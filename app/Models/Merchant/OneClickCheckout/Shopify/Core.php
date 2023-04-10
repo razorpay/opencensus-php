@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\OneClickCheckout\Shopify;
 
 use App;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant\Merchant1ccConfig\Type;
 use Throwable;
 use RZP\Exception;
@@ -44,6 +45,10 @@ class Core extends Base\Core
     ];
 
     const MAX_LENGTH = 8;
+
+    const MAGIC_CHECKOUT_SERVICE_SHOPIFY_PATH        = 'v1/integrations/shopify';
+
+    const CUSTOMER_ACCOUNTS                          = 'customer_accounts';
 
     protected $monitoring;
 
@@ -2395,5 +2400,51 @@ class Core extends Base\Core
             ]
         );
         return $expResult['variant'] === 'magic_order';
+    }
+
+    public function createCustomerAccount($customer) : array
+    {
+        if($customer['email'] != null && $customer['email'] != "")
+        {
+            $input['email'] = $customer['email'];
+        }
+        else
+        {
+            return [];
+        }
+
+        try {
+
+            $input['contact'] = $customer['contact'];
+
+            $client = $this->getShopifyClientByMerchant();
+
+            $input['store_front_access_token'] = $client->getStoreFrontAccessToken();
+            $input['shop_id'] = $client->getShopId();
+
+            $input['merchant_id'] = $this->merchant->getId();
+
+            $path = self::MAGIC_CHECKOUT_SERVICE_SHOPIFY_PATH . '/' . self::CUSTOMER_ACCOUNTS;
+
+            $this->trace->info(TraceCode::SHOPIFY_AUTOMATIC_ACCOUNT_CREATION_STARTED,[
+                'merchant_id'=>$input['merchant_id']
+            ]);
+
+            $this->app['magic_checkout_service_client']->sendRequest($path, $input, Requests::POST);
+
+            $this->trace->info(TraceCode::SHOPIFY_AUTOMATIC_ACCOUNT_CREATION_MAIL_TRIGGERED,[
+                'merchant_id'=>$input['merchant_id']
+            ]);
+
+            return [];
+
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(TraceCode::SHOPIFY_AUTOMATIC_ACCOUNT_CREATION_ERROR,[
+                'error'=> $e->getMessage()
+            ]);
+            return [];
+        }
     }
 }

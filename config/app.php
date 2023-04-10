@@ -585,7 +585,7 @@ return array(
     '1cc_coupons_with_se_splitz_experiment_id' => env('MAGIC_CHECKOUT_COUPONS_WITH_SCRIPT_EDITOR_EXP_ID'),
 
     '1cc_order_default_pending_splitz_experiment_id' => env('MAGIC_CHECKOUT_ORDER_WITH_PENDING_STATUS_EXP_ID'),
-    
+
     'magic_offers_fix_splitz_experiment_id'  => env('MAGIC_CHECKOUT_OFFERS_FIX_EXP_ID'),
 
     'vendor_payment_via_corp_card_experiment_id' => env('VENDOR_PAYMENT_VIA_CORP_CARD_EXPERIMENT_ID'),

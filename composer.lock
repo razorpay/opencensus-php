@@ -10148,22 +10148,21 @@
         },
         {
             "name": "psr/http-message",
-            "version": "dev-master",
+            "version": "1.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-fig/http-message.git",
-                "reference": "efd67d1dc14a7ef4fc4e518e7dee91c271d524e4"
+                "reference": "f6561bf28d520154e4b0ec72be95418abe6d9363"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-fig/http-message/zipball/efd67d1dc14a7ef4fc4e518e7dee91c271d524e4",
-                "reference": "efd67d1dc14a7ef4fc4e518e7dee91c271d524e4",
+                "url": "https://api.github.com/repos/php-fig/http-message/zipball/f6561bf28d520154e4b0ec72be95418abe6d9363",
+                "reference": "f6561bf28d520154e4b0ec72be95418abe6d9363",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.0"
             },
-            "default-branch": true,
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -10198,7 +10197,7 @@
             "support": {
                 "source": "https://github.com/php-fig/http-message/tree/master"
             },
-            "time": "2019-08-29T13:16:46+00:00"
+            "time": "2016-08-06T14:39:51+00:00"
         },
         {
             "name": "psr/http-server-handler",
@@ -10777,12 +10776,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/config-proto.git",
-                "reference": "9f76e54ee9e3b16caaca8680f7207f20691fdc4d"
+                "reference": "4b537d8468322b292840c5eadd2cd967d3147f7a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/config-proto/zipball/9f76e54ee9e3b16caaca8680f7207f20691fdc4d",
-                "reference": "9f76e54ee9e3b16caaca8680f7207f20691fdc4d",
+                "url": "https://api.github.com/repos/razorpay/config-proto/zipball/4b537d8468322b292840c5eadd2cd967d3147f7a",
+                "reference": "4b537d8468322b292840c5eadd2cd967d3147f7a",
                 "shasum": ""
             },
             "require": {
@@ -10808,7 +10807,7 @@
                 "dcs-config",
                 "razorpay"
             ],
-            "time": "2023-03-29T04:20:08+00:00"
+            "time": "2023-04-04T04:18:13+00:00"
         },
         {
             "name": "razorpay/dcs-php-sdk",
@@ -10816,12 +10815,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/dcs-php-sdk.git",
-                "reference": "d0f9b0c6a10a5b31a36ffa8bd2fb0f5eee4e8c8d"
+                "reference": "9885c13ca7f8fe402d6ae98de6e8f9a774fc8cf4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/dcs-php-sdk/zipball/d0f9b0c6a10a5b31a36ffa8bd2fb0f5eee4e8c8d",
-                "reference": "d0f9b0c6a10a5b31a36ffa8bd2fb0f5eee4e8c8d",
+                "url": "https://api.github.com/repos/razorpay/dcs-php-sdk/zipball/9885c13ca7f8fe402d6ae98de6e8f9a774fc8cf4",
+                "reference": "9885c13ca7f8fe402d6ae98de6e8f9a774fc8cf4",
                 "shasum": ""
             },
             "require": {
@@ -10868,7 +10867,7 @@
                 "dcs-php-sdk",
                 "razorpay"
             ],
-            "time": "2023-03-29T13:23:30+00:00"
+            "time": "2023-04-03T10:38:13+00:00"
         },
         {
             "name": "razorpay/ec2-metadata",

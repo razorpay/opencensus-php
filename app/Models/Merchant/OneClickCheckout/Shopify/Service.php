@@ -8,6 +8,7 @@ use Throwable;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Order;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Http\Request\Requests;
@@ -610,6 +611,11 @@ class Service extends Base\Service
         $orderArray = $order->toArrayPublic();
 
         $shopifyOrder = $this->placeShopifyOrder($order, $payment, $fromShopifyApi);
+
+        if($this->merchant->isFeatureEnabled(Feature\Constants::ONE_CC_SHOPIFY_ACC_CREATE))
+        {
+            (new Core)->CreateCustomerAccount($orderArray['customer_details']);
+        }
 
         $this->updateRzpOrder($order, $shopifyOrder);
 

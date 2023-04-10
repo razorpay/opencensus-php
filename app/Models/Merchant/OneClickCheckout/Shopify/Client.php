@@ -66,6 +66,16 @@ class Client
             $resource);
     }
 
+    public function getStoreFrontAccessToken()
+    {
+        return $this->storefrontAccessToken;
+    }
+
+    public function getShopId()
+    {
+        return $this->shopId;
+    }
+
     public function sendStorefrontRequest($body)
     {
         return $this->sendRequest(

@@ -76,6 +76,7 @@ class Constants
     const AssumeMasterAccount = 'assume_master_account';
     const CorporateCardsIsAllowedToApply = 'corporatecards:is_allowed_to_apply';
     const CashAdvanceIsAllowedToApply = 'cashadvance:is_allowed_to_apply';
+    const OneCCAutomaticAccountCreation = 'one_cc_automatic_account_creation';
 
     /**
      * Stores the mapping of the features to their corresponding dcs keys
@@ -147,6 +148,7 @@ class Constants
         self::AssumeMasterAccount => 'rzp/x/merchant/payouts/SubAccountRoles',
         self::CorporateCardsIsAllowedToApply => 'rzp/capital/merchant/onboarding/corporatecards/EligibilityFeatures',
         self::CashAdvanceIsAllowedToApply => 'rzp/capital/merchant/onboarding/cashadvance/EligibilityFeatures',
+        self::OneCCAutomaticAccountCreation => 'rzp/pg/merchant/checkout/magic/Configuration',
     ];
 
     /**
@@ -212,7 +214,7 @@ class Constants
         APIFeaturesConstants::INSTANT_ACTIVATION_V2_API                     => self::SubmerchantInstantActivationViaV2ApiEnabled,
         APIFeaturesConstants::PARTNER_ACTIVATE_MERCHANT                     => self::MerchantActivationByPartnerEnabled,
         APIFeaturesConstants::OVERRIDE_SUB_CONFIG                           => self::OverridingSubmerchantConfigEnabled,
-        APIFeaturesConstants::RAZORPAY_SECURE_MERCHANT => self::ShopifyPaymentsReport,
+        APIFeaturesConstants::RAZORPAY_SECURE_MERCHANT                      => self::ShopifyPaymentsReport,
         APIFeaturesConstants::NO_DOC_ONBOARDING                             => self::NoDocOnboardingEnabled,
         APIFeaturesConstants::CREATE_SOURCE_V2                              => self::OnboardedViaV2ApiEnabled,
         APIFeaturesConstants::BLOCK_ONBOARDING_SMS                          => self::BlockSendingOnboardingSms,
@@ -220,6 +222,7 @@ class Constants
         APIFeaturesConstants::ASSUME_MASTER_ACCOUNT                         => self::AssumeMasterAccount,
         APIFeaturesConstants::CAPITAL_CARDS_ELIGIBLE                        => self::CorporateCardsIsAllowedToApply,
         APIFeaturesConstants::LOC                                           => self::CashAdvanceIsAllowedToApply,
+        APIFeaturesConstants::ONE_CC_SHOPIFY_ACC_CREATE                     => self::OneCCAutomaticAccountCreation,
     ];
 
     /**
