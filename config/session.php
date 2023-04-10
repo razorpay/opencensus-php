@@ -32,7 +32,7 @@ return array(
 
 
 	// TTL in minutes (in CacheBasedSessionHandler (write method) we are already mutiplying by 60 again)
-    'lifetime' => 43200,
+    'lifetime' => 86400, // 60 days in minutes
 
 
 	'expire_on_close' => false,
