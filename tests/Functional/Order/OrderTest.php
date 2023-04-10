@@ -3081,5 +3081,11 @@ class OrderTest extends TestCase
 
         $this->assertEquals($offer1->getPublicId(), $response['offers'][0]['id']);
     }
+    
+    public function testCurrencyForTurkishLiraEnabled()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => false]);
+        $this->startTest();
+    }
 
 }

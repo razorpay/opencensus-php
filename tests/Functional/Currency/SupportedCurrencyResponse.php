@@ -673,6 +673,14 @@ $responseContent = [
         'symbol'         => '฿',
         'name'           => 'Thai Baht',
     ],
+    'TRY' => [
+        'code'           => '949',
+        'min_value'      => 100,
+        'min_auth_value' => 100,
+        'denomination'   => 100,
+        'symbol'         => '₺',
+        'name'           => 'Turkish Lira',
+    ],
     'TTD' => [
         'code'           => '780',
         'min_value'      => 14,

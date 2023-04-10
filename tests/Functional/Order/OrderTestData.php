@@ -324,6 +324,23 @@ return [
         ],
     ],
 
+    'testCurrencyForTurkishLiraEnabled' => [
+        'request'   => [
+            'content' => [
+                'amount'   => 50000,
+                'currency' => 'TRY',
+            ],
+            'method'  => 'POST',
+            'url'     => '/orders',
+        ],
+        'response'  => [
+            'content'     => [
+                'amount'   => 50000,
+                'currency' => 'TRY',
+            ],
+        ],
+    ],
+
     'testCurrencyForShaadiComWithFeatureEnabled' => [
         'request'   => [
             'content' => [

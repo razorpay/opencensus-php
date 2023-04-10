@@ -95,6 +95,7 @@ class Currency
     const SVC = 'SVC';
     const SZL = 'SZL';
     const THB = 'THB';
+    const TRY = 'TRY';
     const TTD = 'TTD';
     const TZS = 'TZS';
     const USD = 'USD';
@@ -192,6 +193,7 @@ class Currency
         self::SVC,
         self::SZL,
         self::THB,
+        self::TRY,
         self::TTD,
         self::TZS,
         self::USD,
@@ -296,6 +298,7 @@ class Currency
         self::SVC => '222',
         self::SZL => '748',
         self::THB => '764',
+        self::TRY => '949',
         self::TTD => '780',
         self::TZS => '834',
         self::USD => '840',
@@ -425,6 +428,7 @@ class Currency
         Country::SZ => self::SZL,
         Country::TF => self::EUR,
         Country::TH => self::THB,
+        Country::TR => self::TRY,
         Country::TT => self::TTD,
         Country::TZ => self::TZS,
         Country::US => self::USD,
@@ -527,6 +531,7 @@ class Currency
         self::SVC => 100,
         self::SZL => 100,
         self::THB => 100,
+        self::TRY => 100,
         self::TTD => 100,
         self::TZS => 100,
         self::USD => 100,
@@ -627,6 +632,7 @@ class Currency
         self::SVC => 2,
         self::SZL => 2,
         self::THB => 2,
+        self::TRY => 2,
         self::TTD => 2,
         self::TZS => 2,
         self::USD => 2,
@@ -726,6 +732,7 @@ class Currency
         self::SVC => 18,
         self::SZL => 29,
         self::THB => 64,
+        self::TRY => 100,
         self::TTD => 14,
         self::TZS => 1000,
         self::USD => 10,
@@ -825,6 +832,7 @@ class Currency
         self::SVC => 18,
         self::SZL => 29,
         self::THB => 64,
+        self::TRY => 100,
         self::TTD => 14,
         self::TZS => 1000,
         self::USD => 50,
@@ -923,6 +931,7 @@ class Currency
         self::SVC => '₡',
         self::SZL => 'E',
         self::THB => '฿',
+        self::TRY => '₺',
         self::TTD => 'TT$',
         self::TZS => 'Sh',
         self::USD => '$',
@@ -1021,6 +1030,7 @@ class Currency
         self::SVC => 'Salvadoran Colon',
         self::SZL => 'Swazi Lilangeni',
         self::THB => 'Thai Baht',
+        self::TRY => 'Turkish Lira',
         self::TTD => 'Trinidadian Dollar',
         self::TZS => 'Tanzanian Shilling',
         self::USD => 'US Dollar',
