@@ -5,7 +5,9 @@ namespace RZP\Mail\Base;
 use App;
 use Illuminate\Contracts\Mail\Factory as MailFactory;
 use Illuminate\Mail\SendQueuedMailable as BaseSendQueuedMailable;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\HyperTrace;
+use RZP\Trace\TraceCode;
 use RZP\Trace\Tracer;
 
 class SendQueuedMailable extends BaseSendQueuedMailable
@@ -37,6 +39,10 @@ class SendQueuedMailable extends BaseSendQueuedMailable
                 $app['basicauth']->setModeAndDbConnection($this->mailable->mode);
             }
 
+            // Since we are using SQS for mail queueing, it is possible to lose the merchant context in basic auth
+            // Hence, if the merchant is not set, we can set it from the mailable->mid
+            $this->setMerchantInAuth();
+
             // Sets originProduct, to tag logs and exceptions for X
             if ($this->mailable->originProduct !== null) {
                 $app['basicauth']->setProduct($this->mailable->originProduct);
@@ -46,5 +52,28 @@ class SendQueuedMailable extends BaseSendQueuedMailable
 
             parent::handle($factory);
         });
+    }
+
+    protected function setMerchantInAuth()
+    {
+        $app = App::getFacadeRoot();
+
+        if (empty($this->mailable->mid) === false)
+        {
+            try
+            {
+                $app['basicauth']->setMerchantById($this->mailable->mid);
+            }
+            catch(\Throwable $e)
+            {
+                $app['trace']->traceException($e,
+                    Trace::ERROR,
+                    TraceCode::MERCHANT_ID_ABSENT_IN_REQUEST,
+                    [
+                        'mid' => $this->mailable->mid,
+                        'reason' => 'mid missing or setMerchantById failed in basic auth'
+                    ]);
+            }
+        }
     }
 }
