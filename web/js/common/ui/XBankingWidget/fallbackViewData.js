@@ -1,3 +1,4 @@
+import { isProductionEnv } from 'common/utils/rzp-utils';
 import tallyIcon from 'assets/x_banking_widget/tally_icon.svg';
 import taxIcon from 'assets/x_banking_widget/tax_icon.svg';
 import payoutIcon from 'assets/x_banking_widget/payout_icon.svg';
@@ -5,6 +6,8 @@ import vendorIcon from 'assets/x_banking_widget/vendor_icon.svg';
 import otpIcon from 'assets/x_banking_widget/otp_icon.svg';
 import reconIcon from 'assets/x_banking_widget/recon_icon.svg';
 import razorpayxLogo from 'assets/x_banking_widget/razorpayx_logo.svg';
+
+const isProd = isProductionEnv();
 
 export const fallbackViewData = {
   error: null,
@@ -71,7 +74,9 @@ export const fallbackViewData = {
           get_started_cta: {
             label: 'Get started',
             type: 'button',
-            url: 'https://x.dev.razorpay.in/welcome?campaign=pg_x_widget&intent=current_account',
+            url: `${
+              isProd ? 'https://x.razorpay.com' : 'https://x.dev.razorpay.in'
+            }/welcome?campaign=pg_x_widget&intent=current_account`,
           },
           headline:
             'Gear up to scale faster with credit cards, payments, taxes, and accounting — automated with a RazorpayX Account.',

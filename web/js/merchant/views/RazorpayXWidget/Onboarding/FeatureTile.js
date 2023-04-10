@@ -13,11 +13,14 @@ const FeatureTile = ({ img, featureDesc }) => {
 export const FeatureTiles = ({ cards }) => {
   return (
     <div className="feature-tiles-grid">
-      {cards.map((feature, index) => (
-        <div key={index}>
-          <FeatureTile img={feature?.illustration?.url} featureDesc={feature?.text} />
-        </div>
-      ))}
+      {cards?.map(
+        (feature) =>
+          feature?.text && (
+            <div key={feature?.priority}>
+              <FeatureTile img={feature?.illustration?.url} featureDesc={feature.text} />
+            </div>
+          ),
+      )}
     </div>
   );
 };
