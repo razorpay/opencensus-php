@@ -22,6 +22,7 @@ use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Feature\Constants as Features;
 use \RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\Payout\Processor\DownstreamProcessor\Base as DSBase;
+use RZP\Models\PayoutsStatusDetails\Core as PayoutsStatusDetailsCore;
 
 class Base extends DSBase
 {
@@ -182,7 +183,9 @@ class Base extends DSBase
 
                     $payout->setStatus(Status::ON_HOLD);
 
-                    $payout->setQueuedReason(QueuedReasons::PARTNER_BANK_DEGRADED);
+                    $payout->setQueuedReason(QueuedReasons::GATEWAY_DEGRADED);
+
+                    (new PayoutsStatusDetailsCore())->create($payout);
 
                     $this->trace->info(
                         TraceCode::PARTNER_BANK_ON_HOLD_PAYOUT_CREATED,

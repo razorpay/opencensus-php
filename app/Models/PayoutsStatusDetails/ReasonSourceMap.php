@@ -14,6 +14,8 @@ class ReasonSourceMap
 
  const GATEWAY                  = 'gateway';
 
+ const GATEWAY_DEGRADED         = 'gateway_degraded';
+
  public static $statusDetailsReasonToSourceMap = [
 
      Reason::BENEFICIARY_BANK_CONFIRMATION_PENDING => self::BENEFICIARY_BANK,
@@ -34,7 +36,7 @@ class ReasonSourceMap
 
      Reason::LOW_BALANCE                           => self::BUSINESS,
 
-     Reason::PARTNER_BANK_DEGRADED                 => self::BUSINESS,
+     Reason::GATEWAY_DEGRADED                      => self::GATEWAY,
 
      Reason::PAYOUT_PROCESSED                      => self::BENEFICIARY_BANK,
 

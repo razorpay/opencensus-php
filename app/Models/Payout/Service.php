@@ -3377,10 +3377,10 @@ class Service extends Base\Service
 
                 foreach ($merchantIdsForAutoCancel as $merchantId) {
 
-                    $slaValue = $this->core->getMerchantSlaForOnHoldPayouts($merchantId, QueuedReasons::PARTNER_BANK_DEGRADED);
+                    $slaValue = $this->core->getMerchantSlaForOnHoldPayouts($merchantId, QueuedReasons::GATEWAY_DEGRADED);
 
                     $payoutIdsToFailForMerchant = $this->repo->payout->getPartnerBankOnHoldPayoutsForMerchantIdSlaBreached($merchantId,
-                        $slaValue, $fetchLimitCount, QueuedReasons::PARTNER_BANK_DEGRADED, $downtimeRawQuery);
+                        $slaValue, $fetchLimitCount, QueuedReasons::GATEWAY_DEGRADED, $downtimeRawQuery);
 
                     $payoutIdsToFail = array_merge($payoutIdsToFail, $payoutIdsToFailForMerchant);
                 }

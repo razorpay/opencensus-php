@@ -21798,8 +21798,8 @@ return [
                 'narration'       => 'Batman',
                 'status'          => 'queued',
                 'mode'            => 'IMPS',
-                'tax'             => 0,
-                'fees'            => 0,
+                'tax'             => 162,
+                'fees'            => 1062,
                 'notes'           => [
                     'abc'         => 'xyz',
                 ],
@@ -21913,12 +21913,12 @@ return [
         'response' => [
             'content' => [
                 'bacc_xba00000000000' => [
-                    'queued' => [
-                        'partner_bank_degraded' => [
-                            'balance'      => 10000000,
-                            'count'        => 1,
-                            'total_amount' => 2000000,
-                            'total_fees'   => 0,
+                    'queued' =>  [
+                        'gateway_degraded' => [
+                            'balance'       => 10000000,
+                            'count'         => 1,
+                            'total_amount'  => 2000000,
+                            'total_fees'    => 0,
                         ],
                     ],
                 ],

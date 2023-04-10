@@ -992,7 +992,7 @@ class Validator extends Base\Validator
         $payout = $this->entity;
 
         // Already processed by another queue job due to overlap of cron runs.
-        if ($payout->isStatusOnHold() === false && $payout->getQueuedReason() === QueuedReasons::PARTNER_BANK_DEGRADED)
+        if ($payout->isStatusOnHold() === false && $payout->getQueuedReason() === QueuedReasons::GATEWAY_DEGRADED)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYOUT_NOT_ON_HOLD,

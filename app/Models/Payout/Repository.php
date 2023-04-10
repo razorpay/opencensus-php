@@ -602,7 +602,7 @@ class Repository extends Base\Repository
         $query= $this->newQueryWithConnection($this->getSlaveConnection())
             ->select($payoutIdColumn)
             ->where($payoutStatus, '=', Status::ON_HOLD)
-            ->where($queuedReason, '=', QueuedReasons::PARTNER_BANK_DEGRADED)
+            ->where($queuedReason, '=', QueuedReasons::GATEWAY_DEGRADED)
             ->where($isPayoutService, '=', 0);
 
         if (strlen($rawQuery) > 0) {
@@ -672,7 +672,7 @@ class Repository extends Base\Repository
         $query = $this->newQueryWithConnection($this->getSlaveConnection())
             ->select($merchantIdColumn)
             ->where($statusColumn, '=', Status::ON_HOLD)
-            ->where($queuedReason, '=', QueuedReasons::PARTNER_BANK_DEGRADED)
+            ->where($queuedReason, '=', QueuedReasons::GATEWAY_DEGRADED)
             ->where($isPayoutService, '=', 0)
             ->whereNotNull($onholdAtColumn)
             ->distinct();

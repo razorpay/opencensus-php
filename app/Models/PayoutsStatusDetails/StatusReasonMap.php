@@ -26,7 +26,7 @@ class StatusReasonMap
 
     const BENEFICIARY_BANK_DOWN                 = 'beneficiary_bank_down';
 
-    const PARTNER_BANK_DEGRADED                  = 'partner_bank_degraded';
+    const GATEWAY_DEGRADED                      = 'gateway_degraded';
 
     const PENDING_APPROVAl                      = 'pending_approval';
 
@@ -83,7 +83,7 @@ class StatusReasonMap
             self::LOW_BALANCE,
             self::NPCI_SYSTEM_DOWN,
             self::BENEFICIARY_BANK_DOWN,
-            self::PARTNER_BANK_DEGRADED,
+            self::GATEWAY_DEGRADED,
         ],
 
         PayoutStatus::PENDING => [

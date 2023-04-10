@@ -52,8 +52,10 @@ class Core extends Base\Core
 
                 $description = rtrim($description);
             }
-            else if ($status === Payout\Status::QUEUED)
+            else if ($status === Payout\Status::QUEUED || $status === Payout\Status::ON_HOLD)
             {
+                $status = Payout\Status::getPublicStatusFromInternalStatus($status);
+
                 $reason = $payout->getQueuedReason();
 
                 $description = $payout->getDescriptionForQueuedReason($reason);

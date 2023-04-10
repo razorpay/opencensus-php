@@ -2722,7 +2722,7 @@ class Core extends Base\Core
             if (empty($slaValue) === true)
             {
                 switch ($queuedReason) {
-                    case QueuedReasons::PARTNER_BANK_DEGRADED:
+                    case QueuedReasons::GATEWAY_DEGRADED:
                         // partner bank downtime sla
                         $slaValue = self::DEFAULT_SLA_FOR_PARTNER_BANK_ON_HOLD_PAYOUTS_IN_MINS;
                         break;
@@ -2871,7 +2871,7 @@ class Core extends Base\Core
                     } else {
 
                         $isSlaBreached = $this->checkIfMerchantSlaBreachedForOnHoldPayout($payout,
-                            QueuedReasons::PARTNER_BANK_DEGRADED);
+                            QueuedReasons::GATEWAY_DEGRADED);
 
                         if (!$isSlaBreached) {
                             return null;
@@ -2880,7 +2880,7 @@ class Core extends Base\Core
                         $payout->setStatus(Status::FAILED);
 
                         //Failure reason is marked as PARTNER_BANK_DEGRADED since the sla is breached and the bank is still down.
-                        $payout->setFailureReason(QueuedReasons::PARTNER_BANK_DEGRADED);
+                        $payout->setFailureReason(QueuedReasons::GATEWAY_DEGRADED);
 
                         $payout->setStatusCode("PARTNER_BANK_OFFLINE");
 

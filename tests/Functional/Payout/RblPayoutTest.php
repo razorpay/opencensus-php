@@ -1402,7 +1402,7 @@ class RblPayoutTest extends TestCase
         $payout = $this->getDbLastEntity('payout');
 
         $this->assertEquals('on_hold', $payout['status']);
-        $this->assertEquals(Payout\QueuedReasons::PARTNER_BANK_DEGRADED, $payout['queued_reason']);
+        $this->assertEquals(Payout\QueuedReasons::GATEWAY_DEGRADED, $payout['queued_reason']);
 
         // tear down
         $testDataDowntime['payload']['status'] = 'uptime';
@@ -1431,7 +1431,7 @@ class RblPayoutTest extends TestCase
         $payout = $this->getDbLastEntity('payout');
 
         $this->assertNotEquals('on_hold', $payout['status']);
-        $this->assertNotEquals(Payout\QueuedReasons::PARTNER_BANK_DEGRADED, $payout['queued_reason']);
+        $this->assertNotEquals(Payout\QueuedReasons::GATEWAY_DEGRADED, $payout['queued_reason']);
 
         // tear down
         $testDataDowntime['payload']['status'] = 'uptime';
@@ -1458,7 +1458,7 @@ class RblPayoutTest extends TestCase
         $payout = $this->getDbLastEntity('payout');
 
         $this->assertNotEquals('on_hold', $payout['status']);
-        $this->assertNotEquals(Payout\QueuedReasons::PARTNER_BANK_DEGRADED, $payout['queued_reason']);
+        $this->assertNotEquals(Payout\QueuedReasons::GATEWAY_DEGRADED, $payout['queued_reason']);
 
         // tear down
         $testDataDowntime['payload']['status'] = 'uptime';
@@ -1485,14 +1485,14 @@ class RblPayoutTest extends TestCase
         $payout1 = $this->getDbLastEntity('payout');
 
         $this->assertEquals('on_hold', $payout1['status']);
-        $this->assertEquals(Payout\QueuedReasons::PARTNER_BANK_DEGRADED, $payout1['queued_reason']);
+        $this->assertEquals(Payout\QueuedReasons::GATEWAY_DEGRADED, $payout1['queued_reason']);
 
         $this->createOnHoldPayoutPartnerBankDown($testDataDowntime);
 
         $payout2 = $this->getDbLastEntity('payout');
 
         $this->assertEquals('on_hold', $payout2['status']);
-        $this->assertEquals(Payout\QueuedReasons::PARTNER_BANK_DEGRADED, $payout2['queued_reason']);
+        $this->assertEquals(Payout\QueuedReasons::GATEWAY_DEGRADED, $payout2['queued_reason']);
 
         $testDataDowntime['payload']['status'] = 'uptime';
         $this->setDowntimeInformationForOnHold($testDataDowntime);
@@ -1532,14 +1532,14 @@ class RblPayoutTest extends TestCase
         $payout1 = $this->getDbLastEntity('payout');
 
         $this->assertEquals('on_hold', $payout1['status']);
-        $this->assertEquals(Payout\QueuedReasons::PARTNER_BANK_DEGRADED, $payout1['queued_reason']);
+        $this->assertEquals(Payout\QueuedReasons::GATEWAY_DEGRADED, $payout1['queued_reason']);
 
         $this->createOnHoldPayoutPartnerBankDown($testDataDowntime);
 
         $payout2 = $this->getDbLastEntity('payout');
 
         $this->assertEquals('on_hold', $payout2['status']);
-        $this->assertEquals(Payout\QueuedReasons::PARTNER_BANK_DEGRADED, $payout2['queued_reason']);
+        $this->assertEquals(Payout\QueuedReasons::GATEWAY_DEGRADED, $payout2['queued_reason']);
 
         $this->fixtures->edit('payout', $payout1['id'], ['on_hold_at' => strtotime(('-4000 seconds'), time())]);
 
@@ -1580,14 +1580,14 @@ class RblPayoutTest extends TestCase
         $payout1 = $this->getDbLastEntity('payout');
 
         $this->assertEquals('on_hold', $payout1['status']);
-        $this->assertEquals(Payout\QueuedReasons::PARTNER_BANK_DEGRADED, $payout1['queued_reason']);
+        $this->assertEquals(Payout\QueuedReasons::GATEWAY_DEGRADED, $payout1['queued_reason']);
 
         $this->createOnHoldPayoutPartnerBankDown($testDataDowntime);
 
         $payout2 = $this->getDbLastEntity('payout');
 
         $this->assertEquals('on_hold', $payout2['status']);
-        $this->assertEquals(Payout\QueuedReasons::PARTNER_BANK_DEGRADED, $payout2['queued_reason']);
+        $this->assertEquals(Payout\QueuedReasons::GATEWAY_DEGRADED, $payout2['queued_reason']);
 
         $testDataDowntime['payload']['status'] = 'uptime';
         $this->setDowntimeInformationForOnHold($testDataDowntime);
@@ -1670,9 +1670,9 @@ class RblPayoutTest extends TestCase
         $this->ba->proxyAuth('rzp_test_10000000000000', $userId);
 
         $completeSummary = $this->startTest();
-        $this->assertEquals(10000000, $completeSummary['bacc_xba00000000000']['queued']['partner_bank_degraded']['balance']);
-        $this->assertEquals(2000000, $completeSummary['bacc_xba00000000000']['queued']['partner_bank_degraded']['total_amount']);
-        $this->assertEquals(1, $completeSummary['bacc_xba00000000000']['queued']['partner_bank_degraded']['count']);
+        $this->assertEquals(10000000, $completeSummary['bacc_xba00000000000']['queued']['gateway_degraded']['balance']);
+        $this->assertEquals(2000000, $completeSummary['bacc_xba00000000000']['queued']['gateway_degraded']['total_amount']);
+        $this->assertEquals(1, $completeSummary['bacc_xba00000000000']['queued']['gateway_degraded']['count']);
 
         // tear down
         $testDataDowntime['payload']['status'] = 'uptime';
