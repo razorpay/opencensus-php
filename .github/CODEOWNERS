@@ -127,3 +127,28 @@ app/Models/Merchant/Email/Entity.php                          @razorpay/identity
 app/Models/Merchant/Stakeholder/Entity.php                    @razorpay/identity-core
 app/Models/Merchant/BusinessDetail/Entity.php                 @razorpay/identity-core
 app/Models/Merchant/Website/Entity.php                        @razorpay/identity-core
+
+
+#
+# Nocode Entities
+#
+# Blocking PR merge on certain entities as they are being moved to no-code-app service.
+# Any update on this entities, will require explicit approval from nocode-apps team.
+app/Http/Controllers/PaymentLinkController.php                  @razorpay/nocode
+app/Jobs/PaymentPageProcessor.php                               @razorpay/nocode
+app/Models/PaymentLink                                          @razorpay/nocode
+app/Models/PaymentLink/CustomDomain                             @razorpay/nocode
+app/Models/PaymentLink/CustomDomain/Plans                       @razorpay/nocode
+app/Models/PaymentLink/CustomDomain/Mock                        @razorpay/nocode
+app/Models/PaymentLink/CustomDomain/WebhookProcessor            @razorpay/nocode
+app/Models/PaymentLink/NocodeCustomUrl                          @razorpay/nocode
+app/Models/PaymentLink/PaymentPageItem                          @razorpay/nocode
+app/Models/PaymentLink/PaymentPageRecord                        @razorpay/nocode
+app/Models/PaymentLink/Template                                 @razorpay/nocode
+generated/proto/Rzp/CustomDomainService/App/V1                  @razorpay/nocode
+generated/proto/Rzp/CustomDomainService/Domain/V1               @razorpay/nocode
+generated/proto/Rzp/CustomDomainService/Propagation/V1          @razorpay/nocode
+resources/views/payment_button                                  @razorpay/nocode
+resources/views/payment_handle                                  @razorpay/nocode
+resources/views/payment_link                                    @razorpay/nocode
+resources/views/payment_link/partials                           @razorpay/nocode
