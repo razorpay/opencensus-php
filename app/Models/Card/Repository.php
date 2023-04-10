@@ -415,4 +415,21 @@ class Repository extends Base\Repository
     {
         return (bool) Admin\ConfigKey::get(Admin\ConfigKey::SET_CARD_METADATA_NULL, true);
     }
+
+    public function getCardNetwork($disputeId)
+    {
+        $paymentCardIdColumn = $this->repo->payment->dbColumn(Payment\Entity::CARD_ID);
+        $paymentIdColumn = $this->repo->payment->dbColumn(Payment\Entity::ID);
+        $disputePaymentIdColumn = $this->repo->dispute->dbColumn(\RZP\Models\Dispute\Entity::PAYMENT_ID);
+        $cardIdColumn = $this->repo->card->dbColumn(Entity::ID);
+        $disputeIdColumn = $this->repo->dispute->dbColumn(Entity::ID);
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->select(\RZP\Models\Card\Entity::NETWORK)
+            ->join(Table::PAYMENT, $paymentCardIdColumn, '=', $cardIdColumn)
+            ->join(Table::DISPUTE, $disputePaymentIdColumn, '=', $paymentIdColumn)
+            ->where($disputeIdColumn, '=', $disputeId)
+            ->pluck(\RZP\Models\Card\Entity::NETWORK)
+            ->toArray();
+    }
 }

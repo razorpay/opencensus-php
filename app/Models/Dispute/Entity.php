@@ -48,6 +48,8 @@ class Entity extends Base\PublicEntity
     const RESOLVED_AT             = 'resolved_at';
     const BACKFILL                = 'backfill';
     const LIFECYCLE               = 'lifecycle';
+    const GATEWAY                 = 'gateway';
+    const NETWORK                 = 'card_network';
 
     const EMAIL_NOTIFICATION_STATUS = 'email_notification_status';
 
@@ -854,6 +856,12 @@ class Entity extends Base\PublicEntity
         $array = parent::toArrayAdmin();
 
         $array[self::AMOUNT_DEDUCTED] = $this->getAmountDeducted();
+
+        $disputeId = ltrim($array[self::ID], 'disp_');
+
+        $array[self::GATEWAY] = (new \RZP\Models\Payment\Repository)->getDisputeGateway($disputeId);
+
+        $array[self::NETWORK] = (new \RZP\Models\Card\Repository)->getCardNetwork($disputeId);
 
         return $array;
     }

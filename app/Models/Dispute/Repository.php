@@ -360,6 +360,7 @@ class Repository extends Base\Repository
             ->where($dbColumn, $param);
     }
 
+
     protected function addQueryParamDeductionReversalAtSet($query, $params)
     {
         if (boolval($params[Entity::DEDUCTION_REVERSAL_AT_SET]) === false)

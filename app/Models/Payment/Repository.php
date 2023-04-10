@@ -4455,4 +4455,17 @@ EOT;
            return  ConnectionType::REPLICA;
         }
     }
+
+    public function getDisputeGateway($disputeId)
+    {
+        $pid = $this->dbColumn(Payment\Entity::ID);
+        $disputePaymentIdColumn = $this->repo->dispute->dbColumn(\RZP\Models\Dispute\Entity::PAYMENT_ID);
+        $disputeIdColumn = $this->repo->dispute->dbColumn(\RZP\Models\Dispute\Entity::ID);
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->select(\RZP\Models\Payment\Entity::GATEWAY)
+            ->join(Table::DISPUTE, $pid, '=', $disputePaymentIdColumn)
+            ->where($disputeIdColumn, '=', $disputeId)
+            ->pluck(\RZP\Models\Payment\Entity::GATEWAY);
+    }
 }
