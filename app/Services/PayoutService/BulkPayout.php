@@ -53,10 +53,14 @@ class BulkPayout extends Base
                                'input' => $input,
                            ]);
 
+        // X_Creator_Id is user_id and this represents which user has uploaded the bulk payout.
+        // X_Creator_Type represents type of X_Creator_Id. In case of bulk payouts it is user everytime
         $headers = [
-            Passport::PASSPORT_JWT_V1  => $this->app['basicauth']->getPassportJwt($this->baseUrl),
-            RequestHeader::X_Batch_Id  => $this->app['request']->header(RequestHeader::X_Batch_Id, null),
-            RequestHeader::X_ENTITY_ID => $this->app['request']->header(RequestHeader::X_ENTITY_ID, null)
+            Passport::PASSPORT_JWT_V1     => $this->app['basicauth']->getPassportJwt($this->baseUrl),
+            RequestHeader::X_Batch_Id     => $this->app['request']->header(RequestHeader::X_Batch_Id, null),
+            RequestHeader::X_ENTITY_ID    => $this->app['request']->header(RequestHeader::X_ENTITY_ID, null),
+            RequestHeader::X_Creator_Id   => $this->app['request']->header(RequestHeader::X_Creator_Id, null),
+            RequestHeader::X_Creator_Type => $this->app['request']->header(RequestHeader::X_Creator_Type, null)
         ];
 
         $response = $this->makeRequestAndGetContent(
