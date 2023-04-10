@@ -37,7 +37,7 @@ class Validator extends Base\Validator
 
     protected static $shippingMethodRules = [
         Fields::ID                 => 'sometimes|string|max:64',
-        Fields::NAME               => 'required|string|max:64',
+        Fields::NAME               => 'required|string|max:156',
         Fields::DESCRIPTION        => 'sometimes|string|max:256',
         Fields::SHIPPING_FEE       => 'sometimes|integer',
         Fields::COD_FEE            => 'sometimes|integer',
