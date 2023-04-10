@@ -326,6 +326,10 @@ class Service extends Base\Service
 
             if ($exception->getCode() !== ErrorCode::BAD_REQUEST_ANOTHER_BANKING_ACCOUNT_STATEMENT_FETCH_IN_PROGRESS)
             {
+                $this->trace->count(Metric::MISSING_STATEMENT_INSERT_FAILURE, [
+                    Metric::LABEL_CHANNEL => $channel,
+                ]);
+
                 $this->core()->releaseBasDetailsFromStatementFix($accountNumber, $channel);
             }
 

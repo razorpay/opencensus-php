@@ -11164,7 +11164,8 @@ class RblBankingAccountStatementTest extends TestCase
             $metricsMock,
             $boolMetricCaptured,
             [
-                'channel' => 'rbl'
+                'channel'       => 'rbl',
+                'is_monitoring' => false,
             ]
         );
 

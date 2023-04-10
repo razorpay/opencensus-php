@@ -339,7 +339,9 @@ abstract class Base extends BaseCore
                 }
                 catch (\Exception $exception)
                 {
-                    $this->trace->count(Metric::MISSING_STATEMENT_REDIS_INSERT_FAILURES);
+                    $this->trace->count(Metric::MISSING_STATEMENT_REDIS_INSERT_FAILURES, [
+                        Metric::LABEL_CHANNEL => $channel,
+                    ]);
 
                     $this->trace->traceException(
                         $exception,

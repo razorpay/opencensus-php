@@ -424,10 +424,10 @@ class Core extends Base\Core
                         $this->trace->info(TraceCode::MISSING_TRANSACTIONS_FOUND, $traceData);
 
                         //pushing the missing transaction metrics to vajra for monitoring
-//                        if ($isMonitoring === true)
-//                        {
-                            $this->trace->count(Metric::MISSING_STATEMENTS_FOUND, [Metric::LABEL_CHANNEL => $channel]);
-                      //  }
+                        $this->trace->count(Metric::MISSING_STATEMENTS_FOUND, [
+                            Metric::LABEL_CHANNEL => $channel,
+                            'is_monitoring'       => $isMonitoring,
+                        ]);
 
                         Tracer::startSpanWithAttributes(HyperTrace::MISSING_STATEMENTS_FOUND,
                             [
@@ -3524,14 +3524,14 @@ class Core extends Base\Core
         else
         {
             BankingAccountStatementRecon::dispatch($this->mode, [
-                Entity::CHANNEL => $channel,
-                Entity::ACCOUNT_NUMBER => $input[Entity::ACCOUNT_NUMBER],
-                Entity::FROM_DATE => $input[Entity::FROM_DATE],
-                Entity::TO_DATE => $input[Entity::TO_DATE],
+                Entity::CHANNEL                 => $channel,
+                Entity::ACCOUNT_NUMBER          => $input[Entity::ACCOUNT_NUMBER],
+                Entity::FROM_DATE               => $input[Entity::FROM_DATE],
+                Entity::TO_DATE                 => $input[Entity::TO_DATE],
                 BASConstants::EXPECTED_ATTEMPTS => $expectedAttempts,
-                BASConstants::PAGINATION_KEY => $paginationKey,
-                Entity::SAVE_IN_REDIS => $input[Entity::SAVE_IN_REDIS],
-            ], $isMonitoring)->delay($delay);
+                BASConstants::PAGINATION_KEY    => $paginationKey,
+                Entity::SAVE_IN_REDIS           => $input[Entity::SAVE_IN_REDIS],
+            ],                                     $isMonitoring)->delay($delay);
         }
 
         $this->trace->info(TraceCode::FETCH_MISSING_ACCOUNT_STATEMENTS_JOB_DISPATCHED);

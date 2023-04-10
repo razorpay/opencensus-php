@@ -808,7 +808,8 @@ class IciciBankingAccountStatementTest extends TestCase
             $metricsMock,
             $boolMetricCaptured,
             [
-                'channel' => 'icici'
+                'is_monitoring' => false,
+                'channel'       => 'icici'
             ]
         );
 

@@ -3,7 +3,7 @@
 namespace RZP\Jobs;
 
 use RZP\Trace\TraceCode;
-use RZP\Models\BankingAccountStatement;
+use RZP\Models\BankingAccountStatement as BAS;
 
 class BankingAccountStatementUpdate extends Job
 {
@@ -46,7 +46,7 @@ class BankingAccountStatementUpdate extends Job
     {
         parent::handle();
 
-        $BASCore = new BankingAccountStatement\Core;
+        $BASCore = new BAS\Core;
 
         $this->trace->info(TraceCode::BAS_ENTITIES_BALANCE_UPDATE_REQUEST,
             [
@@ -68,6 +68,10 @@ class BankingAccountStatementUpdate extends Job
                 [
                     'params' => $this->params,
                 ]);
+
+            $this->trace->count(BAS\Metric::MISSING_STATEMENT_UPDATE_FAILURE, [
+                BAS\Metric::LABEL_CHANNEL => $this->params[BAS\Entity::CHANNEL],
+            ]);
 
             $this->delete();
         }
