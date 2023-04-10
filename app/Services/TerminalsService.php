@@ -803,6 +803,51 @@ class TerminalsService
 
             return $response;
         }
+        catch(\WpOrg\Requests\Exception $exception)
+        {
+            $data = [
+                self::EXCEPTION => $exception->getMessage(),
+                self::URL       => $url,
+                'data'          => $exception,
+            ];
+
+            if ( (empty($exception->getData()) === false) and
+                (curl_errno($exception->getData()) === CURLE_OPERATION_TIMEDOUT))
+            {
+
+                try
+                {
+                    $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_RETRY,
+                        ['route'=>$this->app['request.ctx']->getRoute()]);
+
+                    $this->trace->error(TraceCode::TERMINAL_PROXY_CALL_ERROR_RETRY_ATTEMPT, $data);
+
+                    $response = $this->makeRequest($url, $headers, $content, $method, $options);
+
+                    return $response;
+                }
+                catch (\Exception $exception)
+                {
+                    $data = [
+                        self::EXCEPTION => $exception->getMessage(),
+                        self::URL       => $url,
+                        'data'          => $exception,
+                    ];
+
+                    $this->trace->error(TraceCode::TERMINALS_SERVICE_PROXY_TIMEOUT_RETRY_ERROR, $data);
+
+                    $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_RETRY_ERROR,
+                        ['route'=>$this->app['request.ctx']->getRoute()]);
+
+                    throw $exception;
+                }
+
+            }
+            else
+            {
+                throw $exception;
+            }
+        }
         catch (\Exception $exception)
         {
             $data = [
