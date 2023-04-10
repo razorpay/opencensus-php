@@ -22,6 +22,8 @@ import {
   getDiscrepanciesCategories as gDC,
 } from 'merchant/reducers/instrumentRequests';
 
+const user = window.rzp_user;
+
 const PaymentMethod = (props) => {
   const {
     intermediateInstrument,
@@ -33,10 +35,9 @@ const PaymentMethod = (props) => {
     sL: setLoading,
     sN: showNotification,
     gDC: getDiscrepanciesCategories,
-    user,
   } = props;
 
-  const fetchAllInstruments = async () => {
+  const fetchAllIntruments = async () => {
     await Promise.all([
       fetchMerchantInstruments(),
       fetchRequestedInstruments(),
@@ -63,7 +64,7 @@ const PaymentMethod = (props) => {
 
   useEffect(() => {
     setLoading();
-    fetchAllInstruments();
+    fetchAllIntruments();
     return () => {
       clearIntermediateInstrument();
       clearLeafInstrument();
@@ -107,10 +108,7 @@ const PaymentMethod = (props) => {
           </span>
           <div style={{ marginTop: '5px', marginBottom: '20px' }}>
             We offer a host of payment methods. Some of them are available by default, while others
-            require approval.{' '}
-            {user.isInstrumentRequestHidden
-              ? 'Raise a request to your bank relationship manager for such payment methods.'
-              : 'Raise a request directly from here to enable such payment methods.'}
+            require approval. Raise a request directly from here to enable such payment methods.
           </div>
           <div className="methods-view">
             <RootList />
@@ -129,7 +127,6 @@ const mapStateToProps = (state) => {
   return {
     intermediateInstrument: state.instrumentRequests.intermediateInstrument,
     loading: state.instrumentRequests.loading,
-    user: state.session.user,
   };
 };
 

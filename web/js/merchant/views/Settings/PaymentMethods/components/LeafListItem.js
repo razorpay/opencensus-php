@@ -1,19 +1,12 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
-import { bindActionCreators } from 'redux';
-
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import Popover, { PopoverBody } from 'common/ui/Popover';
-import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
-
-import { Button } from '@razorpay/blade/components';
 
 import PropTypes from 'prop-types';
 
+import Popover, { PopoverBody } from 'common/ui/Popover';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import {
   createMerchantInstrumentRequest,
   cancelMerchantInstrumentRequest,
@@ -24,10 +17,13 @@ import {
   setInstrument,
 } from 'merchant/reducers/instrumentRequests';
 
-import { getIcon } from 'merchant/views/Settings/PaymentMethods/components/InstrumentIcons';
-import { getIcon as getPaymentMethodIcon } from 'merchant/views/Settings/PaymentMethods/components/paymentMethodIcons';
-import PaytmWalletIntegration from 'merchant/views/Settings/PaymentMethods/components/Modals/PaytmWallet/PaytmWalletIntegration';
-import { DetailsDrawer } from 'merchant/views/Settings/PaymentMethods/components/Modals/PaytmWallet/DetailsDrawer';
+import { getIcon } from './InstrumentIcons';
+import { getIcon as getPaymentMethodIcon } from './paymentMethodIcons';
+
+import PaytmWalletIntegration from './Modals/PaytmWallet/PaytmWalletIntegration';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { DetailsDrawer } from './Modals/PaytmWallet/DetailsDrawer';
+import { bindActionCreators } from 'redux';
 import {
   ACTION_REQUIRED,
   ACTIVATED_ACTION_REQUIRED,
@@ -42,13 +38,14 @@ import {
   statusPopoverText,
   additionalDetailsStatus,
 } from 'merchant/views/Settings/PaymentMethods/constants';
-import { RequestedStatus } from 'merchant/views/Settings/PaymentMethods/components/InstrumentStatuses/RequestedStatus';
-import RejectedAndActionRequired from 'merchant/views/Settings/PaymentMethods/components/InstrumentStatuses/RejectedAndActionRequired';
-import AdditionalDetails from 'merchant/views/Settings/PaymentMethods/components/InstrumentStatuses/AdditionalDetails';
-import MissingInfoModal from 'merchant/views/Settings/PaymentMethods/components/MissingInfoModal';
+import { RequestedStatus } from './InstrumentStatuses/RequestedStatus';
+import RejectedAndActionRequired from './InstrumentStatuses/RejectedAndActionRequired';
+import AdditionalDetails from './InstrumentStatuses/AdditionalDetails';
+import MissingInfoModal from './MissingInfoModal';
+import { withRouter } from 'react-router-dom';
 
-import ConfirmBoxContext from 'merchant/views/Settings/PaymentMethods/components/ConfimBoxContent';
-import { displayName, getListClass } from './utils';
+import ConfirmBoxContext from './ConfimBoxContent';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 class LeafListItem extends React.Component {
   static contextTypes = {
@@ -353,14 +350,6 @@ class LeafListItem extends React.Component {
       .catch(() => {});
   };
 
-  handleRequest = (instrument) => {
-    if (instrument?.collect_info) {
-      this.handleMissingInfoModal();
-    } else {
-      this.handleCreateRequest();
-    }
-  };
-
   render() {
     const { instrument, intermediateInstrument, instrumentsTat, user } = this.props;
 
@@ -373,6 +362,39 @@ class LeafListItem extends React.Component {
       return null;
     }
 
+    const getListClass = (status, path) => {
+      if ([REJECTED, ACTION_REQUIRED].includes(status)) {
+        return 'action-required-list-item';
+      } else if (status === ACTIVATED_ACTION_REQUIRED) {
+        return 'activated-action-required-list-item';
+      } else if (status === GREYED) {
+        return 'list-item-disabled';
+      } else if ((status === ACTIVATED && path === 'pg.wallet.paytm') || status === REQUESTED) {
+        return 'list-item-has-description';
+      } else if (instrument.path === 'pg.upi.google_pay') {
+        return 'list-item-has-long-description';
+      } else {
+        return 'list-item';
+      }
+    };
+    const displayName = (name) => {
+      const displayTextStyle = {
+        fontWeight: '500',
+        fontSize: '14px',
+        lineHeight: '17px',
+        color: '#5D666D',
+      };
+      if (
+        (intermediateInstrument &&
+          !['cards', 'netbanking'].includes(intermediateInstrument.slug)) ||
+        !intermediateInstrument
+      ) {
+        return <strong>{name}</strong>;
+      } else {
+        return <p style={displayTextStyle}>{name}</p>;
+      }
+    };
+
     const shouldReinitiateRequest =
       instrument.status === ACTION_REQUIRED &&
       !instrument?.should_show_smart_dashboard_flow &&
@@ -381,11 +403,10 @@ class LeafListItem extends React.Component {
     const isGrayed = instrument.status === GREYED && instrument.fade_comment;
     const instrumentParent = instrument?.path?.split('.')[1];
     const shouldShowGSTMessage =
-      ['2', '11'].includes(user?.business_type) &&
+      ['2', '11'].includes(this.props?.user?.business_type) &&
       isMissingInfo?.some((field) => field.name === 'merchant_details|gstin');
-
     return (
-      <li className={getListClass({ status: instrument.status, path: instrument.path, user })}>
+      <li className={getListClass(instrument.status, instrument.path)}>
         <div>
           {instrument.slug === 'credit' && isAffordabilityOnboardingActive ? (
             <div className="icon">{getPaymentMethodIcon('card')}</div>
@@ -411,7 +432,7 @@ class LeafListItem extends React.Component {
           )}
           <div className="detail raise-request">
             <div>
-              {displayName({ name: instrument.name, intermediateInstrument })}
+              {displayName(instrument.name)}
               {/* {actionItems && Object.keys(actionItems).includes(instrument.path) ? (
                 <span>
                   <span className="notify-badge">1</span>
@@ -477,10 +498,9 @@ class LeafListItem extends React.Component {
                 </div>
               </div>
             )}
-            {!user.isInstrumentRequestHidden && instrument.status === ACCOUNT_LINKABLE && (
+            {instrument.status === ACCOUNT_LINKABLE && (
               <div className="flex-end">
                 <button
-                  data-testid="pm-link-account-cta"
                   className="btn btn-primary ml-5"
                   disabled={this.state.loading}
                   onClick={() => this.handlePaytmWalletIntegration(1, instrument.status)}
@@ -489,25 +509,30 @@ class LeafListItem extends React.Component {
                 </button>
               </div>
             )}
-            {!user.isInstrumentRequestHidden &&
-              [REQUESTABLE, CANCELLED, GREYED].includes(instrument.status) && (
-                <div className="flex-end">
-                  <Button
-                    data-testid="pm-request-cta"
-                    variant="primary"
-                    isDisabled={instrument.status === GREYED}
-                    isLoading={this.state.loading}
-                    onClick={this.handleRequest}
-                  >
-                    Request
-                  </Button>
-                  {isGrayed && (
-                    <Popover align="bottom" theme="dark">
-                      <PopoverBody>{instrument?.fade_comment || ''}</PopoverBody>
-                    </Popover>
-                  )}
-                </div>
-              )}
+            {[REQUESTABLE, CANCELLED, GREYED].includes(instrument.status) && (
+              <div className="flex-end">
+                <button
+                  className={`${statusClass[instrument.status]} ml-5`}
+                  disabled={this.state.loading || instrument.status === GREYED}
+                  onClick={() =>
+                    instrument.collect_info
+                      ? this.handleMissingInfoModal()
+                      : this.handleCreateRequest()
+                  }
+                >
+                  Request
+                </button>
+                {isGrayed && (
+                  <Popover align="bottom" theme="dark">
+                    <PopoverBody>
+                      <div style={{ textAlign: 'left', textTransform: 'none' }}>
+                        {instrument.fade_comment}
+                      </div>
+                    </PopoverBody>
+                  </Popover>
+                )}
+              </div>
+            )}
             {![REQUESTABLE, CANCELLED, GREYED, ACCOUNT_LINKABLE].includes(instrument.status) &&
               instrument.path !== 'pg.wallet.paytm' && (
                 <div className="flex-end">

@@ -66,7 +66,7 @@ describe('AccountAndSettingsHomePage', () => {
     expect(screen.getByText('Merchant Profile')).toBeInTheDocument();
   });
 
-  test('should call fetch merchant and requested instruments on mount and render section in account and products', async () => {
+  test('should call fetch merchant and requested instruments on mount and render section in acount and products', async () => {
     server.use(fetchMerchantInstrumentHandler());
     server.use(fetchRequestedInstrumentHandler());
     const initialState = getState();

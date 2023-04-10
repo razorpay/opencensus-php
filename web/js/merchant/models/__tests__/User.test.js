@@ -173,22 +173,4 @@ describe('User model', () => {
 
     expect(user.isShowInternationalPaymentBtnExpEnabled).toBe(true);
   });
-
-  test('should return true when merchant feature flag hide_instrument_request is set', () => {
-    const user = getDefaultUserObj();
-
-    jest.spyOn(user, 'isInstrumentRequestHidden', 'get').mockReturnValue(true);
-
-    const isInstrumentRequestHidden = user.isInstrumentRequestHidden;
-    expect(isInstrumentRequestHidden).toBe(true);
-  });
-
-  test('should return false when merchant feature flag hide_instrument_request is not set', () => {
-    const user = getDefaultUserObj();
-
-    jest.spyOn(user, 'isInstrumentRequestHidden', 'get').mockReturnValue(false);
-
-    const isInstrumentRequestHidden = user.isInstrumentRequestHidden;
-    expect(isInstrumentRequestHidden).toBe(false);
-  });
 });

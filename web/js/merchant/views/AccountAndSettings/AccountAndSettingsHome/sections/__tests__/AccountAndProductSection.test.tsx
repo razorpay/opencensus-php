@@ -14,7 +14,7 @@ describe('Account And Product Section', () => {
     expect(screen.getByText('Account and product settings')).toBeInTheDocument();
   });
 
-  test('should render section cards', () => {
+  test('should render section section cards', () => {
     renderApp({});
     defaultProps.sections.forEach((each) => {
       expect(screen.getByText(each.title)).toBeInTheDocument();

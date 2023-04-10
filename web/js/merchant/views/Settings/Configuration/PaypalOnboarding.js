@@ -172,7 +172,7 @@ class PaypalOnboardingButton extends Component {
               Change Account
             </Button>
           )}
-          {!user.isInstrumentRequestHidden && showLinkButtonOnly && (
+          {showLinkButtonOnly && (
             <Button
               variant="primary"
               size="small"
@@ -231,13 +231,14 @@ class PaypalOnboardingButton extends Component {
             <i className="i i-info-circle" /> {getStatusMessage(status)}
           </p>
         )}
-        {!user.isInstrumentRequestHidden && showLinkButtonOnly ? (
+        {showLinkButtonOnly ? (
           <>
             <button
               disabled={this.state.loading || disabled}
               onClick={this.verifyAccount}
               className="btn btn-primary paypal-onboard-button"
             >
+              {' '}
               {showLogo && (
                 <img
                   className="paypal-onboard-img"

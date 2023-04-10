@@ -1600,10 +1600,6 @@ export default class User {
     return this.getExpStatus('instrument_request_merchant_dashboard');
   }
 
-  get isInstrumentRequestHidden() {
-    return isOrgFeatureExist('hide_instrument_request');
-  }
-
   // Bank account auto update or old workflow with the approval from admin
   bankAccountAutoUpdateOrWorkflow() {
     return true;

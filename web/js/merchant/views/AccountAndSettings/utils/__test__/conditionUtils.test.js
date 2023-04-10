@@ -25,7 +25,6 @@ const getUser = () => ({
   isOrgAxis: undefined,
   isOrgRZP: undefined,
   isInstrumentRequestAllowed: jest.fn(),
-  isInstrumentRequestHidden: undefined,
   isWebsiteComplianceFlowEnabled: undefined,
   isFeatureEnabled: jest.fn(),
   international: undefined,
@@ -143,16 +142,15 @@ describe('Condition Utils', () => {
 
   describe('isPaymentMethodEnabled', () => {
     test.each([
-      [false, false, false, false, 'test'],
-      [false, true, false, false, 'live'],
-      [false, true, true, true, 'test'],
-      [false, false, true, false, 'live'],
-      [true, true, true, false, 'live'],
+      [false, false, false, 'test'],
+      [false, true, false, 'live'],
+      [false, true, true, 'test'],
+      [false, false, true, 'live'],
+      [true, true, true, 'live'],
     ])(
       'should return %s when isOrgRZP is %s, isInstrumentRequestAllowed returns %s and mode is %s',
-      (flag, isOrgRZP, isInstrumentRequestAllowedOutput, isInstrumentRequestHiddenOutput, mode) => {
+      (flag, isOrgRZP, isInstrumentRequestAllowedOutput, mode) => {
         user.isOrgRZP = isOrgRZP;
-        user.isInstrumentRequestHidden = isInstrumentRequestHiddenOutput;
         user.isInstrumentRequestAllowed.mockReturnValueOnce(isInstrumentRequestAllowedOutput);
         expect(conditionalUtils.isPaymentMethodEnabled(user, mode)).toBe(flag);
       },
