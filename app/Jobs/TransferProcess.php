@@ -55,7 +55,7 @@ class TransferProcess extends Job
 
             if ($delay === true)
             {
-                (new Transfer\Core)->dispatchForTransferProcessing($transfermode, $this->payment);
+                (new Transfer\Core)->dispatchForTransferProcessing($this->transferMode, $this->payment);
 
                 $this->delete();
 
@@ -99,8 +99,8 @@ class TransferProcess extends Job
     {
         $transaction =  $payment->transaction;
 
-        if ((empty($transaction) === true) or 
-            ($transaction->isBalanceUpdated() === false)) 
+        if ((empty($transaction) === true) or
+            ($transaction->isBalanceUpdated() === false))
         {
             return true;
         }
