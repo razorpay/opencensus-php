@@ -30,6 +30,7 @@ use RZP\Services\NbPlus\Netbanking as NetbankingService;
 use RZP\Reconciliator\Base\Foundation\ScroogeReconciliate;
 use RZP\Reconciliator\Base\SubReconciliator\NbPlus\NbPlusServiceRecon;
 use RZP\Reconciliator\Base\SubReconciliator\Upi\Constants as UpsConstants;
+use RZP\Reconciliator\Base\SubReconciliator\Upi\UpiPaymentServiceReconciliate;
 
 class Service extends Base\Service
 {
@@ -835,6 +836,11 @@ class Service extends Base\Service
                 $this->updateTransactionData($input, $payment);
 
                 $this->updateGatewayData($input, $payment);
+
+                if ($payment->isQrV2Payment() === true)
+                {
+                    (new UpiPaymentServiceReconciliate)->handleUnExpectedPaymentRefundInRecon($payment);
+                }
             });
 
             $this->core->pushSuccessPaymentReconMetrics($payment,"art");
