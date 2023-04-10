@@ -3709,6 +3709,7 @@ class Constants
     public const FEATURES_WITHOUT_MERCHANT_AUTHENTICATION = [
         self::ONLY_DS,
         self::REGULAR_TEST_MERCHANT,
-        self::OPTIMIZER_ONLY_MERCHANT
+        self::OPTIMIZER_ONLY_MERCHANT,
+        self::ADMIN_LEAD_PARTNER,
     ];
 }

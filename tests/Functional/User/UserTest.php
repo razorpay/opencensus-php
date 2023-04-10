@@ -65,6 +65,7 @@ use RZP\Tests\Traits\TestsStorkServiceRequests;
 use RZP\Models\Merchant\Store\Core as StoreCore;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Services\Dcs\Features\Service as DCSService;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
@@ -144,6 +145,48 @@ class UserTest extends TestCase
                     ->first();
 
         $this->assertNotNull($row);
+    }
+
+    public function testRegisterRegularTestPartner()
+    {
+        Mail::fake();
+
+        $this->mockDCS();
+
+        $adminId = Org::MAKER_ADMIN;
+
+        $formData = json_decode(
+            '{
+                "merchant_name":"name",
+                "contact_name":"contact",
+                "contact_email":"leademail@razorpay.com",
+                "dba_name":"dbaname",
+                "merchant_type":"Regular Test Partner"
+            }',
+            true
+        );
+
+        $adminLead = $this->fixtures->create('admin_lead', ['admin_id' => $adminId, 'form_data' => $formData]);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['merchant_invitation'] = $adminLead['token'];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->mockHubSpotClient('trackSignupEvent');
+
+        $this->startTest();
+
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $featuresArray = $this->getDbEntity('feature',
+                                            [
+                                                'entity_id'   => $merchant['id'],
+                                                'entity_type' => 'merchant'
+                                            ])->pluck('name')->toArray();
+
+        $this->assertContains(Features::ADMIN_LEAD_PARTNER, $featuresArray);
     }
 
     public function testRegisterRegularTestMerchant()
@@ -823,6 +866,19 @@ class UserTest extends TestCase
 
             return true;
         });
+    }
+
+    protected function mockDCS()
+    {
+        $dcsMock = $this->getMockBuilder(DCSService::class)
+                        ->setConstructorArgs([$this->app])
+                        ->onlyMethods(['editFeature'])
+                        ->getMock();
+
+        $this->app->instance('dcs', $dcsMock);
+
+        $dcsMock->expects($this->any())->method('editFeature')->willReturn(null);
+
     }
 
     protected function mockHubSpotClient($methodName, $times = 1)
