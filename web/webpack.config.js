@@ -7,6 +7,7 @@ const WorkbboxWebpackPlugin = require('workbox-webpack-plugin');
 // const ImageminWebpWebpackPlugin = require('imagemin-webp-webpack-plugin');
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 
 const isProd = process.env.STAGE !== 'development';
 const project = process.env.PROJECT;
@@ -18,6 +19,10 @@ const PROJECTS_USING_WORKBOX = ['merchant', 'merchantLA'];
 const PLUGINS_TO_BE_REMOVED = ['CompressionPlugin', 'LoadablePlugin', 'ImageMinimizerPlugin'];
 const PRELOAD_ASSETS_FOR = ['merchant', 'merchantLA'];
 const RZP_CDN_URL = 'https://cdn.razorpay.com/dashboard';
+
+const isRedirector = process.env.REDIRECTOR === 'true';
+const publicPath = '/public/dist/';
+const rootPublicFolderPath = path.resolve(__dirname, `../public/dist`);
 
 module.exports = {
   browserConfig: ({ config, isStoryBook = false }) => {
@@ -35,9 +40,29 @@ module.exports = {
         `node_modules/.cache/webpack/${project}`,
       );
       config.devServer.devMiddleware = {
-        writeToDisk: true,
-        publicPath: path.resolve(__dirname, `../public/dist`),
+        writeToDisk: !isRedirector,
+        publicPath: isRedirector ? publicPath : rootPublicFolderPath,
       };
+
+      if (isRedirector) {
+        config.devServer.historyApiFallback = {
+          rewrites: [
+            {
+              from: /^\/offline.html/,
+              to: `${publicPath}/offline.html`,
+            },
+            {
+              from: /./,
+              to: publicPath,
+            },
+          ],
+        };
+
+        config.devServer.allowedHosts = 'all';
+        config.devServer.https = true;
+        config.devServer.client.webSocketURL.hostname = 'localhost';
+        config.devServer.client.webSocketURL.port = '8080';
+      }
     }
 
     config.experiments.backCompat = false;
@@ -46,14 +71,10 @@ module.exports = {
     // *** config.output *** //
     config.output = {
       ...config.output,
-      path: path.resolve(__dirname, `../public/dist`),
-      publicPath: `/dist/`,
-      filename: process.env.REDIRECTOR
-        ? `js/${project}/[name].js`
-        : `js/${project}/[name].[chunkhash:8].js`,
-      chunkFilename: process.env.REDIRECTOR
-        ? `js/${project}/[name].js`
-        : `js/${project}/[name].[chunkhash:8].js`,
+      path: isRedirector ? path.resolve(__dirname, `./public/dist`) : rootPublicFolderPath,
+      publicPath: isRedirector ? publicPath : '/dist/',
+      filename: `js/${project}/[name].[chunkhash:8].js`,
+      chunkFilename: `js/${project}/[name].[chunkhash:8].js`,
       hashFunction: 'xxhash64',
     };
 
@@ -125,6 +146,22 @@ module.exports = {
       },
     );
 
+    if (isRedirector) {
+      config.module.rules.push({
+        test: /\.[jt]sx?$/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: require.resolve('babel-loader'),
+            options: {
+              plugins: [require.resolve('react-refresh/babel')].filter(Boolean),
+            },
+          },
+        ],
+      });
+      config.plugins.push(new ReactRefreshWebpackPlugin());
+    }
+
     // *** config.plugins *** //
     if (project === 'merchant') {
       // run this only once for merchant as it is common folder
@@ -150,7 +187,7 @@ module.exports = {
         version: JSON.stringify(process.env.VERSION),
         templateContent: ({ htmlWebpackPlugin }) => {
           return `(function(){
-            ${process.env.REDIRECTOR ? "window.cdnDashboardUrl = 'http://localhost:8000';" : ''}
+            ${isRedirector ? "window.cdnDashboardUrl = 'https://localhost:8080';" : ''}
             var websiteAssets = {
               js : ${JSON.stringify(htmlWebpackPlugin.files.js)},
               css : ${JSON.stringify(htmlWebpackPlugin.files.css)}

@@ -3,7 +3,22 @@ import apiAsyncMiddleware from 'merchant_common/middlewares/apiAsyncMiddleware';
 import reducers from './reducers';
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
-const store = createStore(reducers, composeEnhancers(applyMiddleware(apiAsyncMiddleware)));
+
+function configureStore() {
+  const store = createStore(reducers, composeEnhancers(applyMiddleware(apiAsyncMiddleware)));
+
+  if (module.hot) {
+    // Enable Webpack hot module replacement for reducers
+    module.hot.accept('./reducers', () => {
+      const nextRootReducer = require('./reducers');
+      store.replaceReducer(nextRootReducer);
+    });
+  }
+
+  return store;
+}
+
+const store = configureStore();
 
 export const storeWithInitialState = (initialState) =>
   createStore(reducers, initialState, composeEnhancers(applyMiddleware(apiAsyncMiddleware)));

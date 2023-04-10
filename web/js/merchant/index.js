@@ -24,6 +24,10 @@ import { getPathForMetrics } from 'common/new-ui/ErrorBoundary/utils';
   }
 })();
 
+if (module.hot) {
+  module.hot.accept();
+}
+
 capturePrometheusMetric({
   name: Metrics.PAGE_VIEW,
   labels: { pathname: getPathForMetrics(window.location.pathname) },
