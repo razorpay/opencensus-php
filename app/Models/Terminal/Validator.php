@@ -1318,6 +1318,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE        => 'required|string',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::ENABLED_WALLETS            => 'sometimes|array',
+        Entity::NETWORK_CATEGORY           => 'sometimes|string',
     ];
 
     protected static $walletBajajEditTerminalRules = [
@@ -1325,6 +1326,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
         Entity::GATEWAY_SECURE_SECRET2     => 'sometimes|string',
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
+        Entity::NETWORK_CATEGORY           => 'sometimes|string',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 

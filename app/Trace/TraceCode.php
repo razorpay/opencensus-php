@@ -316,6 +316,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_TRANSACTION_QUEUE_CPS_SUCCESS                 = 'PAYMENT_TRANSACTION_QUEUE_CPS_SUCCESS';
     const PAYMENT_RECON_CPS_QUEUE_DELETE                        = 'PAYMENT_RECON_CPS_QUEUE_DELETE';
     const PAYMENT_RECON_QUEUE_NBPLUS_REQUEST                    = 'PAYMENT_RECON_QUEUE_NBPLUS_REQUEST';
+    const PAYMENT_RECON_QUEUE_NBPLUS_PUSH_FAILURE               = 'PAYMENT_RECON_QUEUE_NBPLUS_PUSH_FAILURE';
     const PAYMENT_RECON_QUEUE_NBPLUS_SUCCESS                    = 'PAYMENT_RECON_QUEUE_NBPLUS_SUCCESS';
     const PAYMENT_RECON_NBPLUS_QUEUE_DELETE                     = 'PAYMENT_RECON_NBPLUS_QUEUE_DELETE';
     const PAYMENTS_DUAL_WRITE_SYNC_INPUT                        = 'PAYMENTS_DUAL_WRITE_SYNC_INPUT';
@@ -1305,7 +1306,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EMANDATE_DEBIT_ENTITY_CREATE                          = 'EMANDATE_DEBIT_ENTITY_CREATE';
     const EMANDATE_FILE_DATA                                    = 'EMANDATE_FILE_DATA';
     const EMANDATE_FILE_NAME                                    = 'EMANDATE_FILE_NAME';
-    
+
     const EMANDATE_TOKEN_VALIDATION_ERROR                       = 'EMANDATE_TOKEN_VALIDATION_ERROR';
     const EMANDATE_NR_TOKEN_UPDATE_ERROR                        = 'EMANDATE_NR_TOKEN_UPDATE_ERROR';
     const EMANDATE_DCS_CONFIG_FETCH_ERROR                       = 'EMANDATE_DCS_CONFIG_FETCH_ERROR';
@@ -1318,7 +1319,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EMANDATE_TOKEN_BLOCKED                                = 'EMANDATE_TOKEN_BLOCKED';
     const EMANDATE_TOKEN_CONFIG_RESET                           = 'EMANDATE_TOKEN_CONFIG_RESET';
     const CURRENT_MONTH_FETCH_ERROR                             = 'CURRENT_MONTH_FETCH_ERROR';
-    
+
     const EMANDATE_CONFIG_FETCH_REQUEST                         = 'EMANDATE_CONFIG_FETCH_REQUEST';
     const EMANDATE_CONFIG_FETCH_ERROR                           = 'EMANDATE_CONFIG_FETCH_ERROR';
 
