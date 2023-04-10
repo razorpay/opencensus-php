@@ -11,7 +11,7 @@ For reviewing PR, please tag @dashboard-pr-reviewers **and** your respective pod
 
 **_Note_** - Please don't review this PR until and unless you are from @dashboard-pr-reviewers group
 
-If your changes are regarding any home page widgets like announcements, banners, slider etc [growth assets](https://docs.google.com/document/d/1jj3LZRgDrd8AQCTDZ6r7uAIbLPLu_PaaBuxRLcngmjg/edit#), please call out the Platform Growth team (@dashboard-widgets-team in Slack).
+If your changes are regarding any home page widgets like announcements, banners, slider etc [growth assets](https://docs.google.com/document/d/1jj3LZRgDrd8AQCTDZ6r7uAIbLPLu_PaaBuxRLcngmjg/edit#), please call out the Platform Growth team (@dashboard-widgets-team in Slack). The changes on these UI elements should be done through CampaignHQ. Please check the [runbook](https://docs.google.com/document/d/1BFpskX9BFchgYo1eueUmSfJ7hy-4jbkaDDDsqQCoZuk/edit?usp=sharing) for more information.
 
 ---
 
