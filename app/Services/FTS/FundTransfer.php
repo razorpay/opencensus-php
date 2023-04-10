@@ -481,11 +481,11 @@ class FundTransfer extends Base
             $requestMeta = Constants::$mcsPurposeMapping[Constants::OTHERS];
         }
 
-        $merchantName = $this->getMerchantIdAndNameForMasterCardSend($payout);
+        list($merchantName, $merchantId) = $this->getMerchantIdAndNameForMasterCardSend($payout);
 
         $requestMeta[Constants::MERCHANT_NAME] = $merchantName;
 
-        $this->addBusinessRegisteredAddressCityAndPin($payout, $requestMeta);
+        $this->addBusinessRegisteredAddressCityAndPin($merchantId, $requestMeta);
 
         if (isset($request[Constants::TRANSFER][Constants::REQUEST_META]) === true)
         {
@@ -547,15 +547,13 @@ class FundTransfer extends Base
             'name'        => $merchantName,
         ]);
 
-        return $merchantName;
+        return [$merchantName, $merchant->getId()];
     }
 
-    protected function addBusinessRegisteredAddressCityAndPin(Payout\Entity $payout, &$requestMeta)
+    protected function addBusinessRegisteredAddressCityAndPin($merchantId, &$requestMeta)
     {
-        $merchant = $payout->merchant;
-
         /* @var Detail\Entity $merchantDetails*/
-        $merchantDetails = $this->repo->merchant_detail->findByPublicId($merchant->getId());
+        $merchantDetails = $this->repo->merchant_detail->findByPublicId($merchantId);
 
         $merchantBusinessAddress = $merchantDetails->getBusinessAddress();
 

@@ -607,14 +607,16 @@ class CompositePayoutTest extends TestCase
         $mockRequestMetaFTSBlock = [
             FTSConstants::TRANSACTION_PURPOSE         => '08',
             FTSConstants::PAYMENT_TYPE                => FTSConstants::BDB,
-            FTSConstants::MERCHANT_NAME               => 'testmerchant1',
+            FTSConstants::MERCHANT_NAME               => 'testmerchant2',
             FTSConstants::BUSINESS_REGISTERED_ADDRESS => 'Line 1 Address Line 2 Address',
             FTSConstants::BUSINESS_REGISTERED_CITY    => 'Bhubaneswar',
             FTSConstants::BUSINESS_REGISTERED_PIN     => '751490',
         ];
 
+        $ftsSuccess = false;
+
         $ftsMock->shouldReceive('createAndSendRequest')
-                ->andReturnUsing(function(string $endpoint, string $method, array $input) use($mockRequestMetaFTSBlock) {
+                ->andReturnUsing(function(string $endpoint, string $method, array $input) use($mockRequestMetaFTSBlock, &$ftsSuccess) {
 
                     self::assertEquals('/transfer', $endpoint);
                     self::assertEquals('POST', $method);
@@ -624,6 +626,8 @@ class CompositePayoutTest extends TestCase
                     self::assertArrayHasKey(FTSConstants::REQUEST_META, $input[FTSConstants::TRANSFER]);
                     self::assertArraySubset($mockRequestMetaFTSBlock, $input[FTSConstants::TRANSFER][FTSConstants::REQUEST_META]);
                     self::assertCount(6, $input[FTSConstants::TRANSFER][FTSConstants::REQUEST_META]);
+
+                    $ftsSuccess = true;
 
                     return [
                         FTSConstants::BODY => [
@@ -660,6 +664,8 @@ class CompositePayoutTest extends TestCase
         // Assert Public facing response
         $this->assertArrayNotHasKey('iin', $response['fund_account']['card']);
         $this->assertEquals($response['fund_account']['card']['input_type'], 'card');
+
+        $this->assertTrue($ftsSuccess);
 
         $this->fixtures->stripSign($response['id']);
 

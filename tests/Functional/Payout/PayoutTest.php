@@ -8698,7 +8698,7 @@ class PayoutTest extends OAuthTestCase
         return $response;
     }
 
-    protected function mockFtsForMasterCardSend($mockRequestMetaFTSBlock)
+    protected function mockFtsForMasterCardSend($mockRequestMetaFTSBlock, &$ftsSuccess)
     {
         $this->setMockRazorxTreatment([RazorxTreatment::ENABLE_MCS_TRANSFER => 'on']);
 
@@ -8712,7 +8712,7 @@ class PayoutTest extends OAuthTestCase
                 ->andReturn([true, 'Dummy']);
 
         $ftsMock->shouldReceive('createAndSendRequest')
-                ->andReturnUsing(function(string $endpoint, string $method, array $input) use($mockRequestMetaFTSBlock) {
+                ->andReturnUsing(function(string $endpoint, string $method, array $input) use($mockRequestMetaFTSBlock, &$ftsSuccess) {
 
                     self::assertEquals('/transfer', $endpoint);
                     self::assertEquals('POST', $method);
@@ -8722,6 +8722,8 @@ class PayoutTest extends OAuthTestCase
                     self::assertArrayHasKey(FTSConstants::REQUEST_META, $input[FTSConstants::TRANSFER]);
                     self::assertArraySubset($mockRequestMetaFTSBlock, $input[FTSConstants::TRANSFER][FTSConstants::REQUEST_META]);
                     self::assertCount(6, $input[FTSConstants::TRANSFER][FTSConstants::REQUEST_META]);
+
+                    $ftsSuccess = true;
 
                     return [
                         FTSConstants::BODY => [
@@ -8748,14 +8750,6 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutToCardHavingCardInputTypeForRefundsAppAndReceivedProcessedWebhookOnMCS()
     {
-        $this->fixtures->create('merchant_detail', [
-            'merchant_id'                                 => '10000000000000',
-            Detail\Entity::BUSINESS_REGISTERED_ADDRESS    => "Line 1 Address",
-            Detail\Entity::BUSINESS_REGISTERED_ADDRESS_L2 => "Line 2 Address",
-            Detail\Entity::BUSINESS_REGISTERED_CITY       => "Bhubaneswar",
-            Detail\Entity::BUSINESS_REGISTERED_PIN        => "751490",
-        ]);
-
         $mockRequestMetaFTSBlock = [
             FTSConstants::TRANSACTION_PURPOSE         => '12',
             FTSConstants::PAYMENT_TYPE                => FTSConstants::BDB,
@@ -8765,9 +8759,21 @@ class PayoutTest extends OAuthTestCase
             FTSConstants::BUSINESS_REGISTERED_PIN     => '751490',
         ];
 
-        $this->mockFtsForMasterCardSend($mockRequestMetaFTSBlock);
+        $ftsSuccess = false;
+
+        $this->mockFtsForMasterCardSend($mockRequestMetaFTSBlock, $ftsSuccess);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'                                 => '10000000000002',
+            Detail\Entity::BUSINESS_REGISTERED_ADDRESS    => "Line 1 Address",
+            Detail\Entity::BUSINESS_REGISTERED_ADDRESS_L2 => "Line 2 Address",
+            Detail\Entity::BUSINESS_REGISTERED_CITY       => "Bhubaneswar",
+            Detail\Entity::BUSINESS_REGISTERED_PIN        => "751490",
+        ]);
 
         $response = $this->testCreatePayoutToCardHavingCardInputTypeForRefundsApp();
+
+        $this->assertTrue($ftsSuccess);
 
         $this->fixtures->stripSign($response['id']);
 
@@ -8931,14 +8937,6 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreateCardPayoutWithServiceProviderTokenInputTypeForRefundsAppAndReceivedProcessedWebhookOnMCS()
     {
-        $this->fixtures->create('merchant_detail', [
-            'merchant_id'                                 => '10000000000000',
-            Detail\Entity::BUSINESS_REGISTERED_ADDRESS    => "Line 1 Address",
-            Detail\Entity::BUSINESS_REGISTERED_ADDRESS_L2 => "Line 2 Address",
-            Detail\Entity::BUSINESS_REGISTERED_CITY       => "Bhubaneswar",
-            Detail\Entity::BUSINESS_REGISTERED_PIN        => "751490",
-        ]);
-
         $mockRequestMetaFTSBlock = [
             FTSConstants::TRANSACTION_PURPOSE         => '08',
             FTSConstants::PAYMENT_TYPE                => FTSConstants::BDB,
@@ -8948,9 +8946,21 @@ class PayoutTest extends OAuthTestCase
             FTSConstants::BUSINESS_REGISTERED_PIN     => '751490',
         ];
 
-        $this->mockFtsForMasterCardSend($mockRequestMetaFTSBlock);
+        $ftsSuccess = false;
+
+        $this->mockFtsForMasterCardSend($mockRequestMetaFTSBlock, $ftsSuccess);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'                                 => '10000000000002',
+            Detail\Entity::BUSINESS_REGISTERED_ADDRESS    => "Line 1 Address",
+            Detail\Entity::BUSINESS_REGISTERED_ADDRESS_L2 => "Line 2 Address",
+            Detail\Entity::BUSINESS_REGISTERED_CITY       => "Bhubaneswar",
+            Detail\Entity::BUSINESS_REGISTERED_PIN        => "751490",
+        ]);
 
         $response = $this->testCreatePayoutToCardHavingServiceProviderTokenInputTypeForRefundsApp();
+
+        $this->assertTrue($ftsSuccess);
 
         $this->fixtures->stripSign($response['id']);
 
@@ -9125,16 +9135,8 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreateCardPayoutWithRazorpayTokenInputTypeForRefundsAppAndReceivedProcessedWebhookOnMCS()
     {
-        $this->fixtures->create('merchant_detail', [
-            'merchant_id'                                 => '10000000000000',
-            Detail\Entity::BUSINESS_REGISTERED_ADDRESS    => "Line 1 Address",
-            Detail\Entity::BUSINESS_REGISTERED_ADDRESS_L2 => "Line 2 Address",
-            Detail\Entity::BUSINESS_REGISTERED_CITY       => "Bhubaneswar",
-            Detail\Entity::BUSINESS_REGISTERED_PIN        => "751490",
-        ]);
-
         $mockRequestMetaFTSBlock = [
-            FTSConstants::TRANSACTION_PURPOSE         => '08',
+            FTSConstants::TRANSACTION_PURPOSE         => '12',
             FTSConstants::PAYMENT_TYPE                => FTSConstants::BDB,
             FTSConstants::MERCHANT_NAME               => 'testmerchant1',
             FTSConstants::BUSINESS_REGISTERED_ADDRESS => 'Line 1 Address Line 2 Address',
@@ -9142,9 +9144,21 @@ class PayoutTest extends OAuthTestCase
             FTSConstants::BUSINESS_REGISTERED_PIN     => '751490',
         ];
 
-        $this->mockFtsForMasterCardSend($mockRequestMetaFTSBlock);
+        $ftsSuccess = false;
+
+        $this->mockFtsForMasterCardSend($mockRequestMetaFTSBlock, $ftsSuccess);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'                                 => '10000000000002',
+            Detail\Entity::BUSINESS_REGISTERED_ADDRESS    => "Line 1 Address",
+            Detail\Entity::BUSINESS_REGISTERED_ADDRESS_L2 => "Line 2 Address",
+            Detail\Entity::BUSINESS_REGISTERED_CITY       => "Bhubaneswar",
+            Detail\Entity::BUSINESS_REGISTERED_PIN        => "751490",
+        ]);
 
         $response = $this->testCreatePayoutToCardHavingRazorpayTokenInputTypeForRefundsApp();
+
+        $this->assertTrue($ftsSuccess);
 
         $this->fixtures->stripSign($response['id']);
 
