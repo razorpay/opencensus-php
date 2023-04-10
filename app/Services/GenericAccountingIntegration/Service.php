@@ -66,7 +66,7 @@ class Service {
             "reference_id"           => $payout->getReferenceId(),
             "merchant_id"            => $payout->getMerchantId(),
             "status"                 => $payout->getStatus(),
-            "banking_account_number" => $payout->bankingAccount->getAccountNumber(),
+            "banking_account_number" => $payout->balance->getAccountNumber(),
             "fund_account_id"        => $payout->fundAccount->getPublicId(),
             "contact_id"             => $payout->fundAccount->contact->getPublicId(),
             "utr"                    => $payout->getUtr(),
