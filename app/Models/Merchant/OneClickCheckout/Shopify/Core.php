@@ -394,34 +394,9 @@ class Core extends Base\Core
      * this is a hack which needs to be monitored
      * other option is we use cod slabs and ask merchant to not set diff fees in shopify
      * if multiple cod options are available the lowest is chosen
-     * Sample rates -
-     * "shippingRates": [
-     *       {
-     *           "handle": "shopify-Standard%201-60.00",
-     *           "title": "Standard 1",
-     *           "priceV2": {
-     *               "amount": "60.0",
-     *               "currencyCode": "INR"
-     *           }
-     *       },
-     *       {
-     *           "handle": "Cash on Delivery app-advanced_cash_on_delivery_350083-90.00",
-     *           "title": "Standard 1 ACOD",
-     *           "priceV2": {
-     *               "amount": "90.0",
-     *               "currencyCode": "INR"
-     *           }
-     *       }
-     *   ]
      */
     public function parseShippingRates($rates, $checkoutId): array
     {
-        $shippingMethods = [];
-        $shippingDetails = [];
-        $shippingOption = null;
-        $shippingDetail = null;
-        $shippingId = 0;
-
         if (empty($rates) === true)
         {
             return [
@@ -429,12 +404,10 @@ class Core extends Base\Core
                 'cod'          => false,
                 'shipping_fee' => 0,
                 'cod_fee'      => null,
-                'shipping_methods' => $shippingMethods
             ];
         }
 
         $bestRate;
-        $codRate;
         $codFee = null;
         $hasCod = false;
 
@@ -449,27 +422,12 @@ class Core extends Base\Core
             if ($this->isMaybeCod($rate) === true)
             {
                 $hasCod = true;
-
-                if (isset($codRate) === false or $amount < $codRate)
-                {
-                    $codRate = $amount;
-                }
-
-                continue;
+                $codRate = $amount;
             }
-
-            if (isset($bestRate) === false or $amount < $bestRate)
+            elseif (isset($bestRate) === false or $amount < $bestRate)
             {
                 $bestRate = $amount;
             }
-
-            //Multiple shipping options
-            $shippingOption['id'] = 'id'.strval($shippingId);
-            $shippingOption['name'] = $rate['title'];
-            $shippingOption['shipping_fee'] = (int) $price['amount'] * 100;
-
-            array_push($shippingDetails, $shippingOption);
-            $shippingId++;
         }
 
         if (isset($codRate) === true)
@@ -477,32 +435,6 @@ class Core extends Base\Core
             $codFee = (new Utils)->formatNumber($codRate - $bestRate);
             if ($codFee < 0) {
                 $codFee = 0;
-            }
-
-            if(empty($shippingDetails) === false)
-            {
-                //COD details for multiple shipping options
-                foreach ($shippingDetails as $shippingDetail)
-                {
-                    $multiCodRate = $this->fetchCodRate($rates, $shippingDetail['name']);
-
-                    if(empty($multiCodRate) === false)
-                    {
-                        $codFeeMulti = (new Utils)->formatNumber($multiCodRate - $shippingDetail['shipping_fee']/100);
-                        if ($codFeeMulti < 0) {
-                            $codFeeMulti = 0;
-                        }
-                        $shippingDetail['cod'] = $hasCod;
-                        $shippingDetail['cod_fee'] = $codFeeMulti === null ? $codFeeMulti : intval($codFeeMulti)*100;
-                        array_push($shippingMethods, $shippingDetail);
-                    }
-                    else
-                    {
-                        $shippingDetail['cod'] = false;
-                        $shippingDetail['cod_fee'] = null;
-                        array_push($shippingMethods, $shippingDetail);
-                    }
-                }
             }
         }
         else
@@ -589,26 +521,7 @@ class Core extends Base\Core
                 {
                     $hasCod = true;
                     $codFee = $bestCod;
-
-                    //COD details for multiple shipping options - Product tags
-                    foreach ($shippingDetails as $shippingDetail)
-                    {
-                        $shippingDetail['cod'] = $hasCod;
-                        $shippingDetail['cod_fee'] = $codFee === null ? $codFee : intval($codFee)*100;
-                        array_push($shippingMethods, $shippingDetail);
-                    }
                 }
-            }
-        }
-
-        if(isset($codRate) === false && isset($bestCod) === false)
-        {
-            //COD details for multiple shipping options - No ACOD and Product tags
-            foreach ($shippingDetails as $shippingDetail)
-            {
-                $shippingDetail['cod'] = $hasCod;
-                $shippingDetail['cod_fee'] = $codFee === null ? $codFee : intval($codFee)*100;
-                array_push($shippingMethods, $shippingDetail);
             }
         }
 
@@ -617,7 +530,6 @@ class Core extends Base\Core
             'shipping_fee' => intval($bestRate)*100,
             'cod'          => $hasCod,
             'cod_fee'      => $codFee === null ? $codFee : intval($codFee)*100,
-            'shipping_methods' => $shippingMethods
         ];
 
         (new ShippingRates)->forceEnableCODIfApplicable($shippingResponse);
@@ -631,22 +543,6 @@ class Core extends Base\Core
             strpos(strtolower($rate['handle']), 'cash on delivery ') !== false
             or strpos(strtolower($rate['title']), 'cash on delivery ') !== false
         );
-    }
-
-    protected function fetchCodRate(array $rates, $title )
-    {
-        foreach ($rates as $rate) {
-            if ( strpos(strtolower($rate['handle']), 'cash on delivery ') !== false
-            or strpos(strtolower($rate['title']), 'cash on delivery ') !== false )
-            {
-                if ( strpos(strtolower($rate['title']), strtolower($title)) !== false )
-                {
-                    $codAmount = $rate['price']['amount'];
-                    return $codAmount;
-                }
-            }
-        }
-        return 0;
     }
 
     public function validateCheckoutOptionsRequest(array $input)
@@ -1331,13 +1227,6 @@ class Core extends Base\Core
 
         $checkout = (new Checkout)->getCheckoutbyStorefrontId($checkoutId);
 
-        $order = (new RzpOrders())->findOrderByIdAndMerchant($rzpOrder['id']);
-
-        $orderMeta = array_first($order->orderMetas ?? [], function ($orderMeta)
-        {
-            return $orderMeta->getType() === Order\OrderMeta\Type::ONE_CLICK_CHECKOUT;
-        });
-
         if (empty($checkout['data']['node']) === true)
         {
             $this->trace->error(
@@ -1601,20 +1490,10 @@ class Core extends Base\Core
            $shippingFee = $shippingFee + $codFee;
         }
 
-        if(empty($orderMeta) === false)
-        {
-            $value = $orderMeta->getValue();
-
-            if (empty($value['shipping_method']) === false)
-            {
-                $shippingTitle = $value['shipping_method']['name'];
-            }
-        }
-
         $body['shipping_lines'] = [
             [
                 'price' => $shippingFee,
-                'title' =>  $shippingTitle ?? 'Standard Shipping'
+                'title' => 'Standard Shipping'
             ]
         ];
 
@@ -1629,6 +1508,13 @@ class Core extends Base\Core
         {
             $body['tags'] = $body['tags'].', Additional Notes';
         }
+
+        $order = (new RzpOrders())->findOrderByIdAndMerchant($rzpOrder['id']);
+
+        $orderMeta = array_first($order->orderMetas ?? [], function ($orderMeta)
+        {
+            return $orderMeta->getType() === Order\OrderMeta\Type::ONE_CLICK_CHECKOUT;
+        });
 
         if(empty($orderMeta) === false && strtolower($rzpPayment['method']) === 'cod')
         {
