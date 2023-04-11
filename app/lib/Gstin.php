@@ -9,7 +9,7 @@ class Gstin
      *
      * First 2 digits matched are captured
      */
-    const GSTIN_REGEX = '/^(\d{2})[A-Z]{5}\d{4}[A-Z]{1}\d[A-Z\d]{2}$/';
+    const GSTIN_REGEX = '/^(\d{2})[A-Z]{5}\d{4}[A-Z]{1}[A-Z\d]{3}$/';
 
     //
     // State codes from http://www.ddvat.gov.in/docs/List%20of%20State%20Code.pdf
