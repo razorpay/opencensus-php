@@ -398,6 +398,15 @@ class PGRouter
 
                     $paymentEntity = (new Payment\Entity)->forceFill($payment['data']['payment']);
 
+                    if ($paymentEntity->isUpi() === true)
+                    {
+                        $input = $payment['data']['payment'];
+                        
+                        (new Payment\Entity)->modifyInput($input);
+
+                        $paymentEntity = (new Payment\Entity)->forceFill($input);
+                    }
+
                     if (($card !== null) and ($withCard === true))
                     {
                         $paymentEntity->card()->associate($card);
