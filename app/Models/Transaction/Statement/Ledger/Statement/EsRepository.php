@@ -15,6 +15,8 @@ class EsRepository extends Transaction\EsRepository
         Entity::UTR,
         Entity::CONTACT_NAME,
         Entity::CONTACT_EMAIL,
+        Entity::CONTACT_PHONE_PS,
+        Entity::CONTACT_EMAIL_PS,
     ];
 
     /**

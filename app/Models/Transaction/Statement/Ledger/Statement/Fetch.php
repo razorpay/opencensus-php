@@ -32,6 +32,8 @@ class Fetch extends BaseFetch
             Entity::ACTION            => 'sometimes|string|in:debit,credit',
             EsRepository::QUERY       => 'sometimes|string|min:2|max:100',
             Entity::ADJUSTMENT_ID     => 'sometimes|public_id|size:18',
+            Entity::CONTACT_PHONE_PS  => 'sometimes|string',
+            Entity::CONTACT_EMAIL_PS  => 'sometimes|string',
         ],
     ];
 
@@ -52,6 +54,8 @@ class Fetch extends BaseFetch
             Entity::MODE,
             Entity::TYPE,
             Entity::ADJUSTMENT_ID,
+            Entity::CONTACT_PHONE_PS,
+            Entity::CONTACT_EMAIL_PS,
         ],
         AuthType::PROXY_AUTH => [
             Entity::ACTION,
@@ -70,6 +74,8 @@ class Fetch extends BaseFetch
         Entity::CONTACT_NAME,
         Entity::CONTACT_EMAIL,
         EsRepository::QUERY,
+        Entity::CONTACT_PHONE_PS,
+        Entity::CONTACT_EMAIL_PS,
     ];
 
     const COMMON_FIELDS = [

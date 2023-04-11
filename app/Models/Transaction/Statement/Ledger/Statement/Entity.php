@@ -43,6 +43,10 @@ class Entity extends LedgerEntry\Entity
     const DEBIT           = 'debit';
     const POSTED_AT       = 'posted_at';
 
+    //Partial Search
+    const CONTACT_PHONE_PS  = 'contact_phone_ps';
+    const CONTACT_EMAIL_PS  = 'contact_email_ps';
+
     //Input key to support search using adjustment_id
     const ADJUSTMENT_ID   = 'adjustment_id';
 
