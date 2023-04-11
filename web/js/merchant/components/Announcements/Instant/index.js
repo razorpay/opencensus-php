@@ -945,12 +945,12 @@ export default class InstantActivationAnnouncements extends Component {
         title = commonSettlementBanner.title;
         content =
           'Congratulations! You can start accepting payments now. Payments will be settled to your bank account according to your settlement schedule. Please note that as part of the routine compliance checks mandated by our banking partners, we will review your business model, website details and reach out for further clarifications.';
-      } else if (
-        (user.activation_status === 'under_review' ||
-          user.activation_status === 'kyc_qualified_unactivated') &&
-        !!user.locked &&
-        user.isDedupe
-      ) {
+      } else if (user.activation_status === 'kyc_qualified_unactivated') {
+        theme = 'success';
+        title = 'KYC verified successfully';
+        content =
+          'There is no action due from your end. You will be able to accept payments as soon as we resume onboarding of new merchants. We will notify about this on your email ID and phone number.';
+      } else if (user.activation_status === 'under_review' && !!user.locked && user.isDedupe) {
         title = 'Contact Support';
         content = (
           <>

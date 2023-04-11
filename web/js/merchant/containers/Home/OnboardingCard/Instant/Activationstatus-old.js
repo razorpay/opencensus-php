@@ -55,6 +55,7 @@ export default class ActivationCard extends Component {
       isHardLimitReached,
       merchant,
       canSkipPoiValidation,
+      activationStatus,
     } = nextProps;
     const { isBlacklistFlow } = instantActivation;
 
@@ -92,7 +93,12 @@ export default class ActivationCard extends Component {
       );
     };
 
-    if (isActivated) {
+    if (activationStatus === 'kyc_qualified_unactivated') {
+      title = 'KYC Verification';
+      status = possibleStatuses.done;
+      content =
+        'There is no action due from your end. You can continue exploring Razorpay products in Test Mode till we activate your account.';
+    } else if (isActivated) {
       title = 'Account Activated';
       status = possibleStatuses.done;
       content = this.activatedAccountContent;

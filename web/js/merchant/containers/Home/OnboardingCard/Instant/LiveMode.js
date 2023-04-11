@@ -195,7 +195,24 @@ export default class LiveMode extends Component {
             </div>
           );
         } else {
-          if (isRejected) {
+          if (user.activation_status === 'kyc_qualified_unactivated') {
+            title = 'Account Activation';
+            status = possibleStatuses.locked;
+            content = (
+              <div>
+                You can start accepting payments and receive{' '}
+                <a
+                  className="btn-link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href="http://razorpay.com/settlement"
+                >
+                  settlements
+                </a>{' '}
+                in your account as soon as we resume merchant onboarding
+              </div>
+            );
+          } else if (isRejected) {
             status = possibleStatuses.blocked;
             content = 'Transactions are not allowed as your account has been suspended';
           } else {
