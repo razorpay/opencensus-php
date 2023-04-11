@@ -806,6 +806,11 @@ class Service extends Base\Service
 
         $paymentId = $input['payment_id'];
 
+        if ($payment->isExternal() === true)
+        {
+            $payment->transaction = $this->repo->transaction->fetchByEntityAndAssociateMerchant($payment);
+        }
+
         $transaction = $payment->transaction;
 
         if ((empty($transaction) === false) and
@@ -1081,14 +1086,7 @@ class Service extends Base\Service
      */
     protected function updateTransactionData(array $input, Payment\Entity $payment)
     {
-        if ($payment->isExternal() === true)
-        {
-            $transaction = $this->repo->transaction->fetchByEntityAndAssociateMerchant($payment);
-        }
-        else
-        {
-            $transaction = $payment->transaction;
-        }
+        $transaction = $payment->transaction;
 
         if (empty($transaction) === true)
         {
