@@ -5,7 +5,7 @@ interface Window {
   rzpQ: any;
   RZP: Record<string, unknown>;
   __VERSION__: string;
-  rzpAnalytics: () => void;
+  rzpAnalytics: (data: Record<string, unknown>) => void;
   razorpayAnalytics: any;
   Razorpay: any;
   rzpTicketSystem: any;

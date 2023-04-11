@@ -5,18 +5,27 @@ import ModalHeader from 'common/ui/ModalHeader';
 import InputGroupField from 'common/ui/Forms/InputField/InputGroupField';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import Spinner from 'common/ui/Spinner';
+import { updateBillingLabel, fetchBillingLabelSuggestions } from 'merchant/reducers/profile';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { fetchBillingLabelSuggestions } from 'merchant/reducers/profile';
+import { updateSession } from 'merchant/reducers/session';
 import { reduxForm } from 'redux-form';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import User from 'merchant/models/User';
 
 @connect(
   (state) => {
     return { user: state.session.user };
   },
-  { closeModal, showNotification, fetchBillingLabelSuggestions },
+  {
+    updateBillingLabel,
+    updateSession,
+    closeModal,
+    showNotification,
+    fetchBillingLabelSuggestions,
+  },
 )
 @reduxForm({
   form: 'updateMerchantConfigForm',
@@ -131,6 +140,55 @@ export default class UpdateBillingLabel extends PureComponent {
     this.setState({ [name]: value, isValid });
   };
 
+  updateBillingLabel = (data) => {
+    const {
+      updateBillingLabel: updateBillingLabelProp,
+      user,
+      updateSession,
+      showNotification,
+      closeModal,
+    } = this.props;
+    return updateBillingLabelProp(data)
+      .then((response) => {
+        if (response.success) {
+          window.rzpAnalytics?.({
+            eventCategory: 'Brand Name',
+            eventAction: 'Save brand name success',
+            eventLabel: user.id,
+          });
+          selfServeTrackSuccess({
+            selfServeAction: 'Brand Name Updated',
+            page: 'Profile',
+            screen: 'My Account',
+          });
+          showNotification({
+            type: 'success',
+            message: 'Brand name updated successfully.',
+          });
+
+          closeModal();
+
+          const newUser = new User({
+            ...user,
+            billing_label: response.data.billing_label,
+          });
+
+          updateSession({ user: newUser });
+        }
+      })
+      .catch(({ errors }) => {
+        window.rzpAnalytics?.({
+          eventCategory: 'Brand Name',
+          eventAction: 'Save brand name failure',
+          eventLabel: user.id,
+        });
+        showNotification({
+          type: 'error',
+          message: errors[0],
+        });
+      });
+  };
+
   onSaveClicked = () => {
     const data = {
       billing_label: this.state.billingLabel,
@@ -148,11 +206,10 @@ export default class UpdateBillingLabel extends PureComponent {
     window.rzpAnalytics?.({
       eventCategory: 'Brand Name',
       eventAction: 'Save brand name clicked',
-      eventLabel: `${user.id}`,
+      eventLabel: user.id,
     });
 
-    this.props
-      .updateMerchantConfig(data)
+    this.updateBillingLabel(data)
       .then(() => {
         analyticsTrack({
           objectName: 'save brand name',
@@ -185,14 +242,9 @@ export default class UpdateBillingLabel extends PureComponent {
   };
 
   render() {
-    const {
-      billingLabel,
-      loading,
-      suggestions,
-      isValid,
-      selectedSuggestion,
-      openCustomLabel,
-    } = this.state;
+    const { billingLabel, loading, suggestions, isValid, selectedSuggestion, openCustomLabel } =
+      this.state;
+    const { user } = this.props;
 
     return (
       <form onSubmit={this.props.handleSubmit(this.onSaveClicked)}>
@@ -205,13 +257,13 @@ export default class UpdateBillingLabel extends PureComponent {
             </small>
             <div class="help-curr-billing-div">Current Brand Name</div>
             <InputGroupField
-              value={this.props.value}
+              value={user.billing_label}
               readOnly={true}
               className="form-control curr-billing-label-input"
               meta={{}}
               suffix={
                 <img
-                  src={'/dist/css/assets/success-tick-blue.svg'}
+                  src="/dist/css/assets/success-tick-blue.svg"
                   alt="Tick icon"
                   className="suggested-label-selected-tick"
                 />
@@ -237,7 +289,7 @@ export default class UpdateBillingLabel extends PureComponent {
                 >
                   {item}
                   <img
-                    src={'/dist/css/assets/success-tick-blue.svg'}
+                    src="/dist/css/assets/success-tick-blue.svg"
                     alt="Tick icon"
                     className={`suggested-label-selected-tick ${
                       !(selectedSuggestion === index) ? 'hide-element' : ''

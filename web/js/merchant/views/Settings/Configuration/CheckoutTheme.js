@@ -38,6 +38,7 @@ import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import EmailRequiredPreviewImage from 'assets/checkout/preview-checkout-form.png';
 import EmailOptionalPreviewImage from 'assets/checkout/preview-checkout-form-email-optional.png';
 import EmailHiddenPreviewImage from 'assets/checkout/preview-checkout-form-email-hidden.png';
+import { BrandName } from 'merchant/views/Account/Profile/components/BrandName';
 
 const languageOptions = [
   { name: 'English', code: 'en' },
@@ -520,6 +521,9 @@ class CheckoutTheme extends Component {
                       </div>
                     </div>
                   )}
+
+                {user.isAccountAndSettingsRevampEnabled && <BrandName />}
+
                 <label className="col-md-12 col-sm-12" style={{ marginTop: 12 }}>
                   <strong>Theme Color</strong>
                 </label>

@@ -26,7 +26,6 @@ import SupportDetails from 'merchant/views/Account/Profile/components/SupportDet
 import EmailSelfServeModal from 'merchant/views/Settings/EmailSelfServe/EmailInput';
 import User2FASettings from './components/User2FASettings';
 import { ATTR_DETAILS } from 'merchant/views/Account/constants';
-import UpdateBillingLabel from './components/UpdateBillingLabel';
 import TwoFactorVerificationContext from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import IntoView from 'common/ui/IntoView';
@@ -43,7 +42,6 @@ import {
   CHANGE_PASSWORD,
   UPDATE_DISPLAY_NAME,
   ACTION_QUERY_PARAM_KEY,
-  UPDATE_BILLING_LABEL,
   UPDATE_LOGIN_EMAIL,
   UPDATE_BANK_ACCOUNT,
 } from 'merchant/views/Account/Profile/deeplink-constants';
@@ -410,75 +408,6 @@ class Profile extends Component {
     this.openAttrSaveModal('display_name');
   };
 
-  updateBillingLabel = (data) => {
-    return this.props
-      .updateBillingLabel(data)
-      .then((resp) => {
-        if (resp.success) {
-          window.rzpAnalytics?.({
-            eventCategory: 'Brand Name',
-            eventAction: 'Save brand name success',
-            eventLabel: `${this.props.user.id}`,
-          });
-          selfServeTrackSuccess({
-            selfServeAction: 'Brand Name Updated',
-            page: 'Profile',
-            screen: 'My Account',
-          });
-          this.props.showNotification({
-            type: 'success',
-            message: 'Brand name updated successfully.',
-          });
-
-          this.props.closeModal();
-
-          const newUser = new User({
-            ...this.props.user,
-            billing_label: resp.data.billing_label,
-          });
-
-          this.props.updateSession({ user: newUser });
-        }
-
-        return resp;
-      })
-      .catch((err) => {
-        window.rzpAnalytics?.({
-          eventCategory: 'Brand Name',
-          eventAction: 'Save brand name failure',
-          eventLabel: `${this.props.user.id}`,
-        });
-        this.props.showNotification({
-          type: 'error',
-          message: err.errors[0],
-        });
-      });
-  };
-
-  openChangeBillingLabel = () => {
-    const { user } = this.props;
-    window.rzpAnalytics?.({
-      eventCategory: 'Brand Name',
-      eventAction: 'Edit brand name clicked',
-      eventLabel: `${user.id}`,
-    });
-
-    this.props.openModal({
-      size: 'med-large',
-      component: (
-        <UpdateBillingLabel
-          attribute="billing_label"
-          value={this.props.user.billing_label}
-          updateMerchantConfig={this.updateBillingLabel}
-        />
-      ),
-      className: 'modal-white-background',
-      queryParams: {
-        [ACTION_QUERY_PARAM_KEY]: UPDATE_BILLING_LABEL,
-      },
-    });
-  };
-
   openAttrSaveModal = (attr) => {
     this.props.openModal({
       size: 'small',
@@ -707,17 +636,11 @@ class Profile extends Component {
                     value: UPDATE_DISPLAY_NAME,
                     trigger: !!this.isAdminOrOwner() && this.openChangeDisplayName,
                   },
-                  {
-                    key: ACTION_QUERY_PARAM_KEY,
-                    value: UPDATE_BILLING_LABEL,
-                    trigger: !!this.isAdminOrOwner() && this.openChangeBillingLabel,
-                  },
                 ]}
               >
                 <MerchantDetails
                   user={user}
                   changeDisplayName={!!this.isAdminOrOwner() && this.openChangeDisplayName}
-                  changeBillingLabel={!!this.isAdminOrOwner() && this.openChangeBillingLabel}
                   isWebsiteInWorkflow={isWebsiteInWorkflow}
                   onWebsiteAdd={this.onWebsiteAdd}
                   isAdminAsMerchant={isAdminAsMerchant}

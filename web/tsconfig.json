@@ -59,7 +59,8 @@
     "js/merchant/components/SidebarV2",
     "js/common/ui/XBankingWidget",
     "js/merchant/views/transactions/UploadInvoice/BulkUpload",
-    "js/merchant/views/PaymentHandle"
+    "js/merchant/views/PaymentHandle",
+    "js/merchant/views/Account"
   ],
   "exclude": ["node_modules", "js/common/utils"],
   "types": ["resize-observer-browser"]
