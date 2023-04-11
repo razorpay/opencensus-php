@@ -21,10 +21,6 @@ universeDangerJs({
   checkPRReviewer: 'off',
   checkMissingTests: 'off',
   checkPRAssignee: 'off',
-  checkPRSize: {
-    value: 600,
-    type: 'warn',
-  },
   checkSensitiveFiles: {
     extendIncludePattern: [...frontendSensitiveFiles, ...backendSensitiveFiles],
   },

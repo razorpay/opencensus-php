@@ -1,37 +1,33 @@
 const { printMessage, universeUsage } = require('../utils');
 const { PR_AUTOMATED_CHECKS } = require('../constants');
-
-const adheredToGuidelinesRegex = /[ \S]*(?=Have you adhered to)/;
 const checkboxRegex = /\[x\]/i;
 const emojiCheckboxRegex = /\u2705/;
 
-function checkAdheredToGuidelines(body) {
-  // - [] Have you adhered to [Dashboard PR review guidelines]
-  // - [x] Have you adhered to [Dashboard PR review guidelines]
-  // - ✅ Have you adhered to [Dashboard PR review guidelines]
+function checkPrGuideLines({ body, checkType }) {
+  const { queryRegex, logMsg, reason } = checkType;
+
   let isChecked = false;
-  const guidelinesLine = body.match(adheredToGuidelinesRegex);
+  const guidelinesLine = body.match(queryRegex);
   if (guidelinesLine) {
     isChecked =
       !!guidelinesLine[0].match(checkboxRegex) || !!guidelinesLine[0].match(emojiCheckboxRegex);
   }
   if (!isChecked) {
     const type = 'fail';
-    const message = "Please check 'Have you adhered to [Dashboard PR review guidelines]'";
     printMessage({
       type,
-      message,
+      message: logMsg,
     });
     universeUsage.log({
       eventName: PR_AUTOMATED_CHECKS,
       eventProperties: {
         module: universeUsage.modules.PR_REVIEW,
-        reason: 'Dashboard PR review guidelines is not checked',
-        message,
+        reason,
+        message: logMsg,
         type,
       },
     });
   }
 }
 
-module.exports = checkAdheredToGuidelines;
+module.exports = checkPrGuideLines;
