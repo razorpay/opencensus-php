@@ -31,6 +31,7 @@ class Constants
     const SUBMERCHANT_FIRST_TRANSACTION                              = 'transacted-submerchants';
     const MERCHANT_AUTO_KYC_PASS_CRON_JOB_NAME                       = 'merchant_auto_kyc_pass_cron';
     const FOH_REMOVAL_CRON_JOB_NAME                                  = 'foh_removal_cron';
+    const INTL_MERCHANTS_WA_NOTIFICATION_CRON_JOB                    = 'intl-merchants-wa-notification';
     const MTU_TRANSACTED_MERCHANTS_CRON_JON_NAME                     = 'mtu-transacted';
 
     # map keys
@@ -46,4 +47,30 @@ class Constants
 
     const FOH_REMOVAL_LAST_CRON_DEFAULT_VLAUE = 24 ;
 
+    // Whatsapp event and templates
+    const CB_SIGNUP_JOURNEY         = "CB_SIGNUP_JOURNEY";
+
+    const WHATSAPP_TEMPLATE_NAME    = [
+        self::CB_SIGNUP_JOURNEY     => "cb_signup_journey_qa3",
+    ];
+
+    const WHATSAPP_TEMPLATE_TEXT    = [
+        self::CB_SIGNUP_JOURNEY     => "Interested in accepting international payments but don't know how?\n" .
+                                      "\n" .
+                                      "With a super easy activation process and maximum coverage across the global market, you can now accept payments internationally without any hassle with Razorpay!\n" .
+                                      "- Accept payments from 100+currencies.\n" .
+                                      "- Easy and timely settlements in INR.\n" .
+                                      "- Super quick set up process.\n" .
+                                      "- Industry best pricing.\n" . 
+                                      "\n" .
+                                      "Here's a helpful video that will guide you through the activation process",
+    ];
+
+    const WHATSAPP_TEMPLATE_HEADER  = [
+        self::CB_SIGNUP_JOURNEY     => "Want to grow your business internationally?",
+    ];
+
+    const WHATSAPP_MULTIMEDIA_LINK  = [
+        self::CB_SIGNUP_JOURNEY     => "https://download.samplelib.com/mp4/sample-5s.mp4",
+    ];
 }

@@ -446,6 +446,19 @@ class Stork
                 }
             }
 
+            if ((isset($input['is_multimedia_template']) == true) and
+                (isset($input['multimedia_payload']) === true) and
+                ($input['is_multimedia_template'] == true))
+            {
+
+                $multmediaPayload               = $input["multimedia_payload"];
+                $multmediaPayload["text"]       = $text;
+
+
+                // Create payload as per: https://idocs.razorpay.com/platform/stork/integrate-stork/whatsapp/#send-a-multimedia-message
+                $whatsappChannels = json_decode(json_encode($multmediaPayload));
+            }
+
             $requestPayload = [
                 'message' => [
                     'service'           => $this->service,

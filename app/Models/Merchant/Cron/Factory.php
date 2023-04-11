@@ -37,6 +37,7 @@ use RZP\Models\Merchant\Cron\Jobs\MerchantPostFirstTransactionEventCronJob;
 use RZP\Models\Merchant\Cron\Jobs\InstantlyActivatedButNotTransactedCronJob;
 use RZP\Models\Merchant\Cron\Jobs\SaveMerchantTransactionCountForSegmentType;
 use RZP\Models\Merchant\Cron\Jobs\WebsiteComplianceGracePeriodReminderCronJob;
+use RZP\Models\Merchant\Cron\Jobs\TriggerWANotificationToIntlMerchantsCronJob;
 use RZP\Models\Merchant\Cron\Jobs\NcRevampReminderCronJob;
 
 class Factory
@@ -130,7 +131,9 @@ class Factory
             case Constants::FOH_REMOVAL_CRON_JOB_NAME:
                 RuntimeManager::setMaxExecTime(3600);
                 return (new FOHRemovalCronJob($input));
-
+            case Constants::INTL_MERCHANTS_WA_NOTIFICATION_CRON_JOB:
+                RuntimeManager::setMaxExecTime(7200);
+                return (new TriggerWANotificationToIntlMerchantsCronJob($input));
         }
 
         throw new BadRequestValidationFailureException("invalid cron");

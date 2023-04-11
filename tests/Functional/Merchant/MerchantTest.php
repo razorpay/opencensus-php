@@ -4803,10 +4803,10 @@ Team Razorpay',
         );
     }
 
-    public function expectStorkWhatsappRequest($storkMock, $text, $destination = '9876543210', $useRegexForText = false): void
+    public function expectStorkWhatsappRequest($storkMock, $text, $destination = '9876543210', $useRegexForText = false, $times = 1): void
     {
         $storkMock->shouldReceive('sendWhatsappMessage')
-                  ->times(1)
+                  ->times($times)
                   ->with(
                       Mockery::on(function($mode) {
                           return true;
@@ -19473,5 +19473,151 @@ The same has been enabled for the account.
         $this->startTest();
 
         $this->resetRedisKeysForIpWhitelist();
+    }
+
+    // Test for sending WA notifications to merchants via Cron
+    // who signed up from intl landing page of Rzp
+    public function testCrossBorderCronJobForSendingWANotifications()
+    {
+        // setup merchant
+        [$merchantId, $userId] = $this->setupMerchantWithMerchantDetails(
+            [
+                'live'      => true,
+                'activated' => 1
+            ],
+            [
+                'activation_status' => 'activated',
+                'business_category' => 'ecommerce'
+            ],
+            'finance'
+        );
+
+        // prepare args
+        $startTime  = Carbon::yesterday(Timezone::IST)->startOfDay()->getTimestamp();
+        $endTime    = Carbon::yesterday(Timezone::IST)->endOfDay()->getTimestamp();
+
+        $storkTemplateEvent = CronJobHandler\Constants::CB_SIGNUP_JOURNEY;
+        $storkTemplateName  = CronJobHandler\Constants::WHATSAPP_TEMPLATE_NAME[$storkTemplateEvent];
+        $storkTemplateText  = CronJobHandler\Constants::WHATSAPP_TEMPLATE_TEXT[$storkTemplateEvent];
+
+        $storkQuery = sprintf(CronDataCollector\TriggerWANotificationToIntlMerchantsDataCollector::STORK_QUERY, 
+            $merchantId, $storkTemplateName);
+
+        $analyticsQuery = sprintf(CronDataCollector\TriggerWANotificationToIntlMerchantsDataCollector::ANALYTICS_QUERY2, 
+            $startTime, $endTime);
+
+        // mock datalake responses
+        $prestoService = $this->getMockBuilder(DataLakePrestoMock::class)
+                              ->setConstructorArgs([$this->app])
+                              ->onlyMethods(['getDataFromDataLake'])
+                              ->getMock();
+
+        $callback = static function($query) use ($merchantId, $analyticsQuery, $storkQuery)
+                    {
+                        $query1Result = [[
+                            "merchant_id"    => $merchantId,
+                            "contact_name"   => "Arjun Menon",
+                            "contact_mobile" => "9876543210",
+                        ]];
+
+                        if ($query === $analyticsQuery)
+                        {
+                            return $query1Result;
+                        }
+
+                        if ($query === $storkQuery)
+                        {
+                            return [];
+                        }
+
+                        return [];
+                    };
+
+        $prestoService->method('getDataFromDataLake')
+                      ->willReturnCallback($callback);
+
+        $this->app->instance('datalake.presto', $prestoService);
+
+        // mock stork responses
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])
+                    ->makePartial()
+                    ->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkWhatsappRequest($storkMock, $storkTemplateText, '9876543210', false, 2);
+
+        // call cron job handler
+        //
+        // test without payload
+        $output = (new CronJobHandler\Core())->handleCron(CronJobHandler\Constants::INTL_MERCHANTS_WA_NOTIFICATION_CRON_JOB, []);
+
+        $this->assertTrue($output);
+
+        // test with payload
+        $output = (new CronJobHandler\Core())->handleCron(CronJobHandler\Constants::INTL_MERCHANTS_WA_NOTIFICATION_CRON_JOB, [
+                "start_time" => $startTime,
+                "end_time"   => $endTime,
+                "input"      => [[
+                    "id"     => "10000000000000",
+                    "name"   => "Arjun Menon",
+                    "mobile" => "9876543210",
+                ]]
+        ]);
+
+        $this->assertTrue($output);
+    }
+
+    protected function mockStork()
+    {
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])
+                                            ->makePartial()
+                                            ->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+    }
+
+    protected function expectStorkWhatsappRequest2($storkMock, $template, $text, $destination = '9876543210', $ownerId = '10000000000000'): void
+    {
+        $storkMock
+            ->shouldReceive('request')
+            ->times(1)
+            ->with(
+                Mockery::on(function ($actualPath)
+                {
+                    return true;
+                }),
+                Mockery::on(function ($actualContent) use ($template, $text, $destination, $ownerId)
+                {
+                    $message = $actualContent['message'];
+
+                    $whatsappChannel = $message['whatsapp_channels'][0];
+
+                    $actualOwnerId = $message['owner_id'];
+
+                    $actualTemplate = $message['context']->template;
+
+                    $actualText = $whatsappChannel->text;
+
+                    $actualDestination = $whatsappChannel->destination;
+
+                    if (($template !== $actualTemplate) or
+                        ($text !== $actualText) or
+                        ($destination !== $actualDestination) or
+                        ($ownerId !== $actualOwnerId))
+                    {
+                        return false;
+                    }
+
+                    return true;
+                }))
+            ->andReturnUsing(function ()
+            {
+                $response = new \Requests_Response;
+
+                $response->body = json_encode(['key' => 'value']);
+
+                return $response;
+            });
     }
 }
