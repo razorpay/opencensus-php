@@ -15,6 +15,8 @@ jest.mock('merchant/views/PaymentHandle/views/Onboarding/EditPaymentHandle', () 
   <div>Edit Payment Handle Modal</div>
 ));
 
+jest.mock('common/new-ui/Lottie', () => () => <div>loading lottie</div>);
+
 export const App = (props = {}) => {
   return <Onboarding {...props} />;
 };

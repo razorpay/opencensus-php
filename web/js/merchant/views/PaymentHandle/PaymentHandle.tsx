@@ -21,12 +21,14 @@ const PaymentHandle = ({
   const [isOnboardingVisible, setOnboardingVisible] = useState(!getPHProductOnboarding(user));
   const [isApiFailed, setApiFailed] = useState(false);
 
-  const fetchInfo = async () => {
+  const fetchInfo = () => {
     try {
-      await fetchPaymentHandle().catch((err) => {
+      fetchPaymentHandle().catch((err) => {
         if (!isHandleAvailableForMerchant(err.errors)) {
           setOnboardingVisible(true);
           createPaymentHandle();
+        } else {
+          throw new Error(); // this will take us to catch block in case of other errors
         }
       });
     } catch {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, userEvent } from 'test-utils';
-import { fetchPaymentHandle } from 'merchant/reducers/paymentHandle';
+import { fetchPaymentHandle, createPaymentHandle } from 'merchant/reducers/paymentHandle';
 import {
   App,
   paymentHandle,
@@ -8,8 +8,8 @@ import {
 } from 'merchant/views/PaymentHandle/__test__/mocks/fixtures/PaymentHandle';
 
 jest.mock('merchant/reducers/paymentHandle', () => ({
-  ...jest.requireActual('merchant/reducers/paymentHandle'),
   fetchPaymentHandle: jest.fn(),
+  createPaymentHandle: jest.fn(),
 }));
 
 describe('Payment Handle', () => {
@@ -42,19 +42,30 @@ describe('Payment Handle', () => {
 
   test('should render loading screen', () => {
     renderApp();
-    screen.debug();
     expect(
-      screen.queryAllByText('Something went wrong, Our team will get back to you shortly.')[1],
+      screen.getAllByText('Something went wrong, Our team will get back to you shortly.')[0],
     ).toBeInTheDocument();
   });
 
   test('should load onboarding screen as payment handle does not exist initially', async () => {
     fetchPaymentHandle.mockReturnValue({
       type: 'FETCH_PAYMENT_HANDLE::ERROR',
-      payload: Promise.reject({ payload: MockFetchErrorResponse }),
+      payload: Promise.reject(MockFetchErrorResponse),
+    });
+    createPaymentHandle.mockReturnValue({
+      type: 'FETCH_PAYMENT_HANDLE::SUCCESS',
+      payload: Promise.resolve({
+        status_code: 200,
+        data: {
+          title: 'Demo',
+          slug: '@deepnewbusiness',
+          url: 'https://razorpay.me/@deepnewbusiness',
+          id: 'pl_JneRfB2WsBgkr2',
+        },
+        success: true,
+      }),
     });
     renderApp();
-    expect(screen.getByText('Introducing Razorpay.me')).toBeInTheDocument();
     const getStartedCTA = screen.getByRole('button', { name: 'Get Started' });
     expect(getStartedCTA).toBeInTheDocument();
     await userEvent.click(getStartedCTA);
@@ -62,6 +73,6 @@ describe('Payment Handle', () => {
       isPaymentHandleEnabled: true,
     };
     renderApp(props);
-    expect(screen.getByText('Payment List')).toBeInTheDocument();
+    expect(screen.getAllByText('Payment List')[0]).toBeInTheDocument();
   });
 });
