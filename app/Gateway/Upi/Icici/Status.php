@@ -35,4 +35,8 @@ class Status
     const REVOKE_SUCCESS = 'REVOKE-SUCCESS';
 
     const REVOKED_SUCCESS = 'REVOKED-SUCCESS';
+
+    const REVOKE_STATUS     = ['VA', 'QC', '3002'];
+
+    const PAUSE_STATUS      = ['3001', 'QA', '3003'];
 }

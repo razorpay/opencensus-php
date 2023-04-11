@@ -211,6 +211,13 @@ class UpiMetadataTransformer extends UpiTransformer
                     return null;
                 }
 
+                // check gateway status code is mandate revoke or pause then do not retry the payment
+                if(((new \RZP\Gateway\Upi\Icici\Gateway())->checkGatewayStatusAndUpdateEntity
+                    ($this->response['status_code'],$this->input[Entity::PAYMENT]['merchant_id'])) === true)
+                {
+                    return null;
+                }
+
                 // Starting with retries at 10 and 20 minutes
                 $remindAfter = (pow(2, $attempt) * 5);
             }

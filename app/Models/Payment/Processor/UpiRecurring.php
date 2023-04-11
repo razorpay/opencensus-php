@@ -13,6 +13,7 @@ use RZP\Models\Merchant;
 use RZP\Services\Reminders;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Customer\Token;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\UpiMetadata;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\PaymentsUpi\Vpa as Vpa;
@@ -872,6 +873,26 @@ trait UpiRecurring
             (new UpiMetadata\Core)->update($metadata);
 
             $this->payment = $payment;
+
+            // check if gateway status is revok or pause then revoke mandate and token
+            if(((new \RZP\Gateway\Upi\Icici\Gateway())->checkGatewayStatusAndUpdateEntity
+              ($exception->getGatewayErrorCodeAndDesc()[0], $this->payment->getMerchantId(), $mandate)) === true)
+            {
+                $this->trace->info(
+                    TraceCode::UPI_RECURRING_UPDATE_TOKEN_STATUS,
+                    [
+                        'mandate'                 => $mandate,
+                        'payment_id'              => $payment->getId(),
+                        'payment_status'          => $payment->getStatus(),
+                        'payment_recurring_type'  => $payment->getRecurringType(),
+                    ]
+                );
+
+                $input['upi_mandate'] = $mandate;
+
+                $this->processMandateAndTokenStatus($input, Gateway::UPI_ICICI);
+            }
+
             $this->updatePaymentAuthFailed($exception);
 
             return true;
@@ -893,6 +914,39 @@ trait UpiRecurring
 
         return true;
     }
+
+    protected function processMandateAndTokenStatus($input, $gatewayDriver)
+    {
+        [$id, $mode] = $this->app['repo']->upi_mandate->determineIdAndLiveOrTestModeForEntityWithUMN($input['upi_mandate']['umn']);
+
+        if ($mode === null)
+        {
+            throw new Exception\LogicException(
+                'UMN not found in either database',
+                null,
+                [
+                    'gateway'    => $gatewayDriver,
+                    'umn'        => $input['umn'],
+                ]);
+        }
+        else
+        {
+            $this->app['basicauth']->setModeAndDbConnection($mode);
+
+            $id = \RZP\Models\UpiMandate\Entity::getSignedId($id);
+
+            switch($input['upi_mandate']['status'])
+            {
+                case 'pause':
+                    return (new Payment\Service)->mandatePauseCallback($id, $input, $gatewayDriver);
+                case 'resume':
+                    return (new Payment\Service)->mandateResumeCallback($id, $input, $gatewayDriver);
+                case 'revoke':
+                    return (new Payment\Service)->mandateCancelCallback($id, $input, $gatewayDriver);
+            }
+        }
+    }
+
 
     protected function processDebitGatewaySuccess(Entity $payment, array $response, bool $wasFailed = false)
     {

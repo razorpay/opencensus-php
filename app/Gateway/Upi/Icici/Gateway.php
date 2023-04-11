@@ -11,6 +11,7 @@ use RZP\Models\QrCode;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
+use RZP\Models\Merchant;
 use RZP\Gateway\Utility;
 use RZP\Trace\TraceCode;
 use phpseclib\Crypt\RSA;
@@ -282,6 +283,44 @@ class Gateway extends Base\Gateway
             Entity::TYPE => Base\Type::COLLECT,
             Entity::GATEWAY_DATA => $input['upi']['gateway_data'] ?? null,
         ];
+    }
+
+    // Check gateway status is revoke or pause then cancelled mandate and token
+    public function checkGatewayStatusAndUpdateEntity($statusCode, $merchantId, $upiMandate=null)
+    {
+        $variant = $this->app['razorx']->getTreatment($merchantId,
+            Merchant\RazorxTreatment::UPI_AUTOPAY_REVOKE_PAUSE_TOKEN,
+            $this->app['rzp.mode'], 3);
+
+        $updateTokenStatus = false;
+        if(strtolower($variant) === 'on')
+        {
+
+            if(in_array($statusCode,Status::REVOKE_STATUS))
+            {
+                $upiMandate['status']  = 'revoke';
+                $updateTokenStatus = true;
+            }
+
+            if(in_array($statusCode,Status::PAUSE_STATUS))
+            {
+                $upiMandate['status']  = 'pause';
+                $updateTokenStatus = true;
+            }
+
+        }
+
+        $this->trace->info(
+            TraceCode::UPI_RECURRING_UPDATE_TOKEN_STATUS,
+            [
+                'variant'                 => $variant,
+                'status_code'             => $statusCode,
+                'merchant_id'             => $merchantId,
+                'update_token_status'     => $updateTokenStatus
+            ]
+        );
+
+        return $updateTokenStatus;
     }
 
     protected function getMandateCallbackResponseIfApplicable($response){

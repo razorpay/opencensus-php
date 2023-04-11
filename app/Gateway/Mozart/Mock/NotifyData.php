@@ -53,6 +53,17 @@ class NotifyData
                     'internal_error_code'       => ErrorCode::GATEWAY_ERROR_BANK_OFFLINE,
                 ];
                 break;
+
+            case 'notify_fails_revoke':
+                $response['data']['status_code'] = 'VA';
+                $response['status_code'] = 'VA';
+                $response['success'] = false;
+                $response['error'] = [
+                    'gateway_error_code'        => 'VA',
+                    'gateway_error_description' => 'MANDATE HAS BEEN REVOKED',
+                    'internal_error_code'       => ErrorCode::BAD_REQUEST_PAYMENT_UPI_MANDATE_REVOKED,
+                ];
+                break;
         }
 
         return $response;

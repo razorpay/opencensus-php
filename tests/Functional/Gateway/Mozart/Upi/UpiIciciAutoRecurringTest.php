@@ -2579,4 +2579,79 @@ class UpiIciciAutoRecurringTest extends TestCase
 
         return $content;
     }
+
+    public function testAutoRecurringNotifyFailsAndCancelMandateAndToken()
+    {
+        $this->setMockRazorxTreatment(['upi_autopay_revoke_pause_token' => 'on']);
+
+        $this->createDbUpiMandate();
+
+        $this->createDbUpiToken();
+
+        $input = $this->getDbUpiAutoRecurringPayment([
+            'description' => 'notify_fails_revoke',
+        ]);
+
+        // The request which we have sent to create the reminder
+        $this->assertReminderRequest('createReminder', $createReminder, $pending);
+
+        $this->doS2SRecurringPayment($input);
+
+        $payment = $this->assertUpiDbLastEntity('payment', [
+            'gateway'   => 'upi_icici',
+            'status'    => 'created',
+            'verify_at' => null,
+        ]);
+
+        // The first reminder call will trigger an update reminder
+        $this->assertReminderRequest('updateReminder', $updateReminder, $pending);
+
+        $calls = [];
+
+        // Gateway request will be sent in next step
+        $this->mockServerRequestFunction(function (& $content, $action) use ($calls)
+        {
+            if ($action === 'notify')
+            {
+                $gatewayData = $content['upi']['gateway_data'];
+                $calls[$gatewayData['ano']] = $gatewayData;
+            }
+        });
+
+        // Making first call from RS, This will call preDebit action on Gateway
+        $this->sendReminderRequest($createReminder);
+
+        $payment = $this->assertUpiDbLastEntity('payment', [
+            'gateway'   => 'upi_icici',
+            'status'    => 'failed',
+            'verify_at' => null,
+        ], false);
+
+        $this->assertUpiDbLastEntity('token', [
+            'recurring_status'       => 'cancelled',
+        ]);
+
+        $this->assertUpiDbLastEntity('upi_mandate', [
+            'status'       => 'revoked',
+        ]);
+
+        $metadata = $this->assertUpiDbLastEntity('upi_metadata', [
+            'vpa'               => 'localuser@icici',
+            'rrn'               => '615519221396',
+            'umn'               => 'FirstUpiRecPayment@razorpay',
+            'internal_status'   => 'pre_debit_failed',
+            'remind_at'         => $updateReminder['reminder_data']['remind_at'],
+            'reminder_id'       => 'TestReminderId',
+        ]);
+
+        $this->assertUpiDbLastEntity('upi', [
+            'status_code'       => 'VA',
+            'gateway_data'      => [
+                'act'   => 'notify',
+                'ano'   => 1,
+                'ext'   => $payment->getCreatedAt() + 90000,
+                'sno'   => 2,
+            ],
+        ]);
+    }
 }
