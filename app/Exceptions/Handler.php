@@ -241,18 +241,20 @@ class Handler extends ExceptionHandler
     {
         $app = \App::getFacadeRoot();
         
+        $context = $this->getExceptionDetails($e);
+        
         if ($e->getMessage() === 'Unauthorized Access')
         {
             return 401;
         }
         else if ($e instanceof Error)
         {
-            $app['trace']->info(TraceCode::MISC_TRACE_CODE, ['context' => $e->getMessage(), 'status_code' => $e->getHttpStatusCode()]);
+            $app['trace']->info(TraceCode::MISC_TRACE_CODE, ['context' => $context, 'status_code' => $e->getHttpStatusCode()]);
 
             return $e->getHttpStatusCode();
         }
         
-        $app['trace']->info(TraceCode::ERROR_EXCEPTION, ['context' => $e->getMessage(), 'status_code' => 500]);
+        $app['trace']->info(TraceCode::ERROR_EXCEPTION, ['context' => $context, 'status_code' => 500]);
         
         return 500;
     }
