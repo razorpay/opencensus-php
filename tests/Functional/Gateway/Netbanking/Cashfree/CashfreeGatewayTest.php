@@ -13,7 +13,7 @@ class CashfreeGatewayTest extends NbPlusPaymentServiceNetbankingTest
 
         $this->gateway = 'cashfree';
 
-        $this->bank = IFSC::KKBK;
+        $this->bank = IFSC::RATN;
 
         $this->payment = $this->getDefaultNetbankingPaymentArray($this->bank);
 

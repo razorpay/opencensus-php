@@ -13,7 +13,7 @@ class CcavenueGatewayTest extends NbPlusPaymentServiceNetbankingTest
 
         $this->gateway = 'ccavenue';
 
-        $this->bank = IFSC::KKBK;
+        $this->bank = IFSC::FDRL;
 
         $this->payment = $this->getDefaultNetbankingPaymentArray($this->bank);
 
