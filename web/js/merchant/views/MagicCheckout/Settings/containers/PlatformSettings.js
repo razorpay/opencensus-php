@@ -91,7 +91,7 @@ const PlatformSettings = ({
   }, [status]);
 
   const getNestedVerticalTab = (path) => {
-    const { one_click_checkout } = settings;
+    const { one_click_checkout = true } = settings;
     if (platform === PLATFORMS.VALUES.NATIVE || one_click_checkout) {
       return <NestedVerticalTab path={path} />;
     }

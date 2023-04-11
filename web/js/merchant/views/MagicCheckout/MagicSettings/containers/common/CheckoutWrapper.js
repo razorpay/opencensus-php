@@ -1,4 +1,5 @@
 import { useEffect, useCallback } from 'react';
+import { connect } from 'react-redux';
 import Card from 'merchant/views/MagicCheckout/MagicSettings/components/common/Card';
 import Form from 'merchant/views/MagicCheckout/MagicSettings/components/common/Form';
 import {
@@ -86,4 +87,8 @@ const CheckoutWrapper = ({
   );
 };
 
-export default CheckoutWrapper;
+const mapStateToProps = (state) => ({
+  user: state.session.user,
+});
+
+export default connect(mapStateToProps, null)(CheckoutWrapper);
