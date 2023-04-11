@@ -1,41 +1,43 @@
 import { titleCase } from 'common/utils/rzp-utils';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
-const statusLabel = (statusMap, statusDescriptionMap) => ({
-  status = '',
-  error_reason = '',
-  className,
-}) => {
-  //short term fix to handle avs failure
-  const isAVSRefunded = status === 'refunded' && error_reason === 'avs_failure';
+const statusLabel =
+  (statusMap, statusDescriptionMap) =>
+  ({ status = '', error_reason = '', className }) => {
+    //short term fix to handle avs failure
+    const isAVSRefunded = status === 'refunded' && error_reason === 'avs_failure';
 
-  return (
-    <span
-      className={`status-label label${
-        statusMap ? ` ${statusMap[status?.toLowerCase()]}` : ''
-      } ${className}`}
-    >
-      {status === 'activated_mcc_pending' ? 'Activated' : titleCase(status)}
-      {(statusDescriptionMap?.[status] || isAVSRefunded) && (
-        <i className="i i-info-circle status-label-info-icon">
-          <Popover persistent={false} theme="dark">
-            <PopoverBody>
-              <p>
-                {isAVSRefunded
-                  ? 'Payment auto refunded because of billing address mismatch'
-                  : statusDescriptionMap[status]}
-              </p>
-            </PopoverBody>
-          </Popover>
-        </i>
-      )}
-    </span>
-  );
-};
+    return (
+      <span
+        className={`status-label label${
+          statusMap ? ` ${statusMap[status?.toLowerCase()]}` : ''
+        } ${className}`}
+      >
+        {status === 'activated_mcc_pending' ? 'Activated' : titleCase(status)}
+        {(statusDescriptionMap?.[status] || isAVSRefunded) && (
+          <i className="i i-info-circle status-label-info-icon">
+            <Popover persistent={false} theme="dark">
+              <PopoverBody>
+                <p>
+                  {isAVSRefunded
+                    ? 'Payment auto refunded because of billing address mismatch'
+                    : statusDescriptionMap[status]}
+                </p>
+              </PopoverBody>
+            </Popover>
+          </i>
+        )}
+      </span>
+    );
+  };
 
-const capitalStatusLabel = (statusMap) => ({ status = '' }) => {
-  return <span className={`status-label label ${statusMap[status?.toLowerCase()]}`}>{status}</span>;
-};
+const capitalStatusLabel =
+  (statusMap) =>
+  ({ status = '' }) => {
+    return (
+      <span className={`status-label label ${statusMap[status?.toLowerCase()]}`}>{status}</span>
+    );
+  };
 
 export const invoiceStatusMap = {
   draft: 'label-muted',
@@ -280,6 +282,7 @@ export const capitalStatusMap = {
   'merchant esign pending': 'label-light-warning',
   'merchant nach pending': 'label-light-warning',
   'cpv pending': 'label-light-warning',
+  'pre offer docs resubmission': 'label-light-warning',
   rejection: 'label-danger-light',
   'application closed': 'label-danger-light',
   'go live': 'label-success-light',
