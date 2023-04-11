@@ -87,13 +87,16 @@ const MobileVerification = ({
       location: SCREEN_NAME[STEPS.MOBILE_VERIFICATION],
     });
     setIsLoading(true);
-    return verifyMobileOTP({
-      captcha: token || 'Faked',
-      contact_mobile: mobileNumber,
-      otp,
-      partner_intent: true,
-      token: otpVerifyToken,
-    })
+    return verifyMobileOTP(
+      {
+        captcha: token || 'Faked',
+        contact_mobile: mobileNumber,
+        otp,
+        partner_intent: true,
+        token: otpVerifyToken,
+      },
+      captchaMode,
+    )
       .then(({ success, data }) => {
         if (success) {
           const merchantID = data?.id;
@@ -135,7 +138,7 @@ const MobileVerification = ({
             message: errorDescription,
           },
         });
-        if (err.status_code === 400 || errorDescription === MOBILE_INCORRECT_OTP_ERROR_DESC)
+        if (err.status_code === 400 && errorDescription === MOBILE_INCORRECT_OTP_ERROR_DESC)
           setOTPError('wrong_otp');
         else if (captchaMode === V3) {
           if (err.message === LOW_CAPTCHA_SCORE || err.message === CAPTCHA_FAILED) {

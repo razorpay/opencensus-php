@@ -12,13 +12,13 @@ export const registerMobileOTP = (contact_mobile) => {
   });
 };
 
-export const verifyMobileOTP = (data) => {
+export const verifyMobileOTP = (data, captchaMode) => {
   return axios({
     method: 'post',
     url: '/user/register/otp/verify',
     data,
     headers: {
-      'X-RECAPTCHA-MODE': 'invisible',
+      'X-RECAPTCHA-MODE': captchaMode || 'invisible',
     },
   }).then(({ data }) => {
     if (data.success) return data;
