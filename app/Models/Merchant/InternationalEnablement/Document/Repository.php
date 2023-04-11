@@ -14,7 +14,7 @@ class Repository extends Base\Repository
 
     public function fetchDocumentByMerchantIdAndIEDetailIdAndType($merchantId, $IEDetailId, $type)
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
+        return $this->newQuery()
             ->where(Entity::MERCHANT_ID, $merchantId)
             ->where(Entity::INTERNATIONAL_ENABLEMENT_DETAIL_ID, $IEDetailId)
             ->where(Entity::TYPE, $type)
@@ -23,7 +23,7 @@ class Repository extends Base\Repository
 
     public function fetchOtherDocumentByMerchantIdAndIEDetailIdAndCustomType($merchantId, $IEDetailId, $customType)
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
+        return $this->newQuery()
             ->where(Entity::MERCHANT_ID, $merchantId)
             ->where(Entity::INTERNATIONAL_ENABLEMENT_DETAIL_ID, $IEDetailId)
             ->where(Entity::CUSTOM_TYPE, $customType)
