@@ -9584,16 +9584,15 @@ class Core extends Base\Core
                     'merchant'                      => $merchant->getAttributes(),
                     'merchant_detail'               => optional($merchant->merchantDetail)->getAttributes(),
                     'merchant_business_detail'      => optional($merchant->merchantBusinessDetail)->getAttributes(),
-                    'merchant_website'              => optional($merchantWebsite->toArray())[0],
+                    'merchant_website'              => optional($merchantWebsite->toArray())[0] ?? (new \stdClass()),
                     'merchant_verification_detail'  => $merchantVerificationDetail->toArray(),
                     'bvs_validation'                => $bvsValidation->toArray(),
                     'merchant_document'             => $documents->toArray()
                 ];
 
-                $merchantInfo['merchant_business_detail']['website_details'] = (count(optional($merchant->merchantBusinessDetail)->getWebsiteDetails())>0 ?
-                    optional($merchant->merchantBusinessDetail)->getWebsiteDetails() : null);
+                $merchantInfo['merchant_business_detail']['website_details'] = optional($merchant->merchantBusinessDetail)->getWebsiteDetails() ?? (new \stdClass());
 
-                $merchantInfo['merchant_business_detail']['app_urls'] = optional($merchant->merchantBusinessDetail)->getAppUrls();
+                $merchantInfo['merchant_business_detail']['app_urls'] = optional($merchant->merchantBusinessDetail)->getAppUrls() ?? (new \stdClass());
 
                 $count += 1;
 
