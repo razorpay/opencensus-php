@@ -73,7 +73,9 @@ const SupportingDocumentsV2 = ({ disabled, saveFormData, showNotification, user 
           const documentKey = `documents${isOtherDocument ? '.others' : ''}`;
           formikProps.setFieldValue(documentKey, documentsObject);
           saveFormData(formikProps);
+          return docData;
         }
+        return undefined;
       })
       .catch((err) => {
         console.error(err);
@@ -95,10 +97,11 @@ const SupportingDocumentsV2 = ({ disabled, saveFormData, showNotification, user 
       const updatedDocs = documentObject[docType].filter((d) => d.id !== docId);
       const documentKey = `documents${isOtherDocument ? '.others' : ''}.${docType}`;
       const documentValue = updatedDocs.length ? updatedDocs : null;
-      // this is needed for formik validation schema to run
-      formikProps.setFieldValue(documentKey, documentValue);
+
       // saveFormData doesn't have latest documents value unless it's updated directly
       formikProps.values = stringToObj(documentKey, documentValue, formikProps.values);
+      // this is needed for formik validation schema to run
+      formikProps.setFieldValue(documentKey, documentValue);
       saveFormData(formikProps, true);
     }
   };

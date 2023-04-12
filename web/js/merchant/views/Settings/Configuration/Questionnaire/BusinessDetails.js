@@ -24,11 +24,17 @@ const BusinessDetails = ({
   const formikProps = useFormikContext();
   const websiteInfo = getWebsiteDetailsInfo(user);
 
+  // consider status flow as well in normal flow
   const getError = (name) =>
     (formikProps.touched[name] ? formikProps.errors[name] : '') ||
-    (!!formikProps.status ? formikProps.status[name] : '');
+    (isRevampFlow ? '' : !!formikProps.status ? formikProps.status[name] : '');
 
-  const handleChange = () => saveFormData(formikProps);
+  const handleChange = (fieldKey) => {
+    if (typeof fieldKey === 'string') {
+      formikProps.setFieldTouched(fieldKey, true);
+    }
+    saveFormData(formikProps, isRevampFlow);
+  };
 
   const handleCheckboxChange = (value, productValue) => {
     let products = [];
@@ -45,7 +51,9 @@ const BusinessDetails = ({
       },
       subSection: 'Info Form',
     });
+    formikProps.values.products = products;
     formikProps.setFieldValue('products', products);
+    handleChange();
   };
 
   useEffect(() => {
@@ -86,7 +94,6 @@ const BusinessDetails = ({
                   onChange={(e) => handleCheckboxChange(e.target.value, each.value)}
                   disabled={disabled || each.disabled}
                   description={each.disabled ? 'Registered website required' : ''}
-                  onBlur={handleChange}
                 />
 
                 <Tooltip
@@ -163,10 +170,11 @@ const BusinessDetails = ({
         value={formikProps.values.business_use_case}
         placeholder="Why do you need international payments (Min 50 Chars)"
         info={`Ex: "We sell apparels, unisex. Most of our customers are from abroad, so we need to enable international card acceptance for that reason"`}
-        onBlur={handleChange}
+        onBlur={() => handleChange('business_use_case')}
         mature={formikProps.touched.business_use_case}
         propagatedError={getError('business_use_case')}
         showCharacterLength={isRevampFlow ? undefined : (val) => (val?.length ? val.length : null)}
+        autoRender
       />
 
       <Input.Select

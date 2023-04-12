@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const SubmitForm = () => {
+const SubmitForm = ({ isRevampFlow }) => {
   return (
     <div>
       <div class="main-title">Submit Form</div>
@@ -31,10 +31,12 @@ const SubmitForm = () => {
           </div>
         </div>
       </div>
-      <div class="greyed-out m-t p-t">
-        Please review the form before submitting. For any changes after submission, you can{' '}
-        <Link to="#ticket">write to support</Link>
-      </div>
+      {!isRevampFlow && (
+        <div class="greyed-out m-t p-t">
+          Please review the form before submitting. For any changes after submission, you can{' '}
+          <Link to="#ticket">write to support</Link>
+        </div>
+      )}
     </div>
   );
 };

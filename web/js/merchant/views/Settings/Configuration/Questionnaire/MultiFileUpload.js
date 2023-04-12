@@ -47,7 +47,23 @@ const MultiFileUpload = ({
             key={file.id}
             name={file.id}
             label={idx === 0 ? label : ''}
-            onFileChange={onFileChange}
+            onFileChange={(file, progressTracker) => {
+              // Update file info which is uploaded
+              onFileChange(file, progressTracker)?.then((uploadedDocInfo) => {
+                if (uploadedDocInfo?.id) {
+                  setFiles((currentFiles) =>
+                    currentFiles.map((currentFile, currentFileIdx) => {
+                      if (idx === currentFileIdx) {
+                        return {
+                          ...uploadedDocInfo,
+                        };
+                      }
+                      return currentFile;
+                    }),
+                  );
+                }
+              });
+            }}
             onFileRemove={() => {
               if (required) {
                 const updatedFiles = files.filter((f) => f.id !== file.id);

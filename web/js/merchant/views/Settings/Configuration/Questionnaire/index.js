@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useReducer } from 'react';
+import React, { useCallback, useEffect, useReducer, useRef } from 'react';
 import { Formik, Form } from 'formik';
 import { connect } from 'react-redux';
 
@@ -38,6 +38,7 @@ import {
   trackModalOpened,
 } from './analytics';
 import FormWrapper from './FormWrapper';
+import useDebounce from 'common/utils/useDebounce';
 
 // eslint-disable-next-line no-shadow
 const Questionnaire = ({
@@ -74,10 +75,8 @@ const Questionnaire = ({
         }
         dispatch({ type: 'LOADING', payload: false });
       })
-      .catch((err) => {
-        if (err.status_code === 400) {
-          dispatch({ type: 'LOADING', payload: false });
-        }
+      .catch(() => {
+        dispatch({ type: 'LOADING', payload: false });
       });
     trackModalOpened();
     return () => {
@@ -158,6 +157,75 @@ const Questionnaire = ({
     }, delay || 7000); // Success states can be removed in 3sec.
   };
 
+  const requestId = useRef(null);
+
+  const makeFormDataCall = (formData, formikProps) => {
+    const requestIdForTheCurrentCall = Math.random();
+    requestId.current = requestIdForTheCurrentCall;
+    return merchantFetch({
+      url: 'international_enablement/draft',
+      method: 'post',
+      data: formData,
+    })
+      .then((res) => {
+        // Since multiple requests are triggered if user saves the form continously,
+        // only the latest response is considered
+        if (requestIdForTheCurrentCall === requestId.current || !isRevampFlow) {
+          dispatch({ type: 'IS_SAVING_FORM', payload: LOADING.SUCCESS });
+          removeLoader(3000);
+          // save the data back to formik
+          const data = modelFormData(res.data);
+          formikProps.setValues(data);
+          formikProps.validateForm();
+          trackDataSaveSuccess(tabsData?.[activeTab]?.name);
+        }
+      })
+      .catch((err) => {
+        if (requestIdForTheCurrentCall === requestId.current || !isRevampFlow) {
+          dispatch({ type: 'IS_SAVING_FORM', payload: LOADING.ERROR });
+          removeLoader();
+          trackDataSaveError(tabsData?.[activeTab]?.name, err?.errors);
+
+          // handle any errors sent from server
+          if (err?.errors?._internal) {
+            const errorObj = err.errors._internal;
+            delete errorObj.internal_error_code;
+
+            // Handling product errors
+            const productErr = Object.keys(errorObj).filter((i) => i.includes('product'));
+            if (productErr.length) {
+              showNotification({
+                type: 'error',
+                message: errorObj[productErr],
+              });
+            } else if (err.errors._internal.documents) {
+              // Handling document related error
+              const errors = Object.keys(err.errors._internal.documents).map((item) =>
+                err.errors._internal.documents[item].toString(),
+              );
+
+              showNotification({
+                type: 'error',
+                message: errors,
+              });
+            } else {
+              // Handling form field errors
+              const errors = transformErrorsFromAPI(err.errors._internal, false);
+              formikProps.setStatus(errors);
+            }
+          } else {
+            // handle other errors
+            showNotification({
+              type: 'error',
+              message: err.errors,
+            });
+          }
+        }
+      });
+  };
+
+  const debouncedFormDataCall = useDebounce(makeFormDataCall, 500);
+
   const saveFormData = (formikProps, skipDirtyCheck) => {
     // save only if dirty
     if (!skipDirtyCheck && (!formikProps.dirty || isDisabled)) {
@@ -181,65 +249,14 @@ const Questionnaire = ({
     });
 
     formData = modelFormDataBeforeSave(formData);
+    console.log('🚀 ~ file: index.js:243 ~ saveFormData ~ formData:', formData);
 
     if (isRevampFlow) {
       formData.version = 'v2';
+      return debouncedFormDataCall(formData, formikProps);
+    } else {
+      return makeFormDataCall(formData, formikProps);
     }
-
-    return merchantFetch({
-      url: 'international_enablement/draft',
-      method: 'post',
-      data: formData,
-    })
-      .then((res) => {
-        dispatch({ type: 'IS_SAVING_FORM', payload: LOADING.SUCCESS });
-        removeLoader(3000);
-        // save the data back to formik
-        const data = modelFormData(res.data);
-        formikProps.setValues(data);
-        formikProps.validateForm();
-        trackDataSaveSuccess(tabsData?.[activeTab]?.name);
-      })
-      .catch((err) => {
-        dispatch({ type: 'IS_SAVING_FORM', payload: LOADING.ERROR });
-        removeLoader();
-        trackDataSaveError(tabsData?.[activeTab]?.name, err?.errors);
-
-        // handle any errors sent from server
-        if (err?.errors?._internal) {
-          const errorObj = err.errors._internal;
-          delete errorObj.internal_error_code;
-
-          // Handling product errors
-          const productErr = Object.keys(errorObj).filter((i) => i.includes('product'));
-          if (productErr.length) {
-            showNotification({
-              type: 'error',
-              message: errorObj[productErr],
-            });
-          } else if (err.errors._internal.documents) {
-            // Handling document related error
-            const errors = Object.keys(err.errors._internal.documents).map((item) =>
-              err.errors._internal.documents[item].toString(),
-            );
-
-            showNotification({
-              type: 'error',
-              message: errors,
-            });
-          } else {
-            // Handling form field errors
-            const errors = transformErrorsFromAPI(err.errors._internal, false);
-            formikProps.setStatus(errors);
-          }
-        } else {
-          // handle other errors
-          showNotification({
-            type: 'error',
-            message: err.errors,
-          });
-        }
-      });
   };
 
   const submitForm = (formData, bag) => {
@@ -386,7 +403,8 @@ const Questionnaire = ({
 
   const schema = getFormSchema(isRevampFlow);
 
-  const isNextDisabled = !tabsValidity[activeTab];
+  // only consider isNextDisabled in revamp
+  const isNextDisabled = !tabsValidity[activeTab] && isRevampFlow;
 
   return (
     <Formik

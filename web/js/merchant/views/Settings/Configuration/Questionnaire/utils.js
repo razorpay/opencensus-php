@@ -107,9 +107,24 @@ export const modelFormData = (data, user) => {
   data.accepts_intl_txns = String(data.accepts_intl_txns);
 
   if (user) {
-    data.existing_risk_checks = data.existing_risk_checks.filter((check) =>
-      riskChecksOptionsV2.includes(check),
-    );
+    let hasNoneSelected = false;
+    if (Array.isArray(data.existing_risk_checks)) {
+      data.existing_risk_checks =
+        data.existing_risk_checks?.filter((check) => {
+          if (!hasNoneSelected) {
+            hasNoneSelected = check === riskChecksOptionsV2[2];
+          }
+          return riskChecksOptionsV2.includes(check);
+        }) || [];
+      if (hasNoneSelected && data.existing_risk_checks.length > 1) {
+        // select only none if its selected along with other options
+        data.existing_risk_checks = riskChecksOptionsV2.slice(2);
+      }
+    } else {
+      // select none by default
+      data.existing_risk_checks = riskChecksOptionsV2.slice(2);
+    }
+
     // user exists - IERevamp flow
     const websiteDetails = getWebsiteDetailsInfo(user);
 
@@ -123,6 +138,7 @@ export const modelFormData = (data, user) => {
   delete data.created_at;
   delete data.submitted_at;
   delete data.updated_at;
+  delete data.risk_checks;
 
   delete data.business_txn_size_min;
   delete data.business_txn_size_max;
@@ -167,6 +183,7 @@ export const modelFormDataBeforeSave = (formData) => {
     formData.accepts_intl_txns === 'true' || formData.accepts_intl_txns === true ? 1 : 0; // converting string value to boolean
 
   delete formData.submit;
+  delete formData.risk_checks;
 
   return formData;
 };

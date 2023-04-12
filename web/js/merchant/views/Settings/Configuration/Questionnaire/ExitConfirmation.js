@@ -24,6 +24,17 @@ const ExitConfirmation = ({
     trackModalClosed();
   };
 
+  const openQuestionnaireModal = () => {
+    openModal({
+      component: <Questionnaire triggerSource={triggerSource} isRevampFlow={isRevampFlow} />,
+      overlayStyles: {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+    });
+  };
+
   return (
     <Modal className="save-draft" showCloseBtn={false}>
       <ModalContent>
@@ -40,18 +51,13 @@ const ExitConfirmation = ({
         <footer>
           <button
             onClick={() => {
-              saveFormData().then(() => {
-                openModal({
-                  component: (
-                    <Questionnaire triggerSource={triggerSource} isRevampFlow={isRevampFlow} />
-                  ),
-                  overlayStyles: {
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  },
+              if (isRevampFlow) {
+                openQuestionnaireModal();
+              } else {
+                saveFormData().then(() => {
+                  openQuestionnaireModal();
                 });
-              });
+              }
             }}
             class="btn btn-link"
           >
