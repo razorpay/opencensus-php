@@ -6,20 +6,19 @@ function Data(brandColor) {
     <main>
       <div className="description">
         <p>
-          Gallabox is a single, collaborative conversational platform that helps SMBs and users
-          manage communication channels such as WhatsApp, Facebook Messenger, Instagram, Live Chat,
-          and Email all in one place.
+          Gallabox is a purpose-built, no-code conversational commerce platform that helps small and
+          medium-sized companies modernize and automate their customer conversations on WhatsApp by
+          deploying ready-to-use workflows, to turn leads to deals and conversations to commerce.
         </p>
         <p>
           <strong>Why Gallabox?</strong>
         </p>
         <p>
-          It help manage contacts and conversations from various channels and make it easier for you
+          Gallabox help manage contacts and conversations from WhatsApp and make it easier for you
           to respond through our collaborative dashboard. Using our shared inbox, team members can
           assign conversations, @mention through private notes, send template notifications to
-          streamline sales, customer support, and marketing workflows while integrating with tools
-          including eCommerce platforms and payment gateways to automate the customer journey with
-          ease
+          streamline sales, and marketing workflows while integrating with tools including eCommerce
+          platforms and payment gateways to automate the customer journey with ease.
         </p>
       </div>
       <div className="how-to-use-razorpay">
