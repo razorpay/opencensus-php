@@ -64,7 +64,19 @@ class SessionInActivity
      */
     public function handle($request, Closure $next)
     {
-        if (($this->isAdminUserAndOrgFeatureEnabledForLogout() === false))
+        $skip = false;
+
+        if ($this->isMerchantDashboardLoggedIn() === true)
+        {
+            $skip = true;
+        }
+
+        $this->trace->info(TraceCode::TIMEOUT_TRACES, [
+            'isMerchantDashboardLoggedIn' => $this->isMerchantDashboardLoggedIn()
+        ]);
+
+        if (($this->isAdminUserAndOrgFeatureEnabledForLogout() === false) and
+              $skip === false)
         {
             return $next($request);
         }
@@ -158,7 +170,30 @@ class SessionInActivity
             $merchantInactivityTimeout = $org['merchant_session_timeout_in_seconds'];
         }
 
+        $this->trace->info(TraceCode::TIMEOUT_TRACES, [
+            'Timeout Value' => $merchantInactivityTimeout
+        ]);
+
         return $merchantInactivityTimeout;
+    }
+
+    protected function isMerchantDashboardLoggedIn(): bool
+    {
+        $user = Auth::guard('user');
+
+        //Checking if both merchant id and user id is present
+        //hence app is merchant dashboard
+        //also adding an extra check on org level flag
+
+        if ((Session::get('current_merchant_id') !== null) and
+            (empty($user->user()) === false) and
+            (isset($user->user()->id) === true) and
+            ($this->isFeatureEnabledForOrg(self::LOGOUT_ADMIN_INACTIVITY) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function isAdminUserAndOrgFeatureEnabledForLogout()
