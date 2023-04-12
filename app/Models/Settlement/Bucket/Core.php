@@ -20,6 +20,7 @@ use RZP\Models\Merchant\Balance;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Preferences;
+use RZP\Models\Payment\Refund;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Jobs\Settlement\TransactionMigrationPublish;
 use RZP\Models\Transfer\Constant as TransferConstant;
@@ -468,7 +469,29 @@ class Core extends Base\Core
     {
         $type = $txn->getType();
 
-        $txnSource = $txn->source;
+        try
+        {
+            $txnSource = $txn->source;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::SETTLEMENT_SERVICE_TRANSACTION_SOURCE_FETCH_ERROR,
+                [
+                    'transaction_id' => $txn->getId(),
+                    'source_id' => $txn->getEntityId()
+                ]);
+
+            if ($type === Transaction\Type::REFUND)
+            {
+                $txnSource = (new Refund\Repository())->fetchExternalRefundById($txn->getEntityId(), '', [], true);
+            }
+            else {
+                throw $e;
+            }
+        }
 
         $international = false;
 

@@ -456,7 +456,7 @@ trait ExternalScroogeRepo
         return false;
     }
 
-    private function fetchExternalRefundById($id, $merchantId = '', $input = [])
+    public function fetchExternalRefundById($id, $merchantId = '', $input = [], $fetchUnscoped = false)
     {
         $class = Entity::getExternalRepoSingleton($this->entity);
 
@@ -477,6 +477,11 @@ trait ExternalScroogeRepo
                     'refunds' => $scroogeFetchParams,
                 ]
             ];
+
+            if ($fetchUnscoped === true)
+            {
+                $scrooge_fetch_query['fetch_unscoped'] = true;
+            }
 
             $entity = $class->fetchRefund($scrooge_fetch_query);
 
