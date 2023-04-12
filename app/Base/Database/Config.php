@@ -37,6 +37,8 @@ class Config
         'test',
         'slave-test',
         'slave-live',
+        'payment-fetch-replica-live',
+        'payment-fetch-replica-test',
     ];
 
     public bool $isProxySqlSidecarActive;
