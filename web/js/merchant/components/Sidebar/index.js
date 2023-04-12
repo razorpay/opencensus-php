@@ -232,8 +232,7 @@ export default class Sidebar extends Component {
                   />
                 </ShowWhen>
 
-                {user.isPartner() &&
-                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Partnership) ? (
+                {user.isPartner() ? (
                   <PartnerSidebar merchantNavLinkProps={merchantNavLinkProps} user={user} />
                 ) : (
                   <MerchantNavLinks {...merchantNavLinkProps} user={user} />

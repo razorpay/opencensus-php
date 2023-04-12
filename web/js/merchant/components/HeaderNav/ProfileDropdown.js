@@ -439,8 +439,7 @@ export default class ProfileDropdown extends Component {
               additionalCondition={(user) =>
                 user.role === rolesList.OWNER &&
                 user.partner_type === null &&
-                !isOrgFeatureExist('hide_razorpay_text_link') &&
-                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Partnership)
+                !isOrgFeatureExist('hide_razorpay_text_link')
               }
             >
               <div className="media loggedin-as">
