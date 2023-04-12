@@ -8,6 +8,7 @@ import { fetchAllWalletBatches as fetchAll, batchDownload } from 'merchant/reduc
 import { titleCase } from 'common/utils/rzp-utils';
 import DataTable from 'common/ui/Table/DataTable';
 import { Button, DownloadIcon } from '@razorpay/blade/components';
+import { AxiosResponse } from 'axios';
 
 const typesLabelMap = {
   create_wallet_accounts: 'Accounts',
@@ -58,11 +59,13 @@ interface FilterParams {
 
 interface ListProps {
   fetchAll: (params: FilterParams) => void;
-  batchDownload: () => void;
+  batchDownload: () => Promise<AxiosResponse>;
   [x: string]: unknown;
 }
 
 export const List = ({ fetchAll, batchDownload, ...rest }: ListProps): JSX.Element => {
+  const onDownload = () => batchDownload().then((res) => (window.location = res.data?.url));
+
   useEffect(() => {
     if (fetchAll) {
       fetchAll({
@@ -83,7 +86,7 @@ export const List = ({ fetchAll, batchDownload, ...rest }: ListProps): JSX.Eleme
           typeColumn,
           createdAt,
           batchStatus,
-          batchActions(batchDownload),
+          batchActions(onDownload),
         ]}
         EmptyComponent={emptyComponent(null, null, emptyResultsDescription)}
         location={window.location}

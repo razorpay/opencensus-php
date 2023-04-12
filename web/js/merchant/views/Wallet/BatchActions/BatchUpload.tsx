@@ -66,7 +66,7 @@ const baseBatchUpload =
         title={title}
         docUrl={docUrl}
         displayMsgs={DISPLAY_MESSAGES}
-        acceptFileInfo={['csv', 'xlsx']}
+        acceptFileInfo={['csv']}
         createBatch={createBatch}
         validateBatch={validateBatch}
         gaEvents={gaEvents}
@@ -77,7 +77,6 @@ const baseBatchUpload =
           <InfoComponent sampleUrl={`/files/sample_${batchType}.xlsx`} points={points} />
         }
         sampleUrl={`/files/sample_${batchType}.xlsx`}
-        processingOptions={true}
       />
     );
 
