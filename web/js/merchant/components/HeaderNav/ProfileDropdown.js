@@ -310,7 +310,10 @@ export default class ProfileDropdown extends Component {
                     </GroupItem>
                   </Group>
                 </div>
-                {user.isPaymentHandleSplitzEnabled && <PaymentHandleSlug />}
+                {user.isPaymentHandleSplitzEnabled &&
+                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.RazorpayMe) && (
+                    <PaymentHandleSlug />
+                  )}
               </div>
             )}
             {showMobileNav && (
