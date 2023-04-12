@@ -39,11 +39,14 @@ class QueuedPayouts extends Job
         {
             $payout = (new Payout\Core)->processQueuedPayout($this->payoutId);
 
-            $this->trace->info(
-                TraceCode::PAYOUT_QUEUE_SUCCESS,
-                $traceData + [
-                    'payout_status' => $payout->getStatus(),
-                ]);
+            if ($payout !== null)
+            {
+                $this->trace->info(
+                    TraceCode::PAYOUT_QUEUE_SUCCESS,
+                    $traceData + [
+                        'payout_status' => $payout->getStatus(),
+                    ]);
+            }
         }
         catch (\Throwable $ex)
         {

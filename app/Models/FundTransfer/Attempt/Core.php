@@ -695,7 +695,7 @@ class Core extends Base\Core
             Entity::BANK_ACCOUNT_TYPE  => $bankAccountType,
             Entity::GATEWAY_ERROR_CODE => $gatewayErrorCode,
             Entity::STATUS_DETAILS     => $statusDetails,
-
+            Entity::FTS_TRANSFER_ID    => $fta->getFTSTransferId()
         ] + $extraInfo;
 
         if (isset($ftaData['return_utr']) === true)

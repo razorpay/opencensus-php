@@ -31,6 +31,7 @@ use RZP\Jobs\PayoutSourceUpdaterJob;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Payout\WorkflowFeature;
 use RZP\Jobs\PayoutServiceDataMigration;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\PayoutService\BulkPayout;
 use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Constants\Entity as EntityConstants;
@@ -53,12 +54,14 @@ use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
 use RZP\Models\Merchant\Balance\AccountType as AccountType;
 use RZP\Services\PayoutService\Retry as PayoutServiceRetry;
 use RZP\Services\PayoutService\Fetch as PayoutServiceFetch;
+use RZP\Models\FundTransfer\Attempt\Entity as AttemptEntity;
 use RZP\Services\PayoutService\Create as PayoutServiceCreate;
 use RZP\Services\PayoutService\Status as PayoutServiceStatus;
 use RZP\Services\PayoutService\Cancel as PayoutServiceCancel;
 use RZP\Services\PayoutService\Details as PayoutServiceDetails;
 use RZP\Services\PayoutService\PayoutsCreateFailureProcessingCron;
 use RZP\Services\PayoutService\PayoutsUpdateFailureProcessingCron;
+use RZP\Models\FundTransfer\Attempt\Constants as AttemptConstants;
 use RZP\Services\PayoutService\FreePayout as PayoutServiceFreePayout;
 use RZP\Services\PayoutService\QueuedInitiate as PayoutServiceQueuedInitiate;
 use RZP\Services\PayoutService\MerchantConfig as PayoutServiceMerchantConfig;
@@ -477,6 +480,43 @@ class PayoutServiceTest extends TestCase
             ->willReturn($this->createResponseForPayoutServiceMock($fail, $status));
     }
 
+    public function mockPayoutServiceStatusWithChecks($status, &$success, $fail = false)
+    {
+        $payoutServiceStatusMock = Mockery::mock('RZP\Services\PayoutService\Status',
+                                                  [$this->app])->makePartial();
+
+        $payoutServiceStatusMock->shouldReceive('sendRequest')
+                                 ->withArgs(
+                                     function($arg) use ($fail, &$success) {
+                                         try
+                                         {
+                                             $arg['content'] = json_decode($arg['content'], true);
+
+                                             $this->assertEquals('Gg7sgBZgvYjlSB',$arg['content'][AttemptEntity::SOURCE_ID]);
+                                             $this->assertEquals('processed',$arg['content'][AttemptEntity::STATUS]);
+                                             $this->assertEquals('632563563',$arg['content'][AttemptConstants::FTS_FUND_ACCOUNT_ID]);
+                                             $this->assertEquals('saving',$arg['content'][AttemptConstants::FTS_ACCOUNT_TYPE]);
+                                             $this->assertEquals('processed',$arg['content'][EntityConstants::FTS_STATUS]);
+
+                                             $success =  true;
+
+                                             return true;
+                                         }
+                                         catch (\Throwable $e)
+                                         {
+                                             $success =  false;
+
+                                             return false;
+                                         }
+                                     }
+                                 )
+                                 ->andReturn(
+                                     $this->createResponseForPayoutServiceMock($fail,$status)
+                                 );
+
+        $this->app->instance(\RZP\Services\PayoutService\Status::PAYOUT_SERVICE_STATUS, $payoutServiceStatusMock);
+    }
+
     public function mockPayoutServiceRetry($fail = false)
     {
         $payoutRetryStatusMock = $this->getMockBuilder(PayoutServiceRetry::class)
@@ -530,6 +570,47 @@ class PayoutServiceTest extends TestCase
 
         $this->app->payout_service_detail->method('sendRequest')
             ->willReturn($this->createResponseForPayoutServiceMock($fail));
+    }
+
+    public function mockPayoutServiceDetailsWithChecks(&$success, $fail = false)
+    {
+        $payoutServiceDetailsMock = Mockery::mock('RZP\Services\PayoutService\Details',
+                                                   [$this->app])->makePartial();
+
+        $payoutServiceDetailsMock->shouldReceive('sendRequest')
+                                  ->withArgs(
+                                      function($arg) use ($fail, &$success) {
+                                          try
+                                          {
+                                              $arg['content'] = json_decode($arg['content'], true);
+
+                                              $this->assertEquals('Test for webhook and email not firing',$arg['content'][Entity::FAILURE_REASON]);
+                                              $this->assertEquals('Check the status by calling getStatus API.',$arg['content'][Entity::REMARKS]);
+                                              $this->assertEquals('1236890',$arg['content'][AttemptEntity::FUND_TRANSFER_ID]);
+                                              $this->assertEquals('SUCCESS',$arg['content'][AttemptEntity::BANK_STATUS_CODE]);
+                                              $this->assertEquals('d10ce8e4167f11eab1750a0047330000',$arg['content'][AttemptEntity::CMS_REF_NO]);
+                                              $this->assertEquals('43426',$arg['content'][AttemptEntity::GATEWAY_REF_NO]);
+                                              $this->assertEquals('processed',$arg['content'][AttemptConstants::FTA_STATUS]);
+                                              $this->assertEquals('SUSANTA BHUYAN',$arg['content'][AttemptConstants::BENEFICIARY_NAME]);
+                                              $this->assertEquals('928337183',$arg['content'][AttemptEntity::UTR]);
+
+                                              $success =  true;
+
+                                              return true;
+                                          }
+                                          catch (\Throwable $e)
+                                          {
+                                              $success =  false;
+
+                                              return false;
+                                          }
+                                      }
+                                  )
+                                  ->andReturn(
+                                      $this->createResponseForPayoutServiceMock($fail)
+                                  );
+
+        $this->app->instance(\RZP\Services\PayoutService\Details::PAYOUT_SERVICE_DETAIL, $payoutServiceDetailsMock);
     }
 
     public function mockPayoutServiceCancel($fail = false)
@@ -3029,6 +3110,40 @@ class PayoutServiceTest extends TestCase
         //$payout->reload();
         //
         //$this->assertEquals('processed', $payout->getStatus());
+    }
+
+    public function testUpdateFTAAndPayoutProcessedWithExperiment()
+    {
+        $psPayout = $this->testCreatePayout();
+
+        /** @var Entity $payout */
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $this->testData[__FUNCTION__]['request']['content']['source_id'] = substr($psPayout['id'], 5);
+
+        $success = false;
+
+        $this->mockPayoutServiceDetailsWithChecks($success);
+
+        $this->mockPayoutServiceStatusWithChecks('processed',$success);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING => 'on']);
+
+        $this->ba->appAuthLive();
+
+        $this->startTest();
+
+        // Assert that payout status didn't update
+        $this->assertEquals('created', $payout->getStatus());
+
+        $ftaForPayout = $this->getDbEntities('fund_transfer_attempt',
+                                             [
+                                                 'source_id'   => substr($psPayout['id'], 5),
+                                                 'source_type' => 'payout',
+                                             ], 'live')->first();
+
+        // Assert that fta status didn't update
+        $this->assertEquals('processed', $ftaForPayout->getStatus());
     }
 
     public function testUpdateFTAAndPayoutInitiated()

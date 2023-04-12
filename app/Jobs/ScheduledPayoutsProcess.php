@@ -34,11 +34,14 @@ class ScheduledPayoutsProcess extends Job
         {
             $payout = (new Payout\Core)->processScheduledPayout($this->payoutId);
 
-            $this->trace->info(
-                TraceCode::PAYOUT_SCHEDULE_PROCESS_SUCCESS,
-                $traceData + [
-                    'payout_status' => $payout->getStatus(),
-                ]);
+            if($payout !== null)
+            {
+                $this->trace->info(
+                    TraceCode::PAYOUT_SCHEDULE_PROCESS_SUCCESS,
+                    $traceData + [
+                        'payout_status' => $payout->getStatus(),
+                    ]);
+            }
         }
         catch (\Throwable $ex)
         {

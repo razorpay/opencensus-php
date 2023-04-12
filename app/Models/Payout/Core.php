@@ -82,6 +82,7 @@ use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Jobs\FreePayoutMigrationForPayoutsService;
 use RZP\Services\Segment\EventCode as SegmentEvent;
+use RZP\Models\Payout\Constants as PayoutConstants;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -1118,6 +1119,41 @@ class Core extends Base\Core
                 'payout_id' => $payout->getId(),
             ]);
 
+        if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                                      $payout->getMerchantId()) === true)
+        {
+            $this->mutex->acquireAndRelease(
+                PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
+                function() use ($payout, $ftaData) {
+                    $payout->reload();
+
+                    $this->updateWithDetailsBeforeFtaReconBase($payout, $ftaData);
+                },
+                self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS,
+                PayoutConstants::MIGRATION_MUTEX_RETRY_COUNT);
+        }
+        else
+        {
+            $this->updateWithDetailsBeforeFtaReconBase($payout, $ftaData);
+        }
+
+        $this->trace->info(
+            TraceCode::PAYOUT_UPDATED_AFTER_FTA_RECON,
+            [
+                'payout_id' => $payout->getId(),
+            ]);
+    }
+
+    /**
+     * @param Entity $payout
+     * @param array  $ftaData
+     *
+     * @return void
+     * @throws \Throwable
+     */
+    function updateWithDetailsBeforeFtaReconBase(Entity $payout, array $ftaData): void
+    {
         $isPayoutService = $payout->getIsPayoutService();
 
         if ($isPayoutService === true)
@@ -1136,8 +1172,7 @@ class Core extends Base\Core
         $initialUtr = $payout->getUtr();
 
         $this->repo->transaction(
-            function() use ($payout, $ftaData, $initialUtr)
-            {
+            function() use ($payout, $ftaData, $initialUtr) {
                 // For non-Yesbank, we will not get public_failure_reason
                 $ftaFailureReason = $ftaData[Attempt\Constants::FAILURE_REASON] ?? null;
 
@@ -1218,16 +1253,16 @@ class Core extends Base\Core
             });
 
         $firePayoutUpdatedWebhook = false;
-        $ftaStatus = $ftaData[Attempt\Constants::FTA_STATUS] ?? null ;
+        $ftaStatus                = $ftaData[Attempt\Constants::FTA_STATUS] ?? null;
 
         // stores status details in case if unique status details update has come
         if (($ftaStatus === "initiated") and
             ($isPayoutService === false))
         {
             $statusDetails = $ftaData[Attempt\Entity::STATUS_DETAILS] ?? null;
-            $lastId = $payout->getStatusDetailsId();
+            $lastId        = $payout->getStatusDetailsId();
 
-            if($statusDetails !== null)
+            if ($statusDetails !== null)
             {
                 if ($lastId !== null)
                 {
@@ -1250,12 +1285,12 @@ class Core extends Base\Core
             }
         }
         elseif (($ftaStatus === "initiated") and
-            ($isPayoutService === true))
+                ($isPayoutService === true))
         {
             $statusDetails = $ftaData[Attempt\Entity::STATUS_DETAILS] ?? null;
-            $lastId = $payout->getStatusDetailsId();
+            $lastId        = $payout->getStatusDetailsId();
 
-            if($statusDetails !== null)
+            if ($statusDetails !== null)
             {
                 if ($lastId !== null)
                 {
@@ -1280,7 +1315,7 @@ class Core extends Base\Core
             ($payout->getUtr() !== null))
         {
             $firePayoutUpdatedWebhook = true;
-            if($isPayoutService === true)
+            if ($isPayoutService === true)
                 $firePayoutUpdatedWebhook = false;
         }
 
@@ -1288,12 +1323,6 @@ class Core extends Base\Core
         {
             $this->app->events->fire('api.payout.updated', [$payout]);
         }
-
-        $this->trace->info(
-            TraceCode::PAYOUT_UPDATED_AFTER_FTA_RECON,
-            [
-                'payout_id' => $payout->getId(),
-            ]);
     }
 
     public function fetchAndUpdateGatewayBalanceIfStale(Merchant\Balance\Entity $balanceEntity)
@@ -1506,25 +1535,59 @@ class Core extends Base\Core
                 //
                 // We also have to handle the fund transfer destination while processing the queued payout.
                 //
-                $payout = $this->getProcessor('fund_account_payout')
-                               ->setMerchant($payout->merchant)
-                               ->processQueuedPayout($payout);
-
-                if ($payout->getStatus() === Status::CREATED)
+                if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                                              $payout->getMerchantId()) === true)
                 {
-                    $this->processLedgerPayout($payout);
+                    return $this->mutex->acquireAndRelease(
+                        PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
+                        function() use ($payout) {
+                            $payout->reload();
+
+                            if ($payout->getIsPayoutService() === true)
+                            {
+                                return null;
+                            }
+
+                            return $this->processQueuedPayoutBase($payout);
+                        },
+                        self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+                        ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS,
+                        PayoutConstants::MIGRATION_MUTEX_RETRY_COUNT);
+                }
+                else
+                {
+                    return $this->processQueuedPayoutBase($payout);
                 }
 
-                //
-                // There might be some type of payouts where we don't want to dispatch FTA.
-                // Should handle that before adding any other type of payouts as queued.
-                //
-                $this->postCreationForPayouts($payout);
-
-                return $payout;
             },
             self::PAYOUT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
+    }
+
+    /**
+     * @param Entity $payout
+     *
+     * @return Entity
+     * @throws \Throwable
+     */
+    function processQueuedPayoutBase(Entity $payout): Entity
+    {
+        $payout = $this->getProcessor('fund_account_payout')
+                       ->setMerchant($payout->merchant)
+                       ->processQueuedPayout($payout);
+
+        if ($payout->getStatus() === Status::CREATED)
+        {
+            $this->processLedgerPayout($payout);
+        }
+
+        //
+        // There might be some type of payouts where we don't want to dispatch FTA.
+        // Should handle that before adding any other type of payouts as queued.
+        //
+        $this->postCreationForPayouts($payout);
+
+        return $payout;
     }
 
     public function initiateProcessingOfBatchSubmittedPayouts(string $merchantId)
@@ -1573,38 +1636,66 @@ class Core extends Base\Core
                 /** @var Entity $payout */
                 $payout = $this->repo->payout->findOrFail($payoutId);
 
-                if ($payout->getIsPayoutService() === true)
+                if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                                              $payout->getMerchantId()) === true)
                 {
-                    return null;
+                    return $this->mutex->acquireAndRelease(
+                        PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
+                        function() use ($payout) {
+                            $payout->reload();
+
+                            if ($payout->getIsPayoutService() === true)
+                            {
+                                return null;
+                            }
+
+                            return $this->processBatchSubmittedPayoutsBase($payout);
+                        },
+                        self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+                        ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS,
+                        PayoutConstants::MIGRATION_MUTEX_RETRY_COUNT);
                 }
-
-                $payout->getValidator()->validateProcessingBatchProcessingPayout();
-
-                //
-                // Currently, we support batch_submitted concept only for Fund Account type.
-                // If we are supporting for others, the processor call needs to be fixed here.
-                // Also, need to fix transaction.created event in the processor since
-                // we do that only for fund_account and not for others.
-                //
-                $payout = $this->getProcessor('fund_account_payout')
-                               ->setMerchant($payout->merchant)
-                               ->processBatchSubmittedPayout($payout);
-
-                if ($payout->getStatus() === Status::CREATED)
+                else
                 {
-                    $this->processLedgerPayout($payout);
+                    return $this->processBatchSubmittedPayoutsBase($payout);
                 }
-
-                //
-                // There might be some type of payouts where we don't want to dispatch FTA.
-                // Should handle that before adding any other type of payouts as batch_submitted.
-                //
-                $this->postCreationForPayouts($payout);
-
-                return $payout;
             },
             self::PAYOUT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
+    }
+
+    /**
+     * @param Entity $payout
+     *
+     * @return Entity
+     * @throws \Throwable
+     */
+    function processBatchSubmittedPayoutsBase(Entity $payout): Entity
+    {
+        $payout->getValidator()->validateProcessingBatchProcessingPayout();
+
+        //
+        // Currently, we support batch_submitted concept only for Fund Account type.
+        // If we are supporting for others, the processor call needs to be fixed here.
+        // Also, need to fix transaction.created event in the processor since
+        // we do that only for fund_account and not for others.
+        //
+        $payout = $this->getProcessor('fund_account_payout')
+                       ->setMerchant($payout->merchant)
+                       ->processBatchSubmittedPayout($payout);
+
+        if ($payout->getStatus() === Status::CREATED)
+        {
+            $this->processLedgerPayout($payout);
+        }
+
+        //
+        // There might be some type of payouts where we don't want to dispatch FTA.
+        // Should handle that before adding any other type of payouts as batch_submitted.
+        //
+        $this->postCreationForPayouts($payout);
+
+        return $payout;
     }
 
     public function processPayoutPostCreate(string $payoutId, bool $queueFlag)
@@ -1616,16 +1707,50 @@ class Core extends Base\Core
                 /** @var Entity $payout */
                 $payout = $this->repo->payout->findOrFail($payoutId);
 
-                $payout->getValidator()->validatePostCreateProcessPayout();
+                if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                                              $payout->getMerchantId()) === true)
+                {
+                    return $this->mutex->acquireAndRelease(
+                        PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
+                        function() use ($payout, $queueFlag) {
+                            $payout->reload();
 
-                $payout = $this->getProcessor('fund_account_payout')
-                                ->setMerchant($payout->merchant)
-                                ->processPayoutPostCreate($payout, $queueFlag);
+                            if ($payout->getIsPayoutService() === true)
+                            {
+                                return null;
+                            }
 
-                return $payout;
+                            return $this->processPayoutPostCreateBase($payout, $queueFlag);
+                        },
+                        self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+                        ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS,
+                        PayoutConstants::MIGRATION_MUTEX_RETRY_COUNT);
+                }
+                else
+                {
+                    return $this->processPayoutPostCreateBase($payout, $queueFlag);
+                }
             },
             self::PAYOUT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
+    }
+
+    /**
+     * @param Entity $payout
+     * @param bool   $queueFlag
+     *
+     * @return Entity
+     * @throws \Throwable
+     */
+    function processPayoutPostCreateBase(Entity $payout, bool $queueFlag): Entity
+    {
+        $payout->getValidator()->validatePostCreateProcessPayout();
+
+        $payout = $this->getProcessor('fund_account_payout')
+                       ->setMerchant($payout->merchant)
+                       ->processPayoutPostCreate($payout, $queueFlag);
+
+        return $payout;
     }
 
     public function processPayoutPostCreateLowPriority(string $payoutId, bool $queueFlag)
@@ -1637,23 +1762,57 @@ class Core extends Base\Core
                 /** @var Entity $payout */
                 $payout = $this->repo->payout->findOrFail($payoutId);
 
-                // associate sub balance if merchant is not on ledger reverse shadow
-                if ($payout->merchant->isFeatureEnabled(FeatureConstants::LEDGER_REVERSE_SHADOW) === false)
+                if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                                              $payout->getMerchantId()) === true)
                 {
-                    $payout = $this->setSubBalance($payout);
+                    return $this->mutex->acquireAndRelease(
+                        PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
+                        function() use ($payout, $queueFlag) {
+                            $payout->reload();
+
+                            if ($payout->getIsPayoutService() === true)
+                            {
+                                return null;
+                            }
+
+                            return $this->processPayoutPostCreateLowPriorityBase($payout, $queueFlag);
+                        },
+                        self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+                        ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS,
+                        PayoutConstants::MIGRATION_MUTEX_RETRY_COUNT);
                 }
-
-                // If failure happens after payout transaction was created, next retry attempt will fail in validation as status is different.
-                $payout->getValidator()->validatePostCreateProcessPayout();
-
-                $payout = $this->getProcessor('fund_account_payout')
-                               ->setMerchant($payout->merchant)
-                               ->processPayoutPostCreate($payout, $queueFlag);
-
-                return $payout;
+                else
+                {
+                    return $this->processPayoutPostCreateLowPriorityBase($payout, $queueFlag);
+                }
             },
             self::PAYOUT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
+    }
+
+    /**
+     * @param Entity $payout
+     * @param bool   $queueFlag
+     *
+     * @return Entity
+     * @throws \Throwable
+     */
+    function processPayoutPostCreateLowPriorityBase(Entity $payout, bool $queueFlag): Entity
+    {
+        // associate sub balance if merchant is not on ledger reverse shadow
+        if ($payout->merchant->isFeatureEnabled(FeatureConstants::LEDGER_REVERSE_SHADOW) === false)
+        {
+            $payout = $this->setSubBalance($payout);
+        }
+
+        // If failure happens after payout transaction was created, next retry attempt will fail in validation as status is different.
+        $payout->getValidator()->validatePostCreateProcessPayout();
+
+        $payout = $this->getProcessor('fund_account_payout')
+                       ->setMerchant($payout->merchant)
+                       ->processPayoutPostCreate($payout, $queueFlag);
+
+        return $payout;
     }
 
     public function fireWebhookForPayoutCreationFailure($metadata, $input, $merchantId)
@@ -1850,31 +2009,65 @@ class Core extends Base\Core
                     return $payout;
                 }
 
-                //
-                // Currently, we support scheduled payouts concept only for Fund Account type.
-                // If we are supporting for others, the processor call needs to be fixed here.
-                // Also, need to fix transaction.created event in the processor since
-                // we do that only for fund_account and not for others.
-                //
-                // Apart from this, we also have to handle dispatching FTA for scheduled payouts.
-                //
-                // We also have to handle the fund transfer destination while processing the scheduled payout.
-                //
-                $payout = $this->getProcessor('fund_account_payout')
-                               ->setMerchant($payout->merchant)
-                               ->processScheduledPayout($payout);
-
-                if ($payout->getStatus() === Status::CREATED)
+                if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                                              $payout->getMerchantId()) === true)
                 {
-                    $this->processLedgerPayout($payout);
+                    return $this->mutex->acquireAndRelease(
+                        PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
+                        function() use ($payout) {
+                            $payout->reload();
+
+                            if ($payout->getIsPayoutService() === true)
+                            {
+                                return null;
+                            }
+
+                            return $this->processScheduledPayoutBase($payout);
+                        },
+                        self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+                        ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS);
                 }
-
-                $this->postCreationForPayouts($payout);
-
-                return $payout;
+                else
+                {
+                    return $this->processScheduledPayoutBase($payout);
+                }
             },
             self::PAYOUT_MUTEX_LOCK_TIMEOUT,
-            ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED);
+            ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED,
+            PayoutConstants::MIGRATION_MUTEX_RETRY_COUNT);
+    }
+
+
+    /**
+     * @param Entity $payout
+     *
+     * @return Entity
+     * @throws \Throwable
+     */
+    function processScheduledPayoutBase(Entity $payout): Entity
+    {
+//
+        // Currently, we support scheduled payouts concept only for Fund Account type.
+        // If we are supporting for others, the processor call needs to be fixed here.
+        // Also, need to fix transaction.created event in the processor since
+        // we do that only for fund_account and not for others.
+        //
+        // Apart from this, we also have to handle dispatching FTA for scheduled payouts.
+        //
+        // We also have to handle the fund transfer destination while processing the scheduled payout.
+        //
+        $payout = $this->getProcessor('fund_account_payout')
+                       ->setMerchant($payout->merchant)
+                       ->processScheduledPayout($payout);
+
+        if ($payout->getStatus() === Status::CREATED)
+        {
+            $this->processLedgerPayout($payout);
+        }
+
+        $this->postCreationForPayouts($payout);
+
+        return $payout;
     }
 
     public function processDispatchForScheduledPayouts($scheduledPayouts)
@@ -1906,6 +2099,41 @@ class Core extends Base\Core
     public function cancelPayout(Entity $payout,
                                  string $remarks = null): Entity
     {
+        // it can cause deadlock if any payout getting processed from webhook or api call
+        // at the same time of cancel payout.
+        //
+        // this is the only case where we Migration redis lock before payout lock .
+        // its a rare scenario bcz cancel payout is manual
+        if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                                      $payout->getMerchantId()) === true)
+        {
+            return $this->mutex->acquireAndRelease(
+                PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
+                function() use ($payout, $remarks) {
+                    $payout->reload();
+
+                    return $this->cancelPayoutBase($payout, $remarks);
+                },
+                self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED,
+                PayoutConstants::MIGRATION_MUTEX_RETRY_COUNT);
+        }
+        else
+        {
+            return $this->cancelPayoutBase($payout, $remarks);
+        }
+    }
+
+    /**
+     * @param Entity      $payout
+     * @param string|null $remarks
+     *
+     * @return mixed|Entity|null
+     * @throws BadRequestException
+     * @throws Exception\InvalidArgumentException
+     */
+    function cancelPayoutBase(Entity $payout, string $remarks = null): mixed
+    {
         if ($payout->getIsPayoutService() === true)
         {
             $this->payoutCancelServiceClient->cancelPayoutViaMicroservice($payout->getId(), $remarks);
@@ -1928,8 +2156,7 @@ class Core extends Base\Core
 
         return $this->mutex->acquireAndRelease(
             $payout->getId(),
-            function() use ($payout, $remarks)
-            {
+            function() use ($payout, $remarks) {
                 $payout->getValidator()->validateCancel();
 
                 $payout->setStatus(Status::CANCELLED);
@@ -1997,9 +2224,26 @@ class Core extends Base\Core
         // else process via api workflow system
         if ($this->shouldCallWorkflowService($payout) === true)
         {
-            $this->rejectWorkflowViaWorkflowService($payout, [Entity::FORCE_REJECT => true]);
+            if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                                             $payout->getMerchantId()) === true)
+            {
+                $this->mutex->acquireAndRelease(
+                    PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
+                    function() use ($payout) {
+                        $payout->reload();
 
-            return $payout;
+                        $this->rejectWorkflowViaWorkflowService($payout, [Entity::FORCE_REJECT => true]);
+                    },
+                    self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+                    ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS,
+                    PayoutConstants::MIGRATION_MUTEX_RETRY_COUNT);
+            }
+            else
+            {
+                $this->rejectWorkflowViaWorkflowService($payout, [Entity::FORCE_REJECT => true]);
+            }
+
+            return $payout->reload();
         }
 
         /** @var Workflow\Action\Entity|null $workflowAction */
@@ -2048,129 +2292,165 @@ class Core extends Base\Core
 
         // Adding this mutex here to handle concurrent requests.
         $payout = $this->mutex->acquireAndRelease(
-                  $payoutId,
-                function() use ($payout, $approve, $input)
+            $payoutId,
+            function() use ($payout, $approve, $input)
+            {
+                // Reload $payout here if needed.
+                if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                                              $payout->getMerchantId()) === true)
                 {
-                    // Reload $payout here if needed.
+                    return $this->mutex->acquireAndRelease(
+                        PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
+                        function() use ($payout, $approve, $input) {
+                            $payout->reload();
 
-                    /** @var Workflow\Action\Entity|null $workflowAction */
-                    $workflowAction = $this->getOpenWorkflowActionForPayout($payout);
+                            return $this->processWorkflowActionOnPayoutBase($payout, $approve, $input);
+                        },
+                        self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+                        ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED,
+                        PayoutConstants::MIGRATION_MUTEX_RETRY_COUNT);
+                }
+                else
+                {
+                    return $this->processWorkflowActionOnPayoutBase($payout, $approve, $input);
+                }
+            });
 
-                    $action = ($approve === true) ? 'approve' : 'reject';
+        return $this->repo->payout->findOrFail($payout->getId());
+    }
 
-                    if ($workflowAction === null)
-                    {
-                        throw new Exception\BadRequestValidationFailureException(
-                            'No further actions can be performed on this payout',
-                            null,
-                            ['action' => $action, 'payout_id' => $payout->getId()]);
-                    }
 
-                    $payout = $this->repo->transaction(
-                        function() use ($payout, $workflowAction, $approve, $action, $input) {
-                            $userComment = $input[Workflow\Action\Checker\Entity::USER_COMMENT] ?? null;
+    /**
+     * @param Entity $payout
+     * @param bool   $approve
+     * @param array  $input
+     *
+     * @return mixed
+     * @throws BadRequestValidationFailureException
+     * @throws Exception\LogicException
+     */
+    function processWorkflowActionOnPayoutBase(Entity $payout, bool $approve, array $input): mixed
+    {
+        /** @var Workflow\Action\Entity|null $workflowAction */
+        $workflowAction = $this->getOpenWorkflowActionForPayout($payout);
 
-                            $actionCheckerCreateParams = [
-                                Workflow\Action\Checker\Entity::ACTION_ID => $workflowAction->getId(),
-                                Workflow\Action\Checker\Entity::APPROVED  => ($approve === true) ? 1 : 0, // 1 = true
-                            ];
+        $action = ($approve === true) ? 'approve' : 'reject';
 
-                            if (empty($userComment) === false)
-                            {
-                                $actionCheckerCreateParams[Workflow\Action\Checker\Entity::USER_COMMENT] = $userComment;
-                            }
-
-                            $actionChecker = (new Workflow\Action\Checker\Core)->create($actionCheckerCreateParams);
-
-                            $e = null;
-
-                            if((empty($actionChecker) === true))
-                            {
-                                $e = new Exception\BadRequestException(
-                                    ErrorCode::BAD_REQUEST_PAYOUT_WORKFLOW_ACTION_FAILED,
-                                    null,
-                                    [
-                                        'create_params'       => $actionCheckerCreateParams,
-                                        'payout_id'           => $payout->getId(),
-                                        'workflows_action_id' => $workflowAction->getId(),
-                                        'action'              => $action,
-                                    ]);
-                            }
-
-                            //tracking slack app related events
-                            $this->trackPayoutEvent(EventCode::PENDING_PAYOUT_APPROVE_REJECT_ACTION,
-                                $payout,
-                                $e);
-
-                            if ((empty($actionChecker) === true) and
-                                ($this->app['basicauth']->getAdmin()->isSuperAdmin() === false))
-                            {
-                                throw new Exception\BadRequestException(
-                                    ErrorCode::BAD_REQUEST_PAYOUT_WORKFLOW_ACTION_FAILED,
-                                    null,
-                                    [
-                                        'create_params'       => $actionCheckerCreateParams,
-                                        'payout_id'           => $payout->getId(),
-                                        'workflows_action_id' => $workflowAction->getId(),
-                                        'action'              => $action,
-                                    ]);
-                            }
-
-                            //
-                            // Reload the workflow_action entity. Changes from the previous function calls
-                            // may not have been sync'd
-                            //
-                            $workflowAction->reload();
-
-                            $this->trace->info(
-                                TraceCode::PAYOUT_WORKFLOW_ACTION_INFO,
-                                [
-                                    'workflow_action' => $workflowAction,
-                                    'action'          => $action,
-                                    'payout_id'       => $payout->getId(),
-                                ]);
-
-                            // This check is similar in processApprovePayout function
-                            // If Logic is changed then it needs to be changed at both the places
-                            $queueFlag = isset($input[Entity::QUEUE_IF_LOW_BALANCE]) ? boolval($input[Entity::QUEUE_IF_LOW_BALANCE]) : true;
-
-                            if (($approve === true) and
-                                ($workflowAction->getApproved() === true))
-                            {
-                                if ($payout->getIsPayoutService() == true) {
-                                    $this->payoutWorkflowServiceClient->approvePayoutViaMicroservice(
-                                        $payout->getId(),
-                                        $queueFlag
-                                    );
-                                }
-                                else {
-                                    $payout = $this->processApprovePayout($payout, $input);
-                                }
-                            }
-                            else
-                            {
-                                if (($approve === false) and
-                                    ($workflowAction->isRejected() === true))
-                                {
-                                    if ($payout->getIsPayoutService() == true) {
-                                        $this->payoutWorkflowServiceClient->rejectPayoutViaMicroservice(
-                                            $payout->getId()
-                                        );
-                                    }
-                                    else {
-                                        $payout = $this->processRejectPayout($payout);
-                                    }
-                                }
-                            }
-
-                            return $payout;
-                        });
-
-                    return $payout;
-                });
-
-            return $this->repo->payout->findOrFail($payout->getId());
+        if ($workflowAction === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'No further actions can be performed on this payout',
+                null,
+                ['action' => $action, 'payout_id' => $payout->getId()]);
         }
+
+        $payout = $this->repo->transaction(
+            function() use ($payout, $workflowAction, $approve, $action, $input) {
+                $userComment = $input[Workflow\Action\Checker\Entity::USER_COMMENT] ?? null;
+
+                $actionCheckerCreateParams = [
+                    Workflow\Action\Checker\Entity::ACTION_ID => $workflowAction->getId(),
+                    Workflow\Action\Checker\Entity::APPROVED  => ($approve === true) ? 1 : 0, // 1 = true
+                ];
+
+                if (empty($userComment) === false)
+                {
+                    $actionCheckerCreateParams[Workflow\Action\Checker\Entity::USER_COMMENT] = $userComment;
+                }
+
+                $actionChecker = (new Workflow\Action\Checker\Core)->create($actionCheckerCreateParams);
+
+                $e = null;
+
+                if ((empty($actionChecker) === true))
+                {
+                    $e = new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYOUT_WORKFLOW_ACTION_FAILED,
+                        null,
+                        [
+                            'create_params'       => $actionCheckerCreateParams,
+                            'payout_id'           => $payout->getId(),
+                            'workflows_action_id' => $workflowAction->getId(),
+                            'action'              => $action,
+                        ]);
+                }
+
+                //tracking slack app related events
+                $this->trackPayoutEvent(EventCode::PENDING_PAYOUT_APPROVE_REJECT_ACTION,
+                                        $payout,
+                                        $e);
+
+                if ((empty($actionChecker) === true) and
+                    ($this->app['basicauth']->getAdmin()->isSuperAdmin() === false))
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYOUT_WORKFLOW_ACTION_FAILED,
+                        null,
+                        [
+                            'create_params'       => $actionCheckerCreateParams,
+                            'payout_id'           => $payout->getId(),
+                            'workflows_action_id' => $workflowAction->getId(),
+                            'action'              => $action,
+                        ]);
+                }
+
+                //
+                // Reload the workflow_action entity. Changes from the previous function calls
+                // may not have been sync'd
+                //
+                $workflowAction->reload();
+
+                $this->trace->info(
+                    TraceCode::PAYOUT_WORKFLOW_ACTION_INFO,
+                    [
+                        'workflow_action' => $workflowAction,
+                        'action'          => $action,
+                        'payout_id'       => $payout->getId(),
+                    ]);
+
+                // This check is similar in processApprovePayout function
+                // If Logic is changed then it needs to be changed at both the places
+                $queueFlag = isset($input[Entity::QUEUE_IF_LOW_BALANCE]) ? boolval($input[Entity::QUEUE_IF_LOW_BALANCE]) : true;
+
+                if (($approve === true) and
+                    ($workflowAction->getApproved() === true))
+                {
+                    if ($payout->getIsPayoutService() == true)
+                    {
+                        $this->payoutWorkflowServiceClient->approvePayoutViaMicroservice(
+                            $payout->getId(),
+                            $queueFlag
+                        );
+                    }
+                    else
+                    {
+                        $payout = $this->processApprovePayout($payout, $input);
+                    }
+                }
+                else
+                {
+                    if (($approve === false) and
+                        ($workflowAction->isRejected() === true))
+                    {
+                        if ($payout->getIsPayoutService() == true)
+                        {
+                            $this->payoutWorkflowServiceClient->rejectPayoutViaMicroservice(
+                                $payout->getId()
+                            );
+                        }
+                        else
+                        {
+                            $payout = $this->processRejectPayout($payout);
+                        }
+                    }
+                }
+
+                return $payout;
+            });
+
+        return $payout;
+    }
+
 
     // Fetch payout by id from payouts service
     public function fetchByIdFromPayoutsService(string $id, array $input): array
@@ -2368,6 +2648,39 @@ class Core extends Base\Core
     {
         $workflowAction = null;
 
+        if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                                      $payout->getMerchantId()) === true)
+        {
+            $this->mutex->acquireAndRelease(
+                PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
+                function() use ($payout, $approved, $input) {
+                    $payout->reload();
+
+                    $this->processActionOnPayoutViaWorkflowServiceBase($approved, $payout, $input);
+                },
+                self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED,
+                PayoutConstants::MIGRATION_MUTEX_RETRY_COUNT);
+        }
+        else
+        {
+            $this->processActionOnPayoutViaWorkflowServiceBase($approved, $payout, $input);
+        }
+
+        return $payout->reload();
+    }
+
+    /**
+     * @param bool   $approved
+     * @param Entity $payout
+     * @param array  $input
+     *
+     * @return void
+     * @throws BadRequestValidationFailureException
+     * @throws \Throwable
+     */
+    function processActionOnPayoutViaWorkflowServiceBase(bool $approved, Entity $payout, array $input): void
+    {
         if ($approved === true)
         {
             $this->approveWorkflowViaWorkflowService($payout, $input);
@@ -2376,8 +2689,6 @@ class Core extends Base\Core
         {
             $this->rejectWorkflowViaWorkflowService($payout, $input);
         }
-
-        return $payout;
     }
 
     /**
@@ -2396,8 +2707,27 @@ class Core extends Base\Core
                 'input' => $input
             ]);
 
-        // error handling is done in the payout service layer
-        $response = $this->workflowService->createWorkflow($payout, $input);
+        $response = null;
+
+        if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                                      $payout->getMerchantId()) === true)
+        {
+            $response = $this->mutex->acquireAndRelease(
+                PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
+                function() use ($payout, $input) {
+                    $payout->reload();
+
+                    // error handling is done in the payout service layer
+                    return $this->workflowService->createWorkflow($payout, $input);
+                },
+                self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED,
+                PayoutConstants::MIGRATION_MUTEX_RETRY_COUNT);
+        }
+        else
+        {
+            $response = $this->workflowService->createWorkflow($payout, $input);
+        }
 
         if (empty($response) === false)
         {
@@ -2442,14 +2772,35 @@ class Core extends Base\Core
         // have enough balance for that payout
         $rzpFeesRecoverySucceeded = true;
 
+        $experimentEnabled = $this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                                   $balance->getMerchantId());
+
         foreach ($payouts as $key => $payout)
         {
-            // We don't want to process queued payouts that have payout service enabled as those will be processed by
-            // payout service.
-            if ($payout->getIsPayoutService() === true)
+            if($experimentEnabled === true)
             {
-                unset($payouts[$key]);
-                continue;
+                $this->mutex->acquireAndRelease(
+                    PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
+                    function() use ($payouts, $payout, $key) {
+                        $payout->reload();
+
+                        // We don't want to process queued payouts that have payout service enabled as those will be processed by
+                        // payout service.
+                        if ($payout->getIsPayoutService() === true)
+                        {
+                            unset($payouts[$key]);
+                        }
+                    },
+                    self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+                    ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED,
+                    PayoutConstants::MIGRATION_MUTEX_RETRY_COUNT);
+            }
+            else
+            {
+                if ($payout->getIsPayoutService() === true)
+                {
+                    unset($payouts[$key]);
+                }
             }
 
             $purpose = $payout->getPurpose();
@@ -2547,16 +2898,52 @@ class Core extends Base\Core
 
         foreach ($scheduledPayouts as $scheduledPayout)
         {
-            if ($scheduledPayout->getIsPayoutService() === false)
+            if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                                          $scheduledPayout->getMerchantId()) === true)
             {
-                $this->dispatchScheduledPayout($scheduledPayout);
+                list($count, $amount, $noCount) = $this->mutex->acquireAndRelease(
+                    PayoutConstants::MIGRATION_REDIS_SUFFIX . $scheduledPayout->getId(),
+                    function() use ($scheduledPayout) {
+                        $dispatchedCount              = 0;
+                        $dispatchedAmount             = 0;
+                        $noDispatchPayoutServiceCount = 0;
 
-                $dispatchedCount += 1;
-                $dispatchedAmount += $scheduledPayout->getAmount();
+                        $scheduledPayout->reload();
+
+                        if ($scheduledPayout->getIsPayoutService() === false)
+                        {
+                            $this->dispatchScheduledPayout($scheduledPayout);
+
+                            $dispatchedCount  = 1;
+                            $dispatchedAmount = $scheduledPayout->getAmount();
+                        }
+                        else
+                        {
+                            $noDispatchPayoutServiceCount = 1;
+                        }
+
+                        return [$dispatchedCount, $dispatchedAmount, $noDispatchPayoutServiceCount];
+                    },
+                    self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+                    ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED,
+                    PayoutConstants::MIGRATION_MUTEX_RETRY_COUNT);
+
+                $dispatchedCount              += $count;
+                $dispatchedAmount             += $amount;
+                $noDispatchPayoutServiceCount += $noCount;
             }
             else
             {
-                $noDispatchPayoutServiceCount += 1;
+                if ($scheduledPayout->getIsPayoutService() === false)
+                {
+                    $this->dispatchScheduledPayout($scheduledPayout);
+                    $dispatchedCount += 1;
+                    $dispatchedAmount += $scheduledPayout->getAmount();
+                }
+                else
+                {
+                    $noDispatchPayoutServiceCount += 1;
+                }
             }
         }
 
@@ -2744,6 +3131,7 @@ class Core extends Base\Core
                 $payoutId,
                 function () use ($payoutId)
                 {
+                    /** @var Entity $payout */
                     $payout = $this->repo->payout->findOrFail($payoutId);
 
                     $payout->getValidator()->validateOnHoldPayoutProcessing();
@@ -2752,16 +3140,29 @@ class Core extends Base\Core
 
                     if ($isBeneDown === false)
                     {
-                        $payout = $this->getProcessor('fund_account_payout')
-                                       ->setMerchant($payout->merchant)
-                                       ->processOnHoldPayout($payout);
-
-                        if ($payout->getStatus() === Status::CREATED)
+                        if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                                                      $payout->getMerchantId()) === true)
                         {
-                            $this->processLedgerPayout($payout);
-                        }
+                            return $this->mutex->acquireAndRelease(
+                                PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
+                                function() use ($payout) {
+                                    $payout->reload();
 
-                        return $payout;
+                                    if ($payout->getIsPayoutService() === true)
+                                    {
+                                        return null;
+                                    }
+
+                                    return $this->processOnHoldPayoutsBase($payout);
+                                },
+                                self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+                                ErrorCode::BAD_REQUEST_PAYOUT_ALREADY_BEING_PROCESSED,
+                                PayoutConstants::MIGRATION_MUTEX_RETRY_COUNT);
+                        }
+                        else
+                        {
+                            return $this->processOnHoldPayoutsBase($payout);
+                        }
                     }
                     else
                     {
@@ -2817,6 +3218,26 @@ class Core extends Base\Core
         }
     }
 
+    /**
+     * @param Entity $payout
+     *
+     * @return Entity
+     * @throws \Throwable
+     */
+    function processOnHoldPayoutsBase(Entity $payout): Entity
+    {
+        $payout = $this->getProcessor('fund_account_payout')
+                       ->setMerchant($payout->merchant)
+                       ->processOnHoldPayout($payout);
+
+        if ($payout->getStatus() === Status::CREATED)
+        {
+            $this->processLedgerPayout($payout);
+        }
+
+        return $payout;
+    }
+
     protected function checkIfMerchantSlaBreachedForOnHoldPayout(Entity $payout, string $queuedReason = null)
     {
         $slaValue = $this->getMerchantSlaForOnHoldPayouts($payout->getMerchantId(), $queuedReason);
@@ -2846,6 +3267,7 @@ class Core extends Base\Core
                 $payoutId,
                 function () use ($payoutId)
                 {
+                    /** @var Entity $payout */
                     $payout = $this->repo->payout->findOrFail($payoutId);
 
                     $payout->getValidator()->validatePartnerBankDowntimeHoldPayoutProcessing();
@@ -2858,17 +3280,32 @@ class Core extends Base\Core
                             return null;
                         }
 
-                        $payout = $this->getProcessor('fund_account_payout')
-                                        ->setMerchant($payout->merchant)
-                                        ->processOnHoldPayout($payout);
-
-                        if ($payout->getStatus() === Status::CREATED)
+                        if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                                                      $payout->getMerchantId()) === true)
                         {
-                            $this->processLedgerPayout($payout);
-                        }
+                            return $this->mutex->acquireAndRelease(
+                                PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
+                                function() use ($payout) {
+                                    $payout->reload();
 
-                        return $payout;
-                    } else {
+                                    if ($payout->getIsPayoutService() === true)
+                                    {
+                                        return null;
+                                    }
+
+                                    return $this->processPartnerBankDowntimeHoldPayoutsBase($payout);
+                                },
+                                self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+                                ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS,
+                                PayoutConstants::MIGRATION_MUTEX_RETRY_COUNT);
+                        }
+                        else
+                        {
+                            return $this->processPartnerBankDowntimeHoldPayoutsBase($payout);
+                        }
+                    }
+                    else
+                    {
 
                         $isSlaBreached = $this->checkIfMerchantSlaBreachedForOnHoldPayout($payout,
                             QueuedReasons::GATEWAY_DEGRADED);
@@ -2917,6 +3354,26 @@ class Core extends Base\Core
                     'payout_id' => $payoutId,
                 ]);
         }
+    }
+
+    /**
+     * @param Entity $payout
+     *
+     * @return Entity
+     * @throws \Throwable
+     */
+    function processPartnerBankDowntimeHoldPayoutsBase(Entity $payout): Entity
+    {
+        $payout = $this->getProcessor('fund_account_payout')
+                       ->setMerchant($payout->merchant)
+                       ->processOnHoldPayout($payout);
+
+        if ($payout->getStatus() === Status::CREATED)
+        {
+            $this->processLedgerPayout($payout);
+        }
+
+        return $payout;
     }
 
     public function dispatchOnHoldPayouts(array $payoutIdList)
@@ -3131,6 +3588,41 @@ class Core extends Base\Core
                 ]);
         }
 
+        if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                                      $payout->getMerchantId()) === true)
+        {
+            $this->mutex->acquireAndRelease(
+                PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
+                function() use ($payout, $ftaStatus, $ftsSourceAccountInformation, $debit_bas) {
+                    $payout->reload();
+
+                    $this->handlePayoutProcessedBase($payout, $ftaStatus, $ftsSourceAccountInformation, $debit_bas);
+                },
+                self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS,
+                PayoutConstants::MIGRATION_MUTEX_RETRY_COUNT);
+        }
+        else
+        {
+            $this->handlePayoutProcessedBase($payout, $ftaStatus, $ftsSourceAccountInformation, $debit_bas);
+        }
+    }
+
+
+    /**
+     * @param Entity      $payout
+     * @param string|null $ftaStatus
+     * @param array       $ftsSourceAccountInformation
+     * @param mixed       $debit_bas
+     *
+     * @return void
+     * @throws BadRequestException
+     */
+    function handlePayoutProcessedBase(Entity $payout,
+                                       string $ftaStatus = null,
+                                       array $ftsSourceAccountInformation = [],
+                                       $debit_bas = null): void
+    {
         if ($payout->getIsPayoutService() === true)
         {
             $this->handlePayoutProcessedForPayoutService($payout, $ftaStatus, $ftsSourceAccountInformation);
@@ -3152,6 +3644,7 @@ class Core extends Base\Core
 
                         (new FeeRecovery\Core)->handlePayoutStatusUpdate($payout);
                     }
+
                     return $bankAccStmt;
                 });
 
@@ -3167,9 +3660,9 @@ class Core extends Base\Core
 
             $merchant = $payout->merchant;
 
-            if(empty($merchant) === false)
+            if (empty($merchant) === false)
             {
-                if($payout->isBalanceAccountTypeDirect() === true)
+                if ($payout->isBalanceAccountTypeDirect() === true)
                 {
                     $this->app['x-segment']->sendEventToSegment(SegmentEvent::CA_PAYOUT_PROCESSED, $merchant);
                 }
@@ -3179,16 +3672,16 @@ class Core extends Base\Core
         $isondemandXVaPayout = self::isOndemandXVaPayout($payout);
 
         if (($payout->isInterAccountPayout() === true) or
-        ($isondemandXVaPayout === true))
+            ($isondemandXVaPayout === true))
         {
             $internal = null;
 
             try
             {
                 $internalEntityService = new \RZP\Models\Internal\PayoutService();
-                $internal = $internalEntityService->createOnPayout($payout);
+                $internal              = $internalEntityService->createOnPayout($payout);
             }
-            catch(\Throwable $ex)
+            catch (\Throwable $ex)
             {
                 $this->app['trace']->traceException(
                     $ex,
@@ -3207,13 +3700,13 @@ class Core extends Base\Core
                 try
                 {
                     $internalEntityService = new \RZP\Models\Internal\Service();
-                    $internal = $internalEntityService->receive($internal[Entity::ID],
-                        [PayoutsLedgerProcessor::TRANSACTOR_EVENT => PayoutsLedgerProcessor::NODAL_FUND_LOADING,
-                            PayoutsLedgerProcessor::FTS_INFO => $ftsSourceAccountInformation]);
+                    $internal              = $internalEntityService->receive($internal[Entity::ID],
+                                                                             [PayoutsLedgerProcessor::TRANSACTOR_EVENT => PayoutsLedgerProcessor::NODAL_FUND_LOADING,
+                                                                              PayoutsLedgerProcessor::FTS_INFO         => $ftsSourceAccountInformation]);
 
                     $this->trace->info(TraceCode::INTERNAL_ENTITY_RECEIVED, $internal);
                 }
-                catch(\Throwable $ex)
+                catch (\Throwable $ex)
                 {
                     $this->app['trace']->traceException(
                         $ex,
@@ -3227,7 +3720,8 @@ class Core extends Base\Core
         $this->processLedgerPayout($payout, null, $ftsSourceAccountInformation);
 
         if (($payout->getIsPayoutService() === false) and
-            (self::shouldPayoutGoThroughLedgerReverseShadowFlow($payout) === true)) {
+            (self::shouldPayoutGoThroughLedgerReverseShadowFlow($payout) === true))
+        {
             try
             {
                 $response = (new PayoutsLedgerProcessor($payout))
@@ -3242,7 +3736,7 @@ class Core extends Base\Core
                     Trace::ERROR,
                     TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR_IN_CREDIT_FLOW,
                     [
-                        'payout_id'     =>  $payout->getId()
+                        'payout_id' => $payout->getId()
                     ]
                 );
             }
@@ -3844,8 +4338,48 @@ class Core extends Base\Core
                                          array $ftsSourceAccountInformation = [],
                                          string $ftaStatus = null)
     {
-        $reversal = null;
+        if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                                      $payout->getMerchantId()) === true)
+        {
+            $this->mutex->acquireAndRelease(
+                PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
+                function() use (
+                    $payout, $ftaFailureReason, $ftaBankStatusCode, $credit_bas,
+                    $ftsSourceAccountInformation, $ftaStatus
+                )
+                {
+                    $payout->reload();
 
+                    $this->handlePayoutReversedBase($payout, $ftaStatus, $ftsSourceAccountInformation, $ftaFailureReason, $ftaBankStatusCode, $credit_bas);
+                },
+                self::PAYOUT_REVERSAL_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS,
+                PayoutConstants::MIGRATION_MUTEX_RETRY_COUNT);
+        }
+        else
+        {
+            $this->handlePayoutReversedBase($payout, $ftaStatus, $ftsSourceAccountInformation, $ftaFailureReason, $ftaBankStatusCode, $credit_bas);
+        }
+    }
+
+    /**
+     * @param Entity      $payout
+     * @param string|null $ftaStatus
+     * @param array       $ftsSourceAccountInformation
+     * @param string|null $ftaFailureReason
+     * @param string|null $ftaBankStatusCode
+     * @param mixed       $credit_bas
+     *
+     * @return mixed
+     */
+    function handlePayoutReversedBase(Entity $payout,
+                                      string $ftaStatus = null,
+                                      array $ftsSourceAccountInformation = [],
+                                      string $ftaFailureReason = null,
+                                      string $ftaBankStatusCode = null,
+                                      mixed $credit_bas = null)
+    {
+        $reversal = null;
         /*
          * Cloning a payout to be used in case we send some additional events to ledger
          * cloning is done here before payout gets marked as REVERSED because
@@ -3859,13 +4393,15 @@ class Core extends Base\Core
          * so we first send a processed event to make sure correct ledger entries are recorded
          */
         if (($payout->getIsPayoutService() === false) and
-            (($ftaStatus === null) || ($ftaStatus === Attempt\Status::REVERSED))) {
+            (($ftaStatus === null) || ($ftaStatus === Attempt\Status::REVERSED)))
+        {
 
             // If a payout goes from initiated to directly reversed, we will still wish to move the status
             // from initiated -> processed -> reversed for proper journal writes,
             // hence we are forcing a call to ledger with processed status.
             if (($previousStatus === Status::INITIATED or
-                $previousStatus === Status::CREATED)) {
+                 $previousStatus === Status::CREATED))
+            {
                 $this->trace->info(
                     TraceCode::PAYOUT_BEING_REVERSED_WITHOUT_PROCESSED_STATE
                 );
@@ -3882,21 +4418,25 @@ class Core extends Base\Core
 
                 // Since the above call for shadow mode won't work for reverse shadow payouts
                 // thus making another call in sync mode
-                if (self::shouldPayoutGoThroughLedgerReverseShadowFlow($clonedPayout) === true) {
-                    try {
+                if (self::shouldPayoutGoThroughLedgerReverseShadowFlow($clonedPayout) === true)
+                {
+                    try
+                    {
                         $response = (new PayoutsLedgerProcessor($clonedPayout))->processPayoutAndCreateJournalEntry(
                             $clonedPayout,
                             null,
                             $ftsSourceAccountInformation
                         );
-                    } catch (\Throwable $e) {
+                    }
+                    catch (\Throwable $e)
+                    {
                         // trace and ignore exception as it will be retries in async
                         $this->trace->traceException(
                             $e,
                             Trace::ERROR,
                             TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR_IN_CREDIT_FLOW,
                             [
-                                'payout_id'     =>  $payout->getId()
+                                'payout_id' => $payout->getId()
                             ]
                         );
                         // We won't throw an exception here, as this is a credit flow. We just try to make sure that the
@@ -3929,8 +4469,10 @@ class Core extends Base\Core
                  * If fta status is Status::REVERSED, we have to send reversed event to ledger,
                  * so we first send a processed event to make sure correct ledger entries are recorded
                  */
-                if (($ftaStatus === null) || ($ftaStatus === Attempt\Status::REVERSED)) {
-                    try {
+                if (($ftaStatus === null) || ($ftaStatus === Attempt\Status::REVERSED))
+                {
+                    try
+                    {
                         $response = (new PayoutsLedgerProcessor($payout))->processPayoutAndCreateJournalEntry(
                             $payout,
                             $reversal,
@@ -3948,16 +4490,18 @@ class Core extends Base\Core
                             Trace::ERROR,
                             TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR_IN_CREDIT_FLOW,
                             [
-                                'payout_id'         =>  $payout->getId(),
-                                'reversal_id'       =>  $reversal->getId()
+                                'payout_id'   => $payout->getId(),
+                                'reversal_id' => $reversal->getId()
                             ]
                         );
                     }
                 }
-                else {
+                else
+                {
                     // failed event for ledger using $clonedPayout
                     $clonedPayout->setStatus(Status::FAILED);
-                    try {
+                    try
+                    {
                         $response = (new PayoutsLedgerProcessor($clonedPayout))->processPayoutAndCreateJournalEntry(
                             $clonedPayout,
                             $reversal
@@ -3974,8 +4518,8 @@ class Core extends Base\Core
                             Trace::ERROR,
                             TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_REQUEST_ERROR_IN_CREDIT_FLOW,
                             [
-                                'payout_id'         =>  $clonedPayout->getId(),
-                                'reversal_id'       =>  $reversal->getId()
+                                'payout_id'   => $clonedPayout->getId(),
+                                'reversal_id' => $reversal->getId()
                             ]
                         );
                     }
@@ -3988,18 +4532,19 @@ class Core extends Base\Core
         }
 
         // if a reversal happens on the payout with inter_account_payout then mark the internal entity as failed
-        if(($previousStatus === Status::PROCESSED) and
-            (($payout->isInterAccountPayout() === true)
-                or self::isOndemandXVaPayout($payout) === true))
+        if (($previousStatus === Status::PROCESSED) and
+            (($payout->isInterAccountPayout() === true) or
+             (self::isOndemandXVaPayout($payout) === true)))
         {
-            try {
+            try
+            {
                 // get internal entity
                 $internalEntityService = new \RZP\Models\Internal\PayoutService();
                 $internalEntityService->failOnPayoutReversal($payout,
-                    [PayoutsLedgerProcessor::TRANSACTOR_EVENT => PayoutsLedgerProcessor::NODAL_FUND_LOADING_REVERSE,
-                        PayoutsLedgerProcessor::FTS_INFO => $ftsSourceAccountInformation]);
+                                                             [PayoutsLedgerProcessor::TRANSACTOR_EVENT => PayoutsLedgerProcessor::NODAL_FUND_LOADING_REVERSE,
+                                                              PayoutsLedgerProcessor::FTS_INFO         => $ftsSourceAccountInformation]);
             }
-            catch(\Throwable $ex)
+            catch (\Throwable $ex)
             {
                 $this->app['trace']->traceException(
                     $ex,
@@ -4015,7 +4560,8 @@ class Core extends Base\Core
          * in this cases, we send a failed event to ledger to make
          * sure correct ledger entries are recorded
          */
-        if (($ftaStatus === null) || ($ftaStatus === Attempt\Status::REVERSED)) {
+        if (($ftaStatus === null) || ($ftaStatus === Attempt\Status::REVERSED))
+        {
             // reversal event for ledger
             // Note: In case of manual reversal, $ftsSourceAccountInformation is not being passed currently, its being checked
             $this->processLedgerPayout($payout, $reversal, $ftsSourceAccountInformation);
@@ -4026,7 +4572,10 @@ class Core extends Base\Core
             $clonedPayout->setStatus(Status::FAILED);
             $this->processLedgerPayout($clonedPayout, $reversal);
         }
+
+        return $reversal;
     }
+
 
     public function handlePayoutReversedForHighTpsMerchants(Entity $payout,
                                          string $ftaFailureReason = null,
@@ -4068,6 +4617,45 @@ class Core extends Base\Core
         //
         Status::validateStatusUpdate(Status::FAILED, $currentStatus);
 
+        if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                                      $payout->getMerchantId()) === true)
+        {
+            $this->mutex->acquireAndRelease(
+                PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
+                function() use ($payout, $ftaFailureReason, $ftaBankStatusCode, $ftaStatus, $ftsSourceAccountInformation) {
+
+                    $payout->reload();
+
+                    $this->handlePayoutFailedBase($payout, $ftaFailureReason, $ftaBankStatusCode, $ftaStatus, $ftsSourceAccountInformation);
+                },
+                self::PAYOUT_FAILURE_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS,
+                PayoutConstants::MIGRATION_MUTEX_RETRY_COUNT);
+        }
+        else
+        {
+            $this->handlePayoutFailedBase($payout, $ftaFailureReason, $ftaBankStatusCode, $ftaStatus, $ftsSourceAccountInformation);
+        }
+
+    }
+
+    /**
+     * @param Entity      $payout
+     * @param string|null $ftaFailureReason
+     * @param string|null $ftaBankStatusCode
+     * @param string|null $ftaStatus
+     * @param array       $ftsSourceAccountInformation
+     *
+     * @return void
+     * @throws BadRequestException
+     * @throws Exception\InvalidArgumentException
+     */
+    function handlePayoutFailedBase(Entity $payout,
+                                    string $ftaFailureReason = null,
+                                    string $ftaBankStatusCode = null,
+                                    string $ftaStatus = null,
+                                    array $ftsSourceAccountInformation = []): void
+    {
         // Keeping the mutex TTL high while updating the payout to failed.
         // This is to ensure that the process that is working on the payout
         // resource, releases mutex on the payout only once all entities are
@@ -4076,8 +4664,7 @@ class Core extends Base\Core
         {
             $this->mutex->acquireAndRelease(
                 'failure_payout_id_' . $payout->getId(),
-                function () use ($payout, $ftaFailureReason, $ftaBankStatusCode)
-                {
+                function() use ($payout, $ftaFailureReason, $ftaBankStatusCode) {
                     // reloading the payout here to ensure if any other process
                     // gets a mutex on payout resource, it gets a fresh copy
                     // of payout to work.
@@ -4132,7 +4719,7 @@ class Core extends Base\Core
             $app = App::getFacadeRoot();
 
             // using function stack trace to identify the caller
-            $dbt = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+            $dbt    = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
             $caller = $dbt[1]['function'] ?? null;
 
             // this is done so that status updates are send to payout service in case the caller is from manual status
@@ -4590,8 +5177,10 @@ class Core extends Base\Core
 
         $payout = $this->repo->payout->find($payoutId);
 
-        if ((empty($payout) === false) and
-            ($payout->getIsPayoutService() === false))
+        // Skipped Mutex lock considering its a very rare scenario of credit transfer
+        // It happened 400 times in a lifetime
+        if ((empty($payout) === false)
+            and ($payout->getIsPayoutService() === false))
         {
             if ($creditTransfer->isStatusProcessed() === true)
             {
@@ -4774,6 +5363,8 @@ class Core extends Base\Core
                     TraceCode::UNKNOWN_STATUS_SENT_TO_PAYOUT,
                     $input);
         }
+
+        $payout->reload();
 
         if ($payout->getIsPayoutService() === false)
         {
@@ -5059,12 +5650,55 @@ class Core extends Base\Core
                 'input'     => $input,
             ]);
 
-        if ($approved === true)
+        if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
+                                      $payout->getMerchantId()) === true)
         {
-            return $this->processApprovePayout($payout, $input);
-        }
+            return $this->mutex->acquireAndRelease(
+                PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
+                function() use ($payout, $approved, $input) {
+                    $payout->reload();
 
-        return $this->processRejectPayout($payout);
+                    if ($approved === true)
+                    {
+                        if ($payout->getIsPayoutService() === true)
+                        {
+                            $this->payoutWorkflowServiceClient->approvePayoutViaMicroservice(
+                                $payout->getId()
+                            );
+                        }
+                        else
+                        {
+                            return $this->processApprovePayout($payout, $input);
+                        }
+                    }
+                    else
+                    {
+                        if ($payout->getIsPayoutService() === true)
+                        {
+                            $this->payoutWorkflowServiceClient->rejectPayoutViaMicroservice(
+                                $payout->getId()
+                            );
+                        }
+                        else
+                        {
+                            return $this->processRejectPayout($payout);
+                        }
+                    }
+
+                    return $payout->reload();
+                },
+                self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS,
+                PayoutConstants::MIGRATION_MUTEX_RETRY_COUNT);
+        }
+        else
+        {
+            if ($approved === true)
+            {
+                return $this->processApprovePayout($payout, $input);
+            }
+            return $this->processRejectPayout($payout);
+        }
     }
 
     /**
@@ -6220,7 +6854,7 @@ class Core extends Base\Core
             $input = [
                 Entity::FAILURE_REASON              => $ftaData[Attempt\Constants::FAILURE_REASON] ?? null,
                 Entity::REMARKS                     => $ftaData[Attempt\Constants::REMARKS] ?? null,
-                Attempt\Entity::FUND_TRANSFER_ID    => (int)$payout->getFTSTransferId(),
+                Attempt\Entity::FUND_TRANSFER_ID    => $ftaData[Attempt\Entity::FTS_TRANSFER_ID] ?? null,
                 Attempt\Constants::BENEFICIARY_NAME => $ftaData[Attempt\Constants::BENEFICIARY_NAME] ?? null,
                 Attempt\Entity::BANK_STATUS_CODE    => $ftaData[Attempt\Entity::BANK_STATUS_CODE] ?? null,
                 Attempt\Constants::FTA_STATUS       => $ftaData[Attempt\Constants::FTA_STATUS] ?? null,
@@ -8339,5 +8973,20 @@ class Core extends Base\Core
     public function bulkUpdateAttachmentsForPayoutServicePayout(array $payoutIds, array $updateRequest)
     {
         return $this->payoutServiceUpdateAttachmentsClient->bulkUpdateAttachments($payoutIds, $updateRequest);
+    }
+
+    protected function isExperimentEnabled($experiment,$merchantId)
+    {
+        $app = $this->app;
+
+        if(empty($merchantId) === false)
+        {
+            $variant = $app['razorx']->getTreatment($merchantId,
+                                                    $experiment, $app['basicauth']->getMode() ?? Constants\Mode::LIVE);
+
+            return ($variant === 'on');
+        }
+
+        return false;
     }
 }

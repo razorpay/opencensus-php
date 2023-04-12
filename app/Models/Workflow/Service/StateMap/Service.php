@@ -74,7 +74,7 @@ class Service extends Base\Service
                 ['id' => $id]);
         }
 
-        $stateMap = $this->core->update($stateMap, $input);
+        $stateMap = $this->core->update($stateMap, $input, $id);
 
         return $stateMap->toArray();
     }

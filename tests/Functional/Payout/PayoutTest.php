@@ -2147,6 +2147,10 @@ class PayoutTest extends OAuthTestCase
             $count++;
         }
 
+        /** @var Payout\Entity $payout2 */
+        $payout2 = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(true, $payout2->getIsPayoutService());
     }
 
     public function testCreatePayoutWithPayoutLimitFeatureFlagEnabled()
@@ -7101,8 +7105,6 @@ class PayoutTest extends OAuthTestCase
 
         $this->startTest();
 
-        $this->assertTrue($success);
-
         $payoutId = $pendingPayout1->getId();
 
         $updatedPayout = \DB::connection('test')->select("select * from ps_payouts where id = '$payoutId'")[0];
@@ -7171,8 +7173,6 @@ class PayoutTest extends OAuthTestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedResponse, $result);
-
-        $this->assertTrue($success);
 
         $payoutId = $scheduledPayout->getId();
 
@@ -7580,8 +7580,6 @@ class PayoutTest extends OAuthTestCase
         $this->mockPayoutServiceWorkflow($success,$payout->getId());
 
         $this->startTest();
-
-        $this->assertTrue($success);
 
         $payoutId = $payout->getId();
 

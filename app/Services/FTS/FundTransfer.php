@@ -28,11 +28,13 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Constants\Mode as ModeConstants;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Card\Entity as CardVault;
+use RZP\Models\FundTransfer\Attempt\Type;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Payout\Entity as PayoutEntity;
+use RZP\Models\Payout\Constants as PayoutConstants;
 use RZP\Models\BankAccount\Core as BankAccountCore;
-use RZP\Models\PayoutSource\Entity as PayoutSources;
 use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
+use RZP\Models\PayoutSource\Entity as PayoutSources;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Holidays as TransferHoliday;
 use RZP\Models\Settlement\Holidays as SettlementHoliday;
@@ -70,6 +72,13 @@ class FundTransfer extends Base
     protected $startTimeHourNeft;
 
     protected $startTimeHourRtgs;
+
+    const PAYOUT_MUTEX_LOCK_TIMEOUT         = 180;
+
+    /**
+     * @var Mutex
+     */
+    protected $mutex;
 
     /**
      * Array to keep working hours of NEFT/RTGS for various channels
@@ -178,6 +187,7 @@ class FundTransfer extends Base
 
         $this->app     = $app;
 
+        $this->mutex = $this->app['api.mutex'];
     }
 
     /**
@@ -902,10 +912,36 @@ class FundTransfer extends Base
 
         if ($fta->getStatus() === FundTransferAttempt\Status::INITIATED)
         {
-            if (method_exists($sourceCore, 'updateStatusAfterFtaInitiated') === true)
+            if ($fta->getSourceType() === Type::PAYOUT and
+                $this->isExperimentEnabled(RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,$fta) === true)
             {
-                $sourceCore->updateStatusAfterFtaInitiated($source, $this->fta);
+                $this->mutex->acquireAndRelease(
+                    PayoutConstants::MIGRATION_REDIS_SUFFIX . $source->getId(),
+                    function() use ($source, $fta, $sourceCore) {
+                        $source->reload();
+
+                        if ($source->getIsPayoutService() === true)
+                        {
+                            $sourceCore->updateEntityWithFtsTransferId($source, $fta->getFTSTransferId());
+                        }
+
+                        if (method_exists($sourceCore, 'updateStatusAfterFtaInitiated') === true)
+                        {
+                            $sourceCore->updateStatusAfterFtaInitiated($source, $this->fta);
+                        }
+                    },
+                    self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+                    ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS,
+                    PayoutConstants::MIGRATION_MUTEX_RETRY_COUNT);
             }
+            else
+            {
+                if (method_exists($sourceCore, 'updateStatusAfterFtaInitiated') === true)
+                {
+                    $sourceCore->updateStatusAfterFtaInitiated($source, $this->fta);
+                }
+            }
+
         }
         elseif (in_array($this->fta->getStatus(), FundTransferAttempt\Status::TERMINAL_STATUSES))
         {
@@ -1800,6 +1836,21 @@ class FundTransfer extends Base
         }
 
         return [false, false];
+    }
+
+    protected function isExperimentEnabled($experiment,FundTransferAttempt\Entity $fta)
+    {
+        $app = $this->app;
+
+        if(empty($fta->getMerchantId()) === false)
+        {
+            $variant = $app['razorx']->getTreatment($fta->getMerchantId(),
+                                                    $experiment, $app['basicauth']->getMode() ?? ModeConstants::LIVE);
+
+            return ($variant === 'on');
+        }
+
+        return false;
     }
 
 }

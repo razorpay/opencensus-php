@@ -4,9 +4,9 @@ namespace RZP\Services\PayoutService;
 
 use Requests;
 use Razorpay\Edge\Passport\Passport;
-
 use RZP\Models\Payout;
 use RZP\Trace\TraceCode;
+use RZP\Http\RequestHeader;
 
 class Workflow extends Base
 {
@@ -14,6 +14,10 @@ class Workflow extends Base
 
     // payout workflow service name for singleton class
     const PAYOUT_SERVICE_WORKFLOW = 'payout_service_workflow';
+
+    const WORKFLOW_STATE_CREATE_CALLBACK_URI = '/workflow/state';
+
+    const WORKFLOW_STATE_UPDATE_CALLBACK_URI = '/workflow/state/%s';
 
     /**
      * @param string      $payoutId
@@ -38,6 +42,62 @@ class Workflow extends Base
             $input,
             sprintf(self::WORKFLOW_PAYOUT_SERVICE_URI, $payoutId) . "/approve/",
             Requests::POST,
+            $headers
+        );
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     */
+    public function createStateCallbackViaMicroservice(array $input)
+    {
+
+        $this->trace->info(TraceCode::CREATE_STATE_VIA_MICROSERVICE_REQUEST,
+                           [
+                               'input' => $input,
+                           ]);
+
+        $headers = [
+            Passport::PASSPORT_JWT_V1           => $this->app['basicauth']->getPassportJwt($this->baseUrl),
+            RequestHeader::X_Creator_Id         => $this->app['request']->header(RequestHeader::X_Creator_Id, null),
+            RequestHeader::X_RAZORPAY_ACCOUNT   => $this->app['request']->header(RequestHeader::X_RAZORPAY_ACCOUNT, null)
+        ];
+
+        return $this->makeRequestAndGetContent(
+            $input,
+            self::WORKFLOW_STATE_CREATE_CALLBACK_URI,
+            Requests::POST,
+            $headers
+        );
+    }
+
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     */
+    public function updateStateCallbackViaMicroservice(string $id,array $input)
+    {
+
+        $this->trace->info(TraceCode::UPDATE_STATE_VIA_MICROSERVICE_REQUEST,
+                           [
+                               'input'  => $input,
+                               'id'     => $id
+                           ]);
+
+        $headers = [
+            Passport::PASSPORT_JWT_V1           => $this->app['basicauth']->getPassportJwt($this->baseUrl),
+            RequestHeader::X_Creator_Id         => $this->app['request']->header(RequestHeader::X_Creator_Id, null),
+            RequestHeader::X_RAZORPAY_ACCOUNT   => $this->app['request']->header(RequestHeader::X_RAZORPAY_ACCOUNT, null)
+        ];
+
+        return $this->makeRequestAndGetContent(
+            $input,
+            sprintf(self::WORKFLOW_STATE_UPDATE_CALLBACK_URI, $id),
+            Requests::PATCH,
             $headers
         );
     }

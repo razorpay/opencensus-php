@@ -41,6 +41,8 @@ class CreatePsWorkflowStateMap extends Migration
             $table->integer(WorkflowStateMap::CREATED_AT);
 
             $table->integer(WorkflowStateMap::UPDATED_AT);
+
+            $table->integer(MigrationWorkflowStateMap::COUNT_OF_APPROVALS_NEEDED);
         });
     }
 

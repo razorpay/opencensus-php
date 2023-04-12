@@ -2056,9 +2056,10 @@ class Repository extends Base\Repository
         $payoutsBalanceIdColumn        = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
         $payoutsScheduledAtColumn      = $this->repo->payout->dbColumn(Entity::SCHEDULED_AT);
         $payoutsIsPayoutServiceColumn  = $this->repo->payout->dbColumn(Entity::IS_PAYOUT_SERVICE);
+        $payoutsMerchantIdColumn       = $this->repo->payout->dbColumn(Entity::MERCHANT_ID);
 
         $query = $this->newQueryWithConnection($this->getSlaveConnection())
-                      ->select($payoutsBalanceIdColumn, $payoutStatusColumn, $payoutsIdColumn, $payoutAmountColumn, $payoutsIsPayoutServiceColumn)
+                      ->select($payoutsBalanceIdColumn, $payoutStatusColumn, $payoutsIdColumn, $payoutAmountColumn, $payoutsIsPayoutServiceColumn,$payoutsMerchantIdColumn)
                       ->where($payoutsScheduledAtColumn, '<', $currentTimeStamp)
                       ->whereIn($payoutStatusColumn, [Status::SCHEDULED, Status::PENDING]);
 

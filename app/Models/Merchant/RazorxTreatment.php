@@ -762,4 +762,7 @@ final class RazorxTreatment
      * Razorx flag to enable capture settings for optimizer merchants overriding the Direct settlement capture flow
      */
     const ENABLE_CAPTURE_SETTINGS_FOR_OPTIMIZER = 'enable_capture_settings_for_optimizer';
+
+    // Expt to handle non terminal payouts after migration
+    const NON_TERMINAL_MIGRATION_HANDLING       = 'non_terminal_migration_handling';
 }
