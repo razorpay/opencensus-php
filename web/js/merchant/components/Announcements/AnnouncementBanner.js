@@ -7,7 +7,11 @@ import { classList } from 'common/utils/rzp-utils';
 function getBannerState(key) {
   const val = getItem(key);
   if (!val) return false; // return 'false' if key/value is 'null'
-  return JSON.parse(val);
+  try {
+    return JSON.parse(val);
+  } catch (e) {
+    return false; // return 'false' if any error occurs
+  }
 }
 class AnnouncementBannerComponent extends Component {
   state = {
