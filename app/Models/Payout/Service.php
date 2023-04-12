@@ -1921,6 +1921,14 @@ class Service extends Base\Service
     {
         list($psInput, $apiInput) = $this->getPSAndAPIInput($input);
 
+        $this->trace->info(
+            TraceCode::BULK_PAYOUTS_PS_API_INPUT,
+            [
+                'ps_input'  => $psInput,
+                'api_input' => $apiInput
+            ]);
+
+
         $finalResponse = new Base\PublicCollection;
 
         /**

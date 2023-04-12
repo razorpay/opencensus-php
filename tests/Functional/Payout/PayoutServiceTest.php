@@ -5284,7 +5284,14 @@ class PayoutServiceTest extends TestCase
 
     public function testBulkPayout_DirectAccount()
     {
-        $this->mockPayoutServiceCreateBulkPayoutShouldNotBeInvoked();
+        $createBulkPayoutMock = Mockery::mock('RZP\Services\PayoutService\BulkPayout',
+                                              [$this->app])->makePartial();
+
+        $createBulkPayoutMock->shouldNotReceive('createBulkPayoutViaMicroservice');
+
+        $createBulkPayoutMock->shouldNotReceive('mockPayoutServiceCreateBulkPayout');
+
+        $this->app->instance(BulkPayout::PAYOUT_SERVICE_BULK_PAYOUTS, $createBulkPayoutMock);
 
         $this->fixtures->on('live')->create(
             'balance',
@@ -5322,11 +5329,20 @@ class PayoutServiceTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedPayoutDetails, $payout);
+
+        $createBulkPayoutMock->shouldNotHaveReceived('createBulkPayoutViaMicroservice');
     }
 
     public function testBulkPayout_MultiplePayouts_SameDirectAccount()
     {
-        $this->mockPayoutServiceCreateBulkPayoutShouldNotBeInvoked();
+        $createBulkPayoutMock = Mockery::mock('RZP\Services\PayoutService\BulkPayout',
+                                              [$this->app])->makePartial();
+
+        $createBulkPayoutMock->shouldNotReceive('createBulkPayoutViaMicroservice');
+
+        $createBulkPayoutMock->shouldNotReceive('mockPayoutServiceCreateBulkPayout');
+
+        $this->app->instance(BulkPayout::PAYOUT_SERVICE_BULK_PAYOUTS, $createBulkPayoutMock);
 
         $this->fixtures->on('live')->create(
             'balance',
@@ -5376,6 +5392,10 @@ class PayoutServiceTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedPayoutDetails, $payout2);
+
+        $createBulkPayoutMock->shouldNotHaveReceived('createBulkPayoutViaMicroservice');
+
+        $createBulkPayoutMock->shouldNotHaveReceived('mockPayoutServiceCreateBulkPayout');
     }
 
     public function testBulkPayout_SharedAndDirectAccounts()

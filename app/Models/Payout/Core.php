@@ -4463,6 +4463,11 @@ class Core extends Base\Core
 
             $this->reversePayout($payout, $ftaFailureReason, $ftaBankStatusCode, $credit_bas, $reversal);
 
+            if (empty($reversal) === true)
+            {
+                return;
+            }
+
             if (self::shouldPayoutGoThroughLedgerReverseShadowFlow($payout) === true)
             {
                 /*

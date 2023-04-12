@@ -26756,6 +26756,25 @@ class PayoutTest extends OAuthTestCase
 
     }
 
+    public function testDuplicateReversalUpdate()
+    {
+        $this->testPayoutReversalInLedgerReverseShadowMode();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldNotReceive('processPayoutAndCreateJournalEntry');
+
+        (new Payout\Core)->handlePayoutReversed($payout, null, 'YB_NS_E10282323');
+
+        $mockLedger->shouldNotHaveReceived('processPayoutAndCreateJournalEntry');
+    }
+
     public function testPayoutProcessedInLedgerReverseShadowMode()
     {
         $this->app['config']->set('applications.ledger.enabled', false);
