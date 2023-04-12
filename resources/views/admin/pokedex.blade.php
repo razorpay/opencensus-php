@@ -31,5 +31,11 @@
 <div id="react-root" class="react-root"></div>
 <!-- Blank interface init before loading the project entry file -->
 @include('partials/rzpq-interface')
+<script 
+    defer 
+    src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js" 
+    crossorigin="anonymous" 
+    integrity="sha512-oJp0DdQuQQrRsKVly+Ww6fAN1GwJN7d1bi8UubpEbzDUh84WrJ2CFPBnT4LqBCcfqTcHR5OGXFFhaPe3g1/bzQ=="
+  ></script>
 <script src="{{$cdn}}/dist/pokedex-entry.js"></script>
 @include('partials/blade-coverage-script')
