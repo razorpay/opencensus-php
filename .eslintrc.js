@@ -121,6 +121,20 @@ module.exports = {
         'no-array-constructor': 'off',
         '@typescript-eslint/no-array-constructor': 'error',
         'react/prop-types': 'off',
+        // Restricting custom components added in reports from being used elsewhere
+        'import/no-restricted-paths': [
+          'error',
+          {
+            basePath: './web/js/',
+            zones: [
+              {
+                target: './',
+                from: './merchant_common/views/Reports/components/',
+                message: 'These components are restricted to reports. Please avoid using it.',
+              },
+            ],
+          },
+        ],
       },
       extends: [
         'plugin:@typescript-eslint/recommended',
@@ -136,6 +150,13 @@ module.exports = {
             jestConfigFile: './jest.config',
           },
         },
+      },
+    },
+    // Allowing custom components to be used in reports dir
+    {
+      files: ['./web/js/merchant_common/views/Reports/**', ''],
+      rules: {
+        'import/no-restricted-paths': 'off',
       },
     },
   ],

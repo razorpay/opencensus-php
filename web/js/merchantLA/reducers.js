@@ -14,10 +14,8 @@ import transferReducer from 'merchantLA/reducers/marketplace/transfer';
 import reversalReducer from 'merchantLA/reducers/marketplace/reversal';
 import creditsReducer from 'merchantLA/reducers/credits';
 import reportsReducer from 'merchantLA/reducers/reports/home';
-import {
-  batchesReducer,
-  batchDetailsReducer,
-} from 'merchantLA/reducers/batches';
+import { batchesReducer, batchDetailsReducer } from 'merchantLA/reducers/batches';
+import { reportsReducer as reportsCoreReducer } from 'merchant_common/views/Reports/redux/reducer';
 
 import {
   reversalsReducer,
@@ -42,6 +40,7 @@ export default combineReducers({
   reversals: reversalsReducer,
   credits: creditsReducer,
   reports: reportsReducer,
+  reportsCore: reportsCoreReducer,
   batchDetails: batchDetailsReducer,
   batches: batchesReducer,
 });

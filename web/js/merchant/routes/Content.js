@@ -123,8 +123,10 @@ const SubscriptionButtonDetails = lazy(() =>
   ),
 );
 
-const ReportsAsync = lazy(() =>
-  import(/* webpackChunkName: "ReportsAsync" */ 'merchant/views/ReportsAsync/Home'),
+const MerchantReports = lazy(() =>
+  import(
+    /* webpackChunkName: "MerchantReports" */ 'merchant_common/views/Reports/views/MerchantReports'
+  ),
 );
 
 const MyAccount = lazy(() => import(/* webpackChunkName: "Account" */ 'merchant/views/Account'));
@@ -731,10 +733,9 @@ export default class Content extends Component {
             }
           />
 
-          {/* Allowing only care health merchant having role owner and disabling for every other user roles */}
           <ShowWhenRoute
             path="/reports"
-            component={ReportsAsync}
+            component={MerchantReports}
             additionalCondition={(user) =>
               (user.isAllowedView('reports') || user.isCareHealthOwner) &&
               user.hideForNIASupportRole

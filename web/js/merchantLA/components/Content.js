@@ -1,28 +1,21 @@
 import React, { Component } from 'react';
-import { NavLink, Switch, Route, withRouter, Redirect } from 'react-router-dom';
+import { Switch, Route, withRouter, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
-
-import { classList } from 'common/utils/rzp-utils';
 import { matchDetail, matchModal } from 'merchantLA/routes';
 import Slider from 'common/ui/Slider';
 import { ModalMask } from 'common/new-ui/Modal';
 
 import { showWhenUtil } from 'merchantLA/components/ShowWhen';
-import Home from 'merchantLA/containers/Home/Index';
 import Transfers from 'merchantLA/containers/Marketplace/Transfers/List';
 import Reversals from 'merchantLA/containers/Marketplace/Reversals/List';
 import Settlements from 'merchantLA/containers/Settlements/List';
-import Reports from 'merchantLA/containers/Reports';
 import MyAccount from 'merchantLA/containers/MyAccount';
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
-import {
-  setBaseLocation,
-  setActiveEntity,
-  setSecActiveEntity,
-} from 'merchantLA/reducers/app';
+import { setBaseLocation, setActiveEntity, setSecActiveEntity } from 'merchantLA/reducers/app';
 import { openSlider } from 'merchant_common/reducers/slider';
+import LinkedAccountReports from 'merchant_common/views/Reports/views/LinkedAccountReports';
 
 @withRouter
 @connect(null, {
@@ -32,10 +25,10 @@ import { openSlider } from 'merchant_common/reducers/slider';
   openSlider,
 })
 export default class Content extends Component {
-  setBaseLocation = location => {
-    let { setBaseLocation, setActiveEntity, setSecActiveEntity } = this.props;
-    var matchDetailsRoute = matchDetail(location.pathname);
-    var matchModalsRoute = matchModal(location.pathname);
+  setBaseLocation = (location) => {
+    const { setBaseLocation, setActiveEntity, setSecActiveEntity } = this.props;
+    const matchDetailsRoute = matchDetail(location.pathname);
+    const matchModalsRoute = matchModal(location.pathname);
 
     if (matchDetailsRoute || matchModalsRoute) {
       let resultRoute;
@@ -85,17 +78,14 @@ export default class Content extends Component {
           <Route path="/transfers" component={Transfers} />
           <Route path="/reversals" component={Reversals} />
           <Route path="/settlements" component={Settlements} />
-          <Route path="/reports" component={Reports} />
+
+          <Route path="/reports" component={LinkedAccountReports} />
 
           <Route path="/profile" component={MyAccount} />
 
           <Route path="/credits" component={Reversals} />
 
-          <ShowWhenRoute
-            path="/team"
-            component={MyAccount}
-            myRole="linked_account_owner"
-          />
+          <ShowWhenRoute path="/team" component={MyAccount} myRole="linked_account_owner" />
           <Redirect to="/transfers" />
           {/*<Redirect to="/dashboard" />*/}
         </Switch>
@@ -118,14 +108,14 @@ export default class Content extends Component {
     }
   }
 
-  closeModalView = e => {
+  closeModalView = () => {
     document.body.classList.remove('noscroll');
     this.props.history.replace(this.baseLocation.pathname);
   };
 
   render() {
-    var DetailView = this.detailView;
-    var BaseView = this.baseLocation ? this.getBaseView() : null;
+    let DetailView = this.detailView;
+    const BaseView = this.baseLocation ? this.getBaseView() : null;
 
     let ModalFormView = this.modalView;
 
@@ -134,10 +124,7 @@ export default class Content extends Component {
         <Slider closeUrl={this.baseLocation}>
           <ErrorBoundary resetOnProps location={this.baseLocation}>
             {' '}
-            <DetailView
-              {...this.detailProps}
-              closeUrl={this.baseLocation.pathname}
-            />{' '}
+            <DetailView {...this.detailProps} closeUrl={this.baseLocation.pathname} />{' '}
           </ErrorBoundary>
         </Slider>
       ) : (
@@ -178,7 +165,7 @@ export default class Content extends Component {
 const ShowWhenRoute = ({ component: Component, ...rest }) => (
   <Route
     {...rest}
-    render={props =>
+    render={() =>
       showWhenUtil(rest) ? (
         <Component {...rest} />
       ) : (

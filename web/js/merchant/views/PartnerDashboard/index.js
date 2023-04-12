@@ -8,7 +8,7 @@ import Settings from './Settings';
 import Earnings from './Earnings';
 import Subvention from './Subvention';
 import Applications from './Applications';
-import Reports from './Reports';
+import PartnerReports from 'merchant_common/views/Reports/views/PartnerReports';
 import Home from './Home';
 import ErrorBoundary, { Teams } from 'common/new-ui/ErrorBoundary';
 import usePartnerPageNPS from 'merchant/views/PartnerDashboard/SubMerchant/utils/usePartnerPageNPS';
@@ -79,7 +79,7 @@ export default function PartnerDashboard() {
 
         <ShowWhenRoute
           path="/partners/reports"
-          component={Reports}
+          component={PartnerReports}
           // disabling for resellers not having partner configs
           additionalCondition={(user) => !user.isPartner('reseller') || user.isHavingPartnerConfigs}
         />

@@ -1,5 +1,5 @@
 export type OpenModalPayload = {
-  size?: 'regular' | 'small' | 'medium' | 'med-large' | 'large' | 'xlarge';
+  size?: 'regular' | 'small' | 'medium' | 'med-large' | 'large' | 'xlarge' | 'custom';
   component: JSX.Element;
   className?: string;
   overlayStyles?: Record<string, string>;

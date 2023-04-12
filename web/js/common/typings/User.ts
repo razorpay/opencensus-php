@@ -37,6 +37,15 @@ type Getters = {
   isIERevampEnabled: boolean;
   isAccepted: boolean;
   isUnregisteredBusiness: boolean;
+  isRevampedReportsEnabled: {
+    merchant: boolean;
+    partner: boolean;
+    la: boolean;
+  };
+  isMarketplaceEnabled: boolean;
+  isSupportRole: boolean;
+  isOrgAllowedFunctionality: (featureName: string) => boolean;
+  findTag: (tag: string) => boolean;
   isSettlementV3RevampEnabled: boolean;
   isSingleReconEnabled: boolean;
   isOptimizerEnabled: boolean;
@@ -48,6 +57,14 @@ type UserProperties = {
   business_website: string;
   activation_status: string;
   international_activation_flow: string;
+  current: string;
+  email: string;
+  contact_email: string;
+  transaction_report_email: string;
+  name: string;
+  user: {
+    name: string;
+  };
   merchant: {
     hold_funds: boolean;
     max_payment_amount: number;

@@ -1,0 +1,71 @@
+import { User } from 'common/typings';
+import { AccountStateType } from './types/account';
+import { BaseConfigType } from './types/config';
+
+export enum Dashboard {
+  partner = 'partner',
+  merchant = 'merchant',
+  linkedAccount = 'linkedAccount',
+}
+
+export type DashboardType = keyof typeof Dashboard;
+
+export enum Mode {
+  test = 'test',
+  live = 'live',
+}
+
+export type ModeType = keyof typeof Mode;
+
+export type CustomConfigType = BaseConfigType & {
+  helpInfo?: {
+    info: string;
+    link: {
+      label: string;
+      href: string;
+    };
+  };
+};
+
+export interface RefDashboardConfigType {
+  /**
+   * Base path of the dashboard route.
+   */
+  basePath: string;
+  /**
+   * API headers specific to the dashboard type.
+   */
+  headers: Record<string, string>;
+  /**
+   * Additional report configs added apart from the ones from the BE API call specific to the dashboard type.
+   */
+  customConfigs: CustomConfigType[];
+  availableAccounts: AccountStateType | undefined;
+  /**
+   * A parse fn to transform the report configs payload as defined in the config wrt the dashboard type.
+   */
+  parseConfigs: (x: BaseConfigType[]) => BaseConfigType[];
+  /**
+   * A parse fn to transform final payload of download report modal before submit wrt the specified dashboard.
+   */
+  parsePayloadBeforeSubmit: (x?, y?) => unknown;
+}
+
+export interface ReportSectionProps {
+  user: User;
+  allReportConfigs: BaseConfigType[];
+  refDashboardConfig: RefDashboardConfigType;
+  dashboardType: DashboardType;
+  handleOverviewLoading: (x: { key: string; state: boolean }) => void;
+  fetchReportsConfigsSuccess: (x: { configs: BaseConfigType[] }) => void;
+  fetchReportsConfigsFailed: () => void;
+  showNotification: (x: unknown) => void;
+  fetchAccounts: () => Promise<void>;
+}
+
+export interface ReportsPropType {
+  /**
+   * Dashboard type where reports ui is to be used. (partner | merchant | linkedAccount).
+   */
+  dashboard: DashboardType;
+}

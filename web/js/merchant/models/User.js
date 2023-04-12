@@ -1904,6 +1904,14 @@ export default class User {
     return getSplitzExperimentVariant('left_nav_revamp')?.variables?.result === 'on';
   }
 
+  get isRevampedReportsEnabled() {
+    return {
+      merchant: getSplitzExperimentVariant('merchant_reports_revamp')?.variables?.result === 'on',
+      partner: getSplitzExperimentVariant('partner_reports_revamp')?.variables?.result === 'on',
+      la: getSplitzExperimentVariant('la_reports_revamp')?.variables?.result === 'on',
+    };
+  }
+
   get isFetchTicketsApiMigration() {
     return getSplitzExperimentVariant('fetch_tickets_migration')?.variables?.result === 'on';
   }

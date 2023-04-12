@@ -448,6 +448,27 @@ export default {
     'Kmd4oqDWnxSFe8',
   ],
 
+  merchant_reports_revamp: [
+    // beta experiment ids
+    'LEG6dZms3jSwvI',
+    // prod experiment ids
+    'LEIsWDFrD9MivV',
+  ],
+
+  partner_reports_revamp: [
+    // beta experiment ids
+    'Lby69yituOrSj2',
+    // prod experiment ids
+    'LbzMrW66OjfDsw',
+  ],
+
+  la_reports_revamp: [
+    // beta experiment ids
+    'Lby668Otnw4zQE',
+    // prod experiment ids
+    'LbzO5k3RZqiN4V',
+  ],
+
   settlement_v3_revamp: [
     // beta experiment ids
     'LaOawyVhmVnwnL',

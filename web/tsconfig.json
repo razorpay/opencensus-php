@@ -60,7 +60,8 @@
     "js/common/ui/XBankingWidget",
     "js/merchant/views/transactions/UploadInvoice/BulkUpload",
     "js/merchant/views/PaymentHandle",
-    "js/merchant/views/Account"
+    "js/merchant/views/Account",
+    "js/merchant_common/views/Reports"
   ],
   "exclude": ["node_modules", "js/common/utils"],
   "types": ["resize-observer-browser"]

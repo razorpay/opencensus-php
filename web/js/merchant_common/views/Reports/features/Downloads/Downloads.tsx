@@ -1,0 +1,143 @@
+import React, { useEffect } from 'react';
+import { Button, PlusIcon, ReportModal, Dropdown } from 'merchant_common/views/Reports/components';
+import { ControlPanel, DownloadsWrapper, DropdownWrapper } from './style';
+import { DownloadsPropsType } from './types';
+import { DownloadsTable } from './components/DownloadsTable';
+import { connect } from 'react-redux';
+import { downloadsFilterDropdown } from 'merchant_common/views/Reports/features/Downloads/constants/dropdownOptions';
+import { getURLQueryParams } from 'common/utils/rzp-utils';
+import { handleLogsFilter } from 'merchant_common/views/Reports/redux/reducer';
+import { openModal } from 'merchant_common/reducers/modals';
+import { useDashboardType } from 'merchant_common/views/Reports/contexts/ReportsContext';
+import { useTheme } from 'merchant_common/views/Reports/hooks';
+import { trackDownloadsSection } from 'merchant_common/views/Reports/configs/analytics.config';
+
+const mapStateToProps = ({ reportsCore }, { dashboardType }) => {
+  const { allConfigs } = reportsCore[dashboardType].overview.reportConfigs;
+  const { filter } = reportsCore[dashboardType].downloads;
+
+  return {
+    isAllConfigLoaded: !allConfigs.loading && !allConfigs.error,
+    logTableFilterType: filter,
+  };
+};
+
+const mapDispatchToProps = (dispatch, { dashboardType }) => ({
+  openModal: (modal) => dispatch(openModal(modal)),
+  handleLogsTableFilterChange: (payload) =>
+    dispatch(handleLogsFilter({ filter: payload, dashboardType })),
+});
+
+const DownloadsSection = connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(
+  ({
+    isAllConfigLoaded,
+    dashboardType,
+    location: { search },
+    logTableFilterType,
+    openModal,
+    handleLogsTableFilterChange,
+  }: DownloadsPropsType): JSX.Element => {
+    const { theme } = useTheme();
+    const { modal, config } = getURLQueryParams(search);
+
+    const handleDownloadReportClick = () => {
+      trackDownloadsSection({ actionName: 'download_report_button_click', dashboardType });
+
+      openModal({
+        component: <ReportModal type="download_report" dashboardType={dashboardType} />,
+        size: 'custom',
+      });
+    };
+
+    useEffect(() => {
+      if (modal) {
+        const modalComponent = (
+          <ReportModal
+            dashboardType={dashboardType}
+            type={modal}
+            params={
+              config
+                ? {
+                    selectedConfig: config,
+                  }
+                : {}
+            }
+          />
+        );
+
+        switch (true) {
+          case modal === 'download_custom_report':
+            openModal({
+              component: modalComponent,
+              size: 'custom',
+            });
+            break;
+          case modal === 'download_report' && isAllConfigLoaded:
+            openModal({
+              component: modalComponent,
+              size: 'custom',
+            });
+            break;
+          default:
+            break;
+        }
+      }
+    }, []);
+
+    useEffect(() => {
+      if (isAllConfigLoaded) {
+        trackDownloadsSection({ actionName: 'downloads_page_load', dashboardType });
+      }
+    }, [isAllConfigLoaded]);
+
+    const handleDownloadsFilter = (refFilter) => {
+      if (!refFilter) return;
+      trackDownloadsSection({
+        actionName: 'download_filter_interaction',
+        properties: {
+          interaction_type: 'select',
+          selectedFilter: refFilter?.label,
+        },
+        dashboardType,
+      });
+      handleLogsTableFilterChange(refFilter?.value);
+    };
+
+    return (
+      <DownloadsWrapper theme={theme}>
+        <ControlPanel theme={theme}>
+          <Button
+            onClick={handleDownloadReportClick}
+            variant="primary"
+            icon={PlusIcon}
+            iconPosition="left"
+            accessibilityLabel="Download Report Button"
+            isLoading={!isAllConfigLoaded}
+          >
+            Download Report
+          </Button>
+          <DropdownWrapper>
+            <Dropdown
+              value={downloadsFilterDropdown.find((item) => item.value === logTableFilterType)}
+              options={downloadsFilterDropdown}
+              onChange={handleDownloadsFilter}
+              labelKey="label"
+              ariaLabelBy="Logs Filter Dropdown"
+              isVirtualized
+              itemHeight={36}
+            />
+          </DropdownWrapper>
+        </ControlPanel>
+        <DownloadsTable />
+      </DownloadsWrapper>
+    );
+  },
+);
+
+export const Downloads = (props) => {
+  const dashboardType = useDashboardType();
+  return <DownloadsSection dashboardType={dashboardType} {...props} />;
+};

@@ -142,6 +142,7 @@ import webhookStatsReducer from 'merchant/reducers/developers/webhookStats';
 import websiteComplianceReducer from 'merchant/reducers/websitecompliance';
 import pluginReducer from 'merchant/reducers/plugins';
 import { paymentUploadInvoiceReducer } from 'merchant/reducers/paymentUploadInvoice';
+import { reportsReducer as reportsCoreReducer } from 'merchant_common/views/Reports/redux/reducer';
 
 export default combineReducers({
   modal: modalReducer,
@@ -218,6 +219,7 @@ export default combineReducers({
   states: statesReducer,
   taxes: taxesReducer,
   reports: reportsReducer,
+  reportsCore: reportsCoreReducer,
   merchantReports: merchantReportsReducer,
   partnerReports: partnerReportsReducer,
   submerchants: submerchantsReducer,
