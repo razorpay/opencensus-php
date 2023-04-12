@@ -417,14 +417,18 @@ class PayoutTest extends OAuthTestCase
             PayoutEntity::PAYOUT_LINK_ID => 'random_plinkid'
         ]);
 
-        $this->fixtures->edit('payouts_details', $payout->getId(), [
-            PayoutsDetails\Entity::TAX_PAYMENT_ID  => 'txpy_F2qwMZe97QTGG1',
+        $expectedAdditionalInfo = [
             PayoutsDetails\Entity::ATTACHMENTS_KEY => [
                 [
                     PayoutsDetails\Entity::ATTACHMENTS_FILE_ID   => 'file_testing',
                     PayoutsDetails\Entity::ATTACHMENTS_FILE_NAME => 'not-your-attachment.pdf'
-                ]
-            ]
+                ],
+            ],
+        ];
+
+        $this->fixtures->edit('payouts_details', $payout->getId(), [
+            PayoutsDetails\Entity::TAX_PAYMENT_ID  => 'txpy_F2qwMZe97QTGG1',
+            PayoutsDetails\Entity::ADDITIONAL_INFO => json_encode($expectedAdditionalInfo),
         ]);
 
         $this->ba->cronAuth();
@@ -494,7 +498,7 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($payoutDetails->getQueueIfLowBalanceFlag(), $migratedPayoutDetails[0]->queue_if_low_balance_flag);
         $this->assertEquals($payoutDetails->getTdsCategoryId(), $migratedPayoutDetails[0]->tds_category_id);
         $this->assertEquals($payoutDetails->getTaxPaymentId(), $migratedPayoutDetails[0]->tax_payment_id);
-        $this->assertEquals($payoutDetails->getAdditionalInfo(), json_decode($migratedPayoutDetails[0]->additional_info));
+        $this->assertEquals($payoutDetails->getAdditionalInfo(), json_decode($migratedPayoutDetails[0]->additional_info, true));
         $this->assertEquals($payoutDetails->getCreatedAt(), $migratedPayoutDetails[0]->created_at);
         $this->assertEquals($payoutDetails->getUpdatedAt(), $migratedPayoutDetails[0]->updated_at);
     }
