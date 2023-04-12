@@ -501,9 +501,9 @@ const entityDetailsMap = {
 
 const entityModalsMap = {
   '/activation': {
-    component: () => (
+    component: (props) => (
       <EasyOnboardingWrapper>
-        <ActivationContainer />
+        <ActivationContainer {...props} />
       </EasyOnboardingWrapper>
     ),
     additionalCondition: (user) => user.isAllowedEdit('activation'),
@@ -637,17 +637,17 @@ const fullPageViewsMap = {
       user.isAllowedEdit('subscription_buttons') && user.isSubscriptionButtonEnabled,
   },
   '/onboarding/steps': {
-    component: () => (
+    component: (props) => (
       <EasyOnboardingWrapper>
-        <ActivationSteps />
+        <ActivationSteps {...props} />
       </EasyOnboardingWrapper>
     ),
     additionalCondition: (user) => user.isOnboardingV2Enabled,
   },
   '/onboarding/form': {
-    component: () => (
+    component: (props) => (
       <EasyOnboardingWrapper>
-        <ActivationForm />
+        <ActivationForm {...props} />
       </EasyOnboardingWrapper>
     ),
     additionalCondition: (user) => user.isOnboardingV2Enabled,
@@ -660,9 +660,9 @@ const fullPageViewsMap = {
         ((user.isProductLedOnboardingRZP || user.isApiKeysRevampEnabled) && user.activated)),
   },
   '/kyc': {
-    component: () => (
+    component: (props) => (
       <EasyOnboardingWrapper>
-        <ActivationFullViewContainer />
+        <ActivationFullViewContainer {...props} />
       </EasyOnboardingWrapper>
     ),
     additionalCondition: (user) => user.isActivationFormFullView,
