@@ -1116,13 +1116,6 @@ class Validator extends Base\Validator
             return;
         }
 
-        if (($method === Payment\Method::EMI) and ($amount < 200000))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT_FOR_EMI,
-                'amount');
-        }
-
         if (($method !== Payment\Method::EMANDATE) and
             ($method !== Payment\Method::NACH))
         {
@@ -1606,7 +1599,7 @@ class Validator extends Base\Validator
             $this->failIfNotPending($payment);
 
             $this->failIfRefundConfigSetLateAuth($payment);
-            
+
             // For Optimizer external pg payments, we should honor auto capture timeout
             $this->failIfRefundConfigSetLateAuthForOptimizerExternalPgPayment($payment);
 
@@ -1756,7 +1749,7 @@ class Validator extends Base\Validator
             'method' => $payment->getMethod(),
         ]);
     }
-    
+
     // Additional check for Optimizer
     protected function failIfRefundConfigSetLateAuthForOptimizerExternalPgPayment($payment)
     {
