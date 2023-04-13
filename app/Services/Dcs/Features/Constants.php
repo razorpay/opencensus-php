@@ -77,6 +77,13 @@ class Constants
     const CorporateCardsIsAllowedToApply = 'corporatecards:is_allowed_to_apply';
     const CashAdvanceIsAllowedToApply = 'cashadvance:is_allowed_to_apply';
     const OneCCAutomaticAccountCreation = 'one_cc_automatic_account_creation';
+    const ValidateVpa = 'validate_vpa';
+    const UseSavedVpa = 'use_saved_vpa';
+    const GooglePayOmnichannel = 'google_pay_omnichannel';
+    const DisableUpiIntent = 'disable_upi_intent';
+    const EnableS2S = 'enable_s2s';
+    const EnableP2P = 'enable_p2p';
+    const EnableOTM = 'enable_otm';
 
     /**
      * Stores the mapping of the features to their corresponding dcs keys
@@ -149,6 +156,13 @@ class Constants
         self::CorporateCardsIsAllowedToApply => 'rzp/capital/merchant/onboarding/corporatecards/EligibilityFeatures',
         self::CashAdvanceIsAllowedToApply => 'rzp/capital/merchant/onboarding/cashadvance/EligibilityFeatures',
         self::OneCCAutomaticAccountCreation => 'rzp/pg/merchant/checkout/magic/Configuration',
+        self::ValidateVpa => 'rzp/pg/merchant/upi/collect/Vpa',
+        self::UseSavedVpa => 'rzp/pg/merchant/upi/collect/Vpa',
+        self::GooglePayOmnichannel => 'rzp/pg/merchant/upi/collect/Omnichannel',
+        self::DisableUpiIntent => 'rzp/pg/merchant/upi/intent/Intent',
+        self::EnableS2S =>  'rzp/pg/merchant/upi/ServerToServer',
+        self::EnableP2P => 'rzp/pg/merchant/upi/PeerToPeer',
+        self::EnableOTM => 'rzp/pg/merchant/upi/Otm',
     ];
 
     /**
@@ -223,6 +237,13 @@ class Constants
         APIFeaturesConstants::CAPITAL_CARDS_ELIGIBLE                        => self::CorporateCardsIsAllowedToApply,
         APIFeaturesConstants::LOC                                           => self::CashAdvanceIsAllowedToApply,
         APIFeaturesConstants::ONE_CC_SHOPIFY_ACC_CREATE                     => self::OneCCAutomaticAccountCreation,
+        APIFeaturesConstants::ENABLE_VPA_VALIDATE                           => self::ValidateVpa,
+        APIFeaturesConstants::SAVE_VPA                                      => self::UseSavedVpa,
+        APIFeaturesConstants::GOOGLE_PAY_OMNICHANNEL                        => self::GooglePayOmnichannel,
+        APIFeaturesConstants::DISABLE_UPI_INTENT                            => self::DisableUpiIntent,
+        APIFeaturesConstants::S2SUPI                                        => self::EnableS2S,
+        APIFeaturesConstants::P2P_UPI                                       => self::EnableP2P,
+        APIFeaturesConstants::UPI_OTM                                       => self::EnableOTM,
     ];
 
     /**
