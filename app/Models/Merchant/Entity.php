@@ -3386,7 +3386,8 @@ class Entity extends Base\PublicEntity
         /*
          * Iframe is only cosumed by checkout public auth.
          */
-        if ($app['basicauth']->isPublicAuth() === true)
+        $routeName = $app['api.route']->getCurrentRouteName();
+        if ($app['basicauth']->isPublicAuth() === true || $routeName == 'customer_fetch_tokens_internal')
         {
             $data[IIN\Flow::IFRAME] = $iin->isIframeApplicable();
         }

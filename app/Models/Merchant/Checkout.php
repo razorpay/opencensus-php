@@ -220,6 +220,8 @@ class Checkout
         if (isset($input['order']))
         {
             $order = $this->app['pg_router']->getOrderEntityFromOrderAttributes($input['order']);
+
+            $this->order = $order;
         }
         elseif (isset($input['invoice_id']))
         {
@@ -231,6 +233,8 @@ class Checkout
             if ($invoice->getOrderId() !== null)
             {
                 $order = $this->setOrGetOrder('order_'.$invoice->getOrderId(), $merchant);
+
+                $this->order = $order;
             }
         }
 
@@ -280,6 +284,9 @@ class Checkout
         //changes based on order entity
         if ($order !== null)
         {
+            // This is required by methods that filter methods
+            $data['order'] = $order->toArrayPublic();
+
             $data[Entity::METHODS][Payment\Method::INTL_BANK_TRANSFER] = $this->addCurrencyBasedIntlVirtualAccounts($merchant, $order);
 
             $this->resetMethodsIfValidBanksPresent($data, $order, $merchant);
@@ -1903,6 +1910,12 @@ class Checkout
 
     private function checkGivenContactIsDiffFromLogInContact(array & $input, $merchant)
     {
+        if ($this->app['basicauth']->getInternalApp() === 'checkout_service') {
+            // If personalisation route is being called from checkout service,
+            // don't do any log out operations
+            return;
+        }
+
         if (empty($input[Payment\Entity::APP_TOKEN]) or empty($input[Payment\Entity::CONTACT]))
         {
             return ;

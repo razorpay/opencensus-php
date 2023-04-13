@@ -172,7 +172,12 @@ class Service extends Base\Service
             Base\Utility::isUpdatedAndroidSdk($input) &&
             ($appToken->getMerchantId() === Account::SHARED_ACCOUNT)
         ) {
-            return $customerData;
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                'We do not support sending customer data for first payment with new sdk'
+            );
         }
 
         // This case comes when customer_id is sent in the input (always local customer).

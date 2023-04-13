@@ -996,8 +996,14 @@ class Entity extends Base\PublicEntity
 
     protected function setPublicBankDetailsAttribute(array & $array)
     {
+
+        $app = App::getFacadeRoot();
+        $routeName = $app['api.route']->getCurrentRouteName();
+        $isNotCheckoutInternalRoute = ($routeName !== 'customer_fetch_tokens_internal');
+
         if(($this->getMethod() === Payment\Method::EMANDATE) or
            (((bool) app('basicauth')->isProxyAuth() === true) and
+               ($isNotCheckoutInternalRoute === true) and
             ($this->getMethod() === Payment\Method::NACH)))
         {
             $array[self::BANK_DETAILS] = [
@@ -1380,7 +1386,7 @@ class Entity extends Base\PublicEntity
 
         $routeName = $app['api.route']->getCurrentRouteName();
 
-         if($routeName == 'merchant_checkout_preferences' || $routeName == 'otp_verify')
+         if($routeName == 'merchant_checkout_preferences' || $routeName == 'otp_verify' || $routeName == 'customer_fetch_tokens_internal')
          {
              $billingAddress = $this->getBillingAddress();
 

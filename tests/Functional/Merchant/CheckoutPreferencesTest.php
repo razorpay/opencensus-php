@@ -2058,6 +2058,23 @@ class CheckoutPreferencesTest extends TestCase
         $response = $this->runRequestResponseFlow($testData);
     }
 
+    public function testPersonalisationForContactDifferentFromLogInContactForCheckoutServiceAuth(): void
+    {
+        $appToken = 'capp_1000000custapp';
+
+        $this->mockSession($appToken);
+
+        $this->ba->checkoutServiceProxyAuth();
+
+        $order = $this->fixtures->order->create();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     public function testGetCheckoutPersonalisationForContactSameWithLogInContact()
     {
         $appToken = 'capp_1000000custapp';

@@ -10152,6 +10152,45 @@ return [
         ],
     ],
 
+    'testPersonalisationForContactDifferentFromLogInContactForCheckoutServiceAuth' => [
+        'request' => [
+            'url'     => '/internal/personalisation',
+            'method'  => 'get',
+            'content' => [
+                'order_id'  => 'null',
+                'contact' => '+918888888888'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'preferred_methods' => [
+                    '+919988776655' => [
+                        'instruments' => [
+                            [
+                                'instrument' => 'paytm',
+                                'method'     => 'wallet',
+                            ],
+                            [
+                                'instrument' => 'SBIN',
+                                'method'     => 'netbanking',
+                            ],
+                            [
+                                'instrument' => null,
+                                'method'     => 'card',
+                                'issuer'     => null,
+                                'type'       => 'debit',
+                                'network'    => 'Visa',
+                            ],
+                        ],
+                        'is_customer_identified' => true,
+                        'user_aggregates_available' => false,
+                        'versionID' => 'v2'
+                    ],
+                ]
+            ],
+        ],
+    ],
+
     'testGetCheckoutPersonalisationForContactSameWithLogInContact' => [
         'request' => [
             'url'     => '/personalisation',
