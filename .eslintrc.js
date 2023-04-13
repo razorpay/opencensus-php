@@ -42,6 +42,20 @@ module.exports = {
       'error',
       { allowSameFolder: true, rootDir: 'web/js' },
     ],
+    'no-restricted-imports': [
+      'warn',
+      {
+        patterns: [
+          // Add your import pattern here
+          // 'common/ui/HeaderAction',
+          {
+            group: ['HeaderAction'],
+            message:
+              'This component is deprecated. Please use ProductWrapper instead. Refer https://docs.google.com/document/d/1eTH_ZGSeHlgnMhAgTwf5S0eNpjQIpPH-z_RzYJo78aY/edit?usp=sharing',
+          },
+        ],
+      },
+    ],
   },
   env: {
     browser: true,
