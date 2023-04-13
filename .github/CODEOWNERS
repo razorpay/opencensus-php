@@ -130,6 +130,25 @@ app/Models/Merchant/Website/Entity.php                        @razorpay/identity
 
 
 #
+# Merchant Acquisitions Entities
+#
+# Blocking PR merge on certain entities as they are being moved to PG Onboarding Service.
+# Any update on these entities will require explicit approval from aqp-be team.
+app/Models/Merchant/Detail                         @razorpay/pg-onboarding-service
+app/Models/Merchant/Document                       @razorpay/pg-onboarding-service
+app/Models/Merchant/Stakeholder                    @razorpay/pg-onboarding-service
+app/Models/Merchant/BusinessDetail                 @razorpay/pg-onboarding-service
+app/Models/Merchant/Website                        @razorpay/pg-onboarding-service
+app/Models/ClarificationDetail                     @razorpay/pg-onboarding-service
+app/Models/DeviceDetail                            @razorpay/pg-onboarding-service
+app/Models/Merchant/BvsValidation                  @razorpay/pg-onboarding-service
+app/Models/Merchant/Consent                        @razorpay/pg-onboarding-service
+app/Models/Merchant/Escalations                    @razorpay/pg-onboarding-service
+app/Models/Merchant/Store                          @razorpay/pg-onboarding-service
+app/Models/Merchant/VerificationDetail             @razorpay/pg-onboarding-service
+
+
+#
 # Nocode Entities
 #
 # Blocking PR merge on certain entities as they are being moved to no-code-app service.
