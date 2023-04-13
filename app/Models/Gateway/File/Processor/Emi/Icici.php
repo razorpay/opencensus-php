@@ -63,10 +63,21 @@ class Icici extends Base
                 $begin,
                 $end,
                 static::BANK_CODE,
-                $gateway,
+                Payment\Gateway::AMEX,
                 $acquirer);
 
-        return $emiPaymentsForBank->merge($emiPaymentsForAmexGateway);
+        $emiPaymentsForBank->merge($emiPaymentsForAmexGateway);
+
+        $emiPaymentsForMpgsGateway = $this->repo
+            ->payment
+            ->fetchEmiPaymentsWithGatewayAndAcquirerBetween(
+                $begin,
+                $end,
+                static::BANK_CODE,
+                Payment\Gateway::MPGS,
+                $acquirer);
+
+        return $emiPaymentsForBank->merge($emiPaymentsForMpgsGateway);
     }
 
     protected function getFileToWriteName()
@@ -206,6 +217,11 @@ class Icici extends Base
                 else if($gateway === 'amex' && $payment_acquirer === 'amex')
                 {
                     $finalTid = $tid;
+                    $finalMid = $mid;
+                }
+                else if($gateway === 'mpgs' && $payment_acquirer === 'amex')
+                {
+                    $finalTid = $mid;
                     $finalMid = $mid;
                 }
                 else
