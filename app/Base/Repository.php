@@ -20,6 +20,7 @@ use Database\Connection;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Entity as E;
 use RZP\Constants\Environment;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base\Collection;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\EsRepository;
@@ -1274,13 +1275,25 @@ class Repository extends \Razorpay\Spine\Repository
 
         $mode = $mode ?? $this->app['rzp.mode'];
 
-        $connection = ($mode === Mode::TEST) ?
-            Connection::TEST : Connection::DATA_WAREHOUSE_ADMIN_SOURCE_API_LIVE;
+        if ($mode === Mode::TEST)
+        {
+            // Ideal connection should be to data warehouse test, but that connection is broken on prod for some reason
+            // To be fixed and used when the use case comes
+            return Connection::TEST;
+        }
+
+        // This config key returns admin/merchant string values
+        // Accordingly those clusters are assumed unhealthy and connection falls back to harvester replica
+        // ToDo : Handle this fallback in an automated fashion with health check
+        $badCluster = (string) ConfigKey::get(ConfigKey::DATA_WAREHOUSE_CONNECTION_FALLBACK, "");
+
+        $connection = ($badCluster === 'admin') ?
+            Connection::PAYMENT_FETCH_REPLICA_LIVE : Connection::DATA_WAREHOUSE_ADMIN_SOURCE_API_LIVE;
 
         if ($cluster === ConnectionType::DATA_WAREHOUSE_MERCHANT)
         {
-            $connection = ($mode === Mode::TEST) ?
-                Connection::TEST : Connection::DATA_WAREHOUSE_MERCHANT_SOURCE_API_LIVE;
+            $connection = ($badCluster === 'merchant') ?
+                Connection::PAYMENT_FETCH_REPLICA_LIVE : Connection::DATA_WAREHOUSE_MERCHANT_SOURCE_API_LIVE;
         }
 
         return $connection;
