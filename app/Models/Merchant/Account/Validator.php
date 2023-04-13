@@ -372,8 +372,8 @@ class Validator extends Merchant\Validator
 
     public function validateAMCLinkedAccountCreationAllowed(Merchant\Entity $merchant)
     {
-        if ((in_array($merchant->getCategory(), Merchant\Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED[Entity::CATEGORY]) === false) or
-            (in_array($merchant->getCategory2(), Merchant\Constants::LINKED_ACCOUNT_ACTIONS_BLOCKED[Entity::CATEGORY2]) === false))
+        if (($merchant->getCategory() !== Merchant\Constants::AUTO_CREATE_AMC_LINKED_ACCOUNT_MCC[Entity::CATEGORY]) or
+            ($merchant->getCategory2() !== Merchant\Constants::AUTO_CREATE_AMC_LINKED_ACCOUNT_MCC[Entity::CATEGORY2]))
         {
             throw new BadRequestValidationFailureException('AMC linked account creation not allowed for this merchant',[
                 Entity::MERCHANT_ID   => $merchant->getId()

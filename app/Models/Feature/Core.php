@@ -116,7 +116,10 @@ class Core extends Base\Core
         // These entity types are owned by api, hence we validate their existence
         // here before associating.
         //
-        if (in_array($entityType, [Constants::MERCHANT, Constants::ACCOUNT], true) === true)
+
+        $isMerchant = (in_array($entityType, [Constants::MERCHANT, Constants::ACCOUNT], true) === true);
+
+        if ($isMerchant)
         {
             $entity = $this->repo->merchant->findOrFailPublic($entityId);
 
@@ -284,9 +287,22 @@ class Core extends Base\Core
             (new Token\Core())->onboardMerchant($merchant, [$tokenizationGateways]);
         }
 
-        if($feature->getName() === Feature::MARKETPLACE)
-        {
-            AutoLinkedAccountCreation::dispatch($this->mode, $entityId);
+        if ($isMerchant) {
+            $autoLinkedAccountCreation = (($feature->getName() === Feature::MARKETPLACE) and
+                ($entity->getCategory() === Merchant\Constants::AUTO_CREATE_AMC_LINKED_ACCOUNT_MCC[Merchant\Entity::CATEGORY]) and
+                ($entity->getCategory2() === Merchant\Constants::AUTO_CREATE_AMC_LINKED_ACCOUNT_MCC[Merchant\Entity::CATEGORY2]));
+
+            if ($autoLinkedAccountCreation) {
+                AutoLinkedAccountCreation::dispatch($this->mode, $entityId);
+            } else {
+                $this->trace->info(
+                    TraceCode::AMC_LINKED_ACCOUNT_CREATION_SKIPPED,
+                    [
+                        "merchant_id" => $entity->getId(),
+                        "category" => $entity->getCategory(),
+                        "category2" => $entity->getCategory2(),
+                    ]);
+            }
         }
 
         $this->notifyMerchantOfFeatureActivationIfApplicable($entityType, $entityId, $feature, $shouldSync);

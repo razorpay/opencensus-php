@@ -2187,8 +2187,8 @@ class MerchantCreateTest extends TestCase
         $this->createLinkedAccountReferenceData();
 
         $this->fixtures->merchant->edit('10000000000000', [
-            'category' => MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category'][0],
-            'category2' =>  MerchantConstants::LINKED_ACCOUNT_ACTIONS_BLOCKED['category2'][0]]);
+            'category'  => MerchantConstants::AUTO_CREATE_AMC_LINKED_ACCOUNT_MCC['category'],
+            'category2' => MerchantConstants::AUTO_CREATE_AMC_LINKED_ACCOUNT_MCC['category2']]);
 
         $request = [
             'url'     => '/merchants/me/features',

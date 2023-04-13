@@ -355,7 +355,7 @@ final class Constants
     const ENABLE_INTERNATIONAL_PG      = 'enable_international_pg';
     const ENABLE_INTERNATIONAL_PROD_V2 = 'enable_international_prod_v2';
     const TOGGLE_INTERNATIONAL_REVAMPED = 'toggle_international_revamped';
-    
+
     const INTERNATIONAL_WORKFLOW_LIST = [
         self::ENABLE_INTERNATIONAL_PG,
         self::ENABLE_INTERNATIONAL_PROD_V2,
@@ -594,6 +594,11 @@ final class Constants
     const LINKED_ACCOUNT_ACTIONS_BLOCKED = [
         Entity::CATEGORY     => ['6211', '6012',],
         Entity::CATEGORY2    => [Category::MUTUAL_FUNDS, Category::LENDING,]
+    ];
+
+    const AUTO_CREATE_AMC_LINKED_ACCOUNT_MCC = [
+        Entity::CATEGORY     => '6211',
+        Entity::CATEGORY2    => Category::MUTUAL_FUNDS
     ];
 
     const MERCHANT_WORKFLOWS = [
