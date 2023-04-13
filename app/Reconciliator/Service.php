@@ -917,17 +917,17 @@ class Service extends Base\Service
             $this->repo->transaction(function () use ($paymentId, $input, $payment)
             {
                 $this->updateTransactionData($input, $payment);
-
-                switch ($payment->getMethod())
-                {
-                    case Payment\Method::NETBANKING;
-                        $this->updateNetbankingGatewayData($input, $payment);
-                        break;
-                    case Payment\Method::WALLET:
-                        $this->updateWalletGatewayData($input, $payment);
-                        break;
-                }
             });
+
+            switch ($payment->getMethod())
+            {
+                case Payment\Method::NETBANKING;
+                    $this->updateNetbankingGatewayData($input, $payment);
+                    break;
+                case Payment\Method::WALLET:
+                    $this->updateWalletGatewayData($input, $payment);
+                    break;
+            }
 
             $this->core->pushSuccessPaymentReconMetrics($payment, "art");
 
@@ -1582,9 +1582,13 @@ class Service extends Base\Service
     private function updateWalletGatewayData(array $input, Payment\Entity $payment)
     {
         $data = [
-            'reference_number' => $input['wallet']['wallet_transaction_id'] ?? null
+            'entity_name' => Method::WALLET,
+            'recon_data' => [
+                'payment_id' => $payment->getId(),
+                Wallet::WALLET_TRANSACTION_ID => $input['wallet']['wallet_transaction_id'] ?? null
+            ]
         ];
 
-        (New NbPlusServiceRecon)->nbPlusPaymentServiceWalletDispatch($data);
+        (New NbPlusServiceRecon)->dispatchToNbplusServiceWalletQueue($data);
     }
 }

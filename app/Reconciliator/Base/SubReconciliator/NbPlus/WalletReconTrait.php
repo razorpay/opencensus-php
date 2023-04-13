@@ -17,12 +17,17 @@ trait WalletReconTrait
     {
         $pushData = [
             'entity_name' => Method::WALLET,
-            'recon_data'  => [
-                'payment_id'                  => $this->payment->getId(),
+            'recon_data' => [
+                'payment_id' => $this->payment->getId(),
                 Wallet::WALLET_TRANSACTION_ID => $rowDetails[BaseReconciliate::REFERENCE_NUMBER] ?? null
             ]
         ];
 
+        $this->dispatchToNbplusServiceWalletQueue($pushData);
+    }
+
+    public function dispatchToNbplusServiceWalletQueue($pushData): void
+    {
         $queueName = $this->app['config']->get('queue.payment_nbplus_api_reconciliation.' . $this->mode);
 
         try
@@ -37,7 +42,7 @@ trait WalletReconTrait
                 TraceCode::PAYMENT_RECON_QUEUE_NBPLUS_PUSH_FAILURE,
                 [
                     'queueName'  => $queueName,
-                    'payment_id' => $rowDetails['payment_id'],
+                    'payment_id' => $pushData['recon_data']['payment_id'],
                     'gateway'    => $this->gateway,
                     'batch_id'   => $this->batchId
                 ]
