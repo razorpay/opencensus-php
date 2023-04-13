@@ -1020,4 +1020,32 @@ Team Razorpay',
             });
     }
 
+    public function testGetInternationalEnablementDetail()
+    {
+        $merchant = $this->createFixtures();
+
+        $this->fixtures->edit('merchant', 'EV7j5qM0qca1U3', ['international' => 1]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant->getId(), $merchantUser['id']);
+
+        $testData = $this->testData['testInternationalVisibility'];
+
+        $this->startTest($testData);
+    }
+
+    public function testGetInternationalEnablementDetailNegative()
+    {
+        $merchant = $this->createFixtures();
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant->getId(), $merchantUser['id']);
+
+        $testData = $this->testData['testInternationalVisibilityFalse'];
+
+        $this->startTest($testData);
+    }
+
 }

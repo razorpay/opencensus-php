@@ -794,7 +794,7 @@ return [
             ],
         ],
     ],
-    
+
     'testPreviewForDraftWithoutIntlDocuments' => [
         'request'   => [
             'url'     => '/international_enablement/preview',
@@ -836,6 +836,22 @@ return [
                 'international_cards_enabled'               => true,
                 'international_activation_form_initiated'   => false,
                 'international_activation_form_completed'   => true,
+                'paypal'                                    => false,
+            ],
+        ],
+    ],
+
+    'testInternationalVisibilityFalse' => [
+        'request'   => [
+            'url'     => '/international_enablement/visibility',
+            'method'  => 'GET',
+        ],
+        'response'  => [
+            'status_code' => 200,
+            'content'     => [
+                'international_cards_enabled'               => false,
+                'international_activation_form_initiated'   => false,
+                'international_activation_form_completed'   => false,
                 'paypal'                                    => false,
             ],
         ],

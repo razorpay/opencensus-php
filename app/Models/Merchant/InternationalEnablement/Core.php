@@ -268,6 +268,7 @@ class Core extends Base\Core
     public function getInternationalEnablementDetail(): array
     {
         $detailEntity = (new Detail\Core)->getLatest();
+        $isInternational = $this->merchant->isInternational();
 
         $internationalFormCompleted = false;
         $internationalFormInitiated = false;
@@ -276,6 +277,9 @@ class Core extends Base\Core
         {
             $internationalFormCompleted = $detailEntity->isSubmitted();
             $internationalFormInitiated = !$internationalFormCompleted;
+        }
+        if ($isInternational === true) {
+            $internationalFormCompleted = true;
         }
 
         return [
