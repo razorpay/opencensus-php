@@ -9491,6 +9491,9 @@ trait Authorize
             ]);
     }
 
+    /**
+     * @throws Exception\BadRequestException
+     */
     protected function verifyBankEnabled(Payment\Entity $payment)
     {
         $merchant = $payment->merchant;
@@ -9528,7 +9531,8 @@ trait Authorize
                 [
                     'custom_properties' => $customProperties,
                     'payment_id'        => $payment->getId(),
-                    'method'            => $payment->getMethod()
+                    'method'            => $payment->getMethod(),
+                    'order_id'          => ($payment?->order) ? $payment->order->getPublicId(): null
                 ]);
         }
     }

@@ -705,7 +705,7 @@ class GatewayController extends Controller
 
         $gateway = Payment\Gateway::NETBANKING_KOTAK;
 
-        $mode = Mode::LIVE;
+        $mode = ($this->app->isProduction()) ? Mode::LIVE: Mode::TEST;
 
         $input['method_type'] = 'corporate';
 
