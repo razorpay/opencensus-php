@@ -86,9 +86,7 @@ function MerchantNavLinks(props) {
         to="/settlements"
         isSettlementEnabled={isSettlementEnabled && !isRecommendProduct}
         additionalCondition={(currentUser) =>
-          currentUser.isAllowedView('settlements') &&
-          !currentUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Settlements) &&
-          currentUser.hideForNIASupportRole
+          currentUser.isAllowedView('settlements') && currentUser.hideForNIASupportRole
         }
       />
       <MainNavLink

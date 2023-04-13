@@ -48,7 +48,6 @@ export const getActualLogStatus = ({ status, fileId }) => {
 
 export const REPORT_CONFIG_TYPE = {
   // hiding by type
-  settlements: HIDDEN_INTERNATIONAL_FEATURES_TAGS.Settlements,
   transactions: HIDDEN_INTERNATIONAL_FEATURES_TAGS.Transactions,
   refunds: HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds,
   rawsql: HIDDEN_INTERNATIONAL_FEATURES_TAGS.RawSQL,

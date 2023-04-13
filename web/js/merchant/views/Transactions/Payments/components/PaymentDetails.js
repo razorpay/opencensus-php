@@ -465,25 +465,19 @@ function PaymentDetails(props) {
                   </Definition>
                 </EntityDetailRow>
 
-                <ShowWhen
-                  additionalCondition={(user) =>
-                    !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.TotalFee)
-                  }
-                >
-                  <EntityDetailRow label="Total Fee">
-                    <Definition>
-                      <Amount value={getPaymentFees()} currency={currency} />
-                      <span>
-                        {chargedFeeLabelText()} Fee -&nbsp;
-                        <Amount value={getPaymentFees() - payment.tax} currency={currency} />
-                      </span>
-                      <span>
-                        {isRZPOrg ? 'GST' : 'Tax'} -{' '}
-                        <Amount value={payment.tax} currency={currency} />
-                      </span>
-                    </Definition>
-                  </EntityDetailRow>
-                </ShowWhen>
+                <EntityDetailRow label="Total Fee">
+                  <Definition>
+                    <Amount value={getPaymentFees()} currency={currency} />
+                    <span>
+                      {chargedFeeLabelText()} Fee -&nbsp;
+                      <Amount value={getPaymentFees() - payment.tax} currency={currency} />
+                    </span>
+                    <span>
+                      {isRZPOrg ? 'GST' : 'Tax'} -{' '}
+                      <Amount value={payment.tax} currency={currency} />
+                    </span>
+                  </Definition>
+                </EntityDetailRow>
 
                 {isInteger(payment?.customer_fee) && isInteger(payment?.customer_fee_gst) && (
                   <EntityDetailRow label="Total Convenience Fee">

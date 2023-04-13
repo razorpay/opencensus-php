@@ -442,9 +442,7 @@ export default class Content extends Component {
             path="/settlements"
             component={Settlements}
             additionalCondition={(user) =>
-              user.isAllowedView('settlements') &&
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Settlements) &&
-              user.hideForNIASupportRole
+              user.isAllowedView('settlements') && user.hideForNIASupportRole
             }
           />
           <ShowWhenRoute

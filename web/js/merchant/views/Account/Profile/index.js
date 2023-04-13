@@ -725,16 +725,9 @@ class Profile extends Component {
           >
             <UpgradeMerchantForm />
           </ShowWhen>
-
-          <ShowWhen
-            additionalCondition={(user) =>
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Settlements)
-            }
-          >
-            <IntoView hashedWith={SETTELEMENT_CYCLE}>
-              <SettlementDetails />
-            </IntoView>
-          </ShowWhen>
+          <IntoView hashedWith={SETTELEMENT_CYCLE}>
+            <SettlementDetails />
+          </IntoView>
 
           <ShowWhen additionalCondition={shouldShowFIRCSection}>
             <SuspenseWithLoader>
