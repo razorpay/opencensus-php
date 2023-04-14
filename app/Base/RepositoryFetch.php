@@ -496,7 +496,7 @@ trait RepositoryFetch
 
         foreach ($warmStorageDbResponse as $key => $value)
         {
-            if($key == "email" or $key == "contact")
+            if($key == "email" or $key == "contact" or $key == "reference17")
             {
                 continue;
             }
@@ -1537,15 +1537,11 @@ trait RepositoryFetch
 
         $wdaQueryBuilder->namespace($dbName);
 
-        $response = $wdaClient->fetchSingleEntity($wdaQueryBuilder->build());
-
-        $response = $this->sortEntityAndCleanUp($entity, $response);
-
-        $entity->forceFill($response);
+        $response = $wdaClient->fetchEntity($wdaQueryBuilder->build(),$entity);
 
         unset($this->app[WDAService::WDA_QUERY_BUILDER]);
 
-        return $entity;
+        return $response;
     }
 
     public function sortEntityAndCleanUp($entity, $array)
