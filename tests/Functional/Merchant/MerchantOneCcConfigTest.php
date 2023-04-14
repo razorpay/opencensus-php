@@ -7,6 +7,7 @@ use RZP\Tests\Functional\TestCase;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use Illuminate\Support\Facades\App;
+use RZP\Models\Merchant\OneClickCheckout\ShippingProvider\Service;
 
 class MerchantOneCcConfigTest extends TestCase
 {
@@ -171,7 +172,19 @@ class MerchantOneCcConfigTest extends TestCase
     public function testOneCcShippingInfoUrlMerchant1ccConfig() {
         $this->ba->proxyAuth();
         $this->setUpAuthConfigForMerchant();
+        $this->setUpShippingServiceMock();
         $this->startTest();
+    }
+
+    private function setUpShippingServiceMock() {
+        $shippingServiceMock = $this->getMockBuilder(Service::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['create'])
+            ->getMock();
+
+        $this->app->instance('shipping_provider_service', $shippingServiceMock);
+
+        $shippingServiceMock->expects($this->any())->method('create')->willReturn([]);
     }
 
     private function setUpAuthConfigForMerchant()
