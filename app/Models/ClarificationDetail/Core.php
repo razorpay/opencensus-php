@@ -126,7 +126,11 @@ class Core extends Base\Core
 
             $response[$groupName]['comments'][] = $clarificationDetail->getCommentData($clarificationDetail);
 
-            $response[$groupName]['fields'] = $clarificationDetail->getFields();
+            //fields should have latest row's fields and $clarificationDetails result is ordered by desc
+            if (isset($response[$groupName]['fields']) === false)
+            {
+                $response[$groupName]['fields'] = $clarificationDetail->getFields();
+            }
         }
 
         foreach ($response as &$group)
