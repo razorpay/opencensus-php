@@ -9,8 +9,9 @@ const commonMeta = {
   columns: [
     {
       recordKey: 'amount',
-      transfomer: (value, record, tabName, displayCompact) => {
-        const component = <Amount value={value} currency={record.currency} />;
+      transfomer: (value, record, tabName, displayCompact, merchantCurrency) => {
+        const currency = record.currency || merchantCurrency;
+        const component = <Amount value={value} currency={currency} />;
 
         return displayCompact ? (
           <Link to={`/${tabName}/${record.id}`}>{component}</Link>
