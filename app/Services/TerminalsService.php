@@ -205,7 +205,12 @@ class TerminalsService
             ]);
         }
 
-        $response = $this->sendRequest($params[self::PATH], $content, $params[self::METHOD], [], $headers);
+        $options = [];
+
+        $options[self::CONNECT_TIMEOUT] = 2;
+        $options[self::TIMEOUT] = 2;
+
+        $response = $this->sendRequest($params[self::PATH], $content, $params[self::METHOD], $options, $headers);
 
         return $this->parseAndReturnResponse($response)['data'] ?? [];
     }
