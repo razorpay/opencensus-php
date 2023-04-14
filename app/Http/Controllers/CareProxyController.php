@@ -52,6 +52,10 @@ class CareProxyController extends Controller
     const CHAT_FETCH_MERCHANT = 'twirp/rzp.care.chat.v1.ChatService/FetchMerchant';
     const CHAT_SEND_WHATSAPP_POST_ONBOARDING_NOTIFICATION = 'twirp/rzp.care.chat.v1.ChatService/SendPostOnboardingNotification';
 
+    // WhatApp NeedsClarification Upload
+    const WA_FETCH_NC = "twirp/rzp.care.nc.v1.NcService/FetchNc";
+    const WA_UPLOAD_NC = "twirp/rzp.care.nc.v1.NcService/UploadNc";
+
     //chat timing config
     const CHAT_GET_TIMINGS_CONFIG         = 'twirp/rzp.care.chat.v1.ChatService/GetChatTimingsConfig';
     const CHAT_PUT_TIMINGS_CONFIG         = 'twirp/rzp.care.chat.v1.ChatService/PutChatTimingsConfig';
@@ -242,6 +246,8 @@ class CareProxyController extends Controller
 
     const CHAT_ROUTES = [
         self::CHAT_FETCH_MERCHANT,
+        self::WA_FETCH_NC,
+        self::WA_UPLOAD_NC,
     ];
 
     public function getDashboardProxyRequest($path)

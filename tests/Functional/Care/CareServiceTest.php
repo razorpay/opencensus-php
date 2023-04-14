@@ -13,6 +13,7 @@ use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
+use WpOrg\Requests\Response;
 
 
 class CareServiceTest extends TestCase
@@ -119,7 +120,7 @@ class CareServiceTest extends TestCase
             }))
             ->andReturnUsing(function () use ($respondWithBody, $respondWithStatus)
             {
-                $response = new \WpOrg\Requests\Response;
+                $response = new Response;
 
                 $response->body = json_encode($respondWithBody);
 
@@ -151,6 +152,28 @@ class CareServiceTest extends TestCase
                 self::AUTH                                => 'yellowmessenger',
                 self::API_ROUTE                           => '/care_service/chat/twirp/rzp.care.chat.v1.ChatService/FetchMerchant',
                 self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.chat.v1.ChatService/FetchMerchant',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'yellowmessenger',
+                self::API_ROUTE                           => '/care_service/chat/twirp/rzp.care.nc.v1.NcService/FetchNc',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.nc.v1.NcService/FetchNc',
+                self::EXPECTED_CARE_SERVICE_REQUEST       => [
+                ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
+                    'key' => 'value',
+                ],
+                self::ACTUAL_CARE_SERVICE_RESPONSE_STATUS => 200,
+            ],
+            [
+                self::AUTH                                => 'yellowmessenger',
+                self::API_ROUTE                           => '/care_service/chat/twirp/rzp.care.nc.v1.NcService/UploadNc',
+                self::EXPECTED_CARE_SERVICE_ROUTE         => 'https://care-int.razorpay.com/twirp/rzp.care.nc.v1.NcService/UploadNc',
                 self::EXPECTED_CARE_SERVICE_REQUEST       => [
                 ],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
