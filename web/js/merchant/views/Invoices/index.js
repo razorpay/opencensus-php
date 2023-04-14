@@ -15,7 +15,7 @@ import Items from 'merchant/views/Invoices/Items/List';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ZapierLaunchBanner from 'merchant/components/Announcements/ZapierBanner/ZapierBanner';
 import { getItem } from 'common/utils/localStorage';
-import DashboardBanner from '../../../common/ui/DashboardBanner';
+import DashboardBanner from 'common/ui/DashboardBanner';
 
 import OnBoarding, {
   getIsInvoicesEnabled,
@@ -26,6 +26,7 @@ import QuickGuide, { getInvoicesQuickGuideIsClosed } from './QuickGuide';
 
 const ItemsComponent = (props) => <Items {...props} isInvoiceView />;
 
+// eslint-disable-next-line react/no-unsafe
 @withRouter
 @connect(
   (state) => ({

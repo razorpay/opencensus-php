@@ -28,6 +28,7 @@ import ListContainer from 'merchant/containers/ListContainer';
 
 import { track, trackSearchFilterForInternational } from 'merchant/views/Invoices/ga';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 @withRouter
 @connect(
@@ -232,7 +233,13 @@ export default class InvoicesListContainer extends ListContainer {
               <TakeATourButton feature={RZPFeatures.INVOICE} />
             </ShowWhen>
 
-            <DocsLink url="https://razorpay.com/docs/invoices/" />
+            <ShowWhen
+              additionalCondition={(_user) =>
+                !_user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Documentation)
+              }
+            >
+              <DocsLink url="https://razorpay.com/docs/invoices/" />
+            </ShowWhen>
 
             <ShowWhen
               additionalCondition={(_user) =>

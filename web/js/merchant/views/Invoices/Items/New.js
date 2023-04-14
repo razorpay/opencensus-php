@@ -88,6 +88,8 @@ export default class AddItem extends Component {
   }
 
   UNSAFE_componentWillMount() {
+    const { user } = this.props;
+    const { merchant } = user;
     const promises = [this.props.fetchTaxes(), this.props.fetchGSTTaxes()];
 
     this.setState({
@@ -98,7 +100,7 @@ export default class AddItem extends Component {
     if (this.props.item) {
       this._initialize(this.props.item, this.props.currency); // In GST invoice, creating New item actually has this.props.items = {name: null}
     } else {
-      this.props.initialize({ currency: this.props.currency || 'INR' });
+      this.props.initialize({ currency: this.props.currency || merchant.currency });
     }
 
     Promise.all(promises)

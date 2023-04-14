@@ -93,6 +93,7 @@ export default class ItemsListContainer extends ListContainer {
      * Size of modal changes if taxes are to be shown.
      */
     const { user } = this.props;
+    const { merchant } = user;
     const gstin = user.gstin || user.p_gstin;
     const showTaxes = Boolean(gstin);
 
@@ -112,7 +113,7 @@ export default class ItemsListContainer extends ListContainer {
           onMount={this.itemFormOnMount}
           onUnmount={this.itemFormOnUnmount}
           showTaxes={showTaxes}
-          currency={(item && item.currency) || 'INR'}
+          currency={(item && item.currency) || merchant.currency}
         />
       ),
     });

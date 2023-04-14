@@ -10,9 +10,11 @@ import Amount from 'common/ui/Amount';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { findBy, isTaxOfTypeCess, calculateTax } from 'common/utils/rzp-utils';
 import Item from 'merchant/models/Item';
-import { track } from '../../../ga';
+import { track } from 'merchant/views/Invoices/ga';
 
 const selector = formValueSelector('newInvoice');
+
+// eslint-disable-next-line react/no-unsafe
 @connect((state) => {
   return {
     session: state.session,

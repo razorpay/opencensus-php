@@ -168,8 +168,10 @@ export default class User {
   }
 
   get isWhiteLabelledOrg() {
-    const custom_code = this.orgCustomCode;
-    return custom_code?.toLowerCase() !== ORG_CUSTOM_CODE_MAP.RAZORPAY;
+    const custom_code = this.orgCustomCode?.toLowerCase();
+    return (
+      custom_code !== ORG_CUSTOM_CODE_MAP.RAZORPAY && custom_code !== ORG_CUSTOM_CODE_MAP.CURLEC
+    );
   }
 
   get isOrgRZP() {

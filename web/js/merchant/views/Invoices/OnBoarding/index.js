@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 
 import { RZPFeatures } from 'merchant/helpers/data';
@@ -20,39 +21,55 @@ import OnBoarding, {
 } from 'merchant/components/OnBoarding';
 
 import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGuide';
+import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 
-import { FEATURES_DATA, FEATURES_LINKS } from './data';
+import { FEATURES_DATA, FEATURES_LINKS, CURLEC_FEATURES_DATA } from './data';
+
+// i18
+export const LANDING_PAGE_DESC = {
+  [ORG_CUSTOM_CODE_MAP.RAZORPAY]:
+    'Create and send GST compliant and International invoices your customers can pay online instantly.',
+  [ORG_CUSTOM_CODE_MAP.CURLEC]: 'Create and send invoices your customers can pay online instantly.',
+};
+
+// i18
+const FEATURE_LINKS_MAPS = {
+  [ORG_CUSTOM_CODE_MAP.RAZORPAY]: FEATURES_LINKS,
+  [ORG_CUSTOM_CODE_MAP.CURLEC]: [],
+};
+
+// i18
+const FEATURE_DATA_MAPS = {
+  [ORG_CUSTOM_CODE_MAP.RAZORPAY]: FEATURES_DATA,
+  [ORG_CUSTOM_CODE_MAP.CURLEC]: CURLEC_FEATURES_DATA,
+};
 
 @connect(
-  state => ({
+  (state) => ({
     user: state.session.user,
-    invoicesProductOnBoarding: getCurrentProductOnBoardingDetails(
-      state,
-      RZPFeatures.INVOICE
-    ),
+    org: state.session.org,
+    invoicesProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.INVOICE),
   }),
-  { handleProductQuickGuide }
+  { handleProductQuickGuide },
 )
 @OnBoarding({
   feature: RZPFeatures.INVOICE,
 })
 export default class InvoicesOnBoarding extends React.Component {
-  getNextBtnProp = sliderProps => () => {
+  getNextBtnProp = (sliderProps) => () => {
     return (
       <FeatureEnableSliderButton
         isLocalEnabler
         feature={RZPFeatures.INVOICE}
         page={sliderProps.active}
+        // eslint-disable-next-line react/no-this-in-sfc
         onClick={this.closeOnboarding}
       />
     );
   };
 
   closeOnboarding = () => {
-    if (
-      this.props.user.isInvoicesEnabled &&
-      !this.props.invoicesProductOnBoarding.isTour
-    ) {
+    if (this.props.user.isInvoicesEnabled && !this.props.invoicesProductOnBoarding.isTour) {
       setQuickGuideIsClosedInLocalStorage(RZPFeatures.INVOICE, false);
     }
 
@@ -60,7 +77,11 @@ export default class InvoicesOnBoarding extends React.Component {
   };
 
   render() {
-    const { active, invoicesProductOnBoarding } = this.props;
+    const { active, invoicesProductOnBoarding, org } = this.props;
+    const orgCode = org.custom_code.toLowerCase();
+    const featureLinks = FEATURE_LINKS_MAPS[orgCode] || FEATURES_LINKS;
+    const description = LANDING_PAGE_DESC[orgCode];
+    const featureData = FEATURE_DATA_MAPS[orgCode] || FEATURES_DATA;
 
     return (
       <OnBoardingWrapper class="Invoices">
@@ -71,24 +92,25 @@ export default class InvoicesOnBoarding extends React.Component {
             closeOnboarding: this.closeOnboarding,
           })}
         >
-          {sliderProps => (
+          {(sliderProps) => (
             <Landing
               {...sliderProps}
               feature={RZPFeatures.INVOICE}
               title="Invoices"
               imageUrl="https://razorpay.com/assets/invoices/banner.svg"
-              desc="Create and send GST compliant and International invoices your customers can pay online instantly."
+              desc={description}
+              businessName={org.business_name}
             />
           )}
 
-          {sliderProps => (
+          {(sliderProps) => (
             <Features
               {...sliderProps}
               title="What makes Invoices great?"
               feature={RZPFeatures.INVOICE}
               nextBtn={this.getNextBtnProp(sliderProps)}
-              featureLinks={FEATURES_LINKS}
-              features={FEATURES_DATA}
+              featureLinks={featureLinks}
+              features={featureData}
             />
           )}
         </Slider>
@@ -97,11 +119,8 @@ export default class InvoicesOnBoarding extends React.Component {
   }
 }
 
-function getOnBoardingSliderDots({
-  closeOnboarding,
-  invoicesProductOnBoarding,
-}) {
-  return sliderProps => (
+function getOnBoardingSliderDots({ closeOnboarding, invoicesProductOnBoarding }) {
+  return (sliderProps) => (
     <SliderDots {...sliderProps}>
       <SkipAndGetStartedButton
         isLocalEnabler
@@ -115,12 +134,7 @@ function getOnBoardingSliderDots({
 }
 
 export function getIsAllowedResetInvoicesOnBoarding({ invoices, items }) {
-  if (
-    invoices.invoices.length ||
-    items.items.length ||
-    invoices.loading ||
-    items.loading
-  ) {
+  if (invoices.invoices.length || items.items.length || invoices.loading || items.loading) {
     return false;
   }
 

@@ -10,14 +10,24 @@ export const FEATURES_DATA = [
   {
     icon: '/dist/css/assets/product_onboarding/partial_payments.svg',
     title: 'Partial payments',
-    desc:
-      'Enable partial payments for your customers at the time of invoice creation directly from the dashboard.',
+    desc: 'Enable partial payments for your customers at the time of invoice creation directly from the dashboard.',
   },
   {
     icon: '/dist/css/assets/product_onboarding/download_option.svg',
     title: 'Download Option',
     desc: 'Let your customers save and download .pdf version of invoices for future reference.',
   },
+];
+
+// Features
+export const CURLEC_FEATURES_DATA = [
+  {
+    icon: '/dist/css/assets/product_onboarding/gst.svg',
+    title: 'Discounts and Shipping Details',
+    desc: `Add discounts and shipping details, all in an invoice and let our invoicing solution work for you.`,
+  },
+  FEATURES_DATA[1],
+  FEATURES_DATA[2],
 ];
 
 // Features Links

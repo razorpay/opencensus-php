@@ -70,6 +70,7 @@ import PickCurrency from 'merchant/views/Invoices/Invoices/components/PickCurren
 import debounce from 'common/utils/debounce';
 import { removeTaxForNonINRItems } from './helpers';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 function validate(values) {
   const errors = {
@@ -109,6 +110,7 @@ function validate(values) {
 
 const selector = formValueSelector('newInvoice');
 
+// eslint-disable-next-line react/no-unsafe
 @withRouter
 @connect(
   (state) => {
@@ -166,7 +168,7 @@ export default class InvoicesNewContainer extends Component {
     customer: {},
   };
 
-  constructor() {
+  constructor(props) {
     // eslint-disable-next-line prefer-rest-params
     super(...arguments);
     const issue_date = moment().startOf('day');
@@ -176,7 +178,7 @@ export default class InvoicesNewContainer extends Component {
       today: issue_date,
       selectedCustomerDisplay: null,
       isFetchingAddresses: false,
-      invoiceCurrency: this.props.invoice.currency || 'INR',
+      invoiceCurrency: this.props.invoice.currency || props.session.user.merchant.currency,
     };
   }
 
@@ -354,7 +356,7 @@ export default class InvoicesNewContainer extends Component {
       if (props.session.user.isInttCurrenciesEnabled) {
         this.openInvoiceCurrencyChangeModal({
           showCross: false,
-          currency: 'INR',
+          currency: props.session.user.merchant.currency,
         });
       }
     }
@@ -400,7 +402,7 @@ export default class InvoicesNewContainer extends Component {
           isLoading: false,
           gst: gst && gst.data,
           states: statesList,
-          invoiceCurrency: (invoice && invoice.currency) || 'INR',
+          invoiceCurrency: (invoice && invoice.currency) || props.session.user.merchant.currency,
         });
 
         // Set state of supply.
@@ -563,35 +565,34 @@ export default class InvoicesNewContainer extends Component {
    *    @param {Customer} customer Selected/Created customer.
    *    @param {Boolean} shippingSameAsBilling whether or not shipping address to be used is the same as billing address. To be used for new customers.
    */
-  selectCustomerAndCloseModal = (updateAddress = false, selectShippingAddress = false) => (
-    customer,
-    shippingSameAsBilling = false,
-  ) => {
-    // Update for TypeAhead
-    this.setState({
-      selectedCustomerDisplay: customer,
-    });
+  selectCustomerAndCloseModal =
+    (updateAddress = false, selectShippingAddress = false) =>
+    (customer, shippingSameAsBilling = false) => {
+      // Update for TypeAhead
+      this.setState({
+        selectedCustomerDisplay: customer,
+      });
 
-    // Update in Redux form
-    this.setCustomerInProps(customer);
-    this.props.closeModal();
+      // Update in Redux form
+      this.setCustomerInProps(customer);
+      this.props.closeModal();
 
-    if (updateAddress) {
-      this.fetchCustomerAddresses(
-        customer.id,
-        undefined,
-        undefined,
-        selectShippingAddress,
-        shippingSameAsBilling,
-      );
-    }
+      if (updateAddress) {
+        this.fetchCustomerAddresses(
+          customer.id,
+          undefined,
+          undefined,
+          selectShippingAddress,
+          shippingSameAsBilling,
+        );
+      }
 
-    track({
-      eventAction: `Close Form - ${updateAddress ? 'Add' : 'Edit'} Customer`,
-    });
+      track({
+        eventAction: `Close Form - ${updateAddress ? 'Add' : 'Edit'} Customer`,
+      });
 
-    this.trackCreateInvoice('newcustomer');
-  };
+      this.trackCreateInvoice('newcustomer');
+    };
 
   /**
    * Fetches customer's addresses and selects one billing and shipping address each.
@@ -896,95 +897,97 @@ export default class InvoicesNewContainer extends Component {
    * @param {String} type One of "billing" and "shipping".
    * @returns {void}
    */
-  showSelectAddressModal = (type = 'billing') => (e) => {
-    e.preventDefault();
+  showSelectAddressModal =
+    (type = 'billing') =>
+    (e) => {
+      e.preventDefault();
 
-    track({
-      eventAction: 'Change - Address',
-      eventLabel: capitalize(type),
-    });
-
-    type = type.toLowerCase();
-
-    const { selectedBillingAddress, selectedShippingAddress, addresses = [] } = this.state;
-
-    const { customer } = this.props;
-
-    // Return if the customer is not yet selected.
-    if (!customer) return;
-
-    /**
-     * Handler for when an address is created.
-     * @param {Object} address the address object
-     */
-    const onSave = (address) => {
-      // Select address.
-      if (type === 'billing') {
-        this.trackCreateInvoice('billing_save');
-
-        this.selectBillingAddress(address);
-      } else {
-        this.selectShippingAddress(address);
-
-        this.trackCreateInvoice('shipping_save');
-      }
-
-      // Add address to master list.
-      addresses.push(address);
-      this.setState({
-        addresses,
+      track({
+        eventAction: 'Change - Address',
+        eventLabel: capitalize(type),
       });
 
-      // Close Modal
-      this.props.closeModal();
+      type = type.toLowerCase();
+
+      const { selectedBillingAddress, selectedShippingAddress, addresses = [] } = this.state;
+
+      const { customer } = this.props;
+
+      // Return if the customer is not yet selected.
+      if (!customer) return;
+
+      /**
+       * Handler for when an address is created.
+       * @param {Object} address the address object
+       */
+      const onSave = (address) => {
+        // Select address.
+        if (type === 'billing') {
+          this.trackCreateInvoice('billing_save');
+
+          this.selectBillingAddress(address);
+        } else {
+          this.selectShippingAddress(address);
+
+          this.trackCreateInvoice('shipping_save');
+        }
+
+        // Add address to master list.
+        addresses.push(address);
+        this.setState({
+          addresses,
+        });
+
+        // Close Modal
+        this.props.closeModal();
+      };
+
+      let actionText = 'Add';
+      if (
+        (type === 'billing' && selectedBillingAddress) ||
+        (type === 'shipping' && selectedShippingAddress)
+      ) {
+        actionText = 'Change';
+      }
+
+      this.props.openModal({
+        size: 'small',
+        component: (
+          <AddressSelectionModal
+            header={`${actionText} ${capitalize(type)} Address`}
+            customer={customer}
+            addresses={addresses}
+            isInttCurrenciesEnabled={this.props.session.user.isInttCurrenciesEnabled}
+            selected={type === 'billing' ? selectedBillingAddress : selectedShippingAddress}
+            onSelect={type === 'billing' ? this.selectBillingAddress : this.selectShippingAddress}
+            onSave={onSave}
+            addressType={type}
+            trackSelectCountry={(...args) => {
+              if (type === 'billing') {
+                trackSelectBillingAddress(...args);
+              } else {
+                trackSelectShippingAddress(...args);
+              }
+
+              this.trackCreateInvoice(`${type === 'billing' ? 'billing' : 'shipping'}_county`);
+            }}
+            onBlur={(event) => {
+              this.trackCreateInvoice(
+                `${type === 'billing' ? 'billing' : 'shipping'}_${event.target.value}`,
+              );
+            }}
+            onClickClose={() => {
+              this.trackCreateInvoice(`${type === 'billing' ? 'billing' : 'shipping'}_leave`);
+            }}
+            trackAddressSelection={() => {
+              this.trackCreateInvoice(`${type === 'billing' ? 'billing' : 'shipping'}_leave`);
+            }}
+          />
+        ),
+      });
+
+      this.trackCreateInvoice('billing');
     };
-
-    let actionText = 'Add';
-    if (
-      (type === 'billing' && selectedBillingAddress) ||
-      (type === 'shipping' && selectedShippingAddress)
-    ) {
-      actionText = 'Change';
-    }
-
-    this.props.openModal({
-      size: 'small',
-      component: (
-        <AddressSelectionModal
-          header={`${actionText} ${capitalize(type)} Address`}
-          customer={customer}
-          addresses={addresses}
-          isInttCurrenciesEnabled={this.props.session.user.isInttCurrenciesEnabled}
-          selected={type === 'billing' ? selectedBillingAddress : selectedShippingAddress}
-          onSelect={type === 'billing' ? this.selectBillingAddress : this.selectShippingAddress}
-          onSave={onSave}
-          addressType={type}
-          trackSelectCountry={(...args) => {
-            if (type === 'billing') {
-              trackSelectBillingAddress(...args);
-            } else {
-              trackSelectShippingAddress(...args);
-            }
-
-            this.trackCreateInvoice(`${type === 'billing' ? 'billing' : 'shipping'}_county`);
-          }}
-          onBlur={(event) => {
-            this.trackCreateInvoice(
-              `${type === 'billing' ? 'billing' : 'shipping'}_${event.target.value}`,
-            );
-          }}
-          onClickClose={() => {
-            this.trackCreateInvoice(`${type === 'billing' ? 'billing' : 'shipping'}_leave`);
-          }}
-          trackAddressSelection={() => {
-            this.trackCreateInvoice(`${type === 'billing' ? 'billing' : 'shipping'}_leave`);
-          }}
-        />
-      ),
-    });
-
-    this.trackCreateInvoice('billing');
-  };
 
   /**
    * Prepares props to be saved.
@@ -1632,7 +1635,7 @@ export default class InvoicesNewContainer extends Component {
       handleSubmit,
       customer,
       invoice,
-      session: { user },
+      session: { user, org },
     } = this.props;
     const { selectedCustomerDisplay } = this.state;
 
@@ -1719,6 +1722,9 @@ export default class InvoicesNewContainer extends Component {
     const customerEmail = customer.email;
     const customerGstin = customer.gstin;
     const customerContact = customer.contact;
+
+    const showCreateGSTEnabledInvoicesOption =
+      !merchantGSTIN && (isNew || isDraft) && !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Gst);
     return (
       <div class="react-root">
         {this.state.isLoading ? (
@@ -1751,6 +1757,7 @@ export default class InvoicesNewContainer extends Component {
                         gstin={showGstn && merchantGSTIN}
                         cin={showGstn && merchantCIN}
                         hideRazorpayDetails={user.isWhiteLabelledOrg}
+                        org={org}
                       />
 
                       <div class="row">
@@ -2283,7 +2290,7 @@ export default class InvoicesNewContainer extends Component {
                         </div>
                         <div class="btn-group-vertical inv__actionbutton">
                           <p>Settings</p>
-                          {!merchantGSTIN && (isNew || isDraft) && (
+                          {showCreateGSTEnabledInvoicesOption && (
                             <label class="btn btn-default btn-block btn-lg" for="gst_enabled">
                               <div class="row">
                                 <div class="col-xs-10">
@@ -2398,6 +2405,7 @@ export default class InvoicesNewContainer extends Component {
                     </ShowWhen>
 
                     <InvoiceInfo invoice={invoice} trackUpdateInvoice={this.trackUpdateInvoice} />
+
                     <InvoiceNotes
                       invoice={invoice}
                       isSaving={this.state.isSaving}

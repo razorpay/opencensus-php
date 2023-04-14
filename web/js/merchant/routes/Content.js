@@ -480,7 +480,10 @@ export default class Content extends Component {
           <ShowWhenRoute
             path="/invoices/:id(inv_.+)"
             component={InvoicesNew}
-            additionalCondition={(user) => user.isAllowedView('invoices')}
+            additionalCondition={(user) =>
+              user.isAllowedView('invoices') &&
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Invoices)
+            }
           />
           <ShowWhenRoute
             path="/invoices/new"

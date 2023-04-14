@@ -1,4 +1,21 @@
-export default function InvoiceLogo({ name, logo, gstin, cin, hideRazorpayDetails }) {
+import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
+
+// i18
+export const LANDING_PAGE_DESC = {
+  [ORG_CUSTOM_CODE_MAP.RAZORPAY]: {
+    link: 'https://razorpay.com/',
+    logo: 'https://razorpay.com/images/logo-black.png',
+    logo_height: '24px',
+  },
+  [ORG_CUSTOM_CODE_MAP.CURLEC]: {
+    link: 'https://curlec.com/',
+    logo: 'https://cdn.razorpay.com/static/assets/i18n/malaysia/curlec-light-logo.png',
+    logo_height: '35px',
+  },
+};
+
+export default function InvoiceLogo({ name, logo, gstin, cin, hideRazorpayDetails, org }) {
+  const orgOptions = LANDING_PAGE_DESC[org.custom_code];
   return (
     <div class="row inv__branding">
       <div class="col-md-8 inv__branding--merchant">
@@ -32,18 +49,19 @@ export default function InvoiceLogo({ name, logo, gstin, cin, hideRazorpayDetail
           <div class="text-right pull-right">
             <a
               class="rzp-logo"
-              href="https://razorpay.com/"
+              href={orgOptions.link}
               target="_blank"
               rel="noreferrer noopener"
+              height={orgOptions.logo_height}
             >
-              <img src="https://razorpay.com/images/logo-black.png" alt="." />
+              <img src={orgOptions.logo} alt="logo" />
             </a>
             <div class="rzp-header-branding-label">
               <div>Invoicing and payments</div>
               <div>
                 powered by{' '}
-                <a href="https://razorpay.com/" target="_blank" rel="noreferrer noopener">
-                  Razorpay
+                <a href={orgOptions.link} target="_blank" rel="noreferrer noopener">
+                  {org.business_name}
                 </a>
               </div>
             </div>
