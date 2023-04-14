@@ -521,6 +521,8 @@ return array(
 
     'checkout_recurring_payment_method_configuration_splitz_experiment_id' => env('CHECKOUT_RECURRING_PAYMENT_METHOD_CONFIGURATION_SPLITZ_EXPERIMENT_ID'),
 
+    'checkout_dcc_vas_merchants_splitz_experiment_id' => env('CHECKOUT_DCC_VAS_MERCHANTS_SPLITZ_EXPERIMENT_ID'),
+
     'checkout_recurring_upi_autopay_psp_splitz_experiment_id' => env('CHECKOUT_RECURRING_UPI_AUTOPAY_PSP_SPLITZ_EXPERIMENT_ID'),
 
     'checkout_banking_redesign_v1_5_splitz_experiment_id' => env('CHECKOUT_BANKING_REDESIGN_V1_5_SPLITZ_EXPERIMENT_ID'),

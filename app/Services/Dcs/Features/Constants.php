@@ -76,6 +76,8 @@ class Constants
     const AssumeMasterAccount = 'assume_master_account';
     const CorporateCardsIsAllowedToApply = 'corporatecards:is_allowed_to_apply';
     const CashAdvanceIsAllowedToApply = 'cashadvance:is_allowed_to_apply';
+    const ShowCustomDccDisclosures = 'show_custom_dcc_disclosures';
+    const DynamicCurrencyConversionCybs = 'dynamic_currency_conversion_cybs';
     const OneCCAutomaticAccountCreation = 'one_cc_automatic_account_creation';
     const ValidateVpa = 'validate_vpa';
     const UseSavedVpa = 'use_saved_vpa';
@@ -163,6 +165,8 @@ class Constants
         self::EnableS2S =>  'rzp/pg/merchant/upi/ServerToServer',
         self::EnableP2P => 'rzp/pg/merchant/upi/PeerToPeer',
         self::EnableOTM => 'rzp/pg/merchant/upi/Otm',
+        self::ShowCustomDccDisclosures => 'rzp/pg/org/checkout/banking_program/UiControls',
+        self::DynamicCurrencyConversionCybs => 'rzp/pg/merchant/payments/banking_program/Cards',
     ];
 
     /**
@@ -236,6 +240,8 @@ class Constants
         APIFeaturesConstants::ASSUME_MASTER_ACCOUNT                         => self::AssumeMasterAccount,
         APIFeaturesConstants::CAPITAL_CARDS_ELIGIBLE                        => self::CorporateCardsIsAllowedToApply,
         APIFeaturesConstants::LOC                                           => self::CashAdvanceIsAllowedToApply,
+        APIFeaturesConstants::SHOW_CUSTOM_DCC_DISCLOSURES                   => self::ShowCustomDccDisclosures,
+        APIFeaturesConstants::DYNAMIC_CURRENCY_CONVERSION_CYBS              => self::DynamicCurrencyConversionCybs,
         APIFeaturesConstants::ONE_CC_SHOPIFY_ACC_CREATE                     => self::OneCCAutomaticAccountCreation,
         APIFeaturesConstants::ENABLE_VPA_VALIDATE                           => self::ValidateVpa,
         APIFeaturesConstants::SAVE_VPA                                      => self::UseSavedVpa,
@@ -267,6 +273,7 @@ class Constants
         self::CvvLessFlowDisabled => 'direct',
         self::AssumeSubAccount => 'direct',
         self::AssumeMasterAccount => 'direct',
+        self::DynamicCurrencyConversionCybs => "direct",
     ];
 
     /**
@@ -274,6 +281,7 @@ class Constants
      */
     public static $dcsNewOrgFeatures = [
         self::AdditionalFieldsHdfcOnboarding => 'direct',
+        self::ShowCustomDccDisclosures       => 'direct',
     ];
 
     public static $dcsReadEnabledFeatures = [
@@ -294,10 +302,12 @@ class Constants
             "excess_order_amount"=> "client",
             "disable_amount_check"=> "client",
             "cart_api_amount_check"=> "client",
-            "order_receipt_unique"=> "client"
+            "order_receipt_unique"=> "client",
+            "dynamic_currency_conversion_cybs" => "direct",
         ],
         "org" => [
-            "disable_free_credit_unreg"=> "client"
+            "disable_free_credit_unreg"=> "client",
+            "show_custom_dcc_disclosures" => "direct",
         ]
     ];
 

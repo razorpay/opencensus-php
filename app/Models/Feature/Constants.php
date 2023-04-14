@@ -204,6 +204,17 @@ class Constants
     const DCC_ON_OTHER_LIBRARY            = 'dcc_on_other_library';
 
     /**
+     * Feature flag used to enable dynamic currency conversion payments to get authorized and captured via cybersource gateway.
+     */
+    const DYNAMIC_CURRENCY_CONVERSION_CYBS = 'dcc_cybs';
+
+    /**
+     * Feature flag used to display modified checkout UI in terms of Dynamic Currency Conversion related disclosures,
+     * defined by card-networks.
+     */
+    const SHOW_CUSTOM_DCC_DISCLOSURES = 'show_custom_dcc_discl';
+
+    /**
      * Feature flag to allow customer fee bearer model on international payments
      * Affects DCC and MCC flows
      */
@@ -1863,6 +1874,7 @@ class Constants
         self::DISABLE_UPI_NUM_CHECKOUT,
         self::DISABLE_UPI_NUM_ON_L0,
         self::DISABLE_UPI_NUM_ON_L1,
+        self::SHOW_CUSTOM_DCC_DISCLOSURES,
     ];
 
     const ONE_CC_FEATURES = [
@@ -2494,6 +2506,8 @@ class Constants
         DcsConstants::AssumeSubAccount        => true,
         DcsConstants::AssumeMasterAccount     => true,
         self::ONE_CC_SHOPIFY_ACC_CREATE       => true,
+        self::SHOW_CUSTOM_DCC_DISCLOSURES      => true,
+        self::DYNAMIC_CURRENCY_CONVERSION_CYBS => true
     ];
 
     // Entity type constants

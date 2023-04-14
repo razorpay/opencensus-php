@@ -66,6 +66,7 @@ class CheckoutExperiment
             'checkout_downtime'                                  => 'control',
             'upi_number'                                         => 'control',
             'cvv_less'                                           => false,
+            'dcc_vas_merchants'                                  => false,
         ];
 
         $this->input = $input;
@@ -284,6 +285,13 @@ class CheckoutExperiment
             ['merchant_id' => $this->merchantId]
         );
 
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.checkout_dcc_vas_merchants_splitz_experiment_id',
+            'DccVasMerchants',
+            'dcc_vas_merchants',
+            ['merchant_id' => $this->merchantId]
+        );
     }
 
     private function fill1CcExperimentData(): void
@@ -583,5 +591,12 @@ class CheckoutExperiment
     private function handleMagicGeneralExperimentResponse($response): string
     {
         return $response['variant']['name'] ?? 'control';
+    }
+
+    private function handleDccVasMerchantsResponse($response): bool
+    {
+        $variant = $response['variant']['name'] ?? '';
+
+        return $variant === 'variant_on';
     }
 }

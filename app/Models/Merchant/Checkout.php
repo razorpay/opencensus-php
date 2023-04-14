@@ -1721,6 +1721,12 @@ class Checkout
                 $data['features']['direct_settlement'] = true;
             }
 
+            else if ($feature === Feature\Constants::SHOW_CUSTOM_DCC_DISCLOSURES and
+                $merchant->org->isFeatureEnabled($feature) === true)
+            {
+                $data['features'][Dcs\Features\Constants::ShowCustomDccDisclosures] = true;
+            }
+
             else if ($merchant->isFeatureEnabled($feature) === true)
             {
                 $data['features'][$feature] = true;

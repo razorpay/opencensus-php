@@ -4083,13 +4083,13 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         if (isset($array[self::ORDER_ID]) and $array[self::ORDER_ID] == "")
         {
-            $array[self::ORDER_ID] = null;   
+            $array[self::ORDER_ID] = null;
         }
     }
 
     public function setPublicInternationalAttribute(array & $array)
     {
-       if (($this->isUpi() === true) and  
+       if (($this->isUpi() === true) and
             ($this->isExternal() === true) and
             (is_bool($array[self::INTERNATIONAL]) === false))
        {
@@ -4099,9 +4099,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function setPublicFeeAttribute(array & $array)
     {
-       if (($this->isUpi() === true) and  
+       if (($this->isUpi() === true) and
             ($this->isExternal() === true) and
-            (($this->isCaptured() === false) and 
+            (($this->isCaptured() === false) and
              ($this->isPartiallyOrFullyRefunded() === false)))
        {
             $array[self::FEE] =  null;
@@ -4110,9 +4110,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function setPublicTaxAttribute(array & $array)
     {
-       if (($this->isUpi() === true) and  
+       if (($this->isUpi() === true) and
             ($this->isExternal() === true) and
-            (($this->isCaptured() === false) and 
+            (($this->isCaptured() === false) and
              ($this->isPartiallyOrFullyRefunded() === false)))
        {
             $array[self::TAX] =  null;
@@ -4624,6 +4624,18 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 // valid in case of international payments dcc payments and dcc over mcc payments.
                 $data['merchant_currency'] =  $this->isDCC() ? Currency\Currency::INR : "";
                 $data['merchant_pay_amount'] = $this->getAmount(); // amount to be settled to merchant in his home currency
+            }
+
+            // Fields to be passed cybersource gateway for DCC payment.
+            if ($this->isDCC() and $merchant->isFeatureEnabled(Feature\Constants::DYNAMIC_CURRENCY_CONVERSION_CYBS))
+            {
+                $data['merchant_pay_amount'] = $this->getAmount();
+
+                $data['merchant_currency'] =  $this->isDCC() ? Currency\Currency::INR : "";
+
+                $data['forex_rate'] = $this->paymentMeta->getForexRate() ?? null;
+
+                $data['dcc_mark_up_percent'] = floatval($this->paymentMeta->getDccMarkUpPercent() ?? null);
             }
 
             if ($this->isAVSSupportedForPayment() === true)
@@ -5385,7 +5397,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         return ($this->getAuthType() === AuthType::SKIP);
     }
-    
+
     /**
      * This function determines if capture settings need to be honored for Optimizer merchants overriding
      * the existing Direct settlement capture flow
@@ -5396,13 +5408,13 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function isOptimizerCaptureSettingsEnabled()
     {
         if ($this->isOptimizerExternalPgPayment() === true) {
-            
+
             $app = \App::getFacadeRoot();
-            
+
             $variant = $app['razorx']->getTreatment($this->getMerchantId(),
                 RazorxTreatment::ENABLE_CAPTURE_SETTINGS_FOR_OPTIMIZER,
                 $app['rzp.mode']);
-            
+
             if (strtolower($variant) === 'on') {
                 return true;
             }
@@ -6417,7 +6429,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return (int)ceil($fee);
     }
 
-    public function modifyInput(& $input) 
+    public function modifyInput(& $input)
     {
         foreach ($this->public as $key)
         {
