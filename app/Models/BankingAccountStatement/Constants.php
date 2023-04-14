@@ -17,4 +17,5 @@ class Constants
     const ACCOUNT_NUMBERS_PRESENT  = 'account_numbers_present';
     const FETCH_MISSING_STATEMENT  = 'fetch_missing_statement';
     const UPDATE_MISSING_STATEMENT = 'update_missing_statement';
+    const DEFAULT                  = 'default';
 }

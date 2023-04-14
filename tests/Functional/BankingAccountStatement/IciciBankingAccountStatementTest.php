@@ -3456,4 +3456,108 @@ class IciciBankingAccountStatementTest extends TestCase
 
         $this->assertEquals(Payout\Status::PROCESSED, $payout->getStatus());
     }
+
+    public function testIciciAccountStatementTxnMappingUsingGatewayRefNo()
+    {
+        $this->mockLedgerSns(0);
+
+        $channel = Channel::ICICI;
+
+        $this->setupForIciciPayout($channel, 10000);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals(590, $payout['fees']);
+        $this->assertEquals(90, $payout['tax']);
+        $this->assertEquals('Bbg7cl6t6I3XB7', $payout['pricing_rule_id']);
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout['id'], [
+            'status'       => 'initiated',
+            'utr'          => '307612641235'
+        ]);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt['id'], [
+            'cms_ref_no'     => 'S5',
+            'utr'            => '307612641235',
+            'gateway_ref_no' => 'APILSCQOSeJ8123'
+        ]);
+
+        $this->fixtures->edit('balance', $payout['balance_id'], ['balance' => 50000]);
+
+        // set ICICI account statement mock data
+        $mockedResponse = [
+            "data"              => [
+                "ACCOUNTNO" => "2224440041626905",
+                "AGGR_ID"   => "RZP1234",
+                "CORP_ID"   => "RAZORPAY",
+                "RESPONSE"  => "SUCCESS",
+                "Record"    => [
+                    [
+                        "AMOUNT"        => "100",
+                        "BALANCE"       => "50000",
+                        "CHEQUENO"      => "",
+                        "REMARKS"       => "MMT/IMPS/307612641236/APILSCQOSeJ8123/TEST/SBIN0070663", // utr here does not match payout utr
+                        "TRANSACTIONID" => "S71034864",
+                        "TXNDATE"       => "18-02-2021 10:59:00",
+                        "TYPE"          => "DR",
+                        "VALUEDATE"     => "18-02-2021"
+                    ]
+                ],
+                "URN"       => "SR189932540",
+                "USER_ID"   => "SATYANAR"
+            ],
+            "error"             => null,
+            "external_trace_id" => "0fd2229a19bf561b600847afb283c551",
+            "mozart_id"         => "c0qd3ta055u5f78fipug",
+            "next"              => [],
+            "success"           => true
+        ];
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $this->ba->cronAuth();
+        $this->startTest();
+
+        $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
+        $payout = $this->getDbLastEntity('payout');
+
+        // assert that payout is linked with debit BAS using gateway ref num
+        $this->assertEquals(EntityConstants::PAYOUT, $basEntries[0]['entity_type']);
+        $this->assertEquals($payout['id'], $basEntries[0]['entity_id']);
+        $this->assertEquals($payout['transaction_id'], $basEntries[0]['transaction_id']);
+        $this->assertEquals(Payout\Mode::IMPS, $payout[Payout\Entity::MODE]);
+
+        // changing record to simulate a credit for reversed txn
+        $txn = $mockedResponse['data']['Record'][0];
+        $txn['BALANCE'] = "50100";
+        $txn['TYPE'] = "CR";
+        $txn['TRANSACTIONID'] = "S71034865";
+        $mockedResponse['data']['Record'][0] = $txn;
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $this->ba->cronAuth();
+        $this->startTest();
+
+        $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
+        $payout = $this->getDbLastEntity('payout');
+        $reversal = $this->getDbLastEntity('reversal');
+
+        // assert that payout is reversed and credit BAS is linked to reversal using gateway ref num
+        $this->assertEquals(EntityConstants::PAYOUT, $basEntries[0]['entity_type']);
+        $this->assertEquals($payout['id'], $basEntries[0]['entity_id']);
+        $this->assertEquals(Payout\Status::REVERSED, $payout[Payout\Entity::STATUS]);
+        $this->assertEquals(Payout\Mode::IMPS, $payout[Payout\Entity::MODE]);
+        $this->assertEquals(TransactionEntity::DEBIT, $basEntries[0]['type']);
+
+        $this->assertEquals(EntityConstants::REVERSAL, $basEntries[1]['entity_type']);
+        $this->assertEquals($reversal['id'], $basEntries[1]['entity_id']);
+        $this->assertEquals($reversal['transaction_id'], $basEntries[1]['transaction_id']);
+        $this->assertEquals(TransactionEntity::CREDIT, $basEntries[1]['type']);
+        $this->assertEquals($payout['id'], $reversal['entity_id']);
+    }
 }

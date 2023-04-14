@@ -280,12 +280,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchPayoutsFromGatewayRefNumberWithinTimeRangeForIFT(
+    public function fetchPayoutsFromGatewayRefNumber(
         $gatewayRefNumber,
         $txnDateTime,
         $txnDateTimeBefore,
         $amount,
-        $balanceId)
+        $balanceId,
+        $mode = null,
+        $isGatewayRefNoCaseSensitive = false)
     {
         $ftaTable           = $this->repo->fund_transfer_attempt->getTableName();
         $ftaSourceIdColumn  = $this->repo->fund_transfer_attempt->dbColumn(Attempt\Entity::SOURCE_ID);
@@ -298,15 +300,33 @@ class Repository extends Base\Repository
 
         $payoutAttrs = $this->dbColumn('*');
 
-        return $this->newQuery()
+        $query =  $this->newQuery()
                     ->select($payoutAttrs)
                     ->join($ftaTable, $payoutsIdColumn, '=', $ftaSourceIdColumn)
                     ->where($payoutsBalanceColumn, $balanceId)
-                    ->whereRaw('UPPER(`fund_transfer_attempts`.`gateway_ref_no`) = ?', $gatewayRefNumber)
-                    ->where($payoutsAmountColumn, $amount)
-                    ->where($ftaModeColumn, Mode::IFT)
-                    ->whereBetween($payoutInitiatedAtColumn, [$txnDateTimeBefore, $txnDateTime])
-                    ->get();
+                    ->where($payoutsAmountColumn, $amount);
+
+        if ($isGatewayRefNoCaseSensitive === true)
+        {
+            $query->whereRaw('UPPER(`fund_transfer_attempts`.`gateway_ref_no`) = ?', strtoupper($gatewayRefNumber));
+        }
+        else
+        {
+            $query->whereRaw('`fund_transfer_attempts`.`gateway_ref_no` = ?', $gatewayRefNumber);
+        }
+
+        if ($mode !== null)
+        {
+            $query->where($ftaModeColumn, $mode);
+        }
+
+        if (($txnDateTime !== null) and
+            ($txnDateTimeBefore !== null))
+        {
+            $query->whereBetween($payoutInitiatedAtColumn, [$txnDateTimeBefore, $txnDateTime]);
+        }
+
+        return $query->get();
     }
 
     public function fetchUnlinkedPayoutsFromCmsRefNumberWithinTimeRangeForIFT(
@@ -341,16 +361,18 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchUnlinkedPayoutsFromGatewayRefNumberWithinTimeRangeForIFT(
+    public function fetchUnlinkedPayoutsFromGatewayRefNumber(
         $gatewayRefNumber,
         $txnDateTime,
         $txnDateTimeBefore,
         $amount,
-        $balanceId)
+        $balanceId,
+        $mode = null,
+        $isGatewayRefNoCaseSensitive = false)
     {
         $ftaTable               = $this->repo->fund_transfer_attempt->getTableName();
         $ftaSourceIdColumn      = $this->repo->fund_transfer_attempt->dbColumn(Attempt\Entity::SOURCE_ID);
-        $ftaModeColumn      = $this->repo->fund_transfer_attempt->dbColumn(Attempt\Entity::MODE);
+        $ftaModeColumn          = $this->repo->fund_transfer_attempt->dbColumn(Attempt\Entity::MODE);
 
         $payoutsIdColumn            = $this->repo->payout->dbColumn(Entity::ID);
         $payoutsBalanceColumn       = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
@@ -360,16 +382,34 @@ class Repository extends Base\Repository
 
         $payoutAttrs = $this->dbColumn('*');
 
-        return $this->newQuery()
-                    ->select($payoutAttrs)
-                    ->join($ftaTable, $payoutsIdColumn, '=', $ftaSourceIdColumn)
-                    ->where($payoutsBalanceColumn, $balanceId)
-                    ->whereRaw('UPPER(`fund_transfer_attempts`.`gateway_ref_no`) = UPPER(?)', $gatewayRefNumber)
-                    ->where($payoutsAmountColumn, $amount)
-                    ->where($ftaModeColumn, Mode::IFT)
-                    ->whereNull($payoutsTransactionIdColumn)
-                    ->whereBetween($payoutInitiatedAtColumn, [$txnDateTimeBefore, $txnDateTime])
-                    ->get();
+        $query = $this->newQuery()
+                      ->select($payoutAttrs)
+                      ->join($ftaTable, $payoutsIdColumn, '=', $ftaSourceIdColumn)
+                      ->where($payoutsBalanceColumn, $balanceId)
+                      ->where($payoutsAmountColumn, $amount)
+                      ->whereNull($payoutsTransactionIdColumn);
+
+        if ($isGatewayRefNoCaseSensitive === true)
+        {
+            $query->whereRaw('UPPER(`fund_transfer_attempts`.`gateway_ref_no`) = ?', strtoupper($gatewayRefNumber));
+        }
+        else
+        {
+            $query->whereRaw('`fund_transfer_attempts`.`gateway_ref_no` = ?', $gatewayRefNumber);
+        }
+
+        if ($mode !== null)
+        {
+            $query->where($ftaModeColumn, $mode);
+        }
+
+        if (($txnDateTime !== null) and
+            ($txnDateTimeBefore !== null))
+        {
+            $query->whereBetween($payoutInitiatedAtColumn, [$txnDateTimeBefore, $txnDateTime]);
+        }
+
+        return $query->get();
     }
 
     public function fetchQueuedPayouts(array $merchantIdsWhitelist = [],

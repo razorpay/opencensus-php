@@ -107,7 +107,7 @@ class BankingAccountStatementReconNeo extends Job
                     ($fetchMore === true) and
                     (empty($paginationKey) === false))
                 {
-                    BankingAccountStatementReconProcessNeo::dispatch($this->mode, $this->params);
+                    BankingAccountStatementReconNeo::dispatch($this->mode, $this->params);
                 }
                 else
                 {

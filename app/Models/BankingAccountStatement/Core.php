@@ -90,10 +90,24 @@ class Core extends Base\Core
 
     const DEFAULT_RX_MISSING_STATEMENTS_INSERTION_LIMIT = 50;
 
-    // In Single payments api we append gateway ref no in description for IFT mode. This regex will be used to fetch
-    // gateway ref no while recon.
-    // ex: SAMPLE NARRATION RZPTESTIFT123
-    const RBL_SINGLE_PAYMENTS_API_IFT_REGEX = "/\sRZP+[0-9A-Z]{10}$/";
+    /**
+     * Constant containing regex for identifying gateway ref number pattern in a statement's description for every bank.
+     * Here, we maintain an array for every bank because regex can be different for different modes. In case of RBL and ICICI,
+     * its the same for every mode and hence we store it in a default key. When a use case arises for different modes, it will be
+     * simple to add a new key based on the mode and store the regex for it.
+     */
+    const GATEWAY_REF_NUMBER_PATTERN = [
+        Channel::RBL => [
+            // In Single payments api we append gateway ref no in description for IFT mode. This regex will be used to fetch
+            // gateway ref no while recon.
+            // ex: SAMPLE NARRATION RZPTESTIFT123
+            BASConstants::DEFAULT => "/\sRZP+[0-9A-Z]{10}$/"
+        ],
+        Channel::ICICI => [
+            // ex: MMT/IMPS/307612641236/APILSCQOSeJ8123/TEST/SBIN0070663
+            BASConstants::DEFAULT => "/API[a-zA-Z0-9]{12}/"
+        ]
+    ];
 
     /**
      * Temporary hack. Should not set balance at a class level.
@@ -2791,34 +2805,52 @@ class Core extends Base\Core
 
             $description = $basEntity->getDescription() ? trim($basEntity->getDescription()) : '';
 
-            $matches = [];
+            [$shouldFetchUsingGatewayRefNumber, $gatewayRefNo] = $this->getGatewayRefNumberAvailabilityAndValue($description, $basEntity->getChannel());
 
-            if (($this->checkForRblSinglePaymentsApi($description, $matches) === true) and
-                ($basEntity->getChannel() === Channel::RBL))
+            if ($shouldFetchUsingGatewayRefNumber === true)
             {
-                $gatewayRefNo = substr($matches[0], 4, 10);
-
                 // this will be used to send slack notifications if required.
                 $identifier = 'gateway ref no';
 
+                $txnDateTime = null;
+
+                $txnDateTimeBefore = null;
+
+                $mode = null;
+
+                $isGatewayRefNoCaseSensitive = false;
+
+                if ($basEntity->getChannel() === Channel::RBL)
+                {
+                    // for rbl, gateway ref number is present only for IFT mode and we need to check for payouts within the last 4 hours of BAS posted date
+                    $txnDateTime = $basEntity->getPostedDate();
+                    $txnDateTimeBefore = $bankTimeBeforePostedDate;
+                    $mode = Payout\Mode::IFT;
+                    $isGatewayRefNoCaseSensitive = true;
+                }
+
                 // we are checking both linked and unlinked payouts because debit row might have already been
                 // processed.
-                $payouts = $this->repo->payout->fetchPayoutsFromGatewayRefNumberWithinTimeRangeForIFT(
+                $payouts = $this->repo->payout->fetchPayoutsFromGatewayRefNumber(
                     $gatewayRefNo,
-                    $basEntity->getPostedDate(),
-                    $bankTimeBeforePostedDate,
+                    $txnDateTime,
+                    $txnDateTimeBefore,
                     $basEntity->getAmount(),
-                    $balance->getId());
+                    $balance->getId(),
+                    $mode,
+                    $isGatewayRefNoCaseSensitive
+                );
 
-                $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_GATEWAY_REF_NO_FOR_IFT_FOR_CREDIT_MAPPING,
-                                   [
-                                       'cms_ref_no'                                              => $bankTxnId,
-                                       'gateway_ref_no'                                          => $gatewayRefNo,
-                                       'payout_ids'                                              => $payouts->getQueueableIds(),
-                                       'bas_id'                                                  => $basEntity->getId(),
-                                       'account_no'                                              => $basEntity->getAccountNumber(),
-                                       'payouts_fetched_via_gateway_ref_no_for_ift_mapping_time' => (microtime(true) - $startTime) * 1000,
-                                   ]);
+                $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_GATEWAY_REF_NUMBER_FOR_CREDIT,
+                    [
+                        'cms_ref_no' => $bankTxnId,
+                        'channel' => $basEntity->getChannel(),
+                        'gateway_ref_no' => $gatewayRefNo,
+                        'payout_ids' => $payouts->getQueueableIds(),
+                        'bas_id' => $basEntity->getId(),
+                        'merchant_id' => $basEntity->getMerchantId(),
+                        'payouts_fetched_via_gateway_ref_number_for_credit_mapping_time' => (microtime(true) - $startTime) * 1000
+                    ]);
             }
             else
             {
@@ -3082,34 +3114,52 @@ class Core extends Base\Core
 
             $description = $basEntity->getDescription() ? trim($basEntity->getDescription()) : '';
 
-            $matches = [];
+            [$shouldFetchUsingGatewayRefNumber, $gatewayRefNo] = $this->getGatewayRefNumberAvailabilityAndValue($description, $basEntity->getChannel());
 
-            if (($this->checkForRblSinglePaymentsApi($description, $matches) === true) and
-                ($basEntity->getChannel() === Channel::RBL))
+            if ($shouldFetchUsingGatewayRefNumber === true)
             {
-                $gatewayRefNo = substr($matches[0], 4, 10);
-
                 // this will be used to send slack notifications if required.
                 $identifier = 'gateway ref no';
 
+                $txnDateTime = null;
+
+                $txnDateTimeBefore = null;
+
+                $isGatewayRefNoCaseSensitive = false;
+
+                $mode = null;
+
+                if ($basEntity->getChannel() === Channel::RBL)
+                {
+                    // for rbl, gateway ref number is present only for IFT mode and we need to check for payouts within the last 4 hours of BAS posted date
+                    $txnDateTime = $basEntity->getPostedDate();
+                    $txnDateTimeBefore = $bankTimeBeforePostedDate;
+                    $mode = Payout\Mode::IFT;
+                    $isGatewayRefNoCaseSensitive = true;
+                }
+
                 // fetch only unlinked payouts i.e which do not have txn_id, since we are trying to map given bas
                 // record with payout.
-                $payouts = $this->repo->payout->fetchUnlinkedPayoutsFromGatewayRefNumberWithinTimeRangeForIFT(
+                $payouts = $this->repo->payout->fetchUnlinkedPayoutsFromGatewayRefNumber(
                     $gatewayRefNo,
-                    $basEntity->getPostedDate(),
-                    $bankTimeBeforePostedDate,
+                    $txnDateTime,
+                    $txnDateTimeBefore,
                     $basEntity->getAmount(),
-                    $balance->getId());
+                    $balance->getId(),
+                    $mode,
+                    $isGatewayRefNoCaseSensitive
+                );
 
-                $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_GATEWAY_REF_NO_FOR_IFT_FOR_DEBIT_MAPPING,
-                                   [
-                                       'cms_ref_no'                                              => $bankTxnId,
-                                       'gateway_ref_no'                                          => $gatewayRefNo,
-                                       'payout_ids'                                              => $payouts->getQueueableIds(),
-                                       'bas_id'                                                  => $basEntity->getId(),
-                                       'account_no'                                              => $basEntity->getAccountNumber(),
-                                       'payouts_fetched_via_gateway_ref_no_for_ift_mapping_time' => (microtime(true) - $startTime) * 1000
-                                   ]);
+                $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_GATEWAY_REF_NUMBER_FOR_DEBIT,
+                    [
+                        'cms_ref_no' => $bankTxnId,
+                        'channel' => $basEntity->getChannel(),
+                        'gateway_ref_no' => $gatewayRefNo,
+                        'payout_ids' => $payouts->getQueueableIds(),
+                        'bas_id' => $basEntity->getId(),
+                        'merchant_id' => $basEntity->getMerchantId(),
+                        'payouts_fetched_via_gateway_ref_number_for_debit_mapping_time' => (microtime(true) - $startTime) * 1000
+                    ]);
             }
             else
             {
@@ -3214,20 +3264,6 @@ class Core extends Base\Core
         }
 
         return $payouts->first();
-    }
-
-    protected function checkForRblSinglePaymentsApi(string $statementDescription, array & $matches)
-    {
-        $regex = self::RBL_SINGLE_PAYMENTS_API_IFT_REGEX;
-
-        $match = preg_match($regex, $statementDescription, $matches);
-
-        if ($match === 1)
-        {
-            return true;
-        }
-
-        return false;
     }
 
     protected function validateBalance(Entity $basEntity, Base\PublicEntity $sourceEntity)
@@ -3996,5 +4032,35 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+
+    protected function checkGatewayRefNumberPatternFor($channel, $basDescription, &$matches)
+    {
+        $regex = self::GATEWAY_REF_NUMBER_PATTERN[$channel][BASConstants::DEFAULT];
+
+        $match = preg_match($regex, $basDescription, $matches);
+
+        return $match === 1;
+    }
+
+    protected function getGatewayRefNumberAvailabilityAndValue($basDescription, $channel)
+    {
+        $matches = [];
+
+        $gatewayRefNum = null;
+
+        $isGatewayRefNumFound = $this->checkGatewayRefNumberPatternFor($channel, $basDescription, $matches);
+
+        if ($isGatewayRefNumFound === true)
+        {
+            $gatewayRefNum = $matches[0];
+
+            if ($channel === Channel::RBL)
+            {
+                $gatewayRefNum = substr($matches[0], 4, 10);
+            }
+        }
+
+        return [$isGatewayRefNumFound, $gatewayRefNum];
     }
 }
