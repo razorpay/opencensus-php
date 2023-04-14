@@ -28,8 +28,6 @@ class AirtelmoneyGatewayTest extends TestCase
         $this->gateway = 'wallet_airtelmoney';
 
         $this->fixtures->merchant->enableWallet('10000000000000', 'airtelmoney');
-
-        self::markTestSkipped('mark tests as skipped bcz of temporary changes');
     }
 
     public function testPayment()
