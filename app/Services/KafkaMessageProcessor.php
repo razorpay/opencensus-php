@@ -5,6 +5,7 @@ namespace RZP\Services;
 use Illuminate\Foundation\Application;
 
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\AutoKyc\OcrService\WebsitePolicyProcessor;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\Kafka as KafkaJobs;
 use RZP\Events\Kafka as KafkaEvents;
@@ -19,6 +20,9 @@ class KafkaMessageProcessor
     const MERCHANT_WEBSITE_INFO         = 'merchant-website-info-result';
     const LEGAL_DOCUMENTS_EVENTS        = 'api-bvs-legal-document-result-events';
     const INVALID_ADDRESS_EVENTS        = 'invalid-address-events';
+    const WEBSITE_POLICY_EVENTS         = 'pg-website-verification-notification-events';
+    const NEGATIVE_KEYWORDS_EVENTS      = 'api-bvs-kyc-document-result-events';
+    const MCC_NOTIFICATION_EVENTS       = 'pg-mcc-notification-events';
     const API_PG_LEDGER_ACKNOWLEDGMENTS = 'outbox_jobs_api';
 
     /** @var Application $app */
@@ -133,6 +137,15 @@ class KafkaMessageProcessor
 
             case self::INVALID_ADDRESS_EVENTS:
                 return new InvalidAddressConsumer($payload, $mode);
+
+            case self::WEBSITE_POLICY_EVENTS:
+                return new WebsitePolicyConsumer($payload['data'], $mode);
+
+            case self::NEGATIVE_KEYWORDS_EVENTS:
+                return new NegativeKeywordsConsumer($payload['data'], $mode);
+
+            case self::MCC_NOTIFICATION_EVENTS:
+                return new MccCategorisationConsumer($payload['data'], $mode);
 
             default:
                 return null;

@@ -105,6 +105,7 @@ use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Mail\Merchant\MerchantBusinessWebsiteAdd;
 use RZP\Models\Base\PublicEntity as PublicEntity;
 use RZP\Mail\Merchant\Rejection as RejectionEmail;
+use RZP\Models\Merchant\VerificationDetail as MVD;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Workflow\Action\Core as ActionCore;
 use RZP\Models\Merchant\Product as MerchantProduct;
@@ -148,6 +149,7 @@ use RZP\Models\Merchant\Detail\NeedsClarification\Constants as NCConstants;
 use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\ManualVerificationRequestDispatcher;
 use RZP\Models\Merchant\Document\Type as DocumentType;
+use RZP\Models\Merchant\Detail\BusinessCategoriesV2\BusinessSubCategoryMetaData as SubcategoryV2;
 use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher\BankAccount as BankAccountRequestDispatcher;
 use RZP\Models\ClarificationDetail\Validator as ClarificationDetailValidator;
 use RZP\Models\ClarificationDetail\Service as ClarificationDetailService;
@@ -477,15 +479,20 @@ class Core extends Base\Core
 
     public function handleWebsiteInput(Entity $oldMerchantDetail, $merchantDetails, $input): bool
     {
-        $razorx = strtolower($this->app->razorx->getTreatment($merchantDetails->getMerchantId(), RazorxTreatment::AUTOMATION_ACTIVATION, Mode::LIVE));
+        $splitzResult = $this->getSplitzResponse($merchantDetails->getMerchantId(), 'merchant_automation_activation_exp_id');
 
-        if ((isset($input[Detail\Entity::BUSINESS_WEBSITE]) === true) and ($input[Entity::BUSINESS_WEBSITE] !== '') and
+        if ((empty($input[Detail\Entity::BUSINESS_WEBSITE]) === false) and
             ($oldMerchantDetail->getWebsite() !== $input[Entity::BUSINESS_WEBSITE]) and
-            (($razorx === Constants::RAZORX_EXPERIMENT_PILOT) or ($razorx === Constants::RAZORX_EXPERIMENT_ON)))
+            ($splitzResult === Constants::SPLITZ_PILOT or $splitzResult === Constants::SPLITZ_LIVE))
         {
             $response = $this->getUrlDetails($input[Entity::BUSINESS_WEBSITE]);
 
-            if ((isset($response['isLive']) === true) and ($response['isLive'] === false))
+            if ((isset($response['isLive']) === true) and ($response['isLive'] === Detail\Constants::UNDETERMINED))
+            {
+                $this->trace->count(Detail\Constants::INPUT_WEBSITE_STATUS_UNDETERMINED_COUNT, $response);
+            }
+
+            if ((isset($response['isLive']) === true) and ($response['isLive'] === Detail\Constants::NO))
             {
                 throw new Exception\BadRequestValidationFailureException(
                     "Enter a live/operational URL. You can enter it later if you don't have a live URL now"
@@ -531,7 +538,35 @@ class Core extends Base\Core
         return true;
     }
 
-    private function triggerOCRService($input, $ocrServiceName)
+    public function getSplitzResponse(string $merchantId, string $experimentName)
+    {
+        try
+        {
+            $experimentId = $this->config->get('app.'.$experimentName);
+
+            $response = $this->app['splitzService']->evaluateRequest([
+                'id'            => $merchantId,
+                'experiment_id' => $experimentId,
+            ]);
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $experimentId,
+                'Result'        => $response
+            ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchantId,
+                'experiment_id' => $this->config->get('app.'.$experimentName) ?? null
+            ]);
+        }
+
+        return $response['response']['variant']['name'] ?? '';
+    }
+
+    public function triggerOCRService($input, $ocrServiceName)
     {
         try
         {
@@ -551,23 +586,23 @@ class Core extends Base\Core
     {
         $urlDetails = [];
 
-        try{
+        try
+        {
             $response = Http::withOptions([
                 'allow_redirects' => false,
-                'timeout'         => 5
-            ])->get($url);
+                'timeout'         => 3
+            ])->retry(2, throw: false)->get($url);
         }
         catch (\Throwable $e)
         {
-            $urlDetails["isLive"] = false;
+            $this->trace->traceException($e);
+
+            $urlDetails['isLive'] = Detail\Constants::UNDETERMINED;
 
             return $urlDetails;
         }
 
-        if ($response->status() >= 400)
-        {
-            $urlDetails["isLive"] = false;
-        }
+        $urlDetails['isLive'] = $response->status() >= 400 ? Detail\Constants::NO : Detail\Constants::YES;
 
         $headers = array_change_key_case($response->headers(), CASE_LOWER);
 
@@ -579,20 +614,20 @@ class Core extends Base\Core
 
             $targetUrlHost = str_ireplace('www.', '', parse_url($target, PHP_URL_HOST));
 
-            if($urlHost === $targetUrlHost)
+            if ($urlHost === $targetUrlHost)
             {
-                $urlDetails["isRedirected"] = false;
+                $urlDetails['isRedirected'] = false;
 
                 return $urlDetails;
             }
 
-            $urlDetails["isRedirected"] = true;
+            $urlDetails['isRedirected'] = true;
         }
 
         return $urlDetails;
     }
 
-    public function isPopularSocialMedia($url )
+    public function isPopularSocialMedia($url)
     {
         $popularSocialMediaRegex = implode('|', DetailConstants::POPULAR_SOCIAL_MEDIA);
 
@@ -1173,6 +1208,24 @@ class Core extends Base\Core
              * Dedupe failed NC run
              */
             $canUpdateMerchantContext = true;
+        }
+
+        $verificationDetail = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifierFromReplica(
+            $merchant->getId(),
+            Constant::WEBSITE_POLICY,
+            MVD\Constants::NUMBER
+        );
+
+        if (optional($verificationDetail)->getStatus() === BvsValidationConstants::INITIATED)
+        {
+            $validation = (new BvsValidation\Core)->getLatestArtefactValidation(
+                $merchant->getId(), Constant::WEBSITE_POLICY, BvsValidationConstants::IDENTIFIER);
+
+            $validation->setMetadata($verificationDetail->getMetadata());
+
+            $statusUpdater = new DocumentStatusUpdater\WebsitePolicyStatusUpdater($merchant, $merchantDetails, $validation);
+
+            $statusUpdater->updateValidationStatus();
         }
 
         $this->triggerValidationRequests($merchant, $merchantDetails);
@@ -5219,27 +5272,26 @@ class Core extends Base\Core
 
         $autoKyc = $this->isAutoKycDone($merchantDetails);
 
-        if ($autoKyc)
+        if ($autoKyc === true)
         {
             switch ($merchantDetails->getBusinessType())
             {
                 case BusinessType::NOT_YET_REGISTERED:
-                case BusinessType::INDIVIDUAL:
-                    return $this->getApplicableActivationStatusForUnregisteredMerchant($merchantDetails);
-
-                case BusinessType::PROPRIETORSHIP:
-                case BusinessType::PARTNERSHIP:
-                case BusinessType::PRIVATE_LIMITED:
-                case BusinessType::PUBLIC_LIMITED:
-                case BusinessType::LLP:
-                case BusinessType::HUF:
-                case BusinessType::TRUST:
                 case BusinessType::SOCIETY:
-                    return $this->getApplicableActivationStatusForRegisteredMerchant($merchantDetails);
+                case BusinessType::TRUST:
+                case BusinessType::HUF:
+                case BusinessType::LLP:
+                case BusinessType::PUBLIC_LIMITED:
+                case BusinessType::PRIVATE_LIMITED:
+                case BusinessType::PARTNERSHIP:
+                case BusinessType::PROPRIETORSHIP:
+                case BusinessType::INDIVIDUAL:
+                    return $this->getApplicableActivationStatusForMerchant($merchantDetails);
+
                 case BusinessType::NGO:
-                    if($merchantDetails->merchant->isLinkedAccount() === true)
+                    if ($merchantDetails->merchant->isLinkedAccount() === true)
                     {
-                        return $this->getApplicableActivationStatusForRegisteredMerchant($merchantDetails);
+                        return $this->getApplicableActivationStatusForMerchant($merchantDetails);
                     }
             }
         }
@@ -5265,7 +5317,8 @@ class Core extends Base\Core
         return false;
     }
 
-    private function getApplicableActivationStatusForRegisteredMerchant($merchantDetails)
+    // getApplicableActivationStatusForRegisteredMerchant and getApplicableActivationStatusForUnregisteredMerchant were performing the same operations, hence we are merging them into one.
+    private function getApplicableActivationStatusForMerchant($merchantDetails): string
     {
         if ($merchantDetails->merchant->getOrgId() !== Org\Entity::RAZORPAY_ORG_ID)
         {
@@ -5309,60 +5362,112 @@ class Core extends Base\Core
             (in_array($currentActivationStatus, $excludeActivationStatusList) === false) and
             ($this->hasRiskTags($merchantDetails->merchant) === false))
         {
+            $merchantId = $merchantDetails->getMerchantId();
+
+            $splitzVariant = (new Detail\Core)->getSplitzResponse($merchantId, 'merchant_automation_activation_exp_id');
+
+            $activationStatusAutomation = $this->getAutomationActivationStatus($merchantDetails);
+
+            if ($splitzVariant === Merchant\Constants::SPLITZ_LIVE)
+            {
+                return $activationStatusAutomation;
+            }
+            else if ($splitzVariant === Merchant\Constants::SPLITZ_PILOT)
+            {
+                try
+                {
+                    (new Service)->saveBusinessDetailsForMerchant($merchantId, [
+                        BusinessDetailEntity::METADATA => [
+                            'activation_status' => $activationStatusAutomation
+                        ]
+                    ]);
+                }
+                catch (\Throwable $ex)
+                {
+                    $this->trace->traceException($ex, Logger::ERROR, TraceCode::MERCHANT_EDIT_BUSINESS_DETAILS_FAILED);
+                }
+            }
+
             return Status::ACTIVATED_MCC_PENDING;
         }
 
         return Status::UNDER_REVIEW;
     }
 
-    private function getApplicableActivationStatusForUnregisteredMerchant($merchantDetails)
+    private function getAutomationActivationStatus(Entity $merchantDetails): string
     {
-        if ($merchantDetails->merchant->getOrgId() !== Org\Entity::RAZORPAY_ORG_ID)
-        {
-            return Status::UNDER_REVIEW;
-        }
+        $merchantId = $merchantDetails->getMerchantId();
 
-        // When the above requirements are all met for linked account move the activation status directly to 'activate'
-        // Linked Account wont be in activated_mcc_pending or activated_kyc_pending state ever.
-        if ($merchantDetails->merchant->isLinkedAccount() === true)
-        {
-            return Status::ACTIVATED;
-        }
-
-        $excludeActivationStatusList = [
-            Status::NEEDS_CLARIFICATION,
-            Status::ACTIVATED,
-            Status::REJECTED
-        ];
-
-        $currentActivationStatus = $merchantDetails->getActivationStatus();
-
-        $currentActivationFlow = $merchantDetails->getActivationFlow();
-
-        if (empty($currentActivationFlow) === true and
-            $merchantDetails->canDetermineActivationFlow())
-        {
-            $currentActivationFlow = $this->getActivationFlow(
-                $merchantDetails->merchant, $merchantDetails, null, false);
-        }
-
-        $isWhitelisted = ($currentActivationFlow === ActivationFlow::WHITELIST);
-
-        $isImpersonated = $this->dedupeCore->isMerchantImpersonated($merchantDetails->merchant);
-
-        // including the condition of nc count because we don't want the merchant to go in amp from nc or ur once he
-        // has already been in nc
-
-        if (((new ClarificationDetailCore)->getNcCount($merchantDetails->merchant) === 0) and
-            ($isWhitelisted === true) and
-            ($isImpersonated === false) and
-            (in_array($currentActivationStatus, $excludeActivationStatusList) === false) and
-            ($this->hasRiskTags($merchantDetails->merchant) === false))
+        if ($this->isAdditionalDocRequired($merchantDetails->getBusinessSubcategory()) === true)
         {
             return Status::ACTIVATED_MCC_PENDING;
         }
 
-        return Status::UNDER_REVIEW;
+        if ($this->hasBusinessWebsite($merchantDetails) === true)
+        {
+            if ($this->hasAppUrls($merchantDetails) === true)
+            {
+                return Status::ACTIVATED_MCC_PENDING;
+            }
+            else
+            {
+                $negativeKeyword = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifierFromReplica(
+                    $merchantId,
+                    Constant::NEGATIVE_KEYWORDS,
+                    MVD\Constants::NUMBER
+                );
+
+                if (optional($negativeKeyword)->getStatus() === BvsValidation\Constants::FAILED)
+                {
+                    return Status::UNDER_REVIEW;
+                }
+
+                $mccCategorisation = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifierFromReplica(
+                    $merchantId,
+                    Constant::MCC_CATEGORISATION_WEBSITE,
+                    MVD\Constants::NUMBER
+                );
+
+                $websitePolicy = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifierFromReplica(
+                    $merchantId,
+                    Constant::WEBSITE_POLICY,
+                    MVD\Constants::NUMBER
+                );
+
+                if (optional($mccCategorisation)->getStatus() === BvsValidation\Constants::VERIFIED and
+                    optional($websitePolicy)->getStatus() === BvsValidation\Constants::VERIFIED and
+                    optional($negativeKeyword)->getStatus() === BvsValidation\Constants::VERIFIED)
+                {
+                    return Status::ACTIVATED;
+                }
+                else
+                {
+                    return Status::ACTIVATED_MCC_PENDING;
+                }
+            }
+        }
+        else
+        {
+            return Status::ACTIVATED;
+        }
+    }
+
+    private function hasAppUrls(Entity $merchantDetails): bool
+    {
+        $appUrls = optional($merchantDetails->businessDetail)->getAppUrls();
+
+        return empty($appUrls[BusinessDetailConstants::PLAYSTORE_URL]) === false or
+            empty($appUrls[BusinessDetailConstants::APPSTORE_URL]) === false;
+    }
+
+    private function hasBusinessWebsite($merchantDetails): bool
+    {
+        return empty($merchantDetails->getWebsite()) === false;
+    }
+
+    private function isAdditionalDocRequired($subCategory): bool
+    {
+        return SubcategoryV2::SUB_CATEGORY_METADATA[$subCategory][SubcategoryV2::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION] === true;
     }
 
     private function getApplicableActivationStatusForNoDoc(Entity $merchantDetails): string

@@ -14,15 +14,19 @@ use RZP\Http\Middleware\EventTracker;
 use RZP\Models\Merchant\BvsValidation;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Detail\Status;
-use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Merchant\Website;
+use RZP\Models\Merchant\BusinessDetail;
+use RZP\Models\Merchant\VerificationDetail as MVD;
 use RZP\Models\Partner\Core as PartnerCore;
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
+use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Detail\NeedsClarification\Core;
 use RZP\Models\Merchant\Detail\NeedsClarification\Metrics;
 use RZP\Models\Partner\Metric as PartnerMetrics;
 use RZP\Models\Merchant\Detail\Constants as DetailConstant;
 use RZP\Models\Partner\Activation\Core as PartnerActivationCore;
-use RZP\Models\Merchant\Detail\NeedsClarificationReasonsList;
 use RZP\Models\Merchant\Detail\NeedsClarification\UpdateContextRequirements;
 
 class UpdateMerchantContext extends Job
@@ -143,6 +147,93 @@ class UpdateMerchantContext extends Job
             $detailCore = new DetailCore();
 
             $newActivationStatus = $detailCore->getApplicableActivationStatus($merchantDetail);
+
+            $splitzResult = $detailCore->getSplitzResponse($this->merchantId, 'merchant_automation_activation_exp_id');
+
+            if (($newActivationStatus === Status::ACTIVATED) and
+                ($splitzResult === Merchant\Constants::SPLITZ_LIVE))
+            {
+                // save website policy links
+                $app = App::getFacadeRoot();
+
+                $websitePolicy = $app['repo']->merchant_verification_detail->getDetailsForTypeAndIdentifierFromReplica(
+                    $this->merchantId,
+                    Constant::WEBSITE_POLICY,
+                    MVD\Constants::NUMBER
+                );
+
+                $websitePolicyResult = $websitePolicy->getMetadata();
+
+                $websitePolicyLinks = [];
+
+                foreach ($websitePolicyResult as $policy => $value)
+                {
+                    $websitePolicyLinks[$policy]['url'] = $value['analysis_result']['links_found'][0];
+                }
+
+                $websiteDetail = $app['repo']->merchant_website->getWebsiteDetailsForMerchantId($this->merchantId);
+
+                $adminWebsiteDetails = optional($websiteDetail)->getAdminWebsiteDetails() ?? [];
+
+                $additionalData = optional($websiteDetail)->getAdditionalData() ?? [];
+
+                $input = [
+                    Website\Entity::ADDITIONAL_DATA => array_replace_recursive($additionalData, [
+                        'admin_website_details' => $adminWebsiteDetails
+                    ]),
+                    Website\Entity::ADMIN_WEBSITE_DETAILS => array_replace_recursive($adminWebsiteDetails, [
+                        'website' => [
+                            $merchantDetail->getWebsite() => $websitePolicyLinks
+                        ]
+                    ]),
+                ];
+
+                (new Website\Core)->createOrEditWebsiteDetails($merchantDetail, $input);
+
+                // save category & subcategory
+                $businessDetailsInput = [
+                    BusinessDetail\Entity::METADATA => [
+                        DetailEntity::BUSINESS_CATEGORY     => $merchantDetail->getBusinessCategory(),
+                        DetailEntity::BUSINESS_SUBCATEGORY  => $merchantDetail->getBusinessSubcategory(),
+                        'mcc'                               => $merchant->getCategory()
+                    ]
+                ];
+
+                try
+                {
+                    (new BusinessDetail\Service())->saveBusinessDetailsForMerchant($this->merchantId, $businessDetailsInput);
+                }
+                catch (\Throwable $ex)
+                {
+                    $this->trace->traceException($ex, Trace::ERROR, TraceCode::MERCHANT_EDIT_BUSINESS_DETAILS_FAILED);
+                }
+
+                $mccCategorisation = $app['repo']->merchant_verification_detail->getDetailsForTypeAndIdentifierFromReplica(
+                    $this->merchantId,
+                    Constant::MCC_CATEGORISATION_WEBSITE,
+                    MVD\Constants::NUMBER
+                );
+// check by throwing an exception if the error is helpful: i.e. it should be logged with enough information
+                $mccResult = $mccCategorisation->getMetadata();
+
+                $merchantInput = [
+                    MerchantEntity::CATEGORY    => strval($mccResult[MVD\Constants::PREDICTED_MCC]),
+                    MerchantEntity::CATEGORY2   => $mccResult[MVD\Constants::CATEGORY]
+                ];
+
+                $merchant->edit($merchantInput);
+
+                $app['repo']->merchant->saveOrFail($merchant);
+
+                $merchantDetailInput = [
+                    DetailEntity::BUSINESS_CATEGORY    => $mccResult[MVD\Constants::CATEGORY],
+                    DetailEntity::BUSINESS_SUBCATEGORY => $mccResult[MVD\Constants::SUBCATEGORY],
+                ];
+
+                $merchantDetail->edit($merchantDetailInput);
+
+                $app['repo']->merchant_detail->saveOrFail($merchantDetail);
+            }
 
             if ($newActivationStatus !== Status::ACTIVATED_KYC_PENDING and $newActivationStatus !== Status::ACTIVATED)
             {

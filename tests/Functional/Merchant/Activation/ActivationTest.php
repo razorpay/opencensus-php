@@ -5442,6 +5442,200 @@ class ActivationTest extends OAuthTestCase
         $this->assertEquals('success', $consentDetail['status']);
     }
 
+    public function testKafkaSuccessForWebsitePolicy()
+    {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'live',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_website'          => 'https://www.sukhdev.org'
+        ]);
+
+        $this->fixtures->create('bvs_validation', [
+            'validation_id'     => 'L61kGPVWKT05Qx',
+            'artefact_type'     => 'website_policy',
+            'owner_id'          => $merchantDetails->getMerchantId(),
+            'validation_status' => 'captured'
+        ]);
+
+        $this->fixtures->on('live')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => 'website_policy',
+            'artefact_identifier'  => 'number',
+        ]);
+
+        $this->fixtures->on('test')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => 'website_policy',
+            'artefact_identifier'  => 'number',
+        ]);
+
+        $kafkaEventPayload = [
+            'data' => [
+                "website_verification_id" => "L61kGPVWKT05Qx",
+                "status" => "completed",
+                "verification_result" => [
+                    "terms" => [
+                        "analysis_result" => [
+                            "links_found" => ["https://www.sukhdev.org/termsofuse"],
+                            "confidence_score" => 0.5775,
+                            "relevant_details" => [],
+                            "validation_result" => true,
+                        ],
+                    ],
+                    "refund" => [
+                        "analysis_result" => [
+                            "links_found" => ["https://www.sukhdev.org/refundpolicy"],
+                            "confidence_score" => 0.6185,
+                            "relevant_details" => [],
+                            "validation_result" => true,
+                        ],
+                    ],
+                    "privacy" => [
+                        "analysis_result" => [
+                            "links_found" => ["https://www.sukhdev.org/privacypolicy"],
+                            "confidence_score" => 0.7067197799682617,
+                            "relevant_details" => [
+                                "note" =>
+                                    "Privacy Policy is majorly about Third Party Sharing/Collection, International and Specific Audiences, User Choice/Control, Practice not covered, Privacy contact information, Privacy Policy includes the following attributes Named third party, Unnamed third party, Does, Receive/Shared with, Aggregated or anonymized, Identifiable, User with account, Opt-out via contacting company, First party use,",
+                            ],
+                            "validation_result" => true,
+                        ],
+                    ],
+                    "contact_us" => [
+                        "analysis_result" => [
+                            "links_found" => ["https://www.sukhdev.org/contactus"],
+                            "relevant_details" => ["9987394065", "sukhdevonline@gmail.com"],
+                            "validation_result" => true,
+                        ],
+                    ],
+                ],
+            ]
+        ];
+
+        (new KafkaMessageProcessor)->process('pg-website-verification-notification-events', $kafkaEventPayload, 'test');
+
+        $bvsValidation = $this->getDbLastEntity('bvs_validation');
+
+        $verificationDetail = $this->getDbLastEntity('merchant_verification_detail');
+
+        $this->assertEquals('success', $bvsValidation['validation_status']);
+
+        $this->assertEquals('verified', $verificationDetail['status']);
+    }
+
+    public function testKafkaFailureForWebsitePolicy()
+    {
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_website'          => null
+        ]);
+
+        $this->fixtures->create('bvs_validation', [
+            'validation_id'     => 'L61kGPVWKT05Qx',
+            'artefact_type'     => 'website_policy',
+            'owner_id'          => $merchantDetails->getMerchantId(),
+            'validation_status' => 'captured'
+        ]);
+
+        $this->fixtures->on('live')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => 'website_policy',
+            'artefact_identifier'  => 'number',
+        ]);
+
+        $this->fixtures->on('test')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => 'website_policy',
+            'artefact_identifier'  => 'number',
+        ]);
+
+        $kafkaEventPayload = [
+            'data' => [
+                "website_verification_id" => "L61kGPVWKT05Qx",
+                "status" => "completed",
+                "result" => [
+                    "terms" => [
+                        "analysis_result" => [
+                            "links_found" => ["https://www.sukhdev.org/termsofuse"],
+                            "confidence_score" => 0.5775,
+                            "relevant_details" => [],
+                            "validation_result" => true,
+                        ],
+                    ],
+                    "refund" => [
+                        "analysis_result" => [
+                            "links_found" => ["https://www.sukhdev.org/refundpolicy"],
+                            "confidence_score" => 0.6185,
+                            "relevant_details" => [],
+                            "validation_result" => true,
+                        ],
+                    ],
+                    "privacy" => [
+                        "analysis_result" => [
+                            "links_found" => ["https://www.sukhdev.org/privacypolicy"],
+                            "confidence_score" => 0.7067197799682617,
+                            "relevant_details" => [
+                                "note" =>
+                                    "Privacy Policy is majorly about Third Party Sharing/Collection, International and Specific Audiences, User Choice/Control, Practice not covered, Privacy contact information, Privacy Policy includes the following attributes Named third party, Unnamed third party, Does, Receive/Shared with, Aggregated or anonymized, Identifiable, User with account, Opt-out via contacting company, First party use,",
+                            ],
+                            "validation_result" => false,
+                        ],
+                    ],
+                    "contact_us" => [
+                        "analysis_result" => [
+                            "links_found" => ["https://www.sukhdev.org/contactus"],
+                            "relevant_details" => ["9987394065", "sukhdevonline@gmail.com"],
+                            "validation_result" => true,
+                        ],
+                    ],
+                ],
+            ]
+        ];
+
+        (new KafkaMessageProcessor)->process('pg-website-verification-notification-events', $kafkaEventPayload, 'test');
+
+        $bvsValidation = $this->getDbLastEntity('bvs_validation');
+
+        $verificationDetail = $this->getDbLastEntity('merchant_verification_detail');
+
+        $merchantWebsiteDetail = $this->getDbLastEntity('merchant_website');
+
+        $this->assertEquals('success', $bvsValidation['validation_status']);
+
+        $this->assertEquals('failed', $verificationDetail['status']);
+
+        $this->assertNull($merchantWebsiteDetail['admin_website_details']['website']);
+    }
+
     public function testKafkaSuccessForLegalDocumentWithExtraFieldsInPayload()
     {
         Config::set('services.bvs.mock', true);
@@ -5527,6 +5721,345 @@ class ActivationTest extends OAuthTestCase
 
         $this->assertEquals('failed', $consentDetail['status']);
     }
+
+    public function testKafkaFailureForNegativeKeywords()
+    {
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_website'          => null
+        ]);
+
+        $this->fixtures->create('bvs_validation', [
+            'validation_id'     => 'L61kGPVWKT05QT',
+            'artefact_type'     => 'negative_keywords',
+            'owner_id'          => $merchantDetails->getMerchantId(),
+            'validation_status' => 'captured'
+        ]);
+
+        $this->fixtures->on('live')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02aT',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => 'negative_keywords',
+            'artefact_identifier'  => 'number',
+        ]);
+
+        $this->fixtures->on('test')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02aT',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => 'negative_keywords',
+            'artefact_identifier'  => 'number',
+        ]);
+
+        $kafkaEventPayload = [
+            "data" =>[
+                "id" => "L61kGPVWKT05QT",
+                "status" => "success",
+                "document_details" => [
+                    "result" => [
+                        "prohibited" => [
+                            "drugs" => [
+                                "Phrases" => [
+                                    "cannabis" => 60,
+                                    "cbd" => 1,
+                                    "weed" => 1
+                                ],
+                                "total_count" => 62,
+                                "unique_count" => 3
+                            ],
+                            "financial services" => [
+                                "Phrases" => [
+                                    "investment" => 2
+                                ],
+                                "total_count" => 2,
+                                "unique_count" => 1
+                            ],
+                            "miscellaneous" => [
+                                "Phrases" => [
+                                    "cash" => 2,
+                                    "cigarette" => 1,
+                                    "cigarettes" => 2,
+                                    "fast" => 8,
+                                    "hazardous chemicals" => 1,
+                                    "money" => 7,
+                                    "payment methods" => 1,
+                                    "rapid" => 1,
+                                    "supplement" => 14,
+                                    "supplements" => 4,
+                                    "thc" => 1
+                                ],
+                                "total_count" => 42,
+                                "unique_count" => 11
+                            ],
+                            "pharma" => [
+                                "Phrases" => [
+                                    "alcohol" => 8,
+                                    "cannabinoid" => 37,
+                                    "codeine" => 1,
+                                    "hemp" => 1,
+                                    "marijuana" => 31,
+                                    "pain" => 1,
+                                    "pharmaceutical" => 5,
+                                    "prescription" => 20,
+                                    "topical" => 19,
+                                    "valium" => 1
+                                ],
+                                "total_count" => 124,
+                                "unique_count" => 10
+                            ],
+                            "tobacco products" => [
+                                "Phrases" => [
+                                    "tobacco" => 1
+                                ],
+                                "total_count" => 1,
+                                "unique_count" => 1
+                            ],
+                            "travel" => [
+                                "Phrases" => [
+                                    "booking" => 2,
+                                    "travel" => 2
+                                ],
+                                "total_count" => 4,
+                                "unique_count" => 2
+                            ]
+                        ],
+                        "required" => [
+                            "policy disclosure" => [
+                                "Phrases" => [
+                                    "cancellations" => 1,
+                                    "claims" => 11,
+                                    "contact us" => 1,
+                                    "delivery" => 46,
+                                    "payment" => 4,
+                                    "payments" => 2,
+                                    "privacy" => 5,
+                                    "privacy policy" => 8,
+                                    "refund" => 6,
+                                    "refund policy" => 4,
+                                    "refunds" => 1,
+                                    "return" => 3,
+                                    "return policy" => 2,
+                                    "returns" => 3,
+                                    "terms of service" => 1
+                                ],
+                                "total_count" => 98,
+                                "unique_count" => 15
+                            ],
+                        ],
+                    ],
+                    "website_url" => "https://www.hempstrol.com"
+                ]
+            ]
+        ];
+
+        (new KafkaMessageProcessor)->process('api-bvs-kyc-document-result-events', $kafkaEventPayload, 'test');
+
+        $bvsValidation = $this->getDbLastEntity('bvs_validation');
+
+        $verificationDetail = $this->getDbLastEntity('merchant_verification_detail');
+
+        $this->assertEquals('success', $bvsValidation['validation_status']);
+
+        $this->assertEquals('failed', $verificationDetail['status']);
+
+    }
+
+    public function testKafkaSuccessForNegativeKeywords()
+    {
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_website'          => null
+        ]);
+
+        $this->fixtures->create('bvs_validation', [
+            'validation_id'     => 'L61kGPVWKT05QT',
+            'artefact_type'     => 'website_policy',
+            'owner_id'          => $merchantDetails->getMerchantId(),
+            'validation_status' => 'captured'
+        ]);
+
+        $this->fixtures->on('live')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => 'negative_keywords',
+            'artefact_identifier'  => 'number',
+        ]);
+
+        $this->fixtures->on('test')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => 'negative_keywords',
+            'artefact_identifier'  => 'number',
+        ]);
+
+        $kafkaEventPayload = [
+            "data" =>[
+                "id" => "L61kGPVWKT05QT",
+                "status" => "success",
+                "document_details" => [
+                    "result" => [
+                        "prohibited" => [
+                            "drugs" => [
+                                "Phrases" => [
+                                    "cannabis" => 0,
+                                ],
+                                "total_count" => 0,
+                                "unique_count" => 0
+                            ],
+                            "financial services" => [
+                                "Phrases" => [
+                                    "investment" => 0
+                                ],
+                                "total_count" => 0,
+                                "unique_count" => 0
+                            ],
+                            "miscellaneous" => [
+                                "Phrases" => [
+                                    "cash" => 0,
+                                    "cigarette" => 0,
+                                ],
+                                "total_count" => 0,
+                                "unique_count" => 0
+                            ],
+                            "pharma" => [
+                                "Phrases" => [
+                                    "alcohol" => 0,
+                                    "cannabinoid" => 0,
+                                    "codeine" => 0,
+                                ],
+                                "total_count" => 0,
+                                "unique_count" => 0
+                            ],
+                            "tobacco products" => [
+                                "Phrases" => [
+                                    "tobacco" => 0
+                                ],
+                                "total_count" => 0,
+                                "unique_count" => 0
+                            ],
+                            "travel" => [
+                                "Phrases" => [
+                                    "booking" => 0,
+                                    "travel" => 0
+                                ],
+                                "total_count" => 0,
+                                "unique_count" => 0
+                            ]
+                        ],
+                        "required" => [
+                            "policy disclosure" => [
+                                "Phrases" => [
+                                    "cancellations" => 1,
+                                    "claims" => 11,
+                                    "contact us" => 1,
+                                    "delivery" => 46,
+                                    "payment" => 4,
+                                    "payments" => 2,
+                                    "privacy" => 5,
+                                    "privacy policy" => 8,
+                                    "refund" => 6,
+                                    "refund policy" => 4,
+                                    "refunds" => 1,
+                                    "return" => 3,
+                                    "return policy" => 2,
+                                    "returns" => 3,
+                                    "terms of service" => 1
+                                ],
+                                "total_count" => 98,
+                                "unique_count" => 15
+                            ],
+                        ],
+                    ],
+                    "website_url" => "https://www.hempstrol.com"
+                ]
+            ]
+        ];
+
+        (new KafkaMessageProcessor)->process('api-bvs-kyc-document-result-events', $kafkaEventPayload, 'test');
+
+        $bvsValidation = $this->getDbLastEntity('bvs_validation');
+
+        $verificationDetail = $this->getDbLastEntity('merchant_verification_detail');
+
+        $this->assertEquals('success', $bvsValidation['validation_status']);
+
+        $this->assertEquals('verified', $verificationDetail['status']);
+
+    }
+
+    public function testKafkaNotCompletedForNegativeKeywords()
+    {
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_website'          => null
+        ]);
+
+        $this->fixtures->create('bvs_validation', [
+            'validation_id'     => 'L61kGPVWKT05QT',
+            'artefact_type'     => 'website_policy',
+            'owner_id'          => $merchantDetails->getMerchantId(),
+            'validation_status' => 'captured'
+        ]);
+
+        $this->fixtures->on('live')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => 'negative_keywords',
+            'artefact_identifier'  => 'number',
+        ]);
+
+        $this->fixtures->on('test')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => 'negative_keywords',
+            'artefact_identifier'  => 'number',
+        ]);
+
+        $kafkaEventPayload = [
+            "data" =>[
+                "id" => "L61kGPVWKT05QT",
+                "status" => "failed",
+                "document_details" => [
+                    "website_url" => "https://www.hempstrol.com"
+                ]
+            ]
+        ];
+
+        (new KafkaMessageProcessor)->process('api-bvs-kyc-document-result-events', $kafkaEventPayload, 'test');
+
+        $bvsValidation = $this->getDbLastEntity('bvs_validation');
+
+        $verificationDetail = $this->getDbLastEntity('merchant_verification_detail');
+
+        $this->assertEquals('failed', $bvsValidation['validation_status']);
+
+        $this->assertEquals('failed', $verificationDetail['status']);
+
+    }
+
 
     public function testSubmitPartnerKycFromMerchantKycFormForRiskyMerchant()
     {

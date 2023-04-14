@@ -39,7 +39,6 @@ class DefaultProcessorMock extends DefaultProcessor
         //
         // This config is not defined in application config , this is used in test case only
         //
-
         $this->setMockStatus($this->app['config']['services.bvs.response'] ?? Constant::SUCCESS);
 
         $this->setMockValidationDetail($this->app['config']['services.bvs.validationDetail'] ?? []);

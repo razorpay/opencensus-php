@@ -357,6 +357,11 @@ class Core extends Base\Core
                 Merchant\Constants::MERCHANT_MUTEX_RETRY_COUNT);
         }
 
+        if (isset($validationObj[Entity::METADATA]) === true)
+        {
+            $validation->setMetadata($validationObj[Entity::METADATA]);
+        }
+
         $this->mutex->acquireAndRelease(
             $merchantId,
             function() use ($validation, $merchantId) {
@@ -364,7 +369,6 @@ class Core extends Base\Core
 
                 $this->repo->transactionOnLiveAndTest(
                     function() use ($validation, $merchantId) {
-
 
                         $callbackHandlerFn = $this->getCallbackHandlerFunction($validation);
 

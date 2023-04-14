@@ -50,6 +50,7 @@ class Validator extends Base\Validator
         Entity::PG_USE_CASE                                                   => 'sometimes|string|max:500|min:50|nullable',
         Entity::MIQ_SHARING_DATE                                              => 'sometimes|integer',
         Entity::TESTING_CREDENTIALS_DATE                                      => 'sometimes|integer',
+        Entity::METADATA                                                      => 'sometimes|array',
     ];
 
     protected static $editRules   = [
@@ -86,6 +87,7 @@ class Validator extends Base\Validator
         Entity::PG_USE_CASE                                                   => 'sometimes|string|nullable|max:500|min:50',
         Entity::MIQ_SHARING_DATE                                              => 'sometimes|integer',
         Entity::TESTING_CREDENTIALS_DATE                                      => 'sometimes|integer',
+        Entity::METADATA                                                      => 'sometimes|array',
     ];
 
     /**

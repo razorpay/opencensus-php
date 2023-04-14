@@ -40,7 +40,7 @@ class PartnershipDeedOcrStatusUpdater extends VerificationDetailStatusUpdater
 
         $this->verificationDetailArtefactType=$this->artefactType;
 
-        $this->verificaationDetailValidationUnit=MVD\Constants::DOC;
+        $this->verificationDetailValidationUnit = MVD\Constants::DOC;
     }
 
 }

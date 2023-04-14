@@ -21,13 +21,22 @@ class BaseClient
 
     const AUTHORIZATION_KEY = 'Authorization';
 
-    const REQUEST_ID_KEY = 'X-Request-ID';
+    const REQUEST_ID_KEY    = 'X-Request-ID';
 
-    const CLIENT_ID_KEY = 'X-Client-ID';
+    const CLIENT_ID_KEY     = 'X-Client-ID';
+
+    const CONTENT_TYPE      = 'Content-Type';
+
+    const OWNER_ID          = 'owner_id';
 
     protected $headers;
 
-    function __construct()
+    /**
+     * @var mixed|null
+     */
+    protected $merchant;
+
+    function __construct($merchant = null)
     {
         $app = App::getFacadeRoot();
 
@@ -38,6 +47,8 @@ class BaseClient
         $this->config = $app['config']['services.ocr_service'];
 
         $this->host = $this->config['host'];
+
+        $this->merchant = $merchant;
     }
 
     private function getHeaders(): array
@@ -48,6 +59,8 @@ class BaseClient
             self::AUTHORIZATION_KEY => $auth,
             self::REQUEST_ID_KEY    => Request::getTaskId(),
             self::CLIENT_ID_KEY     => $this->config['client_id'],
+            self::CONTENT_TYPE      => 'application/json',
+            self::OWNER_ID          => $this->merchant->getId()
         ];
     }
 

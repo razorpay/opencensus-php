@@ -3,6 +3,7 @@
 namespace Unit\Models\Merchant\Detail;
 
 use App;
+use Queue;
 use Config;
 use Mockery;
 use ReflectionClass;
@@ -12,11 +13,14 @@ use RZP\Constants\Mode;
 use RZP\Services\Stork;
 use RZP\Models\Merchant\Store;
 use RZP\Models\Coupon\Constants;
+use RZP\Jobs\UpdateMerchantContext;
 use RZP\Models\Merchant\Detail\Core;
+use RZP\Services\KafkaMessageProcessor;
 use RZP\Services\KafkaProducerClient;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Services\Mock\ApachePinotClient;
 use RZP\Models\ClarificationDetail\Service;
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Tests\Traits\TestsStorkServiceRequests;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Services\Segment\EventCode as SegmentEvent;
@@ -2946,6 +2950,517 @@ class CoreTest extends TestCase
         $this->assertContains($queuedEmails->get(1)->getTemplate(),$expectedEmails);
     }
 
+    public function testGetApplicableActivationStatusPartnershipMccRequiresAdditionalDoc()
+    {
+        Mail::fake();
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 3,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+        ]);
+
+        $input = [
+            "experiment_id" => "LQzMXMbNCUramd",
+            "id"            => $merchantDetails->getId(),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'live',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+    }
+
+    public function testGetApplicableActivationStatusPartnershipWebsiteAbsent()
+    {
+        Mail::fake();
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 3,
+            'business_category'         => 'ecommerce',
+            'business_subcategory'      => 'baby_products',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+        ]);
+
+        $merchant = $this->fixtures->edit('merchant', $merchantDetails->getId(), [
+            'category'             => '5945',
+        ]);
+
+        $input = [
+            "experiment_id" => "LQzMXMbNCUramd",
+            "id"            => $merchant->getId(),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'live',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $this->assertEquals(Status::ACTIVATED, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+    }
+
+    public function testGetApplicableActivationStatusPartnershipWebsitePresentAppURLsAbsent()
+    {
+        Mail::fake();
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 3,
+            'business_category'         => 'ecommerce',
+            'business_subcategory'      => 'baby_products',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_website'          => 'https://google.com',
+        ]);
+
+        $merchant = $this->fixtures->edit('merchant', $merchantDetails->getId(), [
+            'category'             => '5945',
+        ]);
+
+        $input = [
+            "experiment_id" => "LQzMXMbNCUramd",
+            "id"            => $merchant->getId(),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'live',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+    }
+
+    public function testGetApplicableActivationStatusPartnershipWebsitePresentAppURLsPresent()
+    {
+        Mail::fake();
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 3,
+            'business_category'         => 'ecommerce',
+            'business_subcategory'      => 'baby_products',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_website'          => 'https://google.com',
+        ]);
+
+        $merchant = $this->fixtures->edit('merchant', $merchantDetails->getId(), [
+            'category'             => '5945',
+        ]);
+
+        $this->fixtures->create('merchant_business_detail', [
+            'merchant_id' => $merchant->getId(),
+            'app_urls' => [
+                'playstoreurl' => 'https://play.google.com/store/apps/details?id=com.whatsapp',
+            ]
+        ]);
+
+        $input = [
+            "experiment_id" => "LQzMXMbNCUramd",
+            "id"            => $merchant->getId(),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'live',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+    }
+
+    public function testGetApplicableActivationStatusPartnershipWebsitePresentNegativeKeywordFail()
+    {
+        Mail::fake();
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 3,
+            'business_category'         => 'ecommerce',
+            'business_subcategory'      => 'baby_products',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_website'          => 'https://google.com',
+        ]);
+
+        $merchant = $this->fixtures->edit('merchant', $merchantDetails->getId(), [
+            'category'             => '5945',
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::NEGATIVE_KEYWORDS,
+            'artefact_identifier'  => 'number',
+            'status'               => 'failed'
+        ]);
+
+        $input = [
+            "experiment_id" => "LQzMXMbNCUramd",
+            "id"            => $merchant->getId(),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'live',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $this->assertEquals(Status::UNDER_REVIEW, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+    }
+
+    public function testGetApplicableActivationStatusPartnershipWebsitePresentActivated()
+    {
+        Mail::fake();
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 3,
+            'business_category'         => 'ecommerce',
+            'business_subcategory'      => 'baby_products',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_website'          => 'https://google.com',
+        ]);
+
+        $merchant = $this->fixtures->edit('merchant', $merchantDetails->getId(), [
+            'category'             => '5945',
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::NEGATIVE_KEYWORDS,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02aT',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::WEBSITE_POLICY,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02aZ',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::MCC_CATEGORISATION_WEBSITE,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
+
+        $input = [
+            "experiment_id" => "LQzMXMbNCUramd",
+            "id"            => $merchant->getId(),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'live',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $this->assertEquals(Status::ACTIVATED, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+    }
+
+    public function testGetApplicableActivationStatusPartnershipWebsitePresentMccCategorisationFailed()
+    {
+        Mail::fake();
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 3,
+            'business_category'         => 'ecommerce',
+            'business_subcategory'      => 'baby_products',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_website'          => 'https://google.com',
+        ]);
+
+        $merchant = $this->fixtures->edit('merchant', $merchantDetails->getId(), [
+            'category'             => '5945',
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::NEGATIVE_KEYWORDS,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02aT',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::WEBSITE_POLICY,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02aZ',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::MCC_CATEGORISATION_WEBSITE,
+            'artefact_identifier'  => 'number',
+            'status'               => 'failed'
+        ]);
+
+        $input = [
+            "experiment_id" => "LQzMXMbNCUramd",
+            "id"            => $merchant->getId(),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'live',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+    }
+
+    public function testGetApplicableActivationStatusPartnershipWebsitePresentActivatedSplitzPilot()
+    {
+        Mail::fake();
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 3,
+            'business_category'         => 'ecommerce',
+            'business_subcategory'      => 'baby_products',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_website'          => 'https://google.com',
+        ]);
+
+        $merchant = $this->fixtures->edit('merchant', $merchantDetails->getId(), [
+            'category'             => '5945',
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::NEGATIVE_KEYWORDS,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02aT',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::WEBSITE_POLICY,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02aZ',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::MCC_CATEGORISATION_WEBSITE,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
+
+        $input = [
+            "experiment_id" => "LQzMXMbNCUramd",
+            "id"            => $merchant->getId(),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'pilot',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+
+        $businessDetail = $this->getDbLastEntity('merchant_business_detail');
+
+        $this->assertEquals(Status::ACTIVATED, $businessDetail['metadata']['activation_status']);
+    }
+
+    public function testGetApplicableActivationStatusPartnershipWebsiteAbsentSplitzPilot()
+    {
+        Mail::fake();
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 3,
+            'business_category'         => 'ecommerce',
+            'business_subcategory'      => 'baby_products',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+        ]);
+
+        $merchant = $this->fixtures->edit('merchant', $merchantDetails->getId(), [
+            'category'             => '5945',
+        ]);
+
+        $input = [
+            "experiment_id" => "LQzMXMbNCUramd",
+            "id"            => $merchant->getId(),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'pilot',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+
+        $businessDetail = $this->getDbLastEntity('merchant_business_detail');
+
+        $this->assertEquals(Status::ACTIVATED, $businessDetail['metadata']['activation_status']);
+    }
+
     public function testActivatedMccPendingActivationStatusCOI()
     {
         Mail::fake();
@@ -3320,6 +3835,660 @@ class CoreTest extends TestCase
         ]);
     }
 
+    public function testTriggerOcrServiceForMccCategorisationSuccess()
+    {
+        Config::set('services.ocr_service.mock', true);
+
+        Config::set('services.response', 'success');
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_Website'          => null
+        ]);
+
+        $merchant = $merchantDetails->merchant;
+
+        $admin = $this->fixtures->connection('live')->create('admin', [
+            'org_id' => OrgEntity::RAZORPAY_ORG_ID,
+        ]);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['isAutoKycDone'])
+                               ->getMock();
+
+        $detailCoreMock->expects($this->any())
+                       ->method('isAutoKycDone')
+                       ->willReturn(true);
+
+        $this->mockRazorxTreatment();
+
+        $ocrInput = [
+            'website_url' => 'http:razorpay.com'
+        ];
+
+        $detailCoreMock->triggerOCRService($ocrInput, 'mcc_categorisation');
+
+        $bvsValidation = $this->getDbEntity('bvs_validation',
+                                            ['owner_id'      => $merchantDetails->getId(),
+                                             'owner_type'    => 'merchant',
+                                             'artefact_type' => 'mcc_categorisation_website']);
+
+        $verificationData = $this->getDbEntity('merchant_verification_detail',
+                                               ['merchant_id'         => $merchantDetails->getId(),
+                                                'artefact_identifier' => 'number',
+                                                'artefact_type'       => 'mcc_categorisation_website']);
+
+        $this->assertNotNull($bvsValidation);
+
+        $this->assertEquals('captured', $bvsValidation['validation_status']);
+
+        $this->assertNotNull($verificationData);
+
+        $this->assertEquals('initiated', $verificationData['status']);
+
+    }
+
+    public function testTriggerOcrServiceForMccCategorisationFailure()
+    {
+        Config::set('services.ocr_service.mock', true);
+
+        Config::set('services.response', 'failure');
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_Website'          => null
+        ]);
+
+        $merchant = $merchantDetails->merchant;
+
+        $admin = $this->fixtures->connection('live')->create('admin', [
+            'org_id' => OrgEntity::RAZORPAY_ORG_ID,
+        ]);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['isAutoKycDone'])
+                               ->getMock();
+
+        $detailCoreMock->expects($this->any())
+                       ->method('isAutoKycDone')
+                       ->willReturn(true);
+
+        $this->mockRazorxTreatment();
+
+        $ocrInput = [
+            'website_url' => 'http:razorpay.com'
+        ];
+
+        $detailCoreMock->triggerOCRService($ocrInput, 'mcc_categorisation');
+
+        $bvsValidation = $this->getDbEntity('bvs_validation',
+                                            ['owner_id'        => $merchantDetails->getId(),
+                                             'owner_type'      => 'merchant',
+                                             'artefact_type'   => 'mcc_categorisation_website']);
+
+        $verificationData = $this->getDbEntity('merchant_verification_detail',
+                                               ['merchant_id'          => $merchantDetails->getId(),
+                                                'artefact_identifier'  => 'number',
+                                                'artefact_type'        => 'mcc_categorisation_website']);
+
+        $this->assertNull($bvsValidation);
+
+        $this->assertNull($verificationData);
+    }
+
+    public function testMccEventResponseSuccessWithConfidenceScoreAboveThreshold()
+    {
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_Website'          => null
+        ]);
+
+        $bvsValidationData = [
+            'validation_id'     => 'LGjQP2ZQxa02ms',
+            'artefact_type'     => 'mcc_categorisation_website',
+            'owner_id'          => $merchantDetails->getMerchantId(),
+            'validation_status' => 'captured'
+        ];
+
+        $this->fixtures->create('bvs_validation', $bvsValidationData);
+
+        $this->fixtures->on('live')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => 'mcc_categorisation_website',
+            'artefact_identifier'  => 'number',
+        ]);
+
+        $this->fixtures->on('test')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => 'mcc_categorisation_website',
+            'artefact_identifier'  => 'number',
+        ]);
+
+        $kafkaEventPayload = [
+            'data' => [
+                'id'              => 'LGjQP2ZQxa02ms',
+                'status'          => 'completed',
+                'category_result' => [
+                    'website_categorisation' => [
+                        'category'         => 'financial_services',
+                        'subcategory'      => 'trading',
+                        'predicted_mcc'    => 6211,
+                        'confidence_score' => 0.91,
+                        'status'           => 'completed'
+                    ]
+                ]
+            ]
+        ];
+
+        (new KafkaMessageProcessor)->process('pg-mcc-notification-events', $kafkaEventPayload, 'test');
+
+        $newBvsValidationData = $this->getDbEntity('bvs_validation',
+                                            ['owner_id'        => $merchantDetails->getId(),
+                                             'owner_type'      => 'merchant',
+                                             'artefact_type'   => 'mcc_categorisation_website']);
+
+        $verificationData = $this->getDbEntity('merchant_verification_detail',
+                                               ['merchant_id'          => $merchantDetails->getId(),
+                                                'artefact_identifier'  => 'number',
+                                                'artefact_type'        => 'mcc_categorisation_website']);
+
+        $this->assertEquals('success', $newBvsValidationData['validation_status']);
+
+        $this->assertEquals('verified', $verificationData['status']);
+    }
+
+    public function testOCRPassedActivatedSplitzLive()
+    {
+        Queue::fake();
+
+        $this->mockRazorxTreatment();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'category'  => '5945',
+            'category2' => 'ecommerce'
+        ]);
+
+        $input = [
+            "experiment_id" => "LQzMXMbNCUramd",
+            "id"            => $merchant->getId()
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'live',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail:valid_fields', [
+            'merchant_id'               => $merchant->getId(),
+            'business_type'             => 4,
+            'business_category'         => 'ecommerce',
+            'business_subcategory'      => 'baby_products',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_website'          => 'https://www.sukhdev.org',
+            'bank_details_verification_status'     => 'verified',
+            'gstin_verification_status'            => 'verified',
+            'company_pan_verification_status'      => 'verified',
+            'bank_details_doc_verification_status' =>  null,
+            Entity::CIN_VERIFICATION_STATUS        => 'verified',
+        ]);
+
+        $bvsValidationData = [
+            'validation_id'     => 'LGjQP2ZQxa02ms',
+            'artefact_type'     => 'mcc_categorisation_website',
+            'owner_id'          => $merchantDetails->getMerchantId(),
+            'validation_status' => 'captured'
+        ];
+
+        $this->fixtures->create('bvs_validation', $bvsValidationData);
+
+        $this->fixtures->on('live')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => 'mcc_categorisation_website',
+            'artefact_identifier'  => 'number',
+        ]);
+
+        $this->fixtures->on('test')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => 'mcc_categorisation_website',
+            'artefact_identifier'  => 'number',
+        ]);
+
+        $this->fixtures->create('bvs_validation', [
+            'validation_id'     => 'L61kGPVWKT05Qx',
+            'artefact_type'     => 'website_policy',
+            'owner_id'          => $merchantDetails->getMerchantId(),
+            'validation_status' => 'captured'
+        ]);
+
+        $this->fixtures->on('live')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02at',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => 'website_policy',
+            'artefact_identifier'  => 'number',
+        ]);
+
+        $this->fixtures->on('test')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02at',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => 'website_policy',
+            'artefact_identifier'  => 'number',
+        ]);
+
+        $kafkaEventPayload = [
+            'data' => [
+                'id'              => 'LGjQP2ZQxa02ms',
+                'status'          => 'completed',
+                'category_result' => [
+                    'website_categorisation' => [
+                        'category'         => 'financial_services',
+                        'subcategory'      => 'trading',
+                        'predicted_mcc'    => 6211,
+                        'confidence_score' => 0.91,
+                        'status'           => 'completed'
+                    ]
+                ]
+            ]
+        ];
+
+        (new KafkaMessageProcessor)->process('pg-mcc-notification-events', $kafkaEventPayload, 'test');
+
+        $kafkaEventPayload = [
+            'data' => [
+                "website_verification_id" => "L61kGPVWKT05Qx",
+                "status" => "completed",
+                "verification_result" => [
+                    "terms" => [
+                        "analysis_result" => [
+                            "links_found" => ["https://www.sukhdev.org/termsofuse"],
+                            "confidence_score" => 0.5775,
+                            "relevant_details" => [],
+                            "validation_result" => true,
+                        ],
+                    ],
+                    "refund" => [
+                        "analysis_result" => [
+                            "links_found" => ["https://www.sukhdev.org/refundpolicy"],
+                            "confidence_score" => 0.6185,
+                            "relevant_details" => [],
+                            "validation_result" => true,
+                        ],
+                    ],
+                    "privacy" => [
+                        "analysis_result" => [
+                            "links_found" => ["https://www.sukhdev.org/privacypolicy"],
+                            "confidence_score" => 0.7067197799682617,
+                            "relevant_details" => [
+                                "note" =>
+                                    "Privacy Policy is majorly about Third Party Sharing/Collection, International and Specific Audiences, User Choice/Control, Practice not covered, Privacy contact information, Privacy Policy includes the following attributes Named third party, Unnamed third party, Does, Receive/Shared with, Aggregated or anonymized, Identifiable, User with account, Opt-out via contacting company, First party use,",
+                            ],
+                            "validation_result" => true,
+                        ],
+                    ],
+                    "contact_us" => [
+                        "analysis_result" => [
+                            "links_found" => ["https://www.sukhdev.org/contactus"],
+                            "relevant_details" => ["9987394065", "sukhdevonline@gmail.com"],
+                            "validation_result" => true,
+                        ],
+                    ],
+                    "shipping" => [
+                        "analysis_result" => [
+                            "links_found" => ["https://www.sukhdev.org/shipping"],
+                            "relevant_details" => ["9987394065", "sukhdevonline@gmail.com"],
+                            "validation_result" => true,
+                        ],
+                    ],
+                ],
+            ]
+        ];
+
+        (new KafkaMessageProcessor)->process('pg-website-verification-notification-events', $kafkaEventPayload, 'test');
+
+        $this->fixtures->create('bvs_validation', [
+            'validation_id'     => 'L61kGPVWKT05QT',
+            'artefact_type'     => 'website_policy',
+            'owner_id'          => $merchantDetails->getMerchantId(),
+            'validation_status' => 'captured'
+        ]);
+
+        $this->fixtures->on('live')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02am',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => 'negative_keywords',
+            'artefact_identifier'  => 'number',
+        ]);
+
+        $this->fixtures->on('test')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02am',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => 'negative_keywords',
+            'artefact_identifier'  => 'number',
+        ]);
+
+        $kafkaEventPayload = [
+            "data" =>[
+                "id" => "L61kGPVWKT05QT",
+                "status" => "success",
+                "document_details" => [
+                    "result" => [
+                        "prohibited" => [
+                            "drugs" => [
+                                "Phrases" => [
+                                    "cannabis" => 0,
+                                ],
+                                "total_count" => 0,
+                                "unique_count" => 0
+                            ],
+                            "financial services" => [
+                                "Phrases" => [
+                                    "investment" => 0
+                                ],
+                                "total_count" => 0,
+                                "unique_count" => 0
+                            ],
+                            "miscellaneous" => [
+                                "Phrases" => [
+                                    "cash" => 0,
+                                    "cigarette" => 0,
+                                ],
+                                "total_count" => 0,
+                                "unique_count" => 0
+                            ],
+                            "pharma" => [
+                                "Phrases" => [
+                                    "alcohol" => 0,
+                                    "cannabinoid" => 0,
+                                    "codeine" => 0,
+                                ],
+                                "total_count" => 0,
+                                "unique_count" => 0
+                            ],
+                            "tobacco products" => [
+                                "Phrases" => [
+                                    "tobacco" => 0
+                                ],
+                                "total_count" => 0,
+                                "unique_count" => 0
+                            ],
+                            "travel" => [
+                                "Phrases" => [
+                                    "booking" => 0,
+                                    "travel" => 0
+                                ],
+                                "total_count" => 0,
+                                "unique_count" => 0
+                            ]
+                        ],
+                        "required" => [
+                            "policy disclosure" => [
+                                "Phrases" => [
+                                    "cancellations" => 1,
+                                    "claims" => 11,
+                                    "contact us" => 1,
+                                    "delivery" => 46,
+                                    "payment" => 4,
+                                    "payments" => 2,
+                                    "privacy" => 5,
+                                    "privacy policy" => 8,
+                                    "refund" => 6,
+                                    "refund policy" => 4,
+                                    "refunds" => 1,
+                                    "return" => 3,
+                                    "return policy" => 2,
+                                    "returns" => 3,
+                                    "terms of service" => 1
+                                ],
+                                "total_count" => 98,
+                                "unique_count" => 15
+                            ],
+                        ],
+                    ],
+                    "website_url" => "https://www.hempstrol.com"
+                ]
+            ]
+        ];
+
+        (new KafkaMessageProcessor)->process('api-bvs-kyc-document-result-events', $kafkaEventPayload, 'test');
+
+        Queue::assertPushed(UpdateMerchantContext::class);
+
+        (new UpdateMerchantContext(Mode::LIVE, $merchantDetails->getId(), 'L61kGPVWKT05QT'))->handle();
+
+        $newBvsValidationData = $this->getDbEntity('bvs_validation',
+                                                   ['owner_id'        => $merchantDetails->getId(),
+                                                    'owner_type'      => 'merchant',
+                                                    'artefact_type'   => 'mcc_categorisation_website']);
+
+        $verificationData = $this->getDbEntity('merchant_verification_detail',
+                                               ['merchant_id'          => $merchantDetails->getId(),
+                                                'artefact_identifier'  => 'number',
+                                                'artefact_type'        => 'mcc_categorisation_website']);
+
+        $merchantData = $this->getDbEntity('merchant',
+                                            ['id' => $merchantDetails->getId()]);
+
+        $merchantDetailsData =  $this->getDbEntity('merchant_detail',
+                                                   ['merchant_id' => $merchantDetails->getId()]);
+
+        $this->assertEquals('success', $newBvsValidationData['validation_status']);
+
+        $this->assertEquals('verified', $verificationData['status']);
+
+        $this->assertEquals('6211', $merchantData['category']);
+
+        $this->assertEquals('financial_services', $merchantData['category2']);
+
+        $this->assertEquals('financial_services', $merchantDetailsData['business_category']);
+
+        $this->assertEquals('trading', $merchantDetailsData['business_subcategory']);
+
+        $merchantWebsiteDetail = $this->getDbLastEntity('merchant_website');
+
+        $this->assertEquals([
+            'terms' =>  ['url' => "https://www.sukhdev.org/termsofuse"],
+            'refund' =>  ['url' => "https://www.sukhdev.org/refundpolicy"],
+            'privacy' =>  ['url' => "https://www.sukhdev.org/privacypolicy"],
+            'contact_us' =>  ['url' => "https://www.sukhdev.org/contactus"],
+            'shipping' =>  ['url' => "https://www.sukhdev.org/shipping"],
+        ], $merchantWebsiteDetail['admin_website_details']['website']['https://www.sukhdev.org']);
+    }
+
+    public function testMccEventResponseSuccessWithConfidenceScoreBelowThreshold()
+    {
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_Website'          => null
+        ]);
+
+        $bvsValidationData = [
+            'validation_id'     => 'LGjQP2ZQxa02ms',
+            'artefact_type'     => 'mcc_categorisation_website',
+            'owner_id'          => $merchantDetails->getMerchantId(),
+            'validation_status' => 'captured'
+        ];
+
+        $this->fixtures->create('bvs_validation', $bvsValidationData);
+
+        $this->fixtures->on('live')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => 'mcc_categorisation_website',
+            'artefact_identifier'  => 'number',
+        ]);
+
+        $this->fixtures->on('test')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => 'mcc_categorisation_website',
+            'artefact_identifier'  => 'number',
+        ]);
+
+        $kafkaEventPayload = [
+            'data' => [
+                'id'              => 'LGjQP2ZQxa02ms',
+                'status'          => 'completed',
+                'category_result' => [
+                    'website_categorisation' => [
+                        'category'         => 'financial_services',
+                        'subcategory'      => 'trading',
+                        'predicted_mcc'    => 6211,
+                        'confidence_score' => 0.88,
+                        'status'           => 'completed'
+                    ]
+                ]
+            ]
+        ];
+
+        (new KafkaMessageProcessor)->process('pg-mcc-notification-events', $kafkaEventPayload, 'test');
+
+        $newBvsValidationData = $this->getDbEntity('bvs_validation',
+                                                   ['owner_id'        => $merchantDetails->getId(),
+                                                    'owner_type'      => 'merchant',
+                                                    'artefact_type'   => 'mcc_categorisation_website']);
+
+        $verificationData = $this->getDbEntity('merchant_verification_detail',
+                                               ['merchant_id'          => $merchantDetails->getId(),
+                                                'artefact_identifier'  => 'number',
+                                                'artefact_type'        => 'mcc_categorisation_website']);
+
+        $this->assertEquals('success', $newBvsValidationData['validation_status']);
+
+        $this->assertEquals('failed', $verificationData['status']);
+
+    }
+
+    public function testMccEventResponseFailure()
+    {
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_Website'          => null
+        ]);
+
+        $bvsValidationData = [
+            'validation_id'     => 'LGjQP2ZQxa02ms',
+            'artefact_type'     => 'mcc_categorisation_website',
+            'owner_id'          => $merchantDetails->getMerchantId(),
+            'validation_status' => 'captured'
+        ];
+
+        $this->fixtures->create('bvs_validation', $bvsValidationData);
+
+        $this->fixtures->on('live')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => 'mcc_categorisation_website',
+            'artefact_identifier'  => 'number',
+        ]);
+
+        $this->fixtures->on('test')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => 'mcc_categorisation_website',
+            'artefact_identifier'  => 'number',
+        ]);
+
+        $kafkaEventPayload = [
+            'data' => [
+                'id'              => 'LGjQP2ZQxa02ms',
+                'status'          => 'completed',
+                'category_result' => [
+                    'website_categorisation' => [
+                        'error_code'    => 'EXTERNAL_VENDOR_ERROR',
+                        'error_reason'  => "Google NLP Couldn't classify",
+                        'status'        => 'failed'
+
+                    ]
+                ]
+            ]
+        ];
+
+        (new KafkaMessageProcessor)->process('pg-mcc-notification-events', $kafkaEventPayload, 'test');
+
+        $newBvsValidationData = $this->getDbEntity('bvs_validation',
+                                                   ['owner_id'        => $merchantDetails->getId(),
+                                                    'owner_type'      => 'merchant',
+                                                    'artefact_type'   => 'mcc_categorisation_website']);
+
+        $verificationData = $this->getDbEntity('merchant_verification_detail',
+                                               ['merchant_id'          => $merchantDetails->getId(),
+                                                'artefact_identifier'  => 'number',
+                                                'artefact_type'        => 'mcc_categorisation_website']);
+
+        $this->assertEquals('failed', $newBvsValidationData['validation_status']);
+
+        $this->assertEquals('failed', $verificationData['status']);
+    }
+
     public function testTerminalCreationForRegularMerchant()
     {
         Mail::fake();
@@ -3544,17 +4713,152 @@ class CoreTest extends TestCase
         $this->assertTrue($showFirstPaymentBannerData[StoreConfigKey::SHOW_FIRST_PAYMENT_BANNER]);
     }
 
+    public function testTriggerOcrServiceForWebsitePolicySuccess()
+    {
+        Config::set('services.ocr_service.mock', true);
+
+        Config::set('services.response', 'success');
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_Website'          => null
+        ]);
+
+        $merchant = $merchantDetails->merchant;
+
+        $admin = $this->fixtures->connection('live')->create('admin', [
+            'org_id' => OrgEntity::RAZORPAY_ORG_ID,
+        ]);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+
+        $this->mockRazorxTreatment();
+
+        $ocrInput = [
+            'website_url' => 'http:razorpay.com'
+        ];
+
+        $detailCoreMock->triggerOCRService($ocrInput, 'website_policy');
+
+        $bvsValidation = $this->getDbEntity('bvs_validation', [
+            'owner_id'        => $merchantDetails->getId(),
+            'owner_type'      => 'merchant',
+            'artefact_type'   => 'website_policy'
+        ]);
+
+        $verificationData = $this->getDbEntity('merchant_verification_detail', [
+            'merchant_id'          => $merchantDetails->getId(),
+            'artefact_identifier'  => 'number',
+            'artefact_type'        => 'website_policy'
+        ]);
+
+        $this->assertNotNull($bvsValidation);
+
+        $this->assertEquals('captured', $bvsValidation['validation_status']);
+
+        $this->assertNotNull($verificationData);
+
+        $this->assertEquals('initiated', $verificationData['status']);
+    }
+
+    public function testTriggerOcrServiceForWebsitePolicyFailure()
+    {
+        Config::set('services.ocr_service', true);
+
+        Config::set('services.response', 'failure');
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_Website'          => null
+        ]);
+
+        $merchant = $merchantDetails->merchant;
+
+        $admin = $this->fixtures->connection('live')->create('admin', [
+            'org_id' => OrgEntity::RAZORPAY_ORG_ID,
+        ]);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $this->mockRazorxTreatment();
+
+        $ocrInput = [
+            'website_url' => 'http:razorpay.com'
+        ];
+
+        $detailCoreMock->triggerOCRService($ocrInput, 'website_policy');
+
+        $bvsValidation = $this->getDbEntity('bvs_validation',
+            ['owner_id'        => $merchantDetails->getId(),
+                'owner_type'      => 'merchant',
+                'artefact_type'   => 'website_policy']);
+
+        $verificationData = $this->getDbEntity('merchant_verification_detail',
+            ['merchant_id'          => $merchantDetails->getId(),
+                'artefact_identifier'  => 'number',
+                'artefact_type'        => 'website_policy']);
+
+        $this->assertNull($bvsValidation);
+
+        $this->assertNull($verificationData);
+    }
+
     public function testUpdateActivationStatusFromAMPToKQU()
     {
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
-                               ->getMock();
+            ->setMethods(['isAutoKycDone'])
+            ->getMock();
 
         $detailCoreMock->expects($this->any())
-                       ->method('isAutoKycDone')
-                       ->willReturn(true);
+            ->method('isAutoKycDone')
+            ->willReturn(true);
 
         $this->fixtures->create('merchant', ['business_banking' => 1]);
 
@@ -3614,12 +4918,12 @@ class CoreTest extends TestCase
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
-                               ->getMock();
+            ->setMethods(['isAutoKycDone'])
+            ->getMock();
 
         $detailCoreMock->expects($this->any())
-                       ->method('isAutoKycDone')
-                       ->willReturn(false);
+            ->method('isAutoKycDone')
+            ->willReturn(false);
 
         $this->fixtures->create('merchant', ['business_banking' => 1]);
 
@@ -3674,13 +4978,161 @@ class CoreTest extends TestCase
         $this->assertEquals('kyc_qualified_unactivated', $merchantDetailData['activation_status']);
     }
 
+    public function testTriggerOcrServiceForNegativeKeywordsSuccess()
+    {
+        Config::set('services.ocr_service.mock', true);
+
+        Config::set('services.response', 'success');
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_Website'          => null
+        ]);
+
+        $merchant = $merchantDetails->merchant;
+
+        $admin = $this->fixtures->connection('live')->create('admin', [
+            'org_id' => OrgEntity::RAZORPAY_ORG_ID,
+        ]);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+
+        $this->mockRazorxTreatment();
+
+        $ocrInput = [
+            'website_url' => 'http:razorpay.com'
+        ];
+
+        $detailCoreMock->triggerOCRService([
+            'owner_id'                                  => $merchantDetails->getId(),
+            'platform'                                  => Constant::PG,
+            Constant::DOCUMENT_TYPE                     => Constant::SITE_CHECK,
+            Constant::DETAILS                           => $ocrInput
+        ], Constant::NEGATIVE_KEYWORDS);;
+
+        $bvsValidation = $this->getDbEntity('bvs_validation', [
+            'owner_id'        => $merchantDetails->getId(),
+            'owner_type'      => 'merchant',
+            'artefact_type'   => 'negative_keywords'
+        ]);
+
+        $verificationData = $this->getDbEntity('merchant_verification_detail', [
+            'merchant_id'          => $merchantDetails->getId(),
+            'artefact_identifier'  => 'number',
+            'artefact_type'        => 'negative_keywords'
+        ]);
+
+        $this->assertNotNull($bvsValidation);
+
+        $this->assertEquals('captured', $bvsValidation['validation_status']);
+
+        $this->assertNotNull($verificationData);
+
+        $this->assertEquals('initiated', $verificationData['status']);
+    }
+
+    public function testTriggerOcrServiceForNegativeKeywordsFailure()
+    {
+        Config::set('services.ocr_service.mock', true);
+
+        Config::set('services.response', 'failure');
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_Website'          => null
+        ]);
+
+        $merchant = $merchantDetails->merchant;
+
+        $admin = $this->fixtures->connection('live')->create('admin', [
+            'org_id' => OrgEntity::RAZORPAY_ORG_ID,
+        ]);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+
+        $this->mockRazorxTreatment();
+
+        $ocrInput = [
+            'website_url' => 'http:razorpay.com'
+        ];
+
+        $detailCoreMock->triggerOCRService([
+            'owner_id'                                  => $merchantDetails->getId(),
+            'platform'                                  => Constant::PG,
+            Constant::DOCUMENT_TYPE                     => Constant::SITE_CHECK,
+            Constant::DETAILS                           => $ocrInput
+        ], Constant::NEGATIVE_KEYWORDS);;
+
+        $bvsValidation = $this->getDbEntity('bvs_validation', [
+            'owner_id'        => $merchantDetails->getId(),
+            'owner_type'      => 'merchant',
+            'artefact_type'   => 'negative_keywords'
+        ]);
+
+        $verificationData = $this->getDbEntity('merchant_verification_detail', [
+            'merchant_id'          => $merchantDetails->getId(),
+            'artefact_identifier'  => 'number',
+            'artefact_type'        => 'negative_keywords'
+        ]);
+
+        $this->assertNull($bvsValidation);
+
+        $this->assertNull($verificationData);
+    }
+
     public function testUpdateActivationStatusFromKQUToActivated()
     {
         Mail::fake();
 
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)
-                               ->setMethods(['isAutoKycDone'])
-                               ->getMock();
+            ->setMethods(['isAutoKycDone'])
+            ->getMock();
 
         $this->fixtures->create('merchant', ['business_banking' => 1]);
 

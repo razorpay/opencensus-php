@@ -105,6 +105,15 @@ class Factory
             case Constant::COMMON:
                 return new NullStatusUpdater($merchant,$merchantDetails, $validation);
 
+            case Constant::WEBSITE_POLICY:
+                return new WebsitePolicyStatusUpdater($merchant, $merchantDetails, $validation);
+
+            case Constant::NEGATIVE_KEYWORDS:
+                return new NegativeKeywordsStatusUpdater($merchant, $merchantDetails, $validation);
+
+            case Constant::MCC_CATEGORISATION_WEBSITE:
+                return new MccCategorisationStatusUpdater($merchant, $merchantDetails, $validation);
+
             default :
 
                 throw new LogicException(

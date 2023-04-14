@@ -25,7 +25,7 @@ class VerificationDetailStatusUpdater extends BaseStatusUpdater
 
     protected $verificationDetailArtefactType;
 
-    protected $verificaationDetailValidationUnit;
+    protected $verificationDetailValidationUnit;
 
     /**
      * DefaultStatusUpdate constructor.
@@ -59,16 +59,9 @@ class VerificationDetailStatusUpdater extends BaseStatusUpdater
         {
             $documentValidationStatus = $this->getDocumentValidationStatus($validation);
 
-            $verificationDetail = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifier(
-                $this->merchant->getId(),
-                $this->verificationDetailArtefactType,
-                $this->verificaationDetailValidationUnit
-            );
+            $payload = $this->getVerificationDetailsPayload($validation, $documentValidationStatus);
 
-            $verificationDetail->setAttribute(MVD\Entity::STATUS, $documentValidationStatus);
-
-            $this->repo->merchant_verification_detail->saveOrFail($verificationDetail);
-
+            (new MVD\Core)->createOrEditVerificationDetail($this->merchantDetails, $payload);
             //
             // if $documentValidationStatus is null then don't send any metrics
             //
@@ -91,6 +84,10 @@ class VerificationDetailStatusUpdater extends BaseStatusUpdater
         }
 
         $this->sendConsumedValidationResultEvent();
+
+        $this->app['segment-analytics']->buildRequestAndSend();
+
+        $this->updateMerchantContext();
     }
 
     public function updateStatusToPending(): void
@@ -98,13 +95,24 @@ class VerificationDetailStatusUpdater extends BaseStatusUpdater
         $verificationDetail = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifier(
             $this->merchant->getId(),
             $this->verificationDetailArtefactType,
-            $this->verificaationDetailValidationUnit
+            $this->verificationDetailValidationUnit
         );
 
         $verificationDetail->setAttribute(MVD\Entity::STATUS, Constants::PENDING);
     }
+
     public function canUpdateMerchantContext(): bool
     {
         return true;
+    }
+
+    public function getVerificationDetailsPayload($validation, $documentValidationStatus)
+    {
+        return [
+            MVD\Entity::STATUS               => $documentValidationStatus,
+            MVD\Entity::MERCHANT_ID          => $this->merchant->getId(),
+            MVD\Entity::ARTEFACT_TYPE        => $this->verificationDetailArtefactType,
+            MVD\Entity::ARTEFACT_IDENTIFIER  => $this->verificationDetailValidationUnit,
+        ];
     }
 }

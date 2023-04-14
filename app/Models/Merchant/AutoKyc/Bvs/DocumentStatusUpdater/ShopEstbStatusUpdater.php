@@ -37,8 +37,8 @@ class ShopEstbStatusUpdater extends VerificationDetailStatusUpdater
     {
         parent::__construct($merchant,$merchantDetails, $consumedValidation,$entity);
 
-        $this->verificationDetailArtefactType=MVD\Constants::SHOP_ESTABLISHMENT;
+        $this->verificationDetailArtefactType = MVD\Constants::SHOP_ESTABLISHMENT;
 
-        $this->verificaationDetailValidationUnit=MVD\Constants::DOC;
+        $this->verificationDetailValidationUnit = MVD\Constants::DOC;
     }
 }

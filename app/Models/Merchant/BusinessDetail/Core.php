@@ -43,6 +43,11 @@ class Core extends Base\Core
                         $input[Entity::APP_URLS] = $this->mergeJson($businessDetail->getAppUrls(), $input[Entity::APP_URLS]);
                     }
 
+                    if (empty($input[Entity::METADATA]) === false)
+                    {
+                        $input[Entity::METADATA] = $this->mergeJson($businessDetail->getMetadata(), $input[Entity::METADATA]);
+                    }
+
                     if (isset($input[Constants::TXN_URL]) === true)
                     {
                         $appUrls = $this->updatedAppUrlsWithTxnPlaystoreUrls($input[Constants::TXN_URL], $businessDetail);

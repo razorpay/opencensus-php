@@ -4,7 +4,6 @@
 namespace RZP\Models\Merchant\BusinessDetail;
 
 use RZP\Models\Base;
-use RZP\Gateway\Base\Entity;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
 use RZP\Modules\Acs\Wrapper\MerchantBusinessDetail as MerchantBusinessDetailWrapper;
 
@@ -14,7 +13,7 @@ class Repository extends Base\Repository
 
     protected $entity = 'merchant_business_detail';
 
-    public function getBusinessDetailsForMerchantId(string $merchantId)
+    public function getBusinessDetailsForMerchantId(string $merchantId): ?Entity
     {
         return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)

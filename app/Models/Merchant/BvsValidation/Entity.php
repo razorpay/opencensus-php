@@ -19,6 +19,7 @@ class Entity extends PublicEntity
     const CREATED_AT            = 'created_at';
     const UPDATED_AT            = 'updated_at';
     const FUZZY_SCORE           = 'fuzzy_score';
+    const METADATA              = 'metadata';
 
     protected $primaryKey       = self::VALIDATION_ID;
 
@@ -126,4 +127,15 @@ class Entity extends PublicEntity
     {
         return $this->getAttribute(self::FUZZY_SCORE);
     }
+
+    public function setMetadata(array $metadata)
+    {
+        $this->setAttribute(self::METADATA, $metadata);
+    }
+
+    public function getMetadata(): array
+    {
+        return $this->getAttribute(self::METADATA);
+    }
+
 }

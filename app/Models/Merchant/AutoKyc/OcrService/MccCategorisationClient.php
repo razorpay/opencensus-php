@@ -8,7 +8,7 @@ class MccCategorisationClient extends BaseClient
 
     const GET_MCC_PATH = '/mcc/api/v1/get_mcc_details';
 
-    public function createCategorisationJob(array $payload): ?string
+    public function createCategorisationJob(array $payload)
     {
         $url = $this->config['host'] . self::CATEGORISE_MCC_PATH;
 
@@ -16,9 +16,7 @@ class MccCategorisationClient extends BaseClient
 
         if ($response->status_code >= 200 and $response->status_code <= 299)
         {
-            $responseBody = json_decode($response->body, true);
-
-            return $responseBody['reference_id'];
+            return json_decode($response->body, true);
         }
 
         return null;

@@ -733,8 +733,6 @@ final class RazorxTreatment
     //Experiment to create dedicated UPI terminal
     const UPI_DEDICATED_TERMINAL = 'upi_dedicated_terminal';
 
-    const AUTOMATION_ACTIVATION = 'automation_activation';
-
     // Unexpected payment refund delay to T+1
     const UNEXPECTED_PAYMENT_REFUND_DELAY = 'unexpected_payment_refund_delay';
 

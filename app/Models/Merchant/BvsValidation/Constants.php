@@ -23,6 +23,7 @@ class Constants
     const ERROR_DESCRIPTION     = 'error_description';
     const RULE_EXECUTION_LIST   = 'rule_execution_list';
     const ENRICHMENT_DETAILS    = 'enrichmentDetails';
+    const ERROR_REASON          = 'error_reason';
 
     const BVS_KYC_VERIFICATION_RESULT       = 'bvs_kyc_verification_result';
     const MATCH                             = 'match';
@@ -55,7 +56,7 @@ class Constants
     const VALIDATION_STATUS = [
         self::SUCCESS,
         self::FAILED,
-        self::CAPTURED,
+        self::CAPTURED
     ];
 
     const VALIDATION_UNIT = [
@@ -109,4 +110,6 @@ class Constants
     ];
 
     const BANK_ACCOUNT = 'bank_account';
+
+    const RESULT       = 'result';
 }

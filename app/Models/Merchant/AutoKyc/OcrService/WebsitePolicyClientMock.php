@@ -11,11 +11,14 @@ class WebsitePolicyClientMock
         $this->mockStatus = $mockStatus;
     }
 
-    public function createWebsitePolicyJob(array $payload): ?string
+    public function createWebsitePolicyJob(array $payload)
     {
         return match ($this->mockStatus)
         {
-            'success' => 'LB6DS0KgCW0AFO',
+            'success' => [
+                'website_verification_id'   => 'LB6DS0KgCW0AFO',
+                'status'                    => 'initiated',
+            ],
             default   => null,
         };
     }

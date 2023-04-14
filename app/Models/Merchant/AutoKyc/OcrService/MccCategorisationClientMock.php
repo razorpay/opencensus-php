@@ -11,11 +11,14 @@ class MccCategorisationClientMock
         $this->mockStatus = $mockStatus;
     }
 
-    public function createCategorisationJob(array $payload): ?string
+    public function createCategorisationJob(array $payload)
     {
         return match ($this->mockStatus)
         {
-            'success' => 'LB6FunePO70FzC',
+            'success' => [
+                'id'     => 'LGjQP2ZQxa02ms',
+                'status' => 'initiated',
+            ],
             default   => null,
         };
     }
@@ -25,11 +28,16 @@ class MccCategorisationClientMock
         return match ($this->mockStatus)
         {
             'success' => [
-                'website_result' => [
-                    'category'          => 'financial_services',
-                    'subcategory'       => 'trading',
-                    'predicted_mcc'     => 6211,
-                    'confidence_score'  => 0.81
+                'id' => 'LGjQP2ZQxa02ms',
+                'status' => 'completed',
+                'category_result' => [
+                    'website_categorisation' => [
+                        'category'          => 'financial_services',
+                        'subcategory'       => 'trading',
+                        'predicted_mcc'     => 6211,
+                        'confidence_score'  => 0.81,
+                        'status'            => 'completed'
+                    ]
                 ]
             ],
             default   => null,

@@ -40,6 +40,6 @@ class GstCertificateOcrStatusUpdater extends VerificationDetailStatusUpdater
 
         $this->verificationDetailArtefactType=Constant::GSTIN;
 
-        $this->verificaationDetailValidationUnit=MVD\Constants::DOC;
+        $this->verificationDetailValidationUnit = MVD\Constants::DOC;
     }
 }

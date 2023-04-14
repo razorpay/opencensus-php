@@ -3573,7 +3573,8 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => "Enter a live/operational URL. You can enter it later if you don't have a live URL now",                ],
+                    'description' => "Enter a live/operational URL. You can enter it later if you don't have a live URL now"
+                ],
             ],
             'status_code' => 400,
         ],
@@ -3598,7 +3599,7 @@ return [
         ],
     ],
 
-    'testWebsiteNotLiveRazorxOff' => [
+    'testWebsiteNotLiveSplitzOff' => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/merchant/activation',
@@ -3614,7 +3615,7 @@ return [
         ],
     ],
 
-    'testWebsiteNotLiveRazorxPilot' => [
+    'testWebsiteNotLiveSplitzPilot' => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/merchant/activation',
@@ -3626,7 +3627,8 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => "Enter a live/operational URL. You can enter it later if you don't have a live URL now",                ],
+                    'description' => "Enter a live/operational URL. You can enter it later if you don't have a live URL now"
+                ],
             ],
             'status_code' => 400,
         ],

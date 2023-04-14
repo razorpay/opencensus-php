@@ -20,8 +20,10 @@ class Factory
      *
      * @param       $merchant
      *
+     * @param null  $ocrServiceName
+     *
      * @return Processor
-     * @throws \RZP\Exception\LogicException
+     * @throws LogicException
      */
     public function getProcessor(array $input, $merchant, $ocrServiceName = null): Processor
     {

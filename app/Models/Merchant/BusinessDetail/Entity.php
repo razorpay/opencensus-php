@@ -32,6 +32,7 @@ class Entity extends Base\PublicEntity
     const PG_USE_CASE                   = 'pg_use_case';
     const MIQ_SHARING_DATE              = 'miq_sharing_date';
     const TESTING_CREDENTIALS_DATE      = 'testing_credentials_date';
+    const METADATA                      = 'metadata';
 
     protected $entity = 'merchant_business_detail';
 
@@ -51,6 +52,7 @@ class Entity extends Base\PublicEntity
         self::PG_USE_CASE,
         self::MIQ_SHARING_DATE,
         self::TESTING_CREDENTIALS_DATE,
+        self::METADATA,
     ];
 
     protected $fillable = [
@@ -67,13 +69,15 @@ class Entity extends Base\PublicEntity
         self::PG_USE_CASE,
         self::MIQ_SHARING_DATE,
         self::TESTING_CREDENTIALS_DATE,
+        self::METADATA,
     ];
 
     protected $casts = [
         self::WEBSITE_DETAILS           => 'array',
         self::APP_URLS                  => 'array',
         self::PLUGIN_DETAILS            => 'array',
-        self::LEAD_SCORE_COMPONENTS     => 'array'
+        self::LEAD_SCORE_COMPONENTS     => 'array',
+        self::METADATA                  => 'array',
     ];
 
     protected $defaults = [
@@ -86,6 +90,7 @@ class Entity extends Base\PublicEntity
         self::PG_USE_CASE                    => null,
         self::MIQ_SHARING_DATE               => 0,
         self::TESTING_CREDENTIALS_DATE       => 0,
+        self::METADATA                       => null,
     ];
 
     public function getId()
@@ -219,7 +224,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BLACKLISTED_PRODUCTS_CATEGORY);
     }
 
-
     public function getLeadScoreComponents()
     {
         return $this->getAttribute(self::LEAD_SCORE_COMPONENTS);
@@ -228,6 +232,16 @@ class Entity extends Base\PublicEntity
     public function setLeadScoreComponents($leadScoreComponents)
     {
         return $this->setAttribute(self::LEAD_SCORE_COMPONENTS, $leadScoreComponents);
+    }
+
+    public function getMetadata()
+    {
+        return $this->getAttribute(self::METADATA);
+    }
+
+    public function setMetadata($value)
+    {
+        $this->setAttribute(self::METADATA, $value);
     }
 
     public function getValueFromLeadScoreComponents($key)

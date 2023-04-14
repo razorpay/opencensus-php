@@ -21,6 +21,16 @@ class Repository extends Base\Repository
             ->where(Entity::MERCHANT_ID, '=', $mid)
             ->first();
     }
+
+    public function getDetailsForTypeAndIdentifierFromReplica(string $mid, string $artefactType, string $artefactIdentifier): ?Entity
+    {
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA))
+            ->where(Entity::ARTEFACT_TYPE, '=', $artefactType)
+            ->where(Entity::ARTEFACT_IDENTIFIER, '=', $artefactIdentifier)
+            ->where(Entity::MERCHANT_ID, '=', $mid)
+            ->first();
+    }
+
     public function getDetailsForMerchant(string $mid)
     {
         return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA))

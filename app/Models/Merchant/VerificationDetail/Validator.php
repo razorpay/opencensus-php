@@ -11,6 +11,7 @@ class Validator extends Base\Validator
         Entity::ARTEFACT_TYPE         => 'required|string',
         Entity::ARTEFACT_IDENTIFIER   => 'required|string|in:number,doc',
         Entity::STATUS                => 'required|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
+        Entity::METADATA              => 'sometimes|array',
     ];
 
     protected static $editRules = [
@@ -18,5 +19,6 @@ class Validator extends Base\Validator
         Entity::ARTEFACT_TYPE         => 'required|string',
         Entity::ARTEFACT_IDENTIFIER   => 'required|string|in:number,doc',
         Entity::STATUS                => 'required|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
+        Entity::METADATA              => 'sometimes|array',
     ];
 }

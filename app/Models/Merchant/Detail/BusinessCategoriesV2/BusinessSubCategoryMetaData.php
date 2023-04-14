@@ -33,6 +33,16 @@ class BusinessSubCategoryMetaData
     // added for easy onboarding
     const DISPLAY_ORDER                     = 'display_order';
 
+    // Checks for Website Policy Presence
+    const REQUIRED_WEBSITE_POLICIES         = 'required_website_policies';
+    const TERMS_AND_CONDITIONS              = 'terms';
+    const REFUND_POLICY                     = 'refund';
+    const PRIVACY_POLICY                    = 'privacy';
+    const CONTACT_US                        = 'contact_us';
+    const SHIPPING                          = 'shipping';
+
+    const REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION = 'require_additional_documents_for_activation';
+
     const SUB_CATEGORY_METADATA = [
         Sub::ACCOMMODATION                 => [
             Merchant::CATEGORY                      => '7011',
@@ -45,6 +55,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::ACCOUNTING                    => [
             Merchant::CATEGORY                      => '8931',
@@ -57,6 +75,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::AD_AND_MARKETING              => [
             Merchant::CATEGORY                      => '7311',
@@ -69,6 +95,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::AGRICULTURE                   => [
             Merchant::CATEGORY                      => '5193',
@@ -81,6 +115,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::ALCOHOL                       => [
             Merchant::CATEGORY                      => '5813',
@@ -93,6 +135,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::ARTS_AND_COLLECTIBLES         => [
             Merchant::CATEGORY                      => '5971',
@@ -105,6 +155,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::AVIATION                      => [
             Merchant::CATEGORY                      => '4511',
@@ -117,6 +175,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::BABY_PRODUCTS                 => [
             Merchant::CATEGORY                      => '5945',
@@ -129,6 +195,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::BETTING                       => [
             Merchant::CATEGORY                      => '7801',
@@ -141,6 +215,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::BILL_AND_RECHARGE_AGGREGATORS => [
             Merchant::CATEGORY                      => '4814',
@@ -153,6 +235,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::BOOKS                         => [
             Merchant::CATEGORY                      => '5942',
@@ -165,6 +255,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::BROADBAND                     => [
             Merchant::CATEGORY                      => '4899',
@@ -177,6 +275,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::BUS                           => [
             Merchant::CATEGORY                      => '4131',
@@ -189,6 +295,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::CABLE                         => [
             Merchant::CATEGORY                      => '4899',
@@ -201,6 +315,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::CAB_HAILING                   => [
             Merchant::CATEGORY                      => '4121',
@@ -213,6 +335,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::CATERING                      => [
             Merchant::CATEGORY                      => '5811',
@@ -225,6 +355,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::CENTRAL                       => [
             Merchant::CATEGORY                      => '9399',
@@ -237,6 +375,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::CHARITY                       => [
             Merchant::CATEGORY                      => '8398',
@@ -249,6 +395,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::CLINIC                        => [
             Merchant::CATEGORY                      => '8062',
@@ -261,6 +415,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::COACHING                      => [
             Merchant::CATEGORY                      => '8299',
@@ -273,6 +435,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::COLLEGE                       => [
             Merchant::CATEGORY                      => '8220',
@@ -285,6 +455,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::COMMODITIES                   => [
             Merchant::CATEGORY                      => '6211',
@@ -297,6 +475,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::CONSULTING                    => [
             Merchant::CATEGORY                      => '7392',
@@ -309,6 +495,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::CONSULTING_AND_OUTSOURCING    => [
             Merchant::CATEGORY                      => '7392',
@@ -321,6 +515,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::CONTENT_AND_PUBLISHING        => [
             Merchant::CATEGORY                      => '2741',
@@ -333,6 +535,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::COOPERATIVES                  => [
             Merchant::CATEGORY                      => '6012',
@@ -345,6 +555,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::COUPONS                       => [
             Merchant::CATEGORY                      => '7311',
@@ -357,6 +575,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::COURIER                       => [
             Merchant::CATEGORY                      => '4215',
@@ -369,6 +595,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::COWORKING                     => [
             Merchant::CATEGORY                      => '6513',
@@ -381,6 +615,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::CROWDFUNDING                  => [
             Merchant::CATEGORY                      => '6050',
@@ -393,6 +635,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::CRYPTOCURRENCY                => [
             Merchant::CATEGORY                      => '6051',
@@ -405,6 +655,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::CRYPTO_MACHINERY              => [
             Merchant::CATEGORY                      => '5999',
@@ -417,6 +675,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::DAY_CARE                      => [
             Merchant::CATEGORY                      => '8351',
@@ -429,6 +695,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::DEVELOPER                     => [
             Merchant::CATEGORY                      => '6513',
@@ -441,6 +715,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::DIETICIAN                     => [
             Merchant::CATEGORY                      => '7298',
@@ -453,6 +735,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::DISTANCE_LEARNING             => [
             Merchant::CATEGORY                      => '8299',
@@ -465,6 +755,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::DISTRIBUTION                  => [
             Merchant::CATEGORY                      => '4214',
@@ -477,6 +775,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::DROP_SHIPPING                 => [
             Merchant::CATEGORY                      => '5399',
@@ -489,6 +795,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::DTH                           => [
             Merchant::CATEGORY                      => '4899',
@@ -501,6 +815,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::ECOMMERCE_MARKETPLACE         => [
             Merchant::CATEGORY                      => '5399',
@@ -513,7 +835,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
-            self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::EDUCATIONAL                   => [
             Merchant::CATEGORY                      => '8398',
@@ -526,6 +855,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::ELEARNING                     => [
             Merchant::CATEGORY                      => '8299',
@@ -538,6 +875,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::ELECTRICITY                   => [
             Merchant::CATEGORY                      => '4900',
@@ -550,6 +895,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::ELECTRONICS_AND_FURNITURE     => [
             Merchant::CATEGORY                      => '5732',
@@ -562,6 +915,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::END_TO_END_LOGISTICS          => [
             Merchant::CATEGORY                      => '4214',
@@ -574,6 +935,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::ESPORTS                       => [
             Merchant::CATEGORY                      => '5816',
@@ -586,6 +955,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::EVENT_PLANNING                => [
             Merchant::CATEGORY                      => '8999',
@@ -598,6 +975,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::FACILITY_MANAGEMENT           => [
             Merchant::CATEGORY                      => '7349',
@@ -610,6 +995,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::FANTASY_SPORTS                => [
             Merchant::CATEGORY                      => '5816',
@@ -622,6 +1015,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::FASHION_AND_LIFESTYLE         => [
             Merchant::CATEGORY                      => '5691',
@@ -634,6 +1035,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::FINANCIAL_ADVISOR             => [
             Merchant::CATEGORY                      => '8931',
@@ -646,6 +1055,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::FITNESS                       => [
             Merchant::CATEGORY                      => '7298',
@@ -658,6 +1075,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::FOOD_COURT                    => [
             Merchant::CATEGORY                      => '5814',
@@ -670,6 +1095,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::FOREX                         => [
             Merchant::CATEGORY                      => '6010',
@@ -682,6 +1115,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::FREIGHT                       => [
             Merchant::CATEGORY                      => '4214',
@@ -694,6 +1135,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::GAME_DEVELOPER                => [
             Merchant::CATEGORY                      => '5816',
@@ -706,6 +1155,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::GAMING_MARKETPLACE            => [
             Merchant::CATEGORY                      => '5816',
@@ -718,6 +1175,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::GAS                           => [
             Merchant::CATEGORY                      => '4900',
@@ -730,6 +1195,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::GET_RICH_SCHEMES              => [
             Merchant::CATEGORY                      => '7361',
@@ -742,6 +1215,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::GIFTING                       => [
             Merchant::CATEGORY                      => '5193',
@@ -754,6 +1235,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::GROCERY                       => [
             Merchant::CATEGORY                      => '5411',
@@ -766,6 +1255,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::HEALTH_COACHING               => [
             Merchant::CATEGORY                      => '7298',
@@ -778,6 +1275,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::HEALTH_PRODUCTS               => [
             Merchant::CATEGORY                      => '5499',
@@ -790,6 +1295,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::HEALTHCARE_MARKETPLACE        => [
             Merchant::CATEGORY                      => '5399',
@@ -802,6 +1315,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::HOSPITAL                      => [
             Merchant::CATEGORY                      => '8062',
@@ -814,6 +1335,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::IAAS                          => [
             Merchant::CATEGORY                      => '5817',
@@ -826,6 +1355,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::INSURANCE                     => [
             Merchant::CATEGORY                      => '6300',
@@ -838,6 +1375,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::INTERIOR_DESIGN_AND_ARCHITECT => [
             Merchant::CATEGORY                      => '8911',
@@ -850,6 +1395,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::INTERNET_PROVIDER             => [
             Merchant::CATEGORY                      => '4816',
@@ -862,6 +1415,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::LAB                           => [
             Merchant::CATEGORY                      => '8071',
@@ -874,6 +1435,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::LEGAL                         => [
             Merchant::CATEGORY                      => '8111',
@@ -886,6 +1455,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::LENDING                       => [
             Merchant::CATEGORY                      => '6012',
@@ -898,6 +1475,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::MATCHMAKING                   => [
             Merchant::CATEGORY                      => '7273',
@@ -910,6 +1495,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::MESSAGING                     => [
             Merchant::CATEGORY                      => '4821',
@@ -922,6 +1515,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::MOVERS_AND_PACKERS            => [
             Merchant::CATEGORY                      => '4214',
@@ -934,6 +1535,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::MULTI_LEVEL_MARKETING         => [
             Merchant::CATEGORY                      => '5964',
@@ -946,6 +1555,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::MULTIPLEX                     => [
             Merchant::CATEGORY                      => '7832',
@@ -958,6 +1575,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::MUSIC_STREAMING               => [
             Merchant::CATEGORY                      => '5815',
@@ -970,6 +1595,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::MUTUAL_FUND                   => [
             Merchant::CATEGORY                      => '6211',
@@ -982,6 +1615,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::NBFC                          => [
             Merchant::CATEGORY                      => '6012',
@@ -994,6 +1635,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::NEIGHBOURHOOD_NETWORK         => [
             Merchant::CATEGORY                      => '8699',
@@ -1006,6 +1655,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::NEWS                          => [
             Merchant::CATEGORY                      => '5994',
@@ -1018,6 +1675,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::OFFICE_SUPPLIES               => [
             Merchant::CATEGORY                      => '5111',
@@ -1030,6 +1695,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::ONLINE_CASINO                 => [
             Merchant::CATEGORY                      => '7801',
@@ -1042,6 +1715,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::ONLINE_FOOD_ORDERING          => [
             Merchant::CATEGORY                      => '5811',
@@ -1054,6 +1735,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::OTA                           => [
             Merchant::CATEGORY                      => '4722',
@@ -1066,6 +1755,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::PAAS                          => [
             Merchant::CATEGORY                      => '5817',
@@ -1078,6 +1775,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::PENSION_FUND                  => [
             Merchant::CATEGORY                      => '6012',
@@ -1090,6 +1795,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::PERSONAL                      => [
             Merchant::CATEGORY                      => '8398',
@@ -1102,6 +1815,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::PROFESSIONAL_COURSES          => [
             Merchant::CATEGORY                      => '8299',
@@ -1114,6 +1835,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::PET_PRODUCTS                  => [
             Merchant::CATEGORY                      => '5995',
@@ -1126,6 +1855,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::PHARMACY                      => [
             Merchant::CATEGORY                      => '5912',
@@ -1138,6 +1875,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::PROFESSIONAL_NETWORK          => [
             Merchant::CATEGORY                      => '8699',
@@ -1150,6 +1895,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::REALESTATE_CLASSIFIEDS        => [
             Merchant::CATEGORY                      => '6513',
@@ -1162,6 +1915,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::RELIGIOUS                     => [
             Merchant::CATEGORY                      => '8661',
@@ -1174,6 +1935,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::RELIGIOUS_PRODUCTS            => [
             Merchant::CATEGORY                      => '5973',
@@ -1186,6 +1955,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::RENTAL                        => [
             Merchant::CATEGORY                      => '7394',
@@ -1198,6 +1975,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::REPAIR_AND_CLEANING           => [
             Merchant::CATEGORY                      => '7531',
@@ -1210,6 +1995,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::RESTAURANT                    => [
             Merchant::CATEGORY                      => '5812',
@@ -1222,6 +2015,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::RESTAURANT_SEARCH_AND_BOOKING => [
             Merchant::CATEGORY                      => '7299',
@@ -1234,6 +2035,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::RWA                           => [
             Merchant::CATEGORY                      => '7349',
@@ -1246,6 +2055,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::SAAS                          => [
             Merchant::CATEGORY                      => '5817',
@@ -1258,6 +2075,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::SCHOOLS                       => [
             Merchant::CATEGORY                      => '8211',
@@ -1270,6 +2095,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::SECURITIES                    => [
             Merchant::CATEGORY                      => '6211',
@@ -1282,6 +2115,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::SERVICE_CENTRE                => [
             Merchant::CATEGORY                      => '5511',
@@ -1294,6 +2135,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::SERVICES_CLASSIFIEDS          => [
             Merchant::CATEGORY                      => '7311',
@@ -1306,6 +2155,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::SEXUAL_WELLNESS_PRODUCTS      => [
             Merchant::CATEGORY                      => '5999',
@@ -1318,6 +2175,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::SOCIAL_NETWORK                => [
             Merchant::CATEGORY                      => '8641',
@@ -1330,6 +2195,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::SPACE_RENTAL                  => [
             Merchant::CATEGORY                      => '6513',
@@ -1342,6 +2215,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::SPORTS_PRODUCTS               => [
             Merchant::CATEGORY                      => '5941',
@@ -1354,6 +2235,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::STATE                         => [
             Merchant::CATEGORY                      => '9399',
@@ -1366,6 +2255,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::TECHNICAL_SUPPORT             => [
             Merchant::CATEGORY                      => '7379',
@@ -1378,6 +2275,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::TELECOM                       => [
             Merchant::CATEGORY                      => '4814',
@@ -1390,6 +2295,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::TICKETING                     => [
             Merchant::CATEGORY                      => '7832',
@@ -1402,6 +2315,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::TOBACCO                       => [
             Merchant::CATEGORY                      => '5993',
@@ -1414,6 +2335,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::TRADING                       => [
             Merchant::CATEGORY                      => '6211',
@@ -1426,6 +2355,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::TRAIN_AND_METRO               => [
             Merchant::CATEGORY                      => '4112',
@@ -1438,6 +2375,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::TRAVEL_AGENCY                 => [
             Merchant::CATEGORY                      => '4722',
@@ -1450,6 +2395,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::UNIVERSITY                    => [
             Merchant::CATEGORY                      => '8220',
@@ -1462,6 +2415,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::VIDEO_ON_DEMAND               => [
             Merchant::CATEGORY                      => '5815',
@@ -1474,6 +2435,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::WATER                         => [
             Merchant::CATEGORY                      => '4900',
@@ -1486,6 +2455,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::WAREHOUSING                   => [
             Merchant::CATEGORY                      => '4225',
@@ -1498,6 +2475,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::WEAPONS_AND_AMMUNITIONS       => [
             Merchant::CATEGORY                      => '5999',
@@ -1510,6 +2495,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::WEB_DEVELOPMENT                      => [
             Merchant::CATEGORY                      => '7372',
@@ -1522,6 +2515,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::COMPUTER_PROGRAMMING_DATA_PROCESSING => [
             Merchant::CATEGORY                      => '7372',
@@ -1534,6 +2535,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::WHOLESALE                     => [
             Merchant::CATEGORY                      => '5300',
@@ -1546,6 +2555,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
 
         // new business subcategory and mcc mapping
@@ -1560,6 +2577,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::STAMPS_AND_COINS_STORES                            => [
             Merchant::CATEGORY                      => '5972',
@@ -1572,6 +2597,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::AUTOMOBILE_PARTS_AND_EQUIPEMENTS                   => [
             Merchant::CATEGORY                      => '5013',
@@ -1584,6 +2617,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::VOCATIONAL_AND_TRADE_SCHOOLS                       => [
             Merchant::CATEGORY                      => '8249',
@@ -1596,6 +2637,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::SPORTING_CLUBS                                     => [
             Merchant::CATEGORY                      => '7941',
@@ -1608,6 +2657,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::ARCHITECTURAL_SERVICES                             => [
             Merchant::CATEGORY                      => '0780',
@@ -1620,6 +2677,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::CAR_WASHES                                         => [
             Merchant::CATEGORY                      => '7542',
@@ -1632,6 +2697,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::OFFICE_EQUIPMENT                                   => [
             Merchant::CATEGORY                      => '5044',
@@ -1644,6 +2717,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::MOTOR_HOME_RENTALS                                 => [
             Merchant::CATEGORY                      => '7519',
@@ -1656,6 +2737,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::GARDEN_SUPPLY_STORES                               => [
             Merchant::CATEGORY                      => '5261',
@@ -1668,6 +2757,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::HOUSEHOLD_APPLIANCE_STORES                         => [
             Merchant::CATEGORY                      => '5722',
@@ -1680,6 +2777,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::DAIRY_PRODUCTS                                     => [
             Merchant::CATEGORY                      => '5451',
@@ -1692,6 +2797,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::NON_DURABLE_GOODS                                  => [
             Merchant::CATEGORY                      => '5199',
@@ -1704,6 +2817,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::ELECTRICAL_PARTS_AND_EQUIPMENT                     => [
             Merchant::CATEGORY                      => '5065',
@@ -1716,6 +2837,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::BAKERIES                                           => [
             Merchant::CATEGORY                      => '5462',
@@ -1728,6 +2857,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::STENOGRAPHIC_AND_SECRETARIAL_SUPPORT_SERVICES      => [
             Merchant::CATEGORY                      => '7339',
@@ -1740,6 +2877,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::CHIROPRACTORS                                      => [
             Merchant::CATEGORY                      => '8041',
@@ -1752,6 +2897,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::WIG_AND_TOUPEE_SHOPS                               => [
             Merchant::CATEGORY                      => '5698',
@@ -1764,6 +2917,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::GIFT_NOVELTY_AND_SOUVENIR_SHOPS                    => [
             Merchant::CATEGORY                      => '5947',
@@ -1776,6 +2937,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::AUTOMOTIVE_SERVICE_SHOPS                           => [
             Merchant::CATEGORY                      => '7538',
@@ -1788,6 +2957,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::SHOE_REPAIR_SHOPS                                  => [
             Merchant::CATEGORY                      => '7251',
@@ -1800,6 +2977,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::TELECOMMUNICATION_SERVICE                          => [
             Merchant::CATEGORY                      => '4813',
@@ -1812,6 +2997,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::DUTY_FREE_STORES                                   => [
             Merchant::CATEGORY                      => '5309',
@@ -1824,6 +3017,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::FINES                                              => [
             Merchant::CATEGORY                      => '9222',
@@ -1836,6 +3037,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::CRUISE_LINES                                       => [
             Merchant::CATEGORY                      => '4411',
@@ -1848,6 +3057,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::OFFICE_AND_COMMERCIAL_FURNITURE                    => [
             Merchant::CATEGORY                      => '5021',
@@ -1860,6 +3077,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::DANCE_HALLS_STUDIOS_AND_SCHOOLS                    => [
             Merchant::CATEGORY                      => '7911',
@@ -1872,6 +3097,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::SECURITY_AGENCIES                                  => [
             Merchant::CATEGORY                      => '7393',
@@ -1884,6 +3117,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::TYPE_SETTING_AND_ENGRAVING_SERVICES                => [
             Merchant::CATEGORY                      => '2791',
@@ -1896,6 +3137,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::DRY_GOODS                                          => [
             Merchant::CATEGORY                      => '5131',
@@ -1908,6 +3157,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::BOOKS_AND_PUBLICATIONS                             => [
             Merchant::CATEGORY                      => '5942',
@@ -1920,6 +3177,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::SMALL_APPLIANCE_REPAIR_SHOPS                       => [
             Merchant::CATEGORY                      => '7629',
@@ -1932,6 +3197,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::PHOTOGRAPHY_LABS                                   => [
             Merchant::CATEGORY                      => '7395',
@@ -1944,6 +3217,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::CAMERA_AND_PHOTOGRAPHIC_STORES                     => [
             Merchant::CATEGORY                      => '5946',
@@ -1956,6 +3237,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::DRY_CLEANERS                                       => [
             Merchant::CATEGORY                      => '7216',
@@ -1968,6 +3257,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::ELECTRONIC_REPAIR_SHOPS                            => [
             Merchant::CATEGORY                      => '7622',
@@ -1980,6 +3277,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::VIDEO_GAME_ARCADES                                 => [
             Merchant::CATEGORY                      => '7994',
@@ -1992,6 +3297,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::MEAT_SUPPLY_STORES                                 => [
             Merchant::CATEGORY                      => '5422',
@@ -2004,6 +3317,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::LEATHER_GOODS_AND_LUGGAGE                          => [
             Merchant::CATEGORY                      => '5948',
@@ -2016,6 +3337,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::CLEANING_AND_SANITATION_SERVICES                   => [
             Merchant::CATEGORY                      => '2842',
@@ -2028,6 +3357,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::SNOWMOBILE_DEALERS                                 => [
             Merchant::CATEGORY                      => '5598',
@@ -2040,6 +3377,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::VIDEO_TAPE_PRODUCTION_AND_DISTRIBUTION             => [
             Merchant::CATEGORY                      => '7829',
@@ -2052,6 +3397,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::OSTEOPATHS                                         => [
             Merchant::CATEGORY                      => '8031',
@@ -2064,6 +3417,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::MEN_AND_BOYS_CLOTHING_STORES                       => [
             Merchant::CATEGORY                      => '5611',
@@ -2076,6 +3437,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::NURSING_CARE_FACILITIES                            => [
             Merchant::CATEGORY                      => '8050',
@@ -2088,6 +3457,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::DIRECT_MARKETING                                   => [
             Merchant::CATEGORY                      => '5969',
@@ -2100,6 +3477,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::AUTOMOBILE_ASSOCIATIONS_AND_CLUBS                  => [
             Merchant::CATEGORY                      => '8675',
@@ -2112,6 +3497,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::VETERINARY_SERVICES                                => [
             Merchant::CATEGORY                      => '0742',
@@ -2124,6 +3517,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::PAINT_SUPPLY_STORES                                => [
             Merchant::CATEGORY                      => '5198',
@@ -2136,6 +3537,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::AFFLIATED_AUTO_RENTAL                              => [
             Merchant::CATEGORY                      => '3351',
@@ -2148,6 +3557,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::ALIMONY_AND_CHILD_SUPPORT                          => [
             Merchant::CATEGORY                      => '9211',
@@ -2160,6 +3577,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::AIRPORT_FLYING_FIELDS                              => [
             Merchant::CATEGORY                      => '4582',
@@ -2172,6 +3597,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::TIRE_RETREADING_AND_REPAIR_SHOPS                   => [
             Merchant::CATEGORY                      => '7534',
@@ -2184,6 +3617,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::TELEVISION_CABLE_SERVICES                          => [
             Merchant::CATEGORY                      => '4899',
@@ -2196,6 +3637,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::RECREATIONAL_AND_SPORTING_CAMPS                    => [
             Merchant::CATEGORY                      => '7032',
@@ -2208,6 +3657,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::AUTOMOTIVE_PARTS                                   => [
             Merchant::CATEGORY                      => '5533',
@@ -2220,6 +3677,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::JEWELLERY_AND_WATCH_STORES                         => [
             Merchant::CATEGORY                      => '5094',
@@ -2232,6 +3697,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::AUTO_STORE_HOME_SUPPLY_STORES                      => [
             Merchant::CATEGORY                      => '5531',
@@ -2244,6 +3717,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::TENT_STORES                                        => [
             Merchant::CATEGORY                      => '5998',
@@ -2256,6 +3737,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::MEDICAL_EQUIPMENT_AND_SUPPLY_STORES                => [
             Merchant::CATEGORY                      => '5047',
@@ -2268,6 +3757,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::AGRICULTURAL_COOPERATIVES                          => [
             Merchant::CATEGORY                      => '0763',
@@ -2280,6 +3777,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::PETROLEUM_AND_PETROLEUM_PRODUCTS                   => [
             Merchant::CATEGORY                      => '5172',
@@ -2292,6 +3797,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::DEPARTMENT_STORES                                  => [
             Merchant::CATEGORY                      => '5311',
@@ -2304,6 +3817,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::SHOE_STORES_RETAIL                                 => [
             Merchant::CATEGORY                      => '5661',
@@ -2316,6 +3837,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::CARPENTRY_CONTRACTORS                              => [
             Merchant::CATEGORY                      => '1750',
@@ -2328,6 +3857,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::MONEYSEND_FUNDING                                  => [
             Merchant::CATEGORY                      => '6538',
@@ -2340,6 +3877,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::WRECKING_AND_SALVAGING_SERVICES                    => [
             Merchant::CATEGORY                      => '5935',
@@ -2352,6 +3897,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::AUTOMOBILE_TOWING_SERVICES                         => [
             Merchant::CATEGORY                      => '7549',
@@ -2364,6 +3917,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::POLITICAL_ORGANIZATIONS                            => [
             Merchant::CATEGORY                      => '8651',
@@ -2376,6 +3937,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::AUTOMOTIVE_TIRE_STORES                             => [
             Merchant::CATEGORY                      => '5532',
@@ -2388,6 +3957,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::BARBER_AND_BEAUTY_SHOPS                            => [
             Merchant::CATEGORY                      => '7230',
@@ -2400,6 +3977,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::SPORT_APPAREL_STORES                               => [
             Merchant::CATEGORY                      => '5655',
@@ -2412,6 +3997,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::VIDEO_TAPE_RENTAL_STORES                           => [
             Merchant::CATEGORY                      => '7841',
@@ -2424,6 +4017,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::DRUG_STORES                                        => [
             Merchant::CATEGORY                      => '5122',
@@ -2436,6 +4037,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::GOLF_COURSES                                       => [
             Merchant::CATEGORY                      => '7992',
@@ -2448,6 +4057,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::MISCELLANEOUS_REPAIR_SHOPS                         => [
             Merchant::CATEGORY                      => '7699',
@@ -2460,6 +4077,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::MOTOR_HOMES_AND_PARTS                              => [
             Merchant::CATEGORY                      => '5592',
@@ -2472,6 +4097,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::DEBT_MARRIAGE_PERSONAL_COUNSELING_SERVICE          => [
             Merchant::CATEGORY                      => '7277',
@@ -2484,6 +4117,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::CHEMICALS_AND_ALLIED_PRODUCTS                      => [
             Merchant::CATEGORY                      => '5169',
@@ -2496,6 +4137,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::FIREPLACE_PARTS_AND_ACCESSORIES                    => [
             Merchant::CATEGORY                      => '5718',
@@ -2508,6 +4157,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::COMMERCIAL_EQUIPMENTS                              => [
             Merchant::CATEGORY                      => '5046',
@@ -2520,6 +4177,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::AIR_CONDITIONING_AND_REFRIGERATION_REPAIR_SHOPS    => [
             Merchant::CATEGORY                      => '7623',
@@ -2532,6 +4197,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::FAMILY_CLOTHING_STORES                             => [
             Merchant::CATEGORY                      => '5651',
@@ -2544,6 +4217,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::TAILORS                                            => [
             Merchant::CATEGORY                      => '5697',
@@ -2556,6 +4237,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::FABRIC_AND_SEWING_STORES                           => [
             Merchant::CATEGORY                      => '5949',
@@ -2568,6 +4257,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::CAMPER_RECREATIONAL_AND_UTILITY_TRAILER_DEALERS    => [
             Merchant::CATEGORY                      => '5561',
@@ -2580,6 +4277,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::TOURIST_ATTRACTIONS_AND_EXHIBITS                   => [
             Merchant::CATEGORY                      => '7991',
@@ -2592,6 +4297,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::RECORD_SHOPS                                       => [
             Merchant::CATEGORY                      => '5735',
@@ -2604,6 +4317,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::HOME_SUPPLY_WAREHOUSE                              => [
             Merchant::CATEGORY                      => '5200',
@@ -2616,6 +4337,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::CLOCKS_AND_SILVERWARE_STORES                       => [
             Merchant::CATEGORY                      => '5944',
@@ -2628,6 +4357,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::ART_SUPPLY_STORES                                  => [
             Merchant::CATEGORY                      => '5970',
@@ -2640,6 +4377,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::MASSAGE_PARLORS                                    => [
             Merchant::CATEGORY                      => '7297',
@@ -2652,6 +4397,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::HORSE_OR_DOG_RACING                                => [
             Merchant::CATEGORY                      => '7802',
@@ -2664,6 +4417,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::CREDIT_REPORTING_AGENCIES                          => [
             Merchant::CATEGORY                      => '7321',
@@ -2676,6 +4437,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::PAWN_SHOPS                                         => [
             Merchant::CATEGORY                      => '5933',
@@ -2688,6 +4457,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::PARKING_LOTS_AND_GARAGES                           => [
             Merchant::CATEGORY                      => '7523',
@@ -2700,6 +4477,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::SCHOOL_SUPPLIES_AND_STATIONERY                     => [
             Merchant::CATEGORY                      => '5943',
@@ -2712,6 +4497,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::HEATING_AND_PLUMBING_CONTRACTORS                   => [
             Merchant::CATEGORY                      => '1711',
@@ -2724,6 +4517,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::AQUARIUMS_DOLPHINARIUMS_AND_SEAQUARIUMS            => [
             Merchant::CATEGORY                      => '7998',
@@ -2736,6 +4537,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::ELECTRICAL_CONTRACTORS                             => [
             Merchant::CATEGORY                      => '1731',
@@ -2748,6 +4557,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::WIRE_TRANSFERS_AND_MONEY_ORDERS                    => [
             Merchant::CATEGORY                      => '4829',
@@ -2760,6 +4577,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::CARPET_AND_UPHOLSTERY_CLEANING_SERVICES            => [
             Merchant::CATEGORY                      => '7217',
@@ -2772,6 +4597,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::OPTICIANS_OPTICAL_GOODS_AND_EYEGLASSE_STORES       => [
             Merchant::CATEGORY                      => '8043',
@@ -2784,6 +4617,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::WATCH_AND_JEWELLERY_REPAIR_STORES                  => [
             Merchant::CATEGORY                      => '7631',
@@ -2796,6 +4637,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::WHOLESALE_FOOTWEAR_STORES                          => [
             Merchant::CATEGORY                      => '5139',
@@ -2808,6 +4657,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::ANTIQUE_STORES                                     => [
             Merchant::CATEGORY                      => '5937',
@@ -2820,6 +4677,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::ROOFING_AND_METAL_WORK_CONTRACTORS                 => [
             Merchant::CATEGORY                      => '1761',
@@ -2832,6 +4697,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::INTERNET_SERVICE_PROVIDERS                         => [
             Merchant::CATEGORY                      => '4816',
@@ -2844,6 +4717,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::PLUMBING_AND_HEATING_EQUIPMENT                     => [
             Merchant::CATEGORY                      => '5074',
@@ -2856,6 +4737,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::VARIETY_STORES                                     => [
             Merchant::CATEGORY                      => '5331',
@@ -2868,6 +4757,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::LIQUOR_STORES                                      => [
             Merchant::CATEGORY                      => '5921',
@@ -2880,6 +4777,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::BOAT_DEALERS                                       => [
             Merchant::CATEGORY                      => '5551',
@@ -2892,6 +4797,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::LAUNDRY_SERVICES                                   => [
             Merchant::CATEGORY                      => '7210',
@@ -2904,6 +4817,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::RECREATIONAL_CAMPS                                 => [
             Merchant::CATEGORY                      => '7033',
@@ -2916,6 +4837,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::PODIATRISTS_AND_CHIROPODISTS                       => [
             Merchant::CATEGORY                      => '8049',
@@ -2928,6 +4857,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::TAX_PREPARATION_SERVICES                           => [
             Merchant::CATEGORY                      => '7276',
@@ -2940,6 +4877,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::COSMETIC_STORES                                    => [
             Merchant::CATEGORY                      => '5977',
@@ -2952,6 +4897,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::HOME_FURNISHING_STORES                             => [
             Merchant::CATEGORY                      => '5719',
@@ -2964,6 +4917,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::BRIDGE_AND_ROAD_TOLLS                              => [
             Merchant::CATEGORY                      => '4784',
@@ -2976,6 +4937,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::TELECOMMUNICATION_EQUIPMENT_STORES                 => [
             Merchant::CATEGORY                      => '4812',
@@ -2988,6 +4957,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::WOMEN_CLOTHING                                     => [
             Merchant::CATEGORY                      => '5621',
@@ -3000,6 +4977,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::FLORISTS                                           => [
             Merchant::CATEGORY                      => '5992',
@@ -3012,6 +4997,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::COMMERCIAL_PHOTOGRAPHY_AND_GRAPHIC_DESIGN_SERVICES => [
             Merchant::CATEGORY                      => '7333',
@@ -3024,6 +5017,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::BUILDING_MATRIAL_STORES                            => [
             Merchant::CATEGORY                      => '5211',
@@ -3036,6 +5037,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::CANDY_NUT_CONFECTIONERY_SHOPS                      => [
             Merchant::CATEGORY                      => '5441',
@@ -3048,6 +5057,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::TIMESHARES                                         => [
             Merchant::CATEGORY                      => '7012',
@@ -3060,6 +5077,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::MASONRY_CONTRACTORS                                => [
             Merchant::CATEGORY                      => '1740',
@@ -3072,6 +5097,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::EXTERMINATING_AND_DISINFECTING_SERVICES            => [
             Merchant::CATEGORY                      => '7342',
@@ -3084,6 +5117,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::GLASS_AND_WALLPAPER_STORES                         => [
             Merchant::CATEGORY                      => '5231',
@@ -3096,6 +5137,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::VIDEO_GAME_SUPPLY_STORES                           => [
             Merchant::CATEGORY                      => '7993',
@@ -3108,6 +5157,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::AMBULANCE_SERVICES                                 => [
             Merchant::CATEGORY                      => '4119',
@@ -3120,6 +5177,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::FUNERAL_SERVICES_AND_CREMATORIES                   => [
             Merchant::CATEGORY                      => '7261',
@@ -3132,6 +5197,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::BOWLING_ALLEYS                                     => [
             Merchant::CATEGORY                      => '7933',
@@ -3144,6 +5217,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::METAL_SERVICE_CENTRES                              => [
             Merchant::CATEGORY                      => '5051',
@@ -3156,6 +5237,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::COPYING_AND_BLUEPRINTING_SERVICES                  => [
             Merchant::CATEGORY                      => '7338',
@@ -3168,6 +5257,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::DRAPERY_AND_WINDOW_COVERINGS_STORES                => [
             Merchant::CATEGORY                      => '5714',
@@ -3180,6 +5277,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::UNIFORMS_AND_COMMERCIAL_CLOTHING_STORES            => [
             Merchant::CATEGORY                      => '5137',
@@ -3192,6 +5297,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::AUTOMOTIVE_PAINT_SHOPS                             => [
             Merchant::CATEGORY                      => '7535',
@@ -3204,6 +5317,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::DURABLE_GOODS_STORES                               => [
             Merchant::CATEGORY                      => '5099',
@@ -3216,6 +5337,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::FUR_SHOPS                                          => [
             Merchant::CATEGORY                      => '5681',
@@ -3228,6 +5357,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::INDUSTRIAL_SUPPLIES                                => [
             Merchant::CATEGORY                      => '5085',
@@ -3240,6 +5377,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::MOTORCYCLE_SHOPS_AND_DEALERS                       => [
             Merchant::CATEGORY                      => '5571',
@@ -3252,6 +5397,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::CHILDREN_AND_INFANTS_WEAR_STORES                   => [
             Merchant::CATEGORY                      => '5641',
@@ -3264,6 +5417,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::CORRESPONDENCE_SCHOOLS                             => [
             Merchant::CATEGORY                      => '8241',
@@ -3276,6 +5437,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::AUTOMOBILE_RENTALS                                  => [
             Merchant::CATEGORY                      => '7512',
@@ -3288,6 +5457,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::FREIGHT_TRANSPORT                                  => [
             Merchant::CATEGORY                      => '4011',
@@ -3300,6 +5477,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::FUEL_DISPENSERS                                    => [
             Merchant::CATEGORY                      => '5542',
@@ -3312,6 +5497,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::TRUCK_AND_UTILITY_TRAILER_RENTALS                  => [
             Merchant::CATEGORY                      => '7513',
@@ -3324,6 +5517,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::BILLIARD_AND_POOL_ESTABLISHMENTS                   => [
             Merchant::CATEGORY                      => '7932',
@@ -3336,6 +5537,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::LOTTERY                                            => [
             Merchant::CATEGORY                      => '7800',
@@ -3348,6 +5557,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::WELDING_REPAIR                                     => [
             Merchant::CATEGORY                      => '7692',
@@ -3360,6 +5577,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::COMPUTER_SOFTWARE_STORES                           => [
             Merchant::CATEGORY                      => '5734',
@@ -3372,6 +5597,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::AMUSEMENT_PARKS_AND_CIRCUSES                       => [
             Merchant::CATEGORY                      => '7996',
@@ -3384,6 +5617,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::MOBILE_HOME_DEALERS                                => [
             Merchant::CATEGORY                      => '5271',
@@ -3396,6 +5637,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::WOMEN_ACCESSORY_STORES                             => [
             Merchant::CATEGORY                      => '5631',
@@ -3408,6 +5657,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::BOOKS_PERIODICALS_AND_NEWSPAPER                    => [
             Merchant::CATEGORY                      => '5192',
@@ -3420,6 +5677,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::FLOOR_COVERING_STORES                              => [
             Merchant::CATEGORY                      => '5713',
@@ -3432,6 +5697,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::TAX_PAYMENTS                                       => [
             Merchant::CATEGORY                      => '9311',
@@ -3444,6 +5717,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::CRYSTAL_AND_GLASSWARE_STORES                       => [
             Merchant::CATEGORY                      => '5950',
@@ -3456,6 +5737,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::DENTISTS_AND_ORTHODONTISTS                         => [
             Merchant::CATEGORY                      => '8021',
@@ -3468,6 +5757,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::HARDWARE_STORES                                    => [
             Merchant::CATEGORY                      => '5251',
@@ -3480,6 +5777,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::HARDWARE_EQUIPMENT_AND_SUPPLY_STORES               => [
             Merchant::CATEGORY                      => '5072',
@@ -3492,6 +5797,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::CONCRETE_WORK_CONTRACTORS                          => [
             Merchant::CATEGORY                      => '1771',
@@ -3504,6 +5817,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::DISCOUNT_STORES                                    => [
             Merchant::CATEGORY                      => '5310',
@@ -3516,6 +5837,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::OPHTHALMOLOGISTS                                   => [
             Merchant::CATEGORY                      => '8042',
@@ -3528,6 +5857,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::BOAT_RENTALS                                       => [
             Merchant::CATEGORY                      => '4457',
@@ -3540,6 +5877,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::PERSONAL_SHOPPERS_AND_SHOPPING_CLUBS               => [
             Merchant::CATEGORY                      => '7278',
@@ -3552,6 +5897,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::COMPUTERS_PERIPHERAL_EQUIPMENT_SOFTWARE            => [
             Merchant::CATEGORY                      => '5045',
@@ -3564,6 +5917,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::DOOR_TO_DOOR_SALES                                 => [
             Merchant::CATEGORY                      => '5963',
@@ -3576,6 +5937,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::AUTOMOBILE_AND_TRUCK_DEALERS                       => [
             Merchant::CATEGORY                      => '5521',
@@ -3588,6 +5957,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::TRAVEL_RELATED_DIRECT_MARKETING                    => [
             Merchant::CATEGORY                      => '5962',
@@ -3600,6 +5977,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::LOTTERY_AND_BETTING                                => [
             Merchant::CATEGORY                      => '7995',
@@ -3612,6 +5997,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::DIGITAL_GOODS                                      => [
             Merchant::CATEGORY                      => '5818',
@@ -3624,6 +6017,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::INTRA_GOVERNMENT_PURCHASES                         => [
             Merchant::CATEGORY                      => '9405',
@@ -3636,6 +6037,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::COUNTRY_AND_ATHLETIC_CLUBS                         => [
             Merchant::CATEGORY                      => '7997',
@@ -3648,6 +6057,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::BANDS_ORCHESTRAS_AND_MISCELLANEOUS_ENTERTAINERS    => [
             Merchant::CATEGORY                      => '7929',
@@ -3660,6 +6077,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::FURNITURE_REPAIR_AND_REFINISHING                   => [
             Merchant::CATEGORY                      => '7641',
@@ -3672,6 +6097,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::ORTHOPEDIC_GOODS_STORES                            => [
             Merchant::CATEGORY                      => '5976',
@@ -3684,6 +6117,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::DIRECT_MARKETING_AND_SUBSCRIPTION_MERCHANTS        => [
             Merchant::CATEGORY                      => '5968',
@@ -3696,6 +6137,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::TYPEWRITER_STORES_SALES_SERVICE_AND_RENTALS        => [
             Merchant::CATEGORY                      => '5978',
@@ -3708,6 +6157,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::DIRECT_MARKETING_INSURANCE_SERVICES                => [
             Merchant::CATEGORY                      => '5960',
@@ -3720,6 +6177,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::BUSINESS_SERVICES                                  => [
             Merchant::CATEGORY                      => '7399',
@@ -3732,6 +6197,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::TICKET_AGENCIES                                    => [
             Merchant::CATEGORY                      => '7922',
@@ -3744,6 +6217,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::AIRCRAFT_AND_FARM_EQUIPMENT_DEALERS                => [
             Merchant::CATEGORY                      => '5599',
@@ -3756,6 +6237,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::ANTIQUE_SHOPS_SALES_AND_REPAIRS                    => [
             Merchant::CATEGORY                      => '5932',
@@ -3768,6 +6257,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::COURIER_SERVICES                                   => [
             Merchant::CATEGORY                      => '4215',
@@ -3780,6 +6277,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::BICYCLE_STORES                                     => [
             Merchant::CATEGORY                      => '5940',
@@ -3792,6 +6297,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::INBOUND_TELEMARKETING_MERCHANTS                    => [
             Merchant::CATEGORY                      => '5967',
@@ -3804,6 +6317,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::HEARING_AIDS_STORES                                => [
             Merchant::CATEGORY                      => '5975',
@@ -3816,6 +6337,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::RECREATION_SERVICES                                => [
             Merchant::CATEGORY                      => '7999',
@@ -3828,6 +6357,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::MUSIC_STORES                                       => [
             Merchant::CATEGORY                      => '5733',
@@ -3840,6 +6377,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::SWIMMING_POOLS                                     => [
             Merchant::CATEGORY                      => '5996',
@@ -3852,6 +6397,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::OUTBOUND_TELEMARKETING_MERCHANTS                   => [
             Merchant::CATEGORY                      => '5966',
@@ -3864,6 +6417,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::PUBLIC_WAREHOUSING                                 => [
             Merchant::CATEGORY                      => '4225',
@@ -3876,6 +6437,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::CLOTHING_RENTAL_STORES                             => [
             Merchant::CATEGORY                      => '7296',
@@ -3888,6 +6457,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::TRANSPORTATION                                     => [
             Merchant::CATEGORY                      => '4111',
@@ -3900,6 +6477,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::GOVERMENT_POSTAL_SERVICES                          => [
             Merchant::CATEGORY                      => '9402',
@@ -3912,6 +6497,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::HEALTH_PRACTITIONERS_MEDICAL_SERVICES              => [
             Merchant::CATEGORY                      => '8099',
@@ -3924,6 +6517,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::CONSTRUCTION_MATERIALS                             => [
             Merchant::CATEGORY                      => '5039',
@@ -3936,6 +6537,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::ACCESSORY_AND_APPAREL_STORES                       => [
             Merchant::CATEGORY                      => '5699',
@@ -3948,6 +6557,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::TESTING_LABORATORIES                               => [
             Merchant::CATEGORY                      => '8734',
@@ -3960,6 +6577,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::DOCTORS                                            => [
             Merchant::CATEGORY                      => '8011',
@@ -3972,6 +6597,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::CONTRACTORS                                        => [
             Merchant::CATEGORY                      => '1799',
@@ -3984,6 +6617,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::TRANSPORTATION_SERVICES                            => [
             Merchant::CATEGORY                      => '4789',
@@ -3996,6 +6637,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::ATMS                                               => [
             Merchant::CATEGORY                      => '6011',
@@ -4008,6 +6657,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::SECOND_HAND_STORES                                 => [
             Merchant::CATEGORY                      => '5931',
@@ -4020,6 +6677,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::ELECTRIC_RAZOR_STORES                              => [
             Merchant::CATEGORY                      => '5997',
@@ -4032,6 +6697,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::FUEL_DEALERS                                       => [
             Merchant::CATEGORY                      => '5983',
@@ -4044,6 +6717,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::SERVICE_STATIONS                                   => [
             Merchant::CATEGORY                      => '5541',
@@ -4056,6 +6737,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::NEW_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::FURNITURE_AND_HOME_FURNISHING_STORE                => [
             Merchant::CATEGORY                      => '5712',
@@ -4068,6 +6757,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::PHOTOGRAPHIC_STUDIO                                  => [
             Merchant::CATEGORY                      => '7221',
@@ -4080,6 +6777,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1000000,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::DATA_PROCESSING                                        => [
             Merchant::CATEGORY                      => '7372',
@@ -4092,6 +6797,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1500000,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::PROFESSIONAL_SERVICES                                   => [
             Merchant::CATEGORY                      => '8999',
@@ -4104,6 +6817,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 1000000,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::ASSOCIATIONS_AND_MEMBERSHIP      => [
             Merchant::CATEGORY                      => '8699',
@@ -4116,6 +6837,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::BLACKLIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::UTILITIES_ELECTRIC_GAS_OIL_WATER => [
             Merchant::CATEGORY                      => '4900',
@@ -4128,6 +6857,14 @@ class BusinessSubCategoryMetaData
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
             self::EXISTING_OR_NEW_SUBCATEGORY       => self::EXISTING_SUBCATEGORY,
             self::DISPLAY_ORDER                     => 1,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => false,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
         Sub::OTHERS => [
             self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::OTHERS],
@@ -4181,124 +6918,4 @@ class BusinessSubCategoryMetaData
             ErrorCode::BAD_REQUEST_INVALID_SUBCATEGORY,
             [Entity::BUSINESS_SUBCATEGORY => $subcategory]);
     }
-//
-//    /**
-//     * returns feature value based on category or sub-category
-//     *
-//     * @param string      $feature
-//     * @param string      $category
-//     * @param string|null $subCategory
-//     *
-//     * @param string|null $defaultValue
-//     *
-//     * @return string
-//     * @throws BadRequestException
-//     */
-//    public static function getFeatureValueUsingCategoryOrSubcategory(
-//        string $feature,
-//        string $category,
-//        string $subCategory = null,
-//        string $defaultValue = null): string
-//    {
-//        $subCategoryMetaData = self::getSubCategoryMetaData($category, $subCategory);
-//
-//        if (isset($subCategoryMetaData[$feature]) === true)
-//        {
-//            return $subCategoryMetaData[$feature];
-//        }
-//
-//        return $defaultValue;
-//    }
-//
-//    /**
-//     * returns feature value based on category
-//     *
-//     * @param string      $feature
-//     * @param string      $category
-//     * @param string|null $defaultValue
-//     *
-//     * @return string
-//     * @throws BadRequestException
-//     */
-//    public static function getFeatureValueUsingMccCode(
-//        string $feature,
-//        string $category,
-//        string $defaultValue = null): string
-//    {
-//        $categoryData = self::fetchCategoryAndSubCategoryByMccCode($category);
-//
-//        $subCategoryMetaData = self::getSubCategoryMetaData(
-//            $categoryData[Entity::BUSINESS_CATEGORY],
-//            $categoryData[Entity::BUSINESS_SUBCATEGORY]
-//        );
-//
-//        if (isset($subCategoryMetaData[$feature]) === true)
-//        {
-//            return $subCategoryMetaData[$feature];
-//        }
-//
-//        return $defaultValue;
-//    }
-//
-//    /**
-//     * Verifies that category value( mcc code) is present in predefined list of mcc
-//     *
-//     * @param $mccCode
-//     *
-//     * @return bool
-//     */
-//    public static function isMccPresentInPredefinedList($mccCode): bool
-//    {
-//        $othersCategoryMetaData = self::getMetaDataForOthersCategory();
-//
-//        if ($othersCategoryMetaData[Merchant::CATEGORY] === $mccCode)
-//        {
-//            return true;
-//        }
-//
-//        $subCategoriesMetaData = self::SUB_CATEGORY_METADATA;
-//
-//        foreach ($subCategoriesMetaData as $subCategory => $subCategoryMetaData)
-//        {
-//            if ($subCategoryMetaData[Merchant::CATEGORY] === $mccCode)
-//            {
-//                return true;
-//            }
-//        }
-//
-//        return false;
-//    }
-
-//    public static function fetchCategoryAndSubCategoryByMccCode($mccCode)
-//    {
-//        $othersCategoryMetaData = self::getMetaDataForOthersCategory();
-//
-//        if ($othersCategoryMetaData[Merchant::CATEGORY] === $mccCode)
-//        {
-//            return [
-//                Entity::BUSINESS_CATEGORY    => BusinessCategory::OTHERS,
-//                Entity::BUSINESS_SUBCATEGORY => null,
-//            ];
-//        }
-//
-//        $subCategoriesMetaData = self::SUB_CATEGORY_METADATA;
-//
-//        foreach ($subCategoriesMetaData as $subCategory => $subCategoryMetaData)
-//        {
-//            if ($subCategoryMetaData[Merchant::CATEGORY] === $mccCode)
-//            {
-//                return [
-//                    Entity::BUSINESS_CATEGORY    => BusinessCategory::getCategoryFromSubCategory($subCategory),
-//                    Entity::BUSINESS_SUBCATEGORY => $subCategory,
-//                ];
-//            }
-//        }
-//
-//        throw new BadRequestException(
-//            ErrorCode::BAD_REQUEST_MERCHANT_INVALID_MCC_CODE,
-//            null,
-//            [
-//                'mcc_code' => $mccCode,
-//            ]);
-//    }
 }

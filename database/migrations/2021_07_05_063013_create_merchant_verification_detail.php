@@ -37,6 +37,8 @@ class CreateMerchantVerificationDetail extends Migration
 
             $table->integer(Entity::UPDATED_AT);
 
+            $table->json(Entity::METADATA)->nullable();
+
             $table->char(Entity::AUDIT_ID, Entity::ID_LENGTH)->nullable();
 
             $table->index(Entity::MERCHANT_ID);

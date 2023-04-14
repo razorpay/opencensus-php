@@ -23,6 +23,7 @@ class Entity extends Base\PublicEntity
     const ARTEFACT_IDENTIFIER   = 'artefact_identifier';
     const STATUS                = 'status';
     const AUDIT_ID              = 'audit_id';
+    const METADATA              = 'metadata';
     const CREATED_AT            = 'created_at';
     const UPDATED_AT            = 'updated_at';
 
@@ -35,7 +36,8 @@ class Entity extends Base\PublicEntity
         self::ARTEFACT_TYPE,
         self::ARTEFACT_IDENTIFIER,
         self::STATUS,
-        self::AUDIT_ID
+        self::METADATA,
+        self::AUDIT_ID,
     ];
 
     protected $public = [
@@ -44,8 +46,17 @@ class Entity extends Base\PublicEntity
         self::ARTEFACT_TYPE,
         self::ARTEFACT_IDENTIFIER,
         self::STATUS,
+        self::METADATA,
         self::CREATED_AT,
         self::UPDATED_AT,
+    ];
+
+    protected $defaults = [
+        self::METADATA => []
+    ];
+
+    protected $casts = [
+        self::METADATA       => 'array',
     ];
 
     public function merchantDetail()
@@ -56,5 +67,10 @@ class Entity extends Base\PublicEntity
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
+    }
+
+    public function getMetadata()
+    {
+        return $this->getAttribute(self::METADATA);
     }
 }

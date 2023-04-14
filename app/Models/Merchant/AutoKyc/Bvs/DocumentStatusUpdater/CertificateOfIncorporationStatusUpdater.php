@@ -38,8 +38,8 @@ class CertificateOfIncorporationStatusUpdater extends VerificationDetailStatusUp
     {
         parent::__construct($merchant,$merchantDetails, $consumedValidation,$entity);
 
-        $this->verificationDetailArtefactType=$this->artefactType;
+        $this->verificationDetailArtefactType = $this->artefactType;
 
-        $this->verificaationDetailValidationUnit=MVD\Constants::DOC;
+        $this->verificationDetailValidationUnit = MVD\Constants::DOC;
     }
 }

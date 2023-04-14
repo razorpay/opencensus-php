@@ -4757,7 +4757,20 @@ Team Razorpay', '+911234567890');
     {
         $merchantId = '1cXSLlUU8V9sXl';
 
-        $this->setMockRazorxTreatment(['automation_activation' => 'on']);
+        $input = [
+            "experiment_id" => "LQzMXMbNCUramd",
+            "id" => $merchantId
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'live',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
 
         Http::fake(['http://razorpays.com/' => Http::response([], 400, []),]);
 
@@ -4774,7 +4787,20 @@ Team Razorpay', '+911234567890');
     {
         $merchantId = '1cXSLlUU8V9sXl';
 
-        $this->setMockRazorxTreatment(['automation_activation' => 'on']);
+        $input = [
+            "experiment_id" => "LQzMXMbNCUramd",
+            "id" => $merchantId
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'live',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
 
         Http::fake(['http://google.com/' => Http::response([], 200, []),]);
 
@@ -4791,11 +4817,16 @@ Team Razorpay', '+911234567890');
         $this->assertNull($merchantDetails['business_website']);
     }
 
-    public function testWebsiteNotLiveRazorxOff()
+    public function testWebsiteNotLiveSplitzOff()
     {
         $merchantId = '1cXSLlUU8V9sXl';
 
-        $this->setMockRazorxTreatment(['automation_activation' => 'off']);
+        $input = [
+            "experiment_id" => "LQzMXMbNCUramd",
+            "id" => $merchantId
+        ];
+
+        $this->mockSplitzTreatment($input);
 
         $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
 
@@ -4806,13 +4837,26 @@ Team Razorpay', '+911234567890');
         $this->startTest();
     }
 
-    public function testWebsiteNotLiveRazorxPilot()
+    public function testWebsiteNotLiveSplitzPilot()
     {
         $merchantId = '1cXSLlUU8V9sXl';
 
+        $input = [
+            "experiment_id" => "LQzMXMbNCUramd",
+            "id" => $merchantId
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'pilot',
+                ]
+            ]
+        ];
+
         Http::fake(['http://razorpays.com/' => Http::response([], 400, []),]);
 
-        $this->setMockRazorxTreatment(['automation_activation' => 'pilot']);
+        $this->mockSplitzTreatment($input, $output);
 
         $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
 

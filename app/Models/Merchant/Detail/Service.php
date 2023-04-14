@@ -700,7 +700,7 @@ class Service extends Base\Service
          * are reset in this flow because the values are picked up from the cache and sometimes cache does not have updated data.
          * Hence even though merchant activation is completed, the merchant does not seem to be activated. This way
          * the updated merchant details will be fetched from the database. The bug could not be reproduced.
-         * Ref - https://razorpay.slack.com/archives/D02PNFXKGF6/p1673371800015239 for more details.
+         * Ref - https://razorpay.slack.com/archives/C043K5N223F/p1673425345546419 for more details.
          */
         $merchant = $this->repo->merchant->findOrFailPublic($this->merchant->getMerchantId());
 

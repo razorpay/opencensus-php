@@ -31,6 +31,7 @@ class Validator extends Base\Validator
         Entity::ERROR_DESCRIPTION       => 'sometimes|string|max:255',
         Entity::ERROR_CODE              => 'sometimes|string|max:255',
         Entity::RULE_EXECUTION_LIST     => 'sometimes|array',
+        Entity::METADATA                => 'sometimes|array',
     ];
 
     protected static $processKafkaMessageRules = [

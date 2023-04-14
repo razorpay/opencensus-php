@@ -21,15 +21,15 @@ class BvsDocumentManagerClient extends BaseClient
     /**
      * BvsProbeClient constructor.
      */
-    function __construct()
+    function __construct($merchant = null)
     {
-        parent::__construct();
+        parent::__construct($merchant);
 
         $this->documentManagerClient = new DocManagerV1\KYCDocumentManagerAPIClient($this->host, $this->httpClient);
 
     }
 
-    public function documentRecord($request): DocManagerV1\DocumentRecordResponse
+    public function createDocumentRecord($request): DocManagerV1\DocumentRecordResponse
     {
         $details = $request[Constant::DETAILS];
 

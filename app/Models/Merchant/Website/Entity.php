@@ -142,6 +142,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GRACE_PERIOD);
     }
 
+    public function getAdditionalData()
+    {
+        return $this->getAttribute(self::ADDITIONAL_DATA);
+    }
+
     /*
      Document Id is present -
      "merchant_website_details": {

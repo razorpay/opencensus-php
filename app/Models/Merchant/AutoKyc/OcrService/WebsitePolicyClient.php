@@ -8,7 +8,7 @@ class WebsitePolicyClient extends BaseClient
 
     const GET_WEBSITE_PATH = '/website/api/v1/get_website_details';
 
-    public function createWebsitePolicyJob(array $payload): ?string
+    public function createWebsitePolicyJob(array $payload)
     {
         $url = $this->config['host'] . self::PROCESS_VERIFICATION_PATH;
 
@@ -16,9 +16,7 @@ class WebsitePolicyClient extends BaseClient
 
         if ($response->status_code >= 200 and $response->status_code <= 299)
         {
-            $responseBody = json_decode($response->body, true);
-
-            return $responseBody['website_verification_id'];
+            return json_decode($response->body, true);
         }
 
         return null;

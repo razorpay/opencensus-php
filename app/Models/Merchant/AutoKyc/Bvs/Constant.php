@@ -196,6 +196,9 @@ class Constant
     const WEBSITE_POLICY                  = 'website_policy';
     const NEGATIVE_KEYWORDS               = 'negative_keywords';
 
+    const MCC_CATEGORISATION_WEBSITE      = 'mcc_categorisation_website';
+    const MCC_CATEGORISATION_GSTIN        = 'mcc_categorisation_gstin';
+
     const FIELD_ARTEFACT_DETAILS_MAP = [
         self::PARTNERSHIP_DEED            => [
             self::ARTEFACT_TYPE   => self::PARTNERSHIP_DEED,
