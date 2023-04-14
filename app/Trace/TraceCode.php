@@ -5124,8 +5124,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_SEND_MAIL_REQUEST                               = 'BATCH_SEND_MAIL_REQUEST';
     const BATCH_SEND_MAIL_CONFIG                                = 'BATCH_SEND_MAIL_CONFIG';
     const BATCH_SERVICE_BULK_BAD_REQUEST                        = 'BATCH_SERVICE_BULK_BAD_REQUEST';
-    const BULK_PAYOUT_CREATION_PS_FAILED                        = 'BULK_PAYOUT_CREATION_PS_FAILED';
-    const BULK_PAYOUT_CREATION_API_FAILED                       = 'BULK_PAYOUT_CREATION_API_FAILED';
     const BATCH_SERVICE_FUND_ACCOUNT_BULK_REQUEST               = 'BATCH_SERVICE_FUND_ACCOUNT_BULK_REQUEST';
     const BATCH_SERVICE_PAYOUT_BULK_REQUEST                     = 'BATCH_SERVICE_PAYOUT_BULK_REQUEST';
     const BATCH_SERVICE_PAYOUT_BULK_RESPONSE                    = 'BATCH_SERVICE_PAYOUT_BULK_RESPONSE';

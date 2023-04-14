@@ -1911,105 +1911,9 @@ class Service extends Base\Service
     {
         if ($this->merchant->isFeatureEnabled(Features::PAYOUT_SERVICE_ENABLED) === true)
         {
-            return $this->handleBulkCreationForPSEnabledMerchant($input);
+            return $this->payoutServiceBulkPayoutsClient->createBulkPayoutViaMicroservice($input);
         }
 
-        return $this->createBulkPayoutForAPI($input);
-    }
-
-    private function handleBulkCreationForPSEnabledMerchant(array $input)
-    {
-        list($psInput, $apiInput) = $this->getPSAndAPIInput($input);
-
-        $this->trace->info(
-            TraceCode::BULK_PAYOUTS_PS_API_INPUT,
-            [
-                'ps_input'  => $psInput,
-                'api_input' => $apiInput
-            ]);
-
-
-        $finalResponse = new Base\PublicCollection;
-
-        /**
-         * We don't want to proceed with direct account payout creation incase if PS
-         * doesn't send 2xx. Hence we return exception received from PS to batch service
-         * so that whole input will be retried.
-         */
-        try
-        {
-            if (empty($psInput) === false)
-            {
-                $psResponse = $this->payoutServiceBulkPayoutsClient->
-                createBulkPayoutViaMicroservice($psInput);
-
-                if (isset($psResponse['items']) === true)
-                {
-                    $psPayouts = $psResponse['items'];
-
-                    foreach ($psPayouts as $psPayout)
-                    {
-                        $finalResponse->push($psPayout);
-                    }
-                }
-            }
-        }
-        catch (\Throwable $exception)
-        {
-            $this->trace->traceException(
-                $exception,
-                Trace::ERROR,
-                TraceCode::BULK_PAYOUT_CREATION_PS_FAILED,
-                [
-                    'input' => $input,
-                ]);
-
-            throw $exception;
-        }
-
-        try
-        {
-            if (empty($apiInput) === false)
-            {
-                $apiResponse = $this->createBulkPayoutForAPI($apiInput);
-
-                if (isset($apiResponse['items']) === true)
-                {
-                    $apiPayouts = $apiResponse['items'];
-
-                    foreach ($apiPayouts as $apiPayout)
-                    {
-                        $finalResponse->push($apiPayout);
-                    }
-                }
-            }
-        }
-        catch (\Throwable $exception)
-        {
-            $this->trace->traceException(
-                $exception,
-                Trace::ERROR,
-                TraceCode::BULK_PAYOUT_CREATION_API_FAILED,
-                [
-                    'input' => $input,
-                ]);
-
-            /**
-             *  We want batch service to retry if input contains only direct account payouts.
-             *  If it is mix of shared and direct, we don't want to retry for direct since it
-             *  can cause a lot of retries that can cause issues in system.
-             */
-            if (empty($psInput) === true)
-            {
-                throw $exception;
-            }
-        }
-
-        return $finalResponse->toArrayWithItems();
-    }
-
-    private function createBulkPayoutForAPI(array $input)
-    {
         $payoutBatch = new Base\PublicCollection;
 
         $validator = new Validator;
@@ -2061,20 +1965,20 @@ class Service extends Base\Service
                         $validator->validateIdempotencyKey($idempotencyKey, $batchId);
 
                         $existingPayout = $this->repo->payout->fetchByIdempotentKey($item[Entity::IDEMPOTENCY_KEY],
-                                                                                    $this->merchant->getId(),
-                                                                                    $batchId
+                            $this->merchant->getId(),
+                            $batchId
                         );
 
                         if ($existingPayout !== null)
                         {
                             $this->trace->info(TraceCode::PAYOUT_EXIST_WITH_SAME_IDEMPOTENCY_KEY,
-                                               [
-                                                   'input' => $existingPayout->toArrayPublic(),
-                                                   Entity::IDEMPOTENCY_KEY => $item[Entity::IDEMPOTENCY_KEY],
-                                               ]);
+                                [
+                                    'input' => $existingPayout->toArrayPublic(),
+                                    Entity::IDEMPOTENCY_KEY => $item[Entity::IDEMPOTENCY_KEY],
+                                ]);
 
                             $payoutBatch->push($existingPayout->toArrayPublic() +
-                                               [Entity::IDEMPOTENCY_KEY => $existingPayout->getIdempotencyKey()]);
+                                [Entity::IDEMPOTENCY_KEY => $existingPayout->getIdempotencyKey()]);
                         }
                         else
                         {
@@ -2095,14 +1999,14 @@ class Service extends Base\Service
                                 $contact = $this->contactCore->processEntryForContact($item, $batchId, $createDuplicate);
 
                                 $fundAccount = $this->fundAccountService->createFundAcccount($item,
-                                                                                             $contact,
-                                                                                             $batchId,
-                                                                                             $createDuplicate);
+                                    $contact,
+                                    $batchId,
+                                    $createDuplicate);
                             }
 
                             $payout = $this->processEntryForPayoutForFundAccount($item,
-                                                                                 $fundAccount,
-                                                                                 $batchId
+                                $fundAccount,
+                                $batchId
                             );
 
                             $payoutArr = $payout->toArrayPublic() + [Entity::IDEMPOTENCY_KEY => $idempotencyKey];
@@ -2113,8 +2017,8 @@ class Service extends Base\Service
                     catch (Exception\BaseException $exception)
                     {
                         $this->trace->traceException($exception,
-                                                     Trace::INFO,
-                                                     TraceCode::BATCH_SERVICE_BULK_BAD_REQUEST
+                            Trace::INFO,
+                            TraceCode::BATCH_SERVICE_BULK_BAD_REQUEST
                         );
 
                         $exceptionData = [
@@ -2138,8 +2042,8 @@ class Service extends Base\Service
                     catch (\Throwable $throwable)
                     {
                         $this->trace->traceException($throwable,
-                                                     Trace::CRITICAL,
-                                                     TraceCode::BATCH_SERVICE_BULK_EXCEPTION
+                            Trace::CRITICAL,
+                            TraceCode::BATCH_SERVICE_BULK_EXCEPTION
                         );
 
                         $exceptionData = [
@@ -2163,45 +2067,6 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::BATCH_SERVICE_PAYOUT_BULK_RESPONSE, $payoutBatch->toArrayWithItems());
 
         return $payoutBatch->toArrayWithItems();
-    }
-
-    private function getPSAndAPIInput(array $input)
-    {
-        $accountNumbers = array_column($input, PayoutBatchHelper::RAZORPAYX_ACCOUNT_NUMBER);
-
-        $uniqueAccountNumbers = array_unique($accountNumbers);
-
-        $balances = $this->repo->balance->
-        getBalancesForAccountNumbersForTypeBanking($uniqueAccountNumbers);
-
-        $accountNumbersAccountTypeMap = [];
-
-        foreach ($balances as $balance)
-        {
-            $accountNumber = $balance->getAccountNumber();
-
-            $accountNumbersAccountTypeMap[$accountNumber] = $balance->getAccountType();
-        }
-
-        $apiInput = [];
-
-        $psInput = [];
-
-        foreach($input as $item)
-        {
-            $accountNumber = $item[PayoutBatchHelper::RAZORPAYX_ACCOUNT_NUMBER] ?? null;
-
-            if ($accountNumbersAccountTypeMap[$accountNumber] == Merchant\Balance\AccountType::SHARED)
-            {
-                $psInput[] = $item;
-            }
-            else
-            {
-                $apiInput[] = $item;
-            }
-        }
-
-        return array($psInput, $apiInput);
     }
 
     public function createAppFrameworkMerchantMapping()
