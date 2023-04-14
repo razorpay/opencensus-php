@@ -8,6 +8,13 @@ use RZP\Models\Admin\Org\Entity as Org;
 
 class Authorized extends Base
 {
+
+    // @todo : This logic should be refactored and moved to the templating service by creating use case specific templates
+    protected array $storkWhitelistedOrgs = [
+        Org::RAZORPAY_ORG_ID,
+        Org::CURLEC_ORG_ID
+    ];
+
     protected function addHtmlView()
     {
         $emailView = 'emails.mjml.customer.payment';
@@ -65,9 +72,10 @@ class Authorized extends Base
     {
         $data = $this->data;
 
+        // @todo : Remove this logic, to not be extended further
         if ((isset($data['merchant']['eligible_for_covid_relief']) and
             $data['merchant']['eligible_for_covid_relief'] === true) or
-            isset($data['org']['id']) and $data['org']['id'] !== Org::RAZORPAY_ORG_ID)
+            isset($data['org']['id']) and in_array($data['org']['id'], $this->storkWhitelistedOrgs) === false)
         {
             return false;
         }
