@@ -64,9 +64,13 @@ function PaymentDetails(props) {
   const hideRazorpayTextLink = isOrgFeatureExist('hide_razorpay_text_link');
   const isFromHomePage = location?.state?.fromHomePage;
   const paymentId = payment?.id;
-  const bankReference = bankTransfer?.details?.bank_reference;
+  const bankTransferDetails = bankTransfer?.details;
+  const bankReference = bankTransferDetails?.bank_reference;
+  const isAccountClosed = bankTransferDetails?.virtual_account?.status === 'closed';
   const bankReferenceLoading = bankTransfer?.loading;
   const qrPaymentDescription = payment?.description === 'QRv2 Payment';
+  const hideActions =
+    payment.method === 'bank_transfer' && (isAccountClosed || bankReferenceLoading);
   const scroller = useRef();
   const [scrolledToBottom, setScrolledToBottom] = useState(false);
   const [isUPIVisible, setUPIVisible] = useState(false);
@@ -234,7 +238,8 @@ function PaymentDetails(props) {
             >
               {payment.status === 'authorized' &&
                 isRoleAllowedEdit &&
-                payment.method !== 'intl_bank_transfer' && (
+                payment.method !== 'intl_bank_transfer' &&
+                !hideActions && (
                   <div className="payments-manual-actions">
                     <button
                       onClick={() => {
@@ -270,6 +275,13 @@ function PaymentDetails(props) {
                   </div>
                 )}
               <Alert type={statusMsg.type} message={statusMsg.message} />
+              {hideActions && !bankReferenceLoading && payment.status === 'authorized' && (
+                <Alert
+                  type="error"
+                  message="This payment will be refunded within 72 hours"
+                  showDismiss={false}
+                />
+              )}
               <div
                 className={`list-group pair-row-container ${
                   user.isSingleReconEnabled && user.isOptimizerEnabled ? 'opt-remove-margin' : ''

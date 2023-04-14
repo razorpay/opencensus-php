@@ -131,4 +131,68 @@ describe('PaymentDetails', () => {
       });
     });
   });
+
+  describe('Tests for disabled VA when payment method is bank transfer', () => {
+    test('Capture/Refund should be hidden when payment method is bank_transfer and details are loading', () => {
+      const payment = { ...defaultProps.payment, method: 'bank_transfer' };
+      render(<App payment={payment} />);
+
+      expect(screen.queryByText('Capture Payment')).not.toBeInTheDocument();
+      expect(screen.queryByText('Refund Payment')).not.toBeInTheDocument();
+    });
+
+    test('Capture/Refund should be hidden when payment method is bank_transfer and va is inactive', () => {
+      const payment = { ...defaultProps.payment, method: 'bank_transfer' };
+      const bankTransfer = { loading: false, details: { virtual_account: { status: 'closed' } } };
+      render(<App payment={payment} bankTransfer={bankTransfer} />);
+
+      expect(screen.queryByText('Capture Payment')).not.toBeInTheDocument();
+      expect(screen.queryByText('Refund Payment')).not.toBeInTheDocument();
+    });
+
+    test('Refund alert should be visible when payment method is bank_transfer and va is inactive', () => {
+      const payment = { ...defaultProps.payment, method: 'bank_transfer' };
+      const bankTransfer = { loading: false, details: { virtual_account: { status: 'closed' } } };
+      render(<App payment={payment} bankTransfer={bankTransfer} />);
+
+      expect(screen.getByText('This payment will be refunded within 72 hours')).toBeInTheDocument();
+    });
+
+    test('Refund alert should be hidden when payment method is bank_transfer and details are loading', () => {
+      const payment = { ...defaultProps.payment, method: 'bank_transfer' };
+      render(<App payment={payment} />);
+
+      expect(
+        screen.queryByText('This payment will be refunded within 72 hours'),
+      ).not.toBeInTheDocument();
+    });
+
+    test('Refund alert should be hidden when payment method is other than bank_transfer', () => {
+      const payment = { ...defaultProps.payment, method: 'upi_transfer' };
+      const bankTransfer = { loading: false };
+      render(<App payment={payment} bankTransfer={bankTransfer} />);
+
+      expect(
+        screen.queryByText('This payment will be refunded within 72 hours'),
+      ).not.toBeInTheDocument();
+    });
+
+    test('Capture/Refund should be visible when payment method is other than bank_transfer', () => {
+      const payment = { ...defaultProps.payment, method: 'upi_transfer' };
+      const bankTransfer = { loading: false, details: { virtual_account: { status: 'closed' } } };
+      render(<App payment={payment} bankTransfer={bankTransfer} />);
+
+      expect(screen.getByText('Capture Payment')).toBeInTheDocument();
+      expect(screen.getByText('Refund Payment')).toBeInTheDocument();
+    });
+
+    test('Capture/Refund should be visible when payment method is other than bank_transfer and bank details are loading', () => {
+      const payment = { ...defaultProps.payment, method: 'upi_transfer' };
+      const bankTransfer = { loading: true, details: { virtual_account: { status: 'closed' } } };
+      render(<App payment={payment} bankTransfer={bankTransfer} />);
+
+      expect(screen.getByText('Capture Payment')).toBeInTheDocument();
+      expect(screen.getByText('Refund Payment')).toBeInTheDocument();
+    });
+  });
 });
