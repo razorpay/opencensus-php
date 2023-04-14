@@ -147,20 +147,38 @@ class Raven extends Base\Core
             CASE 'verify_coupon':
                 return 'sms.checkout.verify_coupon_otp';
 
+            CASE 'verify_coupon_v2':
+                return 'sms.checkout.verify_coupon_otp_v2';
+
             CASE 'mandatory_login':
                 return 'sms.checkout.mandatory_login_otp';
+
+            CASE 'mandatory_login_v2':
+                return 'sms.checkout.mandatory_login_otp_v2';
 
             CASE 'access_address':
                 return 'sms.checkout.access_address_otp';
 
+            CASE 'access_address_v2':
+                return 'sms.checkout.access_address_otp_v2';
+
             CASE 'save_address':
                 return 'sms.checkout.save_address_otp';
+
+            CASE 'save_address_v2':
+                return 'sms.checkout.save_address_otp_v2';
 
             CASE 'access_card':
                 return 'sms.checkout.access_card_otp';
 
+            CASE 'access_card_v3':
+                return 'sms.checkout.access_card_otp_v3';
+
             CASE 'save_card':
                 return 'sms.checkout.save_card_otp';
+
+            CASE 'save_card_v3':
+                return 'sms.checkout.save_card_otp_v3';
 
             CASE 'support_page_login':
                 return 'sms.support.login_otp';
@@ -180,11 +198,17 @@ class Raven extends Base\Core
     {
         return in_array($otpReason, [
             'verify_coupon',
+            'verify_coupon_v2',
             'mandatory_login',
+            'mandatory_login_v2',
             'access_address',
+            'access_address_v2',
             'save_address',
+            'save_address_v2',
             'access_card',
+            'access_card_v3',
             'save_card',
+            'save_card_v3',
             'access_card_v2',
             'save_card_v2',
             'support_page_login',
