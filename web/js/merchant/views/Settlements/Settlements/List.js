@@ -42,6 +42,8 @@ import SettlementListFilterV3 from 'merchant/views/Settlements/v3/components/Set
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
 import moment from 'moment';
+import qs from 'query-string';
+import { validateSettlementIdFilters } from 'merchant/views/Settlements/v3/utils/common';
 
 const DEFAULT_PAGE_SIZE_SETTLEMENTS_V3 = 25;
 
@@ -404,12 +406,21 @@ class SettlementsListContainer extends ListContainer {
       user,
       terminalProviders,
       selfServeActionsPage,
+      location,
     } = this.props;
 
     let balance = current_balance.data.balance || 0;
 
     if (balance < 0) {
       balance = Math.abs(balance);
+    }
+
+    let settlementsToShow = items;
+    if (!!location.search) {
+      const queryParams = qs.parse(location.search);
+      if (queryParams.id && items.length) {
+        settlementsToShow = validateSettlementIdFilters(items, queryParams);
+      }
     }
 
     return (
@@ -423,9 +434,8 @@ class SettlementsListContainer extends ListContainer {
                 onSubmit={this.handleV3Search}
               />
               <SettlementsListViewV3
-                settlements={items}
+                settlements={settlementsToShow}
                 isLoading={loading}
-                showBreakup={this.showBreakup}
                 user={user}
                 terminalProviders={terminalProviders}
                 selfServeActionsPage={selfServeActionsPage}
@@ -434,7 +444,7 @@ class SettlementsListContainer extends ListContainer {
               <Pager
                 count={DEFAULT_PAGE_SIZE_SETTLEMENTS_V3}
                 skip={this.state.skip}
-                length={items.length}
+                length={settlementsToShow.length}
                 onClick={this.handlePagination}
               />
             </StyledWrapper>

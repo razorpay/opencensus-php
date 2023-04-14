@@ -1,6 +1,6 @@
-import { DateInfo, ERROR_TYPE } from 'merchant/views/Settlements/v3/typings';
+import { DateInfo, ERROR_TYPE, SettlementListFilters } from 'merchant/views/Settlements/v3/typings';
 import moment from 'moment';
-import { User } from 'common/typings';
+import { SettlementsCollectionReducerState, User } from 'common/typings';
 
 export const getSettlementDate = (timestamp: number): DateInfo => {
   if (!timestamp) return { date: '---', time: '---' };
@@ -31,3 +31,30 @@ export const validateUnixTimestamp = (timestamp: string): number | null => {
 
 export const showPaymentProviderColumn = (user: User): boolean =>
   user.isSingleReconEnabled && user.isOptimizerEnabled;
+
+export const validateSettlementIdFilters = (
+  settlements: SettlementsCollectionReducerState['items'],
+  filters: SettlementListFilters,
+): SettlementsCollectionReducerState['items'] => {
+  const { status, from, to, utr } = filters;
+
+  return settlements.filter((settlement) => {
+    if (status && settlement.status !== status) {
+      return false;
+    }
+
+    if (from && to) {
+      const _from = parseInt(from, 10);
+      const _to = parseInt(to, 10);
+      if (!(settlement.created_at >= _from && settlement.created_at <= _to)) {
+        return false;
+      }
+    }
+
+    if (utr && settlement.utr !== utr) {
+      return false;
+    }
+
+    return true;
+  });
+};

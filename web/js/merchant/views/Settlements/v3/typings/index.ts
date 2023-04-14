@@ -150,3 +150,11 @@ export interface AlertInterface {
     action?: any;
   };
 }
+
+export interface SettlementListFilters {
+  id?: string;
+  from?: string;
+  to?: string;
+  utr?: string;
+  status?: string;
+}
