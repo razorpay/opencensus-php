@@ -1,14 +1,18 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { getOnboardingStatus, onboardTerminal } from 'merchant/reducers/config';
+
+import { Alert, Badge, Button, InfoIcon, UsersIcon } from '@razorpay/blade/components';
+
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { getClassName, getStatusMessage, getBadgeVariant } from './InternationalPayments';
-import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
-import { Alert, Badge, Button, InfoIcon, UsersIcon } from '@razorpay/blade/components';
+import { analyticsTrack } from 'common/utils/analytics';
+
+import { getOnboardingStatus, onboardTerminal } from 'merchant/reducers/config';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+import { getClassName, getStatusMessage, getBadgeVariant } from './InternationalPayments';
 
 class PaypalOnboardingButton extends Component {
   is_redirected = false;
@@ -129,6 +133,8 @@ class PaypalOnboardingButton extends Component {
     const showStatusMessage = ['pending', 'created', 'requested', 'permission_missing'].includes(
       status,
     );
+    const isLinkButtonNotHidden = !user.isInstrumentRequestHidden && showLinkButtonOnly;
+
     const changeAccountModalClick = () =>
       openModal({
         size: 'small',
@@ -172,7 +178,7 @@ class PaypalOnboardingButton extends Component {
               Change Account
             </Button>
           )}
-          {showLinkButtonOnly && (
+          {isLinkButtonNotHidden ? (
             <Button
               variant="primary"
               size="small"
@@ -194,7 +200,7 @@ class PaypalOnboardingButton extends Component {
             >
               Link Account
             </Button>
-          )}
+          ) : null}
         </div>
         {showStatusMessage && (
           <div className="mt20">
@@ -231,14 +237,13 @@ class PaypalOnboardingButton extends Component {
             <i className="i i-info-circle" /> {getStatusMessage(status)}
           </p>
         )}
-        {showLinkButtonOnly ? (
+        {isLinkButtonNotHidden ? (
           <>
             <button
               disabled={this.state.loading || disabled}
               onClick={this.verifyAccount}
               className="btn btn-primary paypal-onboard-button"
             >
-              {' '}
               {showLogo && (
                 <img
                   className="paypal-onboard-img"
