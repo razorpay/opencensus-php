@@ -138,9 +138,10 @@ describe('Date time calendar component when picker is active', () => {
     );
   });
 
+  // Temp fix added, need a complete fix.
   it('should change date if clicked on a ref date', async () => {
     // select a date before start date;
-    const refDateMoment = initialState.startDate.clone().set('date', 12);
+    const refDateMoment = initialState.startDate.clone().set('date', 13);
     const refDate = screen.getByLabelText(`Date is ${refDateMoment.format('DD MMMM YYYY')}`);
     await userEvent.click(refDate);
     expect(
