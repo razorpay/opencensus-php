@@ -182,6 +182,10 @@ class ProviderCode
     const PINELABS           = 'pinelabs';
     const ZOICICI            = 'zoicici';
     const GOAXB              = 'goaxb';
+    const TMB                = 'tmb';
+    const UTKARSHBANK        = 'utkarshbank';
+    const OMNI               = 'omni';
+    const DHANI              = 'dhani';
 
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
@@ -234,6 +238,7 @@ class ProviderCode
         self::DCB                => IFSC::DCBL,
         self::DCBBANK            => IFSC::DCBL,
         self::DENABANK           => IFSC::BKDN,
+        self::DHANI              => 'NPCI',
         self::DLB                => IFSC::DLXB,
         self::EAZYPAY            => IFSC::ICIC,
         self::EQUITAS            => IFSC::ESFB,
@@ -291,6 +296,7 @@ class ProviderCode
         self::OKICICI            => IFSC::ICIC,
         self::OKHDFCBANK         => IFSC::HDFC,
         self::OKSBI              => IFSC::SBIN,
+        self::OMNI               => 'NPCI',
         self::PAYTM              => IFSC::PYTM,
         self::PAYZAPP            => IFSC::HDFC,
         self::PINGPAY            => IFSC::UTIB,
@@ -316,6 +322,7 @@ class ProviderCode
         self::SYNDBANK           => IFSC::SYNB,
         self::SYNDICATE          => IFSC::SYNB,
         self::TJSB               => IFSC::TJSB,
+        self::TMB                => IFSC::TMBL,
         self::UBI                => IFSC::UTBI,
         self::UBOI               => IFSC::UBIN,
         self::UCO                => IFSC::UCBA,
@@ -324,6 +331,7 @@ class ProviderCode
         self::UNITED             => IFSC::UTBI,
         self::UPI                => 'NPCI',
         self::UTBI               => IFSC::UTBI,
+        self::UTKARSHBANK        => IFSC::UTKS,
         self::VIJAYABANK         => IFSC::VIJB,
         self::VIJB               => IFSC::VIJB,
         self::VJB                => IFSC::VIJB,

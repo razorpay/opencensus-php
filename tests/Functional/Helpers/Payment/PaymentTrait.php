@@ -3677,6 +3677,10 @@ trait PaymentTrait
             "pinelabs",
             "zoicici",
             "goaxb",
+            "utkarshbank",
+            "tmb",
+            "omni",
+            "dhani",
         ];
 
         return $vpaHandles;
