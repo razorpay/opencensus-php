@@ -328,7 +328,7 @@ export default class Details extends Component {
                   />
                 </EntityDetailRow>
                 <EntityDetailRow label="Refund Credits">
-                  <Amount value={account.refund_credits} currency={account.currency} />
+                  <Amount value={account.refund_credits ?? 0} currency={account.currency} />
                 </EntityDetailRow>
                 {isAllowToEdit && (
                   <EntityDetailRow label="Dashboard Access">

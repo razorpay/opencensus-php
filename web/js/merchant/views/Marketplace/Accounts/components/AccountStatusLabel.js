@@ -8,6 +8,7 @@ import Popover, { PopoverBody } from 'common/ui/Popover';
 const statusMap = {
   activated: {
     labelClass: 'label-success',
+    showToolTip: true,
     ctaText: 'Show Activation Form',
     showCtaAsButton: false,
     description: '',
@@ -16,6 +17,7 @@ const statusMap = {
   },
   not_activated: {
     labelClass: 'label-muted',
+    showToolTip: true,
     ctaText: 'Complete Activation Form',
     showCtaAsButton: true,
     description: '',
@@ -24,6 +26,7 @@ const statusMap = {
   },
   verification_pending: {
     labelClass: 'label-pending',
+    showToolTip: true,
     ctaText: 'View Activation Form',
     showCtaAsButton: false,
     description: 'Bank account verification can take up to 30 mins to complete.',
@@ -33,11 +36,17 @@ const statusMap = {
   },
   verification_failed: {
     labelClass: 'label-danger',
+    showToolTip: true,
     ctaText: 'Update Details',
     showCtaAsButton: true,
     description: '', // from backend
     tooltipCta: 'Update Details',
     tooltipMessage: '', // from backend
+  },
+  suspended: {
+    labelClass: 'label-danger',
+    showToolTip: false,
+    showCtaAsButton: false,
   },
 };
 
@@ -94,7 +103,7 @@ const AccountStatusListView = React.memo(
       return '-';
     }
 
-    const { labelClass, tooltipCta, tooltipMessage } = statusMap[status];
+    const { labelClass, showToolTip, tooltipCta, tooltipMessage } = statusMap[status];
     const isCtaDisabled = isCreationDisabled;
 
     return (
@@ -103,24 +112,26 @@ const AccountStatusListView = React.memo(
           <span class={classList('ModeIndicator', labelClass)} />
           {titleCase(status)}
         </span>
-        <Popover align="top" theme="dark">
-          <PopoverBody>
-            <div>
-              {tooltipMessage || errorDetails}
-              {status === 'activated' && <Time value={timeStamp} format="DD MMM YYYY, hh:mm:A" />}
-              <br />
-              {tooltipCta && (
-                <button
-                  class="btn-link tooltip-cta"
-                  onClick={showActivationForm}
-                  disabled={isCtaDisabled}
-                >
-                  {tooltipCta}
-                </button>
-              )}
-            </div>
-          </PopoverBody>
-        </Popover>
+        {showToolTip ? (
+          <Popover align="top" theme="dark">
+            <PopoverBody>
+              <div data-testid="popover-body">
+                {tooltipMessage || errorDetails}
+                {status === 'activated' && <Time value={timeStamp} format="DD MMM YYYY, hh:mm:A" />}
+                <br />
+                {tooltipCta && (
+                  <button
+                    class="btn-link tooltip-cta"
+                    onClick={showActivationForm}
+                    disabled={isCtaDisabled}
+                  >
+                    {tooltipCta}
+                  </button>
+                )}
+              </div>
+            </PopoverBody>
+          </Popover>
+        ) : null}
       </small>
     );
   },
