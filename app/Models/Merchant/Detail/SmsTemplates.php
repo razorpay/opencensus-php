@@ -4,7 +4,7 @@ namespace RZP\Models\Merchant\Detail;
 
 class SmsTemplates
 {
-    const UNREGISTERED_PAYMENTS_ENABLED             = 'sms.onboarding.unregistered.payments_enabled';
+    const UNREGISTERED_PAYMENTS_ENABLED             = 'sms.onboarding.unregistered.payments_enabled_v2';
 
     const PROMO_UNREGISTERED_PAYMENTS_ENABLED       = 'sms.onboarding.unregistered.payment_enabled_pr';
 
@@ -24,7 +24,7 @@ class SmsTemplates
 
     const PROMO_PENNY_TESTING_FAILURE               = 'sms.onboarding.penny_test_failure_pr';
 
-    const NEEDS_CLARIFICATION                       = 'sms.onboarding.needs_clarification';
+    const NEEDS_CLARIFICATION                       = 'sms.onboarding.needs_clarification_v2';
 
     const PROMO_NEEDS_CLARIFICATION                 = 'sms.onboarding.needs_clarification_pr';
 
