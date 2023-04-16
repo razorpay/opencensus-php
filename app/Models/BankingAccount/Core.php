@@ -3384,55 +3384,24 @@ class Core extends Base\Core
         ];
 
         $recipient = [
-            'name'  => 'Umakant Vashishtha',
-            'email' => 'umakant.vashishtha@razorpay.com',
+            'name'  => 'Rangaswamy S',
+            'email' => 'rangaswamy.s@lesconcierges.in',
         ];
 
-        $otherRecipients = [];
-
-        if ((new Validator())->checkFosLeadCities($city))
-        {
-            $recipient = [
-                'name'  => 'Rangaswamy S',
-                'email' => 'rangaswamy.s@lesconcierges.in',
-            ];
-
-            $otherRecipients = [
-                [
-                    'name'  => 'Lohith M',
-                    'email' => 'lohith.m@lesconcierges.in',
-                ],
-                [
-                    'name'  => 'Syed',
-                    'email' => 'syed@lesconcierges.in'
-                ],
-                [
-                    'name'  => 'X Onboarding',
-                    'email' => 'x-caonboarding@razorpay.com',
-                ],
-            ];
-        }
-        else {
-            $recipient = [
-                'name'  => 'Suresh C',
-                'email' => 'sureshc@supersevak.com',
-            ];
-
-            $otherRecipients = [
-                [
-                    'name'  => 'Mahesh',
-                    'email' => 'mahesh@superseva.com',
-                ],
-                [
-                    'name'  => 'Musaffir',
-                    'email' => 'Musaffir@superseva.com'
-                ],
-                [
-                    'name'  => 'X Onboarding',
-                    'email' => 'x-caonboarding@razorpay.com',
-                ],
-            ];
-        }
+        $otherRecipients = [
+            [
+                'name'  => 'Lohith M',
+                'email' => 'lohith.m@lesconcierges.in',
+            ],
+            [
+                'name'  => 'Syed',
+                'email' => 'syed@lesconcierges.in'
+            ],
+            [
+                'name'  => 'X Onboarding',
+                'email' => 'x-caonboarding@razorpay.com',
+            ],
+        ];
 
         if (in_array($city, ['Bengaluru', 'Bangalore', 'bengaluru', 'bangalore']))
         {
