@@ -15,6 +15,8 @@ class Flow
     const IVR               = 'ivr';
     const DCC_BLACKLISTED   = 'dcc_blacklisted';
 
+    // in case of any changes in flows, please contact cards team
+    // as the same need to be updated in CPS for Rearch flow as well
     public static $flows = [
         self::_3DS              => 1,
         self::PIN               => 2,

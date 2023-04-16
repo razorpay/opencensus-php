@@ -34,6 +34,7 @@ app/Http/P2pRoute.php                                         @razorpay/spine-ed
 
 app/Models/Balance/FreePayout.php                      @razorpay/Payouts-core
 app/Models/BankingAccountStatement/                    @razorpay/Payouts-core
+app/Models/Card/                                       @razorpay/TechCards
 app/Models/Card/NetworkName.php                        @razorpay/TechRulesRouting
 app/Models/Checkout/                                   @razorpay/checkout-backend-leads
 app/Models/Key/                                        @razorpay/spine-edge
