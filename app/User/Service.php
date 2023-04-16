@@ -1067,6 +1067,8 @@ class Service extends Base\Service
 
         $data = $error = null;
 
+        $merchantId = $merchantRole = $merchantName = $merchantLogo = null;
+
         if ($user === null)
         {
             //
@@ -1079,14 +1081,25 @@ class Service extends Base\Service
 
         $currentMerchant = $user->currentMerchant();
 
+        if (empty($currentMerchant) === false)
+        {
+            $merchantId = $currentMerchant->id;
+
+            $merchantRole = $currentMerchant->role ?? $currentMerchant->role;
+
+            $merchantName = $currentMerchant->name;
+
+            $merchantLogo = $currentMerchant->logo_url;
+        }
+
         // Create and cache a random token tying the user to the request
         $token = str_random(30);
 
         $data = [
             'user_id'       => $user->id,
             'user_email'    => $user->email,
-            'merchant_id'   => $currentMerchant->id,
-            'role'          => $currentMerchant->role ?? $currentMerchant->banking_role,
+            'merchant_id'   => $merchantId,
+            'role'          => $merchantRole,
             'query_params'  => $queryParams['query'] ?? []
         ];
 
@@ -1098,10 +1111,10 @@ class Service extends Base\Service
             'token'         => $token,
             'email'         => $user->email,
             'name'          => $user->name,
-            'merchant_id'   => $currentMerchant->id,
-            'role'          => $currentMerchant->role ?? $currentMerchant->banking_role,
-            'merchant_name' => $currentMerchant->name,
-            'logo'          => $currentMerchant->logo_url,
+            'merchant_id'   => $merchantId,
+            'role'          => $merchantRole,
+            'merchant_name' => $merchantName,
+            'logo'          => $merchantLogo,
             'user_id'       => $user->id
         ];
 
