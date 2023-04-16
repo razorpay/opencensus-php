@@ -22,7 +22,7 @@ export const OverviewBanner = ({ loading, history }): JSX.Element => {
       dashboardType: dashboardType as DashboardType,
     });
     history.push(
-      `${dashboardType === 'partner' ? 'partner' : ''}/reports/downloads?modal=download_report`,
+      `${dashboardType === 'partner' ? '/partners' : ''}/reports/downloads?modal=download_report`,
     );
   };
 

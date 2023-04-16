@@ -80,11 +80,11 @@ describe('Date time calendar component when picker is active', () => {
   });
 
   it('should show picker header as expected', () => {
-    // assertion to check basic header
+    // assertion to check basic header.
     expect(screen.getByText('Selected Date Range:')).toBeInTheDocument();
     expect(screen.getByText('Include Time')).toBeInTheDocument();
 
-    // expecting desired dates to show up
+    // expecting desired dates to show up.
     expect(
       screen.getByText(`${initialState.startDate.clone().format(selectedDateInfoBadgeFormat)}`),
     ).toBeInTheDocument();
@@ -138,26 +138,29 @@ describe('Date time calendar component when picker is active', () => {
     );
   });
 
-  // Temp fix added, need a complete fix.
+  // fix added, need a complete fix.
   it('should change date if clicked on a ref date', async () => {
+    const prevBtn = screen.getByLabelText('Previous Range');
+    await userEvent.click(prevBtn);
+
     // select a date before start date;
-    const refDateMoment = initialState.startDate.clone().set('date', 13);
+    const refDateMoment = initialState.startDate.clone().subtract(1, 'month').set('date', 4);
     const refDate = screen.getByLabelText(`Date is ${refDateMoment.format('DD MMMM YYYY')}`);
     await userEvent.click(refDate);
     expect(
       screen.getByText(`${refDateMoment.clone().format(selectedDateInfoBadgeFormat)}`),
     ).toBeInTheDocument();
 
-    // select a date between start and end date
-    const refDateMoment2 = initialState.startDate.clone().set('date', 14);
+    // select a date between start and end date - 1
+    const refDateMoment2 = initialState.startDate.clone().subtract(1, 'month').set('date', 8);
     const refDate2 = screen.getByLabelText(`Date is ${refDateMoment2.format('DD MMMM YYYY')}`);
     await userEvent.click(refDate2);
     expect(
       screen.getByText(`${refDateMoment2.clone().format(selectedDateInfoBadgeFormat)}`),
     ).toBeInTheDocument();
 
-    // select a date between start and end date
-    const refDateMoment3 = initialState.startDate.clone().set('date', 13);
+    // select a date between start and end date - 2
+    const refDateMoment3 = initialState.startDate.clone().subtract(1, 'month').set('date', 5);
     const refDate3 = screen.getByLabelText(`Date is ${refDateMoment3.format('DD MMMM YYYY')}`);
     await userEvent.click(refDate3);
     expect(
@@ -165,21 +168,21 @@ describe('Date time calendar component when picker is active', () => {
     ).toBeInTheDocument();
 
     // select a date after end date
-    const refDateMoment4 = initialState.endDate.clone().set('date', 21);
+    const refDateMoment4 = initialState.endDate.clone().subtract(1, 'month').set('date', 12);
     const refDate4 = screen.getByLabelText(`Date is ${refDateMoment4.format('DD MMMM YYYY')}`);
     await userEvent.click(refDate4);
     expect(
       screen.getByText(`${refDateMoment4.clone().format(selectedDateInfoBadgeFormat)}`),
     ).toBeInTheDocument();
 
-    // double click emic
+    // double click emic - 1
     await userEvent.click(refDate4);
     // start and end date to be same
     expect(
       screen.getAllByText(`${refDateMoment4.clone().format(selectedDateInfoBadgeFormat)}`).length,
     ).toEqual(2);
 
-    // double click emic
+    // double click emic - 2
     await userEvent.click(refDate4);
     // start and end date to be same
     expect(
