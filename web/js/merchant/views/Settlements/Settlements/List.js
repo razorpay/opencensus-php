@@ -39,8 +39,7 @@ import SettlementsListViewV3, {
   StyledWrapper,
 } from 'merchant/views/Settlements/v3/screens/ListView';
 import SettlementListFilterV3 from 'merchant/views/Settlements/v3/components/SettlementListFilter';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { analyticsTrack } from 'common/utils/analytics';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import moment from 'moment';
 import qs from 'query-string';
 import { validateSettlementIdFilters } from 'merchant/views/Settlements/v3/utils/common';
@@ -380,12 +379,11 @@ class SettlementsListContainer extends ListContainer {
   handleV3Search = (args) => {
     this.search(args);
 
-    analyticsTrack({
-      objectName: 'Merchant clicked',
-      actionName: 'Search button',
+    analyticsTrackWithUserInfo({
+      objectName: 'Settlements Search',
+      actionName: 'Clicked',
       screen: 'Settlements',
       properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
         page: 'Home Screen',
         settlements_experiment_name: 'v2',
         duration: args.from && args.to ? this.getDuration(args.from, args.to) : undefined,

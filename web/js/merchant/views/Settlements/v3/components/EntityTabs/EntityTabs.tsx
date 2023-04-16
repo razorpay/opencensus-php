@@ -1,10 +1,10 @@
 import React from 'react';
 import { sanitizeTabName, removeUnreconciledEntity } from 'merchant/views/Settlements/v2/util';
-import { titleCase, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { titleCase } from 'common/utils/rzp-utils';
 import { connect } from 'react-redux';
 import { TabsContainer, Tab, StyledDivTabText } from './styled';
 import { Text, Badge } from '@razorpay/blade/components';
-import { analyticsTrack } from 'common/utils/analytics';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 
 const SECTION_TAB_MAPPING = {
   gross_settlements: ['payment', 'reversal'],
@@ -29,12 +29,11 @@ const RenderTabs = ({
   const instrumentTabClick = (clickedTab) => {
     const entityView = entityType === 'credit' ? 'Gross Settlements' : 'Deductions';
 
-    analyticsTrack({
-      objectName: 'Merchant clicked',
-      actionName: `${titleCase(clickedTab)}s tab in ${entityView} view`,
+    analyticsTrackWithUserInfo({
+      objectName: `Settlements Details ${titleCase(clickedTab)}s`,
+      actionName: `Clicked in ${entityView} view`,
       screen: 'Settlements',
       properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
         page: 'Details View',
         settlements_experiment_name: 'v2',
         settlementId: settlement.id,

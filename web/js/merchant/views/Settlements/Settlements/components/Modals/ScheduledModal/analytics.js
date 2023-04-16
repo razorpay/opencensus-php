@@ -85,7 +85,7 @@ export const trackSettlementsPageRendered = (properties) => {
   trackEvent({
     objectName: 'Settlements Page',
     actionName: EVENT_TYPES.RENDERED,
-    screen: 'Home Screen',
+    screen: 'Settlements',
     properties,
   });
 };

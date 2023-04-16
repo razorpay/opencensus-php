@@ -147,8 +147,8 @@ describe('SettlementListFilterV3', () => {
     await validatePreset(presetsForCalendar[2]);
 
     expect(analyticsTrack).toHaveBeenCalledWith({
-      objectName: 'Merchant clicked',
-      actionName: 'Status drop down',
+      objectName: 'Settlement Status Drop down',
+      actionName: 'Clicked',
       screen: 'Settlements',
       properties: {
         page: 'Home Screen',

@@ -19,6 +19,18 @@ jest.mock('merchant/views/TicketSupport/utils', () => ({
 
 window.session_id = `12345`;
 
+const state = {
+  session: {
+    user: {
+      activation_status: 'activated',
+      international: false,
+      merchant: {
+        currency: 'inr',
+      },
+    },
+  },
+};
+
 describe('SettlementsHeaderV2', () => {
   const fetchOnDemandFnSpy = jest.spyOn(details, 'fetchOnDemandBlocked');
   const fetchSettlementConfigSpy = jest.spyOn(details, 'fetchSettlementConfig');
@@ -63,7 +75,7 @@ describe('SettlementsHeaderV2', () => {
   });
 
   test('My settlement cycle', async () => {
-    render(<App />);
+    render(<App initialState={state} />);
     await waitFor(() => {
       expect(fetchPreviousSettlementsSpy).toHaveBeenCalledTimes(1);
       expect(fetchOnDemandFnSpy).toHaveBeenCalledTimes(1);
@@ -78,9 +90,13 @@ describe('SettlementsHeaderV2', () => {
         eventLabel: `Settlements`,
       });
       expect(analyticsSpy).toHaveBeenCalledTimes(1);
-      expect(analyticsSpy).toHaveBeenCalledWith('settlement cycle', 'clicked', {
+      expect(analyticsSpy).toHaveBeenCalledWith('Settlement Cycle', 'Clicked', {
         settlements_experiment_name: 'v1',
         sessionId: `12345`,
+        state: 'Empty',
+        activation_status: state.session.user.activation_status,
+        international_payments_enabled: state.session.user.international,
+        page: 'Home Screen',
       });
     });
     expect(screen.getByText('Documentation')).toBeInTheDocument();

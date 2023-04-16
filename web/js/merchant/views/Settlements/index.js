@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { withRouter } from 'react-router';
 import { connect } from 'react-redux';
 import { Route, Switch, NavLink, Link } from 'react-router-dom';
-import trackIS from 'merchant/views/Settlements/InstantSettlements/ga';
 import SettlementsListContainer from './Settlements/List';
 import InstantSettlements from './InstantSettlements/InstantSettlements';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
@@ -31,11 +30,11 @@ import {
   SAMEDAY_MODAL_LOCATIONS,
 } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/constants';
 import { getNoOfDaysAfterEsPartialEnable } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/utils';
-import { trackSettlementsPageRendered } from './Settlements/components/Modals/ScheduledModal/analytics';
 import RouteOndemandSettlements from './RouteOndemandSettlements';
 import EmptySettlementState from 'merchant/views/Settlements/v3/components/EmptyState';
 import SettlementsBannerV2 from 'merchant/views/Settlements/components/SettlementsBannerV2';
 import { StyledEmptySettlementsContainer } from 'merchant/views/Settlements/v3/components/EmptyState/styled';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 
 const Settlements = ({
   user,
@@ -54,12 +53,19 @@ const Settlements = ({
     isOndemandSettlementEnabled && isOndemandSettlementsRestricted;
 
   useEffect(() => {
-    trackSettlementsPageRendered({
-      settlements_experiment_name: user.isSettlementV3RevampEnabled ? 'v2' : ' v1',
-      state: user.isTransacted ? 'Complete' : 'Empty',
-      activation_status: user.activation_status,
-      sessionId: window?.session_id ? window.session_id : undefined,
-      isL2Completed: user.isActivated && true,
+    analyticsTrackWithUserInfo({
+      screen: 'Settlements',
+      objectName: 'Settlements Page',
+      actionName: 'Rendered',
+      properties: {
+        page: 'Home Screen',
+        settlements_experiment_name: user.isSettlementV3RevampEnabled ? 'v2' : ' v1',
+        state: user.isTransacted ? 'Complete' : 'Empty',
+        activation_status: user.activation_status,
+        sessionId: window?.session_id ? window.session_id : undefined,
+        isL2Completed: user.isActivated && true,
+        international_payments_enabled: user.international,
+      },
     });
   }, []);
 
@@ -72,13 +78,20 @@ const Settlements = ({
 
   const onInstantSettlementsClick = () => {
     checkIfFirstEverSettlement();
-    trackOnDemandTabClick();
-    trackIS.goToTabIS({
-      settlements_experiment_name: user.isSettlementV3RevampEnabled ? 'v2' : ' v1',
-      state: user.isTransacted ? 'Complete' : 'Empty',
-      activation_status: user.activation_status,
-      sessionId: window?.session_id ? window.session_id : undefined,
-      isL2Completed: user.isActivated && true,
+    trackOnDemandTabClick(user);
+    analyticsTrackWithUserInfo({
+      screen: 'Settlements',
+      objectName: 'Ondemand Settlement Tab',
+      actionName: 'Clicked v2',
+      properties: {
+        page: 'Home Screen',
+        settlements_experiment_name: user.isSettlementV3RevampEnabled ? 'v2' : ' v1',
+        state: user.isTransacted ? 'Complete' : 'Empty',
+        activation_status: user.activation_status,
+        sessionId: window?.session_id ? window.session_id : undefined,
+        isL2Completed: user.isActivated && true,
+        international_payments_enabled: user.international,
+      },
     });
   };
 

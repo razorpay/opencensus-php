@@ -12,8 +12,7 @@ import {
   TabOrder,
   TabQueryItem,
 } from './styled';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { analyticsTrack } from 'common/utils/analytics';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { connect } from 'react-redux';
 
 const FAQs = (props): JSX.Element => {
@@ -31,12 +30,11 @@ const FAQs = (props): JSX.Element => {
   const instrumentQueryClick = () => {
     const { settlement } = props;
 
-    analyticsTrack({
-      objectName: 'Merchant clicked',
-      actionName: 'FAQ section at the end of the page',
+    analyticsTrackWithUserInfo({
+      objectName: 'Settlements FQA',
+      actionName: 'clicked',
       screen: 'Settlements',
       properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
         page: 'Details View',
         settlements_experiment_name: 'v2',
         settlementId: settlement.id,

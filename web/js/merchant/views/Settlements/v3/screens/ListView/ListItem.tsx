@@ -19,8 +19,7 @@ import { showNotification as showNotificationFn } from 'merchant_common/reducers
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { showPaymentProviderColumn } from 'merchant/views/Settlements/v3/utils/common';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { analyticsTrack } from 'common/utils/analytics';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 
 type Props = RouteComponentProps & {
   settlement: SettlementInfo;
@@ -50,12 +49,11 @@ const SettlementListItem = ({
   const currency = user.merchant?.currency;
 
   const instrumentItemClick = () => {
-    analyticsTrack({
-      objectName: 'Merchant clicked',
-      actionName: 'Details for a given Settlement',
+    analyticsTrackWithUserInfo({
+      objectName: 'Settlement Details',
+      actionName: 'clicked',
       screen: 'Settlements',
       properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
         page: 'Home Screen',
         settlements_experiment_name: 'v2',
         settlementId: settlement.id,
@@ -68,12 +66,11 @@ const SettlementListItem = ({
   const [breakupInfo, setBreakupInfo] = useState<BreakupInfo | null>(null);
 
   const instrumentBreakupView = () => {
-    analyticsTrack({
-      objectName: 'Merchant clicked',
-      actionName: 'Breakup for a given Settlement',
+    analyticsTrackWithUserInfo({
+      objectName: 'Break Up',
+      actionName: 'Clicked',
       screen: 'Settlements',
       properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
         page: 'Home Screen',
         settlements_experiment_name: 'v2',
         settlementId: settlement.id,
@@ -86,7 +83,6 @@ const SettlementListItem = ({
   const onTooltipVisibilityUpdate = async (visible) => {
     // only make the api call when breakup info is not loaded
     if (visible && !breakupInfo) {
-      instrumentBreakupView();
       try {
         const { success, data, error } = await fetchBreakupDetails({ id: settlement.id }).payload;
         if (success && !!data.items.length) {
@@ -100,6 +96,7 @@ const SettlementListItem = ({
             netSettlement: netSettlements.amount,
             deductions: deductions.amount,
           });
+          instrumentBreakupView();
         } else {
           showNotification({
             type: 'error',

@@ -9,18 +9,16 @@ import {
 import { ERROR_TYPE, ErrorScreenPropsInterface } from 'merchant/views/Settlements/v3/typings';
 import React, { useEffect } from 'react';
 import { withRouter } from 'react-router-dom';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { analyticsTrack } from 'common/utils/analytics';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { IconWrapper } from './styled';
 
 const ErrorScreen = ({ history, type, handleRefresh }: ErrorScreenPropsInterface): JSX.Element => {
   useEffect(() => {
-    analyticsTrack({
-      objectName: 'Error Page',
-      actionName: 'Displayed',
+    analyticsTrackWithUserInfo({
+      objectName: 'Settlements Details Page Error Displayed',
+      actionName: 'Error Displayed',
       screen: 'Settlements',
       properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
         page: 'Details View',
         settlements_experiment_name: 'v2',
         sessionId: window?.session_id ? window.session_id : undefined,

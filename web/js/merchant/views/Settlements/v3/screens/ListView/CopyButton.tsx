@@ -3,8 +3,7 @@ import { StyledCopyButton } from './styled';
 import { SettlementInfo } from 'common/typings';
 import copyToClipboard from 'common/utils/copyToClipboard';
 import { CopyIcon, Text } from '@razorpay/blade/components';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { analyticsTrack } from 'common/utils/analytics';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 
 const CopyButton = ({
   text,
@@ -16,17 +15,13 @@ const CopyButton = ({
   disabled?: boolean;
   type: string;
   settlement: SettlementInfo;
-}) => {
+}): JSX.Element => {
   const instrumentValueCopy = () => {
-    analyticsTrack({
-      objectName:
-        type === 'settlement-id'
-          ? 'Merchant copies Settlement ID '
-          : '   Merchant copies UTR number',
-      actionName: 'for a given Settlement',
+    analyticsTrackWithUserInfo({
+      objectName: type === 'settlement-id' ? 'Settlements ID ' : 'Settlements UTR',
+      actionName: 'Copied',
       screen: 'Settlements',
       properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
         page: 'Home Screen',
         settlements_experiment_name: 'v2',
         settlementId: settlement.id,

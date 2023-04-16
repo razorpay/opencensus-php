@@ -44,8 +44,7 @@ import {
 } from './styledUtils';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { analyticsTrack } from 'common/utils/analytics';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 
 const SettlementsHeaderV2 = ({
   user,
@@ -94,9 +93,14 @@ const SettlementsHeaderV2 = ({
       eventLabel: `Settlements`,
     });
 
-    handleAnalytics('settlement cycle', 'clicked', {
+    handleAnalytics('Settlement Cycle', 'Clicked', {
       settlements_experiment_name: user.isSettlementV3RevampEnabled ? 'v2' : 'v1',
       sessionId: window?.session_id ? window.session_id : undefined,
+      international_payments_enabled: user.international,
+      state: user.isTransacted ? 'Complete' : 'Empty',
+      activation_status: user.activation_status,
+      isL2Completed: user.isActivated && true,
+      page: 'Home Screen',
     });
   };
 
@@ -110,18 +114,18 @@ const SettlementsHeaderV2 = ({
   }, []);
 
   useEffect(() => {
-    analyticsTrack({
+    analyticsTrackWithUserInfo({
       objectName: 'Settlement help Banner',
       actionName: 'Displayed',
       screen: 'Settlements',
       properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
         page: 'Home Screen',
         settlements_experiment_name: user.isSettlementV3RevampEnabled ? 'v2' : 'v1',
         state: user.isTransacted ? 'Complete' : 'Empty',
         activation_status: user.activation_status,
         sessionId: window?.session_id ? window.session_id : undefined,
         isL2Completed: user.isActivated && true,
+        international_payments_enabled: user.international,
       },
     });
   }, []);
@@ -137,12 +141,11 @@ const SettlementsHeaderV2 = ({
     setTimeDiff(0);
 
     // instrumentation
-    analyticsTrack({
-      objectName: 'Merchant clicked',
-      actionName: 'Refresh on top',
+    analyticsTrackWithUserInfo({
+      objectName: 'Settlements overview',
+      actionName: 'Refresh Requested',
       screen: 'Settlements',
       properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
         page: 'Home Screen',
         settlements_experiment_name: user.isSettlementV3RevampEnabled ? 'v2' : 'v1',
         sessionId: window?.session_id ? window.session_id : undefined,
@@ -151,12 +154,11 @@ const SettlementsHeaderV2 = ({
   };
 
   const instrumentDocumentationLinkClick = () => {
-    analyticsTrack({
-      objectName: 'Merchant clicked',
-      actionName: 'Documentation on Top',
+    analyticsTrackWithUserInfo({
+      objectName: 'Settlements',
+      actionName: 'Documentation Clicked',
       screen: 'Settlements',
       properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
         page: 'Home Screen',
         settlements_experiment_name: user.isSettlementV3RevampEnabled ? 'v2' : 'v1',
         state: user.isTransacted ? 'Complete' : 'Empty',

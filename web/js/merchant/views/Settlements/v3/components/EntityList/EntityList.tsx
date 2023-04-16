@@ -11,7 +11,7 @@ import EntityItemRow from 'merchant/containers/EntityItemRow';
 import Amount from 'common/ui/Amount';
 import Time from 'common/ui/Time';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { titleCase, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { titleCase } from 'common/utils/rzp-utils';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import {
   handleAnalytics,
@@ -23,7 +23,7 @@ import { Text, Spinner, Link, ChevronRightIcon, CopyIcon } from '@razorpay/blade
 // eslint-disable-next-line
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 import { StyledTd, StyledSpinner } from './styled';
-import { analyticsTrack } from 'common/utils/analytics';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { BreakupDetailsInterface } from 'merchant/views/Settlements/v3/typings';
 
 const DEFAULT_SKIP = 0;
@@ -396,18 +396,17 @@ const EntityList = (props) => {
     const entity = activeTab.split('_')[0].trim();
     const entityType = props.entityType === 'credit' ? 'Gross Settlements' : 'Deductions';
 
-    analyticsTrack({
-      objectName: 'Merchant clicked',
-      actionName: `Details for ${titleCase(entity)}s in ${entityType} tab`,
+    analyticsTrackWithUserInfo({
+      objectName: `${entityType} Details`,
+      actionName: `Clicked`,
       screen: 'Settlements',
       properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
         page: 'Details View',
         settlements_experiment_name: 'v2',
         settlementId: settlement.id,
         settlementStatus: settlement.status,
         sessionId: window?.session_id ? window.session_id : undefined,
-        entityId,
+        [`${entity}Id`]: entityId,
         component: `${titleCase(entity)}s`,
       },
     });
@@ -418,18 +417,17 @@ const EntityList = (props) => {
     const entity = activeTab.split('_')[0].trim();
     const entityType = props.entityType === 'credit' ? 'Gross Settlements' : 'Deductions';
 
-    analyticsTrack({
-      objectName: 'Merchant copied',
-      actionName: `${titleCase(entity)} ID from ${entityType} tab`,
+    analyticsTrackWithUserInfo({
+      objectName: `${entityType} ${entity} ID`,
+      actionName: `Copied`,
       screen: 'Settlements',
       properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
         page: 'Details View',
         settlements_experiment_name: 'v2',
         settlementId: settlement.id,
         settlementStatus: settlement.status,
         sessionId: window?.session_id ? window.session_id : undefined,
-        entityId,
+        [`${entity}Id`]: entityId,
         component: `${titleCase(entity)}s`,
       },
     });

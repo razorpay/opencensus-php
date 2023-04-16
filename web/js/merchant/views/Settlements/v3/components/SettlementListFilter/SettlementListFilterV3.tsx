@@ -81,8 +81,8 @@ const SettlementListFilterV3 = ({ terminalProviders, user, status, location, ...
     }
 
     analyticsTrack({
-      objectName: 'Merchant clicked',
-      actionName: 'Status drop down',
+      objectName: 'Settlement Status Drop down',
+      actionName: 'Clicked',
       screen: 'Settlements',
       properties: {
         ...getCommonAnalyticsProperties(window.rzp_user),

@@ -217,11 +217,20 @@ export const trackSettleNowCancelConfirm = (fromWhere) =>
     },
   });
 
-export const trackOnDemandTabClick = () =>
+export const trackOnDemandTabClick = (user) =>
   trackEvent({
     objectName: 'Ondemand Settlement Tab',
     actionName: 'Clicked',
     screen: 'Ondemand Settlements Tab',
+    properties: {
+      page: 'Home Screen',
+      settlements_experiment_name: user.isSettlementV3RevampEnabled ? 'v2' : ' v1',
+      state: user.isTransacted ? 'Complete' : 'Empty',
+      activation_status: user.activation_status,
+      sessionId: window?.session_id ? window.session_id : undefined,
+      isL2Completed: user.isActivated && true,
+      international_payments_enabled: user.international,
+    },
   });
 
 export const trackOnDemandSearchClick = (search) => {

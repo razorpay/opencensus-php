@@ -11,8 +11,7 @@ import { getFailedAlert } from 'merchant/views/Settlements/v3/utils/settlementIn
 import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { analyticsTrack } from 'common/utils/analytics';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { getSelfServeSuccessData } from 'merchant/views/Transactions/utils';
 
@@ -27,12 +26,11 @@ const SettlementDetailView = ({
   }, [settlementId]);
 
   useEffect(() => {
-    analyticsTrack({
-      objectName: 'Merchant arrives',
-      actionName: 'Settlement Details screen',
+    analyticsTrackWithUserInfo({
+      objectName: 'Settlements Details Page',
+      actionName: 'Rendered',
       screen: 'Settlements',
       properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
         page: 'Details View',
         settlements_experiment_name: 'v2',
         settlementId: settlement.id,

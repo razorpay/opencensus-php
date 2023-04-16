@@ -12,8 +12,8 @@ import SettlementMessage from 'merchant/views/Settlements/InstantSettlements/Ins
 import { Alert } from '@razorpay/blade/components';
 import { ALERT_INTENT, SETTLEMENT_RETRY_SLA_IN_HOURS, SETTLEMENT_STATUS } from './utils';
 import moment from 'moment/moment';
-import { getFormattedAmount, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { analyticsTrack } from 'common/utils/analytics';
+import { getFormattedAmount } from 'common/utils/rzp-utils';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 
 export const BannerWrapper = styled.div(
   ({ theme }) => `
@@ -81,17 +81,17 @@ const SettlementsBannerV2 = ({
       CreateTicketEmitter.emit('create-ticket', 'tickets');
     }
 
-    analyticsTrack({
+    analyticsTrackWithUserInfo({
       objectName: 'Create Ticket',
-      actionName: 'Clicked',
+      actionName: 'Clicked v2',
       screen: 'Settlements',
       properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
         page: 'Home Screen',
         settlements_experiment_name: user.isSettlementV3RevampEnabled ? 'v2' : 'v1',
         source_widget: 'Settlements main screen',
         title,
         sessionId: window?.session_id ? window.session_id : undefined,
+        international_payments_enabled: user.international,
       },
     });
   };
@@ -131,12 +131,11 @@ const SettlementsBannerV2 = ({
         text: 'Complete KYC',
         onClick: () => {
           history.push(activationFormUrl);
-          analyticsTrack({
+          analyticsTrackWithUserInfo({
             objectName: 'Complete KYC',
             actionName: 'Clicked',
             screen: 'Settlements',
             properties: {
-              ...getCommonAnalyticsProperties(window.rzp_user),
               page: 'Home Screen',
               settlements_experiment_name: user.isSettlementV3RevampEnabled ? 'v2' : 'v1',
               source_widget: 'Settlements main screen',
@@ -145,6 +144,7 @@ const SettlementsBannerV2 = ({
               activation_status: user.activation_status,
               sessionId: window?.session_id ? window.session_id : undefined,
               isL2Completed: user.isActivated && true,
+              international_payments_enabled: user.international,
             },
           });
         },

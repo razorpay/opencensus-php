@@ -6,6 +6,7 @@ import Time from 'common/ui/Time';
 import StatusBadge from 'merchant/views/Settlements/v3/components/StatusBadge';
 import { StyledSettlementRow } from 'merchant/views/Settlements/v3/screens/ListView/styled';
 import { RouteComponentProps, withRouter } from 'react-router-dom';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 
 type Props = RouteComponentProps & {
   settlement: SettlementInfo;
@@ -20,6 +21,21 @@ const SettlementListItemMobile = ({
   history,
 }: Props): JSX.Element => {
   const currency = user.merchant?.currency;
+
+  const instrumentItemClick = () => {
+    analyticsTrackWithUserInfo({
+      objectName: 'Settlement Details',
+      actionName: 'clicked',
+      screen: 'Settlements',
+      properties: {
+        page: 'Home Screen',
+        settlements_experiment_name: 'v2',
+        settlementId: settlement.id,
+        settlementStatus: settlement.status,
+        sessionId: window?.session_id ? window.session_id : undefined,
+      },
+    });
+  };
 
   return (
     <StyledSettlementRow>
@@ -49,6 +65,7 @@ const SettlementListItemMobile = ({
           <Link
             variant="button"
             onClick={() => {
+              instrumentItemClick();
               history.push(
                 `/settlements/${settlement.id}?init_point=settlements-table&init_page=${initiatePage}`,
               );

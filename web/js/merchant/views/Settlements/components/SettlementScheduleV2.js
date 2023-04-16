@@ -12,8 +12,7 @@ import PaymentSchedule from './PaymentSchedule';
 import EntitySchedule from './EntitySchedule';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { analyticsTrack } from 'common/utils/analytics';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 
 const paymentTypes = ['domestic', 'international'];
 const specialScheduleNames = ['instant']; // these schedules names doesn't have T in their name so we don't want to communicate the info on T
@@ -36,18 +35,18 @@ const SettlementScheduleV2 = (props) => {
 
     // instrument only view clicks
     if (showExample === false)
-      analyticsTrack({
-        objectName: 'Merchant clicks',
-        actionName: 'View example',
+      analyticsTrackWithUserInfo({
+        objectName: 'View Settlement',
+        actionName: 'Example Clicked',
         screen: 'Settlements',
         properties: {
-          ...getCommonAnalyticsProperties(window.rzp_user),
           page: 'Home Screen',
           settlements_experiment_name: user.isSettlementV3RevampEnabled ? 'v2' : 'v1',
           state: user.isTransacted ? 'Complete' : 'Empty',
           activation_status: user.activation_status,
           sessionId: window?.session_id ? window.session_id : undefined,
           isL2Completed: user.isActivated && true,
+          international_payments_enabled: user.international,
         },
       });
   };

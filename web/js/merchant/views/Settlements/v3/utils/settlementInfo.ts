@@ -1,4 +1,4 @@
-import { titleCase, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { titleCase } from 'common/utils/rzp-utils';
 import { SETTLEMENT_INFO } from 'merchant/views/Settlements/v3/constants/info';
 import {
   AlertInterface,
@@ -9,7 +9,7 @@ import {
 } from 'merchant/views/Settlements/v3/typings';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import moment from 'moment';
-import { analyticsTrack } from 'common/utils/analytics';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 
 const FailedBannerConfig = {
   FAILED: {
@@ -21,17 +21,17 @@ const FailedBannerConfig = {
         primary: {
           onClick: () => {
             CreateTicketEmitter.emit('create-ticket', 'tickets');
-            analyticsTrack({
-              objectName: 'Merchant clicked',
-              actionName: 'Contact Support on the banner',
+            analyticsTrackWithUserInfo({
+              objectName: 'Create Ticket',
+              actionName: 'Clicked v2',
               screen: 'Settlements',
               properties: {
-                ...getCommonAnalyticsProperties(window.rzp_user),
                 page: 'Details View',
                 settlements_experiment_name: 'v2',
                 settlementId: settlement.id,
                 settlementStatus: settlement.status,
                 sessionId: window?.session_id ? window.session_id : undefined,
+                title: 'Contact support to receive failed settlement',
               },
             });
           },

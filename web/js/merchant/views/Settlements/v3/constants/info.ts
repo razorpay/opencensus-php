@@ -1,6 +1,5 @@
 import { VALUE_TYPE } from 'merchant/views/Settlements/v3/typings';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { analyticsTrack } from 'common/utils/analytics';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 
 export const SETTLEMENT_INFO = [
   {
@@ -21,12 +20,11 @@ export const SETTLEMENT_INFO = [
     type: VALUE_TYPE.TEXT,
     isCopy: true,
     onItemCopy: (additionalData: any): void => {
-      analyticsTrack({
-        objectName: 'Merchant copies',
-        actionName: 'UTR number for a given Settlement',
+      analyticsTrackWithUserInfo({
+        objectName: 'Settlements UTR number',
+        actionName: 'Copied',
         screen: 'Settlements',
         properties: {
-          ...getCommonAnalyticsProperties(window.rzp_user),
           page: 'Details View',
           settlements_experiment_name: 'v2',
           sessionId: window?.session_id ? window.session_id : undefined,
