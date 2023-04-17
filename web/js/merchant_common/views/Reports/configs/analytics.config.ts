@@ -3,44 +3,44 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { DashboardType } from 'merchant_common/views/Reports/types';
 
 enum ReportsActionType {
-  overview_tab_click = 'overview_tab_click',
-  downloads_tab_click = 'downloads_tab_click',
-  schedules_tab_click = 'schedules_tab_click',
-  configs_fetch_failed = 'configs_fetch_failed',
+  'Overview Tab Click' = 'Overview Tab Click',
+  'Downloads Tab Click' = 'Downloads Tab Click',
+  'Schedules Tab Click' = 'Schedules Tab Click',
+  'Configs Fetch Failed' = 'Configs Fetch Failed',
 }
 
 enum OverviewActionType {
-  load = 'load',
-  overview_filter_interaction = 'overview_filter_interaction',
-  cards_download_link_click = 'cards_download_link_click',
-  download_report_button_click = 'download_report_button_click',
+  'Loaded' = 'Loaded',
+  'Overview Filter Interaction' = 'Overview Filter Interaction',
+  'Cards Download Link Click' = 'Cards Download Link Click',
+  'Download Report Button Click' = 'Download Report Button Click',
 }
 
 enum DownloadsActionType {
-  download_filter_interaction = 'download_filter_interaction',
-  download_report_button_click = 'download_report_button_click',
-  download_file_click = 'download_file_click',
-  download_file_success = 'download_file_success',
-  download_file_failed = 'download_file_failed',
-  expand_recipient_emails_click = 'expand_recipient_emails_click',
-  pagination_click = 'pagination_click',
-  downloads_page_load = 'downloads_page_load',
-  downloads_logs_poll_start = 'downloads_logs_poll_start',
-  downloads_logs_poll_stops = 'downloads_logs_poll_stops',
-  downloads_logs_poll_failed = 'downloads_logs_poll_failed',
+  'Download Filter Interaction' = 'Download Filter Interaction',
+  'Download Report Button Click' = 'Download Report Button Click',
+  'Download File Click' = 'Download File Click',
+  'Report File Download Success' = 'Report File Download Success',
+  'Report File Download Failed' = 'Report File Download Failed',
+  'Expand Recipient Emails Click' = 'Expand Recipient Emails Click',
+  'Pagination Click' = 'Pagination Click',
+  'Downloads Section Loaded' = 'Downloads Section Loaded',
+  'Downloads Logs Poll Start' = 'Downloads Logs Poll Start',
+  'Downloads Logs Poll Stop' = 'Downloads Logs Poll Stop',
+  'Downloads Logs Poll Failed' = 'Downloads Logs Poll Failed',
 }
 
 enum DownloadModalActionType {
-  download_modal_open = 'download_modal_open',
-  modal_section_click = 'modal_section_click',
-  enable_emails_switch_toggle = 'enable_emails_switch_toggle',
-  enable_custom_duration_switch_toggle = 'enable_custom_duration_switch_toggle',
-  account_selection_field_interactions = 'account_selection_field_interactions',
-  close_modal_click = 'close_modal_click',
-  start_download_click = 'start_download_click',
-  generate_report_req_failed = 'generate_report_req_failed',
-  generate_report_req_success = 'generate_report_req_success',
-  report_download_validation_error = 'report_download_validation_error',
+  'Download Report Modal Opened' = 'Download Report Modal Opened',
+  'Modal Section Clicked' = 'Modal Section Clicked',
+  'Enable Emails Switch Toggled' = 'Enable Emails Switch Toggled',
+  'Enable Custom Duration Switch Toggled' = 'Enable Custom Duration Switch Toggled',
+  'Account Selection Field Interactions' = 'Account Selection Field Interactions',
+  'Close Report Modal Clicked' = 'Close Report Modal Clicked',
+  'Start Report Download Btn Clicked' = 'Start Report Download Btn Clicked',
+  'Generate Report Req Failed' = 'Generate Report Req Failed',
+  'Generate Report Req Success' = 'Generate Report Req Success',
+  'Report Download Validation Error' = 'Report Download Validation Error',
 }
 
 const track = ({ properties, dashboardType, ...args }) => {
@@ -64,7 +64,7 @@ export const trackOverviewSection = ({
   dashboardType: DashboardType;
 }) => {
   track({
-    objectName: 'overview section',
+    objectName: 'Overview Section',
     actionName,
     screen: 'reports/overview',
     properties: {
@@ -85,7 +85,7 @@ export const trackDownloadsSection = ({
   dashboardType: DashboardType;
 }) => {
   track({
-    objectName: 'downloads section',
+    objectName: 'Downloads Section',
     actionName,
     screen: 'reports/downloads',
     properties: {
@@ -106,7 +106,7 @@ export const trackDownloadModal = ({
   dashboardType: DashboardType;
 }) => {
   track({
-    objectName: 'Download Modal',
+    objectName: 'Download Report Modal',
     actionName,
     screen: 'reports/downloads/download modal',
     properties: {

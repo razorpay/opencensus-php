@@ -18,7 +18,7 @@ export const OverviewBanner = ({ loading, history }): JSX.Element => {
 
   const handleDownloadClick = () => {
     trackOverviewSection({
-      actionName: 'download_report_button_click',
+      actionName: 'Download Report Button Click',
       dashboardType: dashboardType as DashboardType,
     });
     history.push(

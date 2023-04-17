@@ -21,7 +21,7 @@ export const CollapsibleArray = ({ arr = [], logId }: CollapsibleArrayPropsType)
 
   const handleExpand = () => {
     trackDownloadsSection({
-      actionName: 'expand_recipient_emails_click',
+      actionName: 'Expand Recipient Emails Click',
       properties: {
         log_id: logId,
       },

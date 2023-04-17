@@ -43,7 +43,7 @@ const mapStateToProps = ({ reportsCore, accounts, session: { user, mode } }, { d
 const mapDispatchToProps = (dispatch, { dashboardType }) => ({
   closeModal: () => {
     trackDownloadModal({
-      actionName: 'close_modal_click',
+      actionName: 'Close Report Modal Clicked',
       dashboardType,
     });
     dispatch(closeModal());
@@ -52,14 +52,14 @@ const mapDispatchToProps = (dispatch, { dashboardType }) => ({
   startLogsPoll: () => {
     dispatch(startLogsPoll({ dashboardType }));
     trackDownloadsSection({
-      actionName: 'downloads_logs_poll_start',
+      actionName: 'Downloads Logs Poll Start',
       dashboardType,
     });
   },
   stopLogsPoll: () => {
     dispatch(stopLogsPoll({ dashboardType }));
     trackDownloadsSection({
-      actionName: 'downloads_logs_poll_stops',
+      actionName: 'Downloads Logs Poll Stop',
       dashboardType,
     });
   },

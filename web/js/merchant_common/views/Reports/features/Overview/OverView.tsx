@@ -39,9 +39,10 @@ export const OverviewSection = ({
     () => sortCardsByReportType(allReportConfigs),
     [allReportConfigs],
   );
+
   const handleFilterDropdownSelection = async ({ label, value }) => {
     trackOverviewSection({
-      actionName: 'overview_filter_interaction',
+      actionName: 'Overview Filter Interaction',
       properties: {
         interaction_type: 'select',
         selectedFilter: label,
@@ -60,7 +61,7 @@ export const OverviewSection = ({
         if (a?.data?.items) {
           fetchRecentlyUsedConfigsSuccess({ configs: parseConfigs(a.data.items) });
         } else {
-          throw new Error('Invalid Response');
+          throw new Error('Invalid Response.');
         }
       } catch {
         showNotification({
@@ -160,7 +161,7 @@ export const OverviewSection = ({
 
   useEffect(() => {
     trackOverviewSection({
-      actionName: 'load',
+      actionName: 'Loaded',
       properties: {
         is_configs_loaded: isAllConfigLoaded,
       },
@@ -190,3 +191,5 @@ export const OverviewSection = ({
     </>
   );
 };
+
+// ..

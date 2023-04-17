@@ -86,7 +86,7 @@ export const ReportsSection = connect(
             });
           } else {
             trackReportsSection({
-              actionName: 'configs_fetch_failed',
+              actionName: 'Configs Fetch Failed',
               dashboardType,
             });
           }

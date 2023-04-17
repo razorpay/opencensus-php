@@ -36,14 +36,14 @@ export const mapDispatchToProps = (dispatch, { dashboardType }) => {
     startLogsPoll: (payload) => {
       dispatch(startLogsPoll({ ...payload, dashboardType }));
       trackDownloadsSection({
-        actionName: 'downloads_logs_poll_start',
+        actionName: 'Downloads Logs Poll Start',
         dashboardType,
       });
     },
     stopLogsPoll: (payload) => {
       dispatch(stopLogsPoll({ ...payload, dashboardType }));
       trackDownloadsSection({
-        actionName: 'downloads_logs_poll_stops',
+        actionName: 'Downloads Logs Poll Stop',
         dashboardType,
       });
     },
@@ -78,7 +78,7 @@ const DownloadsTableComponent = connect(
     const { headers } = getReportsDashboardConfig(dashboardType);
 
     useEffect(() => {
-      // abort present poll
+      // abort present poll.
       if (typeof abortPresentlyActivePoll.current === 'function') {
         abortPresentlyActivePoll.current();
       }
@@ -106,7 +106,7 @@ const DownloadsTableComponent = connect(
               message: 'Unable to fetch download logs, please try again later.',
             });
             trackDownloadsSection({
-              actionName: 'downloads_logs_poll_failed',
+              actionName: 'Downloads Logs Poll Failed',
               dashboardType,
             });
             if (typeof abortPresentlyActivePoll.current === 'function') {

@@ -50,7 +50,7 @@ export const DownloadReportModal = ({
   parsePayloadBeforeSubmit,
   handlePageChange,
 }: DownloadReportModalPropsType): JSX.Element => {
-  //toggles
+  //toggles.
   const [isCustomDurationEnabled, setCustomDurationEnabled] = useState<boolean>(false);
   const [showErrorInSection, setShowErrorInSection] = useState<number | undefined>();
 
@@ -127,7 +127,7 @@ export const DownloadReportModal = ({
 
   const handleSubmit = () => {
     trackDownloadModal({
-      actionName: 'start_download_click',
+      actionName: 'Start Report Download Btn Clicked',
       dashboardType,
     });
 
@@ -168,7 +168,7 @@ export const DownloadReportModal = ({
           handlePageChange(1);
           if (!data.success || !data.data || !data.data.id) {
             trackDownloadModal({
-              actionName: 'generate_report_req_failed',
+              actionName: 'Generate Report Req Failed',
               properties: payload as unknown as Record<string, unknown>,
               dashboardType,
             });
@@ -179,7 +179,7 @@ export const DownloadReportModal = ({
           }
 
           trackDownloadModal({
-            actionName: 'generate_report_req_success',
+            actionName: 'Generate Report Req Success',
             dashboardType,
           });
 
@@ -192,7 +192,7 @@ export const DownloadReportModal = ({
         })
         .catch(() => {
           trackDownloadModal({
-            actionName: 'generate_report_req_failed',
+            actionName: 'Generate Report Req Failed',
             properties: payload as unknown as Record<string, unknown>,
             dashboardType,
           });
@@ -213,7 +213,7 @@ export const DownloadReportModal = ({
       });
 
       trackDownloadModal({
-        actionName: 'report_download_validation_error',
+        actionName: 'Report Download Validation Error',
         dashboardType,
       });
     }
@@ -279,7 +279,7 @@ export const DownloadReportModal = ({
 
   useEffect(() => {
     trackDownloadModal({
-      actionName: 'download_modal_open',
+      actionName: 'Download Report Modal Opened',
       dashboardType,
     });
   }, []);
@@ -373,7 +373,7 @@ export const DownloadReportModal = ({
                 onChange={(val) => {
                   setSelectedAccount(val);
                   trackDownloadModal({
-                    actionName: 'account_selection_field_interactions',
+                    actionName: 'Account Selection Field Interactions',
                     properties: {
                       interaction_type: 'select',
                       selected_account: val,
@@ -399,7 +399,7 @@ export const DownloadReportModal = ({
                   onChange={(bool) => {
                     setCustomDurationEnabled(bool);
                     trackDownloadModal({
-                      actionName: 'enable_custom_duration_switch_toggle',
+                      actionName: 'Enable Custom Duration Switch Toggled',
                       properties: {
                         use_custom_duration: bool,
                       },
@@ -457,7 +457,7 @@ export const DownloadReportModal = ({
                   onChange={(bool) => {
                     setIsRecipientsEnabled(bool);
                     trackDownloadModal({
-                      actionName: 'enable_emails_switch_toggle',
+                      actionName: 'Enable Emails Switch Toggled',
                       properties: {
                         enable_emails: bool,
                       },

@@ -44,7 +44,7 @@ const DownloadsSection = connect(
     const { modal, config } = getURLQueryParams(search);
 
     const handleDownloadReportClick = () => {
-      trackDownloadsSection({ actionName: 'download_report_button_click', dashboardType });
+      trackDownloadsSection({ actionName: 'Download Report Button Click', dashboardType });
 
       openModal({
         component: <ReportModal type="download_report" dashboardType={dashboardType} />,
@@ -89,14 +89,14 @@ const DownloadsSection = connect(
 
     useEffect(() => {
       if (isAllConfigLoaded) {
-        trackDownloadsSection({ actionName: 'downloads_page_load', dashboardType });
+        trackDownloadsSection({ actionName: 'Downloads Section Loaded', dashboardType });
       }
     }, [isAllConfigLoaded]);
 
     const handleDownloadsFilter = (refFilter) => {
       if (!refFilter) return;
       trackDownloadsSection({
-        actionName: 'download_filter_interaction',
+        actionName: 'Download Filter Interaction',
         properties: {
           interaction_type: 'select',
           selectedFilter: refFilter?.label,

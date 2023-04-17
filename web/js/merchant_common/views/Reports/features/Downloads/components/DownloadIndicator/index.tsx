@@ -46,7 +46,7 @@ const DownloadIndicatorComponent = connect(
 
     const onDownloadClick = (accountId) => {
       trackDownloadsSection({
-        actionName: 'download_file_click',
+        actionName: 'Download File Click',
         properties: {
           log_id: id,
           file_id,
@@ -58,7 +58,7 @@ const DownloadIndicatorComponent = connect(
       return downloadFromUFH(file_id, accountId)
         .then((response) => {
           trackDownloadsSection({
-            actionName: 'download_file_success',
+            actionName: 'Report File Download Success',
             properties: {
               log_id: id,
               file_id,
@@ -73,7 +73,7 @@ const DownloadIndicatorComponent = connect(
         })
         .catch(() => {
           trackDownloadsSection({
-            actionName: 'download_file_failed',
+            actionName: 'Report File Download Failed',
             properties: {
               log_id: id,
               file_id,

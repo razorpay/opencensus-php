@@ -46,7 +46,7 @@ export const Card = ({ data, linkBasePath }: CardPropsType): JSX.Element => {
             to={`${linkBasePath}/reports/${link.to}`}
             onClick={() =>
               trackOverviewSection({
-                actionName: 'cards_download_link_click',
+                actionName: 'Cards Download Link Click',
                 properties: {
                   report_type: type,
                   config_id: id,
