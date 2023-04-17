@@ -59,12 +59,12 @@ interface FilterParams {
 
 interface ListProps {
   fetchAll: (params: FilterParams) => void;
-  batchDownload: () => Promise<AxiosResponse>;
+  batchDownload: (id: string) => Promise<AxiosResponse>;
   [x: string]: unknown;
 }
 
 export const List = ({ fetchAll, batchDownload, ...rest }: ListProps): JSX.Element => {
-  const onDownload = () => batchDownload().then((res) => (window.location = res.data?.url));
+  const onDownload = (id) => batchDownload(id).then((res) => (window.location = res.data?.url));
 
   useEffect(() => {
     if (fetchAll) {
