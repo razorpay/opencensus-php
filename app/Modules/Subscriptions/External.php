@@ -237,7 +237,7 @@ class External extends Base
 
         $amount             = $input[Payment\Entity::AMOUNT] ?? null;
         $isCardChange       = $input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false;
-        $isCardPresent      = (isset($input[Payment\Entity::CARD]) === true);
+        $isCardPresent      = (empty($input[Payment\Entity::CARD]) === false);
         $method             = ((isset($input['method']) === true) ? $input['method'] : (($isCardPresent === true) ? Constants::CARD :Constants::UPI ));
 
         $requestBody = [
