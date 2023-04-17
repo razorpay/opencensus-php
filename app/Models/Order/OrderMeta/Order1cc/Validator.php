@@ -120,7 +120,7 @@ class Validator extends Base\Validator
     protected static $utmParametersRules = [
         Fields::UTM_SOURCE           => 'sometimes|string|max:100',
         Fields::UTM_MEDIUM           => 'sometimes|string|max:100',
-        Fields::UTM_CAMPAIGN         => 'sometimes|string|max:100',
+        Fields::UTM_CAMPAIGN         => 'sometimes|string|max:512',
         Fields::UTM_TERM             => 'sometimes|string|max:512',
         Fields::UTM_CONTENT          => 'sometimes|string|max:512',
     ];
