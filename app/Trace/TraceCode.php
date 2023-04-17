@@ -298,6 +298,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_AUTO_CAPTURE_FAILED                           = 'PAYMENT_AUTO_CAPTURE_FAILED';
     const PAYMENT_AUTO_REFUND                                   = 'PAYMENT_AUTO_REFUND';
     const PAYMENT_AUTO_REFUND_CRON                              = 'PAYMENT_AUTO_REFUND_CRON';
+    const PAYMENT_AUTO_REFUND_CRON_REQUEST                      = 'PAYMENT_AUTO_REFUND_CRON_REQUEST';
     const PAYMENT_AUTO_REFUND_CRON_SUMMARY                      = 'PAYMENT_AUTO_REFUND_CRON_SUMMARY';
     const REFUND_FROM_AUTHORIZED_REQUEST                        = 'REFUND_FROM_AUTHORIZED_REQUEST';
     const REFUND_FROM_AUTHORIZED_REQUEST_SCROOGE                = 'REFUND_FROM_AUTHORIZED_REQUEST_SCROOGE';
@@ -573,6 +574,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_STATUS_CAPTURED                               = 'PAYMENT_STATUS_CAPTURED';
     const ORDER_STATUS_PAID                                     = 'ORDER_STATUS_PAID';
     const ORDER_STATUS_ATTEMPTED                                = 'ORDER_STATUS_ATTEMPTED';
+    const ORDER_STATUS_MISMATCHED                               = 'ORDER_STATUS_MISMATCHED';
     const PAYMENT_AUTHORIZE_CREATE_TRANSACTION                  = 'PAYMENT_AUTHORIZE_CREATE_TRANSACTION';
     const TRANSACTION_CREATED                                   = 'TRANSACTION_CREATED';
     const TRANSACTION_CREATED_USING_V2                          = 'TRANSACTION_CREATED_USING_V2';

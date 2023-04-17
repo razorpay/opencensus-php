@@ -2985,6 +2985,12 @@ class Service extends Base\Service
     {
         $this->increaseAllowedSystemLimits();
 
+        $this->trace->info(
+            TraceCode::PAYMENT_AUTO_REFUND_CRON_REQUEST,
+            [
+                'input'         => $input,
+            ]);
+
         // Using current time for fetching payments as refund_at is set properly.
         $ts = Carbon::now()->getTimestamp();
 
@@ -3032,7 +3038,7 @@ class Service extends Base\Service
          */
         try
         {
-            $payments = $payments->reject(function ($payment) use (&$updatedRefundAt)
+            $payments = $payments->reject(function ($payment) use ($input, &$updatedRefundAt)
             {
                 /**
                  * @var $payment Payment\Entity
@@ -3040,6 +3046,30 @@ class Service extends Base\Service
                 if ($payment->isDisputed() === true)
                 {
                     return true;
+                }
+
+                if (isset($input['block_order_mismatch']) === true){
+
+                    $orderMismatch =  $input['block_order_mismatch'];
+
+                    if ($orderMismatch === true and $payment->hasOrder() === true)
+                    {
+                        $order = $payment->order;
+
+                        if (($order->getStatus() === Order\Status::PAID) and
+                            ($order->getAttempts() === 1) and ($payment->isAuthorized() === true))
+                        {
+                            $this->trace->info(
+                                TraceCode::ORDER_STATUS_MISMATCHED,
+                                [
+                                    'payment_id'         => $payment->getId(),
+                                    'order_id'           => $order->getId(),
+                                ]);
+
+                            return true;
+                        }
+                    }
+
                 }
 
                 $isRefundRequired = $this->isRefundRequiredForPayment($payment);
