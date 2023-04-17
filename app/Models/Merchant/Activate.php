@@ -966,6 +966,8 @@ class Activate extends Base\Core
 
                     (new Merchant\Balance\Ledger\Core)->createXLedgerAccount($merchant, $bankingAccount, $mode);
                 }
+
+                $this->addEnableIpWhitelistFeatureOnX($merchant, $mode);
             }
 
             (new Counter\Core)->fetchOrCreate($balance);
@@ -983,8 +985,6 @@ class Activate extends Base\Core
             $this->addPayoutFeatureIfApplicable($merchant, $mode);
 
             $this->addSkipHoldFundsOnPayout($merchant);
-
-           // $this->addEnableIpWhitelistFeatureOnX($merchant, $mode);
 
             //create activated TPV
             (new BankingAccountTpv\Core())->createAutoApprovedTpvForActivatedMerchants($merchant, $mode);
@@ -1175,6 +1175,10 @@ class Activate extends Base\Core
         {
             return;
         }
+
+        $this->trace->info(TraceCode::IP_WHITELIST_FEATURE_ADDED, [
+            Merchant\Constants::MERCHANT_ID => $merchant->getId()
+        ]);
 
         $featureParams = [
             Feature\Entity::ENTITY_ID   => $merchant->getId(),

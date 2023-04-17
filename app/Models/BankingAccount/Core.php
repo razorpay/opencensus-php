@@ -1416,7 +1416,7 @@ class Core extends Base\Core
             // For Adding payout feature without RZP KYC
             (new Activate())->addPayoutFeatureIfApplicable($bankingAccount->merchant, Mode::LIVE, true);
 
-            //(new Activate())->addEnableIpWhitelistFeatureOnX($merchant, Mode::LIVE);
+            (new Activate())->addEnableIpWhitelistFeatureOnX($merchant, Mode::LIVE);
 
             $this->trace->info(TraceCode::PAYOUT_FEATURE_ADDED, [
                 Merchant\Constants::MERCHANT_ID => $merchant->getId()
