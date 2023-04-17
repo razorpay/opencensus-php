@@ -3770,15 +3770,7 @@
   resolved "https://registry.npmjs.org/@open-draft/until/-/until-1.0.3.tgz#db9cc719191a62e7d9200f6e7bab21c5b848adca"
   integrity sha512-Aq58f5HiWdyDlFffbbSjAlv596h/cOnt2DO1w3DOC7OJ5EHs0hd/nycJfiu9RJbT6Yk6F1knnRRXNSpxoIVZ9Q==
 
-"@playwright/test@1.23.3":
-  version "1.23.3"
-  resolved "https://registry.npmjs.org/@playwright/test/-/test-1.23.3.tgz#7f9dd982f2b1a5edbe9e58fedf7bb2691d6309b4"
-  integrity sha512-kR4vo2UGHC84DGqE6EwvAeaehj3xCAK6LoC1P1eu6ZGdC79rlqRKf8cFDx6q6c9T8MQSL1O9eOlup0BpwqNF0w==
-  dependencies:
-    "@types/node" "*"
-    playwright-core "1.23.3"
-
-"@playwright/test@1.31.1":
+"@playwright/test@1.23.3", "@playwright/test@1.31.1":
   version "1.31.1"
   resolved "https://registry.npmjs.org/@playwright/test/-/test-1.31.1.tgz#39d6873dc46af135f12451d79707db7d1357455d"
   integrity sha512-IsytVZ+0QLDh1Hj83XatGp/GsI1CDJWbyDaBGbainsh0p2zC7F4toUocqowmjS6sQff2NGT3D9WbDj/3K2CJiA==
@@ -25281,11 +25273,6 @@ pkg-up@3.1.0, pkg-up@^3.1.0:
   integrity sha512-nDywThFk1i4BQK4twPQ6TA4RT8bDY96yeuCVBWL3ePARCiEKDRSrNGbFIgUJpLp+XeIR65v8ra7WuJOFUBtkMA==
   dependencies:
     find-up "^3.0.0"
-
-playwright-core@1.23.3:
-  version "1.23.3"
-  resolved "https://registry.npmjs.org/playwright-core/-/playwright-core-1.23.3.tgz#f27ad80fbf0ba9b53d142d94f052b010eaa0527b"
-  integrity sha512-x35yzsXDyo0BIXYimLnUFNyb42c//NadUNH6IPGOteZm96oTGA1kn4Hq6qJTI1/f9wEc1F9O1DsznXIgXMil7A==
 
 playwright-core@1.31.1:
   version "1.31.1"
