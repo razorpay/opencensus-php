@@ -220,7 +220,6 @@ class Service extends Base\Service
 
         return $org;
     }
-
     public function delete(string $id)
     {
         return $this->core()->delete($id);

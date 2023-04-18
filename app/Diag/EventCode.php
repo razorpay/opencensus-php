@@ -785,6 +785,26 @@ class EventCode
         'name'  => 'merchant_onboarding.reset_password.failure'
     ];
 
+    const WHITELISTED_ORG_ADMIN_ONBOARDING_RESET_PASSWORD_SUCCESS = [
+        'group' => 'onboarding',
+        'name'  => 'whitelisted_org_admin_onboarding.reset_password.success'
+    ];
+
+    const WHITELISTED_ORG_ADMIN_ONBOARDING_RESET_PASSWORD_FAILURE = [
+        'group' => 'onboarding',
+        'name'  => 'whitelisted_org_admin_onboarding.reset_password.failure'
+    ];
+
+    const WHITELISTED_ORG_ADMIN_ONBOARDING_FORGOT_PASSWORD_SUCCESS = [
+        'group' => 'onboarding',
+        'name'  => 'whitelisted_org_admin_onboarding.forgot_password.success'
+    ];
+
+    const WHITELISTED_ORG_ADMIN_ONBOARDING_FORGOT_PASSWORD_FAILURE = [
+        'group' => 'onboarding',
+        'name'  => 'whitelisted_org_admin_onboarding.forgot_password.failure'
+    ];
+
     const MERCHANT_ONBOARDING_LOGIN_FAILURE = [
         'group' => 'onboarding',
         'name'  => 'merchant_onboarding.login.failure'

@@ -7154,3 +7154,7 @@ ALTER TABLE orgs
 ALTER TABLE merchant_business_details
     ADD COLUMN miq_sharing_date INTEGER DEFAULT 0,
     ADD COLUMN testing_credentials_date INTEGER DEFAULT 0;
+
+ALTER TABLE admins
+    ADD COLUMN password_reset_token VARCHAR(255) DEFAULT NULL,
+    ADD COLUMN password_reset_expiry INTEGER DEFAULT NULL;

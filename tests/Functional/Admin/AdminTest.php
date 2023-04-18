@@ -9,6 +9,7 @@ use Cache;
 use Mockery;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
+use RZP\Diag\EventCode;
 use RZP\Models\Admin\Role;
 use RZP\Models\Base\EsDao;
 use RZP\Models\Admin\Admin;
@@ -17,6 +18,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\RazorXClient;
 use RZP\Constants\Entity as E;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Tests\Functional\Helpers\MocksDiagTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\UniqueIdEntity;
 use Illuminate\Support\Facades\Crypt;
@@ -39,6 +41,7 @@ class AdminTest extends TestCase
     use WorkflowTrait;
     use HeimdallTrait;
     use DbEntityFetchTrait;
+    use MocksDiagTrait;
 
     protected $esDao;
 
@@ -278,7 +281,7 @@ class AdminTest extends TestCase
             'email_domains' => 'rzp.com',
             'auth_type'     => 'password',
         ]);
-    
+
         $this->fixtures->create('org_hostname', [
             'org_id'        => $newOrg->getId(),
             'hostname'      => 'testing2.testing.com',
@@ -738,7 +741,14 @@ class AdminTest extends TestCase
         $admin = $this->fixtures->create(
             'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
 
+        $feature = $this->fixtures->create(
+            'feature', ['entity_id' => $this->orgId, 'entity_type' => 'org', 'name' => \RZP\Models\Feature\Constants::ORG_ADMIN_PASSWORD_RESET]);
+
         $this->ba->dashboardGuestAppAuth($this->hostName);
+
+        $diagMock = Mockery::mock('RZP\Services\DiagClient');
+        $diagMock->shouldReceive('trackOnboardingEvent')->andReturn([]);
+        $this->app->instance('diag', $diagMock);
 
         $this->startTest();
 
@@ -759,6 +769,9 @@ class AdminTest extends TestCase
         $this->fixtures->create(
             'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
 
+        $feature = $this->fixtures->create(
+            'feature', ['entity_id' => $this->orgId, 'entity_type' => 'org', 'name' => \RZP\Models\Feature\Constants::ORG_ADMIN_PASSWORD_RESET]);
+
         $this->ba->dashboardGuestAppAuth($this->hostName);
 
         $this->startTest();
@@ -768,6 +781,9 @@ class AdminTest extends TestCase
     {
         $this->fixtures->create(
             'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
+
+        $this->fixtures->create(
+            'feature', ['entity_id' => $this->orgId, 'entity_type' => 'org', 'name' => \RZP\Models\Feature\Constants::ORG_ADMIN_PASSWORD_RESET]);
 
         $this->ba->dashboardGuestAppAuth($this->hostName);
 
@@ -779,13 +795,14 @@ class AdminTest extends TestCase
         $admin = $this->fixtures->create(
             'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
 
+        $feature = $this->fixtures->create(
+            'feature', ['entity_id' => $this->orgId, 'entity_type' => 'org', 'name' => \RZP\Models\Feature\Constants::ORG_ADMIN_PASSWORD_RESET]);
+
         $this->adminForgotPassword($admin->getEmail());
 
-        $key = sprintf(Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY, $this->orgId, $admin->getId());
+        $admin = $this->repo->findOrFailPublic($admin->getId());
 
-        $token = Cache::get($key);
-
-        $this->testData[__FUNCTION__]['request']['content']['token'] = $token;
+        $this->testData[__FUNCTION__]['request']['content']['token'] = $admin->getPasswordResetToken();
 
         $newPassword = $this->testData[__FUNCTION__]['request']['content']['password'];
 
@@ -797,14 +814,16 @@ class AdminTest extends TestCase
 
         $this->assertTrue(Hash::check($newPassword, $admin['password']));
 
-        // Check that token has then been expired
-        $token = Cache::get($key);
+        $tokenExpiry = $admin->getPasswordResetExpiry();
 
-        $this->assertNull($token);
+        $this->assertGreaterThan($tokenExpiry,Carbon::now()->addSecond()->timestamp);
     }
 
     public function testAdminUnlockOnResetPasswordSuccess()
     {
+        $feature = $this->fixtures->create(
+            'feature', ['entity_id' => $this->orgId, 'entity_type' => 'org', 'name' => \RZP\Models\Feature\Constants::ORG_ADMIN_PASSWORD_RESET]);
+
         $admin = $this->fixtures->create('admin', [
             'org_id' => $this->orgId,
             'email' => 'abc@razorpay.com',
@@ -814,11 +833,9 @@ class AdminTest extends TestCase
 
         $this->adminForgotPassword($admin->getEmail());
 
-        $key = sprintf(Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY, $this->orgId, $admin->getId());
+        $admin = $this->repo->findOrFailPublic($admin->getId());
 
-        $token = Cache::get($key);
-
-        $this->testData[__FUNCTION__]['request']['content']['token'] = $token;
+        $this->testData[__FUNCTION__]['request']['content']['token'] = $admin->getPasswordResetToken();
 
         $newPassword = $this->testData[__FUNCTION__]['request']['content']['password'];
 
@@ -834,14 +851,16 @@ class AdminTest extends TestCase
 
         $this->assertEquals(0, $admin['locked']);
 
-        // Check that token has then been expired
-        $token = Cache::get($key);
+        $tokenExpiry = $admin->getPasswordResetExpiry();
 
-        $this->assertNull($token);
+        $this->assertGreaterThan($tokenExpiry,Carbon::now()->addSecond()->timestamp);
     }
 
     public function testAdminUnlockFailOnPasswordResetFail()
     {
+        $feature = $this->fixtures->create(
+            'feature', ['entity_id' => $this->orgId, 'entity_type' => 'org', 'name' => \RZP\Models\Feature\Constants::ORG_ADMIN_PASSWORD_RESET]);
+
         $admin = $this->fixtures->create('admin', [
             'org_id' => $this->orgId,
             'email' => 'abc@razorpay.com',
@@ -864,6 +883,9 @@ class AdminTest extends TestCase
 
     public function testPasswordResetTokenMismatch()
     {
+        $feature = $this->fixtures->create(
+            'feature', ['entity_id' => $this->orgId, 'entity_type' => 'org', 'name' => \RZP\Models\Feature\Constants::ORG_ADMIN_PASSWORD_RESET]);
+
         $admin = $this->fixtures->create('admin', [
             'org_id' => $this->orgId,
             'email' => 'abc@razorpay.com',
@@ -882,18 +904,17 @@ class AdminTest extends TestCase
 
     public function testPasswordResetPasswordMismatch()
     {
+        $feature = $this->fixtures->create(
+            'feature', ['entity_id' => $this->orgId, 'entity_type' => 'org', 'name' => \RZP\Models\Feature\Constants::ORG_ADMIN_PASSWORD_RESET]);
+
         $admin = $this->fixtures->create(
             'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
 
         $this->adminForgotPassword($admin->getEmail());
 
-        $key = sprintf(
-            Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY, $this->orgId,
-            $admin->getId());
+        $admin = $this->repo->findOrFailPublic($admin->getId());
 
-        $token = Cache::get($key);
-
-        $this->testData[__FUNCTION__]['request']['content']['token'] = $token;
+        $this->testData[__FUNCTION__]['request']['content']['token'] = $admin->getPasswordResetToken();
 
         $this->ba->dashboardGuestAppAuth($this->hostName);
 
@@ -909,18 +930,17 @@ class AdminTest extends TestCase
         // This test checks if auth policy rules apply when new password is
         // given for resetting the old password
 
+        $feature = $this->fixtures->create(
+            'feature', ['entity_id' => $this->orgId, 'entity_type' => 'org', 'name' => \RZP\Models\Feature\Constants::ORG_ADMIN_PASSWORD_RESET]);
+
         $admin = $this->fixtures->create(
             'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
 
         $this->adminForgotPassword($admin->getEmail());
 
-        $key = sprintf(
-            Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY,
-            $this->orgId, $admin->getId());
+        $admin = $this->repo->findOrFailPublic($admin->getId());
 
-        $token = Cache::get($key);
-
-        $this->testData[__FUNCTION__]['request']['content']['token'] = $token;
+        $this->testData[__FUNCTION__]['request']['content']['token'] = $admin->getPasswordResetToken();
 
         $this->ba->dashboardGuestAppAuth($this->hostName);
 
@@ -933,16 +953,13 @@ class AdminTest extends TestCase
 
     public function testPasswordResetMaxRetain()
     {
+        $feature = $this->fixtures->create(
+            'feature', ['entity_id' => $this->orgId, 'entity_type' => 'org', 'name' => \RZP\Models\Feature\Constants::ORG_ADMIN_PASSWORD_RESET]);
+
         $admin = $this->fixtures->create(
             'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
 
         $this->adminForgotPassword($admin->getEmail());
-
-        $key = sprintf(
-            Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY,
-            $this->orgId, $admin->getId());
-
-        $token = Cache::get($key);
 
         $oldPwd = 'M!2#uWdx';
 
@@ -950,7 +967,9 @@ class AdminTest extends TestCase
 
         $this->repo->saveOrFail($admin);
 
-        $this->testData[__FUNCTION__]['request']['content']['token'] = $token;
+        $admin = $this->repo->findOrFailPublic($admin->getId());
+
+        $this->testData[__FUNCTION__]['request']['content']['token'] = $admin->getPasswordResetToken();
 
         $this->ba->dashboardGuestAppAuth($this->hostName);
 
@@ -970,12 +989,17 @@ class AdminTest extends TestCase
         $admin = $this->fixtures->create(
             'admin', ['org_id' => $org->getId(), 'email' => 'abc@razorpay.com']);
 
+        $feature = $this->fixtures->create(
+            'feature', ['entity_id' => $org->getId(), 'entity_type' => 'org', 'name' => \RZP\Models\Feature\Constants::ORG_ADMIN_PASSWORD_RESET]);
+
+
         $hostName = 'newtesting.newtesting.com';
 
         $this->orgHostName = $this->fixtures->create('org_hostname', [
             'org_id'        => $org->getId(),
             'hostname'      => $hostName,
         ]);
+
 
         $this->ba->dashboardGuestAppAuth($hostName);
 

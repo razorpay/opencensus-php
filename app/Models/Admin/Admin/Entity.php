@@ -49,6 +49,8 @@ class Entity extends Base\Entity
     const OLD_PASSWORD          = 'old_password';
     const PASSWORD_EXPIRY       = 'password_expiry';
     const PASSWORD_CHANGED_AT   = 'password_changed_at';
+    const PASSWORD_RESET_TOKEN  = 'password_reset_token';
+    const PASSWORD_RESET_EXPIRY = 'password_reset_expiry';
     const EXPIRED_AT            = 'expired_at';
     const DELETED_AT            = 'deleted_at';
     const ROLES                 = 'roles';
@@ -58,6 +60,10 @@ class Entity extends Base\Entity
     const WRONG_2FA_ATTEMPTS            = 'wrong_2fa_attempts';
     //added for org level enforcing of 2fa
     const ORG_ENFORCED_SECOND_FACTOR_AUTH = 'org_enforced_second_factor_auth';
+
+    const NEXT_PASSWORD_EXPIRY_DATE = 'next_password_expiry_date';
+    const PASSWORD_EXPIRY_DAYS = '+30 days';
+
 
     protected $dontKeepRevisionOf = [
         self::PASSWORD,
@@ -130,6 +136,11 @@ class Entity extends Base\Entity
         self::ROLES,
         self::GROUPS,
         self::MERCHANTS,
+        self::NEXT_PASSWORD_EXPIRY_DATE
+    ];
+
+    protected $appends = [
+        self::NEXT_PASSWORD_EXPIRY_DATE
     ];
 
     protected $public = [
@@ -156,6 +167,7 @@ class Entity extends Base\Entity
         self::GROUPS,
         self::MERCHANTS,
         self::ORG_ENFORCED_SECOND_FACTOR_AUTH,
+        self::NEXT_PASSWORD_EXPIRY_DATE
     ];
 
     protected $hidden = [
@@ -194,6 +206,17 @@ class Entity extends Base\Entity
         {
             $admin->tokens()->delete();
         });
+    }
+
+    // Append expiry date to model
+    public function getNextPasswordExpiryDateAttribute()
+    {
+        $passwordChangedAt = $this->getPasswordChangedAt();
+        if (empty($passwordChangedAt))
+        {
+            return strtotime(self::PASSWORD_EXPIRY_DAYS,$this->getCreatedAtAttribute());
+        }
+        return strtotime(self::PASSWORD_EXPIRY_DAYS,$passwordChangedAt);
     }
 
     // -------------- Relations -------------
@@ -346,6 +369,26 @@ class Entity extends Base\Entity
         $this->setAttribute(self::FAILED_ATTEMPTS, $attempts);
     }
 
+    public function setPasswordResetToken(string $token = null)
+    {
+        $this->setAttribute(self::PASSWORD_RESET_TOKEN, $token);
+    }
+
+    public function setPasswordResetExpiry(int $expiry)
+    {
+        $this->setAttribute(self::PASSWORD_RESET_EXPIRY, $expiry);
+    }
+
+    public function getPasswordResetToken()
+    {
+        return $this->getAttribute(self::PASSWORD_RESET_TOKEN);
+    }
+
+    public function getPasswordResetExpiry()
+    {
+        return $this->getAttribute(self::PASSWORD_RESET_EXPIRY);
+    }
+
     public function setOldPasswords()
     {
         // $policy = $this->org->policy;
@@ -378,7 +421,8 @@ class Entity extends Base\Entity
         $this->attributes[self::EMAIL] = strtolower($email);
     }
 
-    protected function setPasswordAttribute($password)
+    // Mutated Attribute function for setPassword Method
+    public function setPasswordAttribute($password)
     {
         $this->attributes[self::PASSWORD] = Hash::make($password);
 

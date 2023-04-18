@@ -1790,6 +1790,8 @@ class Constants
     const DISABLE_TRUECALLER_LOGIN_SAVED_CARDS_SCREEN  = 'dis_truecaller_saved_card';
     const DISABLE_TRUECALLER_LOGIN_ADD_NEW_CARD_SCREEN = 'dis_truecaller_add_card';
 
+    const ORG_ADMIN_PASSWORD_RESET = 'org_admin_password_reset';
+
     /**
      * Feature flag to block VA payouts from master merchant on account <> sub account flow.
      */
@@ -2476,6 +2478,7 @@ class Constants
         DcsConstants::EmailOptionalOnCheckout => true,
         DcsConstants::ShowEmailOnCheckout     => true,
         DcsConstants::CvvLessFlowDisabled     => true,
+        DcsConstants::AdminPasswordResetEnabled => true,
         self::DISABLE_UPI_NUM_CHECKOUT => true,
         self::DISABLE_UPI_NUM_ON_L0 => true,
         self::DISABLE_UPI_NUM_ON_L1 => true,
@@ -2507,7 +2510,8 @@ class Constants
         DcsConstants::AssumeMasterAccount     => true,
         self::ONE_CC_SHOPIFY_ACC_CREATE       => true,
         self::SHOW_CUSTOM_DCC_DISCLOSURES      => true,
-        self::DYNAMIC_CURRENCY_CONVERSION_CYBS => true
+        self::DYNAMIC_CURRENCY_CONVERSION_CYBS => true,
+        self::ORG_ADMIN_PASSWORD_RESET        => true
     ];
 
     // Entity type constants

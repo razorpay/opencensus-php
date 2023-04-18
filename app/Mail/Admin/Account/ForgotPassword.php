@@ -15,7 +15,7 @@ class ForgotPassword extends Base
 
     protected function addSubject()
     {
-        $subject = 'Reset your password for' . $this->org['display_name'] . ' dashboard';
+        $subject = 'Reset your password for ' . $this->org['display_name'] . ' dashboard';
 
         $this->subject($subject);
 
@@ -32,10 +32,11 @@ class ForgotPassword extends Base
     protected function addMailData()
     {
         $firstName = explode(' ', $this->admin['name'])[0];
+        $email = explode(' ', $this->admin['email'])[0];
 
         $data = [
             'firstName' => $firstName,
-            'resetUrl'  => $this->input['reset_password_url'] . '/' . $this->input[self::TOKEN],
+            'resetUrl'  => $this->input['reset_password_url'] . '/admin/reset-password?token=' . $this->input[self::TOKEN] . '&email=' . $email,
             'orgName'   => $this->org['display_name'],
         ];
 

@@ -3,6 +3,8 @@
 namespace RZP\Models\Admin\Admin;
 
 use App;
+use RZP\Diag\EventCode;
+use RZP\Exception\BaseException;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Merchant\RazorxTreatment;
 use Str;
@@ -17,6 +19,7 @@ use Google_Client;
 use RZP\Error;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
@@ -35,6 +38,10 @@ use GuzzleHttp\Psr7\Request as GuzzleRequest;
 class Service extends Base\Service
 {
     const ADMIN_PASSWORD_RESET_TOKEN_KEY = 'password_reset_token_org_%s_admin_%s';
+
+    const ADMIN_EMAIL_NOT_FOUND  = 'ADMIN_EMAIL_NOT_FOUND';
+
+    const PASSWORD_TOKEN_EXPIRY_TIME = 3.6e+6; // 60 minutes
 
     const TOKEN = 'token';
 
@@ -107,6 +114,15 @@ class Service extends Base\Service
         $org = $this->repo->org->findByPublicId($orgId);
 
         return $org->isFeatureEnabled(Constants::ORG_SECOND_FACTOR_AUTH);
+    }
+
+    public function isAdminPasswordResetAllowed(string $orgId): bool
+    {
+        $features = (new \RZP\Models\Feature\Service)->getOrgFeatures('org',$orgId);
+
+        $assignedFeatures =  $features['assigned_features']->pluck('name')->toArray();
+
+        return (in_array(Feature\Constants::ORG_ADMIN_PASSWORD_RESET, $assignedFeatures) === true);
     }
 
     public function verifyAdminSecondFactorAuth(array $input): array
@@ -195,9 +211,21 @@ class Service extends Base\Service
         event(new AuditLogEntry($admin, $action, $customProperties));
     }
 
-    public function forgotPassword(string $orgId, array $input)
-    {
+    /**
+     * @throws Exception\BadRequestException
+     */
+    public function forgotPassword(string $orgId, array $input) {
+
+        $signedOrgId = $orgId;
+        if (!$this->isAdminPasswordResetAllowed(Org\Entity::silentlyStripSign($signedOrgId)))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_WHITELISTED_MERCHANT_ADMIN_FORGOT_PASSWORD_FEATURE_NOT_ENABLED);
+        }
+
         $validator = new Validator();
+
+        $this->trace->info(TraceCode::WHITELISTED_MERCHANT_ADMIN_FORGOT_PASSWORD_REQUEST, $input);
 
         $org = $this->repo->org->findByPublicId($orgId);
 
@@ -205,12 +233,27 @@ class Service extends Base\Service
 
         $validator->validateInput('forgot', $input);
 
-        $admin = $this->getAdminFromEmail($orgId, $input['email']);
+        $admin = $this->repo->admin->findByOrgIdAndEmail($orgId, $input['email']);
 
-        $this->setPasswordResetToken($admin, $input);
+        if (empty($admin) === true)
+        {
+            $this->trace->info(TraceCode::WHITELISTED_MERCHANT_ADMIN_NOT_FOUND,
+                [
+                    'email' => mask_email($input['email'])
+                ]);
 
-        $this->sendAdminForgotPasswordEmail($admin, $input);
+            $this->app['diag']->trackOnboardingEvent(EventCode::WHITELISTED_ORG_ADMIN_ONBOARDING_FORGOT_PASSWORD_FAILURE,
+            null,new BaseException(self::ADMIN_EMAIL_NOT_FOUND), [$input['email']]);
+        }
+        else
+        {
+            $this->setPasswordResetToken($admin, $input);
 
+            $this->sendAdminForgotPasswordEmail($admin, $input);
+
+            $this->app['diag']->trackOnboardingEvent(EventCode::WHITELISTED_ORG_ADMIN_ONBOARDING_FORGOT_PASSWORD_SUCCESS,
+                null,null,[$input['email']]);
+        }
         return ['success' => true];
     }
 
@@ -238,53 +281,118 @@ class Service extends Base\Service
 
     protected function setPasswordResetToken(Entity $admin, array & $input)
     {
-        $key = $this->getCacheKeyForResetToken($admin->org->getId(), $admin->getId());
+        $this->trace->info(
+            TraceCode::WHITELISTED_MERCHANT_ADMIN_PASSWORD_RESET_TOKEN_GENERATE,
+            [
+                'admin_id' => $admin['id'],
+                'expiry'  => self::PASSWORD_TOKEN_EXPIRY_TIME,
+            ]);
 
-        $expiresAt = Carbon::now()->addHours(1);
+        $expiresAt = Carbon::now()->timestamp + self::PASSWORD_TOKEN_EXPIRY_TIME;
 
-        $token = $this->generateToken($input);
+        $token = $this->generateToken();
 
-        Cache::put($key, $token, $expiresAt);
+        $this->savePasswordResetTokenAndExpiry($admin, $token, $expiresAt);
 
         $input[self::TOKEN] = $token;
     }
 
+    public function savePasswordResetTokenAndExpiry(Entity $admin, string $token, int $expiry)
+    {
+        $admin->setPasswordResetToken($token);
+
+        $admin->setPasswordResetExpiry($expiry);
+
+        $this->repo->saveOrFail($admin);
+    }
+
+    /**
+     * @throws Exception\BadRequestException
+     */
     public function resetPassword(string $orgId, array $input)
     {
+        $signedOrgId = $orgId;
+        if (!$this->isAdminPasswordResetAllowed(Org\Entity::verifyIdAndSilentlyStripSign($signedOrgId)))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_WHITELISTED_MERCHANT_ADMIN_RESET_PASSWORD_FEATURE_NOT_ENABLED);
+        }
+
+        $this->trace->info(TraceCode::WHITELISTED_MERCHANT_ADMIN_RESET_PASSWORD_REQUEST, $input);
+
         $org = $this->repo->org->findByPublicId($orgId);
 
         $input[Org\Entity::AUTH_TYPE] = $org->getAuthType();
 
         // Get admin
-        $admin = $this->getAdminFromEmail($orgId, $input['email']);
+        $admin = $this->repo->admin->findByOrgIdAndEmail($orgId, $input['email']);
+        if ($admin === null)
+        {
+            $this->trace->info(TraceCode::WHITELISTED_MERCHANT_ADMIN_NOT_FOUND,
+                [
+                    'email' => mask_email($input['email'])
+                ]);
+
+            $this->app['diag']->trackOnboardingEvent(EventCode::WHITELISTED_ORG_ADMIN_ONBOARDING_RESET_PASSWORD_FAILURE,
+                null,new BaseException(ErrorCode::BAD_REQUEST_INVALID_ADMIN_EMAIL), [$input['email']]);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR);
+        }
 
         $validator = new Validator($admin);
 
         $validator->validateInput('reset', $input);
 
-        $key = $this->getCacheKeyForResetToken($org->getId(), $admin->getId());
+        $expiry = $admin->getPasswordResetExpiry();
 
-        $resetToken = Cache::get($key);
+        $now = Carbon::now()->getTimestamp();
 
-        if (($resetToken === null) or
-            ($resetToken !== $input['token']))
+        if ($expiry < $now)
         {
+            $this->trace->info(TraceCode::WHITELISTED_MERCHANT_ADMIN_TOKEN_EXPIRED,
+                [
+                    'email' => mask_email($input['email'])
+                ]);
+
+            $this->app['diag']->trackOnboardingEvent(EventCode::WHITELISTED_ORG_ADMIN_ONBOARDING_RESET_PASSWORD_FAILURE,
+                null,new BaseException(ErrorCode::BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID), [$input['email']]);
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TOKEN_EXPIRED_NOT_VALID);
+        }
+
+        $resetToken  = $admin->getPasswordResetToken();
+
+        if ((empty($resetToken) === true) or (hash_equals($resetToken, $input['token']) === false))
+        {
+            $this->trace->info(TraceCode::WHITELISTED_MERCHANT_ADMIN_INVALID_TOKEN,
+                [
+                    'email' => mask_email($input['email'])
+                ]);
+
+            $this->app['diag']->trackOnboardingEvent(EventCode::WHITELISTED_ORG_ADMIN_ONBOARDING_RESET_PASSWORD_FAILURE,
+                null,new BaseException(ErrorCode::BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN), [$input['email']]);
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN);
         }
-
-        $this->core()->updatePassword($admin, $input, true);
-
-        if ($admin->isLocked())
+        else
         {
-            $admin->unlock();
+            $this->core()->updatePassword($admin, $input, true);
+
+            //Expiry the reset token on password successful update
+            $admin->setPasswordResetExpiry($now);
+
+            if ($admin->isLocked())
+            {
+                $admin->unlock();
+            }
+
+
+            $this->repo->admin->saveOrFail($admin);
+            $this->app['diag']->trackOnboardingEvent(EventCode::WHITELISTED_ORG_ADMIN_ONBOARDING_RESET_PASSWORD_SUCCESS,
+                null,null,[$input['email']]);
         }
-
-        $this->repo->admin->saveOrFail($admin);
-
-        // Flush the key so that the link cannot be used again.
-        Cache::forget($key);
-
         return ['success' => true];
     }
 
