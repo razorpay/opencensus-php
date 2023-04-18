@@ -33,7 +33,8 @@ export default class ModalSlider extends Component {
       (powerselectMenu && powerselectMenu.contains(target)) ||
       (notification && notification.contains(target)) ||
       (calendarPicker && calendarPicker.contains(target)) ||
-      (whatsNewTooltip && whatsNewTooltip.contains(target))
+      (whatsNewTooltip && whatsNewTooltip.contains(target)) ||
+      this.props.checkIfOutsideClickDisabled?.()
     ) {
       return;
     }

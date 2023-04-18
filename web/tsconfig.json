@@ -57,6 +57,7 @@
     "js/merchant/views/Transactions",
     "js/merchant/containers/ListContainer.tsx",
     "js/merchant/components/SidebarV2",
+    "js/merchant/views/EcosystemDowntimes",
     "js/common/ui/XBankingWidget",
     "js/merchant/views/transactions/UploadInvoice/BulkUpload",
     "js/merchant/views/PaymentHandle",

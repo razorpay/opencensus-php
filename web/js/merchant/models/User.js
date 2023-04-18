@@ -1955,6 +1955,10 @@ export default class User {
   get isFtuxEnabled() {
     return getSplitzExperimentVariant('onboarding_ftux')?.variables?.result === 'on';
   }
+
+  get isEcosystemDowntimeEnabled() {
+    return getSplitzExperimentVariant('ecosystem_downtimes')?.variables?.result === 'on';
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

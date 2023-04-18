@@ -276,6 +276,9 @@ return [
         'PP_ECOMMERCE_SPLITZ' => env('PP_ECOMMERCE_SPLITZ', ''),
         // Affordability Onboarding for SBI CC EMi and credit card segeration
         'SHOW_SEGREGATED_CREDIT_EMI_METHODS' => env('SHOW_SEGREGATED_CREDIT_EMI_METHODS', ''),
-        'SHOW_INTERNATIONAL_PAYMENTS_BUTTON' => env('SHOW_INTERNATIONAL_PAYMENTS_BUTTON', '')
+        'SHOW_INTERNATIONAL_PAYMENTS_BUTTON' => env('SHOW_INTERNATIONAL_PAYMENTS_BUTTON', ''),
+
+        // Ecosystem Downtimes UI - Availability and Downtime
+        'ECOSYSTEM_DOWNTIMES' => env('ECOSYSTEM_DOWNTIMES','')
     ]
 ];

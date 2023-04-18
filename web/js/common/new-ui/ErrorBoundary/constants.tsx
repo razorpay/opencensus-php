@@ -23,6 +23,7 @@ export enum Teams {
   DEV_EXP = 'Developer Experience',
   XPAYROLL = 'XPayroll',
   AFFORDABILITY = 'Affordability',
+  AVAILABILITY_AND_DOWNTIME = 'Availability And Downtime',
   RAZORPAY_X = 'RazorpayX',
 }
 

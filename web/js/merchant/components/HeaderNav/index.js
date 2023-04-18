@@ -15,7 +15,6 @@ import NavFragment from './NavFragment';
 import AppSwitcher from './AppSwitcher';
 import ProfileDropdown from './ProfileDropdown';
 import GrowthAssetEB from 'common/ui/GrowthAssetEB';
-import StatusDetails from './StatusDetails/index';
 import { compose } from 'redux';
 import SupportRequestDropdown from './SupportRequestDropdown';
 import SuccessFullCreditModal from 'common/ui/OnboardingCoupons/SuccessFullCreditModal';
@@ -30,7 +29,8 @@ import lazyLoader from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import PoweredByRzp from 'assets/branding/powered_by_rzp.png';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
-
+import StatusDetails from './StatusDetails';
+import EcosystemDowntimes from 'merchant/views/EcosystemDowntimes';
 const WhatsNew = lazyLoader(() =>
   import(/* webpackChunkName: 'merchantWhatsNew' */ 'common/ui/WhatsNew/Old'),
 );
@@ -255,7 +255,11 @@ class HeaderNav extends Component {
                 </ShowWhen>
                 {user?.isOrgRZP && user?.isInternalStatusPageEnabled && (
                   <li id="status-details">
-                    <StatusDetails AppMode={mode} showMobileNav={showMobileNav} />
+                    {user.isEcosystemDowntimeEnabled ? (
+                      <EcosystemDowntimes mode={mode} showMobileNav={showMobileNav} />
+                    ) : (
+                      <StatusDetails AppMode={mode} showMobileNav={showMobileNav} />
+                    )}
                   </li>
                 )}
 

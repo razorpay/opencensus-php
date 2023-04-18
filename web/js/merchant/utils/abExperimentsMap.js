@@ -597,4 +597,10 @@ export default {
     // prod experiment ids
     'LGeU9L1JfrImWM',
   ],
+  ecosystem_downtimes: [
+    // stage experiment ids
+    'LZJASxGazKW6oH',
+    // prod experiment ids
+    'LZi2wmeOZSCjtX',
+  ],
 };

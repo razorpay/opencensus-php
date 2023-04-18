@@ -104,7 +104,7 @@ function StatusDetails(props) {
   const statusDetailsRef = useRef();
   const downtimeIconRef = useRef();
 
-  const { openSlider: sliderOpen, AppMode } = props;
+  const { openSlider: sliderOpen, AppMode, isForceOpen } = props;
 
   const {
     statusDetails: {
@@ -266,6 +266,12 @@ function StatusDetails(props) {
         );
     }
   };
+
+  useEffect(() => {
+    //in order to force open the slider on mount
+    if (isForceOpen) handleSliderToggleClick();
+  }, []);
+
   //  using the out side click custom hook
   useClickOutSide([statusDetailsRef, downtimeIconRef], onOutSideClick);
 
@@ -293,7 +299,7 @@ function StatusDetails(props) {
               ref={statusDetailsRef}
             >
               <div className="panel panel-default SliderPanel">
-                <div className="panel-heading">
+                <div className="panel-heading" aria-label="payment-methods-status-heading">
                   {mode === 'summary' ? (
                     <b>Payment Methods Status</b>
                   ) : (
