@@ -47,25 +47,27 @@ const InternationalStatusLabel = ({ status, isIERevamp = false }) => {
   }
 
   return isIERevamp ? (
-    <Badge
-      contrast="high"
-      size="large"
-      variant={badgeMapping[status.toLowerCase()]}
-      icon={(props) => (
-        <>
-          <InfoIcon {...props} />
-          {description && (
-            <Popover theme="dark" align="bottom">
-              <PopoverBody>
-                <div>{description}</div>
-              </PopoverBody>
-            </Popover>
-          )}
-        </>
-      )}
-    >
-      {status.toUpperCase().trim()}
-    </Badge>
+    !!status && (
+      <Badge
+        contrast="high"
+        size="large"
+        variant={badgeMapping[status.toLowerCase()]}
+        icon={(props) => (
+          <>
+            <InfoIcon {...props} />
+            {description && (
+              <Popover theme="dark" align="bottom">
+                <PopoverBody>
+                  <div>{description}</div>
+                </PopoverBody>
+              </Popover>
+            )}
+          </>
+        )}
+      >
+        {status.toUpperCase().trim()}
+      </Badge>
+    )
   ) : (
     <span
       class={`status-label label ${statusMap[status.toLowerCase()]}`}
