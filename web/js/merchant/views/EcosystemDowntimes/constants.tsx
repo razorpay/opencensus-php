@@ -195,6 +195,7 @@ export const METHOD_NAMES_MAP = {
   upi: 'UPI',
   card: 'Cards',
   netbanking: 'Net Banking',
+  emandate: 'E-mandate',
 };
 
 export const DOWNTIME_SUMMARY_FIELDS = [
