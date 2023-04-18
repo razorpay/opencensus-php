@@ -6,6 +6,8 @@ import 'react-dates/initialize';
 import { Provider } from 'react-redux';
 import { render } from 'react-dom';
 import { HashRouter as Router } from 'react-router-dom';
+import { BladeProvider } from '@razorpay/blade/components';
+import { paymentTheme } from '@razorpay/blade/tokens';
 
 import 'common/utils/polyfills';
 import store from 'merchantLA/store';
@@ -27,13 +29,15 @@ capturePrometheusMetric({
 });
 render(
   <Provider store={store}>
-    <ConfirmModalProvider>
-      <Router basename="/app">
-        <ErrorBoundary>
-          <App />
-        </ErrorBoundary>
-      </Router>
-    </ConfirmModalProvider>
+    <BladeProvider themeTokens={paymentTheme}>
+      <ConfirmModalProvider>
+        <Router basename="/app">
+          <ErrorBoundary>
+            <App />
+          </ErrorBoundary>
+        </Router>
+      </ConfirmModalProvider>
+    </BladeProvider>
   </Provider>,
   document.getElementById('react-root'),
 );
