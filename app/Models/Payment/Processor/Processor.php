@@ -214,12 +214,13 @@ class Processor
     const CACHE_KEY = 'fallback_%s_card_details';
 
     /**
-     * Delayed adding to capture queue, assuming most
-     * of the merchant captures will be initiated and processed within 15 mins post authorization.
-     * Initiating capture via queue after 15mins so that it doesn't interfere with merchant capture.
+     * Delayed adding to capture queue,
+     * Initiating capture via queue after 15 mins except paysecure
      */
 
     const CAPTURE_QUEUE_DELAY = 900; // In seconds
+
+    const PAYSECURE_CAPTURE_QUEUE_DELAY = 300; // In seconds
 
     /**
      * Core payment service feature flag
@@ -3234,7 +3235,7 @@ class Processor
         {
             $msg = "token_" . $token->getId() . " has been put on hold temporarily for creating recurring payments.".
                 "The next recurring payment can be created on the token after " . $coolDownPeriod;
-            
+
             $this->trace->info(TraceCode::EMANDATE_TOKEN_BLOCK_ERROR, [
                 "msg" => $msg
             ]);
@@ -3261,7 +3262,7 @@ class Processor
                         "token_id"               => $token->getId(),
                         "merchant_id"            => $merchant->getId()
                     ]);
-                
+
                 $emandateTokenStatus = $tokenNotes[TokenConstants::EMANDATE_CONFIGS][TokenConstants::EMANDATE_TOKEN_STATUS] ?? null;
 
                 $presentTime = Carbon::now('Asia/Kolkata')->getTimestamp();
@@ -3269,11 +3270,11 @@ class Processor
                 $coolDowntime = $tokenNotes[TokenConstants::EMANDATE_CONFIGS][TokenConstants::COOLDOWN_PERIOD] ?? $presentTime;
 
                 $timeDifference = (int) $presentTime - $coolDowntime;
-    
+
                 $lastUpdatedMonth = $tokenNotes[TokenConstants::EMANDATE_CONFIGS][Token\Constants::LAST_UPDATED_MONTH] ?? '';
-    
+
                 $currentMonth = $this->getCurrentMonthIST();
-    
+
                 // resetting if blocked time is completed or current time time doesn't match blocked/counter data
                 if(($currentMonth !== $lastUpdatedMonth) or
                     ($emandateTokenStatus === TokenConstants::BLOCKED_TEMPORARILY and $timeDifference >= 0))
@@ -3285,11 +3286,11 @@ class Processor
                         "token_id"              => $token->getId(),
                         "merchant_id"           => $merchant->getId()
                     ]);
-                    
+
                     $token->setNotes([]);
-        
+
                     $this->repo->save($token);
-    
+
                     return [];
                 }
 
@@ -4608,10 +4609,13 @@ class Processor
 
                 $this->repo->reload($this->payment);
 
-                // return if payment is already gateway captured or (status is refunded and captured_at is null)
+                // return if payment is already gateway captured or (status is refunded and  gateway is not paysecure captured_at is null)
+                // there can be cases where refund is created state so we need to capture the payment to process the refund
+                // paysecure does not support the reverse api so we need to gateway capture the payment and in auto refund case sometimes refund get initiated before capture call
                 if (($this->payment->isGatewayCaptured() === true) or
                     (($this->payment->getStatus() === Payment\Status::REFUNDED) and
-                     ($this->payment->hasBeenCaptured() === false)))
+                    ($this->payment->hasBeenCaptured() === false) and
+                    ($this->payment->getGateway() !== Payment\Gateway::PAYSECURE)))
                 {
                     return;
                 }

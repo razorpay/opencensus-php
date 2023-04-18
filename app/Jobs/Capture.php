@@ -101,10 +101,13 @@ class Capture extends Job
 
         $this->addTraceData($payment);
 
-        // return if payment is already gateway captured or (status is refunded and captured_at is null)
+        // return if payment is already gateway captured or (status is refunded and  gateway is not paysecure and  captured_at is null)
+        // there can be cases where refund is created state so we need to capture the payment to process the refund
+        // paysecure does not support the reverse api so we need to gateway capture the payment and in auto refund case sometimes refund get initiated before capture call
         if (($payment->isGatewayCaptured() === true) or
             (($payment->getStatus() === Payment\Status::REFUNDED) and
-             ($payment->hasBeenCaptured() === false)))
+             ($payment->hasBeenCaptured() === false) and
+             ($payment->getGateway() !== Payment\Gateway::PAYSECURE)))
         {
             return;
         }
