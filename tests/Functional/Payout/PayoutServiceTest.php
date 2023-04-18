@@ -4511,6 +4511,130 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals('manual update', $fta->getFailureReason());
     }
 
+    public function testPayoutServiceManualUpdateFromLedgerResponseAwaitedToFailed()
+    {
+        $this->app['rzp.mode'] = Mode::TEST;
+
+        $balance = $this->fixtures->create('balance',
+            [
+                'type'           => 'banking',
+                'account_type'   => 'shared',
+                'balance'        => 10000,
+            ]);
+
+        $this->fixtures->create('banking_account', [
+            'account_type'          => 'shared',
+            'channel'               => 'yesbank',
+            'status'                => 'activated',
+            'balance_id'            => $balance->getId(),
+        ]);
+
+        $this->fixtures->create('payout', [
+            'id'                => 'DuuYxmO7Yegu3x',
+            'status'            => 'ledger_response_awaited',
+            'balance_id'        => $balance->getId(),
+            'is_payout_service' => 1
+        ]);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout['id'], [
+            'transaction_id' => null,
+        ]);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->create('fund_transfer_attempt', [
+            'id'              => "KFrTfUdt2WmGMm",
+            'merchant_id'     => "10000000000000",
+            'purpose'         => "refund",
+            'bank_account_id' => "1000000lcustba",
+            'source_id'       => $payout['id'],
+            'source_type'     => 'payout',
+            'channel'         => "yesbank",
+            'version'         => "V3",
+            'mode'            => "IMPS",
+            'is_fts'          => 1,
+            'status'          => "initiated",
+            'narration'       => "test Merchant Fund Transfer",
+            'failure_reason'  => null,
+            'initiate_at'     => 1662739563,
+            'created_at'      => 1662739563,
+            'updated_at'      => 1662739563,
+        ]);
+
+        $this->assertEquals('ledger_response_awaited', $payout->getStatus());
+
+        $psPayoutData = [
+            'id'                   => $payout['id'],
+            'merchant_id'          => "10000000000000",
+            'fund_account_id'      => "100000000000fa",
+            'method'               => "fund_transfer",
+            'reference_id'         => null,
+            'balance_id'           => $balance->getId(),
+            'user_id'              => "random_user123",
+            'batch_id'             => null,
+            'idempotency_key'      => "random_key",
+            'purpose'              => "refund",
+            'narration'            => "Batman",
+            'purpose_type'         => "refund",
+            'amount'               => 2000000,
+            'currency'             => "INR",
+            'notes'                => "{}",
+            'fees'                 => 10,
+            'tax'                  => 33,
+            'status'               => "failed",
+            'fts_transfer_id'      => 60,
+            'transaction_id'       => "KHTaWqqBKwrVTM",
+            'channel'              => "yesbank",
+            'utr'                  => "933815383814",
+            'failure_reason'       => null,
+            'remarks'              => "Check the status by calling getStatus API.",
+            'pricing_rule_id'      => "Bbg7cl6t6I3XA9",
+            'mode'                 => "IMPS",
+            'fee_type'             => "free_payout",
+            'workflow_feature'     => null,
+            'origin'               => 1,
+            'status_code'          => null,
+            'created_at'           => 1000000000,
+            'updated_at'           => 1000000002,
+        ];
+
+        \DB::connection('live')->table('ps_payouts')->insert($psPayoutData);
+
+        $request = [
+            'url'     => '/payouts/' . $payout['id'] . '/manual/status',
+            'method'  => 'PATCH',
+            'content' => [
+                'status' => 'failed',
+            ]
+        ];
+
+        $payoutServiceStatusMock = Mockery::mock(PayoutServiceStatus::class, [$this->app])->makePartial();
+
+        $this->app->instance(PayoutServiceStatus::PAYOUT_SERVICE_STATUS, $payoutServiceStatusMock);
+
+        $payoutServiceStatusMock->shouldReceive('updatePayoutStatusViaFTS')
+                                ->andReturnUsing(function($payoutId,
+                                      string $status,
+                                      string $failureReason = null,
+                                      string $bankStatusCode = null,
+                                      array $ftsInfo = []) {
+
+                                      self::assertEquals('failed', $status);
+
+                                      return $this->createResponseForPayoutServiceMock(false, 'failed');
+                                })->once();
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $fta = $this->getDbEntityById('fund_transfer_attempt', 'KFrTfUdt2WmGMm');
+
+        $this->assertEquals('failed', $fta->getStatus());
+    }
+
     public function testFreePayoutMigrationAdminAction()
     {
         $this->mockPayoutServiceFreePayoutMigration();

@@ -4617,21 +4617,16 @@ class Core extends Base\Core
 
         $currentStatus = $payout->getStatus();
 
-        //
-        // Payout can go to failed state from initiated or created state only
-        //
-        Status::validateStatusUpdate(Status::FAILED, $currentStatus);
-
         if($this->isExperimentEnabled(Merchant\RazorxTreatment::NON_TERMINAL_MIGRATION_HANDLING,
                                       $payout->getMerchantId()) === true)
         {
             $this->mutex->acquireAndRelease(
                 PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
-                function() use ($payout, $ftaFailureReason, $ftaBankStatusCode, $ftaStatus, $ftsSourceAccountInformation) {
+                function() use ($payout, $ftaFailureReason, $ftaBankStatusCode, $ftaStatus, $ftsSourceAccountInformation, $currentStatus) {
 
                     $payout->reload();
 
-                    $this->handlePayoutFailedBase($payout, $ftaFailureReason, $ftaBankStatusCode, $ftaStatus, $ftsSourceAccountInformation);
+                    $this->handlePayoutFailedBase($payout, $ftaFailureReason, $ftaBankStatusCode, $ftaStatus, $ftsSourceAccountInformation, $currentStatus);
                 },
                 self::PAYOUT_FAILURE_MUTEX_LOCK_TIMEOUT,
                 ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS,
@@ -4639,7 +4634,7 @@ class Core extends Base\Core
         }
         else
         {
-            $this->handlePayoutFailedBase($payout, $ftaFailureReason, $ftaBankStatusCode, $ftaStatus, $ftsSourceAccountInformation);
+            $this->handlePayoutFailedBase($payout, $ftaFailureReason, $ftaBankStatusCode, $ftaStatus, $ftsSourceAccountInformation, $currentStatus);
         }
 
     }
@@ -4650,7 +4645,7 @@ class Core extends Base\Core
      * @param string|null $ftaBankStatusCode
      * @param string|null $ftaStatus
      * @param array       $ftsSourceAccountInformation
-     *
+     * @param string|null $currentStatus
      * @return void
      * @throws BadRequestException
      * @throws Exception\InvalidArgumentException
@@ -4659,7 +4654,8 @@ class Core extends Base\Core
                                     string $ftaFailureReason = null,
                                     string $ftaBankStatusCode = null,
                                     string $ftaStatus = null,
-                                    array $ftsSourceAccountInformation = []): void
+                                    array $ftsSourceAccountInformation = [],
+                                    string $currentStatus = null): void
     {
         // Keeping the mutex TTL high while updating the payout to failed.
         // This is to ensure that the process that is working on the payout
@@ -4667,6 +4663,10 @@ class Core extends Base\Core
         // saved in the database.
         if ($payout->getIsPayoutService() === false)
         {
+
+            // Payout can go to failed state from initiated or created state only
+            Status::validateStatusUpdate(Status::FAILED, $currentStatus);
+
             $this->mutex->acquireAndRelease(
                 'failure_payout_id_' . $payout->getId(),
                 function() use ($payout, $ftaFailureReason, $ftaBankStatusCode) {
@@ -4756,9 +4756,6 @@ class Core extends Base\Core
                         $ftsInfo + $ftsSourceAccountInformation);
                 }
             }
-
-            //(new PayoutsStatusDetailsCore())->create($payout);
-
         }
         else
         {
@@ -5376,6 +5373,11 @@ class Core extends Base\Core
             $this->deleteCardMetaDataAndVaultTokenForTerminalStatePayout($status, $payout);
         }
 
+        if ($payout->getIsPayoutService() === true)
+        {
+            return $this->getAPIModelPayoutFromPayoutService($payout->getId());
+        }
+
         return $payout;
     }
 
@@ -5394,8 +5396,6 @@ class Core extends Base\Core
         // Hence for Payout Service payouts we won't be checking if the below fields were changed in the payout.
 
         // Only updating fta failure reason if payout failure reason was updated during this request.
-        // For payout service payouts the $payout variable is not updated. Hence bypassing the wasChanged()
-        // check for payout service payouts.
         if ((empty($input[Entity::FAILURE_REASON]) === false) and
             (($payout->wasChanged(Entity::FAILURE_REASON) === true) or
              ($payout->getIsPayoutService() === true)))
@@ -5404,8 +5404,6 @@ class Core extends Base\Core
         }
 
         // Only updating fta status if payout status was updated during this request.
-        // For payout service payouts the $payout variable is not updated. Hence bypassing the wasChanged()
-        // check for payout service payouts.
         if ((empty($input[Entity::STATUS]) === false) and
             (($payout->wasChanged(Entity::STATUS) === true) or
              ($payout->getIsPayoutService() === true)))
