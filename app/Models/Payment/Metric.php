@@ -37,6 +37,7 @@ class Metric extends Base\Core
     const LABEL_UPI_FLOW                        = 'upi_flow';
     const LABEL_UPI_PSP                         = 'upi_psp';
     const LABEL_PAYMENT_IS_TPV                  = 'is_tpv';
+    const LABEL_MERCHANT_COUNTRY_CODE           = 'merchant_country_code';
     const LABEL_PAYMENT_MANDATE_HUB             = 'mandate_hub';
     const LABEL_ORG                             = 'org';
 
@@ -303,6 +304,7 @@ class Metric extends Base\Core
             self::LABEL_PAYMENT_TRANSACTION_TYPE => $payment->getTransactionType(),
             self::LABEL_PAYMENT_IS_TPV           => $payment->merchant->isTPVRequired(),
             self::LABEL_ORG                      => $payment->merchant->getOrgId(),
+            self::LABEL_MERCHANT_COUNTRY_CODE       => $payment->merchant->getCountry(),
         ];
 
         if ($payment->hasCard() === true)
@@ -542,6 +544,9 @@ class Metric extends Base\Core
         {
             $dimensions[self::LABEL_PAYMENT_CURRENCY]          = $payment["currency"];
         }
+        if($this->merchant !== null){
+            $dimensions[self::LABEL_MERCHANT_COUNTRY_CODE]          = $this->merchant->getCountry();
+        }
 
         $this->trace->count(self::PAYMENT_CREATED_PG_ROUTER, $dimensions);
     }
@@ -561,6 +566,10 @@ class Metric extends Base\Core
         if (isset($payment['currency']) === true)
         {
             $dimensions[self::LABEL_PAYMENT_CURRENCY] = $payment["currency"];
+        }
+
+        if($this->merchant !== null){
+            $dimensions[self::LABEL_MERCHANT_COUNTRY_CODE]  = $this->merchant->getCountry();
         }
 
         $this->trace->count(self::PAYMENT_FAILED_PG_ROUTER, $dimensions);
