@@ -1287,6 +1287,9 @@ class Route
         'bvs_admin_proxy'                          => ['any',      'bvs/admin/{path?}',                              'BvsAdminProxyController@handleAdminProxyRequests'                  ],
         'bvs_admin_proxy_pii'                      => ['any',      'bvs/admin_pii/{path?}',                          'BvsAdminProxyController@handleAdminProxyRequests'                  ],
         'bvs_validation_artifact_details'          => ['get',      'merchants/{merchantId}/bvs/{validationArtefact}/details', 'MerchantController@getBvsValidationArtefactDetails'       ],
+        //OCR
+        'ocr_admin_proxy'                          => ['get',      'ocr/admin/{path?}',                              'OcrAdminProxyController@handleAdminRequests'                       ],
+
         'loc_bulk_withdrawal_update'               => ['post',     'loc/withdrawals/bulk/update',                    'LOCController@postLocBulkWithdrawalUpdate'                         ],
         'leegality_webhook'                        => ['post',     'leegality/webhook',                              'LOSController@handleLeegalityWebhook'                              ],
         'reminder_admin'                           => ['any',      'reminders/admin/{path?}',                        'RemindersController@remindersAdmin'                                ],
@@ -8088,6 +8091,9 @@ class Route
         'bvs_admin_proxy',
         'bvs_admin_proxy_pii',
 
+        // OCR Admin proxy routes
+        'ocr_admin_proxy',
+
         'admin_bulk_assign_role',
 
         'developer_console_admin_action',
@@ -8189,8 +8195,9 @@ class Route
         'populate_merchant_trim_data_cron'         => Permission::MANAGE_BULK_FEATURE_MAPPING,
         'bvs_service_dashboard'                    => Permission::EDIT_MERCHANT,
         'bvs_validation_artifact_details'          => Permission::VIEW_MERCHANT,
-        'bvs_admin_proxy'                        => Permission::VIEW_ALL_ENTITY,
-        'bvs_admin_proxy_pii'                    => Permission::VIEW_ACTIVATION_FORM,
+        'bvs_admin_proxy'                          => Permission::VIEW_ALL_ENTITY,
+        'bvs_admin_proxy_pii'                      => Permission::VIEW_ACTIVATION_FORM,
+        'ocr_admin_proxy'                          => Permission::VIEW_ALL_ENTITY,
         'transfer_debug'                           => Permission::DEBUG_TRANSFERS_ROUTES,
         'virtual_account_debug'                    => Permission::DEBUG_VIRTUAL_ACCOUNT,
         'payment_links_v2_admin'                   => Permission::PAYMENT_LINKS_V2_ADMIN,
@@ -14025,6 +14032,9 @@ class Route
             'bvs_admin_proxy',
             'bvs_admin_proxy_pii',
             'admin_bulk_assign_role',
+
+            // OCR admin dashboard proxy routes
+            'ocr_admin_proxy',
 
             'banking_account_statement_fetch_missing',
             //CAC
