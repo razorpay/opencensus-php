@@ -1136,4 +1136,20 @@ class Entity extends Base\PublicEntity
 
         return Status::statusIsTerminal($status);
     }
+
+    public function toArray()
+    {
+        // Need these relations to be set to power the notifications
+        if (empty($this->spocs) === true)
+        {
+            $this->load(self::SPOCS);
+        }
+
+        if (empty($this->reviewers) === true)
+        {
+            $this->load(self::REVIEWERS);
+        }
+
+        return parent::toArray();
+    }
 }

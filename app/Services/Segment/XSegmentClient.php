@@ -36,14 +36,6 @@ class XSegmentClient extends SegmentAnalyticsClient
             }
 
             if (empty($user) === false and empty($merchant) === false) {
-                $customProperties = [
-                    'phone' => ($user['contact_mobile'] === null) ? null : ('+' . $user['contact_mobile']),
-                    'email' => $user['email'],
-                    'name'  => $user['name']
-                ];
-                if ($eventName === SegmentEvent::BANKING_ACCOUNT_STATUS_CHANGE) {
-                    $customProperties += $properties;
-                }
 
                 $result = 'on';
 
@@ -56,8 +48,8 @@ class XSegmentClient extends SegmentAnalyticsClient
                     $result = $variant;
                 }
 
-                if($result != 'off' or $eventName == SegmentEvent::BANKING_ACCOUNT_STATUS_CHANGE) {
-                    $this->pushIdentifyandTrackEvent($merchant, $customProperties, $eventName);
+                if($result != 'off') {
+                    $this->pushIdentifyandTrackEvent($merchant, $properties, $eventName);
                 }
             }
         }

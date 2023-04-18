@@ -2712,7 +2712,8 @@ class Core extends Base\Core
     }
 
     public function sendNotificationAfterCAActivation(Entity $bankingAccount){
-
+        // NOTE: After debugging, I found notifyIfStatusChanged does not work for activated state as isDirty returns false
+        //       because $bankingAccount is already committed
         if ((new Service())->isNeoStoneExperiment($bankingAccount) === true)
         {
             $payload = ['ca_channel' => Entity::Neostone];
@@ -2727,16 +2728,15 @@ class Core extends Base\Core
 
         $merchant = $bankingAccount->merchant;
 
-        if (empty($merchant) === false)
+        try
         {
-            $this->app['x-segment']->sendEventToSegment(SegmentEvent::CA_ACTIVATED, $merchant, ['status' => $bankingAccount->getStatus()]);
-        }
-        else
+            $this->app['x-segment']->sendEventToSegment(SegmentEvent::X_BANKING_ACCOUNT_STATUS_CHANGE_V2, $merchant, $this->generateSegmentProperties($bankingAccount->toArray(),$merchant));
+
+        } catch (\Exception $e)
         {
-            $this->trace->info(TraceCode::MERCHANT_FETCH_FAILED,
-                [
-                    'event_name' => SegmentEvent::CA_ACTIVATED,
-                ]);
+            $this->trace->error(TraceCode::X_CURRENT_ACCOUNT_SEGMENT_PUSH_FAILED,[
+                'error' => $e->getMessage()
+            ]);
         }
     }
 
@@ -2772,13 +2772,16 @@ class Core extends Base\Core
      */
     private function sendSegmentEvent(Entity $bankingAccount, Merchant\Entity $merchant): void
     {
-        $currentBankingAccountStatus = $bankingAccount->getStatus();
-
-        $currentBankingAccountSubStatus = $bankingAccount->getSubStatus();
-
-        $properties = $this->getSegmentEventPropertiesForBankingAccountStatusChange($bankingAccount, $currentBankingAccountStatus, $currentBankingAccountSubStatus);
-
-        $this->app['x-segment']->sendEventToSegment(SegmentEvent::BANKING_ACCOUNT_STATUS_CHANGE, $merchant, $properties);
+        try
+        {
+            $this->app['x-segment']->sendEventToSegment(SegmentEvent::X_BANKING_ACCOUNT_STATUS_CHANGE_V2, $merchant,
+                $this->generateSegmentProperties($bankingAccount->toArray(),$merchant));
+        } catch (\Exception $e)
+        {
+            $this->trace->error(TraceCode::X_CURRENT_ACCOUNT_SEGMENT_PUSH_FAILED,[
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 
     protected function sendClarityContextEnabledEventToSF(Merchant\Entity $merchant)
@@ -3417,5 +3420,36 @@ class Core extends Base\Core
         return [
             $viewData, $recipient, $otherRecipients
         ];
+    }
+
+    private function generateSegmentProperties(array $bankingAccount,Merchant\Entity $merchant): array
+    {
+        /** @var \RZP\Models\User\Entity $owner */
+        $owner = $merchant->owners(Product::BANKING)->first();
+        if(empty($owner))
+        {
+            $owner = $merchant->owners()->first();
+        }
+
+        $userRole = 'owner';
+
+        $merchantDetail = $merchant->merchantDetail;
+
+        return [
+            'merchant_id'           => $merchant->getId(),
+            'user_id'               => $owner->getId(),
+            'user_role'             => $userRole,
+            'email'                 => optional($merchantDetail)->getContactEmail(),
+            'phone'                 => optional($merchantDetail)->getContactMobile(),
+            'bank_channel'          => array_get($bankingAccount, Entity::CHANNEL, ''),
+            'business_name'         => array_get($bankingAccount, Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS . '.' . ActivationDetail\Entity::BUSINESS_NAME, ''),
+            'business_type'         => array_get($bankingAccount, Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS . '.' . ActivationDetail\Entity::BUSINESS_CATEGORY, ''),
+            'bank_beneficiary_name' => array_get($bankingAccount, Entity::BENEFICIARY_NAME, ''),
+            'bank_account_ifsc'     => array_get($bankingAccount, Entity::ACCOUNT_IFSC, ''),
+            'account_number'        => array_get($bankingAccount, Entity::ACCOUNT_NUMBER, ''),
+            'status'                => array_get($bankingAccount, Entity::STATUS, ''),
+            'sub_status'            => array_get($bankingAccount, Entity::SUB_STATUS, ''),
+        ];
+
     }
 }

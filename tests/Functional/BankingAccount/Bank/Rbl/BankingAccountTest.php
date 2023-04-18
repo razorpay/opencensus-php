@@ -2491,6 +2491,10 @@ class BankingAccountTest extends TestCase
         $expectedHubspotCall = false;
         $this->mockHubspotAndAssertForChangeEvent($expectedHubspotCall);
 
+        $xsegmentMock = $this->getXSegmentMock();
+        $xsegmentMock->expects($this->exactly(1))
+            ->method('pushIdentifyandTrackEvent')->willReturn(true);
+
         $this->mockCardVault(function ()
         {
             return [
@@ -2601,6 +2605,9 @@ class BankingAccountTest extends TestCase
 
             return $mail->hasTo($bankingAccount->spocs()->first()['email']);
         });
+
+        // reset mock
+        $this->getXSegmentMock();
     }
 
     public function testActivateWithLedgerShadow()
@@ -2654,6 +2661,10 @@ class BankingAccountTest extends TestCase
 
         $expectedHubspotCall = false;
         $this->mockHubspotAndAssertForChangeEvent($expectedHubspotCall);
+
+        $xsegmentMock = $this->getXSegmentMock();
+        $xsegmentMock->expects($this->exactly(1))
+            ->method('pushIdentifyandTrackEvent')->willReturn(true);
 
         $this->mockCardVault(function ()
         {
@@ -2833,6 +2844,10 @@ class BankingAccountTest extends TestCase
         $expectedHubspotCall = false;
         $this->mockHubspotAndAssertForChangeEvent($expectedHubspotCall);
 
+        $xsegmentMock = $this->getXSegmentMock();
+        $xsegmentMock->expects($this->exactly(1))
+            ->method('pushIdentifyandTrackEvent')->willReturn(true);
+
         $this->mockCardVault(function ()
         {
             return [
@@ -2901,6 +2916,10 @@ class BankingAccountTest extends TestCase
 
         $expectedHubspotCall = false;
         $this->mockHubspotAndAssertForChangeEvent($expectedHubspotCall);
+
+        $xsegmentMock = $this->getXSegmentMock();
+        $xsegmentMock->expects($this->exactly(1))
+            ->method('pushIdentifyandTrackEvent')->willReturn(true);
 
         $this->mockCardVault(function ()
         {
@@ -3039,6 +3058,10 @@ class BankingAccountTest extends TestCase
             ];
         });
 
+        $xsegmentMock = $this->getXSegmentMock();
+        $xsegmentMock->expects($this->exactly(0))
+            ->method('pushIdentifyandTrackEvent')->willReturn(true);
+
         $errorContent = [
             'error' => [
                 'description' => '',
@@ -3101,6 +3124,10 @@ class BankingAccountTest extends TestCase
             ]
         ];
 
+        $xsegmentMock = $this->getXSegmentMock();
+        $xsegmentMock->expects($this->exactly(0))
+            ->method('pushIdentifyandTrackEvent')->willReturn(true);
+
         $mozartResponse = $this->getMozartMockedResponse(camel_case(Rbl\Action::ACCOUNT_BALANCE . '_' .
             Rbl\Status::SUCCESS));
 
@@ -3137,6 +3164,10 @@ class BankingAccountTest extends TestCase
                 'url' => '/banking_accounts/' . $bankingAccount->getPublicId() . '/activate'
             ]
         ];
+
+        $xsegmentMock = $this->getXSegmentMock();
+        $xsegmentMock->expects($this->exactly(0))
+            ->method('pushIdentifyandTrackEvent')->willReturn(true);
 
         $mozartResponse = $this->getMozartMockedResponse(camel_case(Rbl\Action::ACCOUNT_BALANCE . '_' .
             Rbl\Status::SUCCESS));
@@ -3192,6 +3223,10 @@ class BankingAccountTest extends TestCase
                 'url' => '/banking_accounts/' . $bankingAccount->getPublicId() . '/activate'
             ]
         ];
+
+        $xsegmentMock = $this->getXSegmentMock();
+        $xsegmentMock->expects($this->exactly(0))
+            ->method('pushIdentifyandTrackEvent')->willReturn(true);
 
         $this->mockCardVault(function ()
         {
@@ -3469,7 +3504,8 @@ class BankingAccountTest extends TestCase
                                                               array $bankingAccount = null,
                                                               string $merchantId = '10000000000000',
                                                               string $expectedStatus = null,
-                                                              string $expectedSubStatus = null
+                                                              string $expectedSubStatus = null,
+                                                              bool $expectException = false
     )
     {
         Mail::fake();
@@ -3519,6 +3555,13 @@ class BankingAccountTest extends TestCase
             $dataToReplace['response']['content'][RZP\Models\BankingAccount\Entity::BANK_INTERNAL_STATUS] = $finalBankStatus;
         }
 
+        $xsegmentMock = $this->getXSegmentMock();
+        if ($finalBankStatus === null)
+        {
+            $xsegmentMock->expects($this->exactly($expectException ? 0 : 1))
+                ->method('pushIdentifyandTrackEvent')->willReturn(true);
+        }
+
         $this->ba->adminAuth();
 
         $this->fixtures->edit('banking_account',
@@ -3565,6 +3608,9 @@ class BankingAccountTest extends TestCase
         }
 
         $this->startTest($dataToReplace);
+
+        // reset mock
+        $xsegmentMock->expects($this->any())->method('pushIdentifyandTrackEvent')->willReturn(true);;
 
         $updatedBankingAccount = $this->getDbEntityById('banking_account', $bankingAccount['id']);
 
@@ -3839,7 +3885,15 @@ class BankingAccountTest extends TestCase
             Status::INITIATED,
             Status::PROCESSING,
             null,
-            Status::MERCHANT_NOT_AVAILABLE);
+            Status::MERCHANT_NOT_AVAILABLE,
+            null,
+            null,
+            null,
+            '10000000000000',
+            null,
+            null,
+            true
+        );
     }
 
     public function testUpdateBankingAccountStatusWithBlockedSubstatusMapping()
@@ -3849,7 +3903,16 @@ class BankingAccountTest extends TestCase
         $this->assertUpdateBankingAccountStatusFromTo(
             Status::PICKED,
             Status::ARCHIVED,
-            Status::READY_TO_SEND_TO_BANK);
+            Status::READY_TO_SEND_TO_BANK,
+            null,
+            null,
+            null,
+            null,
+            '10000000000000',
+            null,
+            null,
+            true
+        );
     }
 
     public function testUpdateBankingAccountStatusWithNoneSubStatus()
@@ -3901,7 +3964,11 @@ class BankingAccountTest extends TestCase
             "",
             "",
             $ba,
-            $bankingAccount->getMerchantId());
+            $bankingAccount->getMerchantId(),
+            null,
+            null,
+            true
+        );
     }
 
     public function testUpdateBankingAccountSubStatusFromDocketInitiatedToDdInProgress()
@@ -4415,7 +4482,11 @@ class BankingAccountTest extends TestCase
             "",
             "",
             $ba,
-            $bankingAccount->getMerchantId());
+            $bankingAccount->getMerchantId(),
+            null,
+            null,
+            true
+        );
     }
 
     public function testUpdateBankingAccountSubStatusFromDwtRequiredToDwtCompleted()
@@ -6234,7 +6305,13 @@ class BankingAccountTest extends TestCase
             null,
             Status::MERCHANT_NOT_AVAILABLE,
             null,
-            Rbl\Status::MERCHANT_PREPARING_DOCS);
+            Rbl\Status::MERCHANT_PREPARING_DOCS,
+            null,
+            '10000000000000',
+            null,
+            null,
+            true
+        );
     }
 
     public function testCombinationsOfBankStatusUpdate()
@@ -6264,6 +6341,7 @@ class BankingAccountTest extends TestCase
                 foreach ($bankStatuslist as $bankStatus)
                 {
                     sleep(1);
+
                     $this->assertUpdateBankingAccountStatusFromTo(
                         $status,
                         $status,
@@ -13227,5 +13305,15 @@ class BankingAccountTest extends TestCase
         ]);
 
         return [$balance, $bankingAccount, $masterDirectBankingAccount];
+    }
+
+    private function getXSegmentMock()
+    {
+        $xsegmentMock = $this->getMockBuilder(XSegmentClient::class)
+            ->setMethods(['pushIdentifyandTrackEvent'])
+            ->getMock();
+        $this->app->instance('x-segment', $xsegmentMock);
+
+        return $xsegmentMock;
     }
 }

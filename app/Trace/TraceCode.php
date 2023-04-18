@@ -9470,6 +9470,10 @@ const EMANDATE_TOKEN_VALIDATION_ERROR                       = 'EMANDATE_TOKEN_VA
     const WHITELISTED_MERCHANT_ADMIN_INVALID_TOKEN                  = 'WHITELISTED_MERCHANT_ADMIN_INVALID_TOKEN';
     const WHITELISTED_MERCHANT_ADMIN_PASSWORD_RESET_TOKEN_GENERATE  = 'WHITELISTED_MERCHANT_ADMIN_PASSWORD_RESET_TOKEN_GENERATE';
 
+    const BAS_SEND_NOTIFICATION_FAILED                  = 'BAS_SEND_NOTIFICATION_FAILED';
+
+    const X_CURRENT_ACCOUNT_SEGMENT_PUSH_FAILED         = 'X_CURRENT_ACCOUNT_SEGMENT_PUSH_FAILED';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

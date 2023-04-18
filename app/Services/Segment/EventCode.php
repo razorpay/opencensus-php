@@ -20,7 +20,7 @@ class EventCode
     const ACTIVATION_STATUS_CHANGE = "Activation Status changed";
     const SUBMERCHANT_ACTIVATED = "Submerchant Activated";
 
-    const BANKING_ACCOUNT_STATUS_CHANGE = "Banking Account Status Change";
+    const X_BANKING_ACCOUNT_STATUS_CHANGE_V2 = "X Banking Account Status Change V2";
     const BANKING_ACCOUNT_DOCUMENT_VERIFICATION_STATUS = "Banking Account Document Verification Status";
 
     const DEDUPE                    = 'Dedupe';
