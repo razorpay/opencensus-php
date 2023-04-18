@@ -6,6 +6,7 @@ import { FlexBetween, CardWrapper, CardFooterIcon, TextFooter } from './styledUt
 import moment from 'moment/moment';
 import { BADGE_INFO, HEADING_INFO } from './utils';
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
+import { currencySymbols } from 'common/utils/rzp-utils';
 
 const UpcomingSettlementCard = ({
   next_settlement,
@@ -20,6 +21,7 @@ const UpcomingSettlementCard = ({
   const isOnTemporaryHold = settlementConfig?.data?.config?.features?.hold?.status;
   const isOnHold = no_settlement?.on_hold;
   const noExecutions = !next_settlement?.next_settlement_time;
+  const currencySym = currencySymbols[currency];
 
   const showBlockedBadge =
     isBlock || isOnHold || isOnTemporaryHold || (noExecutions && balance > 0);
@@ -66,7 +68,7 @@ const UpcomingSettlementCard = ({
   if (next_settlement?.next_settlement_time && next_settlement?.settlement_amount < 100) {
     footer = (
       <TextFooter>
-        <span>Amount more than ₹1 is settled </span>
+        <span>Amount more than {currencySym}1 is settled </span>
       </TextFooter>
     );
   }

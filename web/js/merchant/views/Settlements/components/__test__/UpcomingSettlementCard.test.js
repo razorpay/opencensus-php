@@ -64,7 +64,9 @@ describe('UpcomingSettlementCard', () => {
       settlement_amount: 99,
       next_settlement_time: moment().add(3, 'hours').format('X'),
     };
-    render(<App current_balance={current_balance} next_settlement={next_settlement} />);
+    render(
+      <App current_balance={current_balance} next_settlement={next_settlement} currency="INR" />,
+    );
     expect(screen.getByText('Upcoming settlement')).toBeInTheDocument();
     expect(screen.getByText(HEADING_INFO.UPCOMING_SETTLEMENT)).toBeInTheDocument();
     expect(screen.getByText('.99')).toBeInTheDocument();
