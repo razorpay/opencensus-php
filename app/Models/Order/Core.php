@@ -418,7 +418,9 @@ class Core extends Base\Core
             Entity::FIRST_PAYMENT_MIN_AMOUNT => $order->getFirstPaymentMinAmount(),
         ];
 
-        if($merchant->isFeatureEnabled(Constants::ONE_CLICK_CHECKOUT) === true)
+        $isForNocodeApps = ProductType::IsForNocodeApps($order->getProductType());
+
+        if($merchant->isFeatureEnabled(Constants::ONE_CLICK_CHECKOUT) === true || $isForNocodeApps)
         {
             foreach ($order->orderMetas as $orderMeta)
             {
@@ -428,6 +430,11 @@ class Core extends Base\Core
                 $data[OrderMeta\Order1cc\Fields::LINE_ITEMS_TOTAL] = $orderMeta->getValue()[OrderMeta\Order1cc\Fields::LINE_ITEMS_TOTAL];
                 $data[OrderMeta\Order1cc\Fields::LINE_ITEMS]       = $orderMeta->getValue()[OrderMeta\Order1cc\Fields::LINE_ITEMS] ?? [];
                 break;
+            }
+
+            if ($isForNocodeApps)
+            {
+                $data[Entity::PRODUCT_TYPE] = $order->getProductType();
             }
         }
 

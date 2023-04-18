@@ -467,4 +467,31 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID,
         ],
     ],
+
+    'testUpdateNocodeAppsCustomerDetailsFor1CCOrder'           => [
+        'request'  => [
+            'convertContentToString' => false,
+            'method'                 => 'PATCH',
+            'content'                => [
+                'customer_details' => [
+                    'contact'          => '+9191111111111',
+                    'shipping_address' => [
+                        'type'    => 'shipping_address',
+                        'line1'   => 'line123',
+                        'zipcode' => '110085',
+                        'city'    => 'Delhi',
+                        'state'   => 'Delhi',
+                        'country' => 'in',
+                    ],
+                    'device'    => [
+                        'id' => '1.f66e640403baead0c2718eb27aebe580de325842.1643739530086.12345678',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [],
+        ],
+    ],
 ];

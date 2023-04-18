@@ -5,6 +5,7 @@ namespace Functional\Merchant;
 use Mockery;
 use RZP\Error\ErrorCode;
 use RZP\Services\PincodeSearch;
+use RZP\Models\Order\ProductType;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\BadRequestException;
 use Illuminate\Database\Eloquent\Factory;
@@ -118,4 +119,30 @@ class ShippingInfoTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetShippingInfoForNocodeAppsFeatureNotEnabled()
+    {
+        $this->ba->publicAuth();
+        $order = $this->fixtures->order->create([
+            'receipt'       => 'receipt',
+            'product_type'  => ProductType::PAYMENT_STORE
+        ]);
+        $this->fixtures->create('order_meta',
+            [
+                'order_id' => $order->getId(),
+                'value'    => ['line_items_total' => $order->getAmount()],
+                'type'     => 'one_click_checkout',
+            ]);
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+        $this->fixtures->create(
+            'merchant_1cc_configs',
+            [
+                'merchant_id' => '10000000000000',
+                'config'      => 'shipping_info_url',
+                'value'       => 'fake.url',
+            ]
+        );
+        $this->runRequestResponseFlow($testData);
+    }
 }

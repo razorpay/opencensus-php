@@ -33,4 +33,9 @@ class ProductType
                 'Not a valid product type: ' . $type);
         }
     }
+
+    public static function IsForNocodeApps($productType): bool
+    {
+        return $productType === self::PAYMENT_STORE;
+    }
 }

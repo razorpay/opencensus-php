@@ -225,14 +225,19 @@ class Core extends Base\Core
      */
     public function validateActive1CCOrderId(string $orderId)
     {
-        if ($this->merchant->isFeatureEnabled(FeatureConstants::ONE_CLICK_CHECKOUT) === false)
-        {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_NON_1CC_MERCHANT);
-        }
-
         $order = $this->repo
             ->order
             ->findByPublicIdAndMerchant($orderId, $this->merchant);
+
+        /**
+         * For payment_store product, by defauly we want magic checkout to be used
+         * explicitly setting feature flag for each merchant is not scalable,
+         * hence we added additional checks for payment_store product specifically.
+         */
+        if ($this->merchant->isFeatureEnabled(FeatureConstants::ONE_CLICK_CHECKOUT) === false && ! Order\ProductType::IsForNocodeApps($order->product_type) )
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_NON_1CC_MERCHANT);
+        }
 
         if ($order->isPaid() === true)
         {

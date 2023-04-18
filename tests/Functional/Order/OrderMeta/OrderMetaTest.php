@@ -377,6 +377,40 @@ class OrderMetaTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testUpdateNocodeAppsCustomerDetailsFor1CCOrder()
+    {
+        $order = $this->fixtures->order->create([
+            'receipt'       => 'receipt',
+            'product_type'  => Order\ProductType::PAYMENT_STORE
+        ]);
+        $orderId = $order->getPublicId();
+        $this->fixtures->create('order_meta',
+            [
+                'order_id' => $order->getId(),
+                'value'    => ['line_items_total' => $order->getAmount()],
+                'type'     => 'one_click_checkout',
+            ]);
+
+
+        $this->ba->publicAuth();
+        $url = "/orders/1cc/$orderId/customer/";
+
+        $cacheKey = "SHIPPING_INFO_10000000000000_"
+            . $orderId
+            . "_1000_110085_Delhi_in";
+
+        $this->app['cache']->put($cacheKey, [
+            "serviceable"  => true,
+            "cod"          => false,
+            "cod_fee"      => 0,
+            "shipping_fee" => 0,
+        ],2400);
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = $url;
+        $this->runRequestResponseFlow($testData);
+    }
+
     public function testUpdateCustomerDetailsFor1CCOrderForNonServiceableAddress()
     {
         self::setUp1CCMerchant();
@@ -513,11 +547,11 @@ class OrderMetaTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
-    protected function create1CCOrder()
+    protected function create1CCOrder($overrideInput=[])
     {
         $this->ba->privateAuth();
         $payload = self::get1CCOrderCreatePayload();
-        $order = $this->startOrderMetaFlow($payload);
+        $order = $this->startOrderMetaFlow($payload, $overrideInput);
         return $order['id'];
     }
 
@@ -536,9 +570,11 @@ class OrderMetaTest extends TestCase
         ];
     }
 
-    protected function startOrderMetaFlow(array $payload)
+    protected function startOrderMetaFlow(array $payload, $overrideInput=[])
     {
         $this->ba->privateAuth();
+
+        $payload = array_merge($payload, $overrideInput);
 
         $request = [
             'content' => $payload,

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\ShippingInfo;
 
+use RZP\Models\Order\Entity;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator;
 use RZP\Models\Merchant\OneClickCheckout\ShippingMethodProvider\FeeRule;
@@ -54,6 +55,18 @@ class Service extends Base\Service
     {
         if($this->merchant === null or $this->merchant->isFeatureEnabled(FeatureConstants::ONE_CLICK_CHECKOUT) === false)
         {
+            /**
+             * For payment_store product, by defauly we want magic checkout to be used
+             * explicitly setting feature flag for each merchant is not scalable,
+             * hence we added additional checks for payment_store product specifically.
+             */
+            $forNocodeApps = $this->getNocodeAppsResponseIfApplicable($input);
+
+            if (empty($forNocodeApps) === false)
+            {
+                return $forNocodeApps;
+            }
+
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
         }
 
@@ -86,6 +99,22 @@ class Service extends Base\Service
             $orderId = $input['order_id'];
 
             $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
+
+            /**
+             * For payment_store product, by defauly we want magic checkout to be used
+             * payment page merchants can also use payment_store product, which means
+             * merchants may already have the feature flag enabled. In such cases we want
+             * the behaviour to be the same, hence we added additional checks for nocodeapps specifically.
+             */
+            if (ProductType::IsForNocodeApps($order->product_type))
+            {
+                $nocodeResp = $this->getNocodeAppsResponseFor1ccOrder($order, $input);
+
+                if (empty($nocodeResp) === false)
+                {
+                    return $nocodeResp;
+                }
+            }
 
             $orderMeta = array_first($order->orderMetas ?? [], function ($orderMeta)
             {
@@ -943,4 +972,85 @@ class Service extends Base\Service
         return $this->getPincodeAndState($address);
     }
 
+    /**
+     * @param array $input
+     *
+     * @return array|null
+     * @throws \RZP\Exception\BadRequestException
+     * @throws \RZP\Exception\BadRequestValidationFailureException
+     * @throws \Throwable
+     */
+    private function getNocodeAppsResponseIfApplicable(array $input): null | array
+    {
+        if (empty($this->merchant) === true)
+        {
+            return null;
+        }
+
+        if(!isset($input[self::SHIPPING_INFO_ADDRESSES]) || !isset($input['order_id']))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_SERVICEABILITY_INVALID_INPUT
+            );
+        }
+
+        $orderId = $input['order_id'];
+        /**
+         * @var $order Entity
+         */
+        $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
+
+        return $this->getNocodeAppsResponseFor1ccOrder($order, $input);
+    }
+
+    /**
+     * @param \RZP\Models\Order\Entity $order
+     * @param array                    $input
+     *
+     * @return array[]|null
+     * @throws \RZP\Exception\BadRequestException
+     */
+    private function getNocodeAppsResponseFor1ccOrder(Entity $order, array $input)
+    {
+        $orderMeta = array_first($order->orderMetas ?? [], function ($orderMeta)
+        {
+            return $orderMeta->getType() === \RZP\Models\Order\OrderMeta\Type::ONE_CLICK_CHECKOUT;
+        });
+
+        if($orderMeta === null)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_1CC_ORDER);
+        }
+
+        $productType = $order->getProductType();
+
+        if (ProductType::IsForNocodeApps($productType) === false)
+        {
+            return null;
+        }
+
+        $addresses = $input[self::SHIPPING_INFO_ADDRESSES];
+
+        if (count($addresses) !== 1)
+        {
+            throw  new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_SERVICEABILITY_INVALID_INPUT
+            );
+        }
+
+        $address = $addresses[0];
+
+        (new Validator())->setStrictFalse()->validateInput("shippingInfoRequest", $address);
+
+        (new Validator())->validateStateCode($address);
+
+        $address = $this->getCountryAndStateBasedOnZipcode($address);
+
+        $address[Fields::SHIPPING_FEE] = 0;
+        $address[self::SERVICEABLE] = true;
+        $address[self::COD] = false;
+        $address[Fields::COD_FEE] = 0;
+
+        return [self::SHIPPING_INFO_ADDRESSES => [$address]];
+    }
 }
