@@ -273,7 +273,7 @@ class Service extends Base\Service
 
         $this->updateShippingInfoConfig($shippingProvider);
 
-        if ( $input['platform'] === Constants::SHOPIFY && (isset($input[Type::ONE_CLICK_CHECKOUT]) || isset($input[Type::ONE_CC_BUY_NOW_BUTTON]))) {
+        if ( $input['platform'] === Constants::SHOPIFY && (isset($input[Type::ONE_CLICK_CHECKOUT]))) {
 
             $configOneClickCheckout = $this->merchant->get1ccConfig(Type::ONE_CLICK_CHECKOUT);
             $oneClickCheckoutValue = ($configOneClickCheckout !== null && $configOneClickCheckout->getValue() === "1") ? Constants::TRUE : Constants::FALSE;
@@ -285,16 +285,19 @@ class Service extends Base\Service
                     'MAGIC_CHECKOUT_VALUE' => $oneClickCheckoutValue
                 ]);
 
-            $configBuyNow = $this->merchant->get1ccConfig(Type::ONE_CC_BUY_NOW_BUTTON);
-            $buyNowValue = ($configBuyNow !== null && $configBuyNow->getValue() === "1") ? Constants::TRUE : Constants::FALSE;
-            $buyNowValue = $oneClickCheckoutValue === Constants::FALSE ? $oneClickCheckoutValue : $buyNowValue;
-            (new Merchant\OneClickCheckout\Shopify\Service())->controlMagicCheckout(Constants::BUY_NOW_ENABLED, $buyNowValue);
-            $this->trace->info(
-                TraceCode::BUY_NOW_BUTTON_ENABLED_OR_DISABLED,
-                [
-                    'merchant_id' => $this->merchant->getId(),
-                    'BUY_NOW_ENABLED/DISABLED' => $buyNowValue
-                ]);
+            if(isset($input[Type::ONE_CC_BUY_NOW_BUTTON]))
+            {
+                $configBuyNow = $this->merchant->get1ccConfig(Type::ONE_CC_BUY_NOW_BUTTON);
+                $buyNowValue = ($configBuyNow !== null && $configBuyNow->getValue() === "1") ? Constants::TRUE : Constants::FALSE;
+                $buyNowValue = $oneClickCheckoutValue === Constants::FALSE ? $oneClickCheckoutValue : $buyNowValue;
+                (new Merchant\OneClickCheckout\Shopify\Service())->controlMagicCheckout(Constants::BUY_NOW_ENABLED, $buyNowValue);
+                $this->trace->info(
+                    TraceCode::BUY_NOW_BUTTON_ENABLED_OR_DISABLED,
+                    [
+                        'merchant_id' => $this->merchant->getId(),
+                        'BUY_NOW_ENABLED/DISABLED' => $buyNowValue
+                    ]);
+            }
         }
     }
 
