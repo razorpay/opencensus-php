@@ -197,6 +197,10 @@ class Validator extends Base\Validator
         Entity::NOTES       => 'sometimes|notes',
     ];
 
+    protected static $validateSendNotificationToAllRecordsRules = [
+      'notify_on' => 'required|array|min:1|max:2',
+    ];
+
     protected static $createValidators = [
         Entity::SETTINGS,
         Entity::PAYMENT_PAGE_ITEMS,
@@ -643,7 +647,7 @@ class Validator extends Base\Validator
             if (isset($settings[Entity::UDF_SCHEMA])) {
 
                 $udf_schema = json_decode($settings[Entity::UDF_SCHEMA], true);
- 
+
                 if (($udf_schema !== null) and (in_array(Entity::PAYER_NAME, array_column($udf_schema, 'name')) === false))
                 {
                     throw new BadRequestValidationFailureException(

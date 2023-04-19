@@ -171,20 +171,33 @@ class Service extends Base\Service
         });
     }
 
-    public function sendNotificationToAllRecords(string $id)
+    /**
+     * @throws BadRequestValidationFailureException
+     */
+    public function sendNotificationToAllRecords(string $id, array $input)
     {
+
+        (new Validator)->validateInput('validateSendNotificationToAllRecords', $input);
+
         $records = $this->repo->payment_page_record->findByPaymentPageIdorFail($id);
 
-        $input['contacts'] = array_unique(array_column($records, PaymentPageRecord\Entity::CONTACT));
+        if(in_array('sms',$input['notify_on']) === true)
+        {
+            $notifyInput['contacts'] = array_unique(array_column($records, PaymentPageRecord\Entity::CONTACT));
+        }
 
-        $input['emails'] = array_unique(array_column($records, PaymentPageRecord\Entity::EMAIL));
+        if(in_array('email',$input['notify_on']) === true)
+        {
+            $notifyInput['emails'] = array_unique(array_column($records, PaymentPageRecord\Entity::EMAIL));
+        }
 
-        if(count($input['contacts']) === 0 and count($input['emails']) === 0)
+        if((isset($notifyInput['contacts']) === false)
+            and isset($notifyInput['emails']) === false)
         {
             throw  new BadRequestValidationFailureException('Either email or contact should be present');
         }
 
-        $this->sendNotification($id,$input);
+        $this->sendNotification($id,$notifyInput);
     }
 
     public function expirePaymentLinks(): array

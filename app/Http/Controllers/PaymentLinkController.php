@@ -63,7 +63,7 @@ class PaymentLinkController extends Controller
 
     public function sendNotificationToAllRecords(string $id)
     {
-        $this->service()->sendNotificationToAllRecords($id);
+        $this->service()->sendNotificationToAllRecords($id, $this->input);
 
         return ApiResponse::json([]);
     }

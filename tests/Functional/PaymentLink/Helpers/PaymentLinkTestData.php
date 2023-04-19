@@ -1152,7 +1152,41 @@ return [
         'request' => [
             'url' => '/payment_pages/pl_100000000000pl/fetch_notify_details',
             'method' => 'post',
-            'content' => [],
+            'content' => [
+                'notify_on' => [
+                    'email'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testPaymentLinkSendNotificationForAllRecordsEmail' => [
+        'request' => [
+            'url' => '/payment_pages/pl_100000000000pl/fetch_notify_details',
+            'method' => 'post',
+            'content' => [
+                'notify_on' => [
+                    'email'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testPaymentLinkSendNotificationForAllRecordsSms' => [
+        'request' => [
+            'url' => '/payment_pages/pl_100000000000pl/fetch_notify_details',
+            'method' => 'post',
+            'content' => [
+                'notify_on' => [
+                    'sms'
+                ]
+            ],
         ],
         'response' => [
             'content' => []
@@ -1163,13 +1197,38 @@ return [
         'request' => [
             'url' => '/payment_pages/pl_100000000000pl/fetch_notify_details',
             'method' => 'post',
-            'content' => [],
+            'content' => [
+                'notify_on' => [
+                    'random'
+                ]
+            ],
         ],
         'response' => [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Either email or contact should be present',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testPaymentLinkSendNotificationForAllRecordsValidationFailure' => [
+        'request' => [
+            'url' => '/payment_pages/pl_100000000000pl/fetch_notify_details',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The notify on field is required.',
                 ],
             ],
             'status_code' => 400,

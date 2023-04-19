@@ -4,6 +4,7 @@ namespace RZP\Models\PaymentLink\PaymentPageRecord;
 
 use RZP\Models\Base;
 use RZP\Models\PaymentLink\Entity as PaymentLink;
+use RZP\Models\PaymentLink\PaymentPageRecord\Status as STATUS;
 
 class Repository extends Base\Repository
 {

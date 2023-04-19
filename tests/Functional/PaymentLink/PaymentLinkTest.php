@@ -1043,6 +1043,19 @@ class PaymentLinkTest extends TestCase
     }
 
 
+    public function testPaymentLinkSendNotificationForAllRecordsEmail()
+    {
+        $this->createPaymentLinkWithMultipleItem();
+
+        $res = $this->createPaymentPageRecords();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/pl_'. $res . '/fetch_notify_details';
+
+        $this->ba->proxyAuth();
+
+        $this->startTest($this->testData[__FUNCTION__]);
+    }
+
     public function testPaymentLinkSendNotificationForAllRecords()
     {
         $this->createPaymentLinkWithMultipleItem();
@@ -1056,7 +1069,31 @@ class PaymentLinkTest extends TestCase
         $this->startTest($this->testData[__FUNCTION__]);
     }
 
+    public function testPaymentLinkSendNotificationForAllRecordsSms()
+    {
+        $this->createPaymentLinkWithMultipleItem();
+
+        $res = $this->createPaymentPageRecords();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/pl_'. $res . '/fetch_notify_details';
+
+        $this->ba->proxyAuth();
+
+        $this->startTest($this->testData[__FUNCTION__]);
+    }
+
     public function testPaymentLinkSendNotificationForAllRecordsFailure()
+    {
+        $res = $this->createPaymentLinkWithMultipleItem();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/pl_'. $res['id'] . '/fetch_notify_details';
+
+        $this->ba->proxyAuth();
+
+        $this->startTest($this->testData[__FUNCTION__]);
+    }
+
+    public function testPaymentLinkSendNotificationForAllRecordsValidationFailure()
     {
         $res = $this->createPaymentLinkWithMultipleItem();
 
