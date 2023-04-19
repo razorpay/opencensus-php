@@ -3,11 +3,13 @@
 namespace RZP\Reconciliator\UpiYesBank\SubReconciliator;
 
 use RZP\Exception;
+use RZP\Models\QrCode;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Upi\Sbi\Action;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\QrPayment\Entity;
 use RZP\Models\Base\PublicEntity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\UniqueIdEntity;
@@ -74,6 +76,20 @@ class PaymentReconciliate extends Upi\UpiPaymentServiceReconciliate
                 ]);
 
             return null;
+        }
+
+        if ($this->isQrCodePayment($row) === true)
+        {
+            $referenceNumber = $this->getReferenceNumber($row);
+
+            $this->trace->info(
+                TraceCode::RECON_QR_TRANSACTION_RECEIVED,
+                [
+                    'payment_reference_id' => $referenceNumber,
+                    'payment_id'           => $paymentId,
+                    'gateway'              => $this->gateway,
+                    'batch_id'             => $this->batchId
+                ]);
         }
 
         return $this->getPaymentIdFromUpi($row);
@@ -325,6 +341,16 @@ class PaymentReconciliate extends Upi\UpiPaymentServiceReconciliate
 
         return $paymentId;
 
+    }
+
+    protected function isQrCodePayment(array $row)
+    {
+        $orderNo = trim($row[self::ORDER_NUMBER]);
+
+        $suffixLength = strlen(QrCode\Constants::QR_CODE_V2_TR_SUFFIX);
+
+        return ((strlen($orderNo) >= ($suffixLength + QrCode\Entity::ID_LENGTH)) and
+                (str_ends_with($orderNo, QrCode\Constants::QR_CODE_V2_TR_SUFFIX)));
     }
 
     protected function getUpiAuthorizePaymentId(string $paymentId, array $row)

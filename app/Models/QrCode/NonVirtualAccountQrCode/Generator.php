@@ -87,15 +87,26 @@ class Generator extends QrCode\Generator
 
             if ($terminal !== null)
             {
+                $this->trace->info(TraceCode::QR_CODE_CREATE_TERMINAL, [
+                    'gateway'     => $terminal->getGateway(),
+                    'terminal_id' => $terminal->getId(),
+                    'id'          => $qrCode->getId()
+                ]);
+
                 switch ($terminal->getGateway())
                 {
                     case Gateway::UPI_YESBANK:
                     {
-                        $this->terminalId = $terminal->getId();
-
                         $vpa = $terminal->getVpa();
 
-                        return $vpa ?? throw new InvalidArgumentException('VPA is required for generating QR');
+                        if ((empty($vpa) === true) or ($vpa === null))
+                        {
+                            throw new InvalidArgumentException('VPA is required for generating QR');
+                        }
+
+                        $this->terminalId = $terminal->getId();
+
+                        return $vpa;
                     }
 
                     default:
