@@ -986,7 +986,8 @@ class Core extends Base\Core
             return false;
         }
 
-        if ($invoice->getYear() <= 2022) {
+        if ($invoice->getYear() <= 2022)
+        {
             return false;
         }
         if (!$this->isPartnerInvoiceAutoApprovalExpEnabled($partner->getId(), $invoice->getYear()))
@@ -1005,11 +1006,20 @@ class Core extends Base\Core
         $merchant = $invoice->merchant;
         $merchantDetail = $merchant->merchantDetail;
 
-        if ($merchantDetail === null or !empty($merchantDetail->getGstin())) // GSTIN available then auto approval not applicable
+        if ($merchantDetail === null or $this->checkPartnerActivationStatus($partner, $merchantDetail) === false)
         {
             return false;
         }
-        return $this->checkPartnerActivationStatus($partner, $merchantDetail);
+
+        // If partner is reseller auto approval is enabled even if GSTIN is available
+        // For partner types other than reseller if GSTIN is available then auto approval not applicable
+        if (empty($merchantDetail->getGstin()) === false)
+        {
+            $isPartnerEligible =  in_array($merchant->getPartnerType(), Constants::GSTIN_AUTO_APPROVAL_ENABLED_PARTNER_TYPES);
+            $isInvoiceEligible = $invoice->getMonth() > 4 and $invoice->getYear() > 2022;
+            return $isPartnerEligible && $isInvoiceEligible;
+        }
+        return true;
     }
 
     private function checkPartnerActivationStatus(Merchant\Entity $partner, Merchant\Detail\Entity $merchantDetail): bool

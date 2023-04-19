@@ -82,7 +82,7 @@ class Service extends Base
                 $value = DataFormatter::marshal($request, DataFormatter::convertDCSKeyToClassName(DataFormatter::convertKeyStringToDCSKey($key)));
 
                     // TODO change it to what ever client it is base on mode
-                $res = $this->client($mode)->patch($data, $entity->getEntityId(), $value, [$actualDcsFeatureName], self::getDefaultAuditInfo());
+                $res = $this->client($mode)->patch($data, $entity->getEntityId(), $value, [$actualDcsFeatureName], $this->getAuditInfo());
                 $this->trace->info(TraceCode::DCS_SERVICE_SUCCESSFUL_RESPONSE, [
                     'action' => 'assign',
                     'responseEntityId' => $entity->getEntityId(),
@@ -518,11 +518,21 @@ class Service extends Base
        return $svc->handleResponse($res);
     }
 
-    private static function getDefaultAuditInfo()
+    protected function getAuditInfo()
     {
-        $request[SDKConstants::CHANGE_BY] = 'api@razorpay.com';
-        $request[SDKConstants::CHANGE_REASON] = 'api proxy request';
-        $request[SDKConstants::CHANGE_APPROVED_BY] = 'api@razorpay.com';
+        if($this->auth->isAdminAuth() === true)
+        {
+             $request[SDKConstants::CHANGE_BY] = $this->auth->getAdmin()->getEmail();
+             $request[SDKConstants::CHANGE_APPROVED_BY] = $this->auth->getAdmin()->getEmail();
+             $request[SDKConstants::CHANGE_REASON] = 'added from admin dashboard';
+        }
+        else
+        {
+            $request[SDKConstants::CHANGE_BY] = 'api@razorpay.com';
+            $request[SDKConstants::CHANGE_REASON] = 'api proxy request';
+            $request[SDKConstants::CHANGE_APPROVED_BY] = 'api@razorpay.com';
+        }
+
         return $request;
     }
 }

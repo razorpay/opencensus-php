@@ -133,8 +133,8 @@ class Service extends FeaturesService
         $value = DataFormatter::marshal($request, DataFormatter::convertDCSKeyToClassName(DataFormatter::convertKeyStringToDCSKey($dcsKey)));
         
         // TODO change it to what ever client it is base on mode
-        $res = $this->client($mode)->put($data, $entityId, $value, self::getDefaultAuditInfo());
-        
+        $res = $this->client($mode)->put($data, $entityId, $value, $this->getAuditInfo());
+
         $this->trace->info(TraceCode::DCS_CREATE_SERVICE_CONFIG_RESPONSE, [
             'action'    => 'create_configuration',
             'response'  => $res,
@@ -164,7 +164,7 @@ class Service extends FeaturesService
         $value = DataFormatter::marshal($request, DataFormatter::convertDCSKeyToClassName(DataFormatter::convertKeyStringToDCSKey($dcsKey)));
 
         // TODO change it to what ever client it is base on mode
-        $res = $this->client($mode)->patch($data, $entityId, $value, $modifiedFields, self::getDefaultAuditInfo());
+        $res = $this->client($mode)->patch($data, $entityId, $value, $modifiedFields, $this->getAuditInfo());
 
         $this->trace->info(TraceCode::DCS_EDIT_SERVICE_CONFIG_RESPONSE, [
             'action'    => 'edit_configuration',
@@ -174,11 +174,4 @@ class Service extends FeaturesService
         ]);
     }
 
-    private static function getDefaultAuditInfo()
-    {
-        $request[SDKConstants::CHANGE_BY] = 'api@razorpay.com';
-        $request[SDKConstants::CHANGE_REASON] = 'api proxy request';
-        $request[SDKConstants::CHANGE_APPROVED_BY] = 'api@razorpay.com';
-        return $request;
-    }
 }

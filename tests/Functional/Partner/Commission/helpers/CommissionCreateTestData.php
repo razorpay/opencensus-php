@@ -141,6 +141,10 @@ return [
 
     'testInvoiceCreateAutoApprovalFailedGSTINPresent' => $autoApprovalCaptureRequestResponse,
 
+    'testInvoiceCreateAutoApprovalWithGSTINPresentResellerFailed' => $autoApprovalCaptureRequestResponse,
+
+    'testInvoiceCreateAutoApprovalWithGSTINPresentResellerSuccess' => $autoApprovalCaptureRequestResponse,
+
     'testInvoiceCreateAutoApprovalFailedResellerKYCNotApproved' => $autoApprovalCaptureRequestResponse,
 
     'testInvoiceCreateAutoApprovalSuccessForNonReseller' => $autoApprovalCaptureRequestResponse,
