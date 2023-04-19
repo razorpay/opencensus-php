@@ -76,7 +76,7 @@ const GraphWidget = (props) => {
 
     if (!lastUpdatedAt || diffInSec >= 300) {
       if (tab.name === 'Card') {
-        setGroupTypeFilter(DEFAULT_GROUP_BY[activeTab]);
+        setGroupTypeFilter(DEFAULT_GROUP_BY[tab.name]);
         setCardTypeFilter(INITIAL_SELECTED_CARD_TYPE);
       }
 

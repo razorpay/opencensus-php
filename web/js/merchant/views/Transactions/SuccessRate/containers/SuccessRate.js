@@ -11,7 +11,11 @@ import GraphWidget from './GraphWidget';
 import VolumePieWidget from './VolumePieWidget';
 import FailureReasonsWidget from './FailureReasonsWidget';
 
-import { fetchSuccessRate, fetchMerchantErrors } from 'merchant/reducers/successRate';
+import {
+  fetchSuccessRate,
+  fetchMerchantErrors,
+  resetSRDashboard,
+} from 'merchant/reducers/successRate';
 import {
   queryFilters,
   getMerchantErrorsPayload,
@@ -24,7 +28,7 @@ import {
 } from 'merchant/views/Transactions/SuccessRate/trackEvents';
 
 const SuccessRate = (props) => {
-  const { activeTab, tabs, fetchSuccessRate, fetchMerchantErrors } = props;
+  const { activeTab, tabs, fetchSuccessRate, fetchMerchantErrors, resetSRDashboard } = props;
   const { error } = tabs[activeTab];
 
   const fetchData = () => {
@@ -35,7 +39,13 @@ const SuccessRate = (props) => {
     fetchMerchantErrors(errorsPaylod);
   };
 
-  useEffect(() => fetchData(), []);
+  useEffect(() => {
+    fetchData();
+
+    return () => {
+      resetSRDashboard();
+    };
+  }, []);
 
   return (
     <div className="sr-dashboard">
@@ -74,7 +84,14 @@ const mapStateToProps = ({ successRate }) => {
 };
 
 const mapDispatchToProps = (dispatch) => {
-  return bindActionCreators({ fetchSuccessRate, fetchMerchantErrors }, dispatch);
+  return bindActionCreators(
+    {
+      fetchSuccessRate,
+      fetchMerchantErrors,
+      resetSRDashboard,
+    },
+    dispatch,
+  );
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(SuccessRate);

@@ -45,6 +45,7 @@ const FETCH_MERCHANT_ERRORS = 'FETCH_MERCHANT_ERRORS';
 const FETCH_INTERVALS = 'FETCH_INTERVALS';
 const SET_SELECTED_DROPDOWN_FILTER_OPTIONS = 'SET_SELECTED_DROPDOWN_FILTER_OPTIONS';
 const SET_CARD_TYPE_FILTER = 'SET_CARD_TYPE_FILTER';
+const RESET_SR_DASHBOARD = 'RESET_SR_DASHBOARD';
 
 export const fetchSuccessRate =
   ({ payload, updateDropdownOptions, resetSelectedInterval = true, refreshMetricTabs = false }) =>
@@ -292,6 +293,10 @@ export const setCardTypeFilter = (value) => {
   return { type: SET_CARD_TYPE_FILTER, payload: value };
 };
 
+export const resetSRDashboard = () => {
+  return { type: RESET_SR_DASHBOARD };
+};
+
 const getInitialState = () => {
   const state = {
     isLoading: true,
@@ -449,6 +454,11 @@ export default (state = getInitialState(), action) => {
     case SET_CARD_TYPE_FILTER: {
       const stateClone = cloneDeep(state);
       lodashset(stateClone, `tabs.${state.activeTab}.selectedCardType`, payload);
+      return stateClone;
+    }
+
+    case RESET_SR_DASHBOARD: {
+      const stateClone = getInitialState();
       return stateClone;
     }
 
