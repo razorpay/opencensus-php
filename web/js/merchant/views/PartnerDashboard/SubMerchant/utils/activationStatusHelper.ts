@@ -54,6 +54,8 @@ export const activationStatusMap = (status: string): string => {
       return 'CPV Pending';
     case CAPITAL_STATUS.in_process:
       return 'In Process';
+    case CAPITAL_STATUS.application_initiated:
+      return 'Application Initiated';
 
     default:
       return '';

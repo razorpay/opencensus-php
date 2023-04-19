@@ -283,6 +283,7 @@ export const capitalStatusMap = {
   'merchant nach pending': 'label-light-warning',
   'cpv pending': 'label-light-warning',
   'pre offer docs resubmission': 'label-light-warning',
+  'application initiated': 'label-light-warning',
   rejection: 'label-danger-light',
   'application closed': 'label-danger-light',
   'go live': 'label-success-light',

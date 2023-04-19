@@ -41,6 +41,7 @@ export const CAPITAL_STATUS = {
   lender_docs_resubmission: 'lender docs resubmission',
   cpv_pending: 'cpv pending',
   in_process: 'in process',
+  application_initiated: 'application initiated',
 };
 
 export const ORG_CUSTOM_CODE = {
