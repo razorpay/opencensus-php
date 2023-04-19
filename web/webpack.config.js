@@ -159,7 +159,11 @@ module.exports = {
           },
         ],
       });
-      config.plugins.push(new ReactRefreshWebpackPlugin());
+      config.plugins.push(
+        new ReactRefreshWebpackPlugin({
+          overlay: false,
+        }),
+      );
     }
 
     // *** config.plugins *** //

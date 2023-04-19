@@ -18,6 +18,7 @@ Your prayers are finally answered.
 
 - [1. Redirector setup](#1-redirector-setup)
 - [2. Development using HMR](#2-development-using-hmr)
+- [3. Checklist to use HMR](#3-checklist-to-use-hmr)
 
 Assuming you're ready with frontend installation.
 
@@ -25,12 +26,21 @@ Assuming you're ready with frontend installation.
 
 - Install the [Redirector Extension on Chrome](https://chrome.google.com/webstore/detail/redirector/ocgpenflpmgnfapjedencafcfakcekcd)
 
-- Add the following config in the Redirector extension.
+- You can directly import this config in your Redirector
+  
+  [Redirector.json](./assets/hmr-redirector.json)
+
+
+- Or add the following config in the Redirector extension.
   ```
     Redirect: https://dashboard.dev.razorpay.in/dist/merchant-entry.js
     to:	https://localhost:8080/public/dist/merchant-entry.js
+
+    Also, select scripts under advanced options
   ```
   ![](./assets/redirector-config.png)
+
+  - 
 
 ### 2. Development using HMR
 
@@ -55,3 +65,16 @@ Assuming you're ready with frontend installation.
 - Refresh the dashboard, merchant-entry call will be successful now. But, all the modules will fail to load due to SSL error. Open any one of those modules in a new tab and accept the invalid SSL certificate.
 
 - Refresh dashboard again and VOILAAAA, welcome to the HMR world :raised_hands:.
+
+### 3. Checklist to use HMR
+- Run yarn serve at the root (starts webpack server on port 8080)
+- Accept SSL invalid certificates by opening https://localhost:8080/public/dist/merchant-entry.js directly.
+- You can also update google chrome settings to always allow invalid certificates for resources loaded from localhost (will also add steps to generate and use a valid certificate).
+  - Open Google Chrome browser.
+  - Type chrome://flags/#allow-insecure-localhost in address bar.
+  - Click on Enable.
+  - Select “Relaunch Now” option displaying at the bottom after making the changes
+- Make sure localhost port is configured to **8080** in your redirector config.
+- You don't need to run http-server in the public folder.
+
+
