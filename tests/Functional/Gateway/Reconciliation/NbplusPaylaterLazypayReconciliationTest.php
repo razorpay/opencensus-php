@@ -46,6 +46,8 @@ class NbplusPaylaterLazypayReconciliationTest extends NbPlusPaymentServicePaylat
         $data[] = $this->testData[__FUNCTION__];
 
         $data[0]['Merchant reference number'] = $payment['id'];
+        $data[0]['Discount(MSF)amount'] = '3.75';
+        $data[0]['IGST Amount'] = '0.68';
 
         $file = $this->writeToExcelFile($data, 'lazypay_recon_file', 'files/filestore');
 
@@ -57,6 +59,8 @@ class NbplusPaylaterLazypayReconciliationTest extends NbPlusPaymentServicePaylat
 
         $this->assertNotNull($transactionEntity[Txn::RECONCILED_AT]);
         $this->assertEquals($transactionEntity[Txn::AMOUNT], $payment[Payment::AMOUNT]);
+        $this->assertEquals(4.43 * 100, $transactionEntity[Txn::GATEWAY_FEE]);
+        $this->assertEquals(0.68 * 100, $transactionEntity[Txn::GATEWAY_SERVICE_TAX]);
 
         $batch = $this->getDbLastEntityToArray('batch');
 
@@ -161,6 +165,8 @@ class NbplusPaylaterLazypayReconciliationTest extends NbPlusPaymentServicePaylat
         $data[] = $this->testData['testLazypaySuccessRecon'];
 
         $data[0]['Merchant reference number'] = $payment['id'];
+        $data[0]['Discount(MSF)amount'] = '3.75';
+        $data[0]['IGST Amount'] = '0.68';
 
         $file = $this->writeToExcelFile($data, 'lazypay_recon_file', 'files/filestore');
 
@@ -172,6 +178,8 @@ class NbplusPaylaterLazypayReconciliationTest extends NbPlusPaymentServicePaylat
 
         $this->assertNotNull($transactionEntity[Txn::RECONCILED_AT]);
         $this->assertEquals($transactionEntity[Txn::AMOUNT], $payment[Payment::AMOUNT]);
+        $this->assertEquals(4.43 * 100, $transactionEntity[Txn::GATEWAY_FEE]);
+        $this->assertEquals(0.68 * 100, $transactionEntity[Txn::GATEWAY_SERVICE_TAX]);
 
         $paymentEntity = $this->getDbEntityById('payment', $payment['public_id']);
 
@@ -217,6 +225,8 @@ class NbplusPaylaterLazypayReconciliationTest extends NbPlusPaymentServicePaylat
         $data[] = $this->testData['testLazypaySuccessRecon'];
 
         $data[0]['Merchant reference number'] = $payment['id'];
+        $data[0]['Discount(MSF)amount'] = '3.75';
+        $data[0]['IGST Amount'] = '0.68';
 
         $file = $this->writeToExcelFile($data, 'lazypay_recon_file', 'files/filestore');
 
@@ -228,6 +238,8 @@ class NbplusPaylaterLazypayReconciliationTest extends NbPlusPaymentServicePaylat
 
         $this->assertNotNull($transactionEntity[Txn::RECONCILED_AT]);
         $this->assertEquals($transactionEntity[Txn::AMOUNT], $payment[Payment::AMOUNT]);
+        $this->assertEquals(4.43 * 100, $transactionEntity[Txn::GATEWAY_FEE]);
+        $this->assertEquals(0.68 * 100, $transactionEntity[Txn::GATEWAY_SERVICE_TAX]);
 
         $paymentEntity = $this->getDbEntityById('payment', $payment['public_id']);
 

@@ -12,19 +12,6 @@ class Reconciliate extends Base\Reconciliate
         'reconciliation'      => self::PAYMENT
     ];
 
-    const TYPE_TO_COLUMN_HEADER_MAP = [
-        self::PAYMENT => self::PAYMENT_COLUMN_HEADER
-    ];
-
-    const PAYMENT_COLUMN_HEADER = [
-        'PRN',
-        'MID',
-        'ITC',
-        'BID',
-        'Amount',
-        'Date'
-    ];
-
     /**
      * Determines the type of reconciliation
      * based on the name of the file.
@@ -41,13 +28,8 @@ class Reconciliate extends Base\Reconciliate
         return self::PAYMENT;
     }
 
-    public function getColumnHeadersForType($type)
+    public function getFileType(string $mimeType): string
     {
-        return self::TYPE_TO_COLUMN_HEADER_MAP[$type];
-    }
-
-    public function getDelimiter()
-    {
-        return '|';
+        return FileProcessor::EXCEL;
     }
 }

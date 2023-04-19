@@ -15,8 +15,6 @@ class Reconciliator extends Mock\PaymentReconciliator
     {
         $this->gateway = Gateway::NETBANKING_FEDERAL;
 
-        $this->fileExtension = 'txt';
-
         $this->fileToWriteName = 'mis_report_razorpay_' . Carbon::now(Timezone::IST)->format('dmY');
 
         parent::__construct();
@@ -46,19 +44,15 @@ class Reconciliator extends Mock\PaymentReconciliator
         $netbanking = $input[0]['netbanking'];
 
         $data[] = [
-                    $payment['id'],
-                    '000003214326',
-                    strtoupper($payment['id']),
-                    $netbanking['bank_payment_id'],
-                    number_format($payment['amount'] / 100, 3, '.', ''),
-                    Carbon::createFromTimestamp($payment['created_at'], Timezone::IST)->format('d/m/Y'),
+            'agg_reference_id' => $payment['id'],
+            'atdr' => 7,
+            'gst' => 1.26,
+            'txn_date' => Carbon::createFromTimestamp($payment['created_at'], Timezone::IST)->format('d/m/Y'),
         ];
 
         $this->content($data);
 
-        $formattedData = $this->generateText($data, '|');
-
-        return $formattedData;
+        return $data;
     }
 
     protected function createFile(

@@ -3,6 +3,7 @@
 namespace RZP\Reconciliator\PaylaterLazypay\SubReconciliator;
 
 use RZP\Reconciliator\Base;
+use RZP\Reconciliator\Base\SubReconciliator\Helper;
 use RZP\Reconciliator\PaylaterLazypay\Reconciliate;
 
 class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceRecon
@@ -43,5 +44,43 @@ class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceReco
                 'reference1' => $this->getReferenceNumber($row),
             ]
         ];
+    }
+
+    protected function getGatewayFee($row)
+    {
+        $gatewayFee = 0;
+
+        if (isset($row[Reconciliate::MSF]) === false)
+        {
+            $this->reportMissingColumn($row, Reconciliate::MSF);
+
+            return $gatewayFee;
+        }
+
+        $gatewayFee += Helper::getIntegerFormattedAmount($row[Reconciliate::MSF]);
+
+        $serviceTax = $this->getGatewayServiceTax($row);
+
+        $gatewayFee += $serviceTax;
+
+        return $gatewayFee;
+    }
+
+    protected function getGatewayServiceTax($row)
+    {
+        $serviceTax = 0;
+
+        if (isset($row[Reconciliate::IGST]) === false)
+        {
+            $this->reportMissingColumn($row, Reconciliate::IGST);
+
+            return $serviceTax;
+        }
+
+        $gst = $row[Reconciliate::IGST];
+
+        $serviceTax += Helper::getIntegerFormattedAmount($gst);
+
+        return $serviceTax;
     }
 }

@@ -17,6 +17,8 @@ class Reconciliate extends Base\Reconciliate
     const GATEWAY_PAYMENT_ID                 = 'issuer_txn_ref_number';
     const AGGREGATOR_REFERENCE_NUMBER        = 'aggregator_txn_no';
     const PG_TXN_NO                          = 'pg_txn_no';
+    const MSF                                = 'discountmsfamount';
+    const IGST                               = 'igst_amount';
 
 
     public function getFileType(string $mimeType): string
