@@ -55,6 +55,12 @@ module.exports = {
       functions: 38,
       lines: 48,
     },
+    './js/merchant/views/PartnerDashboard': {
+      statements: 60.52,
+      branches: 57.27,
+      functions: 52.45,
+      lines: 52.45,
+    },
     './js/merchant/views/onboarding/': {
       statements: 72,
       branches: 58,
