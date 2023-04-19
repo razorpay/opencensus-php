@@ -418,6 +418,10 @@ return [
                 [
                     'type' => 'ca_proceeded_bank',
                     'value' => 'true'
+                ],
+                [
+                    'type' => 'ca_onboarding_survey_count',
+                    'value' => '3'
                 ]
             ],
             'url' => '/merchant/preferences/x_merchant_current_accounts',
@@ -430,9 +434,13 @@ return [
                     'value' => 'true'
                 ],
                 [
+                    'type' => 'ca_onboarding_survey_count',
+                    'value' => '3'
+                ],
+                [
                     'type' => 'ca_proceeded_bank',
                     'value' => 'true'
-                ]
+                ],
             ]
         ],
     ],
