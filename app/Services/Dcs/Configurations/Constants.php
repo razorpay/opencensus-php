@@ -13,11 +13,14 @@ class Constants
 {
     const EmandateMerchantConfigurations = 'emandate_merchant_configurations';
 
+    const NetbankingConfigurations = 'netbanking_configurations';
+
     /**
      * Stores the mapping of the configurations to their corresponding dcs keys
      */
     public static $configurationsToDCSKeyMapping = [
-        self::EmandateMerchantConfigurations => "rzp/pg/merchant/emandate/DebitConfiguration"
+        self::EmandateMerchantConfigurations => "rzp/pg/merchant/emandate/DebitConfiguration",
+        self::NetbankingConfigurations       => "rzp/pg/merchant/netbanking/banking_program/NetBankingConfiguration",                                    
     ];
 
 }

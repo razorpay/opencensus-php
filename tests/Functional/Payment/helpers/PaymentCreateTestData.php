@@ -1049,6 +1049,46 @@ return [
         ]
     ],
 
+    'testCreateNBConfig' => [
+        'request'  => [
+            'url'     => '/netbanking/merchant_configs',
+            'method'  => 'post',
+            'content' => [
+                'merchant_id' => 10000000000000,
+                "fields" => [
+                    "auto_refund_offset" => 30
+                ],
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCreateNBConfigNegative' => [
+        'request'  => [
+            'url'     => '/netbanking/merchant_configs',
+            'method'  => 'post',
+            'content' => [
+                'merchant_id' => 10000000000000,
+                "fields" => [
+                    "auto_refund_offset" => 30
+                ],
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_UNAUTHORIZED
+        ],
+    ],
+
     'testCheckOfferApplicabilityForPaymentUsingSavedCardWithMappingAvailable' => [
         'request' => [
             'url' => '/payments/create/ajax',

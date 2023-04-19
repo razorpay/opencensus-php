@@ -287,6 +287,27 @@ return [
         ],
     ],
 
+
+    'testVirtualAccountExpirySettingForAdminDashboardNegative2' => [
+        'request'  => [
+            'url'     => '/admins/virtual_accounts/setting/expiry',
+            'method'  => 'post',
+            'content' => [
+                'va_expiry_offset'  => 24,
+                'merchant_id' => 10000000000000
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_UNAUTHORIZED
+        ],
+    ],
+
     'testVirtualAccountExpirySettingFetchForAdminDashboard' => [
         'request'  => [
             'url'     => '/admins/virtual_accounts/setting/expiry',

@@ -4,6 +4,7 @@ namespace RZP\Models\VirtualAccount;
 
 use Carbon\Carbon;
 use DateTime;
+use RZP\Models\Admin\Org;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Base\RuntimeManager;
@@ -45,6 +46,8 @@ class Service extends Base\Service
 {
     protected $core;
     protected $entity;
+    protected $ba;
+
 
     const DEFAULT_RECEIVER_TYPES = [
         Receiver::BANK_ACCOUNT,
@@ -67,6 +70,8 @@ class Service extends Base\Service
         $this->entity = new Entity();
 
         $this->mutex = $this->app['api.mutex'];
+
+        $this->ba = $this->app['basicauth'];
     }
 
     public function create(array $input)
@@ -237,22 +242,22 @@ class Service extends Base\Service
         $setVADefaultExpiryFeatureForORG      = $this->merchant->org->isFeatureEnabled(Constants::SET_VA_DEFAULT_EXPIRY);
         if (($setVADefaultExpiryFeatureForMerchant == true) or ($setVADefaultExpiryFeatureForORG == true))
         {
-            $expirySettingInHours = $this->getMerchantDefaultVirtualAccountExpiry();
+            $expirySettingInMinutes = $this->getMerchantDefaultVirtualAccountExpiry();
 
-            if($expirySettingInHours === -1)
+            if($expirySettingInMinutes === -1)
             {
-                $expirySettingInHours = $setVADefaultExpiryFeatureForORG == true ? Constant::ECMS_CHALLAN_DEFAULT_EXPIRY_IN_HOURS : Constant::HDFC_LIVE_VA_OFFSET_DEFAULT_CLOSE_BY_HOURS;
+                $expirySettingInMinutes = $setVADefaultExpiryFeatureForORG == true ? Constant::ECMS_CHALLAN_DEFAULT_EXPIRY_IN_HOURS : Constant::HDFC_LIVE_VA_OFFSET_DEFAULT_CLOSE_BY_HOURS;
             }
 
             $createArray[Entity::CLOSE_BY] = Carbon::now(Timezone::IST)
-                                                   ->addHours($expirySettingInHours)
+                                                   ->addMinutes($expirySettingInMinutes)
                                                    ->getTimestamp();
 
             $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_DEFAULT_CLOSE_BY,
                                [
                                    'setVADefaultExpiryFeatureForMerchant'   => $setVADefaultExpiryFeatureForMerchant,
                                    'setVADefaultExpiryFeatureForORG' => $setVADefaultExpiryFeatureForORG,
-                                   'expirySettingInHours' => $expirySettingInHours,
+                                   '$expirySettingInMinutes' => $expirySettingInMinutes,
                                    'close by' => $createArray[Entity::CLOSE_BY],
                                ]);
         }
@@ -1389,6 +1394,16 @@ class Service extends Base\Service
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Merchant id is mandatory parameter');
+            }
+
+            // admin should only get / set expir for merchants of their org
+            $orgId = $this->ba->getOrgId();
+
+            $sessionOrgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+            if ($sessionOrgId !== $merchant->org->getId())
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
             }
         }
         else

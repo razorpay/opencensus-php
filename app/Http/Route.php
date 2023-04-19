@@ -1118,6 +1118,11 @@ class Route
         'create_emandate_merchant_configs'         => ['post',      'emandate/merchant_configs',                      'EMandateController@postBulkEmandateConfigs'                       ],
         'edit_emandate_merchant_configs'           => ['patch',     'emandate/merchant_configs',                      'EMandateController@editBulkEmandateConfigs'                       ],
 
+        // Routes for netbanking configs
+        'fetch_netbanking_configs'                 => ['get',        'netbanking/merchant_configs',                    'NetbankingController@fetchNetbankingConfigs'                          ],
+        'create_netbanking_configs'                => ['post',       'netbanking/merchant_configs',                    'NetbankingController@createNetBankingConfigs'                          ],
+        'edit_netbanking_configs'                  => ['put',        'netbanking/merchant_configs',                    'NetbankingController@editNetbankingConfigs'                          ],
+
 
         'test_mailgun'                             => ['post',     'test_mailgun',                                   'ReconciliatorController@testMailgunFlow'                        ],
 
@@ -8124,7 +8129,11 @@ class Route
         //emandate
         'fetch_emandate_merchant_configs',
         'create_emandate_merchant_configs',
-        'edit_emandate_merchant_configs'
+        'edit_emandate_merchant_configs',
+
+        'fetch_netbanking_configs',
+        'create_netbanking_configs',
+        'edit_netbanking_configs',
     ];
 
     public static $routePermission = [
@@ -8565,6 +8574,10 @@ class Route
         'fetch_emandate_merchant_configs'          => Permission::MANAGE_EMANDATE_CONFIG,
         'create_emandate_merchant_configs'         => Permission::MANAGE_EMANDATE_CONFIG,
         'edit_emandate_merchant_configs'           => Permission::MANAGE_EMANDATE_CONFIG,
+
+        'fetch_netbanking_configs'                 => Permission::CREATE_NETBANKING_REFUND,
+        'create_netbanking_configs'                => Permission::CREATE_NETBANKING_REFUND,
+        'edit_netbanking_configs'                  => Permission::CREATE_NETBANKING_REFUND,
 
         'sub_virtual_account_create'               => Permission::ADMIN_SUB_VIRTUAL_ACCOUNT,
         'sub_virtual_account_list_admin'           => Permission::ADMIN_SUB_VIRTUAL_ACCOUNT,
@@ -13139,6 +13152,10 @@ class Route
             'fetch_emandate_merchant_configs',
             'create_emandate_merchant_configs',
             'edit_emandate_merchant_configs',
+
+            'fetch_netbanking_configs',
+            'create_netbanking_configs',
+            'edit_netbanking_configs',
 
             'nca_store_create',
             'nca_store_list',

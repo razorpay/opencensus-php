@@ -8,15 +8,19 @@ use Mail;
 use Mockery;
 use Carbon\Carbon;
 use RZP\Services\EsClient;
+use RZP\Models\NetbankingConfig;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Card\Network;
 use RZP\Models\Address\Type;
 use RZP\Models\Card\Repository;
+use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Models\Card\Entity as CardEntity;
 use RZP\Tests\Functional\Fixtures\Entity\Card;
 use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Tests\Functional\Invoice\InvoiceTestTrait;
+use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
+
 
 use RZP\Error\PublicErrorCode;
 use RZP\Exception;
@@ -49,6 +53,7 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Services\Dcs\Configurations\Constants as DcsConstants;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Admin\ConfigKey;
 
@@ -59,6 +64,7 @@ class PaymentCreateTest extends TestCase
     use DbEntityFetchTrait;
     use InvoiceTestTrait;
     use TerminalTrait;
+    use HeimdallTrait;
 
     protected function setUp(): void
     {
@@ -9494,6 +9500,95 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals('authorized', $response['status']);
 
         $this->assertNull($paymentEntity->getRefundAt());
+    }
+
+    public function mockGetNetBankingConfig() {
+        $dcsConfigService = $this->getMockBuilder( DcsConfigService::class)
+            ->setConstructorArgs([$this->app])
+            ->getMock();
+
+
+        $this->app->instance('dcs_config_service', $dcsConfigService);
+
+        $this->app->dcs_config_service->method('fetchConfiguration')->willReturn([NetbankingConfig\Constants::AUTO_REFUND_OFFSET => 1200]);
+    }
+
+    public function mockCreateNetBankingConfig() {
+        $dcsConfigService = $this->getMockBuilder( DcsConfigService::class)
+            ->setConstructorArgs([$this->app])
+            ->getMock();
+
+
+        $this->app->instance('dcs_config_service', $dcsConfigService);
+
+        $this->app->dcs_config_service->method('createConfiguration')->willReturn([NetbankingConfig\Constants::AUTO_REFUND_OFFSET => 1200]);
+    }
+
+    public function testCreateCorporateNetbankingBlockAutoRefund()
+    {
+        $attributes = [
+            'merchant_id'              => '10000000000000',
+            'gateway'                   => 'netbanking_canara',
+            'gateway_merchant_id'       => 'merchant_id',
+            'enabled'                   => 1,
+        ];
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::RULE_FILTER]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::NETBANKING_CORPORATE_DELAY_REFUND]);
+
+        $this->fixtures->merchant->addFeatures('corporate_banks');
+
+        $this->fixtures->create('terminal', $attributes);
+
+        $payment = $this->getDefaultNetbankingPaymentArray('ICIC_C');
+
+        $this->mockGetNetBankingConfig();
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getDbLastPayment();
+
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $minuteDiff = ($payment->getRefundAt() - $currentTime) / 60;
+
+        $this->assertTrue($minuteDiff < 1201 and $minuteDiff > 1119);
+    }
+
+    public function testCreateNBConfig()
+    {
+        $this->ba->adminAuth();
+
+        $this->mockCreateNetBankingConfig();
+
+        $this->startTest();
+    }
+
+    public function testCreateNBConfigNegative()
+    {
+        $this->org = $this->fixtures->create('org', [
+            'email'         => 'random@rzp.com',
+            'email_domains' => 'rzp.com',
+            'auth_type'     => 'password',
+        ]);
+
+        $this->orgId = $this->org->getId();
+
+        $this->hostName = 'testing.testing.com';
+
+        $this->orgHostName = $this->fixtures->create('org_hostname', [
+            'org_id'        => $this->orgId,
+            'hostname'      => $this->hostName,
+        ]);
+
+        $this->authToken = $this->getAuthTokenForOrg($this->org);
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->mockCreateNetBankingConfig();
+
+        $this->startTest();
     }
 
     public function testCreatePosPaymentsForUpi()

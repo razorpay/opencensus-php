@@ -25,6 +25,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use RZP\Services\CircuitBreaker\Store\StoreInterface;
 use RZP\Services\CircuitBreaker\Store\RedisClusterStore;
 use RZP\Services\Mock\DruidService as MockDruidService;
+use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\Database\MySqlConnection as IlluminateMySqlConnection;
 
@@ -720,6 +721,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerSettlementApi();
 
         $this->registerSettlementsReminder();
+
+        $this->registerDCSClient();
 
         $this->registerWalletApi();
 
@@ -2067,6 +2070,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             $implementation = ($mock === true) ? Mock\Settlements\Api::class : Settlements\Api::class;
 
             return new $implementation($app);
+        });
+    }
+
+    protected function registerDCSClient()
+    {
+        $this->app->singleton('dcs_config_service', function($app)
+        {
+            return new DcsConfigService($app);
         });
     }
 

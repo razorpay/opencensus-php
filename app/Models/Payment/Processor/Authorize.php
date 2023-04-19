@@ -11,6 +11,7 @@ use Route;
 use Request;
 use Carbon\Carbon;
 use Lib\PhoneBook;
+use RZP\Models\NetbankingConfig;
 
 use RZP\Models\Ledger\ReverseShadow\Payments\Core as ReverseShadowPaymentsCore;
 use RZP\Services\Shield;
@@ -5650,7 +5651,18 @@ trait Authorize
 //
 //             The feature is only enable for the banks have corporate maker checker flow.
 //             Else it shouldn't be applicable.
-            $merchantAutoRefundTime = $createdAt + Merchant\Entity::AUTO_REFUND_DELAY_FOR_NETBANKING_CORPORATE;
+
+            // $autoRefundDelay is in minutes
+            $autoRefundDelay = $this->getNetBankingAutoRefundDelay($payment->getMerchantId());
+
+            if ($autoRefundDelay !== -1)
+            {
+                $merchantAutoRefundTime = $createdAt + $autoRefundDelay * 60;
+            }
+            else
+            {
+                $merchantAutoRefundTime = $createdAt + Merchant\Entity::AUTO_REFUND_DELAY_FOR_NETBANKING_CORPORATE;
+            }
 
             $reason = sprintf(PaymentConstants::MERCHANT_AUTO_REFUND_DELAY_FOR_NETBANKING_CORPORATE,Merchant\Entity::AUTO_REFUND_DELAY_FOR_NETBANKING_CORPORATE);
         }
@@ -5663,6 +5675,32 @@ trait Authorize
         ];
 
         $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTO_REFUND_DATE_SET, $payment, null, [], $properties);
+    }
+
+    protected function getNetBankingAutoRefundDelay($merchantId)
+    {
+        try
+        {
+            $res = (new NetbankingConfig\Service())->fetchNetbankingConfigs([NetbankingConfig\Constants::MERCHANT_ID => $merchantId]);
+
+            if ((isset($res[NetbankingConfig\Constants::AUTO_REFUND_OFFSET]) === true) and
+                ($res[NetbankingConfig\Constants::AUTO_REFUND_OFFSET] !== 0))
+            {
+                return $res[NetbankingConfig\Constants::AUTO_REFUND_OFFSET];
+            }
+            else
+            {
+                return -1;
+            }
+
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException($ex, null, TraceCode::NETBANKING_CONFIG_FETCH_ERROR, [$merchantId]);
+
+            return -1;
+        }
+
     }
 
     protected function addTestSuccessFlagToGatewayInput(array $input, array & $gatewayInput)
