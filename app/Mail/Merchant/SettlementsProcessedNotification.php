@@ -9,6 +9,8 @@ class SettlementsProcessedNotification extends Mailable
 {
     protected $data;
 
+    protected $countryCode;
+
     public function __construct(array $data)
     {
         parent::__construct();
@@ -16,6 +18,7 @@ class SettlementsProcessedNotification extends Mailable
         parent::addMailData();
 
         $this->data = array_merge($this->data, $data);
+        $this->countryCode = $data['merchant']['country_code'];
     }
 
     protected function addRecipients()
@@ -27,9 +30,9 @@ class SettlementsProcessedNotification extends Mailable
 
     protected function addSender()
     {
-        $email = Constants::MAIL_ADDRESSES[Constants::REPORTS];
+        $email = Constants::MAIL_ADDRESSES_GLOBAL[$this->countryCode][Constants::REPORTS];
 
-        $header = Constants::HEADERS[Constants::REPORTS];
+        $header = Constants::HEADERS_GLOBAL[$this->countryCode][Constants::REPORTS];
 
         $this->from($email, $header);
 
@@ -38,7 +41,7 @@ class SettlementsProcessedNotification extends Mailable
 
     protected function addReplyTo()
     {
-        $email = Constants::MAIL_ADDRESSES[Constants::NOREPLY];
+        $email = Constants::MAIL_ADDRESSES_GLOBAL[$this->countryCode][Constants::NOREPLY];
 
         $this->replyTo($email);
 
@@ -47,7 +50,7 @@ class SettlementsProcessedNotification extends Mailable
 
     protected function addSubject()
     {
-        $subject = 'Razorpay Settlement Notification';
+        $subject = Constants::SUBJECT_GLOBAL[$this->countryCode][Constants::SETTLEMENTS];
 
         $this->subject($subject);
 

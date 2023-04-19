@@ -201,14 +201,25 @@ class Constants
         self::SUPPORT                 => 'Team Curlec',
     ];
 
+    const SUBJECT_GLOBAL = [
+        'MY' => [
+            self::SETTLEMENTS => 'Curlec Settlement Notification'
+        ],
+        'IN' => [
+            self::SETTLEMENTS => 'Razorpay Settlement Notification'
+        ]
+    ];
+
     const HEADERS_GLOBAL = [
       'MY' => [
           self::PARTNER_COMMISSIONS => 'Curlec Partnerships',
-          self::PARTNER_ON_BOARDING => 'Curlec Partner Program'
+          self::PARTNER_ON_BOARDING => 'Curlec Partner Program',
+          self::REPORTS => 'Team Curlec',
       ],
       'IN' => [
           self::PARTNER_COMMISSIONS => 'Razorpay Partnerships',
-          self::PARTNER_ON_BOARDING => 'Razorpay Partner Program'
+          self::PARTNER_ON_BOARDING => 'Razorpay Partner Program',
+          self::REPORTS => 'Team Razorpay',
       ]
     ];
 
@@ -216,12 +227,16 @@ class Constants
         'MY' => [
             self::PARTNER_COMMISSIONS => 'success@curlec.com',
             self::PARTNER_ON_BOARDING => 'success@curlec.com',
-            self::PARTNER_ON_BOARDING_REPLY => 'success@curlec.com'
+            self::PARTNER_ON_BOARDING_REPLY => 'success@curlec.com',
+            self::REPORTS => 'success@curlec.com',
+            self::NOREPLY => 'no-reply@curlec.com',
         ],
         'IN' => [
             self::PARTNER_COMMISSIONS => 'partners-commissions@razorpay.com',
             self::PARTNER_ON_BOARDING => 'partnercommunication@razorpay.com',
             self::PARTNER_ON_BOARDING_REPLY => 'kzgpFWFVZU@razorpay.com',
+            self::REPORTS => 'reports@razorpay.com',
+            self::NOREPLY => 'no-reply@razorpay.com',
         ]
     ];
 

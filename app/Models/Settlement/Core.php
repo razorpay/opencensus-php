@@ -34,10 +34,14 @@ use RZP\Jobs\Settlement\TransactionMigrationBatch;
 use RZP\Mail\Merchant\SettlementBankAccountFailure;
 use RZP\Mail\Merchant\SettlementsProcessedNotification;
 use RZP\Notifications\Settlement\Handler as SettlementNotificationHandler;
+use RZP\Models\Settlement\Constants as SettlementConstants;
 
 class Core extends Base\Core
 {
-    const SETTLEMENT_DASHBOARD_URL = 'https://dashboard.razorpay.com/app/settlements/%s';
+    const SETTLEMENT_DASHBOARD_URL = [
+        'MY' => 'https://dashboard.curlec.com/app/settlements/%s',
+        'IN' => 'https://dashboard.razorpay.com/app/settlements/%s'
+    ];
 
     const DASHBOARD_URL = 'https://dashboard.razorpay.com/app/%s';
 
@@ -394,6 +398,7 @@ class Core extends Base\Core
                     'merchant' => [
                         MerchantModel\Entity::EMAIL      => $toMail,
                         MerchantModel\Entity::LOGO_URL   => $merchant->getLogoUrl(),
+                        MerchantModel\Entity::COUNTRY_CODE => $settlement->merchant->getCountry(),
                     ],
                     'settlement' => [
                         'id'                      => $settlement->getPublicId(),
@@ -403,8 +408,9 @@ class Core extends Base\Core
                         'has_aggregated_fee_tax'  => $setlDetails['has_aggregated_fee_tax'],
                         'ba_number'               => $bankAccountNumber,
                         'time'                    => $settlementTime,
-                        'url'                     => sprintf(self::SETTLEMENT_DASHBOARD_URL, $settlement->getPublicId()),
+                        'url'                     => sprintf(self::SETTLEMENT_DASHBOARD_URL[$settlement->merchant->getCountry()], $settlement->getPublicId()),
                     ],
+                    'org_data' => SettlementConstants::ORG_DATA[$settlement->merchant->getCountry()]
                 ];
 
                 $settlementMail = new SettlementsProcessedNotification($data);

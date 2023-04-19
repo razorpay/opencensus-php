@@ -6022,6 +6022,7 @@ class Core extends Base\Core
             'name'  => $merchant->getName(),
             'email' => $merchant->getEmail(),
             'id'    => $merchant->getId(),
+            'further_query_data' => DetailConstants::FURTHER_QUERY_TEXT_DATA[$merchant->getCountry()],
         ];
 
         // For marketplace accounts, send this email to the parent merchant
