@@ -104,7 +104,7 @@ class Gateway extends Base\Gateway
             'action'            => 'authorize',
             'amount'            => $input['payment']['amount'],
             'method'            => $input['payment']['method'],
-            'payment_id'        => $input['payment']['public_id'],
+            'payment_id'        => $input['payment']['id'],
             'callback_url'      => $input['callbackUrl'],
             // This need to be 0 because if it's `false`, frontend converts
             // to "false" and Sharp server treats "false" as `true`.
