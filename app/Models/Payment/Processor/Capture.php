@@ -337,12 +337,7 @@ trait Capture
                             [
                                 'payment_id'        => $this->payment->getId(),
                             ]);
-//                        $this->trace->info(TraceCode::BARRICADE_SQS_PUSH_START,
-//                            [
-//                                'data'      => $this->payment,
-//                            ]);
 
-                        $this->publishMessageToSqsBarricade($this->payment);
 
                         if ($this->payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
                         {
@@ -354,6 +349,7 @@ trait Capture
 
                     return true;
                 });
+
         }
         catch (Exception\BaseException $ex)
         {
@@ -464,12 +460,7 @@ trait Capture
 
             $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CAPTURE_PROCESSED, $payment);
 
-//            $this->trace->info(TraceCode::BARRICADE_SQS_PUSH_START,
-//                [
-//                    'data'      => $payment,
-//                ]);
 
-            $this->publishMessageToSqsBarricade($payment);
 
             return $payment;
         }
@@ -642,6 +633,8 @@ trait Capture
 
         $this->triggerPaymentCapturedEvents();
 
+        $this->publishMessageToSqsBarricade($this->payment);
+
         $this->notifyPaymentCaptured();
 
         // temporarily disabling metric push for "api_payment_captured_v1_bucket"
@@ -682,12 +675,6 @@ trait Capture
                             'payment_id'        => $this->payment->getId(),
                         ]);
 
-//                    $this->trace->info(TraceCode::BARRICADE_SQS_PUSH_START,
-//                        [
-//                            'data'      => $this->payment,
-//                        ]);
-
-                    $this->publishMessageToSqsBarricade($this->payment);
 
                     if ($this->payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
                     {
@@ -1294,6 +1281,7 @@ trait Capture
         ];
 
         $this->app['events']->dispatch('api.payment.captured', $eventPayload);
+
     }
 
     protected function updatePaymentCaptured($payment, $autoCaptured = false)
@@ -1850,6 +1838,8 @@ trait Capture
         $this->recordCapture(true);
 
         $this->triggerPaymentCapturedEvents();
+
+        $this->publishMessageToSqsBarricade($this->payment);
 
         $this->notifyPaymentCaptured();
 

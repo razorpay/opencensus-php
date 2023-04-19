@@ -4656,61 +4656,59 @@ class Processor
 
     protected function publishMessageToSqsBarricade($payment)
     {
-        $methodResult = $this->app->razorx->getTreatment($payment->getMethod(), self::BARRICADE_PAYMENT_METHOD, $this->mode);
-
-        $upiRamp = $this->app->razorx->getTreatment($payment->getId(), self::BARRICADE_UPI_RAMP, $this->mode);
-
-        if  ($methodResult !== 'on')
-        {
-            return;
-        }
-        // To Avoid duplicate Verification
-        if ( $payment->isUpi() === true && $payment->getStatus() !== "authorized" ){
-            return;
-        }
-
-        if ( $payment->isUpi() === true and $upiRamp !== 'on' ) {
-            return;
-        }
-        // Skip verify cll for BharatQr and UpiTransfer
-        if (($payment->isBharatQr() === true)
-            or ($payment->isUpiTransfer() === true))
-        {
-            return;
-        }
-
-
-        $authorizeVerifyCardGateways = $this->app->razorx->getTreatment($payment->terminal->getGateway(),self::BARRICADE_AUTHORIZE_VERIFY_CARD_GATEWAY, $this->mode);
-        $gatewayResult = $this->app->razorx->getTreatment($payment->terminal->getGateway(), self::BARRICADE_PAYMENT_GATEWAY, $this->mode);
-        $demoMerchant  = $this->app->razorx->getTreatment($payment->getMerchantId(),self::DEMO_MERCHANT, $this->mode);
-        // Skip push on capture for AuthorizeVerify Gateways
-        // Change it to avoide duplicate payment from card gateway
-        if ($payment->isCard() === true && $authorizeVerifyCardGateways === 'on' && $payment->getStatus() !== "authorized" ){
-            return;
-        }
-        // To check card payment is gateway captured if gateway is not autorized
-        if ( $payment->isCard() === true && $authorizeVerifyCardGateways === 'control' && $payment->isGatewayCaptured() === false )
-        {
-            return;
-        }
-
-        //Unexpected Payment
-        if ( $gatewayResult !== 'on' || $demoMerchant !== 'control')
-        {
-            return;
-        }
-
-        if ($this->mode !== Mode::LIVE)
-        {
-            return;
-        }
-
-        // Skip push on capture for AuthorizeVerify Gateways
-        if ($payment->isCard() === true && $authorizeVerifyCardGateways === 'on' && $payment->getStatus() !== "authorized" ){
-            return;
-        }
         try
         {
+            $methodResult = $this->app->razorx->getTreatment($payment->getMethod(), self::BARRICADE_PAYMENT_METHOD, $this->mode);
+
+
+            if  ($methodResult !== 'on')
+            {
+                return;
+            }
+            // To Avoid duplicate Verification
+            if ( $payment->isUpi() === true && $payment->getStatus() !== "authorized" ){
+                return;
+            }
+
+
+            // Skip verify cll for BharatQr and UpiTransfer
+            if (($payment->isBharatQr() === true)
+                or ($payment->isUpiTransfer() === true))
+            {
+                return;
+            }
+
+
+            $authorizeVerifyCardGateways = $this->app->razorx->getTreatment($payment->terminal->getGateway(),self::BARRICADE_AUTHORIZE_VERIFY_CARD_GATEWAY, $this->mode);
+            $gatewayResult = $this->app->razorx->getTreatment($payment->terminal->getGateway(), self::BARRICADE_PAYMENT_GATEWAY, $this->mode);
+            $demoMerchant  = $this->app->razorx->getTreatment($payment->getMerchantId(),self::DEMO_MERCHANT, $this->mode);
+            // Skip push on capture for AuthorizeVerify Gateways
+            // Change it to avoide duplicate payment from card gateway
+            if ($payment->isCard() === true && $authorizeVerifyCardGateways === 'on' && $payment->getStatus() !== "authorized" ){
+                return;
+            }
+            // To check card payment is gateway captured if gateway is not autorized
+            if ( $payment->isCard() === true && $authorizeVerifyCardGateways === 'control' && $payment->isGatewayCaptured() === false )
+            {
+                return;
+            }
+
+            //Unexpected Payment
+            if ( $gatewayResult !== 'on' || $demoMerchant !== 'control')
+            {
+                return;
+            }
+
+            if ($this->mode !== Mode::LIVE)
+            {
+                return;
+            }
+
+            // Skip push on capture for AuthorizeVerify Gateways
+            if ($payment->isCard() === true && $authorizeVerifyCardGateways === 'on' && $payment->getStatus() !== "authorized" ){
+                return;
+            }
+
             if ( $payment->isUpi() === true || $payment->isNetbanking() === true ||  $payment-> isWallet() === true )
             {
                 $data = $this->getAutorizeVerifyData($payment);
@@ -4738,17 +4736,6 @@ class Processor
                     'queueName' => $queueName,
                     'data'      => $data,
                 ]);
-
-
-//            $publishData['data'] = json_encode($data);
-//
-//            $response = $this->app['metro']->publish(self::CAPTURE_VERIFY_METRO_TOPIC, $publishData);
-//
-//            $this->trace->info(TraceCode::METRO_PUBLISH_FOR_CAPTURE_VERIFY,
-//                [
-//                    'topic'    => self::CAPTURE_VERIFY_METRO_TOPIC,
-//                    'response' => $response,
-//                ]);
 
         }
         catch (\Throwable $e)

@@ -7561,6 +7561,8 @@ trait Authorize
 
         $this->eventPaymentAuthorized();
 
+        $this->publishMessageToSqsBarricade($this->payment);
+
         $this->notifyIfCardSaved();
 
         $this->notifyAuthorized($wasFailed);
@@ -10275,12 +10277,7 @@ trait Authorize
 
             $event = $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $payment);
 
-//            $this->trace->info(TraceCode::BARRICADE_SQS_PUSH_START,
-//                [
-//                    'data'      => $payment,
-//                ]);
 
-            $this->publishMessageToSqsBarricade($payment);
 
             (new Shield($this->app))->enqueueShieldEvent($event);
 
@@ -10292,6 +10289,8 @@ trait Authorize
             $this->tracePaymentInfo(TraceCode::PAYMENT_AUTH_SUCCESS);
 
             $this->sendFeedbackPaymentAuthorizedToDoppler($payment);
+
+
         }
 
         return $updated;
