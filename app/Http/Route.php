@@ -4241,9 +4241,14 @@ class Route
         'fetch_customer_eligibility_by_id'      => ['get',           'customers/eligibility/{id}',                          'EligibilityController@fetchCustomerEligibilityById'],
         //Capital corp card for payouts
         'corp_card_banking_account_create'      => ['post', 'merchant/onboardCCCForBanking', 'CorpCardController@onboardCapitalCorpCardForRzpX'],
+
+        '1cc_methods_offers' => ['get', '1cc/merchant/methods_offers', 'OneClickCheckoutController@getMethodsAndOffersForMerchant'],
+        '1cc_methods_offers_preflight'    => ['options',    '1cc/merchant/methods_offers',                          'OneClickCheckoutController@allowCors'],
     ];
 
     public static $public = [
+        '1cc_methods_offers_preflight',
+        '1cc_methods_offers',
         'test_mailgun',
         'fetch_international_virtual_account_by_vacurrency',
         '1cc_shopify_checkout',

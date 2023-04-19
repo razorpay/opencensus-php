@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant\OneClickCheckout\Config;
 
+use RZP\Models\Merchant\Account;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
@@ -29,6 +31,11 @@ class Service extends Base\Service
     protected $mutex;
 
     const MUTEX_KEY = 'merchant_1cc_configs';
+
+    const MERCHANT_METHODS_OFFER_MUTEX_KEY_PREFIX = 'mer_1cc_configs_methods_offers';
+    const SECOND    = 1;
+    const MINUTE    = 60 * self::SECOND;
+    const CACHE_TTL = 30 * self::MINUTE;
 
     public function __construct()
     {
@@ -837,6 +844,135 @@ class Service extends Base\Service
                 true
             );
         }
+    }
+
+    /**
+     * Returns methods and offers for the merchant
+     * Currently used for branded button flow
+     * @throws BadRequestException
+     */
+    public function getMethodsAndOffersForMerchant(array $input) : array
+    {
+        if ($this->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::ONE_CLICK_CHECKOUT) === false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+        }
+
+        $amount = $input['amount'] ?? 0;
+        $merchantId = $this->merchant->getId();
+        $offerData = $this->app['cache']->get($this->getMerchantBasedCacheKey(self::MERCHANT_METHODS_OFFER_MUTEX_KEY_PREFIX, 'offers'));
+        if (empty($offerData) === true)
+        {
+            $allOffers = $this->repo->offer->fetchAllActiveNonSubscriptionOffers($merchantId);
+            $offers = [];
+            foreach($allOffers as $offer)
+            {
+                if ($offer->isDefaultOffer() || $offer->getCheckoutDisplay() === 1)
+                {
+                    $offers[] = $offer;
+                }
+            }
+            $offerData = [];
+            foreach ($offers as $offer)
+            {
+                $offerData[] = [
+                    'min_amount' => $offer->getMinAmount(),
+                    'payment_method' => $offer->getPaymentMethod(),
+                ];
+            }
+
+            $this->app['cache']->set(
+                $this->getMerchantBasedCacheKey(
+                    self::MERCHANT_METHODS_OFFER_MUTEX_KEY_PREFIX,
+                    'offers'), $offerData, self::CACHE_TTL
+            );
+        }
+        $offerMethods = [];
+
+        foreach ($offerData as $offer)
+        {
+            if ($offer['min_amount'] > $amount)
+            {
+                continue;
+            }
+
+            $method = $offer['payment_method'];
+            if (empty($method) === true)
+            {
+                continue;
+            }
+            $offerMethods[$method] = true;
+        }
+
+        $methods = $this->app['cache']->get($this->getMerchantBasedCacheKey(self::MERCHANT_METHODS_OFFER_MUTEX_KEY_PREFIX, 'methods'));
+        if (empty($methods) === true)
+        {
+            $methodsEntity = $this->repo->methods->getMethodsForMerchant($this->merchant);
+
+            $walletMap = $methodsEntity->getEnabledWallets();
+            $wallet = [];
+            foreach ($walletMap as $key => $value)
+            {
+                if ($value === true)
+                {
+                    $wallet[] = $key;
+                }
+            }
+
+            $paylaterMap = $methodsEntity->getEnabledPaylaterProviders();
+            $paylater = [];
+            foreach ($paylaterMap as $key => $value)
+            {
+                if ($value === true)
+                {
+                    $paylater[] = $key;
+                }
+            }
+            $methods = [
+                'upi' => $methodsEntity->isUpiEnabled(),
+                'card' => $methodsEntity->isCardEnabled(),
+                'netbanking' => $methodsEntity->isNetbankingEnabled(),
+                'wallet' => $wallet,
+                'paylater' => $paylater,
+                'cod' => $methodsEntity->isCodEnabled(),
+                'cardless_emi' => $methodsEntity->isCardlessEmiEnabled(),
+            ];
+
+            $this->app['cache']->set(
+                $this->getMerchantBasedCacheKey(
+                    self::MERCHANT_METHODS_OFFER_MUTEX_KEY_PREFIX,
+                    'methods'), $methods, self::CACHE_TTL
+            );
+        }
+
+        $enabled = $this->brandedButtonExperiment();
+
+        return [
+            'enabled' => $enabled,
+            'methods' => $methods,
+            'offer_methods'  => $offerMethods,
+        ];
+    }
+
+    protected function getMerchantBasedCacheKey($prefix, $key): string
+    {
+        return $prefix . ':' . $this->merchant->getId() . ':' . $key;
+    }
+
+    protected function brandedButtonExperiment(): bool
+    {
+        $properties = [
+            'id'            => UniqueIdEntity::generateUniqueId(),
+            'experiment_id' => $this->app['config']->get('app.1cc_branded_btn_splitz_exp_id'),
+            'request_data'  => json_encode(
+                [
+                    'merchant_id' =>  $this->merchant->getId(),
+                ]),
+        ];
+
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+        $res = $response['response']['variant']['name'] ?? null;
+        return $res === 'enabled';
     }
 
     public function get1ccAddressIngestionConfig($input): array

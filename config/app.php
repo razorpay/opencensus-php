@@ -607,6 +607,8 @@ return array(
 
     'enable_kyc_qualified_unactivated' => env('ENABLE_KYC_QUALIFIED_UNACTIVATED_EXP_ID'),
 
+    '1cc_branded_btn_splitz_exp_id' => env('MAGIC_CHECKOUT_BRANDED_BUTTON_EXP_ID'),
+    
     'magic_enable_shopify_taxes_experiment_id'  => env('MAGIC_ENABLE_SHOPIFY_TAXES_EXP_ID'),
 
     'magic_qr_v2_experiment_id'  => env('MAGIC_QR_V2_EXP_ID'),

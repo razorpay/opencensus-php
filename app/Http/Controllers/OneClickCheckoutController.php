@@ -6,6 +6,7 @@ use Request;
 use ApiResponse;
 
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant\OneClickCheckout\Config\Service;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Environment;
 use RZP\Exception\BaseException;
@@ -285,5 +286,14 @@ class OneClickCheckoutController extends Controller
             default:
               throw $e;
         }
+    }
+
+    public function getMethodsAndOffersForMerchant()
+    {
+        $input = Request::all();
+        $result = (new Service())->getMethodsAndOffersForMerchant($input);
+        $response = ApiResponse::json($result, 200);
+        $this->addCorsHeaders($response, "GET");
+        return $response;
     }
 }
