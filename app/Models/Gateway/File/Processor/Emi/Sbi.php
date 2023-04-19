@@ -443,7 +443,11 @@ class Sbi extends Base
             'channel'   => 'tech_alerts',
             'filetype'  => self::BEAM_FILE_TYPE,
             'subject'   => 'SBI EMI - File Send failure',
-            'recipient' => Constants::MAIL_ADDRESSES[Constants::GATEWAY_POD]
+            'recipient' => [
+                Constants::MAIL_ADDRESSES[Constants::AFFORDABILITY],
+                Constants::MAIL_ADDRESSES[Constants::FINOPS],
+                Constants::MAIL_ADDRESSES[Constants::DEVOPS_BEAM],
+            ],
         ];
 
         $beamResponse = $this->app['beam']->beamPush($data, $timelines, $mailInfo, true);

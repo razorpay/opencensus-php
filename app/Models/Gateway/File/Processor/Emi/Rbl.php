@@ -4,15 +4,17 @@ namespace RZP\Models\Gateway\File\Processor\Emi;
 
 use App;
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
-use RZP\Mail\Base\Constants;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Models\Emi\Entity;
+use RZP\Constants\Timezone;
+use RZP\Mail\Base\Constants;
+use RZP\Services\Beam\Service;
+use RZP\Exception\GatewayErrorException;
 use RZP\Models\FileStore\Storage\Base\Bucket;
 use RZP\Services\Beam\Constants as BeamConstants;
-use RZP\Services\Beam\Service;
-use RZP\Trace\TraceCode;
 
 class Rbl extends Base
 {
@@ -25,42 +27,52 @@ class Rbl extends Base
 
     protected function sendEmiFile($data)
     {
-        try {
-            $fullFileName = 'rbl-emi/' . $this->file->getName() . '.' . $this->file->getExtension();
+        $fullFileName = 'rbl-emi/' . $this->file->getName() . '.' . $this->file->getExtension();
 
-            $fileInfo = [$fullFileName];
+        $fileInfo = [$fullFileName];
 
-            $bucketConfig = $this->getBucketConfig();
+        $bucketConfig = $this->getBucketConfig();
 
-            $data = [
-                Service::BEAM_PUSH_FILES          => $fileInfo,
-                Service::BEAM_PUSH_JOBNAME        => BeamConstants::RBL_EMI_FILE_JOB_NAME,
-                Service::BEAM_PUSH_BUCKET_NAME    => 'rzp-1415-prod-sftp',
-                Service::BEAM_PUSH_BUCKET_REGION  => $bucketConfig['region'],
-            ];
+        $data = [
+            Service::BEAM_PUSH_FILES          => $fileInfo,
+            Service::BEAM_PUSH_JOBNAME        => BeamConstants::RBL_EMI_FILE_JOB_NAME,
+            Service::BEAM_PUSH_BUCKET_NAME    => 'rzp-1415-prod-sftp',
+            Service::BEAM_PUSH_BUCKET_REGION  => $bucketConfig['region'],
+        ];
 
-            // In seconds
-            $timelines = [];
+        // In seconds
+        $timelines = [];
 
-            $mailInfo = [
-                'fileInfo'  => $fileInfo,
-                'channel'   => 'settlements',
-                'filetype'  => 'emi',
-                'subject'   => 'File Send failure',
-                'recipient' => [
-                    Constants::MAIL_ADDRESSES[Constants::AFFORDABILITY],
-                    Constants::MAIL_ADDRESSES[Constants::FINOPS],
-                    Constants::MAIL_ADDRESSES[Constants::DEVOPS_BEAM],
-                ],
-            ];
+        $mailInfo = [
+            'fileInfo'  => $fileInfo,
+            'channel'   => 'settlements',
+            'filetype'  => 'emi',
+            'subject'   => 'File Send failure',
+            'recipient' => [
+                Constants::MAIL_ADDRESSES[Constants::AFFORDABILITY],
+                Constants::MAIL_ADDRESSES[Constants::FINOPS],
+                Constants::MAIL_ADDRESSES[Constants::DEVOPS_BEAM],
+            ],
+        ];
 
-            $this->app['beam']->beamPush($data, $timelines, $mailInfo);
-        } catch (\Exception $e) {
-            $this->trace->error(TraceCode::BEAM_PUSH_FAILED,
+        $beamResponse = $this->app['beam']->beamPush($data, $timelines, $mailInfo, true);
+
+        if ((isset($beamResponse['success']) === false) or
+            ($beamResponse['success'] === null))
+        {
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+                null,
+                null,
                 [
-                    'job_name'  => BeamConstants::RBL_EMI_FILE_JOB_NAME,
-                    'file_name' => $fullFileName,
-                ]);
+                    'beam_response' => $beamResponse,
+                    'filestore_id'  => $this->file->getId(),
+                    'gateway_file'  => $this->gatewayFile->getId(),
+                    'job_name'      => BeamConstants::RBL_EMI_FILE_JOB_NAME,
+                    'file_name'     => $fullFileName,
+                    'Bank'          => 'Rbl',
+                ]
+            );
         }
     }
 

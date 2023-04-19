@@ -13,6 +13,7 @@ use RZP\Services\Beam\Service;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
+use RZP\Exception\GatewayErrorException;
 use RZP\Models\FileStore\Storage\Base\Bucket;
 use RZP\Services\Beam\Constants as BeamConstants;
 
@@ -32,42 +33,52 @@ class Indusind extends Base
 
     protected function sendEmiFile($data)
     {
-        try {
-            $fullFileName = $this->file->getName() . '.' . $this->file->getExtension();
+        $fullFileName = $this->file->getName() . '.' . $this->file->getExtension();
 
-            $fileInfo = [$fullFileName];
+        $fileInfo = [$fullFileName];
 
-            $bucketConfig = $this->getBucketConfig();
+        $bucketConfig = $this->getBucketConfig();
 
-            $data = [
-                Service::BEAM_PUSH_FILES          => $fileInfo,
-                Service::BEAM_PUSH_JOBNAME        => BeamConstants::INDUSIND_EMI_FILE_JOB_NAME,
-                Service::BEAM_PUSH_BUCKET_NAME    => $bucketConfig['name'],
-                Service::BEAM_PUSH_BUCKET_REGION  => $bucketConfig['region'],
-            ];
+        $data = [
+            Service::BEAM_PUSH_FILES          => $fileInfo,
+            Service::BEAM_PUSH_JOBNAME        => BeamConstants::INDUSIND_EMI_FILE_JOB_NAME,
+            Service::BEAM_PUSH_BUCKET_NAME    => $bucketConfig['name'],
+            Service::BEAM_PUSH_BUCKET_REGION  => $bucketConfig['region'],
+        ];
 
-            // Retry in 15, 30 and 45 minutes
-            $timelines = [900, 1800, 2700];
+        // Retry in 15, 30 and 45 minutes
+        $timelines = [900, 1800, 2700];
 
-            $mailInfo = [
-                'fileInfo'  => $fileInfo,
-                'channel'   => 'settlements',
-                'filetype'  => 'emi',
-                'subject'   => 'File Send failure',
-                'recipient' => [
-                    Constants::MAIL_ADDRESSES[Constants::AFFORDABILITY],
-                    Constants::MAIL_ADDRESSES[Constants::FINOPS],
-                    Constants::MAIL_ADDRESSES[Constants::DEVOPS_BEAM],
-                ],
-            ];
+        $mailInfo = [
+            'fileInfo'  => $fileInfo,
+            'channel'   => 'settlements',
+            'filetype'  => 'emi',
+            'subject'   => 'File Send failure',
+            'recipient' => [
+                Constants::MAIL_ADDRESSES[Constants::AFFORDABILITY],
+                Constants::MAIL_ADDRESSES[Constants::FINOPS],
+                Constants::MAIL_ADDRESSES[Constants::DEVOPS_BEAM],
+            ],
+        ];
 
-            $this->app['beam']->beamPush($data, $timelines, $mailInfo);
-        } catch (\Exception $e) {
-            $this->trace->error(TraceCode::BEAM_PUSH_FAILED,
+        $beamResponse = $this->app['beam']->beamPush($data, $timelines, $mailInfo, true);
+
+        if ((isset($beamResponse['success']) === false) or
+            ($beamResponse['success'] === null))
+        {
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+                null,
+                null,
                 [
-                    'job_name'  => BeamConstants::INDUSIND_EMI_FILE_JOB_NAME,
-                    'file_name' => $fullFileName,
-                ]);
+                    'beam_response' => $beamResponse,
+                    'filestore_id'  => $this->file->getId(),
+                    'gateway_file'  => $this->gatewayFile->getId(),
+                    'job_name'      => BeamConstants::INDUSIND_EMI_FILE_JOB_NAME,
+                    'file_name'     => $fullFileName,
+                    'Bank'          => 'Indusind',
+                ]
+            );
         }
     }
 

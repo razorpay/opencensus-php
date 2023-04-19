@@ -167,10 +167,6 @@ class GatewayEmiFileTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
-
-        Queue::assertPushed(BeamJob::class, 1);
-
-        Queue::assertPushedOn('beam_test', BeamJob::class);
     }
 
     public function testGenerateEmiFileForIndusIndForCardMasking()
@@ -219,10 +215,6 @@ class GatewayEmiFileTest extends TestCase
         $this->assertEquals('************0009', $emiFileContents[0][0]['card_pan']);
         $this->assertEquals('INDUSIND', $emiFileContents[0][0]['issuer']);
         $this->assertEquals('14%', $emiFileContents[0][0]['interest_rate']);
-
-        Queue::assertPushed(BeamJob::class, 1);
-
-        Queue::assertPushedOn('beam_test', BeamJob::class);
     }
 
     public function testGenerateEmiFileForKotak()
@@ -291,9 +283,6 @@ class GatewayEmiFileTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
-
-        Mail::assertQueued(EmiMail\Password::class);
-        Queue::assertPushed(BeamJob::class, 1);
     }
 
     public function testGenerateEmiFileForIcici()
@@ -957,10 +946,6 @@ class GatewayEmiFileTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
-
-        Queue::assertPushed(BeamJob::class, 1);
-
-        Queue::assertPushedOn('beam_test', BeamJob::class);
     }
 
     protected function createDependentEntities($cobrandingPartner)
