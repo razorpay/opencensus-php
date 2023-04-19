@@ -628,6 +628,7 @@ class Repository extends Base\Repository
         $flag = $this->app['razorx']->getTreatment($featureName,
             RazorxTreatment::DCS_EDIT_ENABLED,
             $mode);
+
         $this->trace->info(TraceCode::DCS_RAZORX_EXPERIMENT, [
             'feature_name' => $featureName,
             'razorx_treatment' => RazorxTreatment::DCS_EDIT_ENABLED,

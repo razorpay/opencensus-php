@@ -268,6 +268,10 @@ class Constants
 
     const ADDITIONAL_ONBOARDING = 'additional_onboarding';
 
+    const HIDE_INSTRUMENT_REQUEST = 'hide_instrument_request';
+
+    const QC_INTIMATION_EMAIL = 'qc_intimation_email';
+
     /**
      * If applied on partner merchant then all sub merchant settlement will be settled to partner
      * this will be further aggregated and settled to partner merchant
@@ -2483,6 +2487,8 @@ class Constants
         self::DISABLE_UPI_NUM_ON_L0 => true,
         self::DISABLE_UPI_NUM_ON_L1 => true,
         self::ADDITIONAL_ONBOARDING => true,
+        self::HIDE_INSTRUMENT_REQUEST => true,
+        self::QC_INTIMATION_EMAIL   => true,
         self::AUTO_COMM_INV_DISABLED          => true,
         self::ADMIN_LEAD_PARTNER      => true,
         self::ROUTE_PARTNERSHIPS => true,

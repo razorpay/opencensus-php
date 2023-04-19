@@ -67,6 +67,8 @@ class Constants
     const MerchantActivationByPartnerEnabled = 'merchant_activation_by_partner_enabled';
     const OverridingSubmerchantConfigEnabled = 'overriding_submerchant_config_enabled';
     const AdditionalFieldsHdfcOnboarding = 'additional_fields_hdfc_onboarding';
+    const HideInstrumentRequest = 'hide_instrument_request';
+    const QualityCheckIntimationEmail = 'quality_check_intimation_email';
     const PgLedgerReverseShadowEnabled = 'pg_ledger_reverse_shadow_enabled';
     const ShopifyPaymentsReport = 'shopify_payments_report';
     const NoDocOnboardingEnabled = 'no_doc_onboarding_enabled';
@@ -150,6 +152,8 @@ class Constants
         self::MerchantActivationByPartnerEnabled => "rzp/platform/partner/onboarding/Features",
         self::OverridingSubmerchantConfigEnabled => "rzp/platform/partner/configuration/Features",
         self::AdditionalFieldsHdfcOnboarding => "rzp/pg/org/dashboard/admin/Features",
+        self::HideInstrumentRequest => "rzp/pg/org/dashboard/banking_program/UIControls",
+        self::QualityCheckIntimationEmail => "rzp/pg/org/communication/banking_program/MerchantCommunication",
         self::ShopifyPaymentsReport => "rzp/pg/merchant/report/Features",
         self::NoDocOnboardingEnabled => 'rzp/pg/merchant/onboarding/PartnershipFeatures',
         self::OnboardedViaV2ApiEnabled => 'rzp/pg/merchant/onboarding/PartnershipFeatures',
@@ -245,6 +249,8 @@ class Constants
         APIFeaturesConstants::SHOW_CUSTOM_DCC_DISCLOSURES                   => self::ShowCustomDccDisclosures,
         APIFeaturesConstants::DYNAMIC_CURRENCY_CONVERSION_CYBS              => self::DynamicCurrencyConversionCybs,
         APIFeaturesConstants::ONE_CC_SHOPIFY_ACC_CREATE                     => self::OneCCAutomaticAccountCreation,
+        APIFeaturesConstants::HIDE_INSTRUMENT_REQUEST                       => self::HideInstrumentRequest,
+        APIFeaturesConstants::QC_INTIMATION_EMAIL                           => self::QualityCheckIntimationEmail,
         APIFeaturesConstants::ENABLE_VPA_VALIDATE                           => self::ValidateVpa,
         APIFeaturesConstants::SAVE_VPA                                      => self::UseSavedVpa,
         APIFeaturesConstants::GOOGLE_PAY_OMNICHANNEL                        => self::GooglePayOmnichannel,
@@ -284,6 +290,8 @@ class Constants
      */
     public static $dcsNewOrgFeatures = [
         self::AdditionalFieldsHdfcOnboarding => 'direct',
+        self::HideInstrumentRequest         => 'direct',
+        self::QualityCheckIntimationEmail   => 'direct',
         self::ShowCustomDccDisclosures       => 'direct',
         self::AdminPasswordResetEnabled => 'direct',
     ];
@@ -416,6 +424,8 @@ class Constants
         if (key_exists($name, $dcsFeatureNameToAPIFeatureName) === false)
         {
             $dcsName = Utility::searchAndReturnDcsNameWithCorrespondingColonSeparator($dcsFeatureNameToAPIFeatureName,$name,$dcsKey);
+
+            s($dcsName,$name);
             if ((empty($dcsName) === false) and
                 (key_exists($dcsName, $dcsFeatureNameToAPIFeatureName) === true))
             {
