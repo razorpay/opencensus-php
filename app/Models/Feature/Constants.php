@@ -1828,6 +1828,7 @@ class Constants
     const DISABLE_UPI_NUM_ON_L1 = 'disable_upi_num_on_l1';
 
     const ONE_CC_SHOPIFY_ACC_CREATE = 'one_cc_shopify_acc_create';
+    const ONE_CC_SHOPIFY_MULTIPLE_SHIPPING = 'one_cc_multiple_shipping';
 
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
@@ -1901,6 +1902,7 @@ class Constants
         self::ONE_CC_DISABLE_EMAIL_COOKIE,
         self::ONE_CC_ADDRESS_SYNC_OFF,
         self::ONE_CC_SHOPIFY_ACC_CREATE,
+        self::ONE_CC_SHOPIFY_MULTIPLE_SHIPPING,
     ];
 
     const TRUECALLER_FEATURES = [
@@ -2515,9 +2517,10 @@ class Constants
         DcsConstants::AssumeSubAccount        => true,
         DcsConstants::AssumeMasterAccount     => true,
         self::ONE_CC_SHOPIFY_ACC_CREATE       => true,
+        self::ONE_CC_SHOPIFY_MULTIPLE_SHIPPING => true,
         self::SHOW_CUSTOM_DCC_DISCLOSURES      => true,
         self::DYNAMIC_CURRENCY_CONVERSION_CYBS => true,
-        self::ORG_ADMIN_PASSWORD_RESET        => true
+        self::ORG_ADMIN_PASSWORD_RESET        => true,
     ];
 
     // Entity type constants

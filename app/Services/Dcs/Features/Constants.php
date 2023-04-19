@@ -89,6 +89,7 @@ class Constants
     const EnableP2P = 'enable_p2p';
     const EnableOTM = 'enable_otm';
     const AdminPasswordResetEnabled = 'admin_password_reset_enabled';
+    const OneCCMultipleShipping = 'one_cc_multiple_shipping';
 
     /**
      * Stores the mapping of the features to their corresponding dcs keys
@@ -173,6 +174,7 @@ class Constants
         self::ShowCustomDccDisclosures => 'rzp/pg/org/checkout/banking_program/UiControls',
         self::DynamicCurrencyConversionCybs => 'rzp/pg/merchant/payments/banking_program/Cards',
         self::AdminPasswordResetEnabled => 'rzp/pg/org/banking/admin/Features',
+        self::OneCCMultipleShipping => 'rzp/pg/merchant/checkout/magic/Configuration',
     ];
 
     /**
@@ -259,6 +261,7 @@ class Constants
         APIFeaturesConstants::P2P_UPI                                       => self::EnableP2P,
         APIFeaturesConstants::UPI_OTM                                       => self::EnableOTM,
         APIFeaturesConstants::ORG_ADMIN_PASSWORD_RESET                      => self::AdminPasswordResetEnabled,
+        APIFeaturesConstants::ONE_CC_SHOPIFY_MULTIPLE_SHIPPING              => self::OneCCMultipleShipping,
     ];
 
     /**

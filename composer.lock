@@ -3448,22 +3448,22 @@
         },
         {
             "name": "guzzlehttp/guzzle",
-            "version": "dev-master",
+            "version": "7.5.x-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/guzzle.git",
-                "reference": "8459341c16f96b9610dcdfe22bd3060d60c0da04"
+                "reference": "255d7157b463ee2d9b3cbf891eda2691baa43076"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/8459341c16f96b9610dcdfe22bd3060d60c0da04",
-                "reference": "8459341c16f96b9610dcdfe22bd3060d60c0da04",
+                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/255d7157b463ee2d9b3cbf891eda2691baa43076",
+                "reference": "255d7157b463ee2d9b3cbf891eda2691baa43076",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
                 "guzzlehttp/promises": "^1.5",
-                "guzzlehttp/psr7": "^1.9 || ^2.4",
+                "guzzlehttp/psr7": "^1.9.1 || ^2.4.5",
                 "php": "^7.2.5 || ^8.0",
                 "psr/http-client": "^1.0",
                 "symfony/deprecation-contracts": "^2.2 || ^3.0"
@@ -3489,9 +3489,6 @@
                 "bamarni-bin": {
                     "bin-links": true,
                     "forward-command": false
-                },
-                "branch-alias": {
-                    "dev-master": "7.5-dev"
                 }
             },
             "autoload": {
@@ -3557,7 +3554,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/guzzle/issues",
-                "source": "https://github.com/guzzle/guzzle/tree/master"
+                "source": "https://github.com/guzzle/guzzle/tree/7.5"
             },
             "funding": [
                 {
@@ -3573,7 +3570,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-08-29T11:03:19+00:00"
+            "time": "2023-04-18T08:37:42+00:00"
         },
         {
             "name": "guzzlehttp/promises",
@@ -10776,12 +10773,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/config-proto.git",
-                "reference": "0b0aa08d39a9275e8d8a3860edbed1d795d11ec0"
+                "reference": "f2c22964ab98ab1d47aaefc17a473fe5357476c9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/config-proto/zipball/0b0aa08d39a9275e8d8a3860edbed1d795d11ec0",
-                "reference": "0b0aa08d39a9275e8d8a3860edbed1d795d11ec0",
+                "url": "https://api.github.com/repos/razorpay/config-proto/zipball/f2c22964ab98ab1d47aaefc17a473fe5357476c9",
+                "reference": "f2c22964ab98ab1d47aaefc17a473fe5357476c9",
                 "shasum": ""
             },
             "require": {
@@ -10807,7 +10804,7 @@
                 "dcs-config",
                 "razorpay"
             ],
-            "time": "2023-04-13T05:31:23+00:00"
+            "time": "2023-04-17T05:28:30+00:00"
         },
         {
             "name": "razorpay/dcs-php-sdk",
@@ -19118,5 +19115,5 @@
         "ext-curl": "*"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.1.0"
+    "plugin-api-version": "2.3.0"
 }

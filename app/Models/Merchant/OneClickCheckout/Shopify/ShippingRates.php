@@ -26,6 +26,22 @@ class ShippingRates extends Base\Core
         {
             $shippingResponse['cod'] = true;
             $shippingResponse['cod_fee'] = null;
+
+            $multipleCOD = [];
+
+            if(empty($shippingResponse['shipping_methods']) === false)
+            {
+                $shipMethods = $shippingResponse['shipping_methods'];
+
+                foreach ($shipMethods as $shipMethod)
+                {
+                    $shipMethod['cod'] = true;
+                    $shipMethod['cod_fee'] = null;
+                    array_push($multipleCOD, $shipMethod);
+                }
+            }
+
+            $shippingResponse['shipping_methods'] = $multipleCOD;
         }
     }
 }

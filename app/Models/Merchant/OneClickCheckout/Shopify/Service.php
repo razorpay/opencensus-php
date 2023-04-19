@@ -992,6 +992,14 @@ class Service extends Base\Service
 
             if($isDigitalProductPresent === true)
             {
+                if(isset($rates['shipping_methods']) === true)
+                {
+                    foreach($rates['shipping_methods'] as &$method)
+                    {
+                        $method['cod'] = false;
+                        $method['cod_fee'] = 0;
+                    }
+                }
                 $rates['cod'] = false;
                 $rates['cod_fee'] = 0;
             }
