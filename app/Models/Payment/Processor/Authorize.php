@@ -1972,8 +1972,6 @@ trait Authorize
 
             $this->verifyPaymentMethodEnabled($payment);
 
-            $this->validatePaymentNetworkSupported($payment);
-
             $this->runInternationalChecks($payment);
 
             $this->runFraudChecksIfApplicable($payment, $input);
@@ -2254,23 +2252,6 @@ trait Authorize
                     'payment_amount'  => $paymentAmount,
                     'expected_amount' => $expectedAmount
                 ]);
-        }
-    }
-
-    protected function validatePaymentNetworkSupported(Payment\Entity $payment)
-    {
-        $merchant = $payment->merchant;
-
-        if (($payment->isMethodCardOrEmi() === true) and
-            ($merchant->getCategory2() === Terminal\Category::PHARMA))
-        {
-            $card = $payment->card;
-
-            if ($card->isDiners() === true)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
-            }
         }
     }
 
