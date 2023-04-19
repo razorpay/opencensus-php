@@ -404,6 +404,8 @@ class UpiAxisReconTest extends TestCase
         // Assert empty reconciledAt in gateway entity
         $this->assertEmpty($upiEntity['reconciled_at']);
 
+        $this->assertEmpty($upiEntity['gateway_settled_at']);
+
         $this->assertEquals($content['upi']['npci_reference_id'], $upiEntity['npci_reference_id']);
 
         $this->assertEquals($content['upi']['gateway_payment_id'], $upiEntity['gateway_payment_id']);
@@ -411,6 +413,8 @@ class UpiAxisReconTest extends TestCase
         $transactionEntity = $this->getDbLastEntity('transaction');
 
         $this->assertNotEmpty($transactionEntity['reconciled_at']);
+
+        $this->assertEmpty($transactionEntity['gateway_settled_at']);
 
         $this->assertTrue($response['success']);
     }

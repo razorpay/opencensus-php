@@ -1132,6 +1132,8 @@ class UpiIciciGatewayReconTest extends TestCase
         // Assert empty reconciledAt in gateway entity
         $this->assertEmpty($upiEntity['reconciled_at']);
 
+        $this->assertEmpty($upiEntity['gateway_settled_at']);
+
         $this->assertEquals($content['upi']['npci_reference_id'], $upiEntity['npci_reference_id']);
 
         $this->assertEquals($content['upi']['gateway_payment_id'], $upiEntity['gateway_payment_id']);
@@ -1143,6 +1145,8 @@ class UpiIciciGatewayReconTest extends TestCase
         $this->assertEquals($content['reconciled_at'],$updatedTransactionEntity['reconciled_at']);
 
         $this->assertNotEmpty($updatedTransactionEntity['reconciled_at']);
+
+        $this->assertEmpty($updatedTransactionEntity['gateway_settled_at']);
 
         $this->assertTrue($response['success']);
     }

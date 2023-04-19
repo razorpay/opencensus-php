@@ -1107,6 +1107,12 @@ class Service extends Base\Service
 
         $transaction->setReconciledType($input['reconciled_type']);
 
+        if ($payment->getMethod() === Payment\Method::UPI && isset($input['gateway_settled_at']) === true){
+
+            $transaction->setGatewaySettledAt($input['gateway_settled_at']);
+
+        }
+
         if ($payment->getMethod() !== Payment\Method::UPI)
         {
             $transaction->setGatewayAmount($input['amount']);

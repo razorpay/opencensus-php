@@ -3,10 +3,12 @@
 namespace RZP\Tests\Functional\Gateway\Reconciliation\UpiHdfc;
 
 
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\QrCode;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Constants\Timezone;
 use RZP\Models\Batch\Status;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Payment\Method;
@@ -828,6 +830,73 @@ class UpiHdfcReconTest extends TestCase
             'The upi.npci reference id field is required.');
     }
 
+    public function testUpiHDFCUpdatePostReconData()
+    {
+
+        $this->setMockGatewayTrue();
+
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_mindgate_terminal');
+
+        $this->fixtures->merchant->enableMethod(Account::TEST_ACCOUNT, Method::UPI);
+
+        $this->fixtures->merchant->activate();
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $paymentId = substr($response['payment_id'], 4);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $content = $this->getDefaultUpiPostReconArray();
+
+        $content['payment_id'] = $paymentId;
+
+        $content['reconciled_at'] = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $content['gateway_settled_at'] = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        // The reconciled_at is not persisted yet
+        $this->assertEmpty($transactionEntity['reconciled_at']);
+
+        $transaction = $this->fixtures->create
+        ('transaction', ['entity_id' => $paymentId, 'merchant_id' => '10000000000000']);
+
+        $this->fixtures->edit('payment', $paymentId, ['transaction_id' => $transaction->getId()]);
+
+        $response = $this->makeUpdatePostReconRequestAndGetContent($content);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        // Assert empty reconciledAt in gateway entity
+        $this->assertEmpty($upiEntity['reconciled_at']);
+
+        $this->assertEmpty($upiEntity['gateway_settled_at']);
+
+        $this->assertEquals($content['upi']['npci_reference_id'], $upiEntity['npci_reference_id']);
+
+        $this->assertEquals($content['upi']['gateway_payment_id'], $upiEntity['gateway_payment_id']);
+
+        $this->assertNotEmpty($upiEntity['vpa']);
+
+        $updatedTransactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertEquals($content['reconciled_at'],$updatedTransactionEntity['reconciled_at']);
+
+        $this->assertNotEmpty($updatedTransactionEntity['reconciled_at']);
+
+        $this->assertNotEmpty($updatedTransactionEntity['gateway_settled_at']);
+
+        $this->assertTrue($response['success']);
+    }
+
 
 
     /**
@@ -1019,5 +1088,18 @@ class UpiHdfcReconTest extends TestCase
         $testData['request']['content']= $entries;
 
         $this->runRequestResponseFlow($testData);
+    }
+
+    private function makeUpdatePostReconRequestAndGetContent(array $input)
+    {
+        $request = [
+            'method'  => 'POST',
+            'content' => $input,
+            'url'     => '/reconciliate/data',
+        ];
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
     }
 }

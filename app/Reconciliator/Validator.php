@@ -241,6 +241,7 @@ class Validator extends Base\Core
         'reconciled_type'               => 'required|string',
         'amount'                        => 'required',
         'reconciled_at'                 => 'required|filled|epoch',
+        'gateway_settled_at'            => 'sometimes|epoch',
         'netbanking'                    => 'sometimes',
         'wallet'                        => 'sometimes'
     ];
