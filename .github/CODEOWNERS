@@ -44,11 +44,11 @@ app/Models/Payment/Repository.php                      nikhilesh.chamarthi@razor
 app/Models/Pricing/                                    @razorpay/pricing-team
 app/Models/Payout/                                     @razorpay/Payouts-core
 app/Models/Pricing/Payout.php                          @razorpay/Payouts-core
-app/Models/Reversal/                                   soutreya.kundu@razorpay.com                             @razorpay/Payouts-core
+app/Models/Reversal/                                   mohamed.safwan@razorpay.com                             @razorpay/Payouts-core
 app/Models/Terminal/Sorters/                           @razorpay/TechRulesRouting
 app/Models/Terminal/AuthSelector.php                   @razorpay/TechRulesRouting
 app/Models/Terminal/Selector.php                       @razorpay/TechRulesRouting
-app/Models/Transfer/                                   soutreya.kundu@razorpay.com
+app/Models/Transfer/                                   mohamed.safwan@razorpay.com
 app/Models/TrustedBadge                                @razorpay/checkout-backend-leads
 app/Models/FundTransfer/M2P/M2PConfigs.php             chirag.chiranjib@razorpay.com
 app/Models/Consumer/                                          @razorpay/spine-edge
@@ -79,7 +79,7 @@ app/Gateway/Upi                                        @razorpay/techupicore
 # Functional Tests
 #
 
-tests/Functional/Transfer/                             soutreya.kundu@razorpay.com
+tests/Functional/Transfer/                             mohamed.safwan@razorpay.com
 tests/Functional/BankingAccountStatement/              @razorpay/Payouts-core
 tests/Functional/Key/                                  @razorpay/spine-edge
 
