@@ -438,9 +438,9 @@ export const SR_FILTERS = {
 export const TABS_WITH_OPTIMIZER_DROPDOWN_FILTERS = ['UPI', 'Card', 'Netbanking'];
 
 export const TABS_VS_OPTIMIZER_GROUP_BY = {
+  UPI: ['upi_type'],
   Card: ['type', 'network', 'issuer'],
   Netbanking: ['bank'],
-  UPI: ['upi_type'],
 };
 
 export const FILTERS_VS_DISPLAY_NAMES = {

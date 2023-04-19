@@ -75,9 +75,9 @@ export const getDefaultOptimizerFilterValues = () =>
   );
 
 const getSelectedFilters = ({ selectedDropdownFilterOptions, isOptimizerEnabled }) => {
-  const defaultOptimizerFilters = getDefaultOptimizerFilterValues();
-
   if (!isOptimizerEnabled) return {};
+
+  const defaultOptimizerFilters = getDefaultOptimizerFilterValues();
 
   return selectedDropdownFilterOptions?.reduce((acc, option) => {
     const { query, value } = option || {};
@@ -88,21 +88,11 @@ const getSelectedFilters = ({ selectedDropdownFilterOptions, isOptimizerEnabled 
   }, {});
 };
 
-const getSelectedCardType = ({
-  isOptimizerEnabled = false,
-  activeTab,
-  selectedCardType = 'credit',
-}) => {
-  if (!isOptimizerEnabled) {
-    if (activeTab === 'Card') {
-      return { type: [selectedCardType] };
-    }
-  }
+/**
+ * @param updateDropdownOptions is true, when tab is not equal to 'Overall'
+ */
 
-  return {};
-};
-
-export const queryFilters = (updateDropdownOptions, refreshMetricTabs = false) => {
+export const queryFilters = (updateDropdownOptions = false, refreshMetricTabs = false) => {
   const { session, successRate } = store?.getState();
   const { isOptimizerEnabled = false } = session?.user ?? {};
   const { filters, activeTab: stateActiveTab, tabs } = successRate;
@@ -115,14 +105,14 @@ export const queryFilters = (updateDropdownOptions, refreshMetricTabs = false) =
     selectedCardType,
   } = tabs[activeTab] || {};
 
-  let _group_by = [successRate.tabs[stateActiveTab]?.group_by];
+  let _group_by = [DEFAULT_GROUP_BY[activeTab]];
   let filterMethods = DEFAULT_METHOD[activeTab]?.map(({ method }) => method);
 
   if (updateDropdownOptions) {
     if (isOptimizerEnabled) {
       _group_by = TABS_VS_OPTIMIZER_GROUP_BY?.[activeTab];
     } else {
-      _group_by = [DEFAULT_GROUP_BY[activeTab]];
+      _group_by = [tabs[activeTab]?.group_by];
     }
   }
 
@@ -144,12 +134,12 @@ export const queryFilters = (updateDropdownOptions, refreshMetricTabs = false) =
     filters: {
       method: filterMethods,
       ...(updateDropdownOptions
-        ? {}
-        : getSelectedFilters({
+        ? getSelectedFilters({
             selectedDropdownFilterOptions,
             isOptimizerEnabled,
-          })),
-      ...getSelectedCardType({ activeTab, selectedCardType, isOptimizerEnabled }),
+          })
+        : {}),
+      ...(!isOptimizerEnabled && activeTab === 'Card' ? { type: [selectedCardType] } : {}),
     },
     group_by: {
       keys: _group_by,
@@ -514,12 +504,12 @@ export const getMerchantErrorsPayload = (updateDropdownOptions) => {
     filters: {
       method: filterMethods,
       ...(updateDropdownOptions
-        ? {}
-        : getSelectedFilters({
+        ? getSelectedFilters({
             selectedDropdownFilterOptions,
             isOptimizerEnabled,
-          })),
-      ...getSelectedCardType({ activeTab, selectedCardType, isOptimizerEnabled }),
+          })
+        : {}),
+      ...(!isOptimizerEnabled && activeTab === 'Card' ? { type: [selectedCardType] } : {}),
     },
     group_by: {
       limit: 6,

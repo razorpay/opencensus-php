@@ -10,6 +10,7 @@ import {
   setDefaultLastUpdatedAt,
   setActiveTab,
   setCardTypeFilter,
+  setGroupTypeFilter,
 } from 'merchant/reducers/successRate';
 import {
   getBreakdownInterval,
@@ -22,6 +23,7 @@ import {
   PRESETS,
   DEFAULT_INTERVAL,
   INITIAL_SELECTED_CARD_TYPE,
+  DEFAULT_GROUP_BY,
 } from 'merchant/views/Transactions/SuccessRate/constants';
 import {
   clearFilterSuccessRate,
@@ -44,6 +46,7 @@ const SuccessRateFilter = (props) => {
     activeTab,
     tab,
     setActiveTab,
+    setGroupTypeFilter,
     setCardTypeFilter,
   } = props;
 
@@ -69,7 +72,10 @@ const SuccessRateFilter = (props) => {
     setDefaultInterval(getBreakdownInterval(startDate, endDate));
     setDefaultLastUpdatedAt();
 
-    if (activeTab === 'Card') setCardTypeFilter(INITIAL_SELECTED_CARD_TYPE);
+    if (activeTab === 'Card') {
+      setGroupTypeFilter(DEFAULT_GROUP_BY[activeTab]);
+      setCardTypeFilter(INITIAL_SELECTED_CARD_TYPE);
+    }
 
     if (isOverallTabActive) {
       await fetchSuccessRate({
@@ -183,6 +189,7 @@ const mapDispatchToProps = (dispatch) => {
       setDefaultLastUpdatedAt,
       setActiveTab,
       setCardTypeFilter,
+      setGroupTypeFilter,
     },
     dispatch,
   );

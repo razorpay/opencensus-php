@@ -34,7 +34,10 @@ import {
   methodDropdownChange,
   trackSuccessRateEvents,
 } from 'merchant/views/Transactions/SuccessRate/trackEvents';
-import { INITIAL_SELECTED_CARD_TYPE } from 'merchant/views/Transactions/SuccessRate/constants';
+import {
+  DEFAULT_GROUP_BY,
+  INITIAL_SELECTED_CARD_TYPE,
+} from 'merchant/views/Transactions/SuccessRate/constants';
 
 const GraphWidget = (props) => {
   const {
@@ -71,12 +74,13 @@ const GraphWidget = (props) => {
     setActiveTab(tab.name);
     setDefaultInterval(getBreakdownInterval(startDate, endDate));
 
-    if (tab.name === 'Card') {
-      setCardTypeFilter(INITIAL_SELECTED_CARD_TYPE);
-    }
-
     if (!lastUpdatedAt || diffInSec >= 300) {
-      const updateDropdownOptions = tab.name != 'Overall';
+      if (tab.name === 'Card') {
+        setGroupTypeFilter(DEFAULT_GROUP_BY[activeTab]);
+        setCardTypeFilter(INITIAL_SELECTED_CARD_TYPE);
+      }
+
+      const updateDropdownOptions = tab.name !== 'Overall';
       const payload = queryFilters(updateDropdownOptions);
       fetchSuccessRate({ payload, updateDropdownOptions });
       const errorsPaylod = getMerchantErrorsPayload(updateDropdownOptions);
@@ -88,9 +92,13 @@ const GraphWidget = (props) => {
 
   const handleGroupingChange = ({ option }) => {
     const user = getUser();
+    const updateDropdownOptions = activeTab !== 'Overall';
     setSelectedDropdownFilterOptions(option);
     !user?.isOptimizerEnabled && setGroupTypeFilter(option?.value);
-    fetchSuccessRate({ payload: queryFilters(), resetSelectedInterval: false });
+    fetchSuccessRate({
+      payload: queryFilters(updateDropdownOptions),
+      resetSelectedInterval: false,
+    });
     if (user?.isOptimizerEnabled) {
       fetchMerchantErrors(getMerchantErrorsPayload());
     }

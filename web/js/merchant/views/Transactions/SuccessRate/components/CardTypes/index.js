@@ -16,6 +16,7 @@ import {
 } from 'merchant/views/Transactions/SuccessRate/helper';
 
 const CardTypes = ({
+  activeTab,
   selectedCardType,
   setCardTypeFilter,
   fetchSuccessRate,
@@ -25,8 +26,8 @@ const CardTypes = ({
     if (selectedCardType === selectedValue) return;
 
     setCardTypeFilter(selectedValue);
-
-    const payload = queryFilters();
+    const updateDropdownOptions = activeTab !== 'Overall';
+    const payload = queryFilters(updateDropdownOptions);
     fetchSuccessRate({ payload, resetSelectedInterval: false });
     const errorsPaylod = getMerchantErrorsPayload();
     fetchMerchantErrors(errorsPaylod);
@@ -51,7 +52,7 @@ const mapStateToProps = ({ successRate }) => {
   const { activeTab, tabs } = successRate;
   const { selectedCardType = '' } = tabs[activeTab];
 
-  return { selectedCardType };
+  return { activeTab, selectedCardType };
 };
 
 const mapDispatchToProps = (dispatch) => {

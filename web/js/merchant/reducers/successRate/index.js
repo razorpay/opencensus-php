@@ -46,137 +46,127 @@ const FETCH_INTERVALS = 'FETCH_INTERVALS';
 const SET_SELECTED_DROPDOWN_FILTER_OPTIONS = 'SET_SELECTED_DROPDOWN_FILTER_OPTIONS';
 const SET_CARD_TYPE_FILTER = 'SET_CARD_TYPE_FILTER';
 
-export const fetchSuccessRate = ({
-  payload,
-  updateDropdownOptions,
-  resetSelectedInterval = true,
-  refreshMetricTabs = false,
-}) => async (dispatch) => {
-  const { successRate = {}, session } = store?.getState();
-  const user = session?.user;
-  const { activeTab: stateActiveTab, metrics, tabs } = successRate;
-  const activeTab = refreshMetricTabs ? 'Overall' : stateActiveTab;
-  const {
-    selectedInterval,
-    group_by,
-    dropdownFilterOptions,
-    selectedDropdownFilterOptions,
-  } = tabs?.[activeTab];
-  const newSelectedInterval = resetSelectedInterval
-    ? getBreakdownInterval(moment.unix(payload.from), moment.unix(payload.to))
-    : selectedInterval;
-  let newDropdownFilterOptions = dropdownFilterOptions;
-  let newSelectedDropdownFilterOptions = selectedDropdownFilterOptions;
-  let newGroupBy = group_by;
+export const fetchSuccessRate =
+  ({ payload, updateDropdownOptions, resetSelectedInterval = true, refreshMetricTabs = false }) =>
+  async (dispatch) => {
+    const { successRate = {}, session } = store?.getState();
+    const user = session?.user;
+    const { activeTab: stateActiveTab, metrics, tabs } = successRate;
+    const activeTab = refreshMetricTabs ? 'Overall' : stateActiveTab;
+    const { selectedInterval, group_by, dropdownFilterOptions, selectedDropdownFilterOptions } =
+      tabs?.[activeTab];
+    const newSelectedInterval = resetSelectedInterval
+      ? getBreakdownInterval(moment.unix(payload.from), moment.unix(payload.to))
+      : selectedInterval;
+    let newDropdownFilterOptions = dropdownFilterOptions;
+    let newSelectedDropdownFilterOptions = selectedDropdownFilterOptions;
+    let newGroupBy = group_by;
 
-  dispatch({
-    type: `${FETCH_SUCCESS_RATE}::PENDING`,
-    payload: {
-      [activeTab === 'Overall' ? 'isLoading' : 'tabLoading']: true,
-      isDropdownFilterLoading: updateDropdownOptions,
-    },
-  });
+    dispatch({
+      type: `${FETCH_SUCCESS_RATE}::PENDING`,
+      payload: {
+        [activeTab === 'Overall' ? 'isLoading' : 'tabLoading']: true,
+        isDropdownFilterLoading: updateDropdownOptions,
+      },
+    });
 
-  try {
-    const promises = [];
+    try {
+      const promises = [];
 
-    promises.push(getSR(payload));
+      promises.push(getSR(payload));
 
-    // Fetch downtimes for hourly intervals and for razorpay merchants.
-    if (
-      newSelectedInterval === 'hourly' &&
-      [CARD, NETBANKING, EMANDATE].includes(activeTab) &&
-      !refreshMetricTabs &&
-      !user?.isOptimizerEnabled
-    ) {
-      // Taking start date 24hr before endDate as downtime api doesnt support time query params and we show hourly graph if it is <= 24hr.
-      const startDate = moment(payload.to * 1000)
-        .clone()
-        .subtract(24, 'hour')
-        .format('YYYY-MM-DD');
-      const endDate = moment(payload.to * 1000).format('YYYY-MM-DD');
+      // Fetch downtimes for hourly intervals and for razorpay merchants.
+      if (
+        newSelectedInterval === 'hourly' &&
+        [CARD, NETBANKING, EMANDATE].includes(activeTab) &&
+        !refreshMetricTabs &&
+        !user?.isOptimizerEnabled
+      ) {
+        // Taking start date 24hr before endDate as downtime api doesnt support time query params and we show hourly graph if it is <= 24hr.
+        const startDate = moment(payload.to * 1000)
+          .clone()
+          .subtract(24, 'hour')
+          .format('YYYY-MM-DD');
+        const endDate = moment(payload.to * 1000).format('YYYY-MM-DD');
 
-      const data = {
-        skip: '0',
-        startDate,
-        endDate,
-        method: activeTab.toLowerCase(),
+        const data = {
+          skip: '0',
+          startDate,
+          endDate,
+          method: activeTab.toLowerCase(),
+        };
+
+        promises.push(getResolvedDowntimes(data), getOngoingDowntimes());
+      }
+
+      const [{ data: sr } = {}, { data: resolvedDowntimes } = {}, { data: ongoingDowntimes } = {}] =
+        await Promise.all(promises);
+
+      if (sr?.Code === 'SERVER_ERROR') throw new Error(sr?.Description);
+
+      if (updateDropdownOptions) {
+        if (!user?.isOptimizerEnabled) {
+          newDropdownFilterOptions = SR_FILTERS?.[activeTab];
+          newSelectedDropdownFilterOptions = getInitialGroupings(newDropdownFilterOptions);
+          newGroupBy = DEFAULT_GROUP_BY[activeTab];
+        } else {
+          newDropdownFilterOptions = getOptimizerFilters(sr, activeTab);
+          newSelectedDropdownFilterOptions = getInitialGroupings(newDropdownFilterOptions);
+        }
+      }
+
+      const options = {
+        data: sr,
+        startTime: payload.from,
+        endTime: payload.to,
+        breakdown: newSelectedInterval,
+        group_by: activeTab === 'Overall' || !user.isOptimizerEnabled ? newGroupBy : 'procurer',
+        activeTab,
+        resolvedDowntimes,
+        ongoingDowntimes,
       };
 
-      promises.push(getResolvedDowntimes(data), getOngoingDowntimes());
-    }
+      const res = onFetchSR(options);
 
-    const [
-      { data: sr } = {},
-      { data: resolvedDowntimes } = {},
-      { data: ongoingDowntimes } = {},
-    ] = await Promise.all(promises);
-
-    if (sr?.Code === 'SERVER_ERROR') throw new Error(sr?.Description);
-
-    if (updateDropdownOptions) {
-      if (!user?.isOptimizerEnabled) {
-        newDropdownFilterOptions = SR_FILTERS?.[activeTab];
-        newSelectedDropdownFilterOptions = getInitialGroupings(newDropdownFilterOptions);
-        newGroupBy = DEFAULT_GROUP_BY[activeTab];
-      } else {
-        newDropdownFilterOptions = getOptimizerFilters(sr, activeTab);
-        newSelectedDropdownFilterOptions = getInitialGroupings(newDropdownFilterOptions);
-      }
-    }
-
-    const options = {
-      data: sr,
-      startTime: payload.from,
-      endTime: payload.to,
-      breakdown: newSelectedInterval,
-      group_by: activeTab === 'Overall' || !user.isOptimizerEnabled ? newGroupBy : 'procurer',
-      activeTab,
-      resolvedDowntimes,
-      ongoingDowntimes,
-    };
-
-    const res = onFetchSR(options);
-
-    if (activeTab === 'Overall') {
-      const metricsResult = getMetricsData({
-        metrics,
-        data: sr,
-        payload,
-        breakdown: newSelectedInterval,
-        group_by,
-      });
-
-      dispatch({
-        type: SET_METRICS_DATA,
-        payload: metricsResult,
-      });
-    }
-
-    !refreshMetricTabs &&
-      dispatch({
-        type: `${FETCH_SUCCESS_RATE}::SUCCESS`,
-        payload: {
-          ...tabs[activeTab],
+      if (activeTab === 'Overall') {
+        const metricsResult = getMetricsData({
+          metrics,
           data: sr,
-          error: null,
-          fetched: true,
-          selectedInterval: newSelectedInterval,
-          dropdownFilterOptions: newDropdownFilterOptions,
-          selectedDropdownFilterOptions: newSelectedDropdownFilterOptions,
-          group_by: newGroupBy,
-          downtimes: { resolved: resolvedDowntimes || [], ongoing: ongoingDowntimes || [] },
-          lastUpdatedAt: moment().unix(),
-          ...res,
-        },
+          payload,
+          breakdown: newSelectedInterval,
+          group_by,
+        });
+
+        dispatch({
+          type: SET_METRICS_DATA,
+          payload: metricsResult,
+        });
+      }
+
+      !refreshMetricTabs &&
+        dispatch({
+          type: `${FETCH_SUCCESS_RATE}::SUCCESS`,
+          payload: {
+            ...tabs[activeTab],
+            data: sr,
+            error: null,
+            fetched: true,
+            selectedInterval: newSelectedInterval,
+            dropdownFilterOptions: newDropdownFilterOptions,
+            selectedDropdownFilterOptions: newSelectedDropdownFilterOptions,
+            group_by: newGroupBy,
+            downtimes: { resolved: resolvedDowntimes || [], ongoing: ongoingDowntimes || [] },
+            lastUpdatedAt: moment().unix(),
+            ...res,
+          },
+        });
+    } catch (error) {
+      dispatch({
+        type: `${FETCH_SUCCESS_RATE}::ERROR`,
+        payload: getErrorMessage(error),
       });
-  } catch (error) {
-    dispatch({
-      type: `${FETCH_SUCCESS_RATE}::ERROR`,
-      payload: getErrorMessage(error),
-    });
-  }
-};
+    }
+  };
 
 export const fetchMerchantErrors = (payload) => {
   return {
@@ -415,9 +405,12 @@ export default (state = getInitialState(), action) => {
 
     case SET_DEFAULT_LAST_UPDATED_AT: {
       const stateClone = cloneDeep(state);
-      Object.keys(state?.tabs)?.forEach((tabName) =>
-        lodashset(stateClone, `tabs.${tabName}.lastUpdatedAt`, null),
-      );
+
+      Object.keys(state?.tabs)?.forEach((tabName) => {
+        lodashset(stateClone, `tabs.${tabName}.lastUpdatedAt`, null);
+        lodashset(stateClone, `tabs.${tabName}.selectedDropdownFilterOptions`, []);
+      });
+
       return stateClone;
     }
 

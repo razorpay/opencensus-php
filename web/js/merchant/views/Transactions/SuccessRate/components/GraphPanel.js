@@ -133,7 +133,8 @@ const GraphPanel = (props) => {
 
   const handleBreakdown = (breakdown) => {
     if (breakdown === selectedInterval) return;
-    const payload = queryFilters();
+    const updateDropdownOptions = activeTab !== 'Overall';
+    const payload = queryFilters(updateDropdownOptions);
     payload.interval = breakdownInterval[breakdown];
     props.fetchBreakdownIntervals(breakdown, payload);
     trackSuccessRateEvents(methodIntervalClick({ breakdown }));
