@@ -29,8 +29,8 @@ class Captured extends Base
 
         $storkParams = [
             'template_namespace' => 'payments_core',
+            'org_id'             => $data['org']['id'],
             'params'             => [
-                'org_id'                    => $data['org']['id'],
                 'payment_public_id'         => $data['payment']['public_id'],
                 'amount_symbol'             => $data['payment']['amount_spread'][0],
                 'amount_units'              => $data['payment']['amount_spread'][1],
