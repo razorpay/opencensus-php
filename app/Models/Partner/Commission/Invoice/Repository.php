@@ -35,6 +35,13 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function isProcessedInvoicePresentForPartner(string $partnerId) {
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::SLAVE))
+            ->where(Entity::MERCHANT_ID, '=', $partnerId)
+            ->where(Entity::STATUS, '=', Status::PROCESSED)
+            ->exists();
+    }
+
     public function fetchMerchantIdsByInvoiceStatus(string $status, int $from) : array
     {
         $partners = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::SLAVE))

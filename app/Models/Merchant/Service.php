@@ -10989,7 +10989,12 @@ class Service extends Base\Service
 
         $response['first_earning_generated'] = $this->repo->commission->isEarningsPresentForPartner($partnerId);
 
-        $response['first_commission_payout'] = $this->repo->commission->isCommissionPayoutPresentForPartner($partnerId);
+        if ($this->isFirstCommPayoutExperimentEnabled($partnerId))
+        {
+            $response['first_commission_payout'] = $this->repo->commission_invoice->isProcessedInvoicePresentForPartner($partnerId);
+        } else {
+            $response['first_commission_payout'] = $this->repo->commission->isCommissionPayoutPresentForPartner($partnerId);
+        }
 
         $entityOrigins = $this->repo->entity_origin->fetchOriginApplicationsForPartner($partnerId, 2);
 
@@ -11394,6 +11399,25 @@ class Service extends Base\Service
             'experiment_id' => $this->app['config']->get('app.partner_type_migration_exp_id'),
         ];
 
+        return $this->core()->isSplitzExperimentEnable($properties, 'enable');
+    }
+
+    /**
+     * Checks whether partner commission payout will be queried from commission_invoice table.
+     *
+     * @param string $partnerId
+     *
+     * @return bool
+     */
+    private function isFirstCommPayoutExperimentEnabled(string $partnerId): bool
+    {
+        $properties = [
+            'id'            => $partnerId,
+            'experiment_id' => $this->app['config']->get('app.partner_first_comm_payout_exp_id'),
+            'request_data'  => json_encode([
+                'mid' => $partnerId,
+            ]),
+        ];
         return $this->core()->isSplitzExperimentEnable($properties, 'enable');
     }
 
