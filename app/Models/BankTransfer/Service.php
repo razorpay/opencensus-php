@@ -964,6 +964,13 @@ class Service extends Base\Service
 
                     $responseBody = $this->app->mozart->sendMozartRequest('onboarding',Constants\Entity::CURRENCY_CLOUD,'account_create',$requestBody);
 
+                    if(!isset($responseBody['data']['account_id']) || !isset($responseBody['data']['contact_id']))
+                    {
+                        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR_SOURCE_ACCOUNT_CREATION_FAILED, null, [
+                            'response' => $responseBody,
+                        ]);
+                    }
+
                     $merchantInternationalIntegrations = [
                         InternationalIntegration\Entity::MERCHANT_ID        => $merchantId,
                         InternationalIntegration\Entity::INTEGRATION_ENTITY => Constants\Entity::CURRENCY_CLOUD,
@@ -1072,6 +1079,7 @@ class Service extends Base\Service
             'last_name'  => isset($name[1]) ? $name[1] : "_",
             'email'      => $merchantDetail->getContactEmail(),
             'phone'      => $merchantDetail->getContactMobile(),
+            'login_id'   => $merchantId."_razorpay"
         ];
 
         $requestBody = [
