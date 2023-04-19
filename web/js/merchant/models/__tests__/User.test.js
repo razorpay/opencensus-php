@@ -191,4 +191,34 @@ describe('User model', () => {
     const isInstrumentRequestHidden = user.isInstrumentRequestHidden;
     expect(isInstrumentRequestHidden).toBe(false);
   });
+
+  test('get isIssuingBulkUploadEnabled: exp disabled', () => {
+    const user = getDefaultUserObj();
+
+    jest.spyOn(user, 'getExpStatus').mockReturnValue(false);
+    jest.spyOn(user, 'userRole', 'get').mockReturnValue('manager');
+
+    const isIssuingBulkUploadEnabled = user.isIssuingBulkUploadEnabled;
+    expect(isIssuingBulkUploadEnabled).toBe(false);
+  });
+
+  test('get isIssuingBulkUploadEnabled: when exp enabeld, but role criteria not met', () => {
+    const user = getDefaultUserObj();
+
+    jest.spyOn(user, 'getExpStatus').mockReturnValue(true);
+    jest.spyOn(user, 'userRole', 'get').mockReturnValue('support');
+
+    const isIssuingBulkUploadEnabled = user.isIssuingBulkUploadEnabled;
+    expect(isIssuingBulkUploadEnabled).toBe(false);
+  });
+
+  test('get isIssuingBulkUploadEnabled: exp enabeld, role criteria met', () => {
+    const user = getDefaultUserObj();
+
+    jest.spyOn(user, 'getExpStatus').mockReturnValue(true);
+    jest.spyOn(user, 'userRole', 'get').mockReturnValue('manager');
+
+    const isIssuingBulkUploadEnabled = user.isIssuingBulkUploadEnabled;
+    expect(isIssuingBulkUploadEnabled).toBe(true);
+  });
 });

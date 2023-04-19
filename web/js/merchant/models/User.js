@@ -908,7 +908,11 @@ export default class User {
   }
 
   get isIssuingBulkUploadEnabled() {
-    return this.getExpStatus('issuinghq_wallet_bulk_actions_enabled');
+    const allowedRoles = [rolesList.MANAGER, rolesList.OWNER, rolesList.FINANCE];
+    return (
+      this.getExpStatus('issuinghq_wallet_bulk_actions_enabled') &&
+      allowedRoles.indexOf(this.userRole) > -1
+    );
   }
 
   get isRegistrationLinkTokenAndPaymentsEnabled() {
