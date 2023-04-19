@@ -834,7 +834,8 @@ class Validator extends Base\Validator
         return in_array($routeName,['upi_transfer_process',
                                     'upi_transfer_process_test',
                                     'gateway_payment_callback_bharatqr',
-                                    'bharat_qr_pay_test']);
+                                    'bharat_qr_pay_test',
+                                    'payment_callback_bharatqr_internal']);
     }
 
     protected function isBharatQr()
@@ -844,6 +845,7 @@ class Validator extends Base\Validator
         $routeName = $app['router']->currentRouteName();
 
         return in_array($routeName, ['gateway_payment_callback_bharatqr',
+                                     'payment_callback_bharatqr_internal',
                                      'bharat_qr_pay_test']);
     }
 
