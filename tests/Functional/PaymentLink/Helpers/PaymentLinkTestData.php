@@ -1326,6 +1326,15 @@ return [
         ],
     ],
 
+    'testPaymentPageStatusUpdate' => [
+        'request' => [
+            'url' => '',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => []
+    ],
+
     'testPaymentLinkMakePayment' => [
         // Used to assert payment link's attributes after payment in test
         'payment_link' => [
