@@ -244,6 +244,7 @@ class Checkout
 
         $expectedAsDictionaries = [
             'app',
+            'app_meta',
             'card_networks',
             'card_subtype',
             'cardless_emi',
