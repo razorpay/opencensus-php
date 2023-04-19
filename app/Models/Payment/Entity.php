@@ -1682,6 +1682,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     // set function for wallet_user_id sent in payment create request from razorpaywallet
     public function setReference14($walletUserId)
     {
+        //If wallet_user_id has prefix iuser_, strip it to get 14 char id before storing it
+        $prefix = "iuser_";
+        if (substr($walletUserId, 0, strlen($prefix)) === $prefix) {
+            $walletUserId = substr($walletUserId, strlen($prefix));
+        }
         $this->setAttribute(self::REFERENCE14, $walletUserId);
     }
 
