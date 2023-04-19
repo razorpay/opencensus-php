@@ -337,6 +337,11 @@ class Processor
     const SAVED_CARD_PAYMENTS_VIA_PGROUTER = 'saved_card_payments_via_pg_router';
 
     /**
+     * Razorx flag to indicate if a payment with save option on custom/razorpayjs should go via PG Router and CPS or just via API service
+     */
+    const SAVED_CARD_PAYMENTS_VIA_PGROUTER_V2 = 'saved_card_payments_via_pg_router_v2';
+
+    /**
      * Razorx flag to block merchants from re-arch flow
      */
     const BLOCK_MERCHANTS_ON_REARCH_UPS = 'block_merchants_on_rearch_ups';
@@ -865,6 +870,13 @@ class Processor
 
                 if ($library !== null && $library !== Payment\Analytics\Metadata::CHECKOUTJS)
                 {
+                    if ($library === Payment\Analytics\Metadata::CUSTOM || $library === Payment\Analytics\Metadata::RAZORPAYJS)
+                    {
+                        $result = $this->app->razorx->getTreatment($merchant->getId(), self::SAVED_CARD_PAYMENTS_VIA_PGROUTER_V2, $this->mode);
+
+                        return ($result === 'on');
+                    }
+
                     return false;
                 }
 
