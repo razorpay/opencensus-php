@@ -765,33 +765,6 @@ class PaymentMarketplaceTransferTest extends TestCase
         $this->assertEquals($subMerchantId, $transfer->getMerchantId());
     }
 
-    public function testCreatePaymentTransferWithPartnerAuthForInvalidPartnerType()
-    {
-        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
-
-        $this->fixtures->merchant->addFeatures(['marketplace'], '10000000000000');
-
-        $this->fixtures->merchant->addFeatures(['route_partnerships'], '10000000000000');
-
-        $this->fixtures->edit('payment', $this->payment['id'], ['merchant_id' => $subMerchantId,]);
-
-        $this->fixtures->edit('balance', '10000000000000', ['merchant_id' => $subMerchantId,]);
-
-        $testData = $this->testData[__FUNCTION__];
-
-        $testData['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $subMerchantId;
-
-        $this->mockAllSplitzTreatment();
-
-        $this->setRequestData($testData['request']);
-
-        $this->sendRequest($testData['request']);
-
-        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
-
-        $this->runRequestResponseFlow($testData);
-    }
-
     public function testCreatePaymentTransferWithPartnerAuthForInvalidPartnerMerchantMapping()
     {
         $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
@@ -819,6 +792,217 @@ class PaymentMarketplaceTransferTest extends TestCase
         $merchant = $this->fixtures->create('merchant');
 
         $this->fixtures->edit('merchant_access_map', $accessMap['id'], ['merchant_id' => $merchant['id']]);
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testCreatePaymentTransferWithPartnerAuthForInvalidPartnerType()
+    {
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(['marketplace'], '10000000000000');
+
+        $this->fixtures->merchant->addFeatures(['route_partnerships'], '10000000000000');
+
+        $this->fixtures->edit('payment', $this->payment['id'], ['merchant_id' => $subMerchantId,]);
+
+        $this->fixtures->edit('balance', '10000000000000', ['merchant_id' => $subMerchantId,]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $subMerchantId;
+
+        $this->mockAllSplitzTreatment();
+
+        $this->setRequestData($testData['request']);
+
+        $this->sendRequest($testData['request']);
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testReleaseSubmerchantPaymentByPartner()
+    {
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(['subm_manual_settlement'], '10000000000000');
+
+        $this->fixtures->edit('payment', $this->payment['id'], ['merchant_id' => $subMerchantId,]);
+
+        $this->fixtures->edit('payment', $this->payment['id'], ['on_hold' => true]);
+
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->fixtures->edit('transaction', $transaction->id, ['on_hold' => true]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $subMerchantId;
+
+        $testData['request']['url'] = '/payments/' . $this->payment['id'] . '/settle';
+
+        $this->mockAllSplitzTreatment();
+
+        $this->runRequestResponseFlow($testData);
+
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->assertFalse($transaction->getOnHold());
+
+        $this->assertFalse($transaction->isSettled());
+    }
+
+    public function testReleaseSubmerchantPaymentByPartnerWithFeatureDisabled()
+    {
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->edit('payment', $this->payment['id'], ['merchant_id' => $subMerchantId,]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $subMerchantId;
+
+        $testData['request']['url'] = '/payments/' . $this->payment['id'] . '/settle';
+
+        $this->mockAllSplitzTreatment();
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testReleaseSubmerchantPaymentByPartnerWithInvalidPaymentMerchant()
+    {
+        $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(['subm_manual_settlement'], '10000000000000');
+
+        $this->fixtures->create('merchant', ['id' => '10000000000005']);
+
+        $this->fixtures->edit('payment', $this->payment['id'], ['merchant_id' => '10000000000005',]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_10000000000005';
+
+        $testData['request']['url'] = '/payments/' . $this->payment['id'] . '/settle';
+
+        $this->mockAllSplitzTreatment();
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testReleaseSubmerchantPaymentByPartnerWithUnmappedMerchant()
+    {
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(['subm_manual_settlement'], '10000000000000');
+
+        $this->fixtures->create('merchant', ['id' => '10000000000005']);
+
+        $this->fixtures->edit('payment', $this->payment['id'], ['merchant_id' => $subMerchantId,]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $subMerchantId;
+
+        $testData['request']['url'] = '/payments/' . $this->payment['id'] . '/settle';
+
+        $accessMap = $this->getDbLastEntity('merchant_access_map');
+
+        $this->fixtures->edit('merchant_access_map', $accessMap['id'], ['merchant_id' => '10000000000005']);
+
+        $this->mockAllSplitzTreatment();
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testReleaseSubmerchantPaymentByPartnerWhichIsNotCaptured()
+    {
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(['subm_manual_settlement'], '10000000000000');
+
+        $this->fixtures->edit('payment', $this->payment['id'], ['merchant_id' => $subMerchantId,]);
+
+        $this->fixtures->edit('payment', $this->payment['id'], ['on_hold' => true]);
+
+        $this->fixtures->edit('payment', $this->payment['id'], ['status' => 'authorized']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $subMerchantId;
+
+        $testData['request']['url'] = '/payments/' . $this->payment['id'] . '/settle';
+
+        $this->mockAllSplitzTreatment();
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testReleaseSubmerchantPaymentByPartnerWithTrxnNotOnHold()
+    {
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(['subm_manual_settlement'], '10000000000000');
+
+        $this->fixtures->edit('payment', $this->payment['id'], ['merchant_id' => $subMerchantId,]);
+
+        $this->fixtures->edit('payment', $this->payment['id'], ['on_hold' => true]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $subMerchantId;
+
+        $testData['request']['url'] = '/payments/' . $this->payment['id'] . '/settle';
+
+        $this->mockAllSplitzTreatment();
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testReleaseSubmerchantPaymentByPartnerWithTrxnAlreadySettled()
+    {
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(['subm_manual_settlement'], '10000000000000');
+
+        $this->fixtures->edit('payment', $this->payment['id'], ['merchant_id' => $subMerchantId,]);
+
+        $this->fixtures->edit('payment', $this->payment['id'], ['on_hold' => true]);
+
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->fixtures->edit('transaction', $transaction->id, ['on_hold' => true]);
+
+        $this->fixtures->edit('transaction', $transaction->id, ['settled' => true]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $subMerchantId;
+
+        $testData['request']['url'] = '/payments/' . $this->payment['id'] . '/settle';
+
+        $this->mockAllSplitzTreatment();
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testReleaseSubmerchantPaymentByInvalidPartnerType()
+    {
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(['subm_manual_settlement'], '10000000000000');
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'reseller']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $subMerchantId;
+
+        $testData['request']['url'] = '/payments/' . $this->payment['id'] . '/settle';
+
+        $this->mockAllSplitzTreatment();
 
         $this->runRequestResponseFlow($testData);
     }

@@ -103,4 +103,17 @@ class Validator extends Base\Validator
         }
         return true;
     }
+
+    /**
+     * @param Entity $partner
+     *
+     * @throws BadRequestException
+     */
+    public function validateIfSubmerchantManualSettlementEnabled(Entity $partner)
+    {
+        if ($partner->isSubmerchantManualSettlementEnabled() === false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_MANUAL_SETTLEMENT_NOT_ALLOWED, $partner->getId());
+        }
+    }
 }

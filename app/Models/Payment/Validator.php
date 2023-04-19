@@ -9,31 +9,32 @@ use Carbon\Carbon;
 use Lib\PhoneBook;
 
 use RZP\Base;
-use RZP\Diag\EventCode;
 use RZP\Error;
 use RZP\Exception;
-use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Vpa;
+use RZP\Diag\EventCode;
 use Razorpay\IFSC\IFSC;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Customer\Token;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Currency\Currency;
+use Illuminate\Validation\Concerns;
 use RZP\Error\PublicErrorDescription;
 use RZP\Gateway\Upi\Base\ProviderCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Reconciliator\Base\Reconciliate;
+use RZP\Models\Payment\Processor\UpiTrait;
 use RZP\Models\Payment\Processor\Constants;
 use RZP\Models\Payment\Processor\CardlessEmi;
-use RZP\Models\Payment\Processor\UpiTrait;
 use RZP\Models\Currency\Core as CurrencyCore;
-use Illuminate\Validation\Concerns;
-use RZP\Trace\TraceCode;
 
 class Validator extends Base\Validator
 {
@@ -2038,6 +2039,35 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid purpose type.', 'purpose');
+        }
+    }
+
+    /**
+     * @param Entity $payment
+     *
+     * @throws BadRequestException
+     */
+    public function validatePaymentRelease(Entity $payment)
+    {
+        if ($payment->isCaptured() === false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED, $payment->getId());
+        }
+
+        $transaction = $payment->transaction;
+
+        if ($transaction->isOnHold() === false)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_TRANSACTION_NOT_ON_HOLD, $transaction->getId());
+        }
+
+        if ($transaction->isSettled() === true)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_SETTLED,
+                $payment->getId(),
+                [Entity::TRANSACTION_ID => $transaction->getId()]
+            );
         }
     }
 }

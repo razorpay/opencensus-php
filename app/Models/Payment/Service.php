@@ -63,8 +63,10 @@ use RZP\Models\Payment\Verify\Verify;
 use RZP\Models\Locale\Core as Locale;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Models\Partner\Service as PartnerService;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\CardMandate\CardMandateNotification;
+use RZP\Models\Partner\Validator as PartnerValidator;
 use RZP\Models\Payment\Verify\Result as VerifyResult;
 use RZP\Services\Segment\Constants as SegmentConstants;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -6943,5 +6945,108 @@ class Service extends Base\Service
             [Payment\Status::CAPTURED, Payment\Status::AUTHORIZED],
             true
         );
+    }
+
+    /**
+     * @param string $paymentId
+     *
+     * @return mixed
+     * @throws BadRequestException
+     * @throws Exception\LogicException
+     * @throws Throwable
+     */
+    public function releaseSubmerchantPayment(string $paymentId): mixed
+    {
+        if ($this->app['basicauth']->isPartnerAuth() === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_AUTH_TYPE,
+                null,
+                [PaymentConstants::PAYMENT_ID => $paymentId]
+            );
+        }
+
+        $partner = $this->app['basicauth']->getPartnerMerchant();
+
+        $this->trace->info(
+            TraceCode::SUBMERCHANT_PAYMENT_RELEASE_REQUEST,
+            [
+                'payment_id'    => $paymentId,
+                'merchant_id'   => $this->merchant->getId(),
+                'partner_id'    => $partner->getId()
+            ]
+        );
+
+        (new Merchant\Validator())->validateIsAggregatorPartner($partner);
+
+        (new PartnerValidator())->validateIfSubmerchantManualSettlementEnabled($partner);
+
+        $manualSettlementExpEnabled = (new PartnerService())->isSubmerchantPaymentManualSettlementExpEnabled($partner);
+
+        if ($manualSettlementExpEnabled !== true)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBMERCHANT_MANUAL_SETTLEMENT_EXP_NOT_ENABLED,
+                $partner->getId()
+            );
+        }
+
+        Entity::verifyIdAndSilentlyStripSign($paymentId);
+
+        /** @var Payment\Entity */
+        $payment = $this->repo->payment->findOrFailPublic($paymentId);
+
+        $paymentMid = $payment->merchant->getId();
+
+        if ($this->merchant->getId() !== $paymentMid)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_PAYMENT_ID,
+                $paymentId,
+                [
+                    'request_mid'   => $this->merchant->getId(),
+                    'payment_mid'   => $paymentMid,
+                    'partner_id'    => $partner->getId()
+                ]);
+        }
+
+        (new Payment\Validator())->validatePaymentRelease($payment);
+
+        /** @var Transaction\Entity */
+        $paymentTrxn = $this->repo->transaction(function() use ($payment) {
+
+            $paymentTrxn = $this->repo->transaction->lockForUpdate($payment->getTransactionId());
+
+            $paymentTrxn->setOnHold(false);
+
+            $this->repo->transaction->saveOrFail($paymentTrxn);
+
+            return $paymentTrxn;
+        });
+
+        $accountBalance = $paymentTrxn->accountBalance;
+
+        $settlementBucketCore = (new Settlement\Bucket\Core());
+
+        if ($settlementBucketCore->shouldProcessViaNewService($this->merchant->getId(), $accountBalance) === true)
+        {
+            $settlementBucketCore->settlementServiceToggleTransactionHold([$paymentTrxn->getId()]);
+        }
+        else
+        {
+            (new Transaction\Core)->dispatchForSettlementBucketing($paymentTrxn);
+        }
+
+        $this->trace->info(
+            TraceCode::SUBMERCHANT_PAYMENT_RELEASED_FOR_SETTLEMENT,
+            [
+                'payment_id'        => $paymentId,
+                'transaction_id'    => $paymentTrxn->getId(),
+                'merchant_id'       => $this->merchant->getId(),
+                'partner_id'        => $partner->getId()
+            ]
+        );
+
+        return $payment;
     }
 }

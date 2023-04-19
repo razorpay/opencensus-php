@@ -2600,6 +2600,12 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::ROUTE_PARTNERSHIPS) === true);
     }
 
+
+    public function isSubmerchantManualSettlementEnabled(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::SUBM_MANUAL_SETTLEMENT) === true);
+    }
+
     protected function setEmailAttribute($email)
     {
         $formattedEmail = ($email === null) ? null : mb_strtolower(trim($email));

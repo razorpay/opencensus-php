@@ -410,6 +410,8 @@ return array(
 
     'partnerships_for_marketplace_transfer_experiment_id'   => env('PARTNERSHIPS_FOR_MARKETPLACE_TRANSFER_EXPERIMENT_ID'),
 
+    'submerchant_payment_manual_settlement_experiment_id'   => env('SUBMERCHANT_PAYMENT_MANUAL_SETTLEMENT_EXPERIMENT_ID'),
+
     '1cc_splitz_experiment_id' => env('MAGIC_CHECKOUT_SPLITZ_EXPERIMENT_ID'),
 
     '1cc_city_autopopulate_splitz_experiment_id' => env('MAGIC_CHECKOUT_DISABLE_AUTOPOPULATE_EXP_ID'),

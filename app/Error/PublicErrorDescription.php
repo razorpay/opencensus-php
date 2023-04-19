@@ -20,6 +20,7 @@ class PublicErrorDescription
     //        %x74 /          ; t    tab             U+0009
     //
 
+    const BAD_REQUEST_INVALID_AUTH_TYPE                                         = 'Auth type is invalid.';
     const BAD_REQUEST_REFUND_RECEIPT_ALREADY_PRESENT                            = 'Duplicate receipt found for this refund request.';
     const GATEWAY_ERROR                                                         = 'Payment processing failed due to error at bank or wallet gateway';
     const SERVER_ERROR                                                          = 'We are facing some trouble completing your request at the moment. Please try again shortly.';
@@ -105,6 +106,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED                            = 'Currency is not supported';
     const BAD_REQUEST_PAYMENT_METHOD_NOT_TRANSFER                               = 'The payment method should be transfer for action to be taken';
     const BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED                               = 'The payment status should be captured for action to be taken';
+    CONST BAD_REQUEST_PAYMENT_ALREADY_SETTLED                                   = "The payment is already settled for the merchant.";
     const BAD_REQUEST_PAYMENT_STATUS_CAPTURE_NOT_PROCESSED                      = 'Capture request is not processed yet';
     const BAD_REQUEST_PAYMENT_PAYOUT_BEFORE_SETTLEMENT                          = 'Payout cannot be created on a payment that has not been settled to your account';
     const BAD_REQUEST_PAYMENT_PAYOUT_AMOUNT_GREATER_THAN_CAPTURED               = 'The payout amount provided is greater than the payment amount captured';
@@ -1076,6 +1078,8 @@ class PublicErrorDescription
     const BAD_REQUEST_PARTNER_LOGO_NOT_SQUARE                                   = 'The height and width of the logo are not the same. Upload a square image';
     const BAD_REQUEST_PARTNER_LOGO_NOT_IMAGE                                    = 'The image type is not jpg, jpeg or png';
     const BAD_REQUEST_PARTNER_LOGO_TOO_SMALL                                    = 'The dimensions of the image are too small. Minimum dimensions should be 256x256';
+    const BAD_REQUEST_MANUAL_SETTLEMENT_NOT_ALLOWED                             = 'Manual settlements not enabled on the partner account. Please reach out to Razorpay support to enable.';
+    const BAD_REQUEST_SUBMERCHANT_MANUAL_SETTLEMENT_EXP_NOT_ENABLED             = 'The sub-merchant manual payment settlement experiment is not enabled for the partner';
 
     const BAD_REQUEST_PAYMENT_MDR_UPDATE_IN_PROGRESS                            = 'Payments MDR backfill job is currently in progress';
     const BAD_REQUEST_CANNOT_ADD_MERCHANT_USER                                  = 'Cannot add sub-merchant user with given details';
@@ -1333,6 +1337,7 @@ class PublicErrorDescription
     const BAD_REQUEST_UPI_INVALID_BANK_ACCOUNT                                      = 'Payment failed because Account linked to VPA is invalid';
     const BAD_REQUEST_TRANSACTION_FREQUENCY_LIMIT_EXCEEDED                          = 'Payment failed because Transaction frequency limit has exceeded';
     const BAD_REQUEST_TRANSACTION_AMOUNT_LIMIT_EXCEEDED                             = 'Payment failed because Transaction amount limit has exceeded';
+    const BAD_REQUEST_TRANSACTION_NOT_ON_HOLD                                       = 'Only payment transactions that are put on hold can be released for settlement.';
     const BAD_REQUEST_FORBIDDEN_TRANSACTION_ON_VPA                                  = 'Payment failed because transactions are not allowed on this VPA';
     const BAD_REQUEST_FORBIDDEN_BUSINESS_BANKING_NOT_ENABLED                        = 'Access to requested resource not available';
 

@@ -405,6 +405,152 @@ return [
         ],
     ],
 
+    'testReleaseSubmerchantPaymentByPartner' => [
+        'request' => [
+            'url'       => '/payments/:id/settle',
+            'method'    => 'POST',
+        ],
+        'response'  => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testReleaseSubmerchantPaymentByPartnerWithFeatureDisabled' => [
+        'request' => [
+            'url'       => '/payments/:id/settle',
+            'method'    => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MANUAL_SETTLEMENT_NOT_ALLOWED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MANUAL_SETTLEMENT_NOT_ALLOWED
+        ],
+    ],
+
+    'testReleaseSubmerchantPaymentByPartnerWithInvalidPaymentMerchant' => [
+        'request' => [
+            'url'       => '/payments/:id/settle',
+            'method'    => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PAYMENT_ID
+        ],
+    ],
+
+    'testReleaseSubmerchantPaymentByPartnerWithUnmappedMerchant' => [
+        'request' => [
+            'url'       => '/payments/:id/settle',
+            'method'    => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testReleaseSubmerchantPaymentByPartnerWhichIsNotCaptured' => [
+        'request' => [
+            'url'       => '/payments/:id/settle',
+            'method'    => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED
+        ],
+    ],
+
+    'testReleaseSubmerchantPaymentByPartnerWithTrxnNotOnHold' => [
+        'request' => [
+            'url'       => '/payments/:id/settle',
+            'method'    => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_TRANSACTION_NOT_ON_HOLD,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TRANSACTION_NOT_ON_HOLD
+        ],
+    ],
+
+    'testReleaseSubmerchantPaymentByPartnerWithTrxnAlreadySettled' => [
+        'request' => [
+            'url'       => '/payments/:id/settle',
+            'method'    => 'POST',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_ALREADY_SETTLED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_SETTLED
+        ],
+    ],
+
+    'testReleaseSubmerchantPaymentByInvalidPartnerType' => [
+        'request' => [
+            'url'       => '/payments/:id/settle',
+            'method'    => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid partner action',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION
+        ],
+    ],
+
     'testTransferToSuspendedLinkedAccount' => [
         'response'  => [
             'content'     => [

@@ -333,4 +333,19 @@ class Service extends Base\Service
 
         return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
     }
+
+    public function isSubmerchantPaymentManualSettlementExpEnabled(?Merchant\Entity $partner): bool
+    {
+        if (empty($partner) === true)
+        {
+            return false;
+        }
+
+        $properties = [
+            'id'            => $partner->getId(),
+            'experiment_id' => $this->app['config']->get('app.submerchant_payment_manual_settlement_experiment_id'),
+        ];
+
+        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
+    }
 }
