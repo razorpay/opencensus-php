@@ -1827,17 +1827,21 @@ EOT;
 
         $pAuthorizedAt = $this->dbColumn(Entity::AUTHORIZED_AT);
 
-        // replication lag threshold of 5 minutes
-        return $this->newQueryOnSlave(300000)
-                    ->select($paymentAttrs)
-                    ->join($tTablename, $pTerminalId, '=', $tId)
-                    ->where($pAuthorizedAt, '>=', $from)
-                    ->where($pAuthorizedAt, '<=', $to)
-                    ->where($pGateway, $gateway)
-                    ->whereNotNull($pAuthorizedAt)
-                    ->where($pBankCode, $bankCode)
-                    ->with($relations)
-                    ->get();
+        //use TiDB merchant
+        $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+        $query = $this->newQueryWithConnection($connectionType);
+
+        return $query
+                ->select($paymentAttrs)
+                ->join($tTablename, $pTerminalId, '=', $tId)
+                ->where($pAuthorizedAt, '>=', $from)
+                ->where($pAuthorizedAt, '<=', $to)
+                ->where($pGateway, $gateway)
+                ->whereNotNull($pAuthorizedAt)
+                ->where($pBankCode, $bankCode)
+                ->with($relations)
+                ->get();
     }
 
     public function fetchReconciledPaymentsForTpv($from, $to, $gateway, $status, $tpvEnabled = false, $relations = [])
