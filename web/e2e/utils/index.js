@@ -7,6 +7,23 @@ function generateRandomText(length) {
   return result;
 }
 
+function generateRandomPhoneNumber() {
+  return Math.floor(Math.random() * 9000000000) + 1000000000;
+}
+
+function generateRandomName() {
+  return Math.random().toString(36).slice(2, 15);
+}
+
+function generateRandomEmail() {
+  const phone = generateRandomPhoneNumber();
+  const name = generateRandomName();
+  return `${name}.${phone}@razorpay.com`;
+}
+
 module.exports = {
   generateRandomText,
+  generateRandomPhoneNumber,
+  generateRandomName,
+  generateRandomEmail,
 };

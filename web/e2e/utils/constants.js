@@ -15,6 +15,8 @@ const routes = {
   REMINDERS: '/app/payments-and-refunds-settings/reminders',
   CAPTURE_AND_REFUND_SETTINGS: '/app/payments-and-refunds-settings/capture-refund-settings',
   TRANSACTION_LIMITS: '/app/payments-and-refunds-settings/transaction-limits',
+  MANAGE_TEAM: '/app/business-settings/team',
+  SETTLEMENTS: '/app/settlements',
 };
 
 const EmailCredentials = [

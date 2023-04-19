@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { generateRandomPhoneNumber, generateRandomName, generateRandomEmail } = require('../utils');
 const { StorageStatePath } = require('../utils/constants');
 
 const CONSTANTS = {
@@ -9,14 +10,13 @@ const CONSTANTS = {
 };
 
 const getRandomCustomerData = () => {
-  // replace it with fakerjs like random data generators
-  // exploring lightweight packages atm
-  const phone = Math.floor(Math.random() * 9000000000) + 1000000000;
-  const name = Math.random().toString(36).slice(2, 15);
+  const phone = generateRandomPhoneNumber();
+  const name = generateRandomName();
+  const email = generateRandomEmail();
   return {
     name,
     phone: phone.toString(),
-    email: `${name}.${phone}@razorpay.com`,
+    email,
     gstin: '22AAAAA0000A1Z5',
   };
 };

@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { generateRandomEmail } = require('../utils');
 const { routes } = require('../utils/constants');
 const { StorageStatePath } = require('../utils/constants');
 
@@ -97,26 +98,74 @@ test.describe.parallel('My account and settings @flow=account-settings', () => {
       ).toBeVisible();
     });
 
-    test('should render Credits tab', async ({ page }) => {
-      await page.locator('button[role="button"]:has-text("Credits")').click();
-      await expect(page).toHaveURL(routes.CREDITS);
-      await expect(page.locator('text=Amount Credits').first()).toBeVisible();
-      await expect(page.locator('text=Fee Credits').first()).toBeVisible();
-      await expect(page.locator('text=Refund Credits').first()).toBeVisible();
-      await expect(page.locator('text=Documentation')).toHaveAttribute(
-        'href',
-        'https://razorpay.com/docs/payment-gateway/dashboard-guide/credits/',
-      );
-      await page.locator('text=Manage Alerts').click();
-      await page.locator('text=Amount Credit₹₹₹ >> input').first().fill('100');
-      await page.locator('text=Fee Credit₹₹₹ >> input').first().fill('12');
-      await page.locator('text=Refund Credit₹₹₹ >> input').first().fill('14');
-      await page.locator('text=Save').click();
-      await expect(
-        page.locator('[data-testid="Notification--success"]', {
-          hasText: 'Credits threshold updated successfully',
-        }),
-      ).toBeVisible();
+    test.describe.parallel('Credits tab', () => {
+      test.beforeEach(async ({ page }) => {
+        await page.locator('button[role="button"]:has-text("Credits")').click();
+        await expect(page).toHaveURL(routes.CREDITS);
+      });
+
+      test('should render Credits tab', async ({ page }) => {
+        await expect(page.locator('text=Amount Credits').first()).toBeVisible();
+        await expect(page.locator('text=Fee Credits').first()).toBeVisible();
+        await expect(page.locator('text=Refund Credits').first()).toBeVisible();
+        await expect(page.locator('text=Documentation')).toHaveAttribute(
+          'href',
+          'https://razorpay.com/docs/payment-gateway/dashboard-guide/credits/',
+        );
+        await page.locator('text=Manage Alerts').click();
+        await page.locator('text=Amount Credit₹₹₹ >> input').first().fill('100');
+        await page.locator('text=Fee Credit₹₹₹ >> input').first().fill('12');
+        await page.locator('text=Refund Credit₹₹₹ >> input').first().fill('14');
+        await page.locator('text=Save').click();
+        await expect(
+          page.locator('[data-testid="Notification--success"]', {
+            hasText: 'Credits threshold updated successfully',
+          }),
+        ).toBeVisible();
+      });
+
+      test('should show fee credits history modal @priority=normal', async ({ page }) => {
+        const feeCreditsViewHistoryCTA = await page
+          .getByRole('button', { name: 'View History' })
+          .first();
+        await expect(feeCreditsViewHistoryCTA).toBeVisible();
+        await feeCreditsViewHistoryCTA.click();
+        const feeCreditsHeader = await page.getByRole('heading', { name: 'Fee Credits History' });
+        await expect(feeCreditsHeader).toBeVisible();
+        await page.getByRole('button', { name: 'Close' }).click();
+      });
+
+      test('should show refund credits history modal @priority=normal', async ({ page }) => {
+        const refundCreditsViewHistoryCTA = await page
+          .getByRole('button', { name: 'View History' })
+          .nth(1);
+        await expect(refundCreditsViewHistoryCTA).toBeVisible();
+        await refundCreditsViewHistoryCTA.click();
+        const refundCreditsHeader = await page.getByRole('heading', {
+          name: 'Refund Credits History',
+        });
+        await expect(refundCreditsHeader).toBeVisible();
+        await page.getByRole('button', { name: 'Close' }).click();
+      });
     });
+  });
+  test('should show manage team tab and send invite @priority=normal', async ({ page }) => {
+    await page.getByRole('button', { name: 'Manage team' }).click();
+    await expect(page).toHaveURL(routes.MANAGE_TEAM);
+    const inviteCTA = await page.getByRole('button', { name: 'Invite New Member' });
+    expect(inviteCTA).toBeVisible();
+    await inviteCTA.click();
+    const randomEmail = generateRandomEmail();
+    await page.getByPlaceholder('Email').click();
+    await page.getByPlaceholder('Email').fill(randomEmail);
+    await page.getByRole('combobox').selectOption('support');
+    await page.getByRole('button', { name: 'Send Invitation' }).click();
+    await expect(
+      page.locator('[data-testid="Notification--success"]', {
+        hasText: `Invitation has been successfully sent to ${randomEmail}`,
+      }),
+    ).toBeVisible();
+    const newInvite = await page.locator(`tr td:has-text("${randomEmail}")`);
+    await expect(newInvite).toBeVisible();
   });
 });
