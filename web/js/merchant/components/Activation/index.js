@@ -2453,6 +2453,82 @@ export default class ActivationWizard extends React.Component {
         (isCinValid && (user.isCinSyncFlowEnabled || user.isLlpinSyncFlowEnabled))) &&
       FORM_TABS[2] === 'Business Details';
 
+    const activationFormAlerts = () => {
+      const showFormDisabledAlert = !this.isLinkedAccountForm && (isFormLocked || isFormSubmitted); // '|| isFormActivated' is redundant check. Always covered by isFormSubmitted;
+
+      const { data } = this.props;
+      let Component = Alert.Info;
+      let icon, msg;
+
+      let secondaryMsg = 'For any clarifications, you can';
+      const ticketLink = <Link to="#ticket">write to support</Link>;
+      if (showFormDisabledAlert && !this.isOnKYCTab()) {
+        if (isFormActivated && data.activation_status === 'activated') {
+          // **1. Alert: Account Activated
+
+          icon = 'i-done-all';
+          msg = 'Your account is activated.';
+          secondaryMsg = <React.Fragment>For any changes, please {ticketLink}.</React.Fragment>;
+        } else if (this.isNeedsClarificationMode()) {
+          // **2. Alert: Need clarification
+          icon = 'i-warning';
+          Component = Alert.Warning;
+          msg = `There are issues with your activation form. Please check your mail and respond at the earliest.`;
+          secondaryMsg = '';
+        } else if (data.activation_status === 'rejected') {
+          // **3. Alert: Form Rejected
+
+          icon = 'i-close';
+          Component = Alert.Error;
+          msg =
+            'Your activation form has been rejected by our partner banks. Hence, we would not be able support your business at this moment.';
+          secondaryMsg = 'We have sent you an email with the details.';
+        } else if (
+          !!this.props.user.locked &&
+          !this.props.user.isActivated &&
+          this.props.user.merchant.hold_funds
+        ) {
+          icon = 'i-warning';
+          Component = Alert.Warning;
+          msg = (
+            <React.Fragment>
+              We need more information regarding your submitted details. Please{' '}
+              <SupportButton
+                type="anchor"
+                buttonLabel="Contact Support"
+                category="merchant"
+                openSection="account-activation"
+              />{' '}
+              to complete your activation.
+            </React.Fragment>
+          );
+          secondaryMsg = '';
+        } else if (isFormLocked && isFormSubmitted) {
+          // **4. Alert: Form is Locked (for reasons other than above)
+          // 'locked' status has more priority than 'submitted'
+          // If admins locked form before submiddion, then this alert is not shown
+
+          icon = 'i-outline-lock';
+          msg =
+            'Your activation form is under review. We will let you know once your account gets activated.';
+          secondaryMsg = '';
+        } else if (isFormSubmitted) {
+          // **5. Alert: Form is Submitted
+
+          icon = 'i-check';
+          msg = 'Our team will review the form and submitted documents.';
+          secondaryMsg = 'We will reach out on your contact email for all updates.';
+        }
+
+        return msg ? (
+          <Component iconBefore={icon}>
+            {msg}
+            <div className="side-description">{secondaryMsg}</div>
+          </Component>
+        ) : null;
+      }
+    };
+
     return (
       <div
         className={
@@ -2614,86 +2690,7 @@ export default class ActivationWizard extends React.Component {
               )}
 
               {/* Alerts: for MAIN activation form */}
-              {do {
-                const showFormDisabledAlert =
-                  !this.isLinkedAccountForm && (isFormLocked || isFormSubmitted); // '|| isFormActivated' is redundant check. Always covered by isFormSubmitted;
-
-                const { data } = this.props;
-                let Component = Alert.Info;
-                let icon, msg;
-
-                let secondaryMsg = 'For any clarifications, you can';
-                const ticketLink = <Link to="#ticket">write to support</Link>;
-                if (showFormDisabledAlert && !this.isOnKYCTab()) {
-                  if (isFormActivated && data.activation_status === 'activated') {
-                    // **1. Alert: Account Activated
-
-                    icon = 'i-done-all';
-                    msg = 'Your account is activated.';
-                    secondaryMsg = (
-                      <React.Fragment>For any changes, please {ticketLink}.</React.Fragment>
-                    );
-                  } else if (this.isNeedsClarificationMode()) {
-                    // **2. Alert: Need clarification
-                    icon = 'i-warning';
-                    Component = Alert.Warning;
-                    msg = `There are issues with your activation form. Please check your mail and respond at the earliest.`;
-                    secondaryMsg = '';
-                  } else if (data.activation_status === 'rejected') {
-                    // **3. Alert: Form Rejected
-
-                    icon = 'i-close';
-                    Component = Alert.Error;
-                    msg =
-                      'Your activation form has been rejected by our partner banks. Hence, we would not be able support your business at this moment.';
-                    secondaryMsg = 'We have sent you an email with the details.';
-                  } else if (
-                    !!this.props.user.locked &&
-                    !this.props.user.isActivated &&
-                    this.props.user.merchant.hold_funds
-                  ) {
-                    icon = 'i-warning';
-                    Component = Alert.Warning;
-                    msg = (
-                      <React.Fragment>
-                        We need more information regarding your submitted details. Please{' '}
-                        <SupportButton
-                          type="anchor"
-                          buttonLabel="Contact Support"
-                          category="merchant"
-                          openSection="account-activation"
-                        />{' '}
-                        to complete your activation.
-                      </React.Fragment>
-                    );
-                    secondaryMsg = '';
-                  } else if (isFormLocked && isFormSubmitted) {
-                    // **4. Alert: Form is Locked (for reasons other than above)
-                    // 'locked' status has more priority than 'submitted'
-                    // If admins locked form before submiddion, then this alert is not shown
-
-                    icon = 'i-outline-lock';
-                    msg =
-                      'Your activation form is under review. We will let you know once your account gets activated.';
-                    secondaryMsg = '';
-                  } else if (isFormSubmitted) {
-                    // **5. Alert: Form is Submitted
-
-                    icon = 'i-check';
-                    msg = 'Our team will review the form and submitted documents.';
-                    secondaryMsg = 'We will reach out on your contact email for all updates.';
-                  }
-
-                  {
-                    msg && (
-                      <Component iconBefore={icon}>
-                        {msg}
-                        <div className="side-description">{secondaryMsg}</div>
-                      </Component>
-                    );
-                  }
-                }
-              }}
+              {activationFormAlerts()}
 
               {/* Activation form starts here */}
               <Form onChange={this.onChange} layout="tabular">

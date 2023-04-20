@@ -48,7 +48,7 @@ const sendToLumberjack = ({ eventName, properties = {} }) => {
     });
 };
 
-const getClientID = () => {
+export const getClientID = () => {
   let clientId = getCookie('clientId');
   if (!clientId) {
     clientId = uuid();

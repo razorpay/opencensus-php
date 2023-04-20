@@ -1,6 +1,7 @@
 import experimentDataMap from './experimentDataMap';
 import { init, getVariants } from './splitzSetup';
 import { isProductionEnv } from 'common/utils/rzp-utils';
+import { getClientID } from 'common/services/tracking/segment';
 
 const isProdEnv = isProductionEnv();
 
@@ -10,6 +11,7 @@ export default async function Splitz() {
 
   /** splitz initialization */
   init({
+    id: getClientID(),
     base_url: isProdEnv ? PROD_API_BASE_URL : STAGE_API_BASE_URL,
   });
 

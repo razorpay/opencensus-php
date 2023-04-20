@@ -32,8 +32,9 @@ export const getVariants = async (experiments) => {
 
   const experimentsList = experiments.map(({ experiment }) => {
     return {
-      id: experiment.id,
+      id: experiment.id ? experiment.id : config.id,
       experiment_id: experiment?.experimentId,
+      request_data: JSON.stringify({ mid: config.id }),
       track_impression: experiment?.trackImpression ?? true,
     };
   });

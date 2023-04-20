@@ -147,12 +147,8 @@ const contactFields = [
     type: 'tel',
     info: 'We will reach out to this phone for any account related issues.',
     _disabledWhen: (activation) => {
-      const {
-        isEmailMandatoryOnL1,
-        isEmailNonMandatoryOnL1,
-        isEmailNonMandatoryOnL2Form,
-        user,
-      } = activation.props.user;
+      const { isEmailMandatoryOnL1, isEmailNonMandatoryOnL1, isEmailNonMandatoryOnL2Form, user } =
+        activation.props.user;
       const hasContactNumber = !!activation.props.data.contact_mobile;
       // if user signup from mobile disable the field
       return (
@@ -189,7 +185,7 @@ const contactFields = [
     _autoRenderImpure: true,
     isFieldValid: (activation) => {
       const { user, data } = activation.props;
-      if (user.partner_type && !user.user?.confirmed) return true;
+      if (user.partner_type && !user.user?.confirmed) return false;
       else if (
         (user.isEmailNonMandatoryOnL1 &&
           !user.user?.confirmed &&
@@ -219,12 +215,8 @@ const contactFields = [
       this.sendErrorMessageToSegment(e, error);
     },
     _disabledWhen: (activation) => {
-      const {
-        isEmailMandatoryOnL1,
-        isEmailNonMandatoryOnL1,
-        isEmailNonMandatoryOnL2Form,
-        user,
-      } = activation.props.user;
+      const { isEmailMandatoryOnL1, isEmailNonMandatoryOnL1, isEmailNonMandatoryOnL2Form, user } =
+        activation.props.user;
       const { data } = activation.props;
       // if user email is verified disable the field
       return (
@@ -235,12 +227,8 @@ const contactFields = [
       );
     },
     addonAfter: (activation) => {
-      const {
-        isEmailMandatoryOnL1,
-        isEmailNonMandatoryOnL1,
-        isEmailNonMandatoryOnL2Form,
-        user,
-      } = activation.props.user;
+      const { isEmailMandatoryOnL1, isEmailNonMandatoryOnL1, isEmailNonMandatoryOnL2Form, user } =
+        activation.props.user;
       if (
         !activation.isOnKYCTab() &&
         (isEmailMandatoryOnL1 || isEmailNonMandatoryOnL1 || isEmailNonMandatoryOnL2Form) &&
@@ -253,7 +241,7 @@ const contactFields = [
     required: (activation) =>
       (!activation.props.user.isEmailNonMandatoryOnL1 ||
         !activation.props.user.isEmailNonMandatoryOnL2Form) &&
-      !!activation.props.user.user?.signup_via_email,
+      !activation.props.user.user?.signup_via_email,
   },
 ];
 
@@ -594,8 +582,7 @@ const businessModel = [
         });
         this.sendErrorMessageToSegment(e, error);
       },
-      info:
-        'Your app url would look something like this “https://play.google.com/store/apps/details?id=<package_name>&launch=true” Provide just the play store url in case you operate in multiple stores or any one url in case you don’t have a play store url',
+      info: 'Your app url would look something like this “https://play.google.com/store/apps/details?id=<package_name>&launch=true” Provide just the play store url in case you operate in multiple stores or any one url in case you don’t have a play store url',
       _when: (activation) =>
         activation.state.app_url === '1' &&
         activation.state.has_url === '1' &&
@@ -618,8 +605,7 @@ const businessModel = [
         });
         this.sendErrorMessageToSegment(e, error);
       },
-      info:
-        'Your app url would look something like this “https://apps.apple.com/in/app/<app_name>/<app_id>” Provide just the app store url in case you operate in multiple stores or any one url in case you don’t have a app store url',
+      info: 'Your app url would look something like this “https://apps.apple.com/in/app/<app_name>/<app_id>” Provide just the app store url in case you operate in multiple stores or any one url in case you don’t have a app store url',
       _when: (activation) =>
         activation.state.app_url === '1' &&
         activation.state.has_url === '1' &&
@@ -1984,6 +1970,7 @@ const uploadFields = [
     },
     _when: (activation) => {
       const { user } = activation.props;
+      if (user?.partner_type) return false;
       return (
         (activation.isNeedsClarificationMode() && activation.isOnKYCTab()) ||
         (!activation.isOnKYCTab() &&

@@ -47,8 +47,8 @@ const CongratsForm = ({
   };
 
   const onCTAClick = (label, submittedEmail = null) => {
-    setIsLoading(true);
     if (label === 'submit') {
+      setIsLoading(true);
       trackWithSegment({
         objectName: 'Email Submit',
         actionName: 'Clicked',
