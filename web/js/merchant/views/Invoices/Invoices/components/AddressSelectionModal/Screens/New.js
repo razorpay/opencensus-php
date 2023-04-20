@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { reduxForm, formValueSelector } from 'redux-form';
+import { reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import ModalHeader from 'common/ui/ModalHeader';
 import Alert from 'common/ui/Forms/Alert';
@@ -11,12 +11,18 @@ import { fetchStates } from 'merchant/reducers/states';
 import AddressEntry from 'merchant/views/Customers/components/AddressEntry';
 import PropTypes from 'prop-types';
 import { isAddressValid, capitalize } from 'common/utils/rzp-utils';
-import { track } from '../../../../ga';
+import { track } from 'merchant/views/Invoices/ga';
 import Countries from 'merchant/helpers/countries.json';
+import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 
 const CountryNames = Object.keys(Countries);
 
-@connect(state => ({}), {
+const DEFAULT_COUNTY_MAP = {
+  [ORG_CUSTOM_CODE_MAP.RAZORPAY]: 'India',
+  [ORG_CUSTOM_CODE_MAP.CURLEC]: 'Malaysia',
+};
+// eslint-disable-next-line react/no-unsafe
+@connect((state) => ({ org: state.session.org }), {
   fetchStates,
   ...CustomerActions,
   ...ModalActions,
@@ -58,11 +64,6 @@ export default class New extends Component {
     backLabel: PropTypes.string,
 
     /**
-     * Modal title.
-     */
-    header: PropTypes.string.isRequired,
-
-    /**
      * Save button text.
      */
     saveLabel: PropTypes.string,
@@ -76,6 +77,7 @@ export default class New extends Component {
   static defaultProps = {
     onSave: () => {},
     onBackClick: () => {},
+    // eslint-disable-next-line react/default-props-match-prop-types
     header: 'Select Address',
     saveLabel: 'Add Address',
     backLabel: 'Back to Addresses',
@@ -83,9 +85,9 @@ export default class New extends Component {
     addressType: 'billing',
   };
 
-  constructor() {
-    super(...arguments);
-    this.DEFAULT_COUNTRY = 'India';
+  constructor(props, ...args) {
+    super(props, ...args);
+    this.DEFAULT_COUNTRY = DEFAULT_COUNTY_MAP[props.org.custom_code] || 'India';
 
     if (this.props.isInttCurrenciesEnabled) {
       this.state = {
@@ -98,6 +100,9 @@ export default class New extends Component {
     } else {
       this.state = {
         errors: null,
+        editedAddress: {
+          country: this.DEFAULT_COUNTRY,
+        },
       };
     }
   }
@@ -112,8 +117,9 @@ export default class New extends Component {
 
   UNSAFE_componentWillMount() {
     if (!this.props.isInttCurrenciesEnabled) {
-      let promises = [this.props.fetchStates()];
+      const promises = [this.props.fetchStates()];
       this.setState({
+        // eslint-disable-next-line react/no-unused-state
         isLoading: true,
       });
 
@@ -123,6 +129,7 @@ export default class New extends Component {
           this.props.change('type', this.props.type);
 
           this.setState({
+            // eslint-disable-next-line react/no-unused-state
             isLoading: false,
             states: states && states.data && states.data.items,
           });
@@ -146,8 +153,8 @@ export default class New extends Component {
    * @param {Object} props
    * @return {Promise}
    */
-  save = props => {
-    let { editedAddress } = this.state;
+  save = (props) => {
+    const { editedAddress } = this.state;
 
     props = {
       ...props,
@@ -156,14 +163,14 @@ export default class New extends Component {
 
     return this.props
       .addCustomerAddress(this.props.customer, props)
-      .then(address => {
+      .then((address) => {
         this.props.onSave(address.data);
         this.props.showNotification({
           type: 'success',
           message: 'Address created successfully',
         });
       })
-      .catch(err => {
+      .catch((err) => {
         this.setState({ errors: err.errors });
 
         this.props.trackAddressSelection({
@@ -177,7 +184,7 @@ export default class New extends Component {
    * Update the address in state.
    * @param {Object} address
    */
-  onAddressUpdate = address => {
+  onAddressUpdate = (address) => {
     if (this.props.isInttCurrenciesEnabled) {
       let updatedAddress = {
         editedAddress: address,
@@ -219,7 +226,6 @@ export default class New extends Component {
       header,
       saveLabel,
       handleSubmit,
-      change,
       backLabel,
       onBackClick,
       hideBack,

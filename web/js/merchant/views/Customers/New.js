@@ -15,12 +15,19 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
 import { fetchStates } from 'merchant/reducers/states';
+import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 
 import AddressEntry from 'merchant/views/Customers/components/AddressEntry';
 import Countries from 'merchant/helpers/countries.json';
 
 const selector = formValueSelector('newCustomer');
 
+const DEFAULT_COUNTY_MAP = {
+  [ORG_CUSTOM_CODE_MAP.RAZORPAY]: 'India',
+  [ORG_CUSTOM_CODE_MAP.CURLEC]: 'Malaysia',
+};
+
+// eslint-disable-next-line react/no-unsafe
 @connect(
   (state) => {
     return {
@@ -33,6 +40,7 @@ const selector = formValueSelector('newCustomer');
       add_customer_address: selector(state, 'add_customer_address'),
       add_shipping_address: selector(state, 'add_shipping_address'),
       user: state.session.user,
+      org: state.session.org,
     };
   },
   {
@@ -47,11 +55,11 @@ const selector = formValueSelector('newCustomer');
   validate,
 })
 export default class AddCustomer extends Component {
-  constructor() {
+  constructor(props) {
     // eslint-disable-next-line prefer-rest-params
     super(...arguments);
 
-    this.DEFAULT_COUNTRY = 'India';
+    this.DEFAULT_COUNTRY = DEFAULT_COUNTY_MAP[props.org.custom_code] || 'India';
 
     if (this.props.user.isInttCurrenciesEnabled) {
       this.state = {

@@ -43,7 +43,7 @@ export function getCurrencySymbol(currency) {
   return currencySymbol;
 }
 
-export default ({
+const Amount = ({
   value,
   currency = 'INR',
   className,
@@ -86,6 +86,8 @@ export default ({
     </AmountTooltip>
   );
 };
+
+export default Amount;
 
 // prettier-ignore
 const wrapper =

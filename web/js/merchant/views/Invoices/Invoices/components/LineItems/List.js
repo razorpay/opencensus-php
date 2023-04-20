@@ -3,7 +3,7 @@ import { reduxForm } from 'redux-form';
 import LineItem from './Item';
 import Amount from 'common/ui/Amount';
 import AmountInWords from 'common/ui/AmountInWords';
-import { track } from '../../../ga';
+import { track } from 'merchant/views/Invoices/ga';
 
 @reduxForm({
   form: 'newInvoice',
@@ -157,6 +157,7 @@ export default class InvoiceLineItemTable extends Component {
                             amount={invoiceTotal.total}
                             prefix="(In Words)"
                             suffix="/-"
+                            currency={invoiceCurrency}
                           />
                         </td>
                       </tr>

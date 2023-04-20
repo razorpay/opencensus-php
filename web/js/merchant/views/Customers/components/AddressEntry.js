@@ -1,10 +1,17 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
 import { PowerSelect } from 'react-power-select';
 import QuickAdd from 'common/ui/Select/QuickAdd';
+import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 
 import State from 'merchant/models/State';
+
+const ZIP_CODE_PLACEHOLDER_MAP = {
+  [ORG_CUSTOM_CODE_MAP.RAZORPAY]: 'PIN Code',
+  [ORG_CUSTOM_CODE_MAP.CURLEC]: 'POST Code',
+};
 
 /**
  * Finds a state from the states-list by it's name.
@@ -14,7 +21,26 @@ import State from 'merchant/models/State';
  */
 const findStateByName = (states, name) => states.find((s) => s.name === name);
 
+// eslint-disable-next-line react/no-unsafe
+@connect((state) => ({ org: state.session.org }))
 export default class AddressEntry extends React.Component {
+  static defaultProps = {
+    address: {
+      line1: '',
+      line2: '',
+      zipcode: '',
+      city: '',
+      state: '',
+      country: 'India',
+    },
+    states: [],
+    countries: ['India', 'Malaysia'],
+    hideLine2: false,
+    hideCountry: false,
+    onChange: () => {},
+    showDisabledCountry: false,
+  };
+
   static propTypes = {
     /**
      * Address object.
@@ -161,7 +187,7 @@ export default class AddressEntry extends React.Component {
     const { line1, line2, zipcode, city, state, country, showStateInput } = this.state;
 
     let { states } = this.props;
-    const { onBlur, countries, hideLine2, hideCountry, showDisabledCountry } = this.props;
+    const { onBlur, countries, hideLine2, hideCountry, showDisabledCountry, org } = this.props;
 
     // Get the State.
     let selectedState = null;
@@ -179,6 +205,9 @@ export default class AddressEntry extends React.Component {
       states = [state];
       selectedState = state;
     }
+
+    // i18
+    const zipCodePlaceholder = ZIP_CODE_PLACEHOLDER_MAP[org.custom_code] || 'Pin Code';
 
     return (
       <div class="row address-entry">
@@ -209,7 +238,7 @@ export default class AddressEntry extends React.Component {
           <div class="col col-md-6">
             <input
               value={zipcode}
-              placeholder="PIN Code"
+              placeholder={zipCodePlaceholder}
               class="form-control input-number-no-arrows"
               onChange={this.onFieldChangeClosure('zipcode')}
               autoComplete="postal-code"
@@ -273,7 +302,7 @@ export default class AddressEntry extends React.Component {
           {hideCountry && showDisabledCountry && (
             <div class="col col-md-6">
               <input
-                value="India"
+                value={country}
                 placeholder="Country"
                 class="form-control"
                 type="text"
@@ -286,20 +315,3 @@ export default class AddressEntry extends React.Component {
     );
   }
 }
-
-AddressEntry.defaultProps = {
-  address: {
-    line1: '',
-    line2: '',
-    zipcode: '',
-    city: '',
-    state: '',
-    country: 'India',
-  },
-  states: [],
-  countries: ['India'],
-  hideLine2: false,
-  hideCountry: false,
-  onChange: () => {},
-  showDisabledCountry: false,
-};
