@@ -115,7 +115,7 @@ class PricingWorkflow
                             Constants::PAYLOAD => json_decode ("{}"),
                             Constants::RESPONSE_HANDLER => [
                                 Constants::TYPE => Constants::SUCCESS_STATUS_CODES,
-                                Constants::SUCCESS_STATUS_CODES => [200,400,401,404]
+                                Constants::SUCCESS_STATUS_CODES => [200,400,401,404,403]
                             ]
                         ]
                     ]
