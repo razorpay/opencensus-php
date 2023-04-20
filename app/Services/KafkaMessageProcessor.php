@@ -56,21 +56,26 @@ class KafkaMessageProcessor
         ];
         $this->trace->info(TraceCode::KAFKA_MESSAGE_PROCESSOR_PAYLOAD, $traceTopicDetails);
 
-        try {
-            /** @var KafkaJobs\Job $job */
-            $job = $this->getJob($topic, $payload, $mode);
+        /** @var KafkaJobs\Job $job */
+        $job = $this->getJob($topic, $payload, $mode);
+
+        try
+        {
             if (empty($job) == false)
             {
                 $this->processJob($job);
+
                 return true;
             }
             else
             {
                 $this->trace->error('no processor defined for the topic - ' . $topic);
+
                 return false;
             }
-        } catch (\Exception $e) {
-
+        }
+        catch (\Exception $e)
+        {
             $this->trace->traceException(
                 $e,
                 Trace::CRITICAL,
@@ -82,6 +87,7 @@ class KafkaMessageProcessor
                     'payload' => $payload,
                 ]
             );
+
             return false;
         }
     }
