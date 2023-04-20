@@ -32,7 +32,7 @@ class ProviderPsp
     const BHIM_PNB          = 'bhim_pnb';
     const FAM_PAY           = 'fam_pay';
     const FAVE              = 'fave';
-
+    const ZOMATO            = 'zomato';
 
     // used only for testing.
     const RAZORPAY      = 'razorpay';

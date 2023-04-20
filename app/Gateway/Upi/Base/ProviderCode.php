@@ -458,6 +458,7 @@ class ProviderCode
         ProviderPsp::BHIM_PNB,
         ProviderPsp::FAM_PAY,
         ProviderPsp::FAVE,
+        ProviderPsp::ZOMATO,
     ];
 
     /**
@@ -501,6 +502,7 @@ class ProviderCode
         self::FAM           => ProviderPsp::FAM_PAY,
         self::PINELABS      => ProviderPsp::FAVE,
         self::OKSBI         => ProviderPsp::GOOGLE_PAY,
+        self::ZOICICI       => ProviderPsp::ZOMATO,
 
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,
