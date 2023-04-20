@@ -681,9 +681,15 @@ class TerminalsService
 
                 $network = Token\Core::TokenisationGatewayToNetworkMapping[$tokenisationGateway] ?? '';
 
+                $issuer = Token\Core::TokenisationGatewayToIssuerMapping[$tokenisationGateway] ?? '';
+
                 if (empty($network) === false)
                 {
                     $onboardedNetworks[] = $network;
+                }
+                if(empty($issuer) === false)
+                {
+                    $onboardedNetworks[] = $issuer;
                 }
             }
 

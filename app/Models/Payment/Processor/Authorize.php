@@ -7687,10 +7687,11 @@ trait Authorize
                     return ;
             }
 
-            if (($token->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === false) && ($token->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION) === false))
+            if (($token->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === false) && ($token->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION) === false) && ($token->merchant->isFeatureEnabled(Feature\Constants::ISSUER_TOKENIZATION_LIVE) === false))
             {
                 $this->trace->info(TraceCode::TRACE_TOKEN_MIGRATION_FAILURE, [
                     'featureEnabled'        => $token->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE),
+                    'featureEnabledIssuer'  => $token->merchant->isFeatureEnabled(Feature\Constants::ISSUER_TOKENIZATION_LIVE),
                     'token'      => $token->getId()
                 ]);
 
