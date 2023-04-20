@@ -35103,9 +35103,81 @@ class PayoutTest extends OAuthTestCase
             'payout_id' => 'randomid111111',
         ], 'live');
 
-        // This shows that payout details are not present on api on live mode
+        // This shows that payout details are present on api on live mode
         $this->assertFalse(empty($payoutDetailsOnApi));
 
+        $url = '/payouts/pout_randomid111111/attachment/file_testing';
+
+        $this->testData[__FUNCTION__] = $this->testData['testGetAttachmentSignedUrlForPayoutOnlyPresentOnPayoutService'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $this->startTest();
+    }
+
+    public function testGetAttachmentSignedUrlForPayoutPresentOnBothPayoutServiceAndApi()
+    {
+        $expectedAdditionalInfo = [
+            'tds_amount'                           => 1000,
+            PayoutsDetails\Entity::SUBTOTAL_AMOUNT => 10000,
+            PayoutsDetails\Entity::ATTACHMENTS_KEY => [
+                [
+                    PayoutsDetails\Entity::ATTACHMENTS_FILE_ID   => 'file_testing',
+                    PayoutsDetails\Entity::ATTACHMENTS_FILE_NAME => 'not-your-attachment.pdf'
+                ]
+            ]
+        ];
+
+        $payoutDetailsData = [
+            'id'                        => 'randomid111119',
+            'payout_id'                 => 'randomid111111',
+            'queue_if_low_balance_flag' => 1,
+            'tds_category_id'           => 1,
+            'tax_payment_id'            => 'txpy_F2qwMZe97QTGG1',
+            'additional_info'           => json_encode($expectedAdditionalInfo),
+            'created_at'                => 1000000002,
+            'updated_at'                => 1000000001
+        ];
+
+        \DB::connection('test')->table('ps_payout_details')->insert($payoutDetailsData);
+
+        $expectedAdditionalInfo1 = [
+            'tds_amount'                           => 1001,
+            PayoutsDetails\Entity::SUBTOTAL_AMOUNT => 10001,
+            PayoutsDetails\Entity::ATTACHMENTS_KEY => [
+                [
+                    PayoutsDetails\Entity::ATTACHMENTS_FILE_ID   => 'file_testing1',
+                    PayoutsDetails\Entity::ATTACHMENTS_FILE_NAME => 'not-your-attachment1.pdf'
+                ]
+            ]
+        ];
+
+        $payoutDetailsData1 = [
+            'payout_id'                 => 'randomid111111',
+            'queue_if_low_balance_flag' => 0,
+            'tds_category_id'           => 2,
+            'tax_payment_id'            => 'txpy_F2qwMZe97QTGG2',
+            'additional_info'           => json_encode($expectedAdditionalInfo1),
+            'created_at'                => 1000000002,
+            'updated_at'                => 1000000001
+        ];
+
+        \DB::connection('live')->table('payouts_details')->insert($payoutDetailsData1);
+
+        $payoutDetailsOnApi = $this->getDbEntity('payouts_details', [
+            'payout_id' => 'randomid111111',
+        ], 'live');
+
+        // This shows that payout details are present on api on live mode
+        $this->assertFalse(empty($payoutDetailsOnApi));
+
+        /*
+         * The payout has payout details present on api too but with different attachment file id, so it shouldn't give
+         * attachment not linked to payout error, it should fetch payout details from payout service and use them
+         * instead to give correct response.
+         */
         $url = '/payouts/pout_randomid111111/attachment/file_testing';
 
         $this->testData[__FUNCTION__] = $this->testData['testGetAttachmentSignedUrlForPayoutOnlyPresentOnPayoutService'];

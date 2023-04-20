@@ -244,9 +244,18 @@ class Core extends Base\Core
     {
         $payoutDetails = $this->repo->payouts_details->getPayoutDetailsByPayoutId($payoutId)->first();
 
-        if (empty($payoutDetails) === true)
+        /*
+         * Doing this for all requests because we want to load the freshest payout details updated in payout service for
+         * having no lag on merchant dashboard. if we try to do it only for payout service payouts, we would still have
+         * to do an additional db query to fetch the payout to check is_payout_service flag so it's better to directly
+         * fetch payout details from payout service.
+         */
+        $payoutServicePayoutDetails = (new PayoutDetailsDualWrite)->getAPIPayoutsDetailsFromPayoutService($payoutId);
+
+        // Choosing the most updated payout details
+        if (empty($payoutServicePayoutDetails) === false)
         {
-            $payoutDetails = (new PayoutDetailsDualWrite)->getAPIPayoutsDetailsFromPayoutService($payoutId);
+            $payoutDetails = $payoutServicePayoutDetails;
         }
 
         return $payoutDetails;
