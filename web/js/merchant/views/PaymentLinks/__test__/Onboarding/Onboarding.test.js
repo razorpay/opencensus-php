@@ -105,7 +105,7 @@ describe('Payment link Onboarding Screen', () => {
       onboarding,
     });
 
-    expect(screen.getByText(/Curlec/i)).toBeInTheDocument();
+    expect(screen.getByText('Curlec')).toBeInTheDocument();
   });
 
   test('should load curlec onboarding initial screen', () => {

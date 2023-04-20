@@ -31,7 +31,7 @@ export const LANDING_PAGE_DESC = {
   [ORG_CUSTOM_CODE_MAP.RAZORPAY]:
     'Create and share a Razorpay Payment Link in under a minute with your customers via email, SMS, messenger, chatbot etc. Get domestic and international payments online directly into your bank account.',
   [ORG_CUSTOM_CODE_MAP.CURLEC]:
-    'Create and share a Razorpay Payment Link in under a minute with your customers via email, SMS, messenger, chatbot etc. Get payments directly into your bank account.',
+    'Create and share a Curlec Payment Link in under a minute with your customers via email, SMS, messenger, chatbot etc. Get payments directly into your bank account.',
 };
 
 // i18
@@ -58,6 +58,7 @@ export default class PaymentPagesOnBoarding extends React.Component {
         isLocalEnabler
         feature={RZPFeatures.PL}
         page={sliderProps.active}
+        // eslint-disable-next-line react/no-this-in-sfc
         onClick={this.closeOnboarding}
       />
     );
