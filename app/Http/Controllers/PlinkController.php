@@ -284,6 +284,13 @@ class PlinkController extends Controller
             $headers['X-Razorpay-Requester'] = $requester;
         }
 
+        $partnerMerchantId = $this->ba->getPartnerMerchantId();
+
+        if (empty($partnerMerchantId) === false)
+        {
+            $headers['X-Razorpay-Partner-Merchant-Id'] = $partnerMerchantId;
+        }
+
         return $headers;
     }
 
