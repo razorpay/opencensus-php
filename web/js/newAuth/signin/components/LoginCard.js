@@ -3,7 +3,7 @@ import Size from '@razorpay/blade-old/src/atoms/Size';
 import Text from '@razorpay/blade-old/src/atoms/Text';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import View from '@razorpay/blade-old/src/atoms/View';
-import { CustomLinkButton, Image } from '../styles';
+import { CustomLinkButton, Image } from 'newAuth/signin/styles';
 
 const LoginCard = ({ cardData, cardOrder }) => {
   let hoverEventFired = false;
@@ -45,7 +45,7 @@ const LoginCard = ({ cardData, cardOrder }) => {
         }),
       );
     }
-  }, []);
+  }, [id]);
 
   const Header =
     type === 'with-image' ? (
