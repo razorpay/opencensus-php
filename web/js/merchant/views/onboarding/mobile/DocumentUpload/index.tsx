@@ -79,9 +79,9 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
       isSyncBankVerificationEnabled,
       isUpdatedLiteOnboarding,
       isEmailNonMandatoryOnL2Form,
-      isMsmeDisabled,
       isAdharEkycRequired,
       isAdharEkycRequiredForTrustSocietyNgo,
+      isMsmeCertificateEnabled,
     },
   } = useApp();
   const { gstinDetails } = useGstin();
@@ -669,22 +669,21 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
                     {/*eslint-disable dot-notation*/}
                     {Object.keys(BUSINESS_PROOF_TYPE_DOCS).map((business_proof_type) => {
                       if (
-                        business_proof_type === BUSINESS_PROOF_CERTIFICATE_TYPES.MSME_CERTIFICATE &&
-                        businessDoc !== 'msme_certificate' &&
-                        !formikProps.values.msme_certificate &&
-                        isMsmeDisabled
+                        business_proof_type !== BUSINESS_PROOF_CERTIFICATE_TYPES.MSME_CERTIFICATE ||
+                        (business_proof_type ===
+                          BUSINESS_PROOF_CERTIFICATE_TYPES.MSME_CERTIFICATE &&
+                          isMsmeCertificateEnabled)
                       ) {
-                        return null;
-                      }
-                      return (
-                        <Option
-                          key={business_proof_type}
-                          value={business_proof_type}
-                          label={BUSINESS_PROOF_TYPE_DOCS[business_proof_type]}
-                        >
-                          {BUSINESS_PROOF_TYPE_DOCS[business_proof_type]}
-                        </Option>
-                      );
+                        return (
+                          <Option
+                            key={business_proof_type}
+                            value={business_proof_type}
+                            label={BUSINESS_PROOF_TYPE_DOCS[business_proof_type]}
+                          >
+                            {BUSINESS_PROOF_TYPE_DOCS[business_proof_type]}
+                          </Option>
+                        );
+                      } else return null;
                     })}
                   </Select>
                 </Field>

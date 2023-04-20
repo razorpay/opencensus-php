@@ -1604,10 +1604,8 @@ const uploadFields = [
       Object.keys(BUSINESS_PROOF_TYPE_DOCS).forEach((type) => {
         if (
           type !== BUSINESS_PROOF_CERTIFICATE_TYPES.MSME_CERTIFICATE ||
-          activation.state.business_proof_type ===
-            BUSINESS_PROOF_CERTIFICATE_TYPES.MSME_CERTIFICATE ||
-          activation.props.data?.documents?.msme_certificate ||
-          !activation.props.user.isMsmeDisabled
+          (type === BUSINESS_PROOF_CERTIFICATE_TYPES.MSME_CERTIFICATE &&
+            activation.props.user.isMsmeCertificateEnabled)
         ) {
           options.push({
             label: BUSINESS_PROOF_TYPE_DOCS[type],

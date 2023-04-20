@@ -272,6 +272,9 @@ return [
         // FTUX for Onboarding
         'ONBOARDING_FTUX' => env('ONBOARDING_FTUX', ''),
 
+         // MSME for Proprietership
+         'COLLECT_MSME_CERTIFICATE_PROPRIETORSHIP' => env('COLLECT_MSME_CERTIFICATE_PROPRIETORSHIP', ''),
+
         // Payment Pages - Ecommerce
         'PP_ECOMMERCE_SPLITZ' => env('PP_ECOMMERCE_SPLITZ', ''),
         // Affordability Onboarding for SBI CC EMi and credit card segeration

@@ -13,9 +13,9 @@ const mockRazorXExp = {
   isLlpinSyncFlowEnabled: true,
   isCinSyncFlowEnabled: true,
   isActivationMccPendingProgressbarDisabled: true,
-  isMsmeDisabled: true,
   isAdharEkycRequiredForTrustSocietyNgo: true,
   isFeEasyDashboardNCEnabled: true,
+  isMsmeCertificateEnabled: true,
 };
 
 const mockContext = {

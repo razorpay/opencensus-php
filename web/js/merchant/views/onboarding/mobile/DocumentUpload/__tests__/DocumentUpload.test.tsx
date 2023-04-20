@@ -47,11 +47,11 @@ test('should render all option available for Business Registration Proof', async
   });
 });
 
-test('should not render msme option for Business Registration Proof', async () => {
+test('should not render msme option for Business Registration Proof if experiment is disabled', async () => {
   ActivationDB.update({
     business_type: '1',
     documents: {
-      gst_certificate: [
+      msme_certificate: [
         {
           id: 'It4NCPW4WHW8Nk',
           file_store_id: 'It4NFVRHbAueUB',
@@ -61,13 +61,50 @@ test('should not render msme option for Business Registration Proof', async () =
       ],
     },
   });
-  render(<App />, {});
+  render(<App />, {
+    context: {
+      mode: 'test',
+      org: { id: '123' },
+      user: { contact_name: 'susheela' },
+      experiments: { isMsmeCertificateEnabled: false },
+    },
+  });
   await waitForLoadingToFinish();
   const businessRegistrationProofSelect = screen.getAllByPlaceholderText(
     'SELECT REGISTRATION PROOF TYPE',
   )[0];
   fireEvent.click(businessRegistrationProofSelect);
-  expect(screen.queryAllByText('MSME/Udyam/Udyog Certificate')).toHaveLength(0);
+  expect(screen.queryAllByText('Udyam/ MSME Certificate')).toHaveLength(0);
+});
+
+test('should render msme option for Business Registration Proof if experiment is enabled', async () => {
+  ActivationDB.update({
+    business_type: '1',
+    documents: {
+      msme_certificate: [
+        {
+          id: 'It4NCPW4WHW8Nk',
+          file_store_id: 'It4NFVRHbAueUB',
+          merchant_id: 'IgSqDJUNuBAiOU',
+          created_at: 1644226070,
+        },
+      ],
+    },
+  });
+  render(<App />, {
+    context: {
+      mode: 'test',
+      org: { id: '123' },
+      user: { contact_name: 'susheela' },
+      experiments: { isMsmeCertificateEnabled: true },
+    },
+  });
+  await waitForLoadingToFinish();
+  const businessRegistrationProofSelect = screen.getAllByPlaceholderText(
+    'SELECT REGISTRATION PROOF TYPE',
+  )[0];
+  fireEvent.click(businessRegistrationProofSelect);
+  expect(screen.queryAllByText('Udyam/ MSME Certificate')).toHaveLength(1);
 });
 
 test('should render all option available for Address ', async () => {

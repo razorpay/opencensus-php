@@ -597,6 +597,12 @@ export default {
     // prod experiment ids
     'LGeU9L1JfrImWM',
   ],
+  COLLECT_MSME_CERTIFICATE_PROPRIETORSHIP: [
+    // stage experiment ids
+    'LcsX6qhx42WkE0',
+    // prod experiment ids
+    'LctS8LI0b15D6w',
+  ],
   ecosystem_downtimes: [
     // stage experiment ids
     'LZJASxGazKW6oH',

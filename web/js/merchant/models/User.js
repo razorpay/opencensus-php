@@ -1824,8 +1824,11 @@ export default class User {
     );
   }
 
-  get isMsmeDisabled() {
-    return this.isOrgRZP;
+  get isMsmeCertificateEnabled() {
+    return (
+      getSplitzExperimentVariant('COLLECT_MSME_CERTIFICATE_PROPRIETORSHIP')?.variables?.result ===
+      'on'
+    );
   }
 
   get isDigilockerEkyc() {
