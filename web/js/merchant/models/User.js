@@ -1879,7 +1879,7 @@ export default class User {
   get isAccountAndSettingsRevampEnabled() {
     return (
       getSplitzExperimentVariant('account_settings_revamp')?.variables?.result === 'on' &&
-      this.isOrgRZP
+      (this.isOrgRZP || this.isOrgCurlec)
     );
   }
 
