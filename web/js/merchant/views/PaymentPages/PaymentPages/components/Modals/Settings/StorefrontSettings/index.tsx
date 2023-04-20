@@ -12,10 +12,11 @@ import {
   CtaSection,
   Footer,
   StyledForm,
+  CustomSlugSection,
 } from './styled';
 import PluginsAndAddOns from 'merchant/views/PaymentPages/PaymentPages/components/Modals/PluginsAndAddOns';
 
-import { lenientUrl } from 'common/utils/validators';
+import { lenientUrl, validateSlug } from 'common/utils/validators';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 
 interface IStorefrontSettingsProps {
@@ -25,7 +26,19 @@ interface IStorefrontSettingsProps {
   onClose: () => void;
   openModal: (data) => void;
   closeModal: () => void;
+  isTestMode: boolean;
 }
+
+const CUSTOM_URL_INPUT_NAME = 'slug';
+const CUSTOM_URL_LABEL = 'URL of this page';
+const CUSTOM_URL_RZP_PAGES_URL = 'https://pages.razorpay.com/stores/';
+const CUSTOM_URL_INPUT_CLASS = 'Input--vTop';
+const CUSTOM_URL_MAX_LENGTH = '30';
+const CUSTOM_URL_DISABLED_INFO = (
+  <div style={{ marginTop: 4, fontSize: 13 }}>
+    Custom URL is only available in <b>Live Mode</b>
+  </div>
+);
 
 const StorefrontSettings = ({
   storefrontEntity = {},
@@ -34,10 +47,10 @@ const StorefrontSettings = ({
   onClose,
   openModal,
   closeModal,
+  isTestMode,
 }: IStorefrontSettingsProps): React.ReactElement => {
   const settings = storefrontEntity.settings || {};
   const isPluginConfigured = settings.pp_ga_pixel_tracking_id || settings.pp_fb_pixel_tracking_id;
-
   const [paymentSuccessMessage, setPaymentSuccessMessage] = useState(
     settings.payment_success_message || '',
   );
@@ -92,14 +105,31 @@ const StorefrontSettings = ({
     });
   };
 
+  const validator = (val) => {
+    if (!isTestMode) {
+      if (val && !validateSlug(val.trim())) {
+        return 'Please enter valid Url';
+      }
+
+      if (val.length < 4) {
+        return 'Url must be at least 4 characters long';
+      } else if (val.length > 30) {
+        return 'Url must be maximum 30 characters long';
+      }
+    }
+    return '';
+  };
+
   const PluginsBtn = (
     <Button.Transparent type="button" class="Button--Link" onClick={handleConfigurePlugins}>
       <b>{isPluginConfigured ? 'Update' : 'Configure'}</b>
     </Button.Transparent>
   );
 
+  const isSuccessScreen = window.location.pathname?.includes('/success');
+
   return (
-    <StyledModalMask maskClosable={false}>
+    <StyledModalMask maskClosable={false} isSuccessScreen={isSuccessScreen}>
       <Modal showCloseBtn={false}>
         <ModalContent>
           <StyledTitle>
@@ -107,6 +137,19 @@ const StorefrontSettings = ({
             Page Settings
           </StyledTitle>
           <StyledForm onSubmit={handleSubmit} onChange={handleChange} name="page-settings">
+            <CustomSlugSection>
+              <Input
+                name={CUSTOM_URL_INPUT_NAME}
+                class={CUSTOM_URL_INPUT_CLASS}
+                label={CUSTOM_URL_LABEL}
+                defaultValue={storefrontEntity.slug}
+                addonValueBefore={CUSTOM_URL_RZP_PAGES_URL}
+                disabled={isTestMode}
+                validator={validator}
+                maxLength={CUSTOM_URL_MAX_LENGTH}
+              />
+              {isTestMode && CUSTOM_URL_DISABLED_INFO}
+            </CustomSlugSection>
             <div className="form-body">
               <SettingsSection>
                 <input name="expire_by" value={expireBy || ''} readOnly hidden />
@@ -200,7 +243,7 @@ const StorefrontSettings = ({
   );
 };
 
-const mapStateToProps = () => ({});
+const mapStateToProps = (state) => ({ isTestMode: state.session.mode === 'test' });
 
 const mapDispatchToProps = (dispatch) => bindActionCreators({ closeModal, openModal }, dispatch);
 

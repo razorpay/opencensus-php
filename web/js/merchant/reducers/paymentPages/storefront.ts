@@ -57,6 +57,7 @@ export interface PaymentPagesStorefrontType {
     products: IPaymentPagesProduct[];
     shortUrl: string;
     expire_by: number | null;
+    slug: string | null;
     settings: {
       payment_success_message?: string;
       payment_success_redirect_url?: string;
@@ -183,6 +184,7 @@ const initialState: PaymentPagesStorefrontType = {
     shortUrl: '',
     expire_by: null,
     settings: {},
+    slug: '',
   },
   allCategories: {
     data: [],

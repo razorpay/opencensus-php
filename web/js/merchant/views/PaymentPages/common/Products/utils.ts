@@ -15,7 +15,7 @@ export const PRODUCT_STATUS = {
 };
 
 type _ProductStatusKeys = keyof typeof PRODUCT_STATUS;
-export type ProductStatusKeys = typeof PRODUCT_STATUS[_ProductStatusKeys];
+export type ProductStatusKeys = (typeof PRODUCT_STATUS)[_ProductStatusKeys];
 
 export const emptyProduct: IPaymentPagesProduct = {
   product_name: '',
@@ -178,7 +178,7 @@ export const generateStorefrontRequest = (
   mode: ModeTypes,
 ) => {
   const {
-    entity: { title, products, contactEmail, contactPhone, expire_by, settings },
+    entity: { title, products, contactEmail, contactPhone, expire_by, settings, slug },
   } = storefront;
   return {
     title,
@@ -205,6 +205,7 @@ export const generateStorefrontRequest = (
       mandatory: true,
     })),
     expire_by,
+    slug,
     settings: Object.keys(settings).length ? settings : undefined,
   };
 };

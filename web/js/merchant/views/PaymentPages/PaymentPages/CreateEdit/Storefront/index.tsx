@@ -400,12 +400,14 @@ const StoreFront = ({
         payment_success_message?: string;
         payment_success_redirect_url?: string;
       };
+      slug?: string | null;
     } = {
       expire_by: null,
       settings: {
         payment_success_message: '',
         payment_success_redirect_url: '',
       },
+      slug: null,
     };
 
     if (formData.payment_success_message) {
@@ -418,6 +420,10 @@ const StoreFront = ({
 
     if (formData.expire_by) {
       payload.expire_by = +formData.expire_by;
+    }
+
+    if (formData.slug) {
+      payload.slug = formData.slug;
     }
 
     editStorefrontDeepMerge(payload);

@@ -343,6 +343,7 @@ export const store = {
   created_at: 1673611474,
   updated_at: 1673611474,
   deleted_at: null,
+  slug: '',
   line_items: [
     {
       id: 'li_L3efmJBzcsybnf',

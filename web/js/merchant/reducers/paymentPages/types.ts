@@ -60,6 +60,11 @@ export interface ILineItem {
   catalog: ICatalog;
 }
 
+export interface StoreFrontMetaData {
+  user_email: string;
+  user_id: string;
+}
+
 export interface IStorefrontResponse {
   id: string;
   merchant_id: string;
@@ -71,7 +76,8 @@ export interface IStorefrontResponse {
   expired_at: TimeField;
   status: 'active' | 'inactive';
   type: 'store';
-  meta_data: [];
+  slug: string;
+  meta_data: StoreFrontMetaData;
   short_url: string;
   mode: Mode;
   created_at: number;

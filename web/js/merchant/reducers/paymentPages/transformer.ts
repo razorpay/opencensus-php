@@ -35,6 +35,7 @@ export const transformStorefront = (
 ): PaymentPagesStorefrontType['entity'] => {
   return {
     title: response.title,
+    slug: response.slug || '',
     contactPhone: response.support_contact,
     contactEmail: response.support_email,
     products: response.line_items

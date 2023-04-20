@@ -108,6 +108,7 @@ const StorefrontSuccess = (props: IStorefrontSuccessProps): React.ReactElement =
     expire_by?: number | null;
     payment_success_message?: string;
     payment_success_redirect_url?: string;
+    slug?: string | null;
   }) => {
     const payload: {
       expire_by: number | null;
@@ -115,6 +116,7 @@ const StorefrontSuccess = (props: IStorefrontSuccessProps): React.ReactElement =
         payment_success_message: string;
         payment_success_redirect_url: string;
       };
+      slug?: string | null;
     } = {
       expire_by: formData?.expire_by ? +formData.expire_by : null,
       settings: {
@@ -122,6 +124,7 @@ const StorefrontSuccess = (props: IStorefrontSuccessProps): React.ReactElement =
         payment_success_message: formData?.payment_success_message || '',
         payment_success_redirect_url: formData?.payment_success_redirect_url || '',
       },
+      slug: formData.slug || null,
     };
 
     editStorefrontPageApiCall(props.id, payload, false)

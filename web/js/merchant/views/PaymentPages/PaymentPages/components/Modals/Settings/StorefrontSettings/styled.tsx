@@ -2,12 +2,13 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { ModalMask } from 'common/new-ui/Modal';
+import { Theme } from '@razorpay/blade/components';
 import Form from 'common/new-ui/Form';
 
 const _ModalMask = ({ className = '', ...restProps }) => (
   <ModalMask unmodifiedClassName={className} {...restProps} />
 );
-
+const mobileView = '900px';
 export const StyledModalMask = styled(_ModalMask)`
   .Modal-container {
     width: 400px;
@@ -28,7 +29,10 @@ export const StyledModalMask = styled(_ModalMask)`
   }
 
   .Input .Input-valueBefore + .Input-el {
-    padding-left: 190px;
+    padding-left: ${(props) => (props.isSuccessScreen ? '66%' : '64%')};
+    @media screen and (max-width: ${mobileView}) {
+      padding-left: ${(props) => (props.isSuccessScreen ? '68%' : '66%')};
+    }
   }
 
   .Input-content {
@@ -45,6 +49,12 @@ export const StyledTitle = styled.div`
   padding: 16px 24px;
   font-size: 18px;
 `;
+
+export const CustomSlugSection = styled.div(
+  ({ theme }: { theme: Theme }) => `
+  padding: 0 ${theme.spacing[7]}px;
+`,
+);
 
 export const SettingsSection = styled.div`
   padding: 24px;
