@@ -64,6 +64,7 @@ class RollKey extends Component {
                 ...getCommonAnalyticsProperties(window.rzp_user),
               },
             });
+            this.props.onClose?.();
             this.props.closeModal();
           }}
         />
@@ -105,6 +106,7 @@ class RollKey extends Component {
                     ...getCommonAnalyticsProperties(window.rzp_user),
                   },
                 });
+                this.props.onClose?.();
                 this.props.closeModal();
               }}
             >

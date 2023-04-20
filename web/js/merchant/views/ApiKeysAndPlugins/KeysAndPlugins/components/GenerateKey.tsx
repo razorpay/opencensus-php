@@ -186,6 +186,7 @@ const GenerateKey = ({
           merchantId={merchantId}
           // Regeneration flow for onGenerateKey function
           generateKey={(params) => onGenerateKey(params, true)}
+          onClose={() => setIsKeyGenerating(false)}
         />
       ),
     });
