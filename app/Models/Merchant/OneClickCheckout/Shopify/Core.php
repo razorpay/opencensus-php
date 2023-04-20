@@ -37,7 +37,7 @@ class Core extends Base\Core
 
     const ORDER_CACHE_KEY = 'shopify_1cc_order';
 
-    const ORDER_CACHE_KEY_TTL = 1 * 1440; // 1 day
+    const ORDER_CACHE_KEY_TTL = 24 * 60 * 60; // 1 day
 
     const MUTEX_KEY = 'shopify_1cc_place_order_mutex';
 
@@ -46,6 +46,8 @@ class Core extends Base\Core
     ];
 
     const MAX_LENGTH = 8;
+
+    const SHOPIFY_ORDER_PLACED_CACHE_KEY = '1cc:shopify_order_placed';
 
     const MAGIC_CHECKOUT_SERVICE_SHOPIFY_PATH        = 'v1/integrations/shopify';
 
@@ -1057,6 +1059,9 @@ class Core extends Base\Core
                 $finalErrorCode
               );
         }
+
+        // Mark order as placed in redis
+        $this->markShopifyOrderPlaced($orderId);
 
         $order = json_decode($order, true);
 
@@ -2405,6 +2410,24 @@ class Core extends Base\Core
             ]
         );
         return $expResult['variant'] === 'magic_order';
+    }
+
+    public function markShopifyOrderPlaced(string $orderId): void
+    {
+        $key = $this->getCacheKeyForPlacedOrders($orderId);
+        $this->cache->put($key, 1, self::ORDER_CACHE_KEY_TTL);
+    }
+
+    protected function getCacheKeyForPlacedOrders(string $orderId): string
+    {
+        return self::SHOPIFY_ORDER_PLACED_CACHE_KEY . ':' . $orderId;
+    }
+
+    // canShopifyOrderBePlaced checks if the Rzp order receipt is updated or local storage (Redis).
+    public function canShopifyOrderBePlaced(string $orderId, string $receipt): bool
+    {
+        $key = $this->getCacheKeyForPlacedOrders($orderId);
+        return empty($this->cache->get($key)) === true and $receipt === (new OneClickCheckout\Constants)::SHOPIFY_TEMP_RECEIPT;
     }
 
     public function createCustomerAccount($customer) : array

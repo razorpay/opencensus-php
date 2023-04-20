@@ -590,7 +590,7 @@ class Service extends Base\Service
 
         $receipt = $order->getReceipt();
 
-        if ($receipt !== OneClickCheckout\Constants::SHOPIFY_TEMP_RECEIPT)
+        if ((new Core())->canShopifyOrderBePlaced($orderId, $receipt) === false)
         {
             if ($fromShopifyApi === true)
             {
