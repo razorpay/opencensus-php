@@ -14985,6 +14985,7 @@ class Route
         ],
 
         'settlements_service' => [
+            'setl_transaction_replay',
             'merchant_la_fetch',
             'merchant_fetch_internal',
             'create_settlement_entry',
