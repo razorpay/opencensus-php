@@ -627,6 +627,52 @@ class PaymentCreateAVSTest extends TestCase
         $this->assertEquals(false, $responseContent['avs_required']);
     }
 
+    public function testAddressRequiredForNonUSGBCACards()
+    {
+        $this->fixtures->merchant->addFeatures(['address_required']);
+
+        $this->fixtures->iin->create([
+                                         'iin' => '837413',
+                                         'country' => 'AU',
+                                         'network' => 'MasterCard',
+                                     ]);
+
+        $flowsData = [
+            'content' => ['amount' => 5000, 'currency' => 'AUD', 'iin' => '837413'],
+            'method'  => 'POST',
+            'url'     => '/payment/flows',
+        ];
+
+        $response = $this->sendRequest($flowsData);
+
+        $responseContent = json_decode($response->getContent(), true);
+
+        $this->assertEquals(true, $responseContent['avs_required']);
+    }
+
+    public function testAddressRequiredForCardWithNoCountry()
+    {
+        $this->fixtures->merchant->addFeatures(['address_required']);
+
+        $this->fixtures->iin->create([
+                                         'iin' => '837413',
+                                         'network' => 'MasterCard',
+                                         'country' => null,
+                                     ]);
+
+        $flowsData = [
+            'content' => ['amount' => 5000, 'currency' => 'AUD', 'iin' => '837413'],
+            'method'  => 'POST',
+            'url'     => '/payment/flows',
+        ];
+
+        $response = $this->sendRequest($flowsData);
+
+        $responseContent = json_decode($response->getContent(), true);
+
+        $this->assertEquals(true, $responseContent['avs_required']);
+    }
+
     public function testAVSNotSupportedLibrary()
     {
         $paymentArray = $this->getDefaultPaymentArray();

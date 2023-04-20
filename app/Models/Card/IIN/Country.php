@@ -772,12 +772,6 @@ class Country
         self::CA,
     ];
 
-    const ADDRESS_REQUIRED_COUNTRY_LIST =[
-        self::US,
-        self::GB,
-        self::CA,
-    ];
-
     public static function isValid(string $type):bool
     {
         return (in_array($type, self::COUNTRY_LIST, true) === true);
@@ -786,10 +780,5 @@ class Country
     public static function isAVSSupportedCountry(string $country):bool
     {
         return (in_array($country, self::AVS_COUNTRY_LIST, true) === true);
-    }
-
-    public static function isAddressRequiredCountry(string $country):bool
-    {
-        return (in_array($country, self::ADDRESS_REQUIRED_COUNTRY_LIST, true) === true);
     }
 }

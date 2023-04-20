@@ -5353,12 +5353,10 @@ class Service extends Base\Service
             ($merchant !== null) and ($merchant->isInternational() === true)
             and ($merchant->isAddressRequiredEnabled() === true)
         ) {
+
             if ($iinEntity !== null)
             {
-                if((IIN\IIN::isInternational($iinEntity->getCountry(), $merchant->getCountry()) === true)
-                    and (empty($iinEntity->getCountry()) === false)
-                    and ($iinEntity->getCountry() !== null)
-                    and (Country::isAddressRequiredCountry($iinEntity->getCountry())))
+                if(IIN\IIN::isInternational($iinEntity->getCountry(), $merchant->getCountry()) === true)
                 {
                     return true;
                 }
