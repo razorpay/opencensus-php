@@ -342,7 +342,7 @@ class Gateway extends Base\Gateway
                 'TransactionDescription' => $this->getSubMerchantId($input['merchant']->isTPVRequired()),
                 'FUP-1'                  => '',
                 'FUP-2'                  => '',
-                'FUP-3'                  => '',
+                'FUP-3'                  => $input['merchant']['category'],
             );
 
             if ($input['merchant']->isTPVRequired() === true)
