@@ -846,4 +846,49 @@ return [
             'content' => []
         ]
     ],
+
+    'testAddOrUpdateSettings' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'url'     => '/vendor-payments/add_or_update_settings',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testGetSettings' => [
+        'request'  => [
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'url'     => '/vendor-payments/get_settings',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testApproveRejectInvoice' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'url'     => '/vendor-payments/approve-reject',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
 ];

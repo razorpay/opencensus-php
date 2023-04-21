@@ -82,7 +82,12 @@ class Service
     const DELETE_FILE_UPLOAD            = 'DeleteFileUpload';
 
     const GET_VENDOR_FUND_ACCOUNT      = 'GetVendorFundAccount';
+    const ADD_OR_UPDATE_SETTINGS        = 'AddOrUpdateSettings';
+    const GET_SETTINGS                  = 'GetSettings';
+    const APPROVE_REJECT_INVOICE        = 'ApproveRejectInvoice';
 
+    const GET_TIMELINE_VIEW        = 'GetApprovalTimeline';
+    const GET_LATEST_APPROVERS                  = 'GetLatestApprovers';
 
     const BASE_PATH = 'twirp/vendorpayments.Vendorpayments';
 
@@ -513,11 +518,16 @@ class Service
     }
     public function edit(MerchantEntity $merchant,
                             string $vendorPaymentId,
-                            array $input)
+                            array $input, Entity $user = null)
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::EDIT_VENDOR_PAYMENTS);
 
         $input['id'] = $vendorPaymentId;
+
+        if(!empty($user))
+        {
+            $input['user_id'] = $user->getPublicId();
+        }
 
         return $this->makeRequest($merchant, $url, $input);
     }
@@ -844,15 +854,19 @@ class Service
 
         $headers[self::X_REQUEST_ID] = $this->app['request']->getId();
 
-        $headers[self::X_MERCHANT_ID] = $this->app['basicauth']->getMerchantId();
+        $headers[self::X_MERCHANT_ID] = $this->app['basicauth']->getMerchantId() ?? '';
 
         $headers[self::X_USER_ID] = optional($this->app['basicauth']->getUser())->getId() ?? '';
 
-        $headers[self::X_ORG_ID] = $this->app['basicauth']->getOrgId();
+        $headers[self::X_ORG_ID] = $this->app['basicauth']->getOrgId() ?? '';
 
-        if ($mode == null)
+        if ($mode == null and isset($this->app['rzp.mode']))
         {
             $headers[self::X_APP_MODE] = $this->app['rzp.mode'] ? $this->app['rzp.mode'] : Mode::LIVE;
+        }
+        elseif ($merchant == null)
+        {
+            $headers[self::X_APP_MODE] = Mode::LIVE;
         }
         else
         {
@@ -951,6 +965,41 @@ class Service
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::DELETE_FILE_UPLOAD);
 
         $input = ['ufh_file_id' => $ufhFileId];
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function addOrUpdateSettings(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::ADD_OR_UPDATE_SETTINGS);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function getSettings(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_SETTINGS);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function approveReject(array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::APPROVE_REJECT_INVOICE);
+
+        return $this->makeRequest(null, $url, $input);
+    }
+
+    public function getLatestApprovers(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_LATEST_APPROVERS);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function getTimelineView(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_TIMELINE_VIEW);
 
         return $this->makeRequest($merchant, $url, $input);
     }

@@ -1955,6 +1955,12 @@ class Route
         'vendor_payment_create_file_upload'        => ['post',     'vendor-payments/vp_file_upload',                                          'VendorPaymentController@createFileUpload'                          ],
         'vendor_payment_get_file_upload'           => ['get',      'vendor-payments/vp_file_uploads',                                         'VendorPaymentController@getFileUpload'                             ],
         'vendor_payment_delete_file_upload'        => ['post',     'vendor-payments/vp_file_upload/{ufh_file_id}/remove',                     'VendorPaymentController@deleteFileUpload'                          ],
+        'vendor_payment_add_or_update_settings'    => ['post',     'vendor-payments/add_or_update_settings',                                  'VendorPaymentController@addOrUpdateSettings'                       ],
+        'vendor_payment_get_settings'              => ['get',      'vendor-payments/get_settings',                                            'VendorPaymentController@getSettings'                               ],
+        'vendor_payment_approve_reject'            => ['post',     'vendor-payments/approve-reject',                                          'VendorPaymentController@approveReject'                             ],
+        'vendor_payment_approve_reject_cors'       => ['options',  'vendor-payments/approve-reject',                                          'VendorPaymentController@allowCorsForPublicApproveRejectPage'       ],
+        'vendor_payment_get_latest_approvers'      => ['get',      'vendor-payments/get_latest_approvers',                                    'VendorPaymentController@getLatestApprovers'                        ],
+        'vendor_payment_get_timeline_view'         => ['get',      'vendor-payments/get_timeline_view',                                       'VendorPaymentController@getTimelineView'                           ],
 
         // Vendor Portal
         'vendor_invoices_list'                     => ['get',      'vendor-portal/invite/{vendor_invite_id}/invoices',                               'VendorPortalController@listVendorInvoices'       ],
@@ -6566,6 +6572,10 @@ class Route
         'vendor_payment_get_file_upload',
         'vendor_payment_delete_file_upload',
 
+        'vendor_payment_add_or_update_settings',
+        'vendor_payment_get_settings',
+        'vendor_payment_get_latest_approvers',
+        'vendor_payment_get_timeline_view',
 
         'vendor_payment_get_by_id',
         'vendor_payment_create',
@@ -9786,6 +9796,11 @@ class Route
         'vendor_payment_create_file_upload'            => Permission::CREATE_VENDOR_PAYMENTS,
         'vendor_payment_get_file_upload'               => Permission::CREATE_VENDOR_PAYMENTS,
         'vendor_payment_delete_file_upload'            => Permission::CREATE_VENDOR_PAYMENTS,
+        'vendor_payment_add_or_update_settings'        => Permission::CREATE_VENDOR_PAYMENTS,
+        'vendor_payment_get_settings'                  => Permission::VIEW_VENDOR_PAYMENTS,
+
+        'vendor_payment_get_latest_approvers'          => Permission::CREATE_VENDOR_PAYMENTS,
+        'vendor_payment_get_timeline_view'             => Permission::VIEW_VENDOR_PAYMENTS,
         'vendor_payment_get_ocr_data'                  => Permission::CREATE_VENDOR_PAYMENTS,
         'vendor_payment_invoice_get_signed_url'        => Permission::GET_SIGNED_URL,
         'vendor_payment_get_auto_processed_invoice'    => Permission::CREATE_VENDOR_PAYMENTS,
@@ -10300,6 +10315,10 @@ class Route
         // Support Dashboard Routes
         'support_page_otp_verify',
         'app_fetch_payments',
+
+        // Vendor Payments Public approve reject pages
+        'vendor_payment_approve_reject',
+        'vendor_payment_approve_reject_cors',
     ];
 
     public static $dynamicLifeTimeSession = [
@@ -11709,6 +11728,10 @@ class Route
             'vendor_payment_create_file_upload',
             'vendor_payment_get_file_upload',
             'vendor_payment_delete_file_upload',
+            'vendor_payment_add_or_update_settings',
+            'vendor_payment_get_settings',
+            'vendor_payment_get_latest_approvers',
+            'vendor_payment_get_timeline_view',
             'vendor_payment_list',
             'vendor_payment_list_vendors',
             'vendor_sign_up_create_business_info',
@@ -13891,6 +13914,10 @@ class Route
             'vendor_payment_create_file_upload',
             'vendor_payment_get_file_upload',
             'vendor_payment_delete_file_upload',
+            'vendor_payment_add_or_update_settings',
+            'vendor_payment_get_settings',
+            'vendor_payment_get_latest_approvers',
+            'vendor_payment_get_timeline_view',
             'vendor_payment_list',
             'vendor_payment_mark_as_paid',
             'vendor_payment_reporting_info',
@@ -16111,6 +16138,10 @@ class Route
         'vendor_payment_create_file_upload',
         'vendor_payment_get_file_upload',
         'vendor_payment_delete_file_upload',
+        'vendor_payment_add_or_update_settings',
+        'vendor_payment_get_settings',
+        'vendor_payment_get_latest_approvers',
+        'vendor_payment_get_timeline_view',
         'vendor_payment_contact_get',
         'vendor_payment_contact_create',
         'vendor_payment_contact_update',

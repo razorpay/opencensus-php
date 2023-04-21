@@ -185,7 +185,7 @@ class VendorPaymentController extends Controller
 
     public function edit(string $vendorPaymentId)
     {
-        return $this->service->edit($this->ba->getMerchant(),$vendorPaymentId, $this->input);
+        return $this->service->edit($this->ba->getMerchant(),$vendorPaymentId, $this->input, $this->ba->getUser());
     }
 
     public function cancel(string $vendorPaymentId)
@@ -351,5 +351,66 @@ class VendorPaymentController extends Controller
     public function deleteFileUpload(string $ufhFileId)
     {
         return $this->service->deleteFileUpload($this->ba->getMerchant(), $ufhFileId);
+    }
+
+    public function addOrUpdateSettings()
+    {
+        return $this->service->addOrUpdateSettings($this->ba->getMerchant(), $this->input);
+    }
+
+    public function getSettings()
+    {
+        return $this->service->getSettings($this->ba->getMerchant(), $this->input);
+    }
+
+    public function approveReject()
+    {
+        $response = ApiResponse::json([]);
+
+        try {
+
+            $response = ApiResponse::json($this->service->approveReject($this->input), 200);
+
+        } catch (\Throwable $e)
+        {
+            $response = ApiResponse::json("Error", 400);
+        }
+
+        $response->headers->set('Access-Control-Allow-Origin', $this->config['applications.vendor_payments.public_approve_reject_url']);
+
+        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
+
+        $response->headers->set('Access-Control-Allow-Methods', 'POST, OPTIONS' );
+
+        return $response ;
+    }
+
+
+    public function getLatestApprovers()
+    {
+        return $this->service->getLatestApprovers($this->ba->getMerchant(), $this->input);
+    }
+
+    public function getTimelineView()
+    {
+        return $this->service->getTimelineView($this->ba->getMerchant(), $this->input);
+    }
+
+    public function allowCorsForPublicApproveRejectPage()
+    {
+        $response = ApiResponse::json([]);
+
+        $this->addCorsHeaders($response);
+
+        return $response;
+    }
+
+    private function addCorsHeaders(& $response)
+    {
+        $response->headers->set('Access-Control-Allow-Origin', $this->config['applications.vendor_payments.public_approve_reject_url']);
+
+        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type');
+
+        $response->headers->set('Access-Control-Allow-Methods', 'POST, OPTIONS' );
     }
 }

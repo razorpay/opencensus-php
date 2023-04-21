@@ -134,6 +134,9 @@ class Tracing
             'vendor_payment_send_vendor_invite_ei',
             'vendor_payment_disable_vendor_portal',
             'vendor_payment_enable_vendor_portal',
+            'vendor_payment_get_settings',
+            'vendor_payment_add_or_update_settings',
+            'vendor_payment_approve_reject',
             'merchant_fetch_internal_users',
             'vendor_payment_get_auto_processed_invoice',
             'vendor_settlement_execute_single',
@@ -162,6 +165,8 @@ class Tracing
             'vendor_portal_get_vendor_preferences',
             'vendor_portal_update_vendor_preferences',
             'resend_invite_to_vendor_portal',
+            'vendor_payment_get_latest_approvers',
+            'vendor_payment_get_timeline_view',
 
             // accounting-payouts API routes
             'accounting_payouts_integration_status',
