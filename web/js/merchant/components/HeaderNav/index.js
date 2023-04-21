@@ -305,6 +305,11 @@ class HeaderNav extends Component {
             </div>
           </div>
         </nav>
+        {isMobileSearch && (
+          <div className="mobile-search-layout">
+            <UniversalSearch />
+          </div>
+        )}
         {mode === 'test' && isMobileDevice() && <HighlightTestMode onSwitchMode={onSwitchMode} />}
         {isSuccessfullyCouponApplied && (
           <SuccessFullCreditModal
@@ -313,11 +318,6 @@ class HeaderNav extends Component {
               this.setState({ isSuccessfullyCouponApplied: false });
             }}
           />
-        )}
-        {isMobileSearch && (
-          <div className="mobile-search-layout">
-            <UniversalSearch />
-          </div>
         )}
       </div>
     );
