@@ -879,6 +879,11 @@ class Name
     // Set globally whitelisted payer accounts for rx fund loading
     const SET_RX_GLOBALLY_WHITELISTED_PAYER_ACCOUNTS = 'set_rx_globally_whitelisted_payer_accounts';
 
+    // Media service
+    const MEDIA_SERVICE_UPLOAD_FILE     = 'media_service_upload_file';
+    const MEDIA_SERVICE_GET_BUCKET      = 'media_service_get_bucket';
+    const MEDIA_SERVICE_UPLOAD_PROCESS  = 'media_service_upload_process';
+
     // Templating Service
     const TEMPLATING_SERVICE_WRITE_NAMESPACES          = 'templating_service_write_namespaces';
     const TEMPLATING_SERVICE_READ_NAMESPACES           = 'templating_service_read_namespaces';

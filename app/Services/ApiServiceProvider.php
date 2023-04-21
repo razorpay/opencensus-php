@@ -816,6 +816,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerDeveloperConsole();
 
+        $this->registerMediaService();
+
         $this->registerSplitz();
 
         $this->registerGrowth();
@@ -924,6 +926,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             'cache.psr6',
             'ledger',
             'developer_console',
+            'media_service',
             Acs\SyncEventManager::SINGLETON_NAME,
             'outbox',
             'dcs',
@@ -2372,6 +2375,15 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
             $implementation = $enabled ? DeveloperConsole::class : Mock\DeveloperConsole::class;
 
+            return new $implementation($app);
+        });
+    }
+
+    protected function registerMediaService()
+    {
+        $this->app->bind('media_service', function($app)
+        {
+            $implementation =  Media::class;
             return new $implementation($app);
         });
     }

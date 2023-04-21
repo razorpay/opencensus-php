@@ -1366,6 +1366,12 @@ return [
         'url'           => env('TEMPLATING_SERVICE_URL'),
     ],
 
+    'media_service' => [
+        'user'          => env('MEDIA_SERVICE_AUTH_KEY'),
+        'password'      => env('MEDIA_SERVICE_AUTH_SECRET'),
+        'url'           => env('MEDIA_SERVICE_URL'),
+    ],
+
     'rzp_labs'  => [
         'slack_app' =>  [
             'user'      => env('SLACK_APP_USERNAME'),

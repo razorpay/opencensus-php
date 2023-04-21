@@ -7862,6 +7862,11 @@ const EMANDATE_TOKEN_VALIDATION_ERROR                       = 'EMANDATE_TOKEN_VA
     const EDIT_BULK_MAX_PAYMENT_LIMIT_CSV_FETCHED             = 'EDIT_BULK_MAX_PAYMENT_LIMIT_CSV_FETCHED';
     const BULK_MAX_PAYMENT_LIMIT_UPDATE_ERROR                 = 'BULK_MAX_PAYMENT_LIMIT_UPDATE_ERROR';
 
+    // Media Service
+    const MEDIA_SERVICE_RESPONSE                               = 'MEDIA_SERVICE_RESPONSE';
+    const MEDIA_SERVICE_REQUEST                                = 'MEDIA_SERVICE_REQUEST';
+    const MEDIA_SERVICE_ERROR                                  = 'MEDIA_SERVICE_ERROR';
+    const MEDIA_SERVICE_DEBUG                                  = 'MEDIA_SERVICE_DEBUG';
 
     // payout microservice
     const PAYOUT_SERVICE_REQUEST                              = 'PAYOUT_SERVICE_REQUEST';

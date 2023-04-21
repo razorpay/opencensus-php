@@ -2387,6 +2387,12 @@ class Route
         'customer_flagging_post_grievance_options' => ['options',  'customer_flagging/post_customer_grievance',      'RiskController@allowCors'                                          ],
         'toggle_whatsapp_notifications'            => ['post',     'admin/toggle_whatsapp_notification/{id}',        'AdminController@toggleWhatsappNotification'                        ],
 
+        // media service routes
+        'media_service_upload_file'             => ['post',      'mediaservice/upload/file',    'MediaServiceController@postUploadFile'],
+        'media_service_get_bucket'              => ['get',       'mediaservice/buckets',        'MediaServiceController@getBuckets'],
+        'media_service_upload_process'          => ['post',      'mediaservice/upload/process', 'MediaServiceController@postUploadProcess'],
+
+
         //PurposeCode Merchant Routes
         'purpose_code_fetch'                       => ['get',      'purposecode',                                    'MerchantController@getPurposeCodeDetails'                          ],
         'merchant_patch_purpose_code'              => ['patch',    'merchants/purpose/code',                         'MerchantController@patchMerchantPurposeCode'                       ],
@@ -6066,6 +6072,9 @@ class Route
         'oauth_application_delete_client',
         'merchant_document_fetch',
         'merchant_document_upload',
+        'media_service_upload_file',
+        'media_service_get_bucket',
+        'media_service_upload_process',
         'merchant_document_url_fetch',
         'merchant_document_delete',
         'user_device_detail_save',
@@ -6898,6 +6907,10 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        //media Service routes
+        'media_service_upload_file',
+        'media_service_get_bucket',
+        'media_service_upload_process',
         'admin_merchant_get_terminals',
         'merchant_activation_eligibilty',
         'merchant_activation_clarifications_save_admin',
@@ -9451,6 +9464,11 @@ class Route
         'templating_assign_user_role'                         => Permission::TEMPLATING_SERVICE_WRITE_ROLE,
         'templating_revoke_user_role'                         => Permission::TEMPLATING_SERVICE_WRITE_ROLE,
         'currency_fetch_all_proxy'                            => Permission::CURRENCY_FETCH_RATES,
+
+        //media Service routes
+        'media_service_upload_file'                           => Permission::MEDIA_SERVICE_UPLOAD_FILE,
+        'media_service_get_bucket'                            => Permission::MEDIA_SERVICE_GET_BUCKET,
+        'media_service_upload_process'                        => Permission::MEDIA_SERVICE_UPLOAD_PROCESS,
 
         'care_service_admin_proxy'                            => Permission::MANAGE_CARE_SERVICE_CALLBACK, // todo: have more fine grained permissions at route level
         'care_service_dark_proxy'                             => Permission::CARE_SERVICE_DARK_PROXY,
