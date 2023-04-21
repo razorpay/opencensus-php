@@ -354,7 +354,7 @@
                         <img src="https://cdn.razorpay.com/static/assets/email/loc/credit_limit.png" class="listImage"/>
                     </div>
                     <div class="listDetailsContainer">
-                        <div class="listDetailsBold">Credit Limit up to Rs 25 L:</div>
+                        <div class="listDetailsBold">Credit Limit up to Rs 50 L:</div>
                         <div class="listDetails">
                             100% flexibility & no preclosure charges
                         </div>
@@ -377,8 +377,8 @@
                              class="listImage"/>
                     </div>
                     <div class="listDetailsContainer">
-                        <div class="listDetailsBold">Low interest rates:</div>
-                        <div class="listDetails">Starting from 1.5% per month</div>
+                        <div class="listDetailsBold">Reduce interest flow:</div>
+                        <div class="listDetails">Pay as you use</div>
                     </div>
                 </div>
             </div>
