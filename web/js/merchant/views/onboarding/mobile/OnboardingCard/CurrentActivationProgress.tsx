@@ -93,8 +93,8 @@ const CurrentActivationProgress: React.FC<
     window.rzpTicketSystem?.openModal('#ticket');
   };
 
-  const goToNcFlow = (isEasyNcResolveNow = false, trackProps = {}) => {
-    if (isEasyNcResolveNow) {
+  const goToNcFlow = (trackProps = {}) => {
+    if (isEasyNcEnabled) {
       trackEvents({
         objectName: 'NC Resolve Now',
         actionName: 'Clicked',
@@ -108,8 +108,6 @@ const CurrentActivationProgress: React.FC<
           ...trackProps,
         },
       });
-    }
-    if (isEasyNcEnabled) {
       window.open(`${window.EASY_ONBOARDING_URL}/onboarding/needs-clarification`);
     } else if (submerchantId) {
       history.push(`/partners/submerchants/acc_${submerchantId}/activation`);
@@ -323,7 +321,7 @@ const CurrentActivationProgress: React.FC<
             <Pill>{Messages.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.pill}</Pill>
             <Info title={title} description={description} isNewNCEnabled />
             <Buttons.Primary
-              onClick={() => goToNcFlow(true, { formName: title })}
+              onClick={() => goToNcFlow({ formName: title })}
               title={Messages.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.buttonText}
             />
           </>

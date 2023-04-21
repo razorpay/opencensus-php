@@ -42,6 +42,31 @@ const AccountDetails = (props): JSX.Element => {
   if (!user.showInstantActivation || !user.instantActivation.isL1Submitted)
     activationName = 'Activation';
 
+  const getActivationFormLabel = () => {
+    return `${
+      user.activated || user.locked || user.submitted
+        ? 'View'
+        : user.activation_progress == 100 && !user.submitted
+        ? 'Submit'
+        : 'Fill'
+    } ${activationName} Form`;
+  };
+
+  const redirectToEasyNc = () => {
+    analyticsTrack({
+      objectName: 'NC Easy',
+      actionName: 'Redirect',
+      screen: 'my account',
+      properties: {
+        ctaLabel: getActivationFormLabel(),
+        ctaLocation: 'account details',
+        ncCount: user?.kyc_clarification_reasons?.nc_count,
+      },
+      includeScreenResolution: true,
+    });
+    window.open(`${window.EASY_ONBOARDING_URL}/onboarding/needs-clarification`);
+  };
+
   return (
     <div
       data-testid="account-details-section"
@@ -73,16 +98,11 @@ const AccountDetails = (props): JSX.Element => {
                       user.isFeEasyDashboardNCEnabled &&
                       user.activation_status === 'needs_clarification'
                     ) {
-                      window.open(`${window.EASY_ONBOARDING_URL}/onboarding/needs-clarification`);
+                      redirectToEasyNc();
                     }
                   }}
                 >
-                  {user.activated || user.locked || user.submitted
-                    ? 'View'
-                    : user.activation_progress == 100 && !user.submitted
-                    ? 'Submit'
-                    : 'Fill'}
-                  {` ${activationName}`} Form
+                  {getActivationFormLabel()}
                 </Link>
               </span>
             )}

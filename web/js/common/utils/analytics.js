@@ -170,6 +170,7 @@ export const analyticsTrack = ({
   toLumberjack = true, // Send all events to LJ by default
   toCleverTap = false,
   toFacebook = false,
+  includeScreenResolution = false,
 }) => {
   if (!objectName) {
     throwAnalyticsException('[analytics]: objectName cannot be empty');
@@ -200,10 +201,19 @@ export const analyticsTrack = ({
   const eventName = titleCase(`${objectName} ${actionName}`);
   const Facebook = 'Facebook Pixel';
 
+  let screenResolutions = {};
+  if (includeScreenResolution) {
+    screenResolutions = {
+      screenWidth: document.documentElement?.clientWidth || window.innerWidth,
+      screenHeight: document.documentElement?.clientHeight || window.innerHeight,
+    };
+  }
+
   if (window.analytics && window.analytics.track) {
     window.analytics.track(
       eventName,
       {
+        ...screenResolutions,
         ...properties,
         screen,
         eventTimestamp,

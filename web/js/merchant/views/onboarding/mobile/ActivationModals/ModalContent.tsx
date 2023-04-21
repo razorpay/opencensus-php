@@ -169,16 +169,16 @@ export const getModalContent = (
   const handleNcButton = () => {
     closeModal();
     sendSegmentEventFromButton(Message.NC.buttonText);
-    trackNCEasyRedirect({
-      activationState: modalType,
-      formName: title,
-    });
     const formUrl = submerchantId
       ? `partners/submerchants/${submerchantId}/activation`
       : activationFormUrl;
     if (submerchantId) {
       history.push(formUrl);
     } else {
+      trackNCEasyRedirect({
+        activationState: modalType,
+        formName: title,
+      });
       window.open(
         `${window.EASY_ONBOARDING_URL}/onboarding/needs-clarification`,
         '_self',

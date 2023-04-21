@@ -6,6 +6,7 @@ import { setItem } from 'common/utils/localStorage';
 import Banner from 'common/ui/Banner';
 import { trackLinkClick } from './ga';
 import RTracking from 'react-tracking';
+import { analyticsTrack } from 'common/utils/analytics';
 
 @RTracking(() => window.rzpQ.component('TestModeBanner'))
 class TestModeBanner extends Component {
@@ -19,6 +20,18 @@ class TestModeBanner extends Component {
   };
 
   redirectToNewNC = () => {
+    const { user } = this.props;
+    analyticsTrack({
+      objectName: 'NC Easy',
+      actionName: 'Redirect',
+      screen: 'home page',
+      properties: {
+        ctaLabel: 'Activate your account',
+        ctaLocation: 'TestModeBanner',
+        ncCount: `${user?.kyc_clarification_reasons?.nc_count}`,
+      },
+      includeScreenResolution: true,
+    });
     const needsClarificationOnEasyUrl = `${window.EASY_ONBOARDING_URL}/onboarding/needs-clarification`;
     window.open(needsClarificationOnEasyUrl, '_self', 'noopener');
   };

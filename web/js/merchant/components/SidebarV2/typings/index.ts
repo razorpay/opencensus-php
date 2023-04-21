@@ -31,10 +31,16 @@ export interface NavItems {
   data: NavLinkData[];
 }
 
+type ExtendedUser = {
+  kyc_clarification_reasons: {
+    nc_count: any;
+  };
+};
+
 export interface SidebarPropsInterface extends RouteComponentProps {
   logoURL?: string;
   config: any;
-  user: User;
+  user: User & ExtendedUser;
   fetchLeftNavItems: () => void;
   leftNavItems: NavItems;
   showAcceptPayments: boolean;
@@ -43,6 +49,7 @@ export interface SidebarPropsInterface extends RouteComponentProps {
   isMobile: boolean;
   isTagsLoading: boolean;
   isNcEligibile: boolean;
+  trackEvents: (props: any) => void;
 }
 
 export interface NavLinkItemInterface extends RouteComponentProps {

@@ -34,6 +34,7 @@ import { Routes, SidebarPropsInterface } from './typings';
 import { trackViewedBankingNavBar } from 'merchant/components/Sidebar/ga';
 import { getIsBankingEnabled } from 'merchant/components/Sidebar/helpers';
 import { LOYALTY_PRODUCTS_SECTION } from 'merchant/components/SidebarV2/utils/Fallback';
+import { trackEvents } from 'merchant/reducers/trackEvents';
 
 const SideBar = (props: SidebarPropsInterface): JSX.Element => {
   const {
@@ -46,6 +47,7 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
     isMobile,
     isTagsLoading,
     isNcEligibile,
+    trackEvents,
   } = props;
   const { location, history } = props;
 
@@ -63,6 +65,17 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
 
   const handleActivationClick = () => {
     if (isNcEligibile && user.activation_status === 'needs_clarification') {
+      trackEvents({
+        objectName: 'NC Easy',
+        actionName: 'Redirect',
+        screen: 'home page',
+        properties: {
+          ctaLabel: 'Account Activation',
+          ctaLocation: 'LHS_Nav_Bar_v2',
+          ncCount: user?.kyc_clarification_reasons?.nc_count,
+        },
+        includeScreenResolution: true,
+      });
       window.open(EASY_DASHBOARD_NC_LANDING_URL, '_self', 'noopener');
     } else if (user.isOnboardingV2Enabled && isMobile) {
       history.push(ONBOARDING_STEPS_URL);
@@ -198,7 +211,7 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
   return bindActionCreators(
-    { fetchLeftNavItems: fetchNavigationItems, hideAcceptPaymentsModal },
+    { fetchLeftNavItems: fetchNavigationItems, hideAcceptPaymentsModal, trackEvents },
     dispatch,
   );
 };

@@ -504,11 +504,11 @@ export default class InstantActivationAnnouncements extends Component {
                 class="btn-link"
                 type="button"
                 onClick={() => {
-                  window.open(needsClarificationOnEasyUrl);
                   this.trackNCEasyRedirect({
                     activationState,
                     ncCount: `${user?.kyc_clarification_reasons?.nc_count}`,
                   });
+                  window.open(needsClarificationOnEasyUrl);
                 }}
               >
                 <strong>Resolve Now</strong>
@@ -536,11 +536,11 @@ export default class InstantActivationAnnouncements extends Component {
                 class="btn-link"
                 type="button"
                 onClick={() => {
-                  window.open(needsClarificationOnEasyUrl);
                   this.trackNCEasyRedirect({
                     activationState,
                     ncCount: `${user?.kyc_clarification_reasons?.nc_count}`,
                   });
+                  window.open(needsClarificationOnEasyUrl);
                 }}
               >
                 <strong>Resolve Now</strong>
@@ -569,11 +569,11 @@ export default class InstantActivationAnnouncements extends Component {
                 class="btn-link"
                 type="button"
                 onClick={() => {
-                  window.open(needsClarificationOnEasyUrl);
                   this.trackNCEasyRedirect({
                     activationState,
                     ncCount: `${user?.kyc_clarification_reasons?.nc_count}`,
                   });
+                  window.open(needsClarificationOnEasyUrl);
                 }}
               >
                 <strong>Resolve Now</strong>
@@ -831,11 +831,11 @@ export default class InstantActivationAnnouncements extends Component {
                 class="btn-link"
                 type="button"
                 onClick={() => {
-                  window.open(needsClarificationOnEasyUrl);
                   this.trackNCEasyRedirect({
                     activationState,
                     ncCount: `${user?.kyc_clarification_reasons?.nc_count}`,
                   });
+                  window.open(needsClarificationOnEasyUrl);
                 }}
               >
                 <strong>Resolve Now</strong>
@@ -861,11 +861,11 @@ export default class InstantActivationAnnouncements extends Component {
                 class="btn-link"
                 type="button"
                 onClick={() => {
-                  window.open(needsClarificationOnEasyUrl);
                   this.trackNCEasyRedirect({
                     activationState,
                     ncCount: `${user?.kyc_clarification_reasons?.nc_count}`,
                   });
+                  window.open(needsClarificationOnEasyUrl);
                 }}
               >
                 <strong>Resolve Now</strong>
@@ -892,11 +892,11 @@ export default class InstantActivationAnnouncements extends Component {
                 class="btn-link"
                 type="button"
                 onClick={() => {
-                  window.open(needsClarificationOnEasyUrl);
                   this.trackNCEasyRedirect({
                     activationState,
                     ncCount: `${user?.kyc_clarification_reasons?.nc_count}`,
                   });
+                  window.open(needsClarificationOnEasyUrl);
                 }}
               >
                 <strong>Resolve Now</strong>
