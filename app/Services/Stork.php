@@ -32,6 +32,12 @@ class Stork
     // path to sendSms
     const SEND_SMS_PATH = '/twirp/rzp.stork.sms.v1.SMSAPI/Send';
 
+    // path to setRateLimitThreshold
+    const SET_RATE_LIMIT_PATH = '/twirp/rzp.stork.sms.v1.SMSAPI/SetRateLimit';
+
+    // path to deleteRateLimitThreshold
+    const DELETE_RATE_LIMIT_PATH = '/twirp/rzp.stork.sms.v1.SMSAPI/DeleteRateLimit';
+
     // mocked response params for the sendSms route.
     const MESSAGE_ID          = 'message_id';
     const TEST_MESSAGE_ID     = '10000000000msg';
@@ -578,5 +584,17 @@ class Stork
         }
 
         $this->trace->info(TraceCode::STORK_WHATSAPP_REQUEST, $request);
+    }
+
+    public function setMerchantTemplateRateLimitThreshold(array $payload)
+    {
+        $this->init(app('rzp.mode'));
+        return $this->requestAndGetParsedBody(self::SET_RATE_LIMIT_PATH, $payload);
+    }
+
+    public function deleteMerchantTemplateRateLimitThreshold(array $payload)
+    {
+        $this->init(app('rzp.mode'));
+        return $this->requestAndGetParsedBody(self::DELETE_RATE_LIMIT_PATH, $payload);
     }
 }

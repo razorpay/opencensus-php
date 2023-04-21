@@ -641,6 +641,8 @@ class Name
     const VIEW_WEBHOOK                        = 'view_webhook';
     const VIEW_WEBHOOK_EVENT                  = 'view_webhook_event';
     const STORK_WEBHOOK_REPLAY                = 'stork_webhook_replay';
+    const STORK_CREATE_SMS_RATE_LIMIT         = 'stork_create_sms_rate_limit';
+    const STORK_DELETE_SMS_RATE_LIMIT         = 'stork_delete_sms_rate_limit';
     const VIEW_REPORTING                      = 'view_reporting';
     const CREATE_REPORTING                    = 'create_reporting';
     const UPDATE_REPORTING                    = 'update_reporting';
