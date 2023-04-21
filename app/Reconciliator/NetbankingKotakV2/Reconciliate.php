@@ -16,7 +16,6 @@ class Reconciliate extends Base\Reconciliate
     const AMOUNT                  = 'Transaction Amount';
     const CHARGES                 = 'Charges';
     const GST                     = 'GST';
-    const TOTAL_AMOUNT            = 'Net Settlement Amount';
     const REQUEST_DATE            = 'Request Date';
     const ENTITY_REFERENCE_NUMBER = 'Entity Reference No';
     const BANK_REFERENCE_NUMBER   = 'Bank Reference No';
@@ -34,7 +33,6 @@ class Reconciliate extends Base\Reconciliate
         self::AMOUNT,
         self::CHARGES,
         self::GST,
-        self::TOTAL_AMOUNT,
         self::REQUEST_DATE,
         self::ENTITY_REFERENCE_NUMBER,
         self::BANK_REFERENCE_NUMBER,
