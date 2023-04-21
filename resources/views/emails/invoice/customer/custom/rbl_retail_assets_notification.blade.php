@@ -62,7 +62,10 @@ Dear {{$invoice['customer_details']['name']}},</div>
                         <div style="font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif; line-height: 20px; color: #58666E; white-space: pre-wrap;word-wrap: break-word;">
 Greetings from RBL Bank!
 
-Your NACH mandate registration for loan account number {{$invoice['subscription_registration']['notes']['loan_number'] ?? ''}} was rejected on {{$invoice['subscription_registration']['notes']['rejection_date'] ?? ''}}, by your paying bank for {{$invoice['subscription_registration']['notes']['rejection_reason'] ?? 'technical reason'}}. For ease of your loan re-payment, we request you to register a mandate for your RBL Bank loan by clicking on the <b>AUTHORIZE</b> tab at the bottom of this mail.
+Your E-NACH mandate registration is initiated for re-payment of Loan Account/Application Number {{$invoice['subscription_registration']['notes']['loan_number'] ?? ''}}. For ease of your loan re-payment, we request you to register a mandate for your RBL Bank Loan A/C. To complete the process click on the <b>AUTHORIZE</b> tab at the end of this mail. Assuring you of our best services, at all times.
+
+Kind regards,
+RBL Bank
                         </div>
                     </div>
                 </td>

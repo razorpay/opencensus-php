@@ -1035,10 +1035,9 @@ class Notifier extends Base\Core
                 $sender = 'RBLBNK';
 
                 $params   = [
-                    'receipt'          => $receipt,
+                    'customer_name'    => (empty($this->invoice->getCustomerName()) === false) ? $this->invoice->getCustomerName() : 'Customer',
+                    'receipt'          => $receipt ?? '',
                     'invoice_link'     => $invoiceLink,
-                    'rejection_reason' => $notes['rejection_reason'] ?? 'technical reasons',
-                    'rejection_date'   => $notes['rejection_date'] ?? '',
                 ];
 
                 break;
