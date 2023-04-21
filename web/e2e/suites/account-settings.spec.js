@@ -10,7 +10,7 @@ test.describe.parallel('My account and settings @flow=account-settings', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto(routes.DASHBOARD);
-    await page.locator('text=Account & Settings').click();
+    await page.getByRole('link', { name: 'Account & Settings' }).click();
     await expect(page).toHaveURL(routes.ACCOUNT_SETTINGS);
   });
 

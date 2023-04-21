@@ -80,3 +80,76 @@ export const PaymentMethodsTitles: Record<PaymentMethodsFields, string> = {
   [PaymentMethodsFields.PAYLATER]: 'Pay Later',
   [PaymentMethodsFields.INTERNATIONAL]: 'International payments',
 };
+
+export const WebsiteAppSettingsTitles: Record<WebsiteAppSettingsFields, string> = {
+  [WebsiteAppSettingsFields.API_KEYS]: 'API keys',
+  [WebsiteAppSettingsFields.APPLICATIONS]: 'Applications',
+  [WebsiteAppSettingsFields.BUSINESS_WEBSITE_DETAILS]: 'Business website detail',
+  [WebsiteAppSettingsFields.WEBHOOKS]: 'Webhooks',
+  [WebsiteAppSettingsFields.WEBSITE_APP_DETAIL]: 'Website/App detail',
+};
+
+export const BusinessSettingsTitles: Record<BusinessSettingsFields, string> = {
+  [BusinessSettingsFields.ACCOUNT_DETAILS]: 'Account details',
+  [BusinessSettingsFields.BUSINESS_DETAILS]: 'Business details',
+  [BusinessSettingsFields.CONTACT_DETAILS]: 'Contact details',
+  [BusinessSettingsFields.CUSTOMER_SUPPORT_DETAILS]: 'Customer support details',
+  [BusinessSettingsFields.GST_DETAILS]: 'GST details',
+  [BusinessSettingsFields.INVITATIONS]: 'Invitations',
+  [BusinessSettingsFields.MANAGE_TEAM]: 'Manage team',
+  [BusinessSettingsFields.SUPPORT_TICKETS]: 'Support tickets',
+};
+
+export const PaymentRefundsTitles: Record<PaymentRefundsFields, string> = {
+  [PaymentRefundsFields.BALANCES]: 'Balances',
+  [PaymentRefundsFields.CAPTURE_REFUND_SETTINGS]: 'Capture and refund settings',
+  [PaymentRefundsFields.CREDITS]: 'Credits',
+  [PaymentRefundsFields.FAILED_PAYMENTS_RETRY]: 'Failed payments retry',
+  [PaymentRefundsFields.FEE_BEARER]: 'Fee bearer',
+  [PaymentRefundsFields.REMINDERS]: 'Reminders',
+  [PaymentRefundsFields.TRANSACTION_LIMITS]: 'Transaction limits',
+};
+
+export const BankAccountSettlementTitles: Record<BankAccountSettlementFields, string> = {
+  [BankAccountSettlementFields.BANK_ACCOUNT_DETAILS]: 'Bank account details',
+  [BankAccountSettlementFields.FIRS]: 'Forward inwards remittance statement',
+  [BankAccountSettlementFields.SETTLEMENT_DETAILS]: 'Settlement details',
+};
+
+export const NotificationSettingsTitles: Record<NotificationSettingsFields, string> = {
+  [NotificationSettingsFields.EMAIL]: 'Email',
+  [NotificationSettingsFields.SMS]: 'SMS',
+  [NotificationSettingsFields.WHATSAPP]: 'WhatsApp',
+};
+
+export const CheckoutSettingsTitles: Record<CheckoutSettingsFields, string> = {
+  [CheckoutSettingsFields.BRANDING]: 'Branding',
+  [CheckoutSettingsFields.FLASH_CHECKOUT]: 'Flash checkout',
+  [CheckoutSettingsFields.SKIP_MANDATE_SUMMARY_PAGE]: 'Skip mandate summary page',
+  [CheckoutSettingsFields.TRUSTED_BADGE]: 'Trusted badge',
+};
+
+export const PricingTitles: Record<PricingFields, string> = {
+  [PricingFields.PRICING_PLANS]: 'Pricing Plans',
+};
+
+type ACCOUNT_N_SETTINGS_TITLES =
+  | PaymentMethodsFields
+  | WebsiteAppSettingsFields
+  | BusinessSettingsFields
+  | PaymentRefundsFields
+  | BankAccountSettlementFields
+  | NotificationSettingsFields
+  | CheckoutSettingsFields
+  | PricingFields;
+
+export const ACCOUNT_N_SETTINGS_TITLES: Record<ACCOUNT_N_SETTINGS_TITLES, string> = {
+  ...PaymentMethodsTitles,
+  ...WebsiteAppSettingsTitles,
+  ...BusinessSettingsTitles,
+  ...PaymentRefundsTitles,
+  ...BankAccountSettlementTitles,
+  ...NotificationSettingsTitles,
+  ...CheckoutSettingsTitles,
+  ...PricingTitles,
+};

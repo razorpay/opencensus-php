@@ -462,6 +462,13 @@ export default {
     'LbzMrW66OjfDsw',
   ],
 
+  universal_search_enabled: [
+    // beta experiment ids
+    'Lf6qHEprAH4UCm',
+    // prod experiment ids
+    'Lf6oo0XiYnyal4',
+  ],
+
   la_reports_revamp: [
     // beta experiment ids
     'Lby668Otnw4zQE',

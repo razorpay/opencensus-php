@@ -1,6 +1,7 @@
 import { isMobileResolution } from 'common/utils/rzp-utils';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import { canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
+import { SIDEEBAR_PRODUCTS_TITLES } from 'merchant/components/SidebarV2/constants/constants';
 
 export const PRODUCTS_DATA = {
   home: {
@@ -192,42 +193,42 @@ export const PRODUCTS_DATA = {
 
 export const COMMON_PRODUCTS = [
   {
-    title: 'Home',
+    title: SIDEEBAR_PRODUCTS_TITLES.home,
     product_id: 'home',
     tags: [],
   },
   {
-    title: 'Transactions',
+    title: SIDEEBAR_PRODUCTS_TITLES.transactions,
     product_id: 'transactions',
     tags: [],
   },
   {
-    title: 'Settlements',
+    title: SIDEEBAR_PRODUCTS_TITLES.settlements,
     product_id: 'settlements',
     tags: [],
   },
   {
-    title: 'Reports',
+    title: SIDEEBAR_PRODUCTS_TITLES.reports,
     product_id: 'reports',
     tags: [],
   },
   {
-    title: 'Account',
+    title: SIDEEBAR_PRODUCTS_TITLES.my_account,
     product_id: 'my_account',
     tags: [],
   },
   {
-    title: 'Settings',
+    title: SIDEEBAR_PRODUCTS_TITLES.settings,
     product_id: 'settings',
     tags: [],
   },
   {
-    title: 'Account & Settings',
+    title: SIDEEBAR_PRODUCTS_TITLES.accountsettings,
     product_id: 'accountsettings',
     tags: [],
   },
   {
-    title: 'International Payments',
+    title: SIDEEBAR_PRODUCTS_TITLES.internationalPaymentsBtn,
     product_id: 'internationalPaymentsBtn',
     type: 'linkButton',
     tags: [],
@@ -236,27 +237,27 @@ export const COMMON_PRODUCTS = [
 
 export const CUSTOMERS_PRODUCTS = [
   {
-    title: 'Customers',
+    title: SIDEEBAR_PRODUCTS_TITLES.customers,
     product_id: 'customers',
     tags: [],
   },
   {
-    title: 'Offers',
+    title: SIDEEBAR_PRODUCTS_TITLES.offers,
     product_id: 'offers',
     tags: [],
   },
   {
-    title: 'API Keys and Plugins',
+    title: SIDEEBAR_PRODUCTS_TITLES.api_keys,
     product_id: 'api_keys',
     tags: [],
   },
   {
-    title: 'Developers',
+    title: SIDEEBAR_PRODUCTS_TITLES.developers,
     product_id: 'developers',
     tags: [],
   },
   {
-    title: 'App Store',
+    title: SIDEEBAR_PRODUCTS_TITLES.app_store,
     product_id: 'app_store',
     tags: ['New'],
   },

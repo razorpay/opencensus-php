@@ -1,36 +1,39 @@
 /* eslint-disable react/no-unsafe */
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
-import rTracking from 'react-tracking';
-import NotificationIcon from 'common/ui/WhatsNew/Icon';
-import ErrorFallbackComponent from 'common/ui/WhatsNew/ErrorFallbackComponent';
-import HighlightTestMode from 'merchant/components/HighlightTestMode';
-import { toggleMobileMenu } from 'merchant/reducers/app';
-import { isMobileDevice } from 'merchant/components/Home/data';
-import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import ShowWhen from 'merchant/components/ShowWhen';
-import { getItem, setItem } from 'common/utils/localStorage';
-import NavFragment from './NavFragment';
-import AppSwitcher from './AppSwitcher';
-import ProfileDropdown from './ProfileDropdown';
+import PoweredByRzp from 'assets/branding/powered_by_rzp.png';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import GrowthAssetEB from 'common/ui/GrowthAssetEB';
-import { compose } from 'redux';
-import SupportRequestDropdown from './SupportRequestDropdown';
+import OffersForYou from 'common/ui/OffersForYou';
+import OnboardingCoupons from 'common/ui/OnboardingCoupons';
 import SuccessFullCreditModal from 'common/ui/OnboardingCoupons/SuccessFullCreditModal';
+import ErrorFallbackComponent from 'common/ui/WhatsNew/ErrorFallbackComponent';
+import NotificationIcon from 'common/ui/WhatsNew/Icon';
+import { getItem, setItem } from 'common/utils/localStorage';
+import { classList } from 'common/utils/rzp-utils';
+import HighlightTestMode from 'merchant/components/HighlightTestMode';
+import { isMobileDevice } from 'merchant/components/Home/data';
+import ShowWhen from 'merchant/components/ShowWhen';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import { isOrgFeatureExist } from 'merchant/models/User';
+import { toggleMobileMenu } from 'merchant/reducers/app';
 import {
   fetchModalConfigDetails,
   updateModalConfigDetails,
 } from 'merchant/reducers/ModalConfigApi';
-import OnboardingCoupons from 'common/ui/OnboardingCoupons';
-import OffersForYou from 'common/ui/OffersForYou';
-import { isOrgFeatureExist } from 'merchant/models/User';
 import lazyLoader from 'merchant/routes/LazyLoader';
-import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-import PoweredByRzp from 'assets/branding/powered_by_rzp.png';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
-import StatusDetails from './StatusDetails';
 import EcosystemDowntimes from 'merchant/views/EcosystemDowntimes';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
+import rTracking from 'react-tracking';
+import { compose } from 'redux';
+import AppSwitcher from './AppSwitcher';
+import NavFragment from './NavFragment';
+import ProfileDropdown from './ProfileDropdown';
+import StatusDetails from './StatusDetails';
+import SupportRequestDropdown from './SupportRequestDropdown';
+import UniversalSearch from './UniversalSearch';
+
 const WhatsNew = lazyLoader(() =>
   import(/* webpackChunkName: 'merchantWhatsNew' */ 'common/ui/WhatsNew/Old'),
 );
@@ -155,6 +158,7 @@ class HeaderNav extends Component {
       activePageName,
       org,
       referee,
+      isMobile,
     } = this.props;
     const { isSuccessfullyCouponApplied, mtuOfferCount } = this.state;
 
@@ -171,10 +175,16 @@ class HeaderNav extends Component {
       onSwitchMode,
       onSwitchMerchant,
     };
-
+    const isUniversalSearchEnabled = user.isUniversalSearchEnabled;
+    const isMobileSearch = isUniversalSearchEnabled && isMobile;
     return (
       <div className="nav-wrapper">
-        <nav className="navbar navbar-default navbar-fixed-top">
+        <nav
+          className={classList(
+            'navbar navbar-default navbar-fixed-top',
+            isMobileSearch && 'search-nav-box',
+          )}
+        >
           <div className="container-fluid navbar-container">
             <div className="navbar-collapse" id="headerNav">
               {!showMobileNav && !user.isOrgRZP && !user.isOrgAxis && (
@@ -184,7 +194,7 @@ class HeaderNav extends Component {
                   alt="Powered by Razorpay"
                 />
               )}
-              {showMobileNav && (
+              {isMobile && (
                 <div className="pull-left navbar-toggle-container">
                   <button type="button" className="navbar-toggle" onClick={this.onToggleAppMenu}>
                     <span className="i-bar" />
@@ -192,6 +202,11 @@ class HeaderNav extends Component {
                     <span className="i-bar" />
                   </button>{' '}
                   {activePageName || 'Dashboard'}
+                </div>
+              )}
+              {isUniversalSearchEnabled && !isMobile && (
+                <div className="universal-search-desktop">
+                  <UniversalSearch />
                 </div>
               )}
               <ul className="nav navbar-nav navbar-right">
@@ -299,6 +314,11 @@ class HeaderNav extends Component {
             }}
           />
         )}
+        {isMobileSearch && (
+          <div className="mobile-search-layout">
+            <UniversalSearch />
+          </div>
+        )}
       </div>
     );
   }
@@ -309,6 +329,7 @@ const mapStateToProps = (state) => ({
   user: state.session.user,
   org: state.session.org,
   referee: state.merchantReferral.data.referee,
+  isMobile: state.app.isMobileResolution,
 });
 
 const enhancedComponent = compose(

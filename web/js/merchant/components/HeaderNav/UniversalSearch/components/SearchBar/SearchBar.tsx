@@ -1,0 +1,73 @@
+import { CloseIcon, SearchIcon } from '@razorpay/blade/components';
+import { CommonStateProps } from 'merchant/components/HeaderNav/UniversalSearch/typings';
+import { trackSearchBarClicked } from 'merchant/components/HeaderNav/UniversalSearch/utils';
+import { hideFtux } from 'merchant/components/HeaderNav/UniversalSearch/utils/ftuxVisibility';
+import React, { forwardRef } from 'react';
+import { connect } from 'react-redux';
+import { CloseButton, StyledBaseInput, StyledInputBox } from './styled';
+
+const SearchBar = forwardRef(
+  (
+    {
+      searchQuery,
+      setSearch,
+      setFocussed,
+      isMobile,
+      show,
+      isDeviceInBreakpoint,
+      isFtuxVisible,
+    }: CommonStateProps & { searchQuery: string; isMobile: boolean; isFtuxVisible: boolean },
+    ref,
+  ): JSX.Element => {
+    const handleChange = (type, e): void => {
+      const { value = '' } = e.target;
+      switch (type) {
+        case 'close':
+          setSearch('');
+          setFocussed(false);
+          break;
+        case 'change':
+          setSearch(value);
+          break;
+        /* istanbul ignore next */
+        default:
+          break;
+      }
+    };
+
+    const handleFocus = (): void => {
+      trackSearchBarClicked();
+      setFocussed(true);
+      if (isFtuxVisible) {
+        hideFtux({ onFocus: true });
+      }
+    };
+
+    return (
+      <StyledInputBox isDeviceInBreakpoint={isDeviceInBreakpoint} isMobile={isMobile}>
+        <SearchIcon color="feedback.icon.neutral.lowContrast" size="medium" />
+        <StyledBaseInput
+          ref={ref as React.RefObject<HTMLInputElement>}
+          name="search"
+          type="text"
+          value={searchQuery}
+          autoComplete="off"
+          placeholder="Search payment products, settings, and more"
+          onChange={handleChange.bind(null, 'change')}
+          onFocus={handleFocus}
+        />
+        {searchQuery.length || (isMobile && show) ? (
+          <CloseButton onClick={handleChange.bind(null, 'close')} data-testid="search-close">
+            <CloseIcon color="surface.action.icon.default.lowContrast" size="medium" />
+          </CloseButton>
+        ) : null}
+      </StyledInputBox>
+    );
+  },
+);
+
+const mapStateToProps = ({ app }) => ({
+  isMobile: app.isMobileResolution,
+});
+
+export default connect(mapStateToProps, null)(SearchBar);

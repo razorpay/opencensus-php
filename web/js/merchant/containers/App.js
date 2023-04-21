@@ -1083,6 +1083,7 @@ class App extends Component {
     const currentMode = isPartnerModeEnabled ? partnerMode : mode;
     const currentModeFormatted = isPartnerModeEnabled ? partnerModeFormatted : modeFormatted;
     const submerchantId = this.getSubMerchantId();
+    const mobileWidth = user.isUniversalSearchEnabled ? 1280 : 950;
 
     if (this.state.isLoading || !user.isAuthenticated) {
       return null;
@@ -1122,7 +1123,7 @@ class App extends Component {
                   showGSTModal={hasGSTIN ? undefined : this.showGSTModal}
                   onSwitchMode={this.switchMode}
                   onSwitchMerchant={this.switchMerchant}
-                  showMobileNav={this.props.windowWidth < 950}
+                  showMobileNav={this.props.windowWidth < mobileWidth}
                   org={this.props.org}
                 />
                 {this.showSidebarV2() ? (

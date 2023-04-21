@@ -59,6 +59,7 @@ export const getState = ({ userData = {}, userProfile = {}, config = {} } = {}):
       isInstrumentRequestHidden: undefined,
       isWebsiteComplianceFlowEnabled: undefined,
       isFeatureEnabled: jest.fn(),
+      isAllowedMultiple: () => true,
       ...userData,
     },
   },

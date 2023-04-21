@@ -36,7 +36,7 @@ const ROUTE_REG = {
   internationalPaymentsBtn: /^\/(international)/,
 };
 
-const BASE_ROUTES = {
+export const BASE_ROUTES = {
   home: '/dashboard',
   transactions: '/payments',
   settlements: '/settlements',
@@ -72,7 +72,7 @@ const BASE_ROUTES = {
   chargeAtWill: '/recurring_payments',
   partner: '/submerchants',
   accountsettings: '/account-settings',
-  affordability: 'affordability/widget',
+  affordability: '/affordability/widget',
   payment_handle: '/payment-handle',
   wallet: '/wallet',
   internationalPaymentsBtn: '/payment-methods/international-payments',

@@ -63,6 +63,7 @@
     "js/merchant/views/PaymentHandle",
     "js/merchant/views/Account",
     "js/merchant_common/views/Reports",
+    "js/merchant/components/HeaderNav/UniversalSearch",
     "js/merchant/components/Activation"
   ],
   "exclude": ["node_modules", "js/common/utils"],

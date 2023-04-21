@@ -1913,6 +1913,13 @@ export default class User {
     );
   }
 
+  get isUniversalSearchEnabled() {
+    return (
+      getSplitzExperimentVariant('universal_search_enabled')?.variables?.result === 'on' &&
+      this.isOrgRZP
+    );
+  }
+
   get isLeftNavRevampEnabled() {
     return getSplitzExperimentVariant('left_nav_revamp')?.variables?.result === 'on';
   }

@@ -40,17 +40,35 @@ import {
   BankAccountSettlementFields,
   PricingFields,
   PaymentMethodsTitles,
+  WebsiteAppSettingsTitles,
+  BusinessSettingsTitles,
+  PaymentRefundsTitles,
+  BankAccountSettlementTitles,
+  NotificationSettingsTitles,
+  CheckoutSettingsTitles,
+  PricingTitles,
 } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings/section';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import User from 'common/typings/User';
 import { Modules } from 'common/constant/enums';
 
+export const AccountNSettingsIcons = {
+  payment_methods: 'i-payment-methods',
+  website_app_settings: 'i-monitor',
+  business_settings: 'i-brief-case',
+  payments_refunds: 'i-dollars',
+  bank_and_settlements: 'i-file-asset',
+  notification_settings: 'i-notification-bell',
+  checkout_settings: 'i-shopping-cart',
+  pricing: 'i-zap',
+};
+
 export const Sections: SectionCardInterface[] = [
   {
     id: SectionCardDataFields.PAYMENT_METHODS,
     title: 'Payment methods',
-    icon: 'i-payment-methods',
+    icon: AccountNSettingsIcons.payment_methods,
     iconBackground: 'linear-gradient(161.88deg, #30c5d8 18.69%, #1566f1 90.37%)',
     additionalCondition:
       ({ mode }: AdditionalContextInterface) =>
@@ -188,12 +206,12 @@ export const Sections: SectionCardInterface[] = [
   {
     id: SectionCardDataFields.WEBSITE_APP_SETTINGS,
     title: 'Website and app settings',
-    icon: 'i-monitor',
+    icon: AccountNSettingsIcons.website_app_settings,
     iconBackground: 'linear-gradient(154.84deg, #01B358 17.49%, #008CB1 103.14%)',
     subSections: [
       {
         id: WebsiteAppSettingsFields.WEBSITE_APP_DETAIL,
-        title: 'Website/App detail',
+        title: WebsiteAppSettingsTitles[WebsiteAppSettingsFields.WEBSITE_APP_DETAIL],
         href: ROUTES_INFO.WEBSITE_APP_SETTINGS,
         additionalCondition:
           ({ websiteSectionDetailsData }: AdditionalContextInterface) =>
@@ -202,12 +220,12 @@ export const Sections: SectionCardInterface[] = [
       },
       {
         id: WebsiteAppSettingsFields.BUSINESS_WEBSITE_DETAILS,
-        title: 'Business website detail',
+        title: WebsiteAppSettingsTitles[WebsiteAppSettingsFields.BUSINESS_WEBSITE_DETAILS],
         href: ROUTES_INFO.BUSINESS_WEBSITE_SETTINGS,
       },
       {
         id: WebsiteAppSettingsFields.API_KEYS,
-        title: 'API keys',
+        title: WebsiteAppSettingsTitles[WebsiteAppSettingsFields.API_KEYS],
         href: ROUTES_INFO.API_KEYS,
         additionalCondition:
           () =>
@@ -216,7 +234,7 @@ export const Sections: SectionCardInterface[] = [
       },
       {
         id: WebsiteAppSettingsFields.WEBHOOKS,
-        title: 'Webhooks',
+        title: WebsiteAppSettingsTitles[WebsiteAppSettingsFields.WEBHOOKS],
         href: ROUTES_INFO.WEBHOOKS,
         additionalCondition:
           () =>
@@ -232,7 +250,7 @@ export const Sections: SectionCardInterface[] = [
       },
       {
         id: WebsiteAppSettingsFields.APPLICATIONS,
-        title: 'Applications',
+        title: WebsiteAppSettingsTitles[WebsiteAppSettingsFields.APPLICATIONS],
         href: ROUTES_INFO.APPLICATIONS,
         additionalCondition:
           () =>
@@ -244,22 +262,22 @@ export const Sections: SectionCardInterface[] = [
   {
     id: SectionCardDataFields.BUSINESS_SETTINGS,
     title: 'Business settings',
-    icon: 'i-brief-case',
+    icon: AccountNSettingsIcons.business_settings,
     iconBackground: 'linear-gradient(159.37deg, #C592FF 13.68%, #2A86F3 123.84%)',
     subSections: [
       {
         id: BusinessSettingsFields.CONTACT_DETAILS,
-        title: 'Contact details',
+        title: BusinessSettingsTitles[BusinessSettingsFields.CONTACT_DETAILS],
         href: ROUTES_INFO.CONTACT_DETAILS,
       },
       {
         id: BusinessSettingsFields.BUSINESS_DETAILS,
-        title: 'Business details',
+        title: BusinessSettingsTitles[BusinessSettingsFields.BUSINESS_DETAILS],
         href: ROUTES_INFO.BUSINESS_DETAILS,
       },
       {
         id: BusinessSettingsFields.GST_DETAILS,
-        title: 'GST details',
+        title: BusinessSettingsTitles[BusinessSettingsFields.GST_DETAILS],
         href: ROUTES_INFO.GST_DETAILS,
         additionalCondition:
           () =>
@@ -268,12 +286,12 @@ export const Sections: SectionCardInterface[] = [
       },
       {
         id: BusinessSettingsFields.CUSTOMER_SUPPORT_DETAILS,
-        title: 'Customer support details',
+        title: BusinessSettingsTitles[BusinessSettingsFields.CUSTOMER_SUPPORT_DETAILS],
         href: ROUTES_INFO.CUSTOMER_SUPPORT_DETAILS,
       },
       {
         id: BusinessSettingsFields.ACCOUNT_DETAILS,
-        title: 'Account details',
+        title: BusinessSettingsTitles[BusinessSettingsFields.ACCOUNT_DETAILS],
         href: ROUTES_INFO.ACCOUNT_DETAILS,
         additionalCondition:
           () =>
@@ -282,7 +300,7 @@ export const Sections: SectionCardInterface[] = [
       },
       {
         id: BusinessSettingsFields.MANAGE_TEAM,
-        title: 'Manage team',
+        title: BusinessSettingsTitles[BusinessSettingsFields.MANAGE_TEAM],
         href: ROUTES_INFO.MANAGE_TEAM_DETAILS,
         additionalCondition:
           () =>
@@ -291,7 +309,7 @@ export const Sections: SectionCardInterface[] = [
       },
       {
         id: BusinessSettingsFields.INVITATIONS,
-        title: 'Invitations',
+        title: BusinessSettingsTitles[BusinessSettingsFields.INVITATIONS],
         href: ROUTES_INFO.TEAM_INVITATIONS,
         additionalCondition:
           () =>
@@ -300,7 +318,7 @@ export const Sections: SectionCardInterface[] = [
       },
       {
         id: BusinessSettingsFields.SUPPORT_TICKETS,
-        title: 'Support tickets',
+        title: BusinessSettingsTitles[BusinessSettingsFields.SUPPORT_TICKETS],
         href: ROUTES_INFO.SUPPORT_TICKETS_MERCHANT,
         additionalCondition:
           () =>
@@ -312,12 +330,12 @@ export const Sections: SectionCardInterface[] = [
   {
     id: SectionCardDataFields.PAYMENTS_REFUNDS,
     title: 'Payments and refunds',
-    icon: 'i-dollars',
+    icon: AccountNSettingsIcons.payments_refunds,
     iconBackground: 'linear-gradient(330.16deg, #30C5D8 1.72%, #1566F1 91.46%)',
     subSections: [
       {
         id: PaymentRefundsFields.BALANCES,
-        title: 'Balances',
+        title: PaymentRefundsTitles[PaymentRefundsFields.BALANCES],
         href: ROUTES_INFO.BALANCES,
         additionalCondition:
           () =>
@@ -326,7 +344,7 @@ export const Sections: SectionCardInterface[] = [
       },
       {
         id: PaymentRefundsFields.CREDITS,
-        title: 'Credits',
+        title: PaymentRefundsTitles[PaymentRefundsFields.CREDITS],
         href: ROUTES_INFO.CREDITS,
         additionalCondition:
           () =>
@@ -334,8 +352,8 @@ export const Sections: SectionCardInterface[] = [
             isCreditsEnabled(user),
       },
       {
-        id: PaymentRefundsFields.CREDITS,
-        title: 'Reminders',
+        id: PaymentRefundsFields.REMINDERS,
+        title: PaymentRefundsTitles[PaymentRefundsFields.REMINDERS],
         href: ROUTES_INFO.REMINDERS,
         additionalCondition:
           () =>
@@ -344,12 +362,12 @@ export const Sections: SectionCardInterface[] = [
       },
       {
         id: PaymentRefundsFields.TRANSACTION_LIMITS,
-        title: 'Transaction limits',
+        title: PaymentRefundsTitles[PaymentRefundsFields.TRANSACTION_LIMITS],
         href: ROUTES_INFO.TRANSACTION_LIMITS,
       },
       {
         id: PaymentRefundsFields.FEE_BEARER,
-        title: 'Fee bearer',
+        title: PaymentRefundsTitles[PaymentRefundsFields.FEE_BEARER],
         href: ROUTES_INFO.FEE_BEARER,
         additionalCondition:
           ({ allowCFBInternational }: AdditionalContextInterface) =>
@@ -358,7 +376,7 @@ export const Sections: SectionCardInterface[] = [
       },
       {
         id: PaymentRefundsFields.CAPTURE_REFUND_SETTINGS,
-        title: 'Capture and refund settings',
+        title: PaymentRefundsTitles[PaymentRefundsFields.CAPTURE_REFUND_SETTINGS],
         href: ROUTES_INFO.CAPTURE_AND_REFUND_SETTINGS,
         additionalCondition:
           () =>
@@ -367,7 +385,7 @@ export const Sections: SectionCardInterface[] = [
       },
       {
         id: PaymentRefundsFields.FAILED_PAYMENTS_RETRY,
-        title: 'Failed payments retry',
+        title: PaymentRefundsTitles[PaymentRefundsFields.FAILED_PAYMENTS_RETRY],
         href: ROUTES_INFO.FAILED_PAYMENTS_RETRY,
         additionalCondition:
           () =>
@@ -379,24 +397,24 @@ export const Sections: SectionCardInterface[] = [
   {
     id: SectionCardDataFields.BANK_ACCOUNTS_SETTLEMENTS,
     title: 'Bank accounts and settlements',
-    icon: 'i-file-asset',
+    icon: AccountNSettingsIcons.bank_and_settlements,
     iconBackground: 'linear-gradient(162.28deg, #2A86F3 27.27%, #C592FF 121.23%)',
     additionalCondition: (): ((user: User) => boolean) => isProfileViewAllowed,
     subSections: [
       {
         id: BankAccountSettlementFields.BANK_ACCOUNT_DETAILS,
-        title: 'Bank account details',
+        title: BankAccountSettlementTitles[BankAccountSettlementFields.BANK_ACCOUNT_DETAILS],
         href: ROUTES_INFO.BANK_ACCOUNT_DETAILS,
         additionalCondition: (): ((user: User) => boolean) => isBankAccountDetailsAllowed,
       },
       {
         id: BankAccountSettlementFields.SETTLEMENT_DETAILS,
-        title: 'Settlement details',
+        title: BankAccountSettlementTitles[BankAccountSettlementFields.SETTLEMENT_DETAILS],
         href: ROUTES_INFO.SETTLEMENT_DETAILS,
       },
       {
         id: BankAccountSettlementFields.FIRS,
-        title: 'Forward inwards remittance statement',
+        title: BankAccountSettlementTitles[BankAccountSettlementFields.FIRS],
         href: ROUTES_INFO.FIRS,
         additionalCondition: (): ((user: User) => boolean) => shouldShowFIRCSection,
       },
@@ -405,7 +423,7 @@ export const Sections: SectionCardInterface[] = [
   {
     id: SectionCardDataFields.NOTIFICATION_SETTINGS,
     title: 'Notification settings',
-    icon: 'i-notification-bell',
+    icon: AccountNSettingsIcons.notification_settings,
     iconBackground: 'linear-gradient(156.8deg, #C592FF 3.75%, #1566F1 130.62%)',
     additionalCondition:
       () =>
@@ -414,12 +432,12 @@ export const Sections: SectionCardInterface[] = [
     subSections: [
       {
         id: NotificationSettingsFields.EMAIL,
-        title: 'Email',
+        title: NotificationSettingsTitles[NotificationSettingsFields.EMAIL],
         href: ROUTES_INFO.EMAIL_NOTIFICATIONS,
       },
       {
         id: NotificationSettingsFields.SMS,
-        title: 'SMS',
+        title: NotificationSettingsTitles[NotificationSettingsFields.SMS],
         href: ROUTES_INFO.SMS_NOTIFICATIONS,
         additionalCondition:
           () =>
@@ -428,7 +446,7 @@ export const Sections: SectionCardInterface[] = [
       },
       {
         id: NotificationSettingsFields.WHATSAPP,
-        title: 'WhatsApp',
+        title: NotificationSettingsTitles[NotificationSettingsFields.WHATSAPP],
         href: ROUTES_INFO.WHATSAPP_NOTIFICATIONS,
         additionalCondition:
           () =>
@@ -440,7 +458,7 @@ export const Sections: SectionCardInterface[] = [
   {
     id: SectionCardDataFields.CHECKOUT_SETTINGS,
     title: 'Checkout settings',
-    icon: 'i-shopping-cart',
+    icon: AccountNSettingsIcons.checkout_settings,
     iconBackground: 'linear-gradient(155.9deg, #EC9B26 10.71%, #BD7A03 59.94%)',
     additionalCondition:
       () =>
@@ -449,7 +467,7 @@ export const Sections: SectionCardInterface[] = [
     subSections: [
       {
         id: CheckoutSettingsFields.BRANDING,
-        title: 'Branding',
+        title: CheckoutSettingsTitles[CheckoutSettingsFields.BRANDING],
         href: ROUTES_INFO.BRANDING,
         additionalCondition:
           () =>
@@ -458,7 +476,7 @@ export const Sections: SectionCardInterface[] = [
       },
       {
         id: CheckoutSettingsFields.FLASH_CHECKOUT,
-        title: 'Flash checkout',
+        title: CheckoutSettingsTitles[CheckoutSettingsFields.FLASH_CHECKOUT],
         href: ROUTES_INFO.FLASH_CHECKOUT,
         additionalCondition:
           () =>
@@ -467,7 +485,7 @@ export const Sections: SectionCardInterface[] = [
       },
       {
         id: CheckoutSettingsFields.SKIP_MANDATE_SUMMARY_PAGE,
-        title: 'Skip mandate summary page',
+        title: CheckoutSettingsTitles[CheckoutSettingsFields.SKIP_MANDATE_SUMMARY_PAGE],
         href: ROUTES_INFO.SKIP_MANDATORY_SUMMARY_PAGE,
         additionalCondition:
           () =>
@@ -476,7 +494,7 @@ export const Sections: SectionCardInterface[] = [
       },
       {
         id: CheckoutSettingsFields.TRUSTED_BADGE,
-        title: 'Trusted badge',
+        title: CheckoutSettingsTitles[CheckoutSettingsFields.TRUSTED_BADGE],
         href: ROUTES_INFO.TRUSTED_BADGE,
         additionalCondition: (): ((user: User) => boolean) => isTrustedBadgeAllowed,
       },
@@ -485,13 +503,13 @@ export const Sections: SectionCardInterface[] = [
   {
     id: SectionCardDataFields.PRICING,
     title: 'Pricing',
-    icon: 'i-zap',
+    icon: AccountNSettingsIcons.pricing,
     iconBackground: 'linear-gradient(126deg, #C8BFFF 9.01%, #553EDF 98.6%)',
     additionalCondition: (params) => (): boolean => !!params?.hasEnrolled,
     subSections: [
       {
         id: PricingFields.PRICING_PLANS,
-        title: 'Pricing Plans',
+        title: PricingTitles[PricingFields.PRICING_PLANS],
         href: ROUTES_INFO.PRICING_PLANS,
         isNew: true,
       },

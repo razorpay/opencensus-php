@@ -5,6 +5,8 @@
 // This will be moved under `rzp` later
 
 $sidebar-width = 248px;
+$universal-search-height = 70px;
+$header-height = 51px;
 
 a,
 .btn-link {
@@ -74,7 +76,7 @@ body {
 
 .main-content {
   margin-left: $sidebar-width;
-  margin-top: 51px;
+  margin-top: $header-height;
 
   @media screen and (max-width $screen-sm-min) {
     margin-left: 0;
@@ -87,6 +89,23 @@ body {
   .rzp-error-boundary {
     padding: 20px;
   }
+}
+
+.search-header {
+  margin-top: $header-height + $universal-search-height;
+}
+
+.mobile-search-layout {
+  height: 70px;
+  width: 100%;
+  background-color: #2E3345;
+  padding: 10px 14px 20px;
+}
+
+.universal-search-desktop {
+  display: inline-block;
+  margin: 10px 10px 0 54px;
+  position: relative;
 }
 
 .banner-container {
@@ -435,6 +454,11 @@ body {
       height 60px
     }
   }
+}
+
+.search-nav-box {
+  box-shadow: none;
+  margin-bottom: -1px;
 }
 
 .navbar-default .navbar-nav
@@ -1749,7 +1773,11 @@ ul.switch-modes-menu.nav.nav-stacked {
     display: flex
 
 li.offers-for-you-mobile
-  max-width: 70px
+  max-width: 50px;
+
+  > a {
+    padding: 5px;
+  }
 
 .lottie-disabled {
   // stylelint-disable-next-line declaration-no-important

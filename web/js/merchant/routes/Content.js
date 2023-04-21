@@ -269,6 +269,7 @@ const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
   (state) => ({
     user: state.session.user,
     mode: state.session.mode,
+    isMobile: state.app.isMobileResolution,
   }),
   {
     setBaseLocation,
@@ -970,11 +971,11 @@ export default class Content extends Component {
   };
 
   render() {
-    const { mode, user, fullPageView, isWebView } = this.props;
+    const { mode, user, fullPageView, isWebView, isMobile } = this.props;
 
     let DetailView = this.detailView;
     const BaseView = this.baseLocation ? this.getBaseView() : null;
-
+    const isMobileSearchEnabled = user.isUniversalSearchEnabled && isMobile;
     let ModalFormView = this.modalView;
 
     const overlayCustomClass = this.getOverlayCustomClass();
@@ -1020,6 +1021,7 @@ export default class Content extends Component {
       <main
         class={classList(
           !fullPageView && !isWebView && 'main-content',
+          isMobileSearchEnabled && 'search-header',
           mode === 'test' && isMobileDevice() ? 'test-mode' : '',
         )}
       >

@@ -49,6 +49,8 @@ type Getters = {
   isSettlementV3RevampEnabled: boolean;
   isSingleReconEnabled: boolean;
   isOptimizerEnabled: boolean;
+  isWebsiteComplianceFlowEnabled: boolean;
+  isBundlePricingEnabled: boolean;
 };
 
 type UserProperties = {
@@ -72,6 +74,7 @@ type UserProperties = {
   };
   business_subcategory: BUSINESS_SUBCATEGORIES | string;
   isTransacted: boolean;
+  isAllowedView: (args: string) => boolean;
 };
 
 // as user properties are not available initially
