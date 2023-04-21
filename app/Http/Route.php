@@ -4185,6 +4185,12 @@ class Route
         'update_shopify_1cc_credentials'            => ['post',       '1cc/merchants/{merchant_id}/shopify/credentials',       'MerchantController@updateShopify1ccCredentials'                 ],
         '1cc_address_ingestion_config_get'          => ['get',        '1cc/merchant/address_ingestion/config',    'MerchantController@get1ccAddressIngestionConfig' ],
         '1cc_address_ingestion_addresses_post'      => ['post',       '1cc/merchant/address_ingestion/addresses', 'MerchantController@push1ccAddresses' ],
+        '1cc_shopify_fetch_meta_fields'             => ['get',        '1cc/admin/merchants/{id}/shopify/metafields',                            'OneClickCheckoutController@fetchShopifyMetaFields'            ],
+        '1cc_shopify_update_meta_fields'            => ['post',       '1cc/admin/merchants/{id}/shopify/metafields',                            'OneClickCheckoutController@updateShopifyMetaFields'           ],
+        '1cc_shopify_fetch_themes'                  => ['get',        '1cc/admin/merchants/{id}/shopify/themes',                                'OneClickCheckoutController@fetchShopifyThemes'                ],
+        '1cc_shopify_insert_theme'                  => ['put',        '1cc/admin/merchants/{id}/shopify/snippets/insert',                  'OneClickCheckoutController@insertShopifySnippet'                ],
+        '1cc_shopify_render_magic_snippet'          => ['put',        '1cc/admin/merchants/{id}/shopify/snippets/render',                  'OneClickCheckoutController@renderMagicSnippet'                ],
+
 
         'get_affordability_suite'                 => ['get',          'affordability',                                         'AffordabilityController@__invoke'                             ],
 
@@ -8139,6 +8145,13 @@ class Route
         'fetch_netbanking_configs',
         'create_netbanking_configs',
         'edit_netbanking_configs',
+
+         //magic checkout
+         '1cc_shopify_fetch_meta_fields',
+         '1cc_shopify_update_meta_fields',
+         '1cc_shopify_fetch_themes',
+         '1cc_shopify_insert_theme',
+         '1cc_shopify_render_magic_snippet',
     ];
 
     public static $routePermission = [
@@ -9583,6 +9596,13 @@ class Route
         'mob_fetch_multiple_intents'                => Permission::VIEW_ACTIVATION_FORM,
         'mob_get_workflow'                          => Permission::VIEW_ACTIVATION_FORM,
         'mob_save_workflow'                         => Permission::VIEW_ACTIVATION_FORM,
+
+        //magic checkout
+        '1cc_shopify_fetch_meta_fields'            => Permission::MAGIC_OPS,
+        '1cc_shopify_update_meta_fields'           => Permission::MAGIC_OPS,
+        '1cc_shopify_fetch_themes'                 => Permission::MAGIC_OPS,
+        '1cc_shopify_insert_theme'                 => Permission::MAGIC_OPS,
+        '1cc_shopify_render_magic_snippet'         => Permission::MAGIC_OPS,
     ];
 
     public static $bankLmsRoutePermissions = [
@@ -14088,6 +14108,11 @@ class Route
             '1cc_rto_merchant_model_configs_update_admin',
             '1cc_rto_merchant_model_configs_delete_admin',
             '1cc_rto_merchant_mlmodel_update_admin',
+            '1cc_shopify_fetch_meta_fields',
+            '1cc_shopify_update_meta_fields',
+            '1cc_shopify_fetch_themes',
+            '1cc_shopify_insert_theme',
+            '1cc_shopify_render_magic_snippet',
 
             // Terminal downtimes
             'manual_downtime_fetch',

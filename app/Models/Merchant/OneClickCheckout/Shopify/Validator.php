@@ -46,4 +46,22 @@ class Validator extends Base\Validator
        'client_secret'     => 'required|string|max:150',
        'installation_link' => 'required|string|max:100',
     ];
+
+
+    protected static $updateShopifyMetaFieldsRules = [
+        'namespace'  => 'required|string|in:magic_checkout|max:150',
+        'metafields' => 'required|array',
+    ];
+
+    protected static $insertShopifySnippetRules = [
+        'theme_id'    => 'required|string',
+        'asset'       => 'required|array',
+        'asset.key'   => 'required|string',
+        'asset.value' => 'required|string',
+    ];
+
+    protected static $renderMagicSnippetRules = [
+        'theme_id' => 'required|string',
+    ];
+
 }

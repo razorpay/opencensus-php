@@ -296,4 +296,46 @@ class OneClickCheckoutController extends Controller
         $this->addCorsHeaders($response, "GET");
         return $response;
     }
+
+    public function fetchShopifyMetaFields(string $merchantId)
+    {
+        $response = (new Shopify\Service)->fetchShopifyMetaFields($merchantId);
+
+        return ApiResponse::json($response, 200);
+    }
+
+    public function updateShopifyMetaFields(string $merchantId)
+    {
+        $input = Request::all();
+
+        $response = (new Shopify\Service)->updateShopifyMetaFields($input, $merchantId);
+
+        return ApiResponse::json($response['data'], $response['status_code']);
+    }
+
+    public function fetchShopifyThemes(string $merchantId)
+    {
+        $response = (new Shopify\Service)->fetchShopifyThemes($merchantId);
+
+        return ApiResponse::json($response, 200);
+    }
+
+    public function insertShopifySnippet(string $merchantId)
+    {
+        $input = Request::all();
+
+        $response = (new Shopify\Service)->insertShopifySnippet($merchantId, $input);
+
+        return ApiResponse::json($response, 200);
+    }
+
+    public function renderMagicSnippet(string $merchantId)
+    {
+        $input = Request::all();
+
+        $response = (new Shopify\Service)->renderMagicSnippet($merchantId, $input);
+
+        return ApiResponse::json($response, 200);
+    }
+
 }

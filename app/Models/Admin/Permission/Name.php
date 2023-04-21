@@ -384,6 +384,7 @@ class Name
     const DEVELOPER_CONSOLE_ADMIN             = 'developer_console_admin';
     const MAGIC_RTO_CONFIGS_EDIT              = 'magic_rto_configs_edit';
     const MAGIC_RTO_CONFIGS_VIEW              = 'magic_rto_configs_view';
+    const MAGIC_OPS                           = 'magic_ops';
 
     const CAPITAL_LOS_APPLICATION_READ                              = 'capital_los_application_read';
     const CAPITAL_LOS_APPLICATION_EDIT                              = 'capital_los_application_edit';
@@ -420,7 +421,7 @@ class Name
 
     // Emandate config
     const MANAGE_EMANDATE_CONFIG                      = 'manage_emandate_config';
-    
+
     //permission to edit/execute bulk international disable/enable workflowAction
     const EDIT_MERCHANT_DISABLE_INTERNATIONAL_BULK    = 'edit_merchant_disable_international_bulk';
     const EDIT_MERCHANT_ENABLE_INTERNATIONAL_BULK     = 'edit_merchant_enable_international_bulk';

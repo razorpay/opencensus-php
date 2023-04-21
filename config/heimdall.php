@@ -1339,11 +1339,18 @@ return [
                 'assignable'  => true
             ],
         ],
-    
+
         // RZP White label emandate config
         PermissionCategory::EMANDATE_CONFIG => [
             Permission::MANAGE_EMANDATE_CONFIG   => [
                 'description' => 'Edit EMANDATE Config',
+                'assignable'  => true
+            ]
+        ],
+
+        PermissionCategory::MAGIC_OPS_CONFIG => [
+            Permission::MAGIC_OPS   => [
+                'description' => 'To be used by Magic Ops Team to fetch/update details on admin dashboard',
                 'assignable'  => true
             ]
         ],

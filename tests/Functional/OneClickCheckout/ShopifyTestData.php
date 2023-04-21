@@ -138,4 +138,107 @@ return [
             ],
         ],
     ],
+
+    'testFetchMetaFieldsApi' => [
+        'request'  => [
+            'url'    => '/1cc/admin/merchants/10000000000000/shopify/metafields',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content'     => [
+                'meta_fields' => [
+                    [
+                        'id'    => 'gid://shopify/Metafield/28810825924884',
+                        'key'   => 'test_key',
+                        'value' => 'test_value',
+                        'type'  => 'string',
+                    ],
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testUpdateMetaFieldsApi' => [
+        'request'  => [
+            'url'     => '/1cc/admin/merchants/10000000000000/shopify/metafields',
+            'method'  => 'POST',
+            'content' => [
+                'namespace'  => 'magic_checkout',
+                'metafields' => [
+                    'key'   => 'test_key',
+                    'value' => 'test_value',
+                    'type'  => 'string',
+                ],
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'errors' => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFetchShopifyStoreThemes' => [
+        'request'  => [
+            'url'    => '/1cc/admin/merchants/10000000000000/shopify/themes',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content'     => [
+                'shop_id' => 'random-shop',
+                'themes'  => [
+                    [
+                        'id'                   => 138358325524,
+                        'name'                 => 'Dawn',
+                        'created_at'           => '2022-11-18T00:53:52+05:30',
+                        'updated_at'           => '2023-04-14T23:48:41+05:30',
+                        'role'                 => 'main',
+                        'theme_store_id'       => 887,
+                        'previewable'          => true,
+                        'processing'           => false,
+                        'admin_graphql_api_id' => 'gid://shopify/Theme/138358325524',
+                    ],
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testInsertShopifySnippetApi' => [
+        'request'  => [
+            'url'     => '/1cc/admin/merchants/10000000000000/shopify/snippets/insert',
+            'method'  => 'PUT',
+            'content' => [
+                'theme_id' => '140116427028',
+                'asset'    => [
+                    'key'   => 'snippets/razorpay-magic-test.liquid',
+                    'value' => 'test_value',
+                ],
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'success' => true,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testRenderMagicSnippetApi' => [
+        'request'  => [
+            'url'     => '/1cc/admin/merchants/10000000000000/shopify/snippets/render',
+            'method'  => 'PUT',
+            'content' => [
+                'theme_id' => '140116427028',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'success' => true,
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

@@ -32,6 +32,15 @@ class Service extends Base\Service
 
     const MAX_RETRY_DELAY_MILLIS = 1 * 30 * 1000;
 
+    const MAGIC_CHECKOUT_SERVICE_SHOPIFY_METAFIELDS_PATH  = 'v1/admin/shopify/metafields';
+
+    const MAGIC_CHECKOUT_SERVICE_SHOPIFY_FETCH_THEME_PATH = 'v1/admin/shopify/themes';
+
+    const MAGIC_CHECKOUT_SERVICE_SHOPIFY_INSERT_SNIPPET   = 'v1/admin/shopify/snippets/insert';
+
+    const MAGIC_CHECKOUT_SERVICE_RENDER_MAGIC_SNIPPET     = 'v1/admin/shopify/snippets/render';
+
+
     const skipListCouponMids = [
         'DzyQ9A6YiAcZpT',
         'Glcz7NhPAxVEOw',
@@ -1243,4 +1252,250 @@ class Service extends Base\Service
         }
         return (new Analytics())->getShopifyOrderFromCache($input['order_status_url']);
     }
+
+    /**
+     * fetches meta fields only for namespace :- magic_checkout
+     * @param $merchantId
+     * @return array
+     * @throws Exception\BadRequestException
+     * @throws Throwable
+     */
+    public function fetchShopifyMetaFields(string $merchantId): array
+    {
+
+        try
+        {
+
+            $this->validateOneCcMerchant($merchantId);
+
+            $this->logShopifyOnboardingApiRequest($merchantId, TraceCode::MAGIC_SHOPIFY_FETCH_META_FIELDS_INFO);
+
+            [$query, $headers] = $this->constructFetchQueryForMagicCheckoutService($merchantId);
+
+            $path = self::MAGIC_CHECKOUT_SERVICE_SHOPIFY_METAFIELDS_PATH . $query;
+
+            return $this->app['magic_checkout_service_client']->sendRequest($path, null, Requests::GET, $headers);
+
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::MAGIC_SHOPIFY_FETCH_META_FIELDS_ERROR, [
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * updates meta fields values only to namespace :- magic_checkout
+     * @param array $input
+     * @param string $merchantId
+     * @return
+     * @throws Exception\BadRequestException|Throwable
+     */
+    public function updateShopifyMetaFields(array $input, string $merchantId)
+    {
+        try
+        {
+
+            $this->validateOneCcMerchant($merchantId);
+
+            (new Validator)->setStrictFalse()->validateInput('updateShopifyMetaFields', $input);
+
+            $this->logShopifyOnboardingApiRequest($merchantId, TraceCode::MAGIC_SHOPIFY_UPDATE_META_FIELDS_INFO, $input);
+
+            [$input, $headers] = $this->constructPayloadForMagicCheckoutService($merchantId, $input);
+
+            $path = self::MAGIC_CHECKOUT_SERVICE_SHOPIFY_METAFIELDS_PATH;
+
+            $result = $this->app['magic_checkout_service_client']->sendRequest($path, $input, Requests::POST, $headers);
+
+            $statusCode = $result['errors'] == null ? 200 : 400;
+
+            return ['status_code' => $statusCode, 'data' => $result];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::MAGIC_SHOPIFY_UPDATE_META_FIELDS_ERROR, [
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * fetches all the themes for a shopify store
+     * @param $merchantId
+     * @return array
+     * @throws Exception\BadRequestException
+     * @throws Throwable
+     */
+    public function fetchShopifyThemes(string $merchantId): array
+    {
+
+        try
+        {
+
+            $this->validateOneCcMerchant($merchantId);
+
+            $this->logShopifyOnboardingApiRequest($merchantId, TraceCode::MAGIC_SHOPIFY_FETCH_THEMES_INFO);
+
+            [$query, $headers] = $this->constructFetchQueryForMagicCheckoutService($merchantId);
+
+            $path = self::MAGIC_CHECKOUT_SERVICE_SHOPIFY_FETCH_THEME_PATH . $query;
+
+            return $this->app['magic_checkout_service_client']->sendRequest($path, null, Requests::GET, $headers);
+
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::MAGIC_SHOPIFY_FETCH_THEMES_ERROR, [
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Appends theme file in snippet folder on shopify store
+     * @param $merchantId
+     * @param array $input
+     * @return array
+     * @throws Exception\BadRequestException
+     * @throws Throwable
+     */
+    public function insertShopifySnippet(string $merchantId, array $input)
+    {
+
+        try
+        {
+
+            $this->validateOneCcMerchant($merchantId);
+
+            $this->logShopifyOnboardingApiRequest($merchantId, TraceCode::MAGIC_SHOPIFY_INSERT_THEME_INFO, $input);
+
+            (new Validator)->setStrictFalse()->validateInput('insertShopifySnippet', $input);
+
+            [$input, $headers] = $this->constructPayloadForMagicCheckoutService($merchantId, $input);
+
+            $path = self::MAGIC_CHECKOUT_SERVICE_SHOPIFY_INSERT_SNIPPET;
+
+            return $this->app['magic_checkout_service_client']->sendRequest($path, $input, Requests::PUT, $headers);
+
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::MAGIC_SHOPIFY_INSERT_THEME_ERROR, [
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * renders magic snippet in main theme.liquid for shopify store
+     * @param $merchantId
+     * @param array $input
+     * @return array
+     * @throws Exception\BadRequestException
+     * @throws Throwable
+     */
+    public function renderMagicSnippet(string $merchantId, array $input)
+    {
+
+        try
+        {
+
+            $this->validateOneCcMerchant($merchantId);
+
+            (new Validator)->setStrictFalse()->validateInput('renderMagicSnippet', $input);
+
+            $this->logShopifyOnboardingApiRequest($merchantId, TraceCode::MAGIC_SHOPIFY_RENDER_THEME_INFO, $input);
+
+            [$input, $headers] = $this->constructPayloadForMagicCheckoutService($merchantId, $input);
+
+            $path = self::MAGIC_CHECKOUT_SERVICE_RENDER_MAGIC_SNIPPET;
+
+            return $this->app['magic_checkout_service_client']->sendRequest($path, $input, Requests::PUT, $headers);
+
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::MAGIC_SHOPIFY_RENDER_THEME_ERROR, [
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
+
+    // validates merchant one cc feature
+    private function validateOneCcMerchant(string $merchantId)
+    {
+
+        $this->merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::ONE_CLICK_CHECKOUT) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, "Not a one cc merchant");
+        }
+    }
+
+    // returns shopId and oauth token for hitting magic-checkout-service
+    private function getMerchantAuthCredentials(): array
+    {
+        $client = $this->getShopifyClientByMerchant();
+
+        $accessToken = $client->getOAuthToken();
+
+        $shopId = $client->getShopId();
+
+        return [$shopId, $accessToken];
+    }
+
+    // constructs query for magic-checkout service
+    private function constructFetchQueryForMagicCheckoutService(string $merchantId): array
+    {
+        [$shopId, $accessToken] = $this->getMerchantAuthCredentials();
+
+        $query = "?merchant_id={$merchantId}&shop_id={$shopId}";
+
+        $headers = ['X-Admin-Access-Token' => $accessToken];
+
+        return [$query, $headers];
+
+    }
+
+    // constructs payload for magic-checkout service
+    private function constructPayloadForMagicCheckoutService(string $merchantId, array $input): array
+    {
+        [$shopId, $accessToken] = $this->getMerchantAuthCredentials();
+
+        $input['shop_id'] = $shopId;
+
+        $input['merchant_id'] = $merchantId;
+
+        $headers = ['X-Admin-Access-Token' => $accessToken];
+
+        return [$input, $headers];
+
+    }
+
+    // logs shopify onboarding and theme injection api's request
+    private function logShopifyOnboardingApiRequest(string $merchantId, string $message, array $input = [])
+    {
+        $dimensions = [
+            'X-Admin-Email' => empty($this->auth->getAdmin()) === false ? $this->auth->getAdmin()->getEmail() : '',
+            'X-Admin-Name'  => empty($this->auth->getAdmin()) === false ? $this->auth->getAdmin()->getName() : '',
+            'merchant_id'   => $merchantId,
+        ];
+
+        if (empty($input) === false)
+        {
+            $dimensions['input'] = $input;
+        }
+
+        $this->trace->info($message, $dimensions);
+
+    }
+
 }

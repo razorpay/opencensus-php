@@ -53,6 +53,15 @@ class Client
         $this->storefrontAccessToken = $config[OneClickCheckout\Constants::STOREFRONT_ACCESS_TOKEN];
     }
 
+    public function getOAuthToken(){
+        return $this->oauthToken;
+    }
+
+    public function getShopId()
+    {
+        return $this->shopId;
+    }
+
     /**
      * @param string merchantOrderId - Shopify order ID
      * returns "transactions": [] and 200 even if order id is invalid
@@ -69,11 +78,6 @@ class Client
     public function getStoreFrontAccessToken()
     {
         return $this->storefrontAccessToken;
-    }
-
-    public function getShopId()
-    {
-        return $this->shopId;
     }
 
     public function sendStorefrontRequest($body)

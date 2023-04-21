@@ -37,7 +37,7 @@ class Client
      * @throws IntegrationException
      * @throws BadRequestException
      */
-    public function sendRequest($path, $input, $method)
+    public function sendRequest($path, $input, $method, $headers = [])
     {
         $url = $this->getBaseUrl() . $path;
         try
@@ -47,7 +47,9 @@ class Client
                 'method' => $method,
             ]);
 
-            $response = $this->makeRequest($url, $this->getHeaders(), $input, $method, $this->getOptions());
+            $headers = array_merge($headers, $this->getHeaders());
+
+            $response = $this->makeRequest($url, $headers, $input, $method, $this->getOptions());
 
             if ($response->status_code != 200)
             {
@@ -104,7 +106,7 @@ class Client
     {
         if (empty($content) === true)
         {
-            $content = '{}';
+            $content = [];
         } else
         {
             $content = json_encode($content);

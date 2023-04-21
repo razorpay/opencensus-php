@@ -78,4 +78,5 @@ class Category
     const X_DASHBOARD_FE               = 'x_dashboard_fe';
     const IP_WHITELIST                 = 'ip_whitelist';
     const EMANDATE_CONFIG             = 'emandate_config';
+    const MAGIC_OPS_CONFIG             = 'magic_ops_config';
 }
