@@ -1680,6 +1680,7 @@ class Core extends Base\Core
             IE::RECEIPT             => $receipt,
             IE::REMINDER_ENABLE     => false,
             IE::CURRENCY            => $paymentLink->getCurrency() ?? 'INR',
+            IE::DATE                => $payment->getCapturedAt(),
         ];
 
         $input = array_filter(
