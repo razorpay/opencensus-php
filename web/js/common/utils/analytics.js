@@ -319,6 +319,8 @@ export const capturePrometheusMetric = ({ name, labels = {} }) => {
           accept: 'application/json',
           'Content-Type': 'text/plain',
         },
+      }).catch(() => {
+        // do nothing
       });
     } else {
       for (const metric of data.metrics) {
