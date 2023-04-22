@@ -78,6 +78,8 @@ class Processor
 
     protected $env;
 
+    protected $mode;
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -89,6 +91,11 @@ class Processor
         $this->repo = $this->app['repo'];
 
         $this->trace = $this->app['trace'];
+
+        if (isset($this->app['rzp.mode']))
+        {
+            $this->mode = $this->app['rzp.mode'];
+        }
     }
 
     protected function getPSTableName(string $entity)
@@ -158,6 +165,10 @@ class Processor
                             }
                         }
                     );
+
+                    // Setting connection as live as we want to update payout and it would have been fetched from
+                    // replica so it's connection would be replica only and we'll get write access denied error.
+                    $payout->setConnection($this->mode);
 
                     // Doing it for all migrated payouts , considering if there is any state change (terminal to terminal)
                     // after migration , better to do it in PS
