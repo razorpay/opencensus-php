@@ -3305,27 +3305,17 @@ trait Refund
                     ($token->card->getType() === Type::DEBIT) and
                     ($fundTransferAttemptInput[FundTransferAttempt\Entity::MODE] === FundTransfer\Mode::CT))
                 {
-                    // check for experiment
-                    $variant = $this->app->razorx->getTreatment(
-                        $payment->getMerchantId(),
-                        RefundConstants::RAZORX_KEY_REFUNDS_TOKENISATION_IR_RAMP,
-                        $this->mode
+                    $card = $token->card;
+
+                    $this->trace->info(
+                        TraceCode::REFUND_FTA_VIA_TOKENISED_FLOW,
+                        [
+                            Payment\Entity::CARD_ID            => $card->getId(),
+                            Payment\Entity::TOKEN_ID           => $token->getId(),
+                            Payment\Refund\Entity::PAYMENT_ID  => $payment->getId(),
+                            Payment\Refund\Entity::MERCHANT_ID => $payment->getMerchantId(),
+                        ]
                     );
-
-                    if (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON)
-                    {
-                        $card = $token->card;
-
-                        $this->trace->info(
-                            TraceCode::REFUND_FTA_VIA_TOKENISED_FLOW,
-                            [
-                                Payment\Entity::CARD_ID            => $card->getId(),
-                                Payment\Entity::TOKEN_ID           => $token->getId(),
-                                Payment\Refund\Entity::PAYMENT_ID  => $payment->getId(),
-                                Payment\Refund\Entity::MERCHANT_ID => $payment->getMerchantId(),
-                            ]
-                        );
-                    }
                 }
             }
 

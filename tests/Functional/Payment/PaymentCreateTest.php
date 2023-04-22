@@ -5221,7 +5221,7 @@ class PaymentCreateTest extends TestCase
         // Use this flag to test with the new refund flow, which now entirely happens on Scrooge.
         // This will only assert what is necessary.
         // This flow is not live yet on prod for this flow, so disabling flag for the time being.
-        $flag = false;
+        $flag = true;
 
         if ($flag === true)
         {

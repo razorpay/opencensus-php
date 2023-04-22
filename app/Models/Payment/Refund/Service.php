@@ -442,112 +442,7 @@ class Service extends Base\Service
             'input'       => $input,
         ]);
 
-        $experimentVariable = UniqueIdEntity::generateUniqueId();
-
-        $nonShadowModeVariant = $this->app->razorx->getTreatment($experimentVariable,
-            RefundConstants::RAZORX_KEY_DIRECT_REFUND_FETCH_BY_ID_FROM_SCROOGE,
-            $this->mode
-        );
-
-        // ToDO : remove this condition once optimiser settlement data fetch is supported on scrooge
-        if ($this->app['basicauth']->isOptimiserDashboardRequest() === true)
-        {
-            $nonShadowModeOptimizer = $this->app->razorx->getTreatment($experimentVariable,
-                RefundConstants::RAZORX_KEY_DIRECT_REFUND_FETCH_BY_ID_FROM_SCROOGE_OPTIMIZER,
-                $this->mode
-            );
-
-            if ($nonShadowModeOptimizer !== RefundConstants::RAZORX_VARIANT_ON)
-            {
-                $nonShadowModeVariant = RefundConstants::RAZORX_VARIANT_OFF;
-            }
-        }
-
-        if ($nonShadowModeVariant === RefundConstants::RAZORX_VARIANT_ON)
-        {
-            return $this->app['scrooge']->refundsFetchById($id, $input);
-        }
-
-        // shadow mode experiment
-        $variant = $this->app->razorx->getTreatment($experimentVariable,
-            RefundConstants::RAZORX_KEY_REFUND_FETCH_BY_ID_FROM_SCROOGE,
-            $this->mode
-        );
-
-        if ($variant === RefundConstants::RAZORX_VARIANT_ON)
-        {
-            return $this->fetchShadowMode($id, $input);
-        }
-
-        $refundArray = $this->repo->refund->fetchAndReturnPublicArrayWithExpand($id, $this->merchant, $input);
-
-        // Adding `processed_at`, `failed_at`, `speed_change_time`, `gateway_refund_support` params only for dashboard
-        if ($this->app['basicauth']->isProxyAuth() === true)
-        {
-            $this->addParamsForDashboard($refundArray);
-        }
-
-        if (($this->app['basicauth']->isOptimiserDashboardRequest() === true) &&
-            ($refundArray[Entity::SETTLED_BY] != 'Razorpay'))
-        {
-            $refundArray = $this->setSettlementDetailsForOptimizer($refundArray);
-        }
-
-        return $refundArray;
-    }
-
-    public function fetchShadowMode($id, array $input = [])
-    {
-        $scroogeResponse = [];
-        $scroogeException = null;
-
-        try
-        {
-            $scroogeResponse = $this->app['scrooge']->refundsFetchById($id, $input);
-        }
-        catch (\Throwable $ex)
-        {
-            $scroogeException = $ex;
-
-            $this->trace->info(TraceCode::SCROOGE_REFUNDS_FETCH_EXCEPTION, [
-                'error_code'    => $ex->getCode(),
-                'error_message' => $ex->getMessage(),
-                'route_name'    => $this->app['api.route']->getCurrentRouteName(),
-                'extra_trace'   => $this->app['basicauth']->getAuthType(),
-            ]);
-        }
-
-        try
-        {
-            $refundArray = $this->repo->refund->fetchAndReturnPublicArrayWithExpand($id, $this->merchant, $input);
-
-            // Adding `processed_at`, `failed_at`, `speed_change_time`, `gateway_refund_support` params only for dashboard
-            if ($this->app['basicauth']->isProxyAuth() === true)
-            {
-                $this->addParamsForDashboard($refundArray);
-            }
-
-            if (($this->app['basicauth']->isOptimiserDashboardRequest() === true) &&
-                ($refundArray[Entity::SETTLED_BY] != 'Razorpay'))
-            {
-                $refundArray = $this->setSettlementDetailsForOptimizer($refundArray);
-            }
-
-            $this->compareRefundsAndLogDifference([$refundArray], [$scroogeResponse]);
-
-            return $refundArray;
-        }
-        catch (\Throwable $apiException)
-        {
-            $extraTraceData = [
-                'refund_id' => $id,
-                'input'     => $input,
-            ];
-
-            $this->compareThrowableAndLogDifference($apiException, $scroogeException, $extraTraceData);
-
-            throw $apiException;
-        }
+        return $this->app['scrooge']->refundsFetchById($id, $input);
     }
 
     public function setSettlementDetailsForOptimizer($refundArray)
@@ -1304,24 +1199,12 @@ class Service extends Base\Service
             'input'       => $input,
         ]);
 
-        $experimentVariable = UniqueIdEntity::generateUniqueId();
-
-        $nonShadowModeVariant = $this->app->razorx->getTreatment($experimentVariable,
-            RefundConstants::RAZORX_KEY_DIRECT_REFUND_FETCH_MULTIPLE_FROM_SCROOGE,
-            $this->mode
-        );
-
-        // ToDo : remove this condition once notes filtering is supported on scrooge
-        if (isset($input['notes']) === true)
-        {
-            $nonShadowModeVariant = RefundConstants::RAZORX_VARIANT_OFF;
-        }
-
-        if ($nonShadowModeVariant === RefundConstants::RAZORX_VARIANT_ON)
+        if (isset($input['notes']) === false)
         {
             return $this->app['scrooge']->refundsFetchMultiple($input);
         }
 
+        $experimentVariable = UniqueIdEntity::generateUniqueId();
         // shadow mode experiment
         $variant = $this->app->razorx->getTreatment($experimentVariable,
             RefundConstants::RAZORX_KEY_REFUND_FETCH_MULTIPLE_FROM_SCROOGE,

@@ -106,20 +106,9 @@ class Constants
     const RAZORX_VARIANT_ON                                      = 'on';
     const RAZORX_VARIANT_OFF                                     = 'off';
     const RAZORX_KEY_REFUND_ROUTE_VIA_FTA_SUFFIX                 = 'refund_route_via_fta';
-    const RAZORX_KEY_REFUNDS_TOKENISATION_IR_RAMP                = 'refunds_tokenisation_ir_ramp';
-    const RAZORX_KEY_REFUND_FETCH_BY_ID_FROM_SCROOGE             = 'refund_fetch_by_id_from_scrooge';
     const RAZORX_KEY_REFUND_FETCH_MULTIPLE_FROM_SCROOGE          = 'refund_fetch_multiple_from_scrooge';
-    const RAZORX_KEY_REFUND_FETCH_BY_PAYMENT_FROM_SCROOGE        = 'refund_fetch_by_payment_from_scrooge';
-    const RAZORX_KEY_REFUND_FETCH_BY_ID_AND_PAYMENT_FROM_SCROOGE = 'refund_fetch_by_id_and_payment_from_scrooge';
     const RAZORX_KEY_TERMINAL_REFUNDS_ROUTE_VIA_FTA_SUFFIX       = 'terminal_refunds_route_via_fta';
     const RAZORX_KEY_SKIP_PAYMENT_ENTITY_UPDATE_FOR_REVERSAL     = 'skip_payment_entity_update_for_reversal';
-
-    // Non shadow mode experiments
-    const RAZORX_KEY_DIRECT_REFUND_FETCH_BY_ID_FROM_SCROOGE             = 'direct_refund_fetch_by_id_from_scrooge';
-    const RAZORX_KEY_DIRECT_REFUND_FETCH_MULTIPLE_FROM_SCROOGE          = 'direct_refund_fetch_multiple_from_scrooge';
-    const RAZORX_KEY_DIRECT_REFUND_FETCH_BY_PAYMENT_FROM_SCROOGE        = 'direct_refund_fetch_by_payment_from_scrooge';
-    const RAZORX_KEY_DIRECT_REFUND_FETCH_BY_ID_AND_PAYMENT_FROM_SCROOGE = 'direct_refund_fetch_by_id_and_payment_from_scrooge';
-    const RAZORX_KEY_DIRECT_REFUND_FETCH_BY_ID_FROM_SCROOGE_OPTIMIZER   = 'direct_refund_fetch_by_id_from_scrooge_optimizer';
 
     // Experiment to set up FTA status update flow
     const REFUNDS_0_LOC_FTA_STATUS_UPDATE_FLOW_RAMP_UP = 'refunds_0_loc_fta_status_update_flow_ramp_up';
