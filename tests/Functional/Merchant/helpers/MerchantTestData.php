@@ -14864,26 +14864,23 @@ return [
     ],
 
     'testMerchantCreateIpConfigWhenAlreadyOptedOut' => [
-        'request' => [
-            'url'    => '/admin/merchant/ip_whitelist',
-            'method' => 'POST',
-            'content' =>[
-                'whitelisted_ips' => ['2.2.2.2','3.3.3.3'],
-                'merchant_id'    => '10000000000000',
+        'request'  => [
+            'url'     => '/admin/merchant/ip_whitelist',
+            'method'  => 'POST',
+            'content' => [
+                'whitelisted_ips' => ['2.2.2.2', '3.3.3.3'],
+                'merchant_id'     => '10000000000000',
             ]
         ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'IP whitelisting is not allowed when you have opted out.',
+        'response' => [
+            'content' => [
+                'opted_out'         => false,
+                'whitelisted_ips'   => [
+                    'api_payouts'                 => ['2.2.2.2', '3.3.3.3'],
+                    'api_fund_account_validation' => ['2.2.2.2', '3.3.3.3'],
                 ],
+                'allowed_ips_count' => 20
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_IP_WHITELISTING_NOT_ALLOWED_WHEN_OPTED_OUT,
         ],
     ],
 

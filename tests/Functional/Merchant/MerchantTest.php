@@ -19500,10 +19500,10 @@ The same has been enabled for the account.
         $storkTemplateName  = CronJobHandler\Constants::WHATSAPP_TEMPLATE_NAME[$storkTemplateEvent];
         $storkTemplateText  = CronJobHandler\Constants::WHATSAPP_TEMPLATE_TEXT[$storkTemplateEvent];
 
-        $storkQuery = sprintf(CronDataCollector\TriggerWANotificationToIntlMerchantsDataCollector::STORK_QUERY, 
+        $storkQuery = sprintf(CronDataCollector\TriggerWANotificationToIntlMerchantsDataCollector::STORK_QUERY,
             $merchantId, $storkTemplateName);
 
-        $analyticsQuery = sprintf(CronDataCollector\TriggerWANotificationToIntlMerchantsDataCollector::ANALYTICS_QUERY2, 
+        $analyticsQuery = sprintf(CronDataCollector\TriggerWANotificationToIntlMerchantsDataCollector::ANALYTICS_QUERY2,
             $startTime, $endTime);
 
         // mock datalake responses

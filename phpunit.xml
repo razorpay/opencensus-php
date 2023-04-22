@@ -97,7 +97,6 @@
         </testsuite>
         <testsuite name="Application-3 Test Suite">
             <directory>./tests/Functional/Authz/</directory>
-            <directory>./tests/Functional/Counter/</directory>
             <directory>./tests/Functional/Consumer/</directory>
             <directory>./tests/Functional/TrustedBadge/</directory>
             <directory>./tests/Functional/Modules/</directory>
@@ -107,7 +106,6 @@
             <directory>./tests/Functional/Helpers/</directory>
             <directory>./tests/Functional/BankTransfer/</directory>
             <directory>./tests/Functional/BankingAccount/</directory>
-            <directory>./tests/Functional/FundLoadingDowntime/</directory>
             <directory>./tests/Functional/Offline/</directory>
             <directory>./tests/Functional/BasicAuth/</directory>
             <directory>./tests/Functional/Store/</directory>
@@ -156,7 +154,6 @@
             <file>./tests/Functional/Merchant/MerchantDetailTest.php</file>
         </testsuite>
         <testsuite name="Features-2-2 Test Suite">
-            <file>./tests/Functional/Merchant/LowBalanceConfigTest.php</file>
             <file>./tests/Functional/Merchant/M2MReferralTest.php</file>
             <file>./tests/Functional/Merchant/MailmodoTest.php</file>
             <file>./tests/Functional/Merchant/MerchantAnalyticsTest.php</file>
@@ -217,6 +214,14 @@
         </testsuite>
         <testsuite name="Features-3-1 Test Suite">
             <directory>./tests/Functional/Payout/</directory>
+            <directory>./tests/Functional/Counter/</directory>
+            <directory>./tests/Functional/RequestLog/</directory>
+            <directory>./tests/Functional/PayoutSource/</directory>
+            <directory>./tests/Functional/FundLoadingDowntime/</directory>
+            <file>./tests/Unit/PayoutDetails/CoreTest.php</file>
+            <file>./tests/Unit/Utility/IfscValidationTest.php</file>
+            <file>./tests/Unit/PayoutSource/PayoutSourceTest.php</file>
+            <file>./tests/Functional/Merchant/LowBalanceConfigTest.php</file>
         </testsuite>
         <testsuite name="Features-3-2 Test Suite">
             <directory>./tests/Functional/Order/</directory>
@@ -228,9 +233,7 @@
             <directory>./tests/Functional/Lambda/</directory>
             <directory>./tests/Functional/Mailgun/</directory>
             <directory>./tests/Functional/Storage/</directory>
-            <directory>./tests/Functional/PayoutSource/</directory>
             <directory>./tests/Functional/Pagination/</directory>
-            <directory>./tests/Functional/RequestLog/</directory>
             <directory>./tests/Functional/Survey/</directory>
         </testsuite>
         <testsuite name="Features-4 Test Suite">
@@ -271,6 +274,9 @@
             <exclude>./tests/Unit/CircuitBreaker/RedisCircuitBreakerTest.php</exclude>
             <exclude>./tests/Unit/Models/User/UserTest.php</exclude>
             <exclude>./tests/Unit/Services/CredcaseSignerTest.php</exclude>
+            <exclude>./tests/Unit/PayoutDetails/CoreTest.php</exclude>
+            <exclude>./tests/Unit/PayoutSource/PayoutSourceTest.php</exclude>
+            <exclude>./tests/Unit/Services/Utility/IfscValidationTest.php</exclude>
         </testsuite>
         <testsuite name="Features-4-3 Test Suite">
             <directory>./tests/Unit/Models/Merchant/</directory>

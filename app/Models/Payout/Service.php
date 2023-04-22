@@ -4139,7 +4139,7 @@ class Service extends Base\Service
                ErrorCode::BAD_REQUEST_INVALID_PAYOUT_SOURCE_FOR_UPDATE,
                PayoutDetails\Entity::ATTACHMENTS,
                $payoutSource,
-               'Invalid Payout Source for attachments update');
+               'Invalid Payout Source for Update');
         }
 
         (new Validator)->validateAttachments($input);
@@ -4230,7 +4230,7 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_UPDATE_PAYOUT_ATTACHMENTS,
                 PayoutDetails\Entity::PAYOUT_IDS,
                 $invalidPayoutIds,
-                'Failed to update payouts'
+                'Invalid Update Payout Attachments request'
             );
         }
 

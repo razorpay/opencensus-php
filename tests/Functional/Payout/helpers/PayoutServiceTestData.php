@@ -2307,35 +2307,6 @@ return [
         ],
     ],
 
-    'testStatusUpdateToPayoutServiceForProcessedStatusWhenCallerIsFtsWebhook' => [
-        'request'  => [
-            'method'  => 'POST',
-            'url'     => '/update_fts_fund_transfer',
-            'content' => [
-                'bank_processed_time' => '2019-12-04 15:51:21',
-                'bank_status_code'    => 'SUCCESS',
-                'extra_info'          => [
-                    'beneficiary_name' => 'SUSANTA BHUYAN',
-                    'cms_ref_no'       => 'd10ce8e4167f11eab1750a0047330000',
-                    'internal_error'   => false
-                ],
-                'failure_reason'      => 'Test for webhook and email not firing',
-                'fund_transfer_id'    => 1236890,
-                'mode'                => 'IMPS',
-                'narration'           => 'Kissht FastCash Disbursal',
-                'remarks'             => 'Check the status by calling getStatus API.',
-                'source_type'         => 'payout',
-                'status'              => 'PROCESSED',
-                'utr'                 => 928337183,
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'message' => 'FTA and source updated successfully'
-            ],
-        ],
-    ],
-
     'testFreePayoutMigrationAdminAction' => [
         'request'  => [
             'url'     => '/admin/payouts/free_payout_migration',
@@ -3400,7 +3371,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invalid Payout Source for attachments update',
+                    'description' => 'Invalid Payout Source for Update',
                 ],
             ],
             'status_code' => 400,
@@ -3456,7 +3427,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Failed to update payouts',
+                    'description' => 'Invalid Update Payout Attachments request',
                 ],
             ],
             'status_code' => 400,

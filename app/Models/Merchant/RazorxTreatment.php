@@ -519,10 +519,6 @@ final class RazorxTreatment
     // Experiment to pass unused rejected tokens along with regular tokens in fetchTokens api call
     const PASS_REJECTED_UNUSED_TOKENS = 'pass_rejected_unused_tokens';
 
-    // Experiment to disable status update going to payout service via api
-    // payout service will be consuming status independently from kafka
-    const DISABLE_STATUS_UPDATE_TO_PAYOUT_SERVICE = 'disable_status_update_to_payout_service';
-
     // razorx treatment for fetch from scrooge service
     const ENTITY_RELATIONAL_LOAD_FROM_SCROOGE = 'entity_relational_load_from_scrooge';
     const ENTITY_RELATIONAL_LOAD_FROM_SCROOGE_NON_SHADOW = 'entity_relational_load_from_scrooge_non_shadow';

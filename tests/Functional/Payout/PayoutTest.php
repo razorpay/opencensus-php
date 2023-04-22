@@ -5786,7 +5786,7 @@ class PayoutTest extends OAuthTestCase
 
         foreach ($response as $payouts)
         {
-            $this->assertContains("pout_".$payouts["id"], $payoutIds);
+            $this->assertContains($payouts["id"], $payoutIds);
 
             $this->assertNotNull($payouts["amount"]);
         }
@@ -9557,59 +9557,6 @@ class PayoutTest extends OAuthTestCase
         Queue::assertPushed(PayoutSourceUpdaterJob::class);
     }
 
-    public function testPayoutSourceUpdaterForVanillaPayout()
-    {
-        $this->app->instance('rzp.mode', "live");
-
-        Queue::fake();
-
-        $payout = $this->fixtures->create('payout', [
-            'status'          => 'created',
-            'pricing_rule_id' => '1nvp2XPMmaRLxb',
-        ]);
-
-        $payout->setStatus(Status::PROCESSING);
-
-        Queue::assertNotPushed(PayoutSourceUpdaterJob::class);
-
-        // moving to processed, push should not happen as experiment is disbaled
-        $payout->setStatus(Status::PROCESSED);
-
-        Queue::assertNotPushed(PayoutSourceUpdaterJob::class);
-
-        $payout = $this->fixtures->create('payout', [
-            'status'          => 'initiated',
-            'pricing_rule_id' => '1nvp2XPMmaRLxb',
-        ]);
-
-        $payout->setStatus(Status::CREATED);
-
-        // Job is pushed for vanilla payouts in created state
-        Queue::assertPushed(PayoutSourceUpdaterJob::class);
-
-        // Enabling experiment
-        $this->app['config']->set('app.generic_ai_enabled_experiment_result_mock', true);
-
-        $payout = $this->fixtures->create('payout', [
-            'status'          => 'created',
-            'pricing_rule_id' => '1nvp2XPMmaRLxb',
-        ]);
-
-        $payout->setStatus(Status::PROCESSING);
-
-        Queue::assertNotPushed(PayoutSourceUpdaterJob::class);
-
-        $payout->setStatus(Status::PROCESSED);
-
-        // Job pushed for GenericAccountingIntegration
-        Queue::assertPushed(PayoutSourceUpdaterJob::class);
-
-        $payout->setStatus(Status::REVERSED);
-
-        // Job pushed for GenericAccountingIntegration
-        Queue::assertPushed(PayoutSourceUpdaterJob::class);
-    }
-
     public function testCreatePayoutFundsOnHoldOnTestMode()
     {
         $contactId = $this->getDbLastEntity('contact')->getId();
@@ -12897,6 +12844,14 @@ class PayoutTest extends OAuthTestCase
             $balanceAttributes["balanceType"],
             $balanceAttributes["channel"]
         );
+
+        $bankingAccount = $this->fixtures->create('banking_account', [
+            'balance_id'          => $bankingBalance->getId(),
+            'merchant_id'         => '10000000000000',
+            'id'                  => '10000000000001',
+            'account_type'        => $balanceAttributes["balanceType"],
+            'fts_fund_account_id' => '12345678',
+        ]);
 
         $virtualAccount    = $this->fixtures->create('virtual_account');
         $secondBankAccount = $this->fixtures->create(
@@ -34075,7 +34030,11 @@ class PayoutTest extends OAuthTestCase
 
         $this->app->instance('fts_fund_transfer', $mock);
 
-        $this->startTest($this->testData['testCreatePayout']);
+        $testData = $this->testData['testCreatePayout'];
+
+        $testData['request']['content']['account_number'] = '2323230041626905';
+
+        $this->startTest($testData);
 
         $attempt = $this->getDbLastEntity('fund_transfer_attempt');
         $payout = $this->getDbLastEntity('payout');
@@ -34204,6 +34163,14 @@ class PayoutTest extends OAuthTestCase
             'account_number' => '2323230041626905',
             'merchant_id'    => '10000000000000',
             'balance'        => 10000000
+        ]);
+
+        $bankingAccount = $this->fixtures->on($mode)->create('banking_account', [
+            'balance_id'          => $subBalance->getId(),
+            'merchant_id'         => '10000000000000',
+            'id'                  => '10000000000001',
+            'account_type'        => 'shared',
+            'fts_fund_account_id' => '12345678',
         ]);
 
         $subVirtualAccount = $this->fixtures->on($mode)->create('sub_virtual_account', [

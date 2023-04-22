@@ -5,6 +5,7 @@ namespace Unit\PayoutDetails;
 use Mockery;
 use RZP\Exception;
 use RZP\Tests\Functional\TestCase;
+use RZP\Constants\Mode as EnvMode;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\PayoutsDetails\Entity;
 use RZP\Models\Base\PublicCollection;
@@ -23,6 +24,8 @@ class CoreTest extends TestCase
             ]);
 
         $auth->setMerchant($merchant);
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
 
         $repoMock = Mockery::mock('\RZP\Base\RepositoryManager', [$this->app])->makePartial();
 
@@ -61,6 +64,8 @@ class CoreTest extends TestCase
             ]);
 
         $auth->setMerchant($merchant);
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
 
         $repoMock = Mockery::mock('\RZP\Base\RepositoryManager', [$this->app])->makePartial();
 

@@ -4721,41 +4721,12 @@ class Core extends Base\Core
                 Constants\Entity::FTS_STATUS => $ftaStatus
             ];
 
-            $app = App::getFacadeRoot();
-
-            // using function stack trace to identify the caller
-            $dbt    = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
-            $caller = $dbt[1]['function'] ?? null;
-
-            // this is done so that status updates are send to payout service in case the caller is from manual status
-            // update action via admin dashboard
-            if ($caller !== 'updateStatusAfterFtaRecon')
-            {
-                // error will be handled by service
-                $this->payoutStatusServiceClient->updatePayoutStatusViaFTS(
-                    $payout->getId(),
-                    Status::FAILED,
-                    $ftaFailureReason,
-                    $ftaBankStatusCode,
-                    $ftsInfo + $ftsSourceAccountInformation);
-            }
-            else
-            {
-                $variant = $app['razorx']->getTreatment($payout->getMerchantId(),
-                                                        Merchant\RazorxTreatment::DISABLE_STATUS_UPDATE_TO_PAYOUT_SERVICE,
-                                                        $app['rzp.mode']);
-
-                if (strtolower($variant) !== 'on')
-                {
-                    // error will be handled by service
-                    $this->payoutStatusServiceClient->updatePayoutStatusViaFTS(
-                        $payout->getId(),
-                        Status::FAILED,
-                        $ftaFailureReason,
-                        $ftaBankStatusCode,
-                        $ftsInfo + $ftsSourceAccountInformation);
-                }
-            }
+            $this->payoutStatusServiceClient->updatePayoutStatusViaFTS(
+                $payout->getId(),
+                Status::FAILED,
+                $ftaFailureReason,
+                $ftaBankStatusCode,
+                $ftsInfo + $ftsSourceAccountInformation);
         }
         else
         {
@@ -6907,17 +6878,7 @@ class Core extends Base\Core
 
             $input[Entity::UTR] = $ftaData[Attempt\Constants::UTR];
 
-            $app = App::getFacadeRoot();
-
-            $variant = $app['razorx']->getTreatment($payout->getMerchantId(),
-                                                    Merchant\RazorxTreatment::DISABLE_STATUS_UPDATE_TO_PAYOUT_SERVICE,
-                                                    $app['rzp.mode']);
-
-            if (strtolower($variant) !== 'on')
-            {
-                $this->payoutDetailsServiceClient->updatePayoutDetailsViaFTS($payout, $input);
-                //event will be fired via payout service.
-            }
+            $this->payoutDetailsServiceClient->updatePayoutDetailsViaFTS($payout, $input);
         }
         catch (\Throwable $exception)
         {
@@ -6938,51 +6899,16 @@ class Core extends Base\Core
         string $ftaStatus = null,
         array $ftsSourceAccountInformation = [])
     {
-        $app = App::getFacadeRoot();
-
-        // using function stack trace to identify the caller
-        $dbt = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
-        $caller = $dbt[2]['function'] ?? null;
-
         $ftsInfo = [
             Constants\Entity::FTS_STATUS => $ftaStatus
         ];
 
-        // this is done so that status updates are send to payout service in case the caller is from manual status
-        // update action via admin dashboard
-        if ($caller !== 'updateStatusAfterFtaRecon')
-        {
-            $this->payoutStatusServiceClient->updatePayoutStatusViaFTS(
-                $payout->getId(),
-                Status::PROCESSED,
-                "",
-                "",
-                $ftsInfo + $ftsSourceAccountInformation);
-        }
-        else
-        {
-            $variant = $app['razorx']->getTreatment($payout->getMerchantId(),
-                                                    Merchant\RazorxTreatment::DISABLE_STATUS_UPDATE_TO_PAYOUT_SERVICE,
-                                                    $app['rzp.mode']);
-
-            if (strtolower($variant) !== 'on')
-            {
-                $this->payoutStatusServiceClient->updatePayoutStatusViaFTS(
-                    $payout->getId(),
-                    Status::PROCESSED,
-                    "",
-                    "",
-                    $ftsInfo + $ftsSourceAccountInformation);
-            }
-        }
-
-        //$payout->setStatus(Status::PROCESSED);
-        //
-        //$this->repo->saveOrFail($payout);
-        //// webhook handled in payout service
-        //
-        //(new PayoutsStatusDetailsCore())->create($payout);
-
+        $this->payoutStatusServiceClient->updatePayoutStatusViaFTS(
+            $payout->getId(),
+            Status::PROCESSED,
+            "",
+            "",
+            $ftsInfo + $ftsSourceAccountInformation);
     }
 
     public function handlePayoutReversedForPayoutService(Entity $payout,
