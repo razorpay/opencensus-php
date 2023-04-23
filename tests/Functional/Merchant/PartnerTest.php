@@ -45,6 +45,9 @@ use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
 use RZP\Models\Merchant\MerchantApplications\Entity;
+use RZP\Mail\Merchant\RazorpayX\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateForX;
+use RZP\Mail\Merchant\Capital\LineOfCredit\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateForLOC;
+
 
 class PartnerTest extends OAuthTestCase
 {
@@ -2598,6 +2601,55 @@ class PartnerTest extends OAuthTestCase
         });
     }
 
+    public function testSendSubmerchantPasswordResetLinkWhenSubMerchantUserDoesNotExistForCapitalProduct()
+    {
+        Mail::fake();
+
+        $this->ba->proxyAuth();
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, [
+            'partner_type' => 'aggregator'
+        ]);
+
+        $this->fixtures->merchant->edit(self::DEFAULT_SUBMERCHANT_ID, [
+            'email' => 'testing@example.com',
+        ]);
+
+        $app = Application\Entity::factory()->create([
+            'id' => random_integer(10),
+            'merchant_id' => self::DEFAULT_MERCHANT_ID,
+            'type' => 'partner'
+        ]);
+
+        $this->createMerchantApplication($app->merchant_id, 'aggregator', $app->getId());
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_type' => 'application',
+                'entity_id'   => $app->getId(),
+                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+            ]
+        );
+
+        $this->startTest();
+
+        Mail::assertQueued(CreateSubMerchantAffiliateForLOC::class, 1);
+
+        Mail::assertQueued(CreateSubMerchantAffiliateForLOC::class, function($mail) {
+
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('org', $viewData);
+            $this->assertArrayHasKey('token', $viewData);
+            $this->assertArrayHasKey('merchant', $viewData);
+            $this->assertArrayHasKey('subMerchant', $viewData);
+            $this->assertEquals(self::DEFAULT_SUBMERCHANT_ID, $viewData['subMerchant']['id']);
+
+            return true;
+        });
+    }
+
     public function testSendSubmerchantPasswordResetLinkWhenSubMerchantUserExistAndPartnerMappingDoesNotExist()
     {
         Mail::fake();
@@ -2727,6 +2779,254 @@ class PartnerTest extends OAuthTestCase
 
             return true;
         });
+    }
+
+    public function testSendSubmerchantPasswordResetLinkWithPrimaryProduct()
+    {
+        Mail::fake();
+
+        $partnerMerchantId = self::DEFAULT_MERCHANT_ID;
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, [
+            'partner_type' => 'aggregator',
+            'email'        => 'test@example.com',
+        ]);
+
+        $this->fixtures->merchant->edit(self::DEFAULT_SUBMERCHANT_ID, [
+            'email' => 'testing@example.com',
+        ]);
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+            'user_id'     => User::MERCHANT_USER_ID,
+            'role'        => 'owner',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $partnerMerchantId, User::MERCHANT_USER_ID);
+
+        $app = Application\Entity::factory()->create([
+            'id' => random_integer(10),
+            'merchant_id' => self::DEFAULT_MERCHANT_ID,
+            'type' => 'partner'
+        ]);
+
+        $this->createMerchantApplication($app->merchant_id, 'aggregator', $app->getId());
+
+        $this->fixtures->create('merchant_detail:sane',[
+            'merchant_id' => $app->merchant_id,
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_type'     => 'application',
+                'entity_id'       => $app->getId(),
+                'entity_owner_id' => $partnerMerchantId,
+                'merchant_id'     => self::DEFAULT_SUBMERCHANT_ID,
+            ]
+        );
+
+        $this->startTest();
+
+        Mail::assertQueued(CreateSubMerchantAffiliate::class, 1);
+
+        Mail::assertQueued(CreateSubMerchantAffiliate::class, function($mail) {
+
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('org', $viewData);
+            $this->assertArrayHasKey('token', $viewData);
+            $this->assertArrayHasKey('merchant', $viewData);
+            $this->assertArrayHasKey('subMerchant', $viewData);
+            $this->assertEquals(self::DEFAULT_SUBMERCHANT_ID, $viewData['subMerchant']['id']);
+
+            return true;
+        });
+    }
+
+    public function testSendSubmerchantPasswordResetLinkWithBankingProduct()
+    {
+        Mail::fake();
+
+        $partnerMerchantId = self::DEFAULT_MERCHANT_ID;
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, [
+            'partner_type' => 'aggregator',
+            'email'        => 'test@example.com',
+        ]);
+
+        $this->fixtures->merchant->edit(self::DEFAULT_SUBMERCHANT_ID, [
+            'email' => 'testing@example.com',
+        ]);
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+            'user_id'     => User::MERCHANT_USER_ID,
+            'role'        => 'owner',
+            'product'     => 'banking',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $partnerMerchantId, User::MERCHANT_USER_ID);
+
+        $app = Application\Entity::factory()->create([
+            'id' => random_integer(10),
+            'merchant_id' => self::DEFAULT_MERCHANT_ID,
+            'type' => 'partner'
+        ]);
+
+        $this->createMerchantApplication($app->merchant_id, 'aggregator', $app->getId());
+
+        $this->fixtures->create('merchant_detail:sane',[
+            'merchant_id' => $app->merchant_id,
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_type'     => 'application',
+                'entity_id'       => $app->getId(),
+                'entity_owner_id' => $partnerMerchantId,
+                'merchant_id'     => self::DEFAULT_SUBMERCHANT_ID,
+            ]
+        );
+
+        $this->startTest();
+
+        Mail::assertQueued(CreateSubMerchantAffiliateForX::class, 1);
+
+        Mail::assertQueued(CreateSubMerchantAffiliateForX::class, function($mail) {
+
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('org', $viewData);
+            $this->assertArrayHasKey('token', $viewData);
+            $this->assertArrayHasKey('merchant', $viewData);
+            $this->assertArrayHasKey('subMerchant', $viewData);
+            $this->assertEquals(self::DEFAULT_SUBMERCHANT_ID, $viewData['subMerchant']['id']);
+
+            return true;
+        });
+    }
+
+    public function testSendSubmerchantPasswordResetLinkWithCapitalProduct()
+    {
+        Mail::fake();
+
+        $partnerMerchantId = self::DEFAULT_MERCHANT_ID;
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, [
+            'partner_type' => 'aggregator',
+            'email'        => 'test@example.com',
+        ]);
+
+        $this->fixtures->merchant->edit(self::DEFAULT_SUBMERCHANT_ID, [
+            'email' => 'testing@example.com',
+        ]);
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+            'user_id'     => User::MERCHANT_USER_ID,
+            'role'        => 'owner',
+            'product'     => 'banking',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $partnerMerchantId, User::MERCHANT_USER_ID);
+
+        $app = Application\Entity::factory()->create([
+            'id' => random_integer(10),
+            'merchant_id' => self::DEFAULT_MERCHANT_ID,
+            'type' => 'partner'
+        ]);
+
+        $this->createMerchantApplication($app->merchant_id, 'aggregator', $app->getId());
+
+        $this->fixtures->create('merchant_detail:sane',[
+            'merchant_id' => $app->merchant_id,
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_type'     => 'application',
+                'entity_id'       => $app->getId(),
+                'entity_owner_id' => $partnerMerchantId,
+                'merchant_id'     => self::DEFAULT_SUBMERCHANT_ID,
+            ]
+        );
+
+        $this->startTest();
+
+        Mail::assertQueued(CreateSubMerchantAffiliateForLOC::class, 1);
+
+        Mail::assertQueued(CreateSubMerchantAffiliateForLOC::class, function($mail) {
+
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('org', $viewData);
+            $this->assertArrayHasKey('token', $viewData);
+            $this->assertArrayHasKey('merchant', $viewData);
+            $this->assertArrayHasKey('subMerchant', $viewData);
+            $this->assertEquals(self::DEFAULT_SUBMERCHANT_ID, $viewData['subMerchant']['id']);
+
+            return true;
+        });
+    }
+
+    public function testSendSubmerchantPasswordResetLinkWithInvalidProduct()
+    {
+        Mail::fake();
+
+        $partnerMerchantId = self::DEFAULT_MERCHANT_ID;
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, [
+            'partner_type' => 'aggregator',
+            'email'        => 'test@example.com',
+        ]);
+
+        $this->fixtures->merchant->edit(self::DEFAULT_SUBMERCHANT_ID, [
+            'email' => 'testing@example.com',
+        ]);
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+            'user_id'     => User::MERCHANT_USER_ID,
+            'role'        => 'owner',
+            'product'     => 'banking',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_' . $partnerMerchantId, User::MERCHANT_USER_ID);
+
+        $app = Application\Entity::factory()->create([
+            'id' => random_integer(10),
+            'merchant_id' => self::DEFAULT_MERCHANT_ID,
+            'type' => 'partner'
+        ]);
+
+        $this->createMerchantApplication($app->merchant_id, 'aggregator', $app->getId());
+
+        $this->fixtures->create('merchant_detail:sane',[
+            'merchant_id' => $app->merchant_id,
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_type'     => 'application',
+                'entity_id'       => $app->getId(),
+                'entity_owner_id' => $partnerMerchantId,
+                'merchant_id'     => self::DEFAULT_SUBMERCHANT_ID,
+            ]
+        );
+
+        $this->startTest();
     }
 
     public function testGetAffiliatedPartnersForMerchant()

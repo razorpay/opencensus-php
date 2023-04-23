@@ -2329,7 +2329,9 @@ class MerchantController extends Controller
      */
     public function sendSubmerchantPasswordResetLink(string $id)
     {
-        $data = $this->service()->sendSubmerchantPasswordResetLink($id);
+        $input = Request::all();
+
+        $data = $this->service()->sendSubmerchantPasswordResetLink($id, $input);
 
         return ApiResponse::json($data);
     }

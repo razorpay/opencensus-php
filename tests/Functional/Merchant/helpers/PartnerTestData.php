@@ -1811,6 +1811,20 @@ return [
         ],
     ],
 
+    'testSendSubmerchantPasswordResetLinkWhenSubMerchantUserDoesNotExistForCapitalProduct' => [
+        'request'  => [
+            'url'    => '/submerchants/10000000000009/reset_password',
+            'method' => 'POST',
+            'content' => [
+                'product'           => 'capital',
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
     'testSendSubmerchantPasswordResetLinkWhenSubMerchantUserAndPartnerMappingExist' => [
         'request'  => [
             'url'    => '/submerchants/10000000000009/reset_password',
@@ -1819,6 +1833,71 @@ return [
         'response' => [
             'content'     => [],
             'status_code' => 200,
+        ],
+    ],
+
+    'testSendSubmerchantPasswordResetLinkWithPrimaryProduct' => [
+        'request'  => [
+            'url'    => '/submerchants/10000000000009/reset_password',
+            'method' => 'POST',
+            'content' => [
+                'product'           => 'primary',
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testSendSubmerchantPasswordResetLinkWithBankingProduct' => [
+        'request'  => [
+            'url'    => '/submerchants/10000000000009/reset_password',
+            'method' => 'POST',
+            'content' => [
+                'product'           => 'banking',
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testSendSubmerchantPasswordResetLinkWithCapitalProduct' => [
+        'request'  => [
+            'url'    => '/submerchants/10000000000009/reset_password',
+            'method' => 'POST',
+            'content' => [
+                'product'           => 'capital',
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testSendSubmerchantPasswordResetLinkWithInvalidProduct' => [
+        'request'  => [
+            'url'    => '/submerchants/10000000000009/reset_password',
+            'method' => 'POST',
+            'content' => [
+                'product'           => 'invalidName',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'Not a valid product: invalidName',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
         ],
     ],
 

@@ -33,6 +33,13 @@ final class Product
      */
     const ISSUING = 'issuing';
 
+    const VALID_SUBMERCHANT_PRODUCTS =
+        [
+            self::PRIMARY,
+            self::BANKING,
+            self::CAPITAL
+        ];
+
     /**
      * @param string $product
      *

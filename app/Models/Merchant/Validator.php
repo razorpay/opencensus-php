@@ -774,6 +774,10 @@ class Validator extends Base\Validator
         'ip_whitelist_input'
     ];
 
+    protected static $sendSubmerchantProductRules = [
+        'product'       => 'sometimes|string|custom'
+    ];
+
     protected static $partnerSubmerchantInviteCapitalRules = [
         Detail\Entity::BUSINESS_NAME            => 'required|string|max:200',
         Entity::EMAIL                           => 'required|email',
@@ -864,6 +868,14 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'The merchant_id field is required.');
+        }
+    }
+
+    public function validateProduct($attribute, $value)
+    {
+        if (in_array($value, Product::VALID_SUBMERCHANT_PRODUCTS) === false)
+        {
+            throw new BadRequestValidationFailureException('Not a valid product: ' . $value);
         }
     }
 

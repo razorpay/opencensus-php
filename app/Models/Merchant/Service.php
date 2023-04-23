@@ -39,6 +39,7 @@ use RZP\Models\Merchant\Consent\Constants as ConsentConstant;
 use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
 use RZP\Models\Merchant\Document\Entity as DocumentEntity;
 use RZP\Models\User\Core as UserCore;
+use RZP\Models\User\Service as UserService;
 use Throwable;
 use Carbon\Carbon;
 use RZP\Exception;
@@ -8441,15 +8442,18 @@ class Service extends Base\Service
      * Mail is sent only to sub merchant and partner does not get any mail.
      *
      * @param string $id submerchant id.
+     * @param array $input
      *
      * @return array
-     * @throws Exception\BadRequestException
+     * @throws BadRequestException
      */
-    public function sendSubmerchantPasswordResetLink(string $id)
+    public function sendSubmerchantPasswordResetLink(string $id, array $input)
     {
         $merchant = $this->auth->getMerchant();
 
         (new Validator)->validateIsPartner($merchant);
+
+        (new Validator)->validateInput('send_submerchant_product', $input);
 
         /** @var Entity $subMerchant */
         $subMerchant = $this->repo->merchant->findOrFailPublic($id);
@@ -8477,16 +8481,26 @@ class Service extends Base\Service
 
         $mapping = null;
 
+        if(empty($input['product']) === false)
+        {
+            $product = $input['product'];
+
+            unset($input['product']);
+        }
+
+        // For capital submerchants, we create merchants users with 'banking' as product.
+        $merchantUserProduct = ($product === Product::CAPITAL) ? Product::BANKING : $product;
+
         if (empty($subMerchantUser) === false)
         {
             $mapping = $this->repo->merchant->getMerchantUserMapping($subMerchant->getId(),
-                                                                     $subMerchantUser->getId());
+                                                                     $subMerchantUser->getId(), null, $merchantUserProduct);
         }
 
         if ((empty($subMerchantUser) === true) or (empty($mapping) === true))
         {
             [$subMerchantUser, $createdNew] = $this->createAdditionalUserOrFetchIfApplicable($subMerchant,
-                                                                                                 $merchant);
+                                                                                                 $merchant, $merchantUserProduct);
         }
 
         //
