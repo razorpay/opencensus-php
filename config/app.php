@@ -542,6 +542,8 @@ return array(
 
     'checkout_downtime_splitz_experiment_id' => env('CHECKOUT_DOWNTIME_SPLITZ_EXPERIMENT_ID'),
 
+    'checkout_enable_auto_submit_splitz_experiment_id' => env('CHECKOUT_ENABLE_AUTO_SUBMIT_SPLITZ_EXPERIMENT_ID'),
+
     'checkout_upi_number_splitz_experiment_id' => env('CHECKOUT_UPI_NUMBER_SPLITZ_EXPERIMENT_ID'),
 
     'checkout_upi_number_contact_blacklist_splitz_experiment_id' => env('CHECKOUT_UPI_NUMBER_CONTACT_BLACKLIST_SPLITZ_EXPERIMENT_ID'),

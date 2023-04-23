@@ -66,6 +66,7 @@ class CheckoutExperiment
             'checkout_downtime'                                  => 'control',
             'upi_number'                                         => 'control',
             'cvv_less'                                           => false,
+            'enable_auto_submit'                                 => 'control',
             'dcc_vas_merchants'                                  => false,
         ];
 
@@ -282,6 +283,14 @@ class CheckoutExperiment
             'app.checkout_cvv_less_splitz_experiment_id',
             'CvvLess',
             'cvv_less',
+            ['merchant_id' => $this->merchantId]
+        );
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.checkout_enable_auto_submit_splitz_experiment_id',
+            'EnableAutoSubmit',
+            'enable_auto_submit',
             ['merchant_id' => $this->merchantId]
         );
 
@@ -593,6 +602,11 @@ class CheckoutExperiment
         return $response['variant']['name'] ?? 'control';
     }
 
+    private function handleEnableAutoSubmitResponse($response): string
+    {
+        return $response['variant']['name'] ?? 'control';
+    }
+    
     private function handleDccVasMerchantsResponse($response): bool
     {
         $variant = $response['variant']['name'] ?? '';
