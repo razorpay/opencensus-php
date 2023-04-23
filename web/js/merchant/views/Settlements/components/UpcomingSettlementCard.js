@@ -8,23 +8,15 @@ import { BADGE_INFO, HEADING_INFO } from './utils';
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
 import { currencySymbols } from 'common/utils/rzp-utils';
 
-const UpcomingSettlementCard = ({
-  next_settlement,
-  settlementConfig,
-  current_balance,
-  currency,
-}) => {
-  const balance = current_balance?.data?.balance || 0;
+const UpcomingSettlementCard = ({ next_settlement, settlementConfig, currency }) => {
   const no_settlement = next_settlement?.no_settlement;
 
   const isBlock = settlementConfig?.data?.config?.features?.block?.status;
   const isOnTemporaryHold = settlementConfig?.data?.config?.features?.hold?.status;
   const isOnHold = no_settlement?.on_hold;
-  const noExecutions = !next_settlement?.next_settlement_time;
   const currencySym = currencySymbols[currency];
 
-  const showBlockedBadge =
-    isBlock || isOnHold || isOnTemporaryHold || (noExecutions && balance > 0);
+  const showBlockedBadge = isBlock || isOnHold || isOnTemporaryHold;
 
   let footer, badge;
 

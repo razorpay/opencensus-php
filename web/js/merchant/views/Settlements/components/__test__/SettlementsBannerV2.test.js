@@ -415,7 +415,7 @@ describe('SettlementsBannerV2', () => {
     });
   });
 
-  test('should render banner when user has balance but no executions', async () => {
+  test('should render banner when user has balance but no executions', () => {
     window.rzpTicketSystem = true;
     const initialState = {
       ...state,
@@ -429,26 +429,13 @@ describe('SettlementsBannerV2', () => {
     };
     render(<App initialState={initialState} />);
     expect(
-      screen.getByText('Contact support to resume settlements for your account'),
+      screen.getByText('Collect more payments to continue receiving settlements'),
     ).toBeInTheDocument();
     expect(
       screen.getByText(
-        'Your settlements are not being processed as we’ve noticed lack of transactional activity. Either collect more payments or contact support',
+        'Your settlements are not being processed as we’ve noticed lack of transactional activity',
       ),
     ).toBeInTheDocument();
-    expect(screen.getByText('Contact support')).toBeInTheDocument();
-    userEvent.click(screen.getByText('Contact support'));
-    await waitFor(() => {
-      expect(modalsSpy).toHaveBeenCalledTimes(1);
-      expect(window.rzpAnalytics).toHaveBeenCalledTimes(1);
-      expect(window.rzpAnalytics).toHaveBeenCalledWith({
-        eventCategory: 'Settlement Revamp',
-        eventAction: 'Contact Support',
-        eventLabel: `Settlements`,
-      });
-      expect(CreateTicketEmitter.emit).toHaveBeenCalledTimes(1);
-      expect(CreateTicketEmitter.emit).toHaveBeenCalledWith('create-ticket', 'tickets');
-    });
   });
 
   test('should render banner when user balance < nextSettlement', () => {

@@ -218,20 +218,12 @@ const SettlementsBannerV2 = ({
       },
     };
     intent = retrySlaBreached ? ALERT_INTENT.NEGATIVE : ALERT_INTENT.NOTICE;
-  } else if (noExecutions && balance > 0) {
+  } else if (noExecutions && balance > 100) {
     // We are showing this banner if the user has some balance but no executions
-    title = 'Contact support to resume settlements for your account';
+    title = 'Collect more payments to continue receiving settlements';
     subTitle =
-      'Your settlements are not being processed as we’ve noticed lack of transactional activity. Either collect more payments or contact support';
-    actions = {
-      primary: {
-        text: 'Contact support',
-        onClick: () => {
-          handleContactSupport(title);
-        },
-      },
-    };
-    intent = ALERT_INTENT.NEGATIVE;
+      'Your settlements are not being processed as we’ve noticed lack of transactional activity';
+    intent = ALERT_INTENT.NOTICE;
   } else if (balance < nextSettlement) {
     // We are showing this banner if the user's nextSettlement > current balance
     title = 'Upcoming settlement might get skipped';

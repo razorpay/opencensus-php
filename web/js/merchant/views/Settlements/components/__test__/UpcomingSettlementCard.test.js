@@ -41,19 +41,6 @@ describe('UpcomingSettlementCard', () => {
     expect(screen.getByText('Blocked')).toBeInTheDocument();
   });
 
-  test('should render blocked badge in case No-executions ', () => {
-    const current_balance = {
-      data: {
-        balance: 10099,
-      },
-    };
-    render(<App current_balance={current_balance} />);
-    expect(screen.getByText('Upcoming settlement')).toBeInTheDocument();
-    expect(screen.getByText(HEADING_INFO.UPCOMING_SETTLEMENT)).toBeInTheDocument();
-    expect(screen.getByText('NA')).toBeInTheDocument();
-    expect(screen.getByText('Blocked')).toBeInTheDocument();
-  });
-
   test('should render footer in case the amount is < 1 rupee', () => {
     const current_balance = {
       data: {

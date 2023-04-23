@@ -77,7 +77,10 @@ describe('SettlementsHeaderV2', () => {
   test('My settlement cycle', async () => {
     render(<App initialState={state} />);
     await waitFor(() => {
-      expect(fetchPreviousSettlementsSpy).toHaveBeenCalledTimes(1);
+      expect(fetchPreviousSettlementsSpy).toHaveBeenCalledWith({
+        count: 25,
+        skip: 0,
+      });
       expect(fetchOnDemandFnSpy).toHaveBeenCalledTimes(1);
     });
     expect(screen.getByText('My Settlement Cycle')).toBeInTheDocument();
@@ -104,7 +107,17 @@ describe('SettlementsHeaderV2', () => {
   });
 
   test('refresh button', async () => {
-    render(<App />);
+    const initialState = {
+      session: {
+        user: {
+          id: 'testing123',
+          merchant: {
+            currency: 'INR',
+          },
+        },
+      },
+    };
+    render(<App initialState={initialState} />);
     await waitFor(() => {
       expect(fetchOnDemandFnSpy).toHaveBeenCalledTimes(1);
     });
@@ -112,10 +125,13 @@ describe('SettlementsHeaderV2', () => {
     userEvent.click(screen.getByText('Refresh'));
     await waitFor(() => {
       expect(fetchCurrentBalanceSpy).toHaveBeenCalledTimes(1);
-      expect(fetchPreviousSettlementsSpy).toHaveBeenCalledTimes(2);
+      expect(fetchPreviousSettlementsSpy).toHaveBeenCalledWith({
+        count: 25,
+        skip: 0,
+      });
       expect(fetchSettlementAmountSpy).toHaveBeenCalledTimes(1);
       expect(fetchSettlementConfigSpy).toHaveBeenCalledTimes(1);
-      expect(fetchBankAccountChangeStatusSpy).toHaveBeenCalledTimes(1);
+      expect(fetchBankAccountChangeStatusSpy).toHaveBeenCalledWith('testing123');
       expect(fetchOnDemandFnSpy).toHaveBeenCalledTimes(2);
     });
   });
