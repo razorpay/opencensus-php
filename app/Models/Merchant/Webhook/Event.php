@@ -160,7 +160,15 @@ class Event
     const ISSUING_WITHDRAWAL_INITIATED                  = 'withdrawal.initiated';
     const ISSUING_WITHDRAWAL_PROCESSED                  = 'withdrawal.processed';
     const ISSUING_WITHDRAWAL_FAILED                     = 'withdrawal.failed';
-
+    const ISSUING_KYC_SUCCESS                           = 'kyc.success';
+    const ISSUING_KYC_MANUAL_REVIEW                     = 'kyc.manual_review';
+    const ISSUING_KYC_MANUALLY_VERIFIED                 = 'kyc.manually_verified';
+    const ISSUING_KYC_FAILED                            = 'kyc.failed';
+    const ISSUING_KYC_IN_PROGRESS                       = 'kyc.in_progress';
+    const ISSUING_BENEFICIARY_CREATED                   = 'beneficiary.created';
+    const ISSUING_BENEFICIARY_ACTIVE                    = 'beneficiary.active';
+    const ISSUING_BENEFICIARY_MANUAL_REVIEW             = 'beneficiary.manual_review';
+    const ISSUING_BENEFICIARY_FAILED                    = 'beneficiary.failed';
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -299,6 +307,15 @@ class Event
         self::ISSUING_WITHDRAWAL_INITIATED,
         self::ISSUING_WITHDRAWAL_PROCESSED,
         self::ISSUING_WITHDRAWAL_FAILED,
+        self::ISSUING_KYC_SUCCESS,
+        self::ISSUING_KYC_MANUAL_REVIEW,
+        self::ISSUING_KYC_MANUALLY_VERIFIED,
+        self::ISSUING_KYC_FAILED,
+        self::ISSUING_KYC_IN_PROGRESS,
+        self::ISSUING_BENEFICIARY_CREATED,
+        self::ISSUING_BENEFICIARY_ACTIVE,
+        self::ISSUING_BENEFICIARY_MANUAL_REVIEW,
+        self::ISSUING_BENEFICIARY_FAILED,
     ];
 
     /**
@@ -444,6 +461,16 @@ class Event
         self::ISSUING_WITHDRAWAL_INITIATED,
         self::ISSUING_WITHDRAWAL_PROCESSED,
         self::ISSUING_WITHDRAWAL_FAILED,
+        self::ISSUING_KYC_SUCCESS,
+        self::ISSUING_KYC_MANUAL_REVIEW,
+        self::ISSUING_KYC_MANUALLY_VERIFIED,
+        self::ISSUING_KYC_FAILED,
+        self::ISSUING_KYC_IN_PROGRESS,
+        self::ISSUING_BENEFICIARY_CREATED,
+        self::ISSUING_BENEFICIARY_ACTIVE,
+        self::ISSUING_BENEFICIARY_MANUAL_REVIEW,
+        self::ISSUING_BENEFICIARY_FAILED,
+
     ];
 
     // We have exhausted all the below bits for webhook events, add in $bitPosition2 for any new events
@@ -723,6 +750,15 @@ class Event
         self::ISSUING_WITHDRAWAL_INITIATED                => [Product::PRIMARY, Product::ISSUING],
         self::ISSUING_WITHDRAWAL_PROCESSED                => [Product::PRIMARY, Product::ISSUING],
         self::ISSUING_WITHDRAWAL_FAILED                   => [Product::PRIMARY, Product::ISSUING],
+        self::ISSUING_KYC_SUCCESS                         => [Product::PRIMARY, Product::ISSUING],
+        self::ISSUING_KYC_MANUAL_REVIEW                   => [Product::PRIMARY, Product::ISSUING],
+        self::ISSUING_KYC_MANUALLY_VERIFIED               => [Product::PRIMARY, Product::ISSUING],
+        self::ISSUING_KYC_FAILED                          => [Product::PRIMARY, Product::ISSUING],
+        self::ISSUING_KYC_IN_PROGRESS                     => [Product::PRIMARY, Product::ISSUING],
+        self::ISSUING_BENEFICIARY_CREATED                 => [Product::PRIMARY, Product::ISSUING],
+        self::ISSUING_BENEFICIARY_ACTIVE                  => [Product::PRIMARY, Product::ISSUING],
+        self::ISSUING_BENEFICIARY_MANUAL_REVIEW           => [Product::PRIMARY, Product::ISSUING],
+        self::ISSUING_BENEFICIARY_FAILED                  => [Product::PRIMARY, Product::ISSUING],
 
     ];
 
