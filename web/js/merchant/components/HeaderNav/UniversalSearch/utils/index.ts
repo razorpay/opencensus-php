@@ -1,6 +1,6 @@
-import { SEARCH_PRODUCTS } from 'merchant/components/HeaderNav/UniversalSearch/constants/SearchProducts';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
+import { SEARCH_PRODUCTS } from 'merchant/components/HeaderNav/UniversalSearch/constants/SearchProducts';
 import {
   EligibleProducts,
   EligibleProductsTypes,
@@ -109,4 +109,15 @@ export const trackSearchResultClicked = (props = {}): void => {
       ...props,
     },
   });
+};
+
+export const handleTestModeVisibility = (isFocussed: boolean): void => {
+  const testModeBanner = document.querySelector('.highlight-test-mode-container') as HTMLElement;
+  if (testModeBanner) {
+    if (isFocussed) {
+      testModeBanner.style.visibility = 'hidden';
+    } else if (testModeBanner?.style?.visibility === 'hidden') {
+      testModeBanner.style.visibility = 'visible';
+    }
+  }
 };

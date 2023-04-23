@@ -24,6 +24,7 @@ import {
   options,
   trackSearchTypeInitiated,
   TRACK_TYPE_DEBOUNCE_DURATION,
+  handleTestModeVisibility,
 } from './utils';
 import FtuxTooltip from 'merchant/components/HeaderNav/UniversalSearch/components/FtuxTooltip';
 import { POPULAR_PRODUCTS } from './constants/SearchProducts';
@@ -181,6 +182,12 @@ const UniversalSearch = ({
       });
     }
   }, [searchQuery]);
+
+  useEffect(() => {
+    if (mode === 'test' && !isMobile) {
+      handleTestModeVisibility(isFocussed);
+    }
+  }, [isFocussed, mode, isMobile]);
 
   const commonProps: CommonStateProps = {
     setSearch: setSearchQuery,
