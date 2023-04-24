@@ -9697,6 +9697,7 @@ const EMANDATE_TOKEN_VALIDATION_ERROR                       = 'EMANDATE_TOKEN_VA
         self::LEDGER_STATUS_CRON_SKIP_REVERSAL_CREDIT_FOR_UNDEBITED_PAYOUT   => 'Skipped creation of ledger journal for reversal via cron as payout does not have a transaction ID',
         self::LEDGER_STATUS_CRON_SKIP_REVERSAL_CREDIT_FOR_UNDEBITED_FAV      => 'Skipped creation of ledger journal for reversal via cron as FAV does not have a transaction ID',
         self::BAS_INVALID_CREDENTIALS_ERROR                                  => 'BAAS credentials not received from BAS',
+        self::BAS_SEND_NOTIFICATION_FAILED                                   => 'BAS_SEND_NOTIFICATION_FAILED',
         self::SUBMERCHANT_CREATED_TRANSFER_FOR_PARTNER_INITIATED_PAYMENT     => 'Submerchant created a transfer against a payment initiated by a partner.',
         self::SUBMERCHANT_CREATED_DIRECT_TRANSFER                            => 'Submerchant created a direct transfer to a linked account.',
         self::SUBMERCHANT_INITIATED_SETTLE_NOW_ON_TRANSFER                   => 'Submerchant unblocked settlement on a transfer.',

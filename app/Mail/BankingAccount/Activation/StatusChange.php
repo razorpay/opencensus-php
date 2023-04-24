@@ -3,10 +3,11 @@
 
 namespace RZP\Mail\BankingAccount\Activation;
 
+use RZP\Models\BankingAccount\Entity;
 use RZP\Models\BankingAccount\Status;
 use RZP\Models\BankingAccount\Activation\Notification\Constants;
 
-class StatusChange extends Base
+class StatusChange extends BaseV2
 {
     const SUBJECT = "RazorpayX LMS | %s's CA has been %s";
 
@@ -14,11 +15,13 @@ class StatusChange extends Base
 
     protected $newStatus;
 
-    public function __construct(string $bankingAccountId, array $eventDetails)
+    public function __construct(array $bankingAccount, array $eventDetails)
     {
-        parent::__construct($bankingAccountId, $eventDetails);
+        parent::__construct($bankingAccount, $eventDetails);
 
-        $this->merchantBusinessName = $this->bankingAccount->merchant->merchantDetail->getBusinessName();
+        $merchant = app('repo')->merchant->findOrFail($bankingAccount[Entity::MERCHANT_ID]);
+
+        $this->merchantBusinessName = $merchant->merchantDetail->getBusinessName();
 
         $this->newStatus = Status::transformFromInternalToExternal($eventDetails[Constants::PROPERTIES][Constants::NEW_STATUS]);
     }

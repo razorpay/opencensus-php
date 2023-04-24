@@ -797,6 +797,143 @@ return [
         ],
     ],
 
+    'testBasNotifyXProActivation' => [
+        'request'  => [
+            'url'     => '/bas/banking_accounts/notifications',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    'notification_type' => 'x_pro_activation',
+                    'banking_account'   => [
+                        'id'                                 => '10000000000000',
+                        'merchant_id'                        => '10000000000000',
+                        'banking_account_activation_details' => [
+                            'assignee_name'         => 'Foo',
+                            'additional_details'    => [],
+                            'booking_date_and_time' => 1590521524,
+                            'sales_team'            => 'sme',
+                        ],
+                        'bank_reference_number'              => '1590521524',
+                        'created_at'                         => 1590521524,
+                        'pincode'                            => '560002',
+                        'status'                             => 'created',
+                        'sub_status'                         => null
+                    ],
+                    'validator_op'      => 'create_normal'
+                ],
+            ]
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'banking_account_id' => '10000000000000',
+                    'success'            => true,
+                    'error'              => null
+                ]
+            ],
+        ],
+    ],
+
+    'testBasNotifyStatusChange' => [
+        'request'  => [
+            'url'     => '/bas/banking_accounts/notifications',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    'notification_type' => 'status_change',
+                    'banking_account'   => [
+                        'id'                                 => '10000000000000',
+                        'account_ifsc'                       => 'HDFC0003780',
+                        'account_number'                     => '10000000000000',
+                        'merchant_id'                        => '10000000000000',
+                        'banking_account_activation_details' => [
+                            'assignee_name'         => 'Foo',
+                            'additional_details'    => [],
+                            'booking_date_and_time' => 1590521524,
+                            'contact_verified'      => 1,
+                            'sales_team'            => 'sme',
+                        ],
+                        'bank_reference_number'              => '1590521524',
+                        'created_at'                         => 1590521524,
+                        'pincode'                            => '560002',
+                        'status'                             => 'created',
+                        'sub_status'                         => 'null',
+                        'spocs'                              => [
+                            [
+                                'name'                      => 'foo',
+                                'email'                     => 'spocs@foo.com',
+                            ],
+                        ],
+                        'reviewers'                              => [
+                            [
+                                'name'                      => 'foo',
+                                'email'                     => 'reviewers@foo.com',
+                            ],
+                        ],
+                    ],
+                    'banking_account_status_changed'         => true,
+                    'banking_account_sub_status_changed'     => false,
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'banking_account_id' => '10000000000000',
+                    'success'            => true,
+                    'error'              => null
+                ]
+            ],
+        ],
+    ],
+
+    'testBasNotifySubStatusChange' => [
+        'request'  => [
+            'url'     => '/bas/banking_accounts/notifications',
+            'method'  => 'POST',
+            'content' => [
+                [
+                    'notification_type' => 'status_change',
+                    'banking_account'   => [
+                        'id'                                 => '10000000000000',
+                        'banking_account_activation_details' => [
+                            'contact_verified'      => 0,
+                        ],
+                        'merchant_id'                        => '10000000000000',
+                        'bank_reference_number'              => '1590521524',
+                        'created_at'                         => 1590521524,
+                        'pincode'                            => '560002',
+                        'status'                             => 'created',
+                        'sub_status'                         => 'null',
+                        'spocs'                              => [
+                            [
+                                'name'                      => 'foo',
+                                'email'                     => 'spocs@foo.com',
+                            ],
+                        ],
+                        'reviewers'                              => [
+                            [
+                                'name'                      => 'foo',
+                                'email'                     => 'reviewers@foo.com',
+                            ],
+                        ],
+                    ],
+                    'banking_account_status_changed'         => false,
+                    'banking_account_sub_status_changed'     => true,
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'banking_account_id' => '10000000000000',
+                    'success'            => true,
+                    'error'              => null
+                ]
+            ],
+        ],
+    ],
+
     'testUpdateSignatory' => [
         'request'  => [
             'url'     => '/merchant/banking_application/business/10000000000000/applications/10000000000000',

@@ -332,7 +332,7 @@ class Service extends Base\Service
 
                 (new State\Core())->captureNewBankingAccountState($activationDetail->bankingAccount, $entity);
 
-                $this->notifier->notify($activationDetail->bankingAccount, Event::ASSIGNEE_CHANGE, Event::ALERT);
+                $this->notifier->notify($activationDetail->bankingAccount->toArray(), Event::ASSIGNEE_CHANGE, Event::ALERT);
             }
 
             $comment = null;
@@ -535,7 +535,7 @@ class Service extends Base\Service
                     'ca_rm_number'        => $activationDetail[Entity::RM_PHONE_NUMBER]
                 ];
 
-                $this->notifier->notify($bankingAccount, Event::RM_ASSIGNED, Event::INFO, $payload);
+                $this->notifier->notify($bankingAccount->toArray(), Event::RM_ASSIGNED, Event::INFO, $payload);
             }
 
             if($this->isValidCaseForNotifyingCustomerThroughSmsOnRmAssign($activationDetailDbEntity, $activationDetail, $rmNameInLowerCaseWithTrimApplied, $isRmNotAssigned))
@@ -676,7 +676,7 @@ class Service extends Base\Service
      */
     private function isValidCaseForNotifyingCustomerThroughEmailOnRmAssign(BankingAccount\Service $bankingAccountService, BankingAccount\Entity $bankingAccount, string $rmNameInLowerCaseWithTrimApplied): bool
     {
-        return $bankingAccountService->isNeoStoneExperiment($bankingAccount) === true && in_array($rmNameInLowerCaseWithTrimApplied, BankingAccount\Entity::$rm_name_missing_possibilities) === false;
+        return $bankingAccountService->isNeoStoneExperiment($bankingAccount->toArray()) === true && in_array($rmNameInLowerCaseWithTrimApplied, BankingAccount\Entity::$rm_name_missing_possibilities) === false;
     }
 
     private function isRmNotAssigned(Entity $activationDetail, array $input)

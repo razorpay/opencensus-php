@@ -848,7 +848,7 @@ class SalesForceClient
     {
         $content = $request['content'];
 
-        if ((in_array($request['method'], self::JSON_METHOD)) and (is_array($content) === true))
+        if (in_array($request['method'], self::JSON_METHOD) and (is_array($content) === true))
         {
             $content = json_encode($content);
         }

@@ -12,7 +12,7 @@ class MidOfficePocSubscriber extends Base
 {
     protected $name = 'midOfficePoc';
 
-    protected function shouldNotify(BankingAccount\Entity $bankingAccount, Event $event): bool
+    protected function shouldNotify(array $bankingAccount, Event $event): bool
     {
         // no need for logic at this point
         // we only this listener for the event - BANK_PARTNER_POC_ASSIGNED
@@ -21,9 +21,11 @@ class MidOfficePocSubscriber extends Base
         return true;
     }
 
-    protected function getNameAndEmails(BankingAccount\Entity $bankingAccount, Event $event): array
+    protected function getNameAndEmails(array $bankingAccount, Event $event): array
     {
-        $bankPocUser = $bankingAccount->bankingAccountActivationDetails->getBankPOCUser();
+        $bankPocUserId = $bankingAccount[BankingAccount\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][BankingAccount\Activation\Detail\Entity::BANK_POC_USER_ID];
+
+        $bankPocUser = $this->repo->user->find($bankPocUserId);
 
         $emails = [];
 
@@ -38,7 +40,7 @@ class MidOfficePocSubscriber extends Base
         return $emails;
     }
 
-    public function update(BankingAccount\Entity $bankingAccount, Event $event)
+    public function update(array $bankingAccount, Event $event)
     {
         if ($this->shouldNotify($bankingAccount, $event) === true)
         {

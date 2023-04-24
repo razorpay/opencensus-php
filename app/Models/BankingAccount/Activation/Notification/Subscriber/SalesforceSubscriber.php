@@ -25,15 +25,15 @@ class SalesforceSubscriber extends Base
         return false;
     }
 
-    protected function sendRBLUpdateRequest(BankingAccount\Entity $bankingAccount)
+    protected function sendRBLUpdateRequest(array $bankingAccount)
     {
 
-        $status = $bankingAccount->getStatus();
-        $subStatus = BankingAccount\Status::sanitizeStatus($bankingAccount->getSubStatus());
+        $status = $bankingAccount[BankingAccount\Entity::STATUS];
+        $subStatus = BankingAccount\Status::sanitizeStatus($bankingAccount[BankingAccount\Entity::SUB_STATUS] ?? null);
 
         $payload = [
-            'merchant_id'      => $bankingAccount->getMerchantId(),
-            'ca_id'            => 'bacc_'.$bankingAccount->getId(),
+            'merchant_id'      => $bankingAccount[BankingAccount\Entity::MERCHANT_ID],
+            'ca_id'            => 'bacc_'.$bankingAccount[BankingAccount\Entity::ID],
             'ca_type'          => Constants::RBL,
             'ca_status'        => $status,
             'ca_substatus'     => $subStatus,
@@ -42,7 +42,7 @@ class SalesforceSubscriber extends Base
         $this->app->salesforce->sendLeadStatusUpdate($payload, Constants::RBL);
     }
 
-    public function update(BankingAccount\Entity $bankingAccount, Event $event)
+    public function update(array $bankingAccount, Event $event)
     {
         if ($this->shouldNotify($event) === true)
         {

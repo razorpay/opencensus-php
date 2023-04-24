@@ -12,9 +12,9 @@ class SpocSubscriber extends Base
 {
     protected $name = 'spoc';
 
-    protected function shouldNotify(BankingAccount\Entity $bankingAccount, Event $event)
+    protected function shouldNotify(array $bankingAccount, Event $event)
     {
-        $doesNotHaveSpoc = empty($bankingAccount->spocs->first());
+        $doesNotHaveSpoc = empty($bankingAccount[BankingAccount\Entity::SPOCS]);
 
         if ($doesNotHaveSpoc === true)
         {
@@ -34,15 +34,15 @@ class SpocSubscriber extends Base
                         BankingAccount\Status::ARCHIVED,
                     ]);
             case Event::ASSIGNEE_CHANGE:
-                return ($bankingAccount->bankingAccountActivationDetails->getAssigneeTeam() ===  'sales');
+                return ($bankingAccount[BankingAccount\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][BankingAccount\Entity::ASSIGNEE_TEAM] ===  'sales');
         }
 
         return true;
     }
 
-    protected function getNameAndEmails(BankingAccount\Entity $bankingAccount, Event $event)
+    protected function getNameAndEmails(array $bankingAccount, Event $event)
     {
-        $spoc = $bankingAccount->spocs->first();
+        $spoc = array_get($bankingAccount,BankingAccount\Entity::SPOCS . '.' . '0',[]);
 
         return [
             [
@@ -52,7 +52,7 @@ class SpocSubscriber extends Base
         ];
     }
 
-    public function update(BankingAccount\Entity $bankingAccount, Event $event)
+    public function update(array $bankingAccount, Event $event)
     {
         if ($this->shouldNotify($bankingAccount, $event) === true)
         {

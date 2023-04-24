@@ -8,10 +8,10 @@ class DiscrepancyInDoc extends Base
 
     const SUBJECT       = ' [Alert] RX Current Account - Customers have discrepancy in docs more than 5 days';
 
-    protected $bankingAccount;
+    protected $bankingAccounts;
 
-    public function __construct(array $bankingAccountStates, string $email)
+    public function __construct(array $bankingAccounts, string $email)
     {
-        parent::__construct($bankingAccountStates, $email);
+        parent::__construct($bankingAccounts, $email);
     }
 }

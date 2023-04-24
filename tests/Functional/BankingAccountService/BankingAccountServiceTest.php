@@ -7,9 +7,9 @@ use Carbon\Carbon;
 
 use Illuminate\Support\Facades\Mail;
 use RZP\Error\ErrorCode;
-
-
+use RZP\Mail\BankingAccount\Activation\StatusChange;
 use RZP\Models\Admin;
+use RZP\Models\BankingAccount\Entity;
 use RZP\Models\Merchant;
 use RZP\Mail\BankingAccount\CurrentAccount;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
@@ -29,6 +29,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Models\BankingAccount\Activation\Detail\Validator;
+use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\MerchantNotAvailable;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class BankingAccountServiceTest extends TestCase
@@ -1552,6 +1553,110 @@ class BankingAccountServiceTest extends TestCase
         $this->assertEquals(Validator::SME, $baad1->getSalesTeam());
     }
 
+    public function testBasNotifyXProActivation()
+    {
+        Mail::fake();
+
+        $this->ba->bankingAccountServiceAppAuth();
+
+        $this->mockSalesForce('sendLeadStatusUpdate', 2);
+
+        $this->startTest();
+
+        Mail::hasQueued(XProActivation::class);
+
+    }
+
+    public function testBasNotifyStatusChange()
+    {
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'   => '10000000000000',
+            'business_name' => 'Foo',
+        ]);
+
+        $this->ba->bankingAccountServiceAppAuth();
+
+        $allStatuses = Status::getAll();
+
+        foreach ($allStatuses as $status)
+        {
+            Mail::fake();
+
+            $testData=$this->testData[__FUNCTION__];
+
+            $testData['request']['content'][0]['banking_account']['status'] = $status;
+
+            $this->mockSalesForce('sendLeadStatusUpdate', 1);
+
+            $fnName = __FUNCTION__;
+            print "Starting $fnName with status: $status\n";
+
+            $this->startTest($testData);
+
+            $this->assertNotificationsForStatusChange($testData['request']['content'][0]['banking_account'],$status);
+        }
+    }
+
+    public function testBasNotifySubStatusChange()
+    {
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'   => '10000000000000',
+            'business_name' => 'Foo',
+        ]);
+
+        $this->ba->bankingAccountServiceAppAuth();
+
+        $allStatuses = Status::getAll();
+
+        $statusToSubStatusMap = Status::getAllStatusToSubStatusMap();
+
+        $contactVerifiedValues = [0,1];
+
+        foreach ($contactVerifiedValues as $contactVerifiedValue)
+        {
+            $testData=$this->testData[__FUNCTION__];
+
+            $testData['request']['content'][0]['banking_account']['banking_account_activation_details']
+                ['contact_verified'] = $contactVerifiedValue;
+
+            foreach ($allStatuses as $status)
+            {
+
+                $testData['request']['content'][0]['banking_account']['status'] = $status;
+
+                $allSubStatuses = $statusToSubStatusMap[$status];
+
+                array_push($allSubStatuses,null);
+
+                foreach ($allSubStatuses as $subStatus)
+                {
+                    Mail::fake();
+
+                    $testData['request']['content'][0]['banking_account']['sub_status'] = $subStatus;
+
+                    $sfCount = $contactVerifiedValue === 0 ? 1 : 0;
+
+                    $this->mockSalesForce('sendLeadStatusUpdate', $sfCount);
+
+                    $fnName = __FUNCTION__;
+                    print "Starting $fnName with sub_status: $subStatus\n";
+
+                    $this->startTest($testData);
+
+                    if($subStatus === Status::MERCHANT_NOT_AVAILABLE && $contactVerifiedValue === 0)
+                    {
+                        Mail::assertQueued(MerchantNotAvailable::class);
+                    } else {
+                        Mail::assertNothingQueued();
+                    }
+
+                }
+            }
+        }
+    }
+
     public function mockSalesForce(string $method, int $count)
     {
         $salesforceClientMock = $this->getMockBuilder(SalesForceClient::class)
@@ -1651,4 +1756,66 @@ class BankingAccountServiceTest extends TestCase
         $this->startTest();
     }
 
+
+    private function assertNotificationsForStatusChange(array $bankingAccount, string $status)
+    {
+        switch ($status)
+        {
+            case Status::API_ONBOARDING:
+            case Status::ACCOUNT_ACTIVATION:
+            case Status::PROCESSED:
+                $body = sprintf('This is to notify that Current Account for Merchant Foo has been %s',
+                    studly_case(Status::transformFromInternalToExternal($status)));
+                $subject = sprintf('RazorpayX LMS | Foo\'s CA has been %s',
+                    studly_case(Status::transformFromInternalToExternal($status)));
+                $this->assertStatusChangeNotificationEmail($bankingAccount, $body, $subject,2,true);
+
+                break;
+            case Status::REJECTED:
+            case Status::ARCHIVED:
+            case Status::ACTIVATED:
+                $body = sprintf('This is to notify that Current Account for Merchant Foo has been %s',
+                    studly_case(Status::transformFromInternalToExternal($status)));
+                $subject = sprintf('RazorpayX LMS | Foo\'s CA has been %s',
+                    studly_case(Status::transformFromInternalToExternal($status)));
+                $this->assertStatusChangeNotificationEmail($bankingAccount, $body, $subject,1,false);
+
+                break;
+
+            default:
+                Mail::assertNothingQueued();
+        }
+    }
+
+    private function assertStatusChangeNotificationEmail(array $bankingAccount, string $body, string $subject, int $expectedCount, bool $opsNotify)
+    {
+        Mail::assertQueued(StatusChange::class,$expectedCount);
+
+        $containsSpocEmail = false;
+        $containsReviewerEmail = false;
+        for ($i = 0; $i < $expectedCount; $i++)
+        {
+
+            Mail::assertQueued(StatusChange::class, function ($mail) use ($bankingAccount,&$containsSpocEmail,
+                &$containsReviewerEmail,$body,$subject)
+            {
+                $mail->build();
+                $this->assertArraySelectiveEquals([
+                    'admin_dashboard_link'      => 'https://dashboard.razorpay.com/admin#/app/banking-accounts/bacc_10000000000000',
+                    'body'                      => $body,
+                    'internal_reference_number' => $bankingAccount[Entity::BANK_REFERENCE_NUMBER],
+                    'merchant_id'               => $bankingAccount[Entity::MERCHANT_ID]
+                ],$mail->viewData);
+                $mail->hasSubject($subject);
+                $containsReviewerEmail = $containsReviewerEmail || $mail->hasTo($bankingAccount[Entity::REVIEWERS][0]['email']);
+                $containsSpocEmail = $containsSpocEmail || $mail->hasTo($bankingAccount[Entity::SPOCS][0]['email']);
+                return true;
+            });
+        }
+        $this->assertTrue($containsSpocEmail);
+        if($opsNotify)
+        {
+            $this->assertTrue($containsReviewerEmail);
+        }
+    }
 }

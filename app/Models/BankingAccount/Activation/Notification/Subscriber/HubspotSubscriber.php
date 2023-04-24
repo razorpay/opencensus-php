@@ -6,7 +6,8 @@ namespace RZP\Models\BankingAccount\Activation\Notification\Subscriber;
 use App;
 use Carbon\Carbon;
 use Mail;
-use RZP\Constants\Timezone;
+
+use RZP\Models\Merchant;
 use RZP\Models\BankingAccount;
 use RZP\Services\HubspotClient;
 use RZP\Models\BankingAccount\Status;
@@ -33,7 +34,7 @@ class HubspotSubscriber extends Base
         parent::__construct();
     }
 
-    protected function getStatusChangeProperties(Event $event, BankingAccount\Entity $bankingAccount): array
+    protected function getStatusChangeProperties(Event $event, array $bankingAccount): array
     {
         if ($this->getChannelName($event) === BankingAccount\Entity::Neostone)
         {
@@ -63,8 +64,8 @@ class HubspotSubscriber extends Base
 
                     $properties += [
                         'ca_account_opened' => 'TRUE',
-                        'ca_account_number' => $bankingAccount->getAccountNumber(),
-                        'ca_ifsc_code'      => $bankingAccount->getAccountIfsc()
+                        'ca_account_number' => $bankingAccount[BankingAccount\Entity::ACCOUNT_NUMBER],
+                        'ca_ifsc_code'      => $bankingAccount[BankingAccount\Entity::ACCOUNT_IFSC]
                     ];
 
                     break;
@@ -100,7 +101,7 @@ class HubspotSubscriber extends Base
         }
     }
 
-    protected function pushEventToHubspot(BankingAccount\Entity $bankingAccount, Event $event)
+    protected function pushEventToHubspot(array $bankingAccount, Event $event)
     {
         $eventProperties = [];
 
@@ -123,12 +124,15 @@ class HubspotSubscriber extends Base
                 break;
         }
 
+        /** @var Merchant\Entity $merchant */
+        $merchant = $this->repo->merchant->findByPublicId($bankingAccount[BankingAccount\Entity::MERCHANT_ID]);
+
         $this->hubspotService->trackHubspotEvent(
-            $bankingAccount->merchant->getEmail(),
+            $merchant->getEmail(),
             $eventProperties);
     }
 
-    public function update(BankingAccount\Entity $bankingAccount, Event $event)
+    public function update(array $bankingAccount, Event $event)
     {
         $this->pushEventToHubspot($bankingAccount, $event);
     }
@@ -147,5 +151,5 @@ class HubspotSubscriber extends Base
         }
 
         return null;
-}
+    }
 }

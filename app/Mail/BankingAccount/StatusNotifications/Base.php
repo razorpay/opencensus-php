@@ -6,6 +6,7 @@ use App;
 use RZP\Mail\Base\Mailable;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Constants;
+use RZP\Models\BankingAccount;
 use Illuminate\Foundation\Application;
 
 class Base extends Mailable
@@ -14,24 +15,28 @@ class Base extends Mailable
 
     const SUBJECT       = '';
 
+    /** @var array $bankingAccount */
     protected $bankingAccount;
+
+    /** @var \RZP\Models\Merchant\Entity $merchant */
+    protected $merchant;
 
     protected $config;
 
     /**
-     * @param string $bankingAccountId
+     * @param array $bankingAccount
      */
-    public function __construct(string $bankingAccountId)
+    public function __construct(array $bankingAccount)
     {
         parent::__construct();
 
         $app = App::getFacadeRoot();
 
-        $repo = $app['repo'];
-
         $this->config = $this->getRequiredConfigParamsFromApp($app);
 
-        $this->bankingAccount = $repo->banking_account->find($bankingAccountId);
+        $this->bankingAccount = $bankingAccount;
+
+        $this->merchant = app('repo')->merchant->findOrFail($bankingAccount[BankingAccount\Entity::MERCHANT_ID]);
     }
 
     protected function getRequiredConfigParamsFromApp(Application $app)
@@ -57,9 +62,9 @@ class Base extends Mailable
 
     protected function addRecipients()
     {
-        $toEmail = $this->bankingAccount->merchant->getEmail();
+        $toEmail = $this->merchant->getEmail();
 
-        $toName = $this->bankingAccount->merchant->getName();
+        $toName = $this->merchant->getName();
 
         $this->to($toEmail, $toName);
 

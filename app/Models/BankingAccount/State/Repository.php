@@ -72,9 +72,9 @@ class Repository extends Base\Repository
     }
 
     /**
-     * Given an array for bankingAccountIds  
+     * Given an array for bankingAccountIds
      * Get all created_at for a specific status
-     * 
+     *
      * @param $bankingAccountIds
      * @param $status
      */
@@ -91,7 +91,7 @@ class Repository extends Base\Repository
             ->whereIn($stateBankingAccountIdCol, $bankingAccountIds)
             ->where($stateStatusCol, $status)
             ->orderBy($stateCreatedAtCol, $orderBy);
-    
+
         $timestamps = $query->get();
 
         $this->trace->info(TraceCode::BANKING_ACCOUNT_RBL_MIS_REPORT_JOB_DB_QUERY_DURATION, [

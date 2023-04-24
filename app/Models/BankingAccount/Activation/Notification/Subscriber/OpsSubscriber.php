@@ -12,7 +12,7 @@ class OpsSubscriber extends Base
 {
     protected $name = 'ops';
 
-    protected function shouldNotify(BankingAccount\Entity $bankingAccount, Event $event)
+    protected function shouldNotify(array $bankingAccount, Event $event)
     {
         switch ($event->getName())
         {
@@ -24,7 +24,7 @@ class OpsSubscriber extends Base
                         BankingAccount\Status::ACCOUNT_ACTIVATION,
                     ]);
             case Event::ASSIGNEE_CHANGE:
-                return ($bankingAccount->bankingAccountActivationDetails->getAssigneeTeam() ===  'ops');
+                return ($bankingAccount[BankingAccount\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][BankingAccount\Entity::ASSIGNEE_TEAM] ===  'ops');
 
             case Event::ACCOUNT_OPENING_WEBHOOK_DATA_AMBIGUITY:
                 return true;
@@ -33,9 +33,9 @@ class OpsSubscriber extends Base
         return true;
     }
 
-    protected function getNameAndEmails(BankingAccount\Entity $bankingAccount, Event $event)
+    protected function getNameAndEmails(array $bankingAccount, Event $event)
     {
-        $reviewer = $bankingAccount->reviewers->first();
+        $reviewer = $bankingAccount[BankingAccount\Entity::REVIEWERS][0] ?? null;
 
         $emails = [
             [
@@ -59,14 +59,14 @@ class OpsSubscriber extends Base
         {
             $emails[] = [
                 'name' => $reviewer['name'],
-                'email'=> $reviewer['email']
+                'email'=> $reviewer['email'],
             ];
         }
 
         return $emails;
     }
 
-    public function update(BankingAccount\Entity $bankingAccount, Event $event)
+    public function update(array $bankingAccount, Event $event)
     {
         if ($this->shouldNotify($bankingAccount, $event) === true)
         {

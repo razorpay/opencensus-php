@@ -326,39 +326,42 @@ class Core extends Base\Core
      * This email is sent to ops to notify them about the interest merchant has shown in
      * X Pro plan, currently that is RBL current account
      *
-     * @param Entity $bankingAccount
+     * @param array $bankingAccount
      */
-    public function notifyOpsAboutProActivation(Entity $bankingAccount)
+    public function notifyOpsAboutProActivation(array $bankingAccount)
     {
         try
         {
-            $activationDetail = $bankingAccount->bankingAccountActivationDetails;
+            $activationDetail = $bankingAccount[Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS];
 
             $reviewer = ['reviewer_name' => ""];
 
             if ($activationDetail != null)
             {
-                $reviewer = ['reviewer_name' => $activationDetail->getAssigneeName()];
+                $reviewer = ['reviewer_name' => $activationDetail[Activation\Detail\Entity::ASSIGNEE_NAME] ?? ''];
             }
 
-            $bankingAccount = $bankingAccount->load('merchant');
+            /** @var Merchant\Entity $merchant */
+            $merchant = $this->repo->merchant->findOrFail($bankingAccount[Entity::MERCHANT_ID]);
 
-            $mailer = new XProActivation(array_merge($bankingAccount->toArray(), $reviewer));
+            $merchantArr = ['merchant' => $merchant->toArray()];
+
+            $mailer = new XProActivation(array_merge($bankingAccount, $reviewer, $merchantArr));
 
             Mail::queue($mailer);
 
             $this->trace->info(
                 TraceCode::BANKING_ACCOUNT_X_PRO_ACTIVATION_NOTIFICATION,
                 [
-                    'banking_account_id' => $bankingAccount->getId(),
-                    'merchant_id'        => $bankingAccount->merchant->getId(),
-                    'status'             => $bankingAccount->getStatus(),
+                    'banking_account_id' => $bankingAccount[Entity::ID],
+                    'merchant_id'        => $bankingAccount[Entity::MERCHANT_ID],
+                    'status'             => $bankingAccount[Entity::STATUS],
                     'message'            => 'Mail Sent'
                 ]);
 
-            $this->app['diag']->trackOnboardingEvent(EventCode::X_CA_ONBOARDING_FRESHDESK_TICKET_CREATE, $bankingAccount->merchant, null, [
-                'banking_account_id' => $bankingAccount->getId(),
-                'status'             => $bankingAccount->getStatus()
+            $this->app['diag']->trackOnboardingEvent(EventCode::X_CA_ONBOARDING_FRESHDESK_TICKET_CREATE, $merchant, null, [
+                'banking_account_id' => $bankingAccount[Entity::ID],
+                'status'             => $bankingAccount[Entity::STATUS]
             ]);
 
         }
@@ -369,15 +372,15 @@ class Core extends Base\Core
                 Trace::ERROR,
                 TraceCode::BANKING_ACCOUNT_X_PRO_ACTIVATION_NOTIFICATION_FAILED,
                 [
-                    'banking_account_id' => $bankingAccount->getId(),
-                    'merchant_id'        => $bankingAccount->merchant->getId(),
-                    'status'             => $bankingAccount->getStatus(),
+                    'banking_account_id' => $bankingAccount[Entity::ID],
+                    'merchant_id'        => $bankingAccount[Entity::MERCHANT_ID],
+                    'status'             => $bankingAccount[Entity::STATUS],
                     'error'              => $e->getMessage(),
                 ]);
         }
     }
 
-    public function notifyMerchantAboutUpdatedStatus(Entity $bankingAccount)
+    public function notifyMerchantAboutUpdatedStatus(array $bankingAccount)
     {
         // Product has asked to pause merchant notifications
 
@@ -390,9 +393,9 @@ class Core extends Base\Core
 //            $this->trace->info(
 //                TraceCode::BANKING_ACCOUNT_UPDATE_NOTIFICATION,
 //                [
-//                    'banking_account_id' => $bankingAccount->getId(),
-//                    'merchant_id'        => $bankingAccount->merchant->getId(),
-//                    'status'             => $bankingAccount->getStatus(),
+//                    'banking_account_id' => $bankingAccount[Entity::ID],
+//                    'merchant_id'        => $bankingAccount[Entity::MERCHANT_ID],
+//                    'status'             => $bankingAccount[Entity::STATUS],
 //                    'message'            => 'Mail Sent'
 //                ]);
 //        }
@@ -403,19 +406,19 @@ class Core extends Base\Core
 //                Trace::ERROR,
 //                TraceCode::BANKING_ACCOUNT_UPDATE_NOTIFICATION_FAILED,
 //                [
-//                    'banking_account_id' => $bankingAccount->getId(),
-//                    'merchant_id'        => $bankingAccount->merchant->getId(),
-//                    'status'             => $bankingAccount->getStatus(),
+//                    'banking_account_id' => $bankingAccount[Entity::ID],
+//                    'merchant_id'        => $bankingAccount[Entity::MERCHANT_ID],
+//                    'status'             => $bankingAccount[Entity::STATUS],
 //                    'error'              => $e->getMessage(),
 //                ]);
 //        }
     }
 
-    public function notifyMerchantAboutUpdatedStatusOnMobileViaPushNotification(Entity $bankingAccount)
+    public function notifyMerchantAboutUpdatedStatusOnMobileViaPushNotification(array $bankingAccount)
     {
-        $status = $bankingAccount->getStatus();
+        $status = $bankingAccount[Entity::STATUS];
 
-        $substatus = $bankingAccount->getSubStatus();
+        $substatus = $bankingAccount[Entity::SUB_STATUS] ?? null;
 
         $statusList = self::$notificationStatuses;
 
@@ -437,21 +440,24 @@ class Core extends Base\Core
 
         $pushNotificationTag = "ca_onboarding_" .  $status;
 
-        $users = $bankingAccount->merchant->ownersAndAdmins(Product::BANKING);
+        /** @var Merchant\Entity $merchant */
+        $merchant = $this->repo->merchant->findOrFail($bankingAccount[Entity::MERCHANT_ID]);
+
+        $users = $merchant->ownersAndAdmins(Product::BANKING);
 
         foreach ($users as $user)
         {
             $userId = $user->getId();
 
             $notificationData = array(
-                'ownerId'       => $bankingAccount->merchant->getId(),
+                'ownerId'       => $bankingAccount[Entity::MERCHANT_ID],
                 'ownerType'     => 'merchant',
                 'title'         => $pushNotificationTitle,
                 'body'          => $pushNotificationBody,
                 'status'        => $status,
                 'identityList'  => [$userId],
                 'tags'          => array(
-                    'merchantId'            => $bankingAccount->merchant->getId(),
+                    'merchantId'            => $bankingAccount[Entity::MERCHANT_ID],
                     'userId'                => $userId,
                     'notificationPurpose'   => $pushNotificationTag,
                 ),
@@ -599,9 +605,9 @@ class Core extends Base\Core
             $this->sendClarityContextEnabledEventToSF($merchant);
         }
 
-        $this->shouldNotifyOpsAboutProActivation($validatorOp, $bankingAccount,$clarityContextEnabled);
+        $this->shouldNotifyOpsAboutProActivation($validatorOp, $bankingAccount->toArray(), $clarityContextEnabled);
 
-        $this->sendSegmentEvent($bankingAccount, $merchant);
+        $this->sendSegmentEvent($bankingAccount->toArray(), $merchant);
 
         return $bankingAccount;
     }
@@ -671,7 +677,7 @@ class Core extends Base\Core
                     Entity::BENEFICIARY_EMAIL           => $attributes[Entity::BENEFICIARY_EMAIL],
                     Entity::BENEFICIARY_MOBILE          => $attributes[Entity::BENEFICIARY_MOBILE]
                 ];
-                $this->notifier->notify($bankingAccount, Event::ACCOUNT_OPENING_WEBHOOK_DATA_AMBIGUITY, Event::ALERT, $eventProperties);
+                $this->notifier->notify($bankingAccount->toArray(), Event::ACCOUNT_OPENING_WEBHOOK_DATA_AMBIGUITY, Event::ALERT, $eventProperties);
             }
 
             if ($this->isAccountInfoWebhookAlreadyProcessed($bankingAccount) === true)
@@ -937,11 +943,11 @@ class Core extends Base\Core
 
                 if($isAssigneeChanged === true)
                 {
-                    $this->notifier->notify($bankingAccount, Event::ASSIGNEE_CHANGE, Event::ALERT);
+                    $this->notifier->notify($bankingAccount->toArray(), Event::ASSIGNEE_CHANGE, Event::ALERT);
                 }
             }
 
-            $this->notifyIfStatusChanged($bankingAccount, $bankingAccountStatusChanged, $bankingAccountSubStatusChanged);
+            $this->notifyIfStatusChanged($bankingAccount->toArray(), $bankingAccountStatusChanged, $bankingAccountSubStatusChanged);
 
             // storing state change
             if (($bankInternalStatusChanged === true) or
@@ -1793,7 +1799,7 @@ class Core extends Base\Core
         return $attributes;
     }
 
-    protected function getSegmentEventPropertiesForBankingAccountStatusChange(Entity $bankingAccount, $bankingAccountStatus, $bankingAccountSubStatus): array
+    protected function getSegmentEventPropertiesForBankingAccountStatusChange($bankingAccountStatus, $bankingAccountSubStatus): array
     {
         return [
             'status' => $bankingAccountStatus,
@@ -1802,11 +1808,11 @@ class Core extends Base\Core
     }
 
     /**
-     * @param Entity $bankingAccount
-     * @param bool   $bankingAccountStatusChanged
-     * @param bool   $bankingAccountSubStatusChanged
+     * @param array $bankingAccount
+     * @param bool $bankingAccountStatusChanged
+     * @param bool $bankingAccountSubStatusChanged
      */
-    public function notifyIfStatusChanged(Entity $bankingAccount, bool $bankingAccountStatusChanged, bool $bankingAccountSubStatusChanged): void
+    public function notifyIfStatusChanged(array $bankingAccount, bool $bankingAccountStatusChanged, bool $bankingAccountSubStatusChanged): void
     {
         if ((new Service())->isNeoStoneExperiment($bankingAccount) === true)
         {
@@ -1833,7 +1839,8 @@ class Core extends Base\Core
             ($bankingAccountSubStatusChanged === true))
         {
 
-            $merchant = $bankingAccount->merchant;
+            /** @var \RZP\Models\Merchant\Entity $merchant */
+            $merchant = $this->repo->merchant->findOrFail($bankingAccount[Entity::MERCHANT_ID]);
 
             $this->sendSegmentEvent($bankingAccount, $merchant);
         }
@@ -2563,13 +2570,13 @@ class Core extends Base\Core
         return $activation_detail;
     }
 
-    private function fireHubspotEventForStatusChange(bool $bankingAccountStatusChanged, bool $bankingAccountSubStatusChanged, Entity $account, string $channel)
+    private function fireHubspotEventForStatusChange(bool $bankingAccountStatusChanged, bool $bankingAccountSubStatusChanged, array $account, string $channel)
     {
         if ($bankingAccountStatusChanged or $bankingAccountSubStatusChanged)
         {
-            $currentStatus = $account->getStatus();
+            $currentStatus = $account[Entity::STATUS];
 
-            $currentSubStatus = $account->getSubStatus();
+            $currentSubStatus = $account[Entity::SUB_STATUS];
 
             $payload = ['ca_channel' => $channel];
 
@@ -2588,29 +2595,18 @@ class Core extends Base\Core
 
     }
 
-    private function notifyForMerchantNotAvailableToSPOC(Entity $bankingAccount)
+    private function notifyForMerchantNotAvailableToSPOC(array $bankingAccount)
     {
-        if($bankingAccount->getSubStatus() !== Status::MERCHANT_NOT_AVAILABLE)
+        if ($bankingAccount[Entity::SUB_STATUS] !== Status::MERCHANT_NOT_AVAILABLE)
         {
             return;
         }
 
-        $stateRepo = new State\Repository();
-
-        $bankingAccountState = $stateRepo->getStateByBankingAccountIdAndSubState($bankingAccount->getId(), Status::MERCHANT_NOT_AVAILABLE);
-
-        $spocEmail = $bankingAccount->spocs()->first()['email'];
+        $spocEmail = $bankingAccount[Entity::SPOCS][0]['email'] ?? null;
 
         if (empty($spocEmail) === false)
         {
-            $finalBankingAccountStates = [];
-
-            if ($bankingAccountState->getSubStatus() === $bankingAccount->getSubStatus())
-            {
-                array_push($finalBankingAccountStates, $bankingAccountState);
-            }
-
-            $mailable = new MerchantNotAvailable($finalBankingAccountStates, $spocEmail);
+            $mailable = new MerchantNotAvailable([$bankingAccount], $spocEmail);
 
             Mail::queue($mailable);
         }
@@ -2641,7 +2637,7 @@ class Core extends Base\Core
      *
      * @return void
      */
-    protected function shouldNotifyOpsAboutProActivation(string $validatorOP, Entity $bankingAccount, bool $clarityContextEnabled = false): void
+    public function shouldNotifyOpsAboutProActivation(string $validatorOP, array $bankingAccount, bool $clarityContextEnabled = false): void
     {
         if (($validatorOP !== 'create_dashboard' && $validatorOP != 'create_co_created' && $validatorOP != 'create_ccc_capital_created'))
         {
@@ -2712,18 +2708,17 @@ class Core extends Base\Core
     }
 
     public function sendNotificationAfterCAActivation(Entity $bankingAccount){
-        // NOTE: After debugging, I found notifyIfStatusChanged does not work for activated state as isDirty returns false
-        //       because $bankingAccount is already committed
-        if ((new Service())->isNeoStoneExperiment($bankingAccount) === true)
+
+        if ((new Service())->isNeoStoneExperiment($bankingAccount->toArray()) === true)
         {
             $payload = ['ca_channel' => Entity::Neostone];
 
-            $this->notifier->notify($bankingAccount, Event::STATUS_CHANGE, Event::INFO, $payload);
+            $this->notifier->notify($bankingAccount->toArray(), Event::STATUS_CHANGE, Event::INFO, $payload);
         }
         else
         {
-            $this->notifier->notify($bankingAccount, Event::STATUS_CHANGE);
-            $this->notifier->notify($bankingAccount, Event::SUBSTATUS_CHANGE);
+            $this->notifier->notify($bankingAccount->toArray(), Event::STATUS_CHANGE);
+            $this->notifier->notify($bankingAccount->toArray(), Event::SUBSTATUS_CHANGE);
         }
 
         $merchant = $bankingAccount->merchant;
@@ -2765,17 +2760,17 @@ class Core extends Base\Core
     }
 
     /**
-     * @param Entity          $bankingAccount
+     * @param array           $bankingAccount
      * @param Merchant\Entity $merchant
      *
      * @return void
      */
-    private function sendSegmentEvent(Entity $bankingAccount, Merchant\Entity $merchant): void
+    private function sendSegmentEvent(array $bankingAccount, Merchant\Entity $merchant): void
     {
         try
         {
             $this->app['x-segment']->sendEventToSegment(SegmentEvent::X_BANKING_ACCOUNT_STATUS_CHANGE_V2, $merchant,
-                $this->generateSegmentProperties($bankingAccount->toArray(),$merchant));
+                $this->generateSegmentProperties($bankingAccount,$merchant));
         } catch (\Exception $e)
         {
             $this->trace->error(TraceCode::X_CURRENT_ACCOUNT_SEGMENT_PUSH_FAILED,[
@@ -2837,7 +2832,7 @@ class Core extends Base\Core
                     ],
                     $bankingAccount->merchant);
 
-                $this->notifyOpsAboutProActivation($bankingAccount);
+                $this->notifyOpsAboutProActivation($bankingAccount->toArray());
             });
         }
     }

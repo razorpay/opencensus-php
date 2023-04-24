@@ -393,7 +393,7 @@ class Service extends Base\Service
 
             if ($responseStatus !== 'Failure' and $clarityContextEnabled === true)
             {
-                (new \RZP\Models\BankingAccount\Core())->notifyOpsAboutProActivation($bankingAccount);
+                (new \RZP\Models\BankingAccount\Core())->notifyOpsAboutProActivation($bankingAccount->toArray());
             }
         }
 
@@ -805,6 +805,68 @@ class Service extends Base\Service
 
 
         return ['success' => true];
+    }
+
+    public function handleNotifications(array $inputs): array
+    {
+        $res = array();
+
+        foreach ($inputs as $input)
+        {
+            $errorMsg = null;
+            try
+            {
+                (new Validator)->validateInput(Validator::HANDLE_NOTIFICATION_VALIDATION, $input);
+
+                $notificationType = $input[Constants::NOTIFICATION_TYPE];
+
+                $bankingAccount = $input[Constants::BANKING_ACCOUNT];
+
+                $bankingAccountCore = new \RZP\Models\BankingAccount\Core;
+
+                switch ($notificationType)
+                {
+                    case Constants::NOTIFICATION_TYPE_X_PRO_ACTIVATION:
+                        $validatorOp = $input[Constants::VALIDATOR_OP];
+
+                        $bankingAccountCore->shouldNotifyOpsAboutProActivation($validatorOp, $bankingAccount);
+                        break;
+
+                    case Constants::NOTIFICATION_TYPE_STATUS_CHANGE:
+                        $bankingAccountStatusChanged    = $input[Constants::BANKING_ACCOUNT_STATUS_CHANGED];
+                        $bankingAccountSubStatusChanged = $input[Constants::BANKING_ACCOUNT_SUB_STATUS_CHANGED];
+
+                        // called when a banking_account's status or sub status is updated
+                        $bankingAccountCore->notifyIfStatusChanged($bankingAccount, $bankingAccountStatusChanged, $bankingAccountSubStatusChanged);
+                        break;
+
+                    default:
+                        throw new Exception\BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_INPUT_VALIDATION_FAILURE, $input);
+                }
+
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->error(
+                    TraceCode::BAS_SEND_NOTIFICATION_FAILED,
+                    [
+                        'banking_account_id' => array_get($input,'banking_account.id',''),
+                        'error'              => $e->getMessage()
+                    ]);
+
+                $errorMsg = $e->getMessage();
+            }
+            finally
+            {
+                array_push($res,[
+                    'banking_account_id' => array_get($input,'banking_account.id',''),
+                    'success'            => empty($errorMsg),
+                    'error'              => $errorMsg,
+                ]);
+            }
+        }
+
+        return $res;
     }
 
     public function getFreeSlotForBankingAccount($input): array

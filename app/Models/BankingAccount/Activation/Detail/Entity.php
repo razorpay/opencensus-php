@@ -160,6 +160,8 @@ class Entity extends Base\PublicEntity
     // team that is currently assigned to work on this
     const ASSIGNEE_TEAM = 'assignee_team';
 
+    const ASSIGNEE_NAME = 'assignee_name';
+
     const BOOKING_DATE_AND_TIME = 'booking_date_and_time';
 
     // Details received from RBL
@@ -408,6 +410,7 @@ class Entity extends Base\PublicEntity
         self::ADDITIONAL_DETAILS,
         self::UPI_ACTIVATION_TAT,
         self::CUSTOMER_ONBOARDING_TAT,
+        self::ASSIGNEE_NAME,
     ];
 
     public $public = [
@@ -500,6 +503,10 @@ class Entity extends Base\PublicEntity
     protected $dates = [
         self::CREATED_AT,
         self::UPDATED_AT,
+    ];
+
+    protected $appends = [
+        self::ASSIGNEE_NAME
     ];
 
     public function getBankingAccountId()
@@ -631,8 +638,8 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * Check that the Business Category is matching with Merchant details -> Business Type  
-     * 
+     * Check that the Business Category is matching with Merchant details -> Business Type
+     *
      * Both should be non-empty
      */
     public function businessCategoryMatchesMerchantBusinessType($merchantBusinessType)
@@ -656,9 +663,9 @@ class Entity extends Base\PublicEntity
 
         return false;
     }
-    
+
     /**
-     * Check Business name is same as Merchant Name  
+     * Check Business name is same as Merchant Name
      * Both should be non empty, check is case-insensitive
      */
     public function businessNameMatchesMerchantName($merchantName)
@@ -738,6 +745,11 @@ class Entity extends Base\PublicEntity
         }
 
         return '';
+    }
+
+    public function getAssigneeNameAttribute()
+    {
+        return $this->getAssigneeName();
     }
 
     public function getBankPOCUser()
@@ -967,9 +979,9 @@ class Entity extends Base\PublicEntity
         $customerOnboardingTat = null;
 
         if (empty($array[self::DOC_COLLECTION_DATE]) === false)
-        {   
+        {
             $docCollectionDate = $array[self::DOC_COLLECTION_DATE];
-    
+
             $apiIRClosedDate = $array[self::API_IR_CLOSED_DATE]?? Carbon::now()->timestamp;
 
             $customerOnboardingTat = self::hourDifferenceBetweenTimestamps($docCollectionDate, $apiIRClosedDate);

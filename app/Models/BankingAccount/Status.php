@@ -1317,6 +1317,11 @@ class Status
         return self::$statuses;
     }
 
+    public static function getAllStatusToSubStatusMap(): array
+    {
+        return self::$statusToSubStatusMap;
+    }
+
     public static function validateInInitialStatuses(string $status)
     {
         $statusList = self::$initialStatuses;

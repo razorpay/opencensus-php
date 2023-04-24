@@ -2853,6 +2853,7 @@ class Route
         'get_banking_account_slot_booking_details' => ['get',      'booking/slot',                                   'BasController@getSlotBookingDetailsForBankingAccountAndChannel'    ],
         'archive_icici_banking_account'            => ['post',     'bas/archive',                                    'BasController@archiveICICIAccount'                                 ],
         'unarchive_icici_banking_account'          => ['post',     'bas/unarchive',                                  'BasController@unArchiveICICIAccount'                               ],
+        'bas_banking_accounts_notifications'       => ['post',     'bas/banking_accounts/notifications',             'BasController@handleNotifications'                                 ],
 
         //splitz service
         'splitz_route'                             => ['any',      'service/splitz',                                 'SplitzController@sendRequest'                                      ],
@@ -4981,6 +4982,7 @@ class Route
         'bas_ca_lead_to_freshdesk',
         'rbl_in_progress_lead_to_sales_force',
         'bas_banking_accounts_create',
+        'bas_banking_accounts_notifications',
         'banking_account_service_cron_routes',
         'merchant_update_fraud_type',
         'gstin_e_invoice_cron',
@@ -15286,6 +15288,7 @@ class Route
             'bas_ca_lead_status_to_sales_force',
             'bas_ca_lead_to_freshdesk',
             'bas_banking_accounts_create',
+            'bas_banking_accounts_notifications',
             'merchant_fetch_internal',
             'internal_merchant_fetch',
         ],

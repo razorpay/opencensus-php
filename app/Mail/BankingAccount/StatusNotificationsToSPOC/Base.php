@@ -7,20 +7,21 @@ use RZP\Mail\Base\Mailable;
 use RZP\Constants\MailTags;
 use RZP\Constants\Timezone;
 use RZP\Mail\Base\Constants;
+use RZP\Models\BankingAccount;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
 
 class Base extends Mailable
 {
-    protected $states;
+    protected $bankingAccounts;
 
     protected $email;
 
-    public function __construct(array $bankingAccountStates, string $email)
+    public function __construct(array $bankingAccounts, string $email)
     {
         parent::__construct();
 
-        $this->states = $bankingAccountStates;
+        $this->bankingAccounts = $bankingAccounts;
 
         $this->email = $email;
     }
@@ -29,20 +30,18 @@ class Base extends Mailable
     {
         $data = [];
 
-        foreach ($this->states as $state)
+        foreach ($this->bankingAccounts as $bankingAccount)
         {
-            $bankingAccount = $state->bankingAccount;
-
             array_push($data, [
-                PublicEntity::MERCHANT_ID => $bankingAccount->getMerchantId(),
+                PublicEntity::MERCHANT_ID => $bankingAccount[BankingAccount\Entity::MERCHANT_ID],
 
-                'businessName' => $bankingAccount->merchant->merchantDetail->getBusinessName(),
+                'businessName' => array_get($bankingAccount,BankingAccount\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS . '.' . BankingAccount\Activation\Detail\Entity::BUSINESS_NAME,''),
 
-                'name' => $bankingAccount->bankingAccountActivationDetails[ActivationDetail\Entity::MERCHANT_POC_NAME],
+                'name' => array_get($bankingAccount,BankingAccount\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS . '.' . BankingAccount\Activation\Detail\Entity::MERCHANT_POC_NAME,''),
 
-                'phoneNumber' => $bankingAccount->bankingAccountActivationDetails[ActivationDetail\Entity::MERCHANT_POC_PHONE_NUMBER],
+                'phoneNumber' => array_get($bankingAccount,BankingAccount\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS . '.' . BankingAccount\Activation\Detail\Entity::MERCHANT_POC_PHONE_NUMBER,''),
 
-                'lmsLink' => 'https://admin-dashboard.razorpay.com/admin/banking-accounts/bacc_'. $bankingAccount->getId(),
+                'lmsLink' => 'https://admin-dashboard.razorpay.com/admin/banking-accounts/bacc_'. $bankingAccount[BankingAccount\Entity::ID],
             ]);
         }
 

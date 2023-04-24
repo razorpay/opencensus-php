@@ -12,7 +12,7 @@ class MidOfficeManagerSubscriber extends Base
 {
     protected $name = 'midOfficeManager';
 
-    protected function shouldNotify(BankingAccount\Entity $bankingAccount, Event $event): bool
+    protected function shouldNotify(array $bankingAccount, Event $event): bool
     {
         // No need for logic at this point
         // we only this listener for the event - BANK_PARTNER_ASSIGNED
@@ -21,7 +21,7 @@ class MidOfficeManagerSubscriber extends Base
         return true;
     }
 
-    protected function getNameAndEmails(BankingAccount\Entity $bankingAccount, Event $event): array
+    protected function getNameAndEmails(array $bankingAccount, Event $event): array
     {
         $partnerMerchantId = $event->getProperties()[BankingAccount\BankLms\Constants::PARTNER_MERCHANT_ID];
 
@@ -45,7 +45,7 @@ class MidOfficeManagerSubscriber extends Base
         return $emails;
     }
 
-    public function update(BankingAccount\Entity $bankingAccount, Event $event)
+    public function update(array $bankingAccount, Event $event)
     {
         if ($this->shouldNotify($bankingAccount, $event) === true)
         {

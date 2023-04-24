@@ -4607,7 +4607,7 @@ class BankingAccountTest extends TestCase
             ]
         );
 
-        (new BankingAccount\Core)->notifyIfStatusChanged($bankingAccount,true,false);
+        (new BankingAccount\Core)->notifyIfStatusChanged($bankingAccount->toArray(),true,false);
 
     }
 
@@ -11571,7 +11571,7 @@ class BankingAccountTest extends TestCase
                 Leads::BRANCH_CODE => '195',
                 Leads::BRANCH_NAME => 'Jp Nagar',
                 Leads::BM => 'Venkatathri B',
-                Leads::BM_MOBILE_NO => 8861591505,
+                Leads::BM_MOBILE_NO => 8291282195,
                 Leads::TL => 'Manjunath R',
                 Leads::CLUSTER => 'Blr 2',
                 Leads::REGION => 'South & Goa Region',

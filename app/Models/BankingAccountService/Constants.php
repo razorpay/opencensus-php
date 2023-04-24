@@ -110,4 +110,18 @@ class Constants
     const CA_ONBOARDING_FLOW            = 'ca_onboarding_flow';
 
     const SELF_SERVE                    = 'self_serve';
+
+    const BANKING_ACCOUNT               = 'banking_account';
+
+    const NOTIFICATION_TYPE             = 'notification_type';
+
+    const NOTIFICATION_TYPE_X_PRO_ACTIVATION = 'x_pro_activation';
+
+    const VALIDATOR_OP                       = 'validator_op';
+
+    const NOTIFICATION_TYPE_STATUS_CHANGE    = 'status_change';
+
+    const BANKING_ACCOUNT_STATUS_CHANGED     = 'banking_account_status_changed';
+
+    const BANKING_ACCOUNT_SUB_STATUS_CHANGED = 'banking_account_sub_status_changed';
 }

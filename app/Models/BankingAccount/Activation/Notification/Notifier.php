@@ -78,22 +78,22 @@ class Notifier extends Base\Core
         ];
     }
 
-    protected function prepareEventProperties(BankingAccount\Entity $bankingAccount, string $eventName)
+    protected function prepareEventProperties(array $bankingAccount, string $eventName)
     {
         switch ($eventName)
         {
             case Event::STATUS_CHANGE:
                 return [
-                    Constants::NEW_STATUS => $bankingAccount->getStatus()
+                    Constants::NEW_STATUS => $bankingAccount[BankingAccount\Entity::STATUS]
                 ];
             case Event::SUBSTATUS_CHANGE:
                 return [
-                    Constants::NEW_SUBSTATUS => $bankingAccount->getSubStatus()
+                    Constants::NEW_SUBSTATUS => $bankingAccount[BankingAccount\Entity::SUB_STATUS] ?? null
                 ];
             case Event::ASSIGNEE_CHANGE:
                 return [
-                    Constants::NEW_ASSIGNEE_TEAM => $bankingAccount->bankingAccountActivationDetails->getAssigneeTeam(),
-                    Constants::NEW_ASSIGNEE_NAME => $bankingAccount->bankingAccountActivationDetails->getAssigneeName(),
+                    Constants::NEW_ASSIGNEE_TEAM => $bankingAccount[BankingAccount\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][BankingAccount\Activation\Detail\Entity::ASSIGNEE_TEAM],
+                    Constants::NEW_ASSIGNEE_NAME => $bankingAccount[BankingAccount\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][BankingAccount\Activation\Detail\Entity::ASSIGNEE_NAME],
                 ];
             case Event::PERSONAL_DETAILS_FILLED:
                 return ['ca_form_submit' => 'TRUE'];
@@ -108,7 +108,7 @@ class Notifier extends Base\Core
         return [];
     }
 
-    protected function prepareEvent(BankingAccount\Entity $bankingAccount, string $eventName, string $eventType, array $eventProperties)
+    protected function prepareEvent(array $bankingAccount, string $eventName, string $eventType, array $eventProperties)
     {
         $allEventProperties = $this->prepareEventProperties($bankingAccount, $eventName);
         $allEventProperties = array_merge($allEventProperties, $eventProperties);
@@ -116,7 +116,7 @@ class Notifier extends Base\Core
         return new Event($eventName, $eventType, $allEventProperties);
     }
 
-    public function notify(BankingAccount\Entity $bankingAccount, string $eventName, string $eventType = Event::INFO, array $eventProperties = [])
+    public function notify(array $bankingAccount, string $eventName, string $eventType = Event::INFO, array $eventProperties = [])
     {
         try
         {
@@ -125,7 +125,7 @@ class Notifier extends Base\Core
             $this->trace->info(TraceCode::BANKING_ACCOUNT_EVENT_NOTIFY,
                 [
                     'event' => $event->toArray(),
-                    'banking_account_id' => $bankingAccount->getId()
+                    'banking_account_id' => $bankingAccount[BankingAccount\Entity::ID]
                 ]);
 
             $subscribers = $this->eventSubscribersConfig[$event->getName()] ?? [];
@@ -143,7 +143,7 @@ class Notifier extends Base\Core
                         Logger::ERROR,
                         TraceCode::BANKING_ACCOUNT_EVENT_NOTIFY_FAILED,
                         [
-                            'banking_account_id' => $bankingAccount->getId(),
+                            'banking_account_id' => $bankingAccount[BankingAccount\Entity::ID],
                             'eventName'          => $eventName,
                             'eventType'          => $eventType,
                             'eventProperties'    => $eventProperties,
@@ -159,7 +159,7 @@ class Notifier extends Base\Core
                 Logger::ERROR,
                 TraceCode::BANKING_ACCOUNT_EVENT_NOTIFY_FAILED,
                 [
-                    'banking_account_id' => $bankingAccount->getId(),
+                    'banking_account_id' => $bankingAccount[BankingAccount\Entity::ID],
                     'eventName'          => $eventName,
                     'eventType'          => $eventType,
                     'eventProperties'    => $eventProperties

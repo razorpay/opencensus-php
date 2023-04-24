@@ -341,12 +341,12 @@ class Service extends Base\Service
 
         $currentStatus = $bankingAccount->getStatus();
 
-        if ($this->isNeoStoneExperiment($account) === false)
+        if ($this->isNeoStoneExperiment($account->toArray()) === false)
         {
             if ($previousStatus !== $currentStatus)
             {
-                $this->core->notifyMerchantAboutUpdatedStatus($bankingAccount);
-                $this->core->notifyMerchantAboutUpdatedStatusOnMobileViaPushNotification($bankingAccount);
+                $this->core->notifyMerchantAboutUpdatedStatus($bankingAccount->toArray());
+                $this->core->notifyMerchantAboutUpdatedStatusOnMobileViaPushNotification($bankingAccount->toArray());
             }
         }
 
@@ -523,8 +523,8 @@ class Service extends Base\Service
 
         if ($previousStatus !== $currentStatus)
         {
-            $this->core->notifyMerchantAboutUpdatedStatus($bankingAccount);
-            $this->core->notifyMerchantAboutUpdatedStatusOnMobileViaPushNotification($bankingAccount);
+            $this->core->notifyMerchantAboutUpdatedStatus($bankingAccount->toArray());
+            $this->core->notifyMerchantAboutUpdatedStatusOnMobileViaPushNotification($bankingAccount->toArray());
         }
 
         return array_merge($account->toArrayPublic(), $resp);
@@ -560,10 +560,10 @@ class Service extends Base\Service
 
         $bankingAccount = $this->core->activate($bankingAccount, $input, $admin);
 
-        if ($this->isNeoStoneExperiment($bankingAccount) === false)
+        if ($this->isNeoStoneExperiment($bankingAccount->toArray()) === false)
         {
-            $this->core->notifyMerchantAboutUpdatedStatus($bankingAccount);
-            $this->core->notifyMerchantAboutUpdatedStatusOnMobileViaPushNotification($bankingAccount);
+            $this->core->notifyMerchantAboutUpdatedStatus($bankingAccount->toArray());
+            $this->core->notifyMerchantAboutUpdatedStatusOnMobileViaPushNotification($bankingAccount->toArray());
         }
 
         return $bankingAccount->toArrayPublic();
@@ -1686,7 +1686,7 @@ class Service extends Base\Service
             {
                 $payload = ['ca_channel' => $channel];
 
-                $this->notifier->notify($bankingAccount, Event::APPLICATION_RECEIVED, Event::INFO, $payload);
+                $this->notifier->notify($bankingAccount->toArray(), Event::APPLICATION_RECEIVED, Event::INFO, $payload);
             }
         }
     }
@@ -1711,18 +1711,18 @@ class Service extends Base\Service
         $this->app->hubspot->trackHubspotEvent($merchantEmail, $payload);
     }
 
-    public function isNeoStoneExperiment(Entity $bankingAccount): bool
+    public function isNeoStoneExperiment(array $bankingAccount): bool
     {
-        $bankingAccountActivation = $bankingAccount->bankingAccountActivationDetails;
+        $bankingAccountActivation = $bankingAccount[ActivationDetail\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS];
 
         $this->trace->info(
             TraceCode::CHECK_NEOSTONE,
             [
-                $bankingAccount->merchant->getMerchantId(),
+                $bankingAccount[Entity::MERCHANT_ID],
                 'banking_account_activation_detail' => is_null($bankingAccountActivation)
             ]);
 
-        if (is_null($bankingAccountActivation) === true)
+        if (empty($bankingAccountActivation) === true)
         {
             return false;
         }
@@ -1730,12 +1730,12 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::NEOSTONE_MERCHANT_TRUE,
             [
-                $bankingAccount->merchant->getMerchantId(),
-                'contact_verified'  => $bankingAccountActivation->getContactVerified()
+                $bankingAccount[Entity::MERCHANT_ID],
+                'contact_verified'  => $bankingAccountActivation[Activation\Detail\Entity::CONTACT_VERIFIED],
             ]);
 
         // For neostone we are verifying merchant contact with otp
-        return ($bankingAccountActivation->getContactVerified() === 1);
+        return ($bankingAccountActivation[Activation\Detail\Entity::CONTACT_VERIFIED] == 1);
     }
 
     private function checkIfPersonalDetailFilledAndFireEvent(Entity $bankingAccount, array $activationDetailInput, string $channel)
@@ -1744,7 +1744,7 @@ class Service extends Base\Service
         {
             $payload = ['ca_channel' => $channel];
 
-            $this->notifier->notify($bankingAccount, Event::PERSONAL_DETAILS_FILLED, Event::INFO, $payload);
+            $this->notifier->notify($bankingAccount->toArray(), Event::PERSONAL_DETAILS_FILLED, Event::INFO, $payload);
         }
     }
 
@@ -1804,7 +1804,7 @@ class Service extends Base\Service
         {
             if (empty($spocEmail) === false and empty($bankingAccountStates) == false)
             {
-                $finalBankingAccountStates = [];
+                $finalBankingAccounts = [];
 
                 foreach ($bankingAccountStates as $bankingAccountState)
                 {
@@ -1812,11 +1812,11 @@ class Service extends Base\Service
 
                     if ($bankingAccountState->getSubStatus() === $bankingAccount->getSubStatus())
                     {
-                        array_push($finalBankingAccountStates, $bankingAccountState);
+                        $finalBankingAccounts[] = $bankingAccount;
                     }
                 }
 
-                $mailable = new MerchantPreparingDoc($finalBankingAccountStates, $spocEmail);
+                $mailable = new MerchantPreparingDoc($finalBankingAccounts, $spocEmail);
 
                 Mail::queue($mailable);
             }
@@ -1833,7 +1833,7 @@ class Service extends Base\Service
         {
             if (empty($spocEmail) === false and empty($bankingAccountStates) == false)
             {
-                $finalBankingAccountStates = [];
+                $finalBankingAccounts = [];
 
                 foreach ($bankingAccountStates as $bankingAccountState)
                 {
@@ -1841,11 +1841,11 @@ class Service extends Base\Service
 
                     if ($bankingAccountState->getSubStatus() === $bankingAccount->getSubStatus())
                     {
-                        array_push($finalBankingAccountStates, $bankingAccountState);
+                        $finalBankingAccounts[] = $bankingAccount->toArray();
                     }
                 }
 
-                $mailable = new DiscrepancyInDoc($finalBankingAccountStates, $spocEmail);
+                $mailable = new DiscrepancyInDoc($finalBankingAccounts, $spocEmail);
 
                 Mail::queue($mailable);
             }

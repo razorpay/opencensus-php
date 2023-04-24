@@ -240,5 +240,13 @@ class BasController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function handleNotifications()
+    {
+        $input = Request::all();
+
+        $data =  $this->service->handleNotifications($input);
+
+        return ApiResponse::json($data);
+    }
 }
 
