@@ -383,6 +383,10 @@ class MerchantCreateTest extends TestCase
 
         $this->mockAllExperiments("enable");
 
+        $terminalsServiceMock = $this->getTerminalsServiceMock();
+
+        $terminalsServiceMock->shouldNotHaveReceived('handleRequestAndResponse');
+
         $this->startTest();
 
         $redis = Redis::connection('mutex_redis')->client();
@@ -1342,6 +1346,10 @@ class MerchantCreateTest extends TestCase
         $redis = Redis::connection('mutex_redis')->client();
 
         $redisKey = (new PartnershipsRateLimiter(PartnerConstants::ADD_MULTIPLE_ACCOUNT))->getRateLimitRedisKey("10000000000000");
+
+        $terminalsServiceMock = $this->getTerminalsServiceMock();
+
+        $terminalsServiceMock->shouldNotHaveReceived('handleRequestAndResponse');
 
         $response = $this->startTest();
 

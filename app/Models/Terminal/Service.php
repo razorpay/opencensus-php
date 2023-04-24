@@ -32,6 +32,7 @@ use RZP\Models\Mpan\Constants as MpanConstants;
 use RZP\Models\Batch\Processor\TerminalCreation;
 use RZP\Models\Batch\Processor\TerminalEdit;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\Terminal\Constants as TerminalConstants;
 
 
 
@@ -1700,6 +1701,17 @@ class Service extends Base\Service
 
         try
         {
+            $routeName = $this->app['api.route']->getCurrentRouteName()?? '';
+
+            if(in_array($routeName, TerminalConstants::SKIP_INSTRUMENT_EVENT_RULES_TRIGGER_ROUTES) == true)
+            {
+                $this->trace->info(TraceCode::INSTRUMENT_EVENT_RULES_TRIGGER_SKIPPED, [
+                    'merchant_id' => $merchantId,
+                ]);
+
+                return [];
+            }
+
             $skipEventRulesTrigger = (new \RZP\Models\Merchant\Methods\Core)->validateRuleBasedFeatureFlagForMerchant($merchantId);
 
             //if 'rule_based_enablement' feature is enabled, consuming of events has to be skipped
