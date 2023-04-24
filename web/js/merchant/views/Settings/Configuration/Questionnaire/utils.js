@@ -190,7 +190,7 @@ export const modelFormDataBeforeSave = (formData) => {
 
 export const defaultFileTypesIERevamp = [
   {
-    label: 'Bank Statement for Inward Remittance',
+    label: 'Bank Statement (Last 60 days)',
     name: 'bank_statement_inward_remittance',
     isRequired: true,
     tooltipContent:
