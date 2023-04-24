@@ -1218,6 +1218,7 @@ return [
         ],
         'timeout'       => env('TERMINALS_SERVICE_TIMEOUT'),
         'sync'          => env('SYNC_WITH_TERMINAL_SERVICE'),
+        'dashboard_timeout' => env('TERMINAL_SERVICE_ADMIN_DASHBOARD_TIMEOUT', 5),
     ],
 
     'financial_data_service' => [

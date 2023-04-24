@@ -174,6 +174,27 @@ class TerminalsService
         ]
     ];
 
+    protected array $terminal_admin_dashboard_routes = [
+        'merchant_delete_terminal',
+        'merchant_create_terminal',
+        'terminal_delete',
+        'terminal_edit',
+        'terminal_edit_god_mode',
+        'terminal_update_bulk',
+        'terminal_reassign_merchant',
+        'terminal_toggle',
+        'terminals_proxy_create_gateway_credential',
+        'terminals_proxy_delete_gateway_credential',
+        'terminal_add_merchant',
+        'terminal_remove_merchant',
+        'terminal_set_banks',
+        'terminal_set_wallets',
+        'terminal_bank_bulk',
+        'terminal_restore',
+        'action_request_execute',
+        'action_checker_create',
+    ];
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -717,6 +738,11 @@ class TerminalsService
     protected function sendRequest(string $path, $content = '', string $method = Requests::POST, array $additionalOptions = [],
                                    array  $additionalHeaders = [])
     {
+        if(in_array($this->app['api.route']->getCurrentRouteName(), $this->terminal_admin_dashboard_routes) === true){
+            $timeout = $this->getAdminDashboardRequestTimeout();
+            $additionalOptions[self::TIMEOUT] = $timeout;
+            $additionalOptions[self::CONNECT_TIMEOUT] = $timeout;
+        }
         return $this->handleRequestAndResponse($path, $content, $method, $additionalOptions, $additionalHeaders);
     }
 
@@ -924,6 +950,12 @@ class TerminalsService
     protected function getTimeout()
     {
         $timeoutConfig = 'applications.terminals_service.timeout';
+
+        return $this->app['config']->get($timeoutConfig);
+    }
+
+    protected function getAdminDashboardRequestTimeout(){
+        $timeoutConfig = 'applications.terminals_service.dashboard_timeout';
 
         return $this->app['config']->get($timeoutConfig);
     }
