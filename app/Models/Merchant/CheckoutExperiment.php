@@ -374,6 +374,30 @@ class CheckoutExperiment
             '1cc_upi_qr_v2',
             ['merchant_id' => $this->merchantId]
         );
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.one_cc_auto_submit_otp_experiment_id',
+            'MagicGeneralExperiment',
+            'one_cc_auto_submit_otp',
+            ['merchant_id' => $this->merchantId]
+        );
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.one_cc_email_optional_on_checkout_experiment_id',
+            'MagicGeneralExperiment',
+            'one_cc_email_optional_on_checkout',
+            ['merchant_id' => $this->merchantId]
+        );
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.one_cc_email_hidden_on_checkout_experiment_id',
+            'MagicGeneralExperiment',
+            'one_cc_email_hidden_on_checkout',
+            ['merchant_id' => $this->merchantId]
+        );
     }
 
     private function fillExperimentData(
