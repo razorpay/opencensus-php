@@ -44,6 +44,8 @@ class Format
     const MPEG      = 'mpeg';
     const RM        = 'rm';
     const JFIF      = 'jfif';
+    const HEIC      = 'heic';
+    const HEIF      = 'heif';
 
     const EXCEL_COLUMN_TEXT = '@';
 
@@ -83,7 +85,9 @@ class Format
         self::MPEG,
         self::FLV,
         self::H264,
-        self::JFIF
+        self::JFIF,
+        self::HEIC,
+        self::HEIF
     ];
 
     const VALID_EXTENSION_MIME_MAP = [
@@ -94,6 +98,8 @@ class Format
         self::JPG     => ['image/jpeg', 'application/pgp'],
         self::JPEG    => ['image/jpeg', 'application/pgp'],
         self::JFIF    => ['image/jfif', 'application/pgp'],
+        self::HEIC    => ['image/heic', 'application/pgp'],
+        self::HEIF    => ['image/heif', 'application/pgp'],
         self::PDF     => ['application/pdf', 'application/x-pdf', 'application/pgp'],
         self::PNG     => ['image/png', 'application/pgp'],
         self::TXT     => ['text/plain', 'application/pgp', 'application/octet-stream', 'audio/x-unknown', 'text/x-Algol68', 'text/x-algol68', 'text/csv', 'application/pgp-encrypted'],

@@ -128,15 +128,15 @@ class Validator extends Base\Validator
         Entity::WEBSITE_REFUND                  => 'sometimes|max:255|url',
         Entity::WEBSITE_PRICING                 => 'sometimes|max:255|url',
         Entity::WEBSITE_LOGIN                   => 'sometimes|max:255|url',
-        Entity::BUSINESS_PROOF_URL              => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif',
-        Entity::BUSINESS_OPERATION_PROOF_URL    => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif',
-        Entity::BUSINESS_PAN_URL                => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif',
-        Entity::ADDRESS_PROOF_URL               => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif',
-        Entity::PROMOTER_PROOF_URL              => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif',
-        Entity::PROMOTER_PAN_URL                => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif',
-        Entity::PROMOTER_ADDRESS_URL            => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif',
-        Entity::FORM_12A_URL                    => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif|custom',
-        Entity::FORM_80G_URL                    => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif|custom',
+        Entity::BUSINESS_PROOF_URL              => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif,heic,heif',
+        Entity::BUSINESS_OPERATION_PROOF_URL    => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif,heic,heif',
+        Entity::BUSINESS_PAN_URL                => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif,heic,heif',
+        Entity::ADDRESS_PROOF_URL               => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif,heic,heif',
+        Entity::PROMOTER_PROOF_URL              => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif,heic,heif',
+        Entity::PROMOTER_PAN_URL                => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif,heic,heif',
+        Entity::PROMOTER_ADDRESS_URL            => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif,heic,heif',
+        Entity::FORM_12A_URL                    => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif,heic,heif|custom',
+        Entity::FORM_80G_URL                    => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif,heic,heif|custom',
         Entity::TRANSACTION_REPORT_EMAIL        => 'sometimes|custom',
         Entity::ROLE                            => 'sometimes|max:255',
         Entity::DEPARTMENT                      => 'sometimes|max:255',
@@ -243,15 +243,15 @@ class Validator extends Base\Validator
         Entity::WEBSITE_REFUND                           => 'sometimes|max:255|url',
         Entity::WEBSITE_PRICING                          => 'sometimes|max:255|url',
         Entity::WEBSITE_LOGIN                            => 'sometimes|max:255|url',
-        Entity::BUSINESS_PROOF_URL                       => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif',
-        Entity::BUSINESS_OPERATION_PROOF_URL             => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif',
-        Entity::BUSINESS_PAN_URL                         => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif',
-        Entity::ADDRESS_PROOF_URL                        => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif',
-        Entity::PROMOTER_PROOF_URL                       => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif',
-        Entity::PROMOTER_PAN_URL                         => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif',
-        Entity::PROMOTER_ADDRESS_URL                     => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif',
-        Entity::FORM_12A_URL                             => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif|custom',
-        Entity::FORM_80G_URL                             => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif|custom',
+        Entity::BUSINESS_PROOF_URL                       => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif,heic,heif',
+        Entity::BUSINESS_OPERATION_PROOF_URL             => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif,heic,heif',
+        Entity::BUSINESS_PAN_URL                         => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif,heic,heif',
+        Entity::ADDRESS_PROOF_URL                        => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif,heic,heif',
+        Entity::PROMOTER_PROOF_URL                       => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif,heic,heif',
+        Entity::PROMOTER_PAN_URL                         => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif,heic,heif',
+        Entity::PROMOTER_ADDRESS_URL                     => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif,heic,heif',
+        Entity::FORM_12A_URL                             => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif,heic,heif|custom',
+        Entity::FORM_80G_URL                             => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif,heic,heif|custom',
         Entity::TRANSACTION_REPORT_EMAIL                 => 'sometimes|custom',
         Entity::ROLE                                     => 'sometimes|max:255',
         Entity::DEPARTMENT                               => 'sometimes|max:255',
@@ -329,7 +329,7 @@ class Validator extends Base\Validator
 
     protected static $uploadDocumentRules = [
         Merchant\Document\Entity::DOCUMENT_TYPE => 'required|string|max:255|custom',
-        Entity::FILE                            => 'required|file|mimes:pdf,jpeg,jpg,png,jfif',
+        Entity::FILE                            => 'required|file|mimes:pdf,jpeg,jpg,png,jfif,heic,heif',
     ];
 
     protected static $editLinkedAccountBusinessNameRules = [
@@ -529,7 +529,7 @@ class Validator extends Base\Validator
 
     protected static $gstinSelfServeRules = [
         Entity::GSTIN                           => 'filled|string|size:15',
-        Constants::GSTIN_SELF_SERVE_CERTIFICATE => 'required|file|mimes:pdf,jpeg,jpg,png,jfif'
+        Constants::GSTIN_SELF_SERVE_CERTIFICATE => 'required|file|mimes:pdf,jpeg,jpg,png,jfif,heic,heif'
     ];
 
     protected static $gstinSelfServeValidators = [
@@ -567,7 +567,7 @@ class Validator extends Base\Validator
         DetailConstants::ADDITIONAL_WEBSITE_TEST_USERNAME      => 'sometimes|string|max:50',
         DetailConstants::ADDITIONAL_WEBSITE_TEST_PASSWORD      => 'sometimes|string|max:50',
         DetailConstants::ADDITIONAL_WEBSITE_REASON             => 'required|string|min:100',
-        DetailConstants::ADDITIONAL_WEBSITE_PROOF_URL          => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif',
+        DetailConstants::ADDITIONAL_WEBSITE_PROOF_URL          => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip,jfif,heic,heif',
         DetailConstants::URL_TYPE                              => 'required|string|in:website',
     ];
 

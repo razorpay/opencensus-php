@@ -16,7 +16,7 @@ class Validator extends Base\Validator
 
     protected static $createRules = [
         Entity::DOCUMENT_TYPE => 'required|string|max:255|custom',
-        Entity::FILE          => 'sometimes|file|mimes:pdf,jpeg,jpg,png,jfif',
+        Entity::FILE          => 'sometimes|file|mimes:pdf,jpeg,jpg,png,jfif,heic,heif',
         Entity::FILE_STORE_ID => 'sometimes|string|max:14',
         Entity::SOURCE        => 'required_with:file_store_id|string|custom',
         Entity::METADATA      => 'sometimes|array',
@@ -28,7 +28,7 @@ class Validator extends Base\Validator
 
     protected static $editRules = [
         Entity::DOCUMENT_TYPE => 'required|string|max:255|custom',
-        Entity::FILE          => 'sometimes|file|mimes:pdf,jpeg,jpg,png,jfif',
+        Entity::FILE          => 'sometimes|file|mimes:pdf,jpeg,jpg,png,jfif,heic,heif',
         Entity::FILE_STORE_ID => 'sometimes|string|max:14',
         Entity::SOURCE        => 'required_with:file_store_id|string|custom',
         Entity::DOCUMENT_DATE => 'sometimes|integer',
@@ -44,7 +44,7 @@ class Validator extends Base\Validator
 
     protected static $uploadDocumentRules = [
         Entity::DOCUMENT_TYPE => 'required|string|max:255|custom',
-        Entity::FILE          => 'required|file|mimes:pdf,jpeg,jpg,png,jfif',
+        Entity::FILE          => 'required|file|mimes:pdf,jpeg,jpg,png,jfif,heic,heif',
         'is_partner_kyc'      => 'sometimes|boolean'
     ];
 

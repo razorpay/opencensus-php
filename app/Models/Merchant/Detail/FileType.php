@@ -25,7 +25,9 @@ class FileType
         'mpeg',
         'rm',
         'wmv',
-        'jfif'
+        'jfif',
+        'heic',
+        'heif'
     ];
 
     const ALLOWED_MIMES = [
@@ -53,5 +55,7 @@ class FileType
         'application/vnd.rn-realmedia',
         'video/x-ms-wmv',
         'image/jfif',
+        'image/heic',
+        'image/heif'
     ];
 }

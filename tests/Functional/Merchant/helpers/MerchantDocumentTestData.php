@@ -131,7 +131,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The file must be a file of type: pdf, jpeg, jpg, png, jfif.',
+                    'description' => 'The file must be a file of type: pdf, jpeg, jpg, png, jfif, heic, heif.',
                 ],
             ],
             'status_code' => 400,
@@ -196,7 +196,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The file must be a file of type: pdf, jpeg, jpg, png, jfif.',
+                    'description' => 'The file must be a file of type: pdf, jpeg, jpg, png, jfif, heic, heif.',
                 ],
             ],
             'status_code' => 400,
