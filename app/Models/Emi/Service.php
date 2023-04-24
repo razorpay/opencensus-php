@@ -446,40 +446,30 @@ class Service extends Base\Service
 
             $enabledProviders = $methods->getEnabledCreditEmiProviders();
 
-            $variantFlag = $this->app->razorx->getTreatment($this->merchant->getId(),RazorxTreatment::PREFERENCES_INSTRUMENT_LEVEL_CHECK,  $this->mode);
+            $sharedCreditEmiPlans = $sharedPlans->reject(function($plan) use ($emiType, $enabledProviders) {
 
-            $sharedCreditEmiPlans = $sharedPlans->reject(function($plan) use ($emiType, $enabledProviders,$variantFlag) {
+            if ($plan->type !== $emiType)
+            {
+                return true;
+            }
 
-                // Adding Experiment for checking credit emi insturment status in merchant banks table
-                if($variantFlag == 'on')
-                {
-                    if ($plan->type !== $emiType)
-                    {
-                        return true;
-                    }
+            $provider =  $plan->getIssuer();
 
-                    $provider =  $plan->getIssuer();
+            return (isset($enabledProviders[$provider]) == false or ($enabledProviders[$provider] === 0));
 
-                    return (isset($enabledProviders[$provider]) == false or ($enabledProviders[$provider] === 0));
-                }
-                return $plan->type !== $emiType;
             });
 
-            $merchantCreditEmiPlans = $merchantEmiPlans->reject(function($plan) use ($emiType, $enabledProviders,$variantFlag) {
+            $merchantCreditEmiPlans = $merchantEmiPlans->reject(function($plan) use ($emiType, $enabledProviders) {
 
-                // Adding Experiment for checking credit emi insturment status in merchant banks table
-                if($variantFlag == 'on')
-                {
-                    if ($plan->type !== $emiType)
-                    {
-                        return true;
-                    }
+            if ($plan->type !== $emiType)
+            {
+                return true;
+            }
 
-                    $provider =  $plan->getIssuer();
+            $provider =  $plan->getIssuer();
 
-                    return (isset($enabledProviders[$provider]) == false  or ($enabledProviders[$provider] === 0));
-                }
-                return $plan->type !== $emiType;
+            return (isset($enabledProviders[$provider]) == false  or ($enabledProviders[$provider] === 0));
+
             });
         }
 

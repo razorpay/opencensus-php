@@ -4049,7 +4049,6 @@ return [
                 'mode'  => 'test',
                 'methods' =>[
                     'cardless_emi' => [
-                        'zestmoney' => true,
                         'walnut369' => true,
                     ],
                 ],
@@ -4087,7 +4086,6 @@ return [
                 'mode'  => 'test',
                 'methods' =>[
                     'cardless_emi' => [
-                        'zestmoney' => true,
                         'hcin' => true,
                     ],
                 ],

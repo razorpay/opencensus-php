@@ -1254,21 +1254,13 @@ class Core extends Base\Core
 
             $providers = array_merge($providers, $enabledProviders);
 
-            // Adding Experiment for checking paylater instrument status in merchant banks table
-            $variantFlag = $this->app->razorx->getTreatment($merchant->getId(),RazorxTreatment::PREFERENCES_INSTRUMENT_LEVEL_CHECK,  $this->mode);
+            $paylaterProviders = $methods->getEnabledPaylaterProviders();
 
-            if($variantFlag == 'on')
-            {
+            foreach ($providers as $index => $instrument) {
 
-                $paylaterProviders = $methods->getEnabledPaylaterProviders();
+                if (isset($paylaterProviders[$instrument]) == false or  $paylaterProviders[$instrument] == 0) {
 
-                foreach ($providers as $index => $instrument) {
-
-                    if (isset($paylaterProviders[$instrument]) == false or  $paylaterProviders[$instrument] == 0) {
-
-                        unset($providers[$index]);
-
-                    }
+                    unset($providers[$index]);
 
                 }
 
@@ -1298,22 +1290,16 @@ class Core extends Base\Core
                 $providers = array_unique(array_merge($providers,$terminalProviders));
             }
 
-            // Adding Experiment for checking cardless emi instrument status in merchant banks table
-            $variantFlag = $this->app->razorx->getTreatment($merchant->getId(),RazorxTreatment::PREFERENCES_INSTRUMENT_LEVEL_CHECK,  $this->mode);
+            $cardlessEmiProviders = $methods->getEnabledCardlessEmiProviders();
 
-            if($variantFlag == 'on') {
+            foreach ($providers as $index => $instrument) {
 
-                $cardlessEmiProviders = $methods->getEnabledCardlessEmiProviders();
+                if ($instrument == CardlessEmiProvider::ZESTMONEY or isset($cardlessEmiProviders[$instrument]) == false or $cardlessEmiProviders[$instrument] == 0) {
 
-                foreach ($providers as $index => $instrument) {
-
-                    if (isset($cardlessEmiProviders[$instrument]) == false or $cardlessEmiProviders[$instrument] == 0) {
-
-                        unset($providers[$index]);
-
-                    }
+                    unset($providers[$index]);
 
                 }
+
             }
 
         }

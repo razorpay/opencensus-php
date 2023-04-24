@@ -447,7 +447,7 @@ class FlexMoneyGatewayTest extends CardlessEmiGatewayTest
     {
         $this->sharedTerminal = $this->fixtures->create('terminal:cardlessEmiFlexMoneySubproviderTerminal');
 
-        $this->createSubMerchant();
+        $this->createSubMerchantForFlexmoney();
 
         $preferences = $this->getPreferences();
 

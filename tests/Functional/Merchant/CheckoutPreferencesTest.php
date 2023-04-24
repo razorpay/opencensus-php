@@ -119,23 +119,6 @@ class CheckoutPreferencesTest extends TestCase
         $this->esClient =  $this->esDao->getEsClient()->getClient();
     }
 
-    public function enableRazorXTreatmentForInstrumentLevelCheck()
-    {
-        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
-
-        $this->app->instance('razorx', $razorx);
-
-        $razorx->shouldReceive('getTreatment')
-            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
-            {
-                if ($featureFlag === (RazorxTreatment::PREFERENCES_INSTRUMENT_LEVEL_CHECK))
-                {
-                    return 'on';
-                }
-                return 'off';
-            });
-    }
-
     public function testSetBanks()
     {
         $this->ba->adminAuth();
@@ -773,6 +756,8 @@ class CheckoutPreferencesTest extends TestCase
 
         $this->fixtures->merchant->enableDebitEmiProviders();
 
+        $this->fixtures->merchant->enableCreditEmiProviders(['HDFC' => 1 , 'UTIB' => 1 , 'KKBK' => 1]);
+
         $this->fixtures->create('emi_plan:default_emi_plans');
 
         $response = $this->getPreferences();
@@ -823,8 +808,6 @@ class CheckoutPreferencesTest extends TestCase
     public function testGetCheckoutPreferencesForCreditEmiProviders()
     {
 
-        $this->enableRazorXTreatmentForInstrumentLevelCheck();
-
         $this->fixtures->merchant->enableEmiCredit();
 
         $this->fixtures->emiPlan->create(
@@ -854,8 +837,6 @@ class CheckoutPreferencesTest extends TestCase
     public function testGetCheckoutPreferencesForPaylaterProviders()
     {
 
-        $this->enableRazorXTreatmentForInstrumentLevelCheck();
-
         $this->fixtures->merchant->enablePayLater();
 
         $this->fixtures->merchant->enablePaylaterProviders(['icic' => 1]);
@@ -871,8 +852,6 @@ class CheckoutPreferencesTest extends TestCase
 
     public function testGetCheckoutPreferencesForCardlessEmiProviders()
     {
-
-        $this->enableRazorXTreatmentForInstrumentLevelCheck();
 
         $this->fixtures->merchant->enableCardlessEmi();
 
@@ -1110,17 +1089,17 @@ class CheckoutPreferencesTest extends TestCase
     public function testGetCheckoutPreferencesAfterFilterForMinimumAmountOnCardlessEmi()
     {
         $this->fixtures->merchant->enableCardlessEmi();
-        $this->fixtures->merchant->enableCardlessEmiProviders(['zestmoney' => 1, 'walnut369' => 1]);
+        $this->fixtures->merchant->enableCardlessEmiProviders(['walnut369' => 1]);
 
         $this->fixtures->create('terminal:shared_cardless_emi_walnut369_terminal');
-        $this->fixtures->create('terminal:cardlessEmiZestMoneyTerminal');
+//        $this->fixtures->create('terminal:cardlessEmiZestMoneyTerminal');
 
         $this->ba->publicAuth();
 
         $response = $this->startTest();
 
         $this->assertArrayNotHasKey('walnut369', $response['methods']['cardless_emi']);
-        $this->assertArrayHasKey('zestmoney', $response['methods']['cardless_emi']);
+//        $this->assertArrayHasKey('zestmoney', $response['methods']['cardless_emi']);
 
     }
 
@@ -1128,17 +1107,17 @@ class CheckoutPreferencesTest extends TestCase
     {
         $this->fixtures->merchant->enableCardlessEmi();
 
-        $this->fixtures->merchant->enableCardlessEmiProviders(['zestmoney' => 1 , 'hcin' => 1]);
+        $this->fixtures->merchant->enableCardlessEmiProviders(['hcin' => 1]);
 
         $this->fixtures->create('terminal:cardlessEmiFlexMoneySubproviderTerminal');
-        $this->fixtures->create('terminal:cardlessEmiZestMoneyTerminal');
+//        $this->fixtures->create('terminal:cardlessEmiZestMoneyTerminal');
 
         $this->ba->publicAuth();
 
         $response = $this->startTest();
 
         $this->assertArrayNotHasKey('hcin', $response['methods']['cardless_emi']);
-        $this->assertArrayHasKey('zestmoney', $response['methods']['cardless_emi']);
+//        $this->assertArrayHasKey('zestmoney', $response['methods']['cardless_emi']);
 
     }
 
@@ -1146,18 +1125,18 @@ class CheckoutPreferencesTest extends TestCase
     {
         $this->fixtures->merchant->enableCardlessEmi();
 
-        $this->fixtures->merchant->enableCardlessEmiProviders(['zestmoney' => 1 , 'hcin' => 1]);
+        $this->fixtures->merchant->enableCardlessEmiProviders([ 'hcin' => 1]);
 
         $this->fixtures->create('terminal:cardlessEmiFlexMoneySubproviderTerminal');
 
-        $this->fixtures->create('terminal:cardlessEmiZestMoneyTerminal');
+//        $this->fixtures->create('terminal:cardlessEmiZestMoneyTerminal');
 
         $this->ba->publicAuth();
 
         $response = $this->startTest();
 
         $this->assertArrayHasKey('hcin', $response['methods']['cardless_emi']);
-        $this->assertArrayHasKey('zestmoney', $response['methods']['cardless_emi']);
+//        $this->assertArrayHasKey('zestmoney', $response['methods']['cardless_emi']);
 
     }
 
@@ -1165,35 +1144,35 @@ class CheckoutPreferencesTest extends TestCase
     {
         $this->fixtures->merchant->enableCardlessEmi();
 
-        $this->fixtures->merchant->enableCardlessEmiProviders(['zestmoney' => 1, 'walnut369' => 1]);
+        $this->fixtures->merchant->enableCardlessEmiProviders(['walnut369' => 1]);
 
         $this->fixtures->create('terminal:shared_cardless_emi_walnut369_terminal');
-        $this->fixtures->create('terminal:cardlessEmiZestMoneyTerminal');
+//        $this->fixtures->create('terminal:cardlessEmiZestMoneyTerminal');
 
         $this->ba->publicAuth();
 
         $response = $this->startTest();
 
         $this->assertArrayHasKey('walnut369', $response['methods']['cardless_emi']);
-        $this->assertArrayHasKey('zestmoney', $response['methods']['cardless_emi']);
+//        $this->assertArrayHasKey('zestmoney', $response['methods']['cardless_emi']);
     }
 
     public function testGetCheckoutPreferencesForCardlessEmiEnabledBanks()
     {
         $this->fixtures->merchant->enableCardlessEmi();
 
-        $this->fixtures->merchant->enableCardlessEmiProviders(['hdfc' => 1 , 'icic' => 1 , 'barb' => 1 , 'kkbk' => 1 , 'fdrl' => 1 , 'idfb' => 1 , 'hcin' => 1,'zestmoney' => 1]);
+        $this->fixtures->merchant->enableCardlessEmiProviders(['hdfc' => 1 , 'icic' => 1 , 'barb' => 1 , 'kkbk' => 1 , 'fdrl' => 1 , 'idfb' => 1 , 'hcin' => 1]);
 
         $this->fixtures->create('terminal:cardlessEmiFlexMoneySubproviderTerminal');
         $this->fixtures->create('terminal:cardlessEmiZestMoneyTerminal');
 
         $response = $this->getPreferences();
 
-        $this->assertEquals(8, count($response['methods']['cardless_emi']));
+        $this->assertEquals(7, count($response['methods']['cardless_emi']));
 
         $this->assertArrayHasKey('kkbk', $response['methods']['cardless_emi']);
         $this->assertArrayHasKey('hdfc', $response['methods']['cardless_emi']);
-        $this->assertArrayHasKey('zestmoney', $response['methods']['cardless_emi']);
+//        $this->assertArrayHasKey('zestmoney', $response['methods']['cardless_emi']);
         $this->assertArrayHasKey('barb', $response['methods']['cardless_emi']);
     }
 

@@ -654,8 +654,6 @@ final class RazorxTreatment
     // Experiment to migrate merchant_risk_fact to datalake
     public const MERCHANT_RISK_FACT_MIGRATION = "merchant_risk_fact_migration";
 
-    public const PREFERENCES_INSTRUMENT_LEVEL_CHECK = "preferences_instrument_level_check";
-
     // Experiment to enable Whatsapp Notification for Risk chargeback intimation
     const RISK_WHATSAPP_NOTIFICATION = 'risk_whatsapp_notification';
 

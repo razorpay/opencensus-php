@@ -464,6 +464,34 @@ class CardlessEmiGatewayTest extends TestCase
         return $subMerchantId;
     }
 
+    protected function createSubMerchantForFlexmoney()
+    {
+        $subMerchant = $this->fixtures->create('merchant');
+
+        $subMerchantId = $subMerchant->getId();
+
+        $this->fixtures->create('methods:default_methods', ['merchant_id' => $subMerchantId]);
+
+        $this->fixtures->merchant->enableCardlessEmiProviders(['hdfc' => 1 , 'kkbk' => 1,'fdrl' => 1 , 'idfb' => 1,'icic' => 1 , 'hcin' => 1, 'barb' => 1] , $subMerchantId);
+
+        $this->fixtures->merchant->enableCardlessEmi($subMerchantId);
+
+        $this->fixtures->create('balance',
+            [
+                'merchant_id' => $subMerchantId,
+                'type'        => 'primary',
+                'balance'     => 10000000,
+            ]);
+
+        $this->ba->getAdmin()->merchants()->attach($subMerchantId);
+
+        $this->assignSubMerchant($this->sharedTerminal->getId(), $subMerchantId);
+
+        $this->setSubMerchantPublicAuth($subMerchantId);
+
+        return $subMerchantId;
+    }
+
     protected function assignSubMerchant(string $tid, string $mid)
     {
         $url = '/terminals/' . $tid . '/merchants/' . $mid;

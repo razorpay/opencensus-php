@@ -11,6 +11,7 @@ use Lib\PhoneBook;
 use RZP\Base;
 use RZP\Error;
 use RZP\Exception;
+use RZP\Models\Emi\CardlessEmiProvider;
 use RZP\Models\Vpa;
 use RZP\Diag\EventCode;
 use Razorpay\IFSC\IFSC;
@@ -1004,7 +1005,7 @@ class Validator extends Base\Validator
         switch ($input['method'])
         {
             case Payment\Method::CARDLESS_EMI:
-                if (CardlessEmi::exists($input['provider']) === false)
+                if ((CardlessEmi::exists($input['provider']) === false) or $input['provider'] == CardlessEmiProvider::ZESTMONEY )
                 {
                     throw new Exception\BadRequestValidationFailureException(
                         'Provider is not supported for cardless emi',
