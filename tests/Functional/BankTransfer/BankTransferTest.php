@@ -50,6 +50,7 @@ use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\VirtualAccount\UnexpectedPaymentReason;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\Unit\Models\Invoice\Traits\CreatesInvoice;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
@@ -9804,5 +9805,33 @@ class BankTransferTest extends TestCase
         $this->assertEquals($content['id'],$mii['notes']['beneficiary_id']);
     }
 
+    public function testBankTransferPaymentCaptureOnClosedVa()
+    {
+        $this->closeVirtualAccount($this->virtualAccountId);
+
+        $accountNumber = $this->bankAccount['account_number'];
+        $ifsc          = $this->bankAccount['ifsc'];
+
+        $this->disableUnexpectedPaymentRefundImmediately();
+
+        $response = $this->processBankTransfer($accountNumber, $ifsc);
+        $this->assertEquals(true, $response['valid']);
+        $this->assertNull($response['message']);
+
+        $bankTransfer = $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals(false, $bankTransfer['expected']);
+        $this->assertEquals('VIRTUAL_ACCOUNT_CLOSED', $bankTransfer['unexpected_reason']);
+
+        // Payment is automatically refunded
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage("Payment done on closed customer identifier cannot be captured.");
+
+        $this->capturePayment($payment['id'], $payment['amount']);
+    }
 
 }

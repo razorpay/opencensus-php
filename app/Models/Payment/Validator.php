@@ -1607,6 +1607,8 @@ class Validator extends Base\Validator
             // For Optimizer external pg payments, we should honor auto capture timeout
             $this->failIfRefundConfigSetLateAuthForOptimizerExternalPgPayment($payment);
 
+            $this->failIfSmartCollectUnexpectedPayment($payment);
+
             $this->captureAmountValidate($payment, $amount);
 
             $this->captureCurrencyValidate($payment, $currency);
@@ -2042,6 +2044,27 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid purpose type.', 'purpose');
+        }
+    }
+
+    protected function failIfSmartCollectUnexpectedPayment(Entity $payment)
+    {
+        $virtualAccount = null;
+
+        if ($payment->isBankTransfer() === true)
+        {
+            $virtualAccount = $payment->bankTransfer->virtualAccount;
+        }
+
+        if ($payment->isUpiTransfer() === true)
+        {
+            $virtualAccount = $payment->upiTransfer->virtualAccount;
+        }
+
+        if (($virtualAccount !== null) and ($virtualAccount->isClosed() === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_CLOSED_VIRTUAL_ACCOUNT);
         }
     }
 
