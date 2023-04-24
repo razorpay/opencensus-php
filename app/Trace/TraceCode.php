@@ -38,6 +38,7 @@ class TraceCode
 
     const API_SLOW_RESPONSE_CALL                    = 'API_SLOW_RESPONSE_CALL';
     const API_RESPONSE_METRIC                       = 'API_RESPONSE_METRIC';
+    const API_ERROR_RESPONSE                        = 'API_ERROR_RESPONSE';
 
     const REDIS_CONNECTION_ERROR                    = 'REDIS_CONNECTION_ERROR';
 

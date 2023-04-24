@@ -1701,6 +1701,13 @@ class Service extends Base\Service
 
             if ($APIConnection->status_code !== 200)
             {
+                Trace::info(TraceCode::API_ERROR_RESPONSE, [
+                    'status_code'   => $APIConnection->status_code,
+                    'url'           => $APIConnection->url,
+                    'success'       => $APIConnection->success,
+                    'body'          => $APIConnection->body,
+                ]);
+
                 throw new Exception('API Connection Error');
             }
 
