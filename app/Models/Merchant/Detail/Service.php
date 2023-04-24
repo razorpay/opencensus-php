@@ -515,7 +515,7 @@ class Service extends Base\Service
                 {
                     $this->trace->info(TraceCode::CONSENT_CREATION_ERROR, [
                         'merchant_id' => $merchantId,
-                        'message' => $exception->getMessage()
+                        'message'     => $exception->getMessage()
                     ]);
                 }
             }

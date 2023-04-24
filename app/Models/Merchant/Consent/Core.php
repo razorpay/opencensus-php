@@ -228,7 +228,7 @@ class Core extends Base\Core
     {
         $consents = $this->repo->merchant_consents->fetchAllConsentForMerchantIdAndConsentType($merchantId, array_keys(ConsentConstant::VALID_LEGAL_DOC));
 
-        if($consents != null)
+        if ($consents !== null)
         {
             $responseData = [];
 
@@ -241,9 +241,10 @@ class Core extends Base\Core
                         "entity_id"   => $consent['id'],
                     ]);
 
-                    $fileStoreId = $consent['metadata']['ufh_file_id'] ??  $this->fetchAndSaveFileId($consent);
+                    $fileStoreId = (empty($consent['metadata']['ufh_file_id']) === false) ? $consent['metadata']['ufh_file_id']
+                        : $this->fetchAndSaveFileId($consent);
 
-                    $ufhService        = $this->app['ufh.service'];
+                    $ufhService = $this->app['ufh.service'];
 
                     $signedUrlResponse = $ufhService->getSignedUrl($fileStoreId, [], $merchantId)['signed_url'];
 
@@ -377,7 +378,7 @@ class Core extends Base\Core
     private function fetchAndSaveFileId($consent)
     {
         $requestBody = [
-            "id"                      => $consent['request_id']
+            "id"   => $consent['request_id']
         ];
 
         $bvsResponse = app('bvs_legal_document_manager')->getLegalDocumentsByRequestId($requestBody);
@@ -385,7 +386,8 @@ class Core extends Base\Core
         $bvsResponseData = $bvsResponse->getResponseData();
 
         $this->trace->info(TraceCode::FETCH_CONSENT_SUCCESS, [
-            "response"       => $bvsResponseData,
+            "request_body"  => $requestBody,
+            "response"      => $bvsResponseData,
         ]);
 
         $documentCount = $bvsResponseData['count'];
@@ -394,7 +396,16 @@ class Core extends Base\Core
 
         for ($count = 0; $count < $documentCount; $count++)
         {
-            if($documentDetail[$count]->getType() === $consent['consent_for'])
+            $this->trace->info(TraceCode::FETCH_DOCUMENTS_DETAILS, [
+                "type_of_document" => $documentDetail[$count]->getType(),
+                "consent_for"      => $consent['consent_for'],
+                "ufh_file_id"      => $documentDetail[$count]->getUfhFileId(),
+                "status"           => $documentDetail[$count]->getStatus()
+            ]);
+
+            if (empty($documentDetail[$count]->getType()) === false
+               and str_contains(strtolower($consent['consent_for']),
+                                strtolower($documentDetail[$count]->getType())))
             {
                 $input['metadata'] = $this->mergeJson($consent['metadata'], [
                     'ufh_file_id' => $documentDetail[$count]->getUfhFileId()]);
