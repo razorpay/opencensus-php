@@ -55,16 +55,11 @@ export default class TicketBriefRevamped extends React.Component {
                             </>
                           )}
                         </p>
-
-                        <Link
-                          to={`/ticket-support/${ticket.fd_instance}/${ticket.id}/${this.props.ticketType}/conversation`}
-                        >
-                          <p className="ticket-short-details">
-                            <span>Ticket # {ticket.ticket_id}</span>
-                            <span className="ticket-detail-separator">•</span>
-                            <span>Raised {formattedDate}</span>
-                          </p>
-                        </Link>
+                        <p className="ticket-short-details">
+                          <span>Ticket # {ticket.ticket_id}</span>
+                          <span className="ticket-detail-separator">•</span>
+                          <span>Raised {formattedDate}</span>
+                        </p>
                       </div>
                       <div className="col-xs-2">
                         <TicketStatus ticket={ticket} />
