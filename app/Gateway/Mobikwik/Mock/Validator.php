@@ -24,7 +24,7 @@ class Validator extends Base\Validator
     protected static $refundRules = array(
         'mid'       => 'required|alpha_num',
         'txid'      => 'required|size:14|alpha_num',
-        'email'     => 'required|email',
+        'refundid'  => 'required|size:14|alpha_num',
         'amount'    => 'required|numeric',
         'ispartial' => 'sometimes|alpha_num',
         'checksum'  => 'required',

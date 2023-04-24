@@ -81,7 +81,7 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
-        $request = $this->getVerifyRequestArray($input);
+        $request = $this->getVerifyRequestArray($input, Action::PAY);
 
         $response = $this->sendGatewayRequest($request);
         $this->response = $response;
@@ -111,7 +111,7 @@ class Gateway extends Base\Gateway
 
     public function sendRefundVerifyRequest($input)
     {
-        $request = $this->getVerifyRequestArray($input);
+        $request = $this->getVerifyRequestArray($input, Action::REFUND);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -128,7 +128,7 @@ class Gateway extends Base\Gateway
                 'refund_id'  => $input['refund']['id'],
             ]);
 
-        $this->verifySecureHashForQueryRequest($content);
+        $this->verifySecureHashForQueryRefundRequest($content);
 
         unset($content['checksum']);
 
@@ -564,14 +564,14 @@ class Gateway extends Base\Gateway
         //                         $input['payment']['id'], Action::AUTHORIZE);
 
         $content['txid'] = $input['payment']['id'];
-        $content['email'] = $input['payment']['email'];
+        $content['refundid'] = $input['refund']['id'];
         $content['amount'] = (string) ($input['refund']['amount'] / 100);
 
         $content['checksum'] = $this->getHashForRefundRequest(
                                         $content['mid'],
                                         $content['txid'],
-                                        $content['amount'],
-                                        $content['email']);
+                                        $content['refundid'],
+                                        $content['amount']);
 
         if ($input['refund']['amount'] < $input['payment']['amount'])
         {
@@ -596,16 +596,29 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function getVerifyRequestArray($input)
+    protected function getVerifyRequestArray($input, $action)
     {
         $content['mid'] = $this->getMobikwikMerchantId($input['terminal']);
 
         $content['orderid'] = $input['payment']['id'];
 
-        $contentToTrace = http_build_query($content);
+        if($action === Action::REFUND)
+        {
+            $content['refundid'] = $input['refund']['id'];
 
-        $content['checksum'] = $this->getHashForVerifyRequest(
-                                    $content['mid'], $content['orderid']);
+            $content['checksum'] = $this->getHashForRefundVerifyRequest(
+                                                $content['mid'],
+                                                $content['orderid'],
+                                                $content['refundid']);
+        }
+        else
+        {
+            $content['checksum'] = $this->getHashForVerifyRequest(
+                                                $content['mid'],
+                                                $content['orderid']);
+        }
+
+        $contentToTrace = http_build_query($content);
 
         $content = http_build_query($content);
 
@@ -698,6 +711,13 @@ class Gateway extends Base\Gateway
         return $this->getHashOfString($str);
     }
 
+    protected function getHashForRefundVerifyRequest($mid, $orderId, $refundid)
+    {
+        $str = "'" . $mid . "''" . $orderId . "''". $refundid . "'";
+
+        return $this->getHashOfString($str);
+    }
+
     protected function getStringToHash($content, $glue = '')
     {
         return "'" . parent::getStringToHash($content, "''") . "'";
@@ -717,11 +737,27 @@ class Gateway extends Base\Gateway
         return strtolower(hash_hmac('sha256', $str, $secret, false));
     }
 
-    protected function getHashForRefundRequest($mid, $orderId, $amount, $email)
+    protected function getHashForRefundRequest($mid, $orderId, $refundid, $amount)
     {
-        $str = "'" . $mid . "''" . $orderId . "''" . $amount . "''" . $email . "'";
+        $str = "'" . $mid . "''" . $orderId . "''" . $refundid . "''" . $amount . "'";
 
         return $this->getHashOfString($str);
+    }
+
+    protected function verifySecureHashForQueryRefundRequest($content)
+    {
+        $str = "'" . $content['statuscode'] . "'" .
+            "'" . $content['orderid'] . "'" .
+            "'" . $content['refundid'] . "'" .
+            "'" . $content['txnamount'] . "'" .
+            "'" . $content['refundamount'] . "'" .
+            "'" . $content['refid'] . "'" ;
+
+        $generated = $this->getHashOfString($str);
+
+        $actual = $content['checksum'];
+
+        $this->compareHashes($actual, $generated);
     }
 
     protected function getHashForAuthorizeRequest($content)
@@ -790,6 +826,7 @@ class Gateway extends Base\Gateway
     {
         $attributes['refund_id'] = $input['refund']['id'];
         $attributes['payment_id'] = $input['payment']['id'];
+        $attributes['email'] = $input['payment']['email'];
 
         $refund = $this->createGatewayEntity($attributes);
 

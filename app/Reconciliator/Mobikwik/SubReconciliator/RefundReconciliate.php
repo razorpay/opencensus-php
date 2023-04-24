@@ -12,6 +12,7 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
      *******************/
     const COLUMN_PAYMENT_ID    = 'orderid';
     const COLUMN_REFUND_AMOUNT = 'refundamount';
+    const COLUMN_REFUND_ID     = 'refundid';
 
     /**
      * Gets refund Id from row data
@@ -26,36 +27,51 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
     {
         $refundId = null;
 
-        $paymentId = $this->getPaymentId($row);
-
-        if (empty($paymentId) === true)
+        /**
+         *
+         * Will get refundid in Recon file after making changes for partial refund for the same amount
+         *
+         */
+        if (isset($row[self::COLUMN_REFUND_ID]) === true)
         {
-            return null;
-        }
+            $refundId = $row[self::COLUMN_REFUND_ID];
 
-        $refundAmount = $this->getReconRefundAmount($row);
-
-        $refunds = $this->repo->refund->findForPaymentAndAmount($paymentId, $refundAmount);
-
-        if (count($refunds) === 1)
-        {
-            $refundId = $refunds[0]['id'];
+            return $refundId;
         }
         else
         {
-            $this->trace->info(
-                TraceCode::RECON_MISMATCH,
-                [
-                    'info_code'             => Base\InfoCode::RECON_UNIQUE_REFUND_NOT_FOUND,
-                    'payment_id'            => $paymentId,
-                    'refund_amount'         => $refundAmount,
-                    'refund_count'          => count($refunds),
-                    'gateway'               => $this->gateway,
-                    'batch_id'              => $this->batchId,
-                ]);
-        }
+            $paymentId = $this->getPaymentId($row);
 
-        return $refundId;
+            if (empty($paymentId) === true)
+            {
+                return null;
+            }
+
+            $refundAmount = $this->getReconRefundAmount($row);
+
+            $refunds = $this->repo->refund->findForPaymentAndAmount($paymentId, $refundAmount);
+
+            if (count($refunds) === 1)
+            {
+                $refundId = $refunds[0]['id'];
+            }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::RECON_MISMATCH,
+                    [
+                        'info_code'             => Base\InfoCode::RECON_UNIQUE_REFUND_NOT_FOUND,
+                        'payment_id'            => $paymentId,
+                        'refund_amount'         => $refundAmount,
+                        'refund_count'          => count($refunds),
+                        'gateway'               => $this->gateway,
+                        'batch_id'              => $this->batchId,
+                    ]);
+            }
+
+            return $refundId;
+
+        }
     }
 
     /**
