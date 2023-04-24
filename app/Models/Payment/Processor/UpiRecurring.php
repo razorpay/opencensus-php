@@ -89,7 +89,14 @@ trait UpiRecurring
     {
         $mandate = $this->repo->upi_mandate->findByTokenId($payment->getTokenId());
 
-        $this->validateAutoRecurringForUpiBeforePreDebit($payment, $mandate);
+        try
+        {
+            $this->validateAutoRecurringForUpiBeforePreDebit($payment);
+        }
+        catch (\Exception $e)
+        {
+            return;
+        }
 
         $input = [
             'action'        => Payment\Action::PRE_DEBIT,
@@ -480,27 +487,24 @@ trait UpiRecurring
         //TODO:: This has to be added in the auto recurring PR for upi.
     }
 
-    protected function validateAutoRecurringForUpiBeforePreDebit(Entity $payment, Mandate $mandate)
-    {
-        // TODO: Add predebit validation, these will go as logic exception for now
-    }
-
-    protected function validateAutoRecurringForUpiBeforeDebit(Entity $payment)
+    protected function validateAutoRecurringForUpiBeforePreDebit(Entity $payment)
     {
         try
         {
-            $token = $payment->localToken;
+            $token = $this->repo->token->find($payment->getTokenId());
 
-            if($token !== null and
-                $token->getRecurringStatus() !== Token\RecurringStatus::CONFIRMED)
+            if(($token === null) or
+               ($token->getRecurringStatus() !== Token\RecurringStatus::CONFIRMED))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_UNCONFIRMED_TOKEN_PASSED_IN_SECOND_RECURRING,
                     null,
                     [
                         'payment_id'      => $payment->getId(),
-                        'token_id'        => $token->getId() ?? null,
-                        'recurring_status'=> $token->getRecurringStatus() ?? null
+                        'token_id'        => $token ? $token->getId() : null,
+                        'recurring_status'=> $token ? $token->getRecurringStatus() : null,
+                        'merchant_id'     => $payment->getMerchantId(),
+                        'step'             => 'pre-debit'
                     ]);
             }
         }
@@ -509,12 +513,48 @@ trait UpiRecurring
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::UPI_RECURRING_UNCONFIRMED_TOKEN_IN_AUTO_DEBIT,
-                [
-                    'payment_id'       => $payment->getId(),
-                    'token_id'         => $payment->localToken->getId() ?? null,
-                    'recurring_status' => $payment->localToken->getRecurringStatus() ?? null,
-                ]);
+                TraceCode::UPI_RECURRING_UNCONFIRMED_TOKEN_IN_AUTO_DEBIT);
+
+            $this->lockForUpdateAndReload($payment);
+
+            $metadata = $payment->getUpiMetadata();
+            $metadata->setInternalStatus(UpiMetadata\InternalStatus::PRE_DEBIT_FAILED);
+            $metadata->setRemindAt(null);
+            (new UpiMetadata\Core)->update($metadata);
+
+            $this->updatePaymentAuthFailed($e);
+
+            throw $e;
+        }
+    }
+
+    protected function validateAutoRecurringForUpiBeforeDebit(Entity $payment)
+    {
+        try
+        {
+            $token = $this->repo->token->find($payment->getTokenId());
+
+            if(($token === null) or
+               ($token->getRecurringStatus() !== Token\RecurringStatus::CONFIRMED))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_UNCONFIRMED_TOKEN_PASSED_IN_SECOND_RECURRING,
+                    null,
+                    [
+                        'payment_id'      => $payment->getId(),
+                        'token_id'        => $token ? $token->getId() : null,
+                        'recurring_status'=> $token ? $token->getRecurringStatus() : null,
+                        'merchant_id'     => $payment->getMerchantId(),
+                        'step'             => 'debit'
+                    ]);
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::UPI_RECURRING_UNCONFIRMED_TOKEN_IN_AUTO_DEBIT);
 
             $this->lockForUpdateAndReload($payment);
 
