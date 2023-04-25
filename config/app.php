@@ -477,7 +477,6 @@ return array(
     'product_config_issue_exp_id'       => env('PRODUCT_CONFIG_ISSUE_EXP_ID'),
     'user_role_migration_for_x_exp_id'  => env('USER_ROLE_MIGRATION_FOR_X_EXP_ID'),
     'partner_type_migration_exp_id'     => env('PARTNER_TYPE_MIGRATION_EXP_ID'),
-    'partner_first_comm_payout_exp_id'  => env('PARTNER_FIRST_COMM_PAYOUT_EXP_ID'),
     'finance_approval_removal_exp_id'   => env('FINANCE_APPROVAL_REMOVAL_EXP_ID'),
     'merchant_policies_exp_id'          => env('MERCHANT_POLICIES_EXP_ID'),
     'product_led_mail_communication' => env('PRODUCT_LED_MAIL_COMMUNICATION'),
