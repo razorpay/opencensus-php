@@ -241,9 +241,17 @@ trait UpiRecurring
                 ErrorCode::SERVER_ERROR);
         }
 
-        Customer\Entity::verifyIdAndStripSign($customerId);
+        if((($token->getEntityType() === \RZP\Constants\Entity::SUBSCRIPTION) and
+            ($customerId === "cust_")) === false)
+        {
+            Customer\Entity::verifyIdAndStripSign($customerId);
 
-        $payment = $this->repo->payment->getByTokenIdAndCustomerId($token['id'], $customerId);
+            $payment = $this->repo->payment->getByTokenIdAndCustomerId($token['id'], $customerId);
+        }
+        else
+        {
+            $payment = $this->repo->payment->fetchInitialPaymentIdForToken($token['id'], $token->getMerchantId());
+        }
 
         $gateway = $tokenTerminal->getGateway();
 

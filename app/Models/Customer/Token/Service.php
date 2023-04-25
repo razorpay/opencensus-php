@@ -113,9 +113,16 @@ class Service extends Base\Service
 
     public function cancel($id, $tokenId)
     {
-        $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
+        $token = $this->repo->token->findByPublicId($tokenId);
 
-        $token = $this->core->getByTokenIdAndCustomer($tokenId, $customer);
+        if((($token->getEntityType() === Entity::SUBSCRIPTION) and
+            ($id === "cust_") and
+            ($token->getMethod() === Payment\Method::UPI)) === false)
+        {
+            $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
+
+            $token = $this->core->getByTokenIdAndCustomer($tokenId, $customer);
+        }
 
         $this->core->validateTokenForCancel($token);
 
