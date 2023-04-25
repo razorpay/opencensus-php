@@ -80,7 +80,7 @@ const EcosystemRefreshNudge = ({ waitInterval }: { waitInterval: number }): JSX.
               size="medium"
             />
             <Text>Refresh</Text>
-            {isRefreshEnabled && !isOngoingDowntimesError ? null : (
+            {isRefreshEnabled ? null : (
               <GenericTooltip align="bottom">
                 Please try to refresh after{' '}
                 <span data-testid="time-left">{getRemainingTime(secondsLeft)}</span>

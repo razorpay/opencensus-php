@@ -30,11 +30,11 @@ export const ongoingDowntimesHandler = ({
 
 export const resolvedDowntimesHandler = ({ isSuccess = true }: { isSuccess?: boolean }) => {
   if (!isSuccess) {
-    return rest.get('*/merchant/api/live/payments/downtimes/resolved', (req, res, ctx) => {
+    return rest.get('*/merchant/api/*/payments/downtimes/resolved', (req, res, ctx) => {
       return res(ctx.status(500), ctx.json({}), ctx.delay(50));
     });
   }
-  return rest.get('*/merchant/api/live/payments/downtimes/resolved', (req, res, ctx) => {
+  return rest.get('*/merchant/api/*/payments/downtimes/resolved', (req, res, ctx) => {
     return res(ctx.status(200), ctx.json(previous_downtimes_mock), ctx.delay(50));
   });
 };

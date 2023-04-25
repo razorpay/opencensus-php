@@ -55,6 +55,12 @@ export const EcosystemDowntimeContainer = styled.main(
     background-color: ${COLOR_MAP.background.main(theme.colors)};
     height: 100vh;
     width: 75vw;
+    @media screen and (max-width: ${theme.breakpoints.l}px) {
+      width: 65vw;
+    }
+    @media screen and (max-width: ${theme.breakpoints.m}px) {
+      width: 100vw;
+    }
     .ecosystem-health-error {
       margin-top: ${theme.spacing[5]}px;
       margin-right: ${theme.spacing[5]}px;

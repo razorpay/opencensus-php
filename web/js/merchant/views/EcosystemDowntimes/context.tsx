@@ -98,7 +98,7 @@ export const EcosystemDowntimeProvider = ({
   });
 
   const {
-    error: isPreviousDowntimesError,
+    error: previousDowntimesError,
     isLoading: isPreviousDowntimesLoading,
     isFetching: isPreviousDowntimesFetching,
   } = useQuery(
@@ -128,7 +128,7 @@ export const EcosystemDowntimeProvider = ({
       isOngoingDowntimesError: !!ongoingDowntimesError,
       isOngoingDowntimeLoading,
       isOngoingDowntimeFetching,
-      isPreviousDowntimesError,
+      isPreviousDowntimesError: !!previousDowntimesError,
       isPreviousDowntimesLoading,
       isPreviousDowntimesFetching,
     },
