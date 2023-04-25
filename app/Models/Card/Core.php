@@ -614,9 +614,18 @@ class Core extends Base\Core
             $input['cvv'] = null;
         }
 
-        // set dummy cvv for tokenised Visa cvvless flow
-        if ($card->isVisa() && boolval($input[Card\Entity::TOKENISED]) === true && isset($input[Card\Entity::CVV]) === false) {
+        // set dummy cvv for tokenised Visa via cryptogram cvvless flow
+        if ($card->isVisa() && boolval($input[Card\Entity::TOKENISED]) === true
+            && empty($input[Card\Entity::CVV]) === true) {
+
             $input['cvv'] = '123';
+
+            $this->trace->info(
+                TraceCode::CVV_OPTIONAL,
+                [
+                    'message'       => 'Setting cvv to dummy value',
+                ]
+            );
         }
 
         return array_merge(
@@ -1035,6 +1044,21 @@ class Core extends Base\Core
             Card\Entity::TOKEN_PROVIDER         => 'Razorpay',
             Card\Entity::TOKEN                  => $input['token'] ?? "",
         ];
+
+        // override empty cvv with dummy cvv for cvvless
+        if (Card\Network::getFullName(Network::VISA) === $card->getNetwork()
+            && boolval($input[Card\Entity::TOKENISED]) === true
+            && empty($input[Card\Entity::CVV]) === true) {
+
+            $input[Card\Entity::CVV ] = "123";
+
+            $this->trace->info(
+                TraceCode::CVV_OPTIONAL,
+                [
+                    'message'       => 'Setting cvv to dummy value',
+                ]
+            );
+        }
 
 
         if ( $card->getVault() === Card\Vault::HDFC)
