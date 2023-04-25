@@ -68,6 +68,7 @@ class CheckoutExperiment
             'cvv_less'                                           => false,
             'enable_auto_submit'                                 => 'control',
             'dcc_vas_merchants'                                  => false,
+            'emi_via_cards_revamp'                               => false,
         ];
 
         $this->input = $input;
@@ -299,6 +300,14 @@ class CheckoutExperiment
             'app.checkout_dcc_vas_merchants_splitz_experiment_id',
             'DccVasMerchants',
             'dcc_vas_merchants',
+            ['merchant_id' => $this->merchantId]
+        );
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.emi_via_card_screen_splitz_experiment_id',
+            'EmiViaCardRevamp',
+            'emi_via_cards_revamp',
             ['merchant_id' => $this->merchantId]
         );
     }
@@ -632,6 +641,13 @@ class CheckoutExperiment
     }
     
     private function handleDccVasMerchantsResponse($response): bool
+    {
+        $variant = $response['variant']['name'] ?? '';
+
+        return $variant === 'variant_on';
+    }
+
+    private function handleEmiViaCardRevampResponse($response): bool
     {
         $variant = $response['variant']['name'] ?? '';
 

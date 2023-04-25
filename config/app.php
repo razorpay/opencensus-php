@@ -620,4 +620,6 @@ return array(
     'one_cc_email_optional_on_checkout_experiment_id' => env('1CC_EMAIL_OPTIONAL_ON_CHECKOUT_EXP_ID'),
 
     'one_cc_email_hidden_on_checkout_experiment_id' => env('1CC_EMAIL_HIDDEN_ON_CHECKOUT_EXP_ID'),
+
+    'emi_via_card_screen_splitz_experiment_id' => env('EMI_VIA_CARD_SCREEN_SPLITZ_EXPERIMENT_ID'),
 );
