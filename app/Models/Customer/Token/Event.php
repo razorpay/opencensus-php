@@ -280,7 +280,9 @@ class Event extends Base\Core
 
             $eventData['token_iin'] = $tokenIIN;
 
-            $cardIIN = Card\IIN\IIN::getTransactingIinforRange($tokenIIN);
+            $bin = substr($tokenNumber, 0, 6);
+
+            $cardIIN = Card\IIN\IIN::getTransactingIinforRange($tokenIIN) ?? $bin;
 
             $iin = $this->repo->card->retrieveIinDetails($cardIIN);
 
