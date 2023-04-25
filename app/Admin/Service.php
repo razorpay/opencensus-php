@@ -1804,4 +1804,28 @@ class Service extends Base\Service
 
         $this->trace->info(TraceCode::ADMIN_RAW_API_CALL, $traceData);
     }
+
+    public function triggerPassResetEmail($domain, array $input)
+    {
+        try {
+            $request = new ApiRequestAny();
+            list($error, $data) = $request->processInput($input)->send('admin/forgot_password', 'POST');
+        } 
+        catch (\Razorpay\Api\Errors\BadRequestError $e) {
+            $error[] = $e->getMessage();
+        }
+        return [$error, $data];
+    }
+
+    public function changePassword($domain, array $input)
+    {
+        try {
+            $request = new ApiRequestAny();
+            list($error, $data) = $request->processInput($input)->send('admin/reset_password', 'POST');
+        } 
+        catch (\Razorpay\Api\Errors\BadRequestError $e) {
+            $error[] = $e->getMessage();
+        }
+        return [$error, $data];
+    }
 }

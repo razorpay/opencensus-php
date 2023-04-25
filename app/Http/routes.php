@@ -80,6 +80,14 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/account_block','AdminController@showAccountBlocked')
             ->name('account_block')
             ->middleware('set_x_frame');
+        Route::get('/reset-password','AdminController@resetPassword')
+            ->name('reset-password')
+            ->middleware('set_x_frame');
+        Route::get('/forgot-password','AdminController@forgotPassword')
+            ->name('forgot-password')
+            ->middleware('set_x_frame');
+        Route::post('/forgot_password', 'AdminController@postForgotPassword');
+        Route::post('/reset_password', 'AdminController@postResetPassword');
     });
 
     Route::group(['prefix' => 'user'], function()

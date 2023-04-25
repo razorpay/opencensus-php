@@ -348,6 +348,91 @@ class AdminController extends Controller
         ]);
     }
 
+    public function forgotPassword(){
+        $org = $this->getOrg()->getData(true);
+
+        if ($org['success'])
+        {
+            $org = $org['data'];
+        }
+        else
+        {
+            return AppResponse::jsonResponse(['Organization not found'], null);
+        }
+
+        // If already logged in
+        if (Auth::guard('api')->check())
+        {
+            $admin = $this->getAdmin()->getData(true);
+
+            if (empty($admin['data']) === false)
+            {
+                $view = 'admin.index';
+
+                return view($view, [
+                    'cdn' => \Config::get('app.cdn_dashboard_url'),
+                    'org'   => $org,
+                    'user'  => $admin['data'],
+                ]);
+            }
+        }
+
+        return view('admin.forgot-password', [
+            'org' => $org
+        ]);
+    }
+
+    public function postForgotPassword() {
+        
+        $input = Input::all();
+        $domain = \Request::server('SERVER_NAME');
+        list($error, $response) = (new Admin\Service)->triggerPassResetEmail($domain, $input);
+        return AppResponse::jsonResponse($error, $response);
+    }
+
+    public function postResetPassword() {
+        
+        $input = Input::all();
+        $domain = \Request::server('SERVER_NAME');
+        list($error, $response) = (new Admin\Service)->changePassword($domain, $input);
+        return AppResponse::jsonResponse($error, $response);
+    }
+
+
+    public function resetPassword(){
+        $org = $this->getOrg()->getData(true);
+
+        if ($org['success'])
+        {
+            $org = $org['data'];
+        }
+        else
+        {
+            return AppResponse::jsonResponse(['Organization not found'], null);
+        }
+
+        // If already logged in
+        if (Auth::guard('api')->check())
+        {
+            $admin = $this->getAdmin()->getData(true);
+
+            if (empty($admin['data']) === false)
+            {
+                $view = 'admin.index';
+
+                return view($view, [
+                    'cdn' => \Config::get('app.cdn_dashboard_url'),
+                    'org'   => $org,
+                    'user'  => $admin['data'],
+                ]);
+            }
+        }
+
+        return view('admin.reset-password', [
+            'org' => $org
+        ]);
+    }
+
     public function postResendOtp()
     {
         $input = Input::all();

@@ -82,3 +82,46 @@ body {
   margin-top: 20px;
   white-space: pre;
 }
+
+.admin-auth #successText {
+  background-color: #1f890e;
+  color: #fff;
+  font-size: 12px;
+  margin-top: 20px;
+  align-items: center;
+  padding: 6px 12px;
+  display: none;
+}
+
+.admin-auth #successText p {
+  margin: 12px;
+}
+.admin-auth #successText button {
+  border: none;
+  background: none;
+}
+
+.admin-auth a.forgot-password {
+  display: none;
+  margin-top: 12px;
+}
+div.pass-reset-successful {
+  max-width: 300px;
+  margin: 30px auto;
+  background-color: #20890d;
+  padding: 12px;
+  text-decoration: none;
+  padding: 16px;
+  color: #fff;
+  border-radius: 4px;
+  text-align: center;
+  display: none;
+}
+div.pass-reset-successful a {
+  background-color: #27c24c;
+  color: #fff;
+  text-decoration: none;
+  padding: 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+}

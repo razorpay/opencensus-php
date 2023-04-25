@@ -3,18 +3,31 @@
 </head>
 
 <body>
-  <form class="admin-auth container" method="post" action="/admin/signin" onsubmit="return false">
-    <div class="auth-heading">Admin Login</div>
+  <form class="admin-auth container" method="post" action="/admin/reset_password" onsubmit="return false">
+    <div class="auth-heading">Reset Password</div>
     <img alt="Logo" src="{{$org['login_logo_url']}}">
-    <input type="text" name="username" placeholder="Username" required autofocus>
-    <input type="password" name="password" placeholder="Password" required>
-    <a class="forgot-password" href="/admin/forgot-password">Forgot Password?</a>
-    <input type="submit" value="Login">
+    <input type="email" name="email" disabled>
+    <input type="password" name="password" placeholder="Enter Password" required autofocus>
+    <input type="password" name="confirm-password" placeholder="Confirm Password" required>
+    <input type="submit" value="Reset Password">
     <div id="errorText"></div>
   </form>
+  <div class="pass-reset-successful">
+    <span>Password Reset Successful</span>
+    <a href="/admin">Login</a>
+  </div>
 </body>
 
 <script>
+  window.addEventListener("load", setEmail);
+
+  function setEmail() {
+    var params = new URLSearchParams(window.location.search)
+    var email = params.get('email');
+    var emailElement = document.querySelector('input[type=email]')
+    emailElement.value = email;
+  }
+
   function readCookie(name) {
     var nameEQ = name + "=";
     var ca = document.cookie.split(';');
@@ -28,23 +41,23 @@
   var xhr;
   let errorText = document.querySelector('#errorText');
 
-  (function () {
-    var org = {!! json_encode($org) !!}
-    var feats = org.features;
-    if(feats && Array.isArray(feats) && feats.includes('org_admin_password_reset')) {
-      document.querySelector('.forgot-password').style.display="block";
-    }
-  })();
-
-
   document.forms[0].onsubmit = function(e) {
     e.preventDefault();
     if (xhr) {
       return;
     }
-    xhr = new XMLHttpRequest()
-    var formData = 'username=' + encodeURIComponent(document.querySelector('input').value) +
-      '&password=' + encodeURIComponent(document.querySelector('input[type=password]').value)
+    xhr = new XMLHttpRequest();
+
+    var params = new URLSearchParams(window.location.search)
+    var email = params.get('email');
+    var token = params.get('token');
+    var pass = document.querySelector('input[name=password]').value;
+    var confirmPass = document.querySelector('input[name=confirm-password]').value;
+
+    var formData = 'email=' + encodeURIComponent(email) +
+      '&password=' + encodeURIComponent(pass) +
+      '&password_confirmation=' + encodeURIComponent(confirmPass) +
+      '&token=' + encodeURIComponent(token)
     var submitBtn = document.querySelector('input[type=submit]');
     submitBtn.disabled = true
 
@@ -56,7 +69,8 @@
         data = JSON.parse(data);
 
         if (data.success) {
-          return location.reload();
+          var successDiv = document.querySelector('.pass-reset-successful');
+          successDiv.style.display = 'block';
         }
         if(data.errors && data.errors.length) {
           let firstError = data.errors[0]
