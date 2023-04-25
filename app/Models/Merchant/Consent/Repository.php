@@ -71,7 +71,7 @@ class Repository extends Base\Repository
             $metadata
         ];
 
-        return $this->newQuery()
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA))
                     ->select($userAttrs)
                     ->join(Table::MERCHANT_CONSENT_DETAILS, $detailIdColumn, '=', $consentDetailsIdColumn)
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)

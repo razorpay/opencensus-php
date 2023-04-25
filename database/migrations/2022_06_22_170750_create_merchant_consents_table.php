@@ -53,6 +53,8 @@ class CreateMerchantConsentsTable extends Migration
 
             $table->index(Entity::CREATED_AT);
 
+            $table->index(Entity::MERCHANT_ID);
+
         });
     }
 
