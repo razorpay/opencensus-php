@@ -50,6 +50,9 @@ chown -R nginx:nginx /app/storage/logs
 # /tmp needs to writable by all processes.
 chmod 777 /tmp
 
-/usr/sbin/php-fpm81
+/usr/sbin/php-fpm81 &
+
+CHILD=$!
+wait "$CHILD"
 
 /usr/sbin/nginx -g 'daemon off;'
