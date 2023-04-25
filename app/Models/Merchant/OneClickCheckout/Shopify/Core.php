@@ -932,10 +932,10 @@ class Core extends Base\Core
             $isSEwithCouponApplied = $body['script_with_coupon_applied'];
 
             // This action is need to handle the orders which is placed with both SE discount and customer specific coupons
-            if($isSEwithCouponApplied === true)
-            {
-                $this->disableUsedCoupon($client, $couponCode, $rzpOrder['id']);
-            }
+            // if($isSEwithCouponApplied === true)
+            // {
+            //     $this->disableUsedCoupon($client, $couponCode, $rzpOrder['id']);
+            // }
 
             $this->trace->info(
                 TraceCode::SHOPIFY_1CC_PLACE_ORDER_RETRY_RES,
