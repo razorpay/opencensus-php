@@ -1,4 +1,4 @@
-import { isMobile } from 'common/utils/validators';
+import { isMobile, flexibleDevUrl } from 'common/utils/validators';
 
 const IN_MOBILE_NUMBER = [
   {
@@ -129,6 +129,7 @@ const MY_MOBILE_NUMBER = [
     isValid: false,
   },
 ];
+
 describe('test for isMobile function', () => {
   describe('test scenarios for india', () => {
     test.each(IN_MOBILE_NUMBER)('', ({ number, isValid }) => {
@@ -136,10 +137,32 @@ describe('test for isMobile function', () => {
       expect(isMobile(number, 'IN')).toBe(isValid);
     });
   });
-
   describe('test scenarios for malaysia', () => {
     test.each(MY_MOBILE_NUMBER)('', ({ number, isValid }) => {
       expect(isMobile(number, 'MY')).toBe(isValid);
     });
+  });
+});
+
+describe('flexibleDevUrl', () => {
+  it('matches valid URLs', () => {
+    expect(flexibleDevUrl('https://www.example.com')).toBe(true);
+    expect(flexibleDevUrl('www.example.com')).toBe(true);
+    expect(flexibleDevUrl('http://www.example.com:8080/path/to/resource')).toBe(true);
+    expect(flexibleDevUrl('https://subdomain.example.com/path/to/resource.html')).toBe(true);
+    expect(flexibleDevUrl('http://www.example.com/path/to/resource/with-dashes?query=string')).toBe(
+      true,
+    );
+    expect(flexibleDevUrl('https://www.example.com?param1=value1&param2=value2')).toBe(true);
+  });
+
+  it('does not match invalid URLs', () => {
+    expect(flexibleDevUrl('http://www.example.com:8080/path with spaces')).toBe(false);
+    expect(flexibleDevUrl('ftp://www.example.com')).toBe(false);
+    expect(flexibleDevUrl('http://www.example.com/path/to/resource#fragment')).toBe(false);
+    expect(flexibleDevUrl('http://www.example.com/path/to/resource/#fragment')).toBe(false);
+    expect(flexibleDevUrl('http://www.example.com/path/to/resource/with spaces?query=string')).toBe(
+      false,
+    );
   });
 });
