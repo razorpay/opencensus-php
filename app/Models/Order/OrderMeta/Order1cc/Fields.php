@@ -86,6 +86,9 @@ class Fields
     const UTM_CAMPAIGN      = 'utm_campaign';
     const UTM_TERM          = 'utm_term';
     const UTM_CONTENT       = 'utm_content';
+    const GCLID             = 'gclid';
+    const FBCLID            = 'fbclid';
+    const REF               = 'ref';
 
 
     public static $dataFields = [
