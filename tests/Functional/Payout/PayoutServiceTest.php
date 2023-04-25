@@ -5248,6 +5248,84 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals($expectedReversalDetails['transaction_id'], $actualReversalDetails['transaction_id']);
     }
 
+    public function testCreatePayoutToFundAccount_BatchID_InHeader()
+    {
+        $merchant = $this->getDbEntity('merchant',
+                                       [
+                                           'id' => '10000000000000'
+                                       ],
+                                       'live');
+
+        $payoutCreateInput = [
+            Entity::AMOUNT          => 1000,
+            Entity::CURRENCY        => 'INR',
+            Entity::PURPOSE         => 'refund',
+            Entity::NARRATION       => 'refund',
+            Entity::MODE            => 'IMPS',
+            Entity::FUND_ACCOUNT_ID => 'fa_100000000000fa',
+        ];
+
+        $payoutServiceCreateMock = Mockery::mock('RZP\Services\PayoutService\Create',
+                                                 [$this->app])->makePartial();
+
+        $this->app->instance(PayoutServiceCreate::PAYOUT_SERVICE_CREATE, $payoutServiceCreateMock);
+
+        $payoutServiceCreateMock->shouldNotReceive('createPayoutViaMicroservice');
+
+        $this->app['rzp.mode'] = 'live';
+
+        $enteredCatch = false;
+
+        try
+        {
+            (new Core)->createPayoutToFundAccount($payoutCreateInput, $merchant, 'C0zv9I46W4wiOq');
+        }
+        catch (\Throwable $throwable)
+        {
+            $this->assertEquals(
+                'batch_id, idempotency_key is/are not required and should not be sent',
+                $throwable->getMessage());
+
+            $enteredCatch = true;
+        }
+
+        $this->assertEquals(true, $enteredCatch);
+
+        $payoutServiceCreateMock->shouldNotHaveReceived('createPayoutViaMicroservice');
+    }
+
+    public function testCreatePayoutToFundAccount_BatchID_In_Input()
+    {
+        $payoutServiceCreateMock = Mockery::mock('RZP\Services\PayoutService\Create',
+                                                 [$this->app])->makePartial();
+
+        $this->app->instance(PayoutServiceCreate::PAYOUT_SERVICE_CREATE, $payoutServiceCreateMock);
+
+        $payoutServiceCreateMock->shouldNotReceive('createPayoutViaMicroservice');
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+
+        $payoutServiceCreateMock->shouldNotHaveReceived('createPayoutViaMicroservice');
+    }
+
+    public function testCreatePayoutToFundAccount_IdempotencyKey()
+    {
+        $payoutServiceCreateMock = Mockery::mock('RZP\Services\PayoutService\Create',
+                                                 [$this->app])->makePartial();
+
+        $this->app->instance(PayoutServiceCreate::PAYOUT_SERVICE_CREATE, $payoutServiceCreateMock);
+
+        $payoutServiceCreateMock->shouldNotReceive('createPayoutViaMicroservice');
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+
+        $payoutServiceCreateMock->shouldNotHaveReceived('createPayoutViaMicroservice');
+    }
+
     public function testDccPayoutsDetailsFetchPayoutCountValidationFailure()
     {
         $this->testCreatePayout();

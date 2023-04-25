@@ -58,15 +58,7 @@ class Create extends Base
 
         elseif ($this->app['basicauth']->isAppAuth() === true)
         {
-            $variant = $this->app->razorx->getTreatment(
-                $merchantId,
-                RazorxTreatment::INTERNAL_PAYOUT_VIA_PS,
-                $this->mode);
-
-            if (strtolower($variant) === 'on')
-            {
-                $uri = self::CREATE_PAYOUT_INTERNAL_SERVICE_URI;
-            }
+            $uri = self::CREATE_PAYOUT_INTERNAL_SERVICE_URI;
         }
 
         $request = $this->createRequestBody($input, $merchantId, $creditsInfo);

@@ -3949,7 +3949,7 @@ class Base extends BaseCore
      *
      * @return bool
      */
-    protected function isPayoutServiceIfApplicable() : bool
+    protected function isPayoutServiceIfApplicable(array $input) : bool
     {
         if ($this->mode == Mode::LIVE)
         {
@@ -3957,6 +3957,25 @@ class Base extends BaseCore
 
             if ($this->isPayoutServiceEnabled === true)
             {
+                if ((isset($input[Payout\Entity::BATCH_ID]) === true) or
+                    (isset($input[Payout\Entity::IDEMPOTENCY_KEY]) === true) or
+                    (empty($this->batchId) === false))
+                {
+                    $this->trace->error(
+                        TraceCode::INVALID_PAYOUT_CREATE_REQUEST_TO_PAYOUT_SERVICE,
+                        [
+                            'merchant_id'         => $this->merchant->getMerchantId(),
+                            'payout_create_input' => $input,
+                            'batch_id'            => $this->batchId ?? "",
+                        ]);
+
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_ERROR,
+                        null,
+                        null,
+                        'batch_id, idempotency_key is/are not required and should not be sent');
+                }
+
                 $partnerMerchantId = $this->app['basicauth']->getPartnerMerchantId();
 
                 $applicationId = $this->app['basicauth']->getOAuthApplicationId();
@@ -3994,7 +4013,7 @@ class Base extends BaseCore
      */
     protected function createPayoutViaMicroservice(array $input)
     {
-        if ($this->isPayoutServiceIfApplicable() === true)
+        if ($this->isPayoutServiceIfApplicable($input) === true)
         {
             $input[Balance\Entity::ACCOUNT_NUMBER] = $this->balance->getAccountNumber();
 
