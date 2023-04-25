@@ -401,8 +401,6 @@ trait PartnerTrait
      */
     protected function setUpPartnerAuthForPayment()
     {
-
-
         $partnerId = '100000Razorpay';
 
         $client = $this->setUpPartnerMerchantAppAndGetClient('dev', [], $partnerId);

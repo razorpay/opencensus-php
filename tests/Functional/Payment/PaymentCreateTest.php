@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Mail;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Services\EsClient;
 use RZP\Models\NetbankingConfig;
 use Illuminate\Database\Eloquent\Factory;
@@ -38,6 +39,7 @@ use RZP\Services\RazorXClient;
 use RZP\Models\Currency\Currency;
 use RZP\Tests\Functional\Partner\Constants;
 use RZP\Models\Merchant\FeeBearer;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\UpiMetadata;
 use RZP\Models\Base\UniqueIdEntity;
@@ -56,10 +58,13 @@ use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Services\Dcs\Configurations\Constants as DcsConstants;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Tests\Traits\MocksSplitz;
 
 class PaymentCreateTest extends TestCase
 {
     use OAuthTrait;
+    use MocksSplitz;
+    use PartnerTrait;
     use PaymentTrait;
     use DbEntityFetchTrait;
     use InvoiceTestTrait;
@@ -11175,7 +11180,6 @@ class PaymentCreateTest extends TestCase
         }
     }
 
-
     public function testCreatePaymentWithOptimizerOnlyFlagEnabledRaasEnabled()
     {
         $payment = $this->getDefaultPaymentArray();
@@ -11198,5 +11202,114 @@ class PaymentCreateTest extends TestCase
         $data = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
         $result = $this->submitPaymentCallbackRedirect($data);
         return $result;
+    }
+
+    public function testPaymentOnPartnerAuthWithSubmManualSettlementEnabled()
+    {
+        $client = $this->createPartnerApplicationAndGetClientByEnv('dev', ['type' => 'partner', 'id' => 'AwtIC8XQqM0Wet']);
+
+        $submerchant = $this->fixtures->merchant->createWithBalance();
+
+        $featureParams = [
+            Feature\Entity::ENTITY_ID   => '10000000000000',
+            Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Feature\Entity::NAME        => 'subm_manual_settlement',
+        ];
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        $this->fixtures->create('feature', $featureParams);
+
+        $this->createMerchantApplication('10000000000000', 'aggregator', $client->getApplicationId());
+
+        $this->fixtures->create('merchant_access_map', ['entity_id' => $client->getApplicationId(), 'merchant_id' => $submerchant->getId()]);
+
+        $this->mockAllSplitzTreatment();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $response = $this->doPartnerAuthPayment($payment, $client->getId(), $submerchant->getId());
+
+        $this->capturePaymentByPartnerAuth($response['razorpay_payment_id'], $payment['amount'], $client, 'acc_' . $submerchant->getId());
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $this->assertEquals($payment['public_id'], $response['razorpay_payment_id']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertTrue($transaction['on_hold']);
+    }
+
+    public function testPaymentS2SOnPartnerAuthWithSubmManualSettlementEnabled()
+    {
+        $client = $this->createPartnerApplicationAndGetClientByEnv('dev', ['type' => 'partner', 'id' => 'AwtIC8XQqM0Wet']);
+
+        $this->mockCardVault();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        $sub = $this->fixtures->merchant->createWithBalance();
+
+        $this->fixtures->feature->create(['entity_type' => 'application', 'entity_id' => 'AwtIC8XQqM0Wet', 'name' => 's2s']);
+
+        $this->fixtures->feature->create(['entity_type' => 'merchant', 'entity_id' => '10000000000000', 'name' => 'subm_manual_settlement']);
+
+        $this->createMerchantApplication('10000000000000', 'aggregator', $client->getApplicationId());
+
+        $this->fixtures->create('merchant_access_map', ['entity_id' => $client->getApplicationId(), 'merchant_id' => $sub->getId()]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->mockAllSplitzTreatment();
+
+        $response = $this->doS2SPartnerAuthPayment($payment, $client, 'acc_' . $sub->getId());
+
+        $this->capturePaymentByPartnerAuth($response['razorpay_payment_id'], $payment['amount'], $client, 'acc_' . $sub->getId());
+
+        $this->assertArrayHasKey('razorpay_payment_id', $response);
+
+        $pay = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($pay['public_id'], $response['razorpay_payment_id']);
+
+        $this->assertEquals($pay['status'], 'captured');
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertTrue($transaction['on_hold']);
+    }
+
+    public function testPaymentOnPartnerAuthWithSubmManualSettlementDisabled()
+    {
+        $client = $this->createPartnerApplicationAndGetClientByEnv('dev', ['type' => 'partner', 'id' => 'AwtIC8XQqM0Wet']);
+
+        $submerchant = $this->fixtures->merchant->createWithBalance();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        $this->createMerchantApplication('10000000000000', 'aggregator', $client->getApplicationId());
+
+        $this->fixtures->create('merchant_access_map', ['entity_id' => $client->getApplicationId(), 'merchant_id' => $submerchant->getId()]);
+
+        $this->mockAllSplitzTreatment();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $response = $this->doPartnerAuthPayment($payment, $client->getId(), $submerchant->getId());
+
+        $this->capturePaymentByPartnerAuth($response['razorpay_payment_id'], $payment['amount'], $client, 'acc_' . $submerchant->getId());
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $this->assertEquals($payment['public_id'], $response['razorpay_payment_id']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertFalse($transaction['on_hold']);
     }
 }

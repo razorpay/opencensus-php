@@ -6,18 +6,13 @@ use Mail;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Feature;
-use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Pricing;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
-use RZP\Models\Currency;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use RZP\Constants\Entity;
-use Razorpay\Trace\Logger;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
-use RZP\Jobs\Settlement\Bucket;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Merchant\Balance;
 use Razorpay\Trace\Logger as Trace;
@@ -26,12 +21,12 @@ use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\Base as BaseCollection;
 use RZP\Mail\Merchant\FeeCreditsAlert;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Payment\Processor\Capture;
 use RZP\Mail\Merchant\AmountCreditsAlert;
 use RZP\Mail\Merchant\RefundCreditsAlert;
-use RZP\Mail\Merchant\BalanceThresholdAlert;
 use RZP\Models\Base\Entity as BaseEntity;
-use RZP\Models\Payment\Processor\Capture;
-use RZP\Models\Merchant\Balance\BalanceConfig;
+use RZP\Mail\Merchant\BalanceThresholdAlert;
 
 abstract class Base extends BaseCore
 {

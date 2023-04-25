@@ -969,6 +969,32 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function capturePaymentByPartnerAuth(string $id, int $amount, $client, string $subMerchantId): mixed
+    {
+        $server = [
+            'HTTP_X-Razorpay-Account' => $subMerchantId,
+        ];
+
+        $request = array(
+            'method'  => 'POST',
+            'url'     => '/payments/' . $id . '/capture',
+            'content' => array('amount' => $amount, 'currency' => 'INR'),
+            'server'  => $server
+        );
+
+        $this->ba->privateAuth('rzp_test_partner_' . $client->getId(), $client->getSecret());
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('amount', $content);
+
+        $this->assertArrayHasKey('status', $content);
+
+        $this->assertEquals($content['status'], 'captured');
+
+        return $content;
+    }
+
     protected function cancelPayment($id, $content = [])
     {
         $request = array(
@@ -2892,9 +2918,8 @@ trait PaymentTrait
         ];
 
         $this->ba->publicAuth('rzp_test_partner_' . $clientId);
-        $content = $this->makeRequestAndGetContent($request);
 
-        return $content;
+        return $this->makeRequestAndGetContent($request);
     }
 
     /**
@@ -2923,9 +2948,8 @@ trait PaymentTrait
         ];
 
         $this->ba->privateAuth('rzp_test_partner_' . $client->getId(), $client->getSecret());
-        $content = $this->makeRequestAndGetContent($request);
 
-        return $content;
+        return $this->makeRequestAndGetContent($request);
     }
 
     /**

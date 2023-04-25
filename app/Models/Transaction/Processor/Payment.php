@@ -5,17 +5,19 @@ namespace RZP\Models\Transaction\Processor;
 use RZP\Diag\EventCode;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
-use RZP\Models\Payment\Method;
-use RZP\Models\Card;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Credits;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base as BaseCollection;
 use RZP\Models\Payment as PaymentEntity;
 use RZP\Models\Transaction\ReconciledType;
 use RZP\Models\Schedule\Task as ScheduleTask;
+use RZP\Models\Partner\Service as PartnerService;
 use RZP\Models\Schedule\Library as ScheduleLibrary;
+use RZP\Models\EntityOrigin\Constants as EntityOriginConstants;
+use RZP\Models\Merchant\MerchantApplications\Entity as MerchantAppEntity;
 
 class Payment extends Base
 {
@@ -444,6 +446,64 @@ class Payment extends Base
         return $netAmount;
     }
 
+    /**
+     * Put payments transaction on hold by default for those sub-merchants whose partner have the feature
+     * "subm_manual_settlement" enabled. For this to happen, the payment should be made via partner auth.
+     * TODO: remove the try-catch block when no errors are reported
+     */
+    public static function shouldHoldSubmerchantPayment(PaymentEntity\Entity $payment, Merchant\Entity $merchant): bool
+    {
+        try
+        {
+            $paymentOrigin = $payment->entityOrigin;
+
+            $origin = optional($paymentOrigin)->origin;
+
+            $originType = optional($origin)->getEntityName();
+
+            if ($originType !== EntityOriginConstants::APPLICATION)
+            {
+                return false;
+            }
+
+            /* @var Merchant\Entity */
+            $partner = (new Merchant\Core())->getPartnerFromApp($origin);
+
+            if (empty($partner) === true or
+                $partner->isAggregatorPartner() === false or
+                $partner->isSubmerchantManualSettlementEnabled() === false or
+                (new PartnerService())->isSubmerchantPaymentManualSettlementExpEnabled($partner) !== true or
+                (new Merchant\AccessMap\Core())->isMerchantMappedToPartnerWithAppType($partner, $merchant, MerchantAppEntity::MANAGED) === false)
+            {
+                return false;
+            }
+
+            app('trace')->info(
+                TraceCode::PUT_SUBMERCHANT_PAYMENT_ON_HOLD,
+                [
+                    Merchant\Constants::PARTNER_ID  => $partner->getId(),
+                    Merchant\Constants::MERCHANT_ID => $merchant->getId(),
+                    Transaction\Entity::PAYMENT_ID  => $payment->getId()
+                ]
+            );
+
+            return true;
+        }
+        catch (\Throwable $ex)
+        {
+            app('trace')->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::PUT_SUBMERCHANT_PAYMENT_ON_HOLD_FAILED,
+                [
+                    'payment_id' => empty($payment) === false ? $payment->getId() : null
+                ]
+            );
+        }
+
+        return false;
+    }
+
     protected function getSettledAtTimestamp()
     {
         $payment = $this->source;
@@ -485,7 +545,8 @@ class Payment extends Base
         $merchant = $payment->merchant;
 
         if ($merchant->isFeatureEnabled(Feature\Constants::TRANSACTION_ON_HOLD) === true or
-            $merchant->isOpgspImportEnabled() === true)
+            $merchant->isOpgspImportEnabled() === true or
+            self::shouldHoldSubmerchantPayment($payment, $merchant) === true)
         {
             $this->txn->setOnHold(true);
         }
