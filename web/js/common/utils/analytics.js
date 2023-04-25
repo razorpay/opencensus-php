@@ -36,6 +36,7 @@ export const sendToLumberjack = ({ eventName, properties = {} }) => {
     errorService.captureError(error, {
       tags: {
         team: Teams.PLATFORM,
+        module: 'analytics',
       },
       rank: Ranks.P2,
     });
@@ -48,6 +49,7 @@ const throwAnalyticsException = (errorMessage) => {
   errorService.captureError(error, {
     tags: {
       team: Teams.PLATFORM,
+      module: 'analytics',
     },
     rank: Ranks.P2,
   });
@@ -173,15 +175,15 @@ export const analyticsTrack = ({
   includeScreenResolution = false,
 }) => {
   if (!objectName) {
-    throwAnalyticsException('[analytics]: objectName cannot be empty');
+    throwAnalyticsException(`[analytics]: objectName cannot be empty ${screen} ${actionName}`);
   }
 
   if (!actionName) {
-    throwAnalyticsException('[analytics]: actionName cannot be empty');
+    throwAnalyticsException(`[analytics]: actionName cannot be empty ${screen} ${objectName}`);
   }
 
   if (!screen) {
-    throwAnalyticsException('[analytics]: screen cannot be empty');
+    throwAnalyticsException(`[analytics]: screen cannot be empty ${objectName} ${actionName}`);
   }
 
   if (/_/g.test(objectName)) {
