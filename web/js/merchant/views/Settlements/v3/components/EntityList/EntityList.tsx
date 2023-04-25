@@ -37,7 +37,9 @@ const ENTITY_COLUMNS = {
   adjustment: ['Date', 'Adjustment ID', 'Gross amount', 'Deductions', 'Net amount', ''],
   dispute: ['Date', 'Dispute ID', 'Gross amount', 'Deductions', 'Net amount', ''],
   'settlement.ondemand': ['Date', 'Settlement ID', 'Gross amount', 'Deductions', 'Net amount', ''],
-  funds: ['Date', 'Dispute ID', 'Gross amount', 'Deductions', 'Net amount', ''],
+  fund: ['Date', 'Fund ID', 'Gross amount', 'Deductions', 'Net amount', ''],
+  credit: ['Date', 'Credit repayment ID', 'Gross amount', 'Deductions', 'Net amount', ''],
+  default: ['Date', 'ID', 'Gross amount', 'Deductions', 'Net amount', ''],
 };
 
 const keys = ['date', 'entity_id', 'gross_amount', 'deductions', 'net_amount', 'id'];
@@ -369,18 +371,22 @@ const EntityList = (props) => {
     if (list.length === 0) return null;
 
     const tab = sanitizeTabName(activeTab);
-    let entityColums = [];
+    let entityColumns: any = [];
+
+    if (ENTITY_COLUMNS[tab]) {
+      entityColumns = ENTITY_COLUMNS[tab];
+    } else {
+      entityColumns = ENTITY_COLUMNS.default;
+    }
 
     if (props.isMobileResolution) {
-      entityColums = ENTITY_COLUMNS[tab].filter((col) => {
+      entityColumns = entityColumns.filter((col) => {
         if (col === 'Date' || col === 'Net amount' || col === '') return true;
         else return false;
       });
-    } else {
-      entityColums = ENTITY_COLUMNS[tab];
     }
 
-    return entityColums.map((key, idx) => {
+    return entityColumns.map((key, idx) => {
       return (
         <th key={idx} style={{ backgroundColor: '#F8F9FB', border: 'none' }}>
           <Text variant="body" size="medium" color="surface.text.subtle.lowContrast" weight="bold">

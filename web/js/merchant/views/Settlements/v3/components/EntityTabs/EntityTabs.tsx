@@ -7,15 +7,15 @@ import { Text, Badge } from '@razorpay/blade/components';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 
 const SECTION_TAB_MAPPING = {
-  gross_settlements: ['payment', 'reversal'],
+  gross_settlements: ['payment', 'reversal', 'adjustment'],
   deductions: [
     'adjustment',
     'transfer',
     'refund',
     'dispute',
-    'funds',
+    'fund',
     'settlement.ondemand',
-    'credit_repayment',
+    'credit',
   ],
 };
 
