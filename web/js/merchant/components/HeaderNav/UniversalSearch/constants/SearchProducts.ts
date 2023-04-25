@@ -1,3 +1,8 @@
+import {
+  EligibleProducts,
+  EligibleProductsTypes,
+  ProductType,
+} from 'merchant/components/HeaderNav/UniversalSearch/typings';
 import { SIDEEBAR_PRODUCTS_TITLES } from 'merchant/components/SidebarV2/constants/constants';
 import { BASE_ROUTES as SIDEBAR_ROUTES } from 'merchant/components/SidebarV2/utils/href';
 import { PRODUCTS_DATA } from 'merchant/components/SidebarV2/utils/Products';
@@ -32,11 +37,6 @@ import {
   shouldShowFIRCSection,
   shouldShowTeamInvitations,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
-import {
-  EligibleProducts,
-  EligibleProductsTypes,
-  ProductType,
-} from 'merchant/components/HeaderNav/UniversalSearch/typings';
 
 const {
   invoices,
@@ -185,7 +185,7 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     group: ['in: Transactions'],
     icon: transactions.icon,
     additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
-      isProductViewAllowed(user, 'disputes'),
+      isProductViewAllowed(user, 'refunds'),
     apiCondition: false,
   },
   {
@@ -294,7 +294,38 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
   {
     title: SEARCH_PRODUCTS_TITLES.app_store,
     url: SEARCH_PRODUCTS_URL.app_store,
-    tags: [{ value: 'Apps' }, { value: 'Download apps' }],
+    tags: [
+      { value: 'Apps' },
+      { value: 'Download apps' },
+      { value: 'gallabox' },
+      { value: 'pabbly' },
+      { value: 'dronaHQ' },
+      { value: 'haptik' },
+      { value: 'thrive' },
+      { value: 'integromat' },
+      { value: 'slack' },
+      { value: 'zapier' },
+      { value: 'aisensy' },
+      { value: 'raven' },
+      { value: 'callerdesk' },
+      { value: 'payment links bot' },
+      { value: 'zoho' },
+      { value: 'intuit quickbooks' },
+      { value: 'shopify' },
+      { value: 'woocommerce' },
+      { value: 'wix' },
+      { value: 'getvantage' },
+      { value: 'prestashop' },
+      { value: 'magento' },
+      { value: 'apnapay' },
+      { value: 'leadcart' },
+      { value: 'rista' },
+      { value: 'dukaan' },
+      { value: 'shiprocket' },
+      { value: 'msmex' },
+      { value: 'uengage' },
+      { value: 'kylas' },
+    ],
     icon: app_store.icon,
     additionalCondition: (): boolean => app_store.additionalCondition(),
     apiCondition: false,
@@ -1086,7 +1117,6 @@ export const POPULAR_PRODUCTS: ProductType[] = [
       title: SEARCH_PRODUCTS_TITLES.settlements,
       url: SEARCH_PRODUCTS_URL.settlements,
       tags: [],
-      group: ['in: Transactions'],
       icon: settlements.icon,
     },
   },
