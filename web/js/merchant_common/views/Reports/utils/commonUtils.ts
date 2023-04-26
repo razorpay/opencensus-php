@@ -22,10 +22,10 @@ export const sortCardsByReportType = (configs) => {
     const obj = [...configs]?.reduce((prev, curr) => {
       return {
         ...prev,
-        [curr.type]: [],
+        [curr?.type_title ?? curr?.type]: [],
       };
     }, {});
-    configs?.forEach((config) => obj[config?.type]?.push(config));
+    configs?.forEach((config) => obj[config?.type_title ?? config?.type]?.push(config));
     return Object.entries(obj);
   } catch (err) {
     console.error(err);
@@ -80,7 +80,7 @@ export const getMerchantAccounts = (
 };
 
 export const parseReqDataFromConfigs = (configs) => {
-  return configs.map(({ name, description, id, type, template }) => ({
+  return configs.map(({ name, description, id, type, template, ...otherProps }) => ({
     name,
     description,
     id,
@@ -88,5 +88,6 @@ export const parseReqDataFromConfigs = (configs) => {
     template: {
       referred_accounts: template?.referred_accounts,
     },
+    type_title: otherProps?.type_title,
   }));
 };
