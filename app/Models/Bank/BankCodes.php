@@ -424,6 +424,7 @@ class BankCodes
         '8184' => 'SBIN0RRLDGB',
         '8182' => 'SBIN0RRARGB',
         '8183' => 'SBIN0RRMIGB',
+        '9755' => 'ESFB0004003',
         '8113' => 'HDFC0CMBANK',
         '8130' => 'IBKL0087PSB',
         '8106' => 'HDFC0CPNSBL',
