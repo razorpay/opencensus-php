@@ -16,7 +16,7 @@ class Ujjivan extends Base
     use FileHandler;
 
     const FILE_NAME              = 'Refund_Razorpay_';
-    const EXTENSION              = FileStore\Format::XLSX;
+    const EXTENSION              = FileStore\Format::XLS;
     const FILE_TYPE              = FileStore\Type::UJJIVAN_NETBANKING_REFUND;
     const GATEWAY                = Payment\Gateway::NETBANKING_UJJIVAN;
     const GATEWAY_CODE           = IFSC::UJVN;
@@ -24,7 +24,7 @@ class Ujjivan extends Base
     protected $type              = Payment\Entity::BANK;
     const BASE_STORAGE_DIRECTORY = 'Ujjivan/Refund/Netbanking/';
 
-    protected function formatDataForFile(array $data)
+    protected function formatDataForFile(array $data): array
     {
         $formattedData = [];
 

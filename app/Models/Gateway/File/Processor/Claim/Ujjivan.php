@@ -3,6 +3,7 @@
 namespace RZP\Models\Gateway\File\Processor\Claim;
 
 use Carbon\Carbon;
+
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
@@ -11,12 +12,12 @@ use RZP\Services\NbPlus\Netbanking;
 class Ujjivan extends NetbankingBase
 {
     const FILE_NAME = 'Success_Razorpay_';
-    const EXTENSION = FileStore\Format::XLSX;
+    const EXTENSION = FileStore\Format::XLS;
     const FILE_TYPE = FileStore\Type::UJJIVAN_NETBANKING_CLAIMS;
     const GATEWAY   = Payment\Gateway::NETBANKING_UJJIVAN;
     const BASE_STORAGE_DIRECTORY  = 'Ujjivan/Claim/Netbanking/';
 
-    protected function formatDataForFile(array $data)
+    protected function formatDataForFile(array $data): array
     {
         $formattedData = [];
 
@@ -27,12 +28,12 @@ class Ujjivan extends NetbankingBase
             $accountNo = $this->getAccountNo($row);
 
             $formattedData[]  = [
-                'Transaction date'                                              => $paymentDate,
-                'Account number'                                                => $accountNo,
-                'Amount'                                                        => $this->getFormattedAmount($row['payment']['amount']),
-                'Unique reference number'                                       => $row['payment']['id'],
-                'Tran ID(Finacle)'                                              => $row['gateway'][Netbanking::BANK_TRANSACTION_ID],
-                'Status'                                                        => "Y",
+                'Transaction date'        => $paymentDate,
+                'Account number'          => $accountNo,
+                'Amount'                  => $this->getFormattedAmount($row['payment']['amount']),
+                'Unique reference number' => $row['payment']['id'],
+                'Tran ID(Finacle)'        => $row['gateway'][Netbanking::BANK_TRANSACTION_ID],
+                'Status'                  => "Y",
             ];
         }
 

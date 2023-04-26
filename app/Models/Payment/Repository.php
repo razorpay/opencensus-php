@@ -1828,7 +1828,7 @@ EOT;
         $pAuthorizedAt = $this->dbColumn(Entity::AUTHORIZED_AT);
 
         //use TiDB merchant
-        $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+        $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN);
 
         $query = $this->newQueryWithConnection($connectionType);
 

@@ -2291,6 +2291,7 @@ class Gateway
         self::NACH_ICICI,
         self::NETBANKING_BDBL,
         self::NETBANKING_KARNATAKA,
+        self::NETBANKING_UJJIVAN,
     ];
 
     public static $captureVerifyEnabled = [
@@ -4655,7 +4656,7 @@ class Gateway
     public static function gatewayMigratedToNbPlusOnTerminalLevel($gateway): bool
     {
         $gateways = [
-            self::WALLET_PAYZAPP
+            self::NETBANKING_KOTAK,
         ];
 
         return (in_array($gateway, $gateways, true));
