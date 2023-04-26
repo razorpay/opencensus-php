@@ -21,6 +21,18 @@ getRecentConfigsSpy.mockResolvedValue({
   },
 });
 
+const initialState = {
+  session: {
+    user: {
+      isOrgAllowedFunctionality: () => true,
+      findTag: () => true,
+      isRevampedReportsEnabled: {
+        overviewRecents: true,
+      },
+    },
+  },
+};
+
 describe('Overview Section', () => {
   const App = withRouter((props) => {
     return <OverView {...props} dashboardType={REPORT_TEST_DASHBOARD} />;
@@ -43,14 +55,16 @@ describe('Overview Section', () => {
   };
 
   test('should render configs skeletons when no state is passed without any error', () => {
-    render(<OverviewSection />);
+    render(<OverviewSection />, { initialState });
     checkLoadingState();
     const filterDropdown = screen.getByLabelText('Choose A Config Filter');
     expect(filterDropdown).toBeInTheDocument();
   });
 
   test('should call fetchRecentConfigs only when user select recents from dropdown, multiple calls possible', async () => {
-    render(<OverviewSection />);
+    render(<OverviewSection />, {
+      initialState,
+    });
     await handleFilterDropdownSelectionMock('Recents');
     await handleFilterDropdownSelectionMock('Report Type');
     await handleFilterDropdownSelectionMock('All Reports');
@@ -59,28 +73,38 @@ describe('Overview Section', () => {
   });
 
   test('should render all the configs if allConfigs data is loaded in redux state', () => {
-    const initialState = getOverViewStateWith({
+    const reportsCoreState = getOverViewStateWith({
       allConfigs: {
         loading: false,
         error: false,
         data: mockConfigs,
       },
     });
-    render(<OverviewSection />, { initialState });
+    render(<OverviewSection />, {
+      initialState: {
+        ...initialState,
+        ...reportsCoreState,
+      },
+    });
     const refConfigsContainer = screen.getByLabelText('All Configs Container');
     expect(refConfigsContainer).toBeInTheDocument();
     expect(refConfigsContainer.childNodes.length).toEqual(mockConfigs.length);
   });
 
   test('should render configs wrt its report type if user selects report type in filter dropdown', async () => {
-    const initialState = getOverViewStateWith({
+    const reportsCoreState = getOverViewStateWith({
       allConfigs: {
         loading: false,
         error: false,
         data: mockConfigs,
       },
     });
-    render(<OverviewSection />, { initialState });
+    render(<OverviewSection />, {
+      initialState: {
+        ...initialState,
+        ...reportsCoreState,
+      },
+    });
     await handleFilterDropdownSelectionMock('Report Type');
 
     sortedConfigs.forEach(([type, configs]) => {
@@ -95,14 +119,18 @@ describe('Overview Section', () => {
   });
 
   test('should render recent configs when api is resolved', async () => {
-    render(<OverviewSection />);
+    render(<OverviewSection />, {
+      initialState,
+    });
     await handleFilterDropdownSelectionMock('Recents');
     await expect(getRecentConfigsSpy).toHaveBeenCalled();
     expect(screen.getByLabelText('Recently Used Configs Container')).toBeInTheDocument();
   });
 
   test('should render loading skeletons when getRecentsConfig api returns rejection', async () => {
-    render(<OverviewSection />);
+    render(<OverviewSection />, {
+      initialState,
+    });
     getRecentConfigsSpy.mockReset().mockImplementation(() => new Promise((_, rej) => rej()));
     await handleFilterDropdownSelectionMock('Recents');
     checkLoadingState();

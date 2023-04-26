@@ -448,6 +448,13 @@ export default {
     'Kmd4oqDWnxSFe8',
   ],
 
+  reports_revamp_recents: [
+    // beta
+    'LhJWXVuaVbbpnR',
+    // prod
+    'LhJcdQNbjDvQo5',
+  ],
+
   merchant_reports_revamp: [
     // beta experiment ids
     'LEG6dZms3jSwvI',

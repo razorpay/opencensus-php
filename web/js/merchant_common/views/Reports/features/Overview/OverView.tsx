@@ -31,6 +31,7 @@ export const OverviewSection = ({
   history,
   showNotification,
   dashboardType,
+  isOverviewRecentsFilterEnabled,
 }: OverViewPropsType): JSX.Element => {
   const [filter, setFilter] = useState('');
   const { theme } = useTheme();
@@ -169,6 +170,8 @@ export const OverviewSection = ({
     });
   }, [isAllConfigLoaded]);
 
+  const overviewFilterDropdownOptions = overviewConfigFilterOptions(isOverviewRecentsFilterEnabled);
+
   return (
     <>
       <OverviewBanner loading={!isAllConfigLoaded} history={history} />
@@ -179,10 +182,10 @@ export const OverviewSection = ({
           </Text>
         </DropdownLabel>
         <Dropdown
-          value={overviewConfigFilterOptions.find((item) => item.value === filter)}
-          options={overviewConfigFilterOptions}
+          value={overviewFilterDropdownOptions.find((item) => item.value === filter)}
+          options={overviewFilterDropdownOptions}
           labelKey="label"
-          defaultValue={overviewConfigFilterOptions[0]}
+          defaultValue={overviewFilterDropdownOptions[0]}
           onChange={(e) => e && handleFilterDropdownSelection(e)}
           ariaLabelBy="Choose A Config Filter"
         />
