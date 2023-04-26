@@ -6075,9 +6075,6 @@ class Route
         'oauth_application_delete_client',
         'merchant_document_fetch',
         'merchant_document_upload',
-        'media_service_upload_file',
-        'media_service_get_bucket',
-        'media_service_upload_process',
         'merchant_document_url_fetch',
         'merchant_document_delete',
         'user_device_detail_save',
@@ -11893,6 +11890,9 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'media_service_upload_file',
+            'media_service_get_bucket',
+            'media_service_upload_process',
             'admin_merchant_get_terminals',
             'merchant_activation_eligibilty',
             'merchant_activation_clarifications_fetch',
