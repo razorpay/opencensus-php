@@ -466,6 +466,52 @@ trait PartnerTrait
         return $subMerchantId;
     }
 
+    public function setUpPartnerAuthAndGetSubMerchantIdWithClient($activated = true, $category = 4722)
+    {
+        if ($activated === true)
+        {
+            $subMerchant = $this->fixtures->create('merchant', ['activated' => 1, 'category' => $category]);
+        }
+        else
+        {
+            $subMerchant = $this->fixtures->create('merchant', ['category' => $category]);
+        }
+
+        $subMerchantId = $subMerchant->getId();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'aggregator']);
+
+        $client = $this->setUpPartnerMerchantAppAndGetClient('dev', [], '10000000000000','aggregator');
+
+        $merchantDetailAttribute = [
+            "merchant_id"       => $subMerchantId,
+            "business_type"     => 2,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+
+        // Assign submerchant to partner
+        $accessMapData = [
+            'entity_type'     => 'application',
+            'entity_id'       => $client->getApplicationId(),
+            'merchant_id'     => $subMerchantId,
+            'entity_owner_id' => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_access_map', $accessMapData);
+
+        (new BaseFixture)->createEntity('merchant_detail', [
+            'merchant_id' => '10000000000000',
+            'submitted'   => true,
+            'business_registered_state' => 'KA',
+            'locked'      => true
+        ]);
+
+        $this->ba->partnerAuth($subMerchantId, 'rzp_test_partner_' . $client->getId(), $client->getSecret());
+
+        return [$subMerchantId,$client];
+    }
+
 
     public function markMerchantAsNonPurePlatformPartner(string $merchantId, string $partnerType)
     {

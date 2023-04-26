@@ -18,6 +18,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Transfer;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
+use RZP\Models\EntityOrigin;
 use RZP\Jobs\TransferProcess;
 use RZP\Models\Settlement\Bucket;
 use RZP\Jobs\TransferProcessSlice;
@@ -287,6 +288,11 @@ class Core extends Base\Core
 
             $this->repo->transfer->saveOrFail($transfer);
 
+            if($this->isValidPlatformTransfer() === true)
+            {
+                (new EntityOrigin\Core)->createEntityOrigin($transfer, EntityOrigin\Constants::MARKETPLACE_APPLICATION);
+            }
+
             $transfers->push($transfer->toArrayPublic());
         }
 
@@ -325,6 +331,21 @@ class Core extends Base\Core
         );
 
         return $partner;
+    }
+
+    public function isValidPlatformTransfer() : bool
+    {
+        $partner = $this->partner;
+
+        if (empty($partner) === true or
+            $partner->getPartnerType() !== Merchant\Constants::AGGREGATOR or
+            $partner->isRoutePartnershipsEnabled() === false or
+            (new PartnerService())->isMarketplaceTransferExpEnabled($this->partner) !== true)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -701,6 +722,11 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($transfer);
 
+            if($this->isValidPlatformTransfer() === true)
+            {
+                (new EntityOrigin\Core)->createEntityOrigin($transfer, EntityOrigin\Constants::MARKETPLACE_APPLICATION);
+            }
+
             return $transfer;
         }
         else
@@ -894,6 +920,11 @@ class Core extends Base\Core
         $transferPayment->transfer()->associate($transfer);
 
         $this->repo->saveOrFail($transferPayment);
+
+        if($this->isValidPlatformTransfer() === true)
+        {
+            (new EntityOrigin\Core)->createEntityOrigin($transfer, EntityOrigin\Constants::MARKETPLACE_APPLICATION);
+        }
 
         (new Transfer\Core())->createLedgerEntriesForTransfer($transferPayment, $transfer->merchant);
 

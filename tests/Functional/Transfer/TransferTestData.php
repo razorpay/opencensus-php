@@ -880,6 +880,73 @@ return [
         ],
     ],
 
+    'testCreateDirectTransferEntityOriginWithPartnerAuthForMarketplace' => [
+    'request'   => [
+        'method'   => 'POST',
+        'url'      => '/transfers',
+        'content'   => [
+            'account'       => 'acc_10000000000001',
+            'amount'        => 1000,
+            'currency'      => 'INR',
+            'notes'         => [
+                'order_info'    => 'random_string',
+                'version'       => 2,
+                'roll_no'       => 'iec2011025',
+                'student_name'  => 'student',
+            ],
+            'linked_account_notes' => ['roll_no', 'student_name'],
+            'on_hold'       => '1',
+            'on_hold_until' => 2122588614,
+        ],
+    ],
+    'response'  =>  [
+        'content' => [
+            'entity' => 'transfer',
+            'status' => 'processed',
+            'source' => 'acc_10000000000000',
+            'recipient' => 'acc_10000000000001',
+            'amount' => 1000,
+            'currency' => 'INR',
+            'notes' =>  [
+                'order_info' => 'random_string',
+                'version' => 2,
+                'roll_no' => 'iec2011025',
+                'student_name' => 'student',
+            ],
+            'linked_account_notes' =>
+                [
+                    'roll_no',
+                    'student_name',
+                ],
+            'on_hold' => true,
+            'on_hold_until' => 2122588614,
+        ],
+    ],
+],
+
+    'testTransferResponseEntityOriginWithPartnerAuthForMarketplace' => [
+        'request'   => [
+            'method'   => 'GET',
+            'url'      => '/transfers/{id}?transfer_type=platform',
+            'content'   => [],
+        ],
+        'response'  =>  [
+            'content' => [
+                'entity' => 'transfer',
+                'status' => 'processed',
+                'source' => 'pay_abacad',
+                'recipient' => 'acc_10000000000001',
+                'amount' => 1000,
+                'currency' => 'INR',
+                'partner_details' =>  [
+                    'name' => 'partner_test',
+                    'id' => '10000000000003',
+                    'email' => 'testmail@mail.info',
+                ],
+            ],
+        ],
+    ],
+
     'testCreateDirectTransferWithPartnerAuthForInvalidPartnerType' => [
         'request'   => [
             'method'   => 'POST',

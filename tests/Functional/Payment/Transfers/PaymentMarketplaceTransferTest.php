@@ -740,13 +740,7 @@ class PaymentMarketplaceTransferTest extends TestCase
     {
         $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
 
-        $this->fixtures->merchant->addFeatures(['marketplace'], '10000000000000');
-
-        $this->fixtures->merchant->addFeatures(['route_partnerships'], '10000000000000');
-
-        $this->fixtures->edit('payment', $this->payment['id'], ['merchant_id' => $subMerchantId,]);
-
-        $this->fixtures->edit('balance', '10000000000000', ['merchant_id' => $subMerchantId,]);
+        $this->setupMarketPlace($subMerchantId);
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -765,10 +759,45 @@ class PaymentMarketplaceTransferTest extends TestCase
         $this->assertEquals($subMerchantId, $transfer->getMerchantId());
     }
 
-    public function testCreatePaymentTransferWithPartnerAuthForInvalidPartnerMerchantMapping()
+    public function testCreatePaymentTransferEntityOriginWithPartnerAuthForMarketplace()
     {
-        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+        list($subMerchantId, $client) = $this->setUpPartnerAuthAndGetSubMerchantIdWithClient();
 
+        $this->setupMarketPlace($subMerchantId);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->setRequestData($testData['request']);
+
+        $this->sendRequest($testData['request']);
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $transfer = $this->getDbEntityById('transfer', $response['items'][0]['id']);
+
+        $this->assertEquals($subMerchantId, $transfer->getMerchantId());
+
+        // Assert that the entity origin for the transfer is set to marketplace_application
+        $this->verifyEntityOrigin($transfer['id'], 'marketplace_application',  $client->getApplicationId());
+    }
+
+    private function verifyEntityOrigin($entityId, $originType, $originId)
+    {
+        $this->fixtures->stripSign($entityId);
+
+        $entityOrigin = $this->getDbEntity('entity_origin', ['entity_id' => $entityId]);
+
+        $this->assertEquals($originType, $entityOrigin['origin_type']);
+
+        $this->assertEquals($originId, $entityOrigin['origin_id']);
+    }
+
+    /**
+     * @param mixed $subMerchantId
+     * @return void
+     */
+    private function setupMarketPlace(mixed $subMerchantId): void
+    {
         $this->fixtures->merchant->addFeatures(['marketplace'], '10000000000000');
 
         $this->fixtures->merchant->addFeatures(['route_partnerships'], '10000000000000');
@@ -776,6 +805,17 @@ class PaymentMarketplaceTransferTest extends TestCase
         $this->fixtures->edit('payment', $this->payment['id'], ['merchant_id' => $subMerchantId,]);
 
         $this->fixtures->edit('balance', '10000000000000', ['merchant_id' => $subMerchantId,]);
+
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $subMerchantId;
+
+        $this->mockAllSplitzTreatment();
+    }
+
+    public function testCreatePaymentTransferWithPartnerAuthForInvalidPartnerMerchantMapping()
+    {
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->setupMarketPlace($subMerchantId);
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -800,13 +840,7 @@ class PaymentMarketplaceTransferTest extends TestCase
     {
         $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
 
-        $this->fixtures->merchant->addFeatures(['marketplace'], '10000000000000');
-
-        $this->fixtures->merchant->addFeatures(['route_partnerships'], '10000000000000');
-
-        $this->fixtures->edit('payment', $this->payment['id'], ['merchant_id' => $subMerchantId,]);
-
-        $this->fixtures->edit('balance', '10000000000000', ['merchant_id' => $subMerchantId,]);
+        $this->setupMarketPlace($subMerchantId);
 
         $testData = $this->testData[__FUNCTION__];
 

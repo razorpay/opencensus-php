@@ -50,7 +50,7 @@ class Core extends Base\Core
     /**
      * @param Base\PublicEntity $entity
      */
-    public function createEntityOrigin(Base\PublicEntity $entity)
+    public function createEntityOrigin(Base\PublicEntity $entity, $originType = null)
     {
         try
         {
@@ -58,6 +58,12 @@ class Core extends Base\Core
 
             if (empty($entityOrigin) === false)
             {
+                // override origin type (introduced for route marketplace usecase)
+                if (empty($originType) === false)
+                {
+                    $entityOrigin[Entity::ORIGIN_TYPE] = $originType;
+                }
+
                 $this->repo->saveOrFail($entityOrigin);
             }
 
@@ -151,6 +157,13 @@ class Core extends Base\Core
                 $this->trace->count(Metric::ENTITY_ORIGIN_CREATE_FROM_ORDER_PUBLIC_KEY, $dimensions);
                 $originEntity = $this->getOriginEntityFromPublicKey($entity->order->getPublicKey());
             }
+            else if($entity->getEntityName() === E::TRANSFER && $entity->isOrderTransfer() === true)
+            {
+                $this->trace->info(TraceCode::SET_ORIGIN_FROM_ORDER_PUBLIC_KEY, [
+                    'transfer_id'  => $entity->getId(),
+                ]);
+                $originEntity = $this->getOriginEntityFromPublicKey($entity->source->getPublicKey());
+            }
         }
         return empty($originEntity) === false  ? $this->build($entity, $originEntity) : null;
     }
@@ -171,7 +184,7 @@ class Core extends Base\Core
         $origin     = optional($entityOrigin)->origin;
         $originType = optional($origin)->getEntityName();
 
-        return ($originType === Constants::APPLICATION);
+        return ($originType === Constants::APPLICATION or $originType === Constants::MARKETPLACE_APPLICATION);
     }
 
     /**

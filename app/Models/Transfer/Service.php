@@ -11,14 +11,17 @@ use RZP\Models\Transfer;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Base\ConnectionType;
+use RZP\Models\EntityOrigin;
 use RZP\Jobs\TransferProcess;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Exception\BadRequestException;
 use RZP\Constants\Entity as EntityConstant;
+use RZP\Models\Merchant\MerchantApplications;
 use RZP\Models\Settlement\Entity as Settlement;
 use RZP\Jobs\Transfers\TransferSettlementStatus;
+use RZP\Models\Merchant\Constants as MerchantConstant;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\AccessMap\Core as AccessMapCore;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
@@ -37,6 +40,8 @@ class Service extends Base\Service
 
     public function fetch(string $id, array $input): array
     {
+        $setPlatformTransferDetails = $this->shouldSendPlatformTransferDetails($input);
+
         $transfer = Tracer::inSpan(['name' => 'transfer.fetch'], function() use ($id, $input)
         {
             return $this->repo
@@ -44,7 +49,14 @@ class Service extends Base\Service
                         ->findByPublicIdAndMerchant($id, $this->merchant, $input);
         });
 
-        return $transfer->toArrayPublicWithExpand();
+        $transfer = $transfer->toArrayPublicWithExpand();
+
+        if($setPlatformTransferDetails === true )
+        {
+            $transfer = $this->setPartnerDetailsIfApplicable($id, $transfer);
+        }
+
+        return $transfer;
     }
 
     public function fetchMultiple(array $input)
@@ -1111,5 +1123,60 @@ class Service extends Base\Service
 
             TransferSettlementStatus::dispatch($this->mode, $settlementId);
         }
+    }
+
+    /**
+     * @param array $input
+     * @return array
+     */
+    public function shouldSendPlatformTransferDetails(array & $input) : bool
+    {
+        if (isset($input['transfer_type']) === true)
+        {
+            $type = $input['transfer_type'];
+
+            unset($input['transfer_type']);
+
+            return ($type === Constant::PLATFORM);
+        }
+
+        return false;
+    }
+
+    /**
+     * @param string $id
+     * @param $transfer
+     * @return mixed
+     */
+    public function setPartnerDetailsIfApplicable(string $id, $transfer)
+    {
+        Entity::verifyIdAndStripSign($id);
+
+        $transferOrigin = (new EntityOrigin\Repository())->fetchByEntityTypeAndEntityId(EntityConstant::TRANSFER, $id);
+
+        if (  empty($transferOrigin) === false
+            && $transferOrigin[EntityOrigin\Entity::ORIGIN_TYPE] === EntityOrigin\Constants::MARKETPLACE_APPLICATION
+            && isset($transferOrigin[EntityOrigin\Entity::ORIGIN_ID]) === true)
+        {
+            $merchantApp = (new MerchantApplications\Repository())->fetchMerchantApplication($transferOrigin[EntityOrigin\Entity::ORIGIN_ID], Merchant\Constants::APPLICATION_ID);
+
+            if( $merchantApp->count() === 0)
+            {
+                return $transfer;
+            }
+
+            $partner = (new Merchant\Core)->getPartnerFromApp($merchantApp->first());
+
+            if ($partner !== null)
+            {
+                $transfer[Constant::PARTNER_DETAILS] = [
+                    MerchantConstant::NAME  => $partner->getName(),
+                    MerchantConstant::ID    => $partner->getId(),
+                    Constant::EMAIL         => $partner->getEmail(),
+                ];
+            }
+        }
+
+        return $transfer;
     }
 }

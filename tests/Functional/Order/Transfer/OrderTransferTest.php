@@ -84,6 +84,49 @@ class OrderTransferTest extends TestCase
         $this->assertEquals($subMerchantId, $merchantId);
     }
 
+    public function testCreateOrderTransferEntityOriginWithPartnerAuthForMarketplace()
+    {
+        list($subMerchantId, $client) = $this->setUpPartnerAuthAndGetSubMerchantIdWithClient();
+
+        $this->fixtures->merchant->addFeatures(['route_partnerships'], '10000000000000');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = $subMerchantId;
+
+        $this->mockAllSplitzTreatment();
+
+        $response = $this->startTest($testData);
+
+        $transfer = $this->getDbEntityById('transfer', $response['transfers'][0]['id']);
+
+        $this->assertEquals($subMerchantId, $transfer->getMerchantId());
+
+        $order = $this->getDbEntityById('order', $response['id']);
+
+        $publicKeyParts = explode(BasicAuth::PARTNER_CALLBACK_KEY_DELIMITER, $order->getPublicKey());
+
+        $this->assertTrue(BasicAuth::isValidPartnerKey($publicKeyParts[0]));
+
+        $merchantId = Entity::verifyIdAndStripSign($publicKeyParts[1]);
+
+        $this->assertEquals($subMerchantId, $merchantId);
+
+        // Assert that the entity origin for the transfer is set to marketplace_application
+        $this->verifyEntityOrigin($transfer['id'], 'marketplace_application',  $client->getApplicationId());
+    }
+
+    private function verifyEntityOrigin($entityId, $originType, $originId)
+    {
+        $this->fixtures->stripSign($entityId);
+
+        $entityOrigin = $this->getDbEntity('entity_origin', ['entity_id' => $entityId]);
+
+        $this->assertEquals($originType, $entityOrigin['origin_type']);
+
+        $this->assertEquals($originId, $entityOrigin['origin_id']);
+    }
+
     public function testCreateOrderTransferWithPartnerAuthForInvalidPartnerType()
     {
         $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();

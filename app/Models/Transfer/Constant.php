@@ -11,6 +11,12 @@ final class Constant
     const ORDER     = 'order';
     const MERCHANT  = 'merchant';
 
+    // platform type transfer
+    const PLATFORM          = 'platform';
+    const PARTNER_DETAILS   = 'partner_details';
+    const EMAIL             = 'email';
+
+
     // Attempts
     const MAX_ALLOWED_PAYMENT_TRANSFER_PROCESS_ATTEMPTS = 1;
     const MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS   = 4;

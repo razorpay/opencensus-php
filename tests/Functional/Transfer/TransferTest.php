@@ -1990,6 +1990,73 @@ class TransferTest extends TestCase
         $this->startTest();
     }
 
+    public function testTransferResponseEntityOriginWithPartnerAuthForMarketplace()
+    {
+       $this->createPartnerAndApplication(['id' => '10000000000003', 'email' => 'testmail@mail.info', 'name' => 'partner_test',], ['id' => 'A0m8HLZLyVIDQ9']);
+
+        $this->fixtures->create('transfer', [
+            'id' => 'LhV9fg1fXagWCN',
+            'status' => 'processed',
+            'merchant_id' => '10000000000000',
+            'source_id' => 'abacad',
+            'to_id' => '10000000000001',
+            'amount' => 1000,
+        ]);
+
+        $this->fixtures->create('entity_origin', [
+            'id' => 'LhW4gs8JfWurz0',
+            'entity_type' => 'transfer',
+            'entity_id' => 'LhV9fg1fXagWCN',
+            'origin_type' => 'marketplace_application',
+            'origin_id' => 'A0m8HLZLyVIDQ9',
+        ]);
+
+        $this->fixtures->create('merchant_application', [
+            'id' => 'FrckQEXGYiwK0d',
+            'merchant_id' => '10000000000003',
+            'type' => 'managed',
+            'application_id' => 'A0m8HLZLyVIDQ9',
+        ]);
+
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/transfers/trf_LhV9fg1fXagWCN?transfer_type=platform';
+
+        $this->startTest();
+    }
+
+    public function testCreateDirectTransferEntityOriginWithPartnerAuthForMarketplace()
+    {
+        list($subMerchantId, $client) = $this->setUpPartnerAuthAndGetSubMerchantIdWithClient();
+
+        $this->fixtures->merchant->addFeatures(['route_partnerships'], '10000000000000');
+
+        $this->fixtures->edit('balance', '10000000000000', ['merchant_id' => $subMerchantId,]);
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = $subMerchantId;
+
+        $this->testData[__FUNCTION__]['response']['content']['source'] = 'acc_' . $subMerchantId;
+
+        $this->mockAllSplitzTreatment();
+
+        $transfer = $this->startTest();
+
+        // Assert that the entity origin for the transfer is set to marketplace_application
+        $this->verifyEntityOrigin($transfer['id'], 'marketplace_application',  $client->getApplicationId());
+    }
+
+
+    private function verifyEntityOrigin($entityId, $originType, $originId)
+    {
+        $this->fixtures->stripSign($entityId);
+
+        $entityOrigin = $this->getDbEntity('entity_origin', ['entity_id' => $entityId]);
+
+        $this->assertEquals($originType, $entityOrigin['origin_type']);
+
+        $this->assertEquals($originId, $entityOrigin['origin_id']);
+    }
+
     public function testCreateDirectTransferWithPartnerAuthForInvalidPartnerType()
     {
         $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
