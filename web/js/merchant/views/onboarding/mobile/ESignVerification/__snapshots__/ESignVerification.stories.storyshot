@@ -196,48 +196,6 @@ exports[`Storyshots Onboarding/ESignVerification Default 1`] = `
                       An OTP will be sent to number linked with your Aadhaar. Enter it on next step to verify
                     </div>
                   </div>
-                  <div
-                    class="Viewweb__View-sc-1o0hmxm-0 eayzPs Spaceweb__Space-sc-1abqisc-0 fhDzEn"
-                  >
-                    <div
-                      class="Viewweb__View-sc-1o0hmxm-0 eayzPs Flexweb__Flex-sc-1yhcoea-0 iyJkr"
-                    >
-                      <label
-                        class="Viewweb__View-sc-1o0hmxm-0 Labelweb__Label-sc-rq06rg-0 iqBTUF Flexweb__Flex-sc-1yhcoea-0 kSCwNs"
-                      >
-                        <input
-                          class="Inputweb__Input-sc-vlwi0r-0 gVGPFM"
-                          data-testid="ds-checkbox"
-                          type="checkbox"
-                        />
-                        <div
-                          class="Viewweb__View-sc-1o0hmxm-0 Backdropweb__Backdrop-sc-26g88e-0 jeOdol Sizeweb__Size-sc-1e5yf1-0 esSlSU"
-                        >
-                          <svg
-                            fill="none"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            width="24"
-                          >
-                            <path
-                              clip-rule="evenodd"
-                              d="M16 7H8a1 1 0 00-1 1v8a1 1 0 001 1h8a1 1 0 001-1V8a1 1 0 00-1-1zM8 6a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2V8a2 2 0 00-2-2H8z"
-                              fill="rgba(22, 47, 86, 0.38)"
-                              fill-opacity="0.38"
-                              fill-rule="evenodd"
-                            />
-                          </svg>
-                        </div>
-                        <div
-                          class="Textweb__Text-sc-1qrdpx3-0 fOMNhN Spaceweb__Space-sc-1abqisc-0 clARrY"
-                          color="shade.980"
-                          data-testid="ds-text"
-                        >
-                          My Aadhaar is not linked with any mobile number
-                        </div>
-                      </label>
-                    </div>
-                  </div>
                 </div>
               </div>
             </form>

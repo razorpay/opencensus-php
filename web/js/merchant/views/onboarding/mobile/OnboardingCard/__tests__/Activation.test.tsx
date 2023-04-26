@@ -21,32 +21,28 @@ const App: React.FC = () => {
   return <OnboardingCard referee={undefined} />;
 };
 
-test('should show payment enable modal', async () => {
+test('should show payment disable modal', async () => {
   ActivationDB.update({
     ...DataPieces.ActivationFlowWW,
     ...DataPieces.unregBusinessOverview,
     ...DataPieces.OnboardingMileStoneL1,
-    ...DataPieces.PaymentEnable,
-    poi_verification_status: 'verified',
+    poi_verification_status: 'failed',
   });
   render(<App />, {});
   await waitForOnboardingPageLoadingToFinish();
-  expect(screen.getByText(Messages.PAYMENT_ENABLE.title)).toBeInTheDocument();
-  expect(screen.getByText(Messages.PAYMENT_ENABLE.description)).toBeInTheDocument();
-  expect(screen.getByText(Messages.PAYMENT_ENABLE.buttonText)).toBeInTheDocument();
+  expect(screen.getByText(Messages.PAYMENT_DISABLE.title)).toBeInTheDocument();
+  expect(screen.getByText(Messages.PAYMENT_DISABLE.description)).toBeInTheDocument();
+  expect(screen.getByText(Messages.PAYMENT_DISABLE.buttonText)).toBeInTheDocument();
 });
 
-test('should show paused message is case of block', async () => {
+test('should show activation progress %', async () => {
   ActivationDB.update({
     ...DataPieces.ActivationFlowWW,
     ...DataPieces.regBusinessOverview,
-    dedupe: {
-      isUnderReview: false,
-      isMatch: true,
-    },
+    activation_progress: 45,
   });
   render(<App />, {});
   await waitForOnboardingPageLoadingToFinish();
   expect(screen.getByText('Account Activation')).toBeInTheDocument();
-  expect(screen.queryByText('Paused')).toBeNull();
+  expect(screen.getByText('45% complete')).toBeInTheDocument();
 });

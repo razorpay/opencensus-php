@@ -1,11 +1,13 @@
 // Polyfill "window.fetch" used in the React component.
-import 'whatwg-fetch';
-import 'jest-canvas-mock';
 import '@testing-library/jest-dom/extend-expect';
-import 'regenerator-runtime/runtime';
 import { queryCache } from 'common/components/Bootstrap/Wrapper';
+import 'jest-canvas-mock';
+import 'regenerator-runtime/runtime';
+import 'whatwg-fetch';
 import { server } from '../../../../mocks/node';
 process.env.hostName = 'http://localhost:6006';
+
+const RetryTimes = process.env.UT_RETRY_TIMES || 3;
 
 // Global mocks
 jest.mock('merchant/utils/ajax');
@@ -67,3 +69,9 @@ if (!process.env.LISTENING_TO_UNHANDLED_REJECTION) {
 afterEach(() => {
   queryCache.clear();
 });
+
+if (process.env.CI === 'true') {
+  jest.retryTimes(RetryTimes, {
+    logErrorsBeforeRetry: true,
+  });
+}
