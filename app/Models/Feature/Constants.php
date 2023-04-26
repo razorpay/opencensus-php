@@ -1826,6 +1826,7 @@ class Constants
     const DISABLE_UPI_NUM_CHECKOUT = 'disable_upi_num_checkout';
     const DISABLE_UPI_NUM_ON_L0 = 'disable_upi_num_on_l0';
     const DISABLE_UPI_NUM_ON_L1 = 'disable_upi_num_on_l1';
+    const CLOSE_QR_ON_DEMAND    = 'close_qr_on_demand';
 
     const ONE_CC_SHOPIFY_ACC_CREATE = 'one_cc_shopify_acc_create';
     const ONE_CC_SHOPIFY_MULTIPLE_SHIPPING = 'one_cc_multiple_shipping';
@@ -2516,6 +2517,7 @@ class Constants
         DcsConstants::AffordabilityWidgetSet           => true,
         DcsConstants::AssumeSubAccount        => true,
         DcsConstants::AssumeMasterAccount     => true,
+        self::CLOSE_QR_ON_DEMAND              => true,
         self::ONE_CC_SHOPIFY_ACC_CREATE       => true,
         self::ONE_CC_SHOPIFY_MULTIPLE_SHIPPING => true,
         self::SHOW_CUSTOM_DCC_DISCLOSURES      => true,
@@ -3525,6 +3527,11 @@ class Constants
             'feature'       => self::PAYOUT_SERVICE_ENABLED,
             'display_name'  => 'Payouts Service',
             'documentation' => 'To control onboarding to the new payouts service',
+        ],
+        self::CLOSE_QR_ON_DEMAND => [
+            'feature'       => self::CLOSE_QR_ON_DEMAND,
+            'display_name'  => 'Close QR On Demand',
+            'documentation' => 'Feature to allow the merchant to consume the QR Code close API,',
         ],
     ];
 

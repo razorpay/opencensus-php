@@ -76,6 +76,7 @@ class Constants
     const BlockSendingOnboardingSms = 'block_sending_onboarding_sms';
     const AssumeSubAccount = 'assume_sub_account';
     const AssumeMasterAccount = 'assume_master_account';
+    const CloseQrOnDemand    = 'close_api_enabled';
     const CorporateCardsIsAllowedToApply = 'corporatecards:is_allowed_to_apply';
     const CashAdvanceIsAllowedToApply = 'cashadvance:is_allowed_to_apply';
     const ShowCustomDccDisclosures = 'show_custom_dcc_disclosures';
@@ -161,6 +162,7 @@ class Constants
         self::BlockSendingOnboardingSms => 'rzp/pg/merchant/communication/PartnershipFeatures',
         self::AssumeSubAccount => 'rzp/x/merchant/payouts/SubAccountRoles',
         self::AssumeMasterAccount => 'rzp/x/merchant/payouts/SubAccountRoles',
+        self::CloseQrOnDemand => 'rzp/pg/merchant/upi/qr/QrCode',
         self::CorporateCardsIsAllowedToApply => 'rzp/capital/merchant/onboarding/corporatecards/EligibilityFeatures',
         self::CashAdvanceIsAllowedToApply => 'rzp/capital/merchant/onboarding/cashadvance/EligibilityFeatures',
         self::OneCCAutomaticAccountCreation => 'rzp/pg/merchant/checkout/magic/Configuration',
@@ -246,6 +248,7 @@ class Constants
         APIFeaturesConstants::BLOCK_ONBOARDING_SMS                          => self::BlockSendingOnboardingSms,
         APIFeaturesConstants::ASSUME_SUB_ACCOUNT                            => self::AssumeSubAccount,
         APIFeaturesConstants::ASSUME_MASTER_ACCOUNT                         => self::AssumeMasterAccount,
+        APIFeaturesConstants::CLOSE_QR_ON_DEMAND                            => self::CloseQrOnDemand,
         APIFeaturesConstants::CAPITAL_CARDS_ELIGIBLE                        => self::CorporateCardsIsAllowedToApply,
         APIFeaturesConstants::LOC                                           => self::CashAdvanceIsAllowedToApply,
         APIFeaturesConstants::SHOW_CUSTOM_DCC_DISCLOSURES                   => self::ShowCustomDccDisclosures,
@@ -285,6 +288,7 @@ class Constants
         self::CvvLessFlowDisabled => 'direct',
         self::AssumeSubAccount => 'direct',
         self::AssumeMasterAccount => 'direct',
+        self::CloseQrOnDemand => 'direct',
         self::DynamicCurrencyConversionCybs => "direct",
     ];
 
