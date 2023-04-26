@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Transfer;
 
+use Throwable;
 use RZP\Constants;
 use RZP\Trace\Tracer;
 use RZP\Models\Payment;
@@ -9,9 +10,11 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
+use Illuminate\Support\Str;
 use RZP\Exception\LogicException;
 use Illuminate\Support\Facades\App;
 use RZP\Exception\BadRequestException;
+use RZP\Base\Database\DetectsLostConnections;
 use Razorpay\Spine\Exception\DbQueryException;
 use RZP\Models\Partner\Service as PartnerService;
 
@@ -46,6 +49,8 @@ abstract class AbstractTransfer
     protected  $status;
 
     protected $partner;
+
+    use DetectsLostConnections;
 
     /**
      * AbstractTransfer constructor.
@@ -160,6 +165,15 @@ abstract class AbstractTransfer
 
                 break;
             }
+            catch (\Illuminate\Database\QueryException $ex)
+            {
+                if ($this->isErrorDueToDBLostConnection($ex) === false)
+                {
+                    throw $ex;
+                }
+
+                $this->retryProcessTransferIfWithinRetryLimit($transfer, $i, $ex);
+            }
             catch (DbQueryException | LogicException $ex)
             {
                 if (($transfer->isBalanceTransfer() === true) or
@@ -170,16 +184,7 @@ abstract class AbstractTransfer
                     break;
                 }
 
-                $transfer->reload();
-
-                if ($i === Constant::TRANSFER_PROCESS_RETRIES)
-                {
-                    throw $ex;
-                }
-                else
-                {
-                    $this->trace->traceException($ex);
-                }
+                $this->retryProcessTransferIfWithinRetryLimit($transfer, $i, $ex);
             }
             catch (\Throwable $ex)
             {
@@ -187,6 +192,20 @@ abstract class AbstractTransfer
 
                 break;
             }
+        }
+    }
+
+    protected function retryProcessTransferIfWithinRetryLimit($transfer, $attempt, $ex)
+    {
+        $transfer->reload();
+
+        if ($attempt === Constant::TRANSFER_PROCESS_RETRIES)
+        {
+            throw $ex;
+        }
+        else
+        {
+            $this->trace->traceException($ex);
         }
     }
 
@@ -457,5 +476,19 @@ abstract class AbstractTransfer
         {
             (new Core())->eventTransferFailed($transfer);
         }
+    }
+
+    protected function isErrorDueToDBLostConnection(Throwable $e)
+    {
+        // This method checks for 'Lock wait timeout exceeded' error in addition to the different
+        // errors that are checked by the causedByLostConnection method.
+        $message = $e->getMessage();
+
+        if (Str::contains($message, ['Lock wait timeout exceeded',]) === true)
+        {
+            return true;
+        }
+
+        return $this->causedByLostConnection($e);
     }
 }
