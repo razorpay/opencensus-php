@@ -874,6 +874,7 @@ class UserRolesScope
             'otp_create'                                           => [Role::OWNER, Role::ADMIN],
             'p2p_fetch_private'                                    => [Role::OWNER, Role::ADMIN],
             'partner_activation_details'                           => [Role::OWNER, Role::ADMIN],
+            'partner_sales_poc'                                    => [Role::OWNER, Role::ADMIN],
             'partner_activation_save'                              => [Role::OWNER, Role::ADMIN],
             'partner_referral_fetch'                               => [Role::OWNER, Role::ADMIN],
             'merchant_authorize_partner_save'                      => [Role::OWNER, Role::ADMIN],

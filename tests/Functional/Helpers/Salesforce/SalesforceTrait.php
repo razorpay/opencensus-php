@@ -18,9 +18,9 @@ trait SalesforceTrait
         $this->app['salesforce'] = $this->salesforceMock;
     }
 
-    protected function mockSalesforceRequest($expectedMerchantId, $expectedResponse): void
+    protected function mockSalesforceRequest($expectedMerchantId, $expectedResponse, $method = 'getSalesPOCForMerchantID'): void
     {
-        $this->salesforceMock->shouldReceive('getSalesPOCForMerchantID')
+        $this->salesforceMock->shouldReceive($method)
                              ->times(1)
                              ->with(Mockery::on(function($actualMerchantId) use ($expectedMerchantId) {
                                  return $actualMerchantId === $expectedMerchantId;

@@ -623,6 +623,42 @@ class SalesForceClient
         return $response['records'][0]['Owner']['Email'];
     }
 
+    public function getPartnershipSalesPOCForMerchantId($merchantId)
+    {
+        $accessToken = $this->fetchAccessToken();
+
+        $salesPOCQuery = "select
+                          Enabler_POC__r.Name,
+                          Enabler_POC__r.Email,
+                          Enabler_POC__r.Phone,
+                          Enabler_POC__r.Title
+                          from
+                          Account
+                          where
+                          Merchant_ID__c = '$merchantId'";
+
+        $queryURL = $this->baseUrl . '/services/data/v34.0/query?q=' . $salesPOCQuery;
+        $request  = [
+            'url'     => $queryURL,
+            'method'  => self::GET,
+            'content' => [],
+            'options' => ['timeout' => 120],
+            'headers' => [
+                RequestHeader::CONTENT_TYPE  => 'application/json',
+                RequestHeader::AUTHORIZATION => sprintf('%s %s',RequestHeader::BEARER, $accessToken)
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetResponse($request);
+
+        if (empty($response['records']) ==true)
+        {
+           return [];
+        }
+
+        return $response['records'][0];
+    }
+
     public function getSalesforceDetailsForMerchantIDs(array $merchantIds) : array
     {
         $details = [];

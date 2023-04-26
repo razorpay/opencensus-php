@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Partner;
 
+use RZP\Services\SalesForceClient;
 use Throwable;
 use Carbon\Carbon;
 use RZP\Exception;
@@ -317,6 +318,27 @@ class Service extends Base\Service
             'success_ids' => $successIds,
             'failure_ids' => $failureIds
         ];
+    }
+
+    public function getPartnerSalesPOC()
+    {
+        $merchantId = $this->merchant->getId();
+
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.partnerships_sales_poc_experiment_id'),
+        ];
+
+        $isEnabled =  (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
+
+        $response = [];
+
+        if($isEnabled)
+        {
+            $response = $this->app['salesforce']->getPartnershipSalesPOCForMerchantId($merchantId);
+        }
+
+        return ['items'   =>  $response];
     }
 
     public function isMarketplaceTransferExpEnabled(?Merchant\Entity $partner): bool

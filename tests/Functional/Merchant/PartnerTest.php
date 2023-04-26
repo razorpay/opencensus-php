@@ -45,15 +45,16 @@ use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate;
 use RZP\Models\Merchant\MerchantApplications\Entity;
+use RZP\Tests\Functional\Helpers\Salesforce\SalesforceTrait;
 use RZP\Mail\Merchant\RazorpayX\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateForX;
 use RZP\Mail\Merchant\Capital\LineOfCredit\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateForLOC;
-
 
 class PartnerTest extends OAuthTestCase
 {
     use TestsMetrics;
     use MocksSplitz;
     use PartnerTrait;
+    use SalesforceTrait;
     use BatchTestTrait;
     use CreateLegalDocumentsTrait;
     use TestsWebhookEvents;
@@ -4620,4 +4621,44 @@ class PartnerTest extends OAuthTestCase
 
         $this->startTest();
     }
+
+    public function testPartnerSalesPoc() : void
+    {
+        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID);
+
+        $expectedResponse = [
+                'Name'              => 'Test Razorpay',
+                'Email'             => 'test.sales@example.com',
+                'Phone'    => '9876543210',
+                'Title'             => 'Partnerships',
+        ];
+
+        $this->setUpSalesforceMock();
+
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceRequest(self::DEFAULT_MERCHANT_ID, $expectedResponse, 'getPartnershipSalesPOCForMerchantId');
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_MERCHANT_ID);
+
+        $this->startTest();
+    }
+
+    public function testEmptyPartnerSalesPoc() : void
+    {
+        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID);
+
+        $expectedResponse = [];
+
+        $this->setUpSalesforceMock();
+
+        $this->mockAllSplitzTreatment();
+
+        $this->mockSalesforceRequest(self::DEFAULT_MERCHANT_ID, $expectedResponse, 'getPartnershipSalesPOCForMerchantId');
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_MERCHANT_ID);
+
+        $this->startTest();
+    }
+
 }

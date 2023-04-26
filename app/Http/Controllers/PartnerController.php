@@ -105,4 +105,13 @@ class PartnerController extends Controller
 
         return ApiResponse::json([$response]);
     }
+
+    public function getPartnerSalesPOC()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->getPartnerSalesPOC();
+
+        return ApiResponse::json($response);
+    }
 }

@@ -408,6 +408,8 @@ return array(
 
     'excluded_partners_from_providing_subm_ip_experiment_id' => env('EXCLUDED_PARTNERS_FROM_PROVIDING_SUBM_IP_EXPERIMENT_ID'),
 
+    'partnerships_sales_poc_experiment_id'  => env('PARTNERSHIPS_SALES_POC_EXPERIMENT_ID'),
+
     'partnerships_for_marketplace_transfer_experiment_id'   => env('PARTNERSHIPS_FOR_MARKETPLACE_TRANSFER_EXPERIMENT_ID'),
 
     'submerchant_payment_manual_settlement_experiment_id'   => env('SUBMERCHANT_PAYMENT_MANUAL_SETTLEMENT_EXPERIMENT_ID'),

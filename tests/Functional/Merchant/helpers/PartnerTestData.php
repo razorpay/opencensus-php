@@ -2045,6 +2045,35 @@ return [
         ],
     ],
 
+    'testPartnerSalesPoc'   => [
+        'request'   => [
+            'url'       => '/partner/sales_poc',
+            'method'    => 'GET',
+        ],
+        'response'  => [
+            'content'       => [
+                'items' => [
+                'Name'              => 'Test Razorpay',
+                'Email'             => 'test.sales@example.com',
+                'Phone'             => '9876543210',
+                'Title'             => 'Partnerships',
+                 ]
+            ],
+        ],
+    ],
+
+    'testEmptyPartnerSalesPoc'   => [
+        'request'   => [
+            'url'       => '/partner/sales_poc',
+            'method'    => 'GET',
+        ],
+        'response'  => [
+            'content'       => [
+                'items'  => [],
+            ],
+        ],
+    ],
+
     'testUpdatePartnerTypeAsBankOnboardingPartner' => [
         'request'  => [
             'url'     => '/banking_accounts/rbl/lms/merchant/admin/partner_type',
