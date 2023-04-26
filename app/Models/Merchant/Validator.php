@@ -686,7 +686,7 @@ class Validator extends Base\Validator
         'zipcode'       => 'sometimes|string|between:0,16',
         'country'       => 'required|string|between:2,64',
         'state'         => 'sometimes|string|between:2,64',
-        'state_code'    => 'sometimes|string|between:2,64',
+        'state_code'    => 'sometimes|string|between:1,64',
     ];
 
     protected static $addressShippingInfoResponseRules = [
