@@ -9,6 +9,7 @@ class Constants
     public const TRUECALLER_USER_PROFILE_TTL = 600; // 600 seconds i.e. 10 minutes
     public const TRUECALLER_REQUEST_ID_TTL = 3600; // 3600 seconds i.e. 60 minutes
     public const CACHE_PREFIX = 'truecaller_auth_request_';
+    public const DEFAULT_SERVICE = 'checkout';
 
     /** Entity Status constants*/
     public const ACTIVE   = 'active';

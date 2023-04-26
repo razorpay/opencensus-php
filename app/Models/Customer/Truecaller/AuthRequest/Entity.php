@@ -68,7 +68,7 @@ class Entity extends PublicEntity
 
     /** @var array The default value for attributes to be set during building the entity */
     protected $defaults = [
-        self::SERVICE => 'checkout',
+        self::SERVICE => Constants::DEFAULT_SERVICE,
         self::STATUS => 'active',
         self::TRUECALLER_STATUS => null,
     ];

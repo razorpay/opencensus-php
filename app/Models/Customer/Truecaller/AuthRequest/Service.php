@@ -27,7 +27,7 @@ class Service extends BaseService
         try {
             $input = [
                 'context' => $this->merchant->getId(),
-                'service' => $this->auth->getInternalApp()
+                'service' => Constants::DEFAULT_SERVICE,
             ];
 
             $this->trace->info(TraceCode::CREATE_TRUECALLER_ENTITY_REQUEST, [

@@ -239,7 +239,7 @@ class Core extends BaseCore
         $this->cache->put($redisKeyForSuffixId, json_encode($truecallerEntity), Constants::TRUECALLER_USER_PROFILE_TTL);
     }
 
-    protected function getRedisKey(string $id, string $service = 'checkout'): string
+    protected function getRedisKey(string $id, string $service = Constants::DEFAULT_SERVICE): string
     {
         return $service . Constants::CACHE_VALUE_SEPARATOR . Constants::CACHE_PREFIX . $id;
     }

@@ -426,7 +426,7 @@ class Checkout
     {
         $input['context'] = $merchantId;
 
-        $input['service'] = 'checkout';
+        $input['service'] = Customer\Truecaller\AuthRequest\Constants::DEFAULT_SERVICE;
 
         $truecallerAuthRequest = (new TruecallerService())->create($input);
 

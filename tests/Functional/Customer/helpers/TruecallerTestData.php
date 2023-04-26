@@ -100,7 +100,7 @@ return [
                 'status' => 'active',
                 'truecaller_status' => null,
                 'context' => '10000000000000',
-                'service' => 'checkout_service',
+                'service' => 'checkout',
             ],
         ]
     ]
