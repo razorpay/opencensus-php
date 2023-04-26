@@ -24,6 +24,8 @@ class AuthenticationTerminals
 
     const CAPABILITY             = 'capability';
 
+    const GATEWAY_AUTH_VERSION = 'gateway_auth_version';
+
     const AUTHENTICATION_TERMINALS = [
 
         [
@@ -57,6 +59,14 @@ class AuthenticationTerminals
         [
             self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
             self::GATEWAY                   => Gateway::HITACHI,
+            self::AUTHENTICATION_GATEWAY    => Gateway::MPI_BLADE,
+            self::AUTH_TYPE                 => AuthType::_3DS,
+            self::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
+            self::GATEWAY_AUTH_VERSION         => "v2",
+        ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::HITACHI,
             self::AUTHENTICATION_GATEWAY    => Gateway::MPI_ENSTAGE,
             self::AUTH_TYPE                 => AuthType::OTP,
             self::GATEWAY_AUTH_TYPE         => AuthType::OTP,
@@ -67,6 +77,14 @@ class AuthenticationTerminals
             self::AUTHENTICATION_GATEWAY    => Gateway::MPI_BLADE,
             self::AUTH_TYPE                 => AuthType::HEADLESS_OTP,
             self::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
+        ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::HITACHI,
+            self::AUTHENTICATION_GATEWAY    => Gateway::MPI_BLADE,
+            self::AUTH_TYPE                 => AuthType::HEADLESS_OTP,
+            self::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
+            self::GATEWAY_AUTH_VERSION         => "v2",
         ],
         [
             self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
@@ -129,6 +147,14 @@ class AuthenticationTerminals
         [
             self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
             self::GATEWAY                   => Gateway::CYBERSOURCE,
+            self::AUTHENTICATION_GATEWAY    => null,
+            self::AUTH_TYPE                 => AuthType::_3DS,
+            self::GATEWAY_AUTH_TYPE         => null,
+            self::GATEWAY_AUTH_VERSION      => "v2"
+        ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::CYBERSOURCE,
             self::AUTHENTICATION_GATEWAY    => Gateway::GOOGLE_PAY,
             self::AUTH_TYPE                 => AuthType::_3DS,
             self::GATEWAY_AUTH_TYPE         => null,
@@ -146,6 +172,14 @@ class AuthenticationTerminals
             self::AUTHENTICATION_GATEWAY    => null,
             self::AUTH_TYPE                 => AuthType::HEADLESS_OTP,
             self::GATEWAY_AUTH_TYPE         => null,
+        ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::CYBERSOURCE,
+            self::AUTHENTICATION_GATEWAY    => null,
+            self::AUTH_TYPE                 => AuthType::HEADLESS_OTP,
+            self::GATEWAY_AUTH_TYPE         => null,
+            self::GATEWAY_AUTH_VERSION      => "v2"
         ],
         [
             self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
