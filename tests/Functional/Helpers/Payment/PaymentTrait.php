@@ -3687,6 +3687,7 @@ trait PaymentTrait
             "razorpay",
             "timecosmos",
             "tapicici",
+            "trans",
             "liv",
             "sliceaxis",
             "pz",

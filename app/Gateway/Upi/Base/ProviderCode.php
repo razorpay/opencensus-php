@@ -143,6 +143,7 @@ class ProviderCode
     const SYNDBANK           = 'syndbank';
     const SYNDICATE          = 'syndicate';
     const TJSB               = 'tjsb';
+    const TRANS              = 'trans';
     const UBI                = 'ubi';
     const UBOI               = 'uboi';
     const UCO                = 'uco';
@@ -321,6 +322,7 @@ class ProviderCode
         self::SYND               => IFSC::SYNB,
         self::SYNDBANK           => IFSC::SYNB,
         self::SYNDICATE          => IFSC::SYNB,
+        self::TRANS              => self::PPIW,
         self::TJSB               => IFSC::TJSB,
         self::TMB                => IFSC::TMBL,
         self::UBI                => IFSC::UTBI,
