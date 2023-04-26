@@ -25,6 +25,7 @@ export enum Teams {
   AFFORDABILITY = 'Affordability',
   AVAILABILITY_AND_DOWNTIME = 'Availability And Downtime',
   RAZORPAY_X = 'RazorpayX',
+  MERCHANT_REPORTING = 'Merchant Reporting',
 }
 
 // Maintain this list in ascending order
@@ -109,7 +110,7 @@ export const RoutesConfig = {
   '/partners/earnings/daily': Teams.PARTNERSHIP,
   '/partners/earnings/invoices': Teams.PARTNERSHIP,
   '/partners/earnings/transactional': Teams.PARTNERSHIP,
-  '/partners/reports': Teams.PARTNERSHIP,
+  '/partners/reports': Teams.MERCHANT_REPORTING,
   '/partners/settings': Teams.PARTNERSHIP,
   '/partners/submerchants': Teams.PARTNERSHIP,
   '/partners/subventions': Teams.PARTNERSHIP,
@@ -166,7 +167,7 @@ export const RoutesConfig = {
   '/registration_links': Teams.APPS,
 
   '/reminders': Teams.PG_DASHBOARD,
-  '/reports': Teams.PG_DASHBOARD,
+  '/reports': Teams.MERCHANT_REPORTING,
   '/reversals': Teams.PG_DASHBOARD,
   '/reversals/batchreversals': Teams.PG_DASHBOARD,
 

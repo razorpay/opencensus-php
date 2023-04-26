@@ -20,6 +20,7 @@ export {
   Alert,
   Link,
   ExternalLinkIcon,
+  AlertTriangleIcon,
 } from '@razorpay/blade/components';
 
 // custom components
@@ -39,3 +40,4 @@ export * from './AsyncDropdown';
 export * from './YearPicker';
 export * from './MonthPicker';
 export * from './Suspense';
+export * from './ReportsErrorBoundary';

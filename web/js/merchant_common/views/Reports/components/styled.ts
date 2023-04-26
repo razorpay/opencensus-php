@@ -195,3 +195,11 @@ export const ScrollableContainer = styled.div<{ scrollbarColor?: string }>`
   }
   `}
 `;
+
+export const CenteredEmptyContainer = styled.div`
+  width: 100%;
+  height: calc(100vh - 100px);
+  background-color: #fff;
+  flex-direction: column;
+  ${flexCentered}
+`;

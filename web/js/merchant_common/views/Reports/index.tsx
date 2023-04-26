@@ -2,6 +2,7 @@ import React from 'react';
 import { ReportsPropType } from './types';
 import { ReportsSection } from './Reports';
 import { ReportContextProvider } from './contexts/ReportsContext';
+import { ReportsErrorBoundary } from 'merchant_common/views/Reports/components';
 
 /**
  * `Reporting UI`
@@ -10,9 +11,11 @@ import { ReportContextProvider } from './contexts/ReportsContext';
  */
 const Reports = ({ dashboard }: ReportsPropType): JSX.Element => {
   return (
-    <ReportContextProvider dashboardType={dashboard}>
-      <ReportsSection dashboardType={dashboard} />
-    </ReportContextProvider>
+    <ReportsErrorBoundary>
+      <ReportContextProvider dashboardType={dashboard}>
+        <ReportsSection dashboardType={dashboard} />
+      </ReportContextProvider>
+    </ReportsErrorBoundary>
   );
 };
 
