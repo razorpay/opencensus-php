@@ -35,7 +35,13 @@ fi
 php artisan optimize
 
 echo "$(date) Copy dashboard vhost"
-cp dockerconf/nginx.conf /etc/nginx/conf.d/default.conf
+
+
+if [[ $devserve == "true" ]]; then
+  cp dockerconf/dashboard-dev.conf /etc/nginx/conf.d/default.conf
+else
+  cp dockerconf/nginx.conf /etc/nginx/conf.d/default.conf
+fi
 
 echo "setting max_input_vars to 2000"
 sed -ie "s/; max_input_vars =.*/max_input_vars = 2000/g" /etc/php81/php.ini
