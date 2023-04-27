@@ -118,7 +118,7 @@ const CongratsForm = ({
               <img src={imageStarStroke} alt="success" className="star-logo" />
               <ul>
                 <li>Your can now start refering users from the Razorpay account.</li>
-                <li>Use popular domestic payment methods</li>
+                <li>Refer popular domestic payment methods</li>
               </ul>
               <div className="mt-20">
                 <Button size="medium" isFullWidth block onClick={() => onCTAClick('goToDashboard')}>
@@ -129,7 +129,7 @@ const CongratsForm = ({
             <div className="congrats-form congrats-form-2">
               <div className="form2-heading">Enter email to get all notifications</div>
               <div className="form2-sub-heading">
-                Please share your Email with us, so that we can send your all important
+                Please share your Email with us, so that we can send you all important
                 communication.
               </div>
               <StyledCongratsInputWrapper>

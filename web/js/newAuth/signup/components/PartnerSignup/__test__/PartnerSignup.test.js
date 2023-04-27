@@ -14,11 +14,9 @@ describe('PartnerSignup', () => {
   test('should render signup start screen', () => {
     renderApp();
     expect(screen.getByText(/Already a user\?/i)).toBeInTheDocument();
-    expect(
-      screen.getByText(/Most partners earn ₹ 7500 in commissions every month!/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Most of our partners earn more than/i)).toBeInTheDocument();
     expect(screen.getByText(/Vikas Baruna/i)).toBeInTheDocument();
-    expect(screen.getByText(/Sign up as Partners/i)).toBeInTheDocument();
+    expect(screen.getByText(/Sign up as a Partner/i)).toBeInTheDocument();
     expect(screen.getByText(/privacy policy/i)).toBeInTheDocument();
   });
 });

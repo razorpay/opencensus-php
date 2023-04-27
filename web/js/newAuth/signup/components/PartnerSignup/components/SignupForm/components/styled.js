@@ -120,6 +120,7 @@ export const StyledStepWrapper = styled.div(
       margin-bottom: ${$marginBottom};
       min-height: 225px;
       overflow: ${$mobileOverflow};
+      height: 70%;
 
       .resend-otp {
         margin: 10px 0;

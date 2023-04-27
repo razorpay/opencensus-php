@@ -1,3 +1,4 @@
+import { RupeeIcon } from '@razorpay/blade/components';
 import { STEPS } from 'newAuth/signup/Constants';
 import Testimonials from './Testimonials';
 import imageCongrats from 'assets/partner-dashboard/congrats-img.png';
@@ -11,7 +12,13 @@ export default ({ step }) => {
         Become a <span className="highlight">Partner</span>
       </StyledHeading>
       <hr className="yellow-seperator" />
-      <div className="sub-heading">Most partners earn &#8377; 7500 in commissions every month!</div>
+      <div className="sub-heading">
+        Most of our partners earn more than
+        <span className="rupee-icon">
+          <RupeeIcon color="feedback.icon.neutral.highContrast" size="xlarge" />
+        </span>
+        7500 in commissions every month!
+      </div>
       <Testimonials />
     </StyledInfoWrapper>
   ) : (

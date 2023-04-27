@@ -15,5 +15,11 @@ describe('CongratsForm', () => {
     renderApp();
     expect(screen.getByText(/Enter email to get all notifications/i)).toBeInTheDocument();
     expect(screen.getByText(/Go to Dashboard/i)).toBeInTheDocument();
+    expect(screen.getByText(/Refer popular domestic payment methods/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /Please share your Email with us, so that we can send you all important communication./i,
+      ),
+    ).toBeInTheDocument();
   });
 });

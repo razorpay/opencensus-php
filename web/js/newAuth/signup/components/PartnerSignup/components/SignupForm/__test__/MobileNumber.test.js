@@ -21,7 +21,7 @@ describe('MobileNumber', () => {
 
   test('should render mobile number screen', () => {
     renderApp();
-    expect(screen.getByText(/Sign up as Partners/i)).toBeInTheDocument();
+    expect(screen.getByText(/Sign up as a Partner/i)).toBeInTheDocument();
     expect(screen.getByText(/Get Started/i)).toBeInTheDocument();
   });
 

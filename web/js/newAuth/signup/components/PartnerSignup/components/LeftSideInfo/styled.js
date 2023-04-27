@@ -31,7 +31,11 @@ export const StyledInfoWrapper = styled.div(
       font-size: 24px;
       font-weight: ${theme.typography.fonts.weight.bold};
       width: 500px;
-      line-height: 40px;
+      line-height: 36px;
+
+      .rupee-icon {
+        vertical-align: sub;
+      }
     }
 
     .congrats-content-mweb {

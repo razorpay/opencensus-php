@@ -109,7 +109,7 @@ const MobileNumber = ({
       {(formikProps) => (
         <StyledForm onChange={formikProps.handleChange}>
           <StyledStepWrapper>
-            <StyledTitle>Sign up As Partners!</StyledTitle>
+            <StyledTitle>Sign up as a Partner!</StyledTitle>
             <StyledSubtitle>
               Enter a valid mobile number on which you can receive OTP
             </StyledSubtitle>
