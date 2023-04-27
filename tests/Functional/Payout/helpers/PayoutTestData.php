@@ -3829,6 +3829,20 @@ return [
         ],
     ],
 
+    'testAutoExpiryNotApplicableToExcludedMerchant' => [
+        'request'  => [
+            'method'    => 'POST',
+            'url'       => '/payouts/auto_expire',
+            'content'   => [
+                'excluded_merchant_ids' => ['10000000000000'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testAutoExpiryOfPayoutsAfterThreeMonthsForRejectedPayoutToPS' => [
         'request'  => [
             'method'    => 'POST',

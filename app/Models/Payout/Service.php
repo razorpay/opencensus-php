@@ -1509,13 +1509,17 @@ class Service extends Base\Service
         return $newPayout->toArrayPublic();
     }
 
-    public function processDispatchForPayoutsAutoExpiry()
+    public function processDispatchForPayoutsAutoExpiry(array $input)
     {
         $from = Carbon::now(Timezone::IST)->startOfDay()->subMonths(3)->getTimestamp();
 
-        $pendingPayoutIds = $this->repo->payout->getPayoutsBeforeTimestampForStatus(Status::PENDING, $from);
+        $merchantIdsToExclude = $input['excluded_merchant_ids'] ?? [];
 
-        $queuedPayoutIds = $this->repo->payout->getPayoutsBeforeTimestampForStatus(Status::QUEUED, $from);
+        $targetMerchantIds = $input['merchant_ids'] ?? [];
+
+        $pendingPayoutIds = $this->repo->payout->getPayoutsBeforeTimestampForStatus(Status::PENDING, $from, $merchantIdsToExclude, $targetMerchantIds);
+
+        $queuedPayoutIds = $this->repo->payout->getPayoutsBeforeTimestampForStatus(Status::QUEUED, $from, $merchantIdsToExclude, $targetMerchantIds);
 
         $payoutIdsToDispatch = array_merge($pendingPayoutIds, $queuedPayoutIds);
 

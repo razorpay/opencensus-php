@@ -656,7 +656,7 @@ class Repository extends Base\Repository
     }
 
     //fetch payouts in provided status
-    public function getPayoutsBeforeTimestampForStatus(string $status, int $beforeDate, int $afterDate = null)
+    public function getPayoutsBeforeTimestampForStatus(string $status, int $beforeDate, array $merchantIdsToExclude, array $targetMerchantIds, int $afterDate = null)
     {
         $payoutStatus = $this->dbColumn(Entity::STATUS);
 
@@ -664,10 +664,22 @@ class Repository extends Base\Repository
 
         $createdAtColumn = $this->dbColumn(Entity::CREATED_AT);
 
+        $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+
         $query= $this->newQueryWithConnection($this->getSlaveConnection())
                      ->select($payoutIdColumn)
                      ->where($payoutStatus, '=', $status)
                      ->where($createdAtColumn, '<', $beforeDate);
+
+        if(empty($merchantIdsToExclude) === false)
+        {
+            $query->whereNotIn($merchantIdColumn, $merchantIdsToExclude);
+        }
+
+        if(empty($targetMerchantIds) === false)
+        {
+            $query->whereIn($merchantIdColumn, $targetMerchantIds);
+        }
 
         if (empty($afterDate) === false)
         {
