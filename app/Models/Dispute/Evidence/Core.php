@@ -214,7 +214,13 @@ class Core extends Base\Core
 
         $customProofTypeDocumentIdsMap = $this->fillCustomProofTypeDocumentIdsMap($currentOthersProof);
 
+        $this->trace->info(TraceCode::DISPUTE_CUSTOM_PROOF_VS_DOCUMENT_IDS, ['customProofTypeDocumentIdsMap' => $customProofTypeDocumentIdsMap]);
+
+        $this->trace->info(TraceCode::DISPUTE_CUSTOM_PROOF_VS_DOCUMENT_IDS, ['newOthersProof' => $newOthersProof]);
+
         $customProofTypeDocumentIdsMap = $this->fillCustomProofTypeDocumentIdsMap($newOthersProof, $customProofTypeDocumentIdsMap);
+
+        $this->trace->info(TraceCode::DISPUTE_CUSTOM_PROOF_VS_DOCUMENT_IDS, ['customProofTypeDocumentIdsMap' => $customProofTypeDocumentIdsMap]);
 
         $result = [];
 
@@ -233,6 +239,8 @@ class Core extends Base\Core
     {
         if (empty($othersProof) === true)
         {
+            $this->trace->info(TraceCode::DISPUTE_CUSTOM_PROOF_VS_DOCUMENT_IDS, ['othersProof' => 'empty']);
+
             return $customProofTypeDocumentIdsMap;
         }
 
