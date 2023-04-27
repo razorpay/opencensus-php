@@ -7,8 +7,10 @@ import Clipboard from 'common/ui/Clipboard';
 import { titleCase } from 'common/utils/rzp-utils';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import DocsLink from 'merchant/components/DocsLink';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 const selector = formValueSelector('issueInvoice');
+// eslint-disable-next-line react/no-unsafe
 @connect((state) => {
   return {
     session: state.session,
@@ -87,6 +89,7 @@ export default class IssueInvoiceConfirmModal extends Component {
       isPaymentLink,
       disableIssueOnEmptySelection,
       onFieldChange,
+      session: { user },
     } = this.props;
 
     const isTestMode = this.props.session.mode === 'test';
@@ -94,6 +97,10 @@ export default class IssueInvoiceConfirmModal extends Component {
     const entityName = isPaymentLink ? 'payment link' : 'invoice';
     const disabled =
       (disableIssueOnEmptySelection || isPaymentLink) && !(sms_notify || email_notify);
+
+    const showMoreWaysToNotify =
+      (customer.contact || customer.email) &&
+      !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.AppStore);
 
     return (
       <div class="issue-invoice-modal">
@@ -153,7 +160,7 @@ export default class IssueInvoiceConfirmModal extends Component {
                   </div>
                 )}
 
-                {(customer.contact || customer.email) && (
+                {showMoreWaysToNotify && (
                   <DocsLink
                     title="More ways to notify"
                     url="https://razorpay.com/app-store/"

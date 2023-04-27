@@ -16,6 +16,7 @@ import * as NotificationsActions from 'merchant_common/reducers/notifications';
 
 import { fetchStates } from 'merchant/reducers/states';
 import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 import AddressEntry from 'merchant/views/Customers/components/AddressEntry';
 import Countries from 'merchant/helpers/countries.json';
@@ -372,7 +373,7 @@ export default class AddCustomer extends Component {
       add_shipping_address,
 
       showGSTN,
-      user: { isInttCurrenciesEnabled },
+      user,
     } = this.props;
 
     const {
@@ -383,6 +384,8 @@ export default class AddCustomer extends Component {
       billingAddressStates,
       shippingAddressStates,
     } = this.state;
+
+    const { isInttCurrenciesEnabled } = user;
 
     const screens = [];
 
@@ -415,6 +418,8 @@ export default class AddCustomer extends Component {
         countries: CountryNames,
       };
     }
+
+    const showGSTNInput = showGSTN && !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Gst);
 
     // Add Screen 1
     const screen1 = (
@@ -464,7 +469,7 @@ export default class AddCustomer extends Component {
                   />
                 </div>
               </div>
-              {showGSTN && (
+              {showGSTNInput && (
                 <div class="form-group">
                   <label>GSTIN</label>
                   <div>

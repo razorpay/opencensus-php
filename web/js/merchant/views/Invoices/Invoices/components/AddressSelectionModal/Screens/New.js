@@ -103,6 +103,7 @@ export default class New extends Component {
         editedAddress: {
           country: this.DEFAULT_COUNTRY,
         },
+        states: Countries[this.DEFAULT_COUNTRY],
       };
     }
   }
@@ -116,35 +117,6 @@ export default class New extends Component {
   }
 
   UNSAFE_componentWillMount() {
-    if (!this.props.isInttCurrenciesEnabled) {
-      const promises = [this.props.fetchStates()];
-      this.setState({
-        // eslint-disable-next-line react/no-unused-state
-        isLoading: true,
-      });
-
-      Promise.all(promises)
-        .then(([states]) => {
-          // Set address type.
-          this.props.change('type', this.props.type);
-
-          this.setState({
-            // eslint-disable-next-line react/no-unused-state
-            isLoading: false,
-            states: states && states.data && states.data.items,
-          });
-        })
-        .catch(({ errors }) => {
-          this.props.showNotification({
-            type: 'error',
-            message: errors,
-          });
-        });
-
-      return;
-    }
-
-    // Set address type.
     this.props.change('type', this.props.type);
   }
 

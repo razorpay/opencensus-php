@@ -1,6 +1,7 @@
 import React from 'react';
 import ShowWhen from './ShowWhen';
 import { getUser } from 'merchant/store';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 export default function DocsLink({ url, title = 'Documentation', style = {}, onClick }) {
   if (typeof title === 'string') {
@@ -9,7 +10,12 @@ export default function DocsLink({ url, title = 'Documentation', style = {}, onC
 
   const modifiedURL = getCustomURL(url);
   return (
-    <ShowWhen additionalCondition={(user) => user.isOrgAllowedFunctionality('external_links')}>
+    <ShowWhen
+      additionalCondition={(user) =>
+        user.isOrgAllowedFunctionality('external_links') &&
+        !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Documentation)
+      }
+    >
       <a
         className="btn btn-link"
         href={modifiedURL}
