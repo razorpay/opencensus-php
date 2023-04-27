@@ -50,24 +50,29 @@ class SyncEventManager
 
     protected $stats = ['total' => ['count' => 0]];
 
+    protected array $currentTransactionStats = [];
+
     public function __construct(Application $app)
     {
-        $this->app = $app;
-        $this->trace = $this->app['trace'];
-        $this->outbox = $this->app['outbox'];
-        $this->splitzService =  $this->app['splitzService'];
+        $this->app                    = $app;
+        $this->trace                  = $this->app['trace'];
+        $this->outbox                 = $this->app['outbox'];
+        $this->splitzService          = $this->app['splitzService'];
         $this->syncDeviationAsvClient = new AsvClient\SyncAccountDeviationAsvClient();
-        $this->repo = $this->app['repo'];
+        $this->repo                   = $this->app['repo'];
+    }
+
+    public function resetTransactionStats(): void
+    {
+        $this->currentTransactionStats = [];
     }
 
     public function __destruct()
     {
         // If there are some unreported sync events, log them.
         // Do not throw exception, it would result in unclean/fatal shutdown.
-        if ($this->hasUnreportedAccountIds())
-        {
-            if ($this->hasUnreportedLiveAccountIds())
-            {
+        if ($this->hasUnreportedAccountIds()) {
+            if ($this->hasUnreportedLiveAccountIds()) {
                 $this->trace->count(
                     Metric::ACS_SYNC_ALERT_UNREPORTED_ACCOUNTS,
                     [Metric::LABEL_RZP_MODE => Mode::LIVE],
@@ -75,8 +80,7 @@ class SyncEventManager
                 );
             }
 
-            if ($this->hasUnreportedTestAccountIds())
-            {
+            if ($this->hasUnreportedTestAccountIds()) {
                 $this->trace->count(
                     Metric::ACS_SYNC_ALERT_UNREPORTED_ACCOUNTS,
                     [Metric::LABEL_RZP_MODE => Mode::TEST],
@@ -85,9 +89,9 @@ class SyncEventManager
             }
 
             $this->trace->critical(TraceCode::ACS_SYNC_UNREPORTED_ACCOUNTS, [
-                'liveAccountIds'        => array_values($this->liveAccountIds),
-                'testAccountIds'        => array_values($this->testAccountIds),
-                'metadata'              => $this->getContext($this->app),
+                'liveAccountIds' => array_values($this->liveAccountIds),
+                'testAccountIds' => array_values($this->testAccountIds),
+                'metadata' => $this->getContext($this->app),
             ]);
         }
     }
@@ -118,7 +122,7 @@ class SyncEventManager
             or $this->hasUnreportedTestAccountIds();
     }
 
-    private function mergeOutboxJobs(array & $accountIdMap, string $accountId, array $outboxJobs)
+    private function mergeOutboxJobs(array &$accountIdMap, string $accountId, array $outboxJobs)
     {
         $accountIdMap[$accountId] = array_key_exists($accountId, $accountIdMap) ?
             array_unique(array_merge($accountIdMap[$accountId], $outboxJobs)) : $outboxJobs;
@@ -134,7 +138,7 @@ class SyncEventManager
     public function recordAccountSync(PublicEntity $entity, array $outboxJobs)
     {
         $accountId = $entity->getMerchantId();
-        $mode = $entity->getConnectionName();
+        $mode      = $entity->getConnectionName();
 
         switch ($mode) {
             case Mode::LIVE:
@@ -156,27 +160,33 @@ class SyncEventManager
         }
 
         $this->trace->info(TraceCode::RECORDED_ACCOUNT_ID, [
-            'accountId'    => $accountId,
-            'mode'         => $mode,
-            'outbox_jobs'  => $outboxJobs,
-            'entity_name'  => $entity->getEntityName(),
+            'accountId' => $accountId,
+            'mode' => $mode,
+            'outbox_jobs' => $outboxJobs,
+            'entity_name' => $entity->getEntityName(),
         ]);
 
-        // for live mode, store the stats like the number of updates for each entity etc..
-        if ($mode == Mode::LIVE)
-        {
+        // for live mode, store the stats like the number of updates for each entity etc.
+        if ($mode == Mode::LIVE) {
             // we log before the stats are updated as we want to see the number of updates
             // already applied in the request flow before the current update
             $logData = $this->getLogData($entity, $outboxJobs);
             $this->logEntityUpdate($logData);
             $entityName = $entity->getEntityName();
 
-            if (array_key_exists($entityName, $this->stats) === false)
-            {
+            if (array_key_exists($entityName, $this->stats) === false) {
                 $this->stats[$entityName] = ['count' => 0];
             }
+
             $this->stats[$entityName]['count']++;
             $this->stats['total']['count']++;
+
+            if ($this->repo->isTransactionActive() === true) {
+                if (array_key_exists($entityName, $this->currentTransactionStats) === false) {
+                    $this->currentTransactionStats[$entityName] = ['count' => 0];
+                }
+                $this->currentTransactionStats[$entityName]['count']++;
+            }
         }
     }
 
@@ -187,8 +197,8 @@ class SyncEventManager
      */
     public function publishOutboxJobs(array $metadata)
     {
-        $acsSyncEnabled = $this->app['config']->get('applications.acs.sync_enabled');
-        $credcaseSyncEnabled = $this->app['config']->get('applications.acs.credcase_sync_enabled');
+        $acsSyncEnabled        = $this->app['config']->get('applications.acs.sync_enabled');
+        $credcaseSyncEnabled   = $this->app['config']->get('applications.acs.credcase_sync_enabled');
         $asvSplitzExperimentId = $this->app['config']->get('applications.acs.splitz_experiment_id');
 
         foreach ($this->liveAccountIds as $accountId => $outboxJobs) {
@@ -202,31 +212,29 @@ class SyncEventManager
                 $this->trace->info(TraceCode::ASV_FIND_ACCOUNT_IN_DB, ['id' => $accountId]);
 
                 $this->repo->merchant->findOrFail($accountId);
-            }
-            catch (\Throwable $e)
-            {
+            } catch (\Throwable $e) {
                 $this->trace->traceException(
                     $e,
                     Trace::ERROR,
                     TraceCode::ASV_COULD_NOT_FIND_ACCOUNT,
                     [
-                        'id'  => $accountId,
+                        'id' => $accountId,
                     ]
                 );
 
                 continue;
             }
 
-            foreach ($outboxJobs as $outboxJob)  {
+            foreach ($outboxJobs as $outboxJob) {
                 switch ($outboxJob) {
                     case SyncEventObserver::ACS_OUTBOX_JOB_NAME:
-                        $payloadMetadata  = array_merge(['request_id' => $this->app['request']->getId(), 'task_id' => $this->app['request']->getTaskId()], $metadata);
+                        $payloadMetadata = array_merge(['request_id' => $this->app['request']->getId(), 'task_id' => $this->app['request']->getTaskId()], $metadata);
                         // TODO: verify and update as per sync request proto
                         $jobPayload = [
                             'account_id' => $accountId,
-                            'mode'       => Mode::LIVE,
-                            'mock'       => false,
-                            'metadata'   => $payloadMetadata,
+                            'mode' => Mode::LIVE,
+                            'mock' => false,
+                            'metadata' => $payloadMetadata,
                         ];
                         //Commenting out the code if required can be again uncommented
 
@@ -242,9 +250,9 @@ class SyncEventManager
                         break;
                     case SyncEventObserver::CREDCASE_OUTBOX_JOB_NAME:
                         $jobPayload = [
-                            'owner_id'   => $accountId,
+                            'owner_id' => $accountId,
                             'owner_type' => Consumer::ConsumerTypeMerchant,
-                            'domain'     => Consumer::ConsumerDomainRazorpay,
+                            'domain' => Consumer::ConsumerDomainRazorpay,
                         ];
                         $this->publishOutboxJob($credcaseSyncEnabled, SyncEventObserver::CREDCASE_OUTBOX_JOB_NAME,
                             $jobPayload, Mode::LIVE, $metadata);
@@ -289,23 +297,22 @@ class SyncEventManager
         $this->stats = ['total' => ['count' => 0]];
     }
 
-    public function publishOutboxJob(bool $syncEnabled, string $jobName, array $jobPayload,
+    public function publishOutboxJob(bool   $syncEnabled, string $jobName, array $jobPayload,
                                      string $mode, array $metadata)
     {
 
         // if sync is not enabled, do not publish outbox jobs
-        if ($syncEnabled == false)
-        {
+        if ($syncEnabled == false) {
             return;
         }
 
         $metricDimensions = array_merge([
-            Metric::LABEL_RZP_MODE   => $mode,
+            Metric::LABEL_RZP_MODE => $mode,
             Metric::LABEL_OUTBOX_JOB => $jobName,
         ], $metadata);
-        $logDimensions = [
-            'job_name'      => $jobName,
-            'job_payload'   => $jobPayload
+        $logDimensions    = [
+            'job_name' => $jobName,
+            'job_payload' => $jobPayload
         ];
         try {
 
@@ -383,7 +390,7 @@ class SyncEventManager
             $variables = $variant['variables'] ?? [];
 
             foreach ($variables as $variable) {
-                $key = $variable['key'] ?? '';
+                $key   = $variable['key'] ?? '';
                 $value = $variable['value'] ?? '';
 
                 if ($key === 'enabled' && $value === 'true') {
@@ -408,47 +415,66 @@ class SyncEventManager
     protected function getContext(Application $app): array
     {
         $context = [];
-        if (isset($app['request.ctx']) and empty($app['request.ctx']) === false)
-        {
-            $requestContext = $app['request.ctx'];
+        if (isset($app['request.ctx']) and empty($app['request.ctx']) === false) {
+            $requestContext                               = $app['request.ctx'];
             $context[Metric::LABEL_RZP_INTERNAL_APP_NAME] = $requestContext->getInternalAppName();
-            $context[Metric::LABEL_ROUTE] = $requestContext->getRoute();
+            $context[Metric::LABEL_ROUTE]                 = $requestContext->getRoute();
         }
 
-        if (isset($app['worker.ctx']) and empty($app['worker.ctx']) === false)
-        {
+        if (isset($app['worker.ctx']) and empty($app['worker.ctx']) === false) {
             $workerContext = $app['worker.ctx'];
-            $jobName = get_class($app['worker.ctx']);
-            if (method_exists($workerContext, 'getJobName'))
-            {
+            $jobName       = get_class($app['worker.ctx']);
+            if (method_exists($workerContext, 'getJobName')) {
                 $jobName = $workerContext->getJobName();
             }
-            $jobName = str_replace('\\', '_', $jobName);
+            $jobName                               = str_replace('\\', '_', $jobName);
             $context[Metric::LABEL_ASYNC_JOB_NAME] = $jobName;
         }
 
-        $context[Metric::LABEL_ROUTE] =
+        $context[Metric::LABEL_ROUTE]                 =
             $context[Metric::LABEL_ROUTE] ?? Metric::LABEL_NONE_VALUE;
         $context[Metric::LABEL_RZP_INTERNAL_APP_NAME] =
             $context[Metric::LABEL_RZP_INTERNAL_APP_NAME] ?? Metric::LABEL_NONE_VALUE;
-        $context[Metric::LABEL_ASYNC_JOB_NAME] =
+        $context[Metric::LABEL_ASYNC_JOB_NAME]        =
             $context[Metric::LABEL_ASYNC_JOB_NAME] ?? Metric::LABEL_NONE_VALUE;
 
         return $context;
     }
 
-    public function logEntityFetch(array $logData)
+    public function logEntityFetch(array $logData): void
     {
-        $routeName = $logData['route'] ?? 'none';
+        $routeName    = $logData['route'] ?? 'none';
         $asyncJobName = $logData['async_job_name'] ?? 'none';
+        $entityName   = $logData['entity']['name'] ?? 'none';
+
 
         $metricDimensions = [
             Metric::LABEL_ROUTE => $routeName,
-            Metric::LABEL_ASYNC_JOB_NAME => $asyncJobName
+            Metric::LABEL_ASYNC_JOB_NAME => $asyncJobName,
         ];
 
         if (config('applications.acs.read_traffic_metric_enabled', false) === true) {
             app('trace')->count(Metric::MERCHANT_RELATED_ENTITIES_READ_TRAFFIC_TOTAL, $metricDimensions);
+
+            if ($this->repo->isTransactionActive() === true) {
+                if (array_key_exists($entityName, $this->currentTransactionStats) === true) {
+                    $count = $this->currentTransactionStats[$entityName]['count'] ?? 0;
+                    if ($count > 0) {
+                        $metricDimensions = [
+                            Metric::LABEL_ROUTE => $routeName,
+                            Metric::LABEL_ASYNC_JOB_NAME => $asyncJobName,
+                            Metric::ENTITY_UPDATED => $entityName,
+                        ];
+                        app('trace')->info(TraceCode::ACS_READ_AFTER_WRITE_FETCH, [
+                            Metric::LABEL_ROUTE => $routeName,
+                            Metric::LABEL_ASYNC_JOB_NAME => $asyncJobName,
+                            Metric::ENTITY_UPDATED => $entityName,
+                            'count' => $count
+                        ]);
+                        app('trace')->count(Metric::MERCHANT_ENTITIES_READ_AFTER_WRITE_TOTAL, $metricDimensions);
+                    }
+                }
+            }
         }
 
         if ((config('app.acs.verbose_log') === true) or ($this->stats['total']['count'] > 0)) {
@@ -458,41 +484,59 @@ class SyncEventManager
 
     public function logEntityUpdate(array $logData)
     {
-        if ((config('app.acs.verbose_log') === true) or ($this->stats['total']['count'] > 0))
-        {
+        $routeName    = $logData['route'] ?? 'none';
+        $asyncJobName = $logData['async_job_name'] ?? 'none';
+
+
+        $writeHappeningInTransaction = "false";
+        if ($this->repo->isTransactionActive() === true) {
+            $writeHappeningInTransaction = "true";
+        }
+
+        $metricDimensions = [
+            Metric::LABEL_ROUTE => $routeName,
+            Metric::LABEL_ASYNC_JOB_NAME => $asyncJobName,
+            Metric::DB_TRANSACTION => $writeHappeningInTransaction
+        ];
+
+        if (config('applications.acs.write_traffic_metric_enabled', false) === true) {
+            app('trace')->count(Metric::MERCHANT_RELATED_ENTITIES_WRITE_TRAFFIC_TOTAL, $metricDimensions);
+        }
+
+        if ((config('app.acs.verbose_log') === true) or ($this->stats['total']['count'] > 0)) {
             app('trace')->info(TraceCode::ACS_ENTITY_UPDATE, $logData);
         }
     }
 
     public function getLogData(PublicEntity $entity, array $outboxJobs, PublicCollection $collection = null)
     {
-        if ($collection == null)
-        {
+        if ($collection == null) {
             $collection = new PublicCollection;
         }
         $runningInQueue = app()->runningInQueue();
-        $logData = ['route' => 'none', 'async_job_name' => 'none', 'outbox_jobs' => $outboxJobs];
-        if ($runningInQueue === true)
-        {
+        $logData        = ['route' => 'none', 'async_job_name' => 'none', 'outbox_jobs' => $outboxJobs];
+        if ($runningInQueue === true) {
             $logData['async_job_name'] = app('worker.ctx')->getJobName();
-            $logData['mode'] = app('worker.ctx')->getMode();
-        }
-        else
-        {
-            $logData['route'] = app('request.ctx')->getRoute();
+            $logData['mode']           = app('worker.ctx')->getMode();
+        } else {
+            $logData['route']             = app('request.ctx')->getRoute();
             $logData['internal_app_name'] = app('request.ctx')->getInternalAppName();
-            $logData['mode'] = app('request.ctx')->getMode();
+            $logData['mode']              = app('request.ctx')->getMode();
         }
-        $logData['connection'] = $entity->getConnection()->getName();
+        $logData['connection']            = $entity->getConnection()->getName();
         $logData['is_transaction_active'] = app('repo')->isTransactionActive();
-        $logData['stats'] = $this->stats;
+        $logData['stats']                 = $this->stats;
 
         $logData['entity'] = [
             'name' => $entity->getEntityName(),
             'id' => $entity->getId(), 'merchant_id' => $entity->getMerchantId(),
             'collection' => [
-                'ids' => $collection->map(function($item, $key) {return $item->getId();})->all(),
-                'merchant_ids' => $collection->map(function ($item, $key){return $item->getMerchantId();})->all(),
+                'ids' => $collection->map(function ($item, $key) {
+                    return $item->getId();
+                })->all(),
+                'merchant_ids' => $collection->map(function ($item, $key) {
+                    return $item->getMerchantId();
+                })->all(),
             ]
         ];
 

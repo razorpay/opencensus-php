@@ -47,7 +47,9 @@ class Metric
     const ARCHIVED_ENTITY_FETCH_SUCCESS         = 'archived_entity_fetch_success';
     const ARCHIVED_ENTITY_FETCH_TIME_TAKEN      = 'archived_entity_fetch_time_taken';
     const DB_CONNECTION_CLASSIFICATION          = 'db_connection_classification';
-    const MERCHANT_RELATED_ENTITIES_READ_TRAFFIC_TOTAL    = 'merchant_related_entities_read_traffic_total';
+    const MERCHANT_RELATED_ENTITIES_READ_TRAFFIC_TOTAL = 'merchant_related_entities_read_traffic_total';
+    const MERCHANT_ENTITIES_READ_AFTER_WRITE_TOTAL = 'merchant_entities_read_after_write_total';
+    const MERCHANT_RELATED_ENTITIES_WRITE_TRAFFIC_TOTAL = 'merchant_related_entities_write_traffic_total';
     const RAVEN_REQUEST_FAILED                  = 'raven_request_failed';
 
     // Summary type metric names
@@ -146,5 +148,6 @@ class Metric
     const LEDGER_JOURNAL_FETCH_TRANSACTION_ERROR_TOTAL          = 'ledger_journal_fetch_transaction_error_total';
     const REFUND_API_TXN_KAFKA_PUSH_FAILURE                     = 'refund_api_txn_kafka_push_failure';
     const PG_LEDGER_ACK_WORKER_FAILURE                          = 'pg_ledger_ack_worker_failure';
+    const DB_TRANSACTION                                        = 'db_transaction';
 
 }

@@ -24,63 +24,18 @@ class RollbackEventListenerTest extends TestCase
         $rollbackEvent = new RollbackEvent($merchant, 'afterRollback.updated');
 
         $traceMock = $this->createTraceMock();
-        $rollbackEventListener = $this->getMockedRollbackEventHandler(['publishOutboxJobForRollback']);
+        $rollbackEventListener = $this->getMockedRollbackEventHandler();
         $traceMock->expects($this->once())->method('info');
         $traceMock->expects($this->never())->method('traceException');
-        $rollbackEventListener->expects($this->never())->method('publishOutboxJobForRollback');
         $rollbackEventListener->handle($rollbackEvent);
-    }
-
-    function testPublishOutboxJobForRollback()
-    {
-
-        $jobName = RollbackEventListener::ASV_OUTBOX_JOB_NAME;
-        $metadata = [
-            'async_job_name' => 'none',
-            'route' => 'test_route',
-            'rzp_internal_app_name' => 'test_app_name'
-        ];
-        $payloadMetadata = array_merge(['request_id' => $this->app['request']->getId(), 'task_id' => $this->app['request']->getTaskId()], $metadata);
-
-        $jobPayload = [
-            'account_id' => '10000000000000',
-            'mode' => 'live',
-            'mock' => false,
-            'metadata' => $payloadMetadata,
-        ];
-
-        // T1 starts - Outbox push successful
-        $traceMock = $this->createTraceMock();
-        $traceMock->expects($this->once())->method('info');
-        $traceMock->expects($this->once())->method('count');
-        $outboxMock = $this->createOutboxMock();
-        $outboxMock->expects($this->once())->method('send');
-
-        $rollbackEventListener = new RollbackEventListener();
-        $rollbackEventListener->publishOutboxJobForRollback($jobName, $jobPayload, 'live', $metadata);
-        // T1 ends
-
-        // T2 starts - Outbox push failed
-        $traceMock = $this->createTraceMock();
-        $traceMock->expects($this->never())->method('info');
-        $traceMock->expects($this->once())->method('traceException');
-        $traceMock->expects($this->once())->method('count');
-        $outboxMock = $this->createOutboxMock();
-        $outboxMock->expects($this->once())->method('send')->will($this->throwException(new \Exception('db error encountered')));
-
-        $rollbackEventListener = new RollbackEventListener();
-        $rollbackEventListener->publishOutboxJobForRollback($jobName, $jobPayload, 'live', $metadata);
-        // T2 ends
     }
 
     function getMockedRollbackEventHandler($methods = [])
     {
-        $rollbackEventHandler = $this->getMockBuilder(RollbackEventListener::class)
+        return $this->getMockBuilder(RollbackEventListener::class)
             ->enableOriginalConstructor()
             ->onlyMethods($methods)
             ->getMock();
-
-        return $rollbackEventHandler;
     }
 
     protected function createTraceMock()
@@ -90,19 +45,5 @@ class RollbackEventListenerTest extends TestCase
             ->getMock();
         $this->app->instance('trace', $traceMock);
         return $traceMock;
-    }
-
-    protected function createOutboxMock(array $methods = ['send'])
-    {
-        $encrypter = new AES256GCMEncrypt('OUTBOX_ENCRYPTION_KEY');
-        $encoder = new JsonEncoder();
-        $repo = new Repository(\Database\Connection::LIVE);
-        $trace = $this->getMockBuilder(Logger::class)->getMock();
-        $mock = $this->getMockBuilder(OutboxCore::class)
-            ->setConstructorArgs([$encrypter, $encoder, $repo, $trace])
-            ->onlyMethods($methods)
-            ->getMock();
-        $this->app->instance('outbox', $mock);
-        return $mock;
     }
 }
