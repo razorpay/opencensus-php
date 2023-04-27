@@ -975,7 +975,26 @@ class Selector extends Base\Core
             return false;
         }
 
+        if ($payment[Entity::METHOD] === Method::EMI)
+        {
+            return $this->isEMIFallbackApplicable();
+        }
+
         return true;
+    }
+
+    protected function isEMIFallbackApplicable(){
+
+        $payment = $this->input['payment'];
+
+        // For will have fallback only for hdfc & indb for now, will be removing them once rules are fixed for these as well
+        if ($payment[Entity::BANK] === IFSC::HDFC || $payment[Entity::BANK] === IFSC::INDB)
+        {
+            return true;
+        }
+
+        return false;
+
     }
 
     protected function shouldHitRoutingService(string $paymentId = null)
