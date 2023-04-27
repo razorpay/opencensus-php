@@ -10,6 +10,7 @@ use RZP\Models\Payment;
 use RZP\Constants\Timezone;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
+use RZP\Trace\TraceCode;
 
 class Bob extends Base
 {
@@ -112,6 +113,13 @@ class Bob extends Base
                 'Transaction Amount'        => $this->getFormattedAmount($emiPayment->getAmount()),
 
             ];
+
+            $this->trace->info(TraceCode::EMI_PAYMENT_SHARED_IN_FILE,
+                [
+                    'payment_id' => $emiPayment->getId(),
+                    'bank'       => static::BANK_CODE,
+                ]
+            );
         }
 
         return $formattedData;

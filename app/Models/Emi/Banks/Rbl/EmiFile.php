@@ -8,6 +8,7 @@ use RZP\Models\Card;
 use RZP\Models\Emi\Banks\Base;
 use RZP\Models\FileStore;
 use RZP\Models\Emi\Entity;
+use RZP\Trace\TraceCode;
 
 class EmiFile extends Base\EmiFile
 {
@@ -78,6 +79,13 @@ class EmiFile extends Base\EmiFile
                 'Bonus Reward Points'              => '',
                 'EMI Model'                        => 'Y',
             ];
+
+            $this->trace->info(TraceCode::EMI_PAYMENT_SHARED_IN_FILE,
+                [
+                    'payment_id' => $emiPayment->getId(),
+                    'bank'       => $this->bankName,
+                ]
+            );
         }
 
         return $data;

@@ -12,6 +12,7 @@ use RZP\Models\Payment;
 use RZP\Models\Emi\Banks\Base;
 use RZP\Encryption\PGPEncryption;
 use RZP\Services\Beam\Constants as BeamConstants;
+use RZP\Trace\TraceCode;
 
 class EmiFile extends Base\EmiFile
 {
@@ -120,6 +121,13 @@ class EmiFile extends Base\EmiFile
                 'Additional Cashback'          => $notApplicable,
                 'Reward Point'                 => $notApplicable,
             ];
+
+            $this->trace->info(TraceCode::EMI_PAYMENT_SHARED_IN_FILE,
+                [
+                    'payment_id' => $emiPayment->getId(),
+                    'bank'       => $this->bankName,
+                ]
+            );
         }
 
         $this->totalTransactions = $totalTransactions;

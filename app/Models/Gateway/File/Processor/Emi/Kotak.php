@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Gateway\File\Processor\Emi;
 
+use RZP\Trace\TraceCode;
 use Str;
 use Mail;
 use Carbon\Carbon;
@@ -51,6 +52,13 @@ class Kotak extends Base
                 'Discount / Cashback %'      => '0.00%',
                 'Discount / Cashback Amount' => '0'
             ];
+
+            $this->trace->info(TraceCode::EMI_PAYMENT_SHARED_IN_FILE,
+                [
+                    'payment_id' => $emiPayment->getId(),
+                    'bank'       => static::BANK_CODE,
+                ]
+            );
         }
 
         return $formattedData;

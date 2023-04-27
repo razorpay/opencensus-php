@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Gateway\File\Processor\Emi;
 
+use RZP\Trace\TraceCode;
 use Str;
 use Mail;
 use Config;
@@ -122,6 +123,13 @@ class Yesb extends Base
                 'Additional Cashback'          => $notApplicable,
                 'Reward Point'                 => $notApplicable,
             ];
+
+            $this->trace->info(TraceCode::EMI_PAYMENT_SHARED_IN_FILE,
+                [
+                    'payment_id' => $emiPayment->getId(),
+                    'bank'       => static::BANK_CODE,
+                ]
+            );
         }
 
         $this->totalTransactions = $totalTransactions;

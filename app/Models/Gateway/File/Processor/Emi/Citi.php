@@ -4,6 +4,7 @@ namespace RZP\Models\Gateway\File\Processor\Emi;
 
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
+use RZP\Trace\TraceCode;
 
 class Citi extends Base
 {
@@ -94,6 +95,13 @@ class Citi extends Base
                 'BONUS_REWARD_POINTS'          => '',
                 'EMI_MODEL'                    => 'Y',
             ];
+
+            $this->trace->info(TraceCode::EMI_PAYMENT_SHARED_IN_FILE,
+                [
+                    'payment_id' => $emiPayment->getId(),
+                    'bank'       => static::BANK_CODE,
+                ]
+            );
         }
 
         return $formattedData;

@@ -330,6 +330,12 @@ class Sbi extends Base
                             ]);
                     }
 
+                    $this->trace->info(TraceCode::EMI_PAYMENT_SHARED_IN_FILE,
+                        [
+                            'payment_id' => $emiPayment->getId(),
+                            'bank'       => static::BANK_CODE,
+                        ]
+                    );
                     // If a row is not added in the file, then that row's principal amount
                     // must not be added to the total amount
                     $totalAmount = $totalAmount + $principalAmount;

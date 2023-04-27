@@ -223,6 +223,13 @@ class IndusindDebit extends Base
                 'Partner Name'                 => 'Razorpay',
             ];
 
+            $this->trace->info(TraceCode::EMI_PAYMENT_SHARED_IN_FILE,
+                [
+                    'payment_id' => $emiPayment->getId(),
+                    'bank'       => static::BANK_CODE,
+                ]
+            );
+
             $totalTransactions++;
         }
 

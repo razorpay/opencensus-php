@@ -15,6 +15,7 @@ use RZP\Models\Card as Card;
 use RZP\Mail\Emi as EmiMail;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
+use RZP\Trace\TraceCode;
 
 
 class Hsbc extends Base
@@ -60,6 +61,13 @@ class Hsbc extends Base
                 'Time Stamp'                        =>   Carbon::now()->getTimestamp(),
                 'File Name'                         =>  $this->makeFileName($emiPayment->getCreatedAt()),
             ];
+
+            $this->trace->info(TraceCode::EMI_PAYMENT_SHARED_IN_FILE,
+                [
+                    'payment_id' => $emiPayment->getId(),
+                    'bank'       => static::BANK_CODE,
+                ]
+            );
         }
 
         return $formattedData;

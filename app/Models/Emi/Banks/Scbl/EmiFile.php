@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\FileStore;
 use RZP\Models\Emi\Banks\Base;
+use RZP\Trace\TraceCode;
 
 class EmiFile extends Base\EmiFile
 {
@@ -47,6 +48,13 @@ class EmiFile extends Base\EmiFile
                 'MAX_AMT'                      => '',
                 'REDUCING_INTEREST_RATE_P_A_1' => '',
             ];
+
+            $this->trace->info(TraceCode::EMI_PAYMENT_SHARED_IN_FILE,
+                [
+                    'payment_id' => $emiPayment->getId(),
+                    'bank'       => $this->bankName,
+                ]
+            );
         }
 
         return $data;

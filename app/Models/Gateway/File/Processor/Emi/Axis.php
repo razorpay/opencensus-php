@@ -5,6 +5,7 @@ namespace RZP\Models\Gateway\File\Processor\Emi;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Models\Emi\Entity as EmiPlanEntity;
+use RZP\Trace\TraceCode;
 
 class Axis extends Base
 {
@@ -41,6 +42,13 @@ class Axis extends Base
                 'Source'                       => 'Razorpay',
                 'EMI ID'                       => $emiPayment->getId(), // Non Mandatory, filling with our payment id
             ];
+
+            $this->trace->info(TraceCode::EMI_PAYMENT_SHARED_IN_FILE,
+                [
+                    'payment_id' => $emiPayment->getId(),
+                    'bank'       => static::BANK_CODE,
+                ]
+            );
         }
 
         return $formattedData;

@@ -27,6 +27,7 @@ use RZP\Exception\GatewayErrorException;
 use RZP\Models\FileStore\Storage\Base\Bucket;
 use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Models\Gateway\File\Constants as GatewayFileConstants;
+use RZP\Trace\TraceCode;
 
 class Onecard extends Base
 {
@@ -214,6 +215,13 @@ class Onecard extends Base
                 'Discount / Cashback %'        => '',
                 'Discount / Cashback Amount'   => '',
             ];
+
+            $this->trace->info(TraceCode::EMI_PAYMENT_SHARED_IN_FILE,
+                [
+                    'payment_id' => $emiPayment->getId(),
+                    'bank'       => static::COBRANDING_PARTNER,
+                ]
+            );
         }
 
         return $formattedData;

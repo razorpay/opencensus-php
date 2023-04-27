@@ -287,6 +287,14 @@ class SbiNce extends Base
                             'payment_id'    => $emiPayment['id'],
                         ]);
                 }
+
+                $this->trace->info(TraceCode::EMI_PAYMENT_SHARED_IN_FILE,
+                    [
+                        'payment_id' => $emiPayment->getId(),
+                        'bank'       => static::BANK_CODE,
+                    ]
+                );
+
                 $totalTransactions++;
             }
             catch (\Exception $e)

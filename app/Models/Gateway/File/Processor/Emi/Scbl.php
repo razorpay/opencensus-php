@@ -6,6 +6,7 @@ use App;
 use RZP\Models\Bank\IFSC;
 use RZP\Services;
 use RZP\Models\FileStore;
+use RZP\Trace\TraceCode;
 
 class Scbl extends Base
 {
@@ -52,6 +53,13 @@ class Scbl extends Base
                 'MAX_AMT'                      => '',
                 'REDUCING_INTEREST_RATE_P_A_1' => '',
             ];
+
+            $this->trace->info(TraceCode::EMI_PAYMENT_SHARED_IN_FILE,
+                [
+                    'payment_id' => $emiPayment->getId(),
+                    'bank'       => static::BANK_CODE,
+                ]
+            );
         }
 
         return $formattedData;

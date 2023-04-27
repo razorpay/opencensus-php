@@ -72,6 +72,13 @@ class Federal extends Base
                 'Transaction post date'        => $this -> getFormattedDate($emiPayment -> getCaptureTimestamp()),
                 'Interest rate'                => $emiPercent.'%',
             ];
+
+            $this->trace->info(TraceCode::EMI_PAYMENT_SHARED_IN_FILE,
+                [
+                    'payment_id' => $emiPayment->getId(),
+                    'bank'       => static::BANK_CODE,
+                ]
+            );
         }
 
         $data = [];

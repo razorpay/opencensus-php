@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Gateway\File\Processor\Emi;
 
+use RZP\Trace\TraceCode;
 use Str;
 use Mail;
 use Carbon\Carbon;
@@ -87,6 +88,13 @@ class Base extends BaseProcessor
             $fileData = $this->formatDataForFile($data);
 
             $fileName = $this->getFileToWriteName();
+
+            $this->trace->info(TraceCode::EMI_FILE_NAME,
+                [
+                    'payment_id' => static::BANK_CODE,
+                    'file_name'  => $fileName,
+                ]
+            );
 
             $creator = new FileStore\Creator;
 

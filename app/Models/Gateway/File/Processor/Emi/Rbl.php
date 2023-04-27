@@ -151,6 +151,13 @@ class Rbl extends Base
                 'EMI Model'                        => 'Y',
             ];
 
+            $this->trace->info(TraceCode::EMI_PAYMENT_SHARED_IN_FILE,
+                [
+                    'payment_id' => $emiPayment->getId(),
+                    'bank'       => static::BANK_CODE,
+                ]
+            );
+
             $totalTransactions++;
         }
 

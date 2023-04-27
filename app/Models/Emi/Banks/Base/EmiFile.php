@@ -86,6 +86,12 @@ class EmiFile extends Base\Core
 
         $fileName = $this->getFileToWriteName($emiData);
 
+        $this->trace->info(TraceCode::EMI_FILE_NAME,
+            [
+                'file_name' => $fileName,
+                'extension' => static::EXTENSION
+            ]
+        );
         $creator = new FileStore\Creator;
 
         $creator->extension(static::EXTENSION)
