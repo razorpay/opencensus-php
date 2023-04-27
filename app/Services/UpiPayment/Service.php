@@ -96,6 +96,10 @@ class Service
 
     const VALIDATE_VPA = 'validate_vpa';
 
+    const DASHBOARD_ENTITY_FETCH = 'dashboard_entity_fetch';
+
+    const DASHBOARD_MULTIPLE_ENTITY_FETCH = 'dashboard_multiple_entity_fetch';
+
     /**
      * Initiates the app container, trace and UPS config
      */
@@ -382,6 +386,10 @@ class Service
                     "vpa" => $input[Payment\Entity::VPA],
                 ];
                 break;
+            case self::DASHBOARD_ENTITY_FETCH:
+            case self::DASHBOARD_MULTIPLE_ENTITY_FETCH:
+                $data = $input;
+                break;
             default:
                 throw new Exception\LogicException(
                     'No supported actions found for UPS',
@@ -549,6 +557,9 @@ class Service
                 return $response[Response::DATA];
             case self::VALIDATE_VPA:
                 return $this->processValidateVpaResponse($response);
+            case self::DASHBOARD_ENTITY_FETCH:
+            case self::DASHBOARD_MULTIPLE_ENTITY_FETCH:
+                return $response;
             default:
                 throw new Exception\LogicException(
                     'No supported actions found for UPS',
@@ -981,6 +992,8 @@ class Service
                 break;
             case self::ENTITY_FETCH:
             case self::MULTIPLE_ENTITY_FETCH:
+            case self::DASHBOARD_ENTITY_FETCH:
+            case self::DASHBOARD_MULTIPLE_ENTITY_FETCH:
                 $traceData += $request[Request::CONTENT];
                 break;
             case self::RECON_ENTITY_UPDATE:
@@ -1082,6 +1095,16 @@ class Service
         if ($action === self::TRANSACTION_UPSERT)
         {
             return sprintf('%s/transaction/upsert', $version);
+        }
+
+        if ($action === self::DASHBOARD_MULTIPLE_ENTITY_FETCH)
+        {
+            return sprintf('%s/dashboard/entity_fetch/multiple', $version);
+        }
+
+        if ($action === self::DASHBOARD_ENTITY_FETCH)
+        {
+            return sprintf('%s/dashboard/entity_fetch', $version);
         }
 
         return sprintf('%s/%s', $version, $action);
@@ -1298,5 +1321,66 @@ class Service
             null,
             ErrorCode::SERVER_ERROR_FAILED_TO_CONVERT_ARRAY_TO_JSON
         );
+    }
+
+    /**
+     * fetchMultiple is used by dashboard to fetch multiple entities from UPS
+     *
+     * @param  array $input,
+     * @param  string $entityName
+     * @return array
+     */
+    public function fetchMultiple(string $entityName, array $input)
+    {
+        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_DASHBOARD_MULTIPLE_ENTITY_FETCH_REQUEST, [$input, 'entity' => $entityName]);
+
+        $actionInput = [
+            Request::ENTITY_NAME    => $entityName,
+            Request::COUNT          => $input[Request::COUNT],
+            Request::SKIP           => $input[Request::SKIP],
+            Request::FROM           => $input[Request::FROM],
+            Request::TO             => $input[Request::TO],
+        ];
+
+        unset($input[Request::COUNT]);
+        unset($input[Request::SKIP]);
+        unset($input[Request::FROM]);
+        unset($input[Request::TO]);
+        unset($input[Request::INCLUDE_DELETED]);
+
+        if(empty($input) === false)
+        {
+            $actionInput['filter'] = $input;
+        }
+
+        $response =  $this->action(self::DASHBOARD_MULTIPLE_ENTITY_FETCH, $actionInput,  'upi');
+
+        $response['items'] = $response['entities'][$entityName];
+
+        unset($response['entities']);
+
+        return $response;
+    }
+
+    /**
+     * fetch is called by dashboard to fetch single entity from UPS
+     *
+     * @param  array $input
+     * @param  string $id
+     * @param  string $entityName
+     * @return array
+     */
+    public function fetch(string $entityName, string $id, array $input)
+    {
+        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_DASHBOARD_ENTITY_FETCH_REQUEST, [$input, 'entity' => $entityName, 'id' => $id]);
+
+        $input = [
+            Request::ENTITY_NAME    =>$entityName,
+            Request::ID             => $id
+        ];
+
+        $response = $this->action(self::DASHBOARD_ENTITY_FETCH, $input, 'upi');
+
+        return $response['entity'];
     }
 }

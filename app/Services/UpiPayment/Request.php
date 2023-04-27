@@ -34,4 +34,13 @@ class Request
     const PAYMENT_ID        = 'payment_id';
     const GATEWAY           = 'gateway';
     const REQUIRED_FIELDS   = 'required_fields';
+
+    // Dashboard Entity Fetch Fields
+    const ENTITY_NAME       = 'entity_name';
+    const ID                = 'id';
+    const COUNT             = 'count';
+    const SKIP              = 'skip';
+    const FROM              = 'from';
+    const TO                = 'to';
+    const INCLUDE_DELETED   = 'include_deleted';
 }

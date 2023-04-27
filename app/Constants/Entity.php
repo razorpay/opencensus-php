@@ -617,6 +617,7 @@ class Entity
     const PAYMENTS_UPI_VPA              = 'payments_upi_vpa';
     const PAYMENTS_UPI_BANK_ACCOUNT     = 'payments_upi_bank_account';
     const PAYMENTS_UPI_VPA_BANK_ACCOUNT = 'payments_upi_vpa_bank_account';
+    const PAYMENTS_UPI_FISCAL           = 'payments_upi.fiscal';
     const CONFIG                        = 'config';
 
     const PROMOTION_EVENT = 'promotion_event';
@@ -1732,6 +1733,8 @@ class Entity
         self::VENDOR_PAYMENTS_TAX_PAYMENTS                          => \RZP\Services\VendorPayments\Service::class,
         self::VENDOR_PAYMENTS_DIRECT_TAX_PAYMENTS                   => \RZP\Services\VendorPayments\Service::class,
         self::VENDOR_PAYMENTS_PG_PAYMENTS                           => \RZP\Services\VendorPayments\Service::class,
+
+        self::PAYMENTS_UPI_FISCAL      => \RZP\Services\UpiPayment\Service::class,
     ];
 
     protected static $syncedInLiveAndTest = [
