@@ -185,8 +185,6 @@ class Base extends DSBase
 
                     $payout->setQueuedReason(QueuedReasons::GATEWAY_DEGRADED);
 
-                    (new PayoutsStatusDetailsCore())->create($payout);
-
                     $this->trace->info(
                         TraceCode::PARTNER_BANK_ON_HOLD_PAYOUT_CREATED,
                         [

@@ -1483,14 +1483,32 @@ class RblPayoutTest extends TestCase
         $this->createOnHoldPayoutPartnerBankDown($testDataDowntime);
 
         $payout1 = $this->getDbLastEntity('payout');
+        $ftaForPayout = $this->getDbEntities(
+            'fund_transfer_attempt',
+            [
+                'source_id'   => $payout1['id'],
+                'source_type' => 'payout',
+            ]
+        )->toArray();
 
+        $this->assertNotEmpty($payout1['status_details_id']);
+        $this->assertEquals(0, sizeof($ftaForPayout));
         $this->assertEquals('on_hold', $payout1['status']);
         $this->assertEquals(Payout\QueuedReasons::GATEWAY_DEGRADED, $payout1['queued_reason']);
 
         $this->createOnHoldPayoutPartnerBankDown($testDataDowntime);
 
         $payout2 = $this->getDbLastEntity('payout');
+        $ftaForPayout = $this->getDbEntities(
+            'fund_transfer_attempt',
+            [
+                'source_id'   => $payout2['id'],
+                'source_type' => 'payout',
+            ]
+        )->toArray();
 
+        $this->assertNotEmpty($payout2['status_details_id']);
+        $this->assertEquals(0, sizeof($ftaForPayout));
         $this->assertEquals('on_hold', $payout2['status']);
         $this->assertEquals(Payout\QueuedReasons::GATEWAY_DEGRADED, $payout2['queued_reason']);
 
@@ -1502,9 +1520,29 @@ class RblPayoutTest extends TestCase
         $this->startTest();
 
         $payout1 = $this->getDbEntityById('payout', $payout1['id'])->toArray();
+        $ftaForPayout = $this->getDbEntities(
+            'fund_transfer_attempt',
+            [
+                'source_id'   => $payout1['id'],
+                'source_type' => 'payout',
+            ]
+        )->toArray();
+
+        $this->assertNotEmpty($payout1['status_details_id']);
+        $this->assertEquals(1, sizeof($ftaForPayout));
         $this->assertEquals($payout1['status'], Payout\Status::CREATED);
 
         $payout2 = $this->getDbEntityById('payout', $payout2['id'])->toArray();
+        $ftaForPayout = $this->getDbEntities(
+            'fund_transfer_attempt',
+            [
+                'source_id'   => $payout2['id'],
+                'source_type' => 'payout',
+            ]
+        )->toArray();
+
+        $this->assertNotEmpty($payout2['status_details_id']);
+        $this->assertEquals(1, sizeof($ftaForPayout));
         $this->assertEquals($payout2['status'], Payout\Status::CREATED);
 
         // tear down
@@ -1530,14 +1568,33 @@ class RblPayoutTest extends TestCase
         $this->createOnHoldPayoutPartnerBankDown($testDataDowntime);
 
         $payout1 = $this->getDbLastEntity('payout');
+        $ftaForPayout = $this->getDbEntities(
+            'fund_transfer_attempt',
+            [
+                'source_id'   => $payout1['id'],
+                'source_type' => 'payout',
+            ]
+        )->toArray();
 
+        $this->assertNotEmpty($payout1['status_details_id']);
+        $this->assertEquals(0, sizeof($ftaForPayout));
         $this->assertEquals('on_hold', $payout1['status']);
         $this->assertEquals(Payout\QueuedReasons::GATEWAY_DEGRADED, $payout1['queued_reason']);
 
         $this->createOnHoldPayoutPartnerBankDown($testDataDowntime);
 
         $payout2 = $this->getDbLastEntity('payout');
+        $ftaForPayout = $this->getDbEntities(
+            'fund_transfer_attempt',
+            [
+                'source_id'   => $payout2['id'],
+                'source_type' => 'payout',
+            ]
+        )->toArray();
 
+        $this->assertNotEmpty($payout2['status_details_id']);
+        $this->assertEquals(0, sizeof($ftaForPayout));
+        $this->assertNotEmpty($payout2['status_details_id']);
         $this->assertEquals('on_hold', $payout2['status']);
         $this->assertEquals(Payout\QueuedReasons::GATEWAY_DEGRADED, $payout2['queued_reason']);
 
@@ -1549,10 +1606,30 @@ class RblPayoutTest extends TestCase
 
         $this->startTest();
 
-        $payout1 = $this->getDbEntityById('payout', $payout1['id'])->toArray();
+        $payout1 = $this->getDbEntityById('payout', $payout1['id'])->toArrayPublic();
+        $ftaForPayout = $this->getDbEntities(
+            'fund_transfer_attempt',
+            [
+                'source_id'   => $payout1['id'],
+                'source_type' => 'payout',
+            ]
+        )->toArray();
+
+        $this->assertNotEmpty($payout1['status_details_id']);
+        $this->assertEquals(0, sizeof($ftaForPayout));
         $this->assertEquals($payout1['status'], Payout\Status::FAILED);
 
         $payout2 = $this->getDbEntityById('payout', $payout2['id'])->toArray();
+        $ftaForPayout = $this->getDbEntities(
+            'fund_transfer_attempt',
+            [
+                'source_id'   => $payout2['id'],
+                'source_type' => 'payout',
+            ]
+        )->toArray();
+
+        $this->assertNotEmpty($payout2['status_details_id']);
+        $this->assertEquals(0, sizeof($ftaForPayout));
         $this->assertEquals($payout2['status'], Payout\Status::FAILED);
 
         // tear down

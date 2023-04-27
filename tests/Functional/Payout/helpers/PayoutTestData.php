@@ -21798,8 +21798,6 @@ return [
                 'narration'       => 'Batman',
                 'status'          => 'queued',
                 'mode'            => 'IMPS',
-                'tax'             => 162,
-                'fees'            => 1062,
                 'notes'           => [
                     'abc'         => 'xyz',
                 ],
