@@ -3808,6 +3808,18 @@ class Service extends Base\Service
 
         $unescapeString = stripcslashes($result);
 
+        if (empty($unescapeString) === true)
+        {
+            $this->trace->info(
+                TraceCode::FETCH_HTML_CONTENT_FAILURE,
+                [
+                    'status_code' => $http_status,
+                    'url'         => $url,
+                    'result'      => $result
+                ]
+            );
+        }
+
         $dom = new DOMDocument("1.0", "utf-8");
         $dom->formatOutput = true;
         libxml_use_internal_errors(true);

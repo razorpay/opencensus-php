@@ -4688,6 +4688,7 @@ const EMANDATE_TOKEN_VALIDATION_ERROR                       = 'EMANDATE_TOKEN_VA
     const PAYOUT_AUTO_REJECTED_EMAIL                                = 'PAYOUT_AUTO_REJECTED_EMAIL';
 
     const STORAGE_CONSENT_FETCH_DOCUMENT                            = 'STORAGE_CONSENT_FETCH_DOCUMENT';
+    const FETCH_HTML_CONTENT_FAILURE                                = 'FETCH_HTML_CONTENT_FAILURE';
 
     const REFUND_REVERSAL_CREATED                               = 'REFUND_REVERSAL_CREATED';
     const REFUND_REVERSAL_INITIATED                             = 'REFUND_REVERSAL_INITIATED';
