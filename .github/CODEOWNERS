@@ -20,4 +20,4 @@ web/js/merchant/PartnerDashboard/Reports          @joel-jaimon @TanroopSing @asp
 web/js/merchantLA/containers/Reports              @joel-jaimon @TanroopSing @asp48
 web/js/merchant_common/views/Reports              @joel-jaimon @TanroopSing @asp48
 web/js/merchant_common/containers/ReportsAsync    @joel-jaimon @TanroopSing @asp48
-
+web/js/merchant/views/Settings/PaymentMethods     @adijha @amitabh-blade @NarasimhaSwamy
