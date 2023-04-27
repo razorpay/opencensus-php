@@ -18,6 +18,8 @@ use RZP\Jobs\CardsPaymentTransaction;
 use RZP\Mail\Merchant\FeeCreditsAlert;
 use RZP\Models\Base;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\Ledger\Constants as LedgerConstants;
+use RZP\Models\Ledger\ReverseShadow\Payments\Core as ReverseShadowPaymentsCore;
 use RZP\Models\Ledger\SettlementJournalEvents;
 use RZP\Trace\Tracer;
 use RZP\Models\Base\PublicCollection;
@@ -196,8 +198,15 @@ class Core extends Base\Core
 
             $txn =  $this->createTransactionForCapturedPayment($payment);
 
-            $this->createLedgerEntriesForGatewayCapture($payment);
-            $this->createLedgerEntriesForMerchantCapture($payment, $txn);
+            if($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+            {
+                $this->createPaymentLedgerEntriesInReverseShadow($payment);
+            }
+            else
+            {
+                $this->createLedgerEntriesForGatewayCapture($payment);
+                $this->createLedgerEntriesForMerchantCapture($payment, $txn);
+            }
 
             $this->repo->transaction(function() use ($payment,$txn)
             {
@@ -221,6 +230,39 @@ class Core extends Base\Core
         return $txn;
     }
 
+    public function createPaymentLedgerEntriesInReverseShadow(Payment\Entity $payment)
+    {
+        // create journals in reverse shadow mode until reverse shadow implementation for rearch payments is complete
+        try
+        {
+            (new ReverseShadowPaymentsCore())->createLedgerEntryForGatewayCaptureReverseShadow($payment);
+
+            $paymentProcessor = new Payment\Processor\Processor($payment->merchant);
+
+            $discount = $paymentProcessor->getDiscountIfApplicableForLedger($payment);
+
+            [$fee, $tax] = (new ReverseShadowPaymentsCore())->createLedgerEntryForMerchantCaptureReverseShadow($payment, $discount);
+
+            $this->trace->info(TraceCode::REARCH_PAYMENT_MERCHANT_CAPTURED_REVERSE_SHADOW, [
+                LedgerConstants::PAYMENT_ID     => $payment->getPublicId(),
+                LedgerConstants::FEES           => $fee,
+                LedgerConstants::TAX            => $tax,
+                LedgerConstants::MERCHANT_ID    => $payment->merchant->getId(),
+            ]);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::REARCH_PAYMENT_MERCHANT_CAPTURED_REVERSE_SHADOW_FAILED,
+                [
+                    LedgerConstants::PAYMENT_ID     => $payment->getPublicId(),
+                    LedgerConstants::MERCHANT_ID    => $payment->merchant->getId(),
+                ]);
+        }
+
+    }
     public function dispatchUpdatedTransactionToCPS($txn, $payment)
     {
         $transactionData = [
