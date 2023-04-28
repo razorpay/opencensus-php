@@ -174,6 +174,27 @@ describe('User model', () => {
     expect(user.isShowInternationalPaymentBtnExpEnabled).toBe(true);
   });
 
+  test('should return true when merchant feature flag "file_upload_pp" is set', () => {
+    const user = getDefaultUserObj({
+      features: [
+        {
+          feature: 'file_upload_pp',
+          value: true,
+          display_name: 'Feature to enable file upload functionality on payment pages',
+        },
+      ],
+    });
+    const isPaymentPageFileUploadEnabled = user.isPaymentPageFileUploadEnabled;
+    expect(isPaymentPageFileUploadEnabled).toBe(true);
+  });
+
+  test('should return false when merchant feature flag "file_upload_pp" is not set', () => {
+    const user = getDefaultUserObj({
+      features: [],
+    });
+    const isPaymentPageFileUploadEnabled = user.isPaymentPageFileUploadEnabled;
+    expect(isPaymentPageFileUploadEnabled).toBe(false);
+  });
   test('should return true when merchant feature flag hide_instrument_request is set', () => {
     const user = getDefaultUserObj();
 

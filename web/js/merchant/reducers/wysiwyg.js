@@ -41,6 +41,7 @@ const FETCH_CUSTOM_DOMAIN = 'FETCH_CUSTOM_DOMAIN';
 const UPDATE_CUSTOM_DOMAIN = 'UPDATE_CUSTOM_DOMAIN';
 const UPDATE_MAGIC_CHECKOUT_DATA = 'UPDATE_MAGIC_CHECKOUT_DATA';
 const FETCH_CUSTOM_DOMAIN_PLAN = 'FETCH_CUSTOM_DOMAIN_PLAN';
+const PP_BATCH_PAYMENT_PAGE_ACTIVE = 'PP_BATCH_PAYMENT_PAGE_ACTIVE';
 
 export const updateTemplateType = (data, templateKey) => {
   const isPageDirty = false;
@@ -204,6 +205,7 @@ const initialState = {
     value: '',
     planDetails: {},
   }, // custom domain details at a merchant level
+  isBatchPaymentPages: false,
 };
 
 export const reorderFormItems = ({
@@ -219,6 +221,11 @@ export const reorderFormItems = ({
 export const updateSettings = (updatedSettings = {}) => ({
   type: UPDATE_SETTINGS,
   payload: updatedSettings,
+});
+
+export const setIsBatchPaymentPages = (isActive = false) => ({
+  type: PP_BATCH_PAYMENT_PAGE_ACTIVE,
+  payload: isActive,
 });
 
 export default (state = initialState, action) => {
@@ -520,6 +527,11 @@ export default (state = initialState, action) => {
         magicCheckout: merge(state.magicCheckout, {
           ...action.data,
         }),
+      };
+    case PP_BATCH_PAYMENT_PAGE_ACTIVE:
+      return {
+        ...state,
+        isBatchPaymentPages: action.payload,
       };
     default:
       return state;

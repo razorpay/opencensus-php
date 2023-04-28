@@ -610,6 +610,10 @@ export default class User {
     return this.isFeatureEnabled('pp_custom_domain');
   }
 
+  get isPaymentPageFileUploadEnabled() {
+    return this.isFeatureEnabled('file_upload_pp');
+  }
+
   get isPaymentPageMagicEnabled() {
     return this.getExpStatus('pp_magic_setting');
   }

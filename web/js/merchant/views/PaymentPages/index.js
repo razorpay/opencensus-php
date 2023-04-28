@@ -42,6 +42,9 @@ export default class PaymentPagesContainer extends Component {
             {user.isPaymentPageStorefrontEnabled && (
               <Route path="/paymentpages/products" exact component={ProductsCatalogList} />
             )}
+            {user.isPaymentPageFileUploadEnabled && (
+              <Route path="/paymentpages/batchpaymentpages" exact component={PaymentPagesList} />
+            )}
           </Switch>
         </ErrorBoundary>
       </>
