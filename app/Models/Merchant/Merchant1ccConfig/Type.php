@@ -47,4 +47,8 @@ class Type {
 
     //shipping_method_provider, eventually move to 1cc-shipping-service
     const SHIPPING_METHOD_PROVIDER = 'shipping_method_provider';
+
+    const SHOPIFY_SHIPPING_OVERRIDE = 'shopify_shipping_override';
+    const SHIPPING_VARIANT_STRATEGY = 'shipping_variant_strategy';
+    const SHIPPING_VARIANTS = 'shipping_variants';
 }

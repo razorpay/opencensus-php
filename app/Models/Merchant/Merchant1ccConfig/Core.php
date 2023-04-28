@@ -27,4 +27,48 @@ class Core extends Base\Core
             $type
         );
     }
+
+    public function isShopifyShippingOverrideSet(string $merchantId): bool
+    {
+        $val = (new Repository())
+            ->findByMerchantAndConfigType(
+                $merchantId,
+                Type::SHOPIFY_SHIPPING_OVERRIDE
+            );
+        if ($val === null)
+        {
+            return false;
+        }
+        return $val->getValue() === "1";
+    }
+
+    // This is used to differentiate between multiple shipping configurations for a single merchant
+    // Currenlty in use to support Chumbak's furniture based shipping
+    public function getShippingVariantStrategy(string $merchantId): string
+    {
+        $val = (new Repository())
+            ->findByMerchantAndConfigType(
+                $merchantId,
+                Type::SHIPPING_VARIANT_STRATEGY
+            );
+        if ($val === null)
+        {
+            return '';
+        }
+        return $val->getValue() ?? '';
+    }
+
+    public function getShippingVariants(string $merchantId): array
+    {
+        $val = (new Repository())
+            ->findByMerchantAndConfigType(
+                $merchantId,
+                Type::SHIPPING_VARIANTS
+            );
+        if ($val === null)
+        {
+            return [];
+        }
+        return $val->getValueJson() ?? [];
+    }
 }

@@ -126,6 +126,10 @@ class Service extends Base\Service
                 $ex = new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_1CC_ORDER);
                 throw $ex;
             }
+            $orderMetaArray = $orderMeta->getValue();
+
+            // ShippingVariant is required for merchants with multiple shipping configurations with the same mid
+            $shippingVariant = $this->getShippingVariant($orderMetaArray);
 
             $merchantOrderId = null;
             $productType = $order->getProductType();
@@ -207,8 +211,15 @@ class Service extends Base\Service
                 $dimensions = array_merge($dimensions, ['platform' => $platformConfig->getValue()]);
             }
             $shippingMethodProviderConfig = $this->merchant->getShippingMethodProvider();
+            $shopifyShippingOverride = (new Merchant1ccConfig\Core())->isShopifyShippingOverrideSet($this->merchant->getId());
+
             // shopify configs take priority over all Rzp serviceability features
-            if ($platformConfig !== null and $platformConfig->getValue() === Merchant1ccConfig\Type::SHOPIFY)
+            // The current conditions only allow shopify merchants to have fallback configuration
+            // shopifyShippingOverride allows shopify merchants to use rzp shipping platform
+            if ($platformConfig !== null
+                and $platformConfig->getValue() === Merchant1ccConfig\Type::SHOPIFY
+                and $shopifyShippingOverride === false
+            )
             {
                 $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_SHOPIFY_CALL_COUNT, $dimensions);
                 $decodedResponse = (new Shopify\Service)->getShippingInfo([
@@ -228,7 +239,9 @@ class Service extends Base\Service
                             $decodedResponse,
                             $merchantOrderId,
                             $mockResponse,
-                            $dimensions);
+                            $dimensions,
+                            $shippingVariant
+                        );
                     }
                 }
             }
@@ -258,9 +271,11 @@ class Service extends Base\Service
                             $shippingMethodProviderConfig,
                             $address,
                             $orderId,
-                            $orderMeta->getValue()['line_items_total'],
+                            $orderMetaArray['line_items_total'],
                             $order->toArrayPublic()['notes'],
-                            $merchantOrderId);
+                            $merchantOrderId,
+                            $shippingVariant
+                        );
                         $this->trace->info(TraceCode::SHIPPING_MIGRATION_GET_API_RESPONSE,
                             [
                                 'shipping_response' => $decodedResponse,
@@ -276,6 +291,7 @@ class Service extends Base\Service
                 {
                     try
                     {
+                        // Shipping Info URL based flow. Used by native and WooCommerce merchants
                         $decodedResponse = $this->shippingProviderOldFlow(
                             $shippingMethodProviderConfig,
                             $orderId,
@@ -285,7 +301,9 @@ class Service extends Base\Service
                             $decodedResponse,
                             $merchantOrderId,
                             $mockResponse,
-                            $dimensions);
+                            $dimensions,
+                            $shippingVariant
+                        );
                     }
                     catch (Throwable $e)
                     {
@@ -391,6 +409,41 @@ class Service extends Base\Service
             }
         }
     }
+
+    protected function getShippingVariant($orderMetaArray): ?string
+    {
+        $mid = $this->merchant->getId();
+        $shippingVariantStrategy = (new Merchant1ccConfig\Core())->getShippingVariantStrategy($mid);
+        if (empty($shippingVariantStrategy) === true)
+        {
+            return null;
+        }
+
+        $shippingVariants = (new Merchant1ccConfig\Core())->getShippingVariants($mid) ?? [];
+
+        // For now, there's only 1 strategy.
+        // Product based strategy gives priority to the first variant in the array
+        switch ($shippingVariantStrategy)
+        {
+            case Merchant1ccConfig\Constants::SHIPPING_VARIANT_STRATEGY_PRODUCT_TYPE:
+                $productTypes = [];
+                foreach ($orderMetaArray[Fields::LINE_ITEMS] as $item)
+                {
+                    $productTypes[$item[Fields::LINE_ITEM_TYPE] ?? ''] = 1;
+                }
+                foreach ($shippingVariants as $shippingVariant) {
+                    if (isset($productTypes[$shippingVariant['name']]) === false)
+                    {
+                        continue;
+                    }
+                    return $shippingVariant['variant'];
+                }
+        }
+
+        return null;
+    }
+
+
 
     protected function getCodServiceabilityFromSlabs(int $amount): bool
     {
@@ -730,7 +783,18 @@ class Service extends Base\Service
      * @return array
      * @throws Exception\BadRequestException
      */
-    protected function shippingProviderOldFlow($shippingMethodProviderConfig, $orderId, Base\PublicEntity $order, $orderMeta, $address, array $decodedResponse, $merchantOrderId, $mockResponse, array $dimensions): array
+    protected function shippingProviderOldFlow(
+        $shippingMethodProviderConfig,
+        $orderId,
+        Base\PublicEntity $order,
+        $orderMeta,
+        $address,
+        array $decodedResponse,
+        $merchantOrderId,
+        $mockResponse,
+        array $dimensions,
+        ?string $shippingVariant
+    ): array
     {
         if ($shippingMethodProviderConfig !== null) {
             return (new Providers())->shippingResponseFromShippingProviderConfig(
@@ -738,7 +802,9 @@ class Service extends Base\Service
                 $order,
                 $orderMeta,
                 $address,
-                $shippingMethodProviderConfig);
+                $shippingMethodProviderConfig,
+                $shippingVariant
+            );
         }
 
         $serviceabilityUrlConfig = $this->merchant->getShippingInfoUrlConfig();

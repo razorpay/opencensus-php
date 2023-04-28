@@ -84,7 +84,7 @@ class Service extends Base\Service
         $this->monitoring = new Monitoring();
     }
 
-    public function shopifyCartLineItems(array $checkout) : array
+    public function shopifyCartLineItems(array $checkout, array $productTypeMap) : array
     {
         //Cart line items for the modal
         $lineItems = $checkout['lineItems']['edges'];
@@ -121,7 +121,8 @@ class Service extends Base\Service
                 'name'              => mb_substr(strval($item['title']), 0, 128, 'UTF-8'),
                 'description'       => mb_substr($item['variant']['product']['description'], 0, 256, 'UTF-8'),
                 'weight'            => (int)floatval($item['variant']['weight']),
-                'image_url'         => $item['variant']['image']['url'] ?? ""
+                'image_url'         => $item['variant']['image']['url'] ?? "",
+                'type'              => mb_substr($productTypeMap[$item['variant']['sku']] ?? '', 0, 128, 'UTF-8'),
             ];
         }
 
@@ -131,11 +132,11 @@ class Service extends Base\Service
         ];
     }
 
-    public function shopifyScriptCartLineItems(array $checkout, $cartFromCache) : array
+    public function shopifyScriptCartLineItems(array $checkout, $cartFromCache, array $productTypeMap) : array
     {
         if (empty($cartFromCache) === true)
         {
-            return $this->shopifyCartLineItems($checkout);
+            return $this->shopifyCartLineItems($checkout, $productTypeMap);
         }
 
         //Cart line items for the modal
@@ -156,6 +157,7 @@ class Service extends Base\Service
                 'description'       => mb_substr($item['title'], 0, 256, 'UTF-8'),
                 'weight'            => (int)floatval($item['grams'] / 1000),
                 'image_url'         => "",
+                'type'              => mb_substr($productTypeMap[$item['variant']['sku']] ?? '', 0, 128, 'UTF-8'),
             ];
 
             foreach ($checkoutLineItems as $lineItem) {
@@ -309,6 +311,18 @@ class Service extends Base\Service
         return $input;
     }
 
+    protected function getProductTypesFromCart(array $cart): array
+    {
+        $productTypeMap = [];
+
+        foreach ($cart['items'] as $lineItem)
+        {
+            $productTypeMap[$lineItem['sku'] ?? ''] = $lineItem['product_type'] ?? '';
+        }
+
+        return $productTypeMap;
+    }
+
     protected function createOrderAndGetCheckoutPreferences(
         array $checkout,
         array $cart,
@@ -323,11 +337,14 @@ class Service extends Base\Service
 
         $isAutoDiscountApplied = $this->isScriptDiscountApplied($cart);
 
+        // Construct map from sku to product_type to support new product category based shipping config
+        $productTypeMap = $this->getProductTypesFromCart($cart);
+
         if ($isAutoDiscountApplied)
         {
             $cartPrice = (int)(floatval($cart['total_price']));
 
-            $scriptData = $this->getScriptData($cartId, $cartPrice, $checkout);
+            $scriptData = $this->getScriptData($cartId, $cartPrice, $checkout, $productTypeMap);
 
             $amount = $scriptData['amount'];
 
@@ -337,7 +354,7 @@ class Service extends Base\Service
         }
         else
         {
-            $cartLineItemsData = $this->shopifyCartLineItems($checkout);
+            $cartLineItemsData = $this->shopifyCartLineItems($checkout, $productTypeMap);
 
             $isAutoDiscountApplied = $cartLineItemsData['is_cart_discount_applied'];
 
@@ -421,7 +438,7 @@ class Service extends Base\Service
     /**
      * Get the final checkout
      */
-    protected function getScriptData($cartId, $cartPrice, $checkout)
+    protected function getScriptData($cartId, $cartPrice, $checkout, array $productTypeMap)
     {
         $checkoutAmount = round(floatval($checkout['totalPrice']['amount']) * 100);
 
@@ -440,7 +457,7 @@ class Service extends Base\Service
         {
             $amount = $checkoutAmount;
 
-            $cartLineItemsData = $this->shopifyCartLineItems($checkout);
+            $cartLineItemsData = $this->shopifyCartLineItems($checkout, $productTypeMap);
 
             $lineItemsData = $cartLineItemsData['cart_line_items'];
 
@@ -465,7 +482,7 @@ class Service extends Base\Service
 
             $this->monitoring->addTraceCount(Metric::SCRIPT_DISCOUNT_FETCH_SUCCESS_COUNT, []);
 
-            $cartLineItemsData = $this->shopifyScriptCartLineItems($checkout, $cart);
+            $cartLineItemsData = $this->shopifyScriptCartLineItems($checkout, $cart, $productTypeMap);
 
             $lineItemsData = $cartLineItemsData['cart_line_items'];
 

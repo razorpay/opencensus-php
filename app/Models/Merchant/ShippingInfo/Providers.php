@@ -9,7 +9,14 @@ use RZP\Models\Merchant\OneClickCheckout\ShippingMethodProvider\Type;
 
 class Providers extends Base\Core
 {
-    public function shippingResponseFromShippingProviderConfig($orderId, $order, $orderMeta, $address, $shippingMethodProviderConfig): array
+    public function shippingResponseFromShippingProviderConfig(
+        $orderId,
+        $order,
+        $orderMeta,
+        $address,
+        $shippingMethodProviderConfig,
+        ?string $shippingVariant
+    ): array
     {
         $shippingMethodProviderConfigJson = $shippingMethodProviderConfig->getValueJson();
         $shippingProviderType = $shippingMethodProviderConfigJson[Constants::PROVIDER_TYPE] ?? Type::SHIPROCKET;
@@ -25,7 +32,9 @@ class Providers extends Base\Core
                     $address,
                     $orderId,
                     $orderMeta->getValue()['line_items_total'],
-                    $updatedNotes);
+                    $updatedNotes,
+                    $shippingVariant
+                );
                 break;
             default:
                 $decodedResponse = $this->getShippingInfoForShippingMethodProvider($shippingMethodProviderConfig,
@@ -37,7 +46,14 @@ class Providers extends Base\Core
     }
 
 
-    protected function getShippingMethods($shippingMethodProviderConfig, $address, $orderId, $lineItemsTotal, $notes): array
+    protected function getShippingMethods(
+        $shippingMethodProviderConfig,
+        $address,
+        $orderId,
+        $lineItemsTotal,
+        $notes,
+        ?string $shippingVariant
+    ): array
     {
         $address['country_code'] = $address['country'];
         unset($address['country']);
@@ -51,7 +67,9 @@ class Providers extends Base\Core
             $lineItemsTotal,
             $orderId,
             $this->merchant->getId(),
-            $notes);
+            $notes,
+            $shippingVariant
+        );
         return $this->parseShippingServiceResponse($address, $shippingInfo);
     }
 
@@ -59,7 +77,15 @@ class Providers extends Base\Core
      * This method calls new API of 1cc-shipping-service
      * It will get shipping info for all the merchants except shopify merchants.
      */
-    public function shippingProviderMigrationFlow($shippingMethodProviderConfig, $address, $orderId, $lineItemsTotal, $notes, $merchantOrderId): array
+    public function shippingProviderMigrationFlow(
+        $shippingMethodProviderConfig,
+        $address,
+        $orderId,
+        $lineItemsTotal,
+        $notes,
+        $merchantOrderId,
+        ?string $shippingVariant
+    ): array
     {
         $address['country_code'] = $address['country'];
         unset($address['country']);
@@ -89,7 +115,9 @@ class Providers extends Base\Core
             $orderId,
             $this->merchant->getId(),
             $updatedNotes,
-            $merchantOrderId);
+            $merchantOrderId,
+            $shippingVariant
+        );
 
         return $this->parseShippingServiceResponse($address, $shippingInfo);
     }

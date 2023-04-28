@@ -13,7 +13,15 @@ class Service extends Base\Service
     const SHIPPING_SERVICE_METHODS_EVALUATE_PATH = 'twirp/rzp.shipping.shipping_info_api.v1.ShippingInfoAPI/Evaluate';
     const GET_SHIPPING_SERVICE_METHODS_PATH = 'twirp/rzp.shipping.shipping_info_api.v1.ShippingInfoAPI/Get';
 
-    public function evaluate(string $shippingProviderId, array $location, int $lineItemsTotal, string $orderId, string $merchantId, $notes)
+    public function evaluate(
+        string $shippingProviderId,
+        array $location,
+        int $lineItemsTotal,
+        string $orderId,
+        string $merchantId,
+        $notes,
+        ?string $shippingVariant
+    )
     {
         $request = [
             'delivery_location' => $location,
@@ -24,11 +32,21 @@ class Service extends Base\Service
             ],
             'merchant_id'       => $merchantId,
             'shipping_provider_id' => $shippingProviderId,
+            'shipping_variant'  => $shippingVariant,
         ];
         return $this->app['shipping_service_client']->sendRequest(self::SHIPPING_SERVICE_METHODS_EVALUATE_PATH, $request, Requests::POST);
     }
 
-    public function get(array $deliveryLocation, array $pickupLocation, int $lineItemsTotal, string $orderId, string $merchantId, $notes, string $merchantOrderId)
+    public function get(
+        array $deliveryLocation,
+        array $pickupLocation,
+        int $lineItemsTotal,
+        string $orderId,
+        string $merchantId,
+        $notes,
+        string $merchantOrderId,
+        ?string $shippingVariant
+    )
     {
         $cachedData = [
             'delivery_location' => $deliveryLocation,
@@ -47,6 +65,7 @@ class Service extends Base\Service
             'cached_data' => $cachedData,
             'merchant_id' => $merchantId,
             'order_id' => explode('_', $orderId)[1],
+            'shipping_variant'  => $shippingVariant,
         ];
         $this->trace->info(TraceCode::SHIPPING_MIGRATION_GET_API_CALL,
             [
