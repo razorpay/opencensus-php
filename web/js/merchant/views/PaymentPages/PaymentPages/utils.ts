@@ -23,3 +23,7 @@ export const getUnitsDescription = ({ units, quantitySold, status }: InputType):
 export const getProductBaseLink = (isStorefront, id) => {
   return `/paymentpages/${isStorefront ? 'storefront/' : ''}${id}`;
 };
+
+export const isBatchPaymentPages = () => {
+  return window.location.pathname.includes('/batchpaymentpages');
+};

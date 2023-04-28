@@ -1,5 +1,5 @@
 import { rest } from 'msw';
-import { merchantTnCError, product, productError } from './fixtures';
+import { merchantTnCError, product, productError, paymentPageDetails } from './fixtures';
 import { allProducts, store, transformedStore, payments } from './fixtures/storefront';
 
 export const paymentPagesHandlers = [
@@ -134,6 +134,17 @@ export const paymentPagesHandlers = [
           status: 'inactive',
           status_reason: 'deactivated',
         },
+      }),
+      ctx.delay(50),
+    );
+  }),
+  rest.get('*/merchant/api/*/payment_pages/*/details', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 200,
+        success: true,
+        data: paymentPageDetails,
       }),
       ctx.delay(50),
     );

@@ -29,6 +29,8 @@ import {
 } from 'merchant/views/PaymentPages/PaymentPages/model';
 import { dispatchWebViewEvent } from 'common/utils/reactNativeWebView';
 import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
+import ShowWhen from 'merchant/components/ShowWhen';
+import { isBatchPaymentPages as fnIsBatchPaymentPages } from 'merchant/views/PaymentPages/PaymentPages/utils';
 
 @connect(
   (state) => ({
@@ -263,7 +265,7 @@ class Success extends React.Component {
 
   render() {
     const { isLoaded, pageLoadError } = this.state;
-
+    const isBatchPaymentPages = fnIsBatchPaymentPages();
     let content;
 
     if (!isLoaded) {
@@ -399,6 +401,27 @@ class Success extends React.Component {
                 Next Steps for Your Page
                 <div className="divider" />
               </div>
+              <ShowWhen additionalCondition={() => isBatchPaymentPages}>
+                <div className="box">
+                  <div className="box--left">
+                    <div className="box--line">
+                      <img src={RoundTickImage} alt="tick" width="15" height="15" />
+                      <b>Upload batch for this payment page</b> to fetch entries for the page before
+                      you share this payment <br /> page to your customers
+                    </div>
+                  </div>
+                  <div className="box--right">
+                    <Link
+                      to={`/paymentpages/batchuploads/${paymentPageEntity?.id}/${paymentPageEntity?.title}`}
+                    >
+                      <Button.Transparent className="button--highlight">
+                        <i className="i mr-5" />
+                        Upload Batch
+                      </Button.Transparent>
+                    </Link>
+                  </div>
+                </div>
+              </ShowWhen>
               <div className="box">
                 <div className="box--left">
                   {paymentPageEntity.receipt.enable_custom_serial_number === '0' ? (
@@ -481,7 +504,7 @@ class Success extends React.Component {
 
     return (
       <div class="pp-success-container">
-        <Header />
+        <Header isBatchPaymentPages={isBatchPaymentPages} />
         {content}
       </div>
     );
