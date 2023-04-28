@@ -963,14 +963,15 @@ class GatewayEmiFileTest extends TestCase
 
         $this->fixtures->create('emi_plan',
             [
-                'id'                => '90101010101011',
-                'duration'          => '9',
-                'rate'              => '1400',
-                'methods'           => 'creditcard',
-                'bank'              => 'BARB',
-                'min_amount'        => '300000',
-                'issuer_plan_id'    => '85009',
-                'merchant_id'       => '100000Razorpay',
+                'id'                 => '90101010101011',
+                'duration'           => '9',
+                'rate'               => '1400',
+                'methods'            => 'creditcard',
+                'bank'               => 'BARB',
+                'min_amount'         => '300000',
+                'issuer_plan_id'     => '85009',
+                'merchant_id'        => '100000Razorpay',
+                'cobranding_partner' => $cobrandingPartner
             ]);
 
         // Enable EMI on iin
@@ -1037,14 +1038,15 @@ class GatewayEmiFileTest extends TestCase
 
         $this->fixtures->create('emi_plan',
             [
-                'id'                => '90101010101011',
-                'duration'          => '9',
-                'rate'              => '1400',
-                'methods'           => 'creditcard',
-                'bank'              => 'FDRL',
-                'min_amount'        => '300000',
-                'issuer_plan_id'    => '85009',
-                'merchant_id'       => '100000Razorpay',
+                'id'                 => '90101010101011',
+                'duration'           => '9',
+                'rate'               => '1400',
+                'methods'            => 'creditcard',
+                'bank'               => 'FDRL',
+                'min_amount'         => '300000',
+                'issuer_plan_id'     => '85009',
+                'merchant_id'        => '100000Razorpay',
+                'cobranding_partner' => null,
             ]);
 
         // Enable EMI on iin
