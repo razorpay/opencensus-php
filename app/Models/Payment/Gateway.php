@@ -2161,24 +2161,27 @@ class Gateway
     // changes done here won't be reflected in routing
     public static $bharatQrCardNetwork = [
         // IMP: Order of networks matter!
-        self::HITACHI => [
-            Network::VISA,
-            Network::MC,
-            Network::RUPAY,
-        ],
-        self::PAYSECURE => [
-            Network::RUPAY,
-        ],
-        self::ISG => [
-            Network::VISA,
-            Network::MC,
-            Network::RUPAY,
-        ],
-        self::WORLDLINE => [
-            Network::VISA,
-            Network::MC,
-            Network::RUPAY,
-        ],
+        /*
+         * Blocking all card networks for BharatQr as shared card terminals needs to be disabled due to compliance
+         */
+        //self::HITACHI => [
+        //    Network::VISA,
+        //    Network::MC,
+        //    Network::RUPAY,
+        //],
+        //self::PAYSECURE => [
+        //    Network::RUPAY,
+        //],
+        //self::ISG => [
+        //    Network::VISA,
+        //    Network::MC,
+        //    Network::RUPAY,
+        //],
+        //self::WORLDLINE => [
+        //    Network::VISA,
+        //    Network::MC,
+        //    Network::RUPAY,
+        //],
     ];
 
     // in case of any changes in gateway config, please contact smart routing team

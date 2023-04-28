@@ -1182,6 +1182,8 @@ class VirtualAccountTest extends TestCase
 
     public function testCreateVirtualAccountWithBharatQr()
     {
+        $this->markTestSkipped();
+
         $response = $this->createVirtualAccount([
             'receiver_types'  => 'qr_code',
         ]);

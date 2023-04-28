@@ -48,6 +48,7 @@ class BharatQrWorldlineGatewayTest extends TestCase
 
     public function testQrPaymentProcess()
     {
+        $this->markTestSkipped();
         $request = $this->testData[__FUNCTION__];
 
         $qrCode = $this->createVirtualAccount();
@@ -87,6 +88,7 @@ class BharatQrWorldlineGatewayTest extends TestCase
 
     public function testUpiQrPaymentProcess()
     {
+        $this->markTestSkipped();
         $request = $this->testData[__FUNCTION__];
 
         $qrCode = $this->createVirtualAccount();
@@ -315,6 +317,7 @@ class BharatQrWorldlineGatewayTest extends TestCase
 
     public function testDuplicateNotification()
     {
+        $this->markTestSkipped();
         $qrCode = $this->createVirtualAccount();
 
         $this->ba->directAuth();

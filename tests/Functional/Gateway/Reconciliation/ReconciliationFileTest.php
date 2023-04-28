@@ -3113,6 +3113,7 @@ class ReconciliationFileTest extends TestCase
 
     public function testHitachiUnexpectedPaymentCreateViaRecon()
     {
+        $this->markTestSkipped();
         // Using Live because by default mode is live (when gateway != sharp
         // Refer :  function determineAndSetModeForQr()
         $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal');
@@ -3268,6 +3269,7 @@ class ReconciliationFileTest extends TestCase
 
     public function testWorldlineReconPaymentFile()
     {
+        $this->markTestSkipped();
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
         $this->fixtures->create('terminal:bharat_qr_worldline_terminal');
 
@@ -3321,6 +3323,7 @@ class ReconciliationFileTest extends TestCase
 
     public function testHitachiBharatQrRecon()
     {
+        $this->markTestSkipped();
         $this->fixtures->on('test')->create('terminal:shared_bank_account_terminal');
 
         $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
@@ -3820,6 +3823,7 @@ class ReconciliationFileTest extends TestCase
 
     public function testHdfcBharatQrReconPayment()
     {
+        $this->markTestSkipped();
         $this->fixtures->create('terminal:bharat_qr_isg_terminal');
 
         $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
@@ -3855,6 +3859,7 @@ class ReconciliationFileTest extends TestCase
 
     public function testHdfcBharatQrReconForUnexpectedPayment()
     {
+        $this->markTestSkipped();
         $this->fixtures->create('terminal:bharat_qr_isg_terminal');
 
         $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
@@ -4389,6 +4394,7 @@ class ReconciliationFileTest extends TestCase
 
     public function testHdfcIsgBharatQrReconRefund()
     {
+        $this->markTestSkipped();
         $this->fixtures->create('terminal:bharat_qr_isg_terminal');
 
         $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);

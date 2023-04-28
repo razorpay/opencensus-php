@@ -47,6 +47,7 @@ class BharatQrIsgGatewayTest extends TestCase
 
     public function testQrPaymentProcess()
     {
+        $this->markTestSkipped();
         $request = $this->testData[__FUNCTION__];
 
         $qrCode = $this->createVirtualAccount();
@@ -89,6 +90,7 @@ class BharatQrIsgGatewayTest extends TestCase
 
     public function testQrPaymentBadVerifyCallback()
     {
+        $this->markTestSkipped();
         $request = $this->testData['testQrPaymentProcess'];
 
         $qrCode = $this->createVirtualAccount();
@@ -126,6 +128,8 @@ class BharatQrIsgGatewayTest extends TestCase
 
     public function testVerifyQrPayment()
     {
+        $this->markTestSkipped();
+
         $request = $this->testData['testQrPaymentProcess'];
 
         $qrCode = $this->createVirtualAccount();
@@ -165,6 +169,8 @@ class BharatQrIsgGatewayTest extends TestCase
 
     public function testBharatQrFailedVerifyCallback()
     {
+        $this->markTestSkipped();
+
         $request = $this->testData['testQrPaymentProcess'];
 
         $qrCode = $this->createVirtualAccount();
@@ -203,6 +209,7 @@ class BharatQrIsgGatewayTest extends TestCase
 
     public function testDuplicateNotification()
     {
+        $this->markTestSkipped();
         $qrCode = $this->createVirtualAccount();
 
         $this->ba->directAuth();
@@ -224,6 +231,7 @@ class BharatQrIsgGatewayTest extends TestCase
 
     public function testDecryptionFailureInPaymentNotification()
     {
+        $this->markTestSkipped();
         $request = $this->testData['testQrPaymentProcess'];
 
         $qrCode = $this->createVirtualAccount();
@@ -251,6 +259,7 @@ class BharatQrIsgGatewayTest extends TestCase
 
     public function testPaymentRefund()
     {
+        $this->markTestSkipped();
         $payment = $this->testQrPaymentProcess();
 
         $this->refundPayment($payment['id']);
@@ -266,6 +275,7 @@ class BharatQrIsgGatewayTest extends TestCase
 
     public function testPaymentFailedRefund()
     {
+        $this->markTestSkipped();
         $payment = $this->testQrPaymentProcess();
 
         $this->mockServerContentFunction(function (&$content, $action = null) {
@@ -290,6 +300,7 @@ class BharatQrIsgGatewayTest extends TestCase
 
     public function testPartialRefund()
     {
+        $this->markTestSkipped();
         $request = $this->testData[__FUNCTION__];
 
         $qrCode = $this->createVirtualAccount();

@@ -1479,6 +1479,7 @@ class HitachiGatewayTest extends TestCase
 
     public function testBqrPaymentAndRefund()
     {
+        $this->markTestSkipped();
         $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
 
         $this->app->instance('razorx', $razorx);
