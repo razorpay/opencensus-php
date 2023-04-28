@@ -2041,7 +2041,7 @@ class Service extends Base\Service
 
         $token->incrementUsedCount();
 
-        $token->setUsedAt($payment->getAuthorizeTimestamp());
+        $token->setUsedAt(Carbon::now(Timezone::IST)->getTimestamp());
 
         $token->setAcknowledgedAt(Carbon::now(Timezone::IST)->getTimestamp());
 
