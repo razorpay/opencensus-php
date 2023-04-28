@@ -332,7 +332,7 @@ export const DownloadReportModal = ({
             />
             <TextInput
               label="Save Report As"
-              placeHolder="Eg: Monthly Reckon Report"
+              placeHolder="Eg: Monthly Recon Report"
               value={saveReportAs}
               onChange={setSaveReportAs}
               helpText="Enter file name for your report."
