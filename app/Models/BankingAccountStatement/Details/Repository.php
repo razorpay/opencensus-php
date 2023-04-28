@@ -6,6 +6,7 @@ use RZP\Constants;
 use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\BankingAccountStatement\Constants as BASConstant;
 
 class Repository extends Base\Repository
 {
@@ -207,6 +208,18 @@ class Repository extends Base\Repository
                     ->distinct()
                     ->get()
                     ->pluck(Entity::BALANCE_ID)
+                    ->toArray();
+    }
+
+    public function getByAccountNumbersAndPaginationKeyNull(string $channel, array $input)
+    {
+        return $this->newQuery()
+                    ->useWritePdo()
+                    ->whereIn(Entity::ACCOUNT_NUMBER, $input[BASConstant::ACCOUNT_NUMBERS])
+                    ->where(Entity::CHANNEL, $channel)
+                    ->whereNull(Entity::PAGINATION_KEY)
+                    ->get()
+                    ->pluck(Entity::ACCOUNT_NUMBER)
                     ->toArray();
     }
 }

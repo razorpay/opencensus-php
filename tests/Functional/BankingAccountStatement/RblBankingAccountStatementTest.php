@@ -11203,6 +11203,12 @@ class RblBankingAccountStatementTest extends TestCase
                                     'balance_currency'          => 'INR',
                                 ]);
 
+        $basdBeforeTest = $this->getDbEntity('banking_account_statement_details', ['account_number' => '2224440041626905', 'channel' => 'rbl']);
+
+        $this->fixtures->edit(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS,
+            $basdBeforeTest[Entity::ID],
+            [BasDetails\Entity::PAGINATION_KEY => 'next_key']);
+
         $mockedResponse = $this->getRblBulkResponseForFetchingMissingRecords();
 
         $this->app['rzp.mode'] = EnvMode::TEST;
@@ -11352,22 +11358,19 @@ class RblBankingAccountStatementTest extends TestCase
                 ]
             ]);
 
+        $basdBeforeTest = $this->getDbEntity('banking_account_statement_details', ['account_number' => '2224440041626905', 'channel' => 'rbl']);
+
+        $this->fixtures->edit(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS,
+            $basdBeforeTest[Entity::ID],
+            [BasDetails\Entity::PAGINATION_KEY => 'next_key']);
+
         $this->ba->cronAuth();
 
         Queue::fake();
 
         $this->startTest();
 
-        $merchantMissingStatementList = (new Admin\Service)->getConfigKey(
-            [
-                'key' => Admin\ConfigKey::RX_CA_MISSING_STATEMENTS_RBL
-            ]);
-
-        $this->assertEmpty($merchantMissingStatementList['2224440041626905']);
-
         Queue::assertPushed(BankingAccountStatementRecon::class, 1);
-
-        Queue::assertPushed(BankingAccountStatementUpdate::class, 1);
     }
 
     public function testRblMissingAccountStatementWithCronAuth()

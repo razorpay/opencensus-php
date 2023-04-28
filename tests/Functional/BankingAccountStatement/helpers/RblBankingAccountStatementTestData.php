@@ -1070,8 +1070,7 @@ return [
         'response' => [
             'content' => [
                 '2224440041626905' => [
-                    'fetch_missing_statement'  => 'success',
-                    'update_missing_statement' => 'success'
+                    'fetch_missing_statement'  => 'success'
                 ]
             ]
         ]
