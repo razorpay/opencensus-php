@@ -47,6 +47,32 @@ class Payment extends Base
         }
     }
 
+    public function getValuesForCustomerFeeAndTaxInTransaction($payment): array
+    {
+        if ($payment->hasOrder() === true and
+            $payment->order->getFeeConfigId() !== null)
+        {
+            $fee = $this->txn->getFee();
+
+            $tax = $this->txn->getTax();
+
+            $rzpFee = $fee - $tax;
+
+            $customerFee = (new paymentEntity\processor\processor($this->merchant))->calculateCustomerFee($payment, $payment->order, $rzpFee);
+
+            $customerFeeGst = (new paymentEntity\processor\processor($this->merchant))->calculateCustomerFeeGst($customerFee, $rzpFee, $tax);
+
+            return [
+                Transaction\Entity::CUSTOMER_FEE => $customerFee,
+                Transaction\Entity::CUSTOMER_TAX => $customerFeeGst,
+                Transaction\Entity::FEE => $fee - ($customerFee + $customerFeeGst),
+                Transaction\Entity::TAX => $tax - $customerFeeGst,
+                Transaction\Entity::DEBIT => $customerFee + $customerFeeGst,
+            ];
+        }
+        return [];
+    }
+
     public function fillSettledAtInfo()
     {
         $settledAt = $this->getSettledAtTimestamp();

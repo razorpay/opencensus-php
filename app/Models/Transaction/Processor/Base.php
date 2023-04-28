@@ -56,6 +56,7 @@ abstract class Base extends BaseCore
 
     protected $rewardFeeCredits;
 
+
     public function __construct(BaseEntity $source)
     {
         parent::__construct();
@@ -179,6 +180,11 @@ abstract class Base extends BaseCore
         {
             $this->setCreditDebitDetails($this);
 
+            // For dynamic fee bearer and postpaid model, we need to update fee, tax,
+            // with the amounts borne only by merchant and add a debit of equal to customer fee + customer fee GST,
+            // to settle the right amount to mx, all of this is under a feature flag.
+            $this->setCustomerFeeAndTaxForPostPaidDfb();
+
             // updates entity specific attributes in transaction
             $this->updateTransaction();
 
@@ -246,6 +252,25 @@ abstract class Base extends BaseCore
     protected function shouldMoveTxnFillToAsync(): bool
     {
         return false;
+    }
+
+    public function setCustomerFeeAndTaxForPostPaidDfb()
+    {
+        if ($this->txn->isTypePayment() === true and $this->merchant !== null and
+            $this->featureFlagCheckForMerchantPostPaidCustomerFeeNotSettled($this->merchant) === true)
+        {
+            $payment = $this->source;
+
+            $values = $this->getValuesForCustomerFeeAndTaxInTransaction($payment);
+
+            $this->txn->fill($values);
+        }
+    }
+
+    public function featureFlagCheckForMerchantPostPaidCustomerFeeNotSettled($merchant): bool
+    {
+        return ($merchant->isPostpaid() === true and $merchant->isFeeBearerCustomerOrDynamic() === true and
+                $merchant->isFeatureEnabled(Feature\Constants::CUSTOMER_FEE_DONT_SETTLE) === true);
     }
 
     public function setOtherDetails()

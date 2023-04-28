@@ -222,6 +222,82 @@ class TransactionTest extends TestCase
         return $payment;
     }
 
+    public function testTransactionAfterCapturingPaymentMerchantIndiaDfbPostPaidFlat()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['country_code' => 'IN']);
+
+        $this->fixtures->base->editEntity('merchant', '10000000000000', ['fee_model' => 'postpaid','fee_bearer' => 'dynamic']);
+
+        $this->fixtures->merchant->addFeatures(['customer_fee_dont_settle']);
+
+        $orderEntity = $this->runRequestResponseFlow($this->testData['testTransactionAfterCapturingPaymentMerchantIndiaDfbPostPaidFlat']);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $orderEntity['id'];
+
+        $payment['amount'] = $payment['amount'] + 200;
+
+        $payment = $this->doAuthAndCapturePayment($payment, $payment['amount'], "INR");
+
+        $txn = $this->getLastTransaction(true);
+
+        $testData = $this->testData['txnDataAfterCapturingPaymentDfbPostPaid'];
+        $testData['entity_id'] = $payment['id'];
+
+        $this->assertArraySelectiveEquals($testData, $txn);
+
+        return $payment;
+    }
+
+    public function testTransactionAfterCapturingPaymentMerchantIndiaDfbPostPaidPercent()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['country_code' => 'IN']);
+
+        $this->fixtures->base->editEntity('merchant', '10000000000000', ['fee_model' => 'postpaid','fee_bearer' => 'dynamic']);
+
+        $this->fixtures->merchant->addFeatures(['customer_fee_dont_settle']);
+
+        $paymentConfig = $this->fixtures->create('config', ['name' => '10000000000000_fee_config', 'type' => 'convenience_fee', 'config'=>'{"label": "Convenience Fee", "rules": {"card": {"type": {"credit": {"fee": {"payee": "customer", "percentage_value": 40}}}}}}']);
+
+        $pricingPlan = [
+            'plan_id' => '1ycviEdCgurrFI',
+            'plan_name' => 'testFixturePlan',
+            'feature' => 'payment',
+            'payment_method' => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 300,
+            'fixed_rate' => 0,
+            'org_id'    => '100000razorpay',
+        ];
+
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
+
+        $order = $this->fixtures->create('order', ['amount' => 10000, 'reference7' => $paymentConfig->getId()]);
+
+        $this->fixtures->edit('merchant','10000000000000' ,['pricing_plan_id' => $plan->getPlanId()]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $order->getPublicId();
+
+        $payment['amount'] = '10120';
+
+        $payment['fee'] = 0;
+
+        $payment = $this->doAuthAndCapturePayment($payment, $payment['amount'], "INR");
+
+        $txn = $this->getLastTransaction(true);
+
+        $testData = $this->testData['txnDataAfterCapturingPaymentDfbPostPaidPercent'];
+
+        $this->assertArraySelectiveEquals($testData, $txn);
+
+        return $payment;
+    }
+
     // for vas merchant for direct settlement payment credit and debit both should be zero
     // fee will be non-zero as same needs to be collected by the acquiring bank and not merchant
     public function testTransactionAfterCapturingPaymentForVasMerchant()

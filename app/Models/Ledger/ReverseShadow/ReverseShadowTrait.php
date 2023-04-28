@@ -15,9 +15,11 @@ use RZP\Models\Merchant\RefundSource;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Merchant;
 use RZP\Models\Base\Entity;
+use RZP\Models\Pricing\Fee;
 use RZP\Services\Ledger as LedgerService;
 use RZP\Trace\TraceCode;
-
+use RZP\Models\Feature;
+use RZP\Models\Payment\Processor as PaymentProcessor;
 
 trait ReverseShadowTrait
 {
@@ -34,9 +36,35 @@ trait ReverseShadowTrait
         );
     }
 
+    // For payment in case of post-paid and dynamic fee bearer, where customer fee is not settled
+    // We have to make sure that customer fee and customer fee gst is removed from merchant balance and
+    // merchant receivable amount, hence this function.
+    protected function getCustomerFeeAndCustomerFeeGst($payment,$fee,$tax)
+    {
+        if( $payment->hasOrder() === true and
+            $payment->order->getFeeConfigId() !== null )
+        {
+            $order = $this->repo->order->findByPublicId($payment->getOrderId());
+
+            $customerFee = (new PaymentProcessor\processor($payment->merchant))->calculateCustomerFee($payment, $order, $fee);
+
+            $customerFeeTax = (new PaymentProcessor\processor($payment->merchant))->calculateCustomerFeeGst($customerFee, $fee, $tax);
+
+            return [$customerFee, $customerFeeTax];
+        }
+
+        return [0,0];
+    }
+
     protected function isFeeCreditsWithoutCustomerFeeBearer($feeCredits ,$fee, PaymentEntity $payment)
     {
         return (($feeCredits > 0) and ($feeCredits >= $fee) and ($payment->isFeeBearerCustomer() === false));
+    }
+
+    protected function isPostPaidDynamicFeeBearerFlag(PaymentEntity $payment,$merchant)
+    {
+        return ($this->isPostpaid($payment) === true and ($merchant->isFeeBearerDynamic() === true)
+                and $merchant->isFeatureEnabled(Feature\Constants::CUSTOMER_FEE_DONT_SETTLE) === true);
     }
 
     protected function isFeeCredits($feeCredits ,$fee): bool

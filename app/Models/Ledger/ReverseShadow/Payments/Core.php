@@ -199,6 +199,16 @@ class Core extends Base\Core
             $moneyParams[Constants::TAX]                        = strval(0);
             $moneyParams[Constants::COMMISSION]                 = strval(0);
         }
+        else if($this->isPostPaidDynamicFeeBearerFlag($payment,$payment->merchant))
+        {
+            $customerFeeAndGstArray = $this->getCustomerFeeAndCustomerFeeGst($payment,$fee, $tax);
+
+            $moneyParams[Constants::GMV_AMOUNT]                 = strval($amount);
+            $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount - $customerFeeAndGstArray[0] - $customerFeeAndGstArray[1]);
+            $moneyParams[Constants::TAX]                        = strval(abs($tax));
+            $moneyParams[Constants::COMMISSION]                 = strval(abs($fee));
+            $moneyParams[Constants::MERCHANT_RECEIVABLE_AMOUNT] = strval($tax + $fee - $customerFeeAndGstArray[0] - $customerFeeAndGstArray[1]);
+        }
         else if($this->isPostpaid($payment) === true)
         {
             $moneyParams[Constants::GMV_AMOUNT]                 = strval($amount);

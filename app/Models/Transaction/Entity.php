@@ -65,8 +65,12 @@ class Entity extends Base\PublicEntity
     const REFERENCE4          = 'reference4';
 
     const REFERENCE6          = 'reference6';
-    const REFERENCE7          = 'reference7';
-    const REFERENCE8          = 'reference8';
+
+    //Reference7 (CUSTOMER_FEE) has been used to store customer part of fee in case merchant is in dynamic fee bearer model and in post-paid model
+    const CUSTOMER_FEE          = 'reference7';
+
+    //Reference8 (CUSTOMER_TAX) has been used to store customer part of GST, in case merchant is in dynamic fee bearer model and in post-paid model
+    const CUSTOMER_TAX          = 'reference8';
     const REFERENCE9          = 'reference9';
 
     const PAYMENT_ID        = 'payment_id';
@@ -106,6 +110,8 @@ class Entity extends Base\PublicEntity
         self::ON_HOLD,
         self::SETTLED_AT,
         self::POSTED_AT,
+        self::CUSTOMER_FEE,
+        self::CUSTOMER_TAX,
     ];
 
     protected $public = [
@@ -175,6 +181,8 @@ class Entity extends Base\PublicEntity
         self::FEE_BEARER            => Merchant\FeeBearer::NA,
         self::CREDIT_TYPE           => CreditType::DEFAULT,
         self::BALANCE_UPDATED       => null,
+        self::CUSTOMER_FEE          => null,
+        self::CUSTOMER_TAX          => null,
     ];
 
     protected $amounts = [
@@ -368,6 +376,16 @@ class Entity extends Base\PublicEntity
     public function getReconciledType()
     {
         return $this->getAttribute(self::RECONCILED_TYPE);
+    }
+
+    public function getCustomerFee()
+    {
+        return $this->getAttribute(self::CUSTOMER_FEE);
+    }
+
+    public function getCustomerTax()
+    {
+        return $this->getAttribute(self::CUSTOMER_TAX);
     }
 
 /* ----------------------------- Accessors -----------------------------------*/
@@ -709,6 +727,16 @@ class Entity extends Base\PublicEntity
     public function setEntityId($id)
     {
         $this->setAttribute(self::ENTITY_ID, $id);
+    }
+
+    public function setCustomerFee($customerFee)
+    {
+        $this->setAttribute(self::CUSTOMER_FEE, $customerFee);
+    }
+
+    public function setCustomerTax($customerTax)
+    {
+        $this->setAttribute(self::CUSTOMER_TAX, $customerTax);
     }
 
     public function isReconciled()

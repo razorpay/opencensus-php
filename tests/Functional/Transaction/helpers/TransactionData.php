@@ -5,6 +5,77 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
+    'testTransactionAfterCapturingPaymentMerchantIndiaDfbPostPaidFlat' => [
+        'request' => [
+            'content' => [
+                'amount'   => 50000,
+                'currency' => 'INR',
+                'method'   => 'card',
+                'convenience_fee_config' => [
+                    "rules" => [
+                        [
+                            "method" => "card",
+                            "fee" => [
+                                "payee" => "customer",
+                                "flat_value" => 200
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            'method'  => 'POST',
+            'url'     => '/orders',
+        ],
+        'response'  => [
+            'content'     => [
+                'amount' => 50000,
+                'currency' => 'INR',
+                'convenience_fee_config' => [
+                    "rules" => [
+                        [
+                            "method" => "card",
+                            "fee" => [
+                                "payee" => "customer",
+                                "flat_value" => 200
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+        ],
+    ],
+    'txnDataAfterCapturingPaymentDfbPostPaid' => [
+        'entity'          => 'transaction',
+        'type'            => 'payment',
+        'amount'          => 50200,
+        'currency'        => 'INR',
+        'debit'           => 200,
+        'credit'          => 50200,
+        'fee'             => 800,
+        'tax'             => 0,
+        'gateway_fee'     => 0,
+        'api_fee'         => 0,
+        'balance'         => 1050000,
+        'merchant_id'     => '10000000000000',
+        'pricing_rule_id' => null,
+        'channel'         => 'axis',
+    ],
+    'txnDataAfterCapturingPaymentDfbPostPaidPercent' => [
+        'entity'          => 'transaction',
+        'type'            => 'payment',
+        'amount'          => 10120,
+        'currency'        => 'INR',
+        'debit'           => 120,
+        'credit'          => 10120,
+        'fee'             => 180,
+        'tax'             => 0,
+        'gateway_fee'     => 0,
+        'api_fee'         => 0,
+        'balance'         => 1010000,
+        'merchant_id'     => '10000000000000',
+        'pricing_rule_id' => null,
+        'channel'         => 'axis',
+    ],
     'testAddAdjustment' => [
         'request' => [
             'content' => [

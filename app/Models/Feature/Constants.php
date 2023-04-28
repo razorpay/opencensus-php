@@ -203,6 +203,7 @@ class Constants
 
     const DCC_ON_OTHER_LIBRARY            = 'dcc_on_other_library';
 
+    const CUSTOMER_FEE_DONT_SETTLE        = 'customer_fee_dont_settle';
     /**
      * Feature flag used to enable dynamic currency conversion payments to get authorized and captured via cybersource gateway.
      */
@@ -2519,6 +2520,7 @@ class Constants
         DcsConstants::AssumeMasterAccount     => true,
         self::CLOSE_QR_ON_DEMAND              => true,
         self::ONE_CC_SHOPIFY_ACC_CREATE       => true,
+        self::CUSTOMER_FEE_DONT_SETTLE        => true,
         self::ONE_CC_SHOPIFY_MULTIPLE_SHIPPING => true,
         self::SHOW_CUSTOM_DCC_DISCLOSURES      => true,
         self::DYNAMIC_CURRENCY_CONVERSION_CYBS => true,

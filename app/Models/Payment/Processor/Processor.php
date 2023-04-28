@@ -8341,7 +8341,7 @@ class Processor
         return null;
     }
 
-    protected function calculateCustomerFeeGst($customerFee, $rzpFee, $tax) : ?int
+    public function calculateCustomerFeeGst($customerFee, $rzpFee, $tax) : ?int
     {
         if($customerFee === null)
         {

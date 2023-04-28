@@ -179,6 +179,18 @@ class CaptureJournalEvents
             $moneyParams[Constants::COMMISSION]                 = strval(abs($fee));
             $moneyParams[Constants::FEE_CREDITS]                = strval($tax + $fee);
         }
+        else if($transaction->isTypePayment() === true and $transaction->merchant !== null  and
+                (new Transaction\Processor\payment($transaction))->featureFlagCheckForMerchantPostPaidCustomerFeeNotSettled($transaction->merchant))
+        {
+            $customerFee = $transaction->getCustomerFee();
+            $customerGst = $transaction->getCustomerTax();
+
+            $moneyParams[Constants::GMV_AMOUNT]                 = strval($amount);
+            $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount - $customerFee - $customerGst);
+            $moneyParams[Constants::TAX]                        = strval(abs($tax) + $customerGst);
+            $moneyParams[Constants::COMMISSION]                 = strval(abs($fee) + $customerFee);
+            $moneyParams[Constants::MERCHANT_RECEIVABLE_AMOUNT] = strval($tax + $fee);
+        }
         else if($transaction->isPostpaid() === true)
         {
             $moneyParams[Constants::GMV_AMOUNT]                 = strval($amount);

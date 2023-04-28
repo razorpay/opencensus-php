@@ -135,11 +135,11 @@ class CreateTransactions extends Migration
             $table->tinyInteger(Transaction::REFERENCE6)
                   ->nullable();
 
-            $table->bigInteger(Transaction::REFERENCE7)
+            $table->bigInteger(Transaction::CUSTOMER_FEE)
                   ->unsigned()
                   ->nullable();
 
-            $table->bigInteger(Transaction::REFERENCE8)
+            $table->bigInteger(Transaction::CUSTOMER_TAX)
                   ->unsigned()
                   ->nullable();
 

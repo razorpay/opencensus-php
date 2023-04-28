@@ -10,6 +10,7 @@ use RZP\Models\Feature\Constants as APIFeaturesConstants;
 
 class Constants
 {
+    const PostpaidMerchantsDontSettleCustomerFees = 'postpaid_merchants_dont_settle_customer_fees';
     const RefundEnabled = 'refund_enabled';
     const DisableAutoRefund = 'disable_auto_refund';
     const EligibilityEnabled = 'eligibility_enabled';
@@ -173,6 +174,7 @@ class Constants
         self::EnableS2S =>  'rzp/pg/merchant/upi/ServerToServer',
         self::EnableP2P => 'rzp/pg/merchant/upi/PeerToPeer',
         self::EnableOTM => 'rzp/pg/merchant/upi/Otm',
+        self::PostpaidMerchantsDontSettleCustomerFees => 'rzp/pg/merchant/settlements/CustomerFeeFeatures',
         self::ShowCustomDccDisclosures => 'rzp/pg/org/checkout/banking_program/UiControls',
         self::DynamicCurrencyConversionCybs => 'rzp/pg/merchant/payments/banking_program/Cards',
         self::AdminPasswordResetEnabled => 'rzp/pg/org/banking/admin/Features',
@@ -263,6 +265,7 @@ class Constants
         APIFeaturesConstants::S2SUPI                                        => self::EnableS2S,
         APIFeaturesConstants::P2P_UPI                                       => self::EnableP2P,
         APIFeaturesConstants::UPI_OTM                                       => self::EnableOTM,
+        APIFeaturesConstants::CUSTOMER_FEE_DONT_SETTLE                      => self::PostpaidMerchantsDontSettleCustomerFees,
         APIFeaturesConstants::ORG_ADMIN_PASSWORD_RESET                      => self::AdminPasswordResetEnabled,
         APIFeaturesConstants::ONE_CC_SHOPIFY_MULTIPLE_SHIPPING              => self::OneCCMultipleShipping,
     ];
@@ -288,6 +291,7 @@ class Constants
         self::CvvLessFlowDisabled => 'direct',
         self::AssumeSubAccount => 'direct',
         self::AssumeMasterAccount => 'direct',
+        self::PostpaidMerchantsDontSettleCustomerFees => 'direct',
         self::CloseQrOnDemand => 'direct',
         self::DynamicCurrencyConversionCybs => "direct",
     ];
@@ -322,6 +326,7 @@ class Constants
             "disable_amount_check"=> "client",
             "cart_api_amount_check"=> "client",
             "order_receipt_unique"=> "client",
+            "postpaid_merchants_dont_settle_customer_fees"=> "direct",
             "dynamic_currency_conversion_cybs" => "direct",
         ],
         "org" => [
