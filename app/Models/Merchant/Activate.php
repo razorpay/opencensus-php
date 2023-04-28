@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant;
 
 use Mail;
+use Carbon\Carbon;
 use RZP\Models\Merchant\Balance\Type as BalanceType;
 use Throwable;
 use RZP\Exception;
@@ -1236,12 +1237,20 @@ class Activate extends Base\Core
             ];
 
             $this->trace->info(TraceCode::TERMINAL_CREATION_EVENT_SENT, [
-                'merchant_id'       => $merchant->getId(),
-                'topic'             => $topic,
-                'event_data'        => $event
+                'merchant_id' => $merchant->getId(),
+                'topic'       => $topic,
+                'event_data'  => $event
             ]);
 
             app('kafkaProducerClient')->produce($topic, stringify($event));
+
+            $eventAttributes = [
+                'merchant_id'     => $merchant->getId(),
+                'event_timestamp' => Carbon::now()->getTimestamp(),
+                'type'            => DEConstants::EVENT_TYPE_ONBOARDING
+            ];
+
+            $this->app['segment-analytics']->pushTrackEvent($merchant, $eventAttributes, SegmentEvent::UPI_WRAPPER_REQUESTED);
         }
     }
 }

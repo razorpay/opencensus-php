@@ -4538,6 +4538,21 @@ class CoreTest extends TestCase
 
         $this->app->instance('kafkaProducerClient', $kafkaProducerMock);
 
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+                            ->setConstructorArgs([$this->app])
+                            ->getMock();
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(1))
+                    ->method('pushTrackEvent')
+                    ->will($this->returnCallback(function($merchant, $eventAttributes, $eventName) {
+                        $this->assertTrue(array_key_exists("merchant_id", $eventAttributes));
+                        $this->assertTrue(array_key_exists("event_timestamp", $eventAttributes));
+                        $this->assertTrue(array_key_exists("type", $eventAttributes));
+                        $this->assertTrue(in_array($eventName, ["UPI Wrapper Requested"], true));
+                    }));
+
         $detailCoreMock->updateActivationStatus($merchantDetails->merchant,$activationStatusData,$merchantDetails->merchant);
 
         $kafkaProducerMock->shouldHaveReceived('produce');
@@ -4595,6 +4610,21 @@ class CoreTest extends TestCase
         $kafkaProducerMock = Mockery::mock(KafkaProducerClientMock::class)->makePartial();
 
         $this->app->instance('kafkaProducerClient', $kafkaProducerMock);
+
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+                            ->setConstructorArgs([$this->app])
+                            ->getMock();
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(1))
+                    ->method('pushTrackEvent')
+                    ->will($this->returnCallback(function($merchant, $eventAttributes, $eventName) {
+                        $this->assertTrue(array_key_exists("merchant_id", $eventAttributes));
+                        $this->assertTrue(array_key_exists("event_timestamp", $eventAttributes));
+                        $this->assertTrue(array_key_exists("type", $eventAttributes));
+                        $this->assertTrue(in_array($eventName, ["UPI Wrapper Requested"], true));
+                    }));
 
         $detailCoreMock->updateActivationStatus($merchantDetails->merchant,$activationStatusData,$merchantDetails->merchant);
 

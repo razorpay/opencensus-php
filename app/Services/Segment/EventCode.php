@@ -125,4 +125,7 @@ class EventCode
     //Legal Consents
     const AGREEMENT_CREATION_REQUEST = "Clickwrap Agreement Creation Request";
     const AGREEMENT_CREATION_RESPONSE = "Clickwrap Agreement Creation Response";
+
+    //UPI Terminal creation
+    const UPI_WRAPPER_REQUESTED = "UPI Wrapper Requested";
 }
