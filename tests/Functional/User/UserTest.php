@@ -33,6 +33,7 @@ use RZP\Services\Mock\Raven;
 use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
 use RZP\Services\SplitzService;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Mail\User\PasswordReset;
 use RZP\Models\Admin\Permission;
 use RZP\Services\Mock\AuthToken;
@@ -46,6 +47,7 @@ use RZP\Models\BankingAccount\Channel;
 use RZP\Exception\BadRequestException;
 use RZP\Mail\User\AccountVerification;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Services\Segment\XSegmentClient;
@@ -6652,6 +6654,129 @@ class UserTest extends TestCase
             $this->assertEquals('emails.user.otp_create_payout', $mail->view);
             return true;
         });
+    }
+
+    public function testSmsTemplateSelection()
+    {
+        $this->createContact();
+        $this->createFundAccount();
+
+        $this->fixtures->edit('user', 'MerchantUser01',
+                              ['contact_mobile'          => '1234567890',
+                               'contact_mobile_verified' => 1
+                              ]);
+
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = $this->fundAccount->getPublicId();
+
+        $ravenMock = Mockery::mock('RZP\Services\Mock\Raven');
+
+        $ravenMock->shouldReceive('generateOtp')->andReturn(['otp' => '10000000000sms', 'expires_at' => 10000]);
+
+        $ravenMock->shouldReceive('sendSms')
+                  ->andReturnUsing(function(array $request) {
+                      $template = $request['template'];
+                      $receiver = $request['receiver'];
+                      self::assertEquals('Sms.User.Create_payout.V3', $template);
+                      self::assertEquals('1234567890', $receiver);
+
+                      return [];
+                  });
+
+        $this->app->instance('raven', $ravenMock);
+
+        (new AdminService())->setConfigKeys([ConfigKey::UPDATED_SMS_TEMPLATES_RECEIVER_MERCHANTS => [
+            'Sms.User.Create_payout.V3' => '*',
+        ]]);
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+    }
+
+    public function testSmsTemplateSelectionMerchantAdded()
+    {
+        $this->createContact();
+        $this->createFundAccount();
+
+        $this->fixtures->edit('user', 'MerchantUser01',
+                              ['contact_mobile'          => '1234567890',
+                               'contact_mobile_verified' => 1
+                              ]);
+
+        $this->ba->proxyAuth();
+
+        $testData = $this->testData['testSmsTemplateSelection'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = $this->fundAccount->getPublicId();
+
+        $ravenMock = Mockery::mock('RZP\Services\Mock\Raven');
+
+        $ravenMock->shouldReceive('generateOtp')->andReturn(['otp' => '10000000000sms', 'expires_at' => 10000]);
+
+        $ravenMock->shouldReceive('sendSms')
+                  ->andReturnUsing(function(array $request) {
+                      $template = $request['template'];
+                      $receiver = $request['receiver'];
+                      self::assertEquals('Sms.User.Create_payout.V3', $template);
+                      self::assertEquals('1234567890', $receiver);
+
+                      return [];
+                  });
+
+        $this->app->instance('raven', $ravenMock);
+
+        (new AdminService())->setConfigKeys([ConfigKey::UPDATED_SMS_TEMPLATES_RECEIVER_MERCHANTS => [
+            'Sms.User.Create_payout.V3' => ['10000000000000'],
+        ]]);
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+    }
+
+    public function testSmsTemplateSelectionMerchantNotAdded()
+    {
+        $this->createContact();
+        $this->createFundAccount();
+
+        $this->fixtures->edit('user', 'MerchantUser01',
+                              ['contact_mobile'          => '1234567890',
+                               'contact_mobile_verified' => 1
+                              ]);
+
+        $this->ba->proxyAuth();
+
+        $testData = $this->testData['testSmsTemplateSelection'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->testData[__FUNCTION__]['request']['content']['fund_account_id'] = $this->fundAccount->getPublicId();
+
+        $ravenMock = Mockery::mock('RZP\Services\Mock\Raven');
+
+        $ravenMock->shouldReceive('generateOtp')->andReturn(['otp' => '10000000000sms', 'expires_at' => 10000]);
+
+        $ravenMock->shouldReceive('sendSms')
+                  ->andReturnUsing(function(array $request) {
+                      $template = $request['template'];
+                      $receiver = $request['receiver'];
+                      self::assertEquals('sms.user.create_payout', $template);
+                      self::assertEquals('1234567890', $receiver);
+
+                      return [];
+                  });
+
+        $this->app->instance('raven', $ravenMock);
+
+        (new AdminService())->setConfigKeys([ConfigKey::UPDATED_SMS_TEMPLATES_RECEIVER_MERCHANTS => [
+            'Sms.User.Create_payout.V3' => ['10000000000001'],
+        ]]);
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['token']);
     }
 
     public function testSendOtpForCreatePayoutWithoutMobileNumberInReceiver()

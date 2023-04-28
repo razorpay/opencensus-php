@@ -3428,6 +3428,8 @@ const EMANDATE_TOKEN_VALIDATION_ERROR                       = 'EMANDATE_TOKEN_VA
     const GATEWAY_LOAD_SORTING_BOOSTED_TERMINALS                = 'GATEWAY_LOAD_SORTING_BOOSTED_TERMINALS';
     const GATEWAY_LOAD_SORTING_FALLBACK                         = 'GATEWAY_LOAD_SORTING_FALLBACK';
     const GATEWAY_FILTER_RULES                                  = 'GATEWAY_FILTER_RULES';
+    const UPDATED_SMS_TEMPLATES_RECEIVER_MERCHANTS_CONFIG_KEY   = 'UPDATED_SMS_TEMPLATES_RECEIVER_MERCHANTS_CONFIG_KEY';
+    const SMS_TEMPLATE_NAME                                     = 'SMS_TEMPLATE_NAME';
 
     // Trace codes for tax and tax groups crud
     const TAX_GROUP_CREATE_REQUEST                              = 'TAX_GROUP_CREATE_REQUEST';

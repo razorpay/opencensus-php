@@ -266,6 +266,8 @@ class ConfigKey
 
     const RX_VA_TO_VA_PAYOUTS_WHITELISTED_DESTINATION_MERCHANTS = self::PREFIX . 'rx_va_to_va_payouts_whitelisted_destination_merchants';
 
+    const UPDATED_SMS_TEMPLATES_RECEIVER_MERCHANTS = self::PREFIX . 'updated_sms_templates_receiver_merchants';
+
     const RX_WEBHOOK_URL_FOR_MFN = self::PREFIX . 'rx_webhook_url_for_mfn';
 
     const RX_WEBHOOK_URL_FOR_MFN_TEST_MODE = self::PREFIX . 'rx_webhook_url_for_mfn_test_mode';
@@ -519,6 +521,7 @@ class ConfigKey
         self::DATA_WAREHOUSE_CONNECTION_FALLBACK,
         self::CARD_ARCHIVAL_FALLBACK_ENABLED,
         self::PAYMENTS_DUAL_WRITE,
+        self::UPDATED_SMS_TEMPLATES_RECEIVER_MERCHANTS,
         self::PAYOUT_SERVICE_DATA_MIGRATION_LIMIT_PER_BATCH,
         self::PAYOUT_SERVICE_DATA_MIGRATION_BATCH_ATTEMPTS,
         self::ONDEMAND_SETTLEMENT_INTERNAL_MERCHANTS,

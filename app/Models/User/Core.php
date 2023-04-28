@@ -30,6 +30,7 @@ use RZP\Http\RequestHeader;
 use RZP\Constants\Environment;
 use RZP\Mail\User as UserMail;
 use RZP\Services\TokenService;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Services\HubspotClient;
 use RZP\Models\Admin\AdminLead;
 use RZP\Jobs\MailChimpSubscribe;
@@ -71,6 +72,15 @@ use RZP\Mail\User\AccountLockedWrongAttempt as AccountLockedWrongAttemptMail;
 class Core extends Base\Core
 {
     const VERIFY_SUPPORT_CONTACT = 'verify_support_contact';
+
+    public static $actionToTemplateMapping = [
+        'create_payout'                => 'Sms.User.Create_payout.V3',
+        'sub_virtual_account_transfer' => 'Sms.User.Sub_virtual_account_transfer.V2',
+        'create_payout_batch'          => 'Sms.User.Create_payout_batch.V1',
+        'approve_payout'               => 'Sms.User.Approve_payout.V2',
+        'approve_payout_bulk'          => 'Sms.User.Approve_payout_bulk.V1',
+        // 'bulk_payout_approve'       => 'Sms.User.Bulk_payout_approve.V1',
+    ];
 
     /**
      * @param array $input
@@ -4279,10 +4289,20 @@ class Core extends Base\Core
             }
             else
             {
+                if (is_null($merchant) === true)
+                {
+                   $mid = '10000000000000';
+                }
+
+                else
+                {
+                    $mid = $merchant->getId();
+                }
+
                 $payload = [
                     'receiver' => $user->getContactMobile(),
                     'source' => 'api.user.' . $action,
-                    'template' => 'sms.user.' . $action,
+                    'template' => $this->chooseSmsTemplate($mid, $action),
                     'params' => [
                         'otp' => $otp['otp'],
                         'validity' => Carbon::createFromTimestamp($otp['expires_at'], Timezone::IST)->format('H:i:s'),
@@ -4313,6 +4333,45 @@ class Core extends Base\Core
         }
 
         return array_only($otp, 'token');
+    }
+
+    public function chooseSmsTemplate($merchantId, string $action)
+    {
+        $templateName = 'sms.user.' . $action;
+
+        if (array_key_exists($action, self::$actionToTemplateMapping))
+        {
+            $updatedSmsTemplates = (new Admin\Service)->getConfigKey(['key' => ConfigKey::UPDATED_SMS_TEMPLATES_RECEIVER_MERCHANTS]);
+
+            $this->trace->info(
+                TraceCode::UPDATED_SMS_TEMPLATES_RECEIVER_MERCHANTS_CONFIG_KEY,
+                [
+                    ConfigKey::UPDATED_SMS_TEMPLATES_RECEIVER_MERCHANTS => $updatedSmsTemplates
+                ]
+            );
+
+            $templateNameFromMapping = self::$actionToTemplateMapping[$action] ?? 'sms.user.' . $action;
+
+            if (array_key_exists($templateNameFromMapping, $updatedSmsTemplates) === true)
+            {
+                $merchants = $updatedSmsTemplates[$templateNameFromMapping];
+
+                if (($merchants == "*") or
+                    (in_array($merchantId, $merchants) == true))
+                {
+                    $templateName = $templateNameFromMapping;
+                }
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::SMS_TEMPLATE_NAME,
+            [
+                'template_name' => $templateName
+            ]
+        );
+
+        return $templateName;
     }
 
     /**
@@ -4882,12 +4941,16 @@ class Core extends Base\Core
             // Stork only support merchant and application ownerType hence sending userId
             // since merchant can be null in some flows
             $ownerId = $user->getId();
+
+            $mid = '10000000000000';
         }
         else
         {
             $orgId = $merchant->getOrgId();
 
             $ownerId = $merchant->getId();
+
+            $mid = $merchant->getId();
         }
 
         $smsPayload = [
@@ -4916,7 +4979,7 @@ class Core extends Base\Core
                 break;
 
             case Constants::BULK_APPROVE_PAYOUT:
-                $this->populateTemplateMetaForBulkPayoutAction($input, $smsPayload);
+                $this->populateTemplateMetaForBulkPayoutAction($input, $smsPayload, $mid);
                 break;
 
             case Constants::CREATE_WORKFLOW_CONFIG:
@@ -5954,8 +6017,17 @@ class Core extends Base\Core
         return $contentParams;
     }
 
-    protected function populateTemplateMetaForBulkPayoutAction(array $input, array &$smsPayload)
+    protected function populateTemplateMetaForBulkPayoutAction(array $input, array &$smsPayload, $merchantId)
     {
+        $updatedSmsTemplates = (new Admin\Service)->getConfigKey(['key' => ConfigKey::UPDATED_SMS_TEMPLATES_RECEIVER_MERCHANTS]);
+
+        $this->trace->info(
+            TraceCode::UPDATED_SMS_TEMPLATES_RECEIVER_MERCHANTS_CONFIG_KEY,
+            [
+                ConfigKey::UPDATED_SMS_TEMPLATES_RECEIVER_MERCHANTS => $updatedSmsTemplates
+            ]
+        );
+
         $approvedPayoutCount = array_pull($input, 'approved_payout_count', 0);
 
         $rejectedPayoutCount = array_pull($input, 'rejected_payout_count', 0);
@@ -5963,15 +6035,58 @@ class Core extends Base\Core
         if (($approvedPayoutCount > 0) and ($rejectedPayoutCount === 0))
         {
             $templateName = 'Sms.User.Bulk_payouts_approve';
-        }
-        else if (($approvedPayoutCount === 0) and ($rejectedPayoutCount > 0))
-        {
-            $templateName = 'Sms.User.Bulk_payouts_reject';
+
+            if (array_key_exists('Sms.User.Bulk_payouts_approve.V1', $updatedSmsTemplates) === true)
+            {
+                $merchants = $updatedSmsTemplates['Sms.User.Bulk_payouts_approve.V1'];
+
+                if (($merchants == "*") or
+                    (in_array($merchantId, $merchants) == true))
+                {
+                    $templateName = 'Sms.User.Bulk_payouts_approve.V1';
+                }
+            }
         }
         else
         {
-            $templateName = 'Sms.User.Bulk_payouts_approve_reject_action';
+            if (($approvedPayoutCount === 0) and ($rejectedPayoutCount > 0))
+            {
+                $templateName = 'Sms.User.Bulk_payouts_reject';
+
+                if (array_key_exists('Sms.User.Bulk_payouts_reject.V1', $updatedSmsTemplates) === true)
+                {
+                    $merchants = $updatedSmsTemplates['Sms.User.Bulk_payouts_reject.V1'];
+
+                    if (($merchants == "*") or
+                        (in_array($merchantId, $merchants) == true))
+                    {
+                        $templateName = 'Sms.User.Bulk_payouts_reject.V1';
+                    }
+                }
+            }
+            else
+            {
+                $templateName = 'Sms.User.Bulk_payouts_approve_reject_action';
+
+                if (array_key_exists('Sms.User.Bulk_payouts_approve_reject_action.V2', $updatedSmsTemplates) === true)
+                {
+                    $merchants = $updatedSmsTemplates['Sms.User.Bulk_payouts_approve_reject_action.V2'];
+
+                    if (($merchants == "*") or
+                        (in_array($merchantId, $merchants) == true))
+                    {
+                        $templateName = 'Sms.User.Bulk_payouts_approve_reject_action.V2';
+                    }
+                }
+            }
         }
+
+        $this->trace->info(
+            TraceCode::SMS_TEMPLATE_NAME,
+            [
+                'template_name' => $templateName
+            ]
+        );
 
         $smsPayload['sender'] = 'RZPAYX';
 
