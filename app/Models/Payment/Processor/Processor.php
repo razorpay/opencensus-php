@@ -978,7 +978,7 @@ class Processor
             Card\Entity::CRYPTOGRAM_VALUE       => $cryptogram['cryptogram_value'] ?? null,
             Card\Entity::TOKENISED              => true,
             Card\Entity::VAULT                  => "rzpvault",
-            Card\Entity::CVV                    => $input['card']['cvv'] ?? "123", // adding dummy cvv
+            Card\Entity::CVV                    => $input['card']['cvv'] ?? null,
             Card\Entity::TOKEN_PROVIDER         => 'Razorpay'
         ];
 

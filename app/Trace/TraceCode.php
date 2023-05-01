@@ -3933,7 +3933,7 @@ const EMANDATE_TOKEN_VALIDATION_ERROR                       = 'EMANDATE_TOKEN_VA
     const MAILCHIMP_JOB_ERROR                                   = 'MAILCHIMP_JOB_ERROR';
 
     const UPLOAD_FILE_DETAILS                                   = 'UPLOAD_FILE_DETAILS';
-
+    const TRACK_CARD_OPTIONAL_CFB_FLOW                          = 'TRACK_CARD_OPTIONAL_CFB_FLOW';
     const QR_CODE_WEBHOOK_PUBLISH_FAILED                        = 'QR_CODE_WEBHOOK_PUBLISH_FAILED';
 
     // To log various debugs for a migrate command

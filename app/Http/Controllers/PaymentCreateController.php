@@ -15,6 +15,7 @@ use RZP\Models\Currency\Currency;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Customer;
 use RZP\Models\Settlement\Merchant;
 use RZP\Models\Merchant\Preferences;
 use View;
@@ -513,6 +514,8 @@ class PaymentCreateController extends Controller
         $merchant =  $this->app['basicauth']->getMerchant();
 
         $this->addDummyEmailIfApplicable($input, $merchant);
+
+        $this->addDummyCardIfApplicable($input);
 
         $data = $this->service(E::PAYMENT)->processAndReturnFees($input);
 
@@ -2106,6 +2109,45 @@ class PaymentCreateController extends Controller
 
             $request->merge(['email' => Payment\Entity::DUMMY_EMAIL]);
         }
+    }
+
+    //*CVVLess Payments for Visa and Amex Saved Card Payments
+    protected function addDummyCardIfApplicable(array &$input): void
+    {
+        if (($input[Payment\Entity::METHOD]) == Payment\Method::CARD and (isset($input[Payment\Entity::TOKEN]) === true) and ((array_key_exists('card', $input) === false) or (!isset($input['card']))) ){
+
+            $tokenId = $input[Payment\Entity::TOKEN];
+
+            if (isset($input[Payment\Entity::CUSTOMER_ID]) === true) {
+                $customerId = $input[Payment\Entity::CUSTOMER_ID];
+
+                Customer\Entity::verifyIdAndStripSign($customerId);
+
+                $token = (new Customer\Token\Core)->getByTokenIdAndCustomerId($tokenId, $customerId);
+
+            } else {
+
+                $token = (new Customer\Token\Core)->getByTokenId($tokenId);
+            }
+
+            if ($this->isCardAbsentforTokenisedPayment($token)) {
+                $input['card'] = [];
+            }
+
+            $this->trace->info(TraceCode::TRACK_CARD_OPTIONAL_CFB_FLOW, [
+                'token' => $token->getId(),
+            ]);
+        }
+    }
+
+    // set dummy card for amex and visa payments which do not have card object
+    protected function  isCardAbsentforTokenisedPayment($token) : bool
+    {
+        if(($token->card->isAmex() || $token->card->isVisa()))
+        {
+            return true;
+        }
+        return false;
     }
 
     protected function shouldReturnCallbackViewForNon3ds($id,$data): bool {
