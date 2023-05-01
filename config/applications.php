@@ -1609,9 +1609,12 @@ return [
     ],
 
     'magic_checkout_service' => [
-        'url'           => env('APP_MAGIC_CHECKOUT_SERVICE_URL'),
-        'username'      => 'api',
+        'api' => [
+            'url'           => env('APP_MAGIC_CHECKOUT_SERVICE_API_URL'),
+            'username'      => 'api',
+            'secret'        => env('APP_MAGIC_CHECKOUT_SERVICE_API_SECRET'),
+            'timeout'       => env('APP_MAGIC_CHECKOUT_SERVICE_API_TIMEOUT', 20),
+        ],
         'secret'        => env('APP_MAGIC_CHECKOUT_SERVICE_SECRET'),
-        'timeout'       => env('APP_MAGIC_CHECKOUT_SERVICE_TIMEOUT', 20),
     ],
 ];

@@ -130,7 +130,7 @@ class Client
 
     protected function setConfig()
     {
-        $configPath = 'applications.magic_checkout_service';
+        $configPath = 'applications.magic_checkout_service.api';
 
         $this->config = $this->app['config']->get($configPath);
     }
