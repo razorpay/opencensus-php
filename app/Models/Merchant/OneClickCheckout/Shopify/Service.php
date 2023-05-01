@@ -157,7 +157,7 @@ class Service extends Base\Service
                 'description'       => mb_substr($item['title'], 0, 256, 'UTF-8'),
                 'weight'            => (int)floatval($item['grams'] / 1000),
                 'image_url'         => "",
-                'type'              => mb_substr($productTypeMap[$item['variant']['sku']] ?? '', 0, 128, 'UTF-8'),
+                'type'              => mb_substr($productTypeMap[$item['sku']] ?? '', 0, 128, 'UTF-8'),
             ];
 
             foreach ($checkoutLineItems as $lineItem) {
@@ -317,9 +317,10 @@ class Service extends Base\Service
 
         foreach ($cart['items'] as $lineItem)
         {
-            $productTypeMap[$lineItem['sku'] ?? ''] = $lineItem['product_type'] ?? '';
+            $sku = $lineItem['variant']['sku']?? $lineItem['sku'] ?? '';
+            $productTypeMap[$sku] = $lineItem['product_type'] ?? '';
         }
-
+        
         return $productTypeMap;
     }
 
