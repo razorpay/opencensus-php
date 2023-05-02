@@ -54,9 +54,10 @@ describe('activationStatusHelper', () => {
     );
     expect(activationStatusMap(CAPITAL_STATUS.cpv_pending)).toStrictEqual('CPV Pending');
     expect(activationStatusMap(CAPITAL_STATUS.in_process)).toStrictEqual('In Process');
-    expect(activationStatusMap(CAPITAL_STATUS.application_initiated)).toStrictEqual(
-      'Application Initiated',
+    expect(activationStatusMap(CAPITAL_STATUS.application_initiation)).toStrictEqual(
+      'Application Initiation',
     );
+    expect(activationStatusMap(CAPITAL_STATUS.application_rejected)).toStrictEqual('Rejection');
     expect(activationStatusMap('something default')).toStrictEqual('');
   });
 });
