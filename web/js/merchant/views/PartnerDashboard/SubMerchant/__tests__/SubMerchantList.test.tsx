@@ -55,7 +55,7 @@ jest.mock('merchant/views/PartnerDashboard/SubMerchant/ReferralBox', () => ({
       <div>
         <button onClick={closeModal}>close</button>
         <div>Share Referral Link</div>
-        <button>Copy Link</button>
+        <button>Copy Link refer</button>
       </div>
     );
   },
@@ -128,7 +128,7 @@ describe('List', () => {
     await userEvent.click(referButton);
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Copy/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Copy Link refer/i })).toBeInTheDocument();
     });
   });
 

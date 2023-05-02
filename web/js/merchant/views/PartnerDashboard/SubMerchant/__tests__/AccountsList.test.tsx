@@ -1,6 +1,6 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import { render, screen, server, waitFor } from 'common/services/test/test-utils';
+import { render, screen, server, userEvent, waitFor } from 'common/services/test/test-utils';
 import { rest } from 'msw';
 import { CapitalSubMerchantList } from 'merchant/views/PartnerDashboard/SubMerchant/AccountsList';
 import {
@@ -10,9 +10,30 @@ import {
   orgDetails,
 } from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/fixtures';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import * as downloadSubmerchantsActions from 'merchant/reducers/submerchant';
 
 // TODO : covered only Capital use case, have to cover others later
 
+jest.mock('merchant/components/ShowWhen', () => ({ children }) => <div>{children}</div>);
+
+jest.mock(
+  'merchant/views/PartnerDashboard/SubMerchant/components/ConfirmGenerateReport',
+  () =>
+    ({ onDownload, closeModal }) =>
+      (
+        <div>
+          <span>
+            This report only contains data for affiliate accounts added during the last month.
+          </span>
+          <button type="button" onClick={onDownload}>
+            Generate Report
+          </button>
+          <button type="button" onClick={closeModal}>
+            Close
+          </button>
+        </div>
+      ),
+);
 const isPartner = jest.fn();
 const isPartnerIntent = jest.fn();
 const isFeatureEnabled = jest.fn();
@@ -35,9 +56,10 @@ const location = {
   search: '',
   pathname: '/partners/submerchants/capital',
 };
-
+let downloadSubMerchant;
 describe('AccountsList', () => {
   beforeAll(() => {
+    downloadSubMerchant = jest.spyOn(downloadSubmerchantsActions, 'downloadSubmerchants');
     document.execCommand = jest.fn();
     window.rzp_user = {};
     window.rzpQ = {
@@ -64,6 +86,7 @@ describe('AccountsList', () => {
         org={orgDetails}
       />,
       {
+        showModal: true,
         initialState: {
           ...state,
         },
@@ -143,5 +166,22 @@ describe('AccountsList', () => {
     expect(screen.getByText(items[1].email)).toBeInTheDocument();
     expect(screen.getByText('Bureau Submission')).toBeInTheDocument();
     expect(screen.getAllByText('Not Available')).toHaveLength(2);
+
+    const downloadButton = screen.getByText('Export All (CSV)');
+    expect(downloadButton).toBeInTheDocument();
+    await userEvent.click(downloadButton);
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          'This report only contains data for affiliate accounts added during the last month.',
+        ),
+      ).toBeInTheDocument();
+    });
+    const generateBtn = screen.getByRole('button', { name: 'Generate Report' });
+    expect(generateBtn).toBeInTheDocument();
+    await userEvent.click(generateBtn);
+    await waitFor(() => {
+      expect(downloadSubMerchant).toBeCalled();
+    });
   });
 });

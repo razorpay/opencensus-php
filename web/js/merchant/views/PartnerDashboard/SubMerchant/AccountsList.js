@@ -622,8 +622,9 @@ class ProductSubMerchantsList extends ListContainer {
     const isNonEmptyCapitalList = Array.isArray(capitalItems) && capitalItems?.length > 0;
     const isFilterSearchUsed = location.search !== '';
     const shouldShowWelcomeScreen =
-      !isNonEmptyList && !isFilterSearchUsed && !user.isPartner('pure_platform');
-
+      (!isNonEmptyList || !isNonEmptyCapitalList) &&
+      !isFilterSearchUsed &&
+      !user.isPartner('pure_platform');
     if (user.isPartner('pure_platform')) {
       appIdColumn = [appId];
     } else if (user.isPartner('aggregator', 'fully_managed')) {
@@ -770,7 +771,7 @@ class ProductSubMerchantsList extends ListContainer {
                   {...this.props}
                 />
               )}
-              {isNonEmptyCapitalList && this.isCapitalProduct && (
+              {!shouldShowWelcomeScreen && isNonEmptyCapitalList && this.isCapitalProduct ? (
                 <DataTable
                   title="Sub Merchants"
                   count={this.state.count}
@@ -779,7 +780,7 @@ class ProductSubMerchantsList extends ListContainer {
                   columns={[this.capitalName(), id, email, addedOn, capitalStatus]}
                   items={capitalItems}
                 />
-              )}
+              ) : null}
 
               {shouldShowWelcomeScreen && (
                 <>
@@ -793,22 +794,29 @@ class ProductSubMerchantsList extends ListContainer {
                   </div>
                   <div style={{ flex: 3 }} class="action-area">
                     <div>
-                      <div>
+                      <ShowWhen
+                        myRole="owner manager admin"
+                        additionalCondition={(currentUser) =>
+                          currentUser.isPartner() && !currentUser.isPartner('pure_platform')
+                        }
+                      >
                         <div>
-                          <Image src={AddNewSubMerchants} isWebP />
+                          <div>
+                            <Image src={AddNewSubMerchants} isWebP />
+                          </div>
+                          <p>
+                            <strong>Invite a merchant</strong> by adding their details
+                          </p>
+                          <div style={{ paddingTop: '20px' }}>
+                            <button
+                              class="btn btn-primary pull-right m-l"
+                              onClick={this.handleAddMerchant}
+                            >
+                              <i class="i i-plus line-height-9" /> Add New Merchant
+                            </button>
+                          </div>
                         </div>
-                        <p>
-                          <strong>Invite a merchant</strong> by adding their details
-                        </p>
-                        <div style={{ paddingTop: '20px' }}>
-                          <button
-                            class="btn btn-primary pull-right m-l"
-                            onClick={this.handleAddMerchant}
-                          >
-                            <i class="i i-plus line-height-9" /> Add New Merchant
-                          </button>
-                        </div>
-                      </div>
+                      </ShowWhen>
                       <ShowWhen
                         additionalCondition={(currentUser) =>
                           ((currentUser.isPartner() && currentUser.isPartner('reseller')) ||
