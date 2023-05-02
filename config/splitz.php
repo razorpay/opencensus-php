@@ -267,6 +267,9 @@ return [
         // Partnership for Capital
         'PARTNERSHIP_CAPITAL' => env('PARTNERSHIP_CAPITAL', ''),
 
+        // Partnership for Marketplace
+        'ROUTE_PARTNERSHIPS' => env('ROUTE_PARTNERSHIPS', ''),
+
         // Bundle Pricing
         'BUNDLE_PRICING' => env('BUNDLE_PRICING', ''),
 

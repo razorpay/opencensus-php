@@ -28,6 +28,9 @@ jest.mock(
     </>
   ),
 );
+jest.mock('merchant/views/Transactions/Payments/components/PlatformFeeDetails', () => () => (
+  <div>Platform Fee Details</div>
+));
 // prettier-ignore
 jest.mock(
   'merchant/views/Settlements/components/SettlementInfo',
@@ -171,7 +174,10 @@ export const defaultProps = {
   },
   upiTransfer: {},
   refunds: {},
-  transfers: {},
+  transfers: {
+    loading: false,
+    items: [{ transfer_type: 'platform' }],
+  },
   isLoading: false,
   openRefundModal: jest.fn(),
   isRoleAllowedEdit: true,

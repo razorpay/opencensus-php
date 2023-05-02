@@ -1959,6 +1959,15 @@ export default class User {
     return variant?.name === 'enable';
   }
 
+  get isRoutePartnershipEnabled() {
+    const variant = getSplitzExperimentVariant('route_partnerships');
+    return variant?.name === 'enable';
+  }
+
+  get isRoutePlusPartnershipsEnabled() {
+    return this.isFeatureEnabled('route_partnerships');
+  }
+
   get isShowInternationalPaymentBtnExpEnabled() {
     const variant = getSplitzExperimentVariant('show_international_payments_button_ab');
 

@@ -28,10 +28,18 @@ import { isInteger } from 'common/utils/validators';
 import track from 'merchant/views/Transactions/Payments/track';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import { isOrgFeatureExist } from 'merchant/models/User';
+import lazy from 'merchant/routes/LazyLoader';
+import { isPlatformTransaction } from 'merchant/views/Transactions/Payments/Utils/platformUtils';
+
 // styles
 import './Payments.styl';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+
+//lazy imports
+const PlatformFeeDetails = lazy(() =>
+  import('merchant/views/Transactions/Payments/components/PlatformFeeDetails'),
+);
 
 const INIT_POINT = 'payment-details';
 
@@ -84,6 +92,10 @@ function PaymentDetails(props) {
   const initiatePage = params?.init_page;
   const screen = initiatePage?.split('.')[0];
   const page = initiatePage?.split('.')[1];
+
+  const { isRoutePartnershipEnabled, isRoutePlusPartnershipsEnabled } = user;
+  const showPlatformFee =
+    isRoutePlusPartnershipsEnabled && isRoutePartnershipEnabled && isPlatformTransaction(transfers);
 
   const getProductType = useCallback(() => {
     const isQrCode = () => {
@@ -478,17 +490,21 @@ function PaymentDetails(props) {
                 </EntityDetailRow>
 
                 <EntityDetailRow label="Total Fee">
-                  <Definition>
-                    <Amount value={getPaymentFees()} currency={currency} />
-                    <span>
-                      {chargedFeeLabelText()} Fee -&nbsp;
-                      <Amount value={getPaymentFees() - payment.tax} currency={currency} />
-                    </span>
-                    <span>
-                      {isRZPOrg ? 'GST' : 'Tax'} -{' '}
-                      <Amount value={payment.tax} currency={currency} />
-                    </span>
-                  </Definition>
+                  {showPlatformFee ? (
+                    <PlatformFeeDetails transfers={transfers} payment={payment} />
+                  ) : (
+                    <Definition>
+                      <Amount value={getPaymentFees()} currency={currency} />
+                      <span>
+                        {chargedFeeLabelText()} Fee -&nbsp;
+                        <Amount value={getPaymentFees() - payment.tax} currency={currency} />
+                      </span>
+                      <span>
+                        {isRZPOrg ? 'GST' : 'Tax'} -{' '}
+                        <Amount value={payment.tax} currency={currency} />
+                      </span>
+                    </Definition>
+                  )}
                 </EntityDetailRow>
 
                 {isInteger(payment?.customer_fee) && isInteger(payment?.customer_fee_gst) && (

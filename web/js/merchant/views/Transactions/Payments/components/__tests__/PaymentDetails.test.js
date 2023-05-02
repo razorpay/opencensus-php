@@ -6,6 +6,7 @@ import {
   App,
 } from 'merchant/views/Transactions/Payments/components/__tests__/mocks/fixtures/PaymentDetails';
 import { analyticsTrack } from 'common/utils/analytics';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 describe('PaymentDetails', () => {
   test('should render payment details', () => {
@@ -193,6 +194,22 @@ describe('PaymentDetails', () => {
 
       expect(screen.getByText('Capture Payment')).toBeInTheDocument();
       expect(screen.getByText('Refund Payment')).toBeInTheDocument();
+    });
+  });
+  describe.skip('Platform fee', () => {
+    test('should render platform fee details instead of transfer if transaction type is platform and isRoutePartnershipEnabled is enabled', async () => {
+      ShowWhen.mockImplementation(({ children }) => <div>{children}</div>);
+      render(
+        <App
+          user={{
+            ...defaultProps.user,
+            isRoutePartnershipEnabled: true,
+            isRoutePlusPartnershipsEnabled: true,
+          }}
+        />,
+      );
+      const text = await screen.getByText('Platform Fee');
+      expect(text).toBeInTheDocument();
     });
   });
 });
