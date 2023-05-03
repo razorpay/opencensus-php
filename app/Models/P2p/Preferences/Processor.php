@@ -28,11 +28,11 @@ class Processor extends Base\Processor
         {
             $customer = (new Device\Core)->getDeviceCustomer($input[Entity::CUSTOMER_ID]);
 
-            return array_merge($this->getCustomerData($customer), $this->getGatewayPreferencesForSDK());
+            return array_merge($this->getCustomerData($customer), $this->getGatewayPreferencesForSDK(), $this->getSDKVersionLimitations());
         }
         else
         {
-            return $this->getGatewayPreferencesForSDK();
+            return array_merge($this->getGatewayPreferencesForSDK(), $this->getSDKVersionLimitations());
         }
     }
 
@@ -59,6 +59,22 @@ class Processor extends Base\Processor
                 ],
             ],
             Entity::POPULAR_BANKS   => $popularBankList,
+        ];
+    }
+
+    private function getSDKVersionLimitations()
+    {
+        return[
+            Entity::SDK_VERSIONS => [
+                Entity::ANDROID => [
+                    Entity::MIN       => '1.0.0',
+                    Entity::BLOCKED   => ['1.1.0', '1.1.1', '1.2.0'],
+                ],
+                Entity::IOS     => [
+                    Entity::MIN       => '1.0.0',
+                    Entity::BLOCKED   => ['1.1.0', '1.1.1', '1.2.0'],
+                ],
+            ],
         ];
     }
 

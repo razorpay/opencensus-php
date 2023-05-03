@@ -15,4 +15,10 @@ class Entity extends Base\Entity
     const GATEWAY                   = 'gateway';
     const PRIORITY                  = 'priority';
     const POPULAR_BANKS             = 'popular_banks';
+    const SDK_VERSIONS              = 'sdk_versions';
+    const ANDROID                   = 'android';
+    const IOS                       = 'ios';
+    const MIN                       = 'min';
+    const BLOCKED                   = 'blocked';
+
 }
