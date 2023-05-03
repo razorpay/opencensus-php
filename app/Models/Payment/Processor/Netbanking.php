@@ -1269,7 +1269,6 @@ class Netbanking
         IFSC::ICIC,
         IFSC::SCBL,
         IFSC::UTIB,
-        IFSC::TJSB,
         self::LAVB_C,
         self::UTIB_C,
         self::IBKL_C,
