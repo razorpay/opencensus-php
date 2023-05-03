@@ -1000,7 +1000,7 @@ class UserRolesScope
             'reports_transaction_dsp'                              => [Role::OWNER, Role::ADMIN],
             'reversal_fetch'                                       => [Role::ADMIN, Role::OWNER, Role::OPERATIONS, Role::SUPPORT, Role::MANAGER, Role::FINANCE],
             'reward_activate_or_deactivate'                        => [Role::OWNER, Role::ADMIN],
-            'salesforce_event'                                     => [Role::OWNER, Role::ADMIN],
+            'salesforce_event'                                     => Role::ALL_ROLES,
             'salesforce_opportunity_details'                       => [Role::OWNER, Role::ADMIN],
             'send_email_for_pl_service'                            => [Role::OWNER, Role::ADMIN],
             'setl_combined_recon'                                  => [Role::OWNER, Role::ADMIN],
