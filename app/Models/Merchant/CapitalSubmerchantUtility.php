@@ -392,11 +392,8 @@ class CapitalSubmerchantUtility
         $user = $subMerchant->owners(Product::BANKING)->first();
 
         $headers = [
-            'X-Merchant-Id'    => $subMerchant->getId(),
-            'X-Merchant-Email' => $subMerchant->getEmail(),
-            'X-User-Id'        => optional($user)->getId(),
-            'X-User-Role'      => Role::OWNER,
-            'X-Auth-Type'      => 'proxy',
+            'X-Service-Name' => app('basicauth')->getInternalApp() ?? 'batch',
+            'X-Auth-Type'    => 'internal',
         ];
 
         app('trace')->info(
