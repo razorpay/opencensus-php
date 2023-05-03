@@ -131,7 +131,7 @@ const DisputeDetails = lazy(() =>
 );
 const SubmerchantDetails = lazy(() =>
   import(
-    /* webpackChunkName: "SubMerchantDetails" */ 'merchant/views/PartnerDashboard/SubMerchant/Details'
+    /* webpackChunkName: "SubMerchantDetails" */ 'merchant/views/PartnerDashboard/SubMerchant/DetailsContainer'
   ),
 );
 const EarningTransactionalDetails = lazy(() =>

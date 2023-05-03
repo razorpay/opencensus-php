@@ -3,19 +3,12 @@ import { render, screen } from 'common/services/test/test-utils';
 import EmptyDailyList from 'merchant/views/PartnerDashboard/Commissions/components/EmptyDailyList';
 import { Provider } from 'react-redux';
 import { storeWithInitialState } from 'merchant/store';
+import { getInitialUserOrgState } from 'common/tests/utils';
 
 function getInitialProps(itemList) {
   return {
     isAddMerchantView: true,
     items: itemList,
-  };
-}
-
-function getInitialState(isRzpOrg) {
-  return {
-    user: {
-      isOrgRZP: isRzpOrg,
-    },
   };
 }
 
@@ -30,7 +23,7 @@ describe('test suite for Empty Daily List', () => {
 
   test('should render component with default rzp limit', () => {
     const props = getInitialProps([]);
-    const state = getInitialState(true);
+    const state = getInitialUserOrgState({ isRzpOrg: true });
     render(<App initialState={{ session: state }} {...props} />);
 
     expect(
@@ -40,7 +33,7 @@ describe('test suite for Empty Daily List', () => {
 
   test('should render component without limit text', () => {
     const props = getInitialProps([]);
-    const state = getInitialState(false);
+    const state = getInitialUserOrgState({ isRzpOrg: false });
     render(<App initialState={{ session: state }} {...props} />);
 
     expect(
@@ -50,7 +43,7 @@ describe('test suite for Empty Daily List', () => {
 
   test('should render component with mentioned limit text', () => {
     const props = getInitialProps({ limit: 2 });
-    const state = getInitialState(false);
+    const state = getInitialUserOrgState({ isRzpOrg: false });
     render(<App initialState={{ session: state }} {...props} />);
 
     expect(

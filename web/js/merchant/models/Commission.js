@@ -1,8 +1,6 @@
+import moment from 'moment';
 import GenericEntity from './GenericEntity';
-import {
-  groupCommissionListData,
-  groupSingleDayCommissionData,
-} from 'common/utils/pokedex';
+import { groupCommissionListData, groupSingleDayCommissionData } from 'common/utils/pokedex';
 
 export default class Commission extends GenericEntity {
   resourceUrl = 'commissions';
@@ -17,24 +15,21 @@ export default class Commission extends GenericEntity {
   };
 
   fetchSingleDayAggregateData = ({ from, queryType }) => {
-    const to = Number(
-      moment(from, 'X')
-        .endOf('day')
-        .format('X')
-    );
+    const to = Number(moment(from, 'X').endOf('day').format('X'));
 
-    return this.fetchAggregate(from, to, queryType).then(response => {
+    return this.fetchAggregate(from, to, queryType).then((response) => {
       if (response.success) {
         return {
           ...response,
           data: groupSingleDayCommissionData(response.data),
         };
       }
+      return null;
     });
   };
 
   fetchDailyAggregateData = ({ from, to, queryType }) => {
-    return this.fetchAggregate(from, to, queryType).then(response => {
+    return this.fetchAggregate(from, to, queryType).then((response) => {
       if (response.success) {
         return {
           ...response,

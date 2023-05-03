@@ -50,12 +50,16 @@ const Amount = ({
   parentQuerySelector,
   // eslint-disable-next-line no-unused-vars
   hidePaisa = false,
+  testId = null,
   ...attrs
 }) => {
   if (!currency) {
     currency = 'INR';
   }
 
+  if (testId !== null) {
+    attrs['data-testid'] = testId;
+  }
   const amount = getFormattedAmount(value);
 
   const currencySymbol = getCurrencySymbol(currency);

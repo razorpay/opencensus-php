@@ -34,7 +34,10 @@ export default class CommissionsDailyEntity extends Component {
     const currency = user.merchant.currency;
     const data = entity.data;
     return (
-      <div class="content-wrapper content-sm txn-details Commission--Detail">
+      <div
+        class="content-wrapper content-sm txn-details Commission--Detail"
+        data-testid="daily-details-panel"
+      >
         {isLoading ? (
           <div class="page-spinner-container">
             <Spinner />
@@ -61,7 +64,11 @@ export default class CommissionsDailyEntity extends Component {
                     </div>
 
                     <EntityDetailRow label="Total Transaction Amount">
-                      <Amount value={data.transactionVolume} currency={currency} />
+                      <Amount
+                        value={data.transactionVolume}
+                        currency={currency}
+                        testId="amount-daily-details"
+                      />
                     </EntityDetailRow>
 
                     <EntityDetailRow

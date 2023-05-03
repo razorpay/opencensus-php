@@ -10,29 +10,30 @@ import { earningId, createdAtShort } from 'common/ui/item/pair';
 
 import { capitalize } from 'common/utils/rzp-utils';
 
-import ListFilter from '../../Commissions/Transactional/ListFilter';
+import ListFilter from 'merchant/views/PartnerDashboard/Commissions/Transactional/ListFilter';
 
 const sourceType = {
   title: 'Source',
-  value: item => capitalize(item.source_type),
+  value: (item) => capitalize(item.source_type),
 };
 
 const totalCommission = {
   title: 'Total Earning',
-  value: item => (
+  value: (item) => (
     <Amount
       currency={item.currency}
       value={item.source_type === 'payment' ? item.credit : item.debit}
+      testId={`amount-${item.id}`}
     />
   ),
 };
 
 const merchantName = {
   title: 'Account Name',
-  value: item => (item.merchant || {}).name,
+  value: (item) => (item.merchant || {}).name,
 };
 
-@connect(state => ({ ...state.commisions }), { fetchAll })
+@connect((state) => ({ ...state.commisions }), { fetchAll })
 export default class CommissionList extends ListContainer {
   render() {
     return (
@@ -46,13 +47,7 @@ export default class CommissionList extends ListContainer {
 
         <DataTable
           title="Commissions"
-          columns={[
-            earningId,
-            totalCommission,
-            merchantName,
-            sourceType,
-            createdAtShort,
-          ]}
+          columns={[earningId, totalCommission, merchantName, sourceType, createdAtShort]}
           count={this.state.count}
           skip={this.state.skip}
           paginate={this.paginate}

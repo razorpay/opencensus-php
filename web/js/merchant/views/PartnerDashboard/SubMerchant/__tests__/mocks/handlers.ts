@@ -1,5 +1,11 @@
 import { rest } from 'msw';
-import { accountsListResponse, items, productResponse, bulkResponse } from './fixtures';
+import {
+  accountsListResponse,
+  items,
+  productResponse,
+  bulkResponse,
+  submerchantWithKYCAccess,
+} from './fixtures';
 
 export const subMerchantListHandlers = [
   rest.get('*/merchant/api/test/submerchants', (req, res, ctx) => {
@@ -9,6 +15,16 @@ export const subMerchantListHandlers = [
         status_code: 200,
         success: true,
         data: { ...accountsListResponse, items, count: items.length },
+      }),
+    );
+  }),
+  rest.get('*/merchant/api/test/submerchants/:submerchantId', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 200,
+        success: true,
+        data: submerchantWithKYCAccess,
       }),
     );
   }),

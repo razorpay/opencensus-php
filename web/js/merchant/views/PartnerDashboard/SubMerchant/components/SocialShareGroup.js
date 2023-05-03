@@ -117,9 +117,21 @@ export default function SocialShareGroup({ referralUrl, tracking, product, partn
             <p>Or Share Via</p>
           </strong>
         </div>
-        <img src="/img/social-media/fb.png" onClick={() => shareReferralOn('fb')} />
-        <img src="/img/social-media/twitter.png" onClick={() => shareReferralOn('twitter')} />
-        <img src="/img/social-media/whatsapp.png" onClick={() => shareReferralOn('whatsapp')} />
+        <img
+          src="/img/social-media/fb.png"
+          alt="share via fb"
+          onClick={() => shareReferralOn('fb')}
+        />
+        <img
+          src="/img/social-media/twitter.png"
+          alt="share via twitter"
+          onClick={() => shareReferralOn('twitter')}
+        />
+        <img
+          src="/img/social-media/whatsapp.png"
+          alt="share via whatsapp"
+          onClick={() => shareReferralOn('whatsapp')}
+        />
       </div>
     </div>
   );

@@ -1,12 +1,16 @@
+import { renderHook } from 'test-utils';
 import {
   numberDifferentiation,
   getInitialState,
 } from 'merchant/views/PartnerDashboard/SubMerchant/utils';
+import usePartnerPageNPS from 'merchant/views/PartnerDashboard/SubMerchant/utils/usePartnerPageNPS';
 import {
   defaultAddMerchantState,
   addMerchantProps,
 } from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/fixtures';
 import { PRODUCT_TYPE, ADD_MODE } from 'merchant/views/PartnerDashboard/constants';
+import User from 'merchant/models/User';
+import store from 'merchant/store';
 
 describe('Number Differentiation', () => {
   test('should return short form of Lacks and Crores', () => {
@@ -44,5 +48,18 @@ describe('InitialState for AddMerchant', () => {
       ...defaultAddMerchantState,
       merchantType: PRODUCT_TYPE.PG,
     });
+  });
+});
+
+describe('usePartnerPageNPS', () => {
+  const initialState = { session: { user: new User({ email: 'email.com' }) } };
+  const stateSpy = jest.spyOn(store, 'getState');
+  test('hook renders without any errors', () => {
+    stateSpy.mockReturnValue(initialState);
+    const { result } = renderHook(() => usePartnerPageNPS('surveyID'), {
+      initialState,
+    });
+    expect(result.current).toBe(undefined);
+    stateSpy.mockClear();
   });
 });

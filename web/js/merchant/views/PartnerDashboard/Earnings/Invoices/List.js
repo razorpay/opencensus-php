@@ -51,7 +51,9 @@ const generateColumns = (user) => {
           </small>
         </>
       ),
-      value: (item) => <Amount value={item.gross_amount} currency={currency} />,
+      value: (item) => (
+        <Amount value={item.gross_amount} currency={currency} testId={`amount-${item.id}`} />
+      ),
     },
 
     ProcessInvoice: {

@@ -1,6 +1,7 @@
 // test-utils.js
 import React, { ReactElement } from 'react';
 import { render, waitForElementToBeRemoved, screen, waitFor } from '@testing-library/react';
+import { renderHook } from '@testing-library/react-hooks';
 import { Router, Route } from 'react-router-dom';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { createMemoryHistory } from 'history';
@@ -16,22 +17,7 @@ import userEvent from '@testing-library/user-event';
 import ConfirmModalProvider from 'common/ui/ConfirmModal/ConfirmModalProvider';
 import { mockContext, COMPONENT_WRAPPER_TESTID } from 'common/services/test/constants';
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-const customRender = (
-  ui,
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  {
-    path = '/',
-    initialState,
-    // Remove after updating snapshots
-    showModal,
-    reduxStore = storeWithInitialState(initialState),
-    historyOptions = { initialEntries: ['/'] },
-    history = createMemoryHistory(historyOptions),
-    context = mockContext,
-    ...restOptions
-  }: any = {},
-) => {
+const createWrapper = ({ context, reduxStore, history, showModal, path }) => {
   const AllTheProviders: React.FC<{
     children: ReactElement<any, any> | null;
   }> = ({ children }) => {
@@ -54,9 +40,44 @@ const customRender = (
       </Wrapper>
     );
   };
-
+  return AllTheProviders;
+};
+const customRender = (
+  ui,
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  {
+    path = '/',
+    initialState,
+    // Remove after updating snapshots
+    showModal,
+    reduxStore = storeWithInitialState(initialState),
+    historyOptions = { initialEntries: ['/'] },
+    history = createMemoryHistory(historyOptions),
+    context = mockContext,
+    ...restOptions
+  }: any = {},
+) => {
+  const AllTheProviders = createWrapper({ context, reduxStore, history, showModal, path });
   const renderObj = render(ui, { wrapper: AllTheProviders, ...restOptions });
   return { ...renderObj, history };
+};
+
+const customRenderHook = (
+  hook,
+  {
+    path = '/',
+    initialState,
+    // Remove after updating snapshots
+    showModal,
+    reduxStore = storeWithInitialState(initialState),
+    historyOptions = { initialEntries: ['/'] },
+    history = createMemoryHistory(historyOptions),
+    context = mockContext,
+    ...restOptions
+  },
+) => {
+  const AllTheProviders = createWrapper({ context, reduxStore, history, showModal, path });
+  return renderHook(hook, { wrapper: AllTheProviders, ...restOptions });
 };
 
 const waitForLoadingToFinish = (): Promise<void> =>
@@ -72,6 +93,7 @@ export * from '@testing-library/react';
 // override render method
 export {
   customRender as render,
+  customRenderHook as renderHook,
   waitForLoadingToFinish,
   server,
   errorHandlers,

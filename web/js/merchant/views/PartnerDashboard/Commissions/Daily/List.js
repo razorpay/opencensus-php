@@ -28,7 +28,13 @@ const transactions = {
 const getVolmeListItem = (currency) => {
   return {
     title: 'Transaction Amount',
-    value: (item) => <Amount value={item.transactionVolume} currency={currency} />,
+    value: (item) => (
+      <Amount
+        value={item.transactionVolume}
+        currency={currency}
+        testId={`amount-${item.timestamp}`}
+      />
+    ),
   };
 };
 

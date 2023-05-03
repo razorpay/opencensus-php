@@ -29,6 +29,8 @@ import { subMerchantListHandlers } from 'merchant/views/PartnerDashboard/SubMerc
 import { instrumentHandlers } from 'merchant/views/AccountAndSettings/PaymentMethods/__test__/mocks/handlers';
 import batchHandler from 'merchant/views/Wallet/BatchActions/__tests__/mocks/handlers';
 import { newAuthHandler } from 'newAuth/signup/components/PartnerSignup/__test__/mocks/handlers';
+import { commisionsHandler } from 'merchant/views/PartnerDashboard/Commissions/__test__/mocks/handlers';
+import { submerchantKYCHandlers } from 'merchant/views/PartnerDashboard/SubMerchant/KYC/__tests__/mocks/handlers';
 
 export const handlers = [
   ...batchHandler,
@@ -849,4 +851,6 @@ export const handlers = [
   ...subMerchantListHandlers,
   ...instrumentHandlers,
   ...newAuthHandler,
+  ...commisionsHandler,
+  ...submerchantKYCHandlers,
 ];

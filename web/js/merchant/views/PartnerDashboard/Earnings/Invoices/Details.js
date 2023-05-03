@@ -75,13 +75,17 @@ class InvoiceDetails extends Component {
     const commissionTo = commissionRange.endOf('month').format('DD MMM YYYY');
 
     return (
-      <div class="panel-body">
+      <div class="panel-body" data-testid="invoice-details-panel">
         <div class="list-group pair-row-container">
           <EntityDetailRow
             label="Amount"
             value={() => (
               <div>
-                <Amount value={commissionInvoice.gross_amount} currency={currency} />
+                <Amount
+                  value={commissionInvoice.gross_amount}
+                  testId="amount-invoice-details"
+                  currency={currency}
+                />
               </div>
             )}
           />

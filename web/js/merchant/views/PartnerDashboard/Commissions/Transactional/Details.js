@@ -35,7 +35,10 @@ export default class CommissionEntityContainer extends Component {
     const { loading: isLoading, entity, error, renderDetails, org, user } = this.props;
     const source = entity.source || {};
     return (
-      <div class="content-wrapper content-sm txn-details Commission--Detail">
+      <div
+        class="content-wrapper content-sm txn-details Commission--Detail"
+        data-testid="transactional-details-panel"
+      >
         {isLoading ? (
           <div class="page-spinner-container">
             <Spinner />
@@ -65,7 +68,11 @@ export default class CommissionEntityContainer extends Component {
                         </EntityDetailRow>
 
                         <EntityDetailRow label="Amount">
-                          <Amount value={source.amount} currency={source.currency} />
+                          <Amount
+                            value={source.amount}
+                            currency={source.currency}
+                            testId="amount-transactional-details"
+                          />
                         </EntityDetailRow>
 
                         <EntityDetailRow label="ID" value={source.id} />

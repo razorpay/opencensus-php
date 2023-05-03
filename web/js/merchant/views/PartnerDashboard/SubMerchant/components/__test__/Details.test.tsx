@@ -18,7 +18,7 @@ import {
 import { PRODUCT_TYPE, NOT_AVAILABLE } from 'merchant/views/PartnerDashboard/constants';
 
 const onResendInvite = jest.fn();
-const DetailsProps = {
+const detailsProps = {
   subMerchant: items[1],
   isLoading: false,
   onResendInvite,
@@ -29,7 +29,7 @@ const DetailsProps = {
 const CapitalResponse =
   bulkResponse.response[items[1].id.replace('acc_', '')].partner_applications[1];
 
-describe('Details sub merchants', () => {
+describe('Submerchant Details', () => {
   const renderApp = ({
     subMerchant,
     isLoading = false,
@@ -55,14 +55,14 @@ describe('Details sub merchants', () => {
   });
 
   test('should render spinner while data is fetching', () => {
-    renderApp({ ...DetailsProps, isLoading: true });
+    renderApp({ ...detailsProps, isLoading: true });
 
     const spinner = screen.getByTestId('spinner');
     expect(spinner).toBeInTheDocument();
   });
 
   test('should call resendInvite function after clicking invite again button', async () => {
-    renderApp({ ...DetailsProps });
+    renderApp({ ...detailsProps });
     await waitFor(() => {
       expect(screen.getByText(items[1].name)).toBeInTheDocument();
     });
@@ -90,7 +90,7 @@ describe('Details sub merchants', () => {
       }),
     );
 
-    renderApp({ ...DetailsProps });
+    renderApp({ ...detailsProps });
     await waitFor(() => {
       expect(screen.getByText(items[1].name)).toBeInTheDocument();
     });
@@ -99,7 +99,7 @@ describe('Details sub merchants', () => {
   });
 
   test('should show not available when activation status is empty returned by API', async () => {
-    renderApp({ ...DetailsProps, subMerchant: items[0] });
+    renderApp({ ...detailsProps, subMerchant: items[0] });
     await waitFor(() => {
       expect(screen.getByText(items[0].name)).toBeInTheDocument();
     });
@@ -113,7 +113,7 @@ describe('Details sub merchants', () => {
   });
 
   test('should render details when loading is completed', async () => {
-    renderApp({ ...DetailsProps });
+    renderApp({ ...detailsProps });
     await waitFor(() => {
       expect(screen.getByText(items[1].name)).toBeInTheDocument();
     });

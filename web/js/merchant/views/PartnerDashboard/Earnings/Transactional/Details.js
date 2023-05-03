@@ -1,13 +1,13 @@
 import { Component } from 'react';
 import { withRouter } from 'react-router-dom';
-import CommissionTransactionalEntity, {
+import CommissionTransactionalDetails, {
   CommissionEarningBreakUp,
 } from 'merchant/views/PartnerDashboard/Commissions/Transactional/Details';
 
 @withRouter
-export default class SubventionTransactionalEntity extends Component {
+export default class EarningTransactionalDetails extends Component {
   render() {
-    return <CommissionTransactionalEntity renderDetails={renderDetails} {...this.props} />;
+    return <CommissionTransactionalDetails renderDetails={renderDetails} {...this.props} />;
   }
 }
 

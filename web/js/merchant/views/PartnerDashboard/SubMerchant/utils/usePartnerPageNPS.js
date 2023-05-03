@@ -10,6 +10,7 @@ import moment from 'moment';
 
 export default function usePartnerPageNPS(surveyID, isUserPartner = false, isPartnerMTU = false) {
   const user = store.getState().session.user;
+
   const [partnerNPSSurveyPopup, setPartnerNPSSurveyPopup] = useState();
   const refPartnerNPSEnableTypeForm = useRef(null);
   const npsSurveyStatusFlag = `razorpay_partner_nps_survey_showed_${surveyID}`;

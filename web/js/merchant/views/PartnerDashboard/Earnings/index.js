@@ -10,8 +10,8 @@ import Amount from 'common/ui/Amount';
 import { isPresent } from 'common/utils/rzp-utils';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
-import Transactional from 'merchant/views/PartnerDashboard/Earnings/Transactional/List';
-import Daily from 'merchant/views/PartnerDashboard/Earnings/Daily/List';
+import EarningsTransactionalList from 'merchant/views/PartnerDashboard/Earnings/Transactional/List';
+import EarningsDailyList from 'merchant/views/PartnerDashboard/Earnings/Daily/List';
 import CommissionInvoicesList from 'merchant/views/PartnerDashboard/Earnings/Invoices/List';
 import ProductWrapper from 'common/ui/ProductWrapper';
 
@@ -80,11 +80,11 @@ class EarningsContainer extends Component {
               <Redirect to="/partners/earnings/daily" from="/partners/earnings" exact />
               <ShowWhenRoute
                 path="/partners/earnings/transactional"
-                component={Transactional}
+                component={EarningsTransactionalList}
                 additionalCondition={(user) => !user.isPartner('reseller')}
                 exact
               />
-              <ShowWhenRoute path="/partners/earnings/daily" component={Daily} exact />
+              <ShowWhenRoute path="/partners/earnings/daily" component={EarningsDailyList} exact />
               <ShowWhenRoute
                 path="/partners/earnings/invoices"
                 component={CommissionInvoicesList}
