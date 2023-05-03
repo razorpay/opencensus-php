@@ -4433,6 +4433,26 @@ return [
         ],
     ],
 
+    'testBulkPayoutApproveSmsTemplateSelection' => [
+        'request'  => [
+            'url'     => '/users/otp/send',
+            'method'  => 'POST',
+            'content' => [
+                'medium'                 => 'sms',
+                'action'                 => 'bulk_payout_approve',
+                'approved_payout_count'  => 12,
+                'approved_payout_amount' => "123",
+                'rejected_payout_count'  => 0,
+                'rejected_payout_amount'  => "0"
+            ],
+        ],
+        'response' => [
+            'content' => [
+                // 'token' => 'BUIj3m2Nx2VvVj'
+            ],
+        ],
+    ],
+
     'testSendOtpViaSmsWhenContactDoesNotExist' => [
         'request' => [
             'url'     => '/users/otp/send',

@@ -6855,6 +6855,48 @@ class UserTest extends TestCase
         $this->assertNotEmpty($response['token']);
     }
 
+    public function testBulkPayoutApproveSmsTemplateSelection()
+    {
+        $this->fixtures->edit('user', 'MerchantUser01',
+                              ['contact_mobile'          => '1234567890',
+                               'contact_mobile_verified' => 1
+                              ]);
+
+        $this->ba->proxyAuth();
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app]);
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->app['stork_service']->shouldReceive('generateOtp')->andReturn(['otp' => '10000000000sms', 'expires_at' => 10000]);
+
+        $this->app['stork_service']->shouldReceive('sendSms')
+                                   ->andReturnUsing(function(string $mode, array $request) {
+
+                                       $template = $request['templateName'];
+                                       $receiver = $request['destination'];
+
+                                       self::assertEquals('Sms.User.Bulk_payouts_approve.V1', $template);
+                                       self::assertEquals('1234567890', $receiver);
+
+                                       return [];
+                                   });
+
+        (new AdminService())->setConfigKeys([ConfigKey::SHIFT_BULK_PAYOUT_APPROVE_TO_BULK_APPROVE_PAYOUT_SMS_TEMPLATE => [
+            'bulk_payout_approve_to_bulk_approve_payout' => '*',
+        ]]);
+
+        (new AdminService())->setConfigKeys([ConfigKey::UPDATED_SMS_TEMPLATES_RECEIVER_MERCHANTS => [
+            'Sms.User.Bulk_payouts_approve.V1' => '*',
+            'Sms.User.Bulk_payouts_reject.V1' => '*',
+            'Sms.User.Bulk_payouts_approve_reject_action.V2' => '*'
+        ]]);
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['token']);
+    }
+
     public function testSendOtpForCreatePayoutWithSecureOTP()
     {
         $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'on']);

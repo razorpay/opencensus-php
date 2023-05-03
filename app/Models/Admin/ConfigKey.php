@@ -268,6 +268,8 @@ class ConfigKey
 
     const UPDATED_SMS_TEMPLATES_RECEIVER_MERCHANTS = self::PREFIX . 'updated_sms_templates_receiver_merchants';
 
+    const SHIFT_BULK_PAYOUT_APPROVE_TO_BULK_APPROVE_PAYOUT_SMS_TEMPLATE = self::PREFIX . 'shift_bulk_payout_approve_to_bulk_approve_payout_sms_template';
+
     const RX_WEBHOOK_URL_FOR_MFN = self::PREFIX . 'rx_webhook_url_for_mfn';
 
     const RX_WEBHOOK_URL_FOR_MFN_TEST_MODE = self::PREFIX . 'rx_webhook_url_for_mfn_test_mode';
@@ -522,6 +524,7 @@ class ConfigKey
         self::CARD_ARCHIVAL_FALLBACK_ENABLED,
         self::PAYMENTS_DUAL_WRITE,
         self::UPDATED_SMS_TEMPLATES_RECEIVER_MERCHANTS,
+        self::SHIFT_BULK_PAYOUT_APPROVE_TO_BULK_APPROVE_PAYOUT_SMS_TEMPLATE,
         self::PAYOUT_SERVICE_DATA_MIGRATION_LIMIT_PER_BATCH,
         self::PAYOUT_SERVICE_DATA_MIGRATION_BATCH_ATTEMPTS,
         self::ONDEMAND_SETTLEMENT_INTERNAL_MERCHANTS,

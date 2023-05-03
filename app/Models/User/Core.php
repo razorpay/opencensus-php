@@ -4260,11 +4260,39 @@ class Core extends Base\Core
 
         $action = $input[Entity::ACTION];
 
+        if (is_null($merchant) === true)
+        {
+            $mid = '10000000000000';
+        }
+
+        else
+        {
+            $mid = $merchant->getId();
+        }
+
         // Using the existing create_payout template for Scan & Pay Feature
         // Will use a new template if SMS copy changes in future
         if ($action === Constants::CREATE_COMPOSITE_PAYOUT_WITH_OTP)
         {
             $action = Constants::CREATE_PAYOUT;
+        }
+
+        if ($action === Constants::BULK_PAYOUT_APPROVE)
+        {
+            $templateShiftKey = (new Admin\Service)->getConfigKey(['key' => ConfigKey::SHIFT_BULK_PAYOUT_APPROVE_TO_BULK_APPROVE_PAYOUT_SMS_TEMPLATE]);
+
+            if (array_key_exists(Constants::BULK_PAYOUT_APPROVE_TO_BULK_APPROVE_PAYOUT, $templateShiftKey) === true)
+            {
+                $merchants = $templateShiftKey[Constants::BULK_PAYOUT_APPROVE_TO_BULK_APPROVE_PAYOUT];
+
+                if (($merchants == "*") or
+                    (in_array($mid, $merchants) == true))
+                {
+                    $action                = Constants::BULK_APPROVE_PAYOUT;
+                    $input[Entity::ACTION] = Constants::BULK_APPROVE_PAYOUT;
+                }
+            }
+
         }
 
         try
@@ -6032,7 +6060,7 @@ class Core extends Base\Core
 
         $rejectedPayoutCount = array_pull($input, 'rejected_payout_count', 0);
 
-        if (($approvedPayoutCount > 0) and ($rejectedPayoutCount === 0))
+        if (($approvedPayoutCount > 0) and ($rejectedPayoutCount == 0))
         {
             $templateName = 'Sms.User.Bulk_payouts_approve';
 
@@ -6049,7 +6077,7 @@ class Core extends Base\Core
         }
         else
         {
-            if (($approvedPayoutCount === 0) and ($rejectedPayoutCount > 0))
+            if (($approvedPayoutCount == 0) and ($rejectedPayoutCount > 0))
             {
                 $templateName = 'Sms.User.Bulk_payouts_reject';
 

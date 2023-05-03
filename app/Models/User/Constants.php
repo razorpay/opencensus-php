@@ -89,6 +89,8 @@ class Constants
     const OAUTH_MERCHANT_OAUTH_CLIENT_ID_X_IOS      = 'oauth.merchant_oauth_client_id_x_ios';
     const OAUTH_MERCHANT_OAUTH_MOCK                 = 'oauth.merchant_oauth_mock';
 
+    const BULK_PAYOUT_APPROVE_TO_BULK_APPROVE_PAYOUT = 'bulk_payout_approve_to_bulk_approve_payout';
+
     // payout links constants
     const CONTACT                   = 'contact';
     const ACCOUNT_NUMBER            = 'account_number';
@@ -453,6 +455,7 @@ class Constants
     const UPDATE_WORKFLOW_CONFIG        = 'update_workflow_config';
     const DELETE_WORKFLOW_CONFIG        = 'delete_workflow_config';
     const BULK_APPROVE_PAYOUT           = 'bulk_approve_payout';
+    const BULK_PAYOUT_APPROVE           = 'bulk_payout_approve';
 
     const SEND_SMS_VIA_STORK            = [
         self::X_SECOND_FACTOR_AUTH_ACTION,
