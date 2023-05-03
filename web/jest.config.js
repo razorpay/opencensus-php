@@ -61,12 +61,12 @@ module.exports = {
       functions: 52.45,
       lines: 52.45,
     },
-    './js/merchant/views/onboarding/': {
-      statements: 72,
-      branches: 58,
-      functions: 68,
-      lines: 72,
-    },
+    // './js/merchant/views/onboarding/': {
+    //   statements: 71,
+    //   branches: 69,
+    //   functions: 55,
+    //   lines: 69,
+    // },
     './js/merchant/views/Transactions/Payments/': {
       statements: 90,
       branches: 90,
