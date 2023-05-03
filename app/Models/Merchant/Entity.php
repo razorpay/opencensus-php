@@ -1268,9 +1268,35 @@ class Entity extends Base\PublicEntity
                            ->pluck(Feature\Entity::NAME)
                            ->toArray();
 
-        $this->loadedFeatures = array_unique(array_merge($apiResponse, $dcsResponse));
+        app('trace')->info(
+            TraceCode::API_AND_DCS_FEATURES,
+            [
+                'api_response'      => $apiResponse,
+                'dcs_response'      => $dcsResponse,
+            ]);
+
+        $this->loadedFeatures = $this->mergeUniqueArrays($apiResponse, $dcsResponse);
 
         return $this->loadedFeatures;
+    }
+
+    // Custom function to merge and pick unique items from two arrays
+    private function mergeUniqueArrays($arr1, $arr2)
+    {
+        foreach ($arr2 as $element)
+        {
+            if (!in_array($element, $arr1))
+            {
+                $arr1[] = $element;
+            }
+        }
+
+        app('trace')->info(
+            TraceCode::MERGED_ARRAYS_WITH_UNIQUE_ELEMENTS,
+            [
+                'merged_uniqe_array' => $arr1,
+            ]);
+        return $arr1;
     }
 
     public function setLoadedFeaturesNull()

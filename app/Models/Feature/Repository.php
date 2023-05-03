@@ -41,16 +41,15 @@ class Repository extends Base\Repository
 
         $query = ($mode === null) ? $this->newQuery() : $this->newQueryWithConnection($mode);
 
-        $dcs = $this->app['dcs'];
-        $res = $dcs->getDcsEnabledFeatures($entityType, $entityId, $mode);
+//        $dcs = $this->app['dcs'];
+//        $res = $dcs->getDcsEnabledFeatures($entityType, $entityId, $mode);
 
-        $apiResponse = $query->where(Entity::ENTITY_TYPE, $entityType)
+        return $query->where(Entity::ENTITY_TYPE, $entityType)
             ->where(Entity::ENTITY_ID, $entityId)
             ->remember($cacheTtl)
             ->cacheTags($cacheTags)
             ->get();
 
-        return $apiResponse->merge($res)->unique(Entity::NAME, true);
     }
 
     public function findByEntityTypeEntityIdAndNameOrFail(string $entityType, string $entityId, string $featureName)
@@ -224,14 +223,12 @@ class Repository extends Base\Repository
             $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
         }
 
-        $apiResponse = $this->newQuery()
+        return $this->newQuery()
                     ->select(Entity::NAME)
                     ->whereIn(Entity::NAME, $apiFeatures)
                     ->where(Entity::ENTITY_TYPE, 'merchant')
                     ->where(Entity::ENTITY_ID, $merchantId)
                     ->get();
-
-        return $dcsRes->merge($apiResponse)->unique(Entity::NAME, true);
     }
 
     public function findMerchantWithFeaturesOnConnection(string $merchantId, array $featureNames, $mode)
@@ -471,8 +468,15 @@ class Repository extends Base\Repository
                 $this->assignOnDCS($entity, Mode::TEST, true);
                 $this->assignOnDCS($entity, Mode::LIVE, true);
 
-                $testEntity = $this->findByEntityIdAndNameOnConnection($entityId, $featureName, Mode::TEST);
-                $liveEntity = $this->findByEntityIdAndNameOnConnection($entityId, $featureName, Mode::LIVE);
+                $testEntity = $this->newQueryWithConnection(Mode::TEST)
+                    ->where(Entity::ENTITY_ID, $entityId)
+                    ->where(Entity::NAME, $featureName)
+                    ->first();
+
+                $liveEntity = $this->newQueryWithConnection(Mode::LIVE)
+                    ->where(Entity::ENTITY_ID, $entityId)
+                    ->where(Entity::NAME, $featureName)
+                    ->first();
 
                 if ($testEntity === null) {
                     $this->cloneAndSaveToModeOrFail($entity, Mode::TEST);
@@ -507,8 +511,14 @@ class Repository extends Base\Repository
                 $this->removeOnDCS($entity, Mode::TEST, true);
                 $this->removeOnDCS($entity, Mode::LIVE, true);
 
-                $testEntity = $this->findByEntityIdAndNameOnConnection($entityId, $featureName, Mode::TEST);
-                $liveEntity = $this->findByEntityIdAndNameOnConnection($entityId, $featureName, Mode::LIVE);
+                $testEntity = $this->newQueryWithConnection(Mode::TEST)
+                    ->where(Entity::ENTITY_ID, $entityId)
+                    ->where(Entity::NAME, $featureName)
+                    ->first();
+                $liveEntity = $this->newQueryWithConnection(Mode::LIVE)
+                    ->where(Entity::ENTITY_ID, $entityId)
+                    ->where(Entity::NAME, $featureName)
+                    ->first();
 
                 if ($testEntity !== null) {
                     $testEntity->deleteOrFail();

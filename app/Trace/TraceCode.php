@@ -2491,6 +2491,8 @@ const EMANDATE_TOKEN_VALIDATION_ERROR                       = 'EMANDATE_TOKEN_VA
     const EXISTING_BANK_ACCOUNT_FOUND                           = 'EXISTING_BANK_ACCOUNT_FOUND';
     const BANK_ACCOUNT_CREATED                                  = 'BANK_ACCOUNT_CREATED';
     const MERCHANT_FORCE_ACTIVATED                              = 'MERCHANT_FORCE_ACTIVATED';
+    const API_AND_DCS_FEATURES                                  = 'API_AND_DCS_FEATURES';
+    const MERGED_ARRAYS_WITH_UNIQUE_ELEMENTS                    = 'MERGED_ARRAYS_WITH_UNIQUE_ELEMENTS';
     const MERCHANT_ACTIVATED_AT_OUT_OF_SYNC                     = 'MERCHANT_ACTIVATED_AT_OUT_OF_SYNC';
 
     const MERCHANT_PAYOUT_SKIPPED                               = 'MERCHANT_PAYOUT_SKIPPED';
