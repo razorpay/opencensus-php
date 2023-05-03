@@ -77,11 +77,11 @@ class BankingAccountStatementReconNeo extends Job
                         BAS\Entity::SAVE_IN_REDIS      => $this->params[BAS\Entity::SAVE_IN_REDIS],
                     ]);
 
-                $workerStartTime = Carbon::now()->getTimestamp();
+                $workerStartTime = microtime(true);
 
                 [$fetchMore, $paginationKey] = (new BAS\Core)->fetchAccountStatementWithRange($this->params, true);
 
-                $workerEndTime = Carbon::now()->getTimestamp();
+                $workerEndTime = microtime(true);
 
                 $this->trace->info(TraceCode::MISSING_BANKING_ACCOUNT_STATEMENT_FETCHED,
                                    [
@@ -89,8 +89,7 @@ class BankingAccountStatementReconNeo extends Job
                                        BAS\Entity::ACCOUNT_NUMBER     => $this->params['account_number'],
                                        BAS\Entity::MERCHANT_ID        => $BASCore->getBasDetails()->getMerchantId(),
                                        BAS\Details\Entity::BALANCE_ID => $BASCore->getBasDetails()->getBalanceId(),
-                                       'start_time'                   => $workerStartTime,
-                                       'end_time'                     => $workerEndTime,
+                                       'response_time'                => $workerEndTime - $workerStartTime,
                                        'fetch_more'                   => $fetchMore,
                                    ]);
 
@@ -103,7 +102,6 @@ class BankingAccountStatementReconNeo extends Job
                     $this->params);
 
                 if (($this->params['expected_attempts'] > 0) and
-                    ($this->checkIfContinueFetchForRbl() === true) and
                     ($fetchMore === true) and
                     (empty($paginationKey) === false))
                 {
@@ -189,28 +187,5 @@ class BankingAccountStatementReconNeo extends Job
 
             (new SlackNotification)->send($operation, $this->params, null, 1, 'rx_rbl_recon_alerts');
         }
-    }
-
-    protected function checkIfContinueFetchForRbl()
-    {
-        if (($this->params['channel'] === BAS\Channel::RBL) and
-            (isset($this->params['pagination_key']) === true))
-        {
-            $values = explode("_", $this->params['pagination_key']);
-
-            if (count($values) === 2)
-            {
-                $postedDate = array_first($values);
-
-                if ($postedDate > $this->params[BAS\Entity::TO_DATE])
-                {
-                    $this->trace->info(TraceCode::PAGINATION_KEY_AHEAD_OF_TO_DATE);
-
-                    return false;
-                }
-            }
-        }
-
-        return true;
     }
 }

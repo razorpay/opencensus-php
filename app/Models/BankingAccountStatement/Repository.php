@@ -561,4 +561,20 @@ class Repository extends Base\Repository
                   ->where(Entity::POSTED_DATE, "<=", $input[Entity::TO_DATE])
                   ->value('bas_count');
     }
+
+    public function fetchCountOfRecordsForAGivenDayWithPostedDateRange($accountNumber, $channel, $transactionDate)
+    {
+        $secondsInADay   = 86400;
+        $startPostedDate = $transactionDate - $secondsInADay;
+        $endPostedDate   = $transactionDate + $secondsInADay;
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->selectRaw('COUNT(*) AS bas_count')
+                    ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
+                    ->where(Entity::CHANNEL, $channel)
+                    ->where(Entity::POSTED_DATE, ">=", $startPostedDate)
+                    ->where(Entity::POSTED_DATE, "<", $endPostedDate)
+                    ->where(Entity::TRANSACTION_DATE, "=", $transactionDate)
+                    ->value('bas_count');
+    }
 }

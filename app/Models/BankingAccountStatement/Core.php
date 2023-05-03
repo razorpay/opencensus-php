@@ -6,6 +6,7 @@ use Mail;
 use File;
 use Cache;
 use Carbon\Carbon;
+use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
 use RZP\Constants;
@@ -378,7 +379,7 @@ class Core extends Base\Core
         }
     }
 
-    public function fetchAccountStatementWithRange(array $input, $isMonitoring = false)
+    public function fetchAccountStatementWithRange(array $input, $isMonitoring = false, $save = false)
     {
         $channel = array_pull($input, Entity::CHANNEL);
 
@@ -395,9 +396,10 @@ class Core extends Base\Core
 
             [$fetchMore, $paginationKey] = $this->mutex->acquireAndRelease(
                 'banking_account_statement_recon_' . $accountNumber . '_' . $channel,
-                function () use ($channel, $accountNumber, $input, $isMonitoring)
+                function () use ($channel, $accountNumber, $input, $isMonitoring, $save)
                 {
-                    $basDetailEntity = $this->getBasDetails($accountNumber, $channel);
+                    $basDetailEntity = $this->getBasDetails(
+                        $accountNumber, $channel, [BASDetails\Status::ACTIVE, BASDetails\Status::UNDER_MAINTENANCE]);
 
                     $merchant = $basDetailEntity->merchant;
 
@@ -419,18 +421,38 @@ class Core extends Base\Core
 
                     [$bankTransactions, $fetchMore, $paginationKey] = $processor->sendRequestToFetchStatement($input);
 
+                    if (boolval($save) === true)
+                    {
+                        $this->saveAccountStatementDetails($bankTransactions, $merchant, $channel, $accountNumber, $processor, $basDetailEntity);
+
+                        $basDetailEntity->balance->updateLastFetchedAt();
+
+                        return [null, null];
+                    }
+
                     $missingTransactions = $processor->checkForDuplicateTransactions(
                         $bankTransactions,
                         $channel,
                         $accountNumber,
                         $merchant);
 
-                    if ((boolval($input[Entity::SAVE_IN_REDIS]) === true) and
-                        (count($missingTransactions) !== 0))
+                    if (count($missingTransactions) !== 0)
                     {
+                        foreach ($missingTransactions as $key => $missingTransaction)
+                        {
+                            if ($missingTransaction[Entity::TRANSACTION_DATE] > $input[Entity::TO_DATE])
+                            {
+                                unset($missingTransactions[$key]);
+                            }
+                        }
+
+                        $missingTransactions = array_values($missingTransactions);
+
                         $traceData = [
                             'channel'               => $channel,
                             'merchant_id'           => $merchant->getId(),
+                            'from_date'             => $input[Entity::FROM_DATE],
+                            'to_date'               => $input[Entity::TO_DATE],
                             'missing_records_found' => count($missingTransactions),
                             'missing_records'       => $missingTransactions,
                         ];
@@ -448,17 +470,20 @@ class Core extends Base\Core
                                 Metric::LABEL_CHANNEL => $channel
                             ]);
 
-                        // Persisting in redis
-                        $processor->storeMissingStatementsInRedis($missingTransactions, $accountNumber);
+                        if (boolval($input[Entity::SAVE_IN_REDIS]) === true)
+                        {
+                            // Persisting in redis
+                            $processor->storeMissingStatementsInRedis($missingTransactions, $accountNumber);
 
-                        $operation = 'Missing records found while fetching the statement for '.$channel;
+                            $operation = 'Missing records found while fetching the statement for ' . $channel;
 
-                        (new SlackNotification)->send(
-                            $operation,
-                            $traceData,
-                            null,
-                            0,
-                            'rx_rbl_recon_alerts');
+                            (new SlackNotification)->send(
+                                $operation,
+                                $traceData,
+                                null,
+                                0,
+                                'rx_rbl_recon_alerts');
+                        }
                     }
 
                     return [$fetchMore, $paginationKey];
@@ -490,6 +515,10 @@ class Core extends Base\Core
 
     public function insertMissingStatements(string $accountNumber, string $channel, array $missingStatements, bool $dryRunMode = false)
     {
+        $insertStartTime = microtime(true);
+
+        $noOfStatementsInserted = 0;
+
         $insertLimit = (new Admin\Service)->getConfigKey(
             [
                 'key' => Admin\ConfigKey::RX_MISSING_STATEMENTS_INSERTION_LIMIT
@@ -506,7 +535,7 @@ class Core extends Base\Core
 
         [$response, $params] = $this->mutex->acquireAndRelease(
             'banking_account_statement_fetch_' . $accountNumber . '_' . $channel,
-            function () use ($channel, $accountNumber, $missingStatements, $dryRunMode)
+            function () use ($channel, $accountNumber, $missingStatements, $dryRunMode, &$noOfStatementsInserted)
             {
                 // setting the variable to true to customize the later flow (linking the statement to source entity)
                 $this->isStatementUnderFix = true;
@@ -553,6 +582,8 @@ class Core extends Base\Core
                 $params = [
                     'channel'              => $channel,
                     'account_number'       => $accountNumber,
+                    'merchant_id'          => $this->basDetails->getMerchantId(),
+                    'balance_id'           => $this->basDetails->getBalanceId(),
                     'bas_id_to_amount_map' => $basIdToAmountMap,
                     'created_at'           => $createdAt,
                     'update_before'        => Carbon::now()->getTimestamp() + $delay,
@@ -566,11 +597,20 @@ class Core extends Base\Core
                     'insertedStatements' => json_encode($missingStatements),
                 ];
 
+                $noOfStatementsInserted = count($missingStatements);
+
                 return [$response, $params];
             },
             1800,
             ErrorCode::BAD_REQUEST_ANOTHER_BANKING_ACCOUNT_STATEMENT_FETCH_IN_PROGRESS
         );
+
+        $insertEndTime = microtime(true);
+
+        $this->trace->info(TraceCode::BAS_MISSING_STATEMENT_INSERTED_SUCCESSFULLY, [
+            'response_time'       => $insertEndTime - $insertStartTime,
+            'statements_inserted' => $noOfStatementsInserted,
+        ]);
 
         $this->trace->info(TraceCode::BAS_UPDATE_QUEUE_DISPATCH_INIT,
             [
@@ -878,9 +918,15 @@ class Core extends Base\Core
             $attempts = self::RETRY_COUNT_FOR_ID_GENERATION;
         }
 
+        $maxAttempts = $attempts;
+
+        $generatedIds = [];
+
         do
         {
             $id = $this->generateNextId($id);
+
+            $generatedIds[] = $id;
 
             switch ($entityName)
             {
@@ -899,6 +945,13 @@ class Core extends Base\Core
 
             if ($attempts < 0)
             {
+                $this->trace->error(
+                    'Id generation failure for ' . $entityName,
+                    [
+                        'generated_ids' => $generatedIds,
+                        'max_attempts'  => $maxAttempts
+                    ]);
+
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_ERROR,
                     null,
@@ -907,6 +960,13 @@ class Core extends Base\Core
             }
 
         } while ($idExists === true);
+
+        $this->trace->info(TraceCode::BAS_INSERTION_MAX_ITERATION, [
+            'max_attempts'              => $maxAttempts,
+            'attempts_taken_to_find_id' => $maxAttempts - $attempts,
+            'entity'                    => $entityName,
+            'id_generated'              => $id
+        ]);
 
         return $id;
     }
@@ -979,6 +1039,10 @@ class Core extends Base\Core
             'banking_account_statement_fetch_' . $accountNumber . '_' . $channel,
             function () use ($channel, $accountNumber, $input)
             {
+                $merchantId = $input[Entity::MERCHANT_ID];
+
+                $balanceId = $input[Details\Entity::BALANCE_ID];
+
                 $limitNumberOfEntitiesToUpdate = (new Admin\Service)->getConfigKey(
                     [
                         'key' => Admin\ConfigKey::RX_LIMIT_STATEMENT_FIX_ENTITIES_UPDATE
@@ -1009,17 +1073,18 @@ class Core extends Base\Core
 
                 $countOfRecordsToUpdate = count($basEntities);
 
-                $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_BALANCE_FIX_INIT,
-                    [
-                        'bas_id_to_amount_map'       => $basIdToAmountMap,
-                        'account_number'             => $accountNumber,
-                        'limit'                      => $limitNumberOfEntitiesToUpdate,
-                        'update_before'              => $updatedAt,
-                        'created_at'                 => $createdAt,
-                        'latest_corrected_id'        => $latestCorrectedBasId,
-                        'batch_number'               => $batchNumber,
-                        'count_of_records_to_update' => $countOfRecordsToUpdate,
-                    ]);
+                $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_BALANCE_FIX_INIT, [
+                    'bas_id_to_amount_map'       => $basIdToAmountMap,
+                    'account_number'             => $accountNumber,
+                    'limit'                      => $limitNumberOfEntitiesToUpdate,
+                    'update_before'              => $updatedAt,
+                    'created_at'                 => $createdAt,
+                    'latest_corrected_id'        => $latestCorrectedBasId,
+                    'batch_number'               => $batchNumber,
+                    'count_of_records_to_update' => $countOfRecordsToUpdate,
+                    'merchant_id'                => $merchantId,
+                    'balance_id'                 => $balanceId,
+                ]);
 
                 if ($countOfRecordsToUpdate === 0)
                 {
@@ -1031,9 +1096,51 @@ class Core extends Base\Core
                             'latest_corrected_id'        => $latestCorrectedBasId,
                             'batch_number'               => $batchNumber,
                             'count_of_records_to_update' => $countOfRecordsToUpdate,
+                            'merchant_id'                => $merchantId,
+                            'balance_id'                 => $balanceId,
                         ]);
 
                     $this->updateBasDetailsEntityConsideringMissingStatements($accountNumber, $channel, $basIdToAmountMap);
+
+                    $lastBankTransaction = null;
+
+                    try
+                    {
+                        if ($channel === Channel::RBL)
+                        {
+                            $lastBankTransaction = $this->repo->banking_account_statement
+                                ->findLatestByAccountNumberAndChannel($accountNumber, $channel);
+
+                            $transactionCount = $this->repo->banking_account_statement->fetchCountOfRecordsForAGivenDayWithPostedDateRange(
+                                $accountNumber, $channel, $lastBankTransaction[Entity::TRANSACTION_DATE]);
+
+                            $rblAccountStatementV2MaxNumberOfRecords = RblGateway::DEFAULT_RBL_ACCOUNT_STATEMENT_V2_MAX_NUMBER_OF_RECORDS;
+
+                            $attemptLimit = (int) round($transactionCount / $rblAccountStatementV2MaxNumberOfRecords) + 1;
+
+                            // Limiting fetch to 5 to reduce risk of worker timeout. Need to change this when bigger merchants onboard onto CA
+                            $fetchInput = [
+                                Entity::CHANNEL        => $channel,
+                                Entity::ACCOUNT_NUMBER => $accountNumber,
+                                Entity::FROM_DATE      => $lastBankTransaction[Entity::TRANSACTION_DATE],
+                                Entity::TO_DATE        => $lastBankTransaction[Entity::TRANSACTION_DATE] + 86399,
+                                Entity::SAVE_IN_REDIS  => false,
+                                'attempt_limit'        => ($attemptLimit > 5) ? 1: $attemptLimit,
+                            ];
+
+                            $this->fetchAccountStatementWithRange($fetchInput, true, true);
+                        }
+                    }
+                    catch (\Throwable $e)
+                    {
+                        $this->trace->traceException(
+                            $e,
+                            Trace::ERROR,
+                            TraceCode::BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST_FAILED,
+                            [
+                                'merchant_id' => optional($lastBankTransaction)->getMerchantId()
+                            ]);
+                    }
 
                     $this->releaseBasDetailsFromStatementFix($accountNumber, $channel);
 
@@ -1051,6 +1158,8 @@ class Core extends Base\Core
                             'latest_corrected_id'        => $latestCorrectedBasId,
                             'batch_number'               => $batchNumber,
                             'count_of_records_to_update' => $countOfRecordsToUpdate,
+                            'merchant_id'                => $merchantId,
+                            'balance_id'                 => $balanceId,
                         ]);
 
                     $params = [
@@ -1061,6 +1170,8 @@ class Core extends Base\Core
                         'update_before'        => $updatedAt,
                         'latest_corrected_id'  => $latestCorrectedBasId,
                         'batch_number'         => $batchNumber + 1,
+                        'merchant_id'          => $merchantId,
+                        'balance_id'           => $balanceId,
                     ];
 
                     return [true, $params];
@@ -1092,6 +1203,7 @@ class Core extends Base\Core
     {
         $this->repo->transaction(function() use ($basEntities, $basIdToAmountMap, & $latestCorrectedBasId, & $createdAt)
         {
+            /** @var Entity $basEntity */
             foreach ($basEntities as $basEntity)
             {
                 $id = $basEntity->getId();
@@ -1120,6 +1232,7 @@ class Core extends Base\Core
 
                 $traceData = [
                     'bas_id'            => $id,
+                    'merchant_id'       => $basEntity->getMerchantId(),
                     'previous_balance'  => $previousBalance,
                     'correct_balance'   => $correctBalance,
                     'correction_amount' => $correctionAmount,
@@ -1578,10 +1691,16 @@ class Core extends Base\Core
 
             if ($this->validateRecordBalance($previousClosingBalance, $basEntity) == false)
             {
+                $this->trace->count(Metric::STATEMENT_BALANCES_DO_NOT_MATCH, [
+                    Metric::LABEL_CHANNEL => $channel,
+                    'is_processing'       => false,
+                ]);
+
                 throw new Exception\LogicException('Statement record balance is not in correct order',
                     ErrorCode::SERVER_ERROR_BANKING_ACCOUNT_STATEMENT_BALANCES_DO_NOT_MATCH,
                     [
                         'account_number'    => $accountNumber,
+                        'merchant_id'       => $merchant->getId(),
                         'channel'           => $channel,
                         'row_balance'       => $basEntity->getBalance(),
                         'previous_balance'  => $previousClosingBalance,
@@ -3274,12 +3393,18 @@ class Core extends Base\Core
 
         if ($balanceCalculated !== $balanceAtBankSide)
         {
+            $this->trace->count(Metric::STATEMENT_BALANCES_DO_NOT_MATCH, [
+                Metric::LABEL_CHANNEL => $basEntity->getChannel(),
+                'is_processing'       => true,
+            ]);
+
             throw new Exception\LogicException(
                 'Balance at channel does not match with our balance',
                 ErrorCode::SERVER_ERROR_BANKING_ACCOUNT_STATEMENT_BALANCES_DO_NOT_MATCH,
                 [
                     'rzp_balance'     => $balanceCalculated,
                     'channel_balance' => $balanceAtBankSide,
+                    'merchant_id'     => $basEntity->getMerchantId(),
                     'account_number'  => $basEntity->getAccountNumber(),
                     'bank_txn_id'     => $basEntity->getBankTransactionId(),
                 ]

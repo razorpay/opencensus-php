@@ -1042,8 +1042,8 @@ return [
             'url'     => '/banking_account_statement/fetch_missing/rbl',
             'content' => [
                 'account_number' => '2224440041626905',
-                'from_date'      => 1656686600,
-                'to_date'        => 1656986600,
+                'from_date'      => 1656786600,
+                'to_date'        => 1656829799,
                 'save_in_redis'  => true,
             ],
         ],
@@ -1053,6 +1053,21 @@ return [
                 'dispatched'        => 'success'
             ]
         ]
+    ],
+
+    'testInsertRblMissingAccountStatement' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/insert_missing',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'channel'        => 'rbl',
+                'action'         => 'insert',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
     ],
 
     'testRblAutomatedReconForMissingStatements' => [

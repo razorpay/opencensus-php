@@ -4680,6 +4680,27 @@ class RblBankingAccountStatementTest extends TestCase
                                 'txnSrlNo' => '  2',
                                 'valueDate' => '2022-07-03T00:00:00.000'
                             ],
+                            [
+                                'pstdDate' => '2022-07-04T02:51:23.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '50.00',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2022-07-04T00:00:00.000',
+                                    'txnDesc' => 'DEBIT IMPS 20000324344839',
+                                    'txnType' => 'D'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '50.00'
+                                ],
+                                'txnCat' => 'TCI',
+                                'txnId' => '  S807189',
+                                'txnSrlNo' => '  3',
+                                'valueDate' => '2022-07-04T00:00:00.000'
+                            ],
                         ],
                     ],
                     'Header' => [
@@ -11261,8 +11282,253 @@ class RblBankingAccountStatementTest extends TestCase
         ];
 
         $this->assertArraySubset($basExpected, array_first($merchantMissingStatementList['2224440041626905']));
-        $this->assertTrue($boolMetricCaptured);
 
+        $this->assertTrue($boolMetricCaptured);
+    }
+
+    public function testInsertRblMissingAccountStatement()
+    {
+        $oldDateTime = Carbon::create(2016, 1, 6, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        $this->testRblAccountStatementCase1();
+
+        Queue::except(BankingAccountStatementUpdate::class);
+
+        $this->fixtures->merchant->addFeatures([Features::DA_LEDGER_JOURNAL_WRITES]);
+
+        $ledgerSnsPayloadArray = [];
+
+        $this->mockLedgerSns(1, $ledgerSnsPayloadArray);
+
+        $missingStatementsBeforeInsertion = [
+            [
+                'type'                => 'credit',
+                'amount'              => '100',
+                'currency'            => 'INR',
+                'channel'             => 'rbl',
+                'account_number'      => '2224440041626905',
+                'bank_transaction_id' => 'S71034964',
+                'balance'             => 1000100,
+                'transaction_date'    => 1451327400,
+                'posted_date'         => 1451384893,
+                'bank_serial_number'  => 'S71034964',
+                'description'         => 'INF/NEFT/023629961691/SBIN0050103/TestRBL/Boruto',
+                'balance_currency'    => 'INR',
+            ],
+            [
+                'type'                => 'debit',
+                'amount'              => '100',
+                'currency'            => 'INR',
+                'channel'             => 'rbl',
+                'account_number'      => '2224440041626905',
+                'bank_transaction_id' => 'S71034965',
+                'balance'             => 1000000,
+                'transaction_date'    => 1451327400,
+                'posted_date'         => 1451384992,
+                'bank_serial_number'  => 'S71034965',
+                'description'         => 'INF/NEFT/023629961692/SBIN0050103/TestRBL/Boruto',
+                'balance_currency'    => 'INR',
+            ]];
+
+        (new AdminService)->setConfigKeys(
+            [
+                ConfigKey::PREFIX . 'rx_ca_missing_statements_' . 'rbl'   => [
+                    '2224440041626905' => $missingStatementsBeforeInsertion,
+                ],
+                ConfigKey::PREFIX . 'rx_missing_statements_insertion_limit' => 1
+            ]);
+
+        $initialBasEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
+
+        $initialCount = count($initialBasEntries);
+
+        $initialBasDetails = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $initialStatementClosingBalance = $initialBasDetails[BasDetails\Entity::STATEMENT_CLOSING_BALANCE];
+
+        $initialStatement1 = $this->getDbEntities('banking_account_statement', [
+            'account_number'      => '2224440041626905',
+            'bank_transaction_id' => 'S429655'
+        ])[0];
+
+        $initialStatement2 = $this->getDbEntities('banking_account_statement', [
+            'account_number'      => '2224440041626905',
+            'bank_transaction_id' => 'S807068'
+        ])[0];
+
+        $mockedResponse = [
+            'data' => [
+                'PayGenRes' => [
+                    'Body' => [
+                        'hasMoreData' => 'N',
+                        'transactionDetails' => [
+                            [
+                                'pstdDate' => '2016-01-05T01:38:33.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '100.00',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2016-01-05T00:00:00.000',
+                                    'txnDesc' => '123456-Z',
+                                    'txnType' => 'D'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '14.55'
+                                ],
+                                'txnCat' => 'TCI',
+                                'txnId' => '  S808068',
+                                'txnSrlNo' => '  49',
+                                'valueDate' => '2016-01-05T00:00:00.000'
+                            ],
+                        ]
+                    ],
+                    'Header' => [
+                        'Approver_ID' => '',
+                        'Corp_ID' => 'RAZORPAY',
+                        'Error_Cde' => '',
+                        'Error_Desc' => '',
+                        'Status' => 'SUCCESS',
+                        'TranID' => '1'
+                    ],
+                    'Signature' => [
+                        'Signature' => 'Signature'
+                    ]
+                ],
+            ],
+            'error' => null,
+            'external_trace_id' => '',
+            'mozart_id' => 'bjt1l8jc1osqk0jtadrg',
+            'next' => [],
+            'success' => true
+        ];
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $mozartMock = Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mozartMock->shouldReceive('sendRawRequest')
+                   ->andReturnUsing(function(array $request) use ($mockedResponse){
+
+                       $requestData = json_decode($request['content'], true);
+
+                       if (array_key_exists('from_date',$requestData['entities']['attempt']) === true)
+                       {
+                           return json_encode($this->convertRblV1ResponseToV2Response($mockedResponse));
+                       }
+
+                       $mockRblResponse = $this->convertRblV1ResponseToV2Response($this->getRblNoDataResponse());
+
+                       $mockRblResponse['data']['FetchAccStmtRes']['Header']['Status_Desc'] = "No Records Found";
+
+                       return json_encode($mockRblResponse);
+                   })->times(1);
+
+        $this->app->instance('mozart', $mozartMock);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $merchantMissingStatementList = (new AdminService)->getConfigKey(
+            [
+                'key' => ConfigKey::PREFIX . 'rx_ca_missing_statements_' . 'rbl'
+            ]);
+
+        $this->assertArraySubset($missingStatementsBeforeInsertion[1], $merchantMissingStatementList['2224440041626905'][0]);
+
+        $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
+
+        $this->assertCount($initialCount + 2, $basEntries);
+
+        $basDetails = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $finalStatementClosingBalance = $basDetails[BasDetails\Entity::STATEMENT_CLOSING_BALANCE];
+
+        $this->assertEquals($initialStatementClosingBalance - 9900, $finalStatementClosingBalance);
+
+        $finalStatement1 = $this->getDbEntities('banking_account_statement', [
+            'account_number'      => '2224440041626905',
+            'bank_transaction_id' => 'S429655'
+        ])[0];
+
+        $finalStatement2 = $this->getDbEntities('banking_account_statement', [
+            'account_number'      => '2224440041626905',
+            'bank_transaction_id' => 'S807068'
+        ])[0];
+
+        $insertedStatement = $this->getDbEntities('banking_account_statement', [
+            'account_number'      => '2224440041626905',
+            'bank_transaction_id' => 'S71034964'
+        ])[0];
+
+        $finalInsertedStatement = $this->getDbEntities('banking_account_statement', [
+            'account_number'      => '2224440041626905',
+            'bank_transaction_id' => 'S808068'
+        ])[0];
+
+        $externalEntries = $this->getDbEntities('external', ['banking_account_statement_id' => $insertedStatement[BasEntity::ID]])[0];
+
+        $this->assertEquals($initialStatement1->getBalance(), $finalStatement1->getBalance());
+
+        $this->assertEquals($initialStatement2->getBalance() + 100, $finalStatement2->getBalance());
+
+        $this->assertEquals($finalInsertedStatement[BasEntity::BALANCE] + 10000, $finalStatement2[BasEntity::BALANCE]);
+
+        $this->assertGreaterThan($initialStatement1[BasEntity::ID], $insertedStatement[BasEntity::ID]);
+
+        $this->assertLessThan($initialStatement2[BasEntity::ID], $insertedStatement[BasEntity::ID]);
+
+        $transactorTypeArray = [
+            'da_ext_credit',
+        ];
+
+        $transactorIdArray = [
+            $externalEntries->getPublicId(),
+        ];
+
+        $commissionArray = [
+            '',
+        ];
+
+        $taxArray = [
+            '',
+        ];
+
+        $apiTransactionIdArray = [
+            $externalEntries->getTransactionId(),
+        ];
+
+        for ($index = 0; $index<count($ledgerSnsPayloadArray); $index++)
+        {
+            $ledgerRequestPayload = $ledgerSnsPayloadArray[$index];
+
+            $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
+            $this->assertEquals('X', $ledgerRequestPayload['tenant']);
+            $this->assertEquals('test', $ledgerRequestPayload['mode']);
+            $this->assertEquals($transactorIdArray[$index], $ledgerRequestPayload['transactor_id']);
+            $this->assertEquals('10000000000000', $ledgerRequestPayload['merchant_id']);
+            $this->assertEquals('INR', $ledgerRequestPayload['currency']);
+            $this->assertEquals($commissionArray[$index], $ledgerRequestPayload['commission']);
+            $this->assertEquals($taxArray[$index], $ledgerRequestPayload['tax']);
+            $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
+            $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
+            if (!empty($apiTransactionIdArray[$index]))
+            {
+                $this->assertEquals($apiTransactionIdArray[$index], $ledgerRequestPayload['api_transaction_id']);
+            }
+            else
+            {
+                $this->assertArrayNotHasKey('api_transaction_id', $ledgerRequestPayload['additional_params']);
+            }
+        }
+
+        Carbon::setTestNow();
     }
 
     public function testRblAutomatedReconForMissingStatements()

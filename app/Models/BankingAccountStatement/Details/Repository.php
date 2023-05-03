@@ -33,7 +33,7 @@ class Repository extends Base\Repository
                       ->where($accountNumberColumn, '=', $accountNumber)
                       ->where($channelColumn, '=', $channel);
 
-        if (empty($status) === false)
+        if (empty($statuses) === false)
         {
             $query->whereIn($statusColumn, $statuses);
         }

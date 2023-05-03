@@ -2757,6 +2757,21 @@ class IciciBankingAccountStatementTest extends TestCase
             'bank_transaction_id' => 'S86758818'
         ])[0];
 
+        $mockedResponse = $this->getIciciDataResponse();
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $mozartMock = Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mozartMock->shouldReceive('sendRawRequest')
+                   ->andReturnUsing(
+                       function(array $request) use ($mockedResponse) {
+                           return json_encode($mockedResponse);
+                       }
+                   )->times(0);
+
+        $this->app->instance('mozart', $mozartMock);
+
         $this->ba->adminAuth();
 
         $this->startTest();

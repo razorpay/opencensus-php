@@ -17,6 +17,7 @@ final class Metric
     const MISSING_STATEMENT_INSERT_FAILURE                    = 'missing_statement_insert_failure';
     const MISSING_STATEMENT_UPDATE_FAILURE                    = 'missing_statement_update_failure';
     const MISSING_STATEMENTS_FOUND                            = 'missing_statements_found';
+    const STATEMENT_BALANCES_DO_NOT_MATCH                     = 'statement_balances_do_not_match';
     const MISSING_STATEMENT_RECON_PAGINATION_KEY_ALREADY_NULL = 'missing_statement_recon_pagination_key_already_null';
 }
 

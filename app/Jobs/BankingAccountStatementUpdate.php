@@ -55,7 +55,16 @@ class BankingAccountStatementUpdate extends Job
 
         try
         {
+            $workerStartTime = microtime(true);
+
             $BASCore->correctBalanceForStatementsEffectedByMissingStatements($this->params);
+
+            $workerEndTime = microtime(true);
+
+            $this->trace->info(TraceCode::BAS_BATCH_UPDATE_COMPLETED_SUCCESSFULLY, [
+                'params'        => $this->params,
+                'response_time' => $workerEndTime - $workerStartTime,
+            ]);
 
             $this->delete();
         }

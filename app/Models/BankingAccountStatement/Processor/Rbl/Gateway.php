@@ -636,10 +636,10 @@ class Gateway extends BaseProcessor
     public function sendRequestToFetchStatement(array $input)
     {
         // Retry logic is placed to retry when gateway exceptions are caught. Retry limit is in place for upper bound.
-        $statementRetry = 0;
+        $statementRetry      = 0;
         $statementRetryLimit = 1;
-        $attemptCount = 0;
-        $attemptLimit = 1;
+        $attemptCount        = 0;
+        $attemptLimit        = $input['attempt_limit'] ?? 1;
 
         if (array_key_exists(Entity::FROM_DATE, $input) === true)
         {
