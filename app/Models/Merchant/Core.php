@@ -9699,4 +9699,51 @@ class Core extends Base\Core
 
         return $this->isSplitzExperimentEnable($properties, 'enable');
     }
+
+    public function addFeatureFlagForMerchant(Entity $merchant, string $featureFlag)
+    {
+        $merchantId = $merchant->getId();
+
+        $context = [
+            'merchant_id' => $merchantId,
+            'feature_flag' => $featureFlag,
+        ];
+
+        if ($merchant->isFeatureEnabled($featureFlag) === true)
+        {
+            $this->trace->info(
+                TraceCode::MERCHANT_FEATURE_FLAG_ALREADY_EXISTS
+                , $context);
+
+            return;
+        }
+
+        $this->addFeatureFlag($merchantId, $featureFlag);
+    }
+
+    protected function addFeatureFlag(string $merchantId, string $featureFlag)
+    {
+        $featureParams = [
+            Feature\Entity::ENTITY_ID   => $merchantId,
+            Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Feature\Entity::NAMES       => [$featureFlag],
+            Feature\Entity::SHOULD_SYNC => true,
+        ];
+
+        try
+        {
+            (new Feature\Service)->addFeatures($featureParams);
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->info(TraceCode::FEATURE_GET_STATUS_FAILED, [
+                'merchant_id'       => $merchantId,
+                'feature_flag'      => $featureFlag,
+                'error_code'        => $exception->getCode(),
+                'error_desc'        => $exception->getMessage(),
+            ]);
+        }
+
+    }
+
 }

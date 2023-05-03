@@ -7,6 +7,7 @@ use RZP\Models\Merchant\Core;
 use RZP\Models\Partner;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Feature;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Services\Segment\EventCode as SegmentEvent;
@@ -30,6 +31,9 @@ class InternationalCore extends Base\Core
 
         // Onboarding merchants to 3ds2 flow when international is activated
         (new Core)->checkAndPushMessageToMetroForNetworkOnboard($merchant->getId());
+
+        // Added enable_3ds2 feature flags post pushing the message to metro
+        (new Core)->addFeatureFlagForMerchant($merchant, Feature\Constants::ENABLE_3DS2);
 
         if ($this->getInternationalActivationFlow($merchant) === InternationalActivationFlow::WHITELIST
             and ($merchant->getOrgId() === Org::RAZORPAY_ORG_ID))

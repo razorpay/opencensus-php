@@ -2528,7 +2528,7 @@ class ActivationTest extends OAuthTestCase
         ];
 
 
-        $this->fixtures->org->addFeatures([Feature\Constants::ORG_PROGRAM_DS_CHECK],"100000razorpay");
+        $this->fixtures->org->addFeatures([FeatureConstants::ORG_PROGRAM_DS_CHECK], "100000razorpay");
 
         $response = $this->makeRequestAndGetContent($merchantSignupRequest);
 
@@ -5353,7 +5353,7 @@ class ActivationTest extends OAuthTestCase
         });
     }
 
-    public function testPushSegmentEventsWhenMerchantActivatedOnInternational()
+    public function testPushSegmentEventsAndAutomaticFlagAdditionWhenMerchantActivatedOnInternational()
     {
         $merchantId = '1cXSLlUU8V9sXl';
 
@@ -5374,7 +5374,11 @@ class ActivationTest extends OAuthTestCase
                 $this->assertTrue(in_array($eventName, ["International Payments Enabled"], true));
             }));
 
+        (new Detail\Core())->getMerchantAndSetBasicAuth($merchantId);
+
         (new Detail\InternationalCore())->activateInternational($merchant);
+
+        $this->assertTrue($this->fixtures->merchant->isFeatureEnabled([FeatureConstants::ENABLE_3DS2], $merchantId));
 
         $this->assertTrue($merchant->isInternational());
 
