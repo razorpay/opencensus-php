@@ -1,24 +1,27 @@
-package e2e
+package dtos
 
 type AccountsV2 interface {
 	SetName(name string)
 }
 
 type AccountsV2Request struct {
-	Email                      string         `json:"email"`
-	Phone                      string         `json:"phone"`
-	LegalBusinessName          string         `json:"legal_business_name"`
-	CustomerFacingBusinessName string         `json:"customer_facing_business_name,omitempty"`
-	BusinessType               string         `json:"business_type"`
-	ReferenceId                string         `json:"reference_id"`
-	Profile                    *Profile       `json:"profile,omitempty"`
-	LegalInfo                  *LegalInfo     `json:"legal_info,omitempty"`
-	Brand                      *Brand         `json:"brand,omitempty"`
-	Notes                      string         `json:"notes,omitempty"`
-	TosAcceptance              *TosAcceptance `json:"tos_acceptance,omitempty"`
-	ContactInfo                *ContactInfo   `json:"contact_info,omitempty"`
-	Apps                       *Apps          `json:"apps,omitempty"`
+	Email                      string                 `json:"email"`
+	Phone                      string                 `json:"phone"`
+	LegalBusinessName          string                 `json:"legal_business_name"`
+	CustomerFacingBusinessName string                 `json:"customer_facing_business_name,omitempty"`
+	BusinessType               string                 `json:"business_type"`
+	ContactName                string                 `json:"contact_name"`
+	ReferenceId                string                 `json:"reference_id"`
+	Profile                    *Profile               `json:"profile,omitempty"`
+	LegalInfo                  *LegalInfo             `json:"legal_info,omitempty"`
+	Brand                      *Brand                 `json:"brand,omitempty"`
+	Notes                      map[string]interface{} `json:"notes,omitempty"`
+	TosAcceptance              *TosAcceptance         `json:"tos_acceptance,omitempty"`
+	ContactInfo                *ContactInfo           `json:"contact_info,omitempty"`
+	Apps                       *Apps                  `json:"apps,omitempty"`
+	NoDocOnboarding            bool                   `json:"no_doc_onboarding"`
 }
+
 type Address struct {
 	Street1    string `json:"street1,omitempty"`
 	Street2    string `json:"street2,omitempty"`
@@ -66,8 +69,8 @@ type App struct {
 }
 type Apps struct {
 	Websites []string `json:"websites,omitempty"`
-	Android  *[]App   `json:"android,omitempty"`
-	Ios      *[]App   `json:"ios,omitempty"`
+	Android  []App    `json:"android,omitempty"`
+	Ios      []App    `json:"ios,omitempty"`
 }
 
 func (p *AccountsV2Request) SetEmail(email string) {

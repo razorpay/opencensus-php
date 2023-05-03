@@ -11,6 +11,7 @@ type Configuration struct {
 	ApiDb                 db.Config
 	VirtualAccount        VirtualAccountConfig
 	OnboardingAPIsPartner OnboardingAPIsPartnerConfig
+	AdminConfig           AdminConfig
 	OneClickCheckout      OneClickCheckoutConfig
 	Payments              PaymentCreateConfig
 }
@@ -64,4 +65,11 @@ type OnboardingAPIsPartnerConfig struct {
 type OneClickCheckoutConfig struct {
 	Username string
 	Password string
+}
+
+type AdminConfig struct {
+	Username string
+	Password string
+	OrgId    string
+	Token    string
 }

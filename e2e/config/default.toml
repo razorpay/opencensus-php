@@ -47,8 +47,14 @@
     password = "r9NAWAwHFbrzyzPTFSJhnX7X"
 
 [onboardingapispartner]
-    user = "JDzj3b88zZ3Fo1"
+    user = "LdXLKyZg5VLZvz"
     role = "owner"
-    merchantId = "JDzj3kKN0oQAYj"
-    username = "rzp_test_1quyh5ckoYoMKE"
-    password = "nSbIJNOcyd4aJYU7FN6CFVDR"
+    merchantId = "LdXLL1OsHXpVeH"
+    username = "rzp_live_partner_LdXSPcmuVH7rLq"
+    password = "9dLdThIWVhvxGGPncR5v7KOR"
+
+[adminconfig]
+    username = "rzp_test"
+    password = "RANDOM_DASH_PASSWORD"
+    orgId = "org_100000razorpay"
+    token = "hello7gyptrWlOKu6z9"

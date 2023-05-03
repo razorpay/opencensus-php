@@ -15,6 +15,7 @@ class PaymentMethods
     const X_DASHBOARD_MERCHANT_ID     = "X-Dashboard-Merchant-Id";
     const X_DASHBOARD_MERCHANT_ORG_ID = "X-Dashboard-Merchant-OrgId";
     const FEATURES                    = ['intent_on_ios', 'google_pay_omnichannel'];
+    const PARTNERSHIP_TERMINAL_REQUEST_TIMEOUT = "PARTNERSHIP_TERMINAL_REQUEST_TIMEOUT";
 
     /**
      * @var TerminalsService
@@ -42,12 +43,14 @@ class PaymentMethods
 
     public function get(Merchant\Entity $merchant): array
     {
+        $timeout = env(self::PARTNERSHIP_TERMINAL_REQUEST_TIMEOUT);
+
         $response = $this->terminalService->proxyTerminalService(
             [],
             \Requests::GET,
 
             'v2/merchant_instrument_status?merchant_id=' . $merchant->getId(),
-            ['timeout' => 4], //Increasing timeout to 4sec for now
+            ['timeout' => $timeout], //Increasing timeout to 4sec for now
             $this->getMerchantHeadersForInstrumentRequest());
 
 //        $response[Util\Constants::FEATURES] = $this->getFeatures();

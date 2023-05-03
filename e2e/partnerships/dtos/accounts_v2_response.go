@@ -1,4 +1,4 @@
-package e2e
+package dtos
 
 type AccountsV2Response struct {
 	Id                         string        `json:"id"`

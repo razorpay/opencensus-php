@@ -231,6 +231,14 @@ jobs:
                               "ephemeral_db": false,
                               "replicas": 1
                           }
+                      },
+                      {
+                          "name": "terminals",
+                          "commit_id": "",
+                          "chart_values": {
+                              "ephemeral_db": false,
+                              "replicas": 1
+                          }
                       }
                   ]
             }
