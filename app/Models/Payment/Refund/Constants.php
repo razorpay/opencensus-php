@@ -32,6 +32,7 @@ class Constants
     const DISCOUNTED_AMOUNT                    = 'discounted_amount';
     const GATEWAY_AMOUNT                       = 'gateway_amount';
     const MIN_CURRENCY_AMOUNT                  = 'min_currency_amount';
+    const REFUND_GATEWAY                       = 'refund_gateway';
 
     /**
      * We get the last 10 days refunds created of a gateway.

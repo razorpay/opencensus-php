@@ -140,15 +140,28 @@ class Dbs extends Base
         return [$returnData, true];
     }
 
-    protected function getStatus($row)
+    public function getStatus($row): string
     {
-        if (($row['refund']['status'] === 'processed' && $row['refund']['processed_source'] === 'GATEWAY_API') || $row['refund']['reconciled_at'] !== 0)
+        if (($row['refund']['status'] === 'processed') and ($row['refund']['processed_source'] === 'GATEWAY_API'))
+        {
             return 'Success';
-        else
+        }
+        else if (($row['refund']['status'] === 'processed') and ($row['refund']['processed_source'] === 'GATEWAY_RECON'))
+        {
+            return 'Success';
+        }
+        else if (($row['refund']['status'] === 'processed') and ($row['refund']['processed_source'] === 'SYSTEM_MAIL'))
+        {
             return 'To be processed';
+        }
+        // till request error is resolved from bank end sending the refunds in the file for processing.
+        else
+        {
+            return 'To be processed';
+        }
     }
 
-    protected function getOrderType($row)
+    public function getOrderType($row): string
     {
         $refundStatus = $this->getStatus($row);
 
@@ -156,5 +169,26 @@ class Dbs extends Base
             return 'Refund';
         else
             return 'Offline/Manual refund';
+    }
+
+    protected function getScroogeQuery(int $from, int $to, $refundIds = []): array
+    {
+        return [
+            RefundConstants::SCROOGE_QUERY => [
+                RefundConstants::SCROOGE_REFUNDS => [
+                    RefundConstants::SCROOGE_GATEWAY    => static::GATEWAY,
+                    RefundConstants::REFUND_GATEWAY     => static::GATEWAY,
+                    RefundConstants::SCROOGE_BANK       => static::GATEWAY_CODE,
+                    RefundConstants::SCROOGE_CREATED_AT => [
+                        RefundConstants::SCROOGE_GTE => $from,
+                        RefundConstants::SCROOGE_LTE => $to,
+                    ],
+                    RefundConstants::SCROOGE_BASE_AMOUNT => [
+                        RefundConstants::SCROOGE_GT => 0,
+                    ],
+                ],
+            ],
+            RefundConstants::SCROOGE_COUNT => $this->fetchFromScroogeCount,
+        ];
     }
 }

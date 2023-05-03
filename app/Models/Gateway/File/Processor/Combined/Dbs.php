@@ -11,6 +11,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Services\Beam\Service;
+use RZP\Models\Gateway\File\Type;
 use RZP\Encryption\PGPEncryption;
 use RZP\Services\NbPlus\Netbanking;
 use RZP\Models\Gateway\File\Status;
@@ -54,9 +55,11 @@ class Dbs extends Base
 
         if (isset($data['refunds']) === true)
         {
+            $refundFileProcessor = $this->getFileProcessor(Type::REFUND);
+
             foreach ($data['refunds'] as $row)
             {
-                if ($this->getRefundStatus($row) === 'Success')
+                if ($refundFileProcessor->getStatus($row) === 'Success')
                 {
                     $amount['refunds'] += $row['refund']['amount'];
                     $count['refunds'] += 1;
@@ -228,6 +231,8 @@ class Dbs extends Base
 
         if (isset($data['refunds']) === true)
         {
+            $refundFileProcessor = $this->getFileProcessor(Type::REFUND);
+
             foreach ($data['refunds'] as $row)
             {
                 $date = Carbon::createFromTimestamp($row['refund']['created_at'], Timezone::IST)->format('d/m/Y H:i:s');
@@ -237,14 +242,14 @@ class Dbs extends Base
                     Constants::MERCHANT_ORDER_ID        => $row['refund']['id'],
                     Constants::BANK_REF_NO              => $row['refund']['reference1'],
                     Constants::TXN_AMOUNT               => $this->getFormattedAmount($row['refund']['amount']),
-                    Constants::ORDER_TYPE               => $this->getOrderType($row),
-                    Constants::STATUS                   => $this->getRefundStatus($row),
+                    Constants::ORDER_TYPE               => $refundFileProcessor->getOrderType($row),
+                    Constants::STATUS                   => $refundFileProcessor->getStatus($row),
                     Constants::TXN_DATE                 => $date,
                     Constants::PAYMENT_ID               => $row['payment']['id'],
                     Constants::PAYMENT_BANK_REF_NO      => $row['gateway'][Netbanking::BANK_TRANSACTION_ID],
                 ];
 
-                if ($this->getRefundStatus($row) !== 'Success')
+                if ($refundFileProcessor->getStatus($row) !== 'Success')
                 {
                     $this->refunds_file_based[] = $row;
                 }
@@ -357,23 +362,5 @@ class Dbs extends Base
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
         return strtr(self::FILE_NAME, ['{$date}' => $date]);
-    }
-
-    protected function getRefundStatus($row)
-    {
-        if (($row['refund']['status'] === 'processed' && $row['refund']['processed_source'] === 'GATEWAY_API') || $row['refund']['reconciled_at'] !== 0)
-            return 'Success';
-        else
-            return 'To be processed';
-    }
-
-    protected function getOrderType($row)
-    {
-        $refundStatus = $this->getRefundStatus($row);
-
-        if ($refundStatus === 'Success')
-            return 'Refund';
-        else
-            return 'Offline/Manual refund';
     }
 }
