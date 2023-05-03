@@ -1083,9 +1083,9 @@ class Entity extends Base\PublicEntity
         $addon_methods = $this->getAttribute(self::ADDON_METHODS);
         if(isset($addon_methods[self::UPI]) === true && isset($addon_methods[self::UPI][self::IN_APP]) === true)
         {
-            return $addon_methods[self::UPI][self::IN_APP] === 1;
+            return $addon_methods[self::UPI][self::IN_APP];
         }
-        return null;
+        return 0;
     }
 
     public function getInAppAttribute()

@@ -56,6 +56,6 @@ class CoreTest extends TestCase
         $methods = $this->getMerchantMethodsFixture(true, 1,'8vUslVi0uFOSoy');
 
         $data = (new MethodsCore())->getFormattedMethods($methods->merchant);
-        $this->assertTrue($data['in_app']);
+        $this->assertEquals($data['in_app'], 1);
     }
 }
