@@ -197,7 +197,7 @@ class PaymentMethodsResponseHandler
         });
 
         $instruments = self::getLeafValues($instruments);
-        return $instruments;
+        return array_values(array_unique($instruments));
     }
 
         /**
