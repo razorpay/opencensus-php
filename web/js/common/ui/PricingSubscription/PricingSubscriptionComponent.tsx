@@ -376,9 +376,8 @@ const PricingSubscriptionComponent = ({
           tempTimer[key] = (value as any)?.totalTime;
         }
         trackInstrumentation('', {
-          // section
           time_spent: {
-            outside: outsidePlanSectionTimer.totalTime,
+            outside: outsidePlanSectionTimer?.totalTime,
             ...tempTimer,
           },
           event_name: 'merchant_dashboard.hover_plan.success',
@@ -395,7 +394,7 @@ const PricingSubscriptionComponent = ({
     totalPlanTimer[title]?.startTimer(totalPlanTimer[title]);
   };
   const handleMouseLeave = (title) => (): void => {
-    if (outsidePlanSectionTimer.startTime)
+    if (outsidePlanSectionTimer?.startTime)
       outsidePlanSectionTimer?.startTime(outsidePlanSectionTimer);
     if (totalPlanTimer[title]) {
       totalPlanTimer[title]?.pause(totalPlanTimer[title]);
