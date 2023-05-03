@@ -17,7 +17,7 @@ describe('Tests for the Pricing Subscription', () => {
     fetchPricingSubscription: jest.fn(),
     openModal: jest.fn(),
   };
-  const maxImpressions = 5;
+  const maxImpressions = 10;
   const pricingApp = () => <PricingSubscriptionWrapper />;
   test('Parent component should render successfully', () => {
     expect(() => render(<PricingSubscriptionWrapper />)).not.toThrowError();

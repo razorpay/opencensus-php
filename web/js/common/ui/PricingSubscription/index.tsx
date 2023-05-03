@@ -17,7 +17,7 @@ export const PricingBundle = ({
   location,
   mode,
 }): React.ReactElement | null => {
-  const maxImpressions = 5;
+  const maxImpressions = 10;
   const { pricing_bundles, loading } = pricing_bundles_obj || {};
   const impressionCount = Number(
     localStorage.getItem(`${LS_LABELS.IMPRESSION_COUNT}-${user?.current}`),
