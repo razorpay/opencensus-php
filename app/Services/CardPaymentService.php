@@ -938,25 +938,34 @@ class CardPaymentService
     {
         if( $data['input'][Entity::MERCHANT]->Is3dsDetailsRequiredEnabled())
         {
-            $merchantId = $data['input'][Entity::MERCHANT]->getId();
             $network =  strtolower($data['input']['iin']['network']);
 
             if(in_array($network,Merchant\Constants::listOfNetworksSupportedOn3ds2))
             {
-                $requestorId = (new Merchant\Attribute\Repository())->getValueForProductGroupType($merchantId,Product::PRIMARY,$network,Merchant\Attribute\Type::REQUESTER_ID);
-                $merchantName = (new Merchant\Attribute\Repository())->getValueForProductGroupType($merchantId,Product::PRIMARY,$network,Merchant\Attribute\Type::MERCHANT_NAME);
-
-                if($requestorId && $merchantName)
-                {
-                    $data['input']['card']['authentication_out_of_band']['3ds_requestor_id'] = $requestorId['value'];
-                    $data['input']['card']['authentication_out_of_band']['3ds_requestor_name'] = $merchantName['value'];
-                }
-                else{
-                    list($requestorIdValue, $merchantNameValue) = (new Merchant\Attribute\Service())->getDefaultValuesForMerchantOnboarding($network,$data['input'][Entity::MERCHANT]);
-                    $data['input']['card']['authentication_out_of_band']['3ds_requestor_id'] = $requestorIdValue;
-                    $data['input']['card']['authentication_out_of_band']['3ds_requestor_name'] = $merchantNameValue;
-                }
+                $data['input']['card']['authentication_out_of_band'] = $this->get3ds2DetailsForNetwork($network, $data['input'][Entity::MERCHANT], Product::PRIMARY);
             }
+        }
+
+    }
+
+    public function get3ds2DetailsForNetwork($network, $merchant, $product) {
+
+        $requestorId = (new Merchant\Attribute\Repository())->getValueForProductGroupType($merchant->getId(), $product, $network,Merchant\Attribute\Type::REQUESTER_ID);
+        $merchantName = (new Merchant\Attribute\Repository())->getValueForProductGroupType($merchant->getId(), $product, $network,Merchant\Attribute\Type::MERCHANT_NAME);
+
+        if($requestorId && $merchantName)
+        {
+            return [
+                "3ds_requestor_id" => $requestorId['value'],
+                "3ds_requestor_name" => $merchantName['value']
+            ];
+        }
+        else{
+            list($requestorIdValue, $merchantNameValue) = (new Merchant\Attribute\Service())->getDefaultValuesForMerchantOnboarding($network, $merchant);
+            return [
+                "3ds_requestor_id" => $requestorIdValue,
+                "3ds_requestor_name" => $merchantNameValue
+            ];
         }
     }
 
@@ -1021,6 +1030,8 @@ class CardPaymentService
                 'token.id'                          => 'content.input.token.id',
                 'analytics.risk_engine'             => 'content.input.payment_analytics.risk_engine',
                 'analytics.risk_score'              => 'content.input.payment_analytics.risk_score',
+                'analytics.ip'                      => 'content.input.payment_analytics.ip',
+                'analytics.user_agent'              => 'content.input.payment_analytics.user_agent',
                 'order.receipt'                     => 'content.input.order.receipt',
                 'emi_plan_fetch.merchant_id'        => 'content.merchant_id',
                 'emi_plan_fetch.merchant_ids'       => 'content.merchant_ids',

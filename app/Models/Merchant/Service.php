@@ -5991,6 +5991,10 @@ class Service extends Base\Service
             }
         }
 
+        if($merchant->Is3dsDetailsRequiredEnabled()) {
+            $data[EntityConstants::MERCHANT_DETAIL]['authentication_out_of_band'] = $this->getMerchant3DSOnboardingDetails($merchant);
+        }
+
         $isPayoutService = app('basicauth')->isPayoutService();
 
         if ($isPayoutService === true)
@@ -6003,6 +6007,19 @@ class Service extends Base\Service
         $data[EntityConstants::MERCHANT]['default_offers'] = $defaultOffersBool;
 
         return $data;
+    }
+
+    protected function getMerchant3DSOnboardingDetails($merchant): array
+    {
+
+        $details = [];
+        foreach (Merchant\Constants::listOfNetworksSupportedOn3ds2 as $key => $network) {
+            $details[$key] = $this->app['card.payments']->get3ds2DetailsForNetwork($network, $merchant, Product::PRIMARY);
+            $details[$key]["network"] = $network;
+        }
+
+        return $details;
+
     }
 
     protected function getMerchantDetailForInternalGetMerchant($merchantDetail)
