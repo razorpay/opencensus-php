@@ -73,14 +73,13 @@ export const trackSearchBarInfo = (props = {}): void => {
   });
 };
 
-export const trackSearchBarClicked = (props = {}): void => {
+export const trackSearchBarClicked = (): void => {
   analyticsTrack({
     objectName: 'Search Bar',
     actionName: 'Clicked',
     screen: 'home page',
     properties: {
       ...addCommonProperties(),
-      ...props,
     },
   });
 };

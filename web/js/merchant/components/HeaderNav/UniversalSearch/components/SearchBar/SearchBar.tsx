@@ -36,7 +36,6 @@ const SearchBar = forwardRef(
     };
 
     const handleFocus = (): void => {
-      trackSearchBarClicked();
       setFocussed(true);
       if (isFtuxVisible) {
         hideFtux({ onFocus: true });
@@ -55,6 +54,7 @@ const SearchBar = forwardRef(
           placeholder="Search payment products, settings, and more"
           onChange={handleChange.bind(null, 'change')}
           onFocus={handleFocus}
+          onClick={trackSearchBarClicked}
         />
         {searchQuery.length || (isMobile && show) ? (
           <CloseButton onClick={handleChange.bind(null, 'close')} data-testid="search-close">
