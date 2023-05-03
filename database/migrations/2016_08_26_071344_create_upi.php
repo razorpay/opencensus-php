@@ -94,6 +94,9 @@ class CreateUpi extends Migration
             $table->integer(Upi::CREATED_AT);
             $table->integer(Upi::UPDATED_AT);
 
+            $table->text(Upi::GATEWAY_ERROR)
+                ->nullable();
+
             $table->index(Upi::REFUND_ID);
             $table->index(Upi::RECEIVED);
             $table->index(Upi::GATEWAY_PAYMENT_ID);

@@ -370,7 +370,7 @@ trait RecurringTrait
             unset($payerResponseCode[0]);
             $payerResponseCode = array_values($payerResponseCode);
         }
-        
+
         $gatewayData = [];
         $gatewayData[Constants::GATEWAY_STATUS_CODE] = $statusCode;
         $gatewayData[Constants::GATEWAY_STATUS_DESC] = rtrim($payerResponseCode[0]);
@@ -581,8 +581,14 @@ trait RecurringTrait
         if((isset($response['status_desc'])) and
             (empty($response['status_desc']) === false))
         {
+            $attributes[Entity::GATEWAY_ERROR] = $upi->getGatewayError();
+            if($attributes[Entity::GATEWAY_ERROR] === null)
+            {
+                $attributes[Entity::GATEWAY_ERROR] = [];
+            }
+
             $payerResponseCodeDes = $this->upiRecurringUpdateGatewayStatus($response['status_desc'], $response['status_code']);
-            $attributes[Entity::GATEWAY_DATA] = array_replace($attributes[Entity::GATEWAY_DATA],$payerResponseCodeDes);
+            $attributes[Entity::GATEWAY_ERROR] = array_replace($attributes[Entity::GATEWAY_ERROR],$payerResponseCodeDes);
 
             $this->trace->info(TraceCode::UPI_RECURRING_PAYER_RESPONSE_CODE, [
                 'attributes'                => $attributes,

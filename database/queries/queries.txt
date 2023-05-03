@@ -7161,3 +7161,6 @@ ALTER TABLE merchant_consents
 ALTER TABLE admins
     ADD COLUMN password_reset_token VARCHAR(255) DEFAULT NULL,
     ADD COLUMN password_reset_expiry INTEGER DEFAULT NULL;
+
+ALTER TABLE upi
+    ADD COLUMN gateway_error TEXT DEFAULT NULL;

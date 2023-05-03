@@ -877,26 +877,7 @@ class Gateway extends Base\Gateway
 
         $payment->generatePspData($attr);
 
-        try
-        {
-            $payment->saveOrFail();
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->info(TraceCode::UPI_RECURRING_ERROR_SAVING_RESPONSE_CODE, [
-                'message'   => 'Gateway data length is too long',
-                'error'     => $e->getMessage(),
-                'upi'       => $payment,
-            ]);
-
-            $gatewayData = $payment->getGatewayData();
-
-            unset($gatewayData[Constants::GATEWAY_STATUS_CODE], $gatewayData[Constants::GATEWAY_STATUS_DESC],
-                $gatewayData[Constants::PSP_STATUS_CODE], $gatewayData[Constants::PSP_STATUS_DESC]);
-
-            $payment->setGatewayData($gatewayData);
-            $payment->saveOrFail();
-        }
+        $payment->saveOrFail();
     }
 
     public function mandateCancel(array $input)

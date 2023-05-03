@@ -35,6 +35,7 @@ class Entity extends Base\Entity
     const RECONCILED_AT         = 'reconciled_at';
 
     const GATEWAY_DATA          = 'gateway_data';
+    const GATEWAY_ERROR         = 'gateway_error';
 
     // Input Keys
     const PAYMENT               = 'payment';
@@ -71,6 +72,7 @@ class Entity extends Base\Entity
         self::VPA,
         self::EXPIRY_TIME,
         self::RECONCILED_AT,
+        self::GATEWAY_ERROR,
     ];
 
     protected $fillable = [
@@ -96,11 +98,13 @@ class Entity extends Base\Entity
         self::STATUS_CODE,
         self::VPA,
         self::EXPIRY_TIME,
+        self::GATEWAY_ERROR,
     ];
 
     protected $casts = [
         'amount'       => 'int',
         'gateway_data' => 'array',
+        'gateway_error'=> 'array',
 
     ];
 
@@ -295,6 +299,16 @@ class Entity extends Base\Entity
     public function getGatewayData()
     {
         return $this->getAttribute(self::GATEWAY_DATA);
+    }
+
+    public function setGatewayError($value)
+    {
+        $this->setAttribute(self::GATEWAY_ERROR, $value);
+    }
+
+    public function getGatewayError()
+    {
+        return $this->getAttribute(self::GATEWAY_ERROR);
     }
 
     public function getNpciReferenceIdAttribute()
