@@ -169,6 +169,7 @@ class Event
     const ISSUING_BENEFICIARY_ACTIVE                    = 'beneficiary.active';
     const ISSUING_BENEFICIARY_MANUAL_REVIEW             = 'beneficiary.manual_review';
     const ISSUING_BENEFICIARY_FAILED                    = 'beneficiary.failed';
+    const ISSUING_TRANSACTION_CREATED                   = 'transaction.created';
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -316,6 +317,7 @@ class Event
         self::ISSUING_BENEFICIARY_ACTIVE,
         self::ISSUING_BENEFICIARY_MANUAL_REVIEW,
         self::ISSUING_BENEFICIARY_FAILED,
+        self::ISSUING_TRANSACTION_CREATED,
     ];
 
     /**
@@ -470,7 +472,7 @@ class Event
         self::ISSUING_BENEFICIARY_ACTIVE,
         self::ISSUING_BENEFICIARY_MANUAL_REVIEW,
         self::ISSUING_BENEFICIARY_FAILED,
-
+        self::ISSUING_TRANSACTION_CREATED,
     ];
 
     // We have exhausted all the below bits for webhook events, add in $bitPosition2 for any new events
@@ -759,7 +761,7 @@ class Event
         self::ISSUING_BENEFICIARY_ACTIVE                  => [Product::PRIMARY, Product::ISSUING],
         self::ISSUING_BENEFICIARY_MANUAL_REVIEW           => [Product::PRIMARY, Product::ISSUING],
         self::ISSUING_BENEFICIARY_FAILED                  => [Product::PRIMARY, Product::ISSUING],
-
+        self::ISSUING_TRANSACTION_CREATED                 => [Product::PRIMARY, Product::ISSUING],
     ];
 
     /**
@@ -984,6 +986,24 @@ class Event
         self::PAYMENT_PENDING                               => Feature\Constants::ONE_CLICK_CHECKOUT,
         self::NO_DOC_ONBOARDING_GMV_LIMIT_WARNING         => Feature\Constants::SUBM_NO_DOC_ONBOARDING,
         self::INSTANT_ACTIVATION_GMV_LIMIT_WARNING        => Feature\Constants::INSTANT_ACTIVATION_V2_API,
+
+        self::ISSUING_LOAD_CREATED                        => Feature\Constants::RAZORPAY_WALLET,
+        self::ISSUING_LOAD_SUCCESS                        => Feature\Constants::RAZORPAY_WALLET,
+        self::ISSUING_LOAD_FAILED                         => Feature\Constants::RAZORPAY_WALLET,
+        self::ISSUING_WITHDRAWAL_CREATED                  => Feature\Constants::RAZORPAY_WALLET,
+        self::ISSUING_WITHDRAWAL_INITIATED                => Feature\Constants::RAZORPAY_WALLET,
+        self::ISSUING_WITHDRAWAL_PROCESSED                => Feature\Constants::RAZORPAY_WALLET,
+        self::ISSUING_WITHDRAWAL_FAILED                   => Feature\Constants::RAZORPAY_WALLET,
+        self::ISSUING_KYC_SUCCESS                         => Feature\Constants::RAZORPAY_WALLET,
+        self::ISSUING_KYC_MANUAL_REVIEW                   => Feature\Constants::RAZORPAY_WALLET,
+        self::ISSUING_KYC_MANUALLY_VERIFIED               => Feature\Constants::RAZORPAY_WALLET,
+        self::ISSUING_KYC_FAILED                          => Feature\Constants::RAZORPAY_WALLET,
+        self::ISSUING_KYC_IN_PROGRESS                     => Feature\Constants::RAZORPAY_WALLET,
+        self::ISSUING_BENEFICIARY_CREATED                 => Feature\Constants::RAZORPAY_WALLET,
+        self::ISSUING_BENEFICIARY_ACTIVE                  => Feature\Constants::RAZORPAY_WALLET,
+        self::ISSUING_BENEFICIARY_MANUAL_REVIEW           => Feature\Constants::RAZORPAY_WALLET,
+        self::ISSUING_BENEFICIARY_FAILED                  => Feature\Constants::RAZORPAY_WALLET,
+        self::ISSUING_TRANSACTION_CREATED                 => Feature\Constants::RAZORPAY_WALLET,
     ];
 
     /**
