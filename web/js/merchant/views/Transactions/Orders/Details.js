@@ -12,7 +12,10 @@ class OrderDetailsContainer extends Component {
   fetchItem(id) {
     const { fetchItem } = this.props;
     fetchItem(id).then((response) => {
-      const selfServeSuccessData = getSelfServeSuccessData('Order Details Fetched');
+      const selfServeSuccessData = getSelfServeSuccessData(
+        'Order Details Fetched',
+        'Order Details',
+      );
       selfServeTrackSuccess(selfServeSuccessData);
       return response;
     });

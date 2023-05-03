@@ -11,7 +11,10 @@ class RefundDetailsContainer extends Component {
   fetchItem(id) {
     const { fetchItem } = this.props;
     fetchItem(id).then((response) => {
-      const selfServeSuccessData = getSelfServeSuccessData('Refund Details Fetched');
+      const selfServeSuccessData = getSelfServeSuccessData(
+        'Refund Details Fetched',
+        'Refund Details',
+      );
       selfServeTrackSuccess(selfServeSuccessData);
       return response;
     });

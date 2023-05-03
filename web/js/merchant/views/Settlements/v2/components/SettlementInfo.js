@@ -107,7 +107,10 @@ const SettlementInfo = (props) => {
       const properties = { ...propertiesPayload('settlement', data), status: 'success' };
       handleAnalytics(objectName, actionName, properties, screen);
 
-      const selfServeSuccessData = getSelfServeSuccessData('Settlement Details Fetched');
+      const selfServeSuccessData = getSelfServeSuccessData(
+        'Settlement Details Fetched',
+        'Settlement Details',
+      );
       selfServeTrackSuccess(selfServeSuccessData);
     } catch (e) {
       const properties = {

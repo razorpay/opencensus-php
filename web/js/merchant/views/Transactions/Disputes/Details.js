@@ -39,7 +39,10 @@ class DisputeDetailsContainer extends Component {
 
   loadDispute(disputeId) {
     this.props.loadDispute(findDispute(this.props.disputes, disputeId)).then((response) => {
-      const selfServeSuccessData = getSelfServeSuccessData('Dispute Details Fetched');
+      const selfServeSuccessData = getSelfServeSuccessData(
+        'Dispute Details Fetched',
+        'Dispute Details',
+      );
       selfServeTrackSuccess(selfServeSuccessData);
       return response;
     });

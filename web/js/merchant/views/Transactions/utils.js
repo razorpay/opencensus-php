@@ -14,11 +14,12 @@ export const getInitiatePointAndPageAndScreenName = () => {
   return { initiatePoint, initiatePage, screen, page };
 };
 
-export const getSelfServeSuccessData = (selfServeActionName) => {
+export const getSelfServeSuccessData = (selfServeActionName, screenType) => {
   const { initiatePoint, initiatePage, screen, page } = getInitiatePointAndPageAndScreenName();
 
   const selfServeSuccessData = {
     selfServeAction: selfServeActionName,
+    screen: screenType,
     props: {},
   };
 

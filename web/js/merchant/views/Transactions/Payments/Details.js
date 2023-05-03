@@ -127,6 +127,7 @@ class PaymentDetailsContainer extends Component {
       const page = initiatePage?.split('.')[1];
       const selfServeSuccessData = {
         selfServeAction: 'Payment Details Fetched',
+        screen: 'Payment Details',
         props: {},
       };
 

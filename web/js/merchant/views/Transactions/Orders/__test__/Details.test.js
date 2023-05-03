@@ -134,6 +134,7 @@ describe('Orders - Details Component', () => {
       expect(screen.queryByText('loading')).not.toBeInTheDocument();
       expect(selfServeTrackSuccess).toHaveBeenCalledWith({
         selfServeAction: 'Order Details Fetched',
+        screen: 'Order Details',
         props: {},
       });
     });

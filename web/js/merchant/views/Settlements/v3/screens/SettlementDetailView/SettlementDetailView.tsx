@@ -39,7 +39,10 @@ const SettlementDetailView = ({
       },
     });
 
-    const selfServeSuccessData = getSelfServeSuccessData('Settlement Details Fetched');
+    const selfServeSuccessData = getSelfServeSuccessData(
+      'Settlement Details Fetched',
+      'Settlement Details',
+    );
     selfServeTrackSuccess(selfServeSuccessData);
   }, [settlementId]);
 
