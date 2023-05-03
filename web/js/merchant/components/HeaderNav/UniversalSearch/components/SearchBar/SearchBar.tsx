@@ -1,4 +1,4 @@
-import { CloseIcon, SearchIcon } from '@razorpay/blade/components';
+import { Box, CloseIcon, Link, SearchIcon } from '@razorpay/blade/components';
 import { CommonStateProps } from 'merchant/components/HeaderNav/UniversalSearch/typings';
 import { trackSearchBarClicked } from 'merchant/components/HeaderNav/UniversalSearch/utils';
 import { hideFtux } from 'merchant/components/HeaderNav/UniversalSearch/utils/ftuxVisibility';
@@ -29,6 +29,9 @@ const SearchBar = forwardRef(
         case 'change':
           setSearch(value);
           break;
+        case 'clear':
+          setSearch('');
+          break;
         /* istanbul ignore next */
         default:
           break;
@@ -43,25 +46,32 @@ const SearchBar = forwardRef(
     };
 
     return (
-      <StyledInputBox isDeviceInBreakpoint={isDeviceInBreakpoint} isMobile={isMobile}>
-        <SearchIcon color="feedback.icon.neutral.lowContrast" size="medium" />
-        <StyledBaseInput
-          ref={ref as React.RefObject<HTMLInputElement>}
-          name="search"
-          type="text"
-          value={searchQuery}
-          autoComplete="off"
-          placeholder="Search payment products, settings, and more"
-          onChange={handleChange.bind(null, 'change')}
-          onFocus={handleFocus}
-          onClick={trackSearchBarClicked}
-        />
-        {searchQuery.length || (isMobile && show) ? (
-          <CloseButton onClick={handleChange.bind(null, 'close')} data-testid="search-close">
-            <CloseIcon color="surface.action.icon.default.lowContrast" size="medium" />
-          </CloseButton>
+      <Box display="flex" alignItems="center" gap="spacing.5">
+        <StyledInputBox isDeviceInBreakpoint={isDeviceInBreakpoint} isMobile={isMobile}>
+          <SearchIcon color="feedback.icon.neutral.lowContrast" size="medium" />
+          <StyledBaseInput
+            ref={ref as React.RefObject<HTMLInputElement>}
+            name="search"
+            type="text"
+            value={searchQuery}
+            autoComplete="off"
+            placeholder="Search payment products, settings, and more"
+            onChange={handleChange.bind(null, 'change')}
+            onFocus={handleFocus}
+            onClick={trackSearchBarClicked}
+          />
+          {searchQuery.length ? (
+            <CloseButton onClick={handleChange.bind(null, 'clear')} data-testid="search-close">
+              <CloseIcon color="surface.action.icon.default.lowContrast" size="medium" />
+            </CloseButton>
+          ) : null}
+        </StyledInputBox>
+        {show && isMobile ? (
+          <Link variant="button" onClick={handleChange.bind(null, 'close')} size="medium">
+            Cancel
+          </Link>
         ) : null}
-      </StyledInputBox>
+      </Box>
     );
   },
 );

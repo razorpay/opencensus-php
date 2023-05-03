@@ -62,13 +62,6 @@ describe('SearchBar', () => {
     expect(getInput()).toHaveAttribute('value', query);
   });
 
-  test('should render close button when device type is mobile and search is focussed', async () => {
-    const initialState = getInitialState({ isMobile: true });
-    renderApp({ initialState, props: { isFtuxVisible: false } });
-    await userEvent.click(getInput());
-    expect(screen.getByTestId('search-close')).toBeInTheDocument();
-  });
-
   test('should clear the field on close button click', async () => {
     const initialState = getInitialState({});
     const query = 'how to update bank';
