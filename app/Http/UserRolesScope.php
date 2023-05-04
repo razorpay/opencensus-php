@@ -1245,6 +1245,7 @@ class UserRolesScope
             '1cc_merchant_order_review_automation_rule_configs_upsert' => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE, Role::OPERATIONS],
             '1cc_address_ingestion_config_get'                    => Role::ALL_ROLES,
             '1cc_address_ingestion_addresses_post'                => Role::ALL_ROLES,
+            'wallet_dashboard_proxy'                             => Role::ALL_ROLES,
         ];
 
         /*

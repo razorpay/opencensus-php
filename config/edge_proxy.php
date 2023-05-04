@@ -12,6 +12,7 @@ return [
         'business_reporting_all_proxy_routes' => ['host_id' => 'business_reporting'],
         'accounting_integrations_proxy_routes' => ['host_id' => 'accounting_integrations'],
         'accounting_integrations_callback'     => ['host_id' => 'accounting_integrations_direct_api'],
+        'wallet_dashboard_proxy'               => ['host_id' => 'wallet'],
     ],
 
     // Map- <Host identifier, <Host, Auth[username, password]>>
@@ -49,6 +50,13 @@ return [
             'host'                => env('ACCOUNTING_INTEGRATIONS_HOST_URL'),
             'auth'                => ['api', env('ACCOUNTING_INTEGRATIONS_PASSWORD')],
             'path_prefix_to_skip' => 'v1/direct/accounting-integrations/',
+            'path_prefix_to_add'  => 'v1/',
+        ],
+        'wallet' => [
+            'host'                => env('APP_WALLET_LIVE_URL'),
+            'test_host'           => env('APP_WALLET_TEST_URL'),
+            'auth'                => ['', ''],
+            'path_prefix_to_skip' => 'v1/wallet/proxy/',
             'path_prefix_to_add'  => 'v1/',
         ],
     ],

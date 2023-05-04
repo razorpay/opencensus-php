@@ -1981,7 +1981,7 @@ class Route
         'accounts_receivable_all_routes'           => ['any',     'accounts-receivable/service/{path?}',       'EdgeProxyController@proxy'                                               ],
 
         // Business-Reporting
-        'business_reporting_all_proxy_routes'      => ['any',      'business-reporting/{path?}',               'EdgeProxyController@proxy'                                               ],
+        'business_reporting_all_proxy_routes'      => ['any',      'business-reporting/{path?}',        'EdgeProxyController@proxy'                                               ],
 
         // Accounting Integrations
         'accounting_integrations_proxy_routes'      => ['any',      'accounting-integrations/{path?}',          'EdgeProxyController@proxy'                                               ],
@@ -4265,6 +4265,7 @@ class Route
 
         '1cc_methods_offers' => ['get', '1cc/merchant/methods_offers', 'OneClickCheckoutController@getMethodsAndOffersForMerchant'],
         '1cc_methods_offers_preflight'    => ['options',    '1cc/merchant/methods_offers',                          'OneClickCheckoutController@allowCors'],
+        'wallet_dashboard_proxy'                => ['any',  'wallet/proxy/{path?}',                  'WalletProxyController@proxy']
     ];
 
     public static $public = [
@@ -4903,7 +4904,8 @@ class Route
         'fetch_customer_eligibility_by_id',
 
         '1cc_address_ingestion_config_get',
-        '1cc_address_ingestion_addresses_post'
+        '1cc_address_ingestion_addresses_post',
+        'wallet_dashboard_proxy'
     ];
 
     // Only routes defined in internalApps go here
@@ -11883,7 +11885,8 @@ class Route
             'fetch_pending_payout_links_summary',
             'partner_config_fetch',
             'partner_config_edit',
-            'partner_config_edit_logo'
+            'partner_config_edit_logo',
+            'wallet_dashboard_proxy'
         ],
 
         'admin_dashboard' => [
