@@ -44,6 +44,14 @@ class Service extends QrCode\Service
         {
             $input[Entity::REQUEST_SOURCE] = $input[Entity::REQUEST_SOURCE] ?? $this->getRequestSourceViaAuth();
 
+            $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
+                                                        RazorxTreatment::DEDICATED_TERMINAL_QR_CODE,
+                                                        $this->mode);
+            if (strtolower($variant) === RazorxTreatment::RAZORX_VARIANT_ON)
+            {
+                (new Validator)->validateQrOnDedicatedTerminal($input);
+            }
+
             $qrCode = Tracer::inspan(['name' => HyperTrace::QR_CODE_CREATE], function () use ($input) {
                 return (new Core)->buildQrCode($input);
             });

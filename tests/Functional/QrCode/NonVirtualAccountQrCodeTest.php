@@ -2100,6 +2100,91 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals('refunded', $payment['status']);
     }
 
+    public function testSingleUseQrCodeWithFixedAmount()
+    {
+        $this->enableRazorXTreatmentForQrDedicatedTerminal();
+
+        $qrCode = $this->createQrCode(
+            ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
+                'name' => 'Mitasha']
+        );
+
+        $this->assertEquals('single_use', $qrCode['usage']);
+        $this->assertEquals(1, $qrCode['fixed_amount']);
+        $this->assertEquals(100, $qrCode['payment_amount']);
+        $this->assertEquals('upi_qr' , $qrCode['type']);
+        $this->assertEquals('active', $qrCode['status']);
+    }
+
+    public function testSingleUseQrCodeWithoutFixedAmount()
+    {
+        $this->enableRazorXTreatmentForQrDedicatedTerminal();
+
+        $this->expectException('RZP\Exception\BadRequestValidationFailureException');
+
+        $this->createQrCode(
+            ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => false, 'payment_amount' => 100,
+             'name' => 'Mitasha']
+        );
+    }
+
+    public function testMultipleUseQrCodeWithoutCloseBy()
+    {
+        $this->enableRazorXTreatmentForQrDedicatedTerminal();
+
+        $qrCode = $this->createQrCode(
+            ['usage' => 'multiple_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
+                'name' => 'Mitasha']
+        );
+
+        $this->runEntityAssertions($qrCode);
+    }
+
+    public function testMultipleUseQrCodeWithCloseBy()
+    {
+        $this->enableRazorXTreatmentForQrDedicatedTerminal();
+
+        $closeBy = str_replace([':', '-', ' '], '', Carbon::now(Timezone::IST)->toDateTimeString());
+        $this->expectException('RZP\Exception\BadRequestValidationFailureException');
+
+        $this->createQrCode(
+            ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
+             'close_by' => $closeBy, 'name' => 'Mitasha']
+        );
+    }
+
+    public function testCloseQrCodeForSingleUse()
+    {
+        $this->enableRazorXTreatmentForQrDedicatedTerminal();
+
+        $qrCode = $this->createQrCode(
+            ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
+             'name' => 'Mitasha']
+        );
+
+        $this->assertEquals(Status::ACTIVE, $qrCode['status']);
+        $closeResponse = $this->closeQrCode($qrCode['id']);
+
+        $this->assertEquals(Status::CLOSED, $closeResponse['status']);
+    }
+
+    public function testCloseQrCodeForMultipleUse()
+    {
+        $this->enableRazorXTreatmentForQrDedicatedTerminal();
+
+        $qrCode = $this->createQrCode(
+            ['usage' => 'multiple_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
+                'name' => 'Mitasha']
+        );
+
+        $this->assertEquals(Status::ACTIVE, $qrCode['status']);
+
+        $this->expectException('RZP\Exception\BadRequestException');
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_CLOSE_STATIC_QR_CODE_FAILURE);
+
+        $this->closeQrCode($qrCode['id']);
+    }
+
     public function testCreateQrCodeWithRequestSourceHeader()
     {
         $input = [

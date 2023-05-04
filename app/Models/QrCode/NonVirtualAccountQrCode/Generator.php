@@ -173,7 +173,7 @@ class Generator extends QrCode\Generator
         $input = [
             'qr_code'  => $qrCode->toArray(),
             'terminal' => $terminal->toArray(),
-            'merchant' => $qrCode->merchant
+            'merchant' => $qrCode->merchant,
         ];
 
         $gatewayClass = $this->app['gateway']->gateway($terminal->getGateway());

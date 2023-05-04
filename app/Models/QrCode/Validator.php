@@ -26,11 +26,11 @@ class Validator extends Base\Validator
         Entity::CLOSE_BY            => 'sometimes|epoch|custom',
         Entity::NAME                => 'sometimes|custom',
     ];
-    
+
     // only used in tokenizing mpans of existing qr_strings
     protected static $editRules = [
         Entity::QR_STRING       => 'required|string',
-        Entity::MPANS_TOKENIZED => 'required|in:1',  
+        Entity::MPANS_TOKENIZED => 'required|in:1',
     ];
 
     protected static $tokenizeExistingQrStringMpansRules = [

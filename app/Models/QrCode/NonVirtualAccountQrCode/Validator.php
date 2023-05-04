@@ -25,7 +25,7 @@ class Validator extends QrCode\Validator
         Entity::CUSTOMER_ID    => 'filled|string|nullable',
         Entity::CLOSE_BY       => 'filled|epoch|custom',
         Entity::TAX_INVOICE    => 'sometimes_if:type,upi_qr|array|custom',
-        Entity::REQUEST_SOURCE => 'required'
+        Entity::REQUEST_SOURCE => 'required',
     ];
 
     protected static $createForCheckoutRules = [
@@ -85,6 +85,21 @@ class Validator extends QrCode\Validator
             $message = 'Only plain text characters are allowed';
 
             throw new BadRequestValidationFailureException($message);
+        }
+    }
+
+    public function validateQrOnDedicatedTerminal($input)
+    {
+        if (($input['usage'] === UsageType::SINGLE_USE) and
+            ($input[Entity::FIXED_AMOUNT] === false))
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_DYNAMIC_QR_CODE_FIXED_AMOUNT_FAILURE);
+        }
+
+        if (($input['usage'] === UsageType::MULTIPLE_USE) and
+            (array_key_exists(Entity::CLOSE_BY, $input) === true))
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_STATIC_QR_CODE_EXPIRY_FAILURE);
         }
     }
 }

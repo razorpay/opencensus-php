@@ -132,6 +132,15 @@ class Core extends QrCode\Core
 
     public function close($qrCode, $closeReason)
     {
+        $variant = $this->app->razorx->getTreatment($qrCode->merchant->getId(),
+                                                    RazorxTreatment::DEDICATED_TERMINAL_QR_CODE,
+                                                    $this->mode);
+        if ((strtolower($variant) === RazorxTreatment::RAZORX_VARIANT_ON) and
+            ($qrCode->getUsageType() === UsageType::MULTIPLE_USE))
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_CLOSE_STATIC_QR_CODE_FAILURE);
+        }
+
         $qrCode->setStatus(Status::CLOSED);
 
         $currentTime = Carbon::now()->getTimestamp();
