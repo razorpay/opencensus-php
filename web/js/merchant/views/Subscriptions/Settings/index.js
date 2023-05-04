@@ -23,6 +23,7 @@ import {
 } from 'merchant/views/Subscriptions/constants';
 import analytics from 'merchant/views/Subscriptions/analytics';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 
 const PAYMENT_METHODS = {
   UPI: 'upi',
@@ -31,13 +32,47 @@ const PAYMENT_METHODS = {
 };
 
 const enableDisableMap = {
-  '1': 'enable',
-  '0': 'disable',
+  1: 'enable',
+  0: 'disable',
 };
 
 const isEnabled = (methodName) => (settings) => {
   const paymentMethod = findBy(settings.items, 'name', methodName) || {};
   return paymentMethod.setting_enabled === '1';
+};
+
+const cardDescription = {
+  [ORG_CUSTOM_CODE_MAP.RAZORPAY]: (
+    <>
+      Accept recurring payments via debit & credit cards for your subscriptions in any of our{' '}
+      <DocLink
+        className="inline-doc"
+        target="_blank"
+        href="https://razorpay.com/docs/payments/payments/international-payments/#supported-currencies"
+      >
+        supported international currencies.
+      </DocLink>
+    </>
+  ),
+  [ORG_CUSTOM_CODE_MAP.CURLEC]: (
+    <>Accept recurring payments via debit & credit cards for your subscriptions</>
+  ),
+};
+
+const cardNote = {
+  [ORG_CUSTOM_CODE_MAP.RAZORPAY]: (
+    <>
+      <strong>Note:</strong> Only limited cards are supported due to new payment regulations by RBI.{' '}
+      <DocLink
+        className="inline-doc"
+        target="_blank"
+        href="https://razorpay.com/docs/subscriptions/bank-options/#card-networks"
+      >
+        View supported cards
+      </DocLink>
+    </>
+  ),
+  [ORG_CUSTOM_CODE_MAP.CURLEC]: <div />,
 };
 
 @connect(
@@ -103,8 +138,10 @@ export default class SubscriptionsSettings extends React.Component {
   };
 
   render() {
-    const { settings, user } = this.props;
-
+    const { settings, user, org } = this.props;
+    const orgCode = org?.custom_code || 'rzp';
+    const cardDescriptionText = cardDescription[orgCode] || cardDescription.rzp;
+    const cardNoteText = cardNote[orgCode] || cardNote.rzp;
     if (settings.loading) {
       return (
         <div class="page-spinner-container">
@@ -160,19 +197,7 @@ export default class SubscriptionsSettings extends React.Component {
                       }
                       onToggleChange={this.onToggleChange(PAYMENT_METHODS.CARD)}
                       checked={isEnabled(PAYMENT_METHODS.CARD)(settings)}
-                      description={() => (
-                        <>
-                          Accept recurring payments via debit & credit cards for your subscriptions
-                          in any of our{' '}
-                          <DocLink
-                            className="inline-doc"
-                            target="_blank"
-                            href="https://razorpay.com/docs/payments/payments/international-payments/#supported-currencies"
-                          >
-                            supported international currencies.
-                          </DocLink>
-                        </>
-                      )}
+                      description={() => cardDescriptionText}
                       info={() => (
                         <>
                           Accept payments upto{' '}
@@ -186,57 +211,47 @@ export default class SubscriptionsSettings extends React.Component {
                           the customer for OTP verification as well.
                         </>
                       )}
-                      note={() => (
-                        <>
-                          <strong>Note:</strong> Only limited cards are supported due to new payment
-                          regulations by RBI.{' '}
-                          <DocLink
-                            className="inline-doc"
-                            target="_blank"
-                            href="https://razorpay.com/docs/subscriptions/bank-options/#card-networks"
-                          >
-                            View supported cards
-                          </DocLink>
-                        </>
-                      )}
+                      note={() => cardNoteText}
                     />
                   </div>
 
-                  <div
-                    class={classList(
-                      user.isEmandateOnSubscriptionEnabled ? 'col-md-4' : 'col-md-6',
-                      'column',
-                    )}
-                  >
-                    <ToggleCard
-                      title={
-                        <>
-                          <i class="i i-upi m-r" /> UPI
-                        </>
-                      }
-                      onToggleChange={this.onToggleChange(PAYMENT_METHODS.UPI)}
-                      checked={isEnabled(PAYMENT_METHODS.UPI)(settings)}
-                      description={
-                        <>
-                          Accept recurring payments via UPI apps like PhonePe, Paytm & BHIM for your
-                          subscriptions. Only supports Indian currency.
-                        </>
-                      }
-                      info={() => (
-                        <>
-                          Accept payments upto{' '}
-                          <strong>
-                            {' '}
-                            <Amount value={UPI_MAX_LIMIT_FOR_NON_BFSI} hidePaisa />
-                          </strong>{' '}
-                          (For BFSI: <Amount value={GATEWAY_MAX_LIMIT} hidePaisa />)
-                          <br />
-                          Payments above <Amount value={UPI_AFA_MAX_LIMIT} hidePaisa /> will ask the
-                          customer for UPI PIN verification as well.
-                        </>
+                  {!user.isOrgCurlec && (
+                    <div
+                      class={classList(
+                        user.isEmandateOnSubscriptionEnabled ? 'col-md-4' : 'col-md-6',
+                        'column',
                       )}
-                    />
-                  </div>
+                    >
+                      <ToggleCard
+                        title={
+                          <>
+                            <i class="i i-upi m-r" /> UPI
+                          </>
+                        }
+                        onToggleChange={this.onToggleChange(PAYMENT_METHODS.UPI)}
+                        checked={isEnabled(PAYMENT_METHODS.UPI)(settings)}
+                        description={
+                          <>
+                            Accept recurring payments via UPI apps like PhonePe, Paytm & BHIM for
+                            your subscriptions. Only supports Indian currency.
+                          </>
+                        }
+                        info={() => (
+                          <>
+                            Accept payments upto{' '}
+                            <strong>
+                              {' '}
+                              <Amount value={UPI_MAX_LIMIT_FOR_NON_BFSI} hidePaisa />
+                            </strong>{' '}
+                            (For BFSI: <Amount value={GATEWAY_MAX_LIMIT} hidePaisa />)
+                            <br />
+                            Payments above <Amount value={UPI_AFA_MAX_LIMIT} hidePaisa /> will ask
+                            the customer for UPI PIN verification as well.
+                          </>
+                        )}
+                      />
+                    </div>
+                  )}
 
                   {user.isEmandateOnSubscriptionEnabled && (
                     <div class="col-md-4 column">

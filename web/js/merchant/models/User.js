@@ -1346,7 +1346,10 @@ export default class User {
   }
 
   get isEmandateOnSubscriptionEnabled() {
-    return this.getExpStatus('emandate_subscription');
+    return (
+      this.getExpStatus('emandate_subscription') &&
+      !this.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.EMandate)
+    );
   }
 
   get isDirectTransferEnabled() {

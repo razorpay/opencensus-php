@@ -80,7 +80,7 @@ export const renderApp = (props = {}) => {
   return render(<App {...props} />, {
     initialState: {
       session: {
-        user: { isEmandateOnSubscriptionEnabled: true },
+        user: { isEmandateOnSubscriptionEnabled: true, isOrgRZP: true },
         org: {
           custom_code: 'rzp',
         },

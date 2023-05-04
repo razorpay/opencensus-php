@@ -60,6 +60,7 @@ export const HIDDEN_INTERNATIONAL_FEATURES_TAGS = {
     UPIPaymentLink: 'i18_hide_upi_payment_link',
   },
   HolidayList: 'i18_hide_holiday_list',
+  EMandate: 'i18_hide_emandate',
   SettlementLink: 'i18_hide_settlement_link',
   SettlementGuide: 'i18_hide_settlement_guide',
   DowntimePaymentEvents: 'i18_hide_downtime_payment_events',
