@@ -24,6 +24,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\Payout\Status;
 use RZP\Constants\HyperTrace;
+use RZP\Constants\Environment;
 use RZP\Models\BankingAccount;
 use RZP\Models\Payout\Purpose;
 use RZP\Models\Admin\ConfigKey;
@@ -280,16 +281,35 @@ class Core extends Base\Core
 
         if ($basDetails->getchannel() === Channel::RBL)
         {
-            // razorx experiment to decide the statement fetch flow to be old or new.
-            $accStmtVariant = $this->app->razorx->getTreatment(
-                $basDetails->merchant->getId(),
-                Merchant\RazorxTreatment::RBL_V2_BAS_API_INTEGRATION,
-                $this->mode
-            );
-
-            if (strtolower($accStmtVariant) === "on")
+            if ($this->app['env'] === Environment::TESTING)
             {
-                $accountStatementApiVersion = Entity::ACCOUNT_STATEMENT_FETCH_API_VERSION_2;
+                // razorx experiment to decide the statement fetch flow to be old or new.
+                $accStmtVariant = $this->app->razorx->getTreatment(
+                    $basDetails->merchant->getId(),
+                    Merchant\RazorxTreatment::RBL_V2_BAS_API_INTEGRATION,
+                    $this->mode
+                );
+
+                if (strtolower($accStmtVariant) === "on")
+                {
+                    $accountStatementApiVersion = Entity::ACCOUNT_STATEMENT_FETCH_API_VERSION_2;
+                }
+            }
+            else
+            {
+                $v1Merchants = [
+                    'E3QUiloUAmQJTD',
+                    'D4au0GwLGp3SMY',
+                    'Fmn65RDV0khueP',
+                    'G64B7qHr2WGAJb',
+                    'GE4OiRvbrcAckv',
+                    'INQservugLb8Ag',
+                ];
+
+                if (in_array($basDetails->getMerchantId(), $v1Merchants) === false)
+                {
+                    $accountStatementApiVersion = Entity::ACCOUNT_STATEMENT_FETCH_API_VERSION_2;
+                }
             }
         }
 
@@ -1683,14 +1703,16 @@ class Core extends Base\Core
             }
 
             $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_ENTITY_BUILT,
-                [
-                    'bank_txn_id'           => $bankTransaction[Entity::BANK_TRANSACTION_ID],
-                    'bank_txn_posted_date'  => $bankTransaction[Entity::POSTED_DATE],
-                    'bank_txn_channel'      => $bankTransaction[Entity::CHANNEL],
-                    'bas_id'                => $basEntity->getId(),
-                    'account_no'            => $basEntity->getAccountNumber(),
-                    'utr'                   => $basEntity->getUtr(),
-                ]);
+                               [
+                                   'bank_txn_id'                  => $bankTransaction[Entity::BANK_TRANSACTION_ID],
+                                   'bank_txn_posted_date'         => $bankTransaction[Entity::POSTED_DATE],
+                                   'bank_txn_channel'             => $bankTransaction[Entity::CHANNEL],
+                                   'bas_id'                       => $basEntity->getId(),
+                                   'account_no'                   => $basEntity->getAccountNumber(),
+                                   BASDetails\Entity::MERCHANT_ID => $basDetails->getMerchantId(),
+                                   BASDetails\Entity::BALANCE_ID  => $basDetails->getBalanceId(),
+                                   'utr'                          => $basEntity->getUtr(),
+                               ]);
 
             $basEntity->merchant()->associate($merchant);
 
@@ -1770,10 +1792,12 @@ class Core extends Base\Core
                 $endTime = microtime(true);
 
                 $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_BULK_INSERT_TIME,
-                    [
-                        'account_number'         => $accountNumber,
-                        'time_to_save_records'   => $endTime - $startTime,
-                    ]);
+                                   [
+                                       'account_number'               => $accountNumber,
+                                       'time_to_save_records'         => $endTime - $startTime,
+                                       BASDetails\Entity::MERCHANT_ID => $basDetails->getMerchantId(),
+                                       BASDetails\Entity::BALANCE_ID  => $basDetails->getBalanceId(),
+                                   ]);
 
                 $initialOffset += $limit;
             }
@@ -1788,6 +1812,8 @@ class Core extends Base\Core
                 [
                     BASDetails\Entity::PAGINATION_KEY => $basDetails->getPaginationKey(),
                     BASDetails\Entity::ACCOUNT_NUMBER => $basDetails->getAccountNumber(),
+                    BASDetails\Entity::MERCHANT_ID    => $basDetails->getMerchantId(),
+                    BASDetails\Entity::BALANCE_ID     => $basDetails->getBalanceId(),
                 ]);
         }
 
