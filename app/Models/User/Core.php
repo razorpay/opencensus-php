@@ -4338,6 +4338,9 @@ class Core extends Base\Core
                 ];
 
                 $payload['params'] += $this->getExtraRavenSmsPayload($input, $merchant);
+
+                $this->updateSmsTemplate($input, $payload);
+
                 $this->app->raven->sendSms($payload);
             }
         }
@@ -4400,6 +4403,18 @@ class Core extends Base\Core
         );
 
         return $templateName;
+    }
+
+    protected function updateSmsTemplate(array $input, array &$payload)
+    {
+        if ($input['action'] == 'create_payout_link')
+        {
+            $payload['template'] = 'sms.user.create_payout_link_v2';
+        }
+        else if ($input['action'] == 'create_bulk_payout_link')
+        {
+            $payload['template'] = 'sms.user.create_bulk_payout_link_v2';
+        }
     }
 
     /**
@@ -5014,7 +5029,7 @@ class Core extends Base\Core
             case Constants::UPDATE_WORKFLOW_CONFIG:
             case Constants::DELETE_WORKFLOW_CONFIG:
                 $smsPayload['sender'] = 'RZPAYX';
-                $smsPayload['templateName'] = 'sms.user.otp_workflow_config';
+                $smsPayload['templateName'] = 'sms.user.otp_workflow_config_v2';
                 $smsPayload['templateNamespace'] = 'razorpayx_neobanking';
                 break;
         }

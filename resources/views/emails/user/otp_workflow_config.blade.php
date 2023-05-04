@@ -6,7 +6,7 @@
 <body>
 
 <div>
-    {{ $otp['otp'] }} is the OTP to {{ $input['workflow_action'] }} your workflow config in RazorpayX. OTP is valid till {{ epoch_format($otp['expires_at']) }} IST. Please do not share with anyone.
+    {{ $otp['otp'] }} is the OTP to {{ $input['workflow_action'] }} your workflow config in RazorpayX. OTP is valid for 5 minutes. Please do not share with anyone.
 </div>
 
 </body>

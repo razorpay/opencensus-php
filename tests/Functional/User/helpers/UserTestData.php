@@ -3305,6 +3305,25 @@ return [
         ],
     ],
 
+    'testSSWFSmsOtpViaStork' => [
+        'request' => [
+            'url'     => '/users/otp/send',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin'     => config('applications.banking_service_url'),
+                'HTTP_X-Dashboard-User-Id'  => '20000000000000'
+            ],
+            'content' => [
+                'action'        => 'create_workflow_config',
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
     'testSetMobileNumberForMerchantEnabled2FAForXWithNewSmsTemplateAndSendsViaStork' => [
         'request' => [
             'url'     => '/users/2fa_setup/contact_mobile',

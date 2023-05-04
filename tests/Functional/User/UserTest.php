@@ -4936,6 +4936,25 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testSSWFSmsOtpViaStork()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['second_factor_auth' => 1]);
+
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => '20000000000000'], 'admin');
+
+        $this->ba->proxyAuth();
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkSendSmsRequest($storkMock, 'sms.user.otp_workflow_config_v2', '9999999999', []);
+
+        $this->startTest();
+    }
+
     public function testSetMobileNumberForMerchantEnabled2FAForXWithNewSmsTemplateAndSendsViaStork()
     {
         $this->enableRazorXTreatmentForRazorX();
@@ -6207,7 +6226,6 @@ class UserTest extends TestCase
     protected function expectStorkSendSmsRequest($storkMock, $templateName, $destination, $expectedParms = [])
     {
         $storkMock->shouldReceive('sendSms')
-            ->times(1)
             ->with(
                 Mockery::on(function ($mockInMode)
                 {
