@@ -11,6 +11,7 @@ use RZP\Models\User\Role;
 use RZP\Http\RequestHeader;
 use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\TestCase;
+use RZP\Constants\Mode as EnvMode;
 use RZP\Models\Merchant\RefundSource;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Entity as Payment;
@@ -2112,7 +2113,7 @@ class TransferTest extends TestCase
         });
     }
 
-    public function testTransferSettlementStatusUpdate()
+    public function testTransferSettlementStatusUpdateForReversedTransfer()
     {
         $this->app['rzp.mode'] = 'test';
 
@@ -2144,5 +2145,71 @@ class TransferTest extends TestCase
         $transfer = $this->getDbLastEntity('transfer');
 
         $this->assertEquals('settled', $transfer['settlement_status']);
+    }
+
+    public function testTransferSettlementStatusUpdateForProcessedTransfer()
+    {
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $transferDetails = $this->createTransfer('account');
+
+        $this->createSettlementEntry([
+            'merchant_id'               => '10000000000000',
+            'channel'                   => 'axis2',
+            'balance_type'              => 'primary',
+            'amount'                    => $transferDetails['amount'],
+            'fees'                      => 12,
+            'tax'                       => 13,
+            'settlement_id'             => 'testtestabc123',
+            'status'                    => 'processed',
+            'type'                      => 'normal',
+            'details'                   => [
+                'payment' => [
+                    'type' => 'credit',
+                    'amount' => $transferDetails['amount'],
+                    'count'  => 1,
+                ],
+            ]
+        ]);
+
+        $this->fixtures->edit('transfer', $transferDetails['id'], ['recipient_settlement_id' => 'testtestabc123', 'status'=>'processed']);
+
+        TransferSettlementStatus::dispatch('test', 'testtestabc123');
+
+        $transfer = $this->getDbLastEntity('transfer');
+
+        $this->assertEquals('settled', $transfer['settlement_status']);
+    }
+
+    public function testTransferSettlementStatusUpdateTransferIdNotFound()
+    {
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $transferDetails = $this->createTransfer('account');
+
+        $this->createSettlementEntry([
+            'merchant_id'               => '10000000000000',
+            'channel'                   => 'axis2',
+            'balance_type'              => 'primary',
+            'amount'                    => $transferDetails['amount'],
+            'fees'                      => 12,
+            'tax'                       => 13,
+            'settlement_id'             => 'testtestabc123',
+            'status'                    => 'processed',
+            'type'                      => 'normal',
+            'details'                   => [
+                'payment' => [
+                    'type' => 'credit',
+                    'amount' => $transferDetails['amount'],
+                    'count'  => 1,
+                ],
+            ]
+        ]);
+
+        TransferSettlementStatus::dispatch('test', 'testtestabc123');
+
+        $transfer = $this->getDbLastEntity('transfer');
+
+        $this->assertNull( $transfer['settlement_status']);
     }
 }

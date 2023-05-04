@@ -1316,7 +1316,8 @@ class Core extends Base\Core
         if (($settlement->merchant->isLinkedAccount() === true)
             and ($settlement->getStatus() === Status::PROCESSED))
         {
-            TransferSettlementStatus::dispatch($this->mode, $settlement->getId());
+            TransferSettlementStatus::dispatch($this->mode, $settlement->getId())->delay(
+                TransferSettlementStatus::DISPATCH_DELAY_SECONDS);
         }
     }
 }

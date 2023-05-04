@@ -28,6 +28,7 @@ use RZP\Jobs\TransferProcessCapitalFloat;
 use RZP\Jobs\TransferProcessKeyMerchants;
 use RZP\Models\Ledger\RouteJournalEvents;
 use RZP\Models\Partner\Service as PartnerService;
+use RZP\Exception\SettlementStatusUpdateException;
 use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 
 class Core extends Base\Core
@@ -1065,20 +1066,36 @@ class Core extends Base\Core
         $this->repo->saveOrFailCollection($transfers);
     }
 
+    /**
+     * @throws SettlementStatusUpdateException
+     */
     public function updateSettlementStatusInTransfers(string $settlementId)
     {
         $transferIds = $this->repo->transfer->getIdsByRecipientSettlementId($settlementId, Status::$forSettlementStatusUpdate);
 
         $this->traceTransferIdsFetchedForSettlementStatusUpdate($settlementId, $transferIds);
 
+        $totalTransfersAmount = 0;
+
         foreach ($transferIds as $transferId)
         {
             $transfer = $this->repo->transfer->find($transferId);
+
+            $totalTransfersAmount += $transfer->getAmount();
+
+            if ($transfer->getSettlementStatus() === SettlementStatus::SETTLED)
+            {
+                // Skip the status update here as the status would have been updated by a previous attempt
+                // of TransferSettlementStatus job.
+                continue;
+            }
 
             $transfer->setSettlementStatus(SettlementStatus::SETTLED);
 
             $transfer->saveOrFail();
         }
+
+        $this->checkIfTransfersAmountMatchesSettlementAmount($settlementId, $totalTransfersAmount);
 
         $this->trace->info(
             TraceCode::SETTLEMENT_STATUS_UPDATE_IN_TRANSFERS_SUCCESS,
@@ -1087,6 +1104,37 @@ class Core extends Base\Core
                 'count'         => count($transferIds),
             ]
         );
+    }
+
+    /**
+     * @throws SettlementStatusUpdateException
+     */
+    protected function checkIfTransfersAmountMatchesSettlementAmount($settlementId, $totalTransfersAmount)
+    {
+        $settlement = $this->repo->settlement->findOrFail($settlementId);
+
+        if ($settlement->getAmount() === $totalTransfersAmount)
+        {
+            $this->trace->info(
+                TraceCode::TRANSFERS_AMOUNT_AND_SETTLEMENT_AMOUNT_MATCHED,
+                [
+                    'settlement_id' => $settlementId,
+                    'total_amount'  => $totalTransfersAmount,
+                ]
+            );
+
+            return null;
+        }
+
+        $this->trace->error(
+            TraceCode::TRANSFERS_AMOUNT_AND_SETTLEMENT_AMOUNT_MISMATCH,
+            [
+                'settlement_id' => $settlementId,
+                'total_amount'  => $totalTransfersAmount,
+            ]
+        );
+
+        throw new Exception\SettlementStatusUpdateException('Failed for settlementID: ' . $settlementId);
     }
 
     public function trackTransferProcessingTime(Entity $transfer, Payment\Entity $payment = null)
