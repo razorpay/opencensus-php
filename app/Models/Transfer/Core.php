@@ -1273,6 +1273,45 @@ class Core extends Base\Core
             return;
         }
 
+        //
+        // Live mode check is required because the Slice queue does not exist on test mode.
+        //
+        if ($this->isLiveMode() === true)
+        {
+            $selector = rand(1, 2);
+
+            switch ($selector)
+            {
+                case 1:
+                {
+                    TransferProcess::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delay);
+
+                    return;
+                }
+
+                case 2:
+                {
+                    TransferProcessSlice::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delay);
+
+                    return;
+                }
+
+                default:
+                {
+                    $this->trace->info(
+                        TraceCode::TRANSFER_PROCESS_QUEUE_SELECTOR_INVALID_VALUE,
+                        [
+                            'selector' => $selector,
+                        ]
+                    );
+
+                    TransferProcess::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delay);
+
+                    return;
+                }
+            }
+        }
+
         TransferProcess::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delay);
     }
 
