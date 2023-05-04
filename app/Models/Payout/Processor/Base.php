@@ -7,6 +7,7 @@ use Closure;
 use Razorpay\Api\VirtualAccount;
 use RZP\Exception;
 use Carbon\Carbon;
+use RZP\Http\Route;
 use RZP\Error\Error;
 use RZP\Constants\Mode;
 use RZP\Models\Workflow;
@@ -3968,6 +3969,15 @@ class Base extends BaseCore
                             'payout_create_input' => $input,
                             'batch_id'            => $this->batchId ?? "",
                         ]);
+
+                    /** @var Route $route */
+                    $route = $this->app['api.route'];
+
+                    $routeName = $route->getCurrentRouteName();
+
+                    $this->trace->count(Metric::INVALID_PAYOUT_CREATE_REQUEST_TO_PAYOUT_SERVICE, [
+                        RzpConstants\Metric::LABEL_ROUTE_NAME  => $routeName,
+                    ]);
 
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_ERROR,

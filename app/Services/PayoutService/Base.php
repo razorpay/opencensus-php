@@ -3,11 +3,13 @@
 namespace RZP\Services\PayoutService;
 
 use App;
+use RZP\Http\Route;
 use \WpOrg\Requests\Response;
 use \WpOrg\Requests\Exception as Requests_Exception;
 use Razorpay\Trace\Logger;
 use Razorpay\Edge\Passport\Passport;
 
+use RZP\Constants;
 use RZP\Exception;
 use RZP\Error\Error;
 use RZP\Models\Payout;
@@ -113,11 +115,29 @@ class Base
         }
         catch (Requests_Exception $e)
         {
-            $errorCode = TraceCode::PAYOUT_SERVICE_REQUEST_FAILED;
+
+            /** @var Route $route */
+            $route = $this->app['api.route'];
+
+            $routeName = $route->getCurrentRouteName();
 
             if ($this->checkRequestTimeout($e) === true)
             {
                 $errorCode = TraceCode::PAYOUT_SERVICE_REQUEST_TIMEOUT;
+
+                $this->trace->count(Payout\Metric::PAYOUT_SERVICE_TIME_OUT_EXCEPTION, [
+                    Constants\Metric::LABEL_ROUTE_NAME => $routeName,
+                    Constants\Metric::LABEL_ERROR_CODE => $e->getCode(),
+                ]);
+            }
+            else
+            {
+                $errorCode = TraceCode::PAYOUT_SERVICE_REQUEST_FAILED;
+
+                $this->trace->count(Payout\Metric::PAYOUT_SERVICE_REQUEST_FAILED, [
+                    Constants\Metric::LABEL_ROUTE_NAME => $routeName,
+                    Constants\Metric::LABEL_ERROR_CODE => $e->getCode(),
+                ]);
             }
 
             $this->trace->traceException($e, Logger::ERROR, $errorCode);
@@ -131,6 +151,16 @@ class Base
                 Logger::ERROR,
                 TraceCode::PAYOUT_SERVICE_REQUEST_FAILED
             );
+
+            /** @var Route $route */
+            $route = $this->app['api.route'];
+
+            $routeName = $route->getCurrentRouteName();
+
+            $this->trace->count(Payout\Metric::PAYOUT_SERVICE_REQUEST_FAILED, [
+                Constants\Metric::LABEL_ROUTE_NAME => $routeName,
+                Constants\Metric::LABEL_ERROR_CODE => $ex->getCode(),
+            ]);
 
             throw $ex;
         }
@@ -190,6 +220,25 @@ class Base
             'response'    => $response->body,
             'status_code' => $response->status_code
         ]);
+
+        if (($response->status_code >= 500) and
+            ($response->status_code <= 599))
+        {
+            $responseArray = json_decode($response->body,true);
+
+            if (empty($responseArray) === true)
+            {
+                /** @var Route $route */
+                $route = $this->app['api.route'];
+
+                $routeName = $route->getCurrentRouteName();
+
+                $this->trace->count(Payout\Metric::SERVER_ERROR_PAYOUT_SERVICE_REQUEST_FAILED, [
+                    Constants\Metric::LABEL_STATUS_CODE => $response->status_code,
+                    Constants\Metric::LABEL_ROUTE_NAME  => $routeName,
+                ]);
+            }
+        }
     }
 
     /**

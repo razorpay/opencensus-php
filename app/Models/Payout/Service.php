@@ -2061,6 +2061,10 @@ class Service extends Base\Service
                         ];
 
                         $payoutBatch->push($exceptionData);
+
+                        $this->trace->count(Metric::BULK_PAYOUTS_INTERNAL_SERVER_ERROR, [
+                            Constants\Metric::LABEL_ERROR_CODE => $throwable->getCode(),
+                        ]);
                     }
                 },
                 $mutexLockTimeout,

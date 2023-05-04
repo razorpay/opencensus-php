@@ -34,7 +34,13 @@ final class Metric
     const SERVER_ERROR_PRICING_RULE_ABSENT_TOTAL                    = 'server_error_pricing_rule_absent_total';
     const PAYOUT_TO_CARDS_VAULT_TOKEN_DELETION_RETRIES_EXHAUSTED    = 'payout_to_cards_vault_token_deletion_retries_exhausted';
     const SUB_ACCOUNT_PAYOUT_TYPE_SET_TOTAL                         = 'sub_account_payout_type_set_total';
+    const BULK_PAYOUTS_INTERNAL_SERVER_ERROR                        = 'bulk_payouts_internal_server_error';
 
+    // Payout Service Metrics/Alerts
+    const INVALID_PAYOUT_CREATE_REQUEST_TO_PAYOUT_SERVICE = 'invalid_payout_create_request_to_payout_service';
+    const PAYOUT_SERVICE_TIME_OUT_EXCEPTION               = "payout_service_time_out_exception";
+    const PAYOUT_SERVICE_REQUEST_FAILED                   = "payout_service_request_failed";
+    const SERVER_ERROR_PAYOUT_SERVICE_REQUEST_FAILED      = "server_error_payout_service_request_failed";
 
     // Histograms
     const PAYOUT_QUEUED_TO_CREATED_DURATION_SECONDS                      = 'payout_queued_to_created_duration_seconds.histogram';

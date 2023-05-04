@@ -17,6 +17,7 @@ use RZP\Models\Payout\Core;
 use RZP\Models\Pricing\Fee;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
+use RZP\Models\Payout\Metric;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
 use RZP\Models\PayoutsDetails;
@@ -26,6 +27,7 @@ use RZP\Models\Feature\Constants;
 use RZP\Jobs\BatchPayoutsProcess;
 use RZP\Services\FTS\FundTransfer;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Traits\TestsMetrics;
 use RZP\Models\Payout\DataMigration;
 use RZP\Jobs\PayoutSourceUpdaterJob;
 use RZP\Error\PublicErrorDescription;
@@ -72,6 +74,7 @@ use RZP\Services\PayoutService\DashboardScheduleTimeSlots as PayoutServiceDashbo
 class PayoutServiceTest extends TestCase
 {
     use PayoutTrait;
+    use TestsMetrics;
     use WorkflowTrait;
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
@@ -5339,9 +5342,24 @@ class PayoutServiceTest extends TestCase
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
+        $metricsMock = $this->createMetricsMock();
+
+        $boolMetricCaptured = false;
+
+        $this->mockAndCaptureCountMetric(
+            Metric::INVALID_PAYOUT_CREATE_REQUEST_TO_PAYOUT_SERVICE,
+            $metricsMock,
+            $boolMetricCaptured,
+            [
+                'route_name' => 'payout_create'
+            ]
+        );
+
         $this->startTest();
 
         $payoutServiceCreateMock->shouldNotHaveReceived('createPayoutViaMicroservice');
+
+        $this->assertTrue($boolMetricCaptured);
     }
 
     public function testCreatePayoutToFundAccount_IdempotencyKey()
@@ -5355,9 +5373,24 @@ class PayoutServiceTest extends TestCase
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
+        $metricsMock = $this->createMetricsMock();
+
+        $boolMetricCaptured = false;
+
+        $this->mockAndCaptureCountMetric(
+            Metric::INVALID_PAYOUT_CREATE_REQUEST_TO_PAYOUT_SERVICE,
+            $metricsMock,
+            $boolMetricCaptured,
+            [
+                'route_name' => 'payout_create'
+            ]
+        );
+
         $this->startTest();
 
         $payoutServiceCreateMock->shouldNotHaveReceived('createPayoutViaMicroservice');
+
+        $this->assertTrue($boolMetricCaptured);
     }
 
     public function testDccPayoutsDetailsFetchPayoutCountValidationFailure()
@@ -5494,7 +5527,23 @@ class PayoutServiceTest extends TestCase
 
         $this->mockPayoutServiceInitiateBatchSubmittedCronCreate(true);
 
+        $metricsMock = $this->createMetricsMock();
+
+        $boolMetricCaptured = false;
+
+        $this->mockAndCaptureCountMetric(
+            Metric::SERVER_ERROR_PAYOUT_SERVICE_REQUEST_FAILED,
+            $metricsMock,
+            $boolMetricCaptured,
+            [
+                'route_name' => 'payouts_process_batch',
+                'status_code' => 500,
+            ]
+        );
+
         $this->startTest();
+
+        $this->assertTrue($boolMetricCaptured);
     }
 
     public function mockPayoutServiceInitiateBatchSubmittedCronCreate($fail = false)
@@ -5517,7 +5566,6 @@ class PayoutServiceTest extends TestCase
 
         if ($fail === true)
         {
-            $response->body        = json_encode([]);
             $response->status_code = 500;
             $response->success     = true;
         }
