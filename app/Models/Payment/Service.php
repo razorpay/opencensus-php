@@ -2330,6 +2330,14 @@ class Service extends Base\Service
         return $this->redirectToAuthorize($id, $input);
     }
 
+    // $input contains start_time_stamp in int64 and month in int
+    public function callCpsForBackFilling($input)
+    {
+        $path = 'payments/rearch/backfill';
+
+        $this->app['card.payments']->sendRequest('POST', $path, $input);
+    }
+
     public function getPaymentFlows(array $input)
     {
         $merchant = $this->merchant;

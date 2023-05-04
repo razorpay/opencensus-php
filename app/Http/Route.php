@@ -19,6 +19,7 @@ class Route
     protected $namespace = 'RZP\Http\Controllers';
 
     protected static $apiRoutes = [
+        'payments_rearch_backfill'                          => ['post',     'payments/backfill',                                    'PaymentController@callCpsForBackfilling'                           ],
         'merchant_nc_revamp_eligibility_admin'              => ['get',      'merchant/activation/{id}/clarifications/eligibility',  'MerchantController@getMerchantNcRevampEligibility'                 ],
         'merchant_nc_revamp_eligibility'                    => ['get',      'merchant/activation/clarifications/eligibility',       'MerchantController@getMerchantNcRevampEligibility'                 ],
         'merchant_activation_clarifications_save_admin'     => ['post',     'merchant/activation/{id}/clarifications',              'MerchantController@postMerchantClarificationDetails'               ],
@@ -4912,6 +4913,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'payments_rearch_backfill',
         'update_shopify_1cc_credentials',
         'refunds_reversal_create',
         'adj_transaction_create',
@@ -14310,6 +14312,7 @@ class Route
         ],
 
         'cron' => [
+            'payments_rearch_backfill',
             'dcc_invoice_generation_cron',
             'fpx_downtime_detection_cron',
             'payment_page_cds_billing_update_cron',
