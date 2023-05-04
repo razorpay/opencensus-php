@@ -127,11 +127,7 @@ const LeafList = ({
     <div class={`level-3 ${instrument.leafList && instrument.leafList.length > 1 && 'overflowY'}`}>
       {instrument.leafList.map((leafList) => {
         if (leafList.slug === 'localcurrencytransfer' && !isB2BEnabled) return null;
-        if (
-          leafList?.slug === 'instantbanktransfer' &&
-          (!user.isApmOnboardingEnabled || !user?.international)
-        )
-          return null;
+        if (leafList?.slug === 'instantbanktransfer' && !user?.international) return null;
         return (
           <React.Fragment key={leafList.header}>
             <div class="heading">

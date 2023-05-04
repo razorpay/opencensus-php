@@ -195,7 +195,6 @@ class Service extends Base\Service
             'rx_receivables',
             'capital_cards_unbilled_transactions',
             'capital_cards_statement',
-            'international_apm_onboarding',
             'capital_founders_card',
             'capital_business_rewards',
             'capital_last_day_repayment',

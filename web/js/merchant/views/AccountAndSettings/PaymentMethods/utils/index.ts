@@ -13,6 +13,6 @@ export const isInternationalLeafItemDisabled = ({
 
   return (
     (slug === 'localcurrencytransfer' && !isB2BEnabled) ||
-    (slug === 'instantbanktransfer' && (!user?.isApmOnboardingEnabled || !user?.international))
+    (slug === 'instantbanktransfer' && !user?.international)
   );
 };
