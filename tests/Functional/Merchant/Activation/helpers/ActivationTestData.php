@@ -4312,6 +4312,58 @@ return [
         ],
     ],
 
+    'testConsentDetailsForTnCValidation' => [
+        'request'  => [
+            'content' => [
+                'contact_name'                => 'test',
+                'contact_mobile'              => '9123456789',
+                'business_type'               => '1',
+                'business_name'               => 'Acme',
+                'business_dba'                => 'Acme',
+                'bank_account_name'           => 'test',
+                'bank_account_number'         => '123456789012345',
+                'bank_branch_ifsc'            => 'ICIC0000001',
+                'business_operation_address'  => 'Test address',
+                'business_operation_state'    => 'Karnataka',
+                'business_operation_city'     => 'Bengaluru',
+                'business_operation_pin'      => '560030',
+                'business_registered_address' => 'Test address',
+                'business_registered_state'   => 'Karnataka',
+                'business_registered_city'    => 'Bengaluru',
+                'business_registered_pin'     => '560030',
+                'activation_form_milestone'   => 'L2',
+                'consent'                     => true,
+                'documents_detail'            => [
+                    [
+                        'type'    => 'Privacy Policy',
+                        'url'=>'https://razorpay.com/privacy/'
+                    ],
+                    [
+                        'type'=>'Service Agreement',
+                        'url'=>'https://razorpay.com/agreement/'
+                    ],
+                    [
+                        "type" => "Terms and Conditions",
+                        "url" => "https://razorpay.com/terms/"
+                    ]
+                ]
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'submitted'                   => true,
+                'activation_status'           => 'under_review',
+                'can_submit'                  => true,
+                'activation_form_milestone'   => 'L2',
+            ],
+        ],
+    ],
+
     'testStorageConsentNullForMerchantWithL2Milestone' => [
         'request'  => [
             'content' => [

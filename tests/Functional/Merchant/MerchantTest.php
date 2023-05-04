@@ -10841,7 +10841,7 @@ Team Razorpay',
                 [
                     'id' => 'KdSCny9TA9OrmA',
                     'merchant_id' => '10000000000000',
-                    'consent_for' => ['L2_Terms & Conditions'],
+                    'consent_for' => ['L2_Terms and Conditions'],
                 ]);
 
         $this->fixtures->create('merchant_consents',

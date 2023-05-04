@@ -5404,6 +5404,34 @@ class ActivationTest extends OAuthTestCase
         $this->assertEquals('initiated', $consentDetail['status']);
     }
 
+
+    public function testConsentDetailsForTnCValidation()
+    {
+        Mail::fake();
+
+        Config::set('services.bvs.mock', true);
+
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->setupKycSubmissionForInstantlyActivatedMerchant($merchantId);
+
+        $this->startTest();
+
+        $merchantConsents = \DB::connection('test')->select("select * from merchant_consents where merchant_id = '$merchantId'ORDER BY created_at DESC LIMIT 3 ");
+
+        $values = ["L2_Privacy Policy","L2_Service Agreement","L2_Terms and Conditions"];
+
+        $expectedConsents = [];
+
+        foreach ($merchantConsents as $consent) {
+            $expectedConsents[] = $consent->consent_for;
+        }
+
+        $this->assertCount(3, $expectedConsents);
+        $this->assertEmpty(array_diff($values, $expectedConsents));
+
+    }
+
     public function testStorageConsentNullForMerchantWithL2Milestone()
     {
         Mail::fake();

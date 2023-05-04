@@ -52,7 +52,7 @@ class Constants
     ];
 
     const VALID_LEGAL_DOC_BANKING_ORG = [
-        'L2_Terms & Conditions',
+        'L2_Terms and Conditions',
         'L2_Privacy Policy',
         'L2_Service Agreement',
     ];
