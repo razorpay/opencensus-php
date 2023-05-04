@@ -622,9 +622,7 @@ class ProductSubMerchantsList extends ListContainer {
     const isNonEmptyCapitalList = Array.isArray(capitalItems) && capitalItems?.length > 0;
     const isFilterSearchUsed = location.search !== '';
     const shouldShowWelcomeScreen =
-      (!isNonEmptyList || !isNonEmptyCapitalList) &&
-      !isFilterSearchUsed &&
-      !user.isPartner('pure_platform');
+      !isNonEmptyList && !isFilterSearchUsed && !user.isPartner('pure_platform');
     if (user.isPartner('pure_platform')) {
       appIdColumn = [appId];
     } else if (user.isPartner('aggregator', 'fully_managed')) {
@@ -771,7 +769,7 @@ class ProductSubMerchantsList extends ListContainer {
                   {...this.props}
                 />
               )}
-              {!shouldShowWelcomeScreen && isNonEmptyCapitalList && this.isCapitalProduct ? (
+              {isNonEmptyCapitalList && this.isCapitalProduct ? (
                 <DataTable
                   title="Sub Merchants"
                   count={this.state.count}
@@ -781,7 +779,6 @@ class ProductSubMerchantsList extends ListContainer {
                   items={capitalItems}
                 />
               ) : null}
-
               {shouldShowWelcomeScreen && (
                 <>
                   <div style={{ flex: 2, textAlign: 'center' }}>

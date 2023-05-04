@@ -24,7 +24,7 @@ export const referralData = {
   },
 };
 
-export const accountsListResponse = {
+export const emptyAccountsListResponse = {
   entity: 'collection',
   count: 0,
   items: [],

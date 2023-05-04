@@ -1,6 +1,6 @@
 import { rest } from 'msw';
 import {
-  accountsListResponse,
+  emptyAccountsListResponse,
   items,
   productResponse,
   bulkResponse,
@@ -14,7 +14,7 @@ export const subMerchantListHandlers = [
       ctx.json({
         status_code: 200,
         success: true,
-        data: { ...accountsListResponse, items, count: items.length },
+        data: { ...emptyAccountsListResponse, items, count: items.length },
       }),
     );
   }),
