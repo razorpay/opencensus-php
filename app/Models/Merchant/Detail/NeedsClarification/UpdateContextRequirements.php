@@ -116,6 +116,12 @@ class UpdateContextRequirements
         ],
     ];
 
+    const LINKED_ACCOUNT_UPDATE_MERCHANT_CONTEXT_REQUIREMENTS_WITHOUT_NO_DOC_KYC = [
+        self::default => [
+            [self::BANK_DETAILS_VERIFICATION]
+        ],
+    ];
+
     const UPDATE_MERCHANT_CONTEXT_REQUIREMENTS = [
         self::default                 => [
             [self::POA_VERIFICATION],
@@ -419,8 +425,9 @@ class UpdateContextRequirements
                 {
                     return $this->getNoDocUpdateContextRequirement($entity);
                 }
-
-                $updateContextRequirements = self::UPDATE_MERCHANT_CONTEXT_REQUIREMENTS;
+                $updateContextRequirements = ($entity->merchant->isLinkedAccount() === false) ? self::UPDATE_MERCHANT_CONTEXT_REQUIREMENTS :
+                                                self::LINKED_ACCOUNT_UPDATE_MERCHANT_CONTEXT_REQUIREMENTS_WITHOUT_NO_DOC_KYC;
+                                                
                 $type = $entity->getBusinessType();
                 break;
 
