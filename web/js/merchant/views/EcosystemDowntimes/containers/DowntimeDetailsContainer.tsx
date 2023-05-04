@@ -10,6 +10,7 @@ import { isMobileResolution } from 'common/utils/rzp-utils';
 import { DOWNTIME_SUMMARY_FIELDS, STATUS } from 'merchant/views/EcosystemDowntimes/constants';
 import type { DowntimeMetaDataType } from 'merchant/views/EcosystemDowntimes/types';
 import { DowntimeHistoryContent } from 'merchant/views/EcosystemDowntimes/styles';
+import SuccessRateSummary from 'merchant/views/EcosystemDowntimes/components/SuccessRateSummary';
 
 type processPreviousDowntimeDataReturnType = {
   icon?: JSX.Element;
@@ -70,7 +71,7 @@ const DowntimeDetailsContainer = (): JSX.Element | null => {
 
   if (!!isPreviousDowntimesError) return <EcosystemHealthError />;
 
-  const { key, method, group } = focusedInstrument;
+  const { key, method, group, srKey } = focusedInstrument;
   const activeDowntimeForInstrument = activeDowntimes?.[method]?.[group]?.[key];
   const pastDowntimesForInstrument =
     previousDowntimes?.[method]?.[group]?.[key]?.previousDowntimes || [];
@@ -86,6 +87,9 @@ const DowntimeDetailsContainer = (): JSX.Element | null => {
         pastDowntimes={pastDowntimesForInstrument}
         summaryFields={DOWNTIME_SUMMARY_FIELDS}
       />
+      {!!srKey ? (
+        <SuccessRateSummary isMobile={isMobile} srKey={srKey} instrument={key} method={method} />
+      ) : null}
       <DowntimeDetailsCurrentStatus
         isMobile={isMobile}
         activeDowntime={activeDowntimeForInstrument}

@@ -4,13 +4,15 @@ import DowntimeDetailsContainer from 'merchant/views/EcosystemDowntimes/containe
 import { EcosystemDowntimeContext } from 'merchant/views/EcosystemDowntimes/context';
 import { processPreviousDowntimes } from 'merchant/views/EcosystemDowntimes/helpers';
 import { previous_downtimes_mock } from './mocks/mockResponses';
+import { InstrumentMetaData } from 'merchant/views/EcosystemDowntimes/types';
 
-const instrument = {
+const instrument: InstrumentMetaData = {
   logo: '',
   name: 'VISA',
   key: 'VISA',
   method: 'card',
   group: 'network',
+  srKey: null,
 };
 
 const initProps = {
@@ -25,6 +27,11 @@ const initProps = {
   dispatch: jest.fn(),
   refreshData: jest.fn(),
 };
+
+jest.mock('merchant/views/EcosystemDowntimes/components/SuccessRateSummary', () => ({
+  __esModule: true,
+  default: () => <div data-testid="test-sr-summary-container">Test SR Summary Container</div>,
+}));
 
 const App = ({ propsToBeExposed }): JSX.Element => {
   return (
@@ -114,5 +121,16 @@ describe('<DowntimeDetailsContainer/>', () => {
     };
     render(<App propsToBeExposed={props} />);
     expect(screen.getByTestId('ecosystem-health-error')).toBeInTheDocument();
+  });
+
+  test('should SR summary based on if SR key available', () => {
+    const newInstrument = { ...instrument };
+    newInstrument.srKey = 'card.network.Visa';
+
+    const newProps = { ...initProps };
+    newProps.state.focusedInstrument = newInstrument;
+
+    render(<App propsToBeExposed={newProps} />);
+    expect(screen.getByTestId('test-sr-summary-container')).toBeInTheDocument();
   });
 });

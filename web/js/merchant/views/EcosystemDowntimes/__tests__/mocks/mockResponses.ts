@@ -64,6 +64,12 @@ export const downtime_mock_response_with_no_downtime = {
   data: [],
 };
 
+export const failed_downtime_response = {
+  status_code: 500,
+  success: false,
+  data: [],
+};
+
 export const previous_downtimes_mock = {
   status_code: 200,
   success: true,
@@ -95,4 +101,23 @@ export const previous_downtimes_mock = {
       updated_at: 1675426707,
     },
   ],
+};
+
+export const failed_sr_mock_response = {
+  status_code: 200,
+  success: true,
+  data: {
+    Code: 'SERVER_ERROR',
+    Description: 'The server encountered an error. The incident has been reported to admins.',
+  },
+};
+
+export const sr_mock_response = {
+  status_code: 200,
+  success: true,
+  data: {
+    sr: 30,
+    total: 34005,
+    successful: 1002,
+  },
 };

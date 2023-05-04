@@ -25,11 +25,11 @@ const DowntimeSummaryTile = ({
       </div>
       <div aria-label="summary-tile-value">
         {isMobile ? (
-          <Text size="medium" weight="bold">
+          <Text size="small" weight="bold">
             {value}
           </Text>
         ) : (
-          <Heading size="medium" weight="bold">
+          <Heading size="small" weight="bold">
             {value.toString()}
           </Heading>
         )}

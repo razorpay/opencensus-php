@@ -4,13 +4,11 @@ export type EcosystemDowntimesProviderType = {
   children: React.ReactNode;
 };
 
-export type FocusedInstrumentMetaDataType = {
-  key: string;
-  logo: string;
-  name: string;
-  method: string;
-  group: string;
-};
+type InstrumentField = 'logo' | 'name' | 'key' | 'method' | 'group';
+
+export interface InstrumentMetaData extends Record<InstrumentField, string> {
+  srKey: string | null;
+}
 
 export type EcosystemDowntimesActionType = {
   type: EcosystemDowntimesActions;
@@ -18,7 +16,7 @@ export type EcosystemDowntimesActionType = {
     previousDowntimes?: PreviousDowntimeDictionaryType;
     activeDowntimes?: DowntimeDictionaryType;
     lastUpdatedAt?: string;
-    focusedInstrument?: FocusedInstrumentMetaDataType | null;
+    focusedInstrument?: InstrumentMetaData | null;
   };
 };
 
@@ -35,6 +33,7 @@ export type InstrumentMapType = {
 
 export interface MethodsInstrumentListType extends InstrumentMapType {
   method: string;
+  srKey: string | null;
 }
 export interface DowntimeMetaDataType {
   id: string;
@@ -89,7 +88,7 @@ export interface EcosystemDowntimesInitialState extends EcosystemQueryFieldTypes
   lastUpdatedAt?: string;
   activeDowntimes: DowntimeDictionaryType;
   previousDowntimes?: PreviousDowntimeDictionaryType;
-  focusedInstrument?: FocusedInstrumentMetaDataType | null;
+  focusedInstrument?: InstrumentMetaData | null;
 }
 
 export interface EcosystemDowntimesContextType {
@@ -109,20 +108,13 @@ export interface DowntimeResponseType {
   data: DowntimeMetaDataType[];
 }
 
-export interface InstrumentType {
-  instrument: {
-    [key: string]: string;
-  };
-  status?: DowntimeMetaDataType;
-  onClick?: (FocusedInstrumentMetaDataType) => void;
-}
-
 export interface MethodInstrumentDataListType {
   [key: string]: {
     [key: string]: {
       key: string;
       logo: string;
       name: string;
+      srKey: string | null;
     }[];
   };
 }
@@ -145,5 +137,19 @@ export type StaticInstrumentMappingType = {
     [key in instrumentGroupTypes]?: {
       [key: string]: boolean;
     };
+  };
+};
+
+export type SuccessRateResponseType = {
+  status_code: number;
+  success: boolean;
+  data: {
+    code?: string;
+    name?: 'string';
+    sr?: number;
+    successful?: number;
+    total?: number;
+    Code?: string; //in case endpoint throws error
+    Description?: string; //in case endpoint throws error
   };
 };

@@ -10,6 +10,10 @@ const initProps = {
   instrument: {
     key: 'VISA',
     name: 'VISA',
+    logo: '',
+    group: 'network',
+    method: 'card',
+    srKey: 'card.network.Visa',
   },
 };
 
@@ -41,6 +45,8 @@ describe('<Instrument/>', () => {
       properties: {
         key: 'VISA',
         name: 'VISA',
+        group: 'network',
+        method: 'card',
       },
     });
   });

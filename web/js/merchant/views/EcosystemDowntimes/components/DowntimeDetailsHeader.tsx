@@ -1,12 +1,12 @@
 import React from 'react';
-import type { FocusedInstrumentMetaDataType } from 'merchant/views/EcosystemDowntimes/types';
+import type { InstrumentMetaData } from 'merchant/views/EcosystemDowntimes/types';
 import { DowntimeDetailsHeaderStyled } from 'merchant/views/EcosystemDowntimes/styles';
 import { Heading, Text } from '@razorpay/blade/components';
 import { METHOD_NAMES_MAP } from 'merchant/views/EcosystemDowntimes/constants';
 import { humanize } from 'common/utils/rzp-utils';
 
 type DowntimeDetailsHeaderType = {
-  instrument: FocusedInstrumentMetaDataType;
+  instrument: InstrumentMetaData;
   isMobile: boolean;
 };
 

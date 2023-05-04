@@ -1,6 +1,6 @@
 import { merchantFetch } from 'merchant/utils/ajax';
-import { getPayloadForResolvedDowntimes } from './helpers';
-import type { DowntimeResponseType, DowntimeMetaDataType } from './types';
+import { getPayloadForResolvedDowntimes, getPayloadForSR } from './helpers';
+import type { DowntimeResponseType, DowntimeMetaDataType, SuccessRateResponseType } from './types';
 
 export const fetchOngoingDowntimes = async (): Promise<DowntimeMetaDataType[]> => {
   const { data: onGoingDowntimeData }: DowntimeResponseType = await merchantFetch({
@@ -18,3 +18,16 @@ export const fetchResolvedDowntimes = async (): Promise<DowntimeMetaDataType[]> 
   });
   return previousDowntimes;
 };
+
+type fetchSuccessRateTypes = {
+  srKey: string;
+};
+
+export const fetchSuccessRate = async ({
+  srKey,
+}: fetchSuccessRateTypes): Promise<SuccessRateResponseType> =>
+  merchantFetch({
+    url: `success-rate/merchant/sr`,
+    data: getPayloadForSR({ srKey }),
+    method: 'post',
+  });

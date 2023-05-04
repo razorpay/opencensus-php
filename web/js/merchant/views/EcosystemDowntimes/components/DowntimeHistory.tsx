@@ -15,7 +15,7 @@ type DowntimeHistoryProps = {
 
 const DowntimeHistory = ({ isMobile, pastDowntimes = [] }: DowntimeHistoryProps): JSX.Element => {
   return (
-    <DowntimeHistoryContainer aria-label="downtime-history">
+    <DowntimeHistoryContainer aria-label="downtime-history" isMobile={isMobile}>
       <div className="previous-downtime-title">
         <Text weight="bold">Past Downtimes</Text>
       </div>

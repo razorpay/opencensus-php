@@ -1,6 +1,7 @@
 import moment from 'moment';
 import {
   INSTRUMENT_CODES_MAP,
+  METHOD_NAMES_MAP,
   STATUS,
   accessInstrumentList,
 } from 'merchant/views/EcosystemDowntimes/constants';
@@ -11,7 +12,9 @@ import type {
   MethodsInstrumentListType,
   PreviousDowntimeDictionaryType,
   StaticInstrumentMappingType,
+  SuccessRateResponseType,
 } from './types';
+import { toTitleCase } from '@razorpay/blade/utils';
 
 export const _prepareDowntimeObj = ({
   currentDowntimeObj,
@@ -93,7 +96,7 @@ export const processOnGoingDowntimes = (
   }, {});
 };
 
-export const getHoursMinutesFromTimestamp = (timestamp: number, ignoreFields: string[]): string => {
+export const getElapsedTime = (timestamp: number, ignoreFields: string[] = []): string => {
   const hours = {
     value: Math.floor(timestamp / 60 / 60),
     unit: 'hrs',
@@ -107,9 +110,14 @@ export const getHoursMinutesFromTimestamp = (timestamp: number, ignoreFields: st
     unit: 'secs',
   };
 
+  if (seconds.value && (hours.value || minutes.value)) {
+    minutes.value += seconds.value > 30 ? 1 : 0;
+    seconds.value = 0;
+  }
+
   const finalValues = [hours, minutes, seconds]
     .filter(({ value, unit }) => !!value && !ignoreFields.includes(unit))
-    .map(({ value, unit }) => `${value}${unit}`);
+    .map(({ value, unit }) => `${value}${value < 2 ? unit.slice(0, -1) : unit}`);
 
   return finalValues.join(' ');
 };
@@ -132,7 +140,7 @@ export const processPreviousDowntimes = (
     const finalDowntimeObj = {
       ...previousDowntime,
       fromToString: [from, to].filter(Boolean).join(' to '),
-      duration: getHoursMinutesFromTimestamp((end || now) - begin, []),
+      duration: getElapsedTime((end || now) - begin),
     };
 
     const intermediateDowntimeObj = _prepareDowntimeObj({
@@ -155,9 +163,9 @@ export const getInstrumentList = (): MethodInstrumentDataListType => {
   const data: MethodsInstrumentListType[] = accessInstrumentList();
   return data.reduce((acc, item) => {
     const intermediateAcc = acc;
-    const method = item.method;
+    const { method, srKey } = item;
     const subGroup = Object.keys(item)
-      .filter((item) => item !== 'method')
+      .filter((item) => item !== 'method' && item !== 'srKey')
       .pop();
     if (method && subGroup) {
       const instrument = item[subGroup];
@@ -170,6 +178,7 @@ export const getInstrumentList = (): MethodInstrumentDataListType => {
         key: instrument,
         name: INSTRUMENT_CODES_MAP?.[instrument].name || instrument,
         logo: INSTRUMENT_CODES_MAP?.[instrument].logo,
+        srKey,
       });
     }
     return intermediateAcc;
@@ -177,7 +186,7 @@ export const getInstrumentList = (): MethodInstrumentDataListType => {
 };
 
 export const getPayloadForResolvedDowntimes = (): Record<string, string | number> => {
-  //NOTE :: for intial mvp we query for 1 week data.
+  //NOTE :: for intial mvp we query for 30 days data.
   const today = moment(new Date()).format('YYYY/MM/DD');
   const end = moment(new Date()).subtract(30, 'days').format('YYYY/MM/DD');
   return {
@@ -267,7 +276,76 @@ export const getDowntimesAfterTimestamp = ({
   const totalDuration = collectedDowntimes.reduce((acc, item) => acc + item, 0);
 
   return {
-    totalDuration: getHoursMinutesFromTimestamp(totalDuration, []) || 0,
+    totalDuration: getElapsedTime(totalDuration) || 0,
     totalDowntimes: collectedDowntimes.length || 0,
   };
+};
+
+export const getPayloadForSR = ({ srKey }: { srKey: string }) => {
+  //NOTE :: for intial mvp we query for 7 days data.
+  const to = moment(new Date()).unix();
+  const from = moment(new Date()).subtract(7, 'days').unix();
+
+  const [method, group, instrument] = srKey.split('.');
+
+  return {
+    entity: 'payments',
+    from,
+    to,
+    interval: 60,
+    mode: 'razorpay',
+    filters: {
+      method: [method],
+      [group]: [instrument],
+    },
+  };
+};
+
+type SrDataPointsType = {
+  total: number;
+  successful: number;
+  unsuccessful: number;
+  isError: boolean;
+  methodName: string;
+  instrumentName: string;
+};
+
+type getSrDatPointsFromResponseTypes = {
+  srResponse?: SuccessRateResponseType;
+  method: string;
+  instrument: string;
+};
+
+export const getSrDatPointsFromResponse = ({
+  srResponse,
+  method,
+  instrument,
+}: getSrDatPointsFromResponseTypes): SrDataPointsType => {
+  let responseStruct = {
+    total: 0,
+    successful: 0,
+    unsuccessful: 0,
+    isError: false,
+    methodName: METHOD_NAMES_MAP?.[method] || toTitleCase(method),
+    instrumentName: INSTRUMENT_CODES_MAP?.[instrument]?.name || toTitleCase(instrument),
+  };
+  if (srResponse?.data) {
+    const { data } = srResponse;
+
+    if (data?.Code) {
+      responseStruct = {
+        ...responseStruct,
+        isError: true,
+      };
+    } else {
+      const { successful = 0, total = 0 } = data;
+      responseStruct = {
+        ...responseStruct,
+        successful,
+        total,
+        unsuccessful: total - successful,
+      };
+    }
+  }
+  return responseStruct;
 };

@@ -1,6 +1,6 @@
 import {
   getDowntimesAfterTimestamp,
-  getHoursMinutesFromTimestamp,
+  getElapsedTime,
   getRemainingTime,
   processOnGoingDowntimes,
   processPreviousDowntimes,
@@ -9,11 +9,14 @@ import {
   groupAllDowntimesByMethod,
   getInstrumentList,
   _prepareDowntimeObj,
+  getSrDatPointsFromResponse,
 } from 'merchant/views/EcosystemDowntimes/helpers';
 import {
   downtime_mock_response,
+  failed_sr_mock_response,
   high_sev_downtime_mock,
   previous_downtimes_mock,
+  sr_mock_response,
 } from './mocks/mockResponses';
 import moment from 'moment';
 import * as constants from 'merchant/views/EcosystemDowntimes/constants';
@@ -96,10 +99,12 @@ describe('Helpers', () => {
     expect(response.totalDuration).toBe(0);
   });
 
-  test('getHoursMinutesFromTimestamp should return correct total duration string', () => {
-    expect(getHoursMinutesFromTimestamp(300, [])).toBe('5mins');
-    expect(getHoursMinutesFromTimestamp(322, [])).toBe('5mins 22secs');
-    expect(getHoursMinutesFromTimestamp(322, ['secs'])).toBe('5mins');
+  test('getElapsedTime should return correct total duration string', () => {
+    expect(getElapsedTime(300)).toBe('5mins');
+    expect(getElapsedTime(2032)).toBe('34mins');
+    expect(getElapsedTime(144)).toBe('2mins');
+    expect(getElapsedTime(12)).toBe('12secs');
+    expect(getElapsedTime(60)).toBe('1min');
   });
 
   test('getSupportedMethodInstrumentDictionary should return with correct method-instrument struct', () => {
@@ -130,9 +135,9 @@ describe('Helpers', () => {
   test('getInstrumentList should group downtimes by method', () => {
     const spy = jest.spyOn(constants, 'accessInstrumentList');
     spy.mockReturnValue([
-      { method: 'card', issuer: 'BKID' },
-      { method: 'card', network: 'DICL' },
-      { method: 'upi' },
+      { method: 'card', issuer: 'BKID', srKey: 'card.issuer.BKID' },
+      { method: 'card', network: 'DICL', srKey: 'card.network.Diners Club' },
+      { method: 'upi', srKey: null },
     ]);
 
     const list = getInstrumentList();
@@ -180,5 +185,28 @@ describe('Helpers', () => {
     });
 
     expect(response3?.card?.network?.visa).toBe('mockData');
+  });
+
+  test('getSrDatPointsFromResponse should return with correct sr datapoints if response provided', () => {
+    const props = {
+      srResponse: sr_mock_response,
+      method: 'card',
+      instrument: 'VISA',
+    };
+
+    const srData = getSrDatPointsFromResponse(props);
+    expect(srData.successful).toBe(1002);
+    expect(srData.methodName).toBe('Cards');
+  });
+
+  test('getSrDatPointsFromResponse should return isError as true if endpoint fails', () => {
+    const props = {
+      srResponse: failed_sr_mock_response,
+      method: 'card',
+      instrument: 'VISA',
+    };
+
+    const srData = getSrDatPointsFromResponse(props);
+    expect(srData.isError).toBe(true);
   });
 });

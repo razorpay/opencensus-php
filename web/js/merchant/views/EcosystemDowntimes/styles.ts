@@ -302,7 +302,7 @@ export const DowntimeHistoryContent = styled.div(
 );
 
 export const DowntimeHistoryContainer = styled.div(
-  ({ theme }: { theme: Theme }) => `
+  ({ theme, isMobile }: { theme: Theme; isMobile: boolean }) => `
   margin: 1rem 0;
   .previous-downtime-title {
     position: relative;
@@ -321,7 +321,7 @@ export const DowntimeHistoryContainer = styled.div(
   }
   .downtime-timeline {
     min-height: 3vh;
-    max-height: 30vh;
+    max-height: ${isMobile ? '23vh' : '30vh'};
     overflow-y: auto;
     padding-right: ${theme.spacing[5]}px;
     margin-top: ${theme.spacing[5]}px;

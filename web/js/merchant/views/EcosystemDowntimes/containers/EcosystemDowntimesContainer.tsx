@@ -16,8 +16,10 @@ import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import {
   PAGE_TITLE,
   WAIT_TIME_FOR_NEXT_REFRESH,
+  SR_QUERY_CACHE_KEY,
 } from 'merchant/views/EcosystemDowntimes/constants';
 import EcosystemRefreshNudge from 'merchant/views/EcosystemDowntimes/components/EcosystemRefreshNudge';
+import { useQueryCache } from 'react-query';
 
 // eslint-disable-next-line prettier/prettier
 const MethodsContainer = lazy(
@@ -29,6 +31,7 @@ const EcosystemDowntimesContainer = (props): JSX.Element => {
   const { openSlider: sliderOpen } = props;
   const methodsContainerRef = useRef<HTMLDivElement | null>(null);
   const ecosystemHealthIcon = useRef<HTMLDivElement | null>(null);
+  const queryCache = useQueryCache();
 
   const handleToggleSlider = () => {
     sliderOpen();
@@ -42,6 +45,7 @@ const EcosystemDowntimesContainer = (props): JSX.Element => {
 
   const onOutSideClick = () => {
     if (!isDowntimeDetailsExits()) {
+      queryCache.invalidateQueries(SR_QUERY_CACHE_KEY);
       setIsExpanded(false);
     }
   };

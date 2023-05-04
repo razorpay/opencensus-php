@@ -6,14 +6,31 @@ import {
 } from 'merchant/views/EcosystemDowntimes/events';
 import { InstrumentItem } from 'merchant/views/EcosystemDowntimes/styles';
 import { Text } from '@razorpay/blade/components';
-import type { InstrumentType } from 'merchant/views/EcosystemDowntimes/types';
+import type {
+  DowntimeMetaDataType,
+  InstrumentMetaData,
+} from 'merchant/views/EcosystemDowntimes/types';
+
+type InstrumentType = {
+  instrument: {
+    key: string;
+    name: string;
+    logo: string;
+    method: string;
+    group: string;
+    srKey: string | null;
+  };
+  status?: DowntimeMetaDataType;
+  onClick?: (instrument: InstrumentMetaData) => void;
+};
 
 const Instrument = ({ instrument, status, onClick }: InstrumentType): JSX.Element => {
   const severity = status?.severity;
   const downtimeType = severity ? STATUS?.[severity] : STATUS.operational;
 
   const handleOnClick = () => {
-    trackEcosystemDowntimeEvents(instrumentClick(instrument));
+    const { key, name, method, group } = instrument;
+    trackEcosystemDowntimeEvents(instrumentClick({ key, name, method, group }));
     onClick?.(instrument);
   };
 

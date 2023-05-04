@@ -224,3 +224,5 @@ export const DOWNTIME_SUMMARY_FIELDS = [
       })?.totalDuration,
   },
 ];
+
+export const SR_QUERY_CACHE_KEY = 'successRate';

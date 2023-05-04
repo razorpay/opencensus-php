@@ -15,8 +15,9 @@ import {
   resolvedDowntimesHandler,
 } from 'merchant/views/EcosystemDowntimes/__tests__/mocks/handlers';
 import EcosystemRefreshNudge from 'merchant/views/EcosystemDowntimes/components/EcosystemRefreshNudge';
+import * as Services from 'merchant/views/EcosystemDowntimes/services';
 
-const App = ({ waitTime = 0 }: { waitTime: number }): JSX.Element => {
+const App = ({ waitTime = 0 }: { waitTime?: number }): JSX.Element => {
   return (
     <EcosystemDowntimeProvider>
       <EcosystemRefreshNudge waitInterval={waitTime} />
@@ -67,5 +68,19 @@ describe('<EcosystemRefreshNudge/>', () => {
     render(<App waitTime={1} />);
     await delay(2000);
     expect(screen.getByLabelText('ecosystem-refresh-button')).toHaveClass('enabled-refresh');
+  });
+
+  test('Refresh nudge should refetch past downtimes', async () => {
+    const servicesSpy = jest.spyOn(Services, 'fetchResolvedDowntimes');
+    server.use(
+      resolvedDowntimesHandler({ isSuccess: true }),
+      ongoingDowntimesHandler({ isSuccess: true, downtimeExists: false }),
+    );
+    render(<App />);
+    await waitFor(() => {
+      expect(screen.getByLabelText('ecosystem-refresh-button')).toHaveClass('enabled-refresh');
+    });
+    await userEvent.click(screen.getByLabelText('ecosystem-refresh-button'));
+    expect(servicesSpy).toHaveBeenCalledTimes(2);
   });
 });

@@ -1,6 +1,6 @@
 import React, { createContext, useReducer } from 'react';
-import { useQuery } from 'react-query';
-import { ACTIONS } from 'merchant/views/EcosystemDowntimes/constants';
+import { useQuery, useQueryCache } from 'react-query';
+import { ACTIONS, SR_QUERY_CACHE_KEY } from 'merchant/views/EcosystemDowntimes/constants';
 import {
   fetchOngoingDowntimes,
   fetchResolvedDowntimes,
@@ -55,6 +55,7 @@ export const EcosystemDowntimeProvider = ({
 }: EcosystemDowntimesProviderType): JSX.Element => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const snackbar = useSnackbar();
+  const queryCache = useQueryCache();
 
   const handleOnError = (err: { error: string }): void => {
     if (err?.error) {
@@ -101,6 +102,7 @@ export const EcosystemDowntimeProvider = ({
     error: previousDowntimesError,
     isLoading: isPreviousDowntimesLoading,
     isFetching: isPreviousDowntimesFetching,
+    refetch: refetchPreviousDowntimes,
   } = useQuery(
     'previous-ecosystemdowntime',
     () => {
@@ -119,7 +121,11 @@ export const EcosystemDowntimeProvider = ({
   );
 
   const refreshData = () => {
+    queryCache.invalidateQueries(SR_QUERY_CACHE_KEY);
+
     refetchOngoingDowntimes();
+
+    refetchPreviousDowntimes();
   };
 
   const propsToBeExposed = {
