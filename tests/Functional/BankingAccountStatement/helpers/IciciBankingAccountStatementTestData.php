@@ -257,4 +257,22 @@ return [
             'content' => []
         ]
     ],
+
+    'testIciciMissingAccountStatementDetection' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/detect_missing/icici',
+            'content' => [
+                'account_numbers'              => ['2224440041626905'],
+                'suspected_mismatch_timestamp' => 1660501800,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'channel'                      => 'icici',
+                'account_numbers'              => ['2224440041626905'],
+                'suspected_mismatch_timestamp' => '1660501800',
+            ]
+        ]
+    ],
 ];

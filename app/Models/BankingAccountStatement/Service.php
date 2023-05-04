@@ -10,6 +10,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Constants\Mode as EnvMode;
+use RZP\Jobs\MissingAccountStatementDetection;
 
 class Service extends Base\Service
 {
@@ -297,5 +298,58 @@ class Service extends Base\Service
 
             throw $exception;
         }
+    }
+
+    public function detectMissingStatements(array $input): array
+    {
+        $this->trace->info(TraceCode::BAS_MISSING_STATEMENTS_DETECTION_REQUEST, $input);
+
+        (new Validator())->validateInput(Validator::DETECT_MISSING_STATEMENTS, $input);
+
+        $channel = $input[Entity::CHANNEL];
+
+        $accountNumberList = array_unique($input[Constants::ACCOUNT_NUMBERS]);
+
+        $suspectedMismatchTimestamp = $input[Constants::SUSPECTED_MISMATCH_TIMESTAMP];
+
+        $dispatchedAccountNumberList = [];
+
+        if (isset($suspectedMismatchTimestamp) === false)
+        {
+            $suspectedMismatchTimestamp = Carbon::now(Timezone::IST)->timestamp;
+        }
+
+        foreach ($accountNumberList as $accountNumber)
+        {
+            try
+            {
+                MissingAccountStatementDetection::dispatch($this->mode, $accountNumber, null, $suspectedMismatchTimestamp, $channel);
+
+                $dispatchedAccountNumberList[] = $accountNumber;
+            }
+            catch (\Throwable $exception)
+            {
+                $this->trace->traceException(
+                    $exception,
+                    null,
+                    TraceCode::BAS_MISSING_STATEMENTS_DETECTION_DISPATCH_FAILURE,
+                    [
+                        Entity::ACCOUNT_NUMBER                  => $accountNumber,
+                        Entity::CHANNEL                         => $channel,
+                        Constants::SUSPECTED_MISMATCH_TIMESTAMP => $suspectedMismatchTimestamp
+                    ]
+                );
+            }
+        }
+
+        $jobDispatchSummary = [
+            Entity::CHANNEL                         => $channel,
+            Constants::ACCOUNT_NUMBERS              => $dispatchedAccountNumberList,
+            Constants::SUSPECTED_MISMATCH_TIMESTAMP => $suspectedMismatchTimestamp
+        ];
+
+        $this->trace->info(TraceCode::BAS_MISSING_STATEMENTS_DETECTION_SUMMARY, $jobDispatchSummary);
+
+        return $jobDispatchSummary;
     }
 }

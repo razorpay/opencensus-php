@@ -362,4 +362,48 @@ abstract class Base extends BaseCore
             3
         );
     }
+
+    public function compareAndReturnMatchedBASFromFetchedStatements($fetchedStatements = []): array
+    {
+        $matchedBASFromBank = new Entity();
+
+        $existingBAS = new Entity();
+
+        $count = count($fetchedStatements);
+
+        while ($count > 0)
+        {
+            $basEntityFromBank = (new Entity)->build($fetchedStatements[$count - 1]);
+
+            if (empty($basEntityFromBank->getUtr()) === true)
+            {
+                $utr = $this->getUtrForChannel($basEntityFromBank);
+
+                $basEntityFromBank->setUtr($utr);
+            }
+
+            if ($basEntityFromBank->getUtr() !== null)
+            {
+                $existingBASEntries = $this->repo->banking_account_statement->fetchByUtrAndType(
+                    $basEntityFromBank->getUtr(),
+                    $basEntityFromBank->getType(),
+                    $basEntityFromBank->getAccountNumber(),
+                    $basEntityFromBank->getChannel()
+                );
+
+                $existingBAS = $existingBASEntries[0];
+
+                if (count($existingBASEntries) > 0)
+                {
+                    $matchedBASFromBank = $basEntityFromBank;
+
+                    break;
+                }
+            }
+
+            $count--;
+        }
+
+        return [$matchedBASFromBank, $existingBAS];
+    }
 }

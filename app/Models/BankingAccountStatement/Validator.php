@@ -21,6 +21,8 @@ class Validator extends Base\Validator
 
     const AUTOMATE_ACCOUNT_STATEMENT_RECON = 'automateAccountStatementRecon';
 
+    const DETECT_MISSING_STATEMENTS = 'detect_missing_statements';
+
     protected static $createRules = [
         Entity::CHANNEL             => 'required|string|custom',
         Entity::ACCOUNT_NUMBER      => 'required|string|max:40',
@@ -86,6 +88,13 @@ class Validator extends Base\Validator
         Entity::CHANNEL        => 'required|string|custom',
         Entity::ACCOUNT_NUMBER => 'required|string|max:40',
         Constants::ACTION      => 'required|in:insert,fetch,dry_run'
+    ];
+
+    protected static $detectMissingStatementsRules = [
+        Entity::CHANNEL                         => 'required|string|custom',
+        Constants::ACCOUNT_NUMBERS              => 'required|array',
+        Constants::ACCOUNT_NUMBERS . '*'        => 'required|string|between:5,40',
+        Constants::SUSPECTED_MISMATCH_TIMESTAMP => 'sometimes|epoch'
     ];
 
     public function validateCreditBas($current_status, array $input)

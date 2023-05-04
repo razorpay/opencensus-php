@@ -379,7 +379,7 @@ class Core extends Base\Core
         }
     }
 
-    public function fetchAccountStatementWithRange(array $input, $isMonitoring = false, $save = false)
+    public function fetchAccountStatementWithRange(array $input, $isMonitoring = false, $save = false, $checkDuplicates = true)
     {
         $channel = array_pull($input, Entity::CHANNEL);
 
@@ -394,9 +394,9 @@ class Core extends Base\Core
                     'account_number' => $accountNumber,
                 ]);
 
-            [$fetchMore, $paginationKey] = $this->mutex->acquireAndRelease(
+            [$fetchMore, $paginationKey, $bankTransactions] = $this->mutex->acquireAndRelease(
                 'banking_account_statement_recon_' . $accountNumber . '_' . $channel,
-                function () use ($channel, $accountNumber, $input, $isMonitoring, $save)
+                function () use ($channel, $accountNumber, $input, $isMonitoring, $save, $checkDuplicates)
                 {
                     $basDetailEntity = $this->getBasDetails(
                         $accountNumber, $channel, [BASDetails\Status::ACTIVE, BASDetails\Status::UNDER_MAINTENANCE]);
@@ -430,11 +430,16 @@ class Core extends Base\Core
                         return [null, null];
                     }
 
-                    $missingTransactions = $processor->checkForDuplicateTransactions(
-                        $bankTransactions,
-                        $channel,
-                        $accountNumber,
-                        $merchant);
+                    $missingTransactions = [];
+
+                    if ($checkDuplicates === true)
+                    {
+                        $missingTransactions = $processor->checkForDuplicateTransactions(
+                            $bankTransactions,
+                            $channel,
+                            $accountNumber,
+                            $merchant);
+                    }
 
                     if (count($missingTransactions) !== 0)
                     {
@@ -486,7 +491,7 @@ class Core extends Base\Core
                         }
                     }
 
-                    return [$fetchMore, $paginationKey];
+                    return [$fetchMore, $paginationKey, $bankTransactions];
                 },
                 300,
                 ErrorCode::BAD_REQUEST_ANOTHER_BANKING_ACCOUNT_STATEMENT_FETCH_IN_PROGRESS
@@ -510,7 +515,7 @@ class Core extends Base\Core
             throw $e;
         }
 
-        return [$fetchMore, $paginationKey];
+        return [$fetchMore, $paginationKey, $bankTransactions];
     }
 
     public function insertMissingStatements(string $accountNumber, string $channel, array $missingStatements, bool $dryRunMode = false)
@@ -4187,5 +4192,26 @@ class Core extends Base\Core
         }
 
         return [$isGatewayRefNumFound, $gatewayRefNum];
+    }
+
+    public function findMatchingBASInFetchedStatements(Entity $basEntity, $fetchedStatements)
+    {
+        $accountStatementApiVersion = $this->getAccountStatementApiVersion($this->basDetails);
+
+        $processor = $this->getProcessor($basEntity->getChannel(), $basEntity->getAccountNumber(), $this->basDetails, $accountStatementApiVersion);
+
+        if (count($fetchedStatements) === 0)
+        {
+            return [null, null];
+        }
+
+        [$matchedBASFromBank, $existingBAS] = $processor->compareAndReturnMatchedBASFromFetchedStatements($fetchedStatements);
+
+        if ($matchedBASFromBank->getId() === null)
+        {
+            return [null, null];
+        }
+
+        return [$matchedBASFromBank, $existingBAS];
     }
 }

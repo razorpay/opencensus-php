@@ -3575,4 +3575,80 @@ class IciciBankingAccountStatementTest extends TestCase
         $this->assertEquals(TransactionEntity::CREDIT, $basEntries[1]['type']);
         $this->assertEquals($payout['id'], $reversal['entity_id']);
     }
+
+    public function testIciciMissingAccountStatementDetection()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::BAS_FETCH_RE_ARCH => 'on']);
+
+        $basDetails = $this->getDbEntity('banking_account_statement_details', ['account_number' => 2224440041626905]);
+
+        $this->fixtures->edit('banking_account_statement_details', $basDetails->getId(), [
+            'created_at' => 1652812200
+        ]);
+
+        $this->fixtures->create('banking_account_statement',
+            [
+                'type'                      => 'credit',
+                'amount'                    => '1000000',
+                'channel'                   => 'icici',
+                'account_number'            => 2224440041626905,
+                'bank_transaction_id'       => 'S71034864',
+                'balance'                   => 1000000,
+                'transaction_date'          => 1656786600,
+                'posted_date'               => 1656861681,
+                'bank_serial_number'        => 'S71034864',
+                'description'               => 'MMT/IMPS/104910349740/Shippuden/Naruto',
+                'balance_currency'          => 'INR',
+            ]);
+
+        $latestBAS = $this->fixtures->create('banking_account_statement',
+            [
+                'type'                      => 'credit',
+                'amount'                    => '100',
+                'channel'                   => 'icici',
+                'account_number'            => 2224440041626905,
+                'bank_transaction_id'       => 'S87272425',
+                'balance'                   => 1000100,
+                'transaction_date'          => 1656786600,
+                'posted_date'               => 1656861781,
+                'bank_serial_number'        => 'S87272425',
+                'description'               => 'NEFT-RETURN-23629961691DC-Naruto-ACCOUNT DOES NOT EXIST  R03',
+                'balance_currency'          => 'INR',
+            ]);
+
+        $mockedResponse = $this->getIciciDataResponseForFetchingMissingRecords();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $BASCoreMock = Mockery::mock('RZP\Models\BankingAccountStatement\Core');
+
+        $this->ba->adminAuth();
+
+        // Add assertion for checking if fetch call was made in the end
+
+        $this->startTest();
+
+        $missingStatementDetectionConfig = (new AdminService)->getConfigKey(
+            [
+                'key' => ConfigKey::RX_CA_MISSING_STATEMENT_DETECTION_ICICI
+            ]);
+
+        $this->assertCount(1, $missingStatementDetectionConfig);
+
+        $this->assertArraySelectiveEquals(['completed' => true], $missingStatementDetectionConfig['2224440041626905']);
+
+        // assert that there is only one missing statement config saved
+        $this->assertCount(1, $missingStatementDetectionConfig['2224440041626905']['mismatch_data']);
+
+        // check if config has missing statement detected of 5000 debit between the range 2nd July to 1st August
+        $this->assertArraySelectiveEquals([
+            'start_date' => 1656700200,
+            'end_date' => 1659378599,
+            'mismatch_amount' => -100,
+            'mismatch_type' => "missing_debit",
+            'analysed_bas_id' => $latestBAS->getId()
+        ], $missingStatementDetectionConfig['2224440041626905']['mismatch_data'][0]);
+    }
 }

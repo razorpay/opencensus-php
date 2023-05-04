@@ -174,6 +174,8 @@ class Validator extends Base\Validator
         ConfigKey::ICICI_MISSING_STATEMENT_FETCH_MAX_RECORDS => 'filled|integer',
         ConfigKey::RETRY_COUNT_FOR_ID_GENERATION             => 'filled|integer',
         COnfigKey::RX_MISSING_STATEMENTS_INSERTION_LIMIT     => 'filled|integer',
+        ConfigKey::RX_CA_MISSING_STATEMENT_DETECTION_RBL     => 'filled|array',
+        ConfigKey::RX_CA_MISSING_STATEMENT_DETECTION_ICICI   => 'filled|array',
         ConfigKey::CARD_PAYMENTS_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => 'filled|integer',
         ConfigKey::CARD_REFUNDS_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => 'filled|integer',
         ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT => 'array',
@@ -246,6 +248,8 @@ class Validator extends Base\Validator
         ConfigKey::UNEXPECTED_PAYMENT_DELAY_REFUND                                     => 'filled|integer',
         ConfigKey::DIRECT_TRANSFER_LIMITS                                              => 'filled|array',
         ConfigKey::ACCOUNT_SUB_ACCOUNT_RESTRICTED_PERMISSIONS_LIST                     => 'filled|array',
+        ConfigKey::RX_CA_MISSING_STATEMENT_DETECTION_RBL                               => 'filled|array',
+        ConfigKey::RX_CA_MISSING_STATEMENT_DETECTION_ICICI                             => 'filled|array',
     ];
 
     protected static $setRedisKeysRules = [

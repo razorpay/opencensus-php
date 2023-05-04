@@ -38,12 +38,14 @@ class PendingDispatch extends \Illuminate\Foundation\Bus\PendingDispatch
     const PAYOUT_POST_CREATE_PROCESS_LOW_PRIORITY = 'payout_post_create_process_low_priority';
     const PAYOUT_SERVICE_DUAL_WRITE               = 'payout_service_dual_write';
     const QUEUED_CREDIT_TRANSFER_REQUESTS         = 'queued_credit_transfer_requests';
+    const MISSING_ACCOUNT_STATEMENT_DETECT        = 'missing_account_statement_detect';
 
     protected $shouldThrowErrorOnFailure = [
         self::PAYOUT_POST_CREATE_PROCESS,
         self::PAYOUT_POST_CREATE_PROCESS_LOW_PRIORITY,
         self::PAYOUT_SERVICE_DUAL_WRITE,
         self::QUEUED_CREDIT_TRANSFER_REQUESTS,
+        self::MISSING_ACCOUNT_STATEMENT_DETECT,
     ];
 
     /**

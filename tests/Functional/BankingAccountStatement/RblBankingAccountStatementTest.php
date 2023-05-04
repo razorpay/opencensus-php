@@ -48,6 +48,7 @@ use RZP\Jobs\BankingAccountStatementProcessor;
 use RZP\Mail\Transaction\Payout as PayoutMail;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Models\BankingAccountStatement\Metric;
+use RZP\Jobs\MissingAccountStatementDetection;
 use RZP\Services\Mock\Mutex as MockMutexService;
 use RZP\Models\BankingAccount\Entity as BaEntity;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
@@ -4626,7 +4627,7 @@ class RblBankingAccountStatementTest extends TestCase
                                         'currencyCode' => 'INR'
                                     ],
                                     'txnDate' => '2022-07-03T00:00:00.000',
-                                    'txnDesc' => 'Credit to account',
+                                    'txnDesc' => '209821810000_IMPSIN',
                                     'txnType' => 'C'
                                 ],
                                 'txnBalance' => [
@@ -4668,7 +4669,7 @@ class RblBankingAccountStatementTest extends TestCase
                                         'currencyCode' => 'INR'
                                     ],
                                     'txnDate' => '2022-07-03T00:00:00.000',
-                                    'txnDesc' => 'CREDIT NEFT',
+                                    'txnDesc' => '209821811450_IMPSIN',
                                     'txnType' => 'C'
                                 ],
                                 'txnBalance' => [
@@ -12998,5 +12999,195 @@ class RblBankingAccountStatementTest extends TestCase
         $payout = $this->getDbLastEntity('payout');
 
         $this->assertEquals('created', $payout['status']);
+    }
+
+    public function testRblMissingAccountStatementDetection()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::BAS_FETCH_RE_ARCH => 'on', RazorxTreatment::RBL_V2_BAS_API_INTEGRATION => 'on']);
+
+        $basDetails = $this->getDbEntity('banking_account_statement_details', ['account_number' => 2224440041626905]);
+
+        $this->fixtures->edit('banking_account_statement_details', $basDetails->getId(), [
+           'created_at' => 1652812200
+        ]);
+
+        $this->fixtures->create('banking_account_statement',
+            [
+                'type'                      => 'credit',
+                'amount'                    => '10000',
+                'channel'                   => 'rbl',
+                'account_number'            => 2224440041626905,
+                'bank_transaction_id'       => 'S429654',
+                'balance'                   => 10000,
+                'transaction_date'          => 1656786600,
+                'posted_date'               => 1656861681,
+                'bank_serial_number'        => 1,
+                'description'               => 'Credit to account',
+                'category'                  => 'customer_initiated',
+                'bank_instrument_id'        => '',
+                'balance_currency'          => 'INR',
+            ]);
+
+        $latestBAS = $this->fixtures->create('banking_account_statement',
+            [
+                'type'                      => 'credit',
+                'amount'                    => '11450',
+                'channel'                   => 'rbl',
+                'account_number'            => 2224440041626905,
+                'bank_transaction_id'       => 'S429655',
+                'balance'                   => 21450,
+                'transaction_date'          => 1656786600,
+                'posted_date'               => 1656861781,
+                'bank_serial_number'        => 2,
+                'description'               => 'CREDIT NEFT',
+                'category'                  => 'bank_initiated',
+                'bank_instrument_id'        => '',
+                'balance_currency'          => 'INR',
+            ]);
+
+        $mockedResponse = $this->getRblBulkResponseForFetchingMissingRecords();
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $mozartMock = Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mozartMock->shouldReceive('sendRawRequest')
+            ->andReturnUsing(function(array $request) use ($mockedResponse){
+
+                $requestData = json_decode($request['content'], true);
+
+                if (array_key_exists('from_date',$requestData['entities']['attempt']) === true)
+                {
+                    return json_encode($this->convertRblV1ResponseToV2Response($mockedResponse));
+                }
+
+                $mockRblResponse = $this->convertRblV1ResponseToV2Response($this->getRblNoDataResponse());
+
+                $mockRblResponse['data']['FetchAccStmtRes']['Header']['Status_Desc'] = "No Records Found";
+
+                return json_encode($mockRblResponse);
+            });
+
+        $this->app->instance('mozart', $mozartMock);
+
+        $this->ba->adminAuth();
+
+        // Add assertion for checking if fetch call was made in the end
+
+        $this->startTest();
+
+        $missingStatementDetectionConfig = (new Admin\Service)->getConfigKey(
+            [
+                'key' => Admin\ConfigKey::RX_CA_MISSING_STATEMENT_DETECTION_RBL
+            ]);
+
+        $this->assertCount(1, $missingStatementDetectionConfig);
+
+        $this->assertArraySelectiveEquals(['completed' => true], $missingStatementDetectionConfig['2224440041626905']);
+
+        // assert that there is only one missing statement config saved
+        $this->assertCount(1, $missingStatementDetectionConfig['2224440041626905']['mismatch_data']);
+
+        // check if config has missing statement detected of 5000 debit between the range 2nd July to 1st August
+        $this->assertArraySelectiveEquals(
+            [
+                'start_date'      => 1656700200,
+                'end_date'        => 1659378599,
+                'mismatch_amount' => -5000,
+                'mismatch_type'   => "missing_debit",
+                'analysed_bas_id' => $latestBAS->getId()
+            ], $missingStatementDetectionConfig['2224440041626905']['mismatch_data'][0]);
+    }
+
+    public function testRblMissingAccountStatementDetectionWhenThereIsNoMismatch()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::BAS_FETCH_RE_ARCH => 'on', RazorxTreatment::RBL_V2_BAS_API_INTEGRATION => 'on']);
+
+        $basDetails = $this->getDbEntity('banking_account_statement_details', ['account_number' => 2224440041626905]);
+
+        $this->fixtures->edit('banking_account_statement_details', $basDetails->getId(), [
+            'created_at' => 1652812200
+        ]);
+
+        $this->fixtures->create('banking_account_statement',
+            [
+                'type'                      => 'credit',
+                'amount'                    => '11450',
+                'channel'                   => 'rbl',
+                'account_number'            => 2224440041626905,
+                'bank_transaction_id'       => 'S429655',
+                'balance'                   => 16450,
+                'transaction_date'          => 1656786600,
+                'posted_date'               => 1656861781,
+                'bank_serial_number'        => 2,
+                'description'               => 'CREDIT NEFT',
+                'category'                  => 'bank_initiated',
+                'bank_instrument_id'        => '',
+                'balance_currency'          => 'INR',
+                'utr'                       => '209821811450',
+            ]);
+
+        $mockedResponse = $this->getRblBulkResponseForFetchingMissingRecords();
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $mozartMock = Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mozartMock->shouldReceive('sendRawRequest')
+            ->andReturnUsing(function(array $request) use ($mockedResponse){
+
+                $requestData = json_decode($request['content'], true);
+
+                if (array_key_exists('from_date',$requestData['entities']['attempt']) === true)
+                {
+                    return json_encode($this->convertRblV1ResponseToV2Response($mockedResponse));
+                }
+
+                $mockRblResponse = $this->convertRblV1ResponseToV2Response($this->getRblNoDataResponse());
+
+                $mockRblResponse['data']['FetchAccStmtRes']['Header']['Status_Desc'] = "No Records Found";
+
+                return json_encode($mockRblResponse);
+            });
+
+        $this->app->instance('mozart', $mozartMock);
+
+        $this->ba->adminAuth();
+
+        $this->testData[__FUNCTION__] = $this->testData['testRblMissingAccountStatementDetection'];
+
+        $this->startTest();
+
+        $missingStatementDetectionConfig = (new Admin\Service)->getConfigKey(
+            [
+                'key' => Admin\ConfigKey::RX_CA_MISSING_STATEMENT_DETECTION_RBL
+            ]);
+
+        // Assert that no config was stored in redis
+        $this->assertCount(0, $missingStatementDetectionConfig);
+    }
+
+    public function testRblMissingAccountStatementPushesCurrentTimestampWhenStartTimeIsNotPassed()
+    {
+        $currentTime = Carbon::create(2023, 2, 3, 12, 00, 00, Timezone::IST);
+
+        Carbon::setTestNow($currentTime);
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $this->ba->adminAuth();
+
+        Queue::fake();
+
+        $this->startTest();
+
+        Queue::assertPushed(MissingAccountStatementDetection::class, function($job) use ($currentTime)
+        {
+            $this->assertEquals($currentTime->timestamp, $job->endDate);
+
+            $this->assertEquals($currentTime->startOfMonth()->addDay()->startOfDay()->timestamp, $job->startDate);
+
+            return true;
+        });
     }
 }

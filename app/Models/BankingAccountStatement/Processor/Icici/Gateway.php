@@ -1232,4 +1232,40 @@ class Gateway extends BaseProcessor
         $data[Fields::SOURCE_ACCOUNT][Fields::CREDENTIALS][Fields::AGGR_ID] = $credentials[Icici\Fields::AGGR_ID];
         $data[Fields::SOURCE_ACCOUNT][Fields::CREDENTIALS][Fields::ACCOUNT_STATEMENT_APIKEY] = $credentials[Icici\Fields::BENEFICIARY_API_KEY];
     }
+
+    public function compareAndReturnMatchedBASFromFetchedStatements($fetchedStatements = []): array
+    {
+        $matchedBASFromBank = new Entity();
+
+        $existingBAS = new Entity();
+
+        $count = count($fetchedStatements);
+
+        while ($count > 0)
+        {
+            $basEntityFromBank = (new Entity)->build($fetchedStatements[$count - 1]);
+
+            $existingBAS = $this->repo->banking_account_statement->getExistingUniqueRecord(
+                $basEntityFromBank->getBankTransactionId(),
+                $basEntityFromBank->getAccountNumber(),
+                $basEntityFromBank->getPostedDate(),
+                $basEntityFromBank->getAmount(),
+                $basEntityFromBank->getType(),
+                $basEntityFromBank->getChannel(),
+                $basEntityFromBank->getSerialNumber(),
+                $basEntityFromBank->getDescription()
+            );
+
+            if ($existingBAS !== null)
+            {
+                $matchedBASFromBank = $basEntityFromBank;
+
+                break;
+            }
+
+            $count--;
+        }
+
+        return [$matchedBASFromBank, $existingBAS];
+    }
 }

@@ -577,4 +577,48 @@ class Repository extends Base\Repository
                     ->where(Entity::TRANSACTION_DATE, "=", $transactionDate)
                     ->value('bas_count');
     }
+
+    public function getLatestForGivenPostedDateRangeBy(
+        $accountNumber,
+        $channel,
+        $startDate,
+        $endDate
+    )
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
+            ->where(Entity::CHANNEL, $channel)
+            ->where(Entity::POSTED_DATE,'<=', $endDate)
+            ->where(Entity::POSTED_DATE,'>=', $startDate)
+            ->orderBy(Entity::ID, 'desc')
+            ->first();
+    }
+
+    public function getExistingUniqueRecord(
+        $bankTxnId,
+        $accountNumber,
+        $postedDate,
+        $amount,
+        $type,
+        $channel,
+        $bankTxnSrlNo,
+        string $description = null)
+    {
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+            ->where(Entity::BANK_TRANSACTION_ID, $bankTxnId)
+            ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
+            ->where(Entity::POSTED_DATE, $postedDate)
+            ->where(Entity::AMOUNT, $amount)
+            ->where(Entity::TYPE, $type)
+            ->where(Entity::CHANNEL, $channel)
+            ->where(Entity::BANK_SERIAL_NUMBER, $bankTxnSrlNo)
+            ->orderBy(Entity::ID, 'desc');
+
+        if ($description !== null)
+        {
+            $query->where(Entity::DESCRIPTION, $description);
+        }
+
+        return $query->first();
+    }
 }

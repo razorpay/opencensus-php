@@ -1116,4 +1116,35 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testRblMissingAccountStatementDetection' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/detect_missing/rbl',
+            'content' => [
+                'account_numbers'              => ['2224440041626905'],
+                'suspected_mismatch_timestamp' => 1660501800,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'channel'                      => 'rbl',
+                'account_numbers'              => ['2224440041626905'],
+                'suspected_mismatch_timestamp' => '1660501800',
+            ]
+        ]
+    ],
+
+    'testRblMissingAccountStatementPushesCurrentTimestampWhenStartTimeIsNotPassed' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/detect_missing/rbl',
+            'content' => [
+                'account_numbers' => ['2224440041626905'],
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
 ];

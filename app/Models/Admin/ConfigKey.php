@@ -216,6 +216,8 @@ class ConfigKey
     const ICICI_MISSING_STATEMENT_FETCH_MAX_RECORDS = self::PREFIX . 'icici_missing_statements_fetch_max_records';
     const RETRY_COUNT_FOR_ID_GENERATION             = self::PREFIX . 'retry_count_for_id_generation';
     const RX_MISSING_STATEMENTS_INSERTION_LIMIT     = self::PREFIX . 'rx_missing_statements_insertion_limit';
+    const RX_CA_MISSING_STATEMENT_DETECTION_RBL     = self::PREFIX . 'rx_ca_missing_statement_detection_rbl';
+    const RX_CA_MISSING_STATEMENT_DETECTION_ICICI   = self::PREFIX . 'rx_ca_missing_statement_detection_icici';
 
     // this is used to limit the number of records fetched while querying db to get low balance configs in order
     // to reduce the load
@@ -538,6 +540,8 @@ class ConfigKey
         self::DCS_READ_WHITELISTED_FEATURES,
         self::UNEXPECTED_PAYMENT_DELAY_REFUND,
         self::DIRECT_TRANSFER_LIMITS,
+        self::RX_CA_MISSING_STATEMENT_DETECTION_RBL,
+        self::RX_CA_MISSING_STATEMENT_DETECTION_ICICI,
     ];
 
     const REDIS_CONFIG_MAP = [
