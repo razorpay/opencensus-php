@@ -53,14 +53,14 @@ class Welcome extends Mailable
         return [
             'template_namespace' => 'platform_growth',
             'org_id'             => $this->data['merchant']['org_id'],
-            'template_name'      => 'growth.pricing_bundle.welcome'.'.'.$this->packageName,
+            'template_name'      => 'growth.pricing_bundle'.'.'.$this->packageName,
             'params'  => $this->data,
         ];
     }
 
     protected function addHtmlView()
     {
-        $this->view('growth.pricing_bundle.welcome'.'.'.$this->packageName);
+        $this->view('growth.pricing_bundle'.'.'.$this->packageName);
 
         return $this;
     }
