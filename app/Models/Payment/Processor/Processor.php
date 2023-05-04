@@ -5946,26 +5946,31 @@ class Processor
              ((boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false)) === true))  and
             ($payment->getMethod() === Payment\Method::UPI))
         {
-            //upi token expires 1 week past the subscription's end_at
-            $upitoken = [
-                'max_amount'        => $this->subscription->getCurrentInvoiceAmount(),
-                'frequency'         => UPIMandateFrequency::AS_PRESENTED,
-                'start_at'          => Carbon::now()->addMinute(1)->getTimestamp(),
-                'expire_at'         => $this->subscription->getEndAt() + self::UPI_SUBSCRIPTION_MANDATE_EXPIRY_EXTENSION,
-            ];
+            $this->upiMandate = $this->app['repo']->upi_mandate->findByOrderId($this->order['id']);
 
-            $this->trace->info(
-                TraceCode::UPI_MANDATE_SUBSCRIPTION_CREATE,
-                [
-                    'upi_token_info'  => $upitoken,
-                    'subscriptionId'  => $this->subscription->getId(),
-                ]);
+            if($this->upiMandate === null) {
+                //upi token expires 1 week past the subscription's end_at
+                $upitoken = [
+                    'max_amount' => $this->subscription->getCurrentInvoiceAmount(),
+                    'frequency' => UPIMandateFrequency::AS_PRESENTED,
+                    'start_at' => Carbon::now()->addMinute(1)->getTimestamp(),
+                    'expire_at' => $this->subscription->getEndAt() + self::UPI_SUBSCRIPTION_MANDATE_EXPIRY_EXTENSION,
+                ];
 
-            $core = new Core();
+                $this->trace->info(
+                    TraceCode::UPI_MANDATE_SUBSCRIPTION_CREATE,
+                    [
+                        'upi_token_info' => $upitoken,
+                        'subscriptionId' => $this->subscription->getId(),
+                    ]);
 
-            $orderId = $input['order_id'];
+                $core = new Core();
 
-            $this->upiMandate = $core->create($upitoken, $this->order, null);
+                $orderId = $input['order_id'];
+
+                $this->upiMandate = $core->create($upitoken, $this->order, null);
+            }
+
         }
 
         if (($this->subscription === null) or ($this->subscription->isExternal() === true))

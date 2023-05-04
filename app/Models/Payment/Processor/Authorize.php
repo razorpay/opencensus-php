@@ -9251,6 +9251,11 @@ trait Authorize
     {
         $this->upiMandate->setTokenId($token->getId());
 
+        if($this->upiMandate['start_time'] < Carbon::now()->getTimestamp())
+        {
+            $this->upiMandate['start_time'] = Carbon::now()->getTimestamp();
+        }
+
         $this->repo->saveOrFail($this->upiMandate);
 
         return $this->upiMandate;
