@@ -6,9 +6,11 @@ use Hash;
 use Mail;
 use Queue;
 use Config;
+use Mockery;
 use DateTime;
 use Carbon\Carbon;
 use RZP\Jobs\SettlementOndemand\UpdateOndemandTriggerJob;
+use RZP\Models\Settlement\Ondemand\Entity as OndemandEntity;
 use RZP\Services\Mock;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
@@ -4759,6 +4761,76 @@ class SettlementOndemandTest extends TestCase
         $this->assertNotEmpty($newOndemandPayoutPricingRule);
     }
 
+    public function testSuccessScenarioForSendingDataToCollectionsForLedgerForCreatingOndemandSettlement()
+    {
+        $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
+
+        $this->fixtures->on(Mode::TEST)->create('settlement.ondemand_fund_account');
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'es_on_demand']);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['balance' => 10000000000]);
+
+        $this->fixtures->pricing->createOndemandPercentRatePricingPlan();
+
+        $this->app['config']->set('applications.razorpayx_client.test.mock_webhook', false);
+
+        $this->app['config']->set('applications.razorpayx_client.live.mock_webhook', false);
+
+        $bankingHour = Carbon::create(2020, 2, 18, 10, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($bankingHour);
+
+        $capitalCollectionsClientMock = Mockery::mock('RZP\Services\CapitalCollectionsClient');
+
+        $this->app->instance('capital_collections', $capitalCollectionsClientMock);
+
+        $capitalCollectionsClientMock->shouldReceive('pushInstantSettlementLedgerUpdate')
+            ->with(Mockery::type('RZP\Models\Settlement\Ondemand\Entity'), Mockery::type('bool'))
+            ->times(1)
+            ->andReturnUsing(function (OndemandEntity $OndemandSettlement)
+            {
+                self::assertEquals('1000000', $OndemandSettlement->getAmount());
+                self::assertEquals('0', $OndemandSettlement->getTotalTax());
+                self::assertEquals('0', $OndemandSettlement->getTotalFees());
+                return $this->sendCollectionsToLedgerCreateMockResponse();
+            });
+
+        $this->startTest();
+
+        $settlementOndemand = $this->getLastEntity('settlement.ondemand',true);
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'                    => '10000000000000',
+            'user_id'                        => '20000000000000',
+            'amount'                         => 2000,
+            'total_amount_settled'           => 0,
+            'total_fees'                     => 48,
+            'total_tax'                      => 8,
+            'total_amount_reversed'          => 0,
+            'total_amount_pending'           => 1952,
+            'max_balance'                    => false,
+            'currency'                       => 'INR',
+            'status'                         => 'initiated',
+            'transaction_type'               => 'transaction',
+            'settlement_ondemand_trigger_id' => null
+        ], $settlementOndemand);
+
+        $txn = $this->getLastEntity('transaction',true);
+
+        $this->assertArraySelectiveEquals([
+            'type'                  => 'settlement.ondemand',
+            'merchant_id'           => '10000000000000',
+            'amount'                => 1952,
+            'fee'                   => 48,
+            'tax'                   => 8,
+            'debit'                 => 2000,
+            'credit'                => 0,
+            'currency'              => 'INR',
+        ], $txn);
+    }
+
     public function testNoMinLimitFormEsAutomaticMerchants()
     {
         $this->ba->proxyAuth('rzp_test_' . $this->merchantDetail['merchant_id'], $this->user->getId());
@@ -4876,6 +4948,141 @@ class SettlementOndemandTest extends TestCase
             'transaction_type'               => 'transaction',
             'settlement_ondemand_trigger_id' => 'qaghswtyuiwsgh'
         ], $settlementOndemand);
+    }
+
+    public function testLinkedOndemandSettlementWithCapitalIntegrationForLedgerSuccess()
+    {
+        $this->ba->capitalEarlySettlementAuth();
+
+        $this->fixtures->create('merchant', [
+            'id'   => '10000000000001'
+        ]);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'ondemand_linked']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000001', 'name' => 'ondemand_route']);
+
+        $this->fixtures->on(Mode::TEST)->merchant->edit('10000000000000', ['parent_id' => '10000000000001']);
+
+        $capitalCollectionsClientMock = Mockery::mock('RZP\Services\CapitalCollectionsClient');
+
+        $this->app->instance('capital_collections', $capitalCollectionsClientMock);
+
+        $capitalCollectionsClientMock->shouldReceive('pushInstantSettlementLedgerUpdate')
+            ->with(Mockery::type('RZP\Models\Settlement\Ondemand\Entity'), Mockery::type('bool'))
+            ->times(1)
+            ->andReturnUsing(function (OndemandEntity $OndemandSettlement)
+            {
+                self::assertEquals('1000000', $OndemandSettlement->getAmount());
+                self::assertEquals('0', $OndemandSettlement->getTotalTax());
+                self::assertEquals('0', $OndemandSettlement->getTotalFees());
+                return $this->sendCollectionsToLedgerCreateMockResponse();
+            });
+
+        $this->startTest();
+
+        $txn = $this->getLastEntity('transaction',true);
+
+        $this->assertArraySelectiveEquals([
+            'type'                  => 'settlement.ondemand',
+            'merchant_id'           => '10000000000000',
+            'amount'                => 1000000,
+            'fee'                   => 0,
+            'tax'                   => 0,
+            'debit'                 => 1000000,
+            'credit'                => 0,
+            'currency'              => 'INR',
+        ], $txn);
+
+        $settlementOndemand = $this->getLastEntity('settlement.ondemand',true);
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'                    => '10000000000000',
+            'user_id'                        => null,
+            'amount'                         => 1000000,
+            'total_amount_settled'           => 0,
+            'total_fees'                     => 0,
+            'total_tax'                      => 0,
+            'total_amount_reversed'          => 0,
+            'total_amount_pending'           => 1000000,
+            'max_balance'                    => false,
+            'currency'                       => 'INR',
+            'status'                         => 'initiated',
+            'transaction_type'               => 'transaction',
+            'settlement_ondemand_trigger_id' => 'qaghswtyuiwsgh'
+        ], $settlementOndemand);
+    }
+
+    public function testLinkedAccountSettlementWithCapitalIntegrationForLedgerWithException()
+    {
+        $this->ba->capitalEarlySettlementAuth();
+
+        $this->fixtures->create('merchant', [
+            'id'   => '10000000000001'
+        ]);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000000', 'name' => 'ondemand_linked']);
+
+        $this->fixtures->feature->create([
+            'entity_type' => 'merchant', 'entity_id'  => '10000000000001', 'name' => 'ondemand_route']);
+
+        $this->fixtures->on(Mode::TEST)->merchant->edit('10000000000000', ['parent_id' => '10000000000001']);
+
+        $capitalCollectionsClientMock = Mockery::mock('RZP\Services\CapitalCollectionsClient');
+
+        $this->app->instance('capital_collections', $capitalCollectionsClientMock);
+
+        $capitalCollectionsClientMock->shouldReceive('pushInstantSettlementLedgerUpdate')
+            ->with(Mockery::type('RZP\Models\Settlement\Ondemand\Entity'), Mockery::type('bool'))
+            ->times(1)
+            ->andThrowExceptions([new \Exception("test message")]);
+
+        $this->startTest();
+
+        $txn = $this->getLastEntity('transaction',true);
+
+        $this->assertArraySelectiveEquals([
+            'type'                  => 'settlement.ondemand',
+            'merchant_id'           => '10000000000000',
+            'amount'                => 1000000,
+            'fee'                   => 0,
+            'tax'                   => 0,
+            'debit'                 => 1000000,
+            'credit'                => 0,
+            'currency'              => 'INR',
+        ], $txn);
+
+        $settlementOndemand = $this->getLastEntity('settlement.ondemand',true);
+
+        $this->assertArraySelectiveEquals([
+            'merchant_id'                    => '10000000000000',
+            'user_id'                        => null,
+            'amount'                         => 1000000,
+            'total_amount_settled'           => 0,
+            'total_fees'                     => 0,
+            'total_tax'                      => 0,
+            'total_amount_reversed'          => 0,
+            'total_amount_pending'           => 1000000,
+            'max_balance'                    => false,
+            'currency'                       => 'INR',
+            'status'                         => 'initiated',
+            'transaction_type'               => 'transaction',
+            'settlement_ondemand_trigger_id' => 'qaghswtyuiwsgh'
+        ], $settlementOndemand);
+    }
+
+    private function sendCollectionsToLedgerCreateMockResponse()
+    {
+        $response = new \WpOrg\Requests\Response();
+
+        $response->body = '{}';
+
+        $response->status_code = 200;
+
+        return $response;
     }
 
     public function testCreatePrepaidOndemandSettlementForLinkedAccountSuccess()

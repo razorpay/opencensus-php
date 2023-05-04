@@ -43,7 +43,7 @@ mappings:
   # [1hr, 6hrs, 12hrs, 1day, 2days, 3days, 5days, 7days, 10days, 15days, 1month, 2months, 4months, 6months]
   name: "api_recon_refund_create_to_reconciled_time_minutes"
 
-- match: api_recon_refund_created_to_processed_time_minutes.*
+- match: api_recon_refund__created_to_processed_time_minutes.*
   timer_type: histogram
   buckets: [60, 360, 720, 1440, 2880, 4320, 7200, 10080, 14400, 21600, 43200, 86400, 172800, 259200]
   # [1hr, 6hrs, 12hrs, 1day, 2days, 3days, 5days, 7days, 10days, 15days, 1month, 2months, 4months, 6months]

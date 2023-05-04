@@ -226,8 +226,8 @@ class Service extends Base\Service
                         }
                     }
                 }
-
-
+                // Call to collections for updating new ledger system
+                $this->updateLedgerEntryToCollections($settlementOndemand,false);
 
                 if (isset($input['expand']) === true && boolval($input['expand']) === true)
                 {
@@ -242,6 +242,21 @@ class Service extends Base\Service
 
         });
 
+    }
+
+    public function updateLedgerEntryToCollections($settlementOndemand, bool $reverse)
+    {
+        try
+        {
+            $collectionsService = $this->app['capital_collections'];
+            $collectionsService->pushInstantSettlementLedgerUpdate($settlementOndemand, $reverse);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_PUSH_TO_LEDGER_FAILURE, [
+                'ledger_push_exception'       => $e->getMessage(),
+            ]);
+        }
     }
 
     public function createSettlementOndemandReversal($settlementOndemandId, $merchantId, $reversalReason)

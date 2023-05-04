@@ -222,6 +222,31 @@ return [
         ]
     ],
 
+    'testSuccessScenarioForSendingDataToCollectionsForLedgerForCreatingOndemandSettlement' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand',
+            'method'  => 'post',
+            'content' => [
+                'amount'    => 2000,
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'               => 'settlement.ondemand',
+                'amount_requested'     => 2000,
+                'fees'                 => 48,
+                'tax'                  => 8,
+                'amount_pending'       => 1952,
+                'settle_full_balance'  => false,
+                'currency'             => 'INR',
+                'status'               => 'initiated',
+                'description'          => null,
+                'notes'                => [],
+            ]
+        ]
+    ],
+
     'testNoMinLimitFormEsAutomaticMerchants' => [
         'request'  => [
             'url'     => '/settlements/ondemand',
@@ -1980,6 +2005,67 @@ return [
                   'mode'                           => 'test',
                   'amount'                         => 1000000,
                   'settlement_ondemand_trigger_id' => 'qaghswtyuiwsgh'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'              => 'settlement.ondemand',
+                'amount_requested'    => 1000000,
+                'amount_settled'      => 0,
+                'amount_pending'      => 1000000,
+                'amount_reversed'     => 0,
+                'fees'                => 0,
+                'tax'                 => 0,
+                'currency'            => 'INR',
+                'settle_full_balance' => false,
+                'status'              => 'initiated',
+                'description'         => null,
+                'notes'               => [],
+                'scheduled'           => false
+            ],
+        ],
+    ],
+
+
+    'testLinkedOndemandSettlementWithCapitalIntegrationForLedgerSuccess' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/linked_account_settlements',
+            'method'  => 'post',
+            'content' => [
+                'merchant_id'                    => '10000000000000',
+                'mode'                           => 'test',
+                'amount'                         => 1000000,
+                'settlement_ondemand_trigger_id' => 'qaghswtyuiwsgh'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'              => 'settlement.ondemand',
+                'amount_requested'    => 1000000,
+                'amount_settled'      => 0,
+                'amount_pending'      => 1000000,
+                'amount_reversed'     => 0,
+                'fees'                => 0,
+                'tax'                 => 0,
+                'currency'            => 'INR',
+                'settle_full_balance' => false,
+                'status'              => 'initiated',
+                'description'         => null,
+                'notes'               => [],
+                'scheduled'           => false
+            ],
+        ],
+    ],
+
+    'testLinkedAccountSettlementWithCapitalIntegrationForLedgerWithException' => [
+        'request'  => [
+            'url'     => '/settlements/ondemand/linked_account_settlements',
+            'method'  => 'post',
+            'content' => [
+                'merchant_id'                    => '10000000000000',
+                'mode'                           => 'test',
+                'amount'                         => 1000000,
+                'settlement_ondemand_trigger_id' => 'qaghswtyuiwsgh'
             ]
         ],
         'response' => [

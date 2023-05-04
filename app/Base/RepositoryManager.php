@@ -278,7 +278,7 @@ class RepositoryManager extends Illuminate\Support\Manager
     public function saveOrFail($entity, array $options = array())
     {
         $repo = $this->getRepositoryClassFromObject($entity);
-
+        
         return $repo->saveOrFail($entity, $options);
     }
 

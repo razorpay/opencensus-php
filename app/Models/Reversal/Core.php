@@ -942,7 +942,24 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($reversal);
 
+        $this->updateLedgerEntryToCollectionsForReversal($settlementOndemand, true);
+
         return $reversal;
+    }
+
+    public function updateLedgerEntryToCollectionsForReversal($settlementOndemand,bool $reverse)
+    {
+        try
+        {
+            $collectionsService = $this->app['capital_collections'];
+            $collectionsService->pushInstantSettlementLedgerUpdate($settlementOndemand,$reverse);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::SETTLEMENT_ONDEMAND_PUSH_TO_LEDGER_REVERSAL_FAILURE, [
+                'ledger_push_exception'       => $e->getMessage(),
+            ]);
+        }
     }
 
     /**

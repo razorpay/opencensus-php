@@ -11,10 +11,13 @@ use RZP\Exception\BadRequestException;
 use Http\Discovery\Psr18ClientDiscovery;
 use Http\Discovery\Psr17FactoryDiscovery;
 use RZP\Models\Payout\Entity as PayoutEntity;
+use RZP\Models\Settlement\Ondemand\Entity as OndemandEntity;
 
 class CapitalCollectionsClient implements ExternalService
 {
     const PAYOUT_WEBHOOK_ENDPOINT = 'v1/repayments/payout-webhook';
+
+    const LEDGER_IS_ENDPOINT = 'v1/process_ondemand_settlement';
 
     public function __construct()
     {
@@ -78,6 +81,31 @@ class CapitalCollectionsClient implements ExternalService
         );
     }
 
+    public function pushInstantSettlementLedgerUpdate(OndemandEntity $OndemandSettlement, bool $reverse)
+    {
+
+        return $this->sendRequestAndParseResponse(self::LEDGER_IS_ENDPOINT,
+            $this->getCollectionsToLedgerUpdateData($OndemandSettlement,$reverse),
+            ['X-Auth-Type' => 'direct'], 'POST'
+        );
+    }
+
+    //TODO:have to check for settled_at value in future
+    protected function getCollectionsToLedgerUpdateData(OndemandEntity $settlementOndemand,bool $reverse) : array
+    {
+        return [
+            'merchant_id'               => $settlementOndemand->getMerchantId(),
+            'ondemand_settlement_id'    => $settlementOndemand->getId(),
+            'merchant_amount'           => $settlementOndemand->getAmount(),
+            'ondemand_settlement_fee'   => ($settlementOndemand->getTotalFees()-$settlementOndemand->getTotalTax()),
+            'ondemand_settlement_tax'   => $settlementOndemand->getTotalTax(),
+            'currency'                  => "INR",
+            'settled_at'                => round(millitime()/1000),
+            'is_reversal'               => $reverse,
+            'transaction_id'            => $settlementOndemand->getTransactionId(),
+        ];
+    }
+
     protected function getDataFromPayout(PayoutEntity $payout): array
     {
         return [
@@ -129,7 +157,7 @@ class CapitalCollectionsClient implements ExternalService
             $defaultHeaders['X-Admin-Id']        = $this->ba->getAdmin()->getId() ?? '';
             $defaultHeaders['X-Admin-Email']     = $this->ba->getAdmin()->getEmail() ?? '';
         }
-        
+
 
         return $this->sendRequest($defaultHeaders, $baseUrl . $url, $method, empty($body) ? '' : json_encode($body));
     }

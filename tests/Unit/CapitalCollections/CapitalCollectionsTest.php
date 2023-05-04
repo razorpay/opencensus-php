@@ -6,6 +6,8 @@ use Mockery;
 
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Settlement\Ondemand\Service as Service;
+use RZP\Models\Reversal\Core as Reversal;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
 
@@ -18,6 +20,46 @@ class CapitalCollectionsTest extends TestCase
         parent::setUp();
 
         $this->setUpMerchantForBusinessBanking(true, 10000000);
+    }
+
+    public function testPushInstantSettlementLedgerUpdateSuccessForReversal()
+    {
+        $collectionsMock = Mockery::mock('RZP\Services\CapitalCollectionsClient');
+
+        $collectionsMock->shouldReceive('pushInstantSettlementLedgerUpdate');
+
+        $this->app->instance('capital_collections', $collectionsMock);
+
+        $ondemandSettlement = $this->fixtures->create('settlement.ondemand', [
+            'amount'        => 10000,
+            'total_fees'    => 0,
+            'total_tax'     => 0,
+            'currency'      => "INR",
+        ]);
+
+        (new Reversal) -> updateLedgerEntryToCollectionsForReversal($ondemandSettlement, true);
+        // assert that the Payout Update Status was called when feature was enabled
+        $collectionsMock->shouldHaveReceived('pushInstantSettlementLedgerUpdate');
+    }
+
+    public function testPushInstantSettlementLedgerUpdateSuccess()
+    {
+        $collectionsMock = Mockery::mock('RZP\Services\CapitalCollectionsClient');
+
+        $collectionsMock->shouldReceive('pushInstantSettlementLedgerUpdate');
+
+        $this->app->instance('capital_collections', $collectionsMock);
+
+        $ondemandSettlement = $this->fixtures->create('settlement.ondemand', [
+            'amount'        => 10000,
+            'total_fees'    => 0,
+            'total_tax'     => 0,
+            'currency'      => "INR",
+        ]);
+
+        (new Service) -> updateLedgerEntryToCollections($ondemandSettlement, false);
+        // assert that the Payout Update Status was called when feature was enabled
+        $collectionsMock->shouldHaveReceived('pushInstantSettlementLedgerUpdate');
     }
 
     public function testPayoutStatusPushForCapitalCollectionsAsSource()
