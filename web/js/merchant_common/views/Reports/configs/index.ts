@@ -1,5 +1,5 @@
 import { Theme } from '@razorpay/blade/components';
-import { User } from 'common/typings';
+import { SessionReducerState } from 'common/typings';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { CustomConfigType } from 'merchant_common/views/Reports/types';
 
@@ -105,18 +105,32 @@ export const CUSTOM_CONFIG_MAP = {
   },
 };
 
-export const getCustomConfigs = (sessionUser?: User): CustomConfigType[] => {
-  if (!sessionUser) return [];
+export const isCustomConfigsDisabledForOrg = (orgId: string) => {
+  if (!orgId) return true;
+
+  const blackListedOrg = [
+    // Curlec
+    'KjWRtYXwpK6VfK',
+  ];
+  return blackListedOrg.findIndex((id) => orgId.includes(id)) != -1;
+};
+
+export const getCustomConfigs = (session?: SessionReducerState): CustomConfigType[] => {
+  // base validation
+  if (!session || !session.user) return [];
+  const { user, org } = session;
+
+  if (isCustomConfigsDisabledForOrg(org?.id as string)) return [];
 
   const customConfigs: any = [];
 
-  if (sessionUser.isOrgAllowedFunctionality('monthlyInvoice')) {
+  if (user.isOrgAllowedFunctionality('monthlyInvoice')) {
     customConfigs.push(CUSTOM_CONFIG_MAP.monthlyInvoice);
-  } else if (sessionUser.findTag('borking_report')) {
+  } else if (user.findTag('borking_report')) {
     customConfigs.push(CUSTOM_CONFIG_MAP.broking);
-  } else if (sessionUser.findTag('rpp_report')) {
+  } else if (user.findTag('rpp_report')) {
     customConfigs.push(CUSTOM_CONFIG_MAP.rpp_report);
-  } else if (sessionUser.findTag('dsp_report')) {
+  } else if (user.findTag('dsp_report')) {
     customConfigs.push(CUSTOM_CONFIG_MAP.dsp_report);
   }
 

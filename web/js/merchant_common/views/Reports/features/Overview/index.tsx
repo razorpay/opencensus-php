@@ -12,11 +12,11 @@ import { getReportsDashboardConfig } from 'merchant_common/views/Reports/configs
 import { OverviewSection } from './OverView';
 import { showNotification } from 'merchant_common/reducers/notifications';
 
-const mapStateToProps = ({ reportsCore, session: { user } }, { dashboardType }) => {
+const mapStateToProps = ({ reportsCore, session }, { dashboardType }) => {
   const { allConfigs, recentConfigs } = reportsCore[dashboardType].overview.reportConfigs;
-  const refDashboardConfig = getReportsDashboardConfig(dashboardType, user);
+  const refDashboardConfig = getReportsDashboardConfig(dashboardType, session);
   return {
-    isOverviewRecentsFilterEnabled: user?.isRevampedReportsEnabled?.overviewRecents,
+    isOverviewRecentsFilterEnabled: session?.user?.isRevampedReportsEnabled?.overviewRecents,
     refDashboardConfig,
     allReportConfigs: allConfigs.data,
     recentlyUsedReportConfigs: recentConfigs.data,

@@ -7,6 +7,16 @@ import { REPORT_TEST_DASHBOARD } from 'merchant_common/views/Reports/constants';
 
 const closeModal = jest.spyOn(modalFn, 'closeModal');
 
+const TEST_USER = {
+  name: 'Rzp',
+  email: 'rzp@gmail.com',
+  id: 'MID_ASDASW',
+  current: 'IASD_ASD',
+  isOrgAllowedFunctionality: jest.fn(() => true),
+  findTag: jest.fn(),
+  isMarketplaceEnabled: true,
+};
+
 describe('Download Custom Reports', () => {
   const App = () => {
     return (
@@ -39,7 +49,17 @@ describe('Download Custom Reports', () => {
 
   test('should open link if fields are validated', async () => {
     jest.spyOn(window, 'setTimeout');
-    render(<App />);
+    render(<App />, {
+      initialState: {
+        session: {
+          user: TEST_USER,
+          mode: 'live',
+          org: {
+            id: 'ASDFGHJ',
+          },
+        },
+      },
+    });
     await userEvent.click(screen.getByLabelText('Selected Month Field'));
     await userEvent.click(screen.getByLabelText(`Months Range -> ${moment().format('MMM')}`));
     await userEvent.click(screen.getByLabelText('Selected Year Field'));

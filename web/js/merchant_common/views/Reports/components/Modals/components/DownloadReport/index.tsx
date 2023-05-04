@@ -14,7 +14,8 @@ import {
   trackDownloadsSection,
 } from 'merchant_common/views/Reports/configs/analytics.config';
 
-const mapStateToProps = ({ reportsCore, accounts, session: { user, mode } }, { dashboardType }) => {
+const mapStateToProps = ({ reportsCore, accounts, session }, { dashboardType }) => {
+  const { user, mode } = session;
   const {
     overview: {
       reportConfigs: { allConfigs },
@@ -24,7 +25,7 @@ const mapStateToProps = ({ reportsCore, accounts, session: { user, mode } }, { d
   const availableEmails = getAvailableEmails(user);
   const { availableAccounts, headers, parsePayloadBeforeSubmit } = getReportsDashboardConfig(
     dashboardType,
-    user,
+    session,
     accounts,
     mode,
   );

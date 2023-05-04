@@ -25,11 +25,12 @@ import { CloseModalButtonContainer, CustomDurationWrapper, FieldWrapper } from '
 import { CustomConfigType } from 'merchant_common/views/Reports/types';
 import { MonthIndex } from 'merchant_common/views/Reports/components/types';
 
-const mapStateToProps = ({ accounts, session: { user, mode } }, { dashboardType }) => {
+const mapStateToProps = ({ accounts, session }, { dashboardType }) => {
+  const { user, mode } = session;
   const availableEmails = getAvailableEmails(user);
   const { availableAccounts, headers, customConfigs } = getReportsDashboardConfig(
     dashboardType,
-    user,
+    session,
     accounts,
   );
   const generatedBy = user.current;

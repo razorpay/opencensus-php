@@ -38,11 +38,10 @@ const NAV_LINKS = [
 
 const mapStateToProps = ({ reportsCore, session }, { dashboardType }) => {
   const { allConfigs } = reportsCore[dashboardType].overview.reportConfigs;
-
   return {
     allReportConfigs: allConfigs.data,
     user: pickProps(session.user, ['current', 'international']),
-    refDashboardConfig: getReportsDashboardConfig(dashboardType, session.user),
+    refDashboardConfig: getReportsDashboardConfig(dashboardType, session),
   };
 };
 
