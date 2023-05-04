@@ -38,7 +38,8 @@ class Create extends Base
     public function createPayoutViaMicroservice(array $input,
                                                 string $merchantId,
                                                 bool $isInternal = false,
-                                                array $creditsInfo = [])
+                                                array $creditsInfo = [],
+                                                array $fundAccountInfo = [])
     {
         $data = $input;
 
@@ -61,7 +62,7 @@ class Create extends Base
             $uri = self::CREATE_PAYOUT_INTERNAL_SERVICE_URI;
         }
 
-        $request = $this->createRequestBody($input, $merchantId, $creditsInfo);
+        $request = $this->createRequestBody($input, $merchantId, $creditsInfo, $fundAccountInfo);
 
         $headers = $this->getHeadersWithJwt();
 
@@ -147,7 +148,8 @@ class Create extends Base
      */
     public function createRequestBody(array $input,
                                       string $merchantId,
-                                      array $creditsInfo = []): array
+                                      array $creditsInfo = [],
+                                      array $fundAccountInfo = []): array
     {
         $fundAccountId = PublicEntity::stripDefaultSign($input[Payout\Entity::FUND_ACCOUNT_ID]);
 
@@ -196,6 +198,16 @@ class Create extends Base
             $requestBody[Payout\Entity::EXTRA_INFO] = [
                 Payout\Entity::CREDITS_INFO => [
                     Payout\Entity::AMOUNT => (int) $creditsInfo[Payout\Entity::UNUSED_CREDITS]
+                ]
+            ];
+        }
+
+        if ((isset($fundAccountInfo[Payout\Entity::FETCH_FUND_ACCOUNT_INFO_SUCCESS]) === true) and
+            ($fundAccountInfo[Payout\Entity::FETCH_FUND_ACCOUNT_INFO_SUCCESS] === true))
+        {
+            $requestBody[Payout\Entity::EXTRA_INFO] += [
+                Payout\Entity::FUND_ACCOUNT_INFO => [
+                    Payout\Entity::FUND_ACCOUNT => $fundAccountInfo[Payout\Entity::FUND_ACCOUNT]
                 ]
             ];
         }
