@@ -85,7 +85,7 @@ class Repository extends Base\Repository
         catch (BadRequestException $e)
         {
             //if not found with given hostname, normalize th hostname if it is for devserve, if not raise exeception
-            $hostname = $this->checkIfDeserveHostName($hostname);
+            $hostname = $this->checkIfDevserveHostName($hostname);
 
             // Join the orgs, and org_hostname table to get the org with the given devserve hostname
             return $this->newQuery()
@@ -148,7 +148,7 @@ class Repository extends Base\Repository
     }
 
 
-    protected function checkIfDeserveHostName($hostname): string
+    protected function checkIfDevserveHostName(string $hostname): string
     {
         //This is for the feature in devstack where the host name will be appended with label as a preview URL
         $hostname = mb_strtolower($hostname);
@@ -156,7 +156,7 @@ class Repository extends Base\Repository
         switch ($hostname)
         {
             // if org host has the pattern dashboard-.*.dev.razorpay.in -> dashboard.dev.razorpay.in
-            case preg_match('/dashboard-(\b(?!curlec\b)\w+).dev.razorpay.in/', $hostname) === 1:
+            case preg_match('/dashboard-(?!.*curlec)[^.]+\.dev\.razorpay\.in/', $hostname) === 1:
                 return Constants::DEVSERVE_HOST_URL;
             // if org host has the pattern dashboard-.*-curlec.dev.razorpay.in -> dashboard-curlec.dev.razorpay.in
             case preg_match('/dashboard-(.*)-curlec.dev.razorpay.in/', $hostname) === 1:

@@ -1107,4 +1107,18 @@ return [
         ],
     ],
 
+    'testGetOrgByHostnamePreviewURLDevstack' => [
+        'request' => [
+            'url' => '/orgs/hostname/dashboard-pr-6000.dev.razorpay.in',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'email'                => 'testingpreview@razorpay.com',
+                'hostname'             => 'dashboard-pr-6000.dev.razorpay.in',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
 ];

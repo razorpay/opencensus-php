@@ -501,6 +501,20 @@ class OrgTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetOrgByHostnamePreviewURLDevstack()
+    {
+        $org = $this->fixtures->create('org', ['email' => 'testingpreview@razorpay.com']);
+
+        $this->orgHostName = $this->fixtures->create('org_hostname', [
+            'org_id'        => $org->getId(),
+            'hostname'      => 'dashboard-pr-6000.dev.razorpay.in',
+        ]);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
     public function testFeatureForOrg()
     {
         $this->ba->dashboardGuestAppAuth();
