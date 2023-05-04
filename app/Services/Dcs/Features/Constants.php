@@ -92,6 +92,7 @@ class Constants
     const EnableOTM = 'enable_otm';
     const AdminPasswordResetEnabled = 'admin_password_reset_enabled';
     const OneCCMultipleShipping = 'one_cc_multiple_shipping';
+    const AggregatorAccessToSubmerchantReportEnabled = 'aggregator_access_to_submerchant_report_enabled';
 
     /**
      * Stores the mapping of the features to their corresponding dcs keys
@@ -179,6 +180,7 @@ class Constants
         self::DynamicCurrencyConversionCybs => 'rzp/pg/merchant/payments/banking_program/Cards',
         self::AdminPasswordResetEnabled => 'rzp/pg/org/banking/admin/Features',
         self::OneCCMultipleShipping => 'rzp/pg/merchant/checkout/magic/Configuration',
+        self::AggregatorAccessToSubmerchantReportEnabled => 'rzp/platform/partner/reporting/Features',
     ];
 
     /**
@@ -268,6 +270,7 @@ class Constants
         APIFeaturesConstants::CUSTOMER_FEE_DONT_SETTLE                      => self::PostpaidMerchantsDontSettleCustomerFees,
         APIFeaturesConstants::ORG_ADMIN_PASSWORD_RESET                      => self::AdminPasswordResetEnabled,
         APIFeaturesConstants::ONE_CC_SHOPIFY_MULTIPLE_SHIPPING              => self::OneCCMultipleShipping,
+        APIFeaturesConstants::AGGREGATOR_REPORT                             => self::AggregatorAccessToSubmerchantReportEnabled,
     ];
 
     /**
