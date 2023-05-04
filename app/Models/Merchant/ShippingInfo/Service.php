@@ -186,7 +186,9 @@ class Service extends Base\Service
                */
 
                 $decodedResponse = [self::SHIPPING_INFO_ADDRESSES => [$cachedResponse]];
-
+                // Not ideal nomenclature but we are doing this as the code is too large to extract "source".
+                $dimensions['platform'] = 'cache';
+                $this->recordShippingInfoResp($cachedResponse, $dimensions);
                 return [
                     self::SHIPPING_INFO_ADDRESSES => [$cachedResponse],
                 ];
@@ -194,6 +196,7 @@ class Service extends Base\Service
             //Temporary fix for PP Shipping Fee(Once Shipping Provider is built for PP this can be removed)
             if ($productType != null && $productType === ProductType::PAYMENT_PAGE)
             {
+                $dimensions['platform'] = 'others';
                 $productId = $order->getProductId();
                 $paymentPage = $this->repo->payment_link->findByIdAndMerchant($productId, $this->merchant);
                 $settings = $paymentPage->getSettings()->toArray();
@@ -368,7 +371,7 @@ class Service extends Base\Service
 
             }
             $this->cacheMerchantShippingInfo($orderId, $address, $order->getAmount());
-
+            $this->recordShippingInfoResp($address, $dimensions);
             return [self::SHIPPING_INFO_ADDRESSES => [$address]];
 
         }
@@ -1118,5 +1121,26 @@ class Service extends Base\Service
         $address[Fields::COD_FEE] = 0;
 
         return [self::SHIPPING_INFO_ADDRESSES => [$address]];
+    }
+
+    // For merchants using single shipping method we take the top level values.
+    // In case multiple shipping methods is enabled, we iterate over the loop and record every value.
+    protected function recordShippingInfoResp(array $address, array $dimensions): void {
+      if (empty($address['shipping_methods']) === true) {
+        $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_RESPONSE_COUNT, [
+            'serviceable' => $address['serviceable'],
+            'cod'         => $address['cod'],
+            'platform'    => $dimensions['platform'],
+        ]);
+        return;
+      }
+      $methods = $address['shipping_methods'];
+      for ($i=0; $i < count($methods); $i++) {
+        $this->trace->count(Metric::MERCHANT_SHIPPING_INFO_RESPONSE_COUNT, [
+            'serviceable' => $methods[$i]['serviceable'],
+            'cod'         => $methods[$i]['cod'],
+            'platform'    => $dimensions['platform'],
+        ]);
+      }
     }
 }
