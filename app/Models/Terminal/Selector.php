@@ -952,7 +952,7 @@ class Selector extends Base\Core
 
         $merchant = $this->input['merchant'];
 
-        $excludedMethods = array(Method::EMANDATE,Method::CARD,Method::WALLET,Method::NETBANKING);
+        $excludedMethods = array(Method::EMANDATE,Method::CARD,Method::WALLET,Method::NETBANKING, Method::UPI);
 
         if ((in_array($payment[Entity::METHOD],$excludedMethods)) or
             ($merchant->isFeatureEnabled(Features::RAAS) === true))
