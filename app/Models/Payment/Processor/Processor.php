@@ -6473,7 +6473,9 @@ class Processor
 
     protected function validateDisableS2SIfApplicable(Payment\Entity $payment, array $input)
     {
-        if((isset($payment) === true) && ($input['method'] === Payment\Method::CARD))
+        if((isset($payment) === true) &&
+            ($input['method'] === Payment\Method::CARD) &&
+            (strpos(Request::getUri(), "/payments/create/recurring") === false))
         {
             if (($this->app['api.route']->isS2SPaymentRoute() === true) && ($this->merchant->isFeatureEnabled(Feature::S2S_DISABLE_CARDS) === true)) {
                 throw new Exception\BadRequestValidationFailureException(
