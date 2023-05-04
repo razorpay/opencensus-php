@@ -1141,10 +1141,13 @@ class Processor extends VirtualAccount\Processor
         $gateway    = Payment\Gateway::$bankTransferProviderGateway[$bankTransfer->getGateway()];
         $merchantId = $bankTransfer->getMerchantId();
 
-        $terminalCaching = $this->app->razorx->getTreatment(
-            $merchantId,
-            Merchant\RazorxTreatment::SMART_COLLECT_TERMINAL_CACHING,
-            $this->mode);
+//        $terminalCaching = $this->app->razorx->getTreatment(
+//            $merchantId,
+//            Merchant\RazorxTreatment::SMART_COLLECT_TERMINAL_CACHING,
+//            $this->mode);
+
+        // disabling terminal caching in bank transfer flow due to an issue - https://razorpay.atlassian.net/browse/EPA-605
+        $terminalCaching = 'off';
 
         $getTerminalCallback = function() use ($bankTransfer)
         {
