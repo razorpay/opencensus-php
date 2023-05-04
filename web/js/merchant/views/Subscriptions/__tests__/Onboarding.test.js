@@ -17,7 +17,10 @@ describe('Subscriptions Onboarding Screen', () => {
   const renderApp = (props = {}) => {
     render(<Onboarding {...props} />, {
       initialState: {
-        session: { user: { isSubscriptionsEnabled: true } },
+        session: {
+          user: { isSubscriptionsEnabled: true },
+          org: { custom_code: 'rzp', business_name: 'Razorpay' },
+        },
       },
     });
   };

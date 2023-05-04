@@ -40,10 +40,13 @@ const Label = ({ text, htmlFor, required: isRequired }) => {
 
 @connect(
   (state) => {
-    const { currency } = selector(state, 'item') || {};
+    const { currency } = selector(state, 'item') || {
+      currency: state.session.user.merchant.currency,
+    };
     return {
       currency,
       baseLocation: state.app.baseLocation,
+      user: state.session.user,
     };
   },
   {
@@ -75,6 +78,8 @@ export default class NewPlan extends Component {
     if (this.props.plan) {
       this.props.initialize(this.props.plan);
     }
+
+    this.props.change('item[currency]', this.props.user.merchant.currency);
 
     this.fetchIfIntentDuplicate();
   }

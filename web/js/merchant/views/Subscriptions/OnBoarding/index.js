@@ -1,3 +1,4 @@
+/* eslint-disable react/no-this-in-sfc */
 import React from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
@@ -17,12 +18,23 @@ import OnBoarding, {
   getIsAllowedResetBoarding,
 } from 'merchant/components/OnBoarding';
 import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGuide';
-
+import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 import { PROS, FEATURES_DATA, FEATURES_LINKS } from './data';
-import analytics from '../analytics';
+import analytics from 'merchant/views/Subscriptions/analytics';
+import { ONBOARDING_SUBSCRIPTIONS_DESCRIPTION } from 'merchant/views/Subscriptions/constants';
+
+const ORG_FEATURE_DATA = {
+  [ORG_CUSTOM_CODE_MAP.RAZORPAY]: [
+    FEATURES_DATA.subscriptionLink,
+    FEATURES_DATA.multicurrency,
+    FEATURES_DATA.paymentMethods,
+  ],
+  [ORG_CUSTOM_CODE_MAP.CURLEC]: [FEATURES_DATA.subscriptionLink, FEATURES_DATA.paymentMethods],
+};
 
 @connect((state) => ({
   user: state.session.user,
+  org: state.session.org,
   subscriptionProductOnBoarding: getCurrentProductOnBoardingDetails(
     state,
     RZPFeatures.SUBSCRIPTIONS,
@@ -95,6 +107,9 @@ export default class SubscriptionOnBoarding extends React.Component {
   };
 
   render() {
+    const { org } = this.props;
+    const customCode = org.custom_code;
+    const orgBusinessName = org.business_name;
     return (
       <OnBoardingWrapper class="Subscription">
         <Slider
@@ -108,7 +123,11 @@ export default class SubscriptionOnBoarding extends React.Component {
               feature={RZPFeatures.SUBSCRIPTIONS}
               pros={PROS}
               imageUrl="https://razorpay.com/assets/subscriptions/banner.svg"
-              desc="Collect recurring payments from customers with Razorpay Subscriptions APIs"
+              desc={
+                ONBOARDING_SUBSCRIPTIONS_DESCRIPTION[customCode] ||
+                ONBOARDING_SUBSCRIPTIONS_DESCRIPTION.rzp
+              }
+              businessName={orgBusinessName}
               next={(...args) => {
                 this.props.tracking.trackEvent(
                   window.rzpQ.subscription().interaction('subscription.onboarding.next_screen_1', {
@@ -139,7 +158,7 @@ export default class SubscriptionOnBoarding extends React.Component {
                   );
                 },
               }))}
-              features={FEATURES_DATA}
+              features={ORG_FEATURE_DATA[customCode] || ORG_FEATURE_DATA.rzp}
             />
           )}
         </Slider>

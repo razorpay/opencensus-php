@@ -55,6 +55,7 @@ export const HIDDEN_INTERNATIONAL_FEATURES_TAGS = {
   PartnerCommission: 'i18_hide_partner_commission',
   AddNewRazorpayXMerchant: 'i18_hide_add_new_razorpay_x_merchant',
   RazorpayXAffiliateAccount: 'i18_hide_razorpay_x_affiliate_account',
+  SubcriptionOffers: 'i18_hide_subscription_offers',
   PAYMENT_LINKS: {
     UPIPaymentLink: 'i18_hide_upi_payment_link',
   },

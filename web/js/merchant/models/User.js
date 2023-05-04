@@ -18,6 +18,7 @@ import {
 } from 'merchant/helpers/permissions';
 import { AffordabilityFeaturesFlag } from 'merchant/views/Affordability/AffordabilityWidget/Onboarding/data';
 import { filterByArray as filterByAffordabilityFlags } from 'merchant/views/Affordability/AffordabilityWidget/Onboarding/helper';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 export const ORG_CUSTOM_CODE_MAP = {
   RAZORPAY: 'rzp',
@@ -1313,7 +1314,11 @@ export default class User {
   }
 
   get isSubscriptionOffersEnabled() {
-    return this.getExpStatus('offer_on_subscription') && !this.isChargeAtWillEnabled;
+    return (
+      this.getExpStatus('offer_on_subscription') &&
+      !this.isChargeAtWillEnabled &&
+      !this.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SubcriptionOffers)
+    );
   }
 
   get isSubscriptionOffersReportsEnabled() {

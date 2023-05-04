@@ -56,7 +56,6 @@ class CurrencySelect extends Component {
     const isDisabled = this.props.disabled;
 
     const defaultValue = this.props.defaultValue || 'INR'; // If no value passed, then INR is the displayed option.
-
     /*
      * Note: it can happen that international is manually disabled (by merchant / by support team).
      * And some payments in international currency might exist, hence regardless international enable, currency requested via this component must reflect correct currency, and not INR.

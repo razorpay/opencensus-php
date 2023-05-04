@@ -1,3 +1,5 @@
+import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
+
 export const PAPER_NACH_CARD_BANNER_URL =
   'https://razorpay.com/docs/api/recurring-payments/paper-nach/authorization-transaction/#112-create-an-order';
 export const UPDATE_PAYMENT_METHOD_URL =
@@ -21,3 +23,9 @@ export const DEFAULT_UPI_LIMIT = 200000; // Rs
 export const DEFAULT_EMANDATE_LIMIT = 99999; // Rs
 
 export const tokenStatuses = ['initiated', 'confirmed', 'rejected', 'cancelled', 'paused'];
+export const ONBOARDING_SUBSCRIPTIONS_DESCRIPTION = {
+  [ORG_CUSTOM_CODE_MAP.RAZORPAY]:
+    'Collect recurring payments from customers with Razorpay Subscriptions APIs',
+  [ORG_CUSTOM_CODE_MAP.CURLEC]:
+    'Collect recurring payments from customers with Curlec Subscriptions APIs',
+};

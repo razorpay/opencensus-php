@@ -3,25 +3,23 @@ import ImgMultiCurrency from 'assets/product_onboarding/partial_payments.svg';
 import ImgAlternativePayment from 'assets/product_onboarding/alter_native_payment_option.svg';
 
 // Features
-export const FEATURES_DATA = [
-  {
+export const FEATURES_DATA = {
+  subscriptionLink: {
     icon: ImgSubscriptionLinks,
     title: 'Subscription Links',
-    desc:
-      'Share unique links to onboard your customers on your Subscription plans instantly! Zero coding, Zero integration.',
+    desc: 'Share unique links to onboard your customers on your Subscription plans instantly! Zero coding, Zero integration.',
   },
-  {
+  multicurrency: {
     icon: ImgMultiCurrency,
     title: 'Multi-currency Support',
-    desc:
-      'Accept recurring payments from customers in India and abroad via Razorpay Subscriptions. 100 currencies supported!',
+    desc: 'Accept recurring payments from customers in India and abroad via Razorpay Subscriptions. 100 currencies supported!',
   },
-  {
+  paymentMethods: {
     icon: ImgAlternativePayment,
     title: 'Multiple Payment methods',
     desc: `Offer your customers a wide variety of payment methods. All payment methods which support recurring payments are compliant with RBI regulations.`,
   },
-];
+};
 
 // Landing
 export const PROS = [
