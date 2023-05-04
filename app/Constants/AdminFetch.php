@@ -2455,64 +2455,6 @@ class AdminFetch
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
             ],
-
-            Entity::DISPUTE => [
-                Dispute\Entity::MERCHANT_ID     => Fetch::FIELD_MERCHANT_ID,
-                Dispute\Entity::PAYMENT_ID      => Fetch::FIELD_PAYMENT_ID,
-                Dispute\Entity::STATUS          => [
-                    Fetch::LABEL        => 'Status',
-                    Fetch::TYPE         => Fetch::TYPE_ARRAY,
-                    Fetch::VALUES       => [
-                        Dispute\Status::OPEN,
-                        Dispute\Status::UNDER_REVIEW,
-                        Dispute\Status::WON,
-                        Dispute\Status::LOST,
-                        Dispute\Status::CLOSED,
-                    ],
-                ],
-                Dispute\Entity::INTERNAL_STATUS => [
-                    Fetch::LABEL        => 'Internal Status',
-                    Fetch::TYPE         => Fetch::TYPE_ARRAY,
-                    Fetch::VALUES       => Dispute\InternalStatus::getInternalStatuses(),
-                ],
-                Dispute\Entity::PHASE           => [
-                    Fetch::LABEL        => 'Phase',
-                    Fetch::TYPE         => Fetch::TYPE_ARRAY,
-                    Fetch::VALUES       => [
-                        Dispute\Phase::CHARGEBACK,
-                        Dispute\Phase::PRE_ARBITRATION,
-                        Dispute\Phase::ARBITRATION,
-                        Dispute\Phase::RETRIEVAL,
-                        Dispute\Phase::FRAUD,
-                    ],
-                ],
-                Dispute\Entity::AMOUNT          => [
-                    Fetch::LABEL        => 'Amount',
-                    Fetch::TYPE         => Fetch::TYPE_STRING,
-                ],
-                Dispute\Entity::INTERNAL_RESPOND_BY_TO          => [
-                    Fetch::LABEL        => 'Internal Respond By To',
-                    Fetch::TYPE         => Fetch::TYPE_STRING,
-                ],
-                Dispute\Entity::INTERNAL_RESPOND_BY_FROM         => [
-                    Fetch::LABEL        => 'Internal Respond By From',
-                    Fetch::TYPE         => Fetch::TYPE_STRING,
-                ],
-                Dispute\Entity::ORDER_BY_INTERNAL_RESPOND         => [
-                    Fetch::LABEL        => 'Prioritize on Internal Respond By Disputes',
-                    Fetch::TYPE         => Fetch::TYPE_BOOLEAN,
-                ],
-                Dispute\Entity::GATEWAY_DISPUTE_SOURCE             => [
-                    Fetch::LABEL        => 'Gateway Dispute Source',
-                    Fetch::TYPE         => Fetch::TYPE_ARRAY,
-                    Fetch::VALUES       => [
-                        Dispute\Constants::GATEWAY_DISPUTE_SOURCE_CUSTOMER,
-                        Dispute\Constants::GATEWAY_DISPUTE_SOURCE_NETWORK,
-                    ],
-                ],
-
-            ],
-
             Entity::PAYMENT_FRAUD => [
                 Payment\Fraud\Entity::PAYMENT_ID      => Fetch::FIELD_PAYMENT_ID,
                 Payment\Fraud\Entity::ARN             => [
@@ -2521,43 +2463,14 @@ class AdminFetch
                 ],
             ],
 
-            Entity::DISPUTE_EVIDENCE => [
-                Dispute\Evidence\Entity::DISPUTE_ID =>  [
-                        Fetch::LABEL        => 'Dispute ID',
-                        Fetch::TYPE         => Fetch::TYPE_STRING,
-                ],
-            ],
-            Entity::DISPUTE_EVIDENCE_DOCUMENT => [
-                Dispute\Evidence\Document\Entity::DISPUTE_ID =>  [
-                    Fetch::LABEL        => 'Dispute ID',
-                    Fetch::TYPE         => Fetch::TYPE_STRING,
-                ],
-            ],
-
-
-            Entity::DISPUTE_REASON => [
-                'network' => [
-                    Fetch::LABEL  => 'Network',
-                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
-                    Fetch::VALUES => Dispute\Reason\Network::list(),
-                ],
-                'code' => [
-                    Fetch::LABEL  => 'Code',
-                    Fetch::TYPE   => Fetch::TYPE_STRING,
-                ],
-                'description' => [
-                    Fetch::LABEL  => 'Description',
-                    Fetch::TYPE   => Fetch::TYPE_STRING,
-                ],
-                'gateway_code' => [
-                    Fetch::LABEL  => 'Gateway Code',
-                    Fetch::TYPE   => Fetch::TYPE_STRING,
-                ],
-                'gateway_description' => [
-                    Fetch::LABEL  => 'Gateway Description',
-                    Fetch::TYPE   => Fetch::TYPE_STRING,
-                ]
-            ],
+            Entity::DISPUTE => Disputes::getDisputeFilters(),
+            Entity::DISPUTES_DISPUTES => Disputes::getDisputeFilters(),
+            Entity::DISPUTE_EVIDENCE => Disputes::getDisputeEvidenceFilters(),
+            Entity::DISPUTES_DISPUTE_EVIDENCE => Disputes::getDisputeEvidenceFilters(),
+            Entity::DISPUTE_EVIDENCE_DOCUMENT => Disputes::getDisputeEvidenceDocumentFilters(),
+            Entity::DISPUTES_DISPUTE_EVIDENCE_DOCUMENT => Disputes::getDisputeEvidenceDocumentFilters(),
+            Entity::DISPUTE_REASON => Disputes::getDisputeReasonFilters(),
+            Entity::DISPUTES_DISPUTE_REASONS => Disputes::getDisputeReasonFilters(),
 
             Entity::D2C_BUREAU_REPORT => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,

@@ -2,6 +2,7 @@
 
 namespace RZP\Services;
 
+use GuzzleHttp\RequestOptions;
 use Request;
 use RZP\Exception;
 use RZP\Constants\Mode;
@@ -23,14 +24,22 @@ class DisputesClient
 {
     const CONTENT_TYPE        = 'content-type';
     const CONTENT_TYPE_JSON   = 'application/json';
-    const X_REQUEST_ID        = 'X-Request-ID';
+    const X_TASK_ID           = 'X-Razorpay-TaskId';
     const X_MERCHANT_ID       = 'X-Merchant-ID';
     const X_AUTH_TYPE         = 'X-Auth-Type';
-    const X_IS_EXPRESS        = 'X-Is-Express';
+    const X_INTERNAL_APP      = 'X-Internal-App';
+    const X_ADMIN_ID          = 'X-Admin-Id';
+    const X_USER_ID           = 'X-User-Id';
     const DISPUTES_DUAL_WRITE = "v1/disputes/dual-write";
-    const MAX_RETRIES         = 2;
+    const MAX_RETRIES         = 1;
+
+    const DISPUTES                  = 'disputes';
+    const DISPUTE_REASONS           = 'dispute_reasons';
+    const DISPUTE_EVIDENCE          = 'dispute_evidence';
+    const DISPUTE_EVIDENCE_DOCUMENT = 'dispute_evidence_document';
 
     const AUTH_TYPE_PROXY   = 'proxy';
+    const AUTH_TYPE_ADMIN   = 'admin';
     const AUTH_TYPE_PRIVATE = 'private';
     const AUTH_TYPE_EXPRESS = 'express';
 
@@ -58,7 +67,7 @@ class DisputesClient
             'base_uri' => $this->config['base_url'],
             'auth'     => [
                 $this->config['auth']['username'],
-                $this->config['auth']['secret'],
+                'dispute_secret',
             ]]);
     }
 
@@ -84,6 +93,10 @@ class DisputesClient
         {
             return self::AUTH_TYPE_EXPRESS;
         }
+        if ($this->app['basicauth']->isAdminAuth() === true)
+        {
+            return self::AUTH_TYPE_ADMIN;
+        }
         if ($this->app['basicauth']->isPrivateAuth() === true)
         {
             return self::AUTH_TYPE_PRIVATE;
@@ -95,10 +108,13 @@ class DisputesClient
     private function getDisputesHeaders() : array
     {
         return [
-            self::CONTENT_TYPE  => 'application/json',
-            self::X_REQUEST_ID  => $this->app['request']->getTaskId(),
-            self::X_MERCHANT_ID => $this->app['basicauth']->getMerchantId(),
-            self::X_AUTH_TYPE   => $this->getAuthType(),
+            self::CONTENT_TYPE      => 'application/json',
+            self::X_TASK_ID         => $this->app['request']->getTaskId(),
+            self::X_MERCHANT_ID     => $this->app['basicauth']->getMerchantId() ?? '',
+            self::X_AUTH_TYPE       => $this->getAuthType() ?? '',
+            self::X_INTERNAL_APP    => $this->app['basicauth']->getInternalApp() ?? '',
+            self::X_ADMIN_ID        => $this->app['basicauth']->getAdmin()->getId() ?? '',
+            self::X_USER_ID         => $this->app['basicauth']->getUser()->getId() ?? '',
         ];
     }
 
@@ -110,7 +126,25 @@ class DisputesClient
      */
     public function forwardToDisputesService()
     {
-        return $this->requestAndGetParseBody(Request::method(), Request::path(), Request::all(), 1);
+        return $this->requestAndGetParseBody(Request::method(), Request::path(), Request::all(), 0);
+    }
+
+    public function fetchMultiple(string $entity, array $input)
+    {
+        return match ($entity) {
+            self::DISPUTES, self::DISPUTE_REASONS, self::DISPUTE_EVIDENCE, self::DISPUTE_EVIDENCE_DOCUMENT =>
+                $this->requestAndGetParseBody(Requests::GET, sprintf('v1/admin/%s', $entity), $input, 0),
+            default => null,
+        };
+    }
+
+    public function fetch(string $entity, string $id, array $input)
+    {
+        return match ($entity) {
+            self::DISPUTES, self::DISPUTE_REASONS, self::DISPUTE_EVIDENCE, self::DISPUTE_EVIDENCE_DOCUMENT =>
+            $this->requestAndGetParseBody(Requests::GET, sprintf('v1/admin/%s/%s', $entity, $id), null, 0),
+            default => null,
+        };
     }
 
     /**
@@ -132,11 +166,11 @@ class DisputesClient
 
         try
         {
-            $this->requestAndGetParseBody("POST", self::DISPUTES_DUAL_WRITE, [
+            $this->requestAndGetParseBody(Requests::POST, self::DISPUTES_DUAL_WRITE, [
                 "table" => $table,
                 "action" => $action,
                 "data" => $entityData
-            ],                            1);
+            ],0);
         }
         catch(\Throwable $e)
         {
@@ -173,13 +207,22 @@ class DisputesClient
 
         $this->options = [
             'headers' => $this->getDisputesHeaders(),
-            'json' => $payload,
         ];
+
+        if ($method === Requests::GET)
+        {
+            $url = $url . '?' . http_build_query($payload);
+        }
+        else
+        {
+            $this->options[RequestOptions::JSON] = $payload;
+        }
 
         $this->trace->info(TraceCode::DOWNSTREAM_SERVICE_REQUEST, [
             'url'       => $url,
             'service'   => 'disputes',
             'payload'   => $payload,
+            'headers' => $this->getDisputesHeaders(),
             'retry_count' => $retry_count
         ]);
 

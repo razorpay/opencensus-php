@@ -482,6 +482,13 @@ class Entity
     // Service: RAS
     const RAS_RULES = 'ras.rules';
 
+    // Service: Disputes
+    const DISPUTES_DISPUTES                     = 'disputes.disputes';
+    const DISPUTES_DISPUTE_EVIDENCE             = 'disputes.dispute_evidence';
+    const DISPUTES_DISPUTE_EVIDENCE_DOCUMENT    = 'disputes.dispute_evidence_document';
+    const DISPUTES_DISPUTE_REASONS              = 'disputes.dispute_reasons';
+
+
     // Service: Governor
     const GOVERNOR_RULES                = 'governor.rules';
     const GOVERNOR_RULE_GROUPS          = 'governor.rule_groups';
@@ -1628,6 +1635,11 @@ class Entity
         self::SHIELD_LIST_ITEMS               => \RZP\Services\ShieldClient::class,
         self::SHIELD_RISK_THRESHOLD_CONFIGS   => \RZP\Services\ShieldClient::class,
         self::SHIELD_MERCHANT_RISK_THRESHOLDS => \RZP\Services\ShieldClient::class,
+
+        self::DISPUTES_DISPUTES                     => \RZP\Services\DisputesClient::class,
+        self::DISPUTES_DISPUTE_EVIDENCE             => \RZP\Services\DisputesClient::class,
+        self::DISPUTES_DISPUTE_EVIDENCE_DOCUMENT    => \RZP\Services\DisputesClient::class,
+        self::DISPUTES_DISPUTE_REASONS              => \RZP\Services\DisputesClient::class,
 
         self::BATCH_SERVICE                 => \RZP\Services\BatchMicroService::class,
         self::BATCH_FILE_STORE              => \RZP\Services\BatchMicroService::class,
