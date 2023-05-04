@@ -78,7 +78,7 @@ const Step = ({
 };
 
 const ViewSetupGuide = ({ platform, cta, redirectUrl }) => {
-  const setupSource = `${platform === 'others' ? 'native' : platform}_steup_page`;
+  const setupSource = `${platform === 'others' ? 'native' : platform}_setup_page`;
 
   const ctaLabelMapping = {
     shopify: 'Go to Shopify',
