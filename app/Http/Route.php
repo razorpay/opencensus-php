@@ -120,7 +120,6 @@ class Route
         'merchant_popular_products_cron'           => ['post',     'merchant_popular_products/cron',                 'MerchantController@postMerchantPopularProductsCron'  ],
         'xpress_onboarding_escalations'            => ['post',     'merchants/xp_onboarding/escalations',            'MerchantController@handleNoDocOnboardingEscalationsCron'  ],
         'fetch_merchant_escalation'                => ['get',      'merchants/onboarding/escalations',               'MerchantController@fetchOnboardingEscalations'       ],
-        'merchant_card_networks_onboarding'        => ['post',     'merchants/onboarding/networks',                  'MerchantController@onboardMerchantOnNetworks'],
         'merchant_card_networks_onboarding_bulk'   => ['post',     'merchants/onboarding/networks/bulk',             'MerchantController@onboardMerchantOnNetworkBulk'],
         'payment_create'                           => ['post',     'payments',                                       'PaymentCreateController@postCreatePayment'           ],
         'internal_transactions'                    => ['post',     'internal/transactions',                          'TransactionController@postInternalTransaction'       ],
@@ -5003,7 +5002,6 @@ class Route
         // metro routes
         'payout_email_attachments',
         'account_service_handle_update_event',
-        'merchant_card_networks_onboarding',
 
         // growth routes
         'growth_pricing_bundle_email',
@@ -10474,7 +10472,6 @@ class Route
         'metro' => [
             'payout_email_attachments',
             'account_service_handle_update_event',
-            'merchant_card_networks_onboarding',
         ],
 
         'vendor_payments' => [

@@ -379,23 +379,19 @@ class Service extends Base\Service
     {
         try
         {
-            $message = $input['message'];
-
-            $data = json_decode(base64_decode($message['data'], true), true);
-
             $this->trace->info(TraceCode::MERCHANT_ONBOARD_REQUEST_ON_NETWORK_DATA,[
-                'data' => $data,
+                'input' => $input,
             ]);
 
-            $merchantId = $data['merchant_id'];
+            $merchantId = $input['merchant_id'];
 
             $mutex_key = "merchant_onboard_network_" . $merchantId;
 
             $this->mutex->acquireAndRelease($mutex_key,
-                function () use ($merchantId,$data)
+                function () use ($merchantId,$input)
                 {
                     $merchant = $this->repo->merchant->find($merchantId);
-                    foreach ($data['networks'] as $network)
+                    foreach ($input['networks'] as $network)
                     {
                         $networkRequesterAttributes = $this->entityRepo->getValueForProductGroupType($merchantId,Product::PRIMARY,$network,Type::REQUESTER_ID);
 

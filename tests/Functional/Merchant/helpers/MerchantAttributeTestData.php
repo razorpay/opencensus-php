@@ -887,22 +887,4 @@ return [
             ]
         ],
     ],
-
-    'testOnboardMerchantOnNetworks' => [
-        'request' => [
-            'content' => [
-                'message' => [
-                    'data' => "ewogICJtZXJjaGFudF9pZCI6ICIxMDAwMDAwMDAwMDAwMCIsCiAgIm5ldHdvcmtzIjogWwogICAgIm1hc3RlcmNhcmQiLAogICAgInZpc2EiCiAgXQp9",
-                ]
-            ],
-            'url' => '/merchants/onboarding/networks',
-            'method' => 'POST'
-        ],
-        'response' => [
-            'content' => [
-                "status" => "successful",
-                "merchant_id" => "10000000000000",
-            ]
-        ],
-    ]
 ];

@@ -591,6 +591,11 @@ return [
         'test'       => env('AWS_IMPORT_FLOW_PROCESS_SETTLEMENTS_TEST_QUEUE'),
     ],
 
+    'cross_border_use_case' => [
+        'live'       => env('AWS_CROSSBORDER_USE_CASE_LIVE_QUEUE'),
+        'test'       => env('AWS_CROSSBORDER_USE_CASE_TEST_QUEUE'),
+    ],
+
     'generate_payment_e_invoice' => [
         'live'       => env('AWS_CROSSBORDER_DCC_EINVOICE_LIVE_QUEUE'),
         'test'       => env('AWS_CROSSBORDER_DCC_EINVOICE_TEST_QUEUE'),

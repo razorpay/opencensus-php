@@ -517,28 +517,6 @@ class MerchantAttributeTest extends TestCase
         $this->startTest();
     }
 
-    public function testOnboardMerchantOnNetworks()
-    {
-        $this->ba->MetroAuth();
-
-        $this->mockMozartForMasterCard();
-
-        $this->startTest();
-
-        $attribute = $this->repo->merchant_attribute->getValueForProductGroupType("10000000000000",Product::PRIMARY,Merchant\Attribute\Group::MASTERCARD,Merchant\Attribute\Type::REQUESTER_ID);
-        $this->assertNotEmpty($attribute);
-
-        $attribute = $this->repo->merchant_attribute->getValueForProductGroupType("10000000000000",Product::PRIMARY,Merchant\Attribute\Group::MASTERCARD,Merchant\Attribute\Type::MERCHANT_NAME);
-        $this->assertNotEmpty($attribute);
-
-        $attribute = $this->repo->merchant_attribute->getValueForProductGroupType("10000000000000",Product::PRIMARY,Merchant\Attribute\Group::VISA,Merchant\Attribute\Type::REQUESTER_ID);
-        $this->assertNotEmpty($attribute);
-
-        $attribute = $this->repo->merchant_attribute->getValueForProductGroupType("10000000000000",Product::PRIMARY,Merchant\Attribute\Group::VISA,Merchant\Attribute\Type::MERCHANT_NAME);
-        $this->assertNotEmpty($attribute);
-
-    }
-
     protected function mockMozartForMasterCard()
     {
         $mozartServiceMock = $this->getMockBuilder(\RZP\Services\Mock\Mozart::class)

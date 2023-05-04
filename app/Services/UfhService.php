@@ -89,6 +89,8 @@ class UfhService
         EntityConstants::PAYOUT,
     ];
 
+    const SHARED_MERCHANT_ID = '100000razorpay';
+
     protected $config;
 
     protected $trace;
@@ -315,6 +317,11 @@ class UfhService
         if($type == 'firs_file' || $type === 'firs_icici_file')
         {
             $this->merchantId = $requestData[self::ENTITY_ID];
+        }
+
+        if($type == FileStore\Type::APM_ONBOARD_REQUEST_FILE)
+        {
+            $this->merchantId = self::SHARED_MERCHANT_ID;
         }
 
         if($type === \RZP\Models\Invoice\Type::DCC_INV . '_file' || $type === \RZP\Models\Invoice\Type::DCC_CRN . '_file')

@@ -12,6 +12,7 @@ use Monolog\Logger;
 use Illuminate\Support\Str;
 use Illuminate\Http\JsonResponse;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Jobs\CrossBorderCommonUseCases;
 use Razorpay\OAuth\Client\Repository as OAuthRepo;
 use \WpOrg\Requests\Exception as RequestsException;
 
@@ -8342,35 +8343,29 @@ class Core extends Base\Core
             array_push($networks,$network);
         }
 
-        $data = [
-            'merchant_id' => $merchantId,
-            'networks'    => $networks,
-        ];
-
-        $metroMessage = [
-            'data' => json_encode($data, true),
-            'attributes' => [
-                'mode' => $this->mode ?? Mode::LIVE,
+        $payload = [
+            'action' => CrossBorderCommonUseCases::MERCHANT_ONBOARD_NETWORK,
+            'mode' => $this->mode ?? Mode::LIVE,
+            'body' => [
+                'merchant_id' => $merchantId,
+                'networks'    => $networks
             ]
         ];
 
         try
         {
-            $response = $this->app['metro']->publish(Constants::MERCHANT_ONBOARD_ON_NETWORK_METRO_TOPIC, $metroMessage);
+            CrossBorderCommonUseCases::dispatch($payload)->delay(rand(60,1000) % 601);
 
-            $this->trace->info(TraceCode::MERCHANT_ONBOARD_NETWORK_METRO_PUBLISHED,
-                [
-                    'topic'    => Constants::MERCHANT_ONBOARD_ON_NETWORK_METRO_TOPIC,
-                    'response' => $response,
-                    'merchant_id' => $merchantId,
-                ]);
-
+            $this->trace->info(TraceCode::CROSS_BORDER_COMMON_USE_CASES_DISPATCHED,[
+                'payload' => $payload,
+            ]);
         }
-        catch (Throwable $e)
+        catch(\Exception $ex)
         {
-            $this->trace->info(TraceCode::MERCHANT_ONBOARD_NETWORK_METRO_MESSAGE_ERROR, $data);
+            $this->trace->info(TraceCode::CROSS_BORDER_COMMON_USE_CASES_DISPATCH_FAILED,[
+                'payload' => $payload,
+            ]);
         }
-
     }
 
     public function bulkMigrateAggregatorToResellerPartner(array $input)

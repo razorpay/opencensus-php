@@ -4,11 +4,13 @@ namespace RZP\Models\Merchant\InternationalIntegration;
 
 use Carbon\Carbon;
 use Razorpay\Trace\Logger;
+use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
+use RZP\Jobs\CrossBorderCommonUseCases;
 use RZP\Models\Base;
 use RZP\Models\GenericDocument\ResponseHelper;
 use RZP\Models\Merchant\Entity as MEntity;
@@ -21,6 +23,9 @@ use RZP\Services\Reminders;
 use RZP\Services\TerminalsService;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\MerchantCrossborderEmail;
+use RZP\Models\Base\UniqueIdEntity;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\InternationalIntegration\Emerchantpay\EmerchantpayApmRequestFile;
 
 class Service extends Base\Service
 {
@@ -222,7 +227,18 @@ class Service extends Base\Service
         {
             $requestedPaymentMethods = $this->createEmerchantPayRequestedTerminals($merchant->getId(), $requestedApm);
             $this->setEmerchantpayInstrumentsRequested($merchant->getId(), $mii, $requestedPaymentMethods, 'terminal_request_sent');
-            $this->createEmerchantpayFileGenerationReminder($merchant->getId());
+            
+            $splitzProperties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.emerchantpay_maf_generation_via_sqs_experiement_id'),
+            ];
+
+            if($this->isSplitzExperimentEnable($splitzProperties, 'variant_on')){
+                $this->generateEmerchantpayMafInAsync($merchant->getId());
+            }
+            else{
+                $this->createEmerchantpayFileGenerationReminder($merchant->getId());
+            }
         }
 
         return $this->createEmerchantpayApmFormResponse($mii, $owners);
@@ -399,6 +415,32 @@ class Service extends Base\Service
         }
     }
 
+    protected function generateEmerchantpayMafInAsync($merchantId)
+    {
+        $payload = [
+            'action' => CrossBorderCommonUseCases::EMERCHANTPAY_ONBOARDING_VIA_MAF,
+            'mode' => $this->mode ?? Mode::LIVE,
+            'body' => [
+                'merchant_id' => $merchantId
+            ]
+        ];
+
+        try
+        {
+            CrossBorderCommonUseCases::dispatch($payload)->delay(rand(60,1000) % 601);
+
+            $this->trace->info(TraceCode::CROSS_BORDER_COMMON_USE_CASES_DISPATCHED,[
+                'payload' => $payload,
+            ]);
+        }
+        catch(\Exception $ex)
+        {
+            $this->trace->info(TraceCode::CROSS_BORDER_COMMON_USE_CASES_DISPATCH_FAILED,[
+                'payload' => $payload,
+            ]);
+        }
+    }
+
     protected function createApmRemindersRequest($merchantId)
     {
 
@@ -419,6 +461,30 @@ class Service extends Base\Service
         ];
 
         return $request;
+    }
+
+    public function generateEmerchantpayMaf($mode, $mid)
+    {
+        $this->trace->info(
+            TraceCode::EMERCHANTPAY_APM_REQUEST_MAF_GENERATE,
+            [
+                'mid' => $mid,
+                'mode' => $mode,
+            ]
+        );
+
+        $input['merchant_id'] = $mid;
+
+        $fileProcessor = new EmerchantpayApmRequestFile;
+        $ufhResponse = $fileProcessor->generate($input, null, null);
+        if(count($ufhResponse) !== 0)
+        {
+            $fileProcessor->sendGifuFile();
+        }
+
+        $this->postProcessEmerchantpayMaf($mid);
+
+        return $ufhResponse;
     }
 
     public function postProcessEmerchantpayMaf($mid)
@@ -653,5 +719,32 @@ class Service extends Base\Service
         $response['success'] = true;
         return $response;
 
+    }
+
+    public function isSplitzExperimentEnable(array $properties, string $checkVariant, string $traceCode = null): bool
+    {
+        try
+        {
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? null;
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === $checkVariant)
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $id = $properties['id'] ?? null;
+
+            $traceCode = $traceCode ?? TraceCode::SPLITZ_ERROR;
+
+            $this->trace->traceException($e, Trace::ERROR, $traceCode, ['id' => $id]);
+        }
+
+        return false;
     }
 }
