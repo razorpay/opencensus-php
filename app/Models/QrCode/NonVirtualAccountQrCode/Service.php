@@ -3,6 +3,7 @@
 namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 
 use Carbon\Carbon;
+use RZP\Exception;
 use RZP\Constants\HyperTrace;
 use RZP\Models\Checkout\Order\Entity as CheckoutOrder;
 use RZP\Models\Order\Entity as Order;
@@ -17,6 +18,7 @@ use RZP\Models\QrCode\Constants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Constants\Entity as ConstantEntity;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Trace\Tracer;
@@ -244,6 +246,14 @@ class Service extends QrCode\Service
 
         $errorMessage = null;
 
+        $variant = $this->app->razorx->getTreatment($this->merchant->getId(), RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE, $this->mode);
+
+        if ((strtolower($variant) === RazorxTreatment::RAZORX_VARIANT_ON)
+            and ($this->merchant->isFeatureEnabled(FeatureConstants::CLOSE_QR_ON_DEMAND) === false))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ON_DEMAND_QR_CODE_DISABLED);
+        }
+
         try
         {
             $qrCode = (new Repository())->findByPublicIdAndMerchant($id, $this->merchant);
@@ -253,7 +263,12 @@ class Service extends QrCode\Service
                 return $qrCode->toArrayPublic();
             }
 
-            $qrCode = Tracer::inspan(['name' => HyperTrace::QR_CODES_CLOSE_QR_CODE], function () use ($qrCode,$closeReason) {
+            if ((strtolower($variant) === RazorxTreatment::RAZORX_VARIANT_ON) and (str_contains($qrCode['qr_string'], '@icici') === false))
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ON_DEMAND_QR_CODE_DISABLED);
+            }
+
+            $qrCode = Tracer::inspan(['name' => HyperTrace::QR_CODES_CLOSE_QR_CODE], function () use ($qrCode, $closeReason) {
                 return (new Core)->close($qrCode, $closeReason);
             });
 

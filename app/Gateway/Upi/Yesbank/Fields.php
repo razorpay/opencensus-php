@@ -105,6 +105,14 @@ class Fields
     const RESPONSE_ERROR_CODE    = 'response_error_code';
     const PAYEE_ACC_NAME         = 'payee_account_name';
     const TIMED_OUT_TXN_STATUS   = 'timed_out_txn_status';
+    const MERCHANT_REF_NO        = 'merchant_ref_no';
+    const MERCHANT_REFERENCE     = 'merchant_reference';
+    const NPCI_REFERENCE_ID      = 'npci_reference_id';
+    const GATEWAY_PAYMENT_ID     = 'gateway_payment_id';
+    const TRANSACTION_AUTH_DATE  = 'TransactionAuthDate';
+    const STATUS                 = 'status';
+    const PAYER_NOTE             = 'PayerNote';
+    const AMOUNT_AUTHORIZED      = 'amount_authorized';
 
     const PAYOUT = [
       self::YBLREFNO,

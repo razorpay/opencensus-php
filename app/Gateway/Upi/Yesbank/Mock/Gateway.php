@@ -2,8 +2,7 @@
 
 namespace RZP\Gateway\Upi\Yesbank\Mock;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Gateway\Base;
 use RZP\Gateway\Upi\Yesbank;
@@ -11,4 +10,13 @@ use RZP\Gateway\Upi\Yesbank;
 class Gateway extends Yesbank\Gateway
 {
     use Base\Mock\GatewayTrait;
+
+    public function getQrRefId($input): string
+    {
+        if($input['merchant'] === 'LiveAccountMer')
+        {
+            return throw new Exception\RuntimeException('Invalid Response from Mozart');
+        }
+        return '107611570997';
+    }
 }

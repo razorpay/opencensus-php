@@ -2903,6 +2903,7 @@ class ErrorCode
     const SERVER_ERROR_DCS_SERVICE_TIMEOUT                                         = 'SERVER_ERROR_DCS_SERVICE_TIMEOUT';
     const BAD_REQUEST_CRYPTOGRAM_NOT_SUPPORTED                                     = 'BAD_REQUEST_CRYPTOGRAM_NOT_SUPPORTED';
     const BAD_REQUEST_OPTIMIZER_ONLY_MERCHANT_HAS_RAAS_DISABLED                    = 'BAD_REQUEST_OPTIMIZER_ONLY_MERCHANT_HAS_RAAS_DISABLED';
+    const BAD_REQUEST_ON_DEMAND_QR_CODE_DISABLED                                   = 'BAD_REQUEST_ON_DEMAND_QR_CODE_DISABLED';
     const SERVER_ERROR_SYNC_SHOPIFY_CREDENTIAL                                     = 'SERVER_ERROR_SYNC_SHOPIFY_CREDENTIAL';
 
     // NoCode Service Error Codes

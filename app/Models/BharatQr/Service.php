@@ -7,7 +7,6 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Gateway\Sharp;
 use RZP\Http\Request\Requests;
-use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\QrCode;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
@@ -21,6 +20,9 @@ use RZP\Models\QrPaymentRequest;
 use RZP\Gateway\Upi\Icici\Fields;
 use RZP\Gateway\Hitachi\ResponseFields;
 use RZP\Models\Mpan\Entity as MpanEntity;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Terminal\Entity as TerminalEntity;
+use \RZP\Gateway\Upi\Yesbank\Fields as YesBankFields;
 
 class Service extends Base\Service
 {
@@ -309,15 +311,15 @@ class Service extends Base\Service
         {
             case Gateway::UPI_ICICI:
                 return $gatewayResponse['callback_data'][Fields::MERCHANT_TRAN_ID];
-                break;
 
             case Gateway::HITACHI:
                 return $gatewayResponse['callback_data'][ResponseFields::PURCHASE_ID];
-                break;
 
             case Gateway::SHARP:
                 return $gatewayResponse['callback_data'][Sharp\Fields::REFERENCE];
-                break;
+
+            case Gateway::UPI_YESBANK:
+                return $gatewayResponse['callback_data']['data']['upi'][YesBankFields::MERCHANT_REFERENCE];
         }
     }
 
@@ -359,6 +361,11 @@ class Service extends Base\Service
                     $terminal = $this->getTerminalDefaultCase($gatewayResponse, $gateway);
                 }
                 break;
+
+            case Gateway::UPI_YESBANK:
+                $terminal = $this->getTerminalForYesBank($gatewayResponse, $gateway);
+                break;
+
             default:
                 $terminal = $this->getTerminalDefaultCase($gatewayResponse, $gateway);
         }
@@ -491,5 +498,14 @@ class Service extends Base\Service
         }
 
         return;
+    }
+
+    protected function getTerminalForYesBank($gatewayResponse, $gateway)
+    {
+        $terminalDetails[TerminalEntity::VPA] = $gatewayResponse[GatewayResponseParams::PAYEE_VPA];
+
+        $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $terminalDetails);
+
+        return $terminal;
     }
 }

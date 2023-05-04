@@ -5,17 +5,25 @@ namespace RZP\Gateway\Upi\Yesbank;
 use Request;
 
 use RZP\Exception;
+use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Gateway\Utility;
-use RZP\Trace\ApiTraceProcessor;
+use RZP\Models\BharatQr;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Gateway\Upi\Base;
+use RZP\Constants\Timezone;
 use Illuminate\Support\Str;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Upi\Mindgate;
+use RZP\Models\QrCode\Constants;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Models\Currency\Currency;
+use RZP\Constants\Entity as CoreEntity;
+use RZP\Models\QrCode\Entity as QrEntity;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Gateway\Upi\Base\CommonGatewayTrait;
 use RZP\Models\Payment\Entity as PaymentEntity;
 
@@ -35,6 +43,8 @@ class Gateway extends Mindgate\Gateway
     protected $gateway = 'upi_yesbank';
 
     const CERTIFICATE_DIRECTORY_NAME = 'cert_dir_name';
+
+    const QR_CODE_MAXIMUM_EXPIRY_TIME = 64800;
 
     protected $map = [
         Entity::VPA                     => Entity::VPA,
@@ -67,6 +77,21 @@ class Gateway extends Mindgate\Gateway
     public function authorize(array $input): array
     {
         parent::action($input, Action::AUTHORIZE);
+
+        if ($this->isBharatQrPayment() === true)
+        {
+            $input[Fields::CUST_REF_ID] = $input['data']['upi'][Fields::NPCI_REFERENCE_ID] ?? '';
+
+            $input[Entity::TYPE] = Base\Type::PAY;
+
+            $paymentData = $this->createGatewayPaymentEntity($input, Action::AUTHORIZE);
+
+            return [
+                'acquirer' => [
+                    Payment\Entity::REFERENCE16 => $paymentData->getNpciReferenceId(),
+                ],
+            ];
+        }
 
         return $this->upiAuthorize($input);
     }
@@ -1055,5 +1080,136 @@ class Gateway extends Mindgate\Gateway
             $response);
 
         return $response;
+    }
+
+    protected function checkForPaymentFailure($input)
+    {
+        if ($input[Fields::STATUS] !== Status::SUCCESS_STATUS)
+        {
+            $this->trace->error(
+                TraceCode::QR_PAYMENT_FAILED_TRANSACTION_CALLBACK,
+                [
+                    'notification_request' => $input,
+                    'gateway'              => $this->gateway
+                ]);
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_BQR_PAYMENT_FAILED,
+                null,
+                null,
+                [
+                    'notification_request' => $input,
+                    'gateway'              => $this->gateway
+                ]);
+        }
+    }
+
+    public function getQrData(array $input)
+    {
+        $inputFields = $input['data'];
+
+        $this->checkForPaymentFailure($inputFields);
+
+        $qrData = [
+            BharatQr\GatewayResponseParams::AMOUNT                => $inputFields['payment'][Fields::AMOUNT_AUTHORIZED],
+            BharatQr\GatewayResponseParams::VPA                   => $inputFields['upi']['vpa'],
+            BharatQr\GatewayResponseParams::METHOD                => Payment\Method::UPI,
+            BharatQr\GatewayResponseParams::MERCHANT_REFERENCE    => substr($inputFields['upi'][Fields::MERCHANT_REFERENCE], 0, UniqueIdEntity::ID_LENGTH),
+            BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $inputFields['upi'][Fields::NPCI_REFERENCE_ID],
+            BharatQr\GatewayResponseParams::PAYEE_VPA             => $inputFields['terminal']['vpa'],
+        ];
+
+        if (empty($inputFields['meta']['response']['content']) === false)
+        {
+            $transactionTime = Carbon::createFromFormat('Y:m:d H:i:s', $inputFields['meta']['response']['content'][Fields::TRANSACTION_AUTH_DATE],
+                                                        Timezone::IST);
+
+            if ($transactionTime !== false)
+            {
+                $qrData[BharatQr\GatewayResponseParams::TRANSACTION_TIME] = $transactionTime->getTimestamp();
+            }
+
+            $qrData[BharatQr\GatewayResponseParams::NOTES] = $inputFields['meta']['response']['content'][Fields::PAYER_NOTE] ?? '';
+        }
+
+        return [
+            'callback_data' => $input,
+            'qr_data'       => $qrData
+        ];
+    }
+
+    private function getExpiryTime($input): string
+    {
+        $closeBy = $input[CoreEntity::QR_CODE][QrEntity::CLOSE_BY] ?? null;
+        $expTime = 'NA';
+
+        if (is_null($closeBy) === false)
+        {
+            $expiryInMinutes = (int) (($closeBy - Carbon::now()->getTimestamp()) / 60);
+
+            $expTime = (string) min($expiryInMinutes, self::QR_CODE_MAXIMUM_EXPIRY_TIME);
+        }
+
+        return $expTime;
+    }
+
+    private function buildRequest($input): array
+    {
+        $expTime = $this->getExpiryTime($input);
+
+        $input[CoreEntity::QR_CODE]['id']                .= Constants::QR_CODE_V2_TR_SUFFIX;
+        $input[CoreEntity::QR_CODE][Entity::EXPIRY_TIME] = $expTime;
+
+        $request = [
+            'payment'  => [
+                'gateway' => $this->gateway
+            ],
+            'terminal' => [
+                'gateway_merchant_id' => $input[CoreEntity::TERMINAL][Fields::GATEWAY_MERCHANT_ID]
+            ],
+            'qr_code'  => $input[CoreEntity::QR_CODE],
+        ];
+
+        return $request;
+    }
+
+    /**
+     * @param $input
+     *
+     * @return string
+     * @throws Exception\GatewayErrorException
+     * @throws Exception\RuntimeException
+     */
+    public function getQrRefId($input): string
+    {
+        $request = $this->buildRequest($input);
+
+        $this->trace->info(TraceCode::CREATE_QR_MOZART_REQUEST, [
+            'request' => $request,
+            'gateway' => $this->gateway
+        ]);
+
+        $result = $this->upiSendGatewayRequest($request,
+                                               TraceCode::GATEWAY_INTENT_REQUEST,
+                                               Action::INTENT_QR
+        );
+
+        $data = $result['data'];
+
+        $this->trace->info(TraceCode::CREATE_QR_MOZART_RESPONSE, [
+            'statusCode'  => $data[Fields::STATUS_CODE],
+            'refId'       => $data['upi'][Fields::GATEWAY_PAYMENT_ID],
+            'description' => $data['description'],
+            'gateway'     => $this->gateway
+        ]);
+
+        if (($data[Fields::STATUS_CODE] === Status::SUCCESS) and
+            (!is_null($data['upi'])) and
+            ($data['upi'][Fields::GATEWAY_PAYMENT_ID] !== 'NA'))
+        {
+            return $data['upi'][Fields::GATEWAY_PAYMENT_ID];
+        }
+
+        return throw new Exception\RuntimeException('Invalid Response from Mozart');
     }
 }

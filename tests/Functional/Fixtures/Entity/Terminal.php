@@ -3828,7 +3828,7 @@ class Terminal extends Base
             'gateway_merchant_id'       => 'razorpayupi',
             'gateway_terminal_id'       => 'nodal account upi yesbank',
             'gateway_terminal_password' => 'razorpay_password',
-            'vpa'                       => 'abcba@yesbank',
+            'vpa'                       => 'testvpa@yesb',
             'upi'                       => true,
             'tpv'                       => 2,
             'type'                      => [

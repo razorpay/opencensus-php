@@ -30,6 +30,7 @@ class Action
     const PRE_DEBIT        = 'pre_debit';
     const MANDATE_CANCEL   = 'mandate_cancel';
     const AUTHORIZE_FAILED = 'authorize_failed';
+    const INTENT_QR        = 'intent_qr';
     const FORCE_AUTHORIZE_FAILED        = 'force_authorize_failed';
 
     public static $nonVerifiableActions = [

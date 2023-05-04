@@ -747,6 +747,8 @@ final class RazorxTreatment
     // Experiment for sending fees in mcc to PL service
     const INTL_PL_FEE_IN_MCC = 'intl_pl_fee_in_mcc';
 
+    const DISABLE_QR_CODE_ON_DEMAND_CLOSE = 'disable_qr_code_on_demand_close';
+
     // If true, it will select Optimizer mandate hub for card recurring payments.
     const ALLOW_OPTIMIZER_CARD_MANDATE_HUB = 'allow_optimizer_card_mandate_hub';
 

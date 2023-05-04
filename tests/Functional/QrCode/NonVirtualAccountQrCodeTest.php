@@ -73,7 +73,6 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $this->vpaTerminal = $this->fixtures->create('terminal:vpa_shared_terminal_icici');
 
-
     }
 
     public function testCreateBharatQrCode()
@@ -881,7 +880,6 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testProcessIciciQrPaymentOnClosedQrCode()
     {
-
         $qrCode = $this->createQrCode();
 
         $qrCodeId = $qrCode['id'];
@@ -1935,6 +1933,23 @@ class NonVirtualAccountQrCodeTest extends TestCase
             });
     }
 
+    protected function enableRazorXTreatmentForQrOnDemandClose()
+    {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+            {
+                if ($featureFlag === (RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE))
+                {
+                    return 'on';
+                }
+                return 'control';
+            });
+    }
+
     public function testProcessPaymentForDynamicQrWithDedicatedTerminal()
     {
         $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
@@ -2123,6 +2138,56 @@ class NonVirtualAccountQrCodeTest extends TestCase
         ];
 
         $this->createQrCode($input, 'test', '10000000000000', $headers);
+    }
+
+    public function testCloseQrCodeWithOnDemandFeatureFlagDisabled()
+    {
+        $this->enableRazorXTreatmentForQrOnDemandClose();
+
+        $this->expectException(BadRequestException::class);
+
+        $this->expectExceptionMessage('This feature is not available for your account. Contact support to get it enabled');
+
+        $response = $this->createQrCode();
+
+        $this->assertEquals(Status::ACTIVE, $response['status']);
+
+        $this->closeQrCode($response['id']);
+    }
+
+    public function testCloseQrCodeWithOnDemandFeatureFlagEnabled()
+    {
+        $this->enableRazorXTreatmentForQrOnDemandClose();
+
+        $this->fixtures->merchant->addFeatures(['close_qr_on_demand']);
+
+        $response = $this->createQrCode();
+
+        $this->assertEquals(Status::ACTIVE, $response['status']);
+
+        $closeResponse = $this->closeQrCode($response['id']);
+
+        $this->assertEquals(Status::CLOSED, $closeResponse['status']);
+        $this->assertEquals(CloseReason::ON_DEMAND, $closeResponse['close_reason']);
+
+        $this->runEntityAssertions($closeResponse);
+    }
+
+    public function testCloseQrCodeWithQRNotCreatedUsingICICITerminal()
+    {
+        $this->enableRazorXTreatmentForQrOnDemandClose();
+
+        $this->expectException(BadRequestException::class);
+
+        $this->expectExceptionMessage('This feature is not available for your account. Contact support to get it enabled');
+
+        $response = $this->createQrCode();
+
+        $response['qr_string'] = '05240130rzr.qrmoremegast00437171@abcabc27390240121RZPL2070"';
+
+        $this->assertEquals(Status::ACTIVE, $response['status']);
+
+        $this->closeQrCode($response['id']);
     }
 
 }

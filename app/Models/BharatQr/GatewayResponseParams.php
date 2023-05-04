@@ -17,4 +17,5 @@ class GatewayResponseParams
     const MPAN                  = 'mpan';
     const NOTES                 = 'notes';
     const TRANSACTION_TIME      = 'transaction_time';
+    const PAYEE_VPA             = 'payee_vpa';
 }

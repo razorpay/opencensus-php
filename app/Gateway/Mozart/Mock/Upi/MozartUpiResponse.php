@@ -5,6 +5,7 @@ namespace RZP\Gateway\Mozart\Mock\Upi;
 
 
 use Illuminate\Support\Collection;
+use RZP\Gateway\Upi\Yesbank\Status;
 
 class MozartUpiResponse extends Collection
 {
@@ -19,6 +20,7 @@ class MozartUpiResponse extends Collection
     const TERMINAL  = 'terminal';
     const PAYMENT   = 'payment';
     const META      = 'meta';
+    const STATUS    = 'status';
 
     public function setNext(array $next)
     {
@@ -116,5 +118,23 @@ class MozartUpiResponse extends Collection
             'next'      => [],
             'error'     => [],
         ]);
+    }
+
+    public function setStatus(bool $flag)
+    {
+        $data = $this->getData();
+
+        if ($flag === true)
+        {
+            $data[self::STATUS] = Status::SUCCESS_STATUS;
+        }
+        else
+        {
+            $data[self::STATUS] = Status::FAILURE_STATUS;
+        }
+
+        $this->put(self::DATA, $data);
+
+        return $this;
     }
 }

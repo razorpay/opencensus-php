@@ -78,6 +78,8 @@ class PreProcess extends Base\Mock\Server
             Payment\Entity::AMOUNT_AUTHORIZED => $input[3],
         ]);
 
+        $response->setStatus(true);
+
         $response->setTerminal([
             Terminal\Entity::VPA     => 'testvpa@yesb',
             Terminal\Entity::GATEWAY =>'upi_yesbank',
@@ -86,6 +88,8 @@ class PreProcess extends Base\Mock\Server
         if ($input[7] !== '00')
         {
             $response->setSuccess(false);
+
+            $response->setStatus(false);
 
             $response->setError([
                 'description'               => 'Debit has been failed',
