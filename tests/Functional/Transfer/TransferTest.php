@@ -15,9 +15,11 @@ use RZP\Models\Merchant\RefundSource;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Jobs\Transfers\TransferSettlementStatus;
 use RZP\Services\Mock\Mutex as MockMutexService;
 use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Admin\Permission\Name as PermissionName;
@@ -28,6 +30,7 @@ class TransferTest extends TestCase
     use PaymentTrait;
     use PartnerTrait;
     use DbEntityFetchTrait;
+    use SettlementTrait;
     const STANDARD_PRICING_PLAN_ID  = '1A0Fkd38fGZPVC';
 
     /**
@@ -2107,5 +2110,39 @@ class TransferTest extends TestCase
         {
             $this->createTransfer('account', [], 'live');
         });
+    }
+
+    public function testTransferSettlementStatusUpdate()
+    {
+        $this->app['rzp.mode'] = 'test';
+
+        $transferDetails = $this->createTransfer('account');
+
+        $this->createSettlementEntry([
+            'merchant_id'               => '10000000000000',
+            'channel'                   => 'axis2',
+            'balance_type'              => 'primary',
+            'amount'                    => $transferDetails['amount'],
+            'fees'                      => 12,
+            'tax'                       => 13,
+            'settlement_id'             => '00000123456789',
+            'status'                    => 'processed',
+            'type'                      => 'normal',
+            'details'                   => [
+                'payment' => [
+                    'type' => 'credit',
+                    'amount' => $transferDetails['amount'],
+                    'count'  => 1,
+                ],
+            ]
+        ]);
+
+        $this->fixtures->edit('transfer', $transferDetails['id'], ['recipient_settlement_id' => '00000123456789','status'=>'reversed']);
+
+        TransferSettlementStatus::dispatch('test', '00000123456789');
+
+        $transfer = $this->getDbLastEntity('transfer');
+
+        $this->assertEquals('settled', $transfer['settlement_status']);
     }
 }

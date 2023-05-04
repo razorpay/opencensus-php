@@ -14,6 +14,7 @@ class Status
     public static $forSettlementStatusUpdate = [
         self::PROCESSED,
         self::PARTIALLY_REVERSED,
+        self::REVERSED,
     ];
 
     public static function isStatusValid($status)
