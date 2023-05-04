@@ -407,6 +407,14 @@ class CheckoutExperiment
             'one_cc_email_hidden_on_checkout',
             ['merchant_id' => $this->merchantId]
         );
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.one_cc_conversion_address_improvements_experiment_id',
+            'MagicGeneralExperiment',
+            'one_cc_conversion_address_improvements',
+            ['merchant_id' => $this->merchantId]
+        );
     }
 
     private function fillExperimentData(
