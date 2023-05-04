@@ -23,7 +23,9 @@ class EmailNotVerifiedDataCollector extends TimeBoundDbDataCollector
 
         $merchantIdList = array_unique($this->repo->merchant_user->fetchMerchantIdsForUserIdsAndRole($userIdList));
 
-        $data["merchantIds"] = $merchantIdList;
+        $merchantIdsNonBusinessBanking = $this->repo->merchant->filterNonBusinessBankingMerchants($merchantIdList);
+
+        $data["merchantIds"] = $merchantIdsNonBusinessBanking;
 
         return CollectorDto::create($data);
     }

@@ -98,7 +98,7 @@ class Events
         self::INSTANTLY_ACTIVATED_BUT_NOT_TRANSACTED      => 'sms.onboarding.Onboarding_IA_SMS2',
         self::L2_AADHAR_DETAILS_NOT_SUBMITTED_IN_1_HOUR   => 'sms.onboarding.Onboarding_L2_not_submit_Aadhaar_SMS3',
         self::L1_NOT_SUBMITTED_IN_1_HOUR                  => 'sms.onboarding.Onboarding_L1_not_submit_SMS2',
-        self::SIGNUP_STARTED_NOTIFY                       => 'sms.onboarding.Welcome_SMS_1',
+        self::SIGNUP_STARTED_NOTIFY                       => 'sms.onboarding.welcome_sms_v1',
         self::WEBSITE_ADHERENCE_HARD_NUDGE                => 'sms.onboarding.website_adherence_hard_nudge_1',
 
         // Note: the template name for PARTNER_ADDED_SUBMERCHANT_FOR_X was incorrectly registered and now we have to use the same.

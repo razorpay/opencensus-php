@@ -2028,4 +2028,14 @@ class Repository extends Base\Repository
 
         return $entities;
     }
+
+    public function filterNonBusinessBankingMerchants(array $merchantIds)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->whereIn(Entity::ID, $merchantIds)
+                    ->where(Entity::BUSINESS_BANKING, '=', false)
+                    ->get()
+                    ->pluck(Entity::ID)
+                    ->toArray();
+    }
 }
