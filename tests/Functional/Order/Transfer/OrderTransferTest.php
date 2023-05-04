@@ -112,8 +112,8 @@ class OrderTransferTest extends TestCase
 
         $this->assertEquals($subMerchantId, $merchantId);
 
-        // Assert that the entity origin for the transfer is set to marketplace_application
-        $this->verifyEntityOrigin($transfer['id'], 'marketplace_application',  $client->getApplicationId());
+        // Assert that the entity origin for the transfer is set to marketplace_app
+        $this->verifyEntityOrigin($transfer['id'], 'marketplace_app',  $client->getApplicationId());
     }
 
     private function verifyEntityOrigin($entityId, $originType, $originId)

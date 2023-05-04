@@ -10,5 +10,5 @@ class Constants
     const SUBSCRIPTION              = 'subscription';
     const PAYMENT_LINK              = 'payment_link';
     // For  Route Marketplace transfers.
-    const MARKETPLACE_APPLICATION   = 'marketplace_application';
+    const MARKETPLACE_APPLICATION   = 'marketplace_app';
 }

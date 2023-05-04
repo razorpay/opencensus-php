@@ -2007,7 +2007,7 @@ class TransferTest extends TestCase
             'id' => 'LhW4gs8JfWurz0',
             'entity_type' => 'transfer',
             'entity_id' => 'LhV9fg1fXagWCN',
-            'origin_type' => 'marketplace_application',
+            'origin_type' => 'marketplace_app',
             'origin_id' => 'A0m8HLZLyVIDQ9',
         ]);
 
@@ -2041,8 +2041,8 @@ class TransferTest extends TestCase
 
         $transfer = $this->startTest();
 
-        // Assert that the entity origin for the transfer is set to marketplace_application
-        $this->verifyEntityOrigin($transfer['id'], 'marketplace_application',  $client->getApplicationId());
+        // Assert that the entity origin for the transfer is set to marketplace_app
+        $this->verifyEntityOrigin($transfer['id'], 'marketplace_app',  $client->getApplicationId());
     }
 
 
