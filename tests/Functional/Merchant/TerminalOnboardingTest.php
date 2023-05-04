@@ -287,4 +287,14 @@ class TerminalOnboardingTest extends TestCase
 
         $this->startTest();
     }
+    // Terminals Service call api to enable Upi on activation of Upi onboarding terminal
+    public function testEnableUpiMethodInternal()
+    {
+        $this->ba->terminalsAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', '10000000000000');
+        $this->assertTrue($merchant->methods->isUpiEnabled());
+    }
 }

@@ -286,5 +286,19 @@ return [
             'status_code'   => 200,
         ],
     ],
-
+    'testEnableUpiMethodInternal'  =>  [
+        'request' => [
+            'method' => 'PATCH',
+            'url' => '/merchants/10000000000000/methods',
+            'content' => [
+                'upi'      => true
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'upi'      => true
+            ],
+            'status_code'   => 200,
+        ],
+    ],
 ];
