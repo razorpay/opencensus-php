@@ -28,6 +28,11 @@ import OnBoarding, { getIsAllowedResetRouteBoarding } from './OnBoarding';
 import QuickGuide, { getRouteQuickGuideIsClosed } from './QuickGuide';
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import ShowWhen from 'merchant/components/ShowWhen';
+import lazy from 'merchant/routes/LazyLoader';
+
+//lazy loads
+const PlatformFeeList = lazy(() => import('merchant/views/Marketplace/PlatformFee/List'));
 
 const ClonedPaymentsList = (props) => (
   <PaymentsList docUrl="https://razorpay.com/docs/route" {...props} />
@@ -59,12 +64,12 @@ class MarketplaceContainer extends React.Component {
     this.fetchDataForMarketPlaceOnboarding();
   }
 
-  UNSAFE_componentWillReceiveProps(nextProps) {
+  componentDidUpdate(prevProps) {
     if (
-      nextProps.transfers.loading !== this.props.transfers.loading ||
-      nextProps.accounts.loading !== this.props.accounts.loading
+      prevProps.transfers.loading !== this.props.transfers.loading ||
+      prevProps.accounts.loading !== this.props.accounts.loading
     ) {
-      this.initMarketPlace(nextProps);
+      this.initMarketPlace(this.props);
     }
   }
 
@@ -119,10 +124,10 @@ class MarketplaceContainer extends React.Component {
   };
 
   render() {
-    const { user } = this.props;
-    const { isQuickGuideOpen, showOnboarding } = this.props.routeProductOnBoarding;
-
-    if (showOnboarding && !user.isOrgAxis) {
+    const { user, routeProductOnBoarding } = this.props;
+    const { isQuickGuideOpen, showOnboarding } = routeProductOnBoarding;
+    const { isOrgAxis } = user;
+    if (showOnboarding && !isOrgAxis) {
       return <OnBoarding />;
     }
 
@@ -148,6 +153,13 @@ class MarketplaceContainer extends React.Component {
           <header id="marketplace-header">
             <NavLink to="/route/payments">Payments</NavLink>
             <NavLink to="/route/transfers">Transfers</NavLink>
+            <ShowWhen
+              additionalCondition={(user) =>
+                user.isRoutePartnershipEnabled && user.isRoutePlusPartnershipsEnabled
+              }
+            >
+              <NavLink to="/route/platformfee">Platform Fee</NavLink>
+            </ShowWhen>
             <NavLink to="/route/reversals">Reversals</NavLink>
             <NavLink to="/route/accounts">Accounts</NavLink>
             <NavLink to="/route/batchuploads">
@@ -162,6 +174,7 @@ class MarketplaceContainer extends React.Component {
               <Switch>
                 <Route path="/route/payments" render={ClonedPaymentsList} />
                 <Route path="/route/transfers" component={TransfersList} />
+                <Route path="/route/platformfee" component={PlatformFeeList} />
                 <Route path="/route/reversals" component={ReversalsList} />
                 <Route path="/route/accounts" component={AccountsList} />
                 <Route path="/route/batchuploads" component={BatchesList} />

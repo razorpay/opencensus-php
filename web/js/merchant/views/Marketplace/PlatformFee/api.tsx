@@ -1,0 +1,22 @@
+import { merchantFetch } from 'merchant/utils/ajax';
+
+export const fetchTransfersById = (id: string) => {
+  return merchantFetch({
+    url: `transfers/${id}?transfer_type=platform`,
+    method: 'get',
+  });
+};
+
+export const fetchReversals = (id: string) => {
+  return merchantFetch({
+    url: `transfers/${id}/reversals`,
+    method: 'get',
+  });
+};
+
+export const fetchTransfers = async (key: string, params: string) => {
+  return merchantFetch({
+    url: `transfers?transfer_type=platform${params}`,
+    method: 'get',
+  });
+};

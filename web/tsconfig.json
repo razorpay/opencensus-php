@@ -32,6 +32,7 @@
     "js/merchant/views/onboarding",
     "js/merchant/views/Settlements",
     "js/merchant/views/PartnerDashboard",
+    "js/merchant/views/Marketplace",
     "js/merchant/views/Navigator",
     "js/merchant/views/ApiKeysAndPlugins",
     "js/merchant/views/Wallet",

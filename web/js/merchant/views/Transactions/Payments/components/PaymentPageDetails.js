@@ -7,11 +7,15 @@ export default function PaymentPageDetails({ payment }) {
   const [paymentPageDetails, updatePaymentPageDetails] = useState(null);
 
   useEffect(() => {
-    getPaymentPageDetailsById(payment.order_id).then(({ data }) => {
-      if (data && data.payment_page) {
-        updatePaymentPageDetails(data.payment_page);
-      }
-    });
+    getPaymentPageDetailsById(payment.order_id)
+      .then(({ data }) => {
+        if (data && data.payment_page) {
+          updatePaymentPageDetails(data.payment_page);
+        }
+      })
+      .catch(() => {
+        // error should be handled here
+      });
   }, []);
 
   if (!paymentPageDetails) {

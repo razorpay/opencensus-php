@@ -120,6 +120,11 @@ const DirectTransfers = lazy(() =>
     /* webpackChunkName: "DirectTransfers" */ 'merchant/views/Marketplace/Transfers/DirectTransfers'
   ),
 );
+const PlatformFeeDetails = lazy(() =>
+  import(
+    /* webpackChunkName: "PlatformFeeDetails" */ 'merchant/views/Marketplace/PlatformFee/Details'
+  ),
+);
 const ReversalDetails = lazy(() =>
   import(/* webpackChunkName: "ReversalsDetails" */ 'merchant/views/Marketplace/Reversals/Details'),
 );
@@ -431,6 +436,7 @@ const entityDetailsMap = {
     component: TransferDetails,
   },
   '/route/transfers/:id(trf_.+)': { component: TransferDetails },
+  '/route/platformfee/:id(trf_.+)': { component: PlatformFeeDetails },
   '/route/reversals/:id(rvrsl_.+)': { component: ReversalDetails },
   '/route/batchuploads/:id(batch_.+)': {
     component: MarketplaceBatchDetails,
