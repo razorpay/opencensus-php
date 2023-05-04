@@ -19,6 +19,7 @@ use RZP\Listeners\ApiEventSubscriber;
 use RZP\Exception\BadRequestException;
 use RZP\Constants\Entity as EntityConstant;
 use RZP\Models\Merchant\MerchantApplications;
+use RZP\Exception\SettlementIdUpdateException;
 use RZP\Models\Settlement\Entity as Settlement;
 use RZP\Jobs\Transfers\TransferSettlementStatus;
 use RZP\Models\Merchant\Constants as MerchantConstant;
@@ -701,6 +702,9 @@ class Service extends Base\Service
         return $transferOrderIds;
     }
 
+    /**
+     * @throws SettlementIdUpdateException
+     */
     public function updateTransfersWithSettlementId($transactionIds)
     {
         $this->trace->info(
@@ -712,73 +716,49 @@ class Service extends Base\Service
 
         $startTime = microtime(true);
 
-        $transferIds = [];
+        $transferIdsSuccessful = [];
+        $transferIdsFailed = [];
+        $transactionIdsFailed = [];
 
-        try
+        foreach ($transactionIds as $transactionId)
         {
-            foreach ($transactionIds as $transactionId)
+            $transferId = null;
+            $settlementId = null;
+
+            try
             {
-                $transaction = $this->repo->transaction->findOrFail($transactionId);
+                [$transferId, $settlementId] = $this->updateSingleTransferWithSettlementId($transactionId);
 
-                $this->trace->info(
-                    TraceCode::TRANSACTION_FETCHED_FOR_TRANSFER_RECON,
-                    [
-                        'transaction_id' => $transactionId,
-                    ]
-                );
-
-                if ($transaction->source->getEntityName() !== EntityConstant::PAYMENT)
+                if ($transferId === null and $settlementId === null)
                 {
                     continue;
                 }
 
-                $payment = $transaction->source;
-
-                if ($payment->transfer === null)
-                {
-                    continue;
-                }
-
-                $transfer = $payment->transfer;
-
-                $this->trace->info(
-                    TraceCode::TRANSFER_FETCHED_FOR_RECON,
-                    [
-                        'transfer_id' => $transfer->getId(),
-                    ]
-                );
-
-                $settlementId = $transaction->getSettlementId();
-
-                $transfer->setRecipientSettlementId($settlementId);
-
-                $this->repo->saveOrFail($transfer);
-
-                $this->trace->info(
-                    TraceCode::TRANSFER_RECIPIENT_SETTLEMENT_ID_UPDATED,
-                    [
-                        'transfer_id'               => $transfer->getId(),
-                        'recipient_settlement_id'   => $transfer->getRecipientSettlementId(),
-                    ]
-                );
-
-                $transferIds[$settlementId] = array_merge(
-                    $transferIds[$settlementId] ?? [],
-                    array($transfer->getId())
+                $transferIdsSuccessful[$settlementId] = array_merge(
+                    $transferIdsSuccessful[$settlementId] ?? [],
+                    array($transferId)
                 );
             }
-        }
-        catch (\Exception $ex)
-        {
-            $this->trace->traceException(
-                $ex,
-                Trace::CRITICAL,
-                TraceCode::TRANSFER_RECON_FAILURE,
-                [
-                    'settlement_ids'    => array_keys($transferIds),
-                    'transfer_ids'      => $transferIds,
-                ]
-            );
+            catch (\Throwable $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::CRITICAL,
+                    TraceCode::TRANSFER_RECON_FAILURE,
+                    [
+                        'transfer_id'    => $transferId,
+                        'transaction_id' => $transactionId,
+                        'settlement_id'  => $settlementId,
+                    ]
+                );
+
+                $transferIdsFailed[$settlementId] = array_merge(
+                    $transferIdsFailed[$settlementId] ?? [],
+                    array($transferId)
+                );
+
+                array_push($transactionIdsFailed, $transactionId);
+            }
         }
 
         $endTime = microtime(true);
@@ -786,11 +766,84 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::TRANSFER_RECON_COMPLETE,
             [
-                'settlement_ids'    => array_keys($transferIds),
-                'transfers_ids'     => $transferIds,
-                'time_taken'        => $endTime - $startTime,
+                'settlement_ids_successful'    => array_keys($transferIdsSuccessful),
+                'settlement_ids_failed'        => array_keys($transferIdsFailed),
+                'transfers_ids_successful'     => $transferIdsSuccessful,
+                'transfers_ids_failed'         => $transferIdsFailed,
+                'transaction_ids_successful'   => $transferIdsSuccessful,
+                'transaction_ids_failed'       => $transactionIdsFailed,
+                'time_taken'                   => $endTime - $startTime,
             ]
         );
+
+        if ((empty($transactionIdsFailed) === false) and ($transactionIdsFailed !== $transactionIds))
+        {
+            // One or more tranferId update failed, but not all. Hence, we will push a new job
+            throw new SettlementIdUpdateException($transactionIdsFailed, false);
+        }
+        else if((empty($transactionIdsFailed) === false) and ($transactionIdsFailed === $transactionIds))
+        {
+            // All transferIds have failed, hence we will retry same job
+            throw new SettlementIdUpdateException($transactionIds, true);
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::TRANSFER_RECON_ALL_TXN_IDS_UPDATED,
+                [
+                    'transaction_ids'  => array_keys($transferIdsSuccessful),
+                ]
+            );
+        }
+    }
+
+    protected function updateSingleTransferWithSettlementId(string $transactionId): array
+    {
+        $transaction = $this->repo->transaction->findOrFail($transactionId);
+
+        $this->trace->info(
+            TraceCode::TRANSACTION_FETCHED_FOR_TRANSFER_RECON,
+            [
+                'transaction_id' => $transactionId,
+            ]
+        );
+
+        if ($transaction->source->getEntityName() !== EntityConstant::PAYMENT)
+        {
+            return [null, null];
+        }
+
+        $payment = $transaction->source;
+
+        if ($payment->transfer === null)
+        {
+            return [null, null];
+        }
+
+        $transfer = $payment->transfer;
+
+        $this->trace->info(
+            TraceCode::TRANSFER_FETCHED_FOR_RECON,
+            [
+                'transfer_id' => $transfer->getId(),
+            ]
+        );
+
+        $settlementId = $transaction->getSettlementId();
+
+        $transfer->setRecipientSettlementId($settlementId);
+
+        $this->repo->saveOrFail($transfer);
+
+        $this->trace->info(
+            TraceCode::TRANSFER_RECIPIENT_SETTLEMENT_ID_UPDATED,
+            [
+                'transfer_id'               => $transfer->getId(),
+                'recipient_settlement_id'   => $transfer->getRecipientSettlementId(),
+            ]
+        );
+
+        return [$transfer->getId(), $settlementId];
     }
 
     public function triggerTransferSettledWebhook(string $settlementId)

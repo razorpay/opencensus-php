@@ -5,6 +5,7 @@ namespace RZP\Jobs\Transfers;
 use RZP\Jobs\Job;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transfer\Service as Transfers;
+use RZP\Exception\SettlementIdUpdateException;
 
 class TransferRecon extends Job
 {
@@ -20,6 +21,10 @@ class TransferRecon extends Job
      * @var int
      */
     public $timeout = 900;
+
+    const RETRY_INTERVAL = 300;
+
+    const MAX_RETRY_ATTEMPT = 3;
 
     public function __construct($txnIds, string $mode)
     {
@@ -53,6 +58,8 @@ class TransferRecon extends Job
                     'transaction_ids'    => $this->txnIds,
                 ]);
             }
+
+            $this->delete();
         }
         catch (\Throwable $e)
         {
@@ -61,10 +68,49 @@ class TransferRecon extends Job
                 [
                     'message'    => $e->getMessage(),
                 ]);
+
+            if (($e instanceof SettlementIdUpdateException) and ($e->shouldRetrySameJob() === true))
+            {
+                $this->checkRetry();
+            }
+            else if(($e instanceof SettlementIdUpdateException) and ($e->shouldRetrySameJob() === false))
+            {
+                $this->delete();
+
+                $input['transaction_ids'] = $e->getFailedTransactionIds();
+
+                $this->trace->info(
+                    TraceCode::TRANSFER_RECON_JOB_RETRY_DISPATCH,
+                    [
+                        'transaction_ids'    => $input['transaction_ids']
+                    ]);
+
+                TransferRecon::dispatch($input, $this->mode);
+            }
         }
-        finally
+    }
+
+    protected function checkRetry()
+    {
+        if ($this->attempts() > self::MAX_RETRY_ATTEMPT)
         {
+            $this->trace->error(
+                TraceCode::TRANSFER_RECON_JOB_RETRY_EXHAUSTED,
+                [
+                    'transaction_ids'    => $this->txnIds
+                ]);
+
             $this->delete();
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::TRANSFER_RECON_JOB_RETRY_DISPATCH,
+                [
+                    'transaction_ids'    => $this->txnIds
+                ]);
+
+            $this->release(self::RETRY_INTERVAL);
         }
     }
 }

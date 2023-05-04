@@ -12,6 +12,7 @@ use RZP\Http\RequestHeader;
 use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\TestCase;
 use RZP\Constants\Mode as EnvMode;
+use RZP\Jobs\Transfers\TransferRecon;
 use RZP\Models\Merchant\RefundSource;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Entity as Payment;
@@ -19,8 +20,8 @@ use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Jobs\Transfers\TransferSettlementStatus;
 use RZP\Services\Mock\Mutex as MockMutexService;
 use RZP\Models\Reversal\Entity as ReversalEntity;
-use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Admin\Permission\Name as PermissionName;
@@ -30,8 +31,8 @@ class TransferTest extends TestCase
     use MocksSplitz;
     use PaymentTrait;
     use PartnerTrait;
-    use DbEntityFetchTrait;
     use SettlementTrait;
+    use DbEntityFetchTrait;
     const STANDARD_PRICING_PLAN_ID  = '1A0Fkd38fGZPVC';
 
     /**
@@ -2211,5 +2212,64 @@ class TransferTest extends TestCase
         $transfer = $this->getDbLastEntity('transfer');
 
         $this->assertNull( $transfer['settlement_status']);
+    }
+
+    public function testTransferReconSettlementIdUpdate()
+    {
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $transferDetails = $this->createTransfer('account');
+
+        $payment = $this->getDbLastPayment();
+
+        $this->createSettlementEntry([
+            'merchant_id'               => '10000000000000',
+            'channel'                   => 'axis2',
+            'balance_type'              => 'primary',
+            'amount'                    => $transferDetails['amount'],
+            'fees'                      => 12,
+            'tax'                       => 13,
+            'settlement_id'             => 'testtestabc123',
+            'status'                    => 'processed',
+            'type'                      => 'normal',
+            'details'                   => [
+                'payment' => [
+                    'type' => 'credit',
+                    'amount' => $transferDetails['amount'],
+                    'count'  => 1,
+                ],
+            ]
+        ]);
+
+        $this->fixtures->edit('transaction', $payment->getTransactionId(),
+            ['settlement_id' => 'testtestabc123', 'settled' => true]);
+
+        $txnId = $payment->getTransactionId();
+
+        TransferRecon::dispatch(['transaction_ids' => [$txnId]], 'test');
+
+        $transfer = $this->getDbLastEntity('transfer');
+
+        $this->assertEquals( 'testtestabc123', $transfer['recipient_settlement_id']);
+    }
+
+    public function testTransferReconSettlementIdUpdateWhenErrorWhileUpdating()
+    {
+        // The settlement is not created and settlementID is not set for the transactionID. Hence,
+        // there will be an error in the TransferReconJob
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $transferDetails = $this->createTransfer('account');
+
+        $payment = $this->getDbLastPayment();
+
+        $txnId = $payment->getTransactionId();
+
+        TransferRecon::dispatch(['transaction_ids' => [$txnId]], 'test');
+
+        $transfer = $this->getDbLastEntity('transfer');
+
+        $this->assertNull( $transfer['recipient_settlement_id']);
     }
 }
