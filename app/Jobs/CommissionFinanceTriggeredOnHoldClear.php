@@ -136,8 +136,6 @@ class CommissionFinanceTriggeredOnHoldClear extends Job
                 $core->createCommissionTds($partner, $totalTds);
             }
 
-            (new Commission\CommissionOnHoldUtility())->dispatchForSettlement($txn, $successTxnIds);
-
             $this->delete();
         }
         catch (\Throwable $e)
