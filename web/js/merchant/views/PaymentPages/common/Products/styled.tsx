@@ -39,7 +39,7 @@ export const SubHeading = styled.p(
   color: ${theme.colors.surface.text.subtle.lowContrast};
   font-size: ${theme.typography.fonts.size[100]}px;
   font-weight: ${theme.typography.fonts.weight.regular};
-  line-height: ${theme.typography.lineHeights.l}px;
+  line-height: ${theme.typography.lineHeights[100]}px;
   margin-bottom: ${theme.spacing[7]}px;
   `,
 );
@@ -85,7 +85,7 @@ const PricePreviewWrapper = styled.p(
   color: ${theme.colors.surface.text.subtle.lowContrast};
   font-weight: ${theme.typography.fonts.weight.regular};
   font-size: ${theme.typography.fonts.size[75]}px;
-  line-height: ${theme.typography.lineHeights.m}px;
+  line-height: ${theme.typography.lineHeights[50]}px;
   position: absolute;
   bottom: -16px;
 `,
@@ -131,7 +131,7 @@ const LinkTextWrapper = styled.p<any>(
   font-style: normal;
   font-weight: ${theme.typography.fonts.weight.bold};
   font-size: ${theme.typography.fonts.size[75]}px;
-  line-height: ${theme.typography.lineHeights.m}px;
+  line-height: ${theme.typography.lineHeights[50]}px;
   cursor: pointer;
 
   position: absolute;

@@ -317,7 +317,7 @@ export const ContactDetailsSubHeading = styled.p(
   };
   font-weight: ${theme.typography.fonts.weight.regular};
   font-size: ${theme.typography.fonts.size[75]}px;
-  line-height: ${theme.typography.lineHeights.m}px;
+  line-height: ${theme.typography.lineHeights[50]}px;
   display: flex;
   align-items: center;
 `,
@@ -337,7 +337,7 @@ export const Label = styled.p(
   color: ${theme.colors.surface.text.subdued.lowContrast};
   font-weight: ${theme.typography.fonts.weight.bold};
   font-size: ${theme.typography.fonts.size[75]}px;
-  line-height: ${theme.typography.lineHeights.s}px;
+  line-height: ${theme.typography.lineHeights[50]}px;
   margin-bottom: ${theme.spacing[3]}px;
 `,
 );
@@ -347,7 +347,7 @@ export const Optional = styled.span(
   font-style: italic;
   font-size: ${theme.typography.fonts.size[50]}px;
   font-weight: ${theme.typography.fonts.weight.regular};
-  line-height: ${theme.typography.lineHeights.s}px;
+  line-height: ${theme.typography.lineHeights[50]}px;
 `,
 );
 
@@ -356,7 +356,7 @@ export const AddCategory = styled.button(
   color: ${theme.colors.action.text.secondary.default};
   font-size: ${theme.typography.fonts.size[100]}px;
   font-weight: ${theme.typography.fonts.weight.bold};
-  line-height: ${theme.typography.lineHeights.l}px;
+  line-height: ${theme.typography.lineHeights[100]}px;
   background: none;
   border: none;
 `,
@@ -367,7 +367,7 @@ export const ActiveCategory = styled.button(
   background-color: ${theme.colors.brand.gray[200].lowContrast};
   font-size: ${theme.typography.fonts.size[100]}px;
   font-weight: ${theme.typography.fonts.weight.regular};
-  line-height: ${theme.typography.lineHeights.l}px;
+  line-height: ${theme.typography.lineHeights[100]}px;
   border: none;
   width: 100%;
   display: flex;
@@ -402,7 +402,7 @@ export const CategoryItemsWrapper = styled.ul(
   padding: 0;
   font-size: ${theme.typography.fonts.size[100]}px;
   font-weight: ${theme.typography.fonts.weight.regular};
-  line-height: ${theme.typography.lineHeights.l}px;
+  line-height: ${theme.typography.lineHeights[100]}px;
   max-height: ${theme.spacing[8] * 4}px;
   overflow: auto;
   margin-bottom: 0;
@@ -422,7 +422,7 @@ export const CategoryItem = styled.li(
   height: ${theme.spacing[8]}px;
   font-size: ${theme.typography.fonts.size[100]}px;
   font-weight: ${theme.typography.fonts.weight.regular};
-  line-height: ${theme.typography.lineHeights.l}px;
+  line-height: ${theme.typography.lineHeights[100]}px;
   color: ${
     isAddButton
       ? theme.colors.action.text.secondary.default
