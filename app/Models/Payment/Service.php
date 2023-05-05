@@ -2896,9 +2896,26 @@ class Service extends Base\Service
 
                     $orderMismatch =  $input['block_order_mismatch'];
 
+                    $this->trace->info(
+                        TraceCode::PAYMENT_AUTO_REFUND_CRON_DEBUG,
+                        [
+                            'payment_id'             => $payment->getId(),
+                            'cron_request'           => $orderMismatch,
+                            'payment_has_Order'      => $payment->hasOrder(),
+                        ]);
+
                     if ($orderMismatch === true and $payment->hasOrder() === true)
                     {
                         $order = $payment->order;
+
+                        $this->trace->info(
+                            TraceCode::PAYMENT_AUTO_REFUND_CRON_DEBUG_STATUS_MISMATCH,
+                            [
+                                'payment_id'                => $payment->getId(),
+                                'order_status'              => $order->getStatus(),
+                                'order_attempt'             => $order->getAttempts(),
+                                'payment_authorized'        => $payment->isAuthorized(),
+                            ]);
 
                         if (($order->getStatus() === Order\Status::PAID) and
                             ($order->getAttempts() === 1) and ($payment->isAuthorized() === true))
