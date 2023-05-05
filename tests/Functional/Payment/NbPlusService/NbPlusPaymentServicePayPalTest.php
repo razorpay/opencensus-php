@@ -131,7 +131,6 @@ class NbPlusPaymentServicePayPalTest extends TestCase
 
         $this->payment['contact'] = "8448720400";
 
-        $this->enablePayPalMigrationExperiment();
         $this->doAuthPayment($this->payment);
 
         $payment = $this->getLastEntity(Entity::PAYMENT, true);
@@ -157,7 +156,6 @@ class NbPlusPaymentServicePayPalTest extends TestCase
 
         $this->payment['contact'] = "8448720400";
 
-        $this->enablePayPalMigrationExperiment();
         $response = $this->doAuthPayment($this->payment);
 
         $this->verifyPayment($response['razorpay_payment_id']);
@@ -200,7 +198,6 @@ class NbPlusPaymentServicePayPalTest extends TestCase
 
         $this->payment['contact'] = "8448720400";
 
-        $this->enablePayPalMigrationExperiment();
         $this->doAuthPayment($this->payment);
 
         $paymentEntity = $this->getLastEntity(Entity::PAYMENT, true);
@@ -231,26 +228,6 @@ class NbPlusPaymentServicePayPalTest extends TestCase
         $response = $this->submitPaymentCallbackRequest($data);
 
         return $response;
-    }
-
-    protected function enablePayPalMigrationExperiment(){
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" =>'variant_on',
-                ]
-            ]
-        ];
-
-        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
-
-        $this->app->instance('splitzService', $this->splitzMock);
-
-        $this->splitzMock
-            ->shouldReceive('evaluateRequest')
-            ->atLeast()
-            ->once()
-            ->andReturn($output);
     }
 
 

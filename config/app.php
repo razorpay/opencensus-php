@@ -386,8 +386,6 @@ return array(
 
     'partners_excluded_from_instant_act_v2_api_exp_id'  => env('PARTNERS_EXCLUDED_FROM_INSTANT_ACT_V2_API_EXP_ID'),
 
-    'paypal_migration_experiment_id' => env('PAYPAL_MIGRATION_EXP_ID'),
-
     'send_sms_on_commission_invoice_issued_exp_id' => env('SEND_SMS_ON_COMMISSION_INVOICE_ISSUED_EXP_ID'),
 
     'redirect_malaysia_card_payments_via_api' => env('REDIRECT_MALAYSIA_CARD_PAYMENTS_VIA_API'),
@@ -566,7 +564,6 @@ return array(
     'route_partnership_v1_guards_exp_id' => env('ROUTE_PARTNERSHIP_V1_GUARD_EXP_ID'),
 
     'skip_avs_on_3ds_experiment_id' => env('SKIP_AVS_CHECK_ON_3DS_EXPERIMENT_ID'),
-    'return_callback_view_experiment_id' => env('RETURN_CALLBACKVIEW_EXPERIMENT_ID'),
 
     '1cc_coupon_drop_off_splitz_experiment_id' => env('MAGIC_CHECKOUT_COUPONS_DROP_OFF_EXP_ID'),
 
@@ -575,10 +572,6 @@ return array(
     'commission_invoice_events_to_kafka_exp_id'  => env('COMMISSION_INVOICE_EVENTS_TO_KAFKA_EXP_ID'),
 
     'magic_checkout_woocommerce_giftcard_url'       => env('MAGIC_CHECKOUT_WOOCOMMERCE_GIFTCARD_URL'),
-
-    'send_firs_available_email_experiment_id' => env('SEND_FIRS_AVAILABLE_EMAIL_EXPERIMENT_ID'),
-
-    'create_dcc_e_invoice_experiment_id' => env('CREATE_DCC_E_INVOICE_EXPERIMENT_ID'),
 
     '1cc_multiple_shipping_splitz_experiment_id' => env('MAGIC_CHECKOUT_MULTIPLE_SHIPPING_EXP_ID'),
 

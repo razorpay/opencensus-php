@@ -3674,11 +3674,6 @@ class Gateway
         Currency::USD,
     ];
 
-    // List of partially migrated gateways
-    const PARTIALLY_MIGRATED_PAYMENTGATEWAY = [
-        Gateway::WALLET_PAYPAL
-    ];
-
     // List of Debit Emi Gateways that support the OTP flow for a given payment
     public static $OtpSupportDebitEmiGateways =[
         Payment\Gateway::KOTAK_DEBIT_EMI,
@@ -4635,6 +4630,7 @@ class Gateway
                 self::WALLET_AMAZONPAY,
                 self::WALLET_BAJAJ,
                 self::WALLET_PAYZAPP,
+                self::WALLET_PAYPAL,
             ]
         ];
 
@@ -4728,6 +4724,7 @@ class Gateway
             self::BILLDESK_OPTIMIZER,
             self::NETBANKING_EQUITAS,
             self::WALLET_BAJAJ,
+            self::WALLET_PAYPAL,
         ];
 
         $acquirerGateways = [

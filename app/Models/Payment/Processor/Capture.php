@@ -936,8 +936,7 @@ trait Capture
         }
 
         if($payment->isDCC()
-            and ($payment->isMethodInternationalApp() or $payment->isCard())
-            and $payment->shouldCreateDCCEInvoiceExperiment())
+            and ($payment->isMethodInternationalApp() or $payment->isCard()))
         {
             try
             {

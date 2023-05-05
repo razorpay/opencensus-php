@@ -6374,51 +6374,13 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return Carbon::createFromTimestamp($this->getCreatedAt(), $timeZone)->format('dS M, Y H:i:s A ')  . Timezone::getTimeZoneAbbrevation($timeZone);
     }
 
-    public function shouldCreateDCCEInvoiceExperiment()
-    {
-        $app = \App::getFacadeRoot();
-        try
-        {
-            $properties = [
-                'id'            => $this->getId(),
-                'experiment_id' => $app['config']->get('app.create_dcc_e_invoice_experiment_id'),
-            ];
-
-            $response = $app['splitzService']->evaluateRequest($properties);
-            $variant = $response['response']['variant']['name'] ?? '';
-            if ($variant === 'variant_on')
-            {
-                return true;
-            }
-        }
-        catch (\Exception $e)
-        {
-            $app['trace']->traceException(
-                $e,
-                null,
-                TraceCode::DCC_PAYMENT_E_INVOICE_SPLITZ_ERROR
-            );
-        }
-        return false;
-    }
-
     // Return fee in payment currency
     // Slack: https://razorpay.slack.com/archives/C7WEGELHJ/p1677061101772369?thread_ts=1675832734.858449&cid=C7WEGELHJ
     public function getFeeInMcc()
     {
         $fee = 0;
 
-        $app = \App::getFacadeRoot();
-
-        $mode = (empty($app['rzp.mode']) === true) ? "live" : $app['rzp.mode'];
-
-        $variant = $app['razorx']->getTreatment(
-                    $this->merchant->getId(),
-                    RazorxTreatment::INTL_PL_FEE_IN_MCC,
-                    $mode);
-
-        if ((strtolower($variant) !== 'on') or
-            ($this->getCurrency() === Currency\Currency::INR))
+        if ($this->getCurrency() === Currency\Currency::INR)
         {
             return $fee;
         }

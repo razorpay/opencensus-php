@@ -52,7 +52,6 @@ class PaypalCurrencyWrapperTest extends TestCase
         $payment['dcc_currency'] = $walletCurrency;
         $payment['currency_request_id'] = $currencyRequestId;
 
-        $this->disablePayPalMigrationExperiment();
         $this->doAuthPayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
@@ -143,30 +142,10 @@ class PaypalCurrencyWrapperTest extends TestCase
         });
     }
 
-    protected function disablePayPalMigrationExperiment(){
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" =>'',
-                ]
-            ]
-        ];
-
-        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
-
-        $this->app->instance('splitzService', $this->splitzMock);
-
-        $this->splitzMock
-            ->shouldReceive('evaluateRequest')
-            ->atLeast()
-            ->once()
-            ->andReturn($output);
-    }
-
     public function testPaypalSupportedCurrenciesForNonDcc()
     {
         $payment = $this->payment;
-        
+
         $testData = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($testData, function () use ($payment) {

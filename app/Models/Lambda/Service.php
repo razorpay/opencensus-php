@@ -316,33 +316,6 @@ class Service extends Base\Service
         return $documentMetaData;
     }
 
-    public function shouldSendFIRSAvailableEmail()
-    {
-        try
-        {
-            $properties = [
-                'id'            => UniqueIdEntity::generateUniqueId(),
-                'experiment_id' => $this->app['config']->get('app.send_firs_available_email_experiment_id'),
-            ];
-
-            $response = $this->app['splitzService']->evaluateRequest($properties);
-            $variant = $response['response']['variant']['name'] ?? '';
-            if ($variant === 'variant_on')
-            {
-                return true;
-            }
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException(
-                $e,
-                null,
-                TraceCode::FIRS_SEND_EMAIL_SPLITZ_ERROR
-            );
-        }
-        return false;
-    }
-
     protected function uploadFileAndSaveInMerchantDocument(HttpFoundation\File\UploadedFile $file, array $input, $mode = Mode::LIVE)
     {
         $filename = $file->getClientOriginalName();
@@ -385,23 +358,19 @@ class Service extends Base\Service
                 {
                     $this->app['rzp.mode'] = $mode;
                 }
-                // check experiment
-                $isSendEmail = $this->shouldSendFIRSAvailableEmail();
-                if ($isSendEmail === true)
-                {
-                    $data = [
-                       'document_id' => $document->getId(),
-                       'action'      => MerchantCrossborderEmail::FIRS_AVAILABLE_NOTIFICATION,
-                       'mode'        => $this->app['rzp.mode'],
-                    ];
-                    $this->trace->info(TraceCode::FIRS_SEND_EMAIL_MESSAGE_DISPATCHED,
-                        [
-                            '$data' => $data,
-                        ]
-                    );
-                    // adding delay of 1 to 10 minutes to distribute load
-                    MerchantCrossborderEmail::dispatch($data)->delay(rand(60,1000) % 601);
-                }
+                $data = [
+                   'document_id' => $document->getId(),
+                   'action'      => MerchantCrossborderEmail::FIRS_AVAILABLE_NOTIFICATION,
+                   'mode'        => $this->app['rzp.mode'],
+                ];
+                $this->trace->info(TraceCode::FIRS_SEND_EMAIL_MESSAGE_DISPATCHED,
+                    [
+                        'data' => $data,
+                    ]
+                );
+                // adding delay of 1 to 10 minutes to distribute load
+                MerchantCrossborderEmail::dispatch($data)->delay(rand(60,1000) % 601);
+
             }
             catch (\Exception $ex)
             {

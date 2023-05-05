@@ -5006,25 +5006,6 @@ class PaymentLinkTest extends TestCase
     // PlinkController@fetchPaymentDetails
     public function testFetchPaymentDetails()
     {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment', 'getCachedTreatment'])
-                           ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->will($this->returnCallback(
-                              function ($mid, $feature, $mode)
-                              {
-                                  if ($feature === RazorxTreatment::INTL_PL_FEE_IN_MCC)
-                                  {
-                                      return 'on';
-                                  }
-
-                                  return 'off';
-                              }));
-
         // test for fee_in_mcc as zero value
         //
         $payment = $this->fixtures->create('payment', ['merchant_id' => self::TEST_MID]);

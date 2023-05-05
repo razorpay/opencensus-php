@@ -179,23 +179,18 @@ class MerchantFirsDocumentsZip extends Job
                 {
                     $this->app['rzp.mode'] = $this->mode ?? Mode::LIVE;
                 }
-                // check experiment
-                $isSendEmail = (new Lambda\Service)->shouldSendFIRSAvailableEmail();
-                if ($isSendEmail === true)
-                {
-                    $data = [
-                        'document_id' => $document->getId(),
-                        'action'      => MerchantCrossborderEmail::FIRS_AVAILABLE_NOTIFICATION,
-                        'mode'        => $this->app['rzp.mode'],
-                    ];
-                    $this->trace->info(TraceCode::FIRS_SEND_EMAIL_MESSAGE_DISPATCHED,
-                        [
-                            '$data' => $data,
-                        ]
-                    );
-                    // adding delay of 10 to 15 minutes for the ZIP creation
-                    MerchantCrossborderEmail::dispatch($data)->delay(600 + rand(0, 1000) % 301);
-                }
+                $data = [
+                    'document_id' => $document->getId(),
+                    'action'      => MerchantCrossborderEmail::FIRS_AVAILABLE_NOTIFICATION,
+                    'mode'        => $this->app['rzp.mode'],
+                ];
+                $this->trace->info(TraceCode::FIRS_SEND_EMAIL_MESSAGE_DISPATCHED,
+                    [
+                        'data' => $data,
+                    ]
+                );
+                // adding delay of 10 to 15 minutes for the ZIP creation
+                MerchantCrossborderEmail::dispatch($data)->delay(600 + rand(0, 1000) % 301);
             }
             catch (\Exception $ex)
             {

@@ -2155,11 +2155,6 @@ class PaymentCreateController extends Controller
 
             $merchant = $this->app['basicauth']->getMerchant();
 
-            $experimentResult = $this->shouldReturnCallbackViewExperiment($merchant->id);
-            if ($experimentResult === false) {
-                return false;
-            }
-
             $response = $this->service(E::PAYMENT)->GetPaymentDetailsForCallbackView($id);
             /** removing check on libraries for now
             $libraries = [Payment\Analytics\Metadata::CHECKOUTJS,Payment\Analytics\Metadata::HOSTED];
@@ -2186,40 +2181,6 @@ class PaymentCreateController extends Controller
                     "payment_id" => $id,
                     "merchant_id" => $merchant->id
                 ]
-            );
-        }
-
-        return false;
-    }
-
-    protected function shouldReturnCallbackViewExperiment($merchantId): bool
-    {
-        try
-        {
-            $properties = [
-                'id'            => UniqueIdEntity::generateUniqueId(),
-                'experiment_id' => $this->app['config']->get('app.return_callback_view_experiment_id'),
-                'request_data'  => json_encode(
-                    [
-                        'merchant_id' => $merchantId,
-                    ]),
-            ];
-
-            $response = $this->app['splitzService']->evaluateRequest($properties);
-
-            $variant = $response['response']['variant']['name'] ?? '';
-
-            if ($variant === 'variant_on')
-            {
-                return true;
-            }
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException(
-                $e,
-                null,
-                TraceCode::CALLBACK_VIEW_ON_3DS_PAYMENT_ERROR
             );
         }
 

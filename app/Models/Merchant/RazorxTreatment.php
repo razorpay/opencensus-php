@@ -744,9 +744,6 @@ final class RazorxTreatment
 
     const UPI_AUTOPAY_REVOKE_PAUSE_TOKEN = 'upi_autopay_revoke_pause_token';
 
-    // Experiment for sending fees in mcc to PL service
-    const INTL_PL_FEE_IN_MCC = 'intl_pl_fee_in_mcc';
-
     const DISABLE_QR_CODE_ON_DEMAND_CLOSE = 'disable_qr_code_on_demand_close';
 
     // If true, it will select Optimizer mandate hub for card recurring payments.
