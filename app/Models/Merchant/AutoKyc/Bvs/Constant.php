@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\AutoKyc\Bvs;
 
 use RZP\Constants\Table;
 use RZP\Models\Merchant\BvsValidation\Constants;
+use RZP\Models\Merchant\Detail\BusinessType;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -136,6 +137,9 @@ class Constant
     const ID                = 'id';
     const COUNT             = 'count';
     const DOCUMENTS_DETAIL  = 'documents_detail';
+
+    // Artefact type for signatory validation
+    const SIGNATORY_VALIDATION                   = 'signatory_validation';
 
     // Artefact types in BVS
     const PERSONAL_PAN                           = 'personal_pan';
@@ -327,6 +331,47 @@ class Constant
         Constant::VOTERS_ID . '-' . BvsValidationConstants::PROOF                                     => [Table::MERCHANT_DETAIL, Entity::POA_VERIFICATION_STATUS],
         Constant::PASSPORT . '-' . BvsValidationConstants::PROOF                                      => [Table::MERCHANT_DETAIL, Entity::POA_VERIFICATION_STATUS],
         Constant::AADHAAR . '-' . BvsValidationConstants::PROOF                                       => [Table::MERCHANT_DETAIL, Entity::POA_VERIFICATION_STATUS]
+    ];
+
+    public const SIGNATORY_ARTEFACTS_BUSINESS_TYPE_MAPPING = [
+
+        BusinessType::PUBLIC_LIMITED                 => [
+            Constant::GSTIN . '-' . VerificationConstant::NUMBER,
+            Constant::CIN . '-' . VerificationConstant::NUMBER,
+        ],
+        BusinessType::PRIVATE_LIMITED                 => [
+            Constant::GSTIN . '-' . VerificationConstant::NUMBER,
+            Constant::CIN . '-' . VerificationConstant::NUMBER,
+        ],
+        BusinessType::LLP                 => [
+            Constant::GSTIN . '-' . VerificationConstant::NUMBER,
+            Constant::LLP_DEED . '-' . VerificationConstant::NUMBER,
+        ],
+        BusinessType::PARTNERSHIP                 => [
+            Constant::GSTIN . '-' . VerificationConstant::NUMBER,
+            Constant::PARTNERSHIP_DEED . '-' . VerificationConstant::DOC,
+        ],
+        BusinessType::TRUST                 => [
+            Constant::GSTIN . '-' . VerificationConstant::NUMBER,
+            Constant::TRUST_SOCIETY_NGO_BUSINESS_CERTIFICATE . '-' . VerificationConstant::DOC,
+        ],
+        BusinessType::SOCIETY                 => [
+            Constant::GSTIN . '-' . VerificationConstant::NUMBER,
+            Constant::TRUST_SOCIETY_NGO_BUSINESS_CERTIFICATE . '-' . VerificationConstant::DOC,
+        ],
+        BusinessType::NGO                 => [
+            Constant::GSTIN . '-' . VerificationConstant::NUMBER,
+            Constant::TRUST_SOCIETY_NGO_BUSINESS_CERTIFICATE . '-' . VerificationConstant::DOC,
+        ],
+        BusinessType::PROPRIETORSHIP                 => [
+            Constant::GSTIN . '-' . VerificationConstant::NUMBER,
+            Constant::SHOP_ESTABLISHMENT . '-' . VerificationConstant::DOC,
+            Constant::SHOP_ESTABLISHMENT . '-' . VerificationConstant::NUMBER,
+            Constant::MSME . '-' . VerificationConstant::DOC,
+        ],
+        BusinessType::HUF                 => [
+            Constant::GSTIN . '-' . VerificationConstant::NUMBER,
+        ],
     ];
 
     const EXCLUDED_CONFIGS = [

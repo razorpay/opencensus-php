@@ -71,6 +71,7 @@ class Constants
     const NOT_MATCHED       = 'not_matched';
     const PENDING           = 'pending';
     const INITIATED         = 'initiated';
+    const NOT_INITIATED     = 'not_initiated';
     const FAILED_STATUS = [
         self::FAILED,
         self::INCORRECT_DETAILS,

@@ -4867,6 +4867,654 @@ Team Razorpay', '+911234567890');
         $this->startTest();
     }
 
+    public function testCINSignatorySuccessExperimentLive()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $input = [
+            "experiment_id" => "LhL34xFB6fki66",
+            "id"            => "1cXSLlUU8V9sXl",
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'true',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        Config::set('services.bvs.mock', true);
+        Config::set('services.bvs.response', 'success');
+        Config::set('services.bvs.sync.flow', true);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+            'business_type' => 4,
+            'cin_verification_status'=>'pending'
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $this->startTest();
+
+        $merchantVerificationDetail = $this->getDbEntity('merchant_verification_detail', ['artefact_type' => 'cin', 'merchant_id' => $merchantId]);
+
+        $bvsValidation = $this->getDbLastEntity('bvs_validation')->toArray();
+
+        $expectedMetadata = ["signatory_validation_status"=> "verified", 'bvs_validation_id'=>$bvsValidation['validation_id']];
+
+        $this->assertEquals($expectedMetadata, $merchantVerificationDetail['metadata']);
+
+    }
+
+
+    public function testCINSignatoryFailureExperimentLiveAsync()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $input = [
+            "experiment_id" => "LhL34xFB6fki66",
+            "id"            => "1cXSLlUU8V9sXl",
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'true',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        Config::set('services.bvs.mock', true);
+        Config::set('services.bvs.response', 'success');
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchantId,
+            'business_type' => 4,
+            'cin_verification_status'=>'pending'
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $this->startTest();
+
+        $bvsValidation = $this->getDbLastEntity('bvs_validation', 'live');
+
+        $kafkaEventPayload = [
+            'data'  => [
+                'validation_id'     => $bvsValidation['validation_id'],
+                'status'            => 'failed',
+                'error_description' => 'cin: must be in a valid format.',
+                'error_code'        => 'VALIDATION_ERROR'
+            ]
+        ];
+
+        (new KafkaMessageProcessor)->process('api-bvs-validation-result-events', $kafkaEventPayload, 'live');
+
+        $bvsValidation = $this->getDbEntityById('bvs_validation', $bvsValidation['validation_id']);
+
+        $verificationDetail = $this->getDbEntityById('merchant_detail', '1cXSLlUU8V9sXl');
+
+        $this->assertEquals('failed', $bvsValidation->getValidationStatus());
+
+        $this->assertEquals('incorrect_details', $verificationDetail->getCinVerificationStatus());
+
+
+        $merchantVerificationDetail = $this->getDbEntity('merchant_verification_detail', ['artefact_type' => 'cin', 'merchant_id' => $merchantId]);
+
+        $this->assertEquals(["signatory_validation_status"=> "not_initiated", 'bvs_validation_id'=>$bvsValidation['validation_id']],$merchantVerificationDetail['metadata']);
+
+    }
+
+    public function testCINSignatorySuccessExperimentLiveAsync()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $input = [
+            "experiment_id" => "LhL34xFB6fki66",
+            "id"            => "1cXSLlUU8V9sXl",
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'true',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+
+        Config::set('services.bvs.mock', true);
+        Config::set('services.bvs.response', 'success');
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId,
+            'business_type' => 4,
+            'cin_verification_status'=>'pending']);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $this->startTest();
+
+        $bvsValidation = $this->getDbLastEntity('bvs_validation', 'live');
+
+        $kafkaEventPayload = [
+            'data'  => [
+                'validation_id'     => $bvsValidation['validation_id'],
+                'status'            => 'success',
+                'error_description' => '',
+                'error_code'        => '',
+                'rule_execution_list' => [
+                    0 => [
+                        'rule' => [
+                            'rule_type' => 'string_comparison_rule',
+                            'rule_def' => [
+                                'or' => [
+                                    0 => [
+                                        'fuzzy_wuzzy' => [
+                                            0 => [
+                                                'var' => 'artefact.details.legal_name.value',
+                                            ],
+                                            1 => [
+                                                'var' => 'enrichments.online_provider.details.legal_name.value',
+                                            ],
+                                            2 => 70,
+                                        ],
+                                    ],
+                                    1 => [
+                                        'fuzzy_wuzzy' => [
+                                            0 => [
+                                                'var' => 'artefact.details.trade_name.value',
+                                            ],
+                                            1 => [
+                                                'var' => 'enrichments.online_provider.details.trade_name.value',
+                                            ],
+                                            2 => 70,
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                        'rule_execution_result' => [
+                            'result' => true,
+                            'operator' => 'or',
+                            'operands' => [
+                                'operand_1' => [
+                                    'result'   => false,
+                                    'operator' => 'fuzzy_wuzzy',
+                                    'operands' => [
+                                        'operand_1' => 'Rzp Test QA Merchant',
+                                        'operand_2' => 'RAZORPAY SOFTWARE PRIVATE LIMITED',
+                                        'operand_3' => 70,
+                                    ],
+                                    'remarks' => [
+                                        'algorithm_type'        => 'fuzzy_wuzzy_default_algorithm',
+                                        'match_percentage'      => 45,
+                                        'required_percentage'   => 70,
+                                    ],
+                                ],
+                                'operand_2' => [
+                                    'result'   => false,
+                                    'operator' => 'fuzzy_wuzzy',
+                                    'operands' => [
+                                        'operand_1' => 'CHIZRINZ INFOWAY PRIVATE LIMITED',
+                                        'operand_2' => 'RAZORPAY SOFTWARE PRIVATE LIMITED',
+                                        'operand_3' => 70,
+                                    ],
+                                    'remarks' => [
+                                        'algorithm_type'        => 'fuzzy_wuzzy_default_algorithm',
+                                        'match_percentage'      => 68,
+                                        'required_percentage'   => 70,
+                                    ],
+                                ],
+                            ],
+                            'remarks' => [
+                                'algorithm_type'        => 'fuzzy_wuzzy_default_algorithm',
+                                'match_percentage'      => 68,
+                                'required_percentage'   => 70,
+                            ],
+                        ],
+                        'error' => '',
+                    ],
+                    1 => [
+                        'rule' => [
+                            'rule_type' => 'array_comparison_rule',
+                            'rule_def' => [
+                                'some' => [
+                                    0 => [
+                                        'var' => 'enrichments.online_provider.details.signatory_names',
+                                    ],
+                                    1 => [
+                                        'fuzzy_wuzzy' => [
+                                            0 => [
+                                                'var' => 'each_array_element',
+                                            ],
+                                            1 => [
+                                                'var' => 'artefact.details.legal_name.value',
+                                            ],
+                                            2 => 70,
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                        'rule_execution_result' => [
+                            'result'   => true,
+                            'operator' => 'some',
+                            'operands' => [
+                                'operand_1' => [
+                                    'result'   => false,
+                                    'operator' => 'fuzzy_wuzzy',
+                                    'operands' => [
+                                        'operand_1' => 'HARSHILMATHUR ',
+                                        'operand_2' => 'Rzp Test QA Merchant',
+                                        'operand_3' => 70,
+                                    ],
+                                    'remarks' => [
+                                        'algorithm_type'        => 'fuzzy_wuzzy_default_algorithm',
+                                        'match_percentage'      => 30,
+                                        'required_percentage'   => 70,
+                                    ],
+                                ],
+                                'operand_2' => [
+                                    'result'   => false,
+                                    'operator' => 'fuzzy_wuzzy',
+                                    'operands' => [
+                                        'operand_1' => 'Shashank kumar ',
+                                        'operand_2' => 'Rzp Test QA Merchant',
+                                        'operand_3' => 70,
+                                    ],
+                                    'remarks' => [
+                                        'algorithm_type'        => 'fuzzy_wuzzy_default_algorithm',
+                                        'match_percentage'      => 29,
+                                        'required_percentage'   => 70,
+                                    ],
+                                ],
+                            ],
+                            'remarks' => [
+                                'algorithm_type'        => 'fuzzy_wuzzy_default_algorithm',
+                                'match_percentage'      => 29,
+                                'required_percentage'   => 70,
+                            ],
+                        ]
+                    ]
+                ],
+            ]
+        ];
+
+        (new KafkaMessageProcessor)->process('api-bvs-validation-result-events', $kafkaEventPayload, 'live');
+
+        $bvsValidation = $this->getDbEntityById('bvs_validation', $bvsValidation['validation_id']);
+
+        $verificationDetail = $this->getDbEntityById('merchant_detail', '1cXSLlUU8V9sXl');
+
+        $this->assertEquals('success', $bvsValidation->getValidationStatus());
+
+        $this->assertEquals('verified', $verificationDetail->getCinVerificationStatus());
+
+        $merchantVerificationDetail = $this->getDbEntity('merchant_verification_detail', ['artefact_type' => 'cin', 'merchant_id' => $merchantId]);
+
+        $this->assertEquals(["signatory_validation_status"=> "verified", 'bvs_validation_id'=>$bvsValidation['validation_id']],$merchantVerificationDetail['metadata']);
+
+    }
+
+    public function testCINSignatorySuccessExperimentNotLive()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $input = [
+            "experiment_id" => "LhL34xFB6fki66",
+            "id"            => "1cXSLlUU8V9sXl",
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'false',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        Config::set('services.bvs.mock', true);
+        Config::set('services.bvs.response', 'success');
+        Config::set('services.bvs.sync.flow', true);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId,
+              'business_type' => 4,
+            'cin_verification_status'=>'pending']);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $this->startTest();
+
+        $merchantVerificationDetail = $this->getDbEntity('merchant_verification_detail', ['artefact_type' => 'cin', 'merchant_id' => $merchantId]);
+
+        $this->assertNull($merchantVerificationDetail['metadata']);
+
+        $merchantDetail = $this->getDbEntity('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->assertEquals('verified', $merchantDetail['cin_verification_status']);
+
+
+
+    }
+
+    public function testCINSignatoryFailureExperimentLive()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $input = [
+            "experiment_id" => "LhL34xFB6fki66",
+            "id"            => "1cXSLlUU8V9sXl",
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'true',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        Config::set('services.bvs.mock', true);
+        Config::set('services.bvs.response', 'failure');
+        Config::set('services.bvs.sync.flow', true);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId,
+              'business_type' => 4,
+            'cin_verification_status'=>'pending']);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $this->startTest();
+
+        $merchantVerificationDetail = $this->getDbEntity('merchant_verification_detail', ['artefact_type' => 'cin', 'merchant_id' => $merchantId]);
+
+        $bvsValidation = $this->getDbLastEntity('bvs_validation', 'live');
+
+        $this->assertEquals(["signatory_validation_status"=> "not_initiated", 'bvs_validation_id' => $bvsValidation['validation_id']],$merchantVerificationDetail['metadata']);
+
+        $merchantVerificationDetail = $this->getDbEntity('merchant_verification_detail', ['artefact_type' => 'signatory_validation', 'merchant_id' => $merchantId]);
+
+        $this->assertEquals('not_initiated',$merchantVerificationDetail['status']);
+
+    }
+
+    public function testLLPINSignatorySuccessExperimentLive()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $input = [
+            "experiment_id" => "LhL34xFB6fki66",
+            "id"            => "1cXSLlUU8V9sXl",
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'true',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        Config::set('services.bvs.mock', true);
+        Config::set('services.bvs.response', 'success');
+        Config::set('services.bvs.sync.flow', true);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId,
+              'business_type' => 6,
+            'cin_verification_status'=>'pending']);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $this->startTest();
+
+        $merchantVerificationDetail = $this->getDbEntity('merchant_verification_detail', ['artefact_type' => 'llp_deed', 'merchant_id' => $merchantId]);
+
+        $bvsValidation = $this->getDbLastEntity('bvs_validation', 'live');
+
+        $this->assertEquals(["signatory_validation_status" => "verified", 'bvs_validation_id' => $bvsValidation['validation_id']],$merchantVerificationDetail['metadata']);
+
+    }
+
+    public function testLLPINSignatorySuccessExperimentNotLive()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $input = [
+            "experiment_id" => "LhL34xFB6fki66",
+            "id"            => "1cXSLlUU8V9sXl",
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'false',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        Config::set('services.bvs.mock', true);
+        Config::set('services.bvs.response', 'success');
+        Config::set('services.bvs.sync.flow', true);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId,
+              'business_type' => 6,
+            'cin_verification_status'=>'pending']);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $this->startTest();
+
+        $merchantVerificationDetail = $this->getDbEntity('merchant_verification_detail', ['artefact_type' => 'llp_deed', 'merchant_id' => $merchantId]);
+
+        $this->assertNull($merchantVerificationDetail['metadata']);
+
+        $merchantDetail = $this->getDbEntity('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->assertEquals('verified', $merchantDetail['cin_verification_status']);
+
+    }
+
+    public function testLLPINSignatoryFailureExperimentLive()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $input = [
+            "experiment_id" => "LhL34xFB6fki66",
+            "id"            => "1cXSLlUU8V9sXl",
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'true',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        Config::set('services.bvs.mock', true);
+        Config::set('services.bvs.response', 'failure');
+        Config::set('services.bvs.sync.flow', true);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId,
+              'business_type' => 6,
+            'cin_verification_status'=>'pending']);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $this->startTest();
+
+        $merchantVerificationDetail = $this->getDbEntity('merchant_verification_detail', ['artefact_type' => 'llp_deed', 'merchant_id' => $merchantId]);
+
+        $bvsValidation = $this->getDbLastEntity('bvs_validation', 'live');
+
+        $this->assertEquals(["signatory_validation_status" =>"not_initiated", 'bvs_validation_id' => $bvsValidation['validation_id']],$merchantVerificationDetail['metadata']);
+
+        $merchantVerificationDetail = $this->getDbEntity('merchant_verification_detail', ['artefact_type' => 'signatory_validation', 'merchant_id' => $merchantId]);
+
+        $this->assertEquals('not_initiated',$merchantVerificationDetail['status']);
+
+    }
+
+    public function testGSTINSignatorySuccessExperimentLive()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $input = [
+            "experiment_id" => "LhL34xFB6fki66",
+            "id"            => "1cXSLlUU8V9sXl",
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'true',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        Config::set('services.bvs.mock', true);
+        Config::set('services.bvs.response', 'success');
+        Config::set('services.bvs.sync.flow', true);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId,
+              'business_type' => 4,
+            'gstin_verification_status'=>'pending']);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $this->startTest();
+
+        $merchantVerificationDetail = $this->getDbEntity('merchant_verification_detail', ['artefact_type' => 'gstin', 'merchant_id' => $merchantId]);
+
+        $bvsValidation = $this->getDbLastEntity('bvs_validation', 'live');
+
+        $this->assertEquals(["signatory_validation_status" => "verified", 'bvs_validation_id' => $bvsValidation['validation_id']],$merchantVerificationDetail['metadata']);
+
+    }
+
+    public function testGSTINSignatorySuccessExperimentNotLive()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $input = [
+            "experiment_id" => "LhL34xFB6fki66",
+            "id"            => "1cXSLlUU8V9sXl",
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'false',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        Config::set('services.bvs.mock', true);
+        Config::set('services.bvs.response', 'success');
+        Config::set('services.bvs.sync.flow', true);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId,
+            'business_type' => 4,
+            'gstin_verification_status'=>'pending']);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $this->startTest();
+
+        $merchantVerificationDetail = $this->getDbEntity('merchant_verification_detail', ['artefact_type' => 'gstin', 'merchant_id' => $merchantId]);
+
+        $this->assertNull($merchantVerificationDetail['metadata']);
+
+        $this->assertNull($merchantVerificationDetail['status']);
+    }
+
+    public function testGSTINSignatoryFailureExperimentLive()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $input = [
+            "experiment_id" => "LhL34xFB6fki66",
+            "id"            => "1cXSLlUU8V9sXl",
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'true',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        Config::set('services.bvs.mock', true);
+        Config::set('services.bvs.response', 'failure');
+        Config::set('services.bvs.sync.flow', true);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId,
+            'business_type' => 4,
+            'gstin_verification_status'=>'pending']);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $this->startTest();
+
+        $merchantVerificationDetail = $this->getDbEntity('merchant_verification_detail', ['artefact_type' => 'gstin', 'merchant_id' => $merchantId]);
+
+        $bvsValidation = $this->getDbLastEntity('bvs_validation', 'live');
+
+        $this->assertEquals(["signatory_validation_status"=> "not_initiated", "bvs_validation_id"=> $bvsValidation['validation_id']],$merchantVerificationDetail['metadata']);
+
+        $merchantVerificationDetail = $this->getDbEntity('merchant_verification_detail', ['artefact_type' => 'signatory_validation', 'merchant_id' => $merchantId]);
+
+        $this->assertEquals('not_initiated',$merchantVerificationDetail['status']);
+
+    }
+
     public function testDeleteAdditionalWebsites()
     {
         $merchantId = $this->fixtures->create('merchant')->getId();

@@ -289,7 +289,7 @@ class Core extends Base\Core
 
             for ($counter=0; $counter < $count; $counter++)
             {
-                $ans = $details[$counter][Constant::RULE_EXECUTION_RESULT][Constant::REMARKS][Constant::MATCH_PERCENTAGE];
+                $ans = $details[$counter][Constant::RULE_EXECUTION_RESULT][Constant::REMARKS][Constant::MATCH_PERCENTAGE] ?? 0;
                 $fuzzy_score = max($fuzzy_score, $ans);
             }
 

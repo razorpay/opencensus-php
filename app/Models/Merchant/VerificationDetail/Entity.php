@@ -48,7 +48,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::METADATA,
         self::CREATED_AT,
-        self::UPDATED_AT,
+        self::UPDATED_AT
     ];
 
     protected $defaults = [
@@ -72,5 +72,25 @@ class Entity extends Base\PublicEntity
     public function getMetadata()
     {
         return $this->getAttribute(self::METADATA);
+    }
+
+    public function getArtefactType()
+    {
+        return $this->getAttribute(self::ARTEFACT_TYPE);
+    }
+
+    public function getArtefactIdentifier()
+    {
+        return $this->getAttribute(self::ARTEFACT_IDENTIFIER);
+    }
+
+    public function setMetadata(array $metadata = [])
+    {
+        return $this->setAttribute(self::METADATA, $metadata);
+    }
+
+    public function setStatus($status)
+    {
+        return $this->setAttribute(self::STATUS, $status);
     }
 }

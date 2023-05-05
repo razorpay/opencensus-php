@@ -7,6 +7,7 @@ use RZP\Models\Feature\Constants;
 use RZP\Models\Merchant\BvsValidation;
 use RZP\Models\Merchant\Detail\BusinessType;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\Merchant\VerificationDetail as MVD;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 
@@ -81,6 +82,19 @@ class GstinAuth extends Base
         if ($this->merchantDetails->getGstinVerificationStatus() === BvsValidationConstants::PENDING)
         {
             $this->merchantDetails->setGstinVerificationStatus(BvsValidationConstants::INITIATED);
+
+            $input = [
+                MVD\Entity::MERCHANT_ID         => $this->merchant->getId(),
+                MVD\Entity::ARTEFACT_TYPE       => Constant::GSTIN,
+                MVD\Entity::ARTEFACT_IDENTIFIER => MVD\Constants::NUMBER,
+                MVD\Entity::STATUS              => BvsValidationConstants::INITIATED,
+                MVD\Entity::METADATA            => [
+                                                    'signatory_validation_status'=> BvsValidationConstants::INITIATED,
+                                                    'bvs_validation_id' => $entity->getValidationId()]
+            ];
+
+            (new MVD\Core)->createOrEditVerificationDetail($this->merchantDetails, $input);
+
         }
     }
 }

@@ -110,7 +110,7 @@ class Gstin extends BaseConfig
                                 [
                                     "var" => "artefact.details.legal_name.value"
                                 ],
-                                70
+                                81
                             ]
                         ]
                     ]

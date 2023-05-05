@@ -43,6 +43,11 @@ class Core extends Base\Core
 
             else
             {
+                if (empty($input[Entity::METADATA]) === false)
+                {
+                    $input[Entity::METADATA] = $this->mergeJson($verificationDetail->getMetadata(), $input[Entity::METADATA]);
+                }
+
                 $verificationDetail->edit($input, 'edit');
 
                 $this->repo->merchant_verification_detail->saveOrFail($verificationDetail);
@@ -72,6 +77,18 @@ class Core extends Base\Core
         });
     }
 
+    public function mergeJson($existingDetails, $newDetails)
+    {
+        if (empty($newDetails) === false)
+        {
+            foreach ($newDetails as $key => $value)
+            {
+                $existingDetails[$key] = $value;
+            }
+        }
+
+        return $existingDetails;
+    }
 
     public function savePGOSDataToAPI(array $data)
     {

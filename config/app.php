@@ -609,6 +609,8 @@ return array(
 
     'magic_qr_v2_experiment_id'  => env('MAGIC_QR_V2_EXP_ID'),
 
+    'artefacts_signatory_validations_experiment_id'      => env('ARTEFACTS_SIGNATORY_VALIDATIONS_EXPERIMENT_ID'),
+
     'one_cc_auto_submit_otp_experiment_id' => env('1CC_AUTO_SUBMIT_OTP_EXP_ID'),
 
     'one_cc_email_optional_on_checkout_experiment_id' => env('1CC_EMAIL_OPTIONAL_ON_CHECKOUT_EXP_ID'),
@@ -620,4 +622,5 @@ return array(
     'emerchantpay_maf_generation_via_sqs_experiement_id' => env('EMERCHANTPAY_MAF_GENERATION_VIA_SQS_EXPERIMENT_ID'),
 
     'emi_via_card_screen_splitz_experiment_id' => env('EMI_VIA_CARD_SCREEN_SPLITZ_EXPERIMENT_ID'),
+
 );

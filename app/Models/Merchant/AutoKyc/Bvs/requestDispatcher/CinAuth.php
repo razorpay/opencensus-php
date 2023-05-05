@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 
 use RZP\Models\Merchant\Detail\Core;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use RZP\Models\Merchant\VerificationDetail as MVD;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 
 use RZP\Models\Merchant\BvsValidation;
@@ -41,6 +42,18 @@ class CinAuth extends Base
         if ($this->merchantDetails->getCinVerificationStatus() === BvsValidationConstants::PENDING)
         {
             $this->merchantDetails->setCinVerificationStatus(BvsValidationConstants::INITIATED);
+
+            $input = [
+                MVD\Entity::MERCHANT_ID         => $this->merchant->getId(),
+                MVD\Entity::ARTEFACT_TYPE       => Constant::CIN,
+                MVD\Entity::ARTEFACT_IDENTIFIER => MVD\Constants::NUMBER,
+                MVD\Entity::STATUS              => BvsValidationConstants::INITIATED,
+                MVD\Entity::METADATA            => [
+                                                    'signatory_validation_status'=> BvsValidationConstants::INITIATED,
+                                                    'bvs_validation_id' => $validation->getValidationId()]
+            ];
+
+            (new MVD\Core)->createOrEditVerificationDetail($this->merchantDetails, $input);
         }
     }
 }

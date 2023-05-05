@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\AutoKyc\Bvs\DocumentStatusUpdater;
 
 use RZP\Jobs;
 use RZP\Constants\Mode;
+use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
 use RZP\Models\Merchant\Detail\Core as MerchantDetailCore;
 use RZP\Trace\TraceCode;
@@ -12,9 +13,13 @@ use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Merchant\BvsValidation\Entity;
 use RZP\Models\Merchant\Store\Core as StoreCore;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Merchant\VerificationDetail as MVD;
+use RZP\Models\Merchant\BvsValidation\Constants;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Store\Constants as StoreConstants;
+use RZP\Models\Merchant\BvsValidation\Constants as ValidationConstants;
+
 
 
 class GstInStatusUpdater extends DefaultStatusUpdater
@@ -47,6 +52,8 @@ class GstInStatusUpdater extends DefaultStatusUpdater
 
             $merchantDetailCore->generateLeadScoreForMerchant($this->merchant, $this->merchantDetails);
         }
+
+        $this->handleArtefactSignatoryValidation();
 
         if(($this->merchant->isNoDocOnboardingEnabled() === true) or
             ($this->merchant->isRouteNoDocKycEnabledForParentMerchant() === true))

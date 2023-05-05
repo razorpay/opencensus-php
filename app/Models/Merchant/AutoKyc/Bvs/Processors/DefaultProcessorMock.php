@@ -72,7 +72,7 @@ class DefaultProcessorMock extends DefaultProcessor
 
                     $validationResponse->setStatus('success');
 
-                    $validationResponse->setRuleExecutionList($this->getRuleExecutionList());
+                    $validationResponse->setRuleExecutionList($this->getRuleExecutionList('success'));
 
                     return new ValidationBaseResponseV2($validationResponse);
                 }
@@ -103,6 +103,8 @@ class DefaultProcessorMock extends DefaultProcessor
                     $validationResponse->setValidationId($bvsValidation->getId());
 
                     $validationResponse->setStatus('failed');
+
+                    $validationResponse->setRuleExecutionList($this->getRuleExecutionList('failure'));
 
                     if($this->app['config']['services.bvs.input.error'] == true)
                     {
@@ -184,9 +186,12 @@ class DefaultProcessorMock extends DefaultProcessor
         $this->mockValidationDetail = $validationDetail;
     }
 
-    private function getRuleExecutionList()
+    private function getRuleExecutionList($status)
     {
-        $body = '{
+        switch ($status)
+        {
+            case 'success':
+                $body = '{
         "details": {
             "0": {
                 "error": "",
@@ -321,8 +326,153 @@ class DefaultProcessorMock extends DefaultProcessor
         }
     }';
 
-        $arr = json_decode($body, true);
-        return get_Protobuf_Struct($arr);
+                $arr = json_decode($body, true);
+                return get_Protobuf_Struct($arr);
+
+            case 'failure':
+                $body = '{
+        "details": {
+            "0": {
+                "error": "",
+                "rule": {
+                    "rule_def": {
+                        "or": [
+                            {
+                                "fuzzy_suzzy": [
+                                    {
+                                        "var": "artefact.details.legal_name.value"
+                                    },
+                                    {
+                                        "var": "enrichments.online_provider.details.legal_name.value"
+                                    },
+                                    81
+                                ]
+                            },
+                            {
+                                "fuzzy_wuzzy": [
+                                    {
+                                        "var": "artefact.details.trade_name.value"
+                                    },
+                                    {
+                                        "var": "enrichments.online_provider.details.trade_name.value"
+                                    },
+                                    81,
+                                    [
+                                        "private limited",
+                                        "limited liability partnership",
+                                        "pvt",
+                                        "ltd",
+                                        "."
+                                    ]
+                                ]
+                            }
+                        ]
+                    },"rule_type": "string_comparison_rule"
+                },
+                "rule_execution_result": {
+                    "operands": {
+                        "operand_1": {
+                            "operands": {
+                                "operand_1": "Rzp Test QA Merchant",
+                                "operand_2": "RELIANCE INDUSTRIES LIMITED",
+                                "operand_3": 81
+                            },
+                            "operator": "fuzzy_suzzy",
+                            "remarks": {
+                                "algorithm_type": "fuzzy_suzzy_lev_token_set_algorithm",
+                                "match_percentage": 34,
+                                "required_percentage": 81
+                            },
+                            "result": false
+                        },
+                        "operand_2": {
+                            "operands": {
+                                "operand_1": "CHIZRINZ INFOWAY PRIVATE LIMITED","operand_2": "CHIZRINZ INFOWAY PRIVATE LIMITED",
+                                "operand_3": 81,
+                                "operand_4": [
+                                    "private limited",
+                                    "limited liability partnership",
+                                    "pvt",
+                                    "ltd",
+                                    "."
+                                ]
+                            },
+                            "operator": "fuzzy_wuzzy",
+                            "remarks": {
+                                "algorithm_type": "fuzzy_wuzzy_custom_algorithm_4",
+                                "match_percentage": 100,
+                                "required_percentage": 81
+                            },
+                            "result": true
+                        }
+                    },
+                    "operator": "or",
+                    "remarks": {
+                        "algorithm_type": "fuzzy_wuzzy_custom_algorithm_4",
+                        "match_percentage": 100,
+                        "required_percentage": 81
+                    },
+                    "result": false
+                }
+            },
+            "1": {
+                "error": "",
+                "rule": {
+                    "rule_def": {
+                        "some": [
+                            {
+                                "var": "enrichments.online_provider.details.signatory_names"
+                            },
+                            {
+                                "fuzzy_suzzy": [{
+                                        "var": "artefact.details.legal_name.value"
+                                    },
+                                    {
+                                        "var": "each_array_element"
+                                    },
+                                    81
+                                ]
+                            }
+                        ]
+                    },
+                    "rule_type": "array_comparison_rule"
+                },
+                "rule_execution_result": {
+                    "operands": {
+                        "operand_1": {
+                            "operands": {
+                                "operand_1": "Rzp Test QA Merchant",
+                                "operand_2": "Rzp Test QA Merchant",
+                                "operand_3": 81
+                            },
+                            "operator": "fuzzy_suzzy",
+                            "remarks": {
+                                "algorithm_type": "fuzzy_suzzy_lev_token_set_algorithm",
+                                "match_percentage": 100,
+                                "required_percentage": 81
+                            },
+                            "result": true
+                        }
+                    },
+                    "operator": "some",
+                    "remarks": {
+                        "algorithm_type": "fuzzy_suzzy_lev_token_set_algorithm",
+                        "match_percentage": 100,
+                        "required_percentage": 81},
+                    "result": true
+                }
+            }
+        }
+    }';
+
+                $arr = json_decode($body, true);
+                return get_Protobuf_Struct($arr);
+
+            default:
+                return get_Protobuf_Struct([]);
+
+        }
+
     }
 
     /**

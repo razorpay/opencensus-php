@@ -10,7 +10,7 @@ class Validator extends Base\Validator
         Entity::MERCHANT_ID           => 'required|string|size:14',
         Entity::ARTEFACT_TYPE         => 'required|string',
         Entity::ARTEFACT_IDENTIFIER   => 'required|string|in:number,doc',
-        Entity::STATUS                => 'required|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
+        Entity::STATUS                => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated,not_initiated',
         Entity::METADATA              => 'sometimes|array',
     ];
 
@@ -18,7 +18,7 @@ class Validator extends Base\Validator
         Entity::MERCHANT_ID           => 'required|string|size:14',
         Entity::ARTEFACT_TYPE         => 'required|string',
         Entity::ARTEFACT_IDENTIFIER   => 'required|string|in:number,doc',
-        Entity::STATUS                => 'required|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
+        Entity::STATUS                => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated,not_initiated',
         Entity::METADATA              => 'sometimes|array',
     ];
 }

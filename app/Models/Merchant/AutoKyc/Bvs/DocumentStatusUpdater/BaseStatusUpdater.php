@@ -27,6 +27,8 @@ use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\VerificationDetail as MVD;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\BvsValidation\Entity as Validation;
+use RZP\Models\Merchant\AutoKyc\Bvs\RuleExecutionResultVerifier;
+use RZP\Models\Merchant\Detail\NeedsClarification\Constants as NCConstants;
 
 abstract class BaseStatusUpdater implements StatusUpdater
 {
@@ -71,6 +73,8 @@ abstract class BaseStatusUpdater implements StatusUpdater
      */
     protected $documentTypeStatusKey;
 
+    protected $ruleResultVerifier;
+
     const VALIDATION_STATUS_FUNCTION_MAPPING = [
         Constants::VERIFIED          => 'getVerifiedStatus',
         Constants::INCORRECT_DETAILS => 'getIncorrectDetailStatus',
@@ -106,6 +110,10 @@ abstract class BaseStatusUpdater implements StatusUpdater
         $this->validationUnit = $consumedValidation->getValidationUnit();
 
         $this->consumedValidationId = $consumedValidation->getValidationId();
+
+        $ruleResultVerifierFactory = new RuleExecutionResultVerifier\Factory();
+
+        $this->ruleResultVerifier = $ruleResultVerifierFactory->getInstance($consumedValidation);
     }
 
     /**
@@ -179,6 +187,11 @@ abstract class BaseStatusUpdater implements StatusUpdater
         return Constants::NOT_MATCHED;
     }
 
+    protected function getNotInitiatedStatus()
+    {
+        return Constants::NOT_INITIATED;
+    }
+
     /**
      * Returns document validation status for a validation entity
      *
@@ -189,7 +202,9 @@ abstract class BaseStatusUpdater implements StatusUpdater
      */
     public function getDocumentValidationStatus(Validation $validation): ?string
     {
-        if ($validation->getValidationStatus() === Constants::SUCCESS)
+        $ruleExecutionResult = $this->ruleResultVerifier->verifyAndReturnRuleResult($this->merchant, $validation);
+
+        if ($ruleExecutionResult[NCConstants::IS_ARTEFACT_VALIDATED] === true)
         {
             return $this->getVerifiedStatus();
         }

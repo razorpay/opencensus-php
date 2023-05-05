@@ -32,6 +32,8 @@ class Constants
 
     const IS_SIGNATORY_NAME_MATCHED         = 'isSignatoryNameMatched';
     const IS_COMPANY_NAME_MATCHED           = 'isCompanyNameMatched';
+    const IS_SIGNATORY_VALIDATED            = 'is_signatory_validated';
+    const IS_ARTEFACT_VALIDATED             = 'is_artefact_validated';
     const ADDITIONAL_DETAILS                = 'additional_Details';
     const RELATED_FIELDS                    = 'related_fields';
     const CAN_RF_EXIST_INDEPENDENTLY        = 'can_rf_exist_independently';

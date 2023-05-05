@@ -3615,6 +3615,182 @@ return [
         ],
     ],
 
+    'testCINSignatorySuccessExperimentLive' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+               'company_cin'=>'U67190TN2014PTC096971'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'company_cin'=>'U67190TN2014PTC096971',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCINSignatoryFailureExperimentLiveAsync' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+               'company_cin'=>'U67190TN2014PTC096972'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'company_cin'=>'U67190TN2014PTC096972',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCINSignatorySuccessExperimentLiveAsync' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+               'company_cin'=>'U67190TN2014PTC096971'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'company_cin'=>'U67190TN2014PTC096971',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCINSignatorySuccessExperimentNotLive' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+               'company_cin'=>'U67190TN2014PTC096971'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'company_cin'=>'U67190TN2014PTC096971',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCINSignatoryFailureExperimentLive' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+               'company_cin'=>'U67190TN2014PTC096972'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'company_cin'=>'U67190TN2014PTC096972',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testLLPINSignatorySuccessExperimentLive' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+               'company_cin'=>'AAA-0001'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'company_cin'=>'AAA-0001',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testLLPINSignatorySuccessExperimentNotLive' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+               'company_cin'=>'AAA-0001'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'company_cin'=>'AAA-0001',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testLLPINSignatoryFailureExperimentLive' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+               'company_cin'=>'AAA-0002'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'company_cin'=>'AAA-0002',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testGSTINSignatorySuccessExperimentLive' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+               'gstin'=>'01AADCB1234M1ZX'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'gstin'=>'01AADCB1234M1ZX',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testGSTINSignatorySuccessExperimentNotLive' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+               'gstin'=>'01AADCB1234M1ZX'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'gstin'=>'01AADCB1234M1ZX',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testGSTINSignatoryFailureExperimentLive' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+               'gstin'=>'03AADCB1234M1ZX'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'gstin'=>'03AADCB1234M1ZX',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testWebsiteNotLiveSplitzPilot' => [
         'request'  => [
             'method'  => 'POST',
