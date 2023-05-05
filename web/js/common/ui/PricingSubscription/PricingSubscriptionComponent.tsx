@@ -261,7 +261,7 @@ const PricingSubscriptionComponent = ({
     setChecked(e.target.checked);
     toggleAnnualPlan();
   };
-  const handlePaymentSuccess = (response) => {
+  const handlePaymentSuccess = (response, plans) => {
     closeModal();
     showNotificationToast({
       type: 'success',
@@ -271,28 +271,34 @@ const PricingSubscriptionComponent = ({
     trackInstrumentation('paymentSuccess', {
       value: 'success',
       payment_id: response?.razorpay_payment_id,
-      plan_Activated: togglePlan,
+      toggle_switch: togglePlan,
+      plan_id: plans.id,
       event_name: 'merchant_dashboard.subscription_checkout.success',
     });
   };
-  const handlePaymentFailure = (response) => {
+  const handlePaymentFailure = (response, plans) => {
     trackInstrumentation('', {
-      value: 'Failure',
+      value: 'failure',
       payment_id: response.error.metadata?.payment_id,
       response_code: response.error?.code,
-      plan_Activated: togglePlan,
+      toggle_switch: togglePlan,
+      plan_id: plans.id,
       event_name: 'merchant_dashboard.subscription_checkout.failure',
     });
   };
-  const handleCheckoutInitiation = () => {
+  const handleCheckoutInitiation = (plans) => {
     trackInstrumentation('', {
       value: 'success',
+      toggle_switch: togglePlan,
+      plan_id: plans.id,
       event_name: 'merchant_dashboard.checkout_modal.initiated',
     });
   };
-  const handleCheckoutError = () => {
+  const handleCheckoutError = (plans) => {
     trackInstrumentation('', {
       value: 'failure',
+      toggle_switch: togglePlan,
+      plan_id: plans.id,
       event_name: 'merchant_dashboard.checkout_modal.initiated',
     });
     throw new Error('Something went wrong . Please try again');
@@ -330,18 +336,18 @@ const PricingSubscriptionComponent = ({
             image: rzpLogo,
             // eslint-disable-next-line func-names
             handler: function (response) {
-              handlePaymentSuccess(response);
+              handlePaymentSuccess(response, plans);
             },
           };
           const razorpayCheckout = new window.Razorpay(options);
           razorpayCheckout.open();
           // eslint-disable-next-line func-names
           razorpayCheckout.on('payment.failed', function (response) {
-            handlePaymentFailure(response);
+            handlePaymentFailure(response, plans);
           });
-          handleCheckoutInitiation();
+          handleCheckoutInitiation(plans);
         } else {
-          handleCheckoutError();
+          handleCheckoutError(plans);
         }
       } catch (e) {
         showNotificationToast({
