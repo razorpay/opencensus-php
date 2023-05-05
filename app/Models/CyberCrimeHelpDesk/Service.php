@@ -26,7 +26,9 @@ use RZP\Models\Workflow\Action\Core as WorkFlowActionCore;
 use RZP\Models\Payment\Fraud\Entity as PaymentFraudEntity;
 use RZP\Models\Payment\Fraud\Service as PaymentFraudService;
 use RZP\Models\Payment\Fraud\Constants as PaymentFraudConstants;
+use RZP\Models\Merchant\FreshdeskTicket\Constants as FdConstants;
 use RZP\Models\Merchant\FreshdeskTicket\Service as FreshDeskService;
+use RZP\Models\Merchant\Fraud\BulkNotification\Freshdesk as FreshdeskNotification;
 
 
 class Service extends Base\Service
@@ -453,40 +455,13 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        $mailSubject = sprintf(Constants::NOTIFY_MERCHANT_ABOUT_FRAUD_MAIL_SUBJECT, $merchant->getName(), $merchant->getId(), date('Y-m-d'));
-
-        $mailBody = \View::make(Constants::NOTIFY_MERCHANT_ABOUT_FRAUD_MAIL_TEMPLATE, [
-            Constants::MERCHANT_NAME     => $merchant->getName(),
-            Constants::MERCHANT_ID       => $merchant->getId(),
-            Constants::CURRENT_DATE_TIME => epoch_format(time() + Constants::IST_DIFF_IN_SEC, 'Y-m-d h:i:sa'),
-            Constants::RESPOND_BY        => date('d F Y', time() + Constants::MERCHANT_RESPOND_BY_IN_SECONDS + Constants::IST_DIFF_IN_SEC),
-            Constants::DATA              => $data,
-            Constants::IST_DIFF          => Constants::IST_DIFF_IN_SEC
-        ])->render();
-
-        $fdOutboundEmailRequest = [
-            'subject'         => $mailSubject,
-            'description'     => $mailBody,
-            'status'          => 6,
-            'type'            => 'Service request',
-            'priority'        => 3,
-            'email'           => $merchant->getEmail(),
-            'tags'            => ['bulk_fraud_email'],
-            'group_id'        => (int) $this->app['config']->get('applications.freshdesk')['group_ids']['rzpind']['byers_risk'],
-            'email_config_id' => (int) $this->app['config']->get('applications.freshdesk')['email_config_ids']['cybercrime_helpdesk']['notify_merchant'],
-            'custom_fields'   => [
-                'cf_ticket_queue' => 'Merchant',
-                'cf_merchant_id'  => $merchant->getId(),
-                'cf_category'     => 'Risk Report_Merchant',
-                'cf_subcategory'  => 'Fraud alerts',
-                'cf_product'      => 'Payment Gateway',
-            ],
-        ];
+        $fdOutboundEmailRequest = $this->getOutboundEmailBody($merchant, $data);
 
         $response = $this->app['freshdesk_client']->sendOutboundEmail($fdOutboundEmailRequest);
 
-        $response['body']                      = null;
-        $fdOutboundEmailRequest['description'] = null;
+        $response['body']                               = null;
+        $fdOutboundEmailRequest['description']          = null;
+        $fdOutboundEmailRequest[FdConstants::CC_EMAILS] = null;
 
         $this->app['trace']->info(
             TraceCode::CYBER_HELPDESK_MERCHANT_NOTIFICATION_SENT,
@@ -598,4 +573,54 @@ class Service extends Base\Service
             $id = substr($id, $ix + 1);
         }
     }
+
+    /**
+     * @param Base\Entity $merchant
+     * @param             $data
+     *
+     * @return array
+     */
+    protected function getOutboundEmailBody(Base\Entity $merchant, $data): array
+    {
+        $emailIds = (new FreshdeskNotification(null, null))->getEmailIdsWithSalesPOC($merchant);
+
+        $primaryEmailId = array_shift($emailIds);
+
+        $mailSubject = sprintf(Constants::NOTIFY_MERCHANT_ABOUT_FRAUD_MAIL_SUBJECT, $merchant->getName(), $merchant->getId(), date('Y-m-d'));
+
+        $mailBody = \View::make(Constants::NOTIFY_MERCHANT_ABOUT_FRAUD_MAIL_TEMPLATE, [
+            Constants::MERCHANT_NAME     => $merchant->getName(),
+            Constants::MERCHANT_ID       => $merchant->getId(),
+            Constants::CURRENT_DATE_TIME => epoch_format(time() + Constants::IST_DIFF_IN_SEC, 'Y-m-d h:i:sa'),
+            Constants::RESPOND_BY        => date('d F Y', time() + Constants::MERCHANT_RESPOND_BY_IN_SECONDS + Constants::IST_DIFF_IN_SEC),
+            Constants::DATA              => $data,
+            Constants::IST_DIFF          => Constants::IST_DIFF_IN_SEC
+        ])->render();
+
+        $fdOutboundEmailRequest = [
+            FdConstants::SUBJECT       => $mailSubject,
+            FdConstants::DESCRIPTION   => $mailBody,
+            FdConstants::STATUS        => 6,
+            FdConstants::TYPE          => 'Service request',
+            FdConstants::PRIORITY      => 3,
+            FdConstants::EMAIL         => $primaryEmailId,
+            FdConstants::TICKET_TAGS   => ['bulk_fraud_email'],
+            FdConstants::GROUP_ID      => (int) $this->app['config']->get('applications.freshdesk')['group_ids']['rzpind']['byers_risk'],
+            'email_config_id'          => (int) $this->app['config']->get('applications.freshdesk')['email_config_ids']['cybercrime_helpdesk']['notify_merchant'],
+            FdConstants::CUSTOM_FIELDS => [
+                FdConstants::CF_TICKET_QUEUE => 'Merchant',
+                FdConstants::CF_MERCHANT_ID  => $merchant->getId(),
+                FdConstants::CF_CATEGORY     => 'Risk Report_Merchant',
+                FdConstants::CF_SUBCATEGORY  => 'Fraud alerts',
+                FdConstants::CF_PRODUCT      => 'Payment Gateway',
+            ],
+        ];
+
+        if (empty($emailIds) === false)
+        {
+            $fdOutboundEmailRequest[FdConstants::CC_EMAILS] = $emailIds;
+        }
+
+        return  $fdOutboundEmailRequest;
+}
 }

@@ -298,7 +298,7 @@ class Freshdesk extends Base\Core
         return $fdOutboundEmailRequest;
     }
 
-    private function getEmailIdsWithSalesPOC($merchant): array
+    public function getEmailIdsWithSalesPOC($merchant): array
     {
         $emailIds = $this->getEmailIds($merchant);
 
