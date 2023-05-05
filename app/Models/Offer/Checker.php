@@ -500,12 +500,6 @@ class Checker extends Base\Core
     {
         $result = $this->offer->isPeriodActive();
 
-        $this->traceCheckResult(
-            TraceCode::OFFER_PERIOD_CHECK,
-            [
-                'result' => $result,
-            ]);
-
         if($result === false)
         {
             $this->offer->setErrorMessage(PublicErrorDescription::OFFER_PERIOD_NOT_ACTIVE);

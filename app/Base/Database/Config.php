@@ -304,10 +304,11 @@ class Config
 
     protected function traceProxysqlConnection($type, $proxysqlConfig, $user) {
         //TODO: control logging from env variable as we might want to disable logging due to high volume.
-        $this->app['trace']->info(TraceCode::PROXY_SQL_CONNECTION, [
-            'type'              => $type,
-            'proxy_sql_config'  => $proxysqlConfig,
-            'user'              => $user,
-        ]);
+        // commented out for now
+        // $this->app['trace']->info(TraceCode::PROXY_SQL_CONNECTION, [
+        //     'type'              => $type,
+        //     'proxy_sql_config'  => $proxysqlConfig,
+        //     'user'              => $user,
+        // ]);
     }
 }

@@ -149,12 +149,7 @@ class Service extends Base
             $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_TOTAL, $dimension);
             $dcsFeatures = array_keys(DcsConstants::dcsReadEnabledFeaturesByEntityType($entityType, true,
                 $this->app->runningUnitTests(), $this->app->isEnvironmentProduction()));
-            $this->trace->info(TraceCode::DCS_FETCH_ENABLED_FEATURES,[
-                "dimension" => $dimension,
-                "entity_type" => $entityType,
-                "dcs_features" => $dcsFeatures,
-                "entity_id" => $entityId,
-            ]);
+
             if( sizeof($dcsFeatures) === 0)
             {
                 return $res;

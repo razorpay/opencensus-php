@@ -25,18 +25,7 @@ class Cache implements CacheInterface
      */
     public function get($key)
     {
-        $value = $this->cache->get($key);
-
-        $message = [
-            'action' => 'cache_get',
-            'key'    => $key,
-           ];
-
-        $this->trace->info(
-            TraceCode::REDIS_KEY_FETCH, $message
-        );
-
-        return $value;
+        return $this->cache->get($key);
     }
 
     /**

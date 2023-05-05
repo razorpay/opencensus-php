@@ -54,15 +54,5 @@ class Hooks
 
     public function traceCurlInfo($headers, $info)
     {
-        $this->app['trace']->info(TraceCode::TRACE_REQUEST_METRIC,[
-            'url'                => $this->url,
-            'total_time'         => $info['total_time'],
-            'connect_time'       => $info['connect_time'],
-            'redirect_time'      => $info['redirect_time'],
-            'namelookup_time'    => $info['namelookup_time'],
-            'pretransfer_time'   => $info['pretransfer_time'],
-            'starttransfer_time' => $info['starttransfer_time'],
-            'primary_ip'         => $info['primary_ip'] ?? 'nil',
-        ]);
     }
 }

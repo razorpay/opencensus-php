@@ -101,9 +101,6 @@ class Authenticate
             return $this->authenticateUsingPassport();
         });
 
-        $this->app['trace']->info(TraceCode::PASSPORT_AUTHENTICATION_RESULT,
-                                  ['successfulExecution' => $successfulExecution, 'error' => $error]);
-
         if ($successfulExecution === true)
         {
             $ret = $error;

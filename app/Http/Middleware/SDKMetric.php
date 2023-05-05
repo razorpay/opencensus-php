@@ -63,10 +63,6 @@ class SDKMetric
                 $this->trace->count(self::SDK_USAGE, [
                     self::USER_AGENT => $userAgent
                 ]);
-                $this->trace->info(TraceCode::SDK_USAGE, [
-                    self::USER_AGENT => $userAgent,
-                    self::MERCHANT_ID => $merchantID
-                ]);
             }
         }
         catch (\Exception $e)

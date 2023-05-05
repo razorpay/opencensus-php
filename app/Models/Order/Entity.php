@@ -743,8 +743,6 @@ class Entity extends Base\PublicEntity
             return $apiBankAccount;
         }
 
-        $app['trace']->info(TraceCode::ORDER_API_BANK_ACCOUNT_EMPTY);
-
         try
         {
             $pgRouterBankAccountArray = $this->getAttribute('bank_account_data');
@@ -762,7 +760,6 @@ class Entity extends Base\PublicEntity
             }
             else
             {
-                $app['trace']->info(TraceCode::PG_ROUTER_BANK_ACCOUNT_EMPTY_ERROR);
 
                 return $apiBankAccount;
             }

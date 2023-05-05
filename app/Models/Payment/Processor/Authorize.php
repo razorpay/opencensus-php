@@ -458,23 +458,9 @@ trait Authorize
             }
         }
 
-        $this->trace->info(
-            TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
-            [
-                'line'      => "Models/Payment/Processor/Authorize.php:238"
-            ]
-        );
-
         if ($this->canAuthorizeViaCps($payment) === true)
         {
             $request =  $this->authorizeViaCps($payment, $input, $gatewayInput);
-
-            $this->trace->info(
-                TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
-                [
-                    'line'      => "Models/Payment/Processor/Authorize.php:251"
-                ]
-            );
 
         }
         else
@@ -482,13 +468,6 @@ trait Authorize
             $request = $this->authorizeAcrossTerminals($payment, $input, $gatewayInput);
 
             $request = $this->callAuthenticationGatewayBasedOnApplicationIfApplicable($payment, $input, $request, $gatewayInput);
-
-            $this->trace->info(
-                TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
-                [
-                    'line'      => "Models/Payment/Processor/Authorize.php:263"
-                ]
-            );
         }
 
         if (($request !== null) and
@@ -3110,22 +3089,7 @@ trait Authorize
 
         $this->preProcessHdfcVasSurcharge($payment);
 
-        $this->trace->info(
-            TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
-            [
-                'line'      => "Models/Payment/Processor/Authorize.php:1917"
-            ]
-        );
-
         $this->repo->saveOrFail($payment);
-
-        $this->trace->info(
-            TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
-            [
-                'line'      => "Models/Payment/Processor/Authorize.php:2888",
-                'flow'      => "runPostGatewaySelectionPreProcessing"
-            ]
-        );
 
         if (empty($payment->getGooglePayMethods()) === true)
         {
@@ -3199,14 +3163,6 @@ trait Authorize
         // subscriptions/terminals.
         //
         $this->setGatewayTokenInInput($payment, $gatewayInput);
-
-        $this->trace->info(
-            TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
-            [
-                'line'      => "Models/Payment/Processor/Authorize.php:2888",
-                'flow'      => "runPostGatewaySelectionPreProcessing"
-            ]
-        );
     }
 
     /**
@@ -11088,25 +11044,10 @@ trait Authorize
                 return null;
             }
 
-            $this->trace->info(
-                TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
-                [
-                    'line'      => "Models/Payment/Processor/Authorize.php:7925",
-                    'flow'      => "validateAndReturnRedirectResponseIfApplicable"
-                ]);
-
-
             if ($payment->hasTerminal() === true)
             {
                 $payment->disassociateTerminal();
             }
-
-            $this->trace->info(
-                TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
-                [
-                    'line'      => "Models/Payment/Processor/Authorize.php:7927",
-                    'flow'      => "validateAndReturnRedirectResponseIfApplicable"
-                ]);
 
             $payload = [
                 'merchant_id' => $payment->getMerchantId(),
@@ -11150,13 +11091,6 @@ trait Authorize
                 $redirectUrl = $this->route->getUrl('payment_redirect_to_authenticate_get', ['id' => $trackId]);
             }
 
-            $this->trace->info(
-                TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
-                [
-                    'line'      => "Models/Payment/Processor/Authorize.php:7958",
-                    'flow'      => "validateAndReturnRedirectResponseIfApplicable"
-                ]);
-
             $data['payment_id'] = $payment->getPublicId();
             $data['redirect'] = true;
             $data['type'] = 'first';
@@ -11197,25 +11131,7 @@ trait Authorize
 
             $data['version'] = 1;
 
-            $this->trace->info(
-                TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
-                [
-                    'line'      => "Models/Payment/Processor/Authorize.php:7927",
-                    'flow'      => "validateAndReturnRedirectResponseIfApplicable",
-                    'extra'     => "payment_save"
-                ]);
-
-
             $this->repo->saveOrFail($payment);
-
-            $this->trace->info(
-                TraceCode::TRACE_FOR_INCREASED_RESPONSE_TIMES,
-                [
-                    'line'      => "Models/Payment/Processor/Authorize.php:7927",
-                    'flow'      => "validateAndReturnRedirectResponseIfApplicable",
-                    'extra'     => "payment_save_complete"
-                ]);
-
 
             $payload['track_id'] = $trackId;
             $payload['request']  = $data;

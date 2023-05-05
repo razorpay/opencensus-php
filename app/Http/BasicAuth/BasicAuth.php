@@ -979,12 +979,6 @@ class BasicAuth
             return $res;
         }
 
-        $this->trace->info(
-            TraceCode::AUTH_TYPE_USED, [
-            self::AUTH_TYPE => self::KEY_AUTH,
-            self::ROUTE     => app('request.ctx')->getRoute()
-        ]);
-
         // Else continues with verifying key existence etc.. and sets all the instance variables accordingly
         $response = $this->authCreds->verifyKeyExistenceAndNotExpired();
 
@@ -1015,11 +1009,6 @@ class BasicAuth
             return $this->publicAuth();
         }
 
-        $this->trace->info(
-            TraceCode::AUTH_TYPE_USED, [
-            self::AUTH_TYPE => self::DIRECT_AUTH,
-            self::ROUTE     => app('request.ctx')->getRoute()
-        ]);
         $this->authCreds = new KeyAuthCreds($this->app);
 
         $this->setType(Type::DIRECT_AUTH);
@@ -1432,11 +1421,6 @@ class BasicAuth
         {
             $merchant = null;
         }
-
-        $this->trace->info(
-            TraceCode::MERCHANT_FETCH,
-            ['merchant' => $merchant]
-        );
 
         $this->authCreds->setMerchant($merchant);
 

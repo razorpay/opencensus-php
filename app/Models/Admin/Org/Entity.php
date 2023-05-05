@@ -483,13 +483,6 @@ class Entity extends Base\Entity
                            ->pluck(Feature\Entity::NAME)
                            ->toArray();
 
-        app('trace')->info(
-            TraceCode::API_AND_DCS_FEATURES,
-            [
-                'api_response'      => $apiResponse,
-                'dcs_response'      => $dcsResponse,
-            ]);
-
         $this->loadedFeatures = $this->mergeUniqueArrays($apiResponse, $dcsResponse);
 
         return $this->loadedFeatures;
@@ -506,11 +499,6 @@ class Entity extends Base\Entity
             }
         }
 
-        app('trace')->info(
-            TraceCode::MERGED_ARRAYS_WITH_UNIQUE_ELEMENTS,
-            [
-                'merged_uniqe_array' => $arr1,
-            ]);
         return $arr1;
     }
 
