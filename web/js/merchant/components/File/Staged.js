@@ -126,11 +126,19 @@ export default class Staged extends React.Component {
           onCloseClick &&
           currentStatus !== 'process' &&
           (removeFileButtonLabel ? (
-            <span class="btn-link Dropzone-close" onClick={onCloseClick}>
+            <span
+              class="btn-link Dropzone-close"
+              data-testid="btn-dropzone-close"
+              onClick={onCloseClick}
+            >
               {removeFileButtonLabel}
             </span>
           ) : (
-            <span class="icon i-close Dropzone-close" onClick={onCloseClick} />
+            <span
+              class="icon i-close Dropzone-close"
+              data-testid="btn-dropzone-close"
+              onClick={onCloseClick}
+            />
           ))}
         {hideLoader ? null : (
           <div class="Loader">

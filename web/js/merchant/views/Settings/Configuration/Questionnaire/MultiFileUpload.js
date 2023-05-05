@@ -140,6 +140,11 @@ const DismissableInput = ({
     // Delete file from server
     onFileRemove();
   };
+
+  const handleRemoveFileType = () => {
+    removeFileType(name);
+  };
+
   return (
     <div class="remove-wrapper">
       <Input.File
@@ -154,7 +159,11 @@ const DismissableInput = ({
         {...rest}
       />
       {!required && showRemove && (
-        <span class="remove icon i-close" onClick={() => removeFileType(name)} />
+        <span
+          class="remove icon i-close"
+          data-testid="btn-file-remove"
+          onClick={handleRemoveFileType}
+        />
       )}
     </div>
   );
