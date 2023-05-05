@@ -15,12 +15,15 @@ class Constants
 
     const NetbankingConfigurations = 'netbanking_configurations';
 
+    const DirectAccountsPayoutModeConfig = 'direct_accounts_payout_mode_config';
+
     /**
      * Stores the mapping of the configurations to their corresponding dcs keys
      */
     public static $configurationsToDCSKeyMapping = [
         self::EmandateMerchantConfigurations => "rzp/pg/merchant/emandate/DebitConfiguration",
-        self::NetbankingConfigurations       => "rzp/pg/merchant/netbanking/banking_program/NetBankingConfiguration",                                    
+        self::NetbankingConfigurations       => "rzp/pg/merchant/netbanking/banking_program/NetBankingConfiguration",
+        self::DirectAccountsPayoutModeConfig => "rzp/x/merchant/payouts/direct_accounts/PayoutModeConfig",
     ];
 
 }

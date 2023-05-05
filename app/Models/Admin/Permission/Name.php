@@ -481,6 +481,9 @@ class Name
     //Permission to assign a fee recovery schedule to a merchant
     const ASSIGN_FEE_RECOVERY_SCHEDULE        = 'assign_fee_recovery_schedule';
 
+    // Permission to manage payout mode config
+    const MANAGE_PAYOUT_MODE_CONFIG           = 'manage_payout_mode_config';
+
     // Perform write operations around stork integration e.g. webhook migrations etc
     const STORK_WRITE_OPERATION               = 'stork_write_operation';
 

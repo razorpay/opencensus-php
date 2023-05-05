@@ -1916,7 +1916,11 @@ return [
             Permission::SET_MERCHANT_SLA_FOR_ON_HOLD_PAYOUTS => [
                 'description' => 'Set merchant SLA for on-hold payouts',
                 'assignable' => true
-            ]
+            ],
+            Permission::MANAGE_PAYOUT_MODE_CONFIG => [
+                'description' => 'Manage payout mode config for direct account payouts',
+                'assignable' => true
+            ],
         ],
 
         PermissionCategory::REDIS_CONFIG_PERIMSSIONS => [

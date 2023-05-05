@@ -1866,6 +1866,11 @@ class Route
         'payouts_bulk_amount_type'                 => ['post',     'payouts/bulk/amount_type',                       'PayoutController@postBulkPayoutsAmountType'                        ],
         'payouts_bulk_amount_type_update'          => ['patch',    'payouts/bulk/amount_type',                       'PayoutController@updateBulkPayoutsAmountType'                       ],
 
+        // Routes for merchant's direct account payout mode config
+        'fetch_merchant_da_payout_mode_config'     => ['get',       'payouts/da_payout_mode_config',                 'PayoutsConfigurationsController@fetchDirectAccountPayoutModeConfig'                        ],
+        'create_merchant_da_payout_mode_config'    => ['post',      'payouts/da_payout_mode_config',                 'PayoutsConfigurationsController@createDirectAccountPayoutModeConfig'                       ],
+        'edit_merchant_da_payout_mode_config'      => ['patch',     'payouts/da_payout_mode_config',                 'PayoutsConfigurationsController@editDirectAccountPayoutModeConfig'                         ],
+
         // Payout Outbox
         'undo_payout_creation'                      => ['post',     'payouts/{id}/undo',                            'PayoutOutboxController@undoPayout'                                     ],
         'resume_payout_creation'                    => ['post',     'payouts/{id}/resume',                          'PayoutOutboxController@resumePayout'                                  ],
@@ -8183,6 +8188,10 @@ class Route
         'create_netbanking_configs',
         'edit_netbanking_configs',
 
+        'fetch_merchant_da_payout_mode_config',
+        'create_merchant_da_payout_mode_config',
+        'edit_merchant_da_payout_mode_config',
+
          //magic checkout
          '1cc_shopify_fetch_meta_fields',
          '1cc_shopify_update_meta_fields',
@@ -8633,6 +8642,10 @@ class Route
         'fetch_netbanking_configs'                 => Permission::CREATE_NETBANKING_REFUND,
         'create_netbanking_configs'                => Permission::CREATE_NETBANKING_REFUND,
         'edit_netbanking_configs'                  => Permission::CREATE_NETBANKING_REFUND,
+
+        'fetch_merchant_da_payout_mode_config'     => Permission::MANAGE_PAYOUT_MODE_CONFIG,
+        'create_merchant_da_payout_mode_config'    => Permission::MANAGE_PAYOUT_MODE_CONFIG,
+        'edit_merchant_da_payout_mode_config'      => Permission::MANAGE_PAYOUT_MODE_CONFIG,
 
         'sub_virtual_account_create'               => Permission::ADMIN_SUB_VIRTUAL_ACCOUNT,
         'sub_virtual_account_list_admin'           => Permission::ADMIN_SUB_VIRTUAL_ACCOUNT,
@@ -13243,6 +13256,10 @@ class Route
             'fetch_netbanking_configs',
             'create_netbanking_configs',
             'edit_netbanking_configs',
+
+            'fetch_merchant_da_payout_mode_config',
+            'create_merchant_da_payout_mode_config',
+            'edit_merchant_da_payout_mode_config',
 
             'nca_store_create',
             'nca_store_list',
