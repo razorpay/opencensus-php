@@ -10,7 +10,7 @@ describe('RL - Token Details Form', () => {
   };
 
   test('Should render all the card token fields', () => {
-    renderApp({ isCardPayment: true, mandateMethod: 'card', amount: 20 });
+    renderApp({ isCardPayment: true, mandateMethod: 'card', amount: 20, currency: 'INR' });
     expect(
       screen.getByRole('checkbox', { name: /same as expiry of customer’s card/i }),
     ).toBeInTheDocument();
@@ -30,8 +30,29 @@ describe('RL - Token Details Form', () => {
     });
   });
 
+  test('Should render all the card token fields for Malaysia', () => {
+    renderApp({ isCardPayment: true, mandateMethod: 'card', amount: 20, currency: 'MYR' });
+    expect(
+      screen.getByRole('checkbox', { name: /same as expiry of customer’s card/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/expiry \(dd-mm-yyyy\)/i)).toBeInTheDocument();
+
+    [
+      'expiry of token',
+      'maximum auto-debit amount',
+      '(for domestic cards only)',
+      'you can charge the customer upto RM15000 for each recurring payment. payments above RM15000 will ask for otp verification from the customer.',
+    ].forEach((fieldLabel) => {
+      expect(screen.getByText(new RegExp(fieldLabel, 'i'))).toBeInTheDocument();
+    });
+
+    ['max 15000'].forEach((fieldLabel) => {
+      expect(screen.getByPlaceholderText(new RegExp(fieldLabel, 'i'))).toBeInTheDocument();
+    });
+  });
+
   test('Should render all the upi token fields', () => {
-    renderApp({ isUPIPayment: true, mandateMethod: 'upi', amount: 20 });
+    renderApp({ isUPIPayment: true, mandateMethod: 'upi', amount: 20, currency: 'INR' });
 
     expect(screen.getAllByText(/expiry of token/i)[0]).toBeInTheDocument();
     expect(
@@ -122,9 +143,23 @@ describe('RL - Token Details Form', () => {
       mandateMethod: 'card',
       amount: 201,
       mandateMaxAmount: 1000001,
+      currency: 'INR',
     });
     expect(
       screen.getByText(`Please enter an amount below ₹${CARD_TOKEN_MAX_AMOUNT}`),
+    ).toBeInTheDocument();
+  });
+
+  test('Should render card amount lesser than max allowed amount for Malaysia', () => {
+    renderApp({
+      isCardPayment: true,
+      mandateMethod: 'card',
+      amount: 201,
+      mandateMaxAmount: 1000001,
+      currency: 'MYR',
+    });
+    expect(
+      screen.getByText(`Please enter an amount below RM${CARD_TOKEN_MAX_AMOUNT}`),
     ).toBeInTheDocument();
   });
 });

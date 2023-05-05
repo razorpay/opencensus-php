@@ -68,4 +68,5 @@ export const HIDDEN_INTERNATIONAL_FEATURES_TAGS = {
   PaymentBtnReport: 'i18_hide_payment_btn_report',
   QRCodeReportWithPayID: 'i18_hide_qr_code_report_with_pay_id',
   RazorpayMe: 'i18_hide_razorpay_me',
+  SupportedBankLinks: 'i18_hide_supported_bank_links',
 };

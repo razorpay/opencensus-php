@@ -1,6 +1,6 @@
 import moment from 'moment';
 import { UPI_AVL_LIMIT } from 'merchant/helpers/data';
-import { getFormattedAmount, rupeesToPaise } from 'common/utils/rzp-utils';
+import { getFormattedAmount, rupeesToPaise, currencySymbols } from 'common/utils/rzp-utils';
 import Input from 'common/new-ui/Input';
 
 import { AmountTooltip } from 'common/ui/Amount';
@@ -49,9 +49,9 @@ const maxAmountValidator = (methodAmount, maxAmount) => (value) => {
   return null;
 };
 
-const cardMaxAmountValidator = (maxAllowedAmount) => (value) => {
+const cardMaxAmountValidator = (maxAllowedAmount, currencySym) => (value) => {
   if (value > maxAllowedAmount) {
-    return `Please enter an amount below ₹${maxAllowedAmount}`;
+    return `Please enter an amount below ${currencySym}${maxAllowedAmount}`;
   }
   return null;
 };
@@ -71,11 +71,13 @@ export default function TokenDetailsForm({
   firstPaymentAmount,
   mandateExpireAt,
   onBlurElement,
+  currency,
 }) {
   const maxAmountProps = {
     validator: maxAmountValidator(amount, MAX_TOKEN_AMOUNT),
     description: `Max Amount for Mandate (Up to ${getFormattedAmount(MAX_TOKEN_AMOUNT)})`,
   };
+  const currencySym = currencySymbols[currency];
 
   if (isUPIPayment) {
     maxAmountProps.placeholder = `Max ${getFormattedAmount(UPI_AVL_LIMIT)}`;
@@ -91,16 +93,16 @@ export default function TokenDetailsForm({
     )})`;
   }
   if (isCardPayment) {
-    maxAmountProps.validator = cardMaxAmountValidator(CARD_TOKEN_MAX_AMOUNT);
+    maxAmountProps.validator = cardMaxAmountValidator(CARD_TOKEN_MAX_AMOUNT, currencySym);
     let maxAmount = CARD_AFA_MAX_LIMIT;
     if (mandateMaxAmount <= CARD_AFA_MAX_LIMIT) {
       maxAmount = mandateMaxAmount;
     }
     maxAmountProps.description = () => (
       <>
-        You can <strong>automatically</strong> charge the customer upto ₹{maxAmount} for each
-        recurring payment. Payments above ₹{maxAmount} will ask for OTP verification from the
-        customer.
+        You can <strong>automatically</strong> charge the customer upto {currencySym}
+        {maxAmount} for each recurring payment. Payments above {currencySym}
+        {maxAmount} will ask for OTP verification from the customer.
       </>
     );
   }
@@ -155,7 +157,7 @@ export default function TokenDetailsForm({
             label="Maximum Billing Amount"
             data-name="token_max_amount"
             onBlur={onBlurElement}
-            addonBefore={<AmountTooltip currency="INR" parentQuerySelector=".Modal" />}
+            addonBefore={<AmountTooltip currency={currency} parentQuerySelector=".Modal" />}
             size="half_big"
             validator={checkIfAmount}
             class="Input--Amount"
@@ -176,7 +178,7 @@ export default function TokenDetailsForm({
               value={firstPaymentAmount}
               // TODO: validators need to re-run if the sibling element(here mandateMaxAmount) is changed
               validator={firstPaymentAmountValidator(mandateMaxAmount)}
-              addonBefore={<AmountTooltip currency="INR" parentQuerySelector=".Modal" />}
+              addonBefore={<AmountTooltip currency={currency} parentQuerySelector=".Modal" />}
             />
           )}
         </>
@@ -232,7 +234,7 @@ export default function TokenDetailsForm({
           required={isUPIPayment}
           value={mandateMaxAmount}
           validator={checkIfAmount}
-          addonBefore={<AmountTooltip currency="INR" parentQuerySelector=".Modal" />}
+          addonBefore={<AmountTooltip currency={currency} parentQuerySelector=".Modal" />}
           {...maxAmountProps}
         />
       )}

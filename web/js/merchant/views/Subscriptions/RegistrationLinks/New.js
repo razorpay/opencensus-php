@@ -628,6 +628,8 @@ export default class NewRegistrationLink extends React.Component {
 
   renderForm() {
     const { formFields } = this.state;
+    const { user } = this.props;
+    const currency = user.merchant.currency;
 
     switch (this.state.currentTab) {
       case 0: {
@@ -682,6 +684,7 @@ export default class NewRegistrationLink extends React.Component {
             handleTPV={this.handleTPV}
             notes={this.state.formFields.notes}
             isEsignEnabled={this.props.user.isEsignEnabled}
+            currency={currency}
           />
         );
       }
@@ -703,6 +706,7 @@ export default class NewRegistrationLink extends React.Component {
             firstPaymentAmount={formFields.firstPaymentAmount}
             handleDateChange={this.handleDateChange}
             onBlurElement={this.onBlurElement}
+            currency={currency}
           />
         );
       }

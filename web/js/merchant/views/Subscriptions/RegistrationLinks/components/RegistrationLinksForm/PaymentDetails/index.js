@@ -9,6 +9,8 @@ import NACH from './NACH';
 import Emandate from './Emandate';
 import UPI from './UPI';
 import { checkIfAmount, getPaymentMethodOptions, DOCUMENTATION_LINKS } from './utils';
+import ShowWhen from 'merchant/components/ShowWhen';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 export default function PaymentDetailsForm(props) {
   const {
@@ -42,6 +44,7 @@ export default function PaymentDetailsForm(props) {
     isTPVEnabledMerchant,
     trackReceivedNACHForm,
     trackNACHToolTipHover,
+    currency,
   } = props;
   let recurringMethods = avlblMethods;
   // for TPV enabled Merchant, only emandate and UPI should be enabled
@@ -79,6 +82,7 @@ export default function PaymentDetailsForm(props) {
           onBlurElement={onBlurElement}
           placeholder="Minimum 1"
           amountValidator={amountValidator}
+          currency={currency}
         />
       )}
 
@@ -164,7 +168,13 @@ function PaymentMethod({
             selected={mandateMethod}
             onChange={handlePaymentMethod}
           />
-          {getDocLinkForSelectedPayment(mandateMethod)}
+          <ShowWhen
+            additionalCondition={(_user) =>
+              !_user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SupportedBankLinks)
+            }
+          >
+            {getDocLinkForSelectedPayment(mandateMethod)}
+          </ShowWhen>
         </div>
       </div>
     );

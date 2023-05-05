@@ -10,7 +10,7 @@ import analytics from 'merchant/views/Subscriptions/analytics';
 import { trackSearchEvent } from 'merchant/views/Subscriptions/utils';
 import { SelfServeActionPages } from 'common/constant/enums';
 
-@connect((state) => ({ ...state.payments }), { fetchAll })
+@connect((state) => ({ ...state.payments, user: state.session.user }), { fetchAll })
 @RTracking(() => window.rzpQ.component('EmandatePayments'))
 export default class RecurringPaymentsListContainer extends ListContainer {
   trackSearch = (event, options) => {
@@ -32,6 +32,7 @@ export default class RecurringPaymentsListContainer extends ListContainer {
   };
 
   render() {
+    const { user } = this.props;
     return (
       <div class="content-wrapper">
         <HeaderAction responsive>
@@ -45,6 +46,7 @@ export default class RecurringPaymentsListContainer extends ListContainer {
           showBatchIdFilter
           onSubmit={this.onSubmit}
           onClearAnalytics={this.onClearAnalytics}
+          user={user}
         />
 
         <PaymentsTable

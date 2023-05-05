@@ -1,7 +1,14 @@
 import Input from 'common/new-ui/Input';
 import { AmountTooltip } from 'common/ui/Amount';
 
-export default function Amount({ amount, onBlurElement, placeholder, amountValidator, ...props }) {
+export default function Amount({
+  amount,
+  onBlurElement,
+  placeholder,
+  amountValidator,
+  currency,
+  ...props
+}) {
   return (
     <Input.Group class="InputGroup--inline" label="Authorisation Amount">
       <div class="Input-content">
@@ -16,7 +23,7 @@ export default function Amount({ amount, onBlurElement, placeholder, amountValid
           class="Input--Amount"
           onBlur={onBlurElement}
           data-name="amount"
-          addonBefore={<AmountTooltip currency="INR" parentQuerySelector=".Modal" />}
+          addonBefore={<AmountTooltip currency={currency} parentQuerySelector=".Modal" />}
           {...props}
         />
       </div>
