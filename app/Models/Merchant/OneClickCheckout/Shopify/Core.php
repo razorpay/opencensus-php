@@ -1644,12 +1644,15 @@ class Core extends Base\Core
         {
             $value = $orderMeta->getValue();
 
-            if (empty($value['cod_intelligence']['risk_tier']) === false)
+            $rtoReasons = [];
+
+            if (empty($value['cod_intelligence']['risk_tier']) === false &&
+                empty($value['cod_intelligence']['manual_control_cod_order']) === false &&
+                $value['cod_intelligence']['manual_control_cod_order'] === true)
             {
                 $body['tags'] = $body['tags'].', RTO Risk - '.$value['cod_intelligence']['risk_tier'];
+                $rtoReasons = $value['cod_intelligence']['rto_reasons'] ?? [];
             }
-
-            $rtoReasons = $value['cod_intelligence']['rto_reasons'] ?? [];
 
             if (empty($rtoReasons) === false)
             {
