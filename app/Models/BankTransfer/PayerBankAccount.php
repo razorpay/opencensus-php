@@ -3,14 +3,14 @@
 namespace RZP\Models\BankTransfer;
 
 use App;
-use Razorpay\IFSC\IFSC;
-
-use RZP\Exception\LogicException;
 use RZP\Models\Base;
-use RZP\Models\VirtualAccount\Provider;
+use RZP\Constants\Mode;
+use Razorpay\IFSC\IFSC;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Models\Bank\BankCodes;
+use RZP\Exception\LogicException;
+use RZP\Models\VirtualAccount\Provider;
 
 class PayerBankAccount extends Base\Core
 {
@@ -105,6 +105,14 @@ class PayerBankAccount extends Base\Core
     public static function getPayerIfsc(Entity $bankTransfer)
     {
         $ifsc = $bankTransfer->getMappedPayerIfsc();
+
+        $app = App::getFacadeRoot();
+
+        //Test Mode will have the dummy IFSC, hence returning the IFSC without validation
+        if ($app['rzp.mode'] === Mode::TEST)
+        {
+            return $ifsc;
+        }
 
         if (($ifsc !== null) and
             (IFSC::validate($ifsc) === false))
