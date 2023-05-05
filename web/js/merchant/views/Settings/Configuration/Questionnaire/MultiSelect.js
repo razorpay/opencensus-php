@@ -69,7 +69,7 @@ const MultiSelect = ({
           }}
           triggerComponent={({ select }) => {
             return (
-              <div class="trigger">
+              <div class="trigger" data-testid="select-items">
                 <p style={{ padding: '10px' }}>
                   {selected.length ? `${selected.length} items selected` : placeholder}
                 </p>
@@ -115,7 +115,7 @@ const MultiSelect = ({
                     ) : additionalField ? (
                       <div>
                         <span>{additionalField}</span>
-                        <span onClick={() => setTakeInput(true)}>
+                        <span data-testid="editAdditionalField" onClick={() => setTakeInput(true)}>
                           <i class="i i-edit" />
                         </span>
                       </div>
