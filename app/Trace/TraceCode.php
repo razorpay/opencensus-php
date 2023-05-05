@@ -874,6 +874,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTLEMENT_MERCHANT_DASHBOARD_FETCH_REQUEST           = 'SETTLEMENT_MERCHANT_DASHBOARD_FETCH_REQUEST';
     const DEBUG_LOGGING                                         = 'DEBUG_LOGGING';
     const PAYMENT_WITH_INCORRECT_TID                            = 'PAYMENT_WITH_INCORRECT_TID';
+    const RRN_BACKFILLING_INPUT                                 = 'RRN_BACKFILLING_INPUT';
+    const RRN_PAYMENT_DATA                                      = 'RRN_PAYMENT_DATA';
+    const CURRENT_PAYMENT_UPDATION_STATUS                       = 'CURRENT_PAYMENT_UPDATION_STATUS';
+    const LAST_PAYMENT_UPDATED_BEFORE_EXCEPTION                 = 'LAST_PAYMENT_UPDATED_BEFORE_EXCEPTION';
 
     //circuit breaker
     const CIRCUIT_BREAKER_CLOSED    = "CIRCUIT_BREAKER_CLOSED";

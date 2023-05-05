@@ -29,6 +29,7 @@ class Route
         'merchant_activation_clarifications_fetch_internal' => ['get',      'merchant/internal/activation/{id}/clarifications',     'MerchantController@getMerchantClarificationDetails'                ],
         'merchant_activation_clarifications_save_internal'  => ['post',     'merchant/internal/activation/{id}/clarifications',     'MerchantController@postMerchantResponseToClarifications'           ],
         'merchant_nc_revamp_eligibility_internal'           => ['get',      'merchant/internal/activation/{id}/clarifications/eligibility', 'MerchantController@getMerchantNcRevampEligibility'         ],
+        'payments_api_backfill'                             => ['post',     'payments/api/backfill',                                    'PaymentController@callApiForBackfilling',                      ],
 
         // internal
         'internal_create'    => ['post', 'internal', 'InternalController@create'],
@@ -4922,6 +4923,7 @@ class Route
     public static $internal = [
         'payments_rearch_backfill',
         'update_shopify_1cc_credentials',
+        'payments_api_backfill',
         'refunds_reversal_create',
         'adj_transaction_create',
         'merchant_entities_info',
@@ -14339,6 +14341,7 @@ class Route
         'cron' => [
             'payments_rearch_backfill',
             'dcc_invoice_generation_cron',
+            'payments_api_backfill',
             'fpx_downtime_detection_cron',
             'payment_page_cds_billing_update_cron',
             'merchant_popular_products_cron',

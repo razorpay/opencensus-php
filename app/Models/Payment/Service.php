@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment;
 
 use FuzzyWuzzy\Process;
+use Illuminate\Support\Facades\DB;
 use Mail;
 use Crypt;
 use Config;
@@ -98,6 +99,14 @@ class Service extends Base\Service
     protected $mutex;
 
     protected $redis;
+
+    /**
+     * Default rrn updation cache timeout duration in sec.
+     * @var  integer
+     */
+    const RRN_TTL = 259200;
+
+    const GET_PAYMENTS_QUERY = "select p.id, a.rrn, p.created_at from hive.realtime_hudi_api.payments as p INNER JOIN hive.realtime_pgpayments_card_live.authorization AS a ON p.id = a.payment_id WHERE a.status in ('authorized', 'captured') AND p.method = 'card' and p.gateway = 'hdfc' and p.cps_route = 2 and p.created_at < %s and p.id > '%s' order by p.id asc limit %s";
 
     public function __construct()
     {
@@ -1351,6 +1360,85 @@ class Service extends Base\Service
         ]);
 
         return $this->app['scrooge']->refundsFetchByPayment($id, $input);
+    }
+
+    public function callApiForBackFilling(array $input)
+    {
+        $timeNow1 = Carbon::now()->getTimestamp();
+
+        $month = $input['month'];
+        $limit = $input['limit'];
+        $endTimeStampOfMonth = $input['end_time_stamp'];
+
+        $key = 'backfill_rrn_api_' . $month;
+
+        $paymentId = $this->app['cache']->get($key);
+
+        if($paymentId == null || empty($paymentId)){
+            $paymentId = $input['payment_id'];
+        }
+
+        $this->trace->info(TraceCode::RRN_BACKFILLING_INPUT,[
+            'key ' => $key,
+            'payment_id ' => $paymentId,
+            'month ' => $month,
+            'end_time_stamp' => $endTimeStampOfMonth,
+            'limit ' => $limit
+        ]);
+
+        $query = sprintf(self::GET_PAYMENTS_QUERY, $endTimeStampOfMonth, $paymentId, $limit);
+        $data = $this->app['datalake.presto']->getDataFromDataLake($query);
+
+        $this->trace->info(TraceCode::RRN_PAYMENT_DATA,[
+            'data ' => $data
+        ]);
+
+        $lastPayment = "";
+        $updatedCount = 0;
+
+        try {
+            foreach ($data as $rows) {
+                $currentPayment = $rows['id'];
+                $rrn = $rows['rrn'];
+
+                $currentPaymentEntity = $this->repo->payment->findOrFail($currentPayment);
+                $currentPaymentEntity->setReference16($rrn);
+                $this->repo->saveOrFail($currentPaymentEntity);
+
+                $this->trace->info(TraceCode::CURRENT_PAYMENT_UPDATION_STATUS, [
+                    'Payment id' => $currentPayment,
+                    'Updated Payment entity' => $currentPaymentEntity
+                ]);
+
+                $updatedCount += 1;
+
+                $lastPayment = $currentPayment;
+            }
+
+            $this->app['cache']->put($key, $lastPayment, self::RRN_TTL);
+
+            $timeNow2 = Carbon::now()->getTimestamp();
+
+            $this->trace->info(TraceCode::TIME_TAKEN_TO_FETCH_DATA_FROM_DB, [
+                'start time ' => $timeNow1,
+                'end time ' => $timeNow2,
+                'time taken ' => $timeNow2 - $timeNow1,
+                'updated count' => $updatedCount,
+                'total rows ' => sizeof($data)
+            ]);
+
+        } catch(Throwable $t)
+        {
+            $this->trace->traceException(
+                $t,
+                null,
+                TraceCode::LAST_PAYMENT_UPDATED_BEFORE_EXCEPTION,
+                [
+                    'last payment updated before exception' => $lastPayment,
+                ]
+            );
+        }
+
     }
 
     public function fetchTransactionByPaymentId($id)
