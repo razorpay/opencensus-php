@@ -79,6 +79,9 @@ class Fields
     const GIFT_CARD    = 'gift_card';
     const GIFT_CARD_PROMOTION = 'gift_card_promotion';
 
+    // standard shipping method name
+    const STANDARD_SHIPPING = 'Standard Shipping';
+
     // Analytics Tracking Key
     const UTM_PARAMETERS    = 'utm_parameters';
     const UTM_SOURCE        = 'utm_source';

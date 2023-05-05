@@ -119,8 +119,8 @@ class Service extends \RZP\Models\Base\Service
                     $shippingMethod = [
                         Order1cc\Fields::COD_FEE      => $selectedMethod[Order1cc\Fields::COD_FEE],
                         Order1cc\Fields::SHIPPING_FEE => $selectedMethod[Order1cc\Fields::SHIPPING_FEE],
-                        Order1cc\Fields::NAME         => $selectedMethod[Order1cc\Fields::NAME] ?? 'default',
-                        Order1cc\Fields::DESCRIPTION  => $selectedMethod[Order1cc\Fields::DESCRIPTION] ?? 'default',
+                        Order1cc\Fields::NAME         => $selectedMethod[Order1cc\Fields::NAME] ?? Order1cc\Fields::STANDARD_SHIPPING,
+                        Order1cc\Fields::DESCRIPTION  => $selectedMethod[Order1cc\Fields::DESCRIPTION] ?? Order1cc\Fields::STANDARD_SHIPPING,
                     ];
                     $shippingFee = $selectedMethod[Order1cc\Fields::SHIPPING_FEE];
                     $codFee = $selectedMethod[Order1cc\Fields::COD_FEE];
@@ -130,8 +130,8 @@ class Service extends \RZP\Models\Base\Service
                     $shippingMethod = [
                         Order1cc\Fields::COD_FEE      => $codFee,
                         Order1cc\Fields::SHIPPING_FEE => $shippingFee,
-                        Order1cc\Fields::NAME         => 'default',
-                        Order1cc\Fields::DESCRIPTION  => 'default',
+                        Order1cc\Fields::NAME         => Order1cc\Fields::STANDARD_SHIPPING,
+                        Order1cc\Fields::DESCRIPTION  => Order1cc\Fields::STANDARD_SHIPPING,
                     ];
                 }
 
