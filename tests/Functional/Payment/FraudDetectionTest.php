@@ -8,6 +8,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception\IntegrationException;
 use RZP\Models\Feature;
 use RZP\Models\Risk;
+use RZP\Constants\Shield;
 use RZP\Models\Payment;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
@@ -427,7 +428,7 @@ class FraudDetectionTest extends TestCase
         $this->fixtures->create('merchant_detail', $merchantDetailData);
     }
 
-    public function runFraudDetectedByShieldWebsiteMismatch($mobileSignUpTest = false, $unregisteredBusiness = false, $ruleID = 'rule_F1fgTZ9p7tj2es')
+    public function runFraudDetectedByShieldWebsiteMismatch($mobileSignUpTest = false, $unregisteredBusiness = false, $ruleID = 'rule_F1fgTZ9p7tj2es', $ruleCode= 'DEFAULT_RULE')
     {
         if (($mobileSignUpTest === false) and ($unregisteredBusiness === false))
         {
@@ -447,7 +448,7 @@ class FraudDetectionTest extends TestCase
         $shieldClient = Mockery::mock('RZP\Services\Mock\ShieldClient')->makePartial();
 
         $shieldClient->shouldReceive('evaluateRules')
-            ->andReturnUsing(function ($payload) use ($ruleID) {
+            ->andReturnUsing(function ($payload) use ($ruleID, $ruleCode) {
                 return [
                         "action"                => 'block',
                         "max_rule_weight"       => 0,
@@ -457,10 +458,10 @@ class FraudDetectionTest extends TestCase
                             "block"   => [
                                 [
                                     "rule_id"     => $ruleID,
-                                    "rule_code"   => "This business is not allowed to accept payments on this website. We suggest not going ahead with the payment."
+                                    "rule_code"   => $ruleCode
                                 ],
                             ],
-                        ],
+                        ]
                     ];
                 });
 
@@ -608,7 +609,7 @@ class FraudDetectionTest extends TestCase
 
     public function testFraudDetectedByShieldWebsiteMismatchMobileSignup()
     {
-        $this->runFraudDetectedByShieldWebsiteMismatch(true);
+        $this->runFraudDetectedByShieldWebsiteMismatch(true, false,  'rule_random', "DOMAIN_MISMATCH_BLOCK_NOTIFY_MERCHANT");
     }
 
     # Test case for validating that no alerts are being sent in case of Unregistered Business Type for the merchant
@@ -1190,7 +1191,7 @@ class FraudDetectionTest extends TestCase
 
         $this->app->instance('shield', $shieldClient);
 
-        $slackMessage = "*POWER_BANK_RULES (Rules) Triggered*\n\n*MID*: `<https://dashboard.razorpay.com/admin#/app/merchants/10000000000000/detail | 10000000000000>` flagged\n\n*Shield Id*: `<https://dashboard.razorpay.com/admin/entity/shield.rules/live/223 | 223>`\n*Shield Description*: test_description\n\ncc: <@S02726CADJL>";
+        $slackMessage = "*POWER_BANK_RULES (Rules) Triggered*\n\n*MID*: `<https://dashboard.razorpay.com/admin#/app/merchants/10000000000000/detail | 10000000000000>` flagged\n\n*Shield Id*: `<https://dashboard.razorpay.com/admin/entity/shield.rules/live/223 | 223>`\n*Shield Description*: test_description\n\ncc: <@SPJJUJN4D> <@S0375TGETD0> <@U042S5040AF>";
 
         $slackPayload = [
             'channel' => \Config::get('slack.channels.risk'),
@@ -1199,10 +1200,9 @@ class FraudDetectionTest extends TestCase
 
         $shieldSlackClient = Mockery::mock('RZP\Services\Mock\ShieldSlackClient');
 
-        $shieldSlackClient->shouldReceive('sendRequest')
+        $shieldSlackClient->shouldReceive('sendRequest')->once()
             ->withArgs(function ($payload) use ($slackPayload) {
-                return ($slackPayload['channel'] === $payload['channel']) &&
-                       ($slackPayload['text'] === $payload['text']);
+                return $payload === $slackPayload;
             })
             ->andReturnUsing(function ($content) {
                 return [
@@ -1233,9 +1233,9 @@ class FraudDetectionTest extends TestCase
 
         $this->app->instance('shield.slack', $shieldSlackClient);
 
-        \Config::set('applications.shield.slack.cc_user_ids', 'S02726CADJL');
+        \Config::set('applications.shield.slack.cc_user_ids', 'SPJJUJN4D,S0375TGETD0,U042S5040AF');
 
-        \Config::set('applications.shield.slack.eligible_rule_codes', 'power_bank_rules');
+        \Config::set('applications.shield.slack.eligible_rule_codes', 'power_bank_rules,international_ddos_rule');
 
         $testPayment = $this->getDefaultPaymentArray();
 

@@ -284,6 +284,11 @@ trait FraudDetector
             {
                 return true;
             }
+
+            if ($blockRule[Shield::RULE_CODE] === Shield::DOMAIN_MISMATCH_BLOCK_NOTIFY_MERCHANT)
+            {
+                return true;
+            }
         }
         return false;
     }
