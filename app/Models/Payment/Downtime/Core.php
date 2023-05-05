@@ -461,7 +461,9 @@ class Core extends Base\Core
 
                 $upiDowntimes = $this->fetchDowntimesByDateFromCache($dayForamt . "#upi");
 
-                $downtimes = array_merge($downtimes, $cardDowntimes, $netbankingDowntimes, $upiDowntimes);
+                $emandateDowntimes = $this->fetchDowntimesByDateFromCache($dayForamt . "#emandate");
+
+                $downtimes = array_merge($downtimes, $cardDowntimes, $netbankingDowntimes, $upiDowntimes, $emandateDowntimes);
             }
             else
             {
