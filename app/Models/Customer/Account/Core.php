@@ -807,6 +807,12 @@ class Core extends Base\Core
                 $this->merchant,
                 true);
 
+            if ($customer === null)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED);
+            }
+
             // 1cc Demo: Reject address saving for +911234567890
             if ($customer->getContact() === AccountConstants::DEMO_1CC_CONTACT)
             {
@@ -892,6 +898,13 @@ class Core extends Base\Core
                 ['app_token' => $appToken],
                 $this->merchant,
                 true);
+
+            if ($customer === null)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED);
+            }
+            
             // 1cc Demo: Reject address saving for +911234567890
             if ($customer->getContact() === AccountConstants::DEMO_1CC_CONTACT)
             {
