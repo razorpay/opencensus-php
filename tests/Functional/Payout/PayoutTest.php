@@ -9117,7 +9117,7 @@ class PayoutTest extends OAuthTestCase
                                 'token_number'       => '4610151724696781',
                                 'cryptogram_value'   => 'test',
                                 'token_expiry_month' => 8,
-                                'token_expiry_year'  => 2029,
+                                'token_expiry_year'  => 29,
                             ],
                         ]
                     ];

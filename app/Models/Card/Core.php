@@ -1204,6 +1204,8 @@ class Core extends Base\Core
         {
             $response = (new Card\CardVault)->fetchCryptogram($vaultToken, $merchant, true);
 
+            $this->updateProviderFields($response);
+
             $this->validateProviderFields($response);
         }
         catch (\Throwable $e)
@@ -1322,6 +1324,33 @@ class Core extends Base\Core
             throw new Exception\BadRequestValidationFailureException(
                 'Received invalid response from fetch Cryptogram API.'
             );
+        }
+    }
+
+    protected function updateProviderFields(&$response)
+    {
+        if ((empty($response) === false) and
+            (isset($response[Token\Entity::SERVICE_PROVIDER_TOKENS]) === true))
+        {
+            $serviceProviderTokens = $response[Token\Entity::SERVICE_PROVIDER_TOKENS];
+
+            if (isset($serviceProviderTokens[0]['provider_data']) === true)
+            {
+                $providerData = &$serviceProviderTokens[0]['provider_data'];
+
+                if ((isset($providerData['token_expiry_year'])) and
+                    (strlen($providerData['token_expiry_year']) === 2))
+                {
+                    $providerData['token_expiry_year'] = '20' . $providerData['token_expiry_year'];
+                }
+
+                if (isset($providerData['token_expiry_month']))
+                {
+                    $providerData['token_expiry_month'] = ltrim($providerData['token_expiry_month'], '0');
+                }
+            }
+
+            $response[Token\Entity::SERVICE_PROVIDER_TOKENS] = $serviceProviderTokens;
         }
     }
 
