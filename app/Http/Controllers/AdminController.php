@@ -788,9 +788,11 @@ class AdminController extends Controller
 
         $domain = \Request::server('SERVER_NAME');
 
+        $devServe = Request::header(Headers::DEV_SERVE_USER);
+
         if ((empty($error) === true) and
             (empty(Request::header(Headers::DEV_SERVE_USER)) === false) and
-            (str_starts_with(Request::header(Headers::DEV_SERVE_USER), 'itf')) and
+            (str_starts_with($devServe, 'itf') || str_starts_with($devServe, 'pr-')) and
             ($env === 'stage') and
             (($domain === 'dashboard-' . Request::header(Headers::DEV_SERVE_USER) . '.dev.razorpay.in') or
             ($domain === 'dashboard.dev.razorpay.in')))
