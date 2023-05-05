@@ -390,7 +390,7 @@ class RefundJournalEvents
         }
         else
         {
-            if($refund->getSpeedProcessed() === speed::NORMAL)
+            if($refund->getSpeedDecisioned() === speed::NORMAL)
             {
                 if ($transaction->isRefundCredits() === true)
                 {

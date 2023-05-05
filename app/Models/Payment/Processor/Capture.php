@@ -1883,7 +1883,7 @@ trait Capture
         ]);
     }
 
-    protected function getDiscountIfApplicableForLedger($payment)
+    public function getDiscountIfApplicableForLedger($payment)
     {
         if ($payment->isAppCred() === true)
         {

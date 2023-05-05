@@ -250,7 +250,7 @@ class Core extends Base\Core
                 LedgerConstants::MERCHANT_ID    => $payment->merchant->getId(),
             ]);
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             $this->trace->traceException(
                 $e,
