@@ -346,6 +346,11 @@ class EventCode
         'name'  => 'payment.unexpected.refund.delay'
     ];
 
+    const PAYMENT_UNEXPECTED_PAYMENT_CREATION_SKIPPED        = [
+        'group' => 'unexpected_payment',
+        'name'  => 'payment.unexpected.creation.skipped'
+    ];
+
     const PAYMENT_AUTO_REFUND_FAILED                     = [
         'group' => 'auto_refund',
         'name'  => 'payment.auto.refund.failed'

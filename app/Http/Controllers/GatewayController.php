@@ -12,6 +12,7 @@ use RZP\Models\Admin;
 use RZP\Models\QrCode;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
+use RZP\Diag\EventCode;
 use RZP\Models\Terminal;
 use RZP\Services\NbPlus;
 use RZP\Error\ErrorCode;
@@ -27,6 +28,7 @@ use Exception as BaseException;
 use RZP\Models\Gateway\Downtime;
 use RZP\Gateway\Mozart as Mozart;
 use RZP\Models\UpiMandate\Entity;
+use RZP\Models\Base\UniqueIdEntity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Gateway\Upi\Base as BaseUpi;
 use Illuminate\Http\RedirectResponse;
@@ -430,6 +432,19 @@ class GatewayController extends Controller
                     'gateway' => $gatewayDriver,
                 ]);
             }
+
+            if (UniqueIdEntity::verifyUniqueId($paymentId, false) === true)
+            {
+                $this->trace->info(TraceCode::UPI_UNEXPECTED_PAYMENT_CREATION_SKIPPED, [
+                    'payment_id'    => $paymentId,
+                    'message'       => 'unexpected payment creation skipped due to length being 14'
+                ]);
+
+                $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_UNEXPECTED_PAYMENT_CREATION_SKIPPED);
+
+                return [];
+            }
+
             $data = (new Payment\Service)->unexpectedCallback($input, $paymentId, $gatewayDriver, $isCallback);
         }
 

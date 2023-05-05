@@ -1303,7 +1303,6 @@ class Processor
                 (empty($input['reward_ids']) === false) or
                 ($merchant->isFeeBearerPlatform() === false) or
                 ($merchant->isRazorpayOrgId() === false) or
-                ($merchant->isTPVRequired() === true) or
                 ($this->isOtmPayment($input) === true) or
                 (isset($input[Payment\Method::UPI][Payment\UpiMetadata\Entity::MODE]) === true) or
                 (isset($input[Payment\Method::UPI][Payment\UpiMetadata\Entity::PROVIDER]) === true) or
