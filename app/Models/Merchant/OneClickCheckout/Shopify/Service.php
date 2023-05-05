@@ -12,6 +12,7 @@ use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Http\Request\Requests;
+use RZP\Models\Merchant\Merchant1ccConfig;
 use RZP\Models\Merchant\Service as MerchantService;
 use RZP\Models\Merchant\Metric;
 use RZP\Models\Merchant\OneClickCheckout;
@@ -944,7 +945,10 @@ class Service extends Base\Service
 
         $response = json_decode($response, true);
 
-        $digitalProductConfigFlagValue = $this->merchant->get1ccConfigFlagStatus(Type::ONE_CC_HANDLE_DIGITAL_PRODUCT);
+        $digitalProductConfig = (new Merchant1ccConfig\Repository())->
+        findByMerchantAndConfigType($this->merchant->getId(), Type::ONE_CC_HANDLE_DIGITAL_PRODUCT);
+
+        $digitalProductConfigFlagValue = $digitalProductConfig === null || $digitalProductConfig->getValue() === "1";
 
         if (empty($response['errors']) === false
         or empty($response['data']['checkoutShippingAddressUpdateV2']['checkoutUserErrors']) === false)
