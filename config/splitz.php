@@ -79,6 +79,9 @@ return [
         // partnership for Phantom
         'PARTNERSHIP_FOR_PHANTOM' => env('PARTNERSHIP_FOR_PHANTOM', ''),
 
+        // partner onboarding resuming
+        'SHOW_RESUME_ONBAORDING' => env('SHOW_RESUME_ONBAORDING', ''),
+
         //QR Code campaign
         'ANNOUNCEMENT_QR_CODE_V1_SPLITZ' => env('ANNOUNCEMENT_QR_CODE_V1_SPLITZ', ''),
 

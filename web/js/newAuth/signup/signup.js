@@ -27,7 +27,7 @@ import { ModalHeader, ModalFooter } from 'common/components/Modal/Styled';
 import { Button } from '@razorpay/blade/components';
 import { trackWithSegment } from 'newAuth/trackEvents';
 import { isMobileAndTablet } from 'common/utils/rzp-utils';
-import { isNewPartnerSignup, isSignupEnabled } from 'newAuth/splitz/index';
+import { isNewPartnerSignup, isSignupEnabled, isShowResumeOnboarding } from 'newAuth/splitz/index';
 
 const SignUp = () => {
   const [programDsCheck, setProgramDsCheck] = useState(false);
@@ -188,23 +188,25 @@ const SignUp = () => {
     return (
       <>
         <PartnerSignup />
-        <Modal
-          isOpen={isOpen}
-          onClose={onClose}
-          bottomsheet={isMobileAndTablet()}
-          bottomSheetHeight="265px"
-        >
-          <ModalHeader>New business onboarding is temporarily paused</ModalHeader>
-          <ModalBody>
-            Please submit your details so that your partner account can be activated at the earliest
-            when we resume onboarding.
-            <br />
-            *You can keep referring your clients in the meanwhile
-          </ModalBody>
-          <ModalFooter>
-            <Button onClick={onClose}>Continue</Button>
-          </ModalFooter>
-        </Modal>
+        {isShowResumeOnboarding() ? null : (
+          <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            bottomsheet={isMobileAndTablet()}
+            bottomSheetHeight="265px"
+          >
+            <ModalHeader>New business onboarding is temporarily paused</ModalHeader>
+            <ModalBody>
+              Please submit your details so that your partner account can be activated at the
+              earliest when we resume onboarding.
+              <br />
+              *You can keep referring your clients in the meanwhile
+            </ModalBody>
+            <ModalFooter>
+              <Button onClick={onClose}>Continue</Button>
+            </ModalFooter>
+          </Modal>
+        )}
       </>
     );
 

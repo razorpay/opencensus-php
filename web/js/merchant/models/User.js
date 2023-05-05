@@ -1687,6 +1687,11 @@ export default class User {
     return variant?.name === 'exposed';
   }
 
+  get isShowResumeOnboarding() {
+    const variant = getSplitzExperimentVariant('show_resume_onboarding');
+    return variant?.name === 'exposed';
+  }
+
   get isSubMerchantKycResellerEnabled() {
     // only for RZP org
     // only to owner,admin,manager

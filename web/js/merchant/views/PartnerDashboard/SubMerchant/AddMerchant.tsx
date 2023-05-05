@@ -56,9 +56,11 @@ const PAYMENTS_DISABLED_STATUS = {
   curlec: false,
 };
 
-const PAYMENTS_NOTE_STATUS = {
-  rzp: true,
-  curlec: false,
+const getPaymentNote = (isShowResumeOnboarding = false) => {
+  return {
+    rzp: !isShowResumeOnboarding,
+    curlec: false,
+  };
 };
 
 const MOBILE_NUMBER_MAX_LENGTH = {
@@ -82,6 +84,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
   isPartnershipForXEnabled: boolean;
   isPartnershipForCapitalEnabled: boolean;
   isPartnershipFUX: boolean;
+  isShowResumeOnboarding: boolean;
   orgCode: string;
   orgName: string;
   countryCode: string;
@@ -89,12 +92,18 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
     super(props);
     const { user, addType, referralData, onAddSuccess = () => {}, org } = props;
     const state = getInitialState({ user, addType, referralData });
-    const { isPartnershipForXEnabled, isPartnershipFUX, isPartnershipForCapitalEnabled } = user;
+    const {
+      isPartnershipForXEnabled,
+      isPartnershipFUX,
+      isPartnershipForCapitalEnabled,
+      isShowResumeOnboarding,
+    } = user;
     this.state = state;
     this.onAddSuccess = onAddSuccess;
     this.isPartnershipForXEnabled = isPartnershipForXEnabled;
     this.isPartnershipFUX = isPartnershipFUX;
     this.isPartnershipForCapitalEnabled = isPartnershipForCapitalEnabled;
+    this.isShowResumeOnboarding = isShowResumeOnboarding;
     this.orgCode = org?.custom_code || 'rzp';
     this.orgName = org?.business_name || 'Razorpay';
     this.countryCode = user?.merchant?.country_code || 'IN';
@@ -704,7 +713,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
                     checked={merchantType === PRODUCT_TYPE.PG}
                     disabled={PAYMENTS_DISABLED_STATUS[this.orgCode]}
                     isMaintenance={PAYMENTS_MAINTENANCE_STATUS[this.orgCode]}
-                    showNote={PAYMENTS_NOTE_STATUS[this.orgCode]}
+                    showNote={getPaymentNote(this.isShowResumeOnboarding)[this.orgCode]}
                     orgName={this.orgName}
                   />
                   <ShowWhen

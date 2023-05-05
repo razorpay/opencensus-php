@@ -15,6 +15,7 @@ export default function useTrackPartnerExperiments(user: UserT): void {
     isShowAffWidgetShopifyWaitlist,
     isShowAffWidgetWoocWaitlist,
     isShowSegregatedCreditEmi,
+    isShowResumeOnboarding,
   } = user;
 
   const trackExperiments = useCallback(() => {
@@ -37,6 +38,7 @@ export default function useTrackPartnerExperiments(user: UserT): void {
         isShowAffWidgetShopifyWaitlist,
         isShowAffWidgetWoocWaitlist,
         isShowSegregatedCreditEmi,
+        isShowResumeOnboarding,
       },
     });
   }, [
@@ -52,6 +54,7 @@ export default function useTrackPartnerExperiments(user: UserT): void {
     isShowAffWidgetShopifyWaitlist,
     isShowAffWidgetWoocWaitlist,
     isShowSegregatedCreditEmi,
+    isShowResumeOnboarding,
   ]);
 
   useEffect(() => {

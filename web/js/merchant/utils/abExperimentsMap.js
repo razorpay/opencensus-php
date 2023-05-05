@@ -629,4 +629,10 @@ export default {
     // prod experiment ids
     'LZi2wmeOZSCjtX',
   ],
+  show_resume_onboarding: [
+    // stage
+    'LklQDqgOLE7NNi',
+    // prod
+    'LklMvyKSFn6ETp',
+  ],
 };

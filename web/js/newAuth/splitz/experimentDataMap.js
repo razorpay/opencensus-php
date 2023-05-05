@@ -35,4 +35,11 @@ export default {
     experiment_variable: 'variables',
     trackImpression: true,
   },
+  show_resume_onboarding: {
+    stage_exp_id: 'LklQDqgOLE7NNi',
+    prod_exp_id: 'JLVLvIALXDyaPK',
+    default_variant: 'variables',
+    experiment_variable: 'variables',
+    trackImpression: true,
+  },
 };
