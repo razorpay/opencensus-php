@@ -659,6 +659,10 @@ class Processor
                 ((isset($input[Payment\Method::CARD][Card\Entity::CVV]) === false) and
                     ($merchant->isFeatureEnabled('vsc_authorization') === true)))
             {
+                $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                    'reason' => "input"
+                ]);
+
                 return false;
             }
 
@@ -678,12 +682,21 @@ class Processor
                         ($order->getFeeConfigId() !== null) or
                         ($order->invoice !== null)))
                 {
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "offers",
+                        'order'  => $order,
+                    ]);
+
                     return false;
                 }
 
                 if ((empty($orderTransfers) === false) and
                     (count($orderTransfers) > 0))
                 {
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "order_transfers",
+                    ]);
+
                     return false;
                 }
             }
@@ -691,18 +704,28 @@ class Processor
             if (($input[Payment\Entity::METHOD] == Payment\METHOD::CARD) and
                 ($merchant->isFeatureEnabled('skip_cvv') === true))
             {
+                $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                    'reason' => "merchant_feature",
+                    "feature_name" => "skip_cvv"
+                ]);
                 return false;
             }
 
             if ((empty($input['currency']) === false) and
                 ($input['currency'] !== Currency\Currency::INR))
             {
+                $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                    'reason' => "non_inr_currency",
+                ]);
                 return false;
             }
 
             //Ultimate flag to stop re-arch traffic, merchants added in this flag will be blocked from CPS re-arch traffic
             $result = $this->app->razorx->getTreatment($merchant->getId(), self::BLOCK_MERCHANTS_ON_REARCH_CPS, $this->mode);
             if ($result === 'on') {
+                $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                    'reason' => "blocked_merchant",
+                ]);
                 return false;
             }
 
@@ -745,10 +768,18 @@ class Processor
                             //check if card is not null
                             if(empty($card) === true)
                             {
+                                $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                                    'reason' => "token_card_empty",
+                                ]);
+
                                 return false;
                             }
                             if ($card->getVault() === Card\Vault::PROVIDERS || $card->getVault() === Card\Vault::AXIS)
                             {
+                                $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                                    'reason' => "vault_providers_or_axis",
+                                ]);
+
                                 return false;
                             }
                             if ($card->isNetworkTokenisedCard() === true)
@@ -770,6 +801,9 @@ class Processor
                                 return true;
                             }
                         } else {
+                            $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                                'reason' => "saved_card_not_network_tokenized",
+                            ]);
                             return false;
                         }
                     }
