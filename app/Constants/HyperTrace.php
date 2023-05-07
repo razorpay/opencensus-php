@@ -140,6 +140,7 @@ class HyperTrace
     const CREATE_SUBMERCHANT_CORE                              = 'create_submerchant.core';
     const ASSIGN_SUBMERCHANT_PRICING_PLAN                      = 'assign_submerchant_pricing_plan';
     const ADD_MERCHANT_SUPPORTING_ENTITIES                     = 'add_merchant_supporting_entities';
+    const ADD_SUBMERCHANT_SUPPORTING_ENTITIES                  = 'add_submerchant_supporting_entities';
     const MAP_SUBMERCHANT_PARTNER_APP_IF_APPLICABLE            = 'map_submerchant_partner_app_if_applicable';
     const ADD_FEATURE_REQUEST                                  = 'add_feature_request.core';
     const ATTACH_SUBMERCHANT_USER_IF_APPLICABLE                = 'attach_submerchant_user_if_applicable';

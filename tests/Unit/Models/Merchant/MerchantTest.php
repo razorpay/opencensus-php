@@ -130,7 +130,7 @@ class UserTest extends TestCase
 
         $this->merchantRepoMock = Mockery::mock('RZP\Models\Merchant\Repository');
 
-        $this->merchantCore = Mockery::mock('RZP\Models\Merchant\Core');
+        $this->merchantCore = Mockery::mock('RZP\Models\Merchant\Core')->makePartial();
 
         $this->userEntityMock = Mockery::mock('RZP\Models\User\Entity');
 

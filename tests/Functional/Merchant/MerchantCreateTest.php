@@ -405,6 +405,25 @@ class MerchantCreateTest extends TestCase
         $this->assertNull($testMapping);
 
         $this->assertNull($liveMapping);
+
+        $testMerchantBalance = $this->getDbLastEntity('merchant_balance', 'test');
+        $this->assertNotNull($testMerchantBalance);
+
+        $testBalanceConfig = $this->getDbLastEntity('balance_config', 'test');
+        $this->assertNotNull($testBalanceConfig);
+
+        $testBalance = $this->getDbLastEntity('balance', 'test');
+        $this->assertNotNull($testBalance);
+
+        $testBankAccount = $this->getDbLastEntity('bank_account', 'test');
+        $this->assertNotNull($testBankAccount);
+
+        $testSchedule = $this->getDbLastEntity('schedule', 'test');
+        $this->assertNotNull($testSchedule);
+
+        $testScheduleTask = $this->getDbLastEntity('schedule_task', 'test');
+        $this->assertNotNull($testScheduleTask);
+
     }
 
     /**

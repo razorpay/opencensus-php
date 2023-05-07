@@ -52,6 +52,7 @@ final class Metric
     const RAZORX_BULK_EVALUATE_TIME_MS = 'razorx_bulk_evaluate_time_ms';
 
     const MERCHANT_SUPPORT_ENTITIES_CREATION_FAILURE_TOTAL = 'merchant_support_entities_creation_failure_total';
+    const SUBMERCHANT_SUPPORT_ENTITIES_CREATION_FAILURE_TOTAL = 'submerchant_support_entities_creation_failure_total';
 
     const SUBMERCHANT_TAGGING_FAILURE_TOTAL = 'submerchant_tagging_failure_total';
 

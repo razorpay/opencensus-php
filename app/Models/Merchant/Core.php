@@ -98,6 +98,7 @@ use Razorpay\OAuth\Exception\DBQueryException;
 use RZP\Models\Comment\Entity as CommentEntity;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Jobs\BulkMigrateAggregatorToResellerJob;
+use RZP\Jobs\SubMerchantSupportEntitiesCreateJob;
 use RZP\Models\Workflow\Action as WorkflowAction;
 use RZP\Jobs\MerchantSupportingEntitiesCreateJob;
 use RZP\Models\Feature\Service as FeatureService;
@@ -491,6 +492,8 @@ class Core extends Base\Core
             }
         }
 
+        $jobInput = $this->getInputDataForSubMSupportEntities($input);
+
         $contactMobile = $input[Detail\Entity::CONTACT_MOBILE] ?? null;
         unset($input[Detail\Entity::CONTACT_MOBILE]);
 
@@ -505,7 +508,7 @@ class Core extends Base\Core
             );
         }
 
-        $subMerchantBusinessType = $input[Detail\Entity::BUSINESS_TYPE] ?? '';
+        $jobInput[Detail\Entity::BUSINESS_TYPE] = $input[Detail\Entity::BUSINESS_TYPE] ?? '';
         unset($input[Detail\Entity::BUSINESS_TYPE]);
 
         $subMerchant = $entity->build($input);
@@ -521,13 +524,6 @@ class Core extends Base\Core
                 ]
             );
         }
-
-        $subMerchant->setAuditAction(Action::CREATE_SUBMERCHANT);
-
-        Tracer::inspan(['name' => HyperTrace::ASSIGN_SUBMERCHANT_PRICING_PLAN], function () use ($aggregatorMerchant, $subMerchant, $linkedAccount) {
-
-            $this->assignSubMerchantPricingPlan($aggregatorMerchant, $subMerchant, $linkedAccount);
-        });
 
         // The parent Id has to be linked only when it's a marketplace
         // If both market place and referral are present when creating a referral account we should not link parentId.
@@ -549,8 +545,6 @@ class Core extends Base\Core
             );
         }
 
-        $this->setSubMerchantMaxPaymentAmount($aggregatorMerchant,$subMerchant,$subMerchantBusinessType);
-
         $aggregatorOrgId = $aggregatorMerchant->getOrgId();
 
         if ($aggregatorOrgId !== null)
@@ -559,11 +553,6 @@ class Core extends Base\Core
 
             // Link sub-merchant to its aggregator's org
             $subMerchant->org()->associate($org);
-        }
-
-        if (empty($legalEntity) === false)
-        {
-            $subMerchant->legalEntity()->associate($legalEntity);
         }
 
         if ($linkedAccount === true)
@@ -588,29 +577,109 @@ class Core extends Base\Core
             ]
         );
 
-        $this->repo->saveOrFail($subMerchant);
+        $properties = [
+            'id'            => $aggregatorMerchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.optimise_submerchant_create_exp_id'),
+            'request_data'  => json_encode(
+                [
+                    'partner_id' => $aggregatorMerchant->getId(),
+                ]),
+        ];
+
+        $experimentEnable = $this->isSplitzExperimentEnable($properties, 'enable');
+
+        $subMerchant->setAuditAction(Action::CREATE_SUBMERCHANT);
 
         $subMerchantDetailInput = !empty($contactMobile) ? [Detail\Entity::CONTACT_MOBILE => $contactMobile] : [];
 
-        Tracer::inspan(['name' => HyperTrace::ADD_MERCHANT_SUPPORTING_ENTITIES], function () use ($subMerchant, $aggregatorMerchant, $optimizeCreationFlow, $subMerchantDetailInput) {
-
-            $this->addMerchantSupportingEntities($subMerchant, $aggregatorMerchant, $optimizeCreationFlow, $subMerchantDetailInput);
-        });
-
-        $this->syncHeimdallRelatedEntities($subMerchant, $input);
-
-        $legalEntityInput = [];
-
-        if (empty($externalLegalEntityId) === false)
+        if($experimentEnable == true)
         {
-            $legalEntityInput[LegalEntity\Entity::EXTERNAL_ID] = $externalLegalEntityId;
+            $this->repo->saveOrFail($subMerchant);
+
+            Tracer::inspan(['name' => HyperTrace::ADD_SUBMERCHANT_SUPPORTING_ENTITIES], function() use ($subMerchant, $aggregatorMerchant, $jobInput, $linkedAccount) {
+                $jobInput['merchant_id']    = $subMerchant->getId();
+                $jobInput['partner_id']     = $aggregatorMerchant->getId();
+                $jobInput['linked_account'] = $linkedAccount;
+                SubMerchantSupportEntitiesCreateJob::dispatch($this->mode, $jobInput);
+            });
+
+            Tracer::inspan(['name' => HyperTrace::CREATE_MERCHANT_DETAILS_CORE], function () use ($subMerchant, $subMerchantDetailInput) {
+
+                (new Detail\Core)->createMerchantDetails($subMerchant, $subMerchantDetailInput);
+            });
+
+        }
+        else
+        {
+            $this->associateLegalEntityToSubmerchant($subMerchant, $jobInput);
+
+            Tracer::inspan(['name' => HyperTrace::ASSIGN_SUBMERCHANT_PRICING_PLAN], function () use ($aggregatorMerchant, $subMerchant, $linkedAccount) {
+
+                $this->assignSubMerchantPricingPlan($aggregatorMerchant, $subMerchant, $linkedAccount);
+            });
+
+            $this->setSubMerchantMaxPaymentAmount($aggregatorMerchant,$subMerchant, $jobInput[Detail\Entity::BUSINESS_TYPE]);
+
+            $this->repo->saveOrFail($subMerchant);
+
+            Tracer::inspan(['name' => HyperTrace::ADD_MERCHANT_SUPPORTING_ENTITIES], function() use ($subMerchant, $aggregatorMerchant, $subMerchantDetailInput, $optimizeCreationFlow) {
+
+                $this->addMerchantSupportingEntities($subMerchant, $aggregatorMerchant, $optimizeCreationFlow, $subMerchantDetailInput);
+
+            });
+
+            $this->syncHeimdallRelatedEntities($subMerchant, $input);
+
         }
 
-        $this->upsertLegalEntity($subMerchant, $legalEntityInput);
-
-        $this->addToDefaultUnclaimedGroup($subMerchant);
-
         return $subMerchant;
+    }
+
+    private function getInputDataForSubMSupportEntities(array &$input): array
+    {
+        $jobInput = [];
+
+        if (isset($input[Entity::GROUPS]) == true)
+        {
+            $jobInput[Entity::GROUPS] = $input[Entity::GROUPS];
+        }
+
+        if (isset($input[Entity::ADMINS]) == true)
+        {
+            $jobInput[Entity::ADMINS] = $input[Entity::ADMINS];
+        }
+
+        if (empty($input[Entity::LEGAL_ENTITY_ID]) === false)
+        {
+            $jobInput[Entity::LEGAL_ENTITY_ID] = $input[Entity::LEGAL_ENTITY_ID];
+            unset($input[Entity::LEGAL_ENTITY_ID]);
+        }
+        else if (empty($input[Entity::LEGAL_EXTERNAL_ID]) === false)
+        {
+            $jobInput[Entity::LEGAL_EXTERNAL_ID]  = $input[Entity::LEGAL_EXTERNAL_ID];
+            unset($input[Entity::LEGAL_EXTERNAL_ID]);
+        }
+
+        $jobInput[Detail\Entity::BUSINESS_TYPE] = $input[Detail\Entity::BUSINESS_TYPE] ?? '';
+
+        return $jobInput;
+    }
+
+
+    public function associateLegalEntityToSubmerchant(Entity $subMerchant, array $input)
+    {
+        if (empty($input[Entity::LEGAL_ENTITY_ID]) === false)
+        {
+            $legalEntity = $this->repo->legal_entity->findOrFailPublic($input[Entity::LEGAL_ENTITY_ID]);
+
+            $subMerchant->legalEntity()->associate($legalEntity);
+        }
+        else if (empty($input[Entity::LEGAL_EXTERNAL_ID]) === false)
+        {
+            $legalEntityInput[Entity::LEGAL_EXTERNAL_ID] = $input[Entity::LEGAL_EXTERNAL_ID];
+
+            $this->upsertLegalEntity($subMerchant, $legalEntityInput);
+        }
     }
 
     public function pushSettleToPartnerSubmerchantMetrics(string $partnerId, string $submerchantId)
@@ -6063,7 +6132,7 @@ class Core extends Base\Core
         return false;
     }
 
-    protected function setSubMerchantMaxPaymentAmount(Entity $partner,Entity $subMerchant,string $subMerchantBusinessType)
+    public function setSubMerchantMaxPaymentAmount(Entity $partner,Entity $subMerchant,string $subMerchantBusinessType)
     {
         // In case of linked account we create submerchants without partner
         if($partner->isPartner() === false)
@@ -6082,6 +6151,7 @@ class Core extends Base\Core
         {
             if($maxPaymentConfig[PartnerConfig\Constants::BUSINESS_TYPE] === $subMerchantBusinessType)
             {
+
                 // converting value to paisa
                 $subMerchant->setMaxPaymentAmount($maxPaymentConfig[PartnerConfig\Constants::VALUE]*100);
             }
