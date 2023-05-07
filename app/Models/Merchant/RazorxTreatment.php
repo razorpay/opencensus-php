@@ -756,4 +756,9 @@ final class RazorxTreatment
 
     // Expt to handle non terminal payouts after migration
     const NON_TERMINAL_MIGRATION_HANDLING       = 'non_terminal_migration_handling';
+
+    /**
+     * Razorx flag to enable timeout of upi collect payment with input expiry time
+     */
+    const ENABLE_TIMEOUT_ON_UPI_COLLECT_EXPIRY = 'enable_timeout_on_upi_collect_expiry';
 }

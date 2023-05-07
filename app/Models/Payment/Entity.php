@@ -275,6 +275,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const PAYMENT_TIMEOUT_COD_PENDING       = 86400 * 45; // 45days
     const MCC_MARKDOWN_PERCENTAGE           = 1;
     const PAYMENT_TIMEOUT_EMANDATE_RECURRING = 604800;   // 7 Days
+    const PAYMENT_UPI_COLLECT_MAX_EXPIRY_WINDOW = 345600; // 4 Days
 
     // payment services
     const API                               = 0;
@@ -2775,6 +2776,73 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->getMetadata('flow') === Flow::INTENT);
     }
 
+    /** Checks if the payment is upi collect and
+     *  payment is non qr and recurring flows
+     * @return bool
+     */
+    public function isUpiCollectExcludeQrAndRecurring(): bool
+    {
+        if (($this->isUpi() === false) or
+            ($this->isUpiQr() === true) or
+            ($this->isUpiTransfer() === true) or
+            ($this->isBharatQr() === true) or
+            ($this->isUpiRecurring() === true) or
+            ($this->isUpiAutoRecurring() === true))
+        {
+            return false;
+        }
+
+        $upiMetadata = $this->fetchUpiMetadata();
+
+        $app = \App::getFacadeRoot();
+
+        if ((empty($upiMetadata) === true) or
+            ($upiMetadata instanceof UpiMetadata\Entity === false))
+        {
+            $app['trace']->info(TraceCode::PAYMENT_UPI_METADATA_NOT_FOUND,
+                [
+                    'payment_id'    => $this->getId(),
+                    'merchant_id'   => $this->getMerchantId(),
+                ]);
+
+            return false;
+        }
+
+        if (empty($upiMetadata->getFlow()) === false)
+        {
+            return $upiMetadata->getFlow() === Flow::COLLECT;
+        }
+
+        return false;
+    }
+
+    /** Fetches UpiMetadata if already not set in payments metadata
+     * @return array|mixed|null
+     */
+    public function fetchUpiMetadata()
+    {
+        $upiMetadata = null;
+
+        if ($this->hasMetadata(UpiMetadata\Entity::UPI_METADATA) === true)
+        {
+            $upiMetadata = $this->getMetadata(UpiMetadata\Entity::UPI_METADATA);
+        }
+        else
+        {
+            // if meta data does not exists in upi fetch and attach
+            $upiMetadata = $this->fetchUpiMetadataAttributeForValidation();
+
+        }
+
+        if ((empty($upiMetadata) === false) and
+            ($upiMetadata instanceof UpiMetadata\Entity === false))
+        {
+            return null;
+        }
+
+        return $upiMetadata;
+    }
+
     public function isUpiQr(): bool
     {
         // By definition if receiver type is qr_code and flow is intent, its upi qr payment
@@ -5202,6 +5270,38 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             return self::PAYMENT_TIMEOUT_EMANDATE_RECURRING;
         }
 
+        /**
+         * isTimeoutApplicableOnUpiCollectExpiry() verifies if the
+         * payment is upi collect and is applicable to timeout
+         * the payments on input collect expiry time
+         */
+        if ($this->isTimeoutApplicableOnUpiCollectExpiry() === true)
+        {
+            $app = \App::getFacadeRoot();
+
+            $upiMetadata = $this->fetchUpiMetadata();
+
+            if ((empty($upiMetadata) === true) or
+                ($upiMetadata instanceof UpiMetadata\Entity === false))
+            {
+                return $timeWindow;
+            }
+
+            $expiryWindow = $timeWindow;
+
+            if (empty($upiMetadata->getExpiryTime()) === false)
+            {
+                $expiryWindow = $upiMetadata->getExpiryTime() * 60;
+            }
+
+            $app['trace']->info(TraceCode::PAYMENT_UPI_COLLECT_EXPIRY, [
+                'payment_id'    => $this->getId(),
+                'expiry_time'   => $expiryWindow,
+            ]);
+
+            $timeWindow = min($expiryWindow, self::PAYMENT_UPI_COLLECT_MAX_EXPIRY_WINDOW);
+        }
+
         $autoRefundDelay = $this->merchant->getAutoRefundDelay();
 
         return min($timeWindow, $autoRefundDelay);
@@ -6405,5 +6505,32 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 $input[$key] = null;
             }
         }
+    }
+
+    /** This checks if the experiment is enabled on merchant
+     *  for timeout on collect expiry time  sent in the request
+     * @return bool
+     */
+    public function isTimeoutApplicableOnUpiCollectExpiry()
+    {
+        $app = \App::getFacadeRoot();
+
+        if ($this->isUpiCollectExcludeQrAndRecurring() === false)
+        {
+            return false;
+        }
+
+        $variant = $app['razorx']->getTreatment($this->getMerchantId(),
+            RazorxTreatment::ENABLE_TIMEOUT_ON_UPI_COLLECT_EXPIRY,
+            $app['rzp.mode']);
+
+        $app['trace']->info(TraceCode::PAYMENT_UPI_COLLECT_EXPIRY_RAZORX_EXPERIMENT,
+            [
+                'payment_id'    => $this->getId(),
+                'variant'       => $variant,
+                'merchant_id'   => $this->getMerchantId(),
+            ]);
+
+        return (strtolower($variant) === 'on');
     }
 }
