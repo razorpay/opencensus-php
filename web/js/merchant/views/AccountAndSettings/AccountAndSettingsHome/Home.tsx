@@ -5,7 +5,6 @@ import {
   setLoading as setLoadingFn,
 } from 'merchant/reducers/instrumentRequests';
 import { fetchMerchantWebsiteDetails as fetchMerchantWebsiteDetailsFn } from 'merchant/reducers/websitecompliance';
-import { fetchEnrollmentStatus as fetchEnrollmentStatusFn } from 'merchant/reducers/bundlePricing';
 import { fetchConnectedApplications as fetchConnectedApplicationsFn } from 'merchant/reducers/applications';
 import { showNotification as showNotificationFn } from 'merchant_common/reducers/notifications';
 import React, { useEffect, useState } from 'react';
@@ -37,8 +36,6 @@ const AccountAndSettingsHome = (props: AccountAndSettingsHomePropInterface): JSX
     setLoadingFn: setLoading,
     showNotificationFn: showNotification,
     fetchMerchantWebsiteDetailsFn: fetchMerchantWebsiteDetails,
-    fetchEnrollmentStatus,
-    enrollmentStatus,
     fetchConnectedApplicationsFn: fetchConnectedApplications,
   } = props;
 
@@ -57,7 +54,6 @@ const AccountAndSettingsHome = (props: AccountAndSettingsHomePropInterface): JSX
     const { data } = featureStatusConfig;
     setLoading();
     fetchAllInstruments();
-    if (user.isBundlePricingEnabled) fetchEnrollmentStatus();
 
     if (isApplicationEnabled(user)) {
       fetchConnectedApplications();
@@ -78,7 +74,7 @@ const AccountAndSettingsHome = (props: AccountAndSettingsHomePropInterface): JSX
 
   useEffect(() => {
     const { data: featureData, loading: isFeatureLoading } = featureStatusConfig;
-    if (!isIntrumentLoading && !isFeatureLoading && !enrollmentStatus.loading) {
+    if (!isIntrumentLoading && !isFeatureLoading) {
       const sectionCards = getSectionCards({
         user,
         instruments,
@@ -87,7 +83,6 @@ const AccountAndSettingsHome = (props: AccountAndSettingsHomePropInterface): JSX
         websiteSectionDetailsData,
         profile,
         allowCFBInternational: featureData[feature],
-        hasEnrolled: enrollmentStatus.hasEnrolled,
       });
       setSections(sectionCards);
     }
@@ -99,8 +94,6 @@ const AccountAndSettingsHome = (props: AccountAndSettingsHomePropInterface): JSX
     websiteSectionDetailsData,
     profile,
     featureStatusConfig,
-    enrollmentStatus.loading,
-    enrollmentStatus.hasEnrolled,
     shouldShowApplications,
   ]);
 
@@ -122,7 +115,6 @@ const mapStateToProps = (state) => {
     websiteSectionDetailsData: state.websiteCompliance.websiteSectionDetailsData,
     featureStatusConfig: state.config.featureStatusConfig,
     isMobile: state.app.isMobileResolution,
-    enrollmentStatus: state?.bundlePricing?.enrollmentStatus || {},
     shouldShowApplications: state.applications?.hasConnectedApplications,
   };
 };
@@ -136,7 +128,6 @@ const mapDispatchToProps = (dispatch) => {
       showNotificationFn,
       fetchFeatureByNameFn,
       fetchMerchantWebsiteDetailsFn,
-      fetchEnrollmentStatus: fetchEnrollmentStatusFn,
       fetchConnectedApplicationsFn,
     },
     dispatch,

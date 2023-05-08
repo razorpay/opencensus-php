@@ -505,7 +505,10 @@ export const Sections: SectionCardInterface[] = [
     title: 'Pricing',
     icon: AccountNSettingsIcons.pricing,
     iconBackground: 'linear-gradient(126deg, #C8BFFF 9.01%, #553EDF 98.6%)',
-    additionalCondition: (params) => (): boolean => !!params?.hasEnrolled,
+    additionalCondition:
+      () =>
+      (user: User): boolean =>
+        user?.isBundlePricingEnabled,
     subSections: [
       {
         id: PricingFields.PRICING_PLANS,
