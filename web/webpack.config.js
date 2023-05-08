@@ -16,7 +16,7 @@ const fontsToProjectMap = {
   pokedex: 'merchant',
 };
 const PROJECTS_USING_WORKBOX = ['merchant', 'merchantLA'];
-const PLUGINS_TO_BE_REMOVED = ['CompressionPlugin', 'LoadablePlugin', 'ImageMinimizerPlugin'];
+const PLUGINS_TO_BE_REMOVED = ['CompressionPlugin', 'LoadablePlugin'];
 const PRELOAD_ASSETS_FOR = ['merchant', 'merchantLA'];
 const RZP_CDN_URL = 'https://cdn.razorpay.com/dashboard';
 
@@ -294,6 +294,9 @@ module.exports = {
     config.plugins = config.plugins.filter((plugin) => {
       return PLUGINS_TO_BE_REMOVED.indexOf(plugin?.constructor?.name) === -1;
     });
+    config.optimization.minimizer = config.optimization.minimizer.filter(
+      (minimizer) => minimizer.constructor.name !== 'ImageMinimizerPlugin',
+    );
 
     // Configure the build analysis folder for each project
     config.plugins.forEach((plugin) => {
