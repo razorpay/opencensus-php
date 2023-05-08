@@ -129,6 +129,11 @@ class BankingAccountStatement extends Job
                 Trace::ERROR,
                 TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_FAILED, $data);
 
+            $this->trace->count(BAS\Metric::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_FAILED,
+                                [
+                                    'channel' => $this->params['channel']
+                                ]);
+
             $this->checkRetry();
         }
     }

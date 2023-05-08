@@ -133,6 +133,12 @@ class RblBankingAccountStatement extends Job
                             'redis_key_name'               => $redisKeyName
                         ]);
 
+                    Tracer::startSpanWithAttributes(HyperTrace::BANKING_ACCOUNT_STATEMENT_RATE_LIMITED,
+                                                    [
+                                                        BAS\Entity::CHANNEL            => $this->params['channel'],
+                                                        'redis_key_name'               => $redisKeyName
+                                                    ]);
+
                     $rateLimitReleaseDelay = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::RBL_STATEMENT_FETCH_RATE_LIMIT_RELEASE_DELAY]);
 
                     if (empty($rateLimitReleaseDelay) == true)
@@ -153,6 +159,12 @@ class RblBankingAccountStatement extends Job
                             'rate_limit_request_number'    => $rateLimitRequestNumber,
                             'redis_key_name'               => $redisKeyName
                         ]);
+
+                    Tracer::startSpanWithAttributes(HyperTrace::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_INIT,
+                                                    [
+                                                        BAS\Entity::CHANNEL            => $this->params['channel'],
+                                                        'redis_key_name'               => $redisKeyName
+                                                    ]);
 
                     $workerStartTime = Carbon::now()->getTimestamp();
 
@@ -182,6 +194,11 @@ class RblBankingAccountStatement extends Job
                 $e,
                 Trace::ERROR,
                 TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_FAILED, $this->params);
+
+            $this->trace->count(BAS\Metric::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_FAILED,
+                                [
+                                    'channel' => $this->params['channel']
+                                ]);
 
             $this->checkRetry();
         }

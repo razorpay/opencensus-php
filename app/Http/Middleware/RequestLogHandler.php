@@ -4,6 +4,8 @@ namespace RZP\Http\Middleware;
 
 use App;
 use Closure;
+use RZP\Constants\HyperTrace;
+use RZP\Trace\Tracer;
 use Throwable;
 use Carbon\Carbon;
 
@@ -147,6 +149,12 @@ class RequestLogHandler
                     'route_name'  => $this->route->getCurrentRouteName(),
                 ]
             );
+
+            Tracer::startSpanWithAttributes(HyperTrace::REQUEST_LOG_HANDLER_UNEXPECTED_EXCEPTION,
+                                            [
+                                                'request_url' => $request->getRequestUri(),
+                                                'route_name'  => $this->route->getCurrentRouteName(),
+                                            ]);
 
             return $response;
         }

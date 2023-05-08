@@ -7,8 +7,10 @@ use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
+
 use RZP\Models\Admin;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payout\Metric;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
@@ -124,6 +126,11 @@ class BankingAccountStatementRecon extends Job
                 $e,
                 Trace::ERROR,
                 TraceCode::MISSING_BANKING_ACCOUNT_STATEMENT_FETCH_JOB_FAILED, $this->params);
+
+            $this->trace->count(BAS\Metric::MISSING_BANKING_ACCOUNT_STATEMENT_FETCH_JOB_FAILED,
+                                [
+                                    'channel' => $this->params['channel']
+                                ]);
 
             if ($e instanceof Exception\GatewayErrorException)
             {

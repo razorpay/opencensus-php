@@ -5,6 +5,7 @@ namespace RZP\Models\FundAccount\Validation;
 use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Models\Base;
+use RZP\Trace\Tracer;
 use RZP\Services\FTS;
 use RZP\Models\Admin;
 use RZP\Models\Feature;
@@ -17,6 +18,7 @@ use RZP\Jobs\Transactions;
 use RZP\Models\FundAccount;
 use RZP\Models\Pricing\Fee;
 use RZP\Constants\Timezone;
+use RZP\Constants\HyperTrace;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Settlement\Channel;
 use Razorpay\Trace\Logger as Trace;
@@ -67,6 +69,15 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::FUND_ACCOUNT_VALIDATION_REQUEST, [
             'input' => $input
         ]);
+
+        if ((isset($input['balance_id']) === false) and
+            (isset($input['fund_account']['id']) === true))
+        {
+            Tracer::startSpanWithAttributes(HyperTrace::FAV_REQUEST_WITH_NO_ACCOUNT_NUMBER,
+                                            [
+                                                'merchant_id' => $merchant->getId()
+                                            ]);
+        }
 
         try
         {
@@ -991,6 +1002,11 @@ class Core extends Base\Core
                     'error' => $e->getMessage()
                 ]);
 
+            $this->trace->count(Metric::FAV_UPDATE_FROM_FTS_WEBHOOK_FAILED_COUNT,
+                                [
+                                    'error' => $e->getMessage()
+                                ]);
+
             throw $e;
         }
     }
@@ -1043,6 +1059,11 @@ class Core extends Base\Core
                 [
                     'error' => $e->getMessage()
                 ]);
+
+            $this->trace->count(Metric::FAV_UPDATE_FROM_FTS_WEBHOOK_FAILED_COUNT,
+                                [
+                                    'error' => $e->getMessage()
+                                ]);
 
             throw $e;
         }
@@ -1230,6 +1251,12 @@ class Core extends Base\Core
                         'fav_id' => $fav->getPublicId(),
                     ]
                 );
+
+                $this->trace->count(\RZP\Models\Payout\Metric::LEDGER_STATUS_CRON_FAILURE_COUNT,
+                                    [
+                                        'environment' => $this->app['env'],
+                                        'entity'      => 'fund_account_validation'
+                                    ]);
 
                 continue;
             }

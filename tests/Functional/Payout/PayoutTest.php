@@ -13629,6 +13629,63 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(Payout\Entity::DASHBOARD, $payouts[3][Payout\Entity::ORIGIN]);
     }
 
+    public function testMetricPushForInvalidStateTransition()
+    {
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_ASYNC_FTS_TRANSFER]);
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $testData = $this->testData['testUpdateFTAAndPayoutWithInvalidStateTransition'];
+
+        $testData['request']['content']['source_id'] = $payout->getId();
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->ftsAuth();
+
+        $this->startTest();
+        $metricsMock = $this->createMetricsMock();
+        $boolMetricCaptured = false;
+
+        $this->mockAndCaptureCountMetric(
+            Payout\Metric::PAYOUT_METRIC_PUSH_EXCEPTION_COUNT,
+            $metricsMock,
+            $boolMetricCaptured,
+            [
+                'previous_status' => 'created',
+                'current_status'  => 'processed',
+                'environment'     => 'testing',
+                'mode'            => 'test'
+            ]
+        );
+
+
+        $this->assertEquals('created', $payout->getStatus());
+
+        $ftaForPayout = $this->getDbEntities('fund_transfer_attempt',
+                                             [
+                                                 'source_id'   => $payout->getId(),
+                                                 'source_type' => 'payout',
+                                                 'is_fts'      => true,
+                                             ])->first();
+
+
+        $this->assertEquals('created', $ftaForPayout->getStatus());
+
+
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status'       => 'processed',
+            'failure_reason'   => '',
+            'bank_status_code' => 'NOT_REGISTERED_ERROR'
+        ]);
+
+        $this->assertTrue($boolMetricCaptured);
+    }
+
     public function testProcessBulkPayoutDelayedInitiation()
     {
         $this->testBulkPayoutWithThrottling();
@@ -26743,6 +26800,20 @@ class PayoutTest extends OAuthTestCase
         $this->app['config']->set('applications.ledger.enabled', false);
         $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
 
+        $metricsMock = $this->createMetricsMock();
+
+        $boolMetricCaptured = false;
+
+        $this->mockAndCaptureCountMetric(
+            Payout\Metric::PAYOUT_PUBLIC_ERROR_CODE_UNMAPPED_BANK_STATUS_CODE,
+            $metricsMock,
+            $boolMetricCaptured,
+            [
+                'bank_status_code' => 'YB_NS_E10282323',
+                'mode'       => 'test'
+            ]
+        );
+
         $this->makeRequestAndGetContent($this->testData['testCreatePayout']['request']);
 
         $payout = $this->getDbLastEntity('payout');
@@ -26754,6 +26825,8 @@ class PayoutTest extends OAuthTestCase
             'failure_reason'   => '',
             'bank_status_code' => 'YB_NS_E10282323'
         ]);
+
+        $this->assertTrue($boolMetricCaptured);
 
         $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
 

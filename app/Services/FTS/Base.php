@@ -2,6 +2,7 @@
 
 namespace RZP\Services\FTS;
 
+use RZP\Models\FundAccount\Validation\Metric;
 use \WpOrg\Requests\Response;
 use Razorpay\Trace\Logger as Trace;
 
@@ -311,6 +312,14 @@ class Base
                 [
                     'message'      => $e->getMessage(),
                 ]);
+
+            $this->trace->count(Metric::FTS_FAILURE_EXCEPTION_COUNT,
+                                [
+                                    'route_name'  => app('request.ctx')->getRoute() ?: 'none',
+                                    'mode'        => app('rzp.mode') ?: 'none',
+                                    'environment' => app('env'),
+                                ]);
+
             throw $e;
         }
 

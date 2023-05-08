@@ -119,6 +119,12 @@ class IciciBankingAccountStatement extends Job
                         'redis_key_name'               => $redisKeyName
                     ]);
 
+                Tracer::startSpanWithAttributes(HyperTrace::BANKING_ACCOUNT_STATEMENT_RATE_LIMITED,
+                                                [
+                                                    BAS\Entity::CHANNEL            => $this->params['channel'],
+                                                    'redis_key_name'               => $redisKeyName
+                                                ]);
+
                 $rateLimitReleaseDelay = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::ICICI_STATEMENT_FETCH_RATE_LIMIT_RELEASE_DELAY]);
 
                 if (empty($rateLimitReleaseDelay) == true)
@@ -141,6 +147,12 @@ class IciciBankingAccountStatement extends Job
                     'rate_limit_request_number'    => $rateLimitRequestNumber,
                     'redis_key_name'               => $redisKeyName
                 ]);
+
+            Tracer::startSpanWithAttributes(HyperTrace::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_INIT,
+                                            [
+                                                BAS\Entity::CHANNEL => $this->params['channel'],
+                                                'redis_key_name'    => $redisKeyName
+                                            ]);
 
             $workerStartTime = Carbon::now()->getTimestamp();
 
@@ -169,6 +181,13 @@ class IciciBankingAccountStatement extends Job
                 $e,
                 Trace::ERROR,
                 TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_FAILED, $this->params);
+
+            $BASCore = new BAS\Core;
+
+            $this->trace->count(BAS\Metric::BANKING_ACCOUNT_STATEMENT_FETCH_JOB_FAILED,
+                                [
+                                    BAS\Details\Entity::CHANNEL => $this->params['channel'],
+                                ]);
 
             $this->checkRetry();
         }

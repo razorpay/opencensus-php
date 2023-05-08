@@ -679,6 +679,8 @@ class Core extends Base\Core
 
             $response['message'] = 'Missing statements got inserted and linked successfully.
                                     Dispatch for updating BAS entities got FAILED.';
+
+            $this->trace->count(Metric::BAS_UPDATE_QUEUE_DISPATCH_FAILURE);
         }
 
         try
@@ -700,6 +702,8 @@ class Core extends Base\Core
             $response['message'] = 'Missing statements got inserted and linked successfully.
                                     Dispatched for updating BAS entities.
                                     Removal of inserted missing statements from redis got failed.';
+
+            $this->trace->count(Metric::REMOVAL_OF_INSERTED_STATEMENTS_FROM_REDIS_FAILURE);
         }
 
         if (empty($params) === true)
@@ -2684,6 +2688,12 @@ class Core extends Base\Core
                      'bas_id'    => $basEntity->getId(),
                      'payout_id' => $payout->getId()
                  ]);
+
+            Tracer::startSpanWithAttributes(Constants\HyperTrace::BAS_ENTRY_FOR_A_FAILED_PAYOUT,
+                                            [
+                                                'bas_id'    => $basEntity->getId(),
+                                                'payout_id' => $payout->getId()
+                                            ]);
 
             return null;
         }

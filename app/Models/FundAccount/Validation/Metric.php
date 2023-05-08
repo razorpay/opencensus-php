@@ -20,6 +20,9 @@ class Metric extends Base\Core
     const FUND_ACCOUNT_VALIDATION_COMPLETED_TOTAL        = 'fund_account_validation_completed_total';
     const FUND_ACCOUNT_VALIDATION_FAILED_TOTAL           = 'fund_account_validation_failed_total';
 
+    const FAV_UPDATE_FROM_FTS_WEBHOOK_FAILED_COUNT       = 'fav_update_from_fts_webhook_failed';
+    const FTS_FAILURE_EXCEPTION_COUNT                    = 'fts_failure_exception_count';
+
     // Metric Names
     const FUND_ACCOUNT_VALIDATION_CREATED                = 'fund_account_validation_created';
     const FUND_ACCOUNT_VALIDATION_FAILED                 = 'fund_account_validation_failed';
@@ -28,6 +31,7 @@ class Metric extends Base\Core
     const FUND_ACCOUNT_VALIDATION_CREATED_TO_FAILED_DURATION_SECONDS     = 'fund_account_validation_created_to_failed_duration_seconds.histogram';
 
     const FAV_QUEUE_FOR_FTS_JOB_FAILED_OR_RETRY_ATTEMPT_EXHAUSTED = 'fav_queue_for_fts_job_failed_or_attempt_exhausted';
+    const FAV_COMPLETED_WITH_STATUS_ACTIVE_AND_BENE_NAME_NULL = 'fav_completed_with_status_active_and_bene_name_null';
 
     public function pushCreatedMetrics(string $fundAccountType)
     {

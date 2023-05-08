@@ -4,6 +4,7 @@ namespace RZP\Models\Payout;
 
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payout\Metric;
 
 class ErrorCodeMapping
 {
@@ -237,6 +238,11 @@ class ErrorCodeMapping
                     'bank_status_code'  => $bankStatusCode,
                     'payout_id'         => $payout->getId(),
                 ]);
+
+            app('trace')->count(Metric::PAYOUT_PUBLIC_ERROR_CODE_UNMAPPED_BANK_STATUS_CODE, [
+                'bank_status_code' => $bankStatusCode,
+                'mode'             => app('request.ctx')->getMode() ?: 'none'
+            ]);
 
             return self::DEFAULT_FAILURE_REASON;
         }

@@ -10,6 +10,7 @@ use RdKafka\KafkaConsumer;
 use RdKafka\TopicPartition;
 
 use RZP\Jobs\Job;
+use RZP\Services\Metric;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Services\Kafka\Utils\Constants;
@@ -52,7 +53,11 @@ class Consumer extends Job
         {
             try
             {
+                $startTime = millitime();
+
                 $message = $this->consumer->consume($this->consumerUtils->getConsumerPollTimeoutMs());
+
+                $timeTaken = millitime() - $startTime;
 
                 switch ($message->err)
                 {
@@ -64,6 +69,12 @@ class Consumer extends Job
                                                Constants::CASE    => 'RD_KAFKA_RESP_ERR_NO_ERROR',
                                                Constants::INFO    => "successfully consumed message"
                                            ]);
+
+                        $this->trace->histogram(Metric::KAFKA_CONSUMER_CONSUMPTION_DETAIL_LATENCY, $timeTaken,
+                                                [
+                                                    Constants::CASE    => 'RD_KAFKA_RESP_ERR_NO_ERROR',
+                                                    Constants::INFO    => "successfully consumed message"
+                                                ]);
 
                         $isProcessedSuccessfully = $this->processMessage($message);
 

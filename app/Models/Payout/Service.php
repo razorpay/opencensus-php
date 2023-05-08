@@ -31,6 +31,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Workflow;
 use RZP\Models\Settings;
 use RZP\Models\Admin\Org;
+use RZP\Trace\Tracer;
 use RZP\Traits\TrimSpace;
 use RZP\Models\FundAccount;
 use RZP\Http\RequestHeader;
@@ -1280,6 +1281,8 @@ class Service extends Base\Service
                     Entity::PAYOUT_ID   => $payoutId,
                     Entity::MERCHANT_ID => $this->merchant->getId()
                 ]);
+
+            $this->trace->count(Metric::FTS_OTP_CREATION_FAILURES_COUNT);
         }
 
         return ['success' => true];
@@ -1864,6 +1867,11 @@ class Service extends Base\Service
     public function processInitiateForBatchSubmittedPayouts(array $input)
     {
         $this->trace->info(TraceCode::BATCH_SUBMITTED_PAYOUTS_CRON_REQUEST);
+
+        Tracer::startSpanWithAttributes(Constants\HyperTrace::BATCH_SUBMITTED_PAYOUTS_CRON_REQUEST,
+                                        [
+                                            'mode' => $this->app['rzp.mode'],
+                                        ]);
 
         $merchantIds = $this->repo->payout->fetchMIDsWithBatchSubmittedPayouts();
 

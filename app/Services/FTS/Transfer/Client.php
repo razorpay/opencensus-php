@@ -3,6 +3,7 @@
 namespace RZP\Services\FTS\Transfer;
 
 use App;
+use RZP\Models\FundTransfer\Attempt\Metric;
 use RZP\Trace\TraceCode;
 use RZP\Http\Request\Requests;
 use Razorpay\Trace\Logger as Trace;
@@ -63,6 +64,11 @@ class Client extends BaseHandler
               [
                 'error' => $e->getMessage()
               ]);
+
+            $this->trace->count(Metric::WEBHOOK_UPDATE_FAILURE_COUNT,
+                                [
+                                    'error' => $e->getMessage()
+                                ]);
         }
 
         return $response;

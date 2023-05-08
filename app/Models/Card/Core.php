@@ -710,6 +710,16 @@ class Core extends Base\Core
                 Trace::CRITICAL,
                 TraceCode::VAULT_CARD_METADATA_SAVE_FAILED
             );
+
+
+            if ( $isRzpX === true)
+            {
+                $this->trace->count(Metric::VAULT_CARD_METADATA_SAVE_FAILED,
+                                    [
+                                        'message' => $e->getMessage()
+                                    ]);
+            }
+
         }
 
         return $cardMetaData;

@@ -7,15 +7,19 @@ use Config;
 use Monolog\Logger;
 
 use RZP\Exception;
+use RZP\Trace\Tracer;
 use RZP\Models\Base\Core;
 use RZP\Models\Transaction;
+use RZP\Constants\HyperTrace;
 use RZP\Models\FundAccount\Type;
 use RZP\Jobs\FundAccountValidation;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Listeners\ApiEventSubscriber;
+use RZP\Models\FundAccount\Validation\Metric;
 use RZP\Models\FundAccount\Validation\Entity;
 use RZP\Models\FundAccount\Validation\Status;
+use RZP\Models\FundAccount\Validation\AccountStatus;
 
 abstract class Base extends Core
 {
@@ -85,6 +89,15 @@ abstract class Base extends Core
         $this->validation->setUtr($utr);
 
         $this->repo->saveOrFail($this->validation);
+
+        if (($accountStatus === AccountStatus::ACTIVE) and
+            ($this->validation->getRegisteredName() === null))
+        {
+            $this->trace->count(Metric::FAV_COMPLETED_WITH_STATUS_ACTIVE_AND_BENE_NAME_NULL,
+                                [
+                                    'mode' => $this->app['rzp.mode']
+                                ]);
+        }
 
         $this->dispatchValidationCompletedEvent();
 

@@ -21,6 +21,7 @@ use RZP\Jobs\LedgerStatus;
 use RZP\Jobs\Transactions;
 use RZP\Models\Transaction;
 use RZP\Models\BankAccount;
+use RZP\Models\Payout\Metric;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Currency;
 use Razorpay\Trace\Logger as Trace;
@@ -887,6 +888,12 @@ class Core extends Base\Core
                         'bank_transfer_id' => $bt->getPublicId(),
                     ]
                 );
+
+                $this->trace->count(Metric::LEDGER_STATUS_CRON_FAILURE_COUNT,
+                                    [
+                                        'environment'      => $this->app['env'],
+                                        'entity'           => 'bank_transfer'
+                                    ]);
 
                 continue;
             }

@@ -4,6 +4,7 @@ namespace RZP\Models\Adjustment;
 
 use RZP\Exception;
 use RZP\Models\Base;
+
 use RZP\Models\Dispute;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
@@ -15,6 +16,7 @@ use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Jobs\Transactions;
 use RZP\Models\Transaction;
+use RZP\Models\Payout\Metric;
 use RZP\Models\Merchant\Balance;
 use Exception as DefaultException;
 use RZP\Constants as DefaultConstants;
@@ -947,6 +949,12 @@ class Core extends Base\Core
                         'adjustment_id' => $adj->getPublicId(),
                     ]
                 );
+
+                $this->trace->count(Metric::LEDGER_STATUS_CRON_FAILURE_COUNT,
+                                    [
+                                        'environment'   => $this->app['env'],
+                                        'entity'        => 'adjustment'
+                                    ]);
 
                 continue;
             }

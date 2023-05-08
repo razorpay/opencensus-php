@@ -194,6 +194,8 @@ class Core extends Base\Core
                     TraceCode::MFN_WEBHOOK_CREATE_FAILURE,
                     [ 'merchant_id' => $entityId ]
                 );
+
+                $this->trace->count(Metric::MFN_WEBHOOK_CREATE_FAILURE);
             }
         }
 
@@ -364,6 +366,20 @@ class Core extends Base\Core
                 Entity::FEATURE     => $feature->toArrayPublic(),
                 Entity::SHOULD_SYNC => $shouldSync
             ]);
+
+        if (($feature->getName() === 'ledger_journal_writes') or
+            ($feature->getName() === 'ledger_reverse_shadow') or
+            ($feature->getName() === 'ledger_journal_reads') or
+            ($feature->getName() === 'da_ledger_journal_writes') or
+            ($feature->getName() === 'da_ledger_reverse_shadow'))
+
+        {
+            $this->trace->count(Metric::LEDGER_FEATURE_REMOVAL_COUNT,
+                                [
+                                    'mode'         => $this->app['rzp.mode'],
+                                    'environment'  => $this->app['env'],
+                                ]);
+        }
 
         // Merchant shouldn't be able to remove this feature for compliance of DS only merchants
         if ($feature->toArrayPublic()['name'] === 'only_ds')

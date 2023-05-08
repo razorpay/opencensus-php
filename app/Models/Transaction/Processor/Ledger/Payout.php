@@ -3,6 +3,7 @@
 namespace RZP\Models\Transaction\Processor\Ledger;
 
 use RZP\Constants;
+use RZP\Models\Payout\Metric;
 use Ramsey\Uuid\Uuid;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -540,6 +541,11 @@ class Payout extends Base
                         $this->payout->getId(),
                         Constants\Entity::PAYOUT,
                         $this->payout);
+
+                    $this->trace->count(Metric::CREDITS_REVERSE_FOR_LEDGER_PAYOUT_FOR_INSUFFICIENT_BALANCE_COUNT,
+                                        [
+                                            'environment'    => $this->app['env']
+                                        ]);
 
                     unset($this->payout[Entity::FEE_TYPE]);
 

@@ -1697,6 +1697,8 @@ class Base extends BaseCore
                     'payout_id'     => $payout->getId(),
                 ]);
 
+            $this->trace->count(Metric::ICICI_2FA_APPROVE_ROUTE_FAILURES_COUNT);
+
             throw $throwable;
         }
 

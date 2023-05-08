@@ -7,6 +7,7 @@ use RZP\Models\Payout\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Product;
 use Razorpay\Trace\Logger;
+use RZP\Models\Payout\Metric;
 use RZP\Models\Payout\Status;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Purpose;
@@ -271,6 +272,8 @@ class Base extends DSBase
                     'message'   => $e->getMessage(),
                     'payout_id' => $payout->getId(),
                 ]);
+
+            $this->trace->count(Metric::ON_HOLD_PAYOUT_CHECK_FAILED);
         }
 
         return false;

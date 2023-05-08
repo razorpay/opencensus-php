@@ -7,6 +7,7 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Trace\Tracer;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\FundTransfer;
 use RZP\Models\Settlement;
@@ -539,6 +540,11 @@ class Core extends Base\Core
                     'error' => $e->getMessage()
                 ]);
 
+            $this->trace->count(Metric::WEBHOOK_UPDATE_FAILURE_COUNT,
+                                [
+                                    'error' => $e->getMessage()
+                                ]);
+
             throw $e;
         }
     }
@@ -660,6 +666,13 @@ class Core extends Base\Core
                 TraceCode::FTA_SOURCE_PROCESSING_FAILED,
                 $ftaData
             );
+
+
+
+            $this->trace->count(Metric::WEBHOOK_UPDATE_FAILURE_COUNT,
+                                [
+                                    'error' => $e->getMessage()
+                                ]);
         }
     }
 
@@ -762,6 +775,11 @@ class Core extends Base\Core
                 TraceCode::FTA_SOURCE_PROCESSING_FAILED,
                 $ftaData
             );
+
+            $this->trace->count(Metric::WEBHOOK_UPDATE_FAILURE_COUNT,
+                                [
+                                    'error' => $e->getMessage()
+                                ]);
 
             if ($entityType === EntityConstant::PAYOUT)
             {

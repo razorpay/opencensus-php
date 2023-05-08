@@ -1556,6 +1556,13 @@ class Core extends Base\Core
                     ]
                 );
 
+                $this->trace->count(Payout\Metric::LEDGER_STATUS_CRON_FAILURE_COUNT,
+                                    [
+                                        'environment' => $this->app['env'],
+                                        'entity'      => 'reversal'
+                                    ]);
+
+
                 continue;
             }
         }

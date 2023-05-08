@@ -460,6 +460,8 @@ class Core extends Base\Core
                     'merchant_id' => $merchant->getId(),
                 ]);
 
+            $this->trace->count(Metric::FTS_OTP_CREATION_FAILURES_COUNT);
+
             // Suppress the exception as we don't want to return an error if OTP creation fails.
             // The user will retry OTP creation using the send_otp route.
         }
@@ -4131,6 +4133,13 @@ class Core extends Base\Core
                 'source_id'         => $source->getPublicId(),
             ]);
 
+        Tracer::startSpanWithAttributes(Constants\HyperTrace::TRANSACTION_FOUND_DURING_PAYOUT_PROCESSED,
+                                        [
+                                            'payout_id'         => $payout->getId(),
+                                            'transaction_id'    => $transaction->getId(),
+                                            'source_id'         => $source->getPublicId(),
+                                        ]);
+
         list($dummyTransaction, $dummyFeesBreakup) = $this->getDummyTransactionAndFeesBreakupForPayout($payout);
 
         $this->repo->transaction(
@@ -5141,6 +5150,8 @@ class Core extends Base\Core
                 TraceCode::CREDIT_TRANSFER_FOR_VA_TO_VA_PAYOUT_FAILURE,
                 $traceInfo
             );
+
+            $this->trace->count(Metric::CREDIT_TRANSFER_FOR_VA_TO_VA_PAYOUT_FAILURE);
         }
     }
 
@@ -7798,6 +7809,12 @@ class Core extends Base\Core
                         'payout_id' => $payout->getPublicId(),
                     ]
                 );
+
+                $this->trace->count(Metric::LEDGER_STATUS_CRON_FAILURE_COUNT,
+                                    [
+                                        'environment' => $this->app['env'],
+                                        'entity'      => 'payout'
+                                    ]);
 
                 continue;
             }

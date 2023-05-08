@@ -6,6 +6,7 @@ use Mail;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Trace\Tracer;
 use RZP\Models\Contact;
 use RZP\Diag\EventCode;
 use RZP\Models\Counter;
@@ -19,6 +20,7 @@ use RZP\Models\Admin\Admin;
 use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
 use RZP\Constants\Timezone;
+use RZP\Constants\HyperTrace;
 use RZP\Models\Schedule\Type;
 use RZP\Models\Schedule\Task;
 use RZP\Models\VirtualAccount;
@@ -1776,6 +1778,12 @@ class Core extends Base\Core
                     Entity::GATEWAY_BALANCE         => $basDetails->getGatewayBalance(),
                     Entity::BALANCE_LAST_FETCHED_AT => $basDetails->getBalanceLastFetchedAt(),
                 ]);
+
+            Tracer::startSpanWithAttributes(HyperTrace::BANKING_ACCOUNT_FETCH_AND_UPDATE_GATEWAY_BALANCE_REQUEST_FAILED,
+                                            [
+                                                Entity::CHANNEL                 => $channel,
+                                                Entity::MERCHANT_ID             => $basDetails->getMerchantId(),
+                                            ]);
         }
 
         return $basDetails;

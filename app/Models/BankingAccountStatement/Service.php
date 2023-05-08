@@ -296,6 +296,8 @@ class Service extends Base\Service
                 $this->core()->releaseBasDetailsFromStatementFix($accountNumber, $channel);
             }
 
+            $this->trace->count(Metric::INSERT_AND_UPDATE_BAS_FAILURE);
+
             throw $exception;
         }
     }

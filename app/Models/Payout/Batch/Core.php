@@ -7,6 +7,7 @@ use Ramsey\Uuid\Uuid;
 
 use RZP\Error\Error;
 use RZP\Models\Batch;
+use RZP\Models\Payout\Metric;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
@@ -204,6 +205,9 @@ class Core extends BaseCore
                     'batch_id' => $exceptionData[Entity::BATCH_ID],
                     'message'  => $e->getMessage(),
                 ]);
+
+            $this->trace->count(Metric::PAYOUTS_BATCH_PAYOUT_ENTITY_CREATION_FAILED_WEBHOOK_FAILED);
+
         }
     }
 

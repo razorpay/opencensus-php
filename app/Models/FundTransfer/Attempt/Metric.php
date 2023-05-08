@@ -65,6 +65,8 @@ final class Metric
     const RZP_ERROR         = 'rzp_error';
     const NODAL_BANK_ERROR  = 'nodal_bank_error';
 
+    const WEBHOOK_UPDATE_FAILURE_COUNT = 'webhook_update_failure_count';
+
     public static function getDimensionsAttemptsInitiated($channel, $purpose = null, $sourceType): array
     {
         return [

@@ -20,6 +20,7 @@ use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\BankingAccount\Gateway\Icici;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Models\BankingAccountStatement\Metric;
 use RZP\Models\BankingAccountStatement\Entity;
 use RZP\Models\BankingAccountStatement\Channel;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -873,6 +874,12 @@ class Gateway extends BaseProcessor
                                    Entity::ACCOUNT_NUMBER   => $this->accountNumber
                                ] + $transactionData
             );
+
+            $this->trace->count(Metric::BANKING_ACCOUNT_STATEMENT_ICICI_TEMP_RECORD_COUNT,
+                                [
+                                    Entity::MERCHANT_ID      => $this->basDetails->getMerchantId(),
+                                ]);
+
         }
     }
 

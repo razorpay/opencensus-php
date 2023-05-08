@@ -6,7 +6,9 @@ use App;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Trace\Tracer;
 use RZP\Trace\TraceCode;
+use RZP\Constants\HyperTrace;
 use RZP\Models\Merchant\Balance\Entity as Balance;
 
 final class Metric
@@ -29,6 +31,15 @@ final class Metric
     const PAYOUT_WORKFLOW_CREATION_FAILED_TOTAL                     = 'payout_workflow_creation_failed_total';
     const PAYOUT_WORKFLOW_ACTION_FAILED_TOTAL                       = 'payout_workflow_action_failed_total';
     const PAYOUT_WORKFLOW_ACTION_DUPLICATE_REQUEST_TOTAL            = 'payout_workflow_action_duplicate_request_total';
+    const ON_HOLD_PAYOUT_CHECK_FAILED                               = 'on_hold_payout_check_failed';
+    const CREDIT_TRANSFER_FOR_VA_TO_VA_PAYOUT_FAILURE               = 'credit_transfer_for_va_to_va_payout_failure';
+    const PAYOUT_PUBLIC_ERROR_CODE_UNMAPPED_BANK_STATUS_CODE        = 'payout_public_error_code_unmapped_bank_status_code';
+    const PAYOUT_METRIC_PUSH_EXCEPTION_COUNT                        = 'payout_metric_push_exception_count';
+    const FTS_OTP_CREATION_FAILURES_COUNT                           = 'fts_otp_creation_failures_count';
+    const ICICI_2FA_APPROVE_ROUTE_FAILURES_COUNT                    = 'icici_2fa_approve_route_failures_count';
+    const PAYOUTS_BATCH_PAYOUT_ENTITY_CREATION_FAILED_WEBHOOK_FAILED = 'payouts_batch_payout_entity_creation_failed_webhook_failed';
+    const CREDITS_REVERSE_FOR_LEDGER_PAYOUT_FOR_INSUFFICIENT_BALANCE_COUNT = 'credits_reverse_for_ledger_payout_for_insufficient_balance_count';
+    const LEDGER_STATUS_CRON_FAILURE_COUNT                          = 'ledger_status_cron_failure_count';
     const PARTNER_BANK_ON_HOLD_FAILED                               = 'partner_bank_on_hold_failed';
     const PAYOUT_CREATE_SUBMITTED_PROCESS_JOB_ERROR_TOTAL           = 'payout_create_submitted_process_job_error_total';
     const SERVER_ERROR_PRICING_RULE_ABSENT_TOTAL                    = 'server_error_pricing_rule_absent_total';
@@ -124,6 +135,14 @@ final class Metric
                     'previous_status' => $previousStatus,
                     'current_status'  => $currentStatus,
                 ]);
+
+            app('trace')->count(self::PAYOUT_METRIC_PUSH_EXCEPTION_COUNT,
+                                [
+                                    'previous_status' => $previousStatus,
+                                    'current_status'  => $currentStatus,
+                                    'environment'     => app('env'),
+                                    'mode'            => app('request.ctx')->getMode() ?: 'none'
+                                ]);
         }
     }
 

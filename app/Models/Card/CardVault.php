@@ -264,6 +264,15 @@ class CardVault extends Base\Core
                     'message' => 'Failed to save card meta data'
                 ]
             );
+
+            if ( $isRzpX === true)
+            {
+                $this->trace->count(Metric::VAULT_CARD_METADATA_SAVE_FAILED,
+                                    [
+                                        'message' => 'Failed to save card meta data'
+                                    ]);
+            }
+
         }
 
         return [];

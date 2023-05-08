@@ -305,4 +305,15 @@ class HyperTrace
     const MERCHANT_CORE_FETCH_BANKING_ACCOUNT_BY_MERCHANT_ID_ACCOUNT_TYPE_CHANNEL_AND_STATUS    = 'merchant_core.fetch_banking_account_by_merchant_id_account_type_channel_and_status';
     const MERCHANT_CORE_IS_X_VA_ACTIVATED                                                       = 'merchant_core.is_X_Va_Activated';
     const MERCHANT_CORE_GET_BALANCE_BY_MERCHANT_ID_CHANNELS_AND_ACCOUNT_TYPE                    = 'merchant_core.get_balance_by_merchant_id_channels_and_account_type';
+
+    const BATCH_SUBMITTED_PAYOUTS_CRON_REQUEST                                                  = 'batch_submitted_payouts_cron_request';
+    const PAYOUT_PUBLIC_ERROR_CODE_UNMAPPED_BANK_STATUS_CODE                                    = 'payout_public_error_code_unmapped_bank_status_code';
+    const BANKING_ACCOUNT_STATEMENT_FETCH_JOB_INIT                                              = 'banking_account_statement_fetch_job_init';
+    const BANKING_ACCOUNT_STATEMENT_RATE_LIMITED                                                = 'banking_account_statement_rate_limited';
+    const FAV_COMPLETED_WITH_STATUS_ACTIVE_AND_BENE_NAME_NULL                                   = 'fav_completed_with_status_active_and_bene_name_null';
+    const FAV_REQUEST_WITH_NO_ACCOUNT_NUMBER                                                    = 'fav_request_with_no_account_number';
+    const BANKING_ACCOUNT_FETCH_AND_UPDATE_GATEWAY_BALANCE_REQUEST_FAILED                       = 'banking_account_fetch_and_update_gateway_balance_request_failed';
+    const REQUEST_LOG_HANDLER_UNEXPECTED_EXCEPTION                                              = 'request_log_handler_unexpected_exception';
+    const BAS_ENTRY_FOR_A_FAILED_PAYOUT                                                         = 'bas_entry_for_a_failed_payout';
+    const TRANSACTION_FOUND_DURING_PAYOUT_PROCESSED                                             = 'transaction_found_during_payout_processed';
 }
