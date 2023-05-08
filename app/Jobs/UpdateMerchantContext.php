@@ -7,6 +7,7 @@ use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Constants;
 use Razorpay\Trace\Logger as Trace;
@@ -148,14 +149,34 @@ class UpdateMerchantContext extends Job
 
             $newActivationStatus = $detailCore->getApplicableActivationStatus($merchantDetail);
 
+            $app = App::getFacadeRoot();
+
             $splitzResult = $detailCore->getSplitzResponse($this->merchantId, 'merchant_automation_activation_exp_id');
+
+            $businessDetailMetadata = optional($app['repo']->merchant_business_detail->getBusinessDetailsForMerchantId($this->merchantId))->getMetadata();
+
+            if (empty($businessDetailMetadata['activation_status']) === true and
+                ($splitzResult === Merchant\Constants::SPLITZ_PILOT or
+                 $splitzResult === Merchant\Constants::SPLITZ_LIVE))
+            {
+                try
+                {
+                    (new BusinessDetail\Service)->saveBusinessDetailsForMerchant($this->merchantId, [
+                        BusinessDetail\Entity::METADATA => [
+                            'activation_status' => $newActivationStatus
+                        ]
+                    ]);
+                }
+                catch (\Throwable $ex)
+                {
+                    $this->trace->traceException($ex, Logger::ERROR, TraceCode::MERCHANT_EDIT_BUSINESS_DETAILS_FAILED);
+                }
+            }
 
             if (($newActivationStatus === Status::ACTIVATED) and
                 ($splitzResult === Merchant\Constants::SPLITZ_LIVE))
             {
                 // save website policy links
-                $app = App::getFacadeRoot();
-
                 $websitePolicy = $app['repo']->merchant_verification_detail->getDetailsForTypeAndIdentifierFromReplica(
                     $this->merchantId,
                     Constant::WEBSITE_POLICY,

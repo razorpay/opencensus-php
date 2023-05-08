@@ -4347,6 +4347,296 @@ class CoreTest extends TestCase
         ], $merchantWebsiteDetail['admin_website_details']['website']['https://www.sukhdev.org']);
     }
 
+    public function testOCRPassedActivatedSplitzPilot()
+    {
+        Queue::fake();
+
+        $this->mockRazorxTreatment();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'category'  => '5945',
+            'category2' => 'ecommerce'
+        ]);
+
+        $input = [
+            "experiment_id" => "LQzMXMbNCUramd",
+            "id"            => $merchant->getId()
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'pilot',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail:valid_fields', [
+            'merchant_id'               => $merchant->getId(),
+            'business_type'             => 4,
+            'business_category'         => 'ecommerce',
+            'business_subcategory'      => 'baby_products',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_website'          => 'https://www.sukhdev.org',
+            'bank_details_verification_status'     => 'verified',
+            'gstin_verification_status'            => 'verified',
+            'company_pan_verification_status'      => 'verified',
+            'bank_details_doc_verification_status' =>  null,
+            Entity::CIN_VERIFICATION_STATUS        => 'verified',
+        ]);
+
+        $bvsValidationData = [
+            'validation_id'     => 'LGjQP2ZQxa02ms',
+            'artefact_type'     => 'mcc_categorisation_website',
+            'owner_id'          => $merchantDetails->getMerchantId(),
+            'validation_status' => 'captured'
+        ];
+
+        $this->fixtures->create('bvs_validation', $bvsValidationData);
+
+        $this->fixtures->on('live')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => 'mcc_categorisation_website',
+            'artefact_identifier'  => 'number',
+        ]);
+
+        $this->fixtures->on('test')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => 'mcc_categorisation_website',
+            'artefact_identifier'  => 'number',
+        ]);
+
+        $this->fixtures->create('bvs_validation', [
+            'validation_id'     => 'L61kGPVWKT05Qx',
+            'artefact_type'     => 'website_policy',
+            'owner_id'          => $merchantDetails->getMerchantId(),
+            'validation_status' => 'captured'
+        ]);
+
+        $this->fixtures->on('live')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02at',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => 'website_policy',
+            'artefact_identifier'  => 'number',
+        ]);
+
+        $this->fixtures->on('test')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02at',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => 'website_policy',
+            'artefact_identifier'  => 'number',
+        ]);
+
+        $kafkaEventPayload = [
+            'data' => [
+                'id'              => 'LGjQP2ZQxa02ms',
+                'status'          => 'completed',
+                'category_result' => [
+                    'website_categorisation' => [
+                        'category'         => 'financial_services',
+                        'subcategory'      => 'trading',
+                        'predicted_mcc'    => 6211,
+                        'confidence_score' => 0.91,
+                        'status'           => 'completed'
+                    ]
+                ]
+            ]
+        ];
+
+        (new KafkaMessageProcessor)->process('pg-mcc-notification-events', $kafkaEventPayload, 'test');
+
+        $kafkaEventPayload = [
+            'data' => [
+                "website_verification_id" => "L61kGPVWKT05Qx",
+                "status" => "completed",
+                "verification_result" => [
+                    "terms" => [
+                        "analysis_result" => [
+                            "links_found" => ["https://www.sukhdev.org/termsofuse"],
+                            "confidence_score" => 0.5775,
+                            "relevant_details" => [],
+                            "validation_result" => true,
+                        ],
+                    ],
+                    "refund" => [
+                        "analysis_result" => [
+                            "links_found" => ["https://www.sukhdev.org/refundpolicy"],
+                            "confidence_score" => 0.6185,
+                            "relevant_details" => [],
+                            "validation_result" => true,
+                        ],
+                    ],
+                    "privacy" => [
+                        "analysis_result" => [
+                            "links_found" => ["https://www.sukhdev.org/privacypolicy"],
+                            "confidence_score" => 0.7067197799682617,
+                            "relevant_details" => [
+                                "note" =>
+                                    "Privacy Policy is majorly about Third Party Sharing/Collection, International and Specific Audiences, User Choice/Control, Practice not covered, Privacy contact information, Privacy Policy includes the following attributes Named third party, Unnamed third party, Does, Receive/Shared with, Aggregated or anonymized, Identifiable, User with account, Opt-out via contacting company, First party use,",
+                            ],
+                            "validation_result" => true,
+                        ],
+                    ],
+                    "contact_us" => [
+                        "analysis_result" => [
+                            "links_found" => ["https://www.sukhdev.org/contactus"],
+                            "relevant_details" => ["9987394065", "sukhdevonline@gmail.com"],
+                            "validation_result" => true,
+                        ],
+                    ],
+                    "shipping" => [
+                        "analysis_result" => [
+                            "links_found" => ["https://www.sukhdev.org/shipping"],
+                            "relevant_details" => ["9987394065", "sukhdevonline@gmail.com"],
+                            "validation_result" => true,
+                        ],
+                    ],
+                ],
+            ]
+        ];
+
+        (new KafkaMessageProcessor)->process('pg-website-verification-notification-events', $kafkaEventPayload, 'test');
+
+        $this->fixtures->create('bvs_validation', [
+            'validation_id'     => 'L61kGPVWKT05QT',
+            'artefact_type'     => 'website_policy',
+            'owner_id'          => $merchantDetails->getMerchantId(),
+            'validation_status' => 'captured'
+        ]);
+
+        $this->fixtures->on('live')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02am',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => 'negative_keywords',
+            'artefact_identifier'  => 'number',
+        ]);
+
+        $this->fixtures->on('test')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02am',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => 'negative_keywords',
+            'artefact_identifier'  => 'number',
+        ]);
+
+        $kafkaEventPayload = [
+            "data" =>[
+                "id" => "L61kGPVWKT05QT",
+                "status" => "success",
+                "document_details" => [
+                    "result" => [
+                        "prohibited" => [
+                            "drugs" => [
+                                "Phrases" => [
+                                    "cannabis" => 0,
+                                ],
+                                "total_count" => 0,
+                                "unique_count" => 0
+                            ],
+                            "financial services" => [
+                                "Phrases" => [
+                                    "investment" => 0
+                                ],
+                                "total_count" => 0,
+                                "unique_count" => 0
+                            ],
+                            "miscellaneous" => [
+                                "Phrases" => [
+                                    "cash" => 0,
+                                    "cigarette" => 0,
+                                ],
+                                "total_count" => 0,
+                                "unique_count" => 0
+                            ],
+                            "pharma" => [
+                                "Phrases" => [
+                                    "alcohol" => 0,
+                                    "cannabinoid" => 0,
+                                    "codeine" => 0,
+                                ],
+                                "total_count" => 0,
+                                "unique_count" => 0
+                            ],
+                            "tobacco products" => [
+                                "Phrases" => [
+                                    "tobacco" => 0
+                                ],
+                                "total_count" => 0,
+                                "unique_count" => 0
+                            ],
+                            "travel" => [
+                                "Phrases" => [
+                                    "booking" => 0,
+                                    "travel" => 0
+                                ],
+                                "total_count" => 0,
+                                "unique_count" => 0
+                            ]
+                        ],
+                        "required" => [
+                            "policy disclosure" => [
+                                "Phrases" => [
+                                    "cancellations" => 1,
+                                    "claims" => 11,
+                                    "contact us" => 1,
+                                    "delivery" => 46,
+                                    "payment" => 4,
+                                    "payments" => 2,
+                                    "privacy" => 5,
+                                    "privacy policy" => 8,
+                                    "refund" => 6,
+                                    "refund policy" => 4,
+                                    "refunds" => 1,
+                                    "return" => 3,
+                                    "return policy" => 2,
+                                    "returns" => 3,
+                                    "terms of service" => 1
+                                ],
+                                "total_count" => 98,
+                                "unique_count" => 15
+                            ],
+                        ],
+                    ],
+                    "website_url" => "https://www.hempstrol.com"
+                ]
+            ]
+        ];
+
+        (new KafkaMessageProcessor)->process('api-bvs-kyc-document-result-events', $kafkaEventPayload, 'test');
+
+        Queue::assertPushed(UpdateMerchantContext::class);
+
+        (new UpdateMerchantContext(Mode::LIVE, $merchantDetails->getId(), 'L61kGPVWKT05QT'))->handle();
+
+        $newBvsValidationData = $this->getDbEntity('bvs_validation',
+                                                   ['owner_id'        => $merchantDetails->getId(),
+                                                    'owner_type'      => 'merchant',
+                                                    'artefact_type'   => 'mcc_categorisation_website']);
+
+        $verificationData = $this->getDbEntity('merchant_verification_detail',
+                                               ['merchant_id'          => $merchantDetails->getId(),
+                                                'artefact_identifier'  => 'number',
+                                                'artefact_type'        => 'mcc_categorisation_website']);
+
+        $this->assertEquals('success', $newBvsValidationData['validation_status']);
+
+        $this->assertEquals('verified', $verificationData['status']);
+
+        $businessDetail = $this->getDbEntity('merchant_business_detail', [
+            'merchant_id'        => $merchantDetails->getId()
+        ]);
+
+        $this->assertEquals('activated', $businessDetail['metadata']['activation_status']);
+    }
+
     public function testMccEventResponseSuccessWithConfidenceScoreBelowThreshold()
     {
         $merchantDetails = $this->fixtures->create('merchant_detail', [
