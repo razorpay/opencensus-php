@@ -635,4 +635,10 @@ export default {
     // prod
     'LklMvyKSFn6ETp',
   ],
+  show_terminal_status_banner: [
+    // stage experiment ids
+    'LfxVvG2agqRTco',
+    // prod experiment ids
+    'LfxXJXWfj87JAx',
+  ],
 };

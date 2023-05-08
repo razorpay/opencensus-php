@@ -94,6 +94,13 @@ import * as LocalStorageService from 'common/utils/localStorage';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import PricingSubscriptionWrapper from 'common/ui/PricingSubscription';
+import lazy from 'merchant/routes/LazyLoader';
+
+const TerminalStatus = lazy(() =>
+  import(
+    /* webpackChunkName: 'terminal-status-banner' */ 'merchant/components/Announcements/TerminalStatus'
+  ),
+);
 
 class AnalyticsDesktop extends Component {
   state = {
@@ -801,6 +808,11 @@ class AnalyticsDesktop extends Component {
             {/* Free Credits Repayments Banner */}
             {user.isRepaymentBannerEnabled && <RepaymentAnnouncment userId={user.current} />}
             {/* Announcement - Enable International Cards */}
+            {mode === 'live' && user.showTerminalStatusBanner ? (
+              <Suspense fallback={null}>
+                <TerminalStatus user={user} />
+              </Suspense>
+            ) : null}
             <ShowWhen
               additionalCondition={(usr) =>
                 usr.isOrgRZP &&

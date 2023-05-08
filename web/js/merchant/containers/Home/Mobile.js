@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Suspense } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import LazyLoad from 'react-lazyload';
@@ -46,6 +46,13 @@ import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
 import Traffic from 'merchant/containers/Home/Traffic';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import lazy from 'merchant/routes/LazyLoader';
+
+const TerminalStatus = lazy(() =>
+  import(
+    /* webpackChunkName: 'terminal-status-banner' */ 'merchant/components/Announcements/TerminalStatus'
+  ),
+);
 
 @connect(
   (state) => ({
@@ -287,6 +294,11 @@ class AnalyticsMobile extends Component {
                 {getFormattedAmountNew(this.props.referee.referral_amount, true)} in collections -
                 100% FREE*
               </AnnouncementBanner>
+            ) : null}
+            {mode === 'live' && user.showTerminalStatusBanner ? (
+              <Suspense fallback={null}>
+                <TerminalStatus isMobile user={user} />
+              </Suspense>
             ) : null}
             <WebsiteComplianceNudge screen="Home page" />
             {user.isWebsiteComplianceFlowEnabled &&

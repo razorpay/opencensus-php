@@ -1916,6 +1916,10 @@ export default class User {
     return getSplitzExperimentVariant('get_ticket_migration')?.variables?.result === 'on';
   }
 
+  get showTerminalStatusBanner() {
+    return getSplitzExperimentVariant('show_terminal_status_banner')?.variables?.result === 'on';
+  }
+
   get isProductLedOnboardingRZP() {
     return this.isProductLedOnboarding && this.isOrgRZP;
   }

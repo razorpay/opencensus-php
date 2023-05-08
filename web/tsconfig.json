@@ -65,7 +65,8 @@
     "js/merchant/views/Account",
     "js/merchant_common/views/Reports/**/*",
     "js/merchant/components/HeaderNav/UniversalSearch",
-    "js/merchant/components/Activation"
+    "js/merchant/components/Activation",
+    "js/merchant/components/Announcements/TerminalStatus"
   ],
   "exclude": ["node_modules", "js/common/utils"],
   "types": ["resize-observer-browser"]

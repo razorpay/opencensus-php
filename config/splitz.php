@@ -292,6 +292,9 @@ return [
         'SHOW_INTERNATIONAL_PAYMENTS_BUTTON' => env('SHOW_INTERNATIONAL_PAYMENTS_BUTTON', ''),
 
         // Ecosystem Downtimes UI - Availability and Downtime
-        'ECOSYSTEM_DOWNTIMES' => env('ECOSYSTEM_DOWNTIMES','')
+        'ECOSYSTEM_DOWNTIMES' => env('ECOSYSTEM_DOWNTIMES',''),
+
+        // For showing Ternimal status banner on dashboard.
+        'SHOW_TERMINAL_STATUS_BANNER' => env('SHOW_TERMINAL_STATUS_BANNER','')
     ]
 ];
