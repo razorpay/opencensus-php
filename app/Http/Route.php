@@ -522,6 +522,7 @@ class Route
         'merchant_balance_fetch_admin'             => ['get',      'admin_balances',                                 'MerchantController@getAccountBalances'                             ],
         'credits_create'                           => ['post',     'merchants/{id}/credits_log',                     'MerchantController@postCreateCreditsLog'                           ],
         'credits_create_bulk'                      => ['post',     'merchants/credits/bulk',                         'MerchantController@bulkCreateMerchantCredits'                      ],
+        'credits_create_bulk_internal'             => ['post',     'internal/merchants/credits/bulk',                'MerchantController@bulkCreateMerchantCredits'                      ],
         'credits_create_bulk_batch'                => ['post',     'merchants/credits/bulk/batch',                   'MerchantController@bulkCreateMerchantCreditsBatch'                 ],
         'fund_addition_tpv'                        => ['post',     'fund_addition/initialize',                       'MerchantController@fundAdditionTPV'                                 ],
         'fund_addition_webhook'                    => ['post',     'fund_addition/{type}/webhook',                   'MerchantController@addFundsViaWebhook'                             ],
@@ -5835,6 +5836,7 @@ class Route
 
         //Capital cord card for payouts
         'corp_card_banking_account_create',
+        'credits_create_bulk_internal',
 
         // CAC-RBAC
         'fetch_authz_roles_by_role_id',
@@ -14777,6 +14779,7 @@ class Route
             'corp_card_banking_account_create',
             'workflow_config_create_internal',
             'fetch_authz_roles_by_role_id',
+            'credits_create_bulk_internal',
         ],
 
         'capital_collections_client' => [

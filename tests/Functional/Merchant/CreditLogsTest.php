@@ -56,6 +56,13 @@ class CreditLogsTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateCreditsBulkInternal()
+    {
+        $this->ba->capitalCardsClientAppAuth();
+
+        $this->startTest();
+    }
+
     public function testPositiveUpdateCredits()
     {
         $creditsLog = $this->addFeeCredits(['value' => 150, 'campaign' => 'silent-ads']);
