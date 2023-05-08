@@ -1602,9 +1602,9 @@ class Entity extends Base\PublicEntity
     }
 
 
-    public function toArrayFundAccount(bool $isPSPayout = false)
+    public function toArrayFundAccount()
     {
-        $isPayoutService = (app('basicauth')->isPayoutService()) ? true : $isPSPayout;
+        $isPayoutService = app('basicauth')->isPayoutService();
 
         if ($isPayoutService === true)
         {

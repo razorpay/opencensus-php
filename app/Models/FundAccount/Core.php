@@ -10,7 +10,6 @@ use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Trace\Tracer;
-use RZP\Models\Payout;
 use RZP\Models\Contact;
 use RZP\Models\Feature;
 use RZP\Models\FundAccount;
@@ -1443,39 +1442,6 @@ class Core extends Base\Core
             return $fundAccounts;
         }
         return $this->getBulkAppSpecificInformation($fundAccounts);
-    }
-
-    public function fetchFundAccountForPayoutServiceProcessing(array $input): array
-    {
-        try {
-
-            if (isset($input[Payout\Entity::FUND_ACCOUNT_ID]) === false)
-            {
-                return [false, null];
-            }
-
-            $fundAccountId = $input[Payout\Entity::FUND_ACCOUNT_ID];
-
-            $entity = (new FundAccount\Repository)->findByPublicIdAndMerchant($fundAccountId, $this->merchant);
-
-            $entity->load('contact');
-
-            $entity->setIsPSPayout(true);
-            $entity->contact->setIsPSPayout(true);
-
-            return [true, $entity->toArrayPublic()];
-
-        }
-        catch (\Exception $ex)
-        {
-            $this->trace->error(
-                TraceCode::FUND_ACCOUNT_FETCH_FOR_PAYOUT_SERVICE_EXCEPTION,
-                [
-                    'error'                => $ex->getMessage()
-                ]);
-        }
-
-        return [false, null];
     }
 
     public function getBulkAppSpecificInformation(Base\PublicCollection $fundAccounts) : Base\PublicCollection

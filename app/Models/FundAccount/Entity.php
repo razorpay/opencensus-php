@@ -108,8 +108,6 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
-    protected $isPSPayout = false;
-
     protected $composite = false;
 
     protected $fillable = [
@@ -300,7 +298,7 @@ class Entity extends Base\PublicEntity
         // Don't forget these attributes if a composite payout request is made through strictPrivateAuth as we need to
         // show contact in the response of composite payout.
         if ((app('basicauth')->isStrictPrivateAuth() === true) and
-            !(($this->isComposite() === true) or ($this->isPSPayout() === true) or app('basicauth')->isSlackApp() or app('basicauth')->isAppleWatchApp()))
+            !(($this->isComposite() === true) or app('basicauth')->isSlackApp() or app('basicauth')->isAppleWatchApp()))
         {
             array_forget($attributes, [self::SOURCE, self::CONTACT, self::CUSTOMER]);
 
@@ -436,11 +434,6 @@ class Entity extends Base\PublicEntity
         return $this;
     }
 
-    public function setIsPSPayout(bool $isPSPayout)
-    {
-        $this->isPSPayout = $isPSPayout;
-    }
-
     public function setUniqueHash(string $uniqueHash)
     {
         $this->setAttribute(self::UNIQUE_HASH, $uniqueHash);
@@ -458,11 +451,6 @@ class Entity extends Base\PublicEntity
     public function isComposite()
     {
         return ($this->composite === true);
-    }
-
-    public function isPSPayout()
-    {
-        return ($this->isPSPayout === true);
     }
 
     // ------------- End Helpers -------------
@@ -535,11 +523,10 @@ class Entity extends Base\PublicEntity
 
         if ($accountType === Type::CARD)
         {
-            $accountAttributes = $this->account->toArrayFundAccount($this->isPSPayout);
+            $accountAttributes = $this->account->toArrayFundAccount();
         }
 
-        if ((app('basicauth')->isPayoutService() === true) or
-            ($this->isPSPayout() === true))
+        if (app('basicauth')->isPayoutService() === true)
         {
             array_forget($accountAttributes, Base\PublicEntity::ENTITY);
         }

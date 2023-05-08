@@ -120,8 +120,7 @@ class PayoutServiceTest extends TestCase
                                             $request = [],
                                             $status = 'processing',
                                             $insufficient_balance = false,
-                                            $newBankingError = false,
-                                            &$success = [])
+                                            $newBankingError = false)
     {
         // Not mocking this method like mockPayoutServiceStatus because we need to assert for the request headers that
         // are going to be sent to payout service.
@@ -134,12 +133,9 @@ class PayoutServiceTest extends TestCase
 
         $payoutServiceCreateMock->shouldReceive('sendRequest')
                                 ->withArgs(
-                                    function($arg) use ($request, $status, &$success) {
+                                    function($arg) use ($request, $status) {
                                         try
                                         {
-                                            // json decoding the content so that we can assert the keys of content.
-                                            $arg['content'] = json_decode($arg['content'], true);
-
                                             // Using this method only here as we want to check if the keys in the
                                             // request are coming properly or not.
                                             $this->assertArrayKeySelectiveEquals($request, $arg);
@@ -153,11 +149,6 @@ class PayoutServiceTest extends TestCase
                                                         return false;
                                                     }
                                                 }
-                                            }
-
-                                            if (empty($arg['content']['extra_info']['fund_account_info']) === false)
-                                            {
-                                                $success[] = "fund_account_info_success";
                                             }
 
                                             return true;
@@ -2669,31 +2660,6 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals($payout['transaction_id'], $txn['id']);
         $this->assertNotNull($txn['balance_id']);
         $this->assertNotNull($txn['posted_at']);
-
-        return $payout;
-    }
-
-    public function testCreatePayoutViaMicroserviceAndPassFundAccountInfo(): array
-    {
-        $this->fixtures->on('live')->create('feature', [
-            'name'        => Feature\Constants::NEW_BANKING_ERROR,
-            'entity_id'   => 10000000000000,
-            'entity_type' => 'merchant',
-        ]);
-
-        $success = [];
-
-        $this->mockPayoutServiceCreate(false, [],  [],Status::PROCESSING, false, true, $success);
-
-        $payout = $this->testCreatePayoutEntry('IMPS', true);
-
-        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
-
-        $this->startTest();
-
-        $expectedSuccess = ['fund_account_info_success'];
-
-        $this->assertEquals($expectedSuccess, $success);
 
         return $payout;
     }
