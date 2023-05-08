@@ -11,13 +11,23 @@ const applyFilterForSingleSelect = () => {
 };
 
 const applyFilterForQuery = (option, labelKey, searchFor) => {
-  return searchFor
-    ? typeof option === 'string'
-      ? option?.toLowerCase()?.startsWith(searchFor.toLowerCase()) ||
-        option?.toLowerCase()?.includes(searchFor.toLowerCase())
-      : option[labelKey]?.toLowerCase()?.startsWith(searchFor.toLowerCase()) ||
-        option[labelKey]?.toLowerCase()?.includes(searchFor.toLowerCase())
-    : true;
+  if (!searchFor) {
+    return true;
+  }
+
+  if (typeof option === 'string') {
+    return (
+      option?.toLowerCase()?.startsWith(searchFor.toLowerCase()) ||
+      option?.toLowerCase()?.includes(searchFor.toLowerCase())
+    );
+  }
+
+  const optionLabel = option?.[labelKey];
+
+  return (
+    optionLabel?.toLowerCase()?.startsWith(searchFor.toLowerCase()) ||
+    optionLabel?.toLowerCase()?.includes(searchFor.toLowerCase())
+  );
 };
 
 export const getFilteredItems = (options, selected, labelKey, searchFor, shouldAllowMultiple) => {
