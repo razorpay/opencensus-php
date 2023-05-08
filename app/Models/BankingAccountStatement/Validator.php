@@ -67,6 +67,8 @@ class Validator extends Base\Validator
         Entity::SAVE_IN_REDIS            => 'required|boolean',
         'new_cron_setup'                 => 'sometimes|boolean',
         'monitoring_cron'                => 'sometimes|boolean',
+        Entity::FROM_DATE                => 'sometimes|epoch',
+        Entity::TO_DATE                  => 'sometimes|epoch',
     ];
 
     protected static $accountStatementGenerateValidators = [

@@ -461,16 +461,19 @@ class Core extends Base\Core
                             $merchant);
                     }
 
+                    /**
+                     * Removing statements not pertaining to the range
+                     */
+                    foreach ($missingTransactions as $key => $missingTransaction)
+                    {
+                        if ($missingTransaction[Entity::TRANSACTION_DATE] > $input[Entity::TO_DATE])
+                        {
+                            unset($missingTransactions[$key]);
+                        }
+                    }
+
                     if (count($missingTransactions) !== 0)
                     {
-                        foreach ($missingTransactions as $key => $missingTransaction)
-                        {
-                            if ($missingTransaction[Entity::TRANSACTION_DATE] > $input[Entity::TO_DATE])
-                            {
-                                unset($missingTransactions[$key]);
-                            }
-                        }
-
                         $missingTransactions = array_values($missingTransactions);
 
                         $traceData = [

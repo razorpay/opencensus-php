@@ -63,11 +63,9 @@ class Service extends Base\Service
 
         $response = [];
 
-        $isNewCron = ((isset($input['new_cron_setup']) === true) && ($input['new_cron_setup'] === true));
+        $isNewCron = ((isset($input['new_cron_setup']) === true) && (boolval($input['new_cron_setup']) === true));
 
-        $isMonitoringCron = ((isset($input['monitoring_cron']) === true) && ($input['monitoring_cron'] === true));
-
-        $maxExpectedAttempts = 0;
+        $isMonitoringCron = ((isset($input['monitoring_cron']) === true) && (boolval($input['monitoring_cron']) === true));
 
         $accountNumbersWithPaginationKeyNull = $this->repo->banking_account_statement_details->getByAccountNumbersAndPaginationKeyNull($channel, $input);
 
@@ -89,19 +87,20 @@ class Service extends Base\Service
         {
             try
             {
+                $fromDate = (int) ($input[Entity::FROM_DATE] ?? Carbon::now(Timezone::IST)->subDay()->startOfDay()->getTimestamp());
+                $toDate = (int) ($input[Entity::TO_DATE] ?? Carbon::now(Timezone::IST)->subDay()->endOfDay()->getTimestamp());
+
                 //fetch will be always T-1 in this cron
                 $fetchInput =
                 [
                     Entity::CHANNEL        => $channel,
                     Entity::ACCOUNT_NUMBER => $accountNumber,
-                    Entity::FROM_DATE      => Carbon::now(Timezone::IST)->subDay()->startOfDay()->getTimestamp(),
-                    Entity::TO_DATE        => Carbon::now(Timezone::IST)->subDay()->endOfDay()->getTimestamp(),
-                    Entity::SAVE_IN_REDIS  => $input[Entity::SAVE_IN_REDIS] ?? true
+                    Entity::FROM_DATE      => $fromDate,
+                    Entity::TO_DATE        => $toDate,
+                    Entity::SAVE_IN_REDIS  => $input[Entity::SAVE_IN_REDIS] ?? true,
                 ];
 
-                $attempts[$accountNumber] = $this->core()->fetchMissingAccountStatementsForChannel($channel, $fetchInput, $isNewCron, $isMonitoringCron)[Constants::EXPECTED_ATTEMPTS];
-
-                $maxExpectedAttempts = max($maxExpectedAttempts, $attempts[$accountNumber][Constants::EXPECTED_ATTEMPTS]);
+                $attempts[$accountNumber] = $this->core()->fetchMissingAccountStatementsForChannel($channel, $fetchInput, $isNewCron, $isMonitoringCron);
 
                 $response[$accountNumber][Constants::FETCH_MISSING_STATEMENT] = Constants::SUCCESS;
             }

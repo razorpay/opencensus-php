@@ -45,6 +45,11 @@ class BankingAccountStatementReconNeo extends Job
         parent::__construct($mode);
     }
 
+    public function getParams()
+    {
+        return $this->params;
+    }
+
     public function handle()
     {
         try

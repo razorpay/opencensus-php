@@ -44,6 +44,7 @@ use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Jobs\BankingAccountStatementReconNeo;
 use RZP\Jobs\BankingAccountStatementProcessor;
 use RZP\Mail\Transaction\Payout as PayoutMail;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
@@ -61,6 +62,7 @@ use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\BankingAccountStatement\Entity as BasEntity;
 use RZP\Models\BankingAccountStatement\Details as BasDetails;
+use RZP\Models\BankingAccountStatement\Constants as BASConstants;
 use RZP\Jobs\BankingAccountStatement as BankingAccountStatementJob;
 use RZP\Jobs\RblBankingAccountStatement as RblBankingAccountStatementJob;
 
@@ -11539,70 +11541,6 @@ class RblBankingAccountStatementTest extends TestCase
                 Admin\ConfigKey::PREFIX . 'rx_missing_statements_insertion_limit' => 10
             ]);
 
-        $this->fixtures->create('banking_account_statement',
-                                [
-                                    'type'                      => 'credit',
-                                    'amount'                    => '10000',
-                                    'channel'                   => 'rbl',
-                                    'account_number'            => 2224440041626905,
-                                    'bank_transaction_id'       => 'S429654',
-                                    'balance'                   => 10000,
-                                    'transaction_date'          => 1656786600,
-                                    'posted_date'               => 1656861681,
-                                    'bank_serial_number'        => 1,
-                                    'description'               => 'Credit to account',
-                                    'category'                  => 'customer_initiated',
-                                    'bank_instrument_id'        => '',
-                                    'balance_currency'          => 'INR',
-                                    'transaction_id'            => 'KCNbM1N21uQq6E',
-                                    'entity_id'                 => 'KCNbO1N21uYq6T',
-                                    'entity_type'               => 'external',
-                                    'created_at'                => 1656861881,
-                                    'updated_at'                => 1656861881
-                                ]);
-
-        $this->fixtures->create('transaction',
-                                [
-                                    'id'          => 'KCNbM1N21uQq6E',
-                                    'merchant_id' => '10000000000000',
-                                    'balance'     => 10000,
-                                    'posted_at'   => 1656861681,
-                                    'created_at'  => 1656861881,
-                                    'updated_at'  => 1656861881
-                                ]);
-
-        $this->fixtures->create('banking_account_statement',
-                                [
-                                    'type'                      => 'credit',
-                                    'amount'                    => '11450',
-                                    'channel'                   => 'rbl',
-                                    'account_number'            => 2224440041626905,
-                                    'bank_transaction_id'       => 'S429655',
-                                    'balance'                   => 21450,
-                                    'transaction_date'          => 1656786600,
-                                    'posted_date'               => 1656861781,
-                                    'bank_serial_number'        => 2,
-                                    'description'               => 'CREDIT NEFT',
-                                    'category'                  => 'bank_initiated',
-                                    'bank_instrument_id'        => '',
-                                    'balance_currency'          => 'INR',
-                                    'transaction_id'            => 'KCNbM1N21uQq6T',
-                                    'entity_id'                 => 'KCNbM1N21uZq6T',
-                                    'entity_type'               => 'external',
-                                    'created_at'                => 1656861881,
-                                    'updated_at'                => 1656861881
-                                ]);
-
-        $this->fixtures->create('transaction',
-                                [
-                                    'id'          => 'KCNbM1N21uQq6T',
-                                    'merchant_id' => '10000000000000',
-                                    'balance'     => 21450,
-                                    'posted_at'   => 1656861681,
-                                    'created_at'  => 1656861881,
-                                    'updated_at'  => 1656861881
-                                ]);
-
         (new Admin\Service)->setConfigKeys(
             [
                 Admin\ConfigKey::RX_CA_MISSING_STATEMENTS_RBL => [
@@ -11638,6 +11576,65 @@ class RblBankingAccountStatementTest extends TestCase
         $this->startTest();
 
         Queue::assertPushed(BankingAccountStatementRecon::class, 1);
+    }
+
+    public function testRblAutomatedReconForMissingStatementsForGivenRange()
+    {
+        (new Admin\Service)->setConfigKeys(
+            [
+                Admin\ConfigKey::PREFIX . 'rx_missing_statements_insertion_limit' => 10
+            ]);
+
+        (new Admin\Service)->setConfigKeys(
+            [
+                Admin\ConfigKey::RX_CA_MISSING_STATEMENTS_RBL => [
+                    '2224440041626905' => [
+                        [
+                            BasEntity::ACCOUNT_NUMBER      => '2224440041626905',
+                            BasEntity::BANK_TRANSACTION_ID => 'S807089',
+                            BasEntity::TYPE                => 'debit',
+                            BasEntity::AMOUNT              => 5000,
+                            BasEntity::BALANCE             => 5000,
+                            BasEntity::POSTED_DATE         => 1656861683,
+                            BasEntity::TRANSACTION_DATE    => 1656786600,
+                            BasEntity::DESCRIPTION         => 'DEBIT IMPS 20000324344829',
+                            BasEntity::CHANNEL             => 'rbl',
+                            BasEntity::BANK_SERIAL_NUMBER  => '2',
+                            basEntity::CURRENCY            => 'INR',
+                            basEntity::BALANCE_CURRENCY    => 'INR',
+                        ],
+                    ],
+                ]
+            ]);
+
+        $basdBeforeTest = $this->getDbEntity('banking_account_statement_details', ['account_number' => '2224440041626905', 'channel' => 'rbl']);
+
+        $this->fixtures->edit(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS,
+                              $basdBeforeTest[Entity::ID],
+                              [BasDetails\Entity::PAGINATION_KEY => 'next_key']);
+
+        $this->ba->cronAuth();
+
+        Queue::fake();
+
+        $this->startTest();
+
+        $expectedParams = [
+            BasEntity::CHANNEL              => 'rbl',
+            BasEntity::ACCOUNT_NUMBER       => '2224440041626905',
+            BasEntity::FROM_DATE            => 1683225000,
+            BasEntity::TO_DATE              => 1683268199,
+            BASConstants::EXPECTED_ATTEMPTS => 1,
+            BASConstants::PAGINATION_KEY    => null,
+            BasEntity::SAVE_IN_REDIS        => '1',
+        ];
+
+        Queue::assertPushed(BankingAccountStatementReconNeo::class, function($job) use ($expectedParams)
+        {
+            $this->assertArraySelectiveEquals($expectedParams, $job->getParams());
+
+            return true;
+        });
     }
 
     public function testRblMissingAccountStatementWithCronAuth()
