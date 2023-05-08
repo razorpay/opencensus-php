@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Settlement;
 
+use RZP\Models\Currency\Currency;
+
 class Constants {
     const LOGO_URL = 'logo_url';
 
@@ -27,7 +29,7 @@ class Constants {
             self::SHOW_UTR => false,
             self::RAISE_REQUEST_ON_MAIL => true,
             self::RAISE_REQUEST_REDIRECT_LINK => 'success@curlec.com',
-            self::CURRENCY_LOGO => 'RM',
+            self::CURRENCY_LOGO => Currency::SYMBOL[Currency::MYR],
             self::ORG_NAME => 'Curlec',
         ],
         'IN' => [
@@ -37,7 +39,7 @@ class Constants {
             self::SHOW_ACC_NO => false,
             self::RAISE_REQUEST_ON_MAIL => false,
             self::RAISE_REQUEST_REDIRECT_LINK => 'https://dashboard.razorpay.com/#/app/dashboard#request',
-            self::CURRENCY_LOGO => '&#x20B9;',
+            self::CURRENCY_LOGO => Currency::SYMBOL[Currency::INR],
             self::ORG_NAME => 'Razorpay'
         ]
     ];
