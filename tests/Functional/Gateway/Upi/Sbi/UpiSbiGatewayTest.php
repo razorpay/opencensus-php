@@ -886,7 +886,7 @@ class UpiSbiGatewayTest extends TestCase
             File\Constants::PAYMENT_ID          => $gatewayEntity[Upi::PAYMENT_ID],
         ];
         $this->fixtures->edit('upi', $gatewayEntity['id'], [Upi::PAYMENT_ID => 'unknown_pay_id']);
-        $this->fixtures->edit('payment', $upsPayments[0]['id'], [Payment\Entity::CPS_ROUTE => 4]);
+        $this->fixtures->edit('payment', $upsPayments[0]['id'], [Payment\Entity::CPS_ROUTE => 7]);
 
         $upsPayments[]          = $this->createCapturedPayment();
         $gatewayEntity          = $this->getDbLastEntity('upi');

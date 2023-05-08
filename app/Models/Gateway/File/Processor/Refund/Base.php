@@ -211,7 +211,8 @@ class Base extends BaseProcessor
                     $nbplusPaymentIds[] = $payment->getId();
                 }
                 else if (($this->isUpsRefundGateway() === true) and
-                    ($payment->getCpsRoute() === PaymentEntity::UPI_PAYMENT_SERVICE))
+                    (($payment->getCpsRoute() === PaymentEntity::UPI_PAYMENT_SERVICE ) or
+                        ( $payment->getCpsRoute() === PaymentEntity::REARCH_UPI_PAYMENT_SERVICE)))
                 {
                     $upiPaymentIds[] = $payment->getId();
                 }
