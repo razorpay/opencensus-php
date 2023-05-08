@@ -110,7 +110,7 @@
     "build-storybook": "build-storybook",
     "tsc": "tsc",
     "chromatic": "chromatic --project-token $CHROMATIC_TOKEN --auto-accept-changes --exit-once-uploaded",
-    "test:build:merchant": "DANGER_ENV=true STAGE=production PROJECT=merchant universe build --disable-image-optimization --disable-differential-builds",
+    "test:build:merchant": "NODE_OPTIONS=--max-old-space-size=8192 DANGER_ENV=true STAGE=production PROJECT=merchant universe build --disable-image-optimization --disable-differential-builds",
     "test:e2e": "universe-test web-e2e test",
     "test:setup": "universe-test web-e2e install",
     "test:e2e:auth": "yarn test:e2e --grep '@flow=auth' --project 'chromium'",
