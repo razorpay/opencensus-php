@@ -183,6 +183,20 @@ class AuthService
         return $this->sendRequest('applications/' . $id, Requests::PATCH, $input);
     }
 
+    public function getMerchantAuthorizedApplications(string $merchantId) : array
+    {
+        $input[Token\Entity::MERCHANT_ID] = $merchantId;
+
+        return $this->sendRequest('applications/submerchant', Requests::GET, $input);
+    }
+
+    public function revokeApplicationAccess(string $merchantId, string $appId) : array
+    {
+        $input[Token\Entity::MERCHANT_ID] = $merchantId;
+
+        return $this->sendRequest('tokens/submerchant/revoke_for_application/' . $appId, Requests::PUT, $input);
+    }
+
     public function getTokens(array $input, string $merchantId) : array
     {
         $input[Token\Entity::MERCHANT_ID] = $merchantId;

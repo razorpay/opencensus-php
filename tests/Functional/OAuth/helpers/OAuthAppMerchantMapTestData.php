@@ -98,6 +98,19 @@ return [
         ],
     ],
 
+    'testOAuthAppDeleteWebhook' => [
+        'request'  => [
+            'url'     => '/merchants/10000000000000/applications/10000000000App',
+            'method'  => 'DELETE',
+        ],
+        'response' => [
+            'content'     => [
+                'success' => true,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testOAuthAppDeleteMerchantMapNoEntries' => [
         'request'  => [
             'url'     => '/merchants/10000000000000/applications/10000000000App',

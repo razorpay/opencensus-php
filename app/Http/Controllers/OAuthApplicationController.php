@@ -274,6 +274,24 @@ class OAuthApplicationController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getSubmerchantApplications()
+    {
+        $merchant = $this->auth->getMerchant();
+
+        $data = $this->authservice->getMerchantAuthorizedApplications($merchant->getId());
+
+        return ApiResponse::json($data);
+    }
+
+    public function revokeApplicationAccess(string $id)
+    {
+        $merchant = $this->auth->getMerchant();
+
+        $data = $this->authservice->revokeApplicationAccess($merchant->getId(), $id);
+
+        return ApiResponse::json($data);
+    }
+
     private function hasTypeInApplicationUpdateParams(array $input)
     {
         if (isset($input[Application\Entity::TYPE]))

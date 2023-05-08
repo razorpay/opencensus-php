@@ -95,6 +95,7 @@ class Event
     const ACCOUNT_PAYMENTS_ENABLED          = 'account.payments_enabled';
     const ACCOUNT_PAYMENTS_DISABLED         = 'account.payments_disabled';
     const ACCOUNT_MAPPED_TO_PARTNER         = 'account.mapped_to_partner';
+    const ACCOUNT_APP_AUTHORIZATION_REVOKED = 'account.app.authorization_revoked';
     const PAYOUT_LINK_ISSUED                = 'payout_link.issued';
     const PAYOUT_LINK_PROCESSING            = 'payout_link.processing';
     const PAYOUT_LINK_ATTEMPTED             = 'payout_link.attempted';
@@ -252,6 +253,7 @@ class Event
         self::ACCOUNT_PAYMENTS_ENABLED,
         self::ACCOUNT_PAYMENTS_DISABLED,
         self::ACCOUNT_MAPPED_TO_PARTNER,
+        self::ACCOUNT_APP_AUTHORIZATION_REVOKED,
         self::PAYMENT_CREATED,
         self::PAYOUT_LINK_ISSUED,
         self::PAYOUT_LINK_PROCESSING,
@@ -406,6 +408,7 @@ class Event
         self::ACCOUNT_PAYMENTS_ENABLED,
         self::ACCOUNT_PAYMENTS_DISABLED,
         self::ACCOUNT_MAPPED_TO_PARTNER,
+        self::ACCOUNT_APP_AUTHORIZATION_REVOKED,
         self::PAYOUT_LINK_ISSUED,
         self::PAYOUT_LINK_ISSUED,
         self::PAYOUT_LINK_PROCESSING,
@@ -611,6 +614,7 @@ class Event
         self::ROUTE_PRODUCT_REJECTED                      => 60,
 
         self::ACCOUNT_MAPPED_TO_PARTNER                   => 61,
+        self::ACCOUNT_APP_AUTHORIZATION_REVOKED           => 62,
     ];
 
     /**
@@ -692,6 +696,7 @@ class Event
         self::ACCOUNT_PAYMENTS_ENABLED          => [Product::PRIMARY],
         self::ACCOUNT_PAYMENTS_DISABLED         => [Product::PRIMARY],
         self::ACCOUNT_MAPPED_TO_PARTNER         => [Product::PRIMARY],
+        self::ACCOUNT_APP_AUTHORIZATION_REVOKED => [Product::PRIMARY],
         self::PAYOUT_UPDATED                    => [Product::PRIMARY, Product::BANKING],
         self::PAYOUT_REJECTED                   => [Product::PRIMARY, Product::BANKING],
         self::PAYMENT_CREATED                   => [Product::PRIMARY],
@@ -1006,6 +1011,10 @@ class Event
         self::ISSUING_TRANSACTION_CREATED                 => Feature\Constants::RAZORPAY_WALLET,
     ];
 
+    public static $eventsToPartnerTypeMap = [
+        self::ACCOUNT_APP_AUTHORIZATION_REVOKED        => [Merchant\Constants::PURE_PLATFORM],
+    ];
+
     /**
      * Defines the list of webhooks that needs to be hidden from fetch events api
      * This is to stop merchants from manually subscribing to these webhooks.
@@ -1045,7 +1054,9 @@ class Event
 
         $featureFilteredEvents = static::filterByFeatures($productFilteredEvents, $merchant->getEnabledFeatures());
 
-        return $featureFilteredEvents;
+        $filteredEvents = static::filterByPartnerType($featureFilteredEvents, $merchant->getPartnerType());
+
+        return $filteredEvents;
     }
 
     public static function filterByProductOrigin(array $events): array
@@ -1092,6 +1103,33 @@ class Event
                 }
             }
 
+        }
+
+        return $eventNames;
+    }
+
+    public static function filterByPartnerType(array $eventNames, string $merchantPartnerType = null): array
+    {
+        $eventPartnerMap = Event::$eventsToPartnerTypeMap;
+
+        foreach ($eventNames as $eventName => $value)
+        {
+            $removeEvent = false;
+
+            if ((isset($eventPartnerMap[$eventName]) === true))
+            {
+                $eventPartnerMapValue = $eventPartnerMap[$eventName];
+
+                if (array_search($merchantPartnerType, $eventPartnerMapValue) === false)
+                {
+                    $removeEvent = true;
+                }
+
+                if ($removeEvent === true)
+                {
+                    unset($eventNames[$eventName]);
+                }
+            }
         }
 
         return $eventNames;

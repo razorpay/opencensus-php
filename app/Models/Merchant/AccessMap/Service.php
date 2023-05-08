@@ -45,7 +45,7 @@ class Service extends Base\Service
         $merchant    = $this->repo->merchant->findOrFailPublic($merchantId);
         $entityOwner = $this->repo->merchant->findOrFailPublic($input['partner_id']);
 
-        $mapping     = (new Core)->addMappingForOAuthApp($entityOwner, $merchant, $input);
+        $mapping     = $this->core()->addMappingForOAuthApp($entityOwner, $merchant, $input);
 
         if($consent === true)
         {
@@ -70,7 +70,12 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        (new Core)->deleteMappingForOAuthApp($merchant, $appId);
+        $response = $this->core()->deleteMappingForOAuthApp($merchant, $appId);
+
+        if(empty($response) === false)
+        {
+            $this->core()->triggerAccountAppAuthorizationRevokeWebhook($merchant, $appId);
+        }
 
         return ['success' => true];
     }

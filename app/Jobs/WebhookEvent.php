@@ -39,16 +39,20 @@ class WebhookEvent extends Job
 
     public $product;
 
+    public $ownerType;
+
     public function __construct(string $mode,
                                 Merchant\Entity $merchant,
                                 array $eventAttrs,
-                                string $product = Product::PRIMARY)
+                                string $product = Product::PRIMARY,
+                                string $ownerType = 'merchant')
     {
         parent::__construct($mode);
 
         $this->merchant   = $merchant;
         $this->eventAttrs = $eventAttrs;
         $this->product    = $product;
+        $this->ownerType  = $ownerType;
     }
 
     public function handle()
@@ -67,7 +71,7 @@ class WebhookEvent extends Job
 
             $this->trace->info(TraceCode::WEBHOOK_EVENT_JOB_RECEIVED, $event->toArrayPublic());
 
-            (new Merchant\WebhookV2\Stork($this->mode, $this->product))->processEvent($event);
+            (new Merchant\WebhookV2\Stork($this->mode, $this->product))->processEvent($event, $this->ownerType);
         }
         catch (\Throwable $e)
         {

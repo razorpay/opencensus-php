@@ -64,6 +64,15 @@ class WebhookV2Test extends TestCase
         $this->startTest();
     }
 
+    public function testSubscribePurePlatformSpecificWebhook()
+    {
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'pure_platform']);
+
+        $this->createOAuthApplication(['id' => '10000000000App', 'merchant_id' => '10000000000000']);
+
+        $this->startTest();
+    }
+
     /*
      * Not partner yet but tagged OAuth, can create webhook
      */
@@ -131,6 +140,9 @@ class WebhookV2Test extends TestCase
 
         // Events of other products (e.g. banking) should not come in response.
         $this->assertNotContains('transaction.created', $response);
+
+        //Pure-platform partner specific events should not come in response.
+        $this->assertNotContains('account.app.authorization_revoked', $response);
     }
 
     public function testGetWebhookEventsFor1CC()
@@ -779,6 +791,26 @@ class WebhookV2Test extends TestCase
         $this->ba->addXOriginHeader();
 
         $this->startTest();
+    }
+
+    public function testGetWebhookEventsForAggregatorPartner()
+    {
+        $this->fixtures->merchant->markPartner('aggregator', '10000000000000');
+
+        $response = $this->startTest();
+
+        //Pure-platform partner specific events should not come in response.
+        $this->assertNotContains('account.app.authorization_revoked', $response);
+    }
+
+    public function testGetWebhookEventsForPurePlatformPartner()
+    {
+        $this->fixtures->merchant->markPartner('pure_platform', '10000000000000');
+
+        $response = $this->startTest();
+
+        //Pure-platform partner specific events should arrive in response.
+        $this->assertContains('account.app.authorization_revoked', $response);
     }
 
     private function setPurePlatformContext(): void

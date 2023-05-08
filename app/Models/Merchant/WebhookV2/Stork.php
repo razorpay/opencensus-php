@@ -269,21 +269,22 @@ class Stork
      * devops ask. Ideally there should be a shared queue and stork itself
      * should drain that queue.
      *
-     * @param  Event\Entity $event
+     * @param Event\Entity $event
+     * @param String $ownerType
      * @return void
      */
-    public function processEventSafe(Event\Entity $event)
+    public function processEventSafe(Event\Entity $event, string $ownerType = E::MERCHANT)
     {
         try
         {
-            $this->processEvent($event);
+            $this->processEvent($event, $ownerType);
         }
         catch (\Throwable $e)
         {
             $this->trace->traceException($e, Logger::ERROR, TraceCode::STORK_DISPATCH_EVENT_FAILED);
 
             // Exception for this call i.e. dispatch() is suppressed and logged within by the dispatcher.
-            WebhookEvent::dispatch($this->mode, $event->merchant, $event->getAttributes(), $this->product);
+            WebhookEvent::dispatch($this->mode, $event->merchant, $event->getAttributes(), $this->product, $ownerType);
         }
     }
 
@@ -291,16 +292,27 @@ class Stork
      * Calls rzp.stork.webhook.v1.WebhookAPI/ProcessEvent endpoint of stork service.
      * Also see processEventSafe().
      *
-     * @param  Event\Entity $event
+     * @param Event\Entity $event
+     * @param String $ownerType
      * @return void
      * @throws \RZP\Exception\ServerErrorException
+     * @throws \RZP\Exception\TwirpException
      * @throws \Throwable
      */
-    public function processEvent(Event\Entity $event)
+    public function processEvent(Event\Entity $event, string $ownerType = E::MERCHANT)
     {
         $merchant = $event->merchant;
 
-        $payload = json_encode($event->toArrayPublic());
+        $payload = $event->toArrayPublic();
+
+        $applicationId = null;
+
+        if($ownerType === E::APPLICATION)
+        {
+            $applicationId = $this->extractAndRemoveApplicationFromPayloadIfApplicable( $payload);
+        }
+
+        $payload = json_encode($payload);
 
         if (empty($merchant) === false)
         {
@@ -313,8 +325,8 @@ class Stork
             'event' => [
                 'id'         => $event->getId(),
                 'service'    => $this->service->service,
-                'owner_id'   => $event->getMerchantId(),
-                'owner_type' => E::MERCHANT,
+                'owner_id'   => $ownerType === E::MERCHANT ? $event->getMerchantId() : $applicationId,
+                'owner_type' => $ownerType,
                 'name'       => $event->event,
                 'payload'    => $payload,
             ],
@@ -338,6 +350,36 @@ class Stork
             $processEventReq,
             self::PROCESS_EVENT_REQUEST_TIMEOUT_MS
         );
+    }
+
+    /**
+     * For webhooks where owner_type is application, we are initially passing application_id in payload
+     * This function extracts & removes the application Id from the payload before we make a Stork request to trigger webhook.
+     *
+     * @param array $payload
+     *
+     * @return string
+     */
+    public function extractAndRemoveApplicationFromPayloadIfApplicable(array & $payload): string
+    {
+        $applicationId = null;
+
+        if((isset($payload['payload']) === true)
+            and (isset($payload['payload']['application_id']) === true))
+        {
+            $applicationId = $payload['payload']['application_id'];
+            unset($payload['payload']['application_id']);
+
+            $appKeyPosition =array_search('application_id', $payload['contains']);
+            unset($payload['contains'][$appKeyPosition]);
+
+            if(empty($payload['payload']) === true)
+            {
+                unset($payload['payload']);
+            }
+        }
+
+        return $applicationId;
     }
 
     /**

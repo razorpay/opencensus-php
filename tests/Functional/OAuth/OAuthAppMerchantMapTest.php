@@ -6,6 +6,8 @@ use DB;
 use Carbon\Carbon;
 use RZP\Constants;
 use RZP\Models\Merchant\Consent\Details\Repository as MerchantConsentDetailsRepo;
+use RZP\Tests\Traits\TestsWebhookEvents;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\CreateLegalDocumentsTrait;
@@ -13,6 +15,7 @@ use RZP\Tests\Functional\Helpers\CreateLegalDocumentsTrait;
 class OAuthAppMerchantMapTest extends OAuthTestCase
 {
     use OAuthTrait;
+    use TestsWebhookEvents;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
     use CreateLegalDocumentsTrait;
@@ -179,6 +182,25 @@ class OAuthAppMerchantMapTest extends OAuthTestCase
         $this->assertEquals(null, $liveMapping);
 
         $this->assertEquals(null, $testMapping);
+    }
+
+    public function testOAuthAppDeleteWebhook()
+    {
+        $application = $this->createOAuthApplication(["partner_type" => "pure_platform"]);
+
+        $this->fixtures->create('merchant_access_map', ['id' => 'BWkmyutEXIuvvX', 'entity_id' => $application->getId()]);
+
+        $testDataToReplace = [
+            'request'  => [
+                'url'     => '/merchants/10000000000000/applications/' . $application->getId(),
+            ],
+            'response' => [
+            ],
+        ];
+
+        $this->expectWebhookEvent('account.app.authorization_revoked');
+
+        $this->startTest($testDataToReplace);
     }
 
     public function testOAuthAppDeleteMerchantMapNoEntries()

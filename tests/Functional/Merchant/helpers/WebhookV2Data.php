@@ -35,6 +35,13 @@ $sampleApiWebhookResponse = [
     ],
 ];
 
+$sampleApiWebhookRequestForPurePlatformPartner = array_merge($sampleApiWebhookRequest, [
+    'application_id' => '10000000000App',
+    'events' => [
+        'account.app.authorization_revoked' => '1',
+    ],
+]);
+
 $sampleApiWebhookRequestForBanking = array_merge($sampleApiWebhookRequest, [
     'events' => [
         'payout.failed' => '1',
@@ -49,6 +56,13 @@ $sampleApiWebhookResponseForBanking = array_merge($sampleApiWebhookResponse, [
 
 $sampleApiWebhookResponseForApp = array_merge($sampleApiWebhookResponse, [
     'application_id' => '10000000000App',
+]);
+
+$sampleApiWebhookResponseForPurePlatformPartner = array_merge($sampleApiWebhookResponse, [
+    'application_id' => '10000000000App',
+    'events' => [
+        'account.app.authorization_revoked' => '1',
+    ],
 ]);
 
 $sampleApiWebhookRequestForOnboarding = [
@@ -429,6 +443,44 @@ return [
         ],
     ],
 
+    'testGetWebhookEventsForAggregatorPartner' => [
+        'request' => [
+            'url'   => '/webhooks/events/all',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'payment.authorized',
+                'payment.failed',
+                'payment.captured',
+                'payment.dispute.created',
+                'order.paid',
+                'invoice.paid',
+                'invoice.partially_paid',
+                'invoice.expired',
+            ]
+        ]
+    ],
+
+    'testGetWebhookEventsForPurePlatformPartner' => [
+        'request' => [
+            'url'   => '/webhooks/events/all',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'payment.authorized',
+                'payment.failed',
+                'payment.captured',
+                'payment.dispute.created',
+                'order.paid',
+                'invoice.paid',
+                'invoice.partially_paid',
+                'invoice.expired',
+            ]
+        ]
+    ],
+
     'testEditWebhookByNonOwnerUser' => [
         'request' => [
             'url' => '/webhooks/webhook0000001',
@@ -460,6 +512,17 @@ return [
         ],
         'response' => [
             'content' => $sampleApiWebhookResponseForApp,
+        ],
+    ],
+
+    'testSubscribePurePlatformSpecificWebhook' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/v1/webhooks',
+            'content' => $sampleApiWebhookRequestForPurePlatformPartner,
+        ],
+        'response' => [
+            'content' => $sampleApiWebhookResponseForPurePlatformPartner,
         ],
     ],
 

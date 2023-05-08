@@ -201,6 +201,8 @@ class UserRolesScope
             'oauth_application_update'         => [Role::OWNER],
             'oauth_token_fetch_multiple'       => [Role::OWNER],
             'oauth_token_revoke'               => [Role::OWNER],
+            'oauth_fetch_submerchant_applications'  => [Role::OWNER],
+            'oauth_application_access_revoke'       => [Role::OWNER],
 
             // va
             'virtual_account_create'                => Role::WRITER_ROLES,

@@ -449,6 +449,11 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToStork($payload);
     }
 
+    protected function onAccountAppAuthorizationRevoked($merchant)
+    {
+        $this->dispatchEventToStork($this->withPayload, Constants\Entity::APPLICATION);
+    }
+
     protected function onPaymentAuthorized($payment)
     {
         $payload = $this->getPaymentPayload($payment);
@@ -2012,12 +2017,12 @@ class ApiEventSubscriber extends Base\Core
      * Dispatches event to stork where dispatch-able webhooks are resolved and
      * events are fired to all of them.
      * @param array  $payload
-     * @param string $product
+     * @param string $ownerType
      */
-    protected function dispatchEventToStork(array $payload)
+    protected function dispatchEventToStork(array $payload, string $ownerType = Constants\Entity::MERCHANT)
     {
         $event = $this->createEventEntity($payload);
-        (new Stork($this->getMode(), $this->storkProduct))->processEventSafe($event);
+        (new Stork($this->getMode(), $this->storkProduct))->processEventSafe($event, $ownerType);
     }
 
     /**

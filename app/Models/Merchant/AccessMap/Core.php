@@ -199,9 +199,26 @@ class Core extends Base\Core
             return $this->repo->transaction(function () use ($mapping, $applicationType)
                 {
                     $this->createOutboxJobForOperation('delete', $mapping, $applicationType);
-                    return $this->repo->merchant_access_map->deleteOrFail($mapping);
+                    $this->repo->merchant_access_map->deleteOrFail($mapping);
+
+                    return ['success' => true];
                 });
         }
+    }
+
+    public function triggerAccountAppAuthorizationRevokeWebhook(Merchant\Entity $merchant, String $appId)
+    {
+        $data = [
+            'application_id'        => $appId
+        ];
+
+        $eventPayload = [
+            ApiEventSubscriber::MAIN        => $merchant,
+            ApiEventSubscriber::WITH        => $data,
+            ApiEventSubscriber::MERCHANT_ID => $merchant->getId()
+        ];
+
+        $this->app['events']->dispatch('api.account.app.authorization_revoked', $eventPayload);
     }
 
     /**
