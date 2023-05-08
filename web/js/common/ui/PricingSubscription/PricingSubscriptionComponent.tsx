@@ -121,6 +121,11 @@ const PricingSubscriptionComponent = ({
             ...(toggle_switch && { toggle_switch }),
             ...getAssetTrackingProperties(trackingId, tracking_data, {}, event_name),
           };
+        case 'Overlay':
+          return {
+            ...(toggle_switch && { toggle_switch }),
+            ...getAssetTrackingProperties(trackingId, tracking_data, {}, event_name),
+          };
         case 'paymentSuccess':
           return {
             ...getAssetTrackingProperties(trackingId, tracking_data, {}, event_name),
@@ -407,6 +412,14 @@ const PricingSubscriptionComponent = ({
     }
   };
 
+  const onClickOverlay = () => {
+    trackInstrumentation('Overlay', {
+      toggle_switch: togglePlan,
+      cta_value: 'Overlay',
+      event_name: 'merchant_dashboard.click_close.initiated',
+    });
+  };
+
   if (templateId) {
     if (!loading && Object.keys(gs_modals).length === 0) {
       closeModal();
@@ -425,7 +438,15 @@ const PricingSubscriptionComponent = ({
       togglePlan,
     });
   return (
-    <StyledDiv fullView={isFullView}>
+    <StyledDiv
+      fullView={isFullView}
+      onMouseLeave={() => {
+        document.addEventListener('click', onClickOverlay, { once: true });
+      }}
+      onMouseEnter={() => {
+        document.removeEventListener('click', onClickOverlay);
+      }}
+    >
       <PricingHeader
         headerSrc={headerSrc}
         headerAlt={headerAlt}
