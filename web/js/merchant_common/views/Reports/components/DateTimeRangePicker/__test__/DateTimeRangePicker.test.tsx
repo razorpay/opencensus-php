@@ -281,6 +281,9 @@ describe('Date time calendar component when picker is active', () => {
   });
 
   it('should validate and update main input field when clicked outside, when validated', async () => {
+    const prevBtn = screen.getByLabelText('Previous Range');
+    await userEvent.click(prevBtn);
+
     const refDateMoment1 = initialState.startDate.clone().subtract(2, 'day');
     const refDate1 = screen.getByLabelText(`Date is ${refDateMoment1.format('DD MMMM YYYY')}`);
     await userEvent.click(refDate1);
