@@ -1425,7 +1425,7 @@ class MerchantCreateTest extends TestCase
             'subMerchantName' => 'Submerchant'
         ];
 
-        (new MerchantTest())->expectStorkSmsRequest($storkMock,'sms.onboarding.partner_submerchant_invite', '+919876543210', $expectedParams);
+        (new MerchantTest())->expectStorkSmsRequest($storkMock,'sms.onboarding.partner_submerchant_invite_v2', '+919876543210', $expectedParams);
 
         $this->startTest();
 

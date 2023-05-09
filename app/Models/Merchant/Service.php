@@ -1372,8 +1372,8 @@ class Service extends Base\Service
         if ($product === Product::BANKING)
         {
             $smsPayload['contentParams']['subMerchantEmail'] = $subMerchant->getEmail();
-            $smsPayload['templateName']                      = 'sms.onboarding.partner_submerchant_invite';
-            $tracePayload['sms_template']                    = 'sms.onboarding.partner_submerchant_invite';
+            $smsPayload['templateName']                      = 'sms.onboarding.partner_submerchant_invite_v2';
+            $tracePayload['sms_template']                    = 'sms.onboarding.partner_submerchant_invite_v2';
         }
         elseif ($product === Product::CAPITAL)
         {

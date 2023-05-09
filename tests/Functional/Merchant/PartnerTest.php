@@ -2405,7 +2405,7 @@ class PartnerTest extends OAuthTestCase
             'subMerchantName' => 'random_name_1'
         ];
 
-        (new MerchantTest())->expectStorkSmsRequest($storkMock,'sms.onboarding.partner_submerchant_invite', '+919999999999', $expectedParms);
+        (new MerchantTest())->expectStorkSmsRequest($storkMock,'sms.onboarding.partner_submerchant_invite_v2', '+919999999999', $expectedParms);
 
         $this->startTest();
     }
