@@ -44,6 +44,8 @@ class BankingAccountStatementUpdate extends Job
 
     public function handle()
     {
+        $workerStartTime = microtime(true);
+
         parent::handle();
 
         $BASCore = new BAS\Core;
@@ -55,16 +57,26 @@ class BankingAccountStatementUpdate extends Job
 
         try
         {
-            $workerStartTime = microtime(true);
-
             $BASCore->correctBalanceForStatementsEffectedByMissingStatements($this->params);
 
-            $workerEndTime = microtime(true);
+            $workerCompletionEndTime = microtime(true);
+
+            $workerCompletionTotalTime =  $workerCompletionEndTime - $workerStartTime;
 
             $this->trace->info(TraceCode::BAS_BATCH_UPDATE_COMPLETED_SUCCESSFULLY, [
                 'params'        => $this->params,
-                'response_time' => $workerEndTime - $workerStartTime,
+                'response_time' => $workerCompletionTotalTime,
             ]);
+
+            $dimensions = [
+                'worker_class' => $this->getJobName(),
+                'balance_id'   => $this->params['balance_id'],
+                'merchant_id'  => $this->params['merchant_id'],
+                'channel'      => $this->params['channel'],
+            ];
+
+            $this->trace->histogram(
+                BAS\Metric::BAS_UPDATE_COMPLETED_DURATION_SECONDS, $workerCompletionTotalTime, $dimensions);
 
             $this->delete();
         }

@@ -27,5 +27,12 @@ final class Metric
     const STATEMENT_BALANCES_DO_NOT_MATCH                     = 'statement_balances_do_not_match';
     const MISSING_STATEMENT_RECON_PAGINATION_KEY_ALREADY_NULL = 'missing_statement_recon_pagination_key_already_null';
 
+    // Histograms
+    const BAS_FETCH_PROCESS_DURATION_SECONDS   = 'bas_fetch_process_duration_seconds.histogram';
+    const BAS_FETCH_COMPLETED_DURATION_SECONDS = 'bas_fetch_completed_duration_seconds.histogram';
+    const BAS_UPDATE_COMPLETED_DURATION_SECONDS = 'bas_update_completed_duration_seconds.histogram';
+
+    // Counters
+    const BAS_RECON_MOZART_REQUESTS_TOTAL = 'bas_recon_mozart_requests_total';
 }
 

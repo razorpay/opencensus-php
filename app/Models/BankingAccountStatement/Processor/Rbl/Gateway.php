@@ -18,6 +18,7 @@ use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\BankingAccountStatement\Type;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\BankingAccountStatement\Entity;
+use RZP\Models\BankingAccountStatement\Metric;
 use RZP\Models\BankingAccountStatement\Channel;
 use RZP\Models\BankingAccountStatement\Category;
 use RZP\Models\BankingAccountStatement\Processor\Source;
@@ -692,6 +693,13 @@ class Gateway extends BaseProcessor
             try
             {
                 $startTime = microtime(true);
+
+                $this->trace->count(Metric::BAS_RECON_MOZART_REQUESTS_TOTAL, [
+                    'gateway'   => $this->getChannel(),
+                    'action'    => self::MOZART_ACTION,
+                    'version'   => $this->version,
+                    'namespace' => self::MOZART_NAMESPACE,
+                ]);
 
                 // Increasing the timeout here to 80 secs because sometimes mozart times more time to
                 // load the response

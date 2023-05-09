@@ -39,6 +39,11 @@ class BankingAccountStatementRecon extends Job
     protected $isMonitoring;
 
     /**
+     * @var bool
+     */
+    protected $retried = false;
+
+    /**
      * Default timeout value for a job is 60s. Changing it to 20 mins
      * as fetching account statements for date ranges takes 10-12 mins to complete.
      * @var integer
@@ -56,6 +61,8 @@ class BankingAccountStatementRecon extends Job
 
     public function handle()
     {
+        $workerStartTime = microtime(true);
+
         try
         {
             parent::handle();
@@ -86,11 +93,11 @@ class BankingAccountStatementRecon extends Job
                         BAS\Entity::SAVE_IN_REDIS      => $this->params[BAS\Entity::SAVE_IN_REDIS],
                     ]);
 
-                $workerStartTime = microtime(true);
-
                 [$fetchMore, $paginationKey] = (new BAS\Core)->fetchAccountStatementWithRange($this->params, $this->isMonitoring);
 
-                $workerEndTime = microtime(true);
+                $workerProcessingEndTime = microtime(true);
+
+                $workerProcessingCompletionTotalTime =  $workerProcessingEndTime - $workerStartTime;
 
                 $this->trace->info(TraceCode::MISSING_BANKING_ACCOUNT_STATEMENT_FETCHED,
                                    [
@@ -98,9 +105,19 @@ class BankingAccountStatementRecon extends Job
                                        BAS\Entity::ACCOUNT_NUMBER     => $this->params['account_number'],
                                        BAS\Entity::MERCHANT_ID        => $BASCore->getBasDetails()->getMerchantId(),
                                        BAS\Details\Entity::BALANCE_ID => $BASCore->getBasDetails()->getBalanceId(),
-                                       'response_time'                => $workerEndTime - $workerStartTime,
+                                       'response_time'                => $workerProcessingCompletionTotalTime,
                                        'fetch_more'                   => $fetchMore,
                                    ]);
+
+                $dimensions = [
+                    'worker_class' => $this->getJobName(),
+                    'balance_id'   => $BASCore->getBasDetails()->getBalanceId(),
+                    'merchant_id'  => $BASCore->getBasDetails()->getMerchantId(),
+                    'channel'      => $this->params['channel'],
+                ];
+
+                $this->trace->histogram(
+                    BAS\Metric::BAS_FETCH_PROCESS_DURATION_SECONDS, $workerProcessingCompletionTotalTime, $dimensions);
 
                 $this->params['expected_attempts'] = $this->params['expected_attempts'] - 1;
 
@@ -154,6 +171,21 @@ class BankingAccountStatementRecon extends Job
                 $this->checkRetry();
             }
         }
+
+        $workerCompletionEndTime = microtime(true);
+
+        $dimensions = [
+            'worker_class' => $this->getJobName(),
+            'balance_id'   => $BASCore->getBasDetails()->getBalanceId(),
+            'merchant_id'  => $BASCore->getBasDetails()->getMerchantId(),
+            'channel'      => $this->params['channel'],
+            'is_retry'     => $this->retried,
+        ];
+
+        $workerCompletionTotalTime =  $workerCompletionEndTime - $workerStartTime;
+
+        $this->trace->histogram(
+            BAS\Metric::BAS_FETCH_COMPLETED_DURATION_SECONDS, $workerCompletionTotalTime, $dimensions);
     }
 
     protected function checkRetry()
@@ -167,6 +199,8 @@ class BankingAccountStatementRecon extends Job
             $data[BAS\Core::ATTEMPT_NUMBER] = $this->attempts() + 1;
 
             $this->trace->info(TraceCode::MISSING_BANKING_ACCOUNT_STATEMENT_FETCH_JOB_RELEASED, $data);
+
+            $this->retried = true;
 
             $this->release($workerRetryDelay);
         }
