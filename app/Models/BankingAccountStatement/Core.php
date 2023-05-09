@@ -33,6 +33,7 @@ use RZP\Jobs\IciciBankingAccountStatement;
 use RZP\Jobs\BankingAccountStatementRecon;
 use RZP\Mail\BankingAccount\StatementMail;
 use RZP\Jobs\BankingAccountStatementUpdate;
+use RZP\Jobs\BankingAccountStatementCleanUp;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Jobs\BankingAccountStatementReconNeo;
@@ -414,7 +415,7 @@ class Core extends Base\Core
                     'account_number' => $accountNumber,
                 ]);
 
-            [$fetchMore, $paginationKey, $bankTransactions] = $this->mutex->acquireAndRelease(
+            [$fetchMore, $paginationKey, $bankTransactions, $mismatchAmountFound] = $this->mutex->acquireAndRelease(
                 'banking_account_statement_recon_' . $accountNumber . '_' . $channel,
                 function () use ($channel, $accountNumber, $input, $isMonitoring, $save, $checkDuplicates)
                 {
@@ -451,6 +452,7 @@ class Core extends Base\Core
                     }
 
                     $missingTransactions = [];
+                    $mismatchAmountFound = 0;
 
                     if ($checkDuplicates === true)
                     {
@@ -469,6 +471,17 @@ class Core extends Base\Core
                         if ($missingTransaction[Entity::TRANSACTION_DATE] > $input[Entity::TO_DATE])
                         {
                             unset($missingTransactions[$key]);
+                        }
+                        else
+                        {
+                            if ($missingTransaction[Entity::TYPE] === Type::CREDIT)
+                            {
+                                $mismatchAmountFound += $missingTransaction[Entity::AMOUNT];
+                            }
+                            else
+                            {
+                                $mismatchAmountFound += (-1 * $missingTransaction[Entity::AMOUNT]);
+                            }
                         }
                     }
 
@@ -514,7 +527,7 @@ class Core extends Base\Core
                         }
                     }
 
-                    return [$fetchMore, $paginationKey, $bankTransactions];
+                    return [$fetchMore, $paginationKey, $bankTransactions, $mismatchAmountFound];
                 },
                 300,
                 ErrorCode::BAD_REQUEST_ANOTHER_BANKING_ACCOUNT_STATEMENT_FETCH_IN_PROGRESS
@@ -538,7 +551,7 @@ class Core extends Base\Core
             throw $e;
         }
 
-        return [$fetchMore, $paginationKey, $bankTransactions];
+        return [$fetchMore, $paginationKey, $bankTransactions, $mismatchAmountFound];
     }
 
     public function insertMissingStatements(string $accountNumber, string $channel, array $missingStatements, bool $dryRunMode = false)
@@ -4252,5 +4265,195 @@ class Core extends Base\Core
         }
 
         return [$matchedBASFromBank, $existingBAS];
+    }
+
+    public function dispatchIntoQueueAndRetryIfFailure($queueName, $input, $delay = 0)
+    {
+        $queueRetryLimit = 2;
+        $attempt         = 0;
+        $dispatchSuccess = false;
+
+        do {
+            try
+            {
+                $queueName = "RZP\\Jobs\\".$queueName;
+
+                $queueName::dispatch($this->mode, $input)->delay($delay);
+
+                $dispatchSuccess = true;
+
+                break;
+            }
+            catch (\Throwable $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    null,
+                    TraceCode::BAS_RECON_QUEUE_DISPATCH_FAILURE,
+                    [
+                        'queueName' => $queueName,
+                        'input'     => $input,
+                        'delay'     => $delay,
+                    ]
+                );
+
+                // Push into prometheus
+
+                $attempt++;
+            }
+        } while ($attempt < $queueRetryLimit);
+
+        if ($dispatchSuccess === true)
+        {
+            $this->trace->info(TraceCode::BAS_RECON_QUEUE_DISPATCH_SUCCESS, [
+                'queueName' => $queueName,
+                'input'     => $input,
+                'delay'     => $delay,
+            ]);
+        }
+    }
+
+    public function checkCleanUpConfigIfFetchIsRequired(array $cleanUpConfig, $channel, $accountNumber)
+    {
+        if ((array_key_exists(BASConstants::MISMATCH_DATA, $cleanUpConfig) === true) and
+            (empty($cleanUpConfig[BASConstants::MISMATCH_DATA]) === false))
+        {
+            $input = [
+                Entity::CHANNEL        => $channel,
+                Entity::ACCOUNT_NUMBER => $accountNumber,
+                Entity::FROM_DATE      => (int) ($cleanUpConfig[BASConstants::MISMATCH_DATA][0][Entity::FROM_DATE] ?? null),
+                Entity::TO_DATE        => (int) ($cleanUpConfig[BASConstants::MISMATCH_DATA][0][Entity::TO_DATE] ?? null),
+            ];
+
+            try
+            {
+                // Validation of the cleanup Config
+                (new Validator())->validateInput('cleanUpConfig', $input);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->error(TraceCode::BAS_INVALID_CLEANUP_CONFIG_ERROR, [
+                    'clean_up_config'          => $cleanUpConfig,
+                ]);
+
+                return [false, null];
+            }
+
+            $countOfStatements = $this->repo->banking_account_statement->getCountOfStatementsInGivenPostedDateRange($channel, $input);
+
+            [$expectedAttempts, $allowedToFetch] = $this->getExpectedAttemptsForChannel($channel, $countOfStatements);
+
+            $this->trace->info(TraceCode::FETCH_MISSING_ACCOUNT_STATEMENTS_ATTEMPTS, [
+                'expected_attempts'   => $expectedAttempts,
+                'count_of_statements' => $countOfStatements,
+                'allowed_to_fetch'    => $allowedToFetch,
+            ]);
+
+            $paginationKey = ($channel === Channel::RBL) ? null : '';
+
+            $this->trace->info(TraceCode::MISSING_BANKING_ACCOUNT_STATEMENT_FETCH_DISPATCH_JOB_REQUEST, [
+                Entity::CHANNEL                 => $channel,
+                Entity::ACCOUNT_NUMBER          => $input[Entity::ACCOUNT_NUMBER],
+                BASConstants::EXPECTED_ATTEMPTS => $expectedAttempts,
+                Entity::FROM_DATE               => $input[Entity::FROM_DATE],
+                Entity::TO_DATE                 => $input[Entity::TO_DATE],
+                self::DELAY                     => 0,
+                BASConstants::PAGINATION_KEY    => $paginationKey,
+                Entity::SAVE_IN_REDIS           => true,
+            ]);
+
+            $input[BASConstants::EXPECTED_ATTEMPTS] = $expectedAttempts;
+            $input[BASConstants::PAGINATION_KEY]    = $paginationKey;
+            $input[Entity::SAVE_IN_REDIS]           = true;
+
+            unset($input[Entity::CHANNEL]);
+            unset($input[Entity::ACCOUNT_NUMBER]);
+
+            return [true, $input];
+        }
+
+        return [false, null];
+    }
+
+    public function updateCleanUpConfigWhenFetchIsFinished(array &$cleanUpConfig, $fetchInput)
+    {
+        if ((array_key_exists(BASConstants::MISMATCH_DATA, $cleanUpConfig) === true) and
+            (empty($cleanUpConfig[BASConstants::MISMATCH_DATA]) === false))
+        {
+            $mismatchData = $cleanUpConfig[BASConstants::MISMATCH_DATA];
+
+            foreach ($mismatchData as $key => $mismatchPeriod)
+            {
+                $fromDate = $mismatchPeriod[Entity::FROM_DATE] ?? null;
+                $toDate   = $mismatchPeriod[Entity::TO_DATE] ?? null;
+
+                if (($fromDate === $fetchInput[Entity::FROM_DATE]) and
+                    ($toDate === $fetchInput[Entity::TO_DATE]))
+                {
+                    unset($cleanUpConfig[BASConstants::MISMATCH_DATA][$key]);
+
+                    $cleanUpConfig[BASConstants::MISMATCH_DATA] = array_values($cleanUpConfig[BASConstants::MISMATCH_DATA]);
+
+                    return true;
+                }
+            }
+        }
+
+        $this->trace->error(TraceCode::BAS_CLEANUP_CONFIG_UPDATE_ERROR, [
+            'clean_up_config' => $cleanUpConfig,
+            'fetch_input'     => $fetchInput
+        ]);
+
+        return false;
+    }
+
+    public function cleanMissingStatementsConfigAndDispatch(array $cleanUpConfig, $channel, $accountNumber, $merchantId)
+    {
+        $newMismatchData = [];
+
+        $totalMismatchAmount = 0;
+
+        if ((array_key_exists(BASConstants::MISMATCH_DATA, $cleanUpConfig) === true) and
+            (empty($cleanUpConfig[BASConstants::MISMATCH_DATA]) === false))
+        {
+            $mismatchDataCollection = new Base\Collection($cleanUpConfig[BASConstants::MISMATCH_DATA]);
+
+            $groupedMismatchData = $mismatchDataCollection->groupBy(Entity::FROM_DATE)->sortKeys();
+
+            $mismatchStartingAmount = $groupedMismatchData->first()[0]['mismatch_amount'];
+
+            foreach ($groupedMismatchData as $fromDate => $mismatchData)
+            {
+                $mismatchDataArray = $mismatchData->toArray()[0];
+                $totalMismatchAmount = $totalMismatchAmount + $mismatchDataArray['mismatch_amount'];
+
+                if ($mismatchDataArray['mismatch_amount'] === $mismatchStartingAmount)
+                {
+                    continue;
+                }
+                else
+                {
+                    $newMismatchData[]      = $mismatchDataArray;
+                    $mismatchStartingAmount = $mismatchDataArray['mismatch_amount'];
+                }
+            }
+
+            $cleanUpConfig[BASConstants::MISMATCH_DATA] = $newMismatchData;
+        }
+
+        $queueInput = [
+            Entity::CHANNEL                     => $channel,
+            Entity::MERCHANT_ID                 => $merchantId,
+            Entity::ACCOUNT_NUMBER              => $accountNumber,
+            BASConstants::FETCH_INPUT           => null,
+            BASConstants::CLEAN_UP_CONFIG       => $cleanUpConfig,
+            BASConstants::FETCH_IN_PROGRESS     => false,
+            BASConstants::MISMATCH_AMOUNT_FOUND => 0,
+            BASConstants::TOTAL_MISMATCH_AMOUNT => $totalMismatchAmount,
+        ];
+
+        $this->dispatchIntoQueueAndRetryIfFailure('BankingAccountStatementCleanUp', $queueInput);
+
+        return false;
     }
 }

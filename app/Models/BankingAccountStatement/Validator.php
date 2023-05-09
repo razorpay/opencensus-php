@@ -99,6 +99,13 @@ class Validator extends Base\Validator
         Constants::SUSPECTED_MISMATCH_TIMESTAMP => 'sometimes|epoch'
     ];
 
+    protected static $cleanUpConfigRules = [
+        Entity::CHANNEL        => 'required|string|custom',
+        Entity::ACCOUNT_NUMBER => 'required|string|max:40',
+        Entity::FROM_DATE      => 'required|epoch',
+        Entity::TO_DATE        => 'required|epoch',
+    ];
+
     public function validateCreditBas($current_status, array $input)
     {
         // note current_status is status of payout currently

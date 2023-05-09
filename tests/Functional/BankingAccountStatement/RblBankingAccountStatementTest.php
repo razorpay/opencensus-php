@@ -12,6 +12,8 @@ use Carbon\Carbon;
 use Database\Connection;
 
 use RZP\Constants;
+
+
 use RZP\Models\Admin;
 use RZP\Models\Payout;
 use RZP\Services\Mozart;
@@ -25,6 +27,7 @@ use RZP\Services\RazorXClient;
 
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Balance;
+use RZP\Exception\LogicException;
 use RZP\Constants\Mode as EnvMode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Traits\TestsMetrics;
@@ -39,6 +42,7 @@ use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Mail\BankingAccount\StatementMail;
 use RZP\Jobs\BankingAccountStatementRecon;
 use RZP\Jobs\BankingAccountStatementUpdate;
+use RZP\Jobs\BankingAccountStatementCleanUp;
 use RZP\Models\BankingAccountStatement\Type;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Constants\Entity as EntityConstants;
@@ -57,6 +61,7 @@ use RZP\Models\External\Entity as ExternalEntity;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Jobs\BankingAccountStatementReconProcessNeo;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -4724,6 +4729,92 @@ class RblBankingAccountStatementTest extends TestCase
             'mozart_id' => 'bjt1l8jc1osqk0jtadrg',
             'next' => [],
             'success' => true
+        ];
+
+        return $response;
+    }
+
+    protected function getRblResponseForFetchingMissingRecordsWhileCleanUp($fromDate, $toDate)
+    {
+        $missingTransaction = [];
+
+        if (($fromDate === '01-02-2023') and
+            ($toDate === '28-02-2023'))
+        {
+            $missingTransaction = [
+                'pstdDate'           => '2023-02-27T20:51:21.000',
+                'transactionSummary' => [
+                    'instrumentId' => '',
+                    'txnAmt'       => [
+                        'amountValue'  => '100.00',
+                        'currencyCode' => 'INR'
+                    ],
+                    'txnDate'      => '2023-02-27T00:00:00.000',
+                    'txnDesc'      => '209821810000_IMPSIN',
+                    'txnType'      => 'C'
+                ],
+                'txnBalance'         => [
+                    'currencyCode' => 'INR',
+                    'amountValue'  => '200.00'
+                ],
+                'txnCat'             => 'TCI',
+                'txnId'              => '  S429654',
+                'txnSrlNo'           => ' 1',
+                'valueDate'          => '2023-02-27T00:00:00.000'
+            ];
+        }
+        else
+        {
+            $missingTransaction = [
+                'pstdDate'           => '2023-03-23T20:51:23.000',
+                'transactionSummary' => [
+                    'instrumentId' => '',
+                    'txnAmt'       => [
+                        'amountValue'  => '50.00',
+                        'currencyCode' => 'INR'
+                    ],
+                    'txnDate'      => '2023-03-23T00:00:00.000',
+                    'txnDesc'      => 'DEBIT IMPS 20000324344829',
+                    'txnType'      => 'D'
+                ],
+                'txnBalance'         => [
+                    'currencyCode' => 'INR',
+                    'amountValue'  => '150.00'
+                ],
+                'txnCat'             => 'TCI',
+                'txnId'              => '  S807089',
+                'txnSrlNo'           => '  3',
+                'valueDate'          => '2023-03-23T00:00:00.000'
+            ];
+        }
+
+        $response = [
+            'data'              => [
+                'PayGenRes' => [
+                    'Body'      => [
+                        'hasMoreData'        => 'N',
+                        'transactionDetails' => [
+                            $missingTransaction
+                        ],
+                    ],
+                    'Header'    => [
+                        'Approver_ID' => '',
+                        'Corp_ID'     => 'RAZORPAY',
+                        'Error_Cde'   => '',
+                        'Error_Desc'  => '',
+                        'Status'      => 'SUCCESS',
+                        'TranID'      => '1'
+                    ],
+                    'Signature' => [
+                        'Signature' => 'Signature'
+                    ]
+                ],
+            ],
+            'error'             => null,
+            'external_trace_id' => '',
+            'mozart_id'         => 'bjt1l8jc1osqk0jtadrg',
+            'next'              => [],
+            'success'           => true
         ];
 
         return $response;
@@ -11530,6 +11621,479 @@ class RblBankingAccountStatementTest extends TestCase
                 $this->assertArrayNotHasKey('api_transaction_id', $ledgerRequestPayload['additional_params']);
             }
         }
+
+        Carbon::setTestNow();
+    }
+
+    public function testRblMissingAccountStatementCleanUp()
+    {
+        Queue::fake();
+
+        $oldDateTime = Carbon::create(2023, 5, 2, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RBL_MISSING_STATEMENT_FETCH_MAX_RECORDS => 25000]);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::BANKING_ACCOUNT_STATEMENT_FETCH_DEDUP => 'on']);
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $mozartMock = Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mozartMock->shouldReceive('sendRawRequest')
+                   ->andReturnUsing(function(array $request) {
+
+                       $requestData = json_decode($request['content'], true);
+
+                       if (array_key_exists('from_date', $requestData['entities']['attempt']) === true)
+                       {
+                           $fromDate = $requestData['entities']['attempt']['from_date'];
+                           $toDate   = $requestData['entities']['attempt']['to_date'];
+
+                           $mockedResponse = $this->getRblResponseForFetchingMissingRecordsWhileCleanUp($fromDate, $toDate);
+
+                           return json_encode($this->convertRblV1ResponseToV2Response($mockedResponse));
+                       }
+
+                       $mockRblResponse = $this->convertRblV1ResponseToV2Response($this->getRblNoDataResponse());
+
+                       $mockRblResponse['data']['FetchAccStmtRes']['Header']['Status_Desc'] = "No Records Found";
+
+                       return json_encode($mockRblResponse);
+                   })->times(2);
+
+        $this->app->instance('mozart', $mozartMock);
+
+        $input = [
+            BasEntity::CHANNEL        => 'rbl',
+            BasEntity::MERCHANT_ID    => '10000000000000',
+            BasEntity::ACCOUNT_NUMBER => '2224440041626905',
+            'fetch_input'             => null,
+            'clean_up_config'         => [
+                'mismatch_data' => [
+                    [
+                        'from_date'       => 1675189800,
+                        'to_date'         => 1677522600,
+                        'mismatch_amount' => 10000,
+                        'mismatch_type'   => 'missing_credit',
+                        'analysed_bas_id' => '10000000000bas',
+                    ],
+                    [
+                        'from_date'       => 1677609000,
+                        'to_date'         => 1680201000,
+                        'mismatch_amount' => -5000,
+                        'mismatch_type'   => 'missing_debit',
+                        'analysed_bas_id' => '10000000000bas',
+                    ]
+                ],
+                'completed'     => true
+            ],
+            'fetch_in_progress'       => false,
+            'mismatch_amount_found'   => 0,
+            'total_mismatch_amount'   => 5000,
+        ];
+
+        Queue::except(BankingAccountStatementCleanUp::class);
+
+        (new BankingAccountStatementCleanUp(EnvMode::TEST, $input))->handle();
+
+        $merchantMissingStatementList = (new Admin\Service)->getConfigKey(
+            [
+                'key' => Admin\ConfigKey::RX_CA_MISSING_STATEMENTS_RBL
+            ]);
+
+        $missingStatementsExpected = [
+            [
+                BasEntity::ACCOUNT_NUMBER      => '2224440041626905',
+                BasEntity::BANK_TRANSACTION_ID => 'S429654',
+                BasEntity::TYPE                => 'credit',
+                BasEntity::AMOUNT              => 10000,
+                BasEntity::BALANCE             => 20000,
+                BasEntity::POSTED_DATE         => 1677511281,
+                BasEntity::TRANSACTION_DATE    => 1677436200,
+                BasEntity::DESCRIPTION         => '209821810000_IMPSIN',
+                BasEntity::CHANNEL             => 'rbl',
+            ],
+            [
+                BasEntity::ACCOUNT_NUMBER      => '2224440041626905',
+                BasEntity::BANK_TRANSACTION_ID => 'S807089',
+                BasEntity::TYPE                => 'debit',
+                BasEntity::AMOUNT              => 5000,
+                BasEntity::BALANCE             => 15000,
+                BasEntity::POSTED_DATE         => 1679584883,
+                BasEntity::TRANSACTION_DATE    => 1679509800,
+                BasEntity::DESCRIPTION         => 'DEBIT IMPS 20000324344829',
+                BasEntity::CHANNEL             => 'rbl',
+            ],
+        ];
+
+        Queue::assertPushed(BankingAccountStatementReconProcessNeo::class, 1);
+
+        $this->assertArraySubset($missingStatementsExpected[0], $merchantMissingStatementList['2224440041626905'][0]);
+        $this->assertArraySubset($missingStatementsExpected[1], $merchantMissingStatementList['2224440041626905'][1]);
+
+        Carbon::setTestNow();
+    }
+
+    public function testRblMissingAccountStatementCleanUpWhenBalanceMismatchIsPresentForMissingStatements()
+    {
+        Queue::fake();
+
+        $oldDateTime = Carbon::create(2023, 5, 2, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RBL_MISSING_STATEMENT_FETCH_MAX_RECORDS => 25000]);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::BANKING_ACCOUNT_STATEMENT_FETCH_DEDUP => 'on']);
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $mozartMock = Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mozartMock->shouldReceive('sendRawRequest')
+                   ->andReturnUsing(function(array $request) {
+
+                       $requestData = json_decode($request['content'], true);
+
+                       if (array_key_exists('from_date', $requestData['entities']['attempt']) === true)
+                       {
+                           $fromDate = $requestData['entities']['attempt']['from_date'];
+                           $toDate   = $requestData['entities']['attempt']['to_date'];
+
+                           $mockedResponse = $this->getRblResponseForFetchingMissingRecordsWhileCleanUp($fromDate, $toDate);
+
+                           return json_encode($this->convertRblV1ResponseToV2Response($mockedResponse));
+                       }
+
+                       $mockRblResponse = $this->convertRblV1ResponseToV2Response($this->getRblNoDataResponse());
+
+                       $mockRblResponse['data']['FetchAccStmtRes']['Header']['Status_Desc'] = "No Records Found";
+
+                       return json_encode($mockRblResponse);
+                   })->times(2);
+
+        $this->app->instance('mozart', $mozartMock);
+
+        $input = [
+            BasEntity::CHANNEL        => 'rbl',
+            BasEntity::MERCHANT_ID    => '10000000000000',
+            BasEntity::ACCOUNT_NUMBER => '2224440041626905',
+            'fetch_input'             => null,
+            'clean_up_config'         => [
+                'mismatch_data' => [
+                    [
+                        'from_date'       => 1675189800,
+                        'to_date'         => 1677522600,
+                        'mismatch_amount' => 10000,
+                        'mismatch_type'   => 'missing_credit',
+                        'analysed_bas_id' => '10000000000bas',
+                    ],
+                    [
+                        'from_date'       => 1677609000,
+                        'to_date'         => 1680201000,
+                        'mismatch_amount' => -5000,
+                        'mismatch_type'   => 'missing_debit',
+                        'analysed_bas_id' => '10000000000bas',
+                    ]
+                ],
+                'completed'     => true
+            ],
+            'fetch_in_progress'       => false,
+            'mismatch_amount_found'   => 0,
+            'total_mismatch_amount'   => 53000,
+        ];
+
+        Queue::except(BankingAccountStatementCleanUp::class);
+
+        (new BankingAccountStatementCleanUp(EnvMode::TEST, $input))->handle();
+
+        $merchantMissingStatementList = (new Admin\Service)->getConfigKey(
+            [
+                'key' => Admin\ConfigKey::RX_CA_MISSING_STATEMENTS_RBL
+            ]);
+
+        $missingStatementsExpected = [
+            [
+                BasEntity::ACCOUNT_NUMBER      => '2224440041626905',
+                BasEntity::BANK_TRANSACTION_ID => 'S429654',
+                BasEntity::TYPE                => 'credit',
+                BasEntity::AMOUNT              => 10000,
+                BasEntity::BALANCE             => 20000,
+                BasEntity::POSTED_DATE         => 1677511281,
+                BasEntity::TRANSACTION_DATE    => 1677436200,
+                BasEntity::DESCRIPTION         => '209821810000_IMPSIN',
+                BasEntity::CHANNEL             => 'rbl',
+            ],
+            [
+                BasEntity::ACCOUNT_NUMBER      => '2224440041626905',
+                BasEntity::BANK_TRANSACTION_ID => 'S807089',
+                BasEntity::TYPE                => 'debit',
+                BasEntity::AMOUNT              => 5000,
+                BasEntity::BALANCE             => 15000,
+                BasEntity::POSTED_DATE         => 1679584883,
+                BasEntity::TRANSACTION_DATE    => 1679509800,
+                BasEntity::DESCRIPTION         => 'DEBIT IMPS 20000324344829',
+                BasEntity::CHANNEL             => 'rbl',
+            ],
+        ];
+
+        Queue::assertPushed(BankingAccountStatementReconProcessNeo::class, 0);
+
+        $this->assertArraySubset($missingStatementsExpected[0], $merchantMissingStatementList['2224440041626905'][0]);
+        $this->assertArraySubset($missingStatementsExpected[1], $merchantMissingStatementList['2224440041626905'][1]);
+
+        Carbon::setTestNow();
+    }
+
+    public function testRblMissingAccountStatementCleanUpWhenQueueDispatchFails()
+    {
+        Queue::fake();
+
+        $oldDateTime = Carbon::create(2023, 5, 2, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RBL_MISSING_STATEMENT_FETCH_MAX_RECORDS => 25000]);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::BANKING_ACCOUNT_STATEMENT_FETCH_DEDUP => 'on']);
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $mozartMock = Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mozartMock->shouldReceive('sendRawRequest')
+                   ->andReturnUsing(function(array $request) {
+
+                       $requestData = json_decode($request['content'], true);
+
+                       if (array_key_exists('from_date', $requestData['entities']['attempt']) === true)
+                       {
+                           $fromDate = $requestData['entities']['attempt']['from_date'];
+                           $toDate   = $requestData['entities']['attempt']['to_date'];
+
+                           $mockedResponse = $this->getRblResponseForFetchingMissingRecordsWhileCleanUp($fromDate, $toDate);
+
+                           return json_encode($this->convertRblV1ResponseToV2Response($mockedResponse));
+                       }
+
+                       $mockRblResponse = $this->convertRblV1ResponseToV2Response($this->getRblNoDataResponse());
+
+                       $mockRblResponse['data']['FetchAccStmtRes']['Header']['Status_Desc'] = "No Records Found";
+
+                       return json_encode($mockRblResponse);
+                   })->times(0);
+
+        $this->app->instance('mozart', $mozartMock);
+
+        $input = [
+            BasEntity::CHANNEL        => 'rbl',
+            BasEntity::MERCHANT_ID    => '10000000000000',
+            BasEntity::ACCOUNT_NUMBER => '2224440041626905',
+            'fetch_input'             => null,
+            'clean_up_config'         => [
+                'mismatch_data' => [
+                    [
+                        'from_date'       => 1675189800,
+                        'to_date'         => 1677522600,
+                        'mismatch_amount' => 10000,
+                        'mismatch_type'   => 'missing_credit',
+                        'analysed_bas_id' => '10000000000bas',
+                    ],
+                    [
+                        'from_date'       => 1677609000,
+                        'to_date'         => 1680201000,
+                        'mismatch_amount' => -5000,
+                        'mismatch_type'   => 'missing_debit',
+                        'analysed_bas_id' => '10000000000bas',
+                    ]
+                ],
+                'completed'     => true
+            ],
+            'fetch_in_progress'       => false,
+            'mismatch_amount_found'   => 0,
+            'total_mismatch_amount'   => 53000,
+        ];
+
+        Queue::assertNotPushed(BankingAccountStatementCleanUp::class, function($message)
+        {
+            throw new LogicException('random exception');
+        });
+
+        (new BankingAccountStatementCleanUp(EnvMode::TEST, $input))->handle();
+
+        $merchantMissingStatementList = (new Admin\Service)->getConfigKey(
+            [
+                'key' => Admin\ConfigKey::RX_CA_MISSING_STATEMENTS_RBL
+            ]);
+
+        Queue::assertPushed(BankingAccountStatementReconProcessNeo::class, 0);
+
+        $this->assertEmpty($merchantMissingStatementList);
+
+        Carbon::setTestNow();
+    }
+
+    public function testRblMissingAccountStatementCleanUpWhenCompletedInCleanUpConfigIsFalse()
+    {
+        Queue::fake();
+
+        $oldDateTime = Carbon::create(2023, 5, 2, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RBL_MISSING_STATEMENT_FETCH_MAX_RECORDS => 25000]);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::BANKING_ACCOUNT_STATEMENT_FETCH_DEDUP => 'on']);
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $mozartMock = Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mozartMock->shouldReceive('sendRawRequest')
+                   ->andReturnUsing(function(array $request) {
+
+                       $requestData = json_decode($request['content'], true);
+
+                       if (array_key_exists('from_date', $requestData['entities']['attempt']) === true)
+                       {
+                           $fromDate = $requestData['entities']['attempt']['from_date'];
+                           $toDate   = $requestData['entities']['attempt']['to_date'];
+
+                           $mockedResponse = $this->getRblResponseForFetchingMissingRecordsWhileCleanUp($fromDate, $toDate);
+
+                           return json_encode($this->convertRblV1ResponseToV2Response($mockedResponse));
+                       }
+
+                       $mockRblResponse = $this->convertRblV1ResponseToV2Response($this->getRblNoDataResponse());
+
+                       $mockRblResponse['data']['FetchAccStmtRes']['Header']['Status_Desc'] = "No Records Found";
+
+                       return json_encode($mockRblResponse);
+                   })->times(0);
+
+        $this->app->instance('mozart', $mozartMock);
+
+        $input = [
+            BasEntity::CHANNEL        => 'rbl',
+            BasEntity::MERCHANT_ID    => '10000000000000',
+            BasEntity::ACCOUNT_NUMBER => '2224440041626905',
+            'fetch_input'             => null,
+            'clean_up_config'         => [
+                'mismatch_data' => [
+                    [
+                        'from_date'       => 1675189800,
+                        'to_date'         => 1677522600,
+                        'mismatch_amount' => 10000,
+                        'mismatch_type'   => 'missing_credit',
+                        'analysed_bas_id' => '10000000000bas',
+                    ],
+                    [
+                        'from_date'       => 1677609000,
+                        'to_date'         => 1680201000,
+                        'mismatch_amount' => -5000,
+                        'mismatch_type'   => 'missing_debit',
+                        'analysed_bas_id' => '10000000000bas',
+                    ]
+                ],
+                'completed'     => false
+            ],
+            'fetch_in_progress'       => false,
+            'mismatch_amount_found'   => 0,
+            'total_mismatch_amount'   => 53000,
+        ];
+
+        (new BankingAccountStatementCleanUp(EnvMode::TEST, $input))->handle();
+
+        $merchantMissingStatementList = (new Admin\Service)->getConfigKey(
+            [
+                'key' => Admin\ConfigKey::RX_CA_MISSING_STATEMENTS_RBL
+            ]);
+
+        Queue::assertPushed(BankingAccountStatementCleanUp::class, 0);
+
+        Queue::assertPushed(BankingAccountStatementReconProcessNeo::class, 0);
+
+        $this->assertEmpty($merchantMissingStatementList);
+
+        Carbon::setTestNow();
+    }
+
+    public function testRblMissingAccountStatementCleanUpWhenCompletedInCleanUpConfigIsWrong()
+    {
+        Queue::fake();
+
+        $oldDateTime = Carbon::create(2023, 5, 2, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RBL_MISSING_STATEMENT_FETCH_MAX_RECORDS => 25000]);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::BANKING_ACCOUNT_STATEMENT_FETCH_DEDUP => 'on']);
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $mozartMock = Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mozartMock->shouldReceive('sendRawRequest')
+                   ->andReturnUsing(function(array $request) {
+
+                       $requestData = json_decode($request['content'], true);
+
+                       if (array_key_exists('from_date', $requestData['entities']['attempt']) === true)
+                       {
+                           $fromDate = $requestData['entities']['attempt']['from_date'];
+                           $toDate   = $requestData['entities']['attempt']['to_date'];
+
+                           $mockedResponse = $this->getRblResponseForFetchingMissingRecordsWhileCleanUp($fromDate, $toDate);
+
+                           return json_encode($this->convertRblV1ResponseToV2Response($mockedResponse));
+                       }
+
+                       $mockRblResponse = $this->convertRblV1ResponseToV2Response($this->getRblNoDataResponse());
+
+                       $mockRblResponse['data']['FetchAccStmtRes']['Header']['Status_Desc'] = "No Records Found";
+
+                       return json_encode($mockRblResponse);
+                   })->times(0);
+
+        $this->app->instance('mozart', $mozartMock);
+
+        $input = [
+            BasEntity::CHANNEL        => 'rbl',
+            BasEntity::MERCHANT_ID    => '10000000000000',
+            BasEntity::ACCOUNT_NUMBER => '2224440041626905',
+            'fetch_input'             => null,
+            'clean_up_config'         => [
+                'mismatch_data' => [
+                    [
+                        'from_date'       => 1675189800,
+                        'to_date'         => null,
+                        'mismatch_amount' => 10000,
+                        'mismatch_type'   => 'missing_credit',
+                        'analysed_bas_id' => '10000000000bas',
+                    ],
+                ],
+                'completed'     => true
+            ],
+            'fetch_in_progress'       => false,
+            'mismatch_amount_found'   => 0,
+            'total_mismatch_amount'   => 53000,
+        ];
+
+        (new BankingAccountStatementCleanUp(EnvMode::TEST, $input))->handle();
+
+        $merchantMissingStatementList = (new Admin\Service)->getConfigKey(
+            [
+                'key' => Admin\ConfigKey::RX_CA_MISSING_STATEMENTS_RBL
+            ]);
+
+        Queue::assertPushed(BankingAccountStatementCleanUp::class, 0);
+
+        Queue::assertPushed(BankingAccountStatementReconProcessNeo::class, 0);
+
+        $this->assertEmpty($merchantMissingStatementList);
 
         Carbon::setTestNow();
     }

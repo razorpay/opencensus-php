@@ -39,6 +39,7 @@ class PendingDispatch extends \Illuminate\Foundation\Bus\PendingDispatch
     const PAYOUT_SERVICE_DUAL_WRITE               = 'payout_service_dual_write';
     const QUEUED_CREDIT_TRANSFER_REQUESTS         = 'queued_credit_transfer_requests';
     const MISSING_ACCOUNT_STATEMENT_DETECT        = 'missing_account_statement_detect';
+    const MISSING_ACCOUNT_STATEMENT_RECON         = 'banking_account_statement_recon';
 
     protected $shouldThrowErrorOnFailure = [
         self::PAYOUT_POST_CREATE_PROCESS,
@@ -46,6 +47,7 @@ class PendingDispatch extends \Illuminate\Foundation\Bus\PendingDispatch
         self::PAYOUT_SERVICE_DUAL_WRITE,
         self::QUEUED_CREDIT_TRANSFER_REQUESTS,
         self::MISSING_ACCOUNT_STATEMENT_DETECT,
+        self::MISSING_ACCOUNT_STATEMENT_RECON,
     ];
 
     /**
