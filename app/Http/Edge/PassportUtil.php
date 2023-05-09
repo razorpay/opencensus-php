@@ -65,15 +65,8 @@ class PassportUtil
         {
             return true;
         }
-        else
-        {
-            $this->trace->info(
-                TraceCode::EDGE_PASSPORT_NOT_USABLE_FOR_OAUTH, ['errors'=> $errors,
-                                                                'requestId' => $this->app['request']->getId()]
-            );
 
-            return false;
-        }
+        return false;
     }
 
     /**
