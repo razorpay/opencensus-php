@@ -84,6 +84,15 @@ class BankingAccountStatementCleanUp extends Job
         parent::__construct($mode);
     }
 
+    public function getJobInput()
+    {
+        return [
+            'params'                   => $this->params,
+            Constants::FETCH_INPUT     => $this->fetchInput,
+            Constants::CLEAN_UP_CONFIG => $this->cleanUpConfig
+        ];
+    }
+
     // Clean Up Config Pre-Requisite
     // Cleanup config should be cleansed of duplicates and should contain months for which recon needs to run.
     //

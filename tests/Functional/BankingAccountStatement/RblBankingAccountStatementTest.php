@@ -65,6 +65,7 @@ use RZP\Jobs\BankingAccountStatementReconProcessNeo;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Models\Transaction\Entity as TransactionEntity;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\BankingAccountStatement\Core as BasCore;
 use RZP\Models\BankingAccountStatement\Entity as BasEntity;
 use RZP\Models\BankingAccountStatement\Details as BasDetails;
 use RZP\Models\BankingAccountStatement\Constants as BASConstants;
@@ -13652,8 +13653,8 @@ class RblBankingAccountStatementTest extends TestCase
         // check if config has missing statement detected of 5000 debit between the range 2nd July to 1st August
         $this->assertArraySelectiveEquals(
             [
-                'start_date'      => 1656700200,
-                'end_date'        => 1659378599,
+                'from_date'       => 1656613800,
+                'to_date'         => 1659292199,
                 'mismatch_amount' => -5000,
                 'mismatch_type'   => "missing_debit",
                 'analysed_bas_id' => $latestBAS->getId()
@@ -13725,7 +13726,7 @@ class RblBankingAccountStatementTest extends TestCase
             ]);
 
         // Assert that no config was stored in redis
-        $this->assertCount(0, $missingStatementDetectionConfig);
+        $this->assertTrue(empty($missingStatementDetectionConfig['mismatch_data']));
     }
 
     public function testRblMissingAccountStatementPushesCurrentTimestampWhenStartTimeIsNotPassed()
@@ -13744,11 +13745,116 @@ class RblBankingAccountStatementTest extends TestCase
 
         Queue::assertPushed(MissingAccountStatementDetection::class, function($job) use ($currentTime)
         {
-            $this->assertEquals($currentTime->timestamp, $job->endDate);
+            $this->assertEquals($currentTime->timestamp, $job->toDate);
 
-            $this->assertEquals($currentTime->startOfMonth()->addDay()->startOfDay()->timestamp, $job->startDate);
+            $this->assertEquals($currentTime->startOfMonth()->startOfDay()->timestamp, $job->fromDate);
 
             return true;
         });
+    }
+
+    public function testStatementFetchTriggerForDetectedMissingStatements()
+    {
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        Queue::fake();
+
+        (new BasCore())->triggerMissingStatementFetchForIdentifiedTimeRange('10000000000000', '2224440041626905', 'rbl', [
+            'completed'     => true,
+            'mismatch_data' => [
+                [
+                    "from_date"       => 1680633000,
+                    "to_date"         => 1681065000,
+                    "mismatch_amount" => 20447,
+                    "mismatch_type"   => "missing_credit",
+                    "analysed_bas_id" => "1"
+                ],
+                [
+                    "from_date"       => 1677695400,
+                    "to_date"         => 1680373799,
+                    "mismatch_amount" => -7113,
+                    "mismatch_type"   => "missing_debit",
+                    "analysed_bas_id" => "3"
+                ],
+                [
+                    "from_date"       => 1676831400,
+                    "to_date"         => 1677695400,
+                    "mismatch_amount" => -7113,
+                    "mismatch_type"   => "missing_debit",
+                    "analysed_bas_id" => "4"
+                ],
+                [
+                    "from_date"       => 1680373800,
+                    "to_date"         => 1680546600,
+                    "mismatch_amount" => 20447,
+                    "mismatch_type"   => "missing_credit",
+                    "analysed_bas_id" => "2"
+                ]
+            ]]);
+
+        $missingStatementDetectionConfig = (new Admin\Service)->getConfigKey(
+            [
+                'key' => Admin\ConfigKey::RX_CA_MISSING_STATEMENT_DETECTION_RBL
+            ]);
+
+        // Assert that config only has 2 elements, since the other 2 will be removed for not having any mismatch
+        $this->assertCount(2, $missingStatementDetectionConfig['2224440041626905']['mismatch_data']);
+
+        // Assert that config is finally saved in ascending order before pushing for fetch
+        $firstConfig = $missingStatementDetectionConfig['2224440041626905']['mismatch_data'][0];
+        $secondConfig = $missingStatementDetectionConfig['2224440041626905']['mismatch_data'][1];
+
+        $this->assertEquals(4, $firstConfig['analysed_bas_id']);
+        $this->assertEquals(2, $secondConfig['analysed_bas_id']);
+        $this->assertTrue($firstConfig['from_date'] < $secondConfig['from_date']);
+
+        // Assert that cleanup job was dispatched
+        Queue::assertPushed(BankingAccountStatementCleanUp::class, function($job) use ($secondConfig, $missingStatementDetectionConfig) {
+            $jobInput = $job->getJobInput();
+
+            $this->assertEquals('10000000000000', $jobInput['params']['merchant_id']);
+            $this->assertEquals('2224440041626905', $jobInput['params']['account_number']);
+            $this->assertEquals(false, $jobInput['params']['fetch_in_progress']);
+            $this->assertEquals($secondConfig['mismatch_amount'], $jobInput['params']['total_mismatch_amount']);
+            $this->assertEquals(null, $jobInput['fetch_input']);
+            $this->assertEquals($missingStatementDetectionConfig['2224440041626905'], $jobInput['clean_up_config']);
+
+            return true;
+        });
+    }
+
+    public function testMissingStatementDetectionConfigIsResetBeforeDispatching()
+    {
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_CA_MISSING_STATEMENT_DETECTION_RBL => [
+            "2224440041626905" => [
+                "mismatch_data" => [
+                    [
+                        "start_date"      => 1682965800,
+                        "end_date"        => 1683204973,
+                        "mismatch_amount" => -1483775,
+                        "mismatch_type"   => "missing_debit",
+                        "analysed_bas_id" => "LlGg3PkufJ39fg"
+                    ],
+                    "completed" => true
+                ]
+            ]
+        ]]);
+
+        $this->ba->adminAuth();
+
+        Queue::fake();
+
+        $this->testData[__FUNCTION__] = $this->testData['testRblMissingAccountStatementPushesCurrentTimestampWhenStartTimeIsNotPassed'];
+
+        $this->startTest();
+
+        $missingStatementDetectionConfig = (new Admin\Service)->getConfigKey(
+            [
+                'key' => Admin\ConfigKey::RX_CA_MISSING_STATEMENT_DETECTION_RBL
+            ]);
+
+        $this->assertEquals([], $missingStatementDetectionConfig['2224440041626905']);
     }
 }

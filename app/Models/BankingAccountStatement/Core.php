@@ -4407,53 +4407,146 @@ class Core extends Base\Core
         return false;
     }
 
-    public function cleanMissingStatementsConfigAndDispatch(array $cleanUpConfig, $channel, $accountNumber, $merchantId)
+    public function fetchMissingStatementConfigFor(string $accountNumber, $channel)
     {
-        $newMismatchData = [];
+        $configKey = Admin\ConfigKey::PREFIX . 'rx_ca_missing_statement_detection_' . $channel;
 
-        $totalMismatchAmount = 0;
+        $config = (new Admin\Service())->getConfigKey(['key' => $configKey]);
 
-        if ((array_key_exists(BASConstants::MISMATCH_DATA, $cleanUpConfig) === true) and
-            (empty($cleanUpConfig[BASConstants::MISMATCH_DATA]) === false))
+        if ((empty($config) === true) or
+            (array_key_exists($accountNumber, $config) === false))
         {
-            $mismatchDataCollection = new Base\Collection($cleanUpConfig[BASConstants::MISMATCH_DATA]);
-
-            $groupedMismatchData = $mismatchDataCollection->groupBy(Entity::FROM_DATE)->sortKeys();
-
-            $mismatchStartingAmount = $groupedMismatchData->first()[0]['mismatch_amount'];
-
-            foreach ($groupedMismatchData as $fromDate => $mismatchData)
-            {
-                $mismatchDataArray = $mismatchData->toArray()[0];
-                $totalMismatchAmount = $totalMismatchAmount + $mismatchDataArray['mismatch_amount'];
-
-                if ($mismatchDataArray['mismatch_amount'] === $mismatchStartingAmount)
-                {
-                    continue;
-                }
-                else
-                {
-                    $newMismatchData[]      = $mismatchDataArray;
-                    $mismatchStartingAmount = $mismatchDataArray['mismatch_amount'];
-                }
-            }
-
-            $cleanUpConfig[BASConstants::MISMATCH_DATA] = $newMismatchData;
+            return null;
         }
 
-        $queueInput = [
-            Entity::CHANNEL                     => $channel,
-            Entity::MERCHANT_ID                 => $merchantId,
-            Entity::ACCOUNT_NUMBER              => $accountNumber,
-            BASConstants::FETCH_INPUT           => null,
-            BASConstants::CLEAN_UP_CONFIG       => $cleanUpConfig,
-            BASConstants::FETCH_IN_PROGRESS     => false,
-            BASConstants::MISMATCH_AMOUNT_FOUND => 0,
-            BASConstants::TOTAL_MISMATCH_AMOUNT => $totalMismatchAmount,
-        ];
-
-        $this->dispatchIntoQueueAndRetryIfFailure('BankingAccountStatementCleanUp', $queueInput);
-
-        return false;
+        return $config[$accountNumber];
     }
+
+    public function updateMissingStatementConfigFor(string $accountNumber, string $channel, array $config)
+    {
+        return $this->mutex->acquireAndRelease(
+            'update_redis_missing_statement_detect_' . $channel,
+            function() use ($accountNumber, $config, $channel) {
+                $configKey = Admin\ConfigKey::PREFIX . 'rx_ca_missing_statement_detection_' . $channel;
+
+                $existingConfigs = (new Admin\Service())->getConfigKey(['key' => $configKey]);
+
+                $oldConfig = $existingConfigs;
+
+                if ($existingConfigs === null)
+                {
+                    $existingConfigs = [];
+                }
+
+                $existingConfigs[$accountNumber] = $config;
+
+                $this->setConfigKeys([$configKey => $existingConfigs]);
+
+                $this->trace->info(TraceCode::MISSING_STATEMENT_DETECTION_UPDATE_CONFIG, [
+                    'channel'       => $channel,
+                    'old_config'    => $oldConfig,
+                    'new_config'    => $existingConfigs,
+                ]);
+
+                return $existingConfigs[$accountNumber];
+            },
+            60,
+            ErrorCode::MISSING_STATEMENT_DETECTION_UPDATE_IN_PROGRESS,
+            3
+        );
+    }
+
+    public function triggerMissingStatementFetchForIdentifiedTimeRange($merchantId, $accountNumber, $channel, $missingStatementConfig)
+    {
+        try
+        {
+            // Remove months where there is no change in mismatch
+            $modifiedMissingStatementConfig = $this->removeRangeWithNoMismatchIn($missingStatementConfig);
+
+            if ($modifiedMissingStatementConfig === null)
+            {
+                $this->trace->error(TraceCode::MISSING_STATEMENT_DETECTION_JOB_FETCH_TRIGGER_FAILURE, [
+                    'merchant_id' => $merchantId,
+                    'channel'     => $channel,
+                    'config'      => $modifiedMissingStatementConfig,
+                    'reason'      => 'no_config_found_for_fetch'
+                ]);
+
+                return;
+            }
+
+            $totalMismatchAmount = $modifiedMissingStatementConfig[BASConstants::MISMATCH_DATA][0]['mismatch_amount'];
+
+            // sort data and send in ascending order
+            usort($modifiedMissingStatementConfig[BASConstants::MISMATCH_DATA], function ($a, $b)
+            {
+                return $a[Entity::TO_DATE] > $b[Entity::TO_DATE];
+            });
+
+            $queueInput = [
+                Entity::CHANNEL                     => $channel,
+                Entity::MERCHANT_ID                 => $merchantId,
+                Entity::ACCOUNT_NUMBER              => $accountNumber,
+                BASConstants::FETCH_INPUT           => null,
+                BASConstants::CLEAN_UP_CONFIG       => $modifiedMissingStatementConfig,
+                BASConstants::FETCH_IN_PROGRESS     => false,
+                BASConstants::MISMATCH_AMOUNT_FOUND => 0,
+                BASConstants::TOTAL_MISMATCH_AMOUNT => $totalMismatchAmount,
+            ];
+
+            $this->updateMissingStatementConfigFor($accountNumber, $channel, $modifiedMissingStatementConfig);
+
+            BankingAccountStatementCleanUp::dispatch($this->mode, $queueInput);
+
+            $this->trace->info(
+                TraceCode::MISSING_STATEMENT_DETECTION_FETCH_TRIGGER,
+                [
+                    'merchant_id' => $merchantId,
+                    'channel'     => $channel,
+                    'queue_input' => $queueInput,
+                ]);
+        }
+        catch(\Exception $ex)
+        {
+            $this->trace->error(TraceCode::MISSING_STATEMENT_DETECTION_JOB_FETCH_TRIGGER_FAILURE, [
+                'merchant_id'   => $merchantId,
+                'channel'       => $channel,
+                'config'        => $missingStatementConfig,
+                'exception'     => $ex
+            ]);
+        }
+    }
+
+    private function removeRangeWithNoMismatchIn($missingStatementConfig)
+    {
+        if ((array_key_exists(BASConstants::MISMATCH_DATA, $missingStatementConfig) === false) or
+            (empty($missingStatementConfig[BASConstants::MISMATCH_DATA]) === true))
+        {
+            return null;
+        }
+
+        usort($missingStatementConfig[BASConstants::MISMATCH_DATA], function ($a, $b)
+        {
+            return $a[Entity::TO_DATE] < $b[Entity::TO_DATE];
+        });
+
+        $configCount = count($missingStatementConfig[BASConstants::MISMATCH_DATA]);
+
+        for ($i = 0; $i < $configCount - 1; $i++)
+        {
+            if ($missingStatementConfig[BASConstants::MISMATCH_DATA][$i]['mismatch_amount'] === $missingStatementConfig[BASConstants::MISMATCH_DATA][$i + 1]['mismatch_amount'])
+            {
+                continue;
+            }
+
+            $modifiedConfig[] = $missingStatementConfig[BASConstants::MISMATCH_DATA][$i];
+        }
+
+        $modifiedConfig[] = $missingStatementConfig[BASConstants::MISMATCH_DATA][$configCount - 1];
+
+        $missingStatementConfig[BASConstants::MISMATCH_DATA] = $modifiedConfig;
+
+        return $missingStatementConfig;
+    }
+
 }

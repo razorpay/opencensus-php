@@ -311,7 +311,7 @@ class Service extends Base\Service
 
         $accountNumberList = array_unique($input[Constants::ACCOUNT_NUMBERS]);
 
-        $suspectedMismatchTimestamp = $input[Constants::SUSPECTED_MISMATCH_TIMESTAMP];
+        $suspectedMismatchTimestamp = $input[Constants::SUSPECTED_MISMATCH_TIMESTAMP] ?? null;
 
         $dispatchedAccountNumberList = [];
 
@@ -324,6 +324,9 @@ class Service extends Base\Service
         {
             try
             {
+                // reset missing statement detection config for the account number
+                $this->core()->updateMissingStatementConfigFor($accountNumber, $channel, []);
+
                 MissingAccountStatementDetection::dispatch($this->mode, $accountNumber, null, $suspectedMismatchTimestamp, $channel);
 
                 $dispatchedAccountNumberList[] = $accountNumber;

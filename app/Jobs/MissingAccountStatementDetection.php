@@ -10,11 +10,10 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\BankingAccountStatement as BAS;
 use RZP\Models\BankingAccountStatement\Details as BASDetails;
+use RZP\Models\BankingAccountStatement\Constants as BASConstants;
 
 class MissingAccountStatementDetection extends Job
 {
-    protected $app;
-
     protected $mode;
 
     protected $queueConfigKey = 'missing_account_statement_detect';
@@ -25,9 +24,11 @@ class MissingAccountStatementDetection extends Job
 
     protected $basDetails;
 
-    public $startDate;
+    public $fromDate;
 
-    public $endDate;
+    public $toDate;
+
+    protected $basCore;
 
     const JOB_DELAY = 5;
 
@@ -38,15 +39,15 @@ class MissingAccountStatementDetection extends Job
      *
      * @param string|null $mode
      * @param string      $accountNumber
-     * @param             $startDate
-     * @param             $endDate
+     * @param             $fromDate
+     * @param             $toDate
      * @param string      $channel
      */
     public function __construct(
         string $mode,
         string $accountNumber,
-        $startDate,
-        $endDate,
+        $fromDate,
+        $toDate,
         string $channel
     )
     {
@@ -56,7 +57,7 @@ class MissingAccountStatementDetection extends Job
 
         $this->channel = $channel;
 
-        $this->setTimeRangeDetails($startDate, $endDate);
+        $this->setTimeRangeDetails($fromDate, $toDate);
     }
 
     /**
@@ -68,34 +69,34 @@ class MissingAccountStatementDetection extends Job
     {
         parent::handle();
 
-        $app = App::getFacadeRoot();
-
         try
         {
-            $startDate = Carbon::createFromTimestamp($this->startDate, Timezone::IST)->format('d-m-Y');
+            $fromDate = Carbon::createFromTimestamp($this->fromDate, Timezone::IST)->format('d-m-Y');
 
-            $endDate = Carbon::createFromTimestamp($this->endDate, Timezone::IST)->format('d-m-Y');
+            $toDate = Carbon::createFromTimestamp($this->toDate, Timezone::IST)->format('d-m-Y');
+
+            $this->basCore = new BAS\Core;
+
+            $this->basDetails = $this->basCore->getBasDetails($this->accountNumber, $this->channel, [
+                BASDetails\Status::ACTIVE, BASDetails\Status::UNDER_MAINTENANCE
+            ]);
 
             $this->trace->info(
                 TraceCode::MISSING_STATEMENT_DETECTION_JOB_INIT,
                 [
-                    'merchant_id' => $this->accountNumber,
-                    'channel'     => $this->channel,
-                    'start_date'  => $startDate,
-                    'end_date'    => $endDate,
-                    'start_time'  => $this->startDate,
-                    'end_time'    => $this->endDate
+                    'merchant_id'         => $this->basDetails->getMerchantId(),
+                    'channel'             => $this->channel,
+                    BAS\Entity::FROM_DATE => $fromDate,
+                    BAS\Entity::TO_DATE   => $toDate,
+                    'from_time'           => $this->fromDate,
+                    'to_time'             => $this->toDate
                 ]);
 
-            $basCore = new BAS\Core;
-
-            $this->basDetails = $basCore->getBasDetails($this->accountNumber, $this->channel, [
-                BASDetails\Status::ACTIVE, BASDetails\Status::UNDER_MAINTENANCE
-            ]);
+            $app = App::getFacadeRoot();
 
             [$isCurrentIterationSuccessful, $isLastIteration, $pushNextJob, $missingStatementConfig] = $app['api.mutex']->acquireAndRelease(
                 'missing_statement_detect_' . $this->accountNumber,
-                function() use ($basCore) {
+                function() {
                     $isLastIteration = false;
 
                     $isCurrentIterationSuccessful = true;
@@ -117,19 +118,19 @@ class MissingAccountStatementDetection extends Job
                     }
                     else
                     {
-                        if ($this->basDetails->getCreatedAt() > $this->startDate)
+                        if ($this->basDetails->getCreatedAt() > $this->fromDate)
                         {
                             $isLastIteration = true;
                         }
 
                         $fetchedBAS = $this->repoManager->banking_account_statement->getLatestForGivenPostedDateRangeBy(
-                            $this->basDetails->getAccountNumber(),
+                            $this->accountNumber,
                             $this->channel,
-                            $this->startDate,
-                            $this->endDate
+                            $this->fromDate,
+                            $this->toDate
                         );
 
-                        $missingStatementConfig = $this->fetchMissingStatementConfigFor($this->basDetails->getAccountNumber());
+                        $missingStatementConfig = $this->basCore->fetchMissingStatementConfigFor($this->accountNumber, $this->channel);
 
                         if ($fetchedBAS === null)
                         {
@@ -140,21 +141,11 @@ class MissingAccountStatementDetection extends Job
                         }
                         else
                         {
-                            $fetchDate = Carbon::createFromTimestamp($fetchedBAS->getTransactionDate(), Timezone::IST);
+                            $statementFetchInput = $this->getStatementFetchInput($fetchedBAS);
 
-                            $paginationKey = ($this->channel === BAS\Channel::RBL) ? null : '';
+                            [$fetchMore, $paginationKey, $fetchedStatements] = $this->basCore->fetchAccountStatementWithRange($statementFetchInput, false, false, false);
 
-                            $statementFetchInput = [
-                                BAS\Entity::FROM_DATE      => $fetchDate->timestamp,
-                                BAS\Entity::TO_DATE        => $fetchDate->endOfDay()->timestamp,
-                                BAS\Entity::CHANNEL        => $this->channel,
-                                BAS\Entity::ACCOUNT_NUMBER => $this->basDetails->getAccountNumber(),
-                                'pagination_key'           => $paginationKey
-                            ];
-
-                            [$fetchMore, $paginationKey, $fetchedStatements] = $basCore->fetchAccountStatementWithRange($statementFetchInput, false, false, false);
-
-                            [$matchedBASinFetchedStatement, $fetchedBAS] = $basCore->findMatchingBASInFetchedStatements($fetchedBAS, $fetchedStatements);
+                            [$matchedBASinFetchedStatement, $fetchedBAS] = $this->basCore->findMatchingBASInFetchedStatements($fetchedBAS, $fetchedStatements);
 
                             if ($matchedBASinFetchedStatement === null)
                             {
@@ -165,8 +156,8 @@ class MissingAccountStatementDetection extends Job
                                     [
                                         'merchant_id'        => $this->basDetails->getMerchantId(),
                                         'channel'            => $this->channel,
-                                        'start_time'         => $this->startDate,
-                                        'end_time'           => $this->endDate,
+                                        'from_time'          => $this->fromDate,
+                                        'to_time'            => $this->toDate,
                                         'bas_entity'         => $fetchedBAS,
                                         'fetched_statements' => count($fetchedStatements)
                                     ]);
@@ -186,24 +177,15 @@ class MissingAccountStatementDetection extends Job
                                             'channel'           => $this->channel,
                                             'fetched_statement' => $matchedBASinFetchedStatement,
                                             'bas_entity'        => $fetchedBAS,
-                                            'start_time'        => $this->startDate,
-                                            'end_time'          => $this->endDate
+                                            'from_time'         => $this->fromDate,
+                                            'to_time'           => $this->toDate
                                         ]);
                                 }
                                 else
                                 {
                                     $newConfigValue = $this->prepareConfigForUpdate($amountDiff, $fetchedBAS, $missingStatementConfig);
 
-                                    $missingStatementConfig = $this->updateMissingStatementConfigFor($this->basDetails->getAccountNumber(), $newConfigValue);
-
-                                    $this->trace->info(
-                                        TraceCode::MISSING_STATEMENT_DETECTION_UPDATE_CONFIG,
-                                        [
-                                            'merchant_id' => $this->basDetails->getMerchantId(),
-                                            'channel'     => $this->channel,
-                                            'config'      => $newConfigValue,
-                                            'step'        => 'difference_in_closing_balance'
-                                        ]);
+                                    $missingStatementConfig = $this->basCore->updateMissingStatementConfigFor($this->accountNumber, $this->channel, $newConfigValue);
 
                                     if ($isLastIteration === false)
                                     {
@@ -216,33 +198,21 @@ class MissingAccountStatementDetection extends Job
 
                     return [$isCurrentIterationSuccessful, $isLastIteration, $pushNextJob, $missingStatementConfig];
                 },
-                60,
-                ErrorCode::MISSING_STATEMENT_DETECTION_IN_PROGRESS,
-                3
+                100,
+                ErrorCode::MISSING_STATEMENT_DETECTION_IN_PROGRESS
             );
 
-            if ($pushNextJob === true)
-            {
-                $this->pushNextJobForMissingStatementDetection();
-            }
-            else
-            {
-                if (($isLastIteration === true) and
-                    ($isCurrentIterationSuccessful === true))
-                {
-                    $this->setDetectionCompletedAndTriggerFetch($missingStatementConfig);
-                }
-            }
+            $this->pushNextOrSetComplete($pushNextJob, $isLastIteration, $isCurrentIterationSuccessful, $missingStatementConfig);
 
             $this->trace->info(
                 TraceCode::MISSING_STATEMENT_DETECTION_JOB_COMPLETE,
                 [
-                    'merchant_id' => $this->basDetails->getMerchantId(),
-                    'channel'     => $this->channel,
-                    'start_date'  => $startDate,
-                    'end_date'    => $endDate,
-                    'start_time'  => $this->startDate,
-                    'end_time'    => $this->endDate
+                    'merchant_id'         => $this->basDetails->getMerchantId(),
+                    'channel'             => $this->channel,
+                    BAS\Entity::FROM_DATE => $fromDate,
+                    BAS\Entity::TO_DATE   => $toDate,
+                    'from_time'           => $this->fromDate,
+                    'to_time'             => $this->toDate
                 ]);
 
             $this->delete();
@@ -254,8 +224,8 @@ class MissingAccountStatementDetection extends Job
                 [
                     'merchant_id' => $this->basDetails->getMerchantId(),
                     'channel'     => $this->channel,
-                    'start_time'  => $this->startDate,
-                    'end_time'    => $this->endDate,
+                    'from_time'   => $this->fromDate,
+                    'to_time'     => $this->toDate,
                     'exception'   => $ex,
                     'attempts'    => $this->attempts()
                 ]);
@@ -267,8 +237,8 @@ class MissingAccountStatementDetection extends Job
                     [
                         'merchant_id' => $this->basDetails->getMerchantId(),
                         'channel'     => $this->channel,
-                        'start_time'  => $this->startDate,
-                        'end_time'    => $this->endDate,
+                        'from_time'   => $this->fromDate,
+                        'to_time'     => $this->toDate,
                         'exception'   => $ex,
                         'attempts'    => $this->attempts()
                     ]);
@@ -282,80 +252,54 @@ class MissingAccountStatementDetection extends Job
         }
     }
 
-    private function setTimeRangeDetails($startDate, $endDate)
+    private function setTimeRangeDetails($fromDate, $toDate)
     {
-        $this->startDate = Carbon::createFromTimestamp($startDate, Timezone::IST);
+        $this->fromDate = Carbon::createFromTimestamp($fromDate, Timezone::IST);
 
-        $this->endDate = Carbon::createFromTimestamp($endDate, Timezone::IST);
+        $this->toDate = Carbon::createFromTimestamp($toDate, Timezone::IST);
 
-        if (($startDate === null) and
-            ($endDate === null))
+        if (($fromDate === null) and
+            ($toDate === null))
         {
             $currentTime = Carbon::now(Timezone::IST);
 
-            $this->startDate = $currentTime->startOfMonth()->addDay()->startOfDay()->timestamp;
+            $this->fromDate = $currentTime->startOfMonth()->startOfDay()->timestamp;
 
-            $this->endDate = $currentTime->timestamp;
-
-            return;
-        }
-
-        if (($startDate === null) and
-            ($endDate !== null))
-        {
-            $this->startDate = Carbon::createFromTimestamp($endDate, Timezone::IST)->startOfMonth()->addDay()->startOfDay()->timestamp;
-
-            $this->endDate = $this->endDate->timestamp;
+            $this->toDate = $currentTime->timestamp;
 
             return;
         }
 
-        $this->startDate = $this->startDate->timestamp;
-
-        $this->endDate = $this->endDate->timestamp;
-    }
-
-    private function fetchMissingStatementConfigFor(string $accountNumber)
-    {
-        $configKey = Admin\ConfigKey::PREFIX . 'rx_ca_missing_statement_detection_' . $this->channel;
-
-        $config = (new Admin\Service())->getConfigKey(['key' => $configKey]);
-
-        if ((empty($config) === true) or
-            (array_key_exists($accountNumber, $config) === false))
+        if (($fromDate === null) and
+            ($toDate !== null))
         {
-            return null;
+            $this->fromDate = Carbon::createFromTimestamp($toDate, Timezone::IST)->startOfMonth()->startOfDay()->timestamp;
+
+            $this->toDate = $this->toDate->timestamp;
+
+            return;
         }
 
-        return $config[$accountNumber];
+        $this->fromDate = $this->fromDate->timestamp;
+
+        $this->toDate = $this->toDate->timestamp;
     }
 
-    private function updateMissingStatementConfigFor(string $accountNumber, array $config)
+    private function getStatementFetchInput($fetchedBAS): array
     {
-        $app = App::getFacadeRoot();
+        $fetchDate = Carbon::createFromTimestamp($fetchedBAS->getTransactionDate(), Timezone::IST);
 
-        return $app['api.mutex']->acquireAndRelease(
-            'update_redis_missing_statement_detect_' . $this->channel,
-            function() use ($accountNumber, $config) {
-                $configKey = Admin\ConfigKey::PREFIX . 'rx_ca_missing_statement_detection_' . $this->channel;
+        $paginationKey = ($this->channel === BAS\Channel::RBL) ? null : '';
 
-                $existingConfigs = (new Admin\Service())->getConfigKey(['key' => $configKey]);
+        $statementFetchInput = [
+            BAS\Entity::FROM_DATE      => $fetchDate->timestamp,
+            BAS\Entity::TO_DATE        => $fetchDate->endOfDay()->timestamp,
+            BAS\Entity::CHANNEL        => $this->channel,
+            BAS\Entity::ACCOUNT_NUMBER => $this->accountNumber,
+            'pagination_key'           => $paginationKey
+        ];
 
-                if ($existingConfigs === null)
-                {
-                    $existingConfigs = [];
-                }
-
-                $existingConfigs[$accountNumber] = $config;
-
-                (new BAS\Core)->setConfigKeys([$configKey => $existingConfigs]);
-
-                return $existingConfigs[$accountNumber];
-            },
-            60,
-            ErrorCode::MISSING_STATEMENT_DETECTION_UPDATE_IN_PROGRESS,
-            3
-        );
+        return $statementFetchInput;
     }
 
     private function prepareConfigForUpdate(
@@ -383,17 +327,17 @@ class MissingAccountStatementDetection extends Job
             }
         }
 
-        if (empty($currentConfigValue['mismatch_data']) === true)
+        if (empty($currentConfigValue[BASConstants::MISMATCH_DATA]) === true)
         {
-            $currentConfigValue['mismatch_data'] = [];
+            $currentConfigValue[BASConstants::MISMATCH_DATA] = [];
         }
 
-        $currentConfigValue['mismatch_data'][] = [
-            'start_date'      => $this->startDate,
-            'end_date'        => $this->endDate,
-            'mismatch_amount' => $amountDifference,
-            'mismatch_type'   => $amountDiffType,
-            'analysed_bas_id' => $comparedBASEntity->getId()
+        $currentConfigValue[BASConstants::MISMATCH_DATA][] = [
+            BAS\Entity::FROM_DATE => $this->fromDate,
+            BAS\Entity::TO_DATE   => $this->toDate,
+            'mismatch_amount'     => $amountDifference,
+            'mismatch_type'       => $amountDiffType,
+            'analysed_bas_id'     => $comparedBASEntity->getId()
         ];
 
         $currentConfigValue['completed'] = false;
@@ -401,27 +345,43 @@ class MissingAccountStatementDetection extends Job
         return $currentConfigValue;
     }
 
+    private function pushNextOrSetComplete($pushNextJob, $isLastIteration, $isCurrentIterationSuccessful, $missingStatementConfig): void
+    {
+        if ($pushNextJob === true)
+        {
+            $this->pushNextJobForMissingStatementDetection();
+        }
+        else
+        {
+            if (($isLastIteration === true) and
+                ($isCurrentIterationSuccessful === true))
+            {
+                $this->setDetectionCompletedAndTriggerFetch($missingStatementConfig);
+            }
+        }
+    }
+
     private function pushNextJobForMissingStatementDetection(): void
     {
-        $nextJobStartTime = Carbon::createFromTimestamp($this->startDate, Timezone::IST)->subMonth()->startOfDay()->timestamp;
+        $nextJobFromTime = Carbon::createFromTimestamp($this->fromDate, Timezone::IST)->subMonth()->startOfDay()->timestamp;
 
-        $nextJobEndTime = Carbon::createFromTimestamp($this->startDate, Timezone::IST)->subDay()->endOfDay()->timestamp;
+        $nextJobToTime = Carbon::createFromTimestamp($this->fromDate, Timezone::IST)->subDay()->endOfDay()->timestamp;
 
         MissingAccountStatementDetection::dispatch(
             $this->mode,
             $this->accountNumber,
-            $nextJobStartTime,
-            $nextJobEndTime,
+            $nextJobFromTime,
+            $nextJobToTime,
             $this->channel
         );
 
         $this->trace->info(
             TraceCode::MISSING_STATEMENT_DETECTION_PUSH_NEXT_JOB,
             [
-                'merchant_id'     => $this->basDetails->getMerchantId(),
-                'channel'         => $this->channel,
-                'next_start_time' => $nextJobStartTime,
-                'next_end_time'   => $nextJobEndTime
+                'merchant_id'    => $this->basDetails->getMerchantId(),
+                'channel'        => $this->channel,
+                'next_from_time' => $nextJobFromTime,
+                'next_to_time'   => $nextJobToTime
             ]);
     }
 
@@ -431,7 +391,7 @@ class MissingAccountStatementDetection extends Job
         {
             $missingStatementConfig['completed'] = true;
 
-            $this->updateMissingStatementConfigFor($this->basDetails->getAccountNumber(), $missingStatementConfig);
+            $this->basCore->updateMissingStatementConfigFor($this->accountNumber, $this->channel, $missingStatementConfig);
 
             $this->trace->info(
                 TraceCode::MISSING_STATEMENT_DETECTION_UPDATE_CONFIG,
@@ -442,8 +402,8 @@ class MissingAccountStatementDetection extends Job
                     'step'        => 'set_to_completed'
                 ]);
 
-            if ((array_key_exists('mismatch_data', $missingStatementConfig)) and
-                (empty($missingStatementConfig['mismatch_data']) === false))
+            if ((array_key_exists(BASConstants::MISMATCH_DATA, $missingStatementConfig)) and
+                (empty($missingStatementConfig[BASConstants::MISMATCH_DATA]) === false))
             {
                 $this->trace->info(
                     TraceCode::MISSING_STATEMENT_DETECTION_TRIGGER_FETCH,
@@ -453,7 +413,7 @@ class MissingAccountStatementDetection extends Job
                         'config'      => $missingStatementConfig
                     ]);
 
-                // trigger fetch action
+                $this->basCore->triggerMissingStatementFetchForIdentifiedTimeRange($this->basDetails->getMerchantId(), $this->accountNumber, $this->channel, $missingStatementConfig);
             }
         }
 

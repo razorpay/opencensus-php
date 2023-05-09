@@ -3643,12 +3643,13 @@ class IciciBankingAccountStatementTest extends TestCase
         $this->assertCount(1, $missingStatementDetectionConfig['2224440041626905']['mismatch_data']);
 
         // check if config has missing statement detected of 5000 debit between the range 2nd July to 1st August
-        $this->assertArraySelectiveEquals([
-            'start_date' => 1656700200,
-            'end_date' => 1659378599,
-            'mismatch_amount' => -100,
-            'mismatch_type' => "missing_debit",
-            'analysed_bas_id' => $latestBAS->getId()
-        ], $missingStatementDetectionConfig['2224440041626905']['mismatch_data'][0]);
+        $this->assertArraySelectiveEquals(
+            [
+                'from_date'       => 1656613800,
+                'to_date'         => 1659292199,
+                'mismatch_amount' => -100,
+                'mismatch_type'   => "missing_debit",
+                'analysed_bas_id' => $latestBAS->getId()
+            ], $missingStatementDetectionConfig['2224440041626905']['mismatch_data'][0]);
     }
 }
