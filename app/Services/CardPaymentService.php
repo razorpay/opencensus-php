@@ -61,6 +61,8 @@ class CardPaymentService
     const ERROR     = 'error';
     const AUTHORIZE = 'authorize';
 
+    const ROUTE_NAME = 'route_name';
+
 
     // card meta data
     const NAME          = 'name';
@@ -365,6 +367,8 @@ class CardPaymentService
 
     public function action(string $gateway, string $action, array $input)
     {
+        $app = App::getFacadeRoot();
+
         $this->action = $action;
 
         $this->gateway = $gateway;
@@ -461,11 +465,16 @@ class CardPaymentService
             unset($input['acs_afa_authentication']);
         }
 
+        $routeName = $app['api.route']->getCurrentRouteName();
+
+        $input['route'] = $routeName;
+
         $content = [
             self::ACTION  => $action,
             self::GATEWAY => $gateway,
             self::INPUT   => $input
         ];
+
         // change action for force_authorize_failed to verify after content creation
         // to be take decisions further on action for fulcrum gateway
         if ($action === Action::FORCE_AUTHORIZE_FAILED and (in_array($gateway, Payment\Gateway::FORCE_AUTHORIZE_FAILED_SYNC_GATEWAYS, true) !== true))
@@ -674,6 +683,8 @@ class CardPaymentService
 
     public function authorizeAcrossTerminals(Payment\Entity $payment, array $gatewayInput, array $terminals)
     {
+        $app = App::getFacadeRoot();
+
         $input = [];
 
         $input = $gatewayInput;
@@ -709,6 +720,13 @@ class CardPaymentService
         $this->addCardIin($content);
 
         $this->addAuthenticationDataIfApplicable($content);
+
+        $routeName = $app['api.route']->getCurrentRouteName();
+
+        if ($routeName != null)
+        {
+            $content[self::INPUT][self::ROUTE_NAME] = $routeName;
+        }
 
         $response = $this->sendRequest('POST', self::AUTHORIZE , $content);
 
