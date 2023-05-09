@@ -3,6 +3,7 @@
 namespace RZP\Services\Mock\NbPlus;
 
 use App;
+use Razorpay\IFSC\Bank;
 use \WpOrg\Requests\Response;
 
 use RZP\Models\Payment;
@@ -124,7 +125,9 @@ class Netbanking extends NetbankingBase
             return $this->getcallbackForIbk($input);
         }
 
-        if ((Payment\Gateway::isStaticCallbackGateway($gateway) === true) and (Payment\Gateway::isWebhookEnabledGateway($gateway) === false))
+        if ((Payment\Gateway::isStaticCallbackGateway($gateway) === true) and
+            (Payment\Gateway::isWebhookEnabledGateway($gateway) === false) and
+            (in_array($input['input']['payment']['bank'], [Bank::HDFC]) === false))
         {
             return $this->staticGatewayAuthorize($input, $gateway);
         }
@@ -134,7 +137,7 @@ class Netbanking extends NetbankingBase
                 'data' => [
                     'next' => [
                         'redirect' => [
-                            'url'     => $this->app['api.route']->getPublicCallbackUrlWithHash(
+                            'url' => $this->app['api.route']->getPublicCallbackUrlWithHash(
                                 $input['input']['payment']['public_id'],
                                 'rzp_test_TheTestAuthKey',
                                 'payment_callback_post'
@@ -196,7 +199,7 @@ class Netbanking extends NetbankingBase
         return $content;
     }
 
-    protected function staticGatewayAuthorize($input, $gateway)
+    protected function staticGatewayAuthorize($input, $gateway): array
     {
         return [
             'response' => [

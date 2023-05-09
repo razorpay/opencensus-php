@@ -85,7 +85,7 @@ return [
         ],
         'exception' => [
             'class'                 => 'RZP\Exception\LogicException',
-            'internal_error_code'   => ErrorCode::SERVER_ERROR_AMOUNT_TAMPERED,
+            'internal_error_code'   => ErrorCode::SERVER_ERROR_NBPLUS_PAYMENT_SERVICE_FAILURE,
         ],
     ],
 ];

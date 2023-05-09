@@ -9,6 +9,7 @@ use Mockery;
 use Carbon\Carbon;
 
 use RZP\Jobs\BeamJob;
+use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
@@ -33,6 +34,10 @@ class GatewayRefundFileTest extends TestCase
         $this->testDataFilePath = __DIR__ . '/helpers/GatewayRefundFileTestData.php';
 
         parent::setUp();
+
+        $this->app['rzp.mode'] = Mode::TEST;
+        $this->nbPlusService = Mockery::mock('RZP\Services\Mock\NbPlus\Netbanking', [$this->app])->makePartial();
+        $this->app->instance('nbplus.payments', $this->nbPlusService);
     }
 
     private function makeEmiPaymentOnCard($card, $emiDuration)
@@ -131,7 +136,7 @@ class GatewayRefundFileTest extends TestCase
         $content = $content['items'][0];
 
         $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
-        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNotNull($content[File\Entity::SENT_AT]);
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 

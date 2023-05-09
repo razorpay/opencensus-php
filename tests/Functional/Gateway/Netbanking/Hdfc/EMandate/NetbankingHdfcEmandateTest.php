@@ -1232,4 +1232,16 @@ class NetbankingHdfcEmandateTest extends TestCase
         $this->app->razorx->method('getTreatment')
             ->willReturn($returnValue);
     }
+
+    protected function runPaymentCallbackFlowNetbanking($response, &$callback = null, $gateway)
+    {
+        if (strpos($response->getContent(), 'Mandate') != null)
+        {
+            list ($url, $method, $values) = $this->getDataForGatewayRequest($response, $callback);
+            $data = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
+            return $this->submitPaymentCallbackRedirect($data);
+        }
+
+        return $this->runPaymentCallbackFlowForNbplusGateway($response, $gateway, $callback);
+    }
 }

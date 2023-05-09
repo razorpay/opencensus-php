@@ -3,33 +3,42 @@
 namespace RZP\Tests\Functional\Gateway\File;
 
 use Mail;
+use Mockery;
 use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 
+use RZP\Constants\Mode;
 use RZP\Constants\Entity;
+use RZP\Tests\Functional\TestCase;
 use RZP\Models\Transaction\Entity as Txn;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Reconciliator\RequestProcessor\Base;
 use RZP\Reconciliator\NetbankingHdfc\Constants;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
-use RZP\Tests\Functional\Payment\StaticCallbackNbplusGatewayTest;
-use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 
-class NbplusNetbankingHdfcReconciliationTest extends StaticCallbackNbplusGatewayTest
+class NbplusNetbankingHdfcReconciliationTest extends TestCase
 {
     use ReconTrait;
+    use PaymentTrait;
+    use DbEntityFetchTrait;
 
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/NbplusNetbankingReconciliationTestData.php';
 
-        NbPlusPaymentServiceNetbankingTest::setUp();
+        parent::setUp();
 
         $this->terminal = $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
 
         $this->bank = 'HDFC';
 
         $this->payment = $this->getDefaultNetbankingPaymentArray($this->bank);
+
+        $this->app['rzp.mode'] = Mode::TEST;
+        $this->nbPlusService = Mockery::mock('RZP\Services\Mock\NbPlus\Netbanking', [$this->app])->makePartial();
+        $this->app->instance('nbplus.payments', $this->nbPlusService);
     }
 
     public function testHdfcSuccessRecon()
@@ -38,8 +47,8 @@ class NbplusNetbankingHdfcReconciliationTest extends StaticCallbackNbplusGateway
 
         $payment = $this->getDbLastEntityToArray(Entity::PAYMENT);
 
-        $this->assertEquals($payment[Payment::CPS_ROUTE], Payment::NB_PLUS_SERVICE);
-        $this->assertEquals($payment[Payment::STATUS], Payment::CAPTURED);
+        $this->assertEquals(Payment::NB_PLUS_SERVICE, $payment[Payment::CPS_ROUTE]);
+        $this->assertEquals(Payment::CAPTURED, $payment[Payment::STATUS]);
 
         $data = $this->testData[__FUNCTION__];
 
@@ -59,10 +68,10 @@ class NbplusNetbankingHdfcReconciliationTest extends StaticCallbackNbplusGateway
 
         $batch = $this->getDbLastEntityToArray('batch');
 
-        $this->assertEquals($batch['status'], 'processed');
+        $this->assertEquals('processed', $batch['status']);
     }
 
-    protected function generateReconFile($data)
+    protected function generateReconFile($data): array
     {
         $fileData = 'merchant_code,customer_email,currency,transaction_amount,fee,payment_id,error_code,bank_payment_id,transaction_date,error_description'. "\n" .implode('~', $data);
 

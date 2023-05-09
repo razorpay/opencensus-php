@@ -11198,10 +11198,14 @@ class PaymentCreateTest extends TestCase
 
     protected function runPaymentCallbackFlowNetbanking($response, &$callback = null, $gateway)
     {
-        list ($url, $method, $values) = $this->getDataForGatewayRequest($response, $callback);
-        $data = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
-        $result = $this->submitPaymentCallbackRedirect($data);
-        return $result;
+        if (strpos($response->getContent(), 'mock/netbanking/axis') != null)
+        {
+            list ($url, $method, $values) = $this->getDataForGatewayRequest($response, $callback);
+            $data = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
+            return $this->submitPaymentCallbackRedirect($data);
+        }
+
+        return $this->runPaymentCallbackFlowForNbplusGateway($response, $gateway, $callback);
     }
 
     public function testPaymentOnPartnerAuthWithSubmManualSettlementEnabled()

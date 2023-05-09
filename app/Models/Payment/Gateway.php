@@ -2295,6 +2295,7 @@ class Gateway
         self::NETBANKING_BDBL,
         self::NETBANKING_KARNATAKA,
         self::NETBANKING_UJJIVAN,
+        self::NETBANKING_SARASWAT,
     ];
 
     public static $captureVerifyEnabled = [
@@ -4625,6 +4626,7 @@ class Gateway
                 self::NETBANKING_PNB,
                 self::NETBANKING_SBI,
                 self::NETBANKING_AXIS,
+                self::NETBANKING_HDFC,
             ],
             Method::WALLET => [
                 self::WALLET_AMAZONPAY,

@@ -1771,4 +1771,16 @@ class RecurringPaymentTest extends TestCase
                     return 'control';
                 }));
     }
+
+    protected function runPaymentCallbackFlowNetbanking($response, &$callback = null, $gateway)
+    {
+        if (strpos($response->getContent(), 'Mandate') != null)
+        {
+            list ($url, $method, $values) = $this->getDataForGatewayRequest($response, $callback);
+            $data = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
+            return $this->submitPaymentCallbackRedirect($data);
+        }
+
+        return $this->runPaymentCallbackFlowForNbplusGateway($response, $gateway, $callback);
+    }
 }

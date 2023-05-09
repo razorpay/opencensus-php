@@ -3,7 +3,10 @@
 namespace RZP\Tests\Functional\Gateway\File;
 
 use Mail;
+use Mockery;
 use Carbon\Carbon;
+
+use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Models\Payment\Gateway;
@@ -27,6 +30,10 @@ class NetbankingHdfcRefundFileTest extends TestCase
         parent::setUp();
 
         $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
+
+        $this->app['rzp.mode'] = Mode::TEST;
+        $this->nbPlusService = Mockery::mock('RZP\Services\Mock\NbPlus\Netbanking', [$this->app])->makePartial();
+        $this->app->instance('nbplus.payments', $this->nbPlusService);
     }
 
     public function testNetbankingHdfcRefundFile()

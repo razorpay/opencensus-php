@@ -2,13 +2,16 @@
 
 namespace RZP\Tests\Functional\Gateway\Netbanking\Hdfc;
 
-use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use Mail;
+use Mockery;
+use Carbon\Carbon;
 
-use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Constants\Mode;
+use RZP\Services\NbPlus;
+use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 
 class NetbankingHdfcGatewayTest extends TestCase
 {
@@ -27,35 +30,39 @@ class NetbankingHdfcGatewayTest extends TestCase
         $this->setMockGatewayTrue();
 
         $this->fixtures->on('test')->create('terminal:shared_netbanking_hdfc_terminal');
+
+        $this->app['rzp.mode'] = Mode::TEST;
+        $this->nbPlusService = Mockery::mock('RZP\Services\Mock\NbPlus\Netbanking', [$this->app])->makePartial();
+        $this->app->instance('nbplus.payments', $this->nbPlusService);
     }
 
     public function testPayment()
     {
-        $terminal = $this->fixtures->create('terminal:netbanking_hdfc_terminal');
+        $this->fixtures->create('terminal:netbanking_hdfc_terminal');
 
-        $payment = $this->doNetbankingHdfcAuthAndCapturePayment();
+        $this->doNetbankingHdfcAuthAndCapturePayment();
 
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertTestResponse($payment);
-
-        $gatewayPayment = $this->getLastEntity('netbanking', true);
-
-        $this->assertEquals(
-            strtoupper($gatewayPayment['payment_id']), $gatewayPayment['caps_payment_id']);
-
-        $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentNetbankingEntity'], $gatewayPayment);
-
-        $this->assertArrayHasKey('bank_payment_id', $gatewayPayment);
-        $this->assertTrue(filter_var($gatewayPayment['bank_payment_id'], FILTER_VALIDATE_INT) !== false);
     }
 
     public function testAmountTampering()
     {
         $this->mockServerContentFunction(function (&$content, $action = null)
         {
-            $content['TxnAmount'] = '1';
+            if ($action === NbPlus\Action::CALLBACK)
+            {
+                $content = [
+                    NbPlus\Response::RESPONSE => null,
+                    NbPlus\Response::ERROR    => [
+                        NbPlus\Error::CODE    => 'RUNTIME',
+                        NbPlus\Error::CAUSE   => [
+                            NbPlus\Error::MOZART_ERROR_CODE => 'BAD_REQUEST_AMOUNT_MISMATCH'
+                        ]
+                    ],
+                ];
+            }
         });
 
         $data = $this->testData[__FUNCTION__];
@@ -83,19 +90,11 @@ class NetbankingHdfcGatewayTest extends TestCase
 
     public function testPaymentOnSharedTerminal()
     {
-        $payment = $this->doNetbankingHdfcAuthAndCapturePayment();
+        $this->doNetbankingHdfcAuthAndCapturePayment();
 
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertTestResponse($payment);
-
-        $gatewayPayment = $this->getLastEntity('netbanking', true);
-
-        $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentNetbankingEntity'], $gatewayPayment);
-
-        $this->assertArrayHasKey('bank_payment_id', $gatewayPayment);
-        $this->assertTrue(filter_var($gatewayPayment['bank_payment_id'], FILTER_VALIDATE_INT) !== false);
     }
 
     public function testPaymentVerify()
@@ -108,9 +107,6 @@ class NetbankingHdfcGatewayTest extends TestCase
 
         assert($verify['payment']['verified'] === 1);
 
-        $gatewayPayment = $this->getLastEntity('netbanking', true);
-
-        $this->assertTestResponse($gatewayPayment, 'testPaymentVerifySuccessEntity');
     }
 
     public function testVerifyOldPayment()
@@ -128,18 +124,15 @@ class NetbankingHdfcGatewayTest extends TestCase
 
     public function testRefundExcelFile()
     {
-        // Will remove test in separate pr
-        $this->markTestSkipped();
-
         Mail::fake();
 
         $payment = $this->doNetbankingHdfcAuthAndCapturePayment();
 
-        $refund = $this->refundPayment($payment['id']);
+        $this->refundPayment($payment['id']);
 
         $payment = $this->doNetbankingHdfcAuthAndCapturePayment();
-        $refund = $this->refundPayment($payment['id'], 10000);
-        $refund = $this->refundPayment($payment['id']);
+        $this->refundPayment($payment['id'], 10000);
+        $this->refundPayment($payment['id']);
 
         $refunds = $this->getEntities('refund', [], true);
 
@@ -156,7 +149,7 @@ class NetbankingHdfcGatewayTest extends TestCase
 
         $data = $this->generateRefundsExcelForNb('HDFC');
 
-        $this->assertEquals($data['netbanking_hdfc']['count'], 3);
+        $this->assertEquals(3, $data['netbanking_hdfc']['count']);
         $this->assertTrue(file_exists($data['netbanking_hdfc']['file']));
 
         Mail::assertQueued(RefundFileMail::class, function ($mail)
@@ -177,5 +170,10 @@ class NetbankingHdfcGatewayTest extends TestCase
         $payment = $this->doAuthAndCapturePayment($payment);
 
         return $payment;
+    }
+
+    protected function mockServerContentFunction($closure): void
+    {
+        $this->nbPlusService->shouldReceive('content')->andReturnUsing($closure);
     }
 }
