@@ -31,7 +31,7 @@ class Repository extends Base\Repository
      * @return  Base\PublicCollection
      */
     public function fetchMerchantApplications(
-        string $merchantId, array $types = [], string $mode = null, bool $withTrashed = false
+        string $merchantId, array $types = [], string $mode = null, bool $withTrashed = false, string $appId = null
     ) : Base\PublicCollection
     {
         $query = ($mode === null) ? $this->newQuery() : $this->newQueryWithConnection($mode);
@@ -44,6 +44,10 @@ class Repository extends Base\Repository
         if ($withTrashed === true)
         {
             $query = $query->withTrashed();
+        }
+        if (empty($appId) === false)
+        {
+            $query = $query->where(Entity::APPLICATION_ID, $appId);
         }
 
         return $query->orderBy(Entity::TYPE)->orderBy(Entity::ID)->get();

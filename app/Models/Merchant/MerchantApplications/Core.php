@@ -116,11 +116,11 @@ class Core extends Base\Core
         }
     }
 
-    public function getMerchantAppIds(string $merchantId, array $types = []): array
+    public function getMerchantAppIds(string $merchantId, array $types = [], string $appId = null): array
     {
         return $this->repo
                     ->merchant_application
-                    ->fetchMerchantApplications($merchantId, $types)
+                    ->fetchMerchantApplications($merchantId, $types, null, false, $appId)
                     ->pluck(Entity::APPLICATION_ID)
                     ->toArray();
     }

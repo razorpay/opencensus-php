@@ -3562,6 +3562,16 @@ class Entity extends Base\PublicEntity
         return $array;
     }
 
+    public function toListSubmerchantsArray(): array
+    {
+        $array = $this->toArray();
+
+        // Prepend the Account id sign
+        $this->setSignedId($array);
+
+        return $array;
+    }
+
     protected function fireEventWithMerchantPayload(string $event)
     {
         $entity = clone $this;

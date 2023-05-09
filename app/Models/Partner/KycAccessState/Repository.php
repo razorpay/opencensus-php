@@ -23,6 +23,14 @@ class Repository extends  Base\Repository
                     ->get();
     }
 
+    public function findByPartnerIdAndEntityIds(string $partnerId, array $subMerchantIds): Base\PublicCollection
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::ENTITY_ID, $subMerchantIds)
+                    ->where(Entity::PARTNER_ID, $partnerId)
+                    ->get();
+    }
+
     public function findByPartnerIdAndEntityIdAndToken(string $partnerId, string $subMerchantId, string $tokenType, string $token): Base\PublicCollection
     {
         return $this->newQuery()

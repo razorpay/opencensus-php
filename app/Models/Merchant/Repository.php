@@ -961,6 +961,92 @@ class Repository extends Base\Repository
      *
      * @return PublicCollection
      */
+    public function listSubmerchantsDetailsAndUsers(
+        array $applicationIds, array $params = [], array $relations = ['owners']
+    ): Base\PublicCollection
+    {
+        if (empty($applicationIds) === true)
+        {
+            return new Base\PublicCollection;
+        }
+
+        $submerchantIds = $params[Entity::MERCHANT_ID] ?? [];
+        unset($params[Entity::MERCHANT_ID]);
+
+        $query = $this->buildQueryToFetchSubmerchantDetailsByAppIds($applicationIds, $submerchantIds);
+
+        $this->buildQueryWithParams($query, $params);
+
+        $query->orderBy(Table::MERCHANT . '.' . Entity::CREATED_AT, 'desc')
+            ->orderBy(Table::MERCHANT . '.' . Entity::ID, 'desc');
+
+        $submerchants = $query->get();
+
+        return $submerchants;
+    }
+
+    /**
+     * Builds the query to fetch sub-merchants' details of a Partner for FetchSubMerchantMultiple API.
+     *
+     * @param array $applicationIds
+     * @param array $submerchantIds
+     *
+     */
+    protected function buildQueryToFetchSubmerchantDetailsByAppIds(array $applicationIds, array $submerchantIds = [])
+    {
+        $accessMapRepo       = $this->repo->merchant_access_map;
+        $merchantDetailsRepo = $this->repo->merchant_detail;
+
+        $merchantsMerchantId = $this->dbColumn(Entity::ID);
+
+        $accessMapsEntityId   = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_ID);
+        $accessMapsDeletedAt  = $accessMapRepo->dbColumn(AccessMap\Entity::DELETED_AT);
+        $accessMapsEntityType = $accessMapRepo->dbColumn(AccessMap\Entity::ENTITY_TYPE);
+        $accessMapsMerchantId = $accessMapRepo->dbColumn(AccessMap\Entity::MERCHANT_ID);
+
+        $merchantDetailsColumns    = [$merchantDetailsRepo->dbColumn(Detail\Entity::ACTIVATION_STATUS)];
+        $merchantDetailsMerchantId = $merchantDetailsRepo->dbColumn(Detail\Entity::MERCHANT_ID);
+
+        $merchantAttributes = [
+            $this->dbColumn(Entity::ID),    $this->dbColumn(Entity::NAME),
+            $this->dbColumn(Entity::EMAIL), $this->dbColumn(Entity::HOLD_FUNDS),
+            $this->dbColumn(Entity::CREATED_AT)
+        ];
+        $attributes = array_merge(
+            $merchantAttributes,
+            $merchantDetailsColumns,
+            [$accessMapsEntityId . ' as ' . Constants::APPLICATION_ID]
+        );
+
+        //
+        // merchantDetail is not fetched as a relation below because
+        // a filter has to be added for merchantDetail.activation_status in the query
+        //
+        $query = $this->newQuery()
+            ->with(['owners'])
+            ->select($attributes)
+            ->join(Table::MERCHANT_ACCESS_MAP, $merchantsMerchantId, $accessMapsMerchantId)
+            ->leftJoin(Table::MERCHANT_DETAIL, $merchantsMerchantId, $merchantDetailsMerchantId)
+            ->where($accessMapsEntityType, AccessMap\Entity::APPLICATION)
+            ->whereIn($accessMapsEntityId, $applicationIds)
+            ->whereNull($accessMapsDeletedAt);
+
+        if (empty($submerchantIds) === false)
+        {
+            $query->whereIn($accessMapsMerchantId, $submerchantIds);
+        }
+
+        return $query;
+    }
+
+    /**
+     * @param array $applicationIds
+     * @param array $params
+     *
+     * @param array $relations
+     *
+     * @return PublicCollection
+     */
     public function fetchSubmerchantsByAppIds(array $applicationIds, array $params = [], array $relations = []): Base\PublicCollection
     {
         if (empty($applicationIds) === true)

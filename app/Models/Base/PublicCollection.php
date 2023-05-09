@@ -179,6 +179,19 @@ class PublicCollection extends Collection
         return $array;
     }
 
+    public function toListSubmerchantsArray()
+    {
+        $array[static::ENTITY] = $this->entity;
+        $array[static::COUNT]  = count($this->items);
+        $array[static::ITEMS]  = array_map(function($item)
+        {
+            return $item->toListSubmerchantsArray();
+
+        }, $this->items);
+
+        return $array;
+    }
+
     public function toArrayCaPartnerBankPoc(): array
     {
         $array[static::ENTITY] = $this->entity;

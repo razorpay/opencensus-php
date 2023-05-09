@@ -133,6 +133,8 @@ class Core extends Base\Core
 {
     use Notify;
 
+    const DEFAULT_SUBMERCHANT_FETCH_LIMIT = 25;
+
     const LAST_MONTH_GMV = 'last_month_gmv';
     const CUSTOMER_COUNT = 'customer_count';
 
@@ -5164,6 +5166,126 @@ class Core extends Base\Core
         return $app;
     }
 
+    public function listSubmerchantsV2(Entity $partner, array $params, string $isExpEnabled) : array
+    {
+        $merchantAppIds = $this->getMerchantAppIdsForPartner($partner, $params);
+
+        $params                  = $this->preProcessInput($params, $partner);
+        $product                 = $params[ENTITY::PRODUCT] ?? Product::PRIMARY;
+        $params[ENTITY::PRODUCT] = $product;
+
+        $this->trace->info(
+            TraceCode::PARTNER_FETCH_SUBMERCHANTS,
+            [
+                'partner_id' => $partner->getId(),
+                'app_ids'    => $merchantAppIds,
+                'params'     => $params,
+                'product'    => $product,
+            ]
+        );
+
+        $reqStartAt               = millitime();
+        $subMerchants             = $this->fetchPartnerSubMerchantsByAppIDs($partner, $merchantAppIds, $params);
+        $fetchSubMerchantsLatency = millitime() - $reqStartAt;
+
+        $partnerUser = $partner->primaryOwner();
+
+        $reqStartAt                    = millitime();
+        $merchantsData                 = $this->getPartnerSubMerchantDataV2($subMerchants, $partner, $partnerUser, $product, $isExpEnabled);
+        $fetchSubMerchantsDataLatency  = millitime() - $reqStartAt;
+
+        $this->trace->info(
+            TraceCode::PARTNER_FETCH_SUBMERCHANTS_DATA_LATENCY,
+            [
+                'partner_id'                        => $partner->getId(),
+                'product'                           => $product,
+                'merchants'                         => $subMerchants->getIds(),
+                'app_ids'                           => $merchantAppIds,
+                'fetch_sub_merchants_latency'       => $fetchSubMerchantsLatency,
+                'fetch_sub_merchants_data_latency'  => $fetchSubMerchantsDataLatency,
+                'overall_latency'                   => $fetchSubMerchantsLatency + $fetchSubMerchantsDataLatency,
+                'exp_enabled'                       => $isExpEnabled
+            ]
+        );
+
+        $applyProductFilter = array_key_exists(ENTITY::PRODUCT, $params);
+        return $applyProductFilter ? [$merchantsData, 'offset' => $params['skip']] : [ $merchantsData ];
+    }
+
+    private function getMerchantAppIdsForPartner(Entity $partner, array &$params): array
+    {
+        $merchantAppCore = new MerchantApplications\Core();
+        $types           = [];
+        $applicationId   = null;
+        if (empty($params[MerchantApplications\Entity::TYPE]) === false)
+        {
+            $types = [ $params[MerchantApplications\Entity::TYPE] ];
+            unset($params[MerchantApplications\Entity::TYPE]);
+        }
+        if (empty($params[Constants::APPLICATION_ID]) === false)
+        {
+            $applicationId = $params[Constants::APPLICATION_ID];
+            unset($params[Constants::APPLICATION_ID]);
+        }
+
+        $merchantAppIds = $merchantAppCore->getMerchantAppIds($partner->getId(), $types, $applicationId);
+
+        if (empty($applicationId) === false && empty($merchantAppIds) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_APPLICATION_ID,
+                Constants::APPLICATION_ID,
+                [
+                    Constants::APPLICATION_ID => $merchantAppIds,
+                ]
+            );
+        }
+
+        return $merchantAppIds;
+    }
+
+    private function preProcessInput(array $params, $partner)
+    {
+        // add default params
+        $params['skip'] = $params['skip'] ?? 0;
+        $params['count'] = $params['count'] ?? self::DEFAULT_SUBMERCHANT_FETCH_LIMIT;
+
+        return $this->preProcessForCapital($params, $partner);
+    }
+
+    private function preProcessForCapital(array $params, $partner)
+    {
+        if ($this->capitalSubmerchantUtility()->isCapitalPartnershipEnabledForPartner($partner->getId()) === true)
+        {
+            $product = $params[ENTITY::PRODUCT] ?? Product::PRIMARY;
+
+            if ($product === Product::CAPITAL)
+            {
+                $params[ENTITY::PRODUCT] = Product::BANKING;
+                $params[Constants::TAGS] = [Constants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX . $partner->getId()];
+            }
+            else
+            {
+                $params[Constants::WITHOUT_TAGS] = [
+                    Constants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX . $partner->getId(),
+                    Constants::CAPITAL_CORPORATE_CARD_PARTNERSHIP_TAG_PREFIX . $partner->getId(),
+                ];
+            }
+        }
+
+        return $params;
+    }
+
+    private function fetchPartnerSubMerchantsByAppIDs($partner, $merchantAppIds, $params): PublicCollection
+    {
+        return Tracer::inspan(
+            ['name' => HyperTrace::FETCH_SUBMERCHANTS_ON_APP_IDS],
+            function() use ($params, $merchantAppIds, $partner) {
+                return $this->repo->merchant->listSubmerchantsDetailsAndUsers($merchantAppIds, $params);
+            }
+        );
+    }
+
     /**
      * @param Entity $partner
      * @param array $params
@@ -5174,6 +5296,9 @@ class Core extends Base\Core
      */
     public function listSubmerchants(Entity $partner, array $params)
     {
+        $params['skip'] = $params['skip'] ?? 0;
+        $params['count'] = $params['count'] ?? self::DEFAULT_SUBMERCHANT_FETCH_LIMIT;
+
         $offset = $params['skip'] ?? 0;
 
         $appIds = $this->getPartnerApplicationIds($partner);
@@ -5401,6 +5526,81 @@ class Core extends Base\Core
         }
     }
 
+    private function getPartnerSubMerchantDataV2(
+        PublicCollection $submerchants, Entity $partner, User\Entity $partnerUser,
+        string $product = null, bool $isExpEnabled = false
+    ): PublicCollection
+    {
+        $accessRequests = null;
+        if ($partner->isResellerPartner())
+        {
+            $accessRequests = $this->repo->partner_kyc_access_state->findByPartnerIdAndEntityIds(
+                $partner->getId(), $submerchants->getIds()
+            )->groupBy(\RZP\Models\Partner\KycAccessState\Entity::ENTITY_ID);
+        }
+
+        $dashboardAccesses = null;
+        if ($partner->isAggregatorPartner() || $partner->isFullyManagedPartner())
+        {
+            $dashboardAccesses = $this->fetchSubmerchantDashboardAccesses($submerchants->getIds());
+        }
+
+        return Tracer::inspan( ['name' => HyperTrace::GET_PARTNER_SUBMERCHANT_DATA], function() use (
+            $submerchants, $partnerUser, $accessRequests, $dashboardAccesses, $product, $partner, $isExpEnabled
+        ) {
+            foreach ($submerchants as $submerchant)
+            {
+                $submerchant[Entity::DETAILS] = [
+                    Detail\Entity::ACTIVATION_STATUS => $submerchant->getAttribute(Detail\Entity::ACTIVATION_STATUS),
+                ];
+                unset($submerchant[Detail\Entity::ACTIVATION_STATUS]);
+
+                $subMerchantOwner = $this->getNonPartnerOwnerV2($submerchant, $partnerUser, $product);
+                if (empty($subMerchantOwner) === true)
+                {
+                    $submerchant[Entity::USER] = null;
+                }
+                else
+                {
+                    $submerchant[Entity::USER] = Tracer::inspan(
+                        ['name' => HyperTrace::GET_REDUCED_SUBMERCHANT_OWNER_DATA],
+                        function () use ($subMerchantOwner
+                        ) {
+                            return [
+                                User\Entity::EMAIL          => $subMerchantOwner->email,
+                                User\Entity::CONTACT_MOBILE => $subMerchantOwner->contact_mobile
+                            ];
+                        });
+                }
+                $submerchant->unsetRelation('owners');
+
+                $submerchant[Entity::DASHBOARD_ACCESS] = (
+                    empty($dashboardAccesses) === false &&
+                    empty($dashboardAccesses[$submerchant->getId()]) === false
+                );
+
+                $submerchant[Entity::APPLICATION] = [OAuthApp\Entity::ID => $submerchant->getAttribute(Constants::APPLICATION_ID)];
+
+                $submerchant[Entity::KYC_ACCESS] = null;
+                $accessRequests = $accessRequests[$submerchant->getId()];
+                if (empty($accessRequests) === false)
+                {
+                    $submerchant[Entity::KYC_ACCESS] = $accessRequests->first()->toArrayPublic();
+                }
+
+                if ($product === Product::BANKING)
+                {
+                    $caStatus = Tracer::inspan(['name' => HyperTrace::GET_BANKING_ACCOUNT_STATUS], function () use ($submerchant) {
+                        return $this->getBankingAccountStatus($submerchant);
+                    });
+                    $submerchant[Entity::BANKING_ACCOUNT] = [ENTITY::CA_STATUS => $caStatus];
+                }
+            }
+
+            return $submerchants;
+        });
+    }
+
     /**
      * Sets the partner attributes in the instance of Merchant\Entity so that toArrayPartner() can be used later.
      *
@@ -5435,8 +5635,7 @@ class Core extends Base\Core
                     User\Entity::CONTACT_MOBILE => $subMerchantOwner->contact_mobile
                 ];
             });
-        }
-        else
+        } else
         {
             $submerchant[Entity::USER] = Tracer::inspan(['name' => HyperTrace::GET_SUBMERCHANT_OWNER_DATA], function () use ($subMerchantOwner) {
 
@@ -5482,6 +5681,37 @@ class Core extends Base\Core
      *
      * @return null
      */
+    protected function getNonPartnerOwnerV2(Entity $merchant, User\Entity $partnerUser, string $product = null)
+    {
+        $product = $product ?? Product::PRIMARY;
+
+        $owners = $merchant->owners->filter(function ($item) use ($product) {
+            return ($item['pivot']['product'] === $product);
+        });
+
+        foreach ($owners as $owner)
+        {
+            if ($owner->getEmail() !== $partnerUser->getEmail())
+            {
+                return $owner;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * A submerchant account can have at a max of 2 users with the `owner` role -
+     * One being his own user and second being the partner merchant's user linked as an owner to the submerchant.
+     *
+     * This function returns the first type of given product owner.
+     *
+     * @param Entity $merchant
+     * @param User\Entity $partnerUser
+     * @param string|null $product
+     *
+     * @return null
+     */
     protected function getNonPartnerOwner(Entity $merchant, User\Entity $partnerUser, string $product = null)
     {
         $product = $product ?? Product::PRIMARY;
@@ -5497,6 +5727,31 @@ class Core extends Base\Core
         }
 
         return null;
+    }
+
+    /**
+     * Checks whether the logged in partner user has access over the submerchant's account
+     *
+     * @param Entity $submerchant
+     *
+     * @return array
+     */
+    protected function fetchSubmerchantDashboardAccesses(array $submerchantIds): array
+    {
+        $loggedInPartnerUser = $this->app['basicauth']->getUser();
+
+        if ($loggedInPartnerUser !== null)
+        {
+            $merchantUsers = $this->repo->merchant_user->checkUserForMerchantIds(
+                $submerchantIds, $loggedInPartnerUser->getId()
+            );
+
+            $res = $merchantUsers->groupBy(Merchant\MerchantUser\Entity::MERCHANT_ID);
+
+            return $res->map->count()->toArray();
+        }
+
+        return [];
     }
 
     /**

@@ -385,4 +385,15 @@ class Repository extends Base\Repository
                      ->pluck(Entity::USER_ID)
                      ->toArray();
     }
+
+    public function checkUserForMerchantIds(array $merchantIds, string $userId): Base\PublicCollection
+    {
+        $userIdCol = $this->dbColumn(Entity::USER_ID);
+        $merchantIdCol = $this->dbColumn(Entity::MERCHANT_ID);
+
+        return $this->newQuery()
+                    ->where($userIdCol, $userId)
+                    ->whereIn($merchantIdCol, $merchantIds)
+                    ->get();
+    }
 }

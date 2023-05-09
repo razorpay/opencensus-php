@@ -1428,6 +1428,58 @@ return [
         ],
     ],
 
+    'testFetchPartnerSubmerchantsOptimised' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'id'               => 'acc_10000000000009',
+                        'name'             => 'random_name_1',
+                        'email'            => 'subm1@xyz.com',
+                        'hold_funds'       => false,
+                        'details'          => [
+                            'activation_status' => 'under_review',
+                        ],
+                        'user'              => [
+                            'email'             => 'subm1@xyz.com',
+                            'contact_mobile'    => null,
+                        ],
+                        'dashboard_access'  => false,
+                        'application'       => [
+                            'id'=> '8ckeirnw84ifke'
+                        ],
+                        'kyc_access'        => null,
+                    ],
+                    [
+                        'id'               => 'acc_10000000000011',
+                        'name'             => 'random_name_1',
+                        'email'            => 'subm2@xyz.com',
+                        'hold_funds'       => false,
+                        'details'          => [
+                            'activation_status' => 'activated',
+                        ],
+                        'user'              => [
+                            'email'             => 'subm2@xyz.com',
+                            'contact_mobile'    => null,
+                        ],
+                        'dashboard_access'  => false,
+                        'application'       => [
+                            'id'=> '8ckeirnw84ifke'
+                        ],
+                        'kyc_access'        => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testFetchBankingAccountEntitiesForPartnerSubmerchants' => [
         'request'  => [
             'url'     => '/banking_accounts/rbl/lms/banking_account',
@@ -1529,13 +1581,65 @@ return [
         ],
     ],
 
+    'testFetchPartnerSubmerchantsPurePlatformOptimised' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'id'               => 'acc_10000000000009',
+                        'name'             => 'random_name_1',
+                        'email'            => 'subm1@xyz.com',
+                        'hold_funds'       => false,
+                        'details'          => [
+                            'activation_status' => null,
+                        ],
+                        'user'              => [
+                            'email'             => 'subm1@xyz.com',
+                            'contact_mobile'    => null,
+                        ],
+                        'dashboard_access'  => false,
+                        'application' => [
+                            'id' => '8ckeirnw84ifke',
+                        ],
+                        'kyc_access'        => null,
+                    ],
+                    [
+                        'id'               => 'acc_10000000000009',
+                        'name'             => 'random_name_1',
+                        'email'            => 'subm1@xyz.com',
+                        'hold_funds'       => false,
+                        'details'          => [
+                            'activation_status' => null,
+                        ],
+                        'user'              => [
+                            'email'             => 'subm1@xyz.com',
+                            'contact_mobile'    => null,
+                        ],
+                        'dashboard_access'  => false,
+                        'application' => [
+                            'id' => '10000RandomApp',
+                        ],
+                        'kyc_access'        => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testFetchPartnerSubmerchantsFilters' => [
         'request'  => [
             'url'     => '/submerchants',
             'method'  => 'GET',
             'content' => [
                 'name'              => 'random_name_1',
-                'email'             => 'user@example.com',
+                'email'             => 'subm1@xyz.com',
                 'id'                => '10000000000009',
                 'activation_status' => 'under_review',
                 'merchant_id'       => ['10000000000009'],
@@ -1555,6 +1659,46 @@ return [
                             'activation_status' => 'under_review',
                         ],
                         'dashboard_access' => false,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantsFiltersOptimised' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [
+                'name'              => 'random_name_1',
+                'email'             => 'subm1@xyz.com',
+                'id'                => '10000000000009',
+                'activation_status' => 'under_review',
+                'merchant_id'       => ['10000000000009'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'               => 'acc_10000000000009',
+                        'name'             => 'random_name_1',
+                        'email'            => 'subm1@xyz.com',
+                        'hold_funds'       => false,
+                        'details'          => [
+                            'activation_status' => 'under_review',
+                        ],
+                        'user'              => [
+                            'email'             => 'subm1@xyz.com',
+                            'contact_mobile'    => null,
+                        ],
+                        'dashboard_access'  => false,
+                        'application'       => [
+                            'id'=> '8ckeirnw84ifke'
+                        ],
+                        'kyc_access'        => null,
                     ],
                 ],
             ],
@@ -1589,6 +1733,42 @@ return [
         ],
     ],
 
+    'testFetchPartnerSubmerchantsTypeFilterOptimised' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [
+                'type' => 'referred'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'               => 'acc_10000000000009',
+                        'name'             => 'random_name_1',
+                        'email'            => 'subm1@xyz.com',
+                        'hold_funds'       => false,
+                        'details'          => [
+                            'activation_status' => 'under_review',
+                        ],
+                        'user'              => [
+                            'email'             => 'subm1@xyz.com',
+                            'contact_mobile'    => null,
+                        ],
+                        'dashboard_access'  => false,
+                        'application'       => [
+                            'id'=> '8ckeirnw84ifkf'
+                        ],
+                        'kyc_access'        => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testFetchPartnerSubmerchantsPurePlatformFilters' => [
         'request'  => [
             'url'     => '/submerchants',
@@ -1606,6 +1786,42 @@ return [
                         'application' => [
                             'id' => '10000RandomApp',
                         ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantsPurePlatformFiltersOptimised' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [
+                'application_id' => '10000RandomApp',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'               => 'acc_10000000000009',
+                        'name'             => 'random_name_1',
+                        'email'            => 'subm1@xyz.com',
+                        'hold_funds'       => false,
+                        'details'          => [
+                            'activation_status' => null,
+                        ],
+                        'user'              => [
+                            'email'             => 'subm1@xyz.com',
+                            'contact_mobile'    => null,
+                        ],
+                        'dashboard_access'  => false,
+                        'application' => [
+                            'id' => '10000RandomApp',
+                        ],
+                        'kyc_access'        => null,
                     ],
                 ],
             ],
@@ -1640,7 +1856,59 @@ return [
         ],
     ],
 
+    'testFetchPartnerSubmerchantsPaginationFiltersOptimised' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [
+                'skip'  => 1,
+                'count' => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'               => 'acc_10000000000011',
+                        'name'             => 'random_name_1',
+                        'email'            => 'subm2@xyz.com',
+                        'hold_funds'       => false,
+                        'details'          => [
+                            'activation_status' => 'activated',
+                        ],
+                        'user'              => [
+                            'email'             => 'subm2@xyz.com',
+                            'contact_mobile'    => null,
+                        ],
+                        'dashboard_access'  => false,
+                        'application'       => [
+                            'id'=> '8ckeirnw84ifke'
+                        ],
+                        'kyc_access'        => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testFetchPartnerSubmerchantsEmptyList' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantsEmptyListOptimised' => [
         'request'  => [
             'url'     => '/submerchants',
             'method'  => 'GET',
@@ -2216,13 +2484,13 @@ return [
                         'id'        => 'acc_10000000000009',
                         'entity'    => 'merchant',
                         'name'      => 'random_name_1',
-                        'email'     =>  'user@example.com',
+                        'email'     =>  'subm1@xyz.com',
                     ],
                     [
                         'id'        => 'acc_10000000000011',
                         'entity'    => 'merchant',
-                        'name'      => 'jitendra ojha',
-                        'email'     =>  'email.ojha@test.com',
+                        'name'      => 'random_name_1',
+                        'email'     =>  'subm2@xyz.com',
                     ]
                 ],
             ],

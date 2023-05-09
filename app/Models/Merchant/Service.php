@@ -7385,29 +7385,47 @@ class Service extends Base\Service
     {
         $partner = $this->fetchPartner();
 
-        (new Validator)->validateInput('list_submerchants', $input);
+        $validator = new Validator();
 
-        // add default params
-        $input['skip'] = $input['skip'] ?? 0;
-        $input['count'] = $input['count'] ?? self::DEFAULT_SUBMERCHANT_FETCH_LIMIT;
+        $validator->validateInput('list_submerchants', $input);
+        $validator->validateIsPartner($partner);
 
         $startTime = millitime();
+        $isExpEnabled = $this->isSubmerchantFetchMultipleOptimisationExpEnabled($partner->getId());
 
-        $result = Tracer::inspan(['name' => HyperTrace::LIST_SUBMERCHANTS_CORE], function () use ($partner, $input) {
+        $result = Tracer::inspan(['name' => HyperTrace::LIST_SUBMERCHANTS_CORE], function () use ($partner, $input, $isExpEnabled) {
+            if ($isExpEnabled)
+            {
+                return $this->core()->listSubmerchantsV2($partner, $input, $isExpEnabled);
+            }
 
             return $this->core()->listSubmerchants($partner, $input);
         });
 
-        $this->trace->histogram(Metric::FETCH_ALL_SUBMERCHANTS_LATENCY, millitime()-$startTime);
-
-        $response = $result[0]->toArrayPartner();
-
+        $response = $isExpEnabled ? $result[0]->toListSubmerchantsArray() : $result[0]->toArrayPartner();
         if (array_key_exists(self::OFFSET, $result) === true)
         {
             $response[self::OFFSET] = $result[self::OFFSET];
         }
 
+        $this->trace->histogram(Metric::FETCH_ALL_SUBMERCHANTS_LATENCY, millitime()-$startTime);
+
         return $response;
+    }
+
+    private function isSubmerchantFetchMultipleOptimisationExpEnabled(string $partnerId) : bool
+    {
+        $authType = $this->app['basicauth']->getAuthType();
+        $properties = [
+            'id'            => $partnerId,
+            'experiment_id' => $this->app['config']->get('app.submerchant_fetch_multiple_optimisation_exp_id'),
+            'request_data'  => json_encode([
+                'mid'       => $partnerId,
+                'auth_type' => $authType,
+            ]),
+        ];
+
+        return $this->core()->isSplitzExperimentEnable($properties, 'enable');
     }
 
     /**

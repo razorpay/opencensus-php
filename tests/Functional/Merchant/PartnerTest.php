@@ -1771,8 +1771,30 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testFetchPartnerSubmerchantsOptimised()
+    {
+        $this->mockSubmerchantFetchMultipleOptimisedExperiment();
+
+        $this->createPartnerAndAddMultipleSubmerchants();
+
+        $this->ba->adminProxyAuth();
+
+        $this->startTest();
+    }
+
     public function testFetchPartnerSubmerchantsFilters()
     {
+        $this->createPartnerAndAddMultipleSubmerchants();
+
+        $this->ba->adminProxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchPartnerSubmerchantsFiltersOptimised()
+    {
+        $this->mockSubmerchantFetchMultipleOptimisedExperiment();
+
         $this->createPartnerAndAddMultipleSubmerchants();
 
         $this->ba->adminProxyAuth();
@@ -2016,6 +2038,46 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testFetchPartnerSubmerchantsTypeFilterOptimised()
+    {
+        $partnerUser = $this->createPartnerAndUser();
+
+        $this->createSubmerchantAndUser(Mode::TEST, 'subm1@xyz.com');
+        $app = $this->fixtures->merchant->createDummyReferredAppForManaged([
+            'merchant_id' => self::DEFAULT_MERCHANT_ID,
+            'partner_type'=> 'reseller',
+        ]);
+
+        $accessMap = $this->getAccessMapArray(
+            'application', $app->getId(), self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID
+        );
+        $this->fixtures->create('merchant_access_map', $accessMap);
+
+        $submerchantId = '10000000000011';
+        $this->allowAdminToAccessMerchant($submerchantId);
+        $this->fixtures->on(Mode::TEST)->merchant->edit($submerchantId, [
+            'name' => 'random_name_1',
+            'email' => 'subm2@xyz.com',
+        ]);
+        $this->fixtures->on(Mode::TEST)->user->createUserForMerchant($submerchantId, ['email' => 'subm2@xyz.com']);
+
+        $this->fixtures->user->createUserForMerchant($submerchantId);
+
+        $app = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'fully_managed']);
+
+        $this->addUserToMerchant($partnerUser, $submerchantId, 'owner');
+        $accessMap = $this->getAccessMapArray(
+            'application', $app->getId(), $submerchantId, self::DEFAULT_MERCHANT_ID
+        );
+        $this->fixtures->create('merchant_access_map',$accessMap);
+
+        $this->ba->adminProxyAuth();
+
+        $this->mockSubmerchantFetchMultipleOptimisedExperiment();
+
+        $this->startTest();
+    }
+
     public function testFetchPartnerSubmerchantsPurePlatform()
     {
         $this->allowAdminToAccessPartnerMerchant();
@@ -2053,6 +2115,53 @@ class PartnerTest extends OAuthTestCase
         $this->fixtures->create('merchant_access_map', $accessMap);
 
         $this->ba->adminProxyAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->startTest($testData);
+    }
+
+    public function testFetchPartnerSubmerchantsPurePlatformOptimised()
+    {
+        $this->allowAdminToAccessPartnerMerchant();
+
+        $this->allowAdminToAccessSubMerchant();
+        $this->fixtures->on(Mode::TEST)->merchant->edit(self::DEFAULT_SUBMERCHANT_ID, [
+            'name' => 'random_name_1',
+            'email' => 'subm1@xyz.com',
+        ]);
+        $partnerUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
+        $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID, ['email' => 'subm1@xyz.com']);
+
+        $this->addUserToMerchant($partnerUser, self::DEFAULT_SUBMERCHANT_ID, 'owner');
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'pure_platform']);
+
+        $app = $this->fixtures->merchant->createDummyPartnerApp([
+            'id'          => self::DUMMY_APP_ID_1,
+            'type'        => null,
+            'name'        => 'App 1',
+            'merchant_id' => self::DEFAULT_MERCHANT_ID,
+            'partner_type' => 'pure_platform',
+        ]);
+
+        $accessMap = $this->getAccessMapArray('application', $app->getId(), self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID);
+        $this->fixtures->create('merchant_access_map', $accessMap);
+
+        $app = $this->fixtures->merchant->createDummyPartnerApp([
+            'id'          => self::DUMMY_APP_ID_2,
+            'type'        => null,
+            'name'        => 'App 2',
+            'merchant_id' => self::DEFAULT_MERCHANT_ID,
+            'partner_type' => 'pure_platform',
+        ]);
+
+        $accessMap = $this->getAccessMapArray('application', $app->getId(), self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID);
+        $this->fixtures->create('merchant_access_map', $accessMap);
+
+        $this->ba->adminProxyAuth();
+
+        $this->mockSubmerchantFetchMultipleOptimisedExperiment();
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -2102,8 +2211,67 @@ class PartnerTest extends OAuthTestCase
         $this->startTest($testData);
     }
 
+    public function testFetchPartnerSubmerchantsPurePlatformFiltersOptimised()
+    {
+        $this->allowAdminToAccessPartnerMerchant();
+
+        $this->allowAdminToAccessSubMerchant();
+        $this->fixtures->on(Mode::TEST)->merchant->edit(self::DEFAULT_SUBMERCHANT_ID, [
+            'name' => 'random_name_1',
+            'email' => 'subm1@xyz.com',
+        ]);
+
+        $partnerUser = $this->fixtures->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID);
+
+        $this->fixtures->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID, ['email' => 'subm1@xyz.com']);
+
+        $this->addUserToMerchant($partnerUser, self::DEFAULT_SUBMERCHANT_ID, 'owner');
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'pure_platform']);
+
+        $app = $this->fixtures->merchant->createDummyPartnerApp([
+            'id'          => self::DUMMY_APP_ID_1,
+            'type'        => null,
+            'name'        => 'App 1',
+            'merchant_id' => self::DEFAULT_MERCHANT_ID,
+            'partner_type' => 'pure_platform',
+        ]);
+
+        $accessMap = $this->getAccessMapArray('application', $app->getId(), self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID);
+        $this->fixtures->create('merchant_access_map', $accessMap);
+
+        $app = $this->fixtures->merchant->createDummyPartnerApp([
+            'id'          => self::DUMMY_APP_ID_2,
+            'type'        => null,
+            'name'        => 'App 2',
+            'merchant_id' => self::DEFAULT_MERCHANT_ID,
+            'partner_type' => 'pure_platform',
+        ]);
+
+        $accessMap = $this->getAccessMapArray('application', $app->getId(), self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID);
+        $this->fixtures->create('merchant_access_map', $accessMap);
+
+        $this->ba->adminProxyAuth();
+
+        $this->mockSubmerchantFetchMultipleOptimisedExperiment();
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->startTest($testData);
+    }
+
     public function testFetchPartnerSubmerchantsPaginationFilters()
     {
+        $this->createPartnerAndAddMultipleSubmerchants();
+
+        $this->ba->adminProxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchPartnerSubmerchantsPaginationFiltersOptimised()
+    {
+        $this->mockSubmerchantFetchMultipleOptimisedExperiment();
+
         $this->createPartnerAndAddMultipleSubmerchants();
 
         $this->ba->adminProxyAuth();
@@ -2151,6 +2319,24 @@ class PartnerTest extends OAuthTestCase
         $this->startTest($testData);
     }
 
+    /**
+     * Tests the list submerchants api when there are no submerchants for the partner
+     */
+    public function testFetchPartnerSubmerchantsEmptyListOptimised()
+    {
+        $this->createPartnerAndUser();
+
+        $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'fully_managed']);
+
+        $this->ba->adminProxyAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->mockSubmerchantFetchMultipleOptimisedExperiment();
+
+        $this->startTest($testData);
+    }
+
     public function testFetchPartnerSubmerchantProxyAuth()
     {
         // Failing intermittently way too often and hindering development. TODO: fix
@@ -2188,7 +2374,11 @@ class PartnerTest extends OAuthTestCase
 
     public function testFetchPartnerSubmerchantProxyAuthSellerApp()
     {
-        $partnerUser = $this->createPartnerAndUser();
+        $this->createPartnerAndUser();
+
+        $partnerUser = $this->fixtures->on(Mode::TEST)->user->createUserForMerchant(
+            self::DEFAULT_MERCHANT_ID, [], 'sellerapp'
+        );
 
         $subMerchantUser = $this->createSubmerchantAndUser();
 
@@ -4024,55 +4214,75 @@ class PartnerTest extends OAuthTestCase
 
     protected function createPartnerAndAddMultipleSubmerchants(string $mode = Mode::TEST)
     {
-        $this->createPartnerAndUser($mode);
+        $partnerUser = $this->createPartnerAndUser($mode, 'partner@xyz.com');
 
-        $this->createSubmerchantAndUser($mode);
+        $this->createSubmerchantAndUser($mode, 'subm1@xyz.com');
 
         $submerchantId = '10000000000011';
-
         $this->allowAdminToAccessMerchant($submerchantId);
-
-        $this->fixtures->on($mode)->user->createUserForMerchant($submerchantId);
+        $this->fixtures->on($mode)->merchant->edit($submerchantId, [
+            'name' => 'random_name_1',
+            'email' => 'subm2@xyz.com',
+        ]);
+        $this->fixtures->on($mode)->user->createUserForMerchant($submerchantId, ['email' => 'subm2@xyz.com']);
 
         $app = $this->fixtures->on($mode)->merchant->createDummyPartnerApp(['partner_type' => 'fully_managed']);
 
         $appId = $app->getId();
 
         // Link new submerchants to the partner account
-        $accessMap = $this->getAccessMapArray('application', $appId, self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID);
-
+        $accessMap = $this->getAccessMapArray(
+            'application', $appId, self::DEFAULT_SUBMERCHANT_ID, self::DEFAULT_MERCHANT_ID
+        );
+        $this->fixtures->on($mode)->create('merchant_access_map',$accessMap);
+        $accessMap = $this->getAccessMapArray(
+            'application', $appId, $submerchantId, self::DEFAULT_MERCHANT_ID
+        );
         $this->fixtures->on($mode)->create('merchant_access_map',$accessMap);
 
-        $accessMap = $this->getAccessMapArray('application', $appId, $submerchantId, self::DEFAULT_MERCHANT_ID);
+        $this->fixtures->on($mode)->user->createUserMerchantMapping([
+            'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+            'user_id'     => $partnerUser->getUserId(),
+            'role'        => 'owner',
+        ]);
 
-        $this->fixtures->on($mode)->create('merchant_access_map',$accessMap);
+        $this->fixtures->on($mode)->user->createUserMerchantMapping([
+            'merchant_id' => $submerchantId,
+            'user_id'     => $partnerUser->getUserId(),
+            'role'        => 'owner',
+        ]);
 
         return $appId;
     }
 
-    protected function createPartnerAndUser(string $mode = Mode::TEST)
+    protected function createPartnerAndUser(string $mode = Mode::TEST, $email = 'partner@hotmail.com')
     {
         $this->allowAdminToAccessPartnerMerchant();
 
-        $this->fixtures->on($mode)->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'fully_managed']);
+        $this->fixtures->on($mode)->merchant->edit(
+            self::DEFAULT_MERCHANT_ID,
+            ['partner_type' => 'fully_managed', 'email' => $email]
+        );
 
-        $partnerUser = $this->fixtures->on($mode)->user->createUserForMerchant(self::DEFAULT_MERCHANT_ID, [], 'sellerapp');
-
-        return $partnerUser;
+        return $this->fixtures->on($mode)->user->createUserForMerchant(
+            self::DEFAULT_MERCHANT_ID, ['email' => $email]
+        );
     }
 
-    protected function createSubmerchantAndUser(string $mode = Mode::TEST)
+    protected function createSubmerchantAndUser(string $mode = Mode::TEST, string $email = 'mills.rudolph@smith.biz')
     {
         $this->allowAdminToAccessSubMerchant();
 
         $this->fixtures->on($mode)->merchant->edit(self::DEFAULT_SUBMERCHANT_ID, [
             'name' => 'random_name_1',
-            'email' => 'user@example.com',
+            'email' => $email,
         ]);
 
         $this->fixtures->on($mode)->merchant_detail->edit(self::DEFAULT_SUBMERCHANT_ID, ['activation_status' => 'under_review']);
 
-        $submerchantUser = $this->fixtures->on($mode)->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
+        $submerchantUser = $this->fixtures->on($mode)->user->createUserForMerchant(
+            self::DEFAULT_SUBMERCHANT_ID, ['email' => $email]
+        );
 
         return $submerchantUser;
     }
@@ -4659,6 +4869,27 @@ class PartnerTest extends OAuthTestCase
         $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_MERCHANT_ID);
 
         $this->startTest();
+    }
+
+    private function mockSubmerchantFetchMultipleOptimisedExperiment(): void
+    {
+        $input = [
+            "id"            => self::DEFAULT_MERCHANT_ID,
+            "experiment_id" => "KHTp8UvvI3JWnn",
+            'request_data'  => json_encode([
+                'mid' => self::DEFAULT_MERCHANT_ID,
+                'auth_type' => 'private'
+            ]),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+        $this->mockSplitzTreatment($input, $output);
     }
 
 }
