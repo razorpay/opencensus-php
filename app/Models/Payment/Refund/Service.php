@@ -2729,14 +2729,7 @@ class Service extends Base\Service
      */
     protected function fetchRefundDetailsForCustomerFromMerchantNotes($id, array &$return)
     {
-        if ($this->repo->payment->isExperimentEnabledForId(Repository::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
-        {
-            $payment = $this->repo->payment->fetch([Payment\Entity::NOTES => $id, null, ConnectionType::DATA_WAREHOUSE_MERCHANT]);
-        }
-        else
-        {
-            $payment = $this->repo->payment->fetch([Payment\Entity::NOTES => $id]);
-        }
+        $payment = $this->repo->payment->fetch([Payment\Entity::NOTES => $id], null, ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
         if (empty($payment->toArray()) === false)
         {

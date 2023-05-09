@@ -378,34 +378,20 @@ class RepositoryManager extends Illuminate\Support\Manager
             return Mode::TEST;
         }
 
-        $variant = $this->app['razorx']->getTreatment(
-            __FUNCTION__,
-            Repository::PAYMENT_QUERIES_TIDB_MIGRATION,
-            $this->app['basicauth']->getMode() ?? Mode::LIVE);
+        // Check id in archived data replica as the entity might be archived
+        // Note : Add _record_source = 'api' filter if moving to aggregated warm storage (tidb)
+        $obj = $repo->connection(Connection::ARCHIVED_DATA_REPLICA_LIVE)->find($id);
 
-        $this->app['trace']->info(TraceCode::ARCHIVAL_EXPERIMENTS_REPOSITORY_VARIANT, [
-            'variant'    => $variant,
-            'feature'    => Repository::PAYMENT_QUERIES_TIDB_MIGRATION,
-            'context_id' => __FUNCTION__,
-        ]);
-
-        if ($variant === 'on')
+        if ($obj !== null)
         {
-            // Check id in archived data replica as the entity might be archived
-            // Note : Add _record_source = 'api' filter if moving to aggregated warm storage (tidb)
-            $obj = $repo->connection(Connection::ARCHIVED_DATA_REPLICA_LIVE)->find($id);
+            return Mode::LIVE;
+        }
 
-            if ($obj !== null)
-            {
-                return Mode::LIVE;
-            }
+        $obj = $repo->connection(Connection::ARCHIVED_DATA_REPLICA_TEST)->find($id);
 
-            $obj = $repo->connection(Connection::ARCHIVED_DATA_REPLICA_TEST)->find($id);
-
-            if ($obj !== null)
-            {
-                return Mode::TEST;
-            }
+        if ($obj !== null)
+        {
+            return Mode::TEST;
         }
 
         //

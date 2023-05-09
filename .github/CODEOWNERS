@@ -41,7 +41,6 @@ app/Models/Key/                                        @razorpay/spine-edge
 app/Models/Merchant/Checkout.php                       @razorpay/checkout-backend-leads
 app/Models/Merchant/CheckoutExperiment.php             @razorpay/checkout-backend-leads
 app/Models/Customer/Truecaller                         @razorpay/checkout-backend-leads
-app/Models/Payment/Repository.php                      nikhilesh.chamarthi@razorpay.com
 app/Models/Pricing/                                    @razorpay/pricing-team
 app/Models/Payout/                                     @razorpay/Payouts-core
 app/Models/Pricing/Payout.php                          @razorpay/Payouts-core

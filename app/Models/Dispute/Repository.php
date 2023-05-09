@@ -7,6 +7,7 @@ use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Constants\Timezone;
 use RZP\Base\ConnectionType;
+use RZP\Constants\Environment;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Payment\Method as Method;
 use RZP\Trace\TraceCode;
@@ -172,7 +173,9 @@ class Repository extends Base\Repository
 
         $query = $this->newQuery();
 
-        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        // Adding record_source filter for TiDB query only in prod
+        // This check is to not break the query in lower environments because the column doesn't exist
+        if ($this->app['env'] === Environment::PRODUCTION)
         {
             $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
@@ -257,7 +260,9 @@ class Repository extends Base\Repository
 
         $query = $this->newQuery();
 
-        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        // Adding record_source filter for TiDB query only in prod
+        // This check is to not break the query in lower environments because the column doesn't exist
+        if ($this->app['env'] === Environment::PRODUCTION)
         {
             $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
@@ -288,7 +293,9 @@ class Repository extends Base\Repository
 
         $query = $this->repo->payment->newQuery();
 
-        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        // Adding record_source filter for TiDB query only in prod
+        // This check is to not break the query in lower environments because the column doesn't exist
+        if ($this->app['env'] === Environment::PRODUCTION)
         {
             $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
