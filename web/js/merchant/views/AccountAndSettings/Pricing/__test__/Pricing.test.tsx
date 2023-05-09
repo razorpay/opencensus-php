@@ -21,10 +21,10 @@ describe('Tests for the Pricing page', () => {
     });
   };
 
-  test('Location should change to pricing plans url when clicking the Pricing Plans tab', () => {
+  test('Location should change to pricing plans url when clicking the Pricing Plans tab', async () => {
     const { history } = renderApp();
 
-    userEvent.click(screen.getByTestId('pricing-plan-link'));
+    await userEvent.click(screen.getByTestId('flex-link'));
 
     expect(history?.location?.pathname).toBe(ROUTES_INFO.PRICING_PLANS);
   });

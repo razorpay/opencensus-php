@@ -21,8 +21,8 @@ import { fetchMerchantWebsiteDetails } from 'merchant/reducers/websitecompliance
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import { isTrustedBadgeAllowed } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
-import { StyledNavLink } from 'merchant/views/AccountAndSettings/Pricing/Pricing.styles';
 import { Badge, OffersIcon } from '@razorpay/blade/components';
+import { StyledHeader } from 'merchant/views/AccountAndSettings/Pricing/Pricing.styles';
 
 const {
   ACCOUNT_AND_SETTINGS,
@@ -80,7 +80,7 @@ const MyAccount = (props) => {
       <tabbed-container>
         {/* To make the header scrollable we just need to add this new class to the header component */}
         {!isWebView && (
-          <header id="myaccount-header" className="scrollable-tab-header">
+          <StyledHeader showTopBorder id="myaccount-header" className="scrollable-tab-header">
             <ShowWhen additionalCondition={(user) => user.isAllowedView('profile')}>
               <NavLink to="/profile">Profile</NavLink>
             </ShowWhen>
@@ -160,16 +160,14 @@ const MyAccount = (props) => {
               </NavLink>
             </ShowWhen>
             <ShowWhen additionalCondition={(user) => user?.isBundlePricingEnabled}>
-              <StyledNavLink>
-                <NavLink className="pricing-plan-link" to="/pricing-plans">
-                  Pricing Plans
-                </NavLink>
+              <NavLink className="flex-link" to="/pricing-plans">
+                Pricing Plans
                 <Badge contrast="low" variant="positive" size="medium" icon={OffersIcon}>
                   NEW
                 </Badge>
-              </StyledNavLink>
+              </NavLink>
             </ShowWhen>
-          </header>
+          </StyledHeader>
         )}
         <content>
           <ShowWhenRoute

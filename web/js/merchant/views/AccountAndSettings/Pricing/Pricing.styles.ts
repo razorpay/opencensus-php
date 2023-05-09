@@ -1,19 +1,20 @@
 import styled from 'styled-components';
 import { Theme } from '@razorpay/blade/components';
 
-const StyledNavLink = styled.div(
-  ({ theme }: { theme: Theme }) => `
-  display: inline-flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: ${theme.spacing[3]}px;
-  margin: ${theme.spacing[0]} ${theme.spacing[5]}px;
-  width: fit-content;
+const StyledHeader = styled.header(
+  ({ theme, showTopBorder = false }: { theme: Theme; showTopBorder?: boolean }) => `
 
-  > a.pricing-plan-link {
-    margin: 0;
+  && {
+    ${showTopBorder ? '' : 'border-top: 0;'}
   }
-`,
+
+  > a.flex-link:not(.dropdown a) {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    gap: ${theme.spacing[3]}px;
+  }
+  `,
 );
 
-export { StyledNavLink };
+export { StyledHeader };
