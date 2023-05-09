@@ -255,9 +255,9 @@ class PurposeCodeList
     const P1104 = 'P1104';//old
     const P1105 = 'P1105';//old
     const P1106 = 'P1106';//old
-    const P1107 = 'P1107';//old
+    const P1107 = 'P1107';
     const P1108 = 'P1108';//old
-    const P1109 = 'P1109';//old
+    const P1109 = 'P1109';
     const S1101 = 'S1101';
     const S1102 = 'S1102';
 
@@ -561,15 +561,15 @@ class PurposeCodeList
     const P0099_DESC = "Other capital receipts not included elsewhere";
     const P0108_DESC = "Goods sold under merchanting / Receipt against export leg of merchanting trade";
     const P0109_DESC = "Export realisation on account of exports to Nepal and Bhutan, if any";
-    const P0214_DESC = "Receipts on account of other transportation services (stevedoring,demurrage, port handling charges etc).(Shipping Companies)";
-    const P0215_DESC = "Receipts on account of other transportation services (stevedoring, demurrage, port handling charges etc).( Airlines companies)";
+    const P0214_DESC = "Receipts on account of other transportation services (stevedoring, demurrage, port handling charges etc).(Shipping Companies)";
+    const P0215_DESC = "Receipts on account of other transportation services (stevedoring, demurrage, port handling charges etc).(Airlines companies)";
     const P0216_DESC = "Receipts of freight fare -Shipping companies operating abroad";
     const P0217_DESC = "Receipts of passenger fare by Indian Shipping companies operating abroad";
     const P0218_DESC = "Other receipts by Shipping companies";
     const P0219_DESC = "Receipts of freight fare by Indian Airlines companies operating abroad";
-    const P0220_DESC = "Receipts of passenger fare – Airlines";
+    const P0220_DESC = "Receipts of passenger fare - Airlines";
     const P0221_DESC = "Other receipts by Airlines companies";
-    const P0222_DESC = "Receipts on account of freights under other modes of transport(Internal Waterways, Roadways, Railways, Pipeline transports and Others)";
+    const P0222_DESC = "Receipts on account of freights under other modes of transport (Internal Waterways, Roadways, Railways, Pipeline transports and Others)";
     const P0223_DESC = "Receipts on account of passenger fare under other modes of transport (Internal Waterways, Roadways, Railways, Pipeline transports and Others)";
     const P0224_DESC = "Postal & Courier services by Air";
     const P0225_DESC = "Postal & Courier services by Sea";
@@ -1067,6 +1067,8 @@ class PurposeCodeList
     const PERSONAL_CULTURAL_RECREATIONAL_SERVICES_CODES = [
         self::P1101,
         self::P1102,
+        self::P1107,
+        self::P1109,
         self::S1101,
         self::S1102,
     ];
