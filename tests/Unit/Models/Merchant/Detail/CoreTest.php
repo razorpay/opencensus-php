@@ -5523,4 +5523,267 @@ class CoreTest extends TestCase
 
         $this->assertTrue($response);
     }
+
+    //When terminal procurement status is success and upi_terminal_procurement_status_banner key is not present in Redis
+    public function testPaymentEnabledCallbackConsumerForUPISuccessNoKeyInRedis()
+    {
+        $merchantDetail = $this->fixtures->on('test')->create('merchant_detail:valid_fields');
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $kafkaEventPayload = [
+            'merchant_id'                   => $merchantId,
+            'payment_method'                => 'UPI',
+            'payment_method_enabled'        => true,
+            'merchant_activation_status'    => 'activated_mcc_pending',
+            'mir'                           => [
+                'instrument'  => 'pg.upi.onboarding.online.upi',
+                'status'      => 'success',
+            ]
+        ];
+
+        (new KafkaMessageProcessor)->process('merchant-payments-enabled-callback', $kafkaEventPayload, 'test');
+
+        $data = (new StoreCore())->fetchValuesFromStore(
+            $merchantId,
+            StoreConfigKey::ONBOARDING_NAMESPACE,
+            [StoreConfigKey::UPI_TERMINAL_PROCUREMENT_STATUS_BANNER],
+            StoreConstants::PUBLIC);
+
+        $this->assertEquals('no_banner', $data[StoreConfigKey::UPI_TERMINAL_PROCUREMENT_STATUS_BANNER]);
+    }
+
+    //When terminal procurement status is success and upi_terminal_procurement_status_banner key is present in Redis
+    // with status as Pending
+    public function testPaymentEnabledCallbackConsumerForUPISuccessKeyAsPendingInRedis()
+    {
+        $merchantDetail = $this->fixtures->on('test')->create('merchant_detail:valid_fields');
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $updatedTerminalStatusBannerData = [
+            StoreConstants::NAMESPACE   => StoreConfigKey::ONBOARDING_NAMESPACE,
+            StoreConfigKey::UPI_TERMINAL_PROCUREMENT_STATUS_BANNER => 'pending',
+        ];
+
+        (new StoreCore())->updateMerchantStore($merchantId, $updatedTerminalStatusBannerData);
+
+        $kafkaEventPayload = [
+            'merchant_id'                   => $merchantId,
+            'payment_method'                => 'UPI',
+            'payment_method_enabled'        => true,
+            'merchant_activation_status'    => 'activated_mcc_pending',
+            'mir'                           => [
+                'instrument'  => 'pg.upi.onboarding.online.upi',
+                'status'      => 'success',
+            ]
+        ];
+
+        (new KafkaMessageProcessor)->process('merchant-payments-enabled-callback', $kafkaEventPayload, 'test');
+
+        $data = (new StoreCore())->fetchValuesFromStore(
+            $merchantId,
+            StoreConfigKey::ONBOARDING_NAMESPACE,
+            [StoreConfigKey::UPI_TERMINAL_PROCUREMENT_STATUS_BANNER],
+            StoreConstants::PUBLIC);
+
+        $this->assertEquals('no_banner', $data[StoreConfigKey::UPI_TERMINAL_PROCUREMENT_STATUS_BANNER]);
+    }
+
+    //When terminal procurement status is success and upi_terminal_procurement_status_banner key is present in Redis
+    // with status as Pending seen
+    public function testPaymentEnabledCallbackConsumerForUPISuccessKeyAsPendingSeenInRedis()
+    {
+        $merchantDetail = $this->fixtures->on('test')->create('merchant_detail:valid_fields');
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $updatedTerminalStatusBannerData = [
+            StoreConstants::NAMESPACE   => StoreConfigKey::ONBOARDING_NAMESPACE,
+            StoreConfigKey::UPI_TERMINAL_PROCUREMENT_STATUS_BANNER => 'pending_seen',
+        ];
+
+        (new StoreCore())->updateMerchantStore($merchantId, $updatedTerminalStatusBannerData);
+
+        $kafkaEventPayload = [
+            'merchant_id'                   => $merchantId,
+            'payment_method'                => 'UPI',
+            'payment_method_enabled'        => true,
+            'merchant_activation_status'    => 'activated_mcc_pending',
+            'mir'                           => [
+                'instrument'  => 'pg.upi.onboarding.online.upi',
+                'status'      => 'success',
+            ]
+        ];
+
+        (new KafkaMessageProcessor)->process('merchant-payments-enabled-callback', $kafkaEventPayload, 'test');
+
+        $data = (new StoreCore())->fetchValuesFromStore(
+            $merchantId,
+            StoreConfigKey::ONBOARDING_NAMESPACE,
+            [StoreConfigKey::UPI_TERMINAL_PROCUREMENT_STATUS_BANNER],
+            StoreConstants::PUBLIC);
+
+        $this->assertEquals('success', $data[StoreConfigKey::UPI_TERMINAL_PROCUREMENT_STATUS_BANNER]);
+    }
+
+    //When terminal procurement status is success and upi_terminal_procurement_status_banner key is present in Redis
+    // with status as Pending Ack
+    public function testPaymentEnabledCallbackConsumerForUPISuccessKeyAsPendingAckInRedis()
+    {
+        $merchantDetail = $this->fixtures->on('test')->create('merchant_detail:valid_fields');
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $updatedTerminalStatusBannerData = [
+            StoreConstants::NAMESPACE   => StoreConfigKey::ONBOARDING_NAMESPACE,
+            StoreConfigKey::UPI_TERMINAL_PROCUREMENT_STATUS_BANNER => 'pending_ack',
+        ];
+
+        (new StoreCore())->updateMerchantStore($merchantId, $updatedTerminalStatusBannerData);
+
+        $kafkaEventPayload = [
+            'merchant_id'                   => $merchantId,
+            'payment_method'                => 'UPI',
+            'payment_method_enabled'        => true,
+            'merchant_activation_status'    => 'activated_mcc_pending',
+            'mir'                           => [
+                'instrument'  => 'pg.upi.onboarding.online.upi',
+                'status'      => 'success',
+            ]
+        ];
+
+        (new KafkaMessageProcessor)->process('merchant-payments-enabled-callback', $kafkaEventPayload, 'test');
+
+        $data = (new StoreCore())->fetchValuesFromStore(
+            $merchantId,
+            StoreConfigKey::ONBOARDING_NAMESPACE,
+            [StoreConfigKey::UPI_TERMINAL_PROCUREMENT_STATUS_BANNER],
+            StoreConstants::PUBLIC);
+
+        $this->assertEquals('success', $data[StoreConfigKey::UPI_TERMINAL_PROCUREMENT_STATUS_BANNER]);
+    }
+
+    //When terminal procurement status is success, and UPI payment method is not enabled
+    public function testPaymentEnabledCallbackConsumerForUPISuccessWithPaymentMethodsDisabled()
+    {
+        $merchantDetail = $this->fixtures->on('test')->create('merchant_detail:valid_fields');
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $updatedTerminalStatusBannerData = [
+            StoreConstants::NAMESPACE   => StoreConfigKey::ONBOARDING_NAMESPACE,
+            StoreConfigKey::UPI_TERMINAL_PROCUREMENT_STATUS_BANNER => 'pending_ack',
+        ];
+
+        (new StoreCore())->updateMerchantStore($merchantId, $updatedTerminalStatusBannerData);
+
+        $kafkaEventPayload = [
+            'merchant_id'                   => $merchantId,
+            'payment_method'                => 'UPI',
+            'payment_method_enabled'        => false,
+            'merchant_activation_status'    => 'activated_mcc_pending',
+            'mir'                           => [
+                'instrument'  => 'pg.upi.onboarding.online.upi',
+                'status'      => 'success',
+            ]
+        ];
+
+        (new KafkaMessageProcessor)->process('merchant-payments-enabled-callback', $kafkaEventPayload, 'test');
+
+        $data = (new StoreCore())->fetchValuesFromStore(
+            $merchantId,
+            StoreConfigKey::ONBOARDING_NAMESPACE,
+            [StoreConfigKey::UPI_TERMINAL_PROCUREMENT_STATUS_BANNER],
+            StoreConstants::PUBLIC);
+
+        $this->assertEquals('pending', $data[StoreConfigKey::UPI_TERMINAL_PROCUREMENT_STATUS_BANNER]);
+    }
+
+    //When terminal procurement status is failed for merchant in AMP
+    public function testPaymentEnabledCallbackConsumerForUPIFailureForAMPMerchants()
+    {
+        $merchantDetail = $this->fixtures->on('test')->create('merchant_detail:valid_fields');
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $kafkaEventPayload = [
+            'merchant_id'                   => $merchantId,
+            'payment_method'                => 'UPI',
+            'payment_method_enabled'        => false,
+            'merchant_activation_status'    => 'activated_mcc_pending',
+            'mir'                           => [
+                'instrument'  => 'pg.upi.onboarding.online.upi',
+                'status'      => 'failed',
+            ]
+        ];
+
+        (new KafkaMessageProcessor)->process('merchant-payments-enabled-callback', $kafkaEventPayload, 'test');
+
+        $data = (new StoreCore())->fetchValuesFromStore(
+            $merchantId,
+            StoreConfigKey::ONBOARDING_NAMESPACE,
+            [StoreConfigKey::UPI_TERMINAL_PROCUREMENT_STATUS_BANNER],
+            StoreConstants::PUBLIC);
+
+        $this->assertEquals('pending', $data[StoreConfigKey::UPI_TERMINAL_PROCUREMENT_STATUS_BANNER]);
+    }
+
+    //When terminal procurement status is failed for merchant in Activated state
+    public function testPaymentEnabledCallbackConsumerForUPIFailureForActivatedMerchants()
+    {
+        $merchantDetail = $this->fixtures->on('test')->create('merchant_detail:valid_fields');
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $kafkaEventPayload = [
+            'merchant_id'                   => $merchantId,
+            'payment_method'                => 'UPI',
+            'payment_method_enabled'        => false,
+            'merchant_activation_status'    => 'activated',
+            'mir'                           => [
+                'instrument'  => 'pg.upi.onboarding.online.upi',
+                'status'      => 'failed',
+            ]
+        ];
+
+        (new KafkaMessageProcessor)->process('merchant-payments-enabled-callback', $kafkaEventPayload, 'test');
+
+        $data = (new StoreCore())->fetchValuesFromStore(
+            $merchantId,
+            StoreConfigKey::ONBOARDING_NAMESPACE,
+            [StoreConfigKey::UPI_TERMINAL_PROCUREMENT_STATUS_BANNER],
+            StoreConstants::PUBLIC);
+
+        $this->assertEquals('pending', $data[StoreConfigKey::UPI_TERMINAL_PROCUREMENT_STATUS_BANNER]);
+    }
+
+    //When terminal procurement status is rejected
+    public function testPaymentEnabledCallbackConsumerForUPIRejectedDuringManualProcurement()
+    {
+        $merchantDetail = $this->fixtures->on('test')->create('merchant_detail:valid_fields');
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $kafkaEventPayload = [
+            'merchant_id'                   => $merchantId,
+            'payment_method'                => 'UPI',
+            'payment_method_enabled'        => false,
+            'merchant_activation_status'    => 'activated',
+            'mir'                           => [
+                'instrument'  => 'pg.upi.onboarding.offline.upi',
+                'status'      => 'rejected',
+            ]
+        ];
+
+        (new KafkaMessageProcessor)->process('merchant-payments-enabled-callback', $kafkaEventPayload, 'test');
+
+        $data = (new StoreCore())->fetchValuesFromStore(
+            $merchantId,
+            StoreConfigKey::ONBOARDING_NAMESPACE,
+            [StoreConfigKey::UPI_TERMINAL_PROCUREMENT_STATUS_BANNER],
+            StoreConstants::PUBLIC);
+
+        $this->assertEquals('rejected', $data[StoreConfigKey::UPI_TERMINAL_PROCUREMENT_STATUS_BANNER]);
+    }
 }

@@ -337,7 +337,7 @@ class Core extends Base\Core
 
     private function getUpiPaymentMethod(Merchant\Entity $merchant)
     {
-        return $this->repo->methods->isUpiEnabledForMerchant($merchant);
+        return $this->repo->methods->isUpiEnabledForMerchant($merchant->getId());
     }
 
     public function getUpiMethodForMerchant(Merchant\Entity $merchant)

@@ -140,4 +140,15 @@ class Repository extends Base\Repository
                     ->toArray();
 
     }
+
+    public function fetchByEntityIdAndEntityTypeAndName($merchantId, $names)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ENTITY_ID, '=', $merchantId)
+                    ->where(Entity::ENTITY_TYPE, '=', 'merchant_detail')
+                    ->whereIn(Entity::NAME, $names)
+                    ->orderBy(Entity::CREATED_AT, 'asc')
+                    ->limit(1)
+                    ->get();
+    }
 }

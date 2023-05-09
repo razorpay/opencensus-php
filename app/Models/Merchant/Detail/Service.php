@@ -109,6 +109,9 @@ use RZP\Models\Merchant\Consent\Core as ConsentCore;
 use RZP\Models\Merchant\Consent\Constants as ConsentConstant;
 use Illuminate\Database\Query\Builder;
 use RZP\Exception\LogicException;
+use RZP\Models\Merchant\Store;
+use RZP\Models\Merchant\Store\Constants as StoreConstants;
+use RZP\Models\Merchant\Store\ConfigKey as StoreConfigKey;
 use RZP\Models\Merchant\Consent\Processor\Factory as ProcessorFactory;
 
 class Service extends Base\Service
@@ -2511,6 +2514,24 @@ class Service extends Base\Service
         return (new Core())->verifyMerchantAttributes($merchant, $verificationType, $input);
     }
 
+    /**
+     * @param $payload
+     *
+     * @throws \Exception
+     */
+    public function storeTerminalProcurementBannerStatus($payload)
+    {
+        switch (strtoupper($payload['payment_method']))
+        {
+            case DEConstants::UPI:
+                $this->storeTerminalProcurementBannerStatusForUPI($payload);
+                break;
+            default:
+                throw new Exception\LogicException(
+                    'Invalid payment method passed for displaying terminal procurement banner');
+        }
+    }
+
     protected function applyPromotion(array $input, string $eventName)
     {
         $product = null;
@@ -4103,5 +4124,78 @@ class Service extends Base\Service
         $response = $processor->processLegalDocuments($legalDocumentsInput);
 
         return $response->getResponseData();
+    }
+
+    /**
+     * @param $payload
+     * @param $keyAlreadyExists
+     * @param $value
+     *
+     * @throws Exception\InvalidArgumentException
+     * @throws Exception\InvalidPermissionException
+     */
+    private function storeTerminalProcurementBannerStatusForUPI($payload): void
+    {
+        try
+        {
+            $merchantId = $payload['merchant_id'];
+
+            $data = (new Store\Core())->fetchValuesFromStore($merchantId,
+                                                             StoreConfigKey::ONBOARDING_NAMESPACE,
+                                                             [StoreConfigKey::UPI_TERMINAL_PROCUREMENT_STATUS_BANNER]);
+
+            $existingTerminalBannerStatus = $data[StoreConfigKey::UPI_TERMINAL_PROCUREMENT_STATUS_BANNER];
+
+            $terminalProcurementStatus = $payload['mir']['status'];
+
+            switch ($terminalProcurementStatus)
+            {
+                case DEConstants::SUCCESS:
+                    if ($payload['payment_method_enabled'] === true)
+                    {
+                        $bannerStatus = (empty($existingTerminalBannerStatus) === false and
+                                         ($existingTerminalBannerStatus === DEConstants::PENDING_SEEN or
+                                          $existingTerminalBannerStatus === DEConstants::PENDING_ACK)) ?
+                            DEConstants::SUCCESS : DEConstants::NO_BANNER;
+                    }
+                    else
+                    {
+                        $bannerStatus = DEConstants::PENDING;
+                    }
+                    break;
+                case DEConstants::FAILED:
+                    $bannerStatus = DEConstants::PENDING;
+                    break;
+                case DEConstants::REJECTED:
+                    $bannerStatus = DEConstants::REJECTED;
+                    break;
+                default:
+                    $this->trace->info(TraceCode::INVALID_TERMINAL_PROCUREMENT_STATUS, [
+                        'merchant_id'                   => $merchantId,
+                        'payment_method'                => $payload['payment_method'],
+                        'terminal_procurement_status'   => $terminalProcurementStatus,
+                    ]);
+
+                    throw new Exception\InvalidArgumentException(
+                        'Not a valid status', ['status' => $terminalProcurementStatus]
+                    );
+            }
+
+            $this->trace->info(TraceCode::STORE_TERMINAL_BANNER_STATUS, [
+                'merchant_id'                   => $merchantId,
+                'payment_method'                => $payload['payment_method'],
+                'terminal_procurement_status'   => $terminalProcurementStatus,
+                'banner_status'                 => $bannerStatus
+            ]);
+
+            (new Merchant\Store\Core)->updateMerchantStore($merchantId, [
+                StoreConstants::NAMESPACE                              => StoreConfigKey::ONBOARDING_NAMESPACE,
+                StoreConfigKey::UPI_TERMINAL_PROCUREMENT_STATUS_BANNER => $bannerStatus
+            ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::STORE_TERMINAL_BANNER_STATUS_FAILURE);
+        }
     }
 }

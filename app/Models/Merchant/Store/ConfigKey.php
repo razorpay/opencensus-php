@@ -195,6 +195,10 @@ class ConfigKey
             self::SHOW_FIRST_PAYMENT_BANNER              => [
                 Constants::STORE => Constants::REDIS,
                 Constants::TTL   => Constants::FTUX_POPUP_TTL_IN_SECONDS
+            ],
+            self::UPI_TERMINAL_PROCUREMENT_STATUS_BANNER => [
+                Constants::STORE => Constants::REDIS,
+                Constants::TTL   => Constants::UPI_TERMINAL_BANNER_TTL_IN_SECONDS
             ]
         ]
     ];
@@ -204,4 +208,7 @@ class ConfigKey
     //ftux
     const SHOW_FTUX_FINAL_SCREEN    = 'show_ftux_final_screen';
     const SHOW_FIRST_PAYMENT_BANNER = 'show_first_payment_banner';
+
+    //Dedicated UPI Terminal Procurement status
+    const UPI_TERMINAL_PROCUREMENT_STATUS_BANNER = 'upi_terminal_procurement_status_banner';
 }

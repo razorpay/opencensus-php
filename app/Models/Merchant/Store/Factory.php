@@ -25,4 +25,20 @@ class Factory
                 throw new LogicException("invalid store");
         }
     }
+
+    /**
+     * @param string $key
+     *
+     * @return DefaultKey|UPITerminalProcurementStatusBannerKey
+     */
+    public static function getInstance(string $key)
+    {
+        switch ($key)
+        {
+            case ConfigKey::UPI_TERMINAL_PROCUREMENT_STATUS_BANNER:
+                return new UPITerminalProcurementStatusBannerKey();
+            default:
+                return new DefaultKey();
+        }
+    }
 }

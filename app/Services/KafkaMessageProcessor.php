@@ -24,6 +24,7 @@ class KafkaMessageProcessor
     const NEGATIVE_KEYWORDS_EVENTS      = 'api-bvs-kyc-document-result-events';
     const MCC_NOTIFICATION_EVENTS       = 'pg-mcc-notification-events';
     const API_PG_LEDGER_ACKNOWLEDGMENTS = 'outbox_jobs_api';
+    const MERCHANT_PAYMENTS_ENABLED_CALLBACK_EVENTS = 'merchant-payments-enabled-callback';
 
     /** @var Application $app */
     protected $app;
@@ -152,6 +153,9 @@ class KafkaMessageProcessor
 
             case self::MCC_NOTIFICATION_EVENTS:
                 return new MccCategorisationConsumer($payload['data'], $mode);
+
+            case self::MERCHANT_PAYMENTS_ENABLED_CALLBACK_EVENTS:
+                return new MerchantPaymentsEnabledCallbackConsumer($payload, $mode);
 
             default:
                 return null;

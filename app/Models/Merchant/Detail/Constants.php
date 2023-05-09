@@ -73,6 +73,14 @@ class Constants
     const FAILURE           = 'failure';
     const INVALID           = 'invalid';
 
+    //Terminal Procurement banner status
+    const FAILED        = 'failed';
+    const REJECTED      = 'rejected';
+    const PENDING       = 'pending';
+    const PENDING_SEEN  = 'pending_seen';
+    const PENDING_ACK   = 'pending_ack';
+    const NO_BANNER     = 'no_banner';
+
     const TOKEN = 'token';
     //token timeout duration in mins
     const TOKEN_TTL                    = 15;
@@ -189,7 +197,7 @@ class Constants
     const UPI                      = 'UPI';
     const CREATE                   = 'create';
     const ONLINE                   = 'online';
-    const UPI_INSTRUMENT           = 'pg.upi.onboarding.upi';
+    const UPI_INSTRUMENT           = 'pg.upi.onboarding.online.upi';
     const EVENT_TYPE_ONBOARDING    = 'onboarding';
 
     const BLOCKED_GSTIN_LIST = [

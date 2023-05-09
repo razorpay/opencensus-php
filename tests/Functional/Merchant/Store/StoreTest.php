@@ -97,4 +97,59 @@ class StoreTest extends TestCase
 
 
     }
+
+    public function testGetUPITerminalProcurementBannerStatus()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
+
+        $data = [
+            'namespace'                                 => 'onboarding',
+            'upi_terminal_procurement_status_banner'    => 'no_banner',
+        ];
+
+        (new Store\Core())->updateMerchantStore($merchantDetail['merchant_id'], $data);
+
+        $this->startTest();
+    }
+
+    public function testStoreUPITerminalProcurementBannerStatus()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $user = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id'], [], 'owner', 'live');
+
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id'], $user->getId());
+
+        $this->startTest();
+    }
+
+    //This tests the upi_terminal_procurement_banner_status value if no response is received from terminals team within
+    // 10 minutes of making a terminal procurement request
+    public function testGetUPITerminalBannerStatusForNoKafkaResponseBeyondThreshold()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail',
+                                                              [
+                                                                  'activation_status' => 'activated_mcc_pending'
+                                                              ]);
+
+        $this->ba->proxyAuth('rzp_live_' . $merchantDetail['merchant_id']);
+
+        $this->fixtures->on('live')->create('state', [
+            'entity_id'     => $merchantDetail->getMerchantId(),
+            'name'          => 'activated_mcc_pending',
+            'entity_type'   => 'merchant_detail',
+            'created_at'    =>  1683030415
+        ]);
+
+        $this->fixtures->on('test')->create('state', [
+            'entity_id'     => $merchantDetail->getMerchantId(),
+            'name'          => 'activated_mcc_pending',
+            'entity_type'   => 'merchant_detail',
+            'created_at'    =>  1683030415
+        ]);
+
+        $this->startTest();
+    }
 }

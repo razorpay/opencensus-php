@@ -77,4 +77,45 @@ return [
         ],
         'status_code' => 200,
     ],
+
+    'testGetUPITerminalProcurementBannerStatus' => [
+        'request'   => [
+            'method'  => 'GET',
+            'url'     => '/merchants/config/store?namespace=onboarding',
+        ],
+        'response' => [
+            'content' => [
+                'upi_terminal_procurement_status_banner' => 'no_banner'
+            ]
+        ],
+        'status_code' => 200,
+    ],
+
+    'testStoreUPITerminalProcurementBannerStatus' => [
+        'request'     => [
+            'method'  => 'POST',
+            'url'     => '/merchants/config/store',
+            'content' => [
+                'namespace'                                 => 'onboarding',
+                'upi_terminal_procurement_status_banner'    => 'pending_ack'
+            ]
+        ],
+        'response' => [
+            'content' => [],
+        ],
+        'status_code' => 200,
+    ],
+
+    'testGetUPITerminalBannerStatusForNoKafkaResponseBeyondThreshold' => [
+        'request'   => [
+            'method'  => 'GET',
+            'url'     => '/merchants/config/store?namespace=onboarding',
+        ],
+        'response' => [
+            'content' => [
+                'upi_terminal_procurement_status_banner' => 'pending'
+            ]
+        ],
+        'status_code' => 200,
+    ],
 ];

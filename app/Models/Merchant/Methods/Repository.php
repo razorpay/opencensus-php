@@ -56,11 +56,11 @@ class Repository extends Base\Repository
         return $methods;
     }
 
-    public function isUpiEnabledForMerchant(Merchant\Entity $merchant)
+    public function isUpiEnabledForMerchant($merchantId)
     {
         $query = $this->newQuery()
                     ->select(Entity::UPI)
-                    ->where(Entity::MERCHANT_ID, $merchant->getId());
+                    ->where(Entity::MERCHANT_ID, $merchantId);
 
         return $query->pluck(Entity::UPI)
             ->first();

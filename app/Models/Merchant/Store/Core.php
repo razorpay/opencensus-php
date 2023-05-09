@@ -3,9 +3,14 @@
 
 namespace RZP\Models\Merchant\Store;
 
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Exception\LogicException;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\Detail\Status;
 use RZP\Exception\InvalidPermissionException;
+use RZP\Models\Merchant\Detail\Constants as DEConstant;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Core extends Base\Core
@@ -109,7 +114,6 @@ class Core extends Base\Core
     //if namespace is empty return all readable keys for the role for all namespaces
     public function getAll(string $merchantId, string $namespace, string $role)
     {
-
         $data = [];
 
         $validator = (new Validator());
@@ -124,9 +128,23 @@ class Core extends Base\Core
 
                 if ($validator->isPermittedAction($config, Constants::READ, $role))
                 {
-                    $store = Factory::getStoreForNamespaceAndKey($namespace, $key);
+                    try
+                    {
+                        $instance = Factory::getInstance($key);
 
-                    $data[$key] = $store->get($merchantId, $namespace, $key);
+                        $data[$key] = $instance->getValue($merchantId, $namespace, $key);
+                    }
+                    catch (LogicException $e)
+                    {
+                        $this->trace->traceException(
+                            $e,
+                            Trace::ERROR,
+                            TraceCode::FETCH_CONFIG_VALUE_FAILURE,
+                            [
+                                'key'         => $key,
+                                'merchant_id' => $merchantId,
+                            ]);
+                    }
                 }
             }
         }
