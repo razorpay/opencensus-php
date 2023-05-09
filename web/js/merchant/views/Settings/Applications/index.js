@@ -18,9 +18,11 @@ class ApplicationContainer extends Component {
     confirm: PropTypes.func,
   };
 
-  UNSAFE_componentWillMount() {
+  componentDidMount() {
+    this.props.user.isRevokeApplicationEnabled
+      ? this.props.fetchOauthConnectedApplications()
+      : this.props.fetchConnectedApplications();
     this.props.fetchApplications();
-    this.props.fetchConnectedApplications();
   }
 
   deleteApp = (application) => {
@@ -54,29 +56,50 @@ class ApplicationContainer extends Component {
   };
 
   revokeAccess = (token) => {
+    const { isRevokeApplicationEnabled } = this.props.user;
     this.context.confirm({
-      message: `Are you sure you want to revoke access to ${token.application.name}?`,
+      message: `Are you sure you want to revoke access to ${
+        isRevokeApplicationEnabled ? token.application_name : token.application.name
+      }?`,
       affirmativeLabel: 'Revoke Access',
       affirmativePendingLabel: 'Revoking Access...',
-      action: () =>
-        this.props
-          .revokeAccess(token.id)
-          .then(() => {
-            this.props.showNotification({
-              type: 'success',
-              message: 'Access revoked successfully',
-            });
-          })
-          .catch((err) => {
-            this.props.showNotification({
-              type: 'error',
-              message: err.errors,
-            });
-          }),
+      action: () => {
+        // Maintaining backward compatibility
+        isRevokeApplicationEnabled
+          ? this.props
+              .revokeOauthApplicationAccess(token.application_id)
+              .then(() => {
+                this.props.showNotification({
+                  type: 'success',
+                  message: 'Access revoked successfully',
+                });
+              })
+              .catch((err) => {
+                this.props.showNotification({
+                  type: 'error',
+                  message: err.errors,
+                });
+              })
+          : this.props
+              .revokeAccess(token.id)
+              .then(() => {
+                this.props.showNotification({
+                  type: 'success',
+                  message: 'Access revoked successfully',
+                });
+              })
+              .catch((err) => {
+                this.props.showNotification({
+                  type: 'error',
+                  message: err.errors,
+                });
+              });
+      },
     });
   };
 
   renderConnectedApplications = () => {
+    const { isRevokeApplicationEnabled } = this.props.user;
     const { connectedAppsloading, tokens } = this.props.applications;
     return (
       <div class="content-box">
@@ -87,7 +110,13 @@ class ApplicationContainer extends Component {
           <LoadingConnectedApps />
         ) : tokens.length ? (
           tokens.map((data) => (
-            <AppDetails data={data} key={data.id} type="connected" onBtnClick={this.revokeAccess} />
+            <AppDetails
+              data={data}
+              key={isRevokeApplicationEnabled ? data.application_id : data.id}
+              type="connected"
+              onBtnClick={this.revokeAccess}
+              isRevokeApplicationEnabled={isRevokeApplicationEnabled}
+            />
           ))
         ) : (
           <NoConnectedApps />

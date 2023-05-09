@@ -1960,6 +1960,11 @@ export default class User {
     return variant?.name === 'enable';
   }
 
+  get isRevokeApplicationEnabled() {
+    const variant = getSplitzExperimentVariant('revoke_application');
+    return variant?.name === 'enable';
+  }
+
   get isSettlementV3RevampEnabled() {
     return (
       getSplitzExperimentVariant('settlement_v3_revamp')?.variables?.result === 'on' &&

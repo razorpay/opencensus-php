@@ -1,9 +1,6 @@
 import GenericEntity from './GenericEntity';
 import { merchantFetch } from 'merchant/utils/ajax';
 
-const editFields = ['id', 'delay_roll'];
-const newFields = ['name', 'website'];
-
 export default class Application extends GenericEntity {
   resourceUrl = 'oauth/applications';
 
@@ -12,29 +9,48 @@ export default class Application extends GenericEntity {
   }
 
   fetchConnected(params = {}) {
+    // eslint-disable-next-line
     let id = params.id;
 
-    return merchantFetch('oauth/tokens/').then(response => {
-      response.data.items = response.data.items.map(item => {
-        item.application.logo_url = this.formatLogoUrl(
-          item.application.logo_url
-        );
+    return merchantFetch('oauth/tokens/').then((response) => {
+      response.data.items = response.data.items.map((item) => {
+        item.application.logo_url = this.formatLogoUrl(item.application.logo_url);
         return new Application(item);
       });
       return response;
     });
   }
 
+  fetchOauthConnectedApplications() {
+    return merchantFetch('oauth/submerchant/applications').then((response) => {
+      response.data.items = response.data.items.map((item) => {
+        item.logo_url = this.formatLogoUrl(item.logo_url);
+        return new Application(item);
+      });
+      return response;
+    });
+  }
+
+  revokeOauthApplicationAccess(id) {
+    return merchantFetch({
+      mode: 'live',
+      url: `oauth/applications/${id}/revoke`,
+      method: 'put',
+    }).then((data) => {
+      return { id, ...data };
+    });
+  }
+
   fetch(params = {}) {
-    return super.fetch(params).then(data => {
+    return super.fetch(params).then((data) => {
       data.logo_url = this.formatLogoUrl(data.logo_url);
       return { id: this.id, ...data };
     });
   }
 
   fetchAll(params = {}) {
-    return super.fetchAll(params).then(response => {
-      response.data.items = response.data.items.map(item => {
+    return super.fetchAll(params).then((response) => {
+      response.data.items = response.data.items.map((item) => {
         item.logo_url = this.formatLogoUrl(item.logo_url);
         return new Application(item);
       });
@@ -44,14 +60,15 @@ export default class Application extends GenericEntity {
   }
 
   fetchPartnerApplication() {
-    return merchantFetch(`${this.resourceUrl}/partner`).then(response => {
+    return merchantFetch(`${this.resourceUrl}/partner`).then((response) => {
       return response.data;
     });
   }
 
   create(params = {}, fileName) {
-    let formData = new FormData();
-    for (let key in params) {
+    const formData = new FormData();
+    // eslint-disable-next-line guard-for-in
+    for (const key in params) {
       formData.append(key, params[key]);
     }
 
@@ -63,18 +80,18 @@ export default class Application extends GenericEntity {
       method: 'post',
       data: formData,
     })
-      .then(response => {
+      .then((response) => {
         response.data.logo_url = this.formatLogoUrl(response.data.logo_url);
         return response;
       })
-      .then(response => {
+      .then((response) => {
         return new Application(response.data);
       });
   }
 
   update(params = {}, fileName) {
     let formData = new FormData();
-    for (let key in params) {
+    for (const key in params) {
       if (key === 'client_details') {
         formData = this.formatClientDetails(formData, key, params);
       } else if (key === 'file') {
@@ -90,11 +107,11 @@ export default class Application extends GenericEntity {
       method: 'post',
       data: formData,
     })
-      .then(response => {
+      .then((response) => {
         response.data.logo_url = this.formatLogoUrl(response.data.logo_url);
         return response;
       })
-      .then(response => {
+      .then((response) => {
         return new Application(response.data);
       });
   }
@@ -102,13 +119,10 @@ export default class Application extends GenericEntity {
   formatLogoUrl(logoUrl) {
     if (logoUrl !== null) {
       if (logoUrl !== null && !/^http/.test(logoUrl)) {
-        var cdnName =
-          window.location.hostname.indexOf('-') !== -1 ? 'betacdn' : 'cdn';
+        const cdnName = window.location.hostname.indexOf('-') !== -1 ? 'betacdn' : 'cdn';
         logoUrl =
-          'https://' +
-          cdnName +
-          '.razorpay.com' +
-          logoUrl.replace(/\.([^\.]+$)/, '_medium.$1');
+          // eslint-disable-next-line prefer-template, no-useless-escape
+          'https://' + cdnName + '.razorpay.com' + logoUrl.replace(/\.([^\.]+$)/, '_medium.$1');
       }
     }
 
@@ -116,22 +130,22 @@ export default class Application extends GenericEntity {
   }
 
   formatClientDetails(formData, key, params) {
-    formData.append(`${key}[0][id]`, params[key][0]['id']);
+    formData.append(`${key}[0][id]`, params[key][0].id);
 
-    let urls = params[key][0]['redirect_url'];
+    let urls = params[key][0].redirect_url;
 
     if (urls instanceof Array) {
-      urls.forEach(function(e) {
+      urls.forEach((e) => {
         formData.append(`${key}[0][redirect_url][]`, e);
       });
     }
 
-    formData.append(`${key}[1][id]`, params[key][1]['id']);
+    formData.append(`${key}[1][id]`, params[key][1].id);
 
-    urls = params[key][1]['redirect_url'];
+    urls = params[key][1].redirect_url;
 
     if (urls instanceof Array) {
-      urls.forEach(function(e) {
+      urls.forEach((e) => {
         formData.append(`${key}[1][redirect_url][]`, e);
       });
     }
@@ -140,18 +154,18 @@ export default class Application extends GenericEntity {
   }
 
   delete() {
-    return super.delete().then(data => {
+    return super.delete().then((data) => {
       return { id: this.id, ...data };
     });
   }
 
-  revokeToken(params) {
-    var id = this.id;
+  revokeToken(_params) {
+    const id = this.id;
     return merchantFetch({
       mode: 'live',
       url: `oauth/tokens/${this.id}/revoke`,
       method: 'put',
-    }).then(data => {
+    }).then((data) => {
       return { id, ...data };
     });
   }

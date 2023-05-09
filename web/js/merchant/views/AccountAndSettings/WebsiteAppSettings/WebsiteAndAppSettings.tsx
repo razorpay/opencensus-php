@@ -8,7 +8,10 @@ import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import DashboardBanner from 'common/ui/DashboardBanner';
 import Breadcrumb from 'common/components/Breadcrumb';
 import { fetchMerchantWebsiteDetails } from 'merchant/reducers/websitecompliance';
-import { fetchConnectedApplications } from 'merchant/reducers/applications';
+import {
+  fetchConnectedApplications,
+  fetchOauthConnectedApplications,
+} from 'merchant/reducers/applications';
 import { newRoutes, newAndOldRouteMap } from './constants/constants';
 import { WebsiteAndAppSettingsProps, NewRoutes } from './typings';
 import {
@@ -34,20 +37,23 @@ import { Modules } from 'common/constant/enums';
 
 const APIKeys = lazy(() => import(/* webpackChunkName: "APIKeysTab" */ './Tabs/ApiKeys'));
 
-const WebsiteAppDetails = lazy(() =>
-  import(/* webpackChunkName: "WebsiteAppDetailsTab" */ 'merchant/views/Account/WebsiteAppDetails'),
+const WebsiteAppDetails = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "WebsiteAppDetailsTab" */ 'merchant/views/Account/WebsiteAppDetails'
+    ),
 );
 
-const BusinessWebsiteDetails = lazy(() =>
-  import(/* webpackChunkName: "WebsiteAppDetailsTab" */ './Tabs/BusinessWebsiteDetails'),
+const BusinessWebsiteDetails = lazy(
+  () => import(/* webpackChunkName: "WebsiteAppDetailsTab" */ './Tabs/BusinessWebsiteDetails'),
 );
 
-const Webhooks = lazy(() =>
-  import(/* webpackChunkName: "WebhooksTab" */ 'merchant/views/Settings/Webhooks/List'),
+const Webhooks = lazy(
+  () => import(/* webpackChunkName: "WebhooksTab" */ 'merchant/views/Settings/Webhooks/List'),
 );
 
-const Applications = lazy(() =>
-  import(/* webpackChunkName: "ApplicationsTab" */ 'merchant/views/Settings/Applications'),
+const Applications = lazy(
+  () => import(/* webpackChunkName: "ApplicationsTab" */ 'merchant/views/Settings/Applications'),
 );
 
 const WebsiteAndAppSettings = (props: WebsiteAndAppSettingsProps): JSX.Element => {
@@ -56,6 +62,7 @@ const WebsiteAndAppSettings = (props: WebsiteAndAppSettingsProps): JSX.Element =
     websiteSectionDetailsData,
     fetchMerchantWebsiteDetails,
     fetchConnectedApplications,
+    fetchOauthConnectedApplications,
     location,
     applications,
   } = props;
@@ -65,7 +72,14 @@ const WebsiteAndAppSettings = (props: WebsiteAndAppSettingsProps): JSX.Element =
     if (!Object.keys(websiteSectionDetailsData.data).length && !websiteSectionDetailsData.error) {
       if (user.isWebsiteComplianceFlowEnabled) fetchMerchantWebsiteDetails();
     }
-    if (isApplicationEnabled(user)) fetchConnectedApplications();
+    if (isApplicationEnabled(user)) {
+      // Keeping backward compatibility
+      if (user.isRevokeApplicationEnabled) {
+        fetchOauthConnectedApplications();
+      } else {
+        fetchConnectedApplications();
+      }
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -178,5 +192,5 @@ export default connect(
     websiteSectionDetailsData: state.websiteCompliance.websiteSectionDetailsData,
     applications: state.applications,
   }),
-  { fetchMerchantWebsiteDetails, fetchConnectedApplications },
+  { fetchMerchantWebsiteDetails, fetchConnectedApplications, fetchOauthConnectedApplications },
 )(WebsiteAndAppSettings);

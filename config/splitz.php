@@ -273,6 +273,9 @@ return [
         // Partnership for Marketplace
         'ROUTE_PARTNERSHIPS' => env('ROUTE_PARTNERSHIPS', ''),
 
+        // Revoke Application oauth
+        'REVOKE_APPLICATION' => env('REVOKE_APPLICATION', ''),
+
         // Bundle Pricing
         'BUNDLE_PRICING' => env('BUNDLE_PRICING', ''),
 

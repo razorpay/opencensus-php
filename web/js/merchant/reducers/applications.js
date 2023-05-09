@@ -97,6 +97,28 @@ export const fetchConnectedApplications = (params) => {
   };
 };
 
+// This is the new endpoint to get the application data
+// Re-using same redux action as there is no difference in the data
+export const fetchOauthConnectedApplications = () => {
+  const application = new Application();
+
+  return {
+    type: FETCH_CONNECTED_APPLICATIONS,
+    payload: application.fetchOauthConnectedApplications(),
+  };
+};
+
+// This is the new endpoint to revoke application access
+// Re-using same redux action as there is no difference in the data
+export const revokeOauthApplicationAccess = (id) => {
+  const application = new Application({ id });
+
+  return {
+    type: REVOKE_ACCESS_TOKEN,
+    payload: application.revokeOauthApplicationAccess(id),
+  };
+};
+
 export const fetchApplication = (params) => {
   const application = new Application();
 

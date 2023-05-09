@@ -5,7 +5,10 @@ import {
   setLoading as setLoadingFn,
 } from 'merchant/reducers/instrumentRequests';
 import { fetchMerchantWebsiteDetails as fetchMerchantWebsiteDetailsFn } from 'merchant/reducers/websitecompliance';
-import { fetchConnectedApplications as fetchConnectedApplicationsFn } from 'merchant/reducers/applications';
+import {
+  fetchConnectedApplications as fetchConnectedApplicationsFn,
+  fetchOauthConnectedApplications,
+} from 'merchant/reducers/applications';
 import { showNotification as showNotificationFn } from 'merchant_common/reducers/notifications';
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
@@ -36,6 +39,7 @@ const AccountAndSettingsHome = (props: AccountAndSettingsHomePropInterface): JSX
     setLoadingFn: setLoading,
     showNotificationFn: showNotification,
     fetchMerchantWebsiteDetailsFn: fetchMerchantWebsiteDetails,
+    fetchOauthConnectedApplications,
     fetchConnectedApplicationsFn: fetchConnectedApplications,
   } = props;
 
@@ -56,7 +60,11 @@ const AccountAndSettingsHome = (props: AccountAndSettingsHomePropInterface): JSX
     fetchAllInstruments();
 
     if (isApplicationEnabled(user)) {
-      fetchConnectedApplications();
+      if (user.isRevokeApplicationEnabled) {
+        fetchOauthConnectedApplications();
+      } else {
+        fetchConnectedApplications();
+      }
     }
     if (!data.hasOwnProperty(feature)) {
       fetchFeatureByName({ userId: user.id, feature });
@@ -129,6 +137,7 @@ const mapDispatchToProps = (dispatch) => {
       fetchFeatureByNameFn,
       fetchMerchantWebsiteDetailsFn,
       fetchConnectedApplicationsFn,
+      fetchOauthConnectedApplications,
     },
     dispatch,
   );

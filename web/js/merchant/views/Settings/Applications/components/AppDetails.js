@@ -43,7 +43,9 @@ export default function AppDetails(props) {
               class="app-icon"
               src={
                 isConnected
-                  ? data.application.logo_url
+                  ? props.isRevokeApplicationEnabled
+                    ? data.logo_url
+                    : data.application.logo_url
                   : data.logo_url || '/img/default-app-logo.svg'
               }
               alt=""
@@ -51,12 +53,23 @@ export default function AppDetails(props) {
           </div>
           <div class="app-details-container">
             <div class="app-name">
-              <strong>{isConnected ? data.application.name : data.name}</strong>
+              <strong>
+                {isConnected
+                  ? props.isRevokeApplicationEnabled
+                    ? data.application_name
+                    : data.application?.name
+                  : data.name}
+              </strong>
             </div>
             {!isConnected && <div class="app-id">App ID: {data.id}</div>}
             <div class="app-created-on">
               {isConnected ? 'Approved' : 'Created'} on:{' '}
-              <Time value={data.created_at} format="DD MMM YYYY" />
+              <Time
+                value={
+                  props.isRevokeApplicationEnabled ? data.access_granted_at.date : data.created_at
+                }
+                format="DD MMM YYYY"
+              />
             </div>
           </div>
         </div>

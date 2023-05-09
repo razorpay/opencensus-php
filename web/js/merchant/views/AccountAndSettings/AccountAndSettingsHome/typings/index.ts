@@ -86,6 +86,7 @@ export interface AccountAndSettingsHomePropInterface {
   fetchRequestedInstrumentsFn: () => Promise<void>;
   fetchEnrollmentStatus: () => Promise<void>;
   fetchConnectedApplicationsFn: () => Promise<void>;
+  fetchOauthConnectedApplications: () => Promise<void>;
   showNotificationFn: (payload: NotificationPayload) => Promise<void>;
   setLoadingFn: () => Promise<void>;
   featureStatusConfig: FeatureResponse;

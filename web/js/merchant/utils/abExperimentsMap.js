@@ -562,6 +562,13 @@ export default {
     // prod
     'L0rynez0HhIXHb',
   ],
+  revoke_application: [
+    // stage
+    'LlAzuMZf9ki7ao',
+
+    // prod
+    'Lla1DOCQiKDgM8',
+  ],
   enable_easy_dashboard_nc: [
     // beta
     'L3AHj3UNHRhUXQ',
