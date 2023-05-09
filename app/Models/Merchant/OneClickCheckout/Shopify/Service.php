@@ -114,12 +114,14 @@ class Service extends Base\Service
 
             $cartLineItems[] = [
                 'variant_id'        => mb_substr(strval($item['variant']['id']), 0, 128, 'UTF-8'),
+                'product_id'        => mb_substr(strval($item['variant']['product']['id']), 0, 128, 'UTF-8'),
                 'tax_amount'        => 0,
                 'sku'               => mb_substr(strval($item['variant']['sku']), 0, 128, 'UTF-8'),
                 'price'             => round(floatval($item['variant']['price']['amount']) * 100),
                 'offer_price'       => $offerPrice,
                 'quantity'          => (int)floatval($item['quantity']),
                 'name'              => mb_substr(strval($item['title']), 0, 128, 'UTF-8'),
+                'variant_name'      => mb_substr(strval($item['variant']['title']), 0, 128, 'UTF-8'),
                 'description'       => mb_substr($item['variant']['product']['description'], 0, 256, 'UTF-8'),
                 'weight'            => (int)floatval($item['variant']['weight']),
                 'image_url'         => $item['variant']['image']['url'] ?? "",
@@ -149,12 +151,14 @@ class Service extends Base\Service
         {
             $cartLineItems[] = [
                 'variant_id'        => mb_substr(strval($item['variant_id']), 0, 128, 'UTF-8'),
+                'product_id'        => mb_substr(strval($item['product_id']), 0, 128, 'UTF-8'),
                 'tax_amount'        => 0,
                 'sku'               => mb_substr(strval($item['sku']), 0, 128, 'UTF-8'),
                 'price'             => round(floatval($item['original_price']) * 100),
                 'offer_price'       => round(floatval($item['discounted_price']) * 100),
                 'quantity'          => (int)floatval($item['quantity']),
                 'name'              => mb_substr(strval($item['title']), 0, 128, 'UTF-8'),
+                'variant_name'      => mb_substr(strval($item['variant_title']), 0, 128, 'UTF-8'),
                 'description'       => mb_substr($item['title'], 0, 256, 'UTF-8'),
                 'weight'            => (int)floatval($item['grams'] / 1000),
                 'image_url'         => "",
@@ -321,10 +325,11 @@ class Service extends Base\Service
             $sku = $lineItem['variant']['sku']?? $lineItem['sku'] ?? '';
             $productTypeMap[$sku] = $lineItem['product_type'] ?? '';
         }
-        
+
         return $productTypeMap;
     }
 
+    // If script editor discount is applied we need to do S2S validation with Shopify.
     protected function createOrderAndGetCheckoutPreferences(
         array $checkout,
         array $cart,

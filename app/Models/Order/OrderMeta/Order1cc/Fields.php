@@ -21,12 +21,15 @@ class Fields
     const LINE_ITEM_TYPE                    = 'type';
     const LINE_ITEM_SKU                     = 'sku';
     const LINE_ITEM_VARIANT_ID              = 'variant_id';
+    const LINE_ITEM_PRODUCT_ID              = 'product_id';
     const LINE_ITEM_OTHER_PRODUCT_CODES     = 'other_product_codes';
     const LINE_ITEM_PRICE                   = 'price';
     const LINE_ITEM_OFFER_PRICE             = 'offer_price';
     const LINE_ITEM_TAX_AMOUNT              = 'tax_amount';
     const LINE_ITEM_QUANTITY                = 'quantity';
     const LINE_ITEM_NAME                    = 'name';
+    const LINE_ITEM_VARIANT_NAME            = 'variant_name';
+
     const LINE_ITEM_DESCRIPTION             = 'description';
     const LINE_ITEM_WEIGHT                  = 'weight';
     const LINE_ITEM_DIMENSIONS              = 'dimensions';
