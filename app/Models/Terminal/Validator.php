@@ -3317,7 +3317,7 @@ class Validator extends Base\Validator
             return;
         }
 
-        if (in_array($terminal->getGateway(), self::$editTerminalGateways) || in_array($terminal->getGateway(), Gateway::TOKENISATION_GATEWAYS) || in_array($terminal->getGateway(), Entity::upiGatewaysOnlyOnTs))
+        if (in_array($terminal->getGateway(), self::$editTerminalGateways) || in_array($terminal->getGateway(), Gateway::TOKENISATION_GATEWAYS))
         {
             unset($input[Entity::PLAN_ID]);
             $gateway = $terminal->getGateway();

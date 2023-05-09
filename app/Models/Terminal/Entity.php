@@ -413,10 +413,6 @@ class Entity extends Base\PublicEntity
         Gateway::WALLET_PAYPAL,
     ];
 
-    const upiGatewaysOnlyOnTs = [
-        Gateway::UPI_AXISOLIVE,
-    ];
-
     protected $appends = [
         self::SHARED,
         self::BANKING_TYPES,
@@ -2000,7 +1996,7 @@ class Entity extends Base\PublicEntity
         {
             return false;
         }
-        return in_array($this->getGateway(), self::gatewaysOnlyOnTs) || in_array($this->getGateway(), Gateway::TOKENISATION_GATEWAYS) || in_array($this->getGateway(), self::upiGatewaysOnlyOnTs);
+        return in_array($this->getGateway(), self::gatewaysOnlyOnTs) || in_array($this->getGateway(), Gateway::TOKENISATION_GATEWAYS);
     }
 
     public function isSodexo() {
