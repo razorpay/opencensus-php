@@ -24,6 +24,9 @@ class Status
     const PROCESSED           = 'processed';
     const CANCELLED           = 'cancelled';
     const SCHEDULED           = 'scheduled';
+    const VALIDATED           = 'validated';
+    const VALIDATING          = 'validating';
+    const VALIDATION_FAILED   = 'validation_failed';
 
     //
     // Additional constants used as values of STATUS

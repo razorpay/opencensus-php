@@ -1323,4 +1323,128 @@ return [
             ],
         ],
     ],
+
+    'testValidateBulkPayoutsWithOldTemplate' => [
+        'request'  => [
+            'url'     => '/payouts/batch/validate',
+            'method'  => 'post',
+            'server' => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' => [
+                'type' => 'payout',
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 301,
+        ],
+
+    ],
+
+    'testValidateBulkPayoutsWithAmazonPayWithBeneDetail' => [
+        'request'  => [
+            'url'     => '/payouts/batch/validate',
+            'method'  => 'post',
+            'server' => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 200,
+        ],
+
+    ],
+
+    'testValidateBulkPayoutsWithAmazonPayWithBeneId' => [
+        'request'  => [
+            'url'     => '/payouts/batch/validate',
+            'method'  => 'post',
+            'server' => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 200,
+        ],
+
+    ],
+
+    'testGetBatchRowsWithCreatorNameForTypePayouts' => [
+        'request'  => [
+            'url'     => '/batches?type=payout',
+            'method'  => 'get',
+            'server' => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' => [
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 200,
+        ],
+
+    ],
+
+    'testGetBatchRowsWithCreatorNameForTypePaymentLinks' => [
+        'request'  => [
+            'url'     => '/batches?type=payment_link',
+            'method'  => 'get',
+            'server' => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' => [
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 200,
+        ],
+
+    ],
+
+    'testGetBatchDetails' => [
+        'request'  => [
+            'url'     => '/batches/batch_C3fzDCb4hA4F6b',
+            'method'  => 'get',
+            'server' => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' => [
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 200,
+        ],
+
+    ],
 ];

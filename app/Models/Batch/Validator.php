@@ -597,6 +597,11 @@ class Validator extends Base\Validator
         Entity::SCHEDULE    => 'sometimes|numeric',
     ];
 
+    protected static $bulkPayoutValidateRules = [
+        Entity::TYPE        => 'required|in:bulk_payouts',
+        Entity::FILE        => 'required_without:file_id|file|max:10240' . self::CSV_EXCEL_MIME_RULE,
+    ];
+
     protected static $tallyPayoutValidateRules = [
         Entity::TYPE        => 'required|in:tally_payout',
         Entity::NAME        => 'filled|string|max:255',

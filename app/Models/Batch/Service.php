@@ -48,6 +48,17 @@ class Service extends Base\Service
 
         $input['types'] = $this->validateBatchTypes($input);
 
+        $isTypePayout = false;
+
+        if (isset($input['type']) && $input['type'] == 'payout')
+        {
+            $input['types'] = $this->getBulkPayoutTypes();
+
+            unset($input['type']);
+
+            $isTypePayout = true;
+        }
+
         if ((isset($input['type']) and
             ($this->app->batchService->isMigratingBatchType($input['type']) === true)) or
             (empty($input['types']) === false))
@@ -55,7 +66,43 @@ class Service extends Base\Service
             $fetchResult = $this->app->batchService->getBatchesFromBatchServiceAndMerge($fetchResult, $input, $this->merchant);
         }
 
+        if ($isTypePayout)
+        {
+            $this->appendUserDetails($fetchResult);
+        }
+
         return $fetchResult;
+    }
+
+    private function getBulkPayoutTypes(): array
+    {
+        return [
+            'payouts_bank_transfer_bene_id_process',
+            'payouts_bank_transfer_bene_details_process',
+            'payouts_upi_bene_details_process',
+            'payouts_upi_bene_id_process',
+            'payouts_amazonpay_bene_id_process',
+            'payouts_amazonpay_bene_details_process',
+            'payout'
+        ];
+    }
+
+    private function appendUserDetails(array &$fetchResult): void
+    {
+        if (array_key_exists('items', $fetchResult) === true)
+        {
+            foreach ($fetchResult['items'] as &$item)
+            {
+                if (array_key_exists('creator_id', $item))
+                {
+                    $user = $this->repo->user->getUserFromId($item['creator_id']);
+
+                    $userName = $user->getName();
+
+                    $item['creator_name'] = $userName;
+                }
+            }
+        }
     }
 
     public function validateBatchTypes($input): array

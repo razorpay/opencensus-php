@@ -51,7 +51,8 @@ class BatchMicroService
         'batch'     => 'batch',
         Batch\Constants::VALIDATE_FILE_NAME_URL => 'batch/validateFileName',
         'filestore' => 'filestore',
-        'notify'    => 'batch/{id}/settings'
+        'notify'    => 'batch/{id}/settings',
+        'batch_entry' => 'batch-entry',
     ];
 
     public function __construct()
@@ -170,6 +171,96 @@ class BatchMicroService
         return $batchResponse;
     }
 
+    public function getBatchEntries(string $batchId, array $input, Merchant\Entity $merchant = null)
+    {
+        $relativeUri = self::BATCH_URLS['batch_entry'];
+
+        $input['batchId'] = Batch\Entity::verifyIdAndStripSign($batchId);
+
+        $options = [
+            'X-Entity-Id' => $merchant->getId(),
+            'mode'        => $this->mode,
+        ];
+
+        return $this->getResponseFromBatchService($relativeUri, Requests::GET, $options, $input);
+    }
+
+    public function processBatch(string $previousBatchId, array $input, Merchant\Entity $merchant)
+    {
+        $userId = $this->app['request']->header(RequestHeader::X_DASHBOARD_USER_ID, null);
+
+        $creatorType = 'user';
+
+        $headers = [
+            'X-Entity-Id'    => $merchant->getId(),
+            'mode'           => $this->mode,
+            'X-Creator-Id'   => $userId,
+            'X-Creator-Type' => $creatorType,
+        ];
+
+        if(!empty(Request::header(RequestHeader::DEV_SERVE_USER))){
+            $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
+        }
+
+        $relativeUri = self::BATCH_URLS['batch'];
+
+        $multipartData = [
+            [
+                'name'     => 'previousBatchId',
+                'contents' => Batch\Entity::verifyIdAndStripSign($previousBatchId),
+            ],
+        ];
+
+        if (isset($input['config']))
+        {
+            array_push($multipartData, [
+                'name'     => 'settings',
+                'contents' => json_encode($input['config']),
+            ]);
+        }
+
+        if (isset($input['name']))
+        {
+            array_push($multipartData, [
+                'name'     => 'name',
+                'contents' => $input['name'],
+            ]);
+        }
+
+        try
+        {
+            $response = $this->client->request(Requests::PUT, $relativeUri, [
+                RequestOptions::MULTIPART =>
+                    $multipartData,
+                'auth'      => [
+                    $this->username,
+                    $this->secret,
+                ],
+                'headers'   => $headers,
+            ]);
+        }
+        catch (BadResponseException $exception)
+        {
+            $this->trace->traceException($exception,
+                Trace::INFO,
+                TraceCode::BATCH_SERVICE_BAD_REQUEST);
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BATCH_SERVICE_ERROR,
+                $exception->getMessage());
+        }
+        catch (\Throwable $throwable)
+        {
+            $this->trace->traceException($throwable,
+                Trace::CRITICAL,
+                TraceCode::BATCH_SERVICE_FAILED);
+
+            throw new Exception\ServerNotFoundException(ErrorCode::SERVER_ERROR_BATCH_SERVICE_NOT_FOUND,
+                $throwable->getMessage());
+        }
+
+        return  json_decode($response->getBody(), true);
+    }
+
     protected function checkAndInsert(string $index, array $input = null, array & $output)
     {
         if ($input != null && isset($input[$index]))
@@ -223,7 +314,7 @@ class BatchMicroService
                     $multipartData,
                 'auth'      => [
                     $this->username,
-                    $this->secret
+                    $this->secret,
                 ],
                 'headers'   => $headers,
             ]);
@@ -421,6 +512,15 @@ class BatchMicroService
 
             case 'SCHEDULED':
                 return Batch\Status::SCHEDULED;
+
+            case 'VALIDATED':
+                return Batch\Status::VALIDATED;
+
+            case 'VALIDATING':
+                return Batch\Status::VALIDATING;
+
+            case 'VALIDATION_FAILED':
+                return Batch\Status::VALIDATION_FAILED;
 
             default:
                 return Batch\Status::PARTIALLY_PROCESSED;
@@ -702,6 +802,52 @@ class BatchMicroService
         }
 
         return $response;
+    }
+
+    /**
+     * @throws ServerErrorException
+     */
+    public function validateFile(array $input, Merchant\Entity $merchant)
+    {
+        $data = [
+            'batchTypeId' => $input[Batch\Entity::TYPE],
+        ];
+
+        $batchFile = $input['file'];
+
+        $multipartData = [
+            [
+                'name'     => 'multipartFile',
+                'contents' => fopen($batchFile->getPathname(), 'r'),
+                'filename' => $batchFile->getFilename()
+            ],
+            [
+                'name'     => 'batchTypeId',
+                'contents' => $input['type'],
+            ],
+            [
+                'name'     => 'version',
+                'contents' => '2.0',
+            ],
+            [
+                'name'     => 'name',
+                'contents' => $batchFile->getFilename(),
+            ],
+        ];
+
+        $relativeUri = self::BATCH_URLS['batch'];
+
+        $response = $this->sendToBatchService($multipartData, $merchant, $relativeUri);
+
+        $batchResponse = json_decode($response->getBody(), true);
+
+        $batchResponse['batch_id'] = 'batch_' . $batchResponse['id'];
+
+        $batchResponse['status'] = $this->statusClusterMapping($batchResponse['status']);
+
+        $batchResponse[Batch\Entity::TYPE] = $input[Batch\Entity::TYPE];
+
+        return $batchResponse;
     }
 
     private function checkAndMergeBatchTypes(& $output)

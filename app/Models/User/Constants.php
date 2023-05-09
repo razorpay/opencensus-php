@@ -147,6 +147,11 @@ class Constants
     const RESET_PASSWORD_RATE_LIMIT_THRESHOLD = 5;
     const RESET_PASSWORD_RATE_LIMIT_TTL = 7200;
 
+    // bulk payouts v2 constants
+    const CREATE_PAYOUT_BATCH = 'create_payout_batch';
+    const CREATE_PAYOUT_BATCH_V2 = 'create_payout_batch_v2';
+    const BATCH_FILE_ID = 'batch_file_id';
+
 
     public static $attributionList = [
         self::UTM_SOURCE,

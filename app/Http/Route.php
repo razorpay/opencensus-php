@@ -1873,6 +1873,12 @@ class Route
         'create_merchant_da_payout_mode_config'    => ['post',      'payouts/da_payout_mode_config',                 'PayoutsConfigurationsController@createDirectAccountPayoutModeConfig'                       ],
         'edit_merchant_da_payout_mode_config'      => ['patch',     'payouts/da_payout_mode_config',                 'PayoutsConfigurationsController@editDirectAccountPayoutModeConfig'                         ],
 
+        // Bulk Payouts
+        'payouts_batch_validate'                   => ['post',     'payouts/batch/validate',                         'PayoutController@validatePayoutsBatch'                             ],
+        'payouts_bulk_template_file'               => ['post',     'payouts/batch/template',                         'PayoutController@getTemplateFileForBulkPayouts'                      ],
+        'payouts_batch_process'                    => ['post',     'payouts/batch/{id}/process',                     'PayoutController@processPayoutsBatch'                             ],
+        'payouts_get_batch_rows'                   => ['get',      'payouts/batch/{id}/rows',                        'PayoutController@getBatchRows'                                    ],
+
         // Payout Outbox
         'undo_payout_creation'                      => ['post',     'payouts/{id}/undo',                            'PayoutOutboxController@undoPayout'                                     ],
         'resume_payout_creation'                    => ['post',     'payouts/{id}/resume',                          'PayoutOutboxController@resumePayout'                                  ],
@@ -6758,7 +6764,12 @@ class Route
         'payment_links_switch_versions',
         'subscription_get_revenue_by_source',
 
+        // Bulk Payouts
+        'payouts_batch_validate',
         'payouts_bulk_sample_file',
+        'payouts_bulk_template_file',
+        'payouts_batch_process',
+        'payouts_get_batch_rows',
 
         'setl_fetch_source_details',
         'linked_account_create_batch',
@@ -10061,7 +10072,14 @@ class Route
 
         'get_free_payouts_attributes'                  => Permission::MERCHANT_VIEW_FREE_PAYOUTS_ATTRIBUTES,
         'payouts_bulk_sample_file'                     => '*',
+
         'payouts_bulk_amount_type_update'              => Permission::UPDATE_BULK_PAYOUT_AMOUNT_TYPE,
+
+        // Bulk Payouts
+        'payouts_bulk_template_file'                   => Permission::CREATE_PAYOUT_BULK,
+        'payouts_batch_process'                        => Permission::CREATE_PAYOUT_BULK,
+        'payouts_get_batch_rows'                       => Permission::CREATE_PAYOUT_BULK,
+        'payouts_batch_validate'                       => Permission::CREATE_PAYOUT_BULK,
 
         //freshdesk ticket permissions
         'fd_create_ticket'                             => Permission::CUSTOMER_SUPPORT_FULL_ACCESS,
@@ -11469,6 +11487,10 @@ class Route
             'payouts_batch_create',
             'payouts_bulk_amount_type_update',
             'payouts_bulk_sample_file',
+            'payouts_batch_validate',
+            'payouts_bulk_template_file',
+            'payouts_batch_process',
+            'payouts_get_batch_rows',
             'payouts_scheduled_time_slots',
             'payouts_summary',
             'payouts_workflow_summary',
@@ -16453,6 +16475,9 @@ class Route
         'payout_report_get_attachment_signed_url',
         'payout_report_get_attachment_details',
         'payout_get_attachment_signed_url',
+
+        // Bulk Payouts
+        'payouts_batch_validate',
 
         // self serve workflow
         'workflow_config_create',

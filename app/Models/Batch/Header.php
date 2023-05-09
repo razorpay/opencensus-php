@@ -5371,16 +5371,16 @@ class Header
             self::validateCODEligibilityAttributeBlacklistBulkHeaders($expectedHeaders, $actualHeaders);
         }
 
-        if ($type === Type::CREATE_WALLET_ACCOUNTS) 
+        if ($type === Type::CREATE_WALLET_ACCOUNTS)
         {
             self::validateWalletBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_WALLET_ACCOUNTS);
         }
 
-        if ($type === Type::CREATE_WALLET_LOADS) 
+        if ($type === Type::CREATE_WALLET_LOADS)
         {
             self::validateWalletBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_WALLET_LOADS);
         }
-        
+
         // For payouts, we do not want to match exact headers, because we are allowing some headers to be skipped.
         // Since some headers can be skipped, we are also allowing for rearrangement of headers
         // and hence there are no strict checks inside payout batch file header validations.

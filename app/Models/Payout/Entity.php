@@ -344,6 +344,15 @@ class Entity extends Base\PublicEntity
     const TEMPLATE_FILE     = 'template_file';
     const FILE_EXTENSION    = 'file_extension';
 
+    const PAYOUT_METHOD     = 'payout_method';
+    const BANK_TRANSFER     = 'bank_transfer';
+    const AMAZONPAY         = 'amazonpay';
+    const UPI               = 'upi';
+
+    const BENEFICIARY_INFO      = 'beneficiary_info';
+    const BENEFICIARY_ID        = 'id';
+    const BENEFICIARY_DETAILS   = 'details';
+
     // To be used for bulk improvements project.
     const RUPEES                    = 'rupees';
     const PAISE                     = 'paise';

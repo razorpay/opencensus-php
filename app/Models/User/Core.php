@@ -4276,6 +4276,10 @@ class Core extends Base\Core
         {
             $action = Constants::CREATE_PAYOUT;
         }
+        if ($action === Constants::CREATE_PAYOUT_BATCH_V2)
+        {
+            $action = Constants::CREATE_PAYOUT_BATCH;
+        }
 
         if ($action === Constants::BULK_PAYOUT_APPROVE)
         {
@@ -4823,6 +4827,31 @@ class Core extends Base\Core
 
                 break;
 
+            case Constants::CREATE_PAYOUT_BATCH_V2:
+                $requiredParams = [Payout\Entity::AMOUNT,
+                    Constants::BATCH_FILE_ID,
+                    Payout\Entity::ACCOUNT_NUMBER];
+
+                if (empty(array_diff_key(array_flip($requiredParams), $input)) === true)
+                {
+                    $context = sprintf('%s:%s:%s:%s:%s:%s:%s',
+                        $merchant->getId(),
+                        $user->getId(),
+                        $action,
+                        $token,
+                        $input[Payout\Entity::AMOUNT],
+                        $input[Constants::BATCH_FILE_ID],
+                        $input[Payout\Entity::ACCOUNT_NUMBER]);
+
+                    $context = hash('sha3-512', $context);
+                }
+                else
+                {
+                    $context = $this->getDefaultContextFromActionWithMerchant($merchant, $user, $action, $token);
+                }
+
+                break;
+
             default:
                 // Fallback to default context
                 $context = $this->getDefaultContextFromActionWithMerchant($merchant, $user, $action, $token);
@@ -4963,6 +4992,21 @@ class Core extends Base\Core
             $payload += [
                 'workflow_action'  => Constants::WORKFLOW_SELF_SERVE_ACTION_DELETE,
             ];
+        }
+        else if ($action === Constants::CREATE_PAYOUT_BATCH_V2)
+        {
+            if (array_key_exists('total_payout_amount', $input)) {
+                $payload += [
+                    'account_number'      => mask_except_last4($input['account_number']),
+                    'total_payout_amount' => amount_format_IN($input['total_payout_amount']),
+                ];
+            } else {
+                //Setting total_payout_amount to -1 to allow for raven to use the old OTP template
+                $payload += [
+                    'account_number'      => mask_except_last4($input['account_number']),
+                    'total_payout_amount' => -1
+                ];
+            }
         }
 
         return $payload;

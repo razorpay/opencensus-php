@@ -15,6 +15,26 @@ use RZP\Services\BatchMicroService as BaseBatchMicroService;
 
 class BatchMicroService extends BaseBatchMicroService
 {
+    public function validateFile(array $input, Merchant\Entity $merchant)
+    {
+        return [
+            'created_at'       => 1551782255,
+            'updated_at'       => 1551782255,
+            'entity_id'        => 'C28Q0mJgoSfWC1',
+            'name'             => 0,
+            'batch_type_id'    => $input['type'],
+            'is_scheduled'     => false,
+            'upload_count'     => 0,
+            'total_count'      => 1,
+            'failure_count'    => 0,
+            'success_count'    => 0,
+            'amount'           => 0,
+            'attempts'         => 0,
+            'status'           => 'CREATED',
+            'processed_amount' => 0
+        ];
+    }
+
     public function forwardToBatchServiceRequest(array $input, Merchant\Entity $merchant, FileStore\Entity $ufhFile = null)
     {
         if (isset($input['type']) and
@@ -144,6 +164,28 @@ class BatchMicroService extends BaseBatchMicroService
             ];
         }
 
+        if (isset($input['type']) and
+            ($input['type'] === 'payout'))
+        {
+            return [
+                'id'               => substr($ufhFile->getName(), -14),
+                'created_at'       => 1551782255,
+                'updated_at'       => 1551782255,
+                'entity_id'        => 'C28Q0mJgoSfWC1',
+                'name'             => 0,
+                'batch_type_id'    => 'payout',
+                'is_scheduled'     => false,
+                'upload_count'     => 0,
+                'total_count'      => 1,
+                'failure_count'    => 0,
+                'success_count'    => 0,
+                'amount'           => 0,
+                'attempts'         => 0,
+                'status'           => 'CREATED',
+                'processed_amount' => 1000
+            ];
+        }
+
         return [
             'id'               => 'C3fzDCb4hA4F6b',
             'created_at'       => 1551782255,
@@ -173,6 +215,7 @@ class BatchMicroService extends BaseBatchMicroService
         $result = [
             'id'     => 'batch_00000000000001',
             'type'   => 'payment_link',
+            'creator_id' => 'MerchantUser01',
             'status' => 'created',
             'config' => [
                 'sms_notify'   => '0',
@@ -351,5 +394,66 @@ class BatchMicroService extends BaseBatchMicroService
             default:
                 return false;
         }
+    }
+
+    public function getBatchEntries(string $batchId, array $input, Merchant\Entity $merchant = null): array
+    {
+        return [
+            'count' => 3,
+            'type'  => 'java.util.Collection',
+            'data'  => [
+                [
+                    'created_at'        => 1681121569,
+                    'updated_at'        => 1681121569,
+                    'id'                => 'Lc3FCR5UkORots',
+                    'batch_id'          => 'Lc3D38BgW3c77T',
+                    'sequence_number'   => 7,
+                    'row_data'          => '{\"column name 1\":\"value 1\",\"column name 2\":\"value 1\"}',
+                    'response_data'     => null,
+                    'status'            => "CREATED",
+                ],
+                [
+                    'created_at'        => 1681121569,
+                    'updated_at'        => 1681121569,
+                    'id'                => 'Lc3FCR0jOZyfZm',
+                    'batch_id'          => 'Lc3D38BgW3c77T',
+                    'sequence_number'   => 6,
+                    'row_data'          => '{\"column name 1\":\"value 2\",\"column name 1\":\"value 2\"}',
+                    'response_data'     => null,
+                    'status'            => "CREATED",
+                ],
+                [
+                    'created_at'        => 1681121569,
+                    'updated_at'        => 1681121569,
+                    'id'                => 'Lc3FCQuFNq0CR1',
+                    'batch_id'          => 'Lc3D38BgW3c77T',
+                    'sequence_number'   => 5,
+                    'row_data'          => '{\"column name 1\":\"value 3\",\"column name 1\":\"value 3\"}',
+                    'response_data'     => null,
+                    'status'            => "CREATED",
+                ]
+            ]
+        ];
+    }
+
+    public function processBatch(string $previousBatchId, array $input, Merchant\Entity $merchant)
+    {
+        return [
+            'id'               => 'C3fzDCb4hA4F6b',
+            'created_at'       => 1551782255,
+            'updated_at'       => 1551782255,
+            'entity_id'        => 'C28Q0mJgoSfWC1',
+            'name'             => 0,
+            'batch_type_id'    => 'payout',
+            'is_scheduled'     => false,
+            'upload_count'     => 0,
+            'total_count'      => 3,
+            'failure_count'    => 0,
+            'success_count'    => 0,
+            'amount'           => 0,
+            'attempts'         => 0,
+            'status'           => 'CREATED',
+            'processed_amount' => 0
+        ];
     }
 }

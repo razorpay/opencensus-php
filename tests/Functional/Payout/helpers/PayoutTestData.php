@@ -22010,4 +22010,213 @@ return [
             'description'         => 'Attachment not linked to payout',
         ],
     ],
+
+    'testBulkTemplatesIncorrectInputKey' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/batch/template',
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+            'content' => [
+                'random_key'  => 'random-value',
+                'file_extension'  => 'csv',
+                'payout_method' => 'amazonpay',
+                'beneficiary_info' => 'details'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'random_key is/are not required and should not be sent',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\ExtraFieldsException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ],
+    ],
+
+    'testBulkTemplatesIncorrectInputValue' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/batch/template',
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+            'content' => [
+                'file_extension'  => 'random',
+                'payout_method' => 'amazonpay',
+                'beneficiary_info' => 'details'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'The selected file extension is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
+        ],
+    ],
+
+    'testBulkTemplatesSuccess' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/batch/template',
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+            'content' => [
+                'file_extension'  => 'csv',
+                'payout_method' => 'amazonpay',
+                'beneficiary_info' => 'details'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'signed_url' => 'paper-mandate/generated/ppm_DczOAf1V7oqaDA_DczOEhobMkq2Do.pdf'
+            ],
+            'status_code' => 200
+        ],
+    ],
+
+    'testGetBatchRows' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/batch/batch_abcd/rows',
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+            'content' => [
+                'count'         => 3,
+                'skip'          => 0,
+                'order_by'      => 'created_at',
+                'order_type'    => 'DESC'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 3,
+                'type'  => 'java.util.Collection',
+                'data'  => [
+                    [
+                        'created_at'        => 1681121569,
+                        'updated_at'        => 1681121569,
+                        'id'                => 'Lc3FCR5UkORots',
+                        'batch_id'          => 'Lc3D38BgW3c77T',
+                        'sequence_number'   => 7,
+                        'row_data'          => '{\"column name 1\":\"value 1\",\"column name 2\":\"value 1\"}',
+                        'response_data'     => null,
+                        'status'            => "CREATED",
+                    ],
+                    [
+                        'created_at'        => 1681121569,
+                        'updated_at'        => 1681121569,
+                        'id'                => 'Lc3FCR0jOZyfZm',
+                        'batch_id'          => 'Lc3D38BgW3c77T',
+                        'sequence_number'   => 6,
+                        'row_data'          => '{\"column name 1\":\"value 2\",\"column name 1\":\"value 2\"}',
+                        'response_data'     => null,
+                        'status'            => "CREATED",
+                    ],
+                    [
+                        'created_at'        => 1681121569,
+                        'updated_at'        => 1681121569,
+                        'id'                => 'Lc3FCQuFNq0CR1',
+                        'batch_id'          => 'Lc3D38BgW3c77T',
+                        'sequence_number'   => 5,
+                        'row_data'          => '{\"column name 1\":\"value 3\",\"column name 1\":\"value 3\"}',
+                        'response_data'     => null,
+                        'status'            => "CREATED",
+                    ]
+                ]
+            ],
+            'status_code' => 200
+        ],
+    ],
+
+    'testProcessBatchIncorrectOTP' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/batch/batch_abcd/process',
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+            'content' => [
+                'otp'                   => '1234',
+                'token'                 => 'LDv00lvWOpc3tn',
+                'total_payout_amount'   => 1000,
+                'config'    => [
+                    'payout_purpose' => 'refund',
+                    'account_number' => '100200300400'
+                ]
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'description' => 'Verification failed because of incorrect OTP.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INCORRECT_OTP
+        ],
+    ],
+
+    'testProcessBatchSuccess' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/batch/batch_abcd/process',
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+            'content' => [
+                'otp'                   => '0007',
+                'token'                 => 'LDv00lvWOpc3tn',
+                'total_payout_amount'   => 1000,
+                'config'    => [
+                    'payout_purpose' => 'refund',
+                    'account_number' => '100200300400'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'               => 'C3fzDCb4hA4F6b',
+                'created_at'       => 1551782255,
+                'updated_at'       => 1551782255,
+                'entity_id'        => 'C28Q0mJgoSfWC1',
+                'name'             => 0,
+                'batch_type_id'    => 'payout',
+                'is_scheduled'     => false,
+                'upload_count'     => 0,
+                'total_count'      => 3,
+                'failure_count'    => 0,
+                'success_count'    => 0,
+                'amount'           => 0,
+                'attempts'         => 0,
+                'status'           => 'CREATED',
+                'processed_amount' => 0
+            ],
+            'status_code' => 200
+        ],
+    ],
 ];

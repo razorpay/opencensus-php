@@ -601,6 +601,33 @@ class PayoutController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getTemplateFileForBulkPayouts()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->getTemplateFileForBulkPayouts($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function processPayoutsBatch(string $batchId)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->processPayoutsBatch($batchId, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getBatchRows(string $batchId)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->getBatchRows($batchId, $input);
+
+        return ApiResponse::json($response);
+    }
+
     public function postBulkPayoutsAmountType()
     {
         $input = Request::all();
@@ -976,5 +1003,14 @@ class PayoutController extends Controller
         $response = $this->service()->otpSendForIciciCa2fa($input);
 
         return ApiResponse::json($response);
+    }
+
+    public function validatePayoutsBatch()
+    {
+        $input = Request::all();
+
+        list($response, $statusCode) = $this->service()->validatePayoutsBatch($input);
+
+        return ApiResponse::json($response, $statusCode);
     }
 }

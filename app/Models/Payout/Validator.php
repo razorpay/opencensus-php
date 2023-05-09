@@ -98,6 +98,8 @@ class Validator extends Base\Validator
 
     const PAYOUT_BULK_SAMPLE_FILE = 'payout_bulk_sample_file';
 
+    const PAYOUT_BULK_TEMPLATE_FILE = 'payout_bulk_template_file';
+
     const PAYOUT_BULK_STATUS_UPDATE_MANUAL = 'payout_bulk_status_update_manual';
 
     const PAYOUT_SERVICE_DATA_MIGRATION_INPUT = 'payout_service_data_migration_input';
@@ -503,6 +505,12 @@ class Validator extends Base\Validator
     protected static $payoutBulkSampleFileRules = [
         Entity::FILE_TYPE       => 'required|string|in:sample_file,template_file',
         Entity::FILE_EXTENSION  => 'required|string|in:csv,xlsx',
+    ];
+
+    protected static $payoutBulkTemplateFileRules = [
+        Entity::FILE_EXTENSION   => 'required|string|in:csv,xlsx',
+        Entity::PAYOUT_METHOD    => 'required|string|in:'.Entity::BANK_TRANSFER.','.Entity::AMAZONPAY.','.Entity::UPI,
+        Entity::BENEFICIARY_INFO => 'required|string|in:'.Entity::BENEFICIARY_ID.','.Entity::BENEFICIARY_DETAILS,
     ];
 
     protected static $payoutServiceFtsCreateRules = [

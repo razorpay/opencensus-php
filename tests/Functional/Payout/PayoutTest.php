@@ -35321,5 +35321,47 @@ class PayoutTest extends OAuthTestCase
 
         $this->startTest();
     }
+
+    public function testBulkTemplatesIncorrectInputKey()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testBulkTemplatesIncorrectInputValue()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testBulkTemplatesSuccess()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetBatchRows()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testProcessBatchIncorrectOTP()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testProcessBatchSuccess()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
 }
 

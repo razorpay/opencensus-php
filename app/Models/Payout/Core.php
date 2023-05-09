@@ -88,6 +88,7 @@ use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
 use RZP\Models\BankingAccountStatement\Entity as BASEntity;
+use RZP\Models\Payout\Batch\Constants as BatchPayoutConstants;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 use RZP\Models\Workflow\Service\Adapter\Constants as WorkflowConstants;
 use RZP\Models\Payout\DataMigration\Processor as DataMigrationProcessor;
@@ -4073,6 +4074,66 @@ class Core extends Base\Core
     protected function isInterAccountPayout(Entity $payout)
     {
         return $payout->getPurpose() === Purpose::INTER_ACCOUNT_PAYOUT;
+    }
+
+    public function getBatchType(array $entries): string
+    {
+        $headers = array_keys(current($entries));
+
+        $headers = $this->cleanHeaders($headers);
+
+        $batchType = '';
+
+        if (count($headers) > 11 || count($headers) === 1)
+        {
+            $batchType = BatchPayoutConstants::PAYOUTS;
+        }
+        else if (in_array(BatchPayoutConstants::PAYOUT_MODE_FILE_HEADER, $headers, false) === true)
+        {
+            if (in_array(BatchPayoutConstants::BENE_FA_ID_FILE_HEADER, $headers, false) === true)
+            {
+                $batchType = BatchPayoutConstants::BANK_TRANSFER_WITH_BENE_ID_BATCH_TYPE;
+            }
+            else
+            {
+                $batchType = BatchPayoutConstants::BANK_TRANSFER_WITH_BENE_DETAILS_BATCH_TYPE;
+            }
+        }
+        else if (in_array(BatchPayoutConstants::BENE_UPI_ID_FILE_HEADER, $headers, false) === true)
+        {
+            $batchType = BatchPayoutConstants::UPI_WITH_BENE_DETAILS_BATCH_TYPE;
+        }
+        else if (in_array(BatchPayoutConstants::BENE_FA_ID_FILE_HEADER, $headers, false) === true)
+        {
+            $batchType = BatchPayoutConstants::UPI_WITH_BENE_ID_BATCH_TYPE;
+        }
+        else if (in_array(BatchPayoutConstants::BENE_FA_ID_WALLET_FILE_HEADER, $headers, false) === true)
+        {
+            $batchType = BatchPayoutConstants::AMAZONPAY_WITH_BENE_ID_BATCH_TYPE;
+        }
+        else if (in_array(BatchPayoutConstants::BENE_PHONE_NUMBER_AMAZONPAY_FILE_HEADER, $headers, false) === true)
+        {
+            $batchType = BatchPayoutConstants::AMAZONPAY_WITH_BENE_DETAILS_BATCH_TYPE;
+        }
+
+        return $batchType;
+    }
+
+    private function cleanHeaders(array $headers): array
+    {
+        $cleanHeaders = array();
+
+        foreach ($headers as $header)
+        {
+            $pos = strpos($header, "(");
+
+            if ($pos !== false)
+            {
+                $cleanHeaders[] = trim(substr($header, 0, strpos($header, "(")));
+            }
+        }
+
+        return $cleanHeaders;
     }
 
     protected function isInterAccountTestPayout(Entity $payout)

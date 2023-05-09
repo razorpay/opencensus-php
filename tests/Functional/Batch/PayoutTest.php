@@ -3071,4 +3071,229 @@ class PayoutTest extends TestCase
             'off',
             'control');
     }
+
+    public function testValidateBulkPayoutsWithOldTemplate()
+    {
+        $this->fixtures->merchant->addFeatures([Feature::ALLOW_COMPLETE_ERROR_DESC]);
+
+        $entries = [
+            [
+                // This entry has account number with multiple rules violation in RAZORPAYX_ACCOUNT_NUMBER field
+                // and all errors are shown in the error description.
+                Batch\Header::RAZORPAYX_ACCOUNT_NUMBER  => '232!',
+                Batch\Header::PAYOUT_AMOUNT_RUPEES      => 10,
+                Batch\Header::PAYOUT_CURRENCY           => 'INR',
+                Batch\Header::PAYOUT_MODE               => 'NEFT',
+                Batch\Header::PAYOUT_PURPOSE            => 'refund',
+                Batch\Header::FUND_ACCOUNT_ID           => '',
+                Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
+                Batch\Header::FUND_ACCOUNT_NAME         => 'Chirag Chiranjib',
+                Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
+                Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
+                Batch\Header::FUND_ACCOUNT_VPA          => '',
+                Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => '',
+                Batch\Header::CONTACT_NAME_2            => "Chirag Chiranjib",
+                Batch\Header::PAYOUT_NARRATION          => 'NarrationTest',
+                Batch\Header::PAYOUT_REFERENCE_ID       => '',
+                Batch\Header::FUND_ACCOUNT_EMAIL        => '',
+                Batch\Header::CONTACT_TYPE              => 'employee',
+                Batch\Header::CONTACT_EMAIL_2           => "chirag.chiranjib@razorpay.com",
+                Batch\Header::CONTACT_MOBILE_2          => '',
+                Batch\Header::CONTACT_REFERENCE_ID      => '',
+                Batch\Header::NOTES_CODE                => 'test',
+                Batch\Header::NOTES_PLACE               => 'Bhubaneswar'
+            ],
+            [
+                // This entry has invalid account number with multiple rules violation, has fund account
+                // type violation and violation of custom rules corresponding to non-utf8 characters
+                // in contact email and contact name.
+                // The errors for all of this are shown in the error description.
+                Batch\Header::RAZORPAYX_ACCOUNT_NUMBER  => '232!',
+                Batch\Header::PAYOUT_AMOUNT_RUPEES      => 20,
+                Batch\Header::PAYOUT_CURRENCY           => 'INR',
+                Batch\Header::PAYOUT_MODE               => 'NEFT',
+                Batch\Header::PAYOUT_PURPOSE            => 'refund',
+                Batch\Header::FUND_ACCOUNT_ID           => '',
+                Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account_yo',
+                Batch\Header::FUND_ACCOUNT_NAME         => 'Chirag Chiranjib',
+                Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
+                Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
+                Batch\Header::FUND_ACCOUNT_VPA          => '',
+                Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => '',
+                Batch\Header::CONTACT_NAME_2            => "Chirag \xff Chiranjib",
+                Batch\Header::PAYOUT_NARRATION          => 'NarrationTest',
+                Batch\Header::PAYOUT_REFERENCE_ID       => '',
+                Batch\Header::FUND_ACCOUNT_EMAIL        => '',
+                Batch\Header::CONTACT_TYPE              => 'employeeNo',
+                Batch\Header::CONTACT_EMAIL_2           => "chirag\xffchiranjib@razorpay.com",
+                Batch\Header::CONTACT_MOBILE_2          => '',
+                Batch\Header::CONTACT_REFERENCE_ID      => '',
+                Batch\Header::NOTES_CODE                => 'test',
+                Batch\Header::NOTES_PLACE               => 'Bhubaneswar'
+            ],
+            [
+                // This entry has invalid utf-8 character in both CONTACT_NAME_2 field and CONTACT_EMAIL_2 field
+                // and the errors for them are shown in the error description.
+                Batch\Header::RAZORPAYX_ACCOUNT_NUMBER  => '2323230041626905',
+                Batch\Header::PAYOUT_AMOUNT_RUPEES      => 30,
+                Batch\Header::PAYOUT_CURRENCY           => 'INR',
+                Batch\Header::PAYOUT_MODE               => 'NEFT',
+                Batch\Header::PAYOUT_PURPOSE            => 'refund',
+                Batch\Header::FUND_ACCOUNT_ID           => '',
+                Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
+                Batch\Header::FUND_ACCOUNT_NAME         => 'Chirag Chiranjib',
+                Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
+                Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
+                Batch\Header::FUND_ACCOUNT_VPA          => '',
+                Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => '',
+                Batch\Header::CONTACT_NAME_2            => "Chirag \xf8 Chiranjib",
+                Batch\Header::PAYOUT_NARRATION          => 'NarrationTest',
+                Batch\Header::PAYOUT_REFERENCE_ID       => '',
+                Batch\Header::FUND_ACCOUNT_EMAIL        => '',
+                Batch\Header::CONTACT_TYPE              => 'employee',
+                Batch\Header::CONTACT_EMAIL_2           => "chirag\xffchiranjib@razorpay.com",
+                Batch\Header::CONTACT_MOBILE_2          => '',
+                Batch\Header::CONTACT_REFERENCE_ID      => '',
+                Batch\Header::NOTES_CODE                => 'test',
+                Batch\Header::NOTES_PLACE               => 'Bhubaneswar'
+            ],
+            [                     // This entry has no errors and So this entry will be parsed successfully.
+                Batch\Header::RAZORPAYX_ACCOUNT_NUMBER  => '2323230041626905',
+                Batch\Header::PAYOUT_AMOUNT_RUPEES      => 0,
+                Batch\Header::PAYOUT_CURRENCY           => 'INR',
+                Batch\Header::PAYOUT_MODE               => 'NEFT',
+                Batch\Header::PAYOUT_PURPOSE            => 'refund',
+                Batch\Header::FUND_ACCOUNT_ID           => '',
+                Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
+                Batch\Header::FUND_ACCOUNT_NAME         => 'Chirag Chiranjib',
+                Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
+                Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
+                Batch\Header::FUND_ACCOUNT_VPA          => '',
+                Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => '',
+                Batch\Header::CONTACT_NAME_2            => "Chirag Chiranjib",
+                Batch\Header::PAYOUT_NARRATION          => 'NarrationTest',
+                Batch\Header::PAYOUT_REFERENCE_ID       => '',
+                Batch\Header::FUND_ACCOUNT_EMAIL        => '',
+                Batch\Header::CONTACT_TYPE              => 'employee',
+                Batch\Header::CONTACT_EMAIL_2           => "chirag.chiranjib@razorpay.com",
+                Batch\Header::CONTACT_MOBILE_2          => '',
+                Batch\Header::CONTACT_REFERENCE_ID      => '',
+                Batch\Header::NOTES_CODE                => 'test',
+                Batch\Header::NOTES_PLACE               => 'Bhubaneswar'
+            ],
+            [
+                // This entry has no errors and So this entry will be parsed successfully.
+                Batch\Header::RAZORPAYX_ACCOUNT_NUMBER  => '2323230041626905',
+                Batch\Header::PAYOUT_AMOUNT_RUPEES      => 40,
+                Batch\Header::PAYOUT_CURRENCY           => 'INR',
+                Batch\Header::PAYOUT_MODE               => 'NEFT',
+                Batch\Header::PAYOUT_PURPOSE            => 'refund',
+                Batch\Header::FUND_ACCOUNT_ID           => '',
+                Batch\Header::FUND_ACCOUNT_TYPE         => 'bank_account',
+                Batch\Header::FUND_ACCOUNT_NAME         => 'Chirag Chiranjib',
+                Batch\Header::FUND_ACCOUNT_IFSC         => 'SBIN0010720',
+                Batch\Header::FUND_ACCOUNT_NUMBER       => '100200300400',
+                Batch\Header::FUND_ACCOUNT_VPA          => '',
+                Batch\Header::FUND_ACCOUNT_PHONE_NUMBER => '',
+                Batch\Header::CONTACT_NAME_2            => "Chirag Chiranjib",
+                Batch\Header::PAYOUT_NARRATION          => 'NarrationTest',
+                Batch\Header::PAYOUT_REFERENCE_ID       => '',
+                Batch\Header::FUND_ACCOUNT_EMAIL        => '',
+                Batch\Header::CONTACT_TYPE              => 'employee',
+                Batch\Header::CONTACT_EMAIL_2           => "chirag.chiranjib@razorpay.com",
+                Batch\Header::CONTACT_MOBILE_2          => '',
+                Batch\Header::CONTACT_REFERENCE_ID      => '',
+                Batch\Header::NOTES_CODE                => 'test',
+                Batch\Header::NOTES_PLACE               => 'Bhubaneswar'
+            ],
+        ];
+
+        $this->createAndPutCsvFileInRequest($entries, __FUNCTION__);
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1000, $response['total_payout_amount']);
+    }
+
+    public function testValidateBulkPayoutsWithAmazonPayWithBeneDetail()
+    {
+        $this->fixtures->merchant->addFeatures([Feature::ALLOW_COMPLETE_ERROR_DESC]);
+
+        $amazonPayWithBeneDetailsEntries = [
+            [
+                "Beneficiary Name (Mandatory) Special characters not supported"  => 'Ironman',
+                "Beneficiary's Phone No. Linked with Amazon Pay (Mandatory)" => '9988998899',
+                "Payout Amount (Mandatory) Amount should be in rupees" => 10,
+            ],
+        ];
+
+        $this->createAndPutCsvFileInRequest($amazonPayWithBeneDetailsEntries, __FUNCTION__);
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('payouts_amazonpay_bene_details', $response['batch_type_id']);
+    }
+
+    public function testValidateBulkPayoutsWithAmazonPayWithBeneId()
+    {
+        $this->fixtures->merchant->addFeatures([Feature::ALLOW_COMPLETE_ERROR_DESC]);
+
+        $amazonPayWithBeneDetailsEntries = [
+            [
+                "Beneficiary's Fund Account ID - Wallet (Mandatory) Unique id linked to a Razorpay Fund account." => 'fa_12345',
+                "Payout Amount (Mandatory) Amount should be in rupees" => 10,
+            ],
+        ];
+
+        $this->createAndPutCsvFileInRequest($amazonPayWithBeneDetailsEntries, __FUNCTION__);
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('payouts_amazonpay_bene_id', $response['batch_type_id']);
+    }
+
+    public function testGetBatchRowsWithCreatorNameForTypePayouts()
+    {
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayKeysExist($response, ['items', 'entity', 'count', 'has_more']);
+
+        $this->assertNotNull($response['items']);
+
+        $batchPayout = $response['items'][0];
+
+        $this->assertNotNull($batchPayout['creator_name']);
+    }
+
+    public function testGetBatchRowsWithCreatorNameForTypePaymentLinks()
+    {
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayKeysExist($response, ['items', 'entity', 'count', 'has_more']);
+
+        $this->assertNotNull($response['items']);
+
+        $batchPayout = $response['items'][0];
+
+        $this->assertNull($batchPayout['creator_name']);
+    }
+
+    public function testGetBatchDetails()
+    {
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response);
+    }
 }

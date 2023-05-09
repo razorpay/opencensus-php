@@ -5178,6 +5178,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_SERVICE_CREATED_RESPONSE                        = 'BATCH_SERVICE_CREATED_RESPONSE';
     const BATCH_PRICING_PLAN_REPLICATE_REQUEST                  = 'BATCH_PRICING_PLAN_REPLICATE_REQUEST';
     const BATCH_SEND_MAIL_REQUEST                               = 'BATCH_SEND_MAIL_REQUEST';
+    const BATCH_SERVER_FAILED                                   = 'BATCH_SERVER_FAILED';
     const BATCH_SEND_MAIL_CONFIG                                = 'BATCH_SEND_MAIL_CONFIG';
     const BATCH_SERVICE_BULK_BAD_REQUEST                        = 'BATCH_SERVICE_BULK_BAD_REQUEST';
     const BATCH_SERVICE_FUND_ACCOUNT_BULK_REQUEST               = 'BATCH_SERVICE_FUND_ACCOUNT_BULK_REQUEST';

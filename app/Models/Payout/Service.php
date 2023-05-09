@@ -4,6 +4,7 @@ namespace RZP\Models\Payout;
 
 use App;
 use Carbon\Carbon;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Mail;
 
 use RZP\Constants\Mode;
@@ -12,6 +13,7 @@ use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Http\Route;
+
 use RZP\Models\Vpa;
 use RZP\Error\Error;
 use RZP\Models\Base;
@@ -42,9 +44,11 @@ use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Exception\DbQueryException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\PayoutAttachmentEmail;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\BankingAccountService;
 use RZP\Models\Base\PublicCollection;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\User\Core as UserCore;
 use RZP\Exception\ServerErrorException;
 use RZP\Exception\BadRequestException;
 use RZP\Models\PayoutOutbox\RequestType;
@@ -53,6 +57,7 @@ use RZP\Models\Workflow\Service\Adapter;
 use RZP\Jobs\ApprovedPayoutDistribution;
 use RZP\Models\PartnerBankHealth\Events;
 use RZP\Models\Payout\Mode as PayoutMode;
+use RZP\Exception\ServerNotFoundException;
 use RZP\Models\Merchant\Account as Account;
 use RZP\Models\Payout\Batch as PayoutsBatch;
 use RZP\Constants\Entity as EntityConstants;
@@ -71,6 +76,7 @@ use RZP\Models\PayoutSource\Entity as PayoutSourceEntity;
 use RZP\Models\FundAccount\Service as FundAccountService;
 use RZP\Services\RazorpayLabs\SlackApp as SlackAppService;
 use RZP\Models\FundAccount\BatchHelper as FundAccountHelper;
+use RZP\Models\Payout\Batch\Constants as BatchPayoutConstants;
 use RZP\Models\FundAccount\Validation as FundAccountValidation;
 use RZP\Models\Workflow\Service\Config\Service as WorkflowConfigService;
 use Throwable;
@@ -2295,6 +2301,51 @@ class Service extends Base\Service
         {
             return (new Bulk\TemplateFile)->createAndSaveSampleFile($extension, $this->merchant);
         }
+    }
+
+    public function getTemplateFileForBulkPayouts($input)
+    {
+        (new Validator)->validateInput(Validator::PAYOUT_BULK_TEMPLATE_FILE, $input);
+
+        $configKey = sprintf(
+            PayoutConstants::BULK_TEMPLATE_CONFIG_KEY,
+            $input[Entity::FILE_EXTENSION],
+            $input[Entity::PAYOUT_METHOD],
+            $input[Entity::BENEFICIARY_INFO]
+        );
+
+        $configKey = strtoupper($configKey);
+
+        $templateFileId = env($configKey);
+
+        $ufhService = $this->getUfhService();
+
+        $response = $ufhService->getSignedUrl($templateFileId, [], Account::SHARED_ACCOUNT);
+
+        return [PayoutConstants::SIGNED_URL => $response[PayoutConstants::SIGNED_URL]];
+    }
+
+    public function processPayoutsBatch(string $batchId, array $input)
+    {
+        $settings = $input['config'];
+
+        $verifyOtpInput = array_only($input, ['otp', 'token', 'total_payout_amount']);
+
+        $verifyOtpInput = array_merge($verifyOtpInput, $settings);
+
+        $verifyOtpInput = array_merge($verifyOtpInput, ['action' => 'create_payout_batch_v2']);
+
+        (new UserCore())->verifyOtp($verifyOtpInput,
+            $this->merchant,
+            $this->user,
+            $this->mode === Mode::TEST);
+
+        return $this->app->batchService->processBatch($batchId, $input, $this->merchant);
+    }
+
+    public function getBatchRows(string $batchId, array $input)
+    {
+        return $this->app->batchService->getBatchEntries($batchId, $input, $this->merchant);
     }
 
     public function getScheduleSlotsForPayouts()
@@ -4591,7 +4642,7 @@ class Service extends Base\Service
         PayoutAttachmentEmail::dispatch($mode, $data);
     }
 
-    protected function getUfhService($merchantId)
+    protected function getUfhService($merchantId = null)
     {
         $ufhServiceMock = $this->app['config']->get('applications.ufh.mock');
 
@@ -4601,7 +4652,7 @@ class Service extends Base\Service
         }
         else
         {
-            $ufhService = new UfhService($this->app, $merchantId, EntityConstants::PAYOUT);
+            $ufhService = new UfhService($this->app, $merchantId);
         }
 
         if (is_null($ufhService) == true)
@@ -4855,4 +4906,78 @@ class Service extends Base\Service
         return $rawQuery . " (`payouts`.`channel` = '" . strtolower($key->channel) . "' AND `payouts`.`mode` = '" . $key->mode . "') ";
 
     }
+
+    public function validatePayoutsBatch(array $input): array
+    {
+        // compute the batch type based on the file
+        $input['type'] = 'payout';
+
+        $batch = (new Batch\Entity)->build($input, 'validate');
+
+        $batch->merchant()->associate($this->merchant);
+
+        $processor = Batch\Processor\Factory::get($batch);
+
+        $batchFile = $input['file'];
+
+        $partial = UniqueIdEntity::generateUniqueId();
+
+        $fileIdentifier = pathinfo($batchFile->getClientOriginalName(), PATHINFO_FILENAME);
+
+        $fileName = $partial . '/' . $fileIdentifier;
+
+        $extension = strtolower($batchFile->getClientOriginalExtension());
+
+        if (empty($extension) === false)
+        {
+            $fileName .= '.'. $extension;
+        }
+
+        $localDir  = storage_path('files/filestore') . '/' . Batch\Entity::INPUT_FILE_PREFIX;
+
+        $movedFile = $batchFile->move($localDir, $fileName);
+
+        $entries = $processor->processBatchFile($movedFile->getPathname());
+
+        $batchType = $this->core()->getBatchType($entries);
+
+        $response = [];
+
+        $statusCode = 200;
+
+        if ($batchType === '')
+        {
+            $statusCode = 400;
+
+            return [$response, $statusCode];
+        }
+
+        // redirect to old flow if old template
+        if ($batchType === BatchPayoutConstants::PAYOUTS)
+        {
+            // return 301 response
+            $statusCode = 301;
+
+            return [$response, $statusCode];
+        }
+
+        try
+        {
+            $input['type'] = $batchType;
+
+            $input['file'] = $movedFile;
+
+            $response = $this->app->batchService->validateFile($input, $this->merchant);
+        }
+        catch (ServerNotFoundException $exception)
+        {
+            // Either Batch Microservice is down or not found
+            $this->trace->error(TraceCode::BATCH_SERVER_FAILED, ['error' => $exception->getMessage()]);
+
+            $statusCode = 500;
+        }
+
+        return [$response, $statusCode];
+    }
+
 }

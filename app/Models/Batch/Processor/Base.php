@@ -1195,6 +1195,11 @@ class Base extends BaseModel\Core
         return $this->parentParseExcelSheets($filePath, $this->getStartRowExcelFiles());
     }
 
+    public function processBatchFile(string $filePath): array
+    {
+        return $this->parseFileAndCleanEntries($filePath);
+    }
+
     protected function parseFileAndCleanEntries(string $filePath): array
     {
         return $this->cleanParsedEntries($this->parseFile($filePath));
