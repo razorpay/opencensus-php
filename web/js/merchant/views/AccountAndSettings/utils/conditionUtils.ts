@@ -18,6 +18,9 @@ export const isSkipMandatorySummaryPageAllowed = (user: User): boolean =>
 
 export const isSmsNotificationEnabled = (user: User): boolean => !!user.contact_mobile;
 
+export const isEmailNotificationEnabled = (user: User): boolean =>
+  [rolesList.OWNER, rolesList.ADMIN].includes(user.role);
+
 export const isWhatsappNotificationEnabled = (user: User): boolean =>
   !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.WhatsappNotification) &&
   user.isWhatsappNotificationEnabled() &&

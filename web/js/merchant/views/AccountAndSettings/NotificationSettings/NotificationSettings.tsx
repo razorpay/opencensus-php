@@ -14,6 +14,7 @@ import {
 import {
   isWhatsappNotificationEnabled,
   isSmsNotificationEnabled,
+  isEmailNotificationEnabled,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import { connect } from 'react-redux';
 import {
@@ -52,7 +53,9 @@ const NotificationSettings = ({ user, location: { pathname } }): JSX.Element | n
           ]}
         />
         <StyledHeader className="scrollable-tab-header">
-          <NavLink to={ROUTES_INFO.EMAIL_NOTIFICATIONS}>Email</NavLink>
+          <ShowWhen additionalCondition={isEmailNotificationEnabled}>
+            <NavLink to={ROUTES_INFO.EMAIL_NOTIFICATIONS}>Email</NavLink>
+          </ShowWhen>
           <ShowWhen additionalCondition={isSmsNotificationEnabled}>
             <NavLink to={ROUTES_INFO.SMS_NOTIFICATIONS}>SMS</NavLink>
           </ShowWhen>

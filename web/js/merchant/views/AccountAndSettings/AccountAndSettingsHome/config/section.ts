@@ -24,6 +24,7 @@ import {
   shouldShowFIRCSection,
   shouldShowTeamInvitations,
   isApplicationEnabled,
+  isEmailNotificationEnabled,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import {
   AdditionalContextInterface,
@@ -434,6 +435,10 @@ export const Sections: SectionCardInterface[] = [
         id: NotificationSettingsFields.EMAIL,
         title: NotificationSettingsTitles[NotificationSettingsFields.EMAIL],
         href: ROUTES_INFO.EMAIL_NOTIFICATIONS,
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            isEmailNotificationEnabled(user),
       },
       {
         id: NotificationSettingsFields.SMS,

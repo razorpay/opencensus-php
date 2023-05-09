@@ -175,7 +175,7 @@ class EmailNotifications extends Component {
     }daily payment reports, webhooks, etc. (You can enter multiple email addresses separated by a comma.)`;
     return (
       <div>
-        {user.role === rolesList.OWNER && (
+        {[rolesList.OWNER, rolesList.ADMIN].includes(user.role) && (
           <div className="panel panel-default ftx-parent">
             <div className="panel-heading">
               <span className="title">

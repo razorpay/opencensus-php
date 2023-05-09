@@ -432,4 +432,18 @@ describe('Condition Utils', () => {
       expect(shouldShowTeamInvitations).toBe(false);
     });
   });
+
+  describe('isEmailNotificationEnabled', () => {
+    test('should return true only when user role is owner or admin', () => {
+      for (const rolekey of Object.keys(rolesList)) {
+        const role = rolekey[rolesList];
+        expect(
+          conditionalUtils.isEmailNotificationEnabled({
+            ...user,
+            role,
+          }),
+        ).toBe(['owner', 'admin'].includes(role));
+      }
+    });
+  });
 });

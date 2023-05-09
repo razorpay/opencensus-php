@@ -6,6 +6,7 @@ import {
 import NotificationSettings from 'merchant/views/AccountAndSettings/NotificationSettings';
 import { render, screen } from 'test-utils';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
+import * as conditionalUtils from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 
 jest.mock('merchant/views/AccountAndSettings/styled', () => ({
   __esModule: true,
@@ -29,6 +30,7 @@ jest.mock('merchant/views/AccountAndSettings/styled', () => ({
 jest.mock('merchant/views/AccountAndSettings/utils/conditionUtils', () => ({
   isSmsNotificationEnabled: jest.fn(),
   isWhatsappNotificationEnabled: jest.fn(),
+  isEmailNotificationEnabled: jest.fn(),
 }));
 
 const renderApp = ({ pathname, user } = {}) => {
@@ -49,6 +51,7 @@ const renderApp = ({ pathname, user } = {}) => {
 
 describe('NotificationSettings', () => {
   test('should render NotificationSettings', () => {
+    conditionalUtils.isEmailNotificationEnabled.mockReturnValueOnce(true);
     renderApp();
     expect(screen.getByText('Dashboard Banner')).toBeInTheDocument();
     expect(screen.getByText('Test Mode Banner')).toBeInTheDocument();
@@ -73,6 +76,7 @@ describe('NotificationSettings', () => {
   testConditionalLinks(renderApp, [
     ['SMS', 'isSmsNotificationEnabled', ROUTES_INFO.SMS_NOTIFICATIONS],
     ['WhatsApp', 'isWhatsappNotificationEnabled', ROUTES_INFO.WHATSAPP_NOTIFICATIONS],
+    ['Email', 'isEmailNotificationEnabled', ROUTES_INFO.EMAIL_NOTIFICATIONS],
   ]);
 
   testRedirectionWhenAccountAndSettingsIsNotEnabled(renderApp, [

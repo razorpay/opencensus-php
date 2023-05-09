@@ -19,6 +19,7 @@ import {
   isBankAccountDetailsAllowed,
   isConfigurationViewAllowed,
   isCreditsEnabled,
+  isEmailNotificationEnabled,
   isFailedPaymentRetryEnabled,
   isFlashCheckoutAllowed,
   isGstDetailsEnabled,
@@ -760,7 +761,7 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     group: ['in: Account & Settings'],
     icon: AccountNSettingsIcons.notification_settings,
     additionalCondition: ({ user }: EligibleProductsTypes): boolean =>
-      isConfigurationViewAllowed(user),
+      isConfigurationViewAllowed(user) && isEmailNotificationEnabled(user),
     apiCondition: false,
   },
   {
