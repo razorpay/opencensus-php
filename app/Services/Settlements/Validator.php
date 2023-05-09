@@ -3,8 +3,10 @@
 namespace RZP\Services\Settlements;
 
 use RZP\Base;
+use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Contact\Validator as fundAccountValidator;
+use RZP\Models\Currency\Currency;
 
 class Validator extends Base\Validator
 {
@@ -27,7 +29,7 @@ class Validator extends Base\Validator
         'beneficiary_country' => 'sometimes|string',
         'beneficiary_email'   => 'sometimes|string',
         'beneficiary_mobile'  => 'sometimes|alpha_num',
-        'accepted_currency'   => 'required|in:INR',
+        'accepted_currency'   => 'required|string|size:3|custom',
         'extra_info'          => 'required|array',
         'extra_info.via'      => 'required|in:payout'
     ];
@@ -43,6 +45,16 @@ class Validator extends Base\Validator
             throw new BadRequestValidationFailureException(
                 'The beneficiary name field is invalid',
                 'beneficiary_name');
+        }
+    }
+
+    protected function validateAcceptedCurrency($attribute, $currency)
+    {
+        if (in_array($currency, Currency::SUPPORTED_CURRENCIES, true) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
+                'currency');
         }
     }
 }
