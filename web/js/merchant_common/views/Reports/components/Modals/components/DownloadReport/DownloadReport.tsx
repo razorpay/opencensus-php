@@ -13,6 +13,10 @@ import {
   Text,
   TextInput,
   AsyncDropdown,
+  Box,
+  Badge,
+  MailIcon,
+  UserIcon,
 } from 'merchant_common/views/Reports/components';
 import {
   ModalFooter,
@@ -24,7 +28,7 @@ import { SelectedRangeType } from 'merchant_common/views/Reports/components/Date
 import { preDefinedDurations } from './data';
 import { fetchAccountsApi } from 'merchant/reducers/marketplace/accounts';
 import { AccountType } from 'merchant_common/views/Reports/types/account';
-import { marketplaceConfigTypes } from 'merchant_common/views/Reports/configs';
+import { MARKET_PLACE_CONFIG_TYPES } from 'merchant_common/views/Reports/configs';
 import { downloadNewReport } from 'merchant_common/views/Reports/api/downloadModal';
 import {
   REPORT_GENERATE_LOG_POST_FAILED,
@@ -32,7 +36,7 @@ import {
   REPORT_GENERATE_LOG_POST_SUCCESS,
   REPORT_GENERATE_LOG_POST_INVALID_RES,
 } from 'merchant_common/views/Reports/constants/notifications';
-import { CancelButtonContainer, HeadingContainer } from './styled';
+import { CancelButtonContainer } from './styled';
 import { trackDownloadModal } from 'merchant_common/views/Reports/configs/analytics.config';
 
 export const DownloadReportModal = ({
@@ -162,7 +166,12 @@ export const DownloadReportModal = ({
         generatedBy,
         headers,
         payload: parsedPayload,
-        selectedAccount,
+        accountId:
+          selectedConfig &&
+          MARKET_PLACE_CONFIG_TYPES.includes(selectedConfig.type) &&
+          !selectedAccount?.current
+            ? selectedAccount?.id
+            : undefined,
       })
         .then((data) => {
           handlePageChange(1);
@@ -240,7 +249,7 @@ export const DownloadReportModal = ({
     }
   };
 
-  const parseDate = (resp) => {
+  const parseResData = (resp) => {
     const data = resp?.data?.items;
     if (data && data.length) {
       return data;
@@ -251,13 +260,17 @@ export const DownloadReportModal = ({
   const customComponent = ({ name, id, email }: AccountType) => {
     return (
       <div aria-label={`${name} (${id})`}>
-        <HeadingContainer>
-          <Heading size="small" variant="regular">
-            {`${name} (${id})`}
-          </Heading>
-          <Text variant="caption">{id}</Text>
-        </HeadingContainer>
-        <Heading variant="subheading">{email}</Heading>
+        <Text size="medium" variant="body" weight="bold">
+          {`${name}`}
+        </Text>
+        <Box marginTop={'spacing.3'} display={'flex'} alignItems={'center'}>
+          <Badge icon={UserIcon} variant="neutral">
+            {id.includes('acc_') ? id.replace('acc_', '') : id}
+          </Badge>
+          <Badge icon={MailIcon} marginLeft={'spacing.3'} variant="neutral">
+            {email}
+          </Badge>
+        </Box>
       </div>
     );
   };
@@ -360,7 +373,7 @@ export const DownloadReportModal = ({
             />
 
             {selectedConfig &&
-            marketplaceConfigTypes.includes(selectedConfig.type) &&
+            MARKET_PLACE_CONFIG_TYPES.includes(selectedConfig.type) &&
             availableAccounts ? (
               <AsyncDropdown
                 label="Select An Account"
@@ -381,7 +394,7 @@ export const DownloadReportModal = ({
                     dashboardType,
                   });
                 }}
-                parseData={parseDate}
+                parseData={parseResData}
                 labelKey="name"
                 ariaLabelBy="Select Account Field"
                 renderCustomOption={customComponent}

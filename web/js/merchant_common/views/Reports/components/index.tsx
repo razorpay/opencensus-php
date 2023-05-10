@@ -21,6 +21,9 @@ export {
   Link,
   ExternalLinkIcon,
   AlertTriangleIcon,
+  Box,
+  MailIcon,
+  UserIcon,
 } from '@razorpay/blade/components';
 
 // custom components

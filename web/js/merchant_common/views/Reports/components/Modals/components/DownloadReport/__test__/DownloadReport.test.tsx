@@ -65,17 +65,20 @@ jest.spyOn(downloadAPI, 'downloadNewReport').mockImplementation(
       }),
     ),
 );
-jest.spyOn(accountsApi, 'fetchAccountsApi').mockImplementation(
-  () =>
-    new Promise((res) =>
-      res({
-        json: () => ({
-          data: {
-            items: [TEST_DUM_ACCOUNT],
-          },
-        }),
+jest.spyOn(accountsApi, 'fetchAccountsApi').mockImplementation(() =>
+  new Promise<{
+    json: () => {
+      data: { items: { name: string; id: string; email: string; tag: string; current: boolean }[] };
+    };
+  }>((res) =>
+    res({
+      json: () => ({
+        data: {
+          items: [TEST_DUM_ACCOUNT],
+        },
       }),
-    ),
+    }),
+  ).then((data) => data.json()),
 );
 jest.mock('merchant_common/views/Reports/utils/commonUtils', () => ({
   ...(jest.requireActual('merchant_common/views/Reports/utils/commonUtils') as Record<
@@ -190,7 +193,7 @@ describe('Download Custom Reports', () => {
           },
         },
       },
-      selectedAccount: TEST_DUM_ACCOUNT,
+      accountId: undefined,
     });
 
     await expect(downloadAPI.downloadNewReport).toHaveReturned();

@@ -45,7 +45,6 @@ export const AsyncDropdown = <ItemType, AllowMultiple, Virtualized>({
         abortController.current.abort();
         abortController.current = new AbortController();
         promise({ query, signal: abortController.current.signal })
-          .then((res) => res.json())
           .then((data) => {
             if (query.length) {
               const parsedData = parseData(data);

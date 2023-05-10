@@ -47,9 +47,6 @@ describe('Async Dropdown', () => {
   });
 
   test('should show resolved options in the dropdown on search', async () => {
-    apiSpy.mockResolvedValue({
-      json: () => ['TEST1', 'TEST2'],
-    });
     render(<App debounceInterval={0} shouldAllowMultiple defaultValue={['React']} />);
     expect(screen.getByText('Testing dropdown')).toBeInTheDocument();
     await userEvent.click(screen.getByLabelText('Dropdown input field'));
@@ -63,7 +60,8 @@ describe('Async Dropdown', () => {
   });
 
   test('should show resolved options in the dropdown on search', async () => {
-    apiSpy.mockResolvedValue(new Error('Error was thrown'));
+    // just throwing an error
+    apiSpy.mockResolvedValue(new Error('Error was thrown') as unknown as string[]);
     render(<App debounceInterval={0} shouldAllowMultiple />);
     expect(screen.getByText('Testing dropdown')).toBeInTheDocument();
     await userEvent.click(screen.getByLabelText('Dropdown input field'));

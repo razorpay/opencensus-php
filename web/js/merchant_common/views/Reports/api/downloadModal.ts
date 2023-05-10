@@ -1,11 +1,24 @@
 import { merchantFetch } from 'merchant/utils/ajax';
-import { MARKET_PLACE_CONFIG_TYPES } from 'merchant_common/views/Reports/constants';
+import { BaseLogPayloadType } from 'merchant_common/views/Reports/types/log';
 
-export const downloadNewReport = async ({ payload, headers, selectedAccount, generatedBy }) => {
-  const accountId =
-    MARKET_PLACE_CONFIG_TYPES.includes(payload.type) &&
-    (!selectedAccount.current ? selectedAccount.id : undefined);
+type DownloadReportArgType = {
+  payload: BaseLogPayloadType;
+  headers: Record<string, string>;
+  generatedBy: string;
+  accountId?: string;
+};
 
+/**
+ *
+ * @param {DownloadReportArgType} config config required for downloading report
+ * @returns
+ */
+export const downloadNewReport = async ({
+  payload,
+  headers,
+  generatedBy,
+  accountId,
+}: DownloadReportArgType): Promise<any> => {
   const finalPayload = {
     ...payload,
     generated_by: generatedBy,
@@ -15,7 +28,7 @@ export const downloadNewReport = async ({ payload, headers, selectedAccount, gen
     url: 'reporting/logs',
     method: 'post',
     data: finalPayload,
-    ...(!!accountId && { accountId }),
+    ...(accountId && { accountId }),
     headers,
   });
 };
