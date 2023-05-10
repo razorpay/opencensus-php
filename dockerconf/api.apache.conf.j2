@@ -1,4 +1,9 @@
 <VirtualHost *:80>
+  # Keepalive settings
+  KeepAlive On
+  KeepAliveTimeout 60
+  MaxKeepAliveRequests 100
+
   # {{ ansible_managed }}
   ServerAdmin serverlogs@razorpay.com
 
