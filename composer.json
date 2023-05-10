@@ -92,7 +92,8 @@
         "mvanduijker/laravel-transactional-model-events": "^2.3",
         "razorpay/wda-php-sdk": "v1.2.0",
         "razorpay/dcs-php-sdk": "dev-master",
-        "selective/transformer": "1.2.0"
+        "selective/transformer": "1.2.0",
+        "razorpay/config-proto": "dev-master"
     },
     "repositories": [
         {

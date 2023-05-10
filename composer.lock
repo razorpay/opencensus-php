@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3e8ba739605ed31785932d593db4567c",
+    "content-hash": "044fa6f21f4b1e94f4840edf8a8bb037",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -10773,12 +10773,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/config-proto.git",
-                "reference": "a331f0c453193f0a1a8818071afb4e86225d52b7"
+                "reference": "ce9bc749ee348478a90fd45aa51354c3d49ebd39"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/config-proto/zipball/a331f0c453193f0a1a8818071afb4e86225d52b7",
-                "reference": "a331f0c453193f0a1a8818071afb4e86225d52b7",
+                "url": "https://api.github.com/repos/razorpay/config-proto/zipball/ce9bc749ee348478a90fd45aa51354c3d49ebd39",
+                "reference": "ce9bc749ee348478a90fd45aa51354c3d49ebd39",
                 "shasum": ""
             },
             "require": {
@@ -10804,7 +10804,7 @@
                 "dcs-config",
                 "razorpay"
             ],
-            "time": "2023-04-28T05:45:12+00:00"
+            "time": "2023-05-09T05:14:11+00:00"
         },
         {
             "name": "razorpay/dcs-php-sdk",
@@ -10812,12 +10812,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/dcs-php-sdk.git",
-                "reference": "0ce9046ae666af317a80689247d51db90e64a107"
+                "reference": "8da1f4a74aee7dba00267b5f16e3cbd9a51ba430"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/dcs-php-sdk/zipball/0ce9046ae666af317a80689247d51db90e64a107",
-                "reference": "0ce9046ae666af317a80689247d51db90e64a107",
+                "url": "https://api.github.com/repos/razorpay/dcs-php-sdk/zipball/8da1f4a74aee7dba00267b5f16e3cbd9a51ba430",
+                "reference": "8da1f4a74aee7dba00267b5f16e3cbd9a51ba430",
                 "shasum": ""
             },
             "require": {
@@ -10864,7 +10864,7 @@
                 "dcs-php-sdk",
                 "razorpay"
             ],
-            "time": "2023-04-28T06:07:08+00:00"
+            "time": "2023-05-04T09:43:55+00:00"
         },
         {
             "name": "razorpay/ec2-metadata",
@@ -11876,12 +11876,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/reactphp/promise.git",
-                "reference": "d47bd60659fa7ce58f4a7ec3ea959c05326ef7fa"
+                "reference": "f913fb8cceba1e6644b7b90c4bfb678ed8a3ef38"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/reactphp/promise/zipball/d47bd60659fa7ce58f4a7ec3ea959c05326ef7fa",
-                "reference": "d47bd60659fa7ce58f4a7ec3ea959c05326ef7fa",
+                "url": "https://api.github.com/repos/reactphp/promise/zipball/f913fb8cceba1e6644b7b90c4bfb678ed8a3ef38",
+                "reference": "f913fb8cceba1e6644b7b90c4bfb678ed8a3ef38",
                 "shasum": ""
             },
             "require": {
@@ -11932,19 +11932,15 @@
             ],
             "support": {
                 "issues": "https://github.com/reactphp/promise/issues",
-                "source": "https://github.com/reactphp/promise/tree/2.x"
+                "source": "https://github.com/reactphp/promise/tree/v2.10.0"
             },
             "funding": [
                 {
-                    "url": "https://github.com/WyriHaximus",
-                    "type": "github"
-                },
-                {
-                    "url": "https://github.com/clue",
-                    "type": "github"
+                    "url": "https://opencollective.com/reactphp",
+                    "type": "open_collective"
                 }
             ],
-            "time": "2022-10-31T09:13:55+00:00"
+            "time": "2023-05-02T15:15:43+00:00"
         },
         {
             "name": "react/promise-timer",
@@ -19099,6 +19095,7 @@
         "symfony/mailgun-mailer": 20,
         "symfony/http-client": 20,
         "razorpay/dcs-php-sdk": 20,
+        "razorpay/config-proto": 20,
         "laracasts/testdummy": 20,
         "roave/no-leaks": 20
     },

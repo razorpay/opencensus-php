@@ -92,6 +92,12 @@ class Constants
     const EnableOTM = 'enable_otm';
     const AdminPasswordResetEnabled = 'admin_password_reset_enabled';
     const OneCCMultipleShipping = 'one_cc_multiple_shipping';
+    const AddGatewayProviderToResponse = 'add_gateway_provider_to_response';
+    const AddSettledByToResponse = 'add_settled_by_to_response';
+    const ShowPaymentsDetailsOnOTPSubmit = 'show_payments_details_on_otp_submit';
+    const AddLateAuthToResponse = 'add_late_auth_to_response';
+    const EnableTpvForMerchant = 'enable_tpv_for_merchant';
+    const MerchantPaymentCallbackUrlValidation = 'merchant_payment_callback_url_validation';
     const AggregatorAccessToSubmerchantReportEnabled = 'aggregator_access_to_submerchant_report_enabled';
 
     /**
@@ -116,12 +122,12 @@ class Constants
         self::CartAmountCheckEnabled => "rzp/pg/merchant/order/cart/Features",
         self::AllowPaymentsOnPaidOrder =>"rzp/pg/merchant/order/payments/Features",
         self::ExcessOrderAmountEnabled => "rzp/pg/merchant/order/payments/Features",
-        self::DcsPaymentMailsDisabled => "rzp/pg/merchant/payments/communication/Features",
-        self::FreeCreditUnregDisabled => "rzp/pg/org/payments/credits/Features",
-        self::AsyncBalanceUpdateEnabled => "rzp/pg/merchant/payments/ledger/Features",
-        self::AsyncTransactionUpdateEnabled => "rzp/pg/merchant/payments/ledger/Features",
-        self::PgLedgerReverseShadowEnabled => "rzp/pg/merchant/payments/ledger/Features",
-        self::AutoRefundsDisabled => "rzp/pg/merchant/payments/refunds/Features",
+        self::DcsPaymentMailsDisabled => "rzp/pg/merchant/communication/PaymentFeatures",
+        self::FreeCreditUnregDisabled => "rzp/pg/org/credits/Features",
+        self::AsyncBalanceUpdateEnabled => "rzp/pg/merchant/ledger/Features",
+        self::AsyncTransactionUpdateEnabled => "rzp/pg/merchant/ledger/Features",
+        self::PgLedgerReverseShadowEnabled => "rzp/pg/merchant/ledger/Features",
+        self::AutoRefundsDisabled => "rzp/pg/merchant/refunds/Features",
         self::EnableRoutePartnerships => "rzp/platform/partner/route/Features",
         self::ManualSettlementForSubmerchants => "rzp/pg/merchant/settlements/PartnershipsFeatures",
         self::ImportSettlement => "rzp/pg/merchant/settlements/OPGSPFeatures",
@@ -180,6 +186,12 @@ class Constants
         self::DynamicCurrencyConversionCybs => 'rzp/pg/merchant/payments/banking_program/Cards',
         self::AdminPasswordResetEnabled => 'rzp/pg/org/banking/admin/Features',
         self::OneCCMultipleShipping => 'rzp/pg/merchant/checkout/magic/Configuration',
+        self::AddGatewayProviderToResponse => 'rzp/pg/merchant/api/payments/ResponseConf',
+        self::AddSettledByToResponse => 'rzp/pg/merchant/api/payments/ResponseConf',
+        self::ShowPaymentsDetailsOnOTPSubmit => 'rzp/pg/merchant/api/payments/ResponseConf',
+        self::AddLateAuthToResponse => 'rzp/pg/merchant/api/payments/ResponseConf',
+        self::EnableTpvForMerchant => 'rzp/pg/merchant/order/Features',
+        self::MerchantPaymentCallbackUrlValidation => 'rzp/pg/merchant/security/Features',
         self::AggregatorAccessToSubmerchantReportEnabled => 'rzp/platform/partner/reporting/Features',
     ];
 
@@ -270,6 +282,12 @@ class Constants
         APIFeaturesConstants::CUSTOMER_FEE_DONT_SETTLE                      => self::PostpaidMerchantsDontSettleCustomerFees,
         APIFeaturesConstants::ORG_ADMIN_PASSWORD_RESET                      => self::AdminPasswordResetEnabled,
         APIFeaturesConstants::ONE_CC_SHOPIFY_MULTIPLE_SHIPPING              => self::OneCCMultipleShipping,
+        APIFeaturesConstants::EXPOSE_GATEWAY_PROVIDER                       => self::AddGatewayProviderToResponse,
+        APIFeaturesConstants::EXPOSE_SETTLED_BY                             => self::AddSettledByToResponse,
+        APIFeaturesConstants::OTP_SUBMIT_RESPONSE                           => self::ShowPaymentsDetailsOnOTPSubmit,
+        APIFeaturesConstants::SEND_PAYMENT_LATE_AUTH                        => self::AddLateAuthToResponse,
+        APIFeaturesConstants::TPV                                           => self::EnableTpvForMerchant,
+        APIFeaturesConstants::CALLBACK_URL_VALIDATION                       => self::MerchantPaymentCallbackUrlValidation,
         APIFeaturesConstants::AGGREGATOR_REPORT                             => self::AggregatorAccessToSubmerchantReportEnabled,
     ];
 
