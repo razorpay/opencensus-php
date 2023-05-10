@@ -143,4 +143,20 @@ class Repository extends Base\Repository
                     ->where(Entity::STATUS, '<>', Constants::SUCCESS)
                     ->first();
     }
+
+    public function getConsentDetailsForMerchantIdAndEntityId(string $merchantId, array $validLegalDocs, string $entityId, string $entityType, string $connectionType = null)
+    {
+        if ($connectionType === null)
+        {
+            $connectionType = ConnectionType::REPLICA;
+        }
+
+        return $this->newQueryWithConnection($this->getConnectionFromType($connectionType))
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->whereIn(Entity::CONSENT_FOR, $validLegalDocs)
+            ->where(Entity::ENTITY_ID, $entityId)
+            ->where(Entity::ENTITY_TYPE, $entityType)
+            ->orderBy(Entity::CREATED_AT, 'desc')
+            ->first();
+    }
 }

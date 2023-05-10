@@ -9766,12 +9766,13 @@ class Core extends Base\Core
      * Triggers async Job for capturing IP and create legal documents for Oauth Authorize.
      * @param string $merchantId
      */
-    public function captureConsentsForOauth(string $merchantId)
+    public function captureConsentsForOauth(string $merchantId, array $data)
     {
         $input = [
             DEConstants::CONSENT            => true,
-            DEConstants::IP_ADDRESS         => $this->app['request']->ip(),
-            DEConstants::USER_ID            => $this->app['request']->header(RequestHeader::X_DASHBOARD_USER_ID),
+            DEConstants::IP_ADDRESS         => $data['ip'],
+            DEConstants::ENTITY_ID          => $data[Entity::APPLICATION_ID],
+            Consent\Entity::ENTITY_TYPE     => Entity::APPLICATION,
             DEConstants::DOCUMENTS_DETAIL   => [
                 [
                     DEConstants::TYPE => Constants::TERMS,

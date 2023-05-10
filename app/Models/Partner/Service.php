@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
+use RZP\Http\RequestHeader;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Referral;
 use RZP\Models\Partner\Activation;
@@ -80,7 +81,7 @@ class Service extends Base\Service
         {
             $milestone = 'PartnerActivation';
             $input[DEConstants::IP_ADDRESS ] = $this->app['request']->ip();
-
+            $input[DEConstants::USER_ID]     = $this->app['request']->header(RequestHeader::X_DASHBOARD_USER_ID);
             CapturePartnershipConsents::dispatch($this->mode, $input, $this->merchant->getId(), $milestone);
         }
 

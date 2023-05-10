@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\AccessMap;
 
+use RZP\Constants\Product;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
@@ -47,9 +48,9 @@ class Service extends Base\Service
 
         $mapping     = $this->core()->addMappingForOAuthApp($entityOwner, $merchant, $input);
 
-        if($consent === true)
+        if ($consent === true and $input['env'] === 'prod')
         {
-            (new Merchant\Core())->captureConsentsForOauth($merchantId);
+            (new Merchant\Core())->captureConsentsForOauth($merchantId, $input);
         }
 
         return $mapping->toArrayPublic();

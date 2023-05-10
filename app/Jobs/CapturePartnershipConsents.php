@@ -4,6 +4,7 @@ namespace RZP\Jobs;
 
 use App;
 use Carbon\Carbon;
+use RZP\Constants\Product;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
@@ -75,7 +76,7 @@ class CapturePartnershipConsents extends Job
         }
         catch (\Throwable $e)
         {
-            if($e->getCode() === ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS)
+            if ($e->getCode() === ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS)
             {
                  $this->delete();
             }
@@ -100,22 +101,26 @@ class CapturePartnershipConsents extends Job
     {
         $merchantId   = $merchant->getId();
         $activationFormMilestone = $input[MerchantDetail::ACTIVATION_FORM_MILESTONE] = $milestone;
+        $input[Consent\Entity::ENTITY_ID]   ??= null;   //added these because php warning is throwing exception
+        $input[Consent\Entity::ENTITY_TYPE] ??= null;
+
+        if (empty($input[DEConstants::USER_ID]) === true)
+        {
+            $product = ($merchant->primaryOwner() === null) ? Product::BANKING : Product::PRIMARY;
+            $input[DEConstants::USER_ID] =  $merchant->primaryOwner($product)->getId();
+        }
 
         $detailService = new Merchant\Detail\Service();
 
         //if legal documents are not present already, store them in database
-        if($detailService->checkIfConsentsPresent($merchantId, [$activationFormMilestone.'_'.Constants::TERMS]) === false)
+        if ($this->checkIfConsentsPresent($merchantId, $input) === false)
         {
-            $input[Consent\Entity::ENTITY_ID]   =  null;
-            $input[Consent\Entity::ENTITY_TYPE] =  null;
-            $userId = $input[DEConstants::USER_ID] ?? $merchant->primaryOwner()->getId();
-
             $this->trace->info(TraceCode::CREATE_MERCHANT_CONSENTS, [
                 'message' => 'Consents are not present.',
                 'input'   => $input
             ]);
 
-            $detailService->storeConsents($merchantId, $input, $userId);
+            $detailService->storeConsents($merchantId, $input, $input[DEConstants::USER_ID]);
 
             $data = $detailService->getDocumentsDetails($input);
 
@@ -162,6 +167,29 @@ class CapturePartnershipConsents extends Job
                 'message' => 'Consents are already present.'
             ]);
         }
+    }
+
+    protected function checkIfConsentsPresent(string $merchantId, array $input) : bool
+    {
+        $detailService = new Merchant\Detail\Service();
+
+        $milestone = $input[MerchantDetail::ACTIVATION_FORM_MILESTONE];
+
+        $validDocTypes = [$milestone.'_'.Constants::TERMS];
+
+        if ($milestone === Constants::OAUTH)
+        {
+            $consentDetails = $this->repoManager->merchant_consents->getConsentDetailsForMerchantIdAndEntityId($merchantId, $validDocTypes, $input[Consent\Entity::ENTITY_ID], $input[Consent\Entity::ENTITY_TYPE]);
+
+            if ($consentDetails === null)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        return $detailService->checkIfConsentsPresent($merchantId, $validDocTypes);
     }
 
 

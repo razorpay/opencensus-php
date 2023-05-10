@@ -277,6 +277,7 @@ class Entity extends Base\PublicEntity
     const APPLICATION               = 'application';
     const KYC_ACCESS                = 'kyc_access';
 
+    const APPLICATION_ID            = 'application_id';
     const REFERRED_APPLICATION      = 'Referred application';
 
     // Extra constants for Batch

@@ -75,6 +75,8 @@ class OAuthAppMerchantMapTest extends OAuthTestCase
         $testData = $this->testData['testOAuthAppMerchantMap'];
 
         $testData['request']['content']['application_id'] = $application->getId();
+        $testData['request']['content']['env']            = "prod";
+        $testData['request']['content']['ip']             = "120.121.35";
         $testData['response']['content']['entity_id']     = $application->getId();
 
         $this->runRequestResponseFlow($testData);
