@@ -659,10 +659,15 @@ class Processor
                 ((isset($input[Payment\Method::CARD][Card\Entity::CVV]) === false) and
                     ($merchant->isFeatureEnabled('vsc_authorization') === true)))
             {
-                $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                    'reason' => "input"
-                ]);
-
+                if (($this->route->isRearchRoute($currentRouteName) === true) and
+                    (empty($input[Payment\Entity::METHOD]) === false and
+                    $input[Payment\Entity::METHOD] === Payment\METHOD::CARD))
+                {
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "input",
+                        'merchant_id' => $merchant->getId(),
+                    ]);
+                }
                 return false;
             }
 
@@ -684,7 +689,7 @@ class Processor
                 {
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                         'reason' => "offers",
-                        'order'  => $order,
+                        'merchant_id' => $merchant->getId(),
                     ]);
 
                     return false;
@@ -695,6 +700,7 @@ class Processor
                 {
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                         'reason' => "order_transfers",
+                        'merchant_id' => $merchant->getId(),
                     ]);
 
                     return false;
@@ -706,7 +712,8 @@ class Processor
             {
                 $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                     'reason' => "merchant_feature",
-                    "feature_name" => "skip_cvv"
+                    "feature_name" => "skip_cvv",
+                    'merchant_id' => $merchant->getId(),
                 ]);
                 return false;
             }
@@ -716,6 +723,7 @@ class Processor
             {
                 $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                     'reason' => "non_inr_currency",
+                    'merchant_id' => $merchant->getId(),
                 ]);
                 return false;
             }
@@ -725,6 +733,7 @@ class Processor
             if ($result === 'on') {
                 $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                     'reason' => "blocked_merchant",
+                    'merchant_id' => $merchant->getId(),
                 ]);
                 return false;
             }
@@ -770,6 +779,7 @@ class Processor
                             {
                                 $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                                     'reason' => "token_card_empty",
+                                    'merchant_id' => $merchant->getId(),
                                 ]);
 
                                 return false;
@@ -778,6 +788,7 @@ class Processor
                             {
                                 $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                                     'reason' => "vault_providers_or_axis",
+                                    'merchant_id' => $merchant->getId(),
                                 ]);
 
                                 return false;
@@ -803,6 +814,7 @@ class Processor
                         } else {
                             $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
                                 'reason' => "saved_card_not_network_tokenized",
+                                'merchant_id' => $merchant->getId(),
                             ]);
                             return false;
                         }
@@ -824,6 +836,10 @@ class Processor
 
             if ($merchant->isFeeBearerCustomerOrDynamic() === true )
             {
+                $this->trace->info(TraceCode::DEBUG_LOGGING, [
+                    'reason' => "check_for_customer_or_dynamic_fee_bearer_rearch",
+                    'merchant_id' => $merchant->getId(),
+                ]);
                 return ($feeBearerResult === 'on');
             }
 
@@ -840,6 +856,10 @@ class Processor
             // IIN not available
             if (empty($iin) === true)
             {
+                $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                    'reason' => "iin_not_available",
+                    'merchant_id' => $merchant->getId(),
+                ]);
                 return false;
             }
 
