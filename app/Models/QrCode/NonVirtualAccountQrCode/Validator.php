@@ -23,7 +23,7 @@ class Validator extends QrCode\Validator
         Entity::DESCRIPTION    => 'sometimes|custom|nullable',
         Entity::NOTES          => 'filled|notes',
         Entity::CUSTOMER_ID    => 'filled|string|nullable',
-        Entity::CLOSE_BY       => 'filled|epoch|custom',
+        Entity::CLOSE_BY       => 'nullable|epoch|custom',
         Entity::TAX_INVOICE    => 'sometimes_if:type,upi_qr|array|custom',
         Entity::REQUEST_SOURCE => 'required',
     ];
@@ -97,7 +97,7 @@ class Validator extends QrCode\Validator
         }
 
         if (($input['usage'] === UsageType::MULTIPLE_USE) and
-            (array_key_exists(Entity::CLOSE_BY, $input) === true))
+            (isset($input[Entity::CLOSE_BY]) === true))
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_STATIC_QR_CODE_EXPIRY_FAILURE);
         }

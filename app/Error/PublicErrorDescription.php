@@ -1760,5 +1760,10 @@ class PublicErrorDescription
 
     const BAD_REQUEST_INCORRECT_RESERVATION_OR_CANCELLATION_ID_FOR_REFUND           = 'Invalid request. The Reservation/Cancellation ID should be numeric entries';
 
+    const BAD_REQUEST_DYNAMIC_QR_CODE_FIXED_AMOUNT_FAILURE                          = 'fixed_amount=true is required for Single use QR';
+
+    const BAD_REQUEST_STATIC_QR_CODE_EXPIRY_FAILURE                                 = 'close_by for Multiple use QR code is not supported';
+
+    const BAD_REQUEST_CLOSE_STATIC_QR_CODE_FAILURE                                  = 'Multiple use QR code cannot be closed';
 
 }
