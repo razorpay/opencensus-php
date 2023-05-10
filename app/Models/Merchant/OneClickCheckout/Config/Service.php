@@ -2,9 +2,12 @@
 
 namespace RZP\Models\Merchant\OneClickCheckout\Config;
 
+use GuzzleHttp\Client;
+use RZP\Exception\ServerErrorException;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Http\Request\Requests;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Core;
@@ -32,6 +35,7 @@ class Service extends Base\Service
 
     const MUTEX_KEY = 'merchant_1cc_configs';
 
+    const WHITELIST_COUPONS_UPLOAD_PATH = 'v1/magic/coupons/csv?key_id=';
     const MERCHANT_METHODS_OFFER_MUTEX_KEY_PREFIX = 'mer_1cc_configs_methods_offers';
     const SECOND    = 1;
     const MINUTE    = 60 * self::SECOND;
@@ -1027,5 +1031,45 @@ class Service extends Base\Service
         }
 
         return $configs;
+    }
+
+    /**
+     * @throws ServerErrorException
+     * @throws BadRequestException
+     */
+    public function adminWhitelistCoupons(string $merchantId, $input): array
+    {
+        $input = utf8_decode(urldecode($input));
+        $this->merchant = $this->repo->merchant->find($merchantId);
+
+        if ($this->merchant === null)
+        {
+            return [
+                [
+                    "Code"=> "BAD_REQUEST_INVALID_MERCHANT_ID",
+                    "Description"=> "Invalid merchant ID",
+                    "Field"=> "",
+                    "Source"=> "",
+                    "Step"=> "",
+                    "Reason"=> "input_validation_failed",
+                ],
+                200
+            ];
+        }
+
+        $key = $this->repo->key->getKeysForMerchant($this->merchant->getId())->first();
+
+        $res = $this->app['integration_service_client']->makeMultipartRequest(
+            self::WHITELIST_COUPONS_UPLOAD_PATH . $key->getPublicKey(),
+            $input,
+        );
+
+        if($res->getStatusCode() != 200 && $res->getStatusCode() != 400)
+        {
+            throw new ServerErrorException('Received unexpected response from consumer app',
+                ErrorCode::SERVER_ERROR);
+        }
+        $response = json_decode($res->getBody(), true);
+        return [$response, 200];
     }
 }

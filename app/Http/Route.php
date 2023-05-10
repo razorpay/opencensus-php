@@ -4283,6 +4283,8 @@ class Route
 
         '1cc_methods_offers' => ['get', '1cc/merchant/methods_offers', 'OneClickCheckoutController@getMethodsAndOffersForMerchant'],
         '1cc_methods_offers_preflight'    => ['options',    '1cc/merchant/methods_offers',                          'OneClickCheckoutController@allowCors'],
+
+        'admin_1cc_whitelist_coupons'           => ['post', '1cc/admin/merchants/{id}/coupons/whitelist', 'OneClickCheckoutController@adminWhitelistCoupons'],
         'wallet_dashboard_proxy'                => ['any',  'wallet/proxy/{path?}',                  'WalletProxyController@proxy']
     ];
 
@@ -6938,6 +6940,7 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'admin_1cc_whitelist_coupons',
         //media Service routes
         'media_service_upload_file',
         'media_service_get_bucket',
@@ -9680,6 +9683,7 @@ class Route
         '1cc_shopify_fetch_themes'                 => Permission::MAGIC_OPS,
         '1cc_shopify_insert_theme'                 => Permission::MAGIC_OPS,
         '1cc_shopify_render_magic_snippet'         => Permission::MAGIC_OPS,
+        'admin_1cc_whitelist_coupons'              => Permission::MAGIC_OPS,
     ];
 
     public static $bankLmsRoutePermissions = [
@@ -14234,6 +14238,7 @@ class Route
             '1cc_shopify_fetch_themes',
             '1cc_shopify_insert_theme',
             '1cc_shopify_render_magic_snippet',
+            'admin_1cc_whitelist_coupons',
 
             // Terminal downtimes
             'manual_downtime_fetch',

@@ -9,6 +9,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Exception\IntegrationException;
 use RZP\Http\Request\Requests;
 use ApiResponse;
+use GuzzleHttp\Exception\GuzzleException;
 
 class Client
 {
@@ -103,6 +104,71 @@ class Client
             $this->app['trace']->error(TraceCode::INTEGRATION_SERVICE_ERROR, $data);
 
             throw $exception;
+        }
+    }
+
+    public function makeMultipartRequest(
+        string $path,
+        $input,
+        array $headers = [])
+    {
+        $url = $this->getBaseUrl() . $path;
+        try
+        {
+            $this->app['trace']->info(TraceCode::INTEGRATION_SERVICE_REQUEST, [
+                'type' => 'raw',
+                'url'   => $url,
+                'method' => 'POST',
+            ]);
+
+            $requestHeaders = array_merge([
+                self::AUTHORIZATION => $this->getAuthorizationHeader(),
+                self::X_REQUEST_ID  => $this->app['request']->getId(),
+            ], $headers);
+            $client = new \GuzzleHttp\Client();
+
+            $response = $client->request(
+                'POST',
+                $url,
+                [
+                    'multipart' => [
+                        [
+                            'name'     => 'file',
+                            'contents' => $input,
+                            'filename' => 'file.csv',
+                        ],
+                    ],
+                    'timeout' => $this->config['timeout'],
+                    'headers' => $requestHeaders,
+                    'http_errors' => false,
+                ]
+            );
+
+            if ($response->getStatusCode() != 200)
+            {
+                $this->app['trace']->info(TraceCode::INTEGRATION_SERVICE_RESPONSE,
+                    [
+                        'status_code' => $response->getStatusCode(),
+                        'response' => $response->getBody(),
+                    ]);
+            }
+
+            return $response;
+
+        }
+        catch (GuzzleException $e)
+        {
+            $fixedPath = explode("?", $path)[0];
+            $data = [
+                'exception' => $e->getMessage(),
+                'path'       => $fixedPath,
+            ];
+
+            $this->app['trace']->count(TraceCode::INTEGRATION_SERVICE_ERROR, $data);
+
+            $this->app['trace']->error(TraceCode::INTEGRATION_SERVICE_ERROR, $data);
+
+            throw $e;
         }
     }
 
