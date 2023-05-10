@@ -9,6 +9,7 @@ use RZP\Models\Transfer;
 use RZP\Constants\Entity;
 use RZP\Models\User\Role;
 use RZP\Http\RequestHeader;
+use RZP\Jobs\TransferProcess;
 use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\TestCase;
 use RZP\Constants\Mode as EnvMode;
@@ -2271,5 +2272,18 @@ class TransferTest extends TestCase
         $transfer = $this->getDbLastEntity('transfer');
 
         $this->assertNull( $transfer['recipient_settlement_id']);
+    }
+
+    public function testTransferProcessingDuplicateJobDispatch()
+    {
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $this->createPaymentAndTransfer();
+
+        $transfer = $this->getDbLastEntity('transfer');
+
+        $this->assertEquals('processed', $transfer->getStatus());
+
+        TransferProcess::dispatch(EnvMode::TEST, $transfer->getSourceId(), 'payment');
     }
 }

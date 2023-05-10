@@ -22,7 +22,7 @@ class OrderTransfer extends  AbstractTransfer
     {
         try
         {
-            $this->mutex->acquireAndRelease(
+            $transfersProcessed = $this->mutex->acquireAndRelease(
                 'order_transfer_process_' . $this->payment->getPublicId(),
                 function ()
                 {
@@ -40,7 +40,7 @@ class OrderTransfer extends  AbstractTransfer
 
                     $this->status = [Status::PENDING,Status::FAILED];
 
-                    $this->processOrderTransfers($this->payment);
+                    return $this->processOrderTransfers($this->payment);
                 },
                 self::MUTEX_LOCK_TIMEOUT,
                 ErrorCode::BAD_REQUEST_ORDER_TRANSFER_PROCESS_IN_PROGRESS, 0,100,200 ,true);
@@ -48,7 +48,8 @@ class OrderTransfer extends  AbstractTransfer
             $this->trace->info(
                 TraceCode::ORDER_TRANSFER_PROCESS_SUCCESS,
                 [
-                    'payment_id' => $this->payment->getPublicId()
+                    'payment_id' => $this->payment->getPublicId(),
+                    'count'      => count($transfersProcessed->getIds())
                 ]
             );
         }
