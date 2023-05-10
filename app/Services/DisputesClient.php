@@ -107,15 +107,25 @@ class DisputesClient
     // other headers for auth type, admin_id, etc to be added depending on the use-case.
     private function getDisputesHeaders() : array
     {
-        return [
+        $headers = [
             self::CONTENT_TYPE      => 'application/json',
             self::X_TASK_ID         => $this->app['request']->getTaskId(),
             self::X_MERCHANT_ID     => $this->app['basicauth']->getMerchantId() ?? '',
             self::X_AUTH_TYPE       => $this->getAuthType() ?? '',
             self::X_INTERNAL_APP    => $this->app['basicauth']->getInternalApp() ?? '',
-            self::X_ADMIN_ID        => $this->app['basicauth']->getAdmin()->getId() ?? '',
-            self::X_USER_ID         => $this->app['basicauth']->getUser()->getId() ?? '',
         ];
+
+        if ($this->app['basicauth']->getAdmin() !== null)
+        {
+            $headers[self::X_ADMIN_ID] = $this->app['basicauth']->getAdmin()->getId() ?? '';
+        }
+
+        if ($this->app['basicauth']->getUser() !== null)
+        {
+            $headers[self::X_USER_ID] = $this->app['basicauth']->getUser()->getId() ?? '';
+        }
+
+        return $headers;
     }
 
     /**
@@ -234,7 +244,9 @@ class DisputesClient
         }
         catch (\Throwable $e)
         {
-            $this->trace->count(Metric::DISPUTES_SERVICE_ERROR_COUNT);
+            $this->trace->count(Metric::DISPUTES_SERVICE_ERROR_COUNT, [
+                'route' => $this->app['api.route']->getCurrentRouteName(),
+            ]);
 
             $this->trace->error(TraceCode::DISPUTES_INTEGRATION_ERROR, [
                 'error_message' => $e->getMessage(),
