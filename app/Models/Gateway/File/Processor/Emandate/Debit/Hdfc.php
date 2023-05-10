@@ -90,7 +90,7 @@ class Hdfc extends Base
 
     protected function increaseAllowedSystemLimits()
     {
-        RuntimeManager::setMemoryLimit('4096M');
+        RuntimeManager::setMemoryLimit('8192M'); // 8 GB
 
         RuntimeManager::setTimeLimit(7200);
 

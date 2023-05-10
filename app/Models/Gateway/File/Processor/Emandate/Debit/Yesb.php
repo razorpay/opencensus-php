@@ -919,7 +919,11 @@ class Yesb extends Base
      */
     protected function increaseAllowedSystemLimits()
     {
-        RuntimeManager::setMemoryLimit('8192M'); // 8gb
+        RuntimeManager::setMemoryLimit('16384M'); // 16 GB
+    
+        RuntimeManager::setTimeLimit(7200);
+    
+        RuntimeManager::setMaxExecTime(7200);
     }
 
 }

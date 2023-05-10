@@ -5,6 +5,7 @@ namespace RZP\Models\Gateway\File\Processor\Emandate\Debit;
 use Mail;
 use Carbon\Carbon;
 
+use RZP\Base\RuntimeManager;
 use RZP\Gateway\Enach;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
@@ -220,5 +221,14 @@ class EnachRbl extends Base
             Enach\Base\Entity::ACQUIRER => self::ACQUIRER,
             Enach\Base\Entity::UMRN     => $token['gateway_token'],
         ];
+    }
+    
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('8192M'); // 8GB
+        
+        RuntimeManager::setTimeLimit(7200);
+        
+        RuntimeManager::setMaxExecTime(7200);
     }
 }

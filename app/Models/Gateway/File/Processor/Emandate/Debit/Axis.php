@@ -4,6 +4,7 @@ namespace RZP\Models\Gateway\File\Processor\Emandate\Debit;
 
 use Carbon\Carbon;
 
+use RZP\Base\RuntimeManager;
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
@@ -85,5 +86,10 @@ class Axis extends Base
         }
 
         return static::BASE_STORAGE_DIRECTORY . static::FILE_NAME . '_' . $time;
+    }
+    
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('4096M');
     }
 }
