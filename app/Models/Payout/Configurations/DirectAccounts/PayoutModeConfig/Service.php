@@ -123,7 +123,11 @@ class Service extends Base\Service
     {
         try
         {
-            $config = $this->fetchPayoutModeConfig($merchantId);
+            $params = [
+                Constants::MERCHANT_ID => $merchantId,
+            ];
+
+            $config = $this->fetchPayoutModeConfig($params);
 
             if (isset($config[Constants::ALLOWED_UPI_CHANNELS]) === true)
             {

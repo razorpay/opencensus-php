@@ -207,6 +207,9 @@ class Mode
                     ]
                 ],
                 Settlement\Channel::ICICI => [
+                    Constants\Entity::VPA          => [
+                        self::UPI,
+                    ],
                     Constants\Entity::BANK_ACCOUNT => [
                         self::RTGS,
                         self::IMPS,
@@ -216,9 +219,13 @@ class Mode
                     Constants\Entity::CARD         => [
                         self::IMPS,
                         self::NEFT,
+                        self::UPI,
                     ],
                 ],
                 Settlement\Channel::AXIS  => [
+                    Constants\Entity::VPA          => [
+                        self::UPI,
+                    ],
                     Constants\Entity::BANK_ACCOUNT => [
                         self::RTGS,
                         self::NEFT,
@@ -227,10 +234,14 @@ class Mode
                     ],
                     Constants\Entity::CARD => [
                         self::IMPS,
-                        self::NEFT
+                        self::NEFT,
+                        self::UPI
                     ],
                 ],
                 Settlement\Channel::YESBANK  => [
+                    Constants\Entity::VPA          => [
+                        self::UPI,
+                    ],
                     Constants\Entity::BANK_ACCOUNT => [
                         self::RTGS,
                         self::NEFT,
@@ -239,7 +250,8 @@ class Mode
                     ],
                     Constants\Entity::CARD => [
                         self::IMPS,
-                        self::NEFT
+                        self::NEFT,
+                        self::UPI
                     ],
                 ],
             ],

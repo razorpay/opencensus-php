@@ -403,6 +403,9 @@ class Channel
                 ],
             ],
             self::AXIS       => [
+                Constants\Entity::VPA           =>  [
+                    Mode::UPI,
+                ],
                 Constants\Entity::BANK_ACCOUNT => [
                     Mode::NEFT,
                     Mode::RTGS,

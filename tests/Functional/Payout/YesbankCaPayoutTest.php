@@ -20,6 +20,7 @@ use RZP\Models\Settlement\Channel;
 Use RZP\Models\FundTransfer\Attempt;
 use RZP\Exception\GatewayErrorException;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Services\Mock\BankingAccountService;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\BankingAccount\Gateway\Fields;
@@ -33,6 +34,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Jobs\ConnectedBankingAccountGatewayBalanceUpdate;
+use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
 
 class YesbankCaPayoutTest extends TestCase
 {
@@ -1629,5 +1631,134 @@ class YesbankCaPayoutTest extends TestCase
                                                       ['account_number' => 2224440041626905]);
 
         $this->assertEquals(0, $basDetailsAfterCronRuns->getBalanceLastFetchedAt());
+    }
+
+    public function mockDcsFetchConfigurationWithGivenResponse($response) {
+
+        $dcsConfigService = $this->getMockBuilder( DcsConfigService::class)
+                                 ->setConstructorArgs([$this->app])
+                                 ->getMock();
+
+        $this->app->instance('dcs_config_service', $dcsConfigService);
+
+        $this->app['dcs_config_service']
+             ->method('fetchConfiguration')
+             ->willReturn($response);
+    }
+
+    public function testCreateFreePayoutForUPIModeDirectAccountWithUpiEnabled()
+    {
+        $fundAccountRequest = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' => [
+                "account_type" => "vpa",
+                "contact_id"   => "cont_1000001contact",
+                "vpa"          => [
+                    "address" => 'yesbank@upi',
+                ]
+            ]];
+
+        $this->ba->privateAuth();
+
+        $fundAccount = $this->makeRequestAndGetContent($fundAccountRequest);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id'] = $fundAccount['id'];
+
+        $testData['response']['content']['fund_account_id'] = $fundAccount['id'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $balance = $this->getDbEntities('balance',
+            [
+                'merchant_id'  => "10000000000000",
+                'account_type' => 'direct',
+                'channel'      => 'yesbank'
+            ])->first();
+
+        $balanceId = $balance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('direct', $balanceId, 'yesbank');
+
+        $dcsResponse = [
+            Payout\Configurations\DirectAccounts\PayoutModeConfig\Constants::ALLOWED_UPI_CHANNELS => ["yesbank","axis"],
+        ];
+
+        $this->mockDcsFetchConfigurationWithGivenResponse($dcsResponse);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $expectedStatus = (env('FTS_MOCK') === true) ? 'created' : 'initiated';
+
+        $this->assertEquals('yesbank', $payout->getChannel());
+
+        $this->assertEquals($expectedStatus, $payout->getStatus());
+
+        $this->assertEquals('UPI', $payout->getMode());
+    }
+
+    public function testCreateNonFreePayoutForUPIModeDirectAccountWithUpiEnabled()
+    {
+        $fundAccountRequest = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' => [
+                "account_type" => "vpa",
+                "contact_id"   => "cont_1000001contact",
+                "vpa"          => [
+                    "address" => 'yesbank@upi',
+                ]
+            ]];
+
+        $this->ba->privateAuth();
+
+        $fundAccount = $this->makeRequestAndGetContent($fundAccountRequest);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account_id'] = $fundAccount['id'];
+
+        $testData['response']['content']['fund_account_id'] = $fundAccount['id'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $balance = $this->getDbEntities('balance',
+            [
+                'merchant_id'  => "10000000000000",
+                'account_type' => 'direct',
+                'channel'      => 'yesbank'
+            ])->first();
+
+        $dcsResponse = [
+            Payout\Configurations\DirectAccounts\PayoutModeConfig\Constants::ALLOWED_UPI_CHANNELS => ["yesbank", "axis"],
+        ];
+
+        $this->mockDcsFetchConfigurationWithGivenResponse($dcsResponse);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $expectedStatus = (env('FTS_MOCK') === true) ? 'created' : 'initiated';
+
+        $this->assertEquals('yesbank', $payout->getChannel());
+
+        $this->assertEquals($expectedStatus, $payout->getStatus());
+
+        $this->assertEquals('UPI', $payout->getMode());
     }
 }

@@ -485,4 +485,72 @@ return [
             'internal_error_code' => 'SERVER_ERROR_PRICING_RULE_ABSENT',
         ],
     ],
+
+    'testCreateFreePayoutForUPIModeDirectAccountWithFeatureEnabled' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'        => '2224440041626905',
+                'amount'                => 200,
+                'currency'              => 'INR',
+                'purpose'               => 'refund',
+                'narration'             => 'Batman',
+                'mode'                  => 'UPI',
+                'fund_account_id'       => '',
+                'notes'                 => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 200,
+                'currency'        => 'INR',
+                'fund_account_id' => '',
+                'mode'            => 'UPI',
+                'purpose'         => 'refund',
+                'tax'             => 0,
+                'fees'            => 0,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateAxisPayoutToUpiWithFeatureEnabledAndNonFreePayout' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'        => '2224440041626905',
+                'amount'                => 200,
+                'currency'              => 'INR',
+                'purpose'               => 'refund',
+                'narration'             => 'Batman',
+                'mode'                  => 'UPI',
+                'fund_account_id'       => '',
+                'notes'                 => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 200,
+                'currency'        => 'INR',
+                'fund_account_id' => '',
+                'mode'            => 'UPI',
+                'purpose'         => 'refund',
+                'tax'             => 90,
+                'fees'            => 590,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+    ],
 ];

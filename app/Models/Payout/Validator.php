@@ -39,6 +39,7 @@ use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
 use RZP\Models\PayoutsDetails\Entity as PayoutDetailsEntity;
 use RZP\Models\Workflow\Action\Checker\Entity as ActionChecker;
 use RZP\Models\PayoutsDetails\Validator as PayoutDetailsValidator;
+use RZP\Models\Payout\Configurations\DirectAccounts\PayoutModeConfig;
 
 class Validator extends Base\Validator
 {
@@ -1424,12 +1425,27 @@ class Validator extends Base\Validator
                                                      string $mode = null,
                                                      string $accountType = null) : bool
     {
-        if (($channel === Settlement\Channel::RBL) and
+        if (($accountType === Balance\AccountType::DIRECT) and
             ($mode === PayoutMode::UPI))
         {
-            if($this->isUpiModeEnabledOnRblDirectAccountForMerchantId($merchantId) === false)
+            switch ($channel)
             {
-                return false;
+                case Settlement\Channel::RBL :
+                    if ($this->isUpiModeEnabledOnRblDirectAccountForMerchantId($merchantId) === false)
+                    {
+                        return false;
+                    }
+                    break;
+
+                case Settlement\Channel::AXIS :
+                case Settlement\Channel::ICICI :
+                case Settlement\Channel::YESBANK :
+                    if ($this->isUpiModeEnabledForMerchantsDirectAccountOnChannel($merchantId, $channel) === false)
+                    {
+                        return false;
+                    }
+                    break;
+
             }
         }
 
@@ -1712,6 +1728,13 @@ class Validator extends Base\Validator
     {
         $featureList = (new FeatureRepo())->findMerchantWithFeatures($merchantId, [Features::RBL_CA_UPI]);
         return (count($featureList) !== 0);
+    }
+
+    public function isUpiModeEnabledForMerchantsDirectAccountOnChannel($merchantId, $channel)
+    {
+        $allowedUpiChannels = (new PayoutModeConfig\Service())->fetchAllowedUpiChannelsForMerchant($merchantId);
+
+        return in_array($channel, $allowedUpiChannels, true);
     }
 
     public function validatebulkPurposeCreation(int $count)
