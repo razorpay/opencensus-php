@@ -4555,4 +4555,42 @@ class TerminalTest extends TestCase
 
         $this->assertEquals(['non_recurring','sodexo'],$content['type']);
     }
+
+    public function testCreateOptimizerRazorpayTerminal()
+    {
+        $this->startTest();
+    }
+
+    public function testEditOptimizerRazorpayTerminal()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opVt',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'optimizer_razorpay',
+                'gateway_merchant_id' => '250000002',
+                'gateway_secure_secret' => "1231424",
+                'card' => 1,
+                'netbanking' => 1,
+                'mode' => 2,
+                'type'    => [
+                    'optimizer'     => 1,
+                    'non_recurring' => 1,
+                    'direct_settlement_with_refund' => 1,
+                ],
+            ]);
+        $tid = $terminal['id'];
+
+        $data = [
+            'upi' => 1
+        ];
+
+        $content = $this->editTerminal($tid, $data);
+
+        $this->assertEquals( "1", $content['upi']);
+        $this->assertEquals( "1", $content['netbanking']);
+        $this->assertEquals( "1", $content['card']);
+
+    }
 }

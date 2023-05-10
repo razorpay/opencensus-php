@@ -216,6 +216,7 @@ class Gateway
 
     const VA_USD             = 'va_usd';
 
+    const OPTIMIZER_RAZORPAY = "optimizer_razorpay";
 
     //
     // Constant used to store the response of various refund functions, used to prepare response for scrooge/
@@ -425,6 +426,7 @@ class Gateway
         self::HDFC_EZETAP           => self::HDFC,
         self::UMOBILE               => self::UMOBILE,
         self::FPX                   => self::FPX,
+        self::OPTIMIZER_RAZORPAY    => self::OPTIMIZER_RAZORPAY
     ];
 
     // Map of DS settlement entity with DS Bank/org name
@@ -459,6 +461,7 @@ class Gateway
         self::PAYSECURE             => self::AXIS,
         self::UMOBILE               => self::UMOBILE,
         self::FPX                   => self::FPX,
+        self::OPTIMIZER_RAZORPAY    => self::OPTIMIZER_RAZORPAY
     ];
 
 
@@ -1597,6 +1600,7 @@ class Gateway
             self::INGENICO,
             self::BILLDESK_OPTIMIZER,
             self::HDFC_EZETAP,
+            self::OPTIMIZER_RAZORPAY
         ],
 
         Method::NETBANKING => [
@@ -1651,6 +1655,7 @@ class Gateway
             self::NETBANKING_DBS,
             self::INGENICO,
             self::BILLDESK_OPTIMIZER,
+            self::OPTIMIZER_RAZORPAY
         ],
 
         //
@@ -1716,6 +1721,7 @@ class Gateway
             self::PINELABS,
             self::HDFC_EZETAP,
             self::BILLDESK_OPTIMIZER,
+            self::OPTIMIZER_RAZORPAY
         ],
 
         Method::AEPS => [

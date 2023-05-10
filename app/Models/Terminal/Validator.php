@@ -184,6 +184,7 @@ class Validator extends Base\Validator
         Payment\Gateway::HDFC_EZETAP,
         Payment\Gateway::AXIS_TOKENHQ,
         Payment\Gateway::FPX,
+        Payment\Gateway::OPTIMIZER_RAZORPAY,
         Payment\Gateway::EGHL,
     ];
 
@@ -669,6 +670,24 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_ID        => 'required|string|size:8',
         Entity::ENABLED                    => 'required|in:0,1',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+    ];
+
+    protected static $optimizerRazorpayTerminalRules = [
+        Entity::GATEWAY                                 => 'required|in:optimizer_razorpay',
+        Entity::GATEWAY_MERCHANT_ID                     => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET                   => 'required|string',
+        Entity::TYPE                                    => 'required|array',
+        Entity::TYPE . '.direct_settlement_with_refund' => 'required|in:1',
+        Entity::TYPE . '.optimizer'                     => 'required|in:1',
+        Entity::MODE                                    => 'sometimes|in:2',
+        Entity::PROCURER                                => 'required|string|in:merchant',
+        Entity::STATUS                                  => 'required|in:pending,activated,deactivated,failed',
+        Entity::CARD                                    => 'sometimes|boolean|in:0,1',
+        Entity::UPI                                     => 'sometimes|boolean|in:0,1',
+        Entity::NOTES                                   => 'sometimes|string',
+        Entity::NETBANKING                              => 'sometimes|boolean|in:0,1',
+        Entity::NETWORK_CATEGORY                        => 'sometimes|string|max:30',
+        Entity::CATEGORY                                => 'sometimes|string|numeric|digits:4',
     ];
 
     protected static $emiSbiEditTerminalRules = [
@@ -1279,6 +1298,20 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+    ];
+
+    protected static $optimizerRazorpayEditTerminalRules = [
+        Entity::MODE                       => 'sometimes|in:2',
+        Entity::ENABLED                    => 'sometimes|in:0,1',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::CARD                       => 'sometimes|boolean|in:0,1',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::NOTES                      => 'sometimes|string',
+        Entity::UPI                        => 'sometimes|boolean|in:0,1',
+        Entity::NETBANKING                 => 'sometimes|boolean|in:0,1',
+        Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
     ];
 
     protected static $walletOlamoneyEditTerminalRules = [
@@ -3106,6 +3139,7 @@ class Validator extends Base\Validator
             Gateway::INGENICO,
             Gateway::BILLDESK_OPTIMIZER,
             Gateway::AXIS_TOKENHQ,
+            Gateway::OPTIMIZER_RAZORPAY
         ];
 
         //Migs now supports purchase mode as well

@@ -5101,7 +5101,39 @@ return [
                 'gateway_acquirer'              => 'payu',
                 'gateway_merchant_id'           => '12344',
                 'gateway_secure_secret'         => '12344',
-                'card'                           => 1,
+                'card'                          => 1,
+                'mode'                          => 2,
+                'type'                      => [
+                    'non_recurring' => '1',
+                    'direct_settlement_with_refund' => '1',
+                    'sodexo' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response'  => [
+            'content'  => [
+                'gateway_merchant_id'       => '12344',
+                'enabled'                   => true,
+                'type'    => [
+                    'non_recurring',
+                    'direct_settlement_with_refund',
+                    'sodexo',
+                ],
+            ]
+        ]
+    ],
+
+    'testCreateOptimizerRazorpayTerminal'        => [
+        'request' => [
+            'url'     => '/merchants/10000000000000/terminals',
+            'content' => [
+                'gateway'                       => 'optimizer_razorpay',
+                'gateway_acquirer'              => 'axis_vas',
+                'gateway_merchant_id'           => '12344',
+                'gateway_secure_secret'         => '12344',
+                'card'                          => 1,
+                'upi'                           => 1,
                 'type'                      => [
                     'non_recurring' => '1',
                     'direct_settlement_with_refund' => '1',
