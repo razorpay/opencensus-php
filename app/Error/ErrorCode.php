@@ -2919,6 +2919,14 @@ class ErrorCode
     const BAD_REQUEST_WHITELISTED_MERCHANT_ADMIN_FORGOT_PASSWORD_FEATURE_NOT_ENABLED           = 'BAD_REQUEST_WHITELISTED_MERCHANT_ADMIN_FORGOT_PASSWORD_FEATURE_NOT_ENABLED';
     const BAD_REQUEST_WHITELISTED_MERCHANT_ADMIN_RESET_PASSWORD_FEATURE_NOT_ENABLED            = 'BAD_REQUEST_WHITELISTED_MERCHANT_ADMIN_RESET_PASSWORD_FEATURE_NOT_ENABLED';
 
+    // Account Service Error Codes
+    const BAD_REQUEST_NO_RECORD_FOUND_FOR_ID                                        = 'BAD_REQUEST_NO_RECORD_FOUND_FOR_ID';
+    const BAD_REQUEST_INVALID_ARGUMENT                                              = 'BAD_REQUEST_INVALID_ARGUMENT';
+
+    const ASV_SERVER_ERROR                                                          = 'ASV_SERVER_ERROR';
+
+    const ASV_INTERNAL_PARITY_CHECKER_ERROR                                         = 'ASV_INTERNAL_PARITY_CHECKER_ERROR';
+
     static function getConstants()
     {
         $oClass = new \ReflectionClass(__CLASS__);

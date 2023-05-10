@@ -1445,6 +1445,16 @@ return [
         'asv_data_sync_events_topic' => env('ASV_DATA_SYNC_EVENTS_TOPIC', 'prod-asv-data-sync-events')
     ],
 
+    'asv_v2' => [
+        'grpc_host' =>  env('ASV_V2_GRPC_HOST', 'asv-grpc.razorpay.com'),
+        'username' => env('ASV_V2_USERNAME', ''),
+        'password' => env('ASV_V2_PASSWORD', ''),
+        'grpc_timeout' => env('ASV_V2_GRPC_CLIENT_TIMEOUT', 100000),
+
+        // splitz experiment ids
+        'splitz_experiment_website_read_merchantid' => env('ASV_SPLITZ_EXPERIMENT_WEBSITE_READ_MERCHANTID', ''),
+    ],
+
     'recon'         => [
         'api_key'               => env('RECON_SERVICE_API_AUTH_KEY'),
         'api_secret'            => env('RECON_SERVICE_API_AUTH_SECRET'),

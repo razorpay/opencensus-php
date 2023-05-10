@@ -93,7 +93,10 @@
         "razorpay/wda-php-sdk": "v1.2.0",
         "razorpay/dcs-php-sdk": "dev-master",
         "selective/transformer": "1.2.0",
-        "razorpay/config-proto": "dev-master"
+        "razorpay/config-proto": "dev-master",
+        "grpc/grpc": "1.52.0",
+        "razorpay/account-service-php-sdk": "v1.0.3",
+        "ext-grpc": "*"
     },
     "repositories": [
         {
@@ -174,6 +177,11 @@
             "type": "vcs",
             "no-api": true,
             "url": "git@github.com:razorpay/wda-php-sdk.git"
+        },
+        {
+            "type": "vcs",
+            "no-api": true,
+            "url": "git@github.com:razorpay/account-service-php-sdk.git"
         }
     ],
     "require-dev": {

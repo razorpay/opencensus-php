@@ -9,6 +9,9 @@ use Cache;
 use RZP\Trace\TraceCode;
 use Swift_Mailer;
 use Buzz\Client\MultiCurl;
+use Razorpay\Asv\Config as AsvSdkConfig;
+use Razorpay\Asv\Client as AsvSdkClient;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as ASVV2Constant;
 use Razorpay\Outbox\Job\Core;
 use Razorpay\OAuth\Application;
 use Illuminate\Database\Connection;
@@ -734,6 +737,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerAsvHttpClient();
 
+        $this->registerAsvSdkClient();
+
         $this->registerPayoutServiceStatus();
 
         $this->registerPayoutServiceDetail();
@@ -935,7 +940,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             'smartcollect',
             'cds_http_client',
             AsvConstant::ASV_HTTP_CLIENT,
-            'kafkaProducerClient'
+            'kafkaProducerClient',
+            ASVV2Constant::ASV_SDK_CLIENT
         ];
     }
 
@@ -2230,6 +2236,31 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             $client          = new MultiCurl($responseFactory, $options);
 
             return $client;
+        });
+    }
+
+    /**
+     * register ASV SDK Client
+     *
+     * @return void
+     */
+    protected function registerAsvSdkClient()
+    {
+        $this->app->singleton(ASVV2Constant::ASV_SDK_CLIENT, function ($app) {
+
+            $asvConfig = $app->config->get(ASVV2Constant::ASV_CONFIG);
+
+            $username = $asvConfig[ASVV2Constant::USERNAME];
+            $password = $asvConfig[ASVV2Constant::PASSWORD];
+            $grpcHost = $asvConfig[ASVV2Constant::GRPC_HOST];
+
+            $credentials = new AsvSdkConfig\Credentials($username, $password);
+            $logger = $app['trace'];
+
+            $asvSdkConfig = new AsvSdkConfig\Config();
+            $asvSdkConfig->setHost($grpcHost)->setCredentials($credentials)->setLogger($logger)->setTraceCodeClass(TraceCode::Class);
+
+            return new AsvSdkClient($asvSdkConfig);
         });
     }
 

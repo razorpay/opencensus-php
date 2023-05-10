@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "044fa6f21f4b1e94f4840edf8a8bb037",
+    "content-hash": "061e637cea05ef1c6034ae317e06af35",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -3404,16 +3404,16 @@
         },
         {
             "name": "grpc/grpc",
-            "version": "1.42.0",
+            "version": "1.52.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/grpc/grpc-php.git",
-                "reference": "9fa44f104cb92e924d4da547323a97f3d8aca6d4"
+                "reference": "98394cd601a587ca68294e6209bd713856969105"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/grpc/grpc-php/zipball/9fa44f104cb92e924d4da547323a97f3d8aca6d4",
-                "reference": "9fa44f104cb92e924d4da547323a97f3d8aca6d4",
+                "url": "https://api.github.com/repos/grpc/grpc-php/zipball/98394cd601a587ca68294e6209bd713856969105",
+                "reference": "98394cd601a587ca68294e6209bd713856969105",
                 "shasum": ""
             },
             "require": {
@@ -3442,9 +3442,9 @@
                 "rpc"
             ],
             "support": {
-                "source": "https://github.com/grpc/grpc-php/tree/v1.42.0"
+                "source": "https://github.com/grpc/grpc-php/tree/v1.52.0"
             },
-            "time": "2021-11-19T08:13:51+00:00"
+            "time": "2023-02-25T05:20:08+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -10766,6 +10766,49 @@
                 "source": "https://github.com/ratchetphp/RFC6455/tree/v0.3.1"
             },
             "time": "2021-12-09T23:20:49+00:00"
+        },
+        {
+            "name": "razorpay/account-service-php-sdk",
+            "version": "v1.0.3",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:razorpay/account-service-php-sdk.git",
+                "reference": "4bc1b8d13626a5aaafdbb17bc83b58d841bd6adf"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/razorpay/account-service-php-sdk/zipball/4bc1b8d13626a5aaafdbb17bc83b58d841bd6adf",
+                "reference": "4bc1b8d13626a5aaafdbb17bc83b58d841bd6adf",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "ext-json": "*",
+                "ext-mbstring": "*",
+                "google/protobuf": "^3.12",
+                "grpc/grpc": "^1.52",
+                "illuminate/support": "^9.0",
+                "monolog/monolog": "2.x-dev",
+                "php": "^8.1",
+                "phpunit/phpunit": "^9.0",
+                "psr/log": "^1.0",
+                "razorpay/trace": "4.0.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Razorpay\\Asv\\": "src/",
+                    "Razorpay\\Asv\\Tests\\": "tests/",
+                    "": "generated/grpc/"
+                }
+            },
+            "description": "PHP sdk of Account Service",
+            "keywords": [
+                "account-service-php-sdk",
+                "asv",
+                "razorpay"
+            ],
+            "time": "2023-05-08T14:33:10+00:00"
         },
         {
             "name": "razorpay/config-proto",
@@ -19109,7 +19152,8 @@
         "ext-dom": "*",
         "ext-libxml": "*",
         "ext-gd": "*",
-        "ext-curl": "*"
+        "ext-curl": "*",
+        "ext-grpc": "*"
     },
     "platform-dev": [],
     "plugin-api-version": "2.3.0"

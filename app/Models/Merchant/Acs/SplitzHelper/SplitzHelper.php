@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Acs\SplitzHelper;
 
 use App;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as ASVV2Constant;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Modules\Acs\Wrapper\Constant;
@@ -26,9 +27,21 @@ class SplitzHelper
         $this->trace = $app[Constant::TRACE];
 
         $this->splitzService = $this->app[Constant::SPLITZ_SERVICE];
-
     }
 
+    function isSplitzOnByExperimentName(string $experimentName, string $identifier): bool {
+        try {
+            $experimentId = $this->app->config->get(ASVV2Constant::ASV_CONFIG)[$experimentName];
+            return $this->isSplitzOn($experimentId, $identifier);
+        } catch (\Exception $e) {
+            $this->trace->error(TraceCode::ACCOUNT_SERVICE_SPLITZ_EXCEPTION, [
+                "splitz_call_exception" => $e->getMessage(),
+                "experiment_name" => $experimentName,
+                "identifier" => $identifier,
+            ]);
+            return false;
+        }
+    }
     /**
      * @param string $experimentId
      * @param string $id

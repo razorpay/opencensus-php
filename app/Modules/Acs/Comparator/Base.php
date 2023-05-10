@@ -114,6 +114,90 @@ class Base
 
     /**
      *
+     * Returns exact difference of two arrays, method doesn't consider excluded keys
+     * This method consider zero value of a type and null as different value, e.g false !=null, 0!=null, ""!=null, []!="
+     * Difference in child key is returned as: parent->child1->child2
+     * array_difference($a1, $a2) only compares keys present in $a1
+     * Hence, to get complete difference also call in reverse.
+     *
+     * Example 1:
+     * $a1=array("e"=>"red","b"=>0,"c"=>"blue","d"=>["ok"=>"ok", "ok3"=>"hello"]);
+     * $a2=array("e"=>"red","b"=>"green","g"=>"blue","d"=>["ok"=>"ok", "different"=>"hello"], "de"=>"ok");
+     * getExactArrayDifference($a1, $a2) = [b,c,d->different]
+     *
+     * Example 2:
+     * $b1=array("e"=>"red","b"=>null);
+     * $b2 = array("e" => "red", "b" => []);
+     * getExactArrayDifference($b1, $b2) = [b];
+     * @param array $array1
+     * @param array $array2
+     * @param string $parentKey
+     * @return array
+     */
+    protected function getExactArrayDifference(array $array1, array $array2, string $parentKey = ""): array
+    {
+        $difference = [];
+        foreach($array1 as $key => $value)
+        {
+            $keyWithParent = $key;
+            if($parentKey !== ""){
+                $keyWithParent = $parentKey."->".$key;
+            }
+
+            if(array_key_exists($key, $array2) === false) {
+                $difference[] = $key;
+                continue;
+            }
+
+            // calculates diff recursively
+            if(is_array($value) === true)
+            {
+
+                if((is_array($array2[$key]) === false))
+                {
+                    $difference[] = $key;
+                }
+                else
+                {
+                    $childDifference = $this->getExactArrayDifference($value, $array2[$key], $keyWithParent);
+                    foreach($childDifference as $childDifferenceKey => $childDifferenceValue) {
+                        $difference[] = $key."->".$childDifferenceValue;
+                    }
+                }
+            }
+            elseif($array2[$key] !== $value)
+            {
+                $difference[] = $key;
+            }
+        }
+
+        return $difference;
+    }
+
+    /**
+     *
+     * Calls getExactArrayDifference with direct and reverse sequence.
+     *
+     * Example 1:
+     * $a1=array("e"=>"red","b"=>0,"c"=>"blue","d"=>["ok"=>"ok", "ok3"=>"hello"]);
+     * $a2=array("e"=>"red","b"=>null,"g"=>"blue","d"=>["ok"=>"ok", "different"=>"hello"], "de"=>"ok");
+     * getExactDifference($a1, $a2) = [b,c,g,d->different,de]
+     *
+     * @param array $array1
+     * @param array $array2
+     * @return array
+     */
+    public function getExactDifference(array $array1, array $array2): array {
+        $difference = array_values(array_unique(array_merge(
+            $this->getExactArrayDifference($array1, $array2),
+            $this->getExactArrayDifference($array2, $array1)
+        )));
+
+        return $difference;
+    }
+
+    /**
+     *
      * Called by getDifference to help post process difference with custom logic.
      *
      * @param array $difference

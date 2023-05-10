@@ -8,7 +8,10 @@ use RZP\Services\KafkaProducer;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\TriggerAcsFullSync;
 use RZP\Exception\LogicException;
+use RZP\Jobs\TriggerAsvFullParityCheck;
+use RZP\Models\Merchant\Acs\ParityChecker;
 use RZP\Models\Merchant\Acs\SplitzHelper\SplitzHelper;
+use RZP\Models\Merchant\Acs\ParityChecker\Constant\Constant;
 use RZP\Models\Merchant\Acs\EventProcessor\EventProcessorFactory;
 
 class Service extends Base\Service
@@ -72,6 +75,26 @@ class Service extends Base\Service
         //                event(new RecordSyncEvent($entity, $outboxJobs));
         //            }
         //        }
+        return [];
+    }
+
+    public function triggerFullParityCheck(array $input): array
+    {
+        $this->trace->info(TraceCode::ASV_TRIGGER_FULL_PARITY_CHECK, $input);
+
+        TriggerAsvFullParityCheck::dispatch($this->mode, $input);
+
+        return [];
+    }
+
+    public function triggerParityCheck(array $input): array
+    {
+        $this->trace->info(TraceCode::ASV_TRIGGER_PARITY_CHECK, $input);
+        $merchantIds = $input[Constant::MERCHANT_IDS];
+        $parityCheckEntity = $input[Constant::PARITY_CHECK_ENTITY];
+        $parityCheckMethods = $input[Constant::PARITY_CHECK_METHODS] ?? [Constant::GET_BY_MERCHANT_ID];
+        $parityService = new ParityChecker\Service($merchantIds, $parityCheckEntity, $parityCheckMethods);
+        $parityService->triggerParityCheck();
         return [];
     }
 

@@ -5,6 +5,7 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Acs\ParityChecker\Constant\Constant;
 
 class AcsController extends Controller
 {
@@ -13,8 +14,17 @@ class AcsController extends Controller
     public function triggerSync()
     {
         $input = Request::all();
+        $parityCheckEnabled = $input[Constant::PARITY_CHECK_ENABLED] ?? false;
 
-        $data = $this->service()->triggerSync($input);
+        $data = [];
+        if($parityCheckEnabled === true){
+            /**
+             * Triggering Parity Check
+             */
+            $data = $this->service()->triggerParityCheck($input);
+        }else{
+            $data = $this->service()->triggerSync($input);
+        }
 
         return ApiResponse::json($data);
     }
@@ -22,8 +32,18 @@ class AcsController extends Controller
     public function triggerFullSync()
     {
         $input = Request::all();
+        $parityCheckEnabled = $input[Constant::PARITY_CHECK_ENABLED] ?? false;
 
-        $data = $this->service()->triggerFullSync($input);
+        $data = [];
+
+        if ($parityCheckEnabled === true){
+            /**
+             * Triggering Full Parity Check
+             */
+            $data = $this->service()->triggerFullParityCheck($input);
+        }else{
+            $data = $this->service()->triggerFullSync($input);
+        }
 
         return ApiResponse::json($data);
     }
