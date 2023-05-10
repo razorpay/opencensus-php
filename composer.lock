@@ -10773,12 +10773,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/config-proto.git",
-                "reference": "ce9bc749ee348478a90fd45aa51354c3d49ebd39"
+                "reference": "0fad686b990f691710e25ba979b6041d1f5a40f4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/config-proto/zipball/ce9bc749ee348478a90fd45aa51354c3d49ebd39",
-                "reference": "ce9bc749ee348478a90fd45aa51354c3d49ebd39",
+                "url": "https://api.github.com/repos/razorpay/config-proto/zipball/0fad686b990f691710e25ba979b6041d1f5a40f4",
+                "reference": "0fad686b990f691710e25ba979b6041d1f5a40f4",
                 "shasum": ""
             },
             "require": {
@@ -10804,7 +10804,7 @@
                 "dcs-config",
                 "razorpay"
             ],
-            "time": "2023-05-09T05:14:11+00:00"
+            "time": "2023-05-09T09:23:58+00:00"
         },
         {
             "name": "razorpay/dcs-php-sdk",
@@ -10812,12 +10812,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/dcs-php-sdk.git",
-                "reference": "8da1f4a74aee7dba00267b5f16e3cbd9a51ba430"
+                "reference": "62eb994e4e8e340c2b0cda0a12769f6205423251"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/dcs-php-sdk/zipball/8da1f4a74aee7dba00267b5f16e3cbd9a51ba430",
-                "reference": "8da1f4a74aee7dba00267b5f16e3cbd9a51ba430",
+                "url": "https://api.github.com/repos/razorpay/dcs-php-sdk/zipball/62eb994e4e8e340c2b0cda0a12769f6205423251",
+                "reference": "62eb994e4e8e340c2b0cda0a12769f6205423251",
                 "shasum": ""
             },
             "require": {
@@ -10864,7 +10864,7 @@
                 "dcs-php-sdk",
                 "razorpay"
             ],
-            "time": "2023-05-04T09:43:55+00:00"
+            "time": "2023-05-08T12:21:09+00:00"
         },
         {
             "name": "razorpay/ec2-metadata",

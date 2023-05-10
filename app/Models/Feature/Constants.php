@@ -233,6 +233,8 @@ class Constants
     const SKIP_NOTES_MERGING              = 'skip_notes_merging';
     const ENABLE_SINGLE_RECON             = 'enable_single_recon';
 
+    const OPTIMIZER_RAZORPAY_VAS          = 'optimizer_razorpay_vas';
+
     // Ledger constants
     const IDEMPOTENCY_KEY                   = 'idempotency_key';
     const MERCHANT_ID                       = 'merchant_id';
@@ -2139,6 +2141,7 @@ class Constants
         self::OPTIMIZER_SMART_ROUTER          => true,
         self::SKIP_NOTES_MERGING              => true,
         self::ENABLE_SINGLE_RECON             => true,
+        self::OPTIMIZER_RAZORPAY_VAS          => true,
         self::PAYMENTLINKS_V2                 => true,
         self::RECURRING_DEBIT_UMRN            => true,
         self::NACH_FORM_DIRECT_DOWNLOAD       => true,
@@ -2965,6 +2968,11 @@ class Constants
         self::ENABLE_SINGLE_RECON => [
             'feature'       => self::ENABLE_SINGLE_RECON,
             'display_name'  => 'Enable Single Recon For Merchant',
+            'documentation' => '',
+        ],
+        self::OPTIMIZER_RAZORPAY_VAS => [
+            'feature'       => self::OPTIMIZER_RAZORPAY_VAS,
+            'display_name'  => 'Razorpay Gateway for optimiser',
             'documentation' => '',
         ],
         self::RX_SHOW_PAYOUT_SOURCE => [

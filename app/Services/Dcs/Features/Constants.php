@@ -99,6 +99,7 @@ class Constants
     const EnableTpvForMerchant = 'enable_tpv_for_merchant';
     const MerchantPaymentCallbackUrlValidation = 'merchant_payment_callback_url_validation';
     const AggregatorAccessToSubmerchantReportEnabled = 'aggregator_access_to_submerchant_report_enabled';
+    const OptimizerRazorpayVas = 'razorpay_vas';
 
     /**
      * Stores the mapping of the features to their corresponding dcs keys
@@ -193,6 +194,7 @@ class Constants
         self::EnableTpvForMerchant => 'rzp/pg/merchant/order/Features',
         self::MerchantPaymentCallbackUrlValidation => 'rzp/pg/merchant/security/Features',
         self::AggregatorAccessToSubmerchantReportEnabled => 'rzp/platform/partner/reporting/Features',
+        self::OptimizerRazorpayVas => 'rzp/pg/merchant/optimizer/OnboardingFeatures'
     ];
 
     /**
@@ -289,6 +291,7 @@ class Constants
         APIFeaturesConstants::TPV                                           => self::EnableTpvForMerchant,
         APIFeaturesConstants::CALLBACK_URL_VALIDATION                       => self::MerchantPaymentCallbackUrlValidation,
         APIFeaturesConstants::AGGREGATOR_REPORT                             => self::AggregatorAccessToSubmerchantReportEnabled,
+        APIFeaturesConstants::OPTIMIZER_RAZORPAY_VAS                        => self::OptimizerRazorpayVas,
     ];
 
     /**
