@@ -1238,6 +1238,81 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateEghlTerminal()
+    {
+        $url = '/merchants/10000000000000/terminals';
+
+        $this->fixtures->merchant->edit('10000000000000',[
+            MerchantEntity::COUNTRY_CODE => 'MY'
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testEditEghlTerminal()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opVt',
+                'merchant_id' => '10000000000000',
+                'gateway'                  => 'eghl',
+                'gateway_terminal_id'      => '12344',
+                'gateway_access_code'      => '12344',
+                'gateway_merchant_id'      => '12344',
+                'gateway_secure_secret'    => '12345',
+                'procurer'                 => 'merchant'
+            ]);
+
+
+        $tid = $terminal['id'];
+
+        $data = [
+            'procurer' => "razorpay",
+        ];
+
+        $this->terminalsServiceMock = $this->getTerminalsServiceMock();
+
+        $this->mockTerminalsServiceProxyRequest(
+            ["id" => "AqdfGh5460opVt",
+                "gateway" => "eghl",
+                "procurer" => "razorpay",
+                "merchant_id" => "10000000000000"]);
+
+        $content = $this->editTerminal($tid, $data);
+
+        $this->assertEquals( "razorpay", $content['procurer']);
+    }
+
+    public function testDeleteEghlTerminal()
+    {
+        $this->ba->adminAuth();
+
+        $terminal = $this->fixtures->create('terminal', [
+            'enabled'     => false,
+            'gateway'     => 'eghl',
+            'status'      => 'pending'
+        ]);
+
+        $terminalId = $terminal->getId();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/terminals/' . $terminalId;
+
+        $terminal = $this->getEntityById('terminal', $terminalId, true);
+
+        $content = $this->startTest();
+
+        $this->expectException(Exception\BadRequestException::class);
+
+        $this->expectExceptionCode(
+            ErrorCode::BAD_REQUEST_INVALID_ID);
+
+        $terminal = $this->getEntityById('terminal', $terminalId, true);
+    }
+
+
     public function testCreateTerminalInvalidAcquirerForCountry()
     {
         $url = '/merchants/10000000000000/terminals';
@@ -4477,7 +4552,7 @@ class TerminalTest extends TestCase
         $content = $this->editTerminal($tid, $data);
 
         $this->assertEquals( "1", $content['card']);
-        
+
         $this->assertEquals(['non_recurring','sodexo'],$content['type']);
     }
 }

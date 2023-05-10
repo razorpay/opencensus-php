@@ -2438,6 +2438,35 @@ class TerminalMigrationTest extends TestCase
         $this->assertEquals($terminal->getId(), $terminal2->getId());
     }
 
+    public function testFindByEghlGatewayAndTerminalData()
+    {
+        DB::table('terminals')->delete();
+
+        $terminal = $this->fixtures->create(
+            'terminal', [
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'eghl',
+            'gateway_merchant_id'       => 'EGHL00001000',
+            'card'                      => 1,
+            'enabled_wallets'           => ['boost'],
+            'gateway_terminal_password' => 'abcd',
+            'gateway_acquirer'          => 'eghl',
+            'capability'                => 0,
+            'type'                      => [
+                'non_recurring' => '1',
+            ],
+            'currency'                  => ['MYR']
+        ]);
+
+        $terminal2 = $this->terminalRepository->findByGatewayAndTerminalData('eghl');
+
+        // if wallet is present in gateway or not
+        $this->assertTrue(in_array(\RZP\Models\Payment\Processor\Wallet::BOOST, $terminal2->getEnabledWallets()));
+
+        $this->assertEquals($terminal->getId(), $terminal2->getId());
+
+    }
+
     public function testSetTerminalBanksOnTerminalService()
     {
         DB::table('terminals')->delete();

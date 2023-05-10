@@ -184,6 +184,7 @@ class Validator extends Base\Validator
         Payment\Gateway::HDFC_EZETAP,
         Payment\Gateway::AXIS_TOKENHQ,
         Payment\Gateway::FPX,
+        Payment\Gateway::EGHL,
     ];
 
     protected static $createValidators = [
@@ -2840,6 +2841,28 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID                             => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2                            => 'sometimes|string',
         Entity::STATUS                                          => 'sometimes|in:created,pending,activated,deactivated,failed',
+        Entity::CURRENCY                                        => 'sometimes|array',
+        Entity::PROCURER                                        => 'sometimes',
+    ];
+
+    protected static $eghlCreateTerminalRules = [
+        Entity::GATEWAY                                         => 'required|in:eghl',
+        Entity::GATEWAY_MERCHANT_ID                             => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD                       => 'required|string',
+        Entity::FPX                                             => 'sometimes|boolean|in:0,1',
+        Entity::ENABLED_WALLETS                                 => 'sometimes|array',
+        Entity::STATUS                                          => 'sometimes|in:created,pending,activated,deactivated,failed',
+        Entity::CURRENCY                                        => 'sometimes|array',
+        Entity::PROCURER                                        => 'sometimes',
+        Entity::SHARED                                          => 'sometimes|boolean|in:0,1'
+    ];
+
+    protected static $eghlEditTerminalRules = [
+        Entity::GATEWAY                                         => 'sometimes|in:eghl',
+        Entity::GATEWAY_TERMINAL_PASSWORD                       => 'sometimes|string',
+        Entity::STATUS                                          => 'sometimes|in:created,pending,activated,deactivated,failed',
+        Entity::FPX                                             => 'sometimes|boolean|in:0,1',
+        Entity::ENABLED_WALLETS                                 => 'sometimes|array',
         Entity::CURRENCY                                        => 'sometimes|array',
         Entity::PROCURER                                        => 'sometimes',
     ];

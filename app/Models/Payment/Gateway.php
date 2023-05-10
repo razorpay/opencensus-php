@@ -135,6 +135,7 @@ class Gateway
     const BILLDESK_SIHUB         = 'billdesk_sihub';
     const MANDATE_HQ             = 'mandate_hq';
     const RUPAY_SIHUB            = 'rupay_sihub';
+    const EGHL                   = 'eghl';
 
     const CARD_FSS               = 'card_fss';
     const CHECKOUT_DOT_COM       = 'checkout_dot_com';
@@ -302,7 +303,7 @@ class Gateway
             self::ACQUIRER_AMEX,
             self::PAYU
         ],
-        Country::MY    => [self::ACQUIRER_OCBC],
+        Country::MY    => [self::ACQUIRER_OCBC]
     ];
 
     const POWER_WALLETS = [
@@ -3652,6 +3653,9 @@ class Gateway
         self::CCAVENUE  =>  [
             Wallet::FREECHARGE, Wallet::ITZCASH, Wallet::JIOMONEY, Wallet::MOBIKWIK, Wallet::PAYTM
         ],
+        self::EGHL  => [
+            Wallet::MCASH, Wallet::BOOST, Wallet::TOUCHNGO, Wallet::GRABPAY
+        ]
     ];
 
     // These gateways do not support power wallet flow. for example, freecharge behaves as powerwallet in razorpay,

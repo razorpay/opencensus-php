@@ -32,7 +32,13 @@ class Wallet
     const OXIGEN               = 'oxigen';
     const AMEXEASYCLICK        = "amexeasyclick";
     const PAYCASH              = "paycash";
-    const CITIBANKREWARDS = "citibankrewards";
+    const CITIBANKREWARDS      = "citibankrewards";
+
+    // wallets supported in MY
+    const MCASH    = 'mcash';
+    const BOOST    = 'boost';
+    const TOUCHNGO = 'touchngo';
+    const GRABPAY  = 'grabpay';
 
     public static $fullName = array(
         self::MOBIKWIK          => 'Mobikwik',

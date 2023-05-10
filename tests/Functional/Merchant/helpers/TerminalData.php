@@ -2060,6 +2060,41 @@ return [
         ]
     ],
 
+    'testCreateEghlTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'eghl',
+                'gateway_merchant_id'       => 'EGHL00001000',
+                'card'                      => 1,
+                'enabled_wallets'           => ['boost'],
+                'gateway_terminal_password' => 'abcd',
+                'capability'                => 0,
+                'type'                      => [
+                    'non_recurring' => '1',
+                ],
+                'currency'                  => ['MYR']
+            ],
+            'method' => 'POST'
+        ],
+
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'EGHL00001000',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
+    'testDeleteEghlTerminal' => [
+        'request' => [
+            'method' => 'DELETE',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testCreateTerminalInvalidAcquirerForCountry'  => [
         'request' => [
             'content' => [
