@@ -86,6 +86,7 @@ class Shared
     const PAYUMONEY_RAZORPAY_TERMINAL        = '100PayumnyTmnl';
     const FREECHARGE_RAZORPAY_TERMINAL       = '100FrchrgeTmnl';
     const BAJAJ_RAZORPAY_TERMINAL            = '100BajajTrminl';
+    const EGHL_SHARED_TERMINAL               = 'LlTeg1IYN1MFwc';
     const SHARP_RAZORPAY_TERMINAL            = '1000SharpTrmnl';
     const CYBERSOURCE_HDFC_TERMINAL          = '1000CybrsTrmnl';
     const CYBERSOURCE_HDFC_TERMINAL_WITHOUT_SECRET2  = '1000CybesTrmnl';

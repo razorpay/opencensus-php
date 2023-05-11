@@ -40,6 +40,13 @@ class Wallet
     const TOUCHNGO = 'touchngo';
     const GRABPAY  = 'grabpay';
 
+    public static $supportedWalletsForRearch = array(
+        self::MCASH,
+        self::TOUCHNGO,
+        self::GRABPAY,
+        self::BOOST
+    );
+
     public static $fullName = array(
         self::MOBIKWIK          => 'Mobikwik',
         self::OLAMONEY          => 'Olamoney (Postpaid + Wallet)',
@@ -62,7 +69,11 @@ class Wallet
         self::OXIGEN            => 'Oxigen',
         self::AMEXEASYCLICK     => 'Amex Easy Click',
         self::PAYCASH           => 'Paycash',
-        self::CITIBANKREWARDS => 'Citibank Reward Points',
+        self::CITIBANKREWARDS   => 'Citibank Reward Points',
+        self::MCASH             => 'MCash',
+        self::BOOST             => 'Boost',
+        self::TOUCHNGO          => 'TouchNGo',
+        self::GRABPAY           => 'GrabPay'
     );
 
     public static $emailRequiredWallets = array(

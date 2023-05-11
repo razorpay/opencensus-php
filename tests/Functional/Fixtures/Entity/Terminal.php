@@ -5239,6 +5239,24 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedEghlTerminal(array $attributes = [])
+    {
+        $termId = Shared::EGHL_SHARED_TERMINAL;
+
+        $attributes = [
+            'id'                     => $termId,
+            'merchant_id'            => '10000000000000',
+            'gateway'                => 'eghl',
+            'gateway_merchant_id'    => 'dummy_merchant_id',
+            'gateway_secure_secret'  => 'dummy_secure_secret',
+            'gateway_secure_secret2' => 'dummy_secure_secret2',
+            'gateway_access_code'    => 'dummy_access_code',
+            'enabled_wallets'        => ['boost', "grabpay", "touchngo", "mcash"]
+        ];
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createPayuSodexoTerminal()
     {
         $attributes = [

@@ -549,6 +549,16 @@ class Processor
         $this->subscription = null;
     }
 
+
+    /*
+     * | Method | Flow   | Network          | Experimental Dependency
+     * <--------------------------------------------------->
+     * | Card   | API    | Visa/MC          | If experiment is enabled
+     * |        |        |                  | then api flow selected
+     * | Card   | rearch | Visa/MC/UnionPay | If experiment is disabled
+     * |        |        |                  | and network is UnionPay
+     */
+
     /**
      * @return bool
      * Controls rearch flow proxy for Malaysia
@@ -1488,6 +1498,26 @@ class Processor
         }
     }
 
+    private function canRouteWalletThroughRearchFlow($input): bool
+    {
+        // wallet mentioned in array => $supportedWalletsForRearch, always process through nbplus rearch except test mode in production
+        if ($input[Payment\Entity::METHOD] === Payment\METHOD::WALLET)
+        {
+            if ((app()->isEnvironmentProduction() === true) and ($this->mode === Mode::TEST))
+            {
+                return false;
+            }
+
+            if ((isset($input[Payment\Entity::WALLET]) === true) &&
+                (in_array($input[Payment\Entity::WALLET], Wallet::$supportedWalletsForRearch)))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private function processPaymentViaPGRouter(array $input, $startTime)
     {
         (new Payment\Metric)->pushCreateMetricsViaPGRouter($input);
@@ -1680,7 +1710,8 @@ class Processor
             $this->validateAndDecryptEncryptedCardInput($input);
 
             if (($this->isOpgspImportMerchant() === false) and
-                (($this->canRouteThroughRearchFlow($input) === true) or
+                (($this->canRouteWalletThroughRearchFlow($input) === true) or
+                ($this->canRouteThroughRearchFlow($input) === true) or
                 ($this->canRouteThroughNbPlusRearchFlow($input) === true) or
                 ($this->canRouteThroughUpsRearchFlow($input) === true) or
                 ($this->canRouteFpxThroughRearchFlow($input) === true)))

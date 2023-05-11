@@ -2877,6 +2877,226 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals($content['data']['pg_router'], 'true');
     }
 
+    public function testRearchPaymentCreateBoostWalletMalaysia()
+    {
+        $this->fixtures->merchant->edit('10000000000000',[
+            Merchant::COUNTRY_CODE => 'MY'
+        ]);
+
+        $this->wallet = Payment\Processor\Wallet::BOOST;
+        $this->fixtures->merchant->enableAdditionalWallets([$this->wallet]);
+        $this->terminal = $this->fixtures->create('terminal:shared_eghl_terminal');
+        $payment = $this->getDefaultWalletPaymentArray($this->wallet);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        // we are ramping up auth terminal selection hence to make sure all test cases passes
+
+        $order = $this->fixtures->order->createPaymentCaptureOrder();
+
+        $this->enablePgRouterConfig();
+
+        $this->payment['currency'] = 'MYR';
+
+        $pgService = \Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('pg_router', $pgService);
+
+        $pgService->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'), Mockery::type('int'))
+            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure, int $timeout)
+            {
+                return [
+                    'body' => [
+                        'data' => [
+                            'pg_router' => 'true'
+                        ]
+                    ]
+
+                ];
+            });
+
+        $request = [
+            'content' => $payment,
+            'url'     => '/payments/create/ajax',
+            'method'  => 'post'
+        ];
+
+        $response = $this->makeRequestParent($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertEquals($content['data']['pg_router'], 'true');
+    }
+
+    public function testRearchPaymentCreateGrabPayWalletMalaysia()
+    {
+        $this->fixtures->merchant->edit('10000000000000',[
+            Merchant::COUNTRY_CODE => 'MY'
+        ]);
+
+        $this->wallet = Payment\Processor\Wallet::GRABPAY;
+        $this->fixtures->merchant->enableAdditionalWallets([$this->wallet]);
+        $this->terminal = $this->fixtures->create('terminal:shared_eghl_terminal');
+        $payment = $this->getDefaultWalletPaymentArray($this->wallet);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        // we are ramping up auth terminal selection hence to make sure all test cases passes
+
+        $order = $this->fixtures->order->createPaymentCaptureOrder();
+
+        $this->enablePgRouterConfig();
+
+        $this->payment['currency'] = 'MYR';
+
+        $pgService = \Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('pg_router', $pgService);
+
+        $pgService->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'), Mockery::type('int'))
+            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure, int $timeout)
+            {
+                return [
+                    'body' => [
+                        'data' => [
+                            'pg_router' => 'true'
+                        ]
+                    ]
+
+                ];
+            });
+
+        $request = [
+            'content' => $payment,
+            'url'     => '/payments/create/ajax',
+            'method'  => 'post'
+        ];
+
+        $response = $this->makeRequestParent($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertEquals($content['data']['pg_router'], 'true');
+    }
+
+    public function testRearchPaymentCreateTouchNGgoWalletMalaysia()
+    {
+        $this->fixtures->merchant->edit('10000000000000',[
+            Merchant::COUNTRY_CODE => 'MY'
+        ]);
+
+        $this->wallet = Payment\Processor\Wallet::TOUCHNGO;
+        $this->fixtures->merchant->enableAdditionalWallets([$this->wallet]);
+        $this->terminal = $this->fixtures->create('terminal:shared_eghl_terminal');
+        $payment = $this->getDefaultWalletPaymentArray($this->wallet);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        // we are ramping up auth terminal selection hence to make sure all test cases passes
+
+        $order = $this->fixtures->order->createPaymentCaptureOrder();
+
+        $this->enablePgRouterConfig();
+
+        $this->payment['currency'] = 'MYR';
+
+        $pgService = \Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('pg_router', $pgService);
+
+        $pgService->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'), Mockery::type('int'))
+            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure, int $timeout)
+            {
+                return [
+                    'body' => [
+                        'data' => [
+                            'pg_router' => 'true'
+                        ]
+                    ]
+
+                ];
+            });
+
+        $request = [
+            'content' => $payment,
+            'url'     => '/payments/create/ajax',
+            'method'  => 'post'
+        ];
+
+        $response = $this->makeRequestParent($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertEquals($content['data']['pg_router'], 'true');
+    }
+
+    public function testRearchPaymentCreateMCashWalletMalaysia()
+    {
+        $this->fixtures->merchant->edit('10000000000000',[
+            Merchant::COUNTRY_CODE => 'MY'
+        ]);
+
+        $this->wallet = Payment\Processor\Wallet::MCASH;
+        $this->fixtures->merchant->enableAdditionalWallets([$this->wallet]);
+        $this->terminal = $this->fixtures->create('terminal:shared_eghl_terminal');
+        $payment = $this->getDefaultWalletPaymentArray($this->wallet);
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        // we are ramping up auth terminal selection hence to make sure all test cases passes
+
+        $order = $this->fixtures->order->createPaymentCaptureOrder();
+
+        $this->enablePgRouterConfig();
+
+        $this->payment['currency'] = 'MYR';
+
+        $pgService = \Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('pg_router', $pgService);
+
+        $pgService->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'), Mockery::type('int'))
+            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure, int $timeout)
+            {
+                return [
+                    'body' => [
+                        'data' => [
+                            'pg_router' => 'true'
+                        ]
+                    ]
+
+                ];
+            });
+
+        $request = [
+            'content' => $payment,
+            'url'     => '/payments/create/ajax',
+            'method'  => 'post'
+        ];
+
+        $response = $this->makeRequestParent($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertEquals($content['data']['pg_router'], 'true');
+    }
+
     public function testRearchPaymentCreateAjaxInvoiceFail()
     {
         $this->fixtures->iin->edit('401200',[

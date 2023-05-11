@@ -871,6 +871,10 @@ class PricingTest extends TestCase
         $this->assertNotEquals(count($response['paylater']), 0);
         $this->assertNotEquals(count($response['cardless_emi']), 0);
 
+        $this->assertEquals($response['wallet']['boost'], "Boost");
+        $this->assertEquals($response['wallet']['mcash'], "MCash");
+        $this->assertEquals($response['wallet']['touchngo'], "TouchNGo");
+        $this->assertEquals($response['wallet']['grabpay'], "GrabPay");
     }
 
     public function testGetPricingPlans()
