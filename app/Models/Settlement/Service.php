@@ -873,16 +873,25 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('settlement_holiday', $input);
 
-        $year = Carbon::now(Timezone::IST)->year;
+        $timezone = Timezone::IST;
+        $countryCode = "IN";
+        $merchant = $this->app['basicauth']->getMerchant();
+        if (empty($merchant) === false) {
+            $countryCode = $merchant->getCountry();
+            $timezone = $merchant->getTimeZone();
+        }
 
+        $year = Carbon::now($timezone)->year;
         if (isset($input['year']) === true)
         {
             $year = (int) $input['year'];
         }
 
-        $data = Holidays::getHolidayListForYear($year);
+        if ($timezone == Timezone::IST) {
+            return Holidays::getHolidayListForYear($year);
+        }
 
-        return $data;
+        return app('settlements_merchant_dashboard')->getHolidaysForYearAndCountry($year, $countryCode, $timezone);
     }
 
     /**

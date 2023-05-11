@@ -3,6 +3,7 @@
 namespace RZP\Services\Settlements;
 
 use RZP\Exception\RuntimeException;
+use Carbon\Carbon;
 
 /**
  * class for handling all requests from merchant dashboard
@@ -65,5 +66,53 @@ class MerchantDashboard extends Base
     public function getSettlementForTransaction(array $input)
     {
         return $this->makeRequest(self::GET_SETTLEMENT_FOR_TRANSACTIONS, $input, self::SERVICE_MERCHANT_DASHBOARD);
+    }
+
+
+    /*
+     * getHolidaysForYearAndCountry method calls settlements service
+     * to get the list of holidays for a given country & year
+     * the response format here is the one expected by getHolidayListForYear API
+     * */
+    public function getHolidaysForYearAndCountry(int $year, $countryCode, string $timezone)
+    {
+        $input = [
+            'country_code' => $countryCode,
+            'year' => $year,
+            'include_weekends' => false,
+        ];
+
+        $response = $this->makeRequest(self::GET_HOLIDAYS_FOR_YEAR_AND_COUNTRY, $input, self::SERVICE_MERCHANT_DASHBOARD);
+
+        if (!array_key_exists("holidays", $response)) {
+            throw new RuntimeException(
+                'Unexpected response received from settlements service.',
+                [
+                    'response_body' => $response,
+                ]);
+        }
+
+        $holidays = $response["holidays"];
+        $holidayDetails = [];
+
+        foreach ($holidays as $month => $monthlyHolidays)
+        {
+            if (!array_key_exists("details", $monthlyHolidays)) {
+                continue;
+            }
+
+            foreach ($monthlyHolidays["details"] as $day => $details)
+            {
+                $date = Carbon::createFromDate($year, $month, $day, $timezone);
+
+                $holidayDetails[] = [
+                    'date'        => $date->format('d/m/Y'),
+                    'description' => $details["description"],
+                ];
+            }
+        }
+        return [
+            $year => $holidayDetails
+        ];
     }
 }

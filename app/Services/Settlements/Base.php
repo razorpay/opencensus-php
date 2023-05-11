@@ -43,6 +43,7 @@ class Base
     const OPTIMIZER_EXTERNAL_SETTLEMENTS_MANUAL_EXECUTION   = '/twirp/rzp.settlements.optimizer_settlements.v1.ExecuteOptimizerSettlementsAPI/ManualExecute';
     const GET_SETTLEMENT_SOURCE_TRANSACTIONS                = '/twirp/rzp.settlements.external_transaction.v1.RecordExternalTransactionAPI/FetchSourceTxn';
     const GET_SETTLEMENT_FOR_TRANSACTIONS                   = '/twirp/rzp.settlements.external_transaction.v1.RecordExternalTransactionAPI/FetchSettlementForTxn';
+    const GET_HOLIDAYS_FOR_YEAR_AND_COUNTRY                 = '/twirp/rzp.settlements.holiday.v1.Holiday/Get';
     const POS_TRANSACTIONS_ADD                              = '/twirp/rzp.settlements.external_transaction.v1.RecordExternalTransactionAPI/RecordBulkPosTransactions';
 
     const GET_NEXT_SETTLEMENT_AMOUNT    = '/twirp/rzp.settlements.transaction.v1.TransactionService/GetNextSettlementAmount';
