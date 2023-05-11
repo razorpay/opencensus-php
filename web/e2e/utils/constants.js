@@ -8,6 +8,7 @@ const StorageStatePath = {
 };
 
 const routes = {
+  SIGN_IN_PATH: '/?screen=sign_in&isTestEnv=true',
   DASHBOARD: '/app/dashboard',
   ACCOUNT_SETTINGS: '/app/account-settings',
   BALANCES: '/app/payments-and-refunds-settings/balances',

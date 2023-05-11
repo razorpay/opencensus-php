@@ -1,12 +1,35 @@
 </head>
 <body>
   <div id="react-root" class="react-root"></div>
-  <div id="splash" ng-if="flag" style="position: absolute;top: 50%;left: 50%;margin-left: -20px;margin-top: -40px;">
-    <svg version='1.1' id='loader-1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' width='40px' height='40px' viewBox='0 0 50 50' style='enable-background:new 0 0 50 50;' xml:space='preserve'>
-      <path fill='#528ff0' d='M43.935,25.145c0-10.318-8.364-18.683-18.683-18.683c-10.318,0-18.683,8.365-18.683,18.683h4.068c0-8.071,6.543-14.615,14.615-14.615c8.072,0,14.615,6.543,14.615,14.615H43.935z' transform='rotate(80.1374 25 25)'>
-        <animateTransform attributeType='xml' attributeName='transform' type='rotate' from='0 25 25' to='360 25 25' dur='0.6s' repeatCount='indefinite'></animateTransform>
-      </path>
-    </svg>
-  </div>
- <div class="app" id="app"></div>
+
+  <style>
+    html {
+      background-color: #f0f3f4;
+    }
+    #splash {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      border-top-color: #528ff0;
+      border-left-color: #528ff0;
+      animation: spin 0.6s linear infinite;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+
+  <div id="splash"></div>
+
+  <div class="app" id="app"></div>
 

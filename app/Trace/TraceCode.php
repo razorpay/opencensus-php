@@ -237,7 +237,7 @@ class TraceCode
     const OPTIONS_ROUTE_MODE_AS_NULL_ERROR          = 'OPTIONS_ROUTE_MODE_AS_NULL_ERROR';
     const FETCH_ORG_DETAILS_ERROR                   = 'FETCH_ORG_DETAILS_ERROR';
     const FETCH_USER_DETAILS_ERROR                  = 'FETCH_USER_DETAILS_ERROR';
-
+    const CHUNKED_DETAILS                           = 'CHUNKED_DETAILS';
     const GET_CONFIG_STORE_KEYS_FAILED              = 'GET_CONFIG_STORE_KEYS_FAILED';
 
     protected static $messages = array(

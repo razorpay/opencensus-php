@@ -9,6 +9,7 @@ use App\Http\Headers;
 use App\Trace\TraceCode;
 use Illuminate\Contracts\Auth\Guard;
 use Razorpay\Api\Request as ApiRequest;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SetApiHeaders {
 
@@ -61,7 +62,17 @@ class SetApiHeaders {
         ];
 
         $response = $next($request);
-
+        
+        if($response instanceof StreamedResponse)
+        {
+            foreach ($csrfTokenHeader as $key => $value)
+            {
+                $response->headers->set($key, $value);
+            }
+            
+            return $response;
+        }
+        
         $response->withHeaders($csrfTokenHeader);
 
         return $response;

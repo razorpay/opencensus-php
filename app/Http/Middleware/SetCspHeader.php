@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SetCspHeader
 {
@@ -18,7 +19,11 @@ class SetCspHeader
         $response = $next($request);
 
         $response->headers->set('Content-Security-Policy', $this->getCspPolicy());
-
+        
+        if($response instanceof StreamedResponse)
+        {
+            return $response;
+        }
         return $response;
     }
 

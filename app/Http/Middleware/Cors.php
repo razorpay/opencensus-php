@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use App\Http\ApiUrl;
 use App\Http\Headers;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class Cors
 {
@@ -151,6 +152,19 @@ class Cors
             // For GET/POST requests, add CORS headers before sending
             // the response
             //
+            
+            if($response instanceof StreamedResponse)
+            {
+                foreach ($headers as $key => $value)
+                {
+                    $response->headers->set($key, $value);
+                }
+                
+                $response->headers->set('X-Accel-Buffering', 'no');
+                
+                return $response;
+            }
+            
             $response->withHeaders($headers);
 
             return $response;

@@ -294,6 +294,9 @@ return [
         // Affordability Onboarding for SBI CC EMi and credit card segeration
         'SHOW_SEGREGATED_CREDIT_EMI_METHODS' => env('SHOW_SEGREGATED_CREDIT_EMI_METHODS', ''),
         'SHOW_INTERNATIONAL_PAYMENTS_BUTTON' => env('SHOW_INTERNATIONAL_PAYMENTS_BUTTON', ''),
+        
+        // Chunked Based Streaming - View Page
+        'CHUNKED_BASED_STREAMING' => env('CHUNKED_BASED_STREAMING', ''),
 
         // Ecosystem Downtimes UI - Availability and Downtime
         'ECOSYSTEM_DOWNTIMES' => env('ECOSYSTEM_DOWNTIMES',''),

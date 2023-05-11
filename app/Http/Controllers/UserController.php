@@ -29,6 +29,8 @@ use App\Metrics\Constants as MetricConstants;
 use App\Merchant\Constants as MerchantConstants;
 use App\User\Constants as UserConstants;
 use Illuminate\Contracts\Foundation\Application;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+
 
 const EVENT_TRIGGER_COUNT = 1;
 class UserController extends Controller
@@ -53,47 +55,8 @@ class UserController extends Controller
         $this->metrics = $app['metrics'];
     }
 
-    /**
-     * Returns the base template for angular.
-     *
-     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Http\Response|\Illuminate\Routing\Redirector
-     */
-    public function getIndex()
+    public function getDataForRendering($details, $org, $userError, $orgError): array
     {
-        $domain = \Request::server('SERVER_NAME');
-
-        $currentRouteName = \Route::currentRouteName();
-
-        list($orgError, $org) = (new Admin\Service)->getOrg($domain);
-
-        if (empty($orgError) == false)
-        {
-            $this->trace->info(TraceCode::FETCH_ORG_DETAILS_ERROR, [
-                'error' => $orgError
-            ]);
-
-//            throw new BadRequestError(
-//                'Error in fetching org details',
-//                ErrorCode::BAD_REQUEST_ERROR,
-//                400
-//            );
-        }
-
-        list($userError, $details) = (new User\Service)->getUserDetails();
-
-        if (empty($userError) == false)
-        {
-            $this->trace->info(TraceCode::FETCH_USER_DETAILS_ERROR, [
-                'error' => $userError
-            ]);
-
-//            throw new BadRequestError(
-//                'Error in fetching user details',
-//                ErrorCode::BAD_REQUEST_ERROR,
-//                400
-//            );
-        }
-
         $data = [
             'isAuthenticated'       => false,
             'isConfirmed'           => false,
@@ -102,7 +65,27 @@ class UserController extends Controller
             'isPreSignupComplete'   => false,
             'org'                   => json_encode($org),
             'session_id'            => Session::getId(),
+            'cdnDashboardUrl'       => \Config::get('app.cdn_dashboard_url'),
         ];
+
+        $data['requestPath'] = \Request::path();
+
+        if (empty($userError) and empty($orgError))
+        {
+            $data['isConfirmed']        = $details['user']['confirmed'];
+            $data['isMobileConfirmed']  = $details['user']['contact_mobile_verified'];
+            $data['preSignupData']      = $details['pre_signup'];
+            $data['isPreSignupComplete']= $details['pre_signup_complete'];
+        }
+
+        return $data;
+    }
+
+    public function viewOrRedirectToUrl($details, $org, $userError, $orgError, $isChunkedBasedEnable = false)
+    {
+        $data = $this->getDataForRendering($details,$org, $userError, $orgError);
+
+        $currentRouteName = \Route::currentRouteName();
 
         if (empty($userError) and empty($orgError))
         {
@@ -232,8 +215,188 @@ class UserController extends Controller
                 $data['isMobileConfirmed'] = false;
             }
 
-            return view('merchant.index', $data);
+            if ($isChunkedBasedEnable === false)
+            {
+                return view('merchant.index', $data);
+            }
+
+            // Chunk based straming: get the flag to check streaming
+            $isMerchantLogin = Session::get('is_merchant_login');
+
+            $this->trace->info(TraceCode::CHUNKED_DETAILS, [
+                'isMerchantLogin'     => $isMerchantLogin,
+                'currentMerchantId'   => $currentMerchantId
+            ]);
+
+            if (is_null($isMerchantLogin) === true)
+            {
+                if (is_null($currentMerchantId) === false)
+                {
+                    // Chunk based straming: set flag to enable streaming
+                    Session::put('is_merchant_login', true);
+                }
+
+                return view('merchant.index', $data);
+            }
+            else
+            {
+                // Chunk based straming: send second chunk
+                $view = view('merchant.index2', $data)->render();
+
+                echo($view);
+                ob_flush();
+                flush();
+            }
         }
+    }
+
+    // Chunk based straming: get the flag status from splitz
+    private function isChunkedBasedStreamingEnabled(): bool
+    {
+        $currentMerchantId = Session::get('current_merchant_id');
+
+        if (app('request.ctx')->isOauthRequest() === true)
+        {
+            $currentMerchantId = app('request.ctx')->getMerchantId();
+        }
+
+        $currentRouteName = \Route::currentRouteName();
+
+        $serverName = \Request::server('SERVER_NAME');
+
+        $isPgRenderCall = (new User\Service)->isPgRenderCall($currentRouteName, $serverName);
+
+        if (($currentMerchantId === null) or
+            ($isPgRenderCall === false))
+        {
+            return false;
+        }
+
+        $experimentId = config('splitz.experiments')['CHUNKED_BASED_STREAMING'];
+
+        $data = (new SplitzService())->getVariantBulk($currentMerchantId, [$experimentId], [], "splitz/bulkEvaluate");
+
+        return ($data[$experimentId]['variables']['result'] ?? null) === 'on';
+    }
+
+    /**
+     * Returns the base template for angular.
+     *
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Foundation\Application|\Illuminate\Http\RedirectResponse|\Illuminate\Http\Response|\Illuminate\Routing\Redirector
+     */
+    public function getIndex()
+    {
+        $domain = \Request::server('SERVER_NAME');
+
+        list($orgError, $org) = (new Admin\Service)->getOrg($domain);
+
+        if (empty($orgError) == false)
+        {
+            $this->trace->info(TraceCode::FETCH_ORG_DETAILS_ERROR, [
+                'error' => $orgError
+            ]);
+//            throw new BadRequestError(
+//                'Error in fetching org details',
+//                ErrorCode::BAD_REQUEST_ERROR,
+//                400
+//            );
+        }
+
+        // Chunk based straming: On the basis of experiment we are revamping the Chunked Based streaming, so this part of
+        // code will go through old flow by calling getUserDetails function
+        // This flow will be similar to older flow without chunk based streaming
+
+        if ($this->isChunkedBasedStreamingEnabled() === false)
+        {
+            list($userError, $details) = (new User\Service)->getUserDetails();
+
+            if (empty($userError) == false)
+            {
+                $this->trace->info(TraceCode::FETCH_USER_DETAILS_ERROR, [
+                    'error' => $userError
+                ]);
+//            throw new BadRequestError(
+//                'Error in fetching user details',
+//                ErrorCode::BAD_REQUEST_ERROR,
+//                400
+//            );
+            }
+
+            return $this->viewOrRedirectToUrl($details, $org, $userError, $orgError, false);
+        }
+
+        // From here logic for chunked Based Streaming has started.
+
+        // Overall scenario for Chunked Based Streaming
+        // 1. When merchant will log in the dashboard, then we will get some details by calling getFirstChunkUserDetails function
+        // 2. Then we will check for is_merchant_login value in session id this will be null initially, so we will execute
+        //    first condition and then get other details of merchant by calling getSecondChunkUserDetails function.
+        // 3. After then, we are calling viewOrRedirectToUrl function by making this params ($isChunkedBasedEnable as true )
+        //    which will redirect or view the blade.php file based on condition.
+        // 4. Inside viewOrRedirectToUrl function, $isChunkedBasedEnable is true, so we will see whether the
+        //    is_merchant_login value in session is true or false , if false then we will make this as true and normally view the
+        //    index blade file without chunked based.
+        // 5. if is_merchant_login is true in one session then we will view index1 blade file using chunked based streaming and then
+        //    we will get other details by calling getSecondChunkUserDetails function and then we will call viewOrRedirectToUrl function
+        //    and view index2 blade file using chunked based streaming.
+
+        list($userError, $firstChunkData) = (new User\Service)->getFirstChunkUserDetails();
+
+        if (empty($userError) == false)
+        {
+            $this->trace->info(TraceCode::FETCH_USER_DETAILS_ERROR, [
+                'error' => $userError
+            ]);
+        }
+
+        $isMerchantLogin = Session::get('is_merchant_login');
+
+        if (is_null($isMerchantLogin) === true)
+        {
+            if (empty($userError) and empty($orgError))
+            {
+                list($userError2, $secondChunkData) = (new User\Service)->getSecondChunkUserDetails($firstChunkData);
+            }
+
+            $details = $secondChunkData['details'] ?? [];
+
+            return $this->viewOrRedirectToUrl($details, $org, $userError, $orgError, true);
+        }
+        else
+        {
+            // Chunk based straming: start streaming the response
+            $response = new StreamedResponse();
+
+            $response->setCallback(function () use ($firstChunkData, $org, $userError, $orgError){
+
+                $firstDetails = $firstChunkData['details'] ?? [];
+
+                $dataForRender = $this->getDataForRendering($firstDetails, $org, $userError, $orgError);
+
+                $data = array_merge($firstDetails, $dataForRender);
+
+                $data['chunkStreamingEnabled'] = true;
+
+                // Chunk based straming: send first chunk
+                $view = view('merchant.index1', $data)->render();
+
+                echo $view;
+                ob_flush();
+                flush();
+
+                if (empty($userError) and empty($orgError))
+                {
+                    list($secondUserError, $secondChunkData) = (new User\Service)->getSecondChunkUserDetails($firstChunkData);
+                }
+
+                $secondDetails = $secondChunkData['details'] ?? [];
+
+                $this->viewOrRedirectToUrl($secondDetails, $org, $userError, $orgError, true);
+            });
+
+            return $response;
+        }
+
     }
 
     public function getDummyIFrameForEasyDashboard(){
@@ -1132,6 +1295,8 @@ class UserController extends Controller
         Session::forget('dashboard_user_payload');
 
         Session::forget('show_tnc_popup');
+
+        Session::forget('is_merchant_login');
 
         return AppResponse::jsonResponse([]);
     }

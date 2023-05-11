@@ -73,7 +73,9 @@ jobs:
           echo 'PR Branch: ${{ steps.branch-name.outputs.current_branch }}'
           base=$base yarn validate-lint
           npx eslint \
-          --output-file eslint_report.json --format json \
+          --output-file eslint_report.json \
+          --no-error-on-unmatched-pattern \
+          --format json \
           --ext .js,.jsx,.ts,.tsx \
           ${{ steps.changed-files.outputs.all_modified_files }}
         continue-on-error: true
