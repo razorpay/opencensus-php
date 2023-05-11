@@ -6,7 +6,7 @@ import SettlementInfo from './components/SettlementInfo';
 import SettlementBreakup from './components/SettlementBreakup';
 import SettlementEntities from './components/SettlementEntities';
 import { calculateCreditDebitAmount } from './util';
-import { classList } from 'common/utils/rzp-utils';
+import { classList, isNone } from 'common/utils/rzp-utils';
 import LoaderDots from 'common/ui/LoaderDots';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import Amount from 'common/ui/Amount';
@@ -98,8 +98,8 @@ const SettlementDetails = (props) => {
         </div>
         {user?.isSingleReconEnabled &&
           user?.isOptimizerEnabled &&
-          settlementAmount &&
-          totalTransactionAmount &&
+          !isNone(settlementAmount) &&
+          !isNone(totalTransactionAmount) &&
           settlementAmount > totalTransactionAmount && (
             <MismatchBanner
               totalAmount={settlementAmount}
