@@ -797,8 +797,6 @@ class IciciBankingAccountStatementTest extends TestCase
     {
         (new AdminService)->setConfigKeys([ConfigKey::ICICI_MISSING_STATEMENT_FETCH_MAX_RECORDS => 8000]);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::BANKING_ACCOUNT_STATEMENT_FETCH_DEDUP => 'on']);
-
         $metricsMock = $this->createMetricsMock();
 
         $boolMetricCaptured = false;

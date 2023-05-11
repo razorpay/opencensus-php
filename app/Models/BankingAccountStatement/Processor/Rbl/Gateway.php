@@ -120,7 +120,6 @@ class Gateway extends BaseProcessor
     {
         $this->alterStatementColumnsToMatch();
 
-        $recordsToCheck = [];
         $totalRecordCount = count($bankTransactions);
         $totalRecords = 0;
         $skippedRecordCount = 0;
@@ -137,34 +136,16 @@ class Gateway extends BaseProcessor
             $limit = self::RBL_ACCOUNT_STATEMENT_RECORDS_TO_FETCH_AT_ONCE_DEFAULT;
         }
 
-        /**
-         * This experiment was added to enable dedupe check for fetched statements
-         * by querying on the basis of bank_transaction_id and created_at on master db to avoid replica lag.
-         * This was also found faster than querying by using bulk check (whereInMultiple).
-         */
-        $variant = $this->app->razorx->getTreatment(
-            $merchant->getId(),
-            Merchant\RazorxTreatment::BANKING_ACCOUNT_STATEMENT_FETCH_DEDUP,
-            $this->mode
-        );
-
-        $startTime = null;
+        $dedupeStartTime = microtime(true);
 
         foreach ($bankTransactions as $index => $bankTransaction)
         {
-            if ($variant === 'on')
-            {
-                $recordsToCheck[] = $record = $this->arrangeColumnsToFindDuplicates($bankTransaction);
+            $record = $this->arrangeColumnsToFindDuplicates($bankTransaction);
 
-                $bankTransactionIds[] = $record[Entity::BANK_TRANSACTION_ID];
+            $bankTransactionIds[] = $record[Entity::BANK_TRANSACTION_ID];
 
-                $queryDate = (isset($queryDate) === false) ? $record[Entity::TRANSACTION_DATE]
-                    : min($queryDate, $record[Entity::TRANSACTION_DATE]);
-            }
-            else
-            {
-                $recordsToCheck[] = $this->getColumnsToFindDuplicates($bankTransaction);
-            }
+            $queryDate = (isset($queryDate) === false) ? $record[Entity::TRANSACTION_DATE]
+                : min($queryDate, $record[Entity::TRANSACTION_DATE]);
 
             $bankTransactionRecords[$index] = $this->formBankTransactionRecordToMatch($bankTransaction);
 
@@ -178,52 +159,16 @@ class Gateway extends BaseProcessor
             if ((($processedRecordCount % $limit) === 0) or
                 (($totalRecords === $totalRecordCount) and ($processedRecordCount % $limit) !== 0))
             {
-                $startTime = microtime(true);
-
-                $this->trace->info(
-                    TraceCode::BAS_DEDUPE_CHECK_ANALYSIS,
-                    [
-                        'channel'        => Channel::RBL,
-                        'account_number' => $accountNumber,
-                        'time_taken'     => (microtime(true) - $startTime) * 1000,
-                        'description'    => 'going to find duplicates records from db',
-                    ]);
-
                 if ($this->basDetails->getAccountType() === BasDetails\AccountType::DIRECT)
                 {
-                    if ($variant === 'on')
-                    {
-                        $existingRecords = $this->repo->banking_account_statement
-                            ->findExistingStatementRecordsForBankWithDate($bankTransactionIds, $accountNumber, $queryDate);
-                    }
-                    else
-                    {
-                        $existingRecords = $this->repo->banking_account_statement
-                            ->findExistingStatementRecordsForBank($recordsToCheck);
-                    }
+                    $existingRecords = $this->repo->banking_account_statement
+                        ->findExistingStatementRecordsForBankWithDate($bankTransactionIds, $accountNumber, $queryDate);
                 }
                 else
                 {
-                    if ($variant === 'on')
-                    {
-                        $existingRecords = $this->repo->banking_account_statement_pool_rbl
-                            ->findExistingStatementRecordsForBankWithDate($bankTransactionIds, $accountNumber, $queryDate);
-                    }
-                    else
-                    {
-                        $existingRecords = $this->repo->banking_account_statement_pool_rbl
-                            ->findExistingStatementRecordsForBank($recordsToCheck);
-                    }
+                    $existingRecords = $this->repo->banking_account_statement_pool_rbl
+                        ->findExistingStatementRecordsForBankWithDate($bankTransactionIds, $accountNumber, $queryDate);
                 }
-
-                $this->trace->info(
-                    TraceCode::BAS_DEDUPE_CHECK_ANALYSIS,
-                    [
-                        'channel'        => Channel::RBL,
-                        'account_number' => $accountNumber,
-                        'time_taken'     => (microtime(true) - $startTime) * 1000,
-                        'description'    => 'dedupe db query executed',
-                    ]);
 
                 /** @var Entity $record */
                 foreach ($existingRecords as $record)
@@ -241,7 +186,6 @@ class Gateway extends BaseProcessor
                     }
                 }
 
-                $recordsToCheck         = [];
                 $bankTransactionRecords = [];
                 $bankTransactionIds     = [];
                 $queryDate              = null;
@@ -249,19 +193,23 @@ class Gateway extends BaseProcessor
             }
         }
 
+        $dedupeEndTime = microtime(true);
+
         $this->trace->info(
             TraceCode::BAS_DEDUPE_CHECK_ANALYSIS,
             [
-                'channel'        => Channel::RBL,
+                'channel'        => $channel,
                 'account_number' => $accountNumber,
-                'time_taken'     => (microtime(true) - $startTime) * 1000,
-                'description'    => 'skip duplicate records complete',
+                'merchant_id'    => $merchant->getId(),
+                'time_taken'     => $dedupeEndTime - $dedupeStartTime,
+                'total_records'  => $totalRecordCount,
             ]);
 
         if ($skippedRecordCount !== 0)
         {
             $data = [
                 'channel'                    => Channel::RBL,
+                'merchant_id'                => $merchant->getId(),
                 'skipped_record_count'       => $skippedRecordCount,
             ];
 
@@ -284,6 +232,7 @@ class Gateway extends BaseProcessor
                 [
                     'channel'                    => Channel::RBL,
                     'account_number'             => $accountNumber,
+                    'merchant_id'                => $merchant->getId(),
                 ]);
         }
 

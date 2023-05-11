@@ -11269,8 +11269,6 @@ class RblBankingAccountStatementTest extends TestCase
     {
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RBL_MISSING_STATEMENT_FETCH_MAX_RECORDS => 25000]);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::BANKING_ACCOUNT_STATEMENT_FETCH_DEDUP => 'on']);
-
         $metricsMock = $this->createMetricsMock();
 
         $boolMetricCaptured = false;
@@ -11636,8 +11634,6 @@ class RblBankingAccountStatementTest extends TestCase
 
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RBL_MISSING_STATEMENT_FETCH_MAX_RECORDS => 25000]);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::BANKING_ACCOUNT_STATEMENT_FETCH_DEDUP => 'on']);
-
         $this->app['rzp.mode'] = EnvMode::TEST;
 
         $mozartMock = Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
@@ -11746,8 +11742,6 @@ class RblBankingAccountStatementTest extends TestCase
         Carbon::setTestNow($oldDateTime);
 
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RBL_MISSING_STATEMENT_FETCH_MAX_RECORDS => 25000]);
-
-        $this->setMockRazorxTreatment([RazorxTreatment::BANKING_ACCOUNT_STATEMENT_FETCH_DEDUP => 'on']);
 
         $this->app['rzp.mode'] = EnvMode::TEST;
 
@@ -11858,8 +11852,6 @@ class RblBankingAccountStatementTest extends TestCase
 
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RBL_MISSING_STATEMENT_FETCH_MAX_RECORDS => 25000]);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::BANKING_ACCOUNT_STATEMENT_FETCH_DEDUP => 'on']);
-
         $this->app['rzp.mode'] = EnvMode::TEST;
 
         $mozartMock = Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
@@ -11946,8 +11938,6 @@ class RblBankingAccountStatementTest extends TestCase
 
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RBL_MISSING_STATEMENT_FETCH_MAX_RECORDS => 25000]);
 
-        $this->setMockRazorxTreatment([RazorxTreatment::BANKING_ACCOUNT_STATEMENT_FETCH_DEDUP => 'on']);
-
         $this->app['rzp.mode'] = EnvMode::TEST;
 
         $mozartMock = Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
@@ -12030,8 +12020,6 @@ class RblBankingAccountStatementTest extends TestCase
         Carbon::setTestNow($oldDateTime);
 
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RBL_MISSING_STATEMENT_FETCH_MAX_RECORDS => 25000]);
-
-        $this->setMockRazorxTreatment([RazorxTreatment::BANKING_ACCOUNT_STATEMENT_FETCH_DEDUP => 'on']);
 
         $this->app['rzp.mode'] = EnvMode::TEST;
 
@@ -12205,8 +12193,6 @@ class RblBankingAccountStatementTest extends TestCase
     public function testRblMissingAccountStatementWithCronAuth()
     {
         (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RBL_MISSING_STATEMENT_FETCH_MAX_RECORDS => 25000]);
-
-        $this->setMockRazorxTreatment([RazorxTreatment::BANKING_ACCOUNT_STATEMENT_FETCH_DEDUP => 'on']);
 
         $this->fixtures->create('banking_account_statement',
                                 [
