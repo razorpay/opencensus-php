@@ -16,6 +16,7 @@ import {
   MIN_YEAR_WINDOW_INDEX_INCLUSIVE,
 } from 'merchant_common/views/Reports/components/DateTimeRangePicker/constants';
 import { PickerNavigation } from './PickerNavigation';
+import { useTheme } from 'merchant_common/views/Reports/hooks';
 
 export const DateRangePicker = ({
   allowSingleDateSelection,
@@ -31,7 +32,10 @@ export const DateRangePicker = ({
   const [visibleYearsRangeIndex, setVisibleYearsRangeIndex] = useState<number>(0);
   const [viewMode, setViewMode] = useState<keyof typeof ViewMode>('date');
   const [calendarIndex, setCalendarIndex] = useState<0 | 1>(0);
-  const [visibleRange, setVisibleRange] = useState<VisibleRangeType>(initialVisibleRange ?? null);
+  const { theme } = useTheme();
+  const [visibleRange, setVisibleRange] = useState<VisibleRangeType>(
+    initialVisibleRange ?? (isCompactView ? [moment()] : [moment(), moment().add(1, 'month')]),
+  );
 
   const onNextClick = () => {
     if (viewMode === 'year') {
@@ -183,7 +187,7 @@ export const DateRangePicker = ({
         onPrevClick={onPrevClick}
         viewMode={viewMode}
       />
-      <DateRangeContainer aria-label="Main Calendar Range">
+      <DateRangeContainer theme={theme} aria-label="Main Calendar Range">
         {visibleRange && renderComponent(viewMode)}
       </DateRangeContainer>
     </div>

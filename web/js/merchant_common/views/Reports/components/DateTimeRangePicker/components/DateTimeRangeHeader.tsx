@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from 'react';
+import React, { useState } from 'react';
 import { ArrowRightIcon, Text, Switch, TimePicker } from 'merchant_common/views/Reports/components';
 import { useTheme } from 'merchant_common/views/Reports/hooks';
 import { useDateTimeRangeContext } from 'merchant_common/views/Reports/components/DateTimeRangePicker/context/DateTimeRangePickerContext';
@@ -25,25 +25,27 @@ export const DateTimeRangeHeader = (): JSX.Element => {
     }
   };
 
-  return startDate && endDate ? (
+  return (
     <CalendarHeader theme={theme}>
       <RangeSectionHeader>
         <Text variant="body" type="normal" weight="bold">
           Selected Date Range:
         </Text>
-        <Switch label="Include Time" onChange={handleIncludeTime} value={shouldIncludeTime} />
+        {Boolean(startDate && endDate) ? (
+          <Switch label="Include Time" onChange={handleIncludeTime} value={shouldIncludeTime} />
+        ) : null}
       </RangeSectionHeader>
 
       <SelectedRangeInfo>
         <RangeSection>
           <SelectedRangeInfoBadge aria-label="Picker Start Date" theme={theme}>
             <Text type="normal" size="medium" weight="regular" variant="body">
-              {startDate.format('MMM DD, YYYY')}
+              {startDate ? startDate.format('MMM DD, YYYY') : 'Choose A Start Date'}
             </Text>
           </SelectedRangeInfoBadge>
-          {shouldIncludeTime && (
-            <TimePicker date={startDate} onChange={({ date }) => setStartDate(date)} />
-          )}
+          {shouldIncludeTime && startDate ? (
+            <TimePicker value={startDate} onChange={({ date }) => setStartDate(date)} />
+          ) : null}
         </RangeSection>
         <RangeSection>
           <ArrowRightIcon size="medium" color="feedback.icon.neutral.lowContrast" />
@@ -51,16 +53,14 @@ export const DateTimeRangeHeader = (): JSX.Element => {
         <RangeSection>
           <SelectedRangeInfoBadge aria-label="Picker End Date" theme={theme}>
             <Text type="normal" size="medium" weight="regular" variant="body">
-              {endDate.format('MMM DD, YYYY')}
+              {endDate ? endDate.format('MMM DD, YYYY') : 'Choose An End Date'}
             </Text>
           </SelectedRangeInfoBadge>
-          {shouldIncludeTime && (
-            <TimePicker date={endDate} onChange={({ date }) => setEndDate(date)} />
-          )}
+          {shouldIncludeTime && endDate ? (
+            <TimePicker value={endDate} onChange={({ date }) => setEndDate(date)} />
+          ) : null}
         </RangeSection>
       </SelectedRangeInfo>
     </CalendarHeader>
-  ) : (
-    <Fragment />
   );
 };

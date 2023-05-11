@@ -1,7 +1,10 @@
+import { NecessityIndicatorType } from 'merchant_common/views/Reports/components/types';
+
 export interface YearPickerProps {
   value: number | undefined;
   onChange: (x: number) => void;
   helpText?: string;
+  errorText?: string;
   label?: string;
   /**
    * Function when called, returns the validation state
@@ -16,4 +19,5 @@ export interface YearPickerProps {
    * For disabling all the dates upto today
    */
   disablePast?: boolean;
+  necessityIndicator?: NecessityIndicatorType;
 }

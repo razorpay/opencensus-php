@@ -56,3 +56,7 @@ export const ReportTypeWrapper = styled.div<BaseDivType>(
 export const DropdownLabel = styled.div`
   padding: 6px 12px;
 `;
+
+export const DropdownWrapper = styled.div`
+  min-width: 200px;
+`;

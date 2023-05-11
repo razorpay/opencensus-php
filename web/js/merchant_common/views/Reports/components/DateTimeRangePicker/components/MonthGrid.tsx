@@ -24,6 +24,7 @@ export const MonthGrid = ({
   const { theme } = useTheme();
 
   const checkIfMonthIsAllowed = (m) => {
+    if (!refDayMoment) return false;
     if (disableFuture) {
       return refDayMoment
         .clone()

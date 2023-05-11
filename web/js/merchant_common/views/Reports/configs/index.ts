@@ -2,7 +2,6 @@ import { Theme } from '@razorpay/blade/components';
 import { SessionReducerState } from 'common/typings';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { CustomConfigType } from 'merchant_common/views/Reports/types';
-
 export const reportsTheme = (theme: Theme) => {
   // colors
   const bladeColors = theme
@@ -19,12 +18,16 @@ export const reportsTheme = (theme: Theme) => {
         HOVER_BG_COLOR: theme.colors.surface.background.level3.lowContrast,
         DISABLED_BG_COLOR: theme.colors.surface.background.level1.lowContrast,
         MARGIN_DIVIDER: theme.spacing[4],
+        NEGATIVE_BG: theme.colors.feedback.background.negative.lowContrast,
+        NEGATIVE_BORDER: theme.colors.feedback.border.negative.highContrast,
       }
     : {};
 
   const customColors = {
-    FIELD_BG_COLOR: '#ffffff',
+    FIELD_BG_COLOR: 'hsla(216,15%,54%,0.09)',
     MODAL_BG_MASK_COLOR: 'rgba(17, 30, 60, 0.6)',
+    HOVER_BG_COLOR_L2: '#79879C17',
+    HOVER_BG_COLOR_L3: '#79879C2E',
   };
 
   // sizing
@@ -33,9 +36,9 @@ export const reportsTheme = (theme: Theme) => {
   const customSizing = {
     FIELD_PADDING: '8px 12px',
     FIELD_BORDER_WIDTH: '0.5px',
-    FIELD_BORDER_RADIUS: '4px',
-    FIELD_WITHOUT_LABEL_MARGIN: '0',
-    FIELD_WITH_LABEL_MARGIN: '5px 0',
+    FIELD_BORDER_RADIUS: '2px',
+    FIELD_WITHOUT_LABEL_MARGIN: '0px',
+    FIELD_WITH_LABEL_MARGIN: '5px 0px',
     FIELD_SHADOW_BLUR_RADIUS: '20px',
     FIELD_SHADOW: 'rgba(0,0,0,0.1)',
   };

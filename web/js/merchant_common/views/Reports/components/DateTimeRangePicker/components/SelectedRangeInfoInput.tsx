@@ -1,13 +1,14 @@
 import React, { useRef, useState } from 'react';
-import moment from 'moment';
 import {
   CalendarInput,
   SelectedDateValue,
 } from 'merchant_common/views/Reports/components/DateTimeRangePicker/styled';
-import { SELECTED_DATE_RANGE_RENDER_FORMAT } from 'merchant_common/views/Reports/components/DateTimeRangePicker/constants';
 import { SelectedRangeInfoInputPropsType } from 'merchant_common/views/Reports/components/DateTimeRangePicker/types';
-import { Spinner, Text } from 'merchant_common/views/Reports/components';
-import { didDatesUpdate } from 'merchant_common/views/Reports/components/DateTimeRangePicker/utils';
+import { CalendarIcon, Text } from 'merchant_common/views/Reports/components';
+import {
+  didDatesUpdate,
+  getFormattedDate,
+} from 'merchant_common/views/Reports/components/DateTimeRangePicker/utils';
 import { useClickOutSide } from 'common/utils/customHooks';
 import { useDateTimeRangeContext } from 'merchant_common/views/Reports/components/DateTimeRangePicker/context/DateTimeRangePickerContext';
 import { FlexCentered } from 'merchant_common/views/Reports/components/styled';
@@ -19,16 +20,27 @@ export const SelectedRangeInfoInput = ({
   placeHolder,
   label,
   selectedRangeFormat,
-  validate,
+  validateRange,
+  isValidatedField,
 }: SelectedRangeInfoInputPropsType): JSX.Element => {
   const [isPickerOpen, setPickerOpen] = useState(false);
   const { startDate, endDate, setValidationError } = useDateTimeRangeContext();
   const dateTimeRangePickerContainerRef = useRef<HTMLDivElement>(null);
   const validValue = value && value.startDate && value.endDate;
 
-  const validateRange = () => {
-    if (startDate && endDate && validate) {
-      const isValid = validate({ startDate, endDate });
+  const validateSelectedRange = () => {
+    if (startDate && !endDate) {
+      return {
+        isValid: false,
+        error: 'Please select an end date.',
+      };
+    } else if (startDate && endDate && startDate.isAfter(endDate, 'minute')) {
+      return {
+        isValid: false,
+        error: 'Please select a valid range.',
+      };
+    } else if (startDate && endDate && validateRange) {
+      const isValid = validateRange({ startDate, endDate });
       const isError = isValid && typeof isValid === 'boolean' ? false : isValid.error;
 
       if (isError) {
@@ -51,20 +63,11 @@ export const SelectedRangeInfoInput = ({
   };
 
   const renderDate = () => {
-    if (value) {
-      const renderText = `${moment(value.startDate).format(
-        selectedRangeFormat ?? SELECTED_DATE_RANGE_RENDER_FORMAT,
-      )} - ${moment(value.endDate).format(
-        selectedRangeFormat ?? SELECTED_DATE_RANGE_RENDER_FORMAT,
-      )}`;
+    if (validValue) {
+      const renderText = getFormattedDate(value, selectedRangeFormat);
       return (
-        <Text
-          variant="body"
-          type="normal"
-          weight="regular"
-          color={validValue ? 'surface.text.subtle.lowContrast' : 'surface.text.muted.lowContrast'}
-        >
-          {validValue ? renderText : placeHolder ?? 'Loading...'}
+        <Text variant="body" type="normal" weight="regular" color="surface.text.subtle.lowContrast">
+          {renderText}
         </Text>
       );
     } else {
@@ -80,34 +83,35 @@ export const SelectedRangeInfoInput = ({
             weight="regular"
             color="surface.text.muted.lowContrast"
           >
-            Loading... Please wait...
+            {placeHolder ?? 'Loading... Please wait...'}
           </Text>
-          <Spinner size="medium" accessibilityLabel="Picker loading..." />
         </FlexCentered>
       );
     }
   };
 
   useClickOutSide([dateTimeRangePickerContainerRef], () => {
-    if (startDate && endDate) {
-      const { error, isValid } = validateRange();
-      if (isValid) {
-        if (didDatesUpdate(value, { startDate, endDate })) onChange({ startDate, endDate });
-        setValidationError('');
-        setPickerOpen(false);
-      } else {
-        setValidationError(error);
-      }
+    const { error, isValid } = validateSelectedRange();
+    if (isValid) {
+      if (didDatesUpdate(value, { startDate, endDate }) && startDate && endDate)
+        onChange({ startDate, endDate });
+      setValidationError('');
+      setPickerOpen(false);
+    } else {
+      setValidationError(error);
     }
   });
 
   return (
     <CalendarInput ref={dateTimeRangePickerContainerRef} label={label} open={isPickerOpen}>
       <SelectedDateValue
+        validation={isValidatedField}
         aria-label="Picker Input Field"
-        onClick={value ? () => setPickerOpen(true) : undefined}
+        focused={isPickerOpen}
+        onClick={() => setPickerOpen(true)}
       >
-        {renderDate()}
+        <div>{renderDate()}</div>
+        <CalendarIcon color="feedback.icon.neutral.lowContrast" size="medium" />
       </SelectedDateValue>
       <div aria-label="Picker Container">{isPickerOpen ? children : null}</div>
     </CalendarInput>

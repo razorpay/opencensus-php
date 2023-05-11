@@ -1,4 +1,5 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import {
   OverViewBannerWrapper,
   BannerBGImage,
@@ -6,13 +7,24 @@ import {
   OverViewContent,
   BannerAccentImage,
 } from './style';
-import { Title, Text, Button, DownloadIcon } from 'merchant_common/views/Reports/components';
+import {
+  Title,
+  Text,
+  Button,
+  DownloadIcon,
+  ReportModal,
+} from 'merchant_common/views/Reports/components';
 import { useTheme } from 'merchant_common/views/Reports/hooks';
 import { useDashboardType } from 'merchant_common/views/Reports/contexts/ReportsContext';
 import { trackOverviewSection } from 'merchant_common/views/Reports/configs/analytics.config';
 import { DashboardType } from 'merchant_common/views/Reports/types';
+import { openModal } from 'merchant_common/reducers/modals';
 
-export const OverviewBanner = ({ loading, history }): JSX.Element => {
+const mapDispatchToProps = (dispatch) => ({
+  openModal: (modal) => dispatch(openModal(modal)),
+});
+
+const OverviewBannerComponent = ({ loading, openModal }): JSX.Element => {
   const { theme } = useTheme();
   const dashboardType = useDashboardType();
 
@@ -21,9 +33,10 @@ export const OverviewBanner = ({ loading, history }): JSX.Element => {
       actionName: 'Download Report Button Click',
       dashboardType: dashboardType as DashboardType,
     });
-    history.push(
-      `${dashboardType === 'partner' ? '/partners' : ''}/reports/downloads?modal=download_report`,
-    );
+    openModal({
+      component: <ReportModal type="download_report" dashboardType={dashboardType} />,
+      size: 'custom',
+    });
   };
 
   return (
@@ -55,3 +68,5 @@ export const OverviewBanner = ({ loading, history }): JSX.Element => {
     </OverViewBannerWrapper>
   );
 };
+
+export const OverviewBanner = connect(null, mapDispatchToProps)(OverviewBannerComponent);

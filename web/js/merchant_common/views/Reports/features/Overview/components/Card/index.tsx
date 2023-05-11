@@ -2,19 +2,54 @@ import React from 'react';
 import defaultIcon from 'assets/reports/default.svg';
 import { CardPropsType } from 'merchant_common/views/Reports/features/Overview/types';
 import { CardWrapper, Header, Footer, CardLink, CardIcon, TextWrapper } from './style';
-import { Heading, Text } from 'merchant_common/views/Reports/components';
-import { Link } from 'react-router-dom';
+import { Heading, ReportModal, Text } from 'merchant_common/views/Reports/components';
 import { availableLinks, reportTypeIconsMap } from './configs';
 import { useTheme } from 'merchant_common/views/Reports/hooks';
 import { trackOverviewSection } from 'merchant_common/views/Reports/configs/analytics.config';
 import { useDashboardType } from 'merchant_common/views/Reports/contexts/ReportsContext';
 import { DashboardType } from 'merchant_common/views/Reports/types';
+import { openModal } from 'merchant_common/reducers/modals';
+import { connect } from 'react-redux';
+import { ClickableButton } from 'merchant_common/views/Reports/components/styled';
 
-export const Card = ({ data, linkBasePath }: CardPropsType): JSX.Element => {
+const mapDispatchToProps = (dispatch) => ({
+  openModal: (modal) => dispatch(openModal(modal)),
+});
+
+export const Card = connect(
+  null,
+  mapDispatchToProps,
+)(({ data, openModal }: CardPropsType): JSX.Element => {
   const { name, description, id, type } = data;
   const { theme } = useTheme();
-  const availableLinksArr = availableLinks(id, type);
+  const availableLinksArr = availableLinks();
   const dashboardType = useDashboardType() as DashboardType;
+
+  const onLinkClick = () => {
+    trackOverviewSection({
+      actionName: 'Cards Download Link Click',
+      properties: {
+        report_type: type,
+        config_id: id,
+      },
+      dashboardType,
+    });
+
+    openModal({
+      component: (
+        <ReportModal
+          params={{
+            startPollOnSubmit: false,
+            selectedConfig: id,
+          }}
+          type={type === 'custom_non_owned' ? 'download_custom_report' : 'download_report'}
+          dashboardType={dashboardType}
+        />
+      ),
+      size: 'custom',
+    });
+  };
+
   return (
     <CardWrapper aria-label={`${name} Card`} theme={theme}>
       <div>
@@ -40,27 +75,17 @@ export const Card = ({ data, linkBasePath }: CardPropsType): JSX.Element => {
         {availableLinksArr.map((link) => (
           // eslint-disable-next-line
           //@ts-ignore
-          <Link
+          <ClickableButton
             key={link.label}
             aria-label={`${link.label} Button`}
-            to={`${linkBasePath}/reports/${link.to}`}
-            onClick={() =>
-              trackOverviewSection({
-                actionName: 'Cards Download Link Click',
-                properties: {
-                  report_type: type,
-                  config_id: id,
-                },
-                dashboardType,
-              })
-            }
+            onClick={onLinkClick}
           >
             <Text variant="body" type="normal" weight="bold">
               <CardLink theme={theme}>{link.label}</CardLink>
             </Text>
-          </Link>
+          </ClickableButton>
         ))}
       </Footer>
     </CardWrapper>
   );
-};
+});

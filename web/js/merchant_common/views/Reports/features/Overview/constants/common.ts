@@ -2,7 +2,7 @@ export const overviewConfigFilterOptions = (showRecentsOption = false) => {
   const options = [
     {
       label: 'All Reports',
-      value: '',
+      value: 'all',
     },
   ];
 

@@ -39,15 +39,15 @@ describe('Downloads', () => {
   test('should render component without any error', () => {
     renderDownload({}, '', {});
     expect(screen.getByLabelText('Download Report Button')).toBeInTheDocument();
-    expect(screen.getByLabelText('Logs Filter Dropdown')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Choose Logs Filter')).toBeInTheDocument();
     expect(modalUtils.openModal).toHaveBeenCalledTimes(0);
   });
 
   test('should change filter on dropdown select', async () => {
     renderDownload({}, '?modal=invalid', {});
     expect(modalUtils.openModal).toHaveBeenCalledTimes(0);
-    await userEvent.click(screen.getByLabelText('Logs Filter Dropdown'));
-    await userEvent.click(screen.getByLabelText(downloadsFilterDropdown[0].label));
+    await userEvent.click(screen.getByPlaceholderText('Choose Logs Filter'));
+    await userEvent.click(screen.getByTestId(downloadsFilterDropdown[0].label));
     expect(actions.handleLogsFilter).toHaveBeenCalledWith({
       dashboardType: REPORT_TEST_DASHBOARD,
       filter: downloadsFilterDropdown[0].value,

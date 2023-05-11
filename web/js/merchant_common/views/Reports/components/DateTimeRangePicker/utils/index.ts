@@ -1,5 +1,11 @@
 import moment, { isMoment } from 'moment';
-import { WEEK_DAYS } from 'merchant_common/views/Reports/components/DateTimeRangePicker/constants';
+import {
+  SELECTED_DATE_RANGE_RENDER_FORMAT,
+  SELECTED_DATE_RENDER_FORMAT,
+  SELECTED_TIME_RENDER_FORMAT,
+  WEEK_DAYS,
+} from 'merchant_common/views/Reports/components/DateTimeRangePicker/constants';
+import { ModifierType } from 'merchant_common/views/Reports/components/DateTimeRangePicker/types';
 
 export const renderNumberArray = (length, offset = 0) => {
   return Array(length)
@@ -67,18 +73,77 @@ export const getYearsArray = (visibleWindowIndex = 0, numOfVisibleYear) => {
 };
 
 export const didDatesUpdate = (prev, curr) => {
-  if (prev?.startDate && prev?.endDate) {
-    if (
-      isMoment(prev.startDate) &&
-      isMoment(prev.endDate) &&
-      isMoment(curr.endDate) &&
-      isMoment(curr.startDate)
-    ) {
-      return !(
-        prev.startDate.clone().isSame(curr.startDate.clone(), 'minute') &&
-        prev.endDate.clone().isSame(curr.endDate.clone(), 'minute')
-      );
-    }
+  if (
+    prev?.startDate &&
+    prev?.endDate &&
+    isMoment(prev.startDate) &&
+    isMoment(prev.endDate) &&
+    isMoment(curr.endDate) &&
+    isMoment(curr.startDate)
+  ) {
+    return !(
+      prev.startDate.clone().isSame(curr.startDate.clone(), 'minute') &&
+      prev.endDate.clone().isSame(curr.endDate.clone(), 'minute')
+    );
+  } else {
+    return true;
   }
-  return false;
+};
+
+export const getFormattedDate = (value, selectedRangeFormat?) => {
+  if (!value) return '';
+
+  switch (true) {
+    case moment(value.startDate).isSame(moment(value.endDate), 'minute'):
+      return `${moment(value.startDate).format(SELECTED_DATE_RENDER_FORMAT)}`;
+
+    case moment(value.startDate).isSame(moment(value.endDate), 'day'):
+      return `${moment(value.startDate).format(SELECTED_DATE_RENDER_FORMAT)} (${`${moment(
+        value.startDate,
+      ).format(SELECTED_TIME_RENDER_FORMAT)} - ${moment(value.endDate).format(
+        SELECTED_TIME_RENDER_FORMAT,
+      )}`})`;
+
+    default:
+      return `${moment(value.startDate).format(
+        selectedRangeFormat ?? SELECTED_DATE_RANGE_RENDER_FORMAT,
+      )} - ${moment(value.endDate).format(
+        selectedRangeFormat ?? SELECTED_DATE_RANGE_RENDER_FORMAT,
+      )}`;
+  }
+};
+
+export const parseError = ({
+  validationError,
+  disableFuture,
+  disablePast,
+  modifiers,
+}: {
+  validationError: string;
+  disableFuture?: boolean;
+  disablePast?: boolean;
+  modifiers: ModifierType;
+}) => {
+  switch (true) {
+    case Boolean(validationError):
+      return validationError;
+    case disableFuture:
+      if (modifiers?.INFO_WHEN_FUTURE_DISABLED) {
+        return modifiers?.INFO_WHEN_FUTURE_DISABLED;
+      } else {
+        return `*Maximum end date allowed is ${moment().endOf('day').format('MMMM Do, h A')}`;
+      }
+    case disablePast:
+      if (modifiers?.INFO_WHEN_PAST_DISABLED) {
+        return modifiers?.INFO_WHEN_PAST_DISABLED;
+      } else {
+        return `*Minimum start date allowed is ${moment().startOf('day').format('MMMM Do, h A')}`;
+      }
+    default:
+      if (modifiers?.DEFAULT_INFO) {
+        return modifiers.DEFAULT_INFO;
+      } else {
+        return '';
+      }
+  }
 };

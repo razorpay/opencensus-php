@@ -7,7 +7,7 @@ import React, {
   useState,
 } from 'react';
 import debounce from 'common/utils/debounce';
-import { Dropdown } from 'merchant_common/views/Reports/components';
+import { BaseDropdown } from 'merchant_common/views/Reports/components/MultiSelectDropdown/_BaseDropdown';
 import { AsyncDropdownPropsType } from './types';
 import { useClickOutSide } from 'merchant_common/views/Reports/hooks';
 
@@ -72,7 +72,7 @@ export const AsyncDropdown = <ItemType, AllowMultiple, Virtualized>({
   });
 
   const renderDropdown = (props) => {
-    return <Dropdown {...props} />;
+    return <BaseDropdown {...props} />;
   };
 
   const combinedDropdownProps = {

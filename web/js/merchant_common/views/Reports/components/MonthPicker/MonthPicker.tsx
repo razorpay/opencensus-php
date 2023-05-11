@@ -12,10 +12,12 @@ import {
   MonthInput,
   YearPickerStyled,
 } from './styled';
-import { Heading, Text } from 'merchant_common/views/Reports/components';
+import { Box, CalendarIcon, Heading, Text } from 'merchant_common/views/Reports/components';
 import { MonthGrid } from 'merchant_common/views/Reports/components/DateTimeRangePicker/components';
 import { useTheme, useClickOutSide } from 'merchant_common/views/Reports/hooks';
 import { MonthIndex, MonthPickerProps } from './types';
+import { FieldFooter } from 'merchant_common/views/Reports/components/FieldFooter';
+import { FieldLabel } from 'merchant_common/views/Reports/components/FieldLabel';
 
 export const MonthPicker = ({
   value,
@@ -24,6 +26,8 @@ export const MonthPicker = ({
   label,
   validate = () => true,
   placeHolder,
+  necessityIndicator,
+  errorText,
 }: MonthPickerProps) => {
   const [isPickerOpen, setPickerOpen] = useState(false);
   const isValidated = validate();
@@ -41,33 +45,33 @@ export const MonthPicker = ({
 
   return (
     <MonthField>
-      {Boolean(label) && (
-        <Text variant="body" type="normal" weight="bold">
-          {label}
-        </Text>
-      )}
-
+      <FieldLabel necessityIndicator={necessityIndicator} label={label} />
       <MonthInput ref={pickerRef} label={label} open={isPickerOpen}>
         <SelectedMonthInfo
           validation={isPickerOpen ? true : isValidated}
           aria-label="Selected Month Field"
           onClick={() => setPickerOpen(true)}
+          focused={isPickerOpen}
         >
           <Text
-            variant="body"
+            size="medium"
             type="normal"
-            weight="regular"
+            variant="body"
             color={
-              isValidated ? 'surface.text.subtle.lowContrast' : 'surface.text.muted.lowContrast'
+              typeof value === 'number'
+                ? 'surface.text.normal.lowContrast'
+                : 'surface.text.muted.lowContrast'
             }
           >
             {(typeof value === 'number' ? moment().month(value).format('MMMM') : null) ??
               placeHolder ??
               'Select A Month'}
           </Text>
+
+          <CalendarIcon color="feedback.icon.neutral.lowContrast" size="medium" />
         </SelectedMonthInfo>
-        {isPickerOpen && (
-          <AbsoluteWrapper>
+        {isPickerOpen ? (
+          <AbsoluteWrapper topOffset={18}>
             <MonthContainer theme={theme} focused={true} validation={isValidated}>
               <YearPickerStyled>
                 <FlexJustifyContentCenter>
@@ -81,9 +85,11 @@ export const MonthPicker = ({
                     refDayMoment={moment()}
                     customCalendarHeading={() => (
                       <FlexCentered>
-                        <Heading size="medium" weight="bold" type="subdued" variant="regular">
-                          Select Month
-                        </Heading>
+                        <Box marginBottom={'spacing.4'}>
+                          <Heading size="small" weight="bold" type="subdued" variant="regular">
+                            Select Month
+                          </Heading>
+                        </Box>
                       </FlexCentered>
                     )}
                   />
@@ -91,21 +97,9 @@ export const MonthPicker = ({
               </YearPickerStyled>
             </MonthContainer>
           </AbsoluteWrapper>
-        )}
+        ) : null}
       </MonthInput>
-
-      {Boolean(helpText) && (
-        <Text
-          variant="caption"
-          type="subdued"
-          weight="regular"
-          color={
-            isValidated ? 'surface.text.subdued.lowContrast' : 'feedback.text.negative.lowContrast'
-          }
-        >
-          {isValidated ? helpText : `Mandatory Field: ${helpText}`}
-        </Text>
-      )}
+      <FieldFooter errorText={errorText} validation={isValidated} helpText={helpText} />
     </MonthField>
   );
 };

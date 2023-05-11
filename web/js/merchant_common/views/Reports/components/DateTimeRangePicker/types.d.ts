@@ -1,5 +1,6 @@
 import * as moment from 'moment';
 import { ReactChild } from 'react';
+import { NecessityIndicatorType } from 'merchant_common/views/Reports/components/types';
 
 export enum ViewMode {
   date = 'date',
@@ -100,7 +101,8 @@ export interface SelectedRangeInfoInputPropsType {
   placeHolder?: string;
   label?: string;
   selectedRangeFormat?: string;
-  validate?: (date: SelectedRangeType) => ValidationConfigType | true;
+  isValidatedField: boolean;
+  validateRange?: (date: SelectedRangeType) => ValidationConfigType | true;
 }
 
 export interface MonthGridPropsType extends BaseDateRangePickerChildType {
@@ -152,6 +154,7 @@ export interface DateTimeRangePickerPropsType {
    * Disable all the dates after today (exclusive).
    */
   disableFuture?: boolean;
+  errorText?: string;
   helpText?: string;
   label?: string;
   onChange: (date: SelectedRangeType) => void;
@@ -179,14 +182,19 @@ export interface DateTimeRangePickerPropsType {
    */
   selectedRangeFormat?: string;
   /**
-   * Function when called, returns the validation state
+   * A validator fn to validate the selected range when range picker is open, shows errors passed via modifiers inside the opened picker itself.
    */
-  validate?: (date: SelectedRangeType) => ValidationConfigType | true;
+  validateRange?: (date: SelectedRangeType) => ValidationConfigType | true;
+  /**
+   * A boolean to be used for validating field when picker is closed, only to be used for validating if a range is selected or not.
+   */
+  validationState?: boolean;
   ariaLabel?: string;
   /**
    * An object to show info in calendar footer.
    */
   modifiers?: ModifierType;
+  necessityIndicator?: NecessityIndicatorType;
 }
 
 export type VisibleRangeType = moment.Moment[] | null;

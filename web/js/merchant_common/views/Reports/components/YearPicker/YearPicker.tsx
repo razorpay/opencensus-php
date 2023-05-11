@@ -10,10 +10,13 @@ import {
   YearInput,
   YearPickerStyled,
 } from './styled';
-import { Text } from 'merchant_common/views/Reports/components';
+import { CalendarIcon, Text, Box, Heading } from 'merchant_common/views/Reports/components';
 import { YearGrid } from 'merchant_common/views/Reports/components/DateTimeRangePicker/components';
 import { useTheme, useClickOutSide } from 'merchant_common/views/Reports/hooks';
 import { YearPickerProps } from './types';
+import { FlexCentered } from 'merchant_common/views/Reports/components/styled';
+import { FieldFooter } from 'merchant_common/views/Reports/components/FieldFooter';
+import { FieldLabel } from 'merchant_common/views/Reports/components/FieldLabel';
 
 export const YearPicker = ({
   value,
@@ -24,6 +27,8 @@ export const YearPicker = ({
   label,
   validate = () => true,
   placeHolder,
+  necessityIndicator,
+  errorText,
 }: YearPickerProps) => {
   const [isPickerOpen, setPickerOpen] = useState(false);
   const [yearRangeIndex, setYearIndex] = useState(0);
@@ -55,31 +60,31 @@ export const YearPicker = ({
 
   return (
     <YearField>
-      {Boolean(label) && (
-        <Text variant="body" type="normal" weight="bold">
-          {label}
-        </Text>
-      )}
+      <FieldLabel necessityIndicator={necessityIndicator} label={label} />
 
       <YearInput ref={pickerRef} label={label} open={isPickerOpen}>
         <SelectedYearInfo
           validation={isPickerOpen ? true : isValidated}
           aria-label="Selected Year Field"
           onClick={() => setPickerOpen(true)}
+          focused={isPickerOpen}
         >
           <Text
-            variant="body"
+            size="medium"
             type="normal"
-            weight="regular"
+            variant="body"
             color={
-              isValidated ? 'surface.text.subtle.lowContrast' : 'surface.text.muted.lowContrast'
+              typeof value === 'number'
+                ? 'surface.text.normal.lowContrast'
+                : 'surface.text.muted.lowContrast'
             }
           >
             {value ?? placeHolder ?? 'Select A Year'}
           </Text>
+          <CalendarIcon color="feedback.icon.neutral.lowContrast" size="medium" />
         </SelectedYearInfo>
         {isPickerOpen ? (
-          <AbsoluteWrapper>
+          <AbsoluteWrapper topOffset={18}>
             <YearContainer theme={theme} focused={true} validation={isValidated}>
               <YearPickerStyled>
                 <PickerNavigationContainer>
@@ -102,25 +107,22 @@ export const YearPicker = ({
                   setViewMode={() => {}}
                   isCompactView={true}
                   refDayMoment={moment()}
+                  customCalendarHeading={() => (
+                    <FlexCentered>
+                      <Box marginBottom={'spacing.4'}>
+                        <Heading size="small" weight="bold" type="subdued" variant="regular">
+                          Select Year
+                        </Heading>
+                      </Box>
+                    </FlexCentered>
+                  )}
                 />
               </YearPickerStyled>
             </YearContainer>
           </AbsoluteWrapper>
         ) : null}
       </YearInput>
-
-      {Boolean(helpText) && (
-        <Text
-          variant="caption"
-          type="subdued"
-          weight="regular"
-          color={
-            isValidated ? 'surface.text.subdued.lowContrast' : 'feedback.text.negative.lowContrast'
-          }
-        >
-          {isValidated ? helpText : `Mandatory Field: ${helpText}`}
-        </Text>
-      )}
+      <FieldFooter errorText={errorText} validation={isValidated} helpText={helpText} />
     </YearField>
   );
 };

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import moment from 'moment';
 import { Date as StyledDate } from 'merchant_common/views/Reports/components/DateTimeRangePicker/styled';
 import { DatePropsType } from 'merchant_common/views/Reports/components/DateTimeRangePicker/types';
@@ -14,14 +14,36 @@ export const Date = ({
   disableFuture,
   onDayClick = () => {},
   showToday,
-  allowSingleDateSelection,
   disablePast,
   maxDate,
   minDate,
+  allowSingleDateSelection,
 }: DatePropsType): JSX.Element => {
   const { theme } = useTheme();
   const { startDate, endDate, setStartDate, setEndDate } = useDateTimeRangeContext();
   const { dateHoveringOn, focused, setDateHoveringOn, setFocused } = useDatesContext();
+
+  const checkIfHovered = useCallback(() => {
+    if (!day) return false;
+
+    switch (true) {
+      case startDate && endDate && moment?.isMoment(dateHoveringOn):
+        if (focused === 'startDate') {
+          return day.isBetween(dateHoveringOn, startDate, 'day', '[)');
+        } else {
+          return day.isBetween(endDate, dateHoveringOn, 'day', '(]');
+        }
+
+      case !startDate && !endDate:
+        return dateHoveringOn?.isSame(day, 'day');
+
+      case !endDate:
+        return day.isBetween(startDate, dateHoveringOn, 'day', '(]');
+
+      default:
+        return false;
+    }
+  }, [dateHoveringOn, day, endDate, focused, startDate]);
 
   if (!day) {
     return customDateComponent ? (
@@ -52,9 +74,9 @@ export const Date = ({
   const isDayBeforeMinDate = Boolean(minDate) && day.isBefore(minDate, 'month');
 
   const isDisabled = isDisabledFutureOrPast || isDayAfterMaxDate || isDayBeforeMinDate;
-  const isBetween = day.isBetween(startDate, endDate, 'day', '()');
-  const isStartDate = day.isSame(startDate, 'day');
-  const isEndDate = day.isSame(endDate, 'day');
+  const isBetween = Boolean(startDate && day.isBetween(startDate, endDate, 'day', '()'));
+  const isStartDate = Boolean(startDate && day.isSame(startDate, 'day'));
+  const isEndDate = Boolean(endDate && day.isSame(endDate, 'day'));
   const isExtremeEnds = isStartDate || isEndDate;
   const isSingleDaySelected = isStartDate && isEndDate;
   const isToday = day.isSame(moment(), 'day');
@@ -71,34 +93,44 @@ export const Date = ({
     if (event) event?.preventDefault();
     if (isDisabled) return;
 
-    if (
-      allowSingleDateSelection
+    switch (true) {
+      case !startDate && !endDate:
+        if (allowSingleDateSelection) {
+          setStartDate(day.clone().startOf('day'));
+          setEndDate(day.clone().endOf('day'));
+        } else {
+          setStartDate(day.clone().startOf('day'));
+          setFocused('endDate');
+        }
+        break;
+      case allowSingleDateSelection
         ? day.isBefore(startDate, 'day')
-        : day.isSameOrBefore(startDate, 'day')
-    ) {
-      setStartDate(updateMomentWithCurrTime(day, startDate));
-      setFocused('endDate');
-    } else if (day.isBetween(startDate, endDate, 'day', allowSingleDateSelection ? '[]' : '()')) {
-      if (allowSingleDateSelection && day.isSame(startDate, 'day')) {
-        // handles state when user clicks on start date
-        // single day will be selected
-        setEndDate(updateMomentWithCurrTime(day, endDate));
-        setFocused('startDate');
-      } else if (allowSingleDateSelection && day.isSame(endDate, 'day')) {
-        // handles state whhen user clicks on end date
-        // single day will be selected
+        : day.isSameOrBefore(startDate, 'day'):
         setStartDate(updateMomentWithCurrTime(day, startDate));
         setFocused('endDate');
-      } else if (focused === 'startDate') {
-        setStartDate(updateMomentWithCurrTime(day, startDate));
-        setFocused('endDate');
-      } else {
+        break;
+      case startDate && !endDate:
+        setEndDate(day.clone().endOf('day'));
+        setFocused('startDate');
+        break;
+      case day.isBetween(startDate, endDate, 'day', allowSingleDateSelection ? '[]' : '()'):
+        if (allowSingleDateSelection && day.isSame(startDate, 'day')) {
+          setEndDate(updateMomentWithCurrTime(day, endDate));
+          setFocused('startDate');
+        } else if (allowSingleDateSelection && day.isSame(endDate, 'day')) {
+          setStartDate(updateMomentWithCurrTime(day, startDate));
+          setFocused('endDate');
+        } else if (focused === 'startDate') {
+          setStartDate(updateMomentWithCurrTime(day, startDate));
+          setFocused('endDate');
+        } else {
+          setEndDate(updateMomentWithCurrTime(day, endDate));
+          setFocused('startDate');
+        }
+        break;
+      default:
         setEndDate(updateMomentWithCurrTime(day, endDate));
         setFocused('startDate');
-      }
-    } else {
-      setEndDate(updateMomentWithCurrTime(day, endDate));
-      setFocused('startDate');
     }
 
     onDayClick(day);
@@ -130,12 +162,7 @@ export const Date = ({
     }
   };
 
-  const isInTrackOfHighlight =
-    startDate && endDate && moment.isMoment(dateHoveringOn)
-      ? focused === 'startDate'
-        ? day.isBetween(dateHoveringOn.clone(), startDate.clone(), 'day', '[)')
-        : day.isBetween(endDate.clone(), dateHoveringOn.clone(), 'day', '(]')
-      : false;
+  const isInTrackOfHighlight = checkIfHovered();
 
   return customDateComponent ? (
     customDateComponent({
@@ -148,7 +175,7 @@ export const Date = ({
       isExtremeEnds,
       isSingleDaySelected,
       onClick,
-      isHovered: isInTrackOfHighlight,
+      isHovered: Boolean(isInTrackOfHighlight),
     })
   ) : (
     <StyledDate

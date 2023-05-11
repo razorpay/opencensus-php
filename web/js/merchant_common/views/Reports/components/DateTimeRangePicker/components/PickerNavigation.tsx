@@ -22,7 +22,9 @@ export const PickerNavigation = ({
           onClick={onPrevClick}
           size="large"
         />
-      ) : null}
+      ) : (
+        <div />
+      )}
       {isNextClickAllowed ? (
         <IconButton
           icon={ChevronRightIcon}
@@ -30,7 +32,9 @@ export const PickerNavigation = ({
           onClick={onNextClick}
           size="large"
         />
-      ) : null}
+      ) : (
+        <div />
+      )}
     </NavigationContainer>
   );
 };

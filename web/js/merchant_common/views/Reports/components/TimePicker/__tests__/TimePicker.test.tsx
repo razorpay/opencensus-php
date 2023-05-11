@@ -11,7 +11,7 @@ describe('TimePicker', () => {
   const App = () => {
     return (
       <>
-        <TimePicker onChange={() => {}} date={moment()} onClose={() => {}} />
+        <TimePicker onChange={() => {}} value={moment()} onClose={() => {}} />
         <p aria-label="selected time" />
       </>
     );

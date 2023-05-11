@@ -203,3 +203,8 @@ export const CenteredEmptyContainer = styled.div`
   flex-direction: column;
   ${flexCentered}
 `;
+
+export const FieldLabelWrapper = styled.div`
+  margin-bottom: 9px;
+  position: relative;
+`;

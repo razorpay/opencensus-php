@@ -5,12 +5,9 @@ import {
   flexCentered,
   AbsoluteWrapper as AS,
   BASE_FIELD_MARGIN,
-  BASE_FIELD_PADDING,
   BASE_FIELD_BORDER_RADIUS,
-  BASE_FIELD_BACKGROUND_COLOR,
-  BASE_FIELD_WIDTH,
   ScrollSafeMargin,
-  BASE_FIELD_BORDER,
+  BASE_FIELD_PADDING,
 } from 'merchant_common/views/Reports/components/styled';
 import { reportsTheme } from 'merchant_common/views/Reports/configs';
 import { BaseValidationStyledProps } from 'merchant_common/views/Reports/components/types';
@@ -31,17 +28,36 @@ export const CalendarInput = styled.div<BaseValidationStyledProps>`
   overflow: ${({ open }) => (open ? `visible` : `hidden`)};
 `;
 
-export const SelectedDateValue = styled.div`
+export const SelectedDateValue = styled.div<BaseValidationStyledProps>`
+  ${BASE_FIELD_MARGIN}
   ${BASE_FIELD_PADDING}
-  ${BASE_FIELD_BORDER_RADIUS}
-  ${BASE_FIELD_BACKGROUND_COLOR}
-  ${BASE_FIELD_WIDTH}
-  cursor: pointer;
-  ${({ theme }) => {
-    const { FIELD_BORDER_WIDTH, FIELD_BORDER_DEFAULT_COLOR } = reportsTheme(theme);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  ${({ theme, focused, validation }) => {
+    const {
+      FIELD_BORDER_DEFAULT_COLOR,
+      FIELD_BORDER_RADIUS,
+      FIELD_FOCUS_COLOR_L1,
+      FIELD_BG_COLOR,
+      FIELD_FOCUS_COLOR_L3,
+      NEGATIVE_BORDER,
+      NEGATIVE_BG,
+      HOVER_BG_COLOR_L3,
+    } = reportsTheme(theme);
+    const bgColor = validation ? (focused ? FIELD_FOCUS_COLOR_L1 : FIELD_BG_COLOR) : NEGATIVE_BG;
     return `
-      border: ${FIELD_BORDER_WIDTH} solid ${FIELD_BORDER_DEFAULT_COLOR};
-    `;
+    transition: background-color border-color 0.3s ${theme.motion.easing.standard.revealing};
+    border-bottom: 1px solid ${
+      validation ? (focused ? FIELD_FOCUS_COLOR_L3 : FIELD_BORDER_DEFAULT_COLOR) : NEGATIVE_BORDER
+    };
+    border-top-left-radius: ${FIELD_BORDER_RADIUS};
+    border-top-right-radius: ${FIELD_BORDER_RADIUS};
+    background-color: ${bgColor};
+    &: hover{
+      background-color: ${focused || !validation ? bgColor : HOVER_BG_COLOR_L3};
+    }
+  `;
   }}
 `;
 
@@ -77,39 +93,55 @@ export const Date = styled.td<{
 `;
 
 // PORTAL
-export const AbsoluteWrapper = styled(AS)`
+// PORTAL
+export const AbsoluteWrapper = styled(AS)<{ topOffset?: number }>`
   z-index: 100;
-  ${({ theme }) => `
-  @media (max-width: ${theme.breakpoints.m}px) {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    animation: blendIn 150ms linear;
-    & ${ScrollSafeMargin}{
-      margin: 0;
+  animation: slideFromTop 100ms linear;
+
+  @keyframes slideFromTop {
+    0% {
+      transform: translateY(-10px);
+      opacity: 0.3;
     }
-    @keyframes blendIn {
-      0% {
-        transform: translateY(20px);
-        opacity: 0.3;
-      };
-      100% {
-        transform: translateY(0);
-        opacity: 1;
-      };
+    100% {
+      transform: translateY(0px);
+      opacity: 1;
     }
   }
-`}
+
+  @keyframes slideFromBottom {
+    0% {
+      transform: translateY(20px);
+      opacity: 0.3;
+    }
+    100% {
+      transform: translateY(0px);
+      opacity: 1;
+    }
+  }
+
+  ${({ theme, topOffset = 28 }) => `
+  top: calc(100% + ${topOffset}px);
+  @media (max-width: ${theme.breakpoints.m}px) {
+    position: fixed;
+    top: unset;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    animation: slideFromBottom 100ms linear;
+    & ${ScrollSafeMargin}{
+      margin: 0px;
+    }
+  }
+`};
 `;
 
 export const DateTimeRangeContainer = styled(ScrollSafeMargin)<BaseValidationStyledProps>`
-  ${BASE_FIELD_BORDER}
+  border-radius: 4px;
   ${({ theme }) => {
-    const { FIELD_BORDER_RADIUS, FIELD_SHADOW, FIELD_SHADOW_BLUR_RADIUS } = reportsTheme(theme);
+    const { FIELD_SHADOW, FIELD_SHADOW_BLUR_RADIUS } = reportsTheme(theme);
     return `
     background: #ffffff;
-    border-radius: ${FIELD_BORDER_RADIUS};
     box-shadow: 0 0 ${FIELD_SHADOW_BLUR_RADIUS} ${FIELD_SHADOW};
     padding: 0;
   `;
@@ -144,6 +176,7 @@ export const RangeSectionHeader = styled.div`
   display: flex;
   justify-content: space-between;
   width: 100%;
+  margin-bottom: 15px;
 `;
 
 export const CalendarContent = styled.main``;
@@ -179,8 +212,37 @@ export const NavigationContainer = styled.div<{ disabled: boolean }>`
 
 export const DateRangeContainer = styled(FlexJustifyContentCenter)``;
 
-export const DateGridWrapper = styled.div`
+export const DateGridWrapper = styled.div<{ topOffset?: number }>`
   margin: 10px;
+  animation: slideFromTop 250ms linear;
+
+  @keyframes slideFromTop {
+    0% {
+      transform: translateY(-10px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0px);
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideFromBottom {
+    0% {
+      transform: translateY(10px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0px);
+      opacity: 1;
+    }
+  }
+
+  ${({ theme }) => `
+  @media (max-width: ${theme.breakpoints.m}px) {
+    animation: slideFromBottom 220ms linear;
+  }
+`}
 `;
 
 export const Table = styled.table<{ size: number }>`

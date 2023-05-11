@@ -8,9 +8,10 @@ import { DateTimeRangePickerPropsType } from './types';
 import { DateTimeRangePickerProvider } from './context/DateTimeRangePickerContext';
 import { DatesContextProvider } from './context/DatesContext';
 import { SelectedRangeInfoInput } from './components/SelectedRangeInfoInput';
-import { Text } from 'merchant_common/views/Reports/components';
 import { useTheme } from 'merchant_common/views/Reports/hooks';
 import { VisibleRangeContainer } from './components/VisibleRangeContainer';
+import { FieldFooter } from 'merchant_common/views/Reports/components/FieldFooter';
+import { FieldLabel } from 'merchant_common/views/Reports/components/FieldLabel';
 
 const Picker = ({
   allowSingleDateSelection = false,
@@ -24,29 +25,29 @@ const Picker = ({
   placeHolder,
   selectedRangeFormat,
   showToday,
-  validate = () => true,
+  validateRange = () => true,
+  validationState = true,
   value,
   ariaLabel,
   modifiers,
+  necessityIndicator,
+  errorText,
 }: DateTimeRangePickerPropsType): JSX.Element => {
   const { theme } = useTheme();
   const daySize = DAY_SIZE;
   return (
-    <DateTimeRangePickerProvider value={value} onChange={onChange}>
+    <DateTimeRangePickerProvider value={value}>
       <DatesContextProvider>
         <CalendarField>
-          {Boolean(label) && (
-            <Text variant="body" type="normal" weight="bold">
-              {label}
-            </Text>
-          )}
+          <FieldLabel necessityIndicator={necessityIndicator} label={label} />
           <SelectedRangeInfoInput
             placeHolder={placeHolder}
             value={value}
             onChange={onChange}
             label={label}
             selectedRangeFormat={selectedRangeFormat}
-            validate={validate}
+            validateRange={validateRange}
+            isValidatedField={validationState}
           >
             <DateTimeRangeContainer>
               <DateTimeRangeHeader />
@@ -68,11 +69,7 @@ const Picker = ({
               />
             </DateTimeRangeContainer>
           </SelectedRangeInfoInput>
-          {Boolean(helpText) && (
-            <Text variant="caption" type="subdued">
-              {helpText}
-            </Text>
-          )}
+          <FieldFooter errorText={errorText} helpText={helpText} validation={validationState} />{' '}
         </CalendarField>
       </DatesContextProvider>
     </DateTimeRangePickerProvider>

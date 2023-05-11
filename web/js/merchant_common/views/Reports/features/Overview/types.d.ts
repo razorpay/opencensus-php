@@ -1,16 +1,15 @@
-import { History, Location } from 'history';
+import { Location } from 'history';
 import { BaseConfigType } from 'merchant_common/views/Reports/types/config';
 import { DashboardType, RefDashboardConfigType } from 'merchant_common/views/Reports/types';
-import { ShowNotificationType } from 'common/typings';
+import { OpenModalPayload, ShowNotificationType } from 'common/typings';
 
 export interface CardPropsType {
   data: BaseConfigType;
-  linkBasePath: string;
+  openModal: (x: OpenModalPayload) => void;
 }
 
 export interface OverViewPropsType {
   allReportConfigs: BaseConfigType[];
-  history: History;
   location: Location;
   recentlyUsedReportConfigs: BaseConfigType[];
   isAllConfigLoaded: boolean;

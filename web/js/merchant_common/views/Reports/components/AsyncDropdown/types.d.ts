@@ -1,4 +1,8 @@
-import { CheckItemType, VirtualizedTypes } from 'merchant_common/views/Reports/components/types';
+import {
+  CheckItemType,
+  NecessityIndicatorType,
+  VirtualizedTypes,
+} from 'merchant_common/views/Reports/components/types';
 
 type DefaultAsyncDropdownProps<ItemType, AllowMultiple, Virtualized> = {
   /**
@@ -12,6 +16,7 @@ type DefaultAsyncDropdownProps<ItemType, AllowMultiple, Virtualized> = {
   shouldCloseDropdownOnSelect?: boolean;
   defaultValue?: SingleOrMulipleItem<ItemType, AllowMultiple>;
   helpText?: string;
+  errorText?: string;
   /**
    * In TODO
    */
@@ -53,6 +58,7 @@ type DefaultAsyncDropdownProps<ItemType, AllowMultiple, Virtualized> = {
    * Debounce interval for the type ahead api calls.
    */
   debounceInterval?: number;
+  necessityIndicator?: NecessityIndicatorType;
 };
 
 export type AsyncDropdownPropsType<T1, T2, T3> = DefaultAsyncDropdownProps<T1, T2, T3> &

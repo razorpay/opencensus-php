@@ -11,9 +11,7 @@ describe('OverviewCard', () => {
 
   test('should render card component without any error', () => {
     render(<App data={cardProp} linkBasePath="" />);
-    expect(
-      screen.getByLabelText(`${availableLinks(cardProp.id, '')[0].label} Button`),
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText(`${availableLinks()[0].label} Button`)).toBeInTheDocument();
     expect(screen.getByText(cardProp.name)).toBeInTheDocument();
     expect(screen.getByText(cardProp.description)).toBeInTheDocument();
   });

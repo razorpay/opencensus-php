@@ -9,14 +9,11 @@ import qrIcon from 'assets/reports/qr.svg';
 import transactionIcon from 'assets/reports/transactions.svg';
 import settlementOnDemandIcon from 'assets/reports/ondemandsettlement.svg';
 
-export const availableLinks = (id, type) => {
+export const availableLinks = () => {
   return [
     {
       type: 'download',
       label: 'Download Report',
-      to: `downloads?modal=${
-        type === 'custom_non_owned' ? 'download_custom_report' : 'download_report'
-      }&config=${id}`,
     },
   ];
 };

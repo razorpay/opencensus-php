@@ -1,1 +1,1 @@
-export { TimePicker } from './TimePicker';
+export { TimePicker, TimePickerField } from './TimePicker';

@@ -42,9 +42,9 @@ describe('Overview Section', () => {
   };
 
   const handleFilterDropdownSelectionMock = async (optionLabel) => {
-    const filterDropdown = screen.getByLabelText('Choose A Config Filter');
+    const filterDropdown = screen.getByPlaceholderText('Choose A Filter');
     await userEvent.click(filterDropdown);
-    const refOption = screen.getByLabelText(optionLabel);
+    const refOption = screen.getByTestId(optionLabel);
     await userEvent.click(refOption);
   };
 
@@ -57,7 +57,7 @@ describe('Overview Section', () => {
   test('should render configs skeletons when no state is passed without any error', () => {
     render(<OverviewSection />, { initialState });
     checkLoadingState();
-    const filterDropdown = screen.getByLabelText('Choose A Config Filter');
+    const filterDropdown = screen.getByPlaceholderText('Choose A Filter');
     expect(filterDropdown).toBeInTheDocument();
   });
 

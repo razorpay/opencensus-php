@@ -1,6 +1,13 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { sortCardsByReportType } from 'merchant_common/views/Reports/utils/commonUtils';
-import { Dropdown, Heading, Text } from 'merchant_common/views/Reports/components';
+import {
+  ActionList,
+  ActionListItem,
+  Dropdown,
+  DropdownOverlay,
+  Heading,
+  SelectInput,
+} from 'merchant_common/views/Reports/components';
 import { OverViewPropsType } from 'merchant_common/views/Reports/features/Overview/types';
 import { Card } from 'merchant_common/views/Reports/features/Overview/components/Card';
 import { CardSkeleton } from 'merchant_common/views/Reports/features/Overview/components/Card/Skeleton';
@@ -12,12 +19,13 @@ import {
   AccessabilityToolbar,
   CardContainer,
   CardsWrapper,
-  DropdownLabel,
+  DropdownWrapper,
   ReportTypeHeader,
   ReportTypeWrapper,
 } from './styled';
 import { REPORT_OVERVIEW_LOADING_SKELETONS_COUNT } from 'merchant_common/views/Reports/constants';
 import { trackOverviewSection } from 'merchant_common/views/Reports/configs/analytics.config';
+import { patchedSelectOnChange } from 'merchant_common/views/Reports/components/blade.patch';
 
 export const OverviewSection = ({
   allReportConfigs,
@@ -28,12 +36,12 @@ export const OverviewSection = ({
   fetchRecentlyUsedConfigsSuccess,
   handleOverviewLoading,
   refDashboardConfig: { headers, basePath, parseConfigs, customConfigs },
-  history,
   showNotification,
   dashboardType,
   isOverviewRecentsFilterEnabled,
 }: OverViewPropsType): JSX.Element => {
-  const [filter, setFilter] = useState('');
+  const overviewFilterDropdownOptions = overviewConfigFilterOptions(isOverviewRecentsFilterEnabled);
+  const [filter, setFilter] = useState(overviewFilterDropdownOptions[0].value);
   const { theme } = useTheme();
 
   const cardsSortedByReportType: any = useMemo(
@@ -77,7 +85,7 @@ export const OverviewSection = ({
   const renderOverviewCards = () => {
     const parsedAdditionalConfigs = parseConfigs(customConfigs);
     switch (true) {
-      case !Boolean(filter) && isAllConfigLoaded:
+      case filter === 'all' && isAllConfigLoaded:
         return (
           <>
             <CardsWrapper aria-label="All Configs Container" theme={theme}>
@@ -170,25 +178,36 @@ export const OverviewSection = ({
     });
   }, [isAllConfigLoaded]);
 
-  const overviewFilterDropdownOptions = overviewConfigFilterOptions(isOverviewRecentsFilterEnabled);
-
   return (
     <>
-      <OverviewBanner loading={!isAllConfigLoaded} history={history} />
+      <OverviewBanner loading={!isAllConfigLoaded} />
       <AccessabilityToolbar theme={theme}>
-        <DropdownLabel>
-          <Text type="subtle" variant="body">
-            Filter:
-          </Text>
-        </DropdownLabel>
-        <Dropdown
-          value={overviewFilterDropdownOptions.find((item) => item.value === filter)}
-          options={overviewFilterDropdownOptions}
-          labelKey="label"
-          defaultValue={overviewFilterDropdownOptions[0]}
-          onChange={(e) => e && handleFilterDropdownSelection(e)}
-          ariaLabelBy="Choose A Config Filter"
-        />
+        <DropdownWrapper>
+          <Dropdown selectionType="single">
+            <SelectInput
+              label="Filter:"
+              labelPosition="top"
+              onChange={patchedSelectOnChange(({ values }) =>
+                handleFilterDropdownSelection(overviewFilterDropdownOptions[+values[0]]),
+              )}
+              placeholder="Choose A Filter"
+              validationState="none"
+            />
+            <DropdownOverlay>
+              <ActionList surfaceLevel={2}>
+                {overviewFilterDropdownOptions.map(({ label, value }, index) => (
+                  <ActionListItem
+                    key={value}
+                    isDefaultSelected={value === filter}
+                    title={label}
+                    value={index.toString()}
+                    testID={label}
+                  />
+                ))}
+              </ActionList>
+            </DropdownOverlay>
+          </Dropdown>
+        </DropdownWrapper>
       </AccessabilityToolbar>
       <CardContainer theme={theme}>{renderOverviewCards()}</CardContainer>
     </>

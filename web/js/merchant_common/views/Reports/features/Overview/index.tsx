@@ -11,6 +11,7 @@ import { useDashboardType } from 'merchant_common/views/Reports/contexts/Reports
 import { getReportsDashboardConfig } from 'merchant_common/views/Reports/configs/refDashboard.config';
 import { OverviewSection } from './OverView';
 import { showNotification } from 'merchant_common/reducers/notifications';
+import { openModal } from 'merchant_common/reducers/modals';
 
 const mapStateToProps = ({ reportsCore, session }, { dashboardType }) => {
   const { allConfigs, recentConfigs } = reportsCore[dashboardType].overview.reportConfigs;
@@ -27,6 +28,7 @@ const mapStateToProps = ({ reportsCore, session }, { dashboardType }) => {
 
 export const mapDispatchToProps = (dispatch, { dashboardType }) => {
   return {
+    openModal: (modal) => dispatch(openModal(modal)),
     fetchRecentlyUsedConfigsFailed: (payload) =>
       dispatch(fetchRecentlyUsedConfigsFailed({ ...payload, dashboardType })),
     fetchRecentlyUsedConfigsSuccess: (payload) =>

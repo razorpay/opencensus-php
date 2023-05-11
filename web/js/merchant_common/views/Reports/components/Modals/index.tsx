@@ -1,1 +1,0 @@
-export { ReportModal } from './Modals';
