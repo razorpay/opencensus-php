@@ -59,6 +59,18 @@ class VerificationDetailStatusUpdater extends BaseStatusUpdater
         {
             $documentValidationStatus = $this->getDocumentValidationStatus($validation);
 
+            if (empty($documentValidationStatus) === true)
+            {
+                $this->trace->info(TraceCode::ONBOARDING_BVS_VERIFICATION_STATUS_SKIPPED, [
+                    'merchant_id'                  => $this->merchantDetails->getId(),
+                    'artefact_type'                => $this->artefactType,
+                    'document_verification_status' => $documentValidationStatus,
+                    'bvs_validation_id'            => $this->consumedValidationId
+                ]);
+
+                return;
+            }
+
             $payload = $this->getVerificationDetailsPayload($validation, $documentValidationStatus);
 
             (new MVD\Core)->createOrEditVerificationDetail($this->merchantDetails, $payload);

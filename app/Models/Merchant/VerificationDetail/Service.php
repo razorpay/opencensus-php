@@ -42,6 +42,11 @@ class Service extends Base\Service
     {
         $validationId = $payload['website_verification_id'];
 
+        $this->trace->info(TraceCode::PROCESS_WEBSITE_POLICY_RESULT, [
+            'validation_id' => $validationId,
+            'result'        => $payload['verification_result'] ?? []
+        ]);
+
         $validationObj = [
             Entity::VALIDATION_ID       => $validationId,
             Entity::VALIDATION_STATUS   => $this->getValidationStatus($payload[Constants::STATUS]),
@@ -49,7 +54,6 @@ class Service extends Base\Service
         ];
 
         (new BvsCore)->processValidation($validationId, $validationObj);
-        // TODO: add traces
     }
 
     public function processNegativeKeywordsResponse($payload)
