@@ -785,14 +785,7 @@ class TerminalsService
         try
         {
 
-            $this->trace->info(TraceCode::TERMINALS_SERVICE_REQUEST, $data);
-
             $response = $this->makeRequest($url, $headers, $content, $method, $options);
-
-            $this->trace->info(TraceCode::TERMINALS_SERVICE_RESPONSE,
-                [
-                    self::STATUS_CODE => $response->status_code,
-                ]);
 
             $parsedResponse = $this->parseAndReturnResponse($response);
 
