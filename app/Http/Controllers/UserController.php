@@ -242,11 +242,6 @@ class UserController extends Controller
 
     private function redirectionApplicableForGuest(): bool
     {
-        if ($this->matchExclusionsToRedirect() === true)
-        {
-            return false;
-        }
-
         if (ApiUrl::isBankingOriginRequest() === true)
         {
             return false;
@@ -257,17 +252,37 @@ class UserController extends Controller
         Cookie::queue('rzp_ab_uuid', $uuid);
 
         $experimentId = config('splitz.experiments')['EASY_ONBOARDING_REDIRECT'];
+        $referralExpId = config('splitz.experiments')['EASY_ONBOARDING_REFERRAL_LINK_REDIRECT_PARTNERSHIPS'];
 
-        $data = (new SplitzService())->getVariantBulk($uuid, [$experimentId], [], "splitz/bulkEvaluate");
+        $queryParams = Request::all();
+        $referralCode = $queryParams['referral_code'] ?? '';
+
+        $requestData = [ 'referral_code' => $referralCode];
+
+        $data = (new SplitzService())->getVariantBulk($uuid, [$experimentId, $referralExpId], [], "splitz/bulkEvaluate", $requestData);
+
+        $isReferralExpEnabled = ($data[$referralExpId]['variables']['result'] ?? null) === 'on';
+
+        if ($this->matchExclusionsToRedirect($isReferralExpEnabled))
+        {
+            return false;
+        }
 
         return ($data[$experimentId]['variables']['result'] ?? null) === 'on';
     }
 
-    private function matchExclusionsToRedirect(): bool
+    private function matchExclusionsToRedirect(bool $isExpEnabled = false): bool
     {
         $uri = trim(\Request::getRequestUri(), '/');
 
-        if (preg_match('/(\br=partner\b)|(\bauth_source\b)|(\breferral_code\b)|(\bcoupon_code\b)|(\bmerchant_invitation\b)|(\binvitation\b)/', $uri))
+        $pattern = '/(\br=partner\b)|(\bauth_source\b)|(\breferral_code\b)|(\bcoupon_code\b)|(\bmerchant_invitation\b)|(\binvitation\b)/';
+
+        if($isExpEnabled)
+        {
+            $pattern = '/(\br=partner\b)|(\bauth_source\b)|(\bcoupon_code\b)|(\bmerchant_invitation\b)|(\binvitation\b)/';
+        }
+
+        if (preg_match($pattern, $uri))
         {
             return true;
         }

@@ -205,6 +205,7 @@ return [
         // Onboarding all as resellers
         'PARTNERSHIP_ONBOARD_RESELLERS' => env('PARTNERSHIP_ONBOARD_RESELLERS', ''),
         'EASY_ONBOARDING_REDIRECT'      => env('EASY_ONBOARDING_REDIRECT', ''),
+        'EASY_ONBOARDING_REFERRAL_LINK_REDIRECT_PARTNERSHIPS'      => env('EASY_ONBOARDING_REFERRAL_LINK_REDIRECT_PARTNERSHIPS', ''),
 
         'WEBSITE_COMPLIANCE_MODAL_EXP'      => env('WEBSITE_COMPLIANCE_MODAL_EXP', ''),
         'WEBSITE_COMPLIANCE_FLOW_EXP'      => env('WEBSITE_COMPLIANCE_FLOW_EXP', ''),
@@ -234,7 +235,7 @@ return [
         'PARTNER_REPORTS_REVAMP' => env('PARTNER_REPORTS_REVAMP', ''),
         'LA_REPORTS_REVAMP' => env('LA_REPORTS_REVAMP', ''),
         'REPORTS_REVAMP_RECENTS' => env('REPORTS_REVAMP_RECENTS', ''),
-        
+
         // Account Settings Revamp
         'ACCOUNT_SETTINGS_REVAMP'  => env('ACCOUNT_SETTINGS_REVAMP', ''),
 
@@ -245,7 +246,7 @@ return [
         'BANK_ACCOUNT_UPDATE_REVAMP'  => env('BANK_ACCOUNT_UPDATE_REVAMP', ''),
 
         // Settlement Revamp
-        'SETTLEMENT_V3_REVAMP' => env('SETTLEMENT_V3_REVAMP', ''), 
+        'SETTLEMENT_V3_REVAMP' => env('SETTLEMENT_V3_REVAMP', ''),
 
          // Payment Handle Onboarding
          'PAYMENT_HANDLE_ONBOARDING'  => env('PAYMENT_HANDLE_ONBOARDING', ''),
