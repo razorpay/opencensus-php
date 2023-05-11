@@ -117,10 +117,10 @@
                 <tr>
                   <td style="text-align: center;">
                     <!--<img src="http://imgur.com/aUcogPb.png">-->
-                    <div style="margin-bottom: 15px;"><b>Card Saved!</b></div>
+                    <div style="margin-bottom: 15px;"><b>Card Tokenized Successfully!</b></div>
                     <div>
                         <div style="width: 250px;">
-                          You have successfully saved your card on Razorpay.
+                        You have successfully tokenized and saved your card on Razorpay according to RBI guidelines.
                         </div>
                     </div>
                   </td>
@@ -137,9 +137,8 @@
         <tr style="font-size:14px; line-height: 24px; text-align: center;">
             <td style="font-family:-apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif;">
             <div style="margin-top: 40px;">
-            Your card details are safe and secure with us and all your under control
+            Your card details are safe. You can view, add and manage cards via Razorpay’s secure Checkout.
             </div>
-            <div style="margin-bottom: 40px;">You can easily manage and save more cards on checkout</div>
             </td>
         </tr>
      </tbody>

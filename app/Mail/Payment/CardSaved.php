@@ -8,7 +8,7 @@ class CardSaved extends Base
 {
     protected function addSubject()
     {
-        $subject = "Card successfully saved with Razorpay";
+        $subject = "Card successfully tokenized with Razorpay";
 
         $this->subject($subject);
 
