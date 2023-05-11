@@ -18,11 +18,7 @@ import FullPageCover from './FullPageCover';
 import FullPageCoverHeader from './FullPageCoverHeader';
 import { HowToGetDetails } from './Provider/HowToGetDetails';
 import { Step1, Step2, Step3 } from './AddProvider/index';
-import {
-  popularGateways,
-  gatewayLogos,
-  getSelectedProviderWithAcquirer as getSelectedProvider,
-} from './util';
+import { getSelectedProviderWithAcquirer as getSelectedProvider } from './util';
 import {
   INIT_PROVIDER_STATE,
   INIT_FORM_STATE,
@@ -31,6 +27,7 @@ import {
   NETBANKING_FEATURES,
   UPI_FEATURES,
   SKIP_VALIDATION_KEYS,
+  PROVIDER_KEYS,
 } from 'merchant/views/Navigator/constants';
 
 @withRouter
@@ -64,9 +61,7 @@ export default class AddProvider extends React.Component {
       },
     },
     providers: {},
-    filteredProviders: [],
     selectedProvider: null,
-    isGatewaySearch: false,
     validationErrors: {},
     isEdit: false,
     loadingProviders: true,
@@ -86,7 +81,6 @@ export default class AddProvider extends React.Component {
         if (res?.success) {
           this.setState({ providers: res.data });
         }
-        this.filterProvidersOnSearch('');
       })
       .finally(() => {
         this.setState({ loadingProviders: false });
@@ -123,22 +117,6 @@ export default class AddProvider extends React.Component {
           provider,
         });
       }
-    }
-  };
-
-  filterProvidersOnSearch = (val) => {
-    const { providers } = this.state;
-    if (val.trim() === '') {
-      this.setState({ filteredProviders: providers, isGatewaySearch: false });
-    } else {
-      const keys = Object.keys(providers).filter((item) =>
-        item.toLowerCase().startsWith(val.toLowerCase()),
-      );
-      const res = {};
-      keys.forEach((item) => {
-        res[item] = providers[item];
-      });
-      this.setState({ filteredProviders: res, isGatewaySearch: true });
     }
   };
 
@@ -199,57 +177,6 @@ export default class AddProvider extends React.Component {
 
       return { selectedProvider: provider, provider: provider_st };
     });
-  };
-
-  viewProvider = (provider, index) => {
-    const { providers } = this.state;
-    const SELECTED_PROVIDER = providers?.[provider] || {};
-    const PAYMENT_METHODS = SELECTED_PROVIDER?.['Payment Methods']?.data_value?.join(', ') || '';
-    return (
-      <div className="col-xs-4 gateway-provider-col" key={index}>
-        <div className="gateway-provider-block" onClick={() => this.selectProvider(provider)}>
-          <div className="provider-img-holder">
-            <img alt={provider} src={gatewayLogos[provider?.toLowerCase()]} />
-          </div>
-          <div className="gateway-provider-block--details">
-            <h3>{SELECTED_PROVIDER?.['Gateway Name']?.data_value}</h3>
-            <div className="gateway-provider-block--details--methods">
-              <p title={PAYMENT_METHODS}>{PAYMENT_METHODS}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  listProviders = (providers) => {
-    const { isGatewaySearch, loadingProviders } = this.state;
-
-    if (loadingProviders) {
-      return (
-        <div className="page-spinner-container">
-          <Spinner />
-        </div>
-      );
-    }
-    return (
-      <>
-        {!isGatewaySearch && Object.keys(providers).length > 0 && (
-          <>
-            <div className="col-xs-12 popular-gateways-header my-2">
-              <img
-                alt="popular"
-                src="https://cdn.razorpay.com/static/assets/merchant-dash/popular_provider.svg"
-              />
-              <span>Popular Gateways</span>
-            </div>
-            {popularGateways.map((provider, index) => this.viewProvider(provider, index))}
-            <div className="col-xs-12 all-gateways-header mb-2">All Gateways</div>
-          </>
-        )}
-        {Object.keys(providers).map((provider, index) => this.viewProvider(provider, index))}
-      </>
-    );
   };
 
   disableStep = (step) => {
@@ -323,13 +250,9 @@ export default class AddProvider extends React.Component {
   };
 
   changeGateway = () => {
-    const { providers } = this.state;
-
     this.setState({
       selectedProvider: null,
       provider: deepClone(INIT_PROVIDER_STATE),
-      filteredProviders: providers,
-      isGatewaySearch: false,
     });
   };
 
@@ -439,7 +362,7 @@ export default class AddProvider extends React.Component {
 
     this.setState(
       (prevState) => {
-        const { provider, providers } = prevState;
+        const { provider, providers, selectedProvider } = prevState;
         if (type === 'checkbox') {
           if (checked) {
             provider.Gateway_details['Payment Methods'] = [
@@ -456,6 +379,9 @@ export default class AddProvider extends React.Component {
               };
             }
           } else if (provider?.Gateway_details?.['Payment Methods']) {
+            const isSodexoEnabled =
+              selectedProvider === 'payu' &&
+              providers?.[selectedProvider]?.hasOwnProperty(PROVIDER_KEYS.SODEXO);
             const index = provider.Gateway_details['Payment Methods'].indexOf(item);
             provider.Gateway_details['Payment Methods'] = [
               ...provider.Gateway_details['Payment Methods'].slice(0, index),
@@ -463,6 +389,9 @@ export default class AddProvider extends React.Component {
             ];
             if (item === 'wallet') {
               delete provider.Gateway_details.wallet_metadata;
+            }
+            if (item === 'card' && isSodexoEnabled) {
+              provider.Gateway_details[PROVIDER_KEYS.SODEXO] = false;
             }
           }
         } else {
@@ -473,6 +402,18 @@ export default class AddProvider extends React.Component {
       },
       () => this.validateGatewayDetails(id),
     );
+  };
+
+  toggleMethods = (event) => {
+    const { id, checked } = event.target;
+    this.setState((prevState) => {
+      return {
+        provider: {
+          ...prevState.provider,
+          Gateway_details: { ...prevState.provider.Gateway_details, [id]: checked },
+        },
+      };
+    });
   };
 
   changeGatewayWallets = (event, wallet) => {
@@ -497,8 +438,11 @@ export default class AddProvider extends React.Component {
   validateGatewayDetails = (key) => {
     const { provider, providers, validationErrors } = this.state;
     const selectedProviderWithAcquirer = this.getSelectedProviderWithAcquirer();
-    const { min_length: minLength, max_length: maxLength, meta_data } =
-      providers?.[selectedProviderWithAcquirer]?.[key] || {};
+    const {
+      min_length: minLength,
+      max_length: maxLength,
+      meta_data,
+    } = providers?.[selectedProviderWithAcquirer]?.[key] ?? {};
     const validationRegex = meta_data?.validation_regex;
     const checkVal = provider?.Gateway_details?.[key];
     const validErr = { ...validationErrors };
@@ -632,7 +576,6 @@ export default class AddProvider extends React.Component {
     const {
       redirect,
       providers,
-      filteredProviders,
       validationErrors,
       isEdit,
       isSaving,
@@ -710,11 +653,10 @@ export default class AddProvider extends React.Component {
                         <Step1
                           steps={steps}
                           providers={providers}
+                          loadingProviders={loadingProviders}
                           selectedProvider={selectedProviderWithAcquirer}
                           gatewayDetails={provider?.Gateway_details}
-                          filterProvidersOnSearch={this.filterProvidersOnSearch}
-                          filteredProviders={filteredProviders}
-                          listProviders={this.listProviders}
+                          selectProvider={this.selectProvider}
                           changeGateway={this.changeGateway}
                           toggleSeamless={this.toggleSeamless}
                           isEdit={isEdit}
@@ -813,6 +755,7 @@ export default class AddProvider extends React.Component {
                           validationErrors={validationErrors}
                           changeGatewayDetails={this.changeGatewayDetails}
                           changeGatewayWallets={this.changeGatewayWallets}
+                          toggleMethods={this.toggleMethods}
                         />
                       </div>
 

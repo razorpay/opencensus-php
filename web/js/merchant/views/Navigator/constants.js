@@ -30,7 +30,21 @@ export const INIT_FORM_STATE = {
   },
 };
 
-export const SKIP_VALIDATION_KEYS = ['Gateway Name', 'TPV', 'optimizer_seamless_disabled'];
+export const SKIP_VALIDATION_KEYS = [
+  'Gateway Name',
+  'TPV',
+  'optimizer_seamless_disabled',
+  'Sodexo',
+];
+
+export const PROVIDER_KEYS = {
+  SODEXO: 'Sodexo',
+};
+
+export const METHODS = {
+  CARD: 'card',
+  SODEXO: 'sodexo',
+};
 
 export const TPV_OPTIONS = {
   0: 'Non TPV',

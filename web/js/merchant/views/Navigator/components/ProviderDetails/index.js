@@ -12,7 +12,7 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
 import { trackOptimizerEvents } from 'merchant/views/Navigator/track';
 import { gatewayLogos, WalletLabels } from 'merchant/views/Navigator/components/util';
-import { TPV_OPTIONS, SEAMLESS_PROVIDERS } from 'merchant/views/Navigator/constants';
+import { TPV_OPTIONS, SEAMLESS_PROVIDERS, PROVIDER_KEYS } from 'merchant/views/Navigator/constants';
 
 import APIDetails from './components/APIDetails';
 import NoProviderFound from './components/NoProviderFound';
@@ -53,12 +53,20 @@ export default class ProviderDetails extends Component {
       const seamlessOptionExist =
         SEAMLESS_PROVIDERS?.includes(provider?.Gateway) &&
         provider?.Gateway_details?.hasOwnProperty('optimizer_seamless_disabled');
-
       const {
         'UPI Features': upiFeatures,
         'Payment Methods': paymentMethods,
         optimizer_seamless_disabled,
       } = provider?.Gateway_details || {};
+
+      let strPaymentMethods = paymentMethods?.join(', ') ?? '';
+      const isSodexoEnabled =
+        provider?.Gateway_details?.hasOwnProperty(PROVIDER_KEYS.SODEXO) &&
+        provider?.Gateway_details?.Sodexo;
+
+      if (isSodexoEnabled) {
+        strPaymentMethods += ', sodexo';
+      }
 
       return (
         <div className="content-wrapper content-sm txn-details optimizer-provider-detail">
@@ -107,10 +115,7 @@ export default class ProviderDetails extends Component {
                   </div>
 
                   <div className="list-group details-row-container">
-                    <EntityDetailRow
-                      label="Methods Enabled"
-                      value={() => paymentMethods?.join(', ')}
-                    />
+                    <EntityDetailRow label="Methods Enabled" value={() => strPaymentMethods} />
                   </div>
 
                   {walletsNames?.length > 0 && (

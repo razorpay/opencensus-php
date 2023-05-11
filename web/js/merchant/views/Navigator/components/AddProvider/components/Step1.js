@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Input from 'common/new-ui/Input';
+import Spinner from 'common/ui/Spinner';
+import debounce from 'lodash/debounce';
 import { SeamlessOption } from 'merchant/views/Navigator/components/Provider/SeamlessOption';
 import SeamlessNote from 'merchant/views/Navigator/components/Provider/SeamlessNote';
-import { gatewayLogos } from 'merchant/views/Navigator/components/util';
+import { popularGateways, gatewayLogos } from 'merchant/views/Navigator/components/util';
 import {
   SEAMLESS_CONTENT,
   SEAMLESS_PROVIDERS,
@@ -18,23 +20,106 @@ export const Step1 = (props) => {
   const {
     steps,
     providers,
+    loadingProviders,
+    selectProvider,
     selectedProvider,
-    filterProvidersOnSearch,
-    filteredProviders,
-    listProviders,
     changeGateway,
     toggleSeamless,
     isEdit,
     gatewayDetails,
   } = props;
 
+  const [search, setSearch] = useState('');
+  const [filteredProviders, setFilteredProviders] = useState({});
+
+  const providersObjectKeys = Object.keys(providers) ?? [];
   const selectedProviderDetails = providers?.[selectedProvider] ?? {};
   const showSeamlessNote = selectedProvider && steps[1].edit;
   const seamlessOptionExist =
     SEAMLESS_PROVIDERS?.includes(selectedProvider) &&
     providers?.[selectedProvider]?.hasOwnProperty('optimizer_seamless_disabled');
 
-  const onRadioChange = (e) => toggleSeamless(JSON.parse(e?.target?.value));
+  const filterOnSearch = (e) => {
+    const val = e.target.value;
+    if (val.trim() === '') {
+      setSearch('');
+      setFilteredProviders({});
+    } else {
+      const res = providersObjectKeys.reduce((obj, item) => {
+        if (item?.toLowerCase()?.startsWith(val.toLowerCase())) {
+          obj[item] = providers[item];
+        }
+        return obj;
+      }, {});
+
+      setSearch(val);
+      setFilteredProviders(res);
+    }
+  };
+
+  const renderProviderItem = (provider, index) => {
+    const SELECTED_PROVIDER = providers?.[provider] || {};
+    const PAYMENT_METHODS = SELECTED_PROVIDER?.['Payment Methods']?.data_value?.join(', ') ?? '';
+
+    const onSelect = () => selectProvider(provider);
+
+    return (
+      <div
+        key={`${provider}-${index}`}
+        className="col-xs-4 gateway-provider-col"
+        data-testid="gateway-provider"
+      >
+        <div className="gateway-provider-block" onClick={onSelect}>
+          <div className="provider-img-holder">
+            <img alt={provider} src={gatewayLogos[provider?.toLowerCase()]} />
+          </div>
+          <div className="gateway-provider-block--details">
+            <h3>{SELECTED_PROVIDER?.['Gateway Name']?.data_value}</h3>
+            <div className="gateway-provider-block--details--methods">
+              <p title={PAYMENT_METHODS}>{PAYMENT_METHODS}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderProvidersList = () => {
+    if (Object.keys(filteredProviders).length > 0) {
+      return Object.keys(filteredProviders).map((provider, index) => {
+        return renderProviderItem(provider, index);
+      });
+    }
+
+    if (!search && providersObjectKeys.length > 0) {
+      return (
+        <>
+          <div className="col-xs-12 popular-gateways-header my-2">
+            <img
+              alt="popular"
+              src="https://cdn.razorpay.com/static/assets/merchant-dash/popular_provider.svg"
+            />
+            <span>Popular Gateways</span>
+          </div>
+          {popularGateways.map((provider, index) => renderProviderItem(provider, index))}
+          <div className="col-xs-12 all-gateways-header mb-2">All Gateways</div>
+          {providersObjectKeys.map((provider, index) => {
+            return renderProviderItem(provider, index);
+          })}
+        </>
+      );
+    }
+
+    return <div className="col-xs-12 all-gateways-header mb-2">No Providers Found</div>;
+  };
+
+  const handleGatewayChange = () => {
+    setSearch('');
+    setFilteredProviders({});
+    changeGateway();
+  };
+
+  const onRadioChange = (e) => toggleSeamless(Boolean(e.target.value));
 
   const radioFeedback = () => {
     const contentExist = SEAMLESS_CONTENT?.hasOwnProperty(selectedProvider);
@@ -53,6 +138,14 @@ export const Step1 = (props) => {
     );
   };
 
+  if (loadingProviders) {
+    return (
+      <div className="page-spinner-container">
+        <Spinner />
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="row gateway-section-row">
@@ -64,7 +157,7 @@ export const Step1 = (props) => {
 
         <div className="col-xs-6">
           {!steps[1].edit && selectedProvider ? (
-            <label className="provider-details-read-only">
+            <label className="provider-details-read-only" data-testid="provider-readOnly">
               <div className="provider-logo-holder">
                 <img src={gatewayLogos?.[selectedProvider?.toLowerCase()]} alt="gateway-logo" />
               </div>
@@ -72,7 +165,7 @@ export const Step1 = (props) => {
             </label>
           ) : selectedProvider ? (
             <>
-              <div className="selected-gateway-provider">
+              <div className="selected-gateway-provider" data-testid="selected-gateway">
                 <div class="provider-img-holder">
                   <img src={gatewayLogos?.[selectedProvider?.toLowerCase()]} alt="gateway-logo" />
                 </div>
@@ -84,7 +177,7 @@ export const Step1 = (props) => {
                 </div>
               </div>
               {steps[1].edit && !isEdit && (
-                <div className="change-gateway" onClick={changeGateway}>
+                <div className="change-gateway" onClick={handleGatewayChange}>
                   <i className="i i-pencil-edit" /> Change Gateway
                 </div>
               )}
@@ -95,10 +188,9 @@ export const Step1 = (props) => {
               type="text"
               name="gateway"
               placeholder="Search Gateway"
+              aria-label="Search Gateway"
               class="Input--vLeft"
-              onChange={(e) => {
-                filterProvidersOnSearch(e.target.value);
-              }}
+              onChange={debounce(filterOnSearch, 300)}
             />
           )}
         </div>
@@ -107,7 +199,7 @@ export const Step1 = (props) => {
       {!selectedProvider && (
         <div className="row list-providers-section">
           <div className="col-xs-10 col-xs-offset-2 p-0">
-            <div className="row">{listProviders(filteredProviders)}</div>
+            <div className="row">{renderProvidersList()}</div>
           </div>
         </div>
       )}

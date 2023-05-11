@@ -2,9 +2,11 @@ import React, { Fragment } from 'react';
 
 import Input from 'common/new-ui/Input';
 import Popover, { PopoverBody } from 'common/ui/Popover';
+import Tooltip from 'common/ui/Tooltip';
 
 import { WalletsMultiSelect } from './WalletsMultiSelect';
 import { getTPVOptions } from 'merchant/views/Navigator/components/AddProvider/util';
+import { METHODS, PROVIDER_KEYS } from 'merchant/views/Navigator/constants';
 
 export function Step3({
   isEdit,
@@ -14,19 +16,42 @@ export function Step3({
   validationErrors,
   changeGatewayDetails,
   changeGatewayWallets,
+  toggleMethods,
 }) {
-  const selectedProviderDetails = providers?.[selectedProvider] || {};
+  const selectedProviderDetails = providers?.[selectedProvider] ?? {};
   const { Gateway_details } = provider;
   const walletOptions =
-    selectedProviderDetails?.['Payment Methods']?.meta_data?.wallet_metadata?.wallets || [];
+    selectedProviderDetails?.['Payment Methods']?.meta_data?.wallet_metadata?.wallets ?? [];
 
   // Filter out the fields that are required in this step i.e step 3.
   const fields = Object.entries(selectedProviderDetails).reduce((acc, [label, value]) => {
-    if (!['Gateway Name', 'optimizer_seamless_disabled'].includes(label)) {
+    if (!['Gateway Name', 'optimizer_seamless_disabled', PROVIDER_KEYS.SODEXO].includes(label)) {
       acc.push({ label, ...value });
     }
     return acc;
   }, []);
+
+  function isMethodCheckboxDisabled(method) {
+    if (!isEdit) return true;
+
+    // Paytm onboarding enabled wallet method by default
+    if (selectedProvider === 'paytm' && method === 'wallet') return true;
+
+    // Payu disable sodexo if card method is not selected
+    if (
+      method === METHODS.SODEXO &&
+      !provider?.Gateway_details?.['Payment Methods']?.includes(METHODS.CARD)
+    ) {
+      return true;
+    }
+
+    return false;
+  }
+
+  const isSodexoCheckboxDisabled = isMethodCheckboxDisabled(METHODS.SODEXO);
+  const isSodexoEnabled =
+    selectedProvider === 'payu' &&
+    providers?.[selectedProvider]?.hasOwnProperty(PROVIDER_KEYS.SODEXO);
 
   return (
     <div className="row">
@@ -60,13 +85,29 @@ export function Step3({
                                   method,
                                 )}
                                 onChange={(e) => changeGatewayDetails(e, method)}
-                                disabled={
-                                  !isEdit || (selectedProvider === 'paytm' && method === 'wallet')
-                                } // Paytm onboarding enabled wallet method by default
+                                disabled={isMethodCheckboxDisabled(method)}
                                 autoRender
                               />
                             </span>
                           ))}
+                        {isSodexoEnabled ? (
+                          <span className="payment-method-checkbox-span">
+                            <Input.Check
+                              id={PROVIDER_KEYS.SODEXO}
+                              fieldLabel={METHODS.SODEXO}
+                              checked={provider?.Gateway_details?.Sodexo ?? false}
+                              onChange={toggleMethods}
+                              disabled={isSodexoCheckboxDisabled}
+                              autoRender
+                            />
+                            {isSodexoCheckboxDisabled ? (
+                              <Tooltip delay={50} align="bottom">
+                                To activate the Sodexo feature, please make sure to enable the card
+                                option
+                              </Tooltip>
+                            ) : null}
+                          </span>
+                        ) : null}
                       </div>
                       <p className="select-payment-method-desc">
                         Select the payment methods to be enabled for the {selectedProvider}
@@ -150,7 +191,7 @@ export function Step3({
                       placeholder={data_value}
                       onChange={changeGatewayDetails}
                     />
-                    {validationErrors[label] && (
+                    {validationErrors?.[label] && (
                       <div className="provider-details-validation-error">
                         {validationErrors[label]}
                       </div>
