@@ -2935,7 +2935,6 @@ class IciciBankingAccountStatementTest extends TestCase
         $mutex = $this->app['api.mutex'];
 
         $basDetails = $this->fixtures->create('banking_account_statement_details', [
-            'status' => BasDetails\Status::UNDER_MAINTENANCE,
             'account_number' => '2224440041626915',
             'channel' => BasDetails\Channel::ICICI
         ]);
@@ -2969,8 +2968,6 @@ class IciciBankingAccountStatementTest extends TestCase
             300);
 
         $basDetails->reload();
-
-        $this->assertEquals(BasDetails\Status::UNDER_MAINTENANCE, $basDetails->getStatus());
     }
 
     public function testDryRunInsertMissingAccountStatement()

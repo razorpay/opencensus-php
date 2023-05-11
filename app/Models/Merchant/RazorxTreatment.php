@@ -504,6 +504,9 @@ final class RazorxTreatment
     //Experiment to disable statement fetch for merchants
     const DISABLE_STATEMENT_FETCH = 'disable_statement_fetch';
 
+    //Experiment to switch to missing statements insertion optimisation logic
+    const OPTIMISE_INSERTION_LOGIC = 'optimise_insertion_logic';
+
     //Experiment to choose gateway balance in case of CA flows
     const USE_GATEWAY_BALANCE = 'use_gateway_balance';
 

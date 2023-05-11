@@ -199,7 +199,7 @@ class MissingAccountStatementDetection extends Job
                     return [$isCurrentIterationSuccessful, $isLastIteration, $pushNextJob, $missingStatementConfig];
                 },
                 100,
-                ErrorCode::MISSING_STATEMENT_DETECTION_IN_PROGRESS
+                ErrorCode::BAD_REQUEST_MISSING_STATEMENT_DETECTION_IN_PROGRESS
             );
 
             $this->pushNextOrSetComplete($pushNextJob, $isLastIteration, $isCurrentIterationSuccessful, $missingStatementConfig);

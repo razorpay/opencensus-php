@@ -340,7 +340,7 @@ class Core extends Base\Core
 
                     if (empty($basDetailEntity) === true)
                     {
-                        throw new Exception\BadRequestException(ErrorCode::BAS_DETAILS_FOR_ACCOUNT_IS_NOT_ACTIVE, null, [
+                        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BAS_DETAILS_FOR_ACCOUNT_IS_NOT_ACTIVE, null, [
                             'account_number' => $accountNumber,
                             'channel'        => $channel,
                         ]);
@@ -351,7 +351,7 @@ class Core extends Base\Core
                     if (($basDetailEntity->getStatus() !== Details\Status::ACTIVE) or
                         ($basDetailEntity->getStatus() === Details\Status::UNDER_MAINTENANCE))
                     {
-                        throw new Exception\BadRequestException(ErrorCode::BAS_DETAILS_FOR_ACCOUNT_IS_NOT_ACTIVE, null, [
+                        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BAS_DETAILS_FOR_ACCOUNT_IS_NOT_ACTIVE, null, [
                             'account_number'     => $accountNumber,
                             'channel'            => $channel,
                             'bas_details_id'     => $basDetailEntity->getId(),
@@ -574,21 +574,39 @@ class Core extends Base\Core
 
         $missingStatementsBeforeDedupe = $missingStatements;
 
+        $basDetails = $this->getBasDetails($accountNumber, $channel);
+
+        if (isset($basDetails) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+        }
+
+        $variant = $this->app->razorx->getTreatment(
+            $basDetails->getMerchantId(),
+            Merchant\RazorxTreatment::OPTIMISE_INSERTION_LOGIC,
+            $this->mode ?? Constants\Mode::LIVE,
+            2
+        );
+
         [$response, $params] = $this->mutex->acquireAndRelease(
             'banking_account_statement_fetch_' . $accountNumber . '_' . $channel,
-            function () use ($channel, $accountNumber, $missingStatements, $dryRunMode, &$noOfStatementsInserted)
+            function () use ($channel, $accountNumber, $missingStatements, $dryRunMode, &$noOfStatementsInserted, $variant)
             {
                 // setting the variable to true to customize the later flow (linking the statement to source entity)
                 $this->isStatementUnderFix = true;
 
-                if ($dryRunMode === true)
-                {
-                    $this->isDryRunModeActiveForStatementFix = true;
-                }
+                $this->isDryRunModeActiveForStatementFix = $dryRunMode;
 
                 $this->setBasDetailsForStatementFix($accountNumber, $channel);
 
-                $insertedBasEntities = $this->saveMissingAccountStatements($accountNumber, $channel, $missingStatements);
+                if ($variant === 'on')
+                {
+                    $insertedBasEntities = $this->optimiseSaveMissingAccountStatements($accountNumber, $channel, $missingStatements);
+                }
+                else
+                {
+                    $insertedBasEntities = $this->saveMissingAccountStatements($accountNumber, $channel, $missingStatements);
+                }
 
                 $this->pushMissingStatementsLinkingEventsToLedger($accountNumber, $channel, $insertedBasEntities);
 
@@ -650,6 +668,7 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::BAS_MISSING_STATEMENT_INSERTED_SUCCESSFULLY, [
             'response_time'       => $insertEndTime - $insertStartTime,
+            'variant'             => $variant,
             'statements_inserted' => $noOfStatementsInserted,
         ]);
 
@@ -745,6 +764,17 @@ class Core extends Base\Core
 
             $processor = $this->getProcessor($channel, $accountNumber, $basDetailEntity, $accountStatementApiVersion);
 
+            $countOfStatementsBeforeDedupe = count($missingStatements);
+
+            $missingStatements = $processor->checkForDuplicateTransactions($missingStatements, $channel, $accountNumber, $merchant);
+
+            $this->trace->info(TraceCode::BAS_MISSING_RECORD_ALREADY_EXISTS, [
+                'account_number'                   => $accountNumber,
+                'channel'                          => $channel,
+                'count_of_statement_before_dedupe' => $countOfStatementsBeforeDedupe,
+                'count_of_statement_after_dedupe'  => count($missingStatements),
+            ]);
+
             $missingStatementsCollection = new Base\Collection($missingStatements);
 
             $groupedMissingStatements = $missingStatementsCollection->groupBy('posted_date');
@@ -758,33 +788,19 @@ class Core extends Base\Core
             {
                 $insertionDetails = $this->getInsertionDetailsForMissingStatement($merchantId, $accountNumber, $channel, $groupOfStatements[0]);
 
-                $this->trace->info(TraceCode::BAS_MISSING_STATEMENTS_INSERTION_DETAILS,
-                    [
-                        'account_number'    => $accountNumber,
-                        'channel'           => $channel,
-                        'posted_date'       => $postedDate,
-                        'insertion_details' => $insertionDetails,
-                        'dry_run_mode'      => $this->isDryRunModeActiveForStatementFix,
-                    ]);
+                $this->trace->info(TraceCode::BAS_MISSING_STATEMENTS_INSERTION_DETAILS, [
+                    'account_number'    => $accountNumber,
+                    'channel'           => $channel,
+                    'posted_date'       => $postedDate,
+                    'insertion_details' => $insertionDetails,
+                    'dry_run_mode'      => $this->isDryRunModeActiveForStatementFix,
+                ]);
 
-                $previousBasId = $insertionDetails[Entity::ID];
+                $previousBasId         = $insertionDetails[Entity::ID];
+                $previousTransactionId = $insertionDetails[Entity::TRANSACTION_ID];
 
                 foreach ($groupOfStatements as $statement)
                 {
-                    $statementAfterDedupe = $processor->checkForDuplicateTransactions([$statement], $channel, $accountNumber, $merchant);
-
-                    if (empty($statementAfterDedupe) === true)
-                    {
-                        $this->trace->info(TraceCode::BAS_MISSING_RECORD_ALREADY_EXISTS,
-                            [
-                                'account_number' => $accountNumber,
-                                'channel'        => $channel,
-                                'statement'      => $statement,
-                            ]);
-
-                        continue;
-                    }
-
                     $nextId = $this->generateNextUnUsedIdForEntity($previousBasId,
                                                                    $insertedBasIds,
                                                                    Constants\Entity::BANKING_ACCOUNT_STATEMENT);
@@ -817,18 +833,17 @@ class Core extends Base\Core
 
                     $insertedBasIds[] = $nextId;
 
-                    $this->trace->info(TraceCode::BAS_INSERTED_ENTITY,
-                        [
-                            'bank_txn_id'           => $statement[Entity::BANK_TRANSACTION_ID],
-                            'bank_txn_posted_date'  => $statement[Entity::POSTED_DATE],
-                            'bank_txn_channel'      => $statement[Entity::CHANNEL],
-                            'bas_id'                => $basEntity->getId(),
-                            'account_no'            => $basEntity->getAccountNumber(),
-                            'utr'                   => $basEntity->getUtr(),
-                            'previous_bas_id'       => $insertionDetails[Entity::ID],
-                            'dry_run_mode'          => $this->isDryRunModeActiveForStatementFix,
-                            'inserted_bas_entity'   => $basEntity->toArray(),
-                        ]);
+                    $this->trace->info(TraceCode::BAS_INSERTED_ENTITY, [
+                        'bank_txn_id'          => $statement[Entity::BANK_TRANSACTION_ID],
+                        'bank_txn_posted_date' => $statement[Entity::POSTED_DATE],
+                        'bank_txn_channel'     => $statement[Entity::CHANNEL],
+                        'bas_id'               => $basEntity->getId(),
+                        'account_no'           => $basEntity->getAccountNumber(),
+                        'utr'                  => $basEntity->getUtr(),
+                        'previous_bas_id'      => $insertionDetails[Entity::ID],
+                        'dry_run_mode'         => $this->isDryRunModeActiveForStatementFix,
+                        'inserted_bas_entity'  => $basEntity->toArray(),
+                    ]);
 
                     $insertedBasEntities[] = $basEntity;
 
@@ -836,7 +851,7 @@ class Core extends Base\Core
 
                     $previousBasId = $nextId;
 
-                    $generateTransactionId = $this->generateNextUnUsedIdForEntity($insertionDetails[Entity::TRANSACTION_ID],
+                    $generateTransactionId = $this->generateNextUnUsedIdForEntity($previousTransactionId,
                                                                                   $insertedTransactionIds,
                                                                                   Constants\Entity::TRANSACTION);
 
@@ -857,13 +872,12 @@ class Core extends Base\Core
                             $this->saveAccountStatementV2($insertedBasEntity, $merchant);
                         }
 
-                        $this->trace->info(TraceCode::BAS_MISSING_STATEMENTS_PREVIOUS_TRANSACTION_DETAILS,
-                            [
-                                'account_number'                   => $accountNumber,
-                                'channel'                          => $channel,
-                                'previous_bas_transaction_details' => $this->insertedBasTransactionDetails,
-                                'dry_run_mode'                     => $this->isDryRunModeActiveForStatementFix,
-                            ]);
+                        $this->trace->info(TraceCode::BAS_MISSING_STATEMENTS_PREVIOUS_TRANSACTION_DETAILS, [
+                            'account_number'                   => $accountNumber,
+                            'channel'                          => $channel,
+                            'previous_bas_transaction_details' => $this->insertedBasTransactionDetails,
+                            'dry_run_mode'                     => $this->isDryRunModeActiveForStatementFix,
+                        ]);
                     }
                     catch (\Exception $exception)
                     {
@@ -881,6 +895,188 @@ class Core extends Base\Core
                     }
 
                     $insertedTransactionIds[] = $generateTransactionId;
+
+                    $previousTransactionId = $generateTransactionId;
+                }
+            }
+
+            $missingStatements = $insertedStatements;
+
+            return $insertedBasEntities;
+        });
+    }
+
+    // finds the insertion point optimally and then saves it accordingly
+    protected function optimiseSaveMissingAccountStatements(string $accountNumber, string $channel, array & $missingStatements)
+    {
+        return $this->repo->transaction(function() use ($accountNumber, $channel, & $missingStatements)
+        {
+            $basDetailEntity = $this->getBasDetails($accountNumber, $channel, [Details\Status::UNDER_MAINTENANCE]);
+
+            $merchant = $basDetailEntity->merchant;
+
+            $merchantId = $merchant->getId();
+
+            $accountStatementApiVersion = $this->getAccountStatementApiVersion($basDetailEntity);
+
+            $processor = $this->getProcessor($channel, $accountNumber, $basDetailEntity, $accountStatementApiVersion);
+
+            $countOfStatementsBeforeDedupe = count($missingStatements);
+
+            $missingStatements = $processor->checkForDuplicateTransactions($missingStatements, $channel, $accountNumber, $merchant);
+
+            $this->trace->info(TraceCode::BAS_MISSING_RECORD_ALREADY_EXISTS, [
+                'account_number'                   => $accountNumber,
+                'channel'                          => $channel,
+                'count_of_statement_before_dedupe' => $countOfStatementsBeforeDedupe,
+                'count_of_statement_after_dedupe'  => count($missingStatements),
+            ]);
+
+            $missingStatementsCollection = new Base\Collection($missingStatements);
+
+            $groupedMissingStatements = $missingStatementsCollection->groupBy('posted_date');
+
+            $groupedStatementsBasedOnInsertion = [];
+
+            foreach ($groupedMissingStatements as $postedDate => $groupOfStatements)
+            {
+                $insertionDetails = $this->getInsertionDetailsForMissingStatement($merchantId, $accountNumber, $channel, $groupOfStatements[0]);
+
+                $this->trace->info(TraceCode::BAS_MISSING_STATEMENTS_INSERTION_DETAILS, [
+                    'account_number'    => $accountNumber,
+                    'channel'           => $channel,
+                    'posted_date'       => $postedDate,
+                    'insertion_details' => $insertionDetails,
+                    'dry_run_mode'      => $this->isDryRunModeActiveForStatementFix,
+                ]);
+
+                $encodedInsertionDetails = json_encode($insertionDetails);
+
+                if (array_key_exists($encodedInsertionDetails, $groupedStatementsBasedOnInsertion) === true)
+                {
+                    $groupedStatementsBasedOnInsertion[$encodedInsertionDetails] =
+                        array_merge($groupedStatementsBasedOnInsertion[$encodedInsertionDetails], $groupOfStatements->toArray());
+                }
+                else
+                {
+                    $groupedStatementsBasedOnInsertion[$encodedInsertionDetails] = $groupOfStatements->toArray();
+                }
+            }
+
+            $insertedBasEntities    = [];
+            $insertedStatements     = [];
+            $insertedBasIds         = [];
+            $insertedTransactionIds = [];
+
+            foreach ($groupedStatementsBasedOnInsertion as $encodedInsertionDetails => $groupOfStatements)
+            {
+                $insertionDetails = json_decode($encodedInsertionDetails, true);
+
+                $previousBasId         = $insertionDetails[Entity::ID];
+                $previousTransactionId = $insertionDetails[Entity::TRANSACTION_ID];
+
+                foreach ($groupOfStatements as $statement)
+                {
+                    $nextId = $this->generateNextUnUsedIdForEntity(
+                        $previousBasId,
+                        $insertedBasIds,
+                        Constants\Entity::BANKING_ACCOUNT_STATEMENT,
+                        true);
+
+                    $basEntity = (new Entity)->build($statement);
+
+                    $basEntity->setId($nextId);
+
+                    if (empty($basEntity->getUtr()) === true)
+                    {
+                        $utr = $processor->getUtrForChannel($basEntity);
+
+                        $basEntity->setUtr($utr);
+                    }
+
+                    $basEntity->merchant()->associate($merchant);
+
+                    $basEntity->setCreatedAt($insertionDetails[Entity::CREATED_AT]);
+
+                    $basEntity->setUpdatedAt($insertionDetails[Entity::UPDATED_AT]);
+
+                    $balanceChange = $basEntity->getNetAmountBasedOnTransactionType();
+
+                    $basEntity->setBalance($insertionDetails[Entity::BALANCE] + $balanceChange);
+
+                    if ($this->isDryRunModeActiveForStatementFix === false)
+                    {
+                        $this->repo->saveOrFail($basEntity);
+                    }
+
+                    $insertedBasIds[] = $nextId;
+
+                    $this->trace->info(TraceCode::BAS_INSERTED_ENTITY, [
+                        'bank_txn_id'          => $statement[Entity::BANK_TRANSACTION_ID],
+                        'bank_txn_posted_date' => $statement[Entity::POSTED_DATE],
+                        'bank_txn_channel'     => $statement[Entity::CHANNEL],
+                        'bas_id'               => $basEntity->getId(),
+                        'account_no'           => $basEntity->getAccountNumber(),
+                        'utr'                  => $basEntity->getUtr(),
+                        'previous_bas_id'      => $insertionDetails[Entity::ID],
+                        'dry_run_mode'         => $this->isDryRunModeActiveForStatementFix,
+                        'inserted_bas_entity'  => $basEntity->toArray(),
+                    ]);
+
+                    $insertedBasEntities[] = $basEntity;
+
+                    $insertedStatements[] = $statement;
+
+                    $previousBasId = $nextId;
+
+                    $generateTransactionId = $this->generateNextUnUsedIdForEntity(
+                        $previousTransactionId,
+                        $insertedTransactionIds,
+                        Constants\Entity::TRANSACTION,
+                        true);
+
+                    $this->insertedBasTransactionDetails = [
+                        Transaction\Entity::ID         => $generateTransactionId,
+                        Transaction\Entity::CREATED_AT => $insertionDetails['transaction_created_at'],
+                    ];
+
+                    try
+                    {
+                        if ($this->isDryRunModeActiveForStatementFix === false)
+                        {
+                            // the balance gets updated when we link a statement to the source entity and
+                            // as a result, the actual statement entities linking gets stopped
+                            // that is our desired behaviour while fixing statement
+                            $insertedBasEntity = new Base\PublicCollection([$basEntity]);
+
+                            $this->saveAccountStatementV2($insertedBasEntity, $merchant);
+                        }
+
+                        $this->trace->info(TraceCode::BAS_MISSING_STATEMENTS_PREVIOUS_TRANSACTION_DETAILS, [
+                            'account_number'                   => $accountNumber,
+                            'channel'                          => $channel,
+                            'previous_bas_transaction_details' => $this->insertedBasTransactionDetails,
+                            'dry_run_mode'                     => $this->isDryRunModeActiveForStatementFix,
+                        ]);
+                    }
+                    catch (\Exception $exception)
+                    {
+                        $this->trace->traceException(
+                            $exception,
+                            null,
+                            TraceCode::BAS_MISSING_STATEMENT_LINKING_FAILED,
+                            [
+                                'bas_id' => $basEntity->getId(),
+                                'utr'    => $basEntity->getUtr(),
+                            ]
+                        );
+
+                        throw $exception;
+                    }
+
+                    $insertedTransactionIds[] = $generateTransactionId;
+
+                    $previousTransactionId = $generateTransactionId;
                 }
             }
 
@@ -951,7 +1147,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function generateNextUnUsedIdForEntity(string $id, array $insertedIds, string $entityName)
+    protected function generateNextUnUsedIdForEntity(string $id, array $insertedIds, string $entityName, bool $optimised = false)
     {
         $attempts = (new Admin\Service)->getConfigKey(
             [
@@ -976,13 +1172,13 @@ class Core extends Base\Core
             switch ($entityName)
             {
                 case Constants\Entity::BANKING_ACCOUNT_STATEMENT :
-                    $idExists = (($this->repo->banking_account_statement->checkIfIdExists($id) === true) or
-                                 (array_key_exists($id, array_flip($insertedIds)) === true));
+                    $idExists = ((array_key_exists($id, array_flip($insertedIds)) === true) or
+                                 ($this->repo->banking_account_statement->checkIfIdExists($id) === true));
                     break;
 
                 case Constants\Entity::TRANSACTION :
-                    $idExists = (($this->repo->transaction->checkIfIdExists($id) === true) or
-                                 (array_key_exists($id, array_flip($insertedIds)) === true));
+                    $idExists = ((array_key_exists($id, array_flip($insertedIds)) === true) or
+                                 ($this->repo->transaction->checkIfIdExists($id) === true));
                     break;
             }
 
@@ -1010,7 +1206,8 @@ class Core extends Base\Core
             'max_attempts'              => $maxAttempts,
             'attempts_taken_to_find_id' => $maxAttempts - $attempts,
             'entity'                    => $entityName,
-            'id_generated'              => $id
+            'id_generated'              => $id,
+            'optimised'                 => $optimised,
         ]);
 
         return $id;
@@ -1324,7 +1521,7 @@ class Core extends Base\Core
                 if (($basDetailEntity->getStatus() !== Details\Status::ACTIVE) or
                     ($basDetailEntity->getStatus() === Details\Status::UNDER_MAINTENANCE))
                 {
-                    throw new Exception\BadRequestException(ErrorCode::LOCK_BAS_DETAILS_FOR_STATEMENT_FIX_FAILURE, null, null);
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_LOCK_BAS_DETAILS_FOR_STATEMENT_FIX_FAILURE);
                 }
 
                 $basDetailEntity->setStatus(Details\Status::UNDER_MAINTENANCE);
@@ -4451,7 +4648,7 @@ class Core extends Base\Core
                 return $existingConfigs[$accountNumber];
             },
             60,
-            ErrorCode::MISSING_STATEMENT_DETECTION_UPDATE_IN_PROGRESS,
+            ErrorCode::BAD_REQUEST_MISSING_STATEMENT_DETECTION_UPDATE_IN_PROGRESS,
             3
         );
     }

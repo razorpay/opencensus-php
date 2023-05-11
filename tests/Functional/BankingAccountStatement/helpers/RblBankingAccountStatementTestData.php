@@ -1055,6 +1055,21 @@ return [
         ]
     ],
 
+    'testOptimiseInsertRblMissingAccountStatement' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/insert_missing',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'channel'        => 'rbl',
+                'action'         => 'insert',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testInsertRblMissingAccountStatement' => [
         'request'  => [
             'method'  => 'POST',
