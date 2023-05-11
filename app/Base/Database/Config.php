@@ -72,12 +72,13 @@ class Config
 
         // Worker only makes a db connection once. So we will not need proxySQL for this.
         // (Not needed but this is just extra security.)
-        $isWorkerPod = $this->app['config']->get(self::WORKER_CONFIG . '.' . self::IS_WORKER_POD);
-
-        if ($isWorkerPod === true)
-        {
-            return;
-        }
+        // Commenting this to allow worker db connections via proxySQL
+//        $isWorkerPod = $this->app['config']->get(self::WORKER_CONFIG . '.' . self::IS_WORKER_POD);
+//
+//        if ($isWorkerPod === true)
+//        {
+//            return;
+//        }
 
         // this is kept to rollback at later stage
         // we can just change env and re-deploy to disable proxysql.
@@ -305,10 +306,11 @@ class Config
     protected function traceProxysqlConnection($type, $proxysqlConfig, $user) {
         //TODO: control logging from env variable as we might want to disable logging due to high volume.
         // commented out for now
-        // $this->app['trace']->info(TraceCode::PROXY_SQL_CONNECTION, [
-        //     'type'              => $type,
-        //     'proxy_sql_config'  => $proxysqlConfig,
-        //     'user'              => $user,
-        // ]);
+        // enabling for api workers on proxySQL go-live, can be removed after this.
+         $this->app['trace']->info(TraceCode::PROXY_SQL_CONNECTION, [
+             'type'              => $type,
+             'proxy_sql_config'  => $proxysqlConfig,
+             'user'              => $user,
+         ]);
     }
 }

@@ -235,6 +235,9 @@ class Job implements ShouldQueue
             $app['basicauth']->setModeAndDbConnection($this->mode);
         }
 
+        //Overwrite to db connection via proxysql
+        $app['proxysql.config']->setDatabaseHostsIfApplicable();
+
         // Set origin product, this is useful in tracking X logs and exceptions
         // Refer ApiTraceProcessor::addProduct()
         if ($this->originProduct !== null)
