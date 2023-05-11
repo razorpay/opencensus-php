@@ -17,6 +17,7 @@ import { History } from 'history';
 import rTracking from 'react-tracking';
 import { compose } from 'redux';
 import { TODO_PD } from 'merchant/views/PartnerDashboard/TypesDeclare';
+import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 
 interface ActivationGuideT {
   fuxStatus: FUXStatusStateT;
@@ -53,69 +54,71 @@ const ActivationGuide = ({
     );
   };
   return (
-    <div>
-      {fuxStatus.isFetching ? (
-        <ProductShimmer />
-      ) : (
-        <div className="activation-guide-card">
-          <div className="title-bar">
-            <div className="confetti-wrapper">
-              <canvas id="confettiActivationGuideMob" />
+    <ErrorBoundary team={Teams?.PARTNERSHIP} rank={Ranks.P1} resetOnProps>
+      <div>
+        {fuxStatus.isFetching ? (
+          <ProductShimmer />
+        ) : (
+          <div className="activation-guide-card">
+            <div className="title-bar">
+              <div className="confetti-wrapper">
+                <canvas id="confettiActivationGuideMob" />
+              </div>
+              <div className="title-bar__container">
+                <div className="title">
+                  <span>Start your journey as {orgName} Partner</span>
+                </div>
+
+                <div className="sub-title">
+                  <span>
+                    Complete the steps to start earning commissions and pamper yourself to exclusive
+                    training & dedicated support.
+                  </span>
+                </div>
+
+                <img src={activationTitleIcon} alt="" />
+              </div>
             </div>
-            <div className="title-bar__container">
-              <div className="title">
-                <span>Start your journey as {orgName} Partner</span>
+            <div className="activation-steps">
+              <div className="confetti-wrapper">
+                <canvas id="confettiActivationGuide" />
               </div>
 
-              <div className="sub-title">
-                <span>
-                  Complete the steps to start earning commissions and pamper yourself to exclusive
-                  training & dedicated support.
-                </span>
-              </div>
+              <StartReferringStep
+                handleReferClient={handleReferClient}
+                fuxStatus={fuxStatus}
+                partnerName={partnerName}
+                partnerType={user.partner_type}
+                orgName={orgName}
+              />
 
-              <img src={activationTitleIcon} alt="" />
+              <ActivateAccountStep
+                history={history}
+                fuxStatus={fuxStatus}
+                activation_status={activation_status}
+                trackUserEvent={trackUserEvent}
+                partnerType={user.partner_type}
+              />
+
+              <IntegratingAPIStep
+                activation_status={activation_status}
+                fuxStatus={fuxStatus}
+                partnerType={user.partner_type}
+                orgName={orgName}
+              />
+
+              <CommissionStep
+                activation_status={activation_status}
+                fuxStatus={fuxStatus}
+                partnerType={user.partner_type}
+                history={history}
+                trackUserEvent={trackUserEvent}
+              />
             </div>
           </div>
-          <div className="activation-steps">
-            <div className="confetti-wrapper">
-              <canvas id="confettiActivationGuide" />
-            </div>
-
-            <StartReferringStep
-              handleReferClient={handleReferClient}
-              fuxStatus={fuxStatus}
-              partnerName={partnerName}
-              partnerType={user.partner_type}
-              orgName={orgName}
-            />
-
-            <ActivateAccountStep
-              history={history}
-              fuxStatus={fuxStatus}
-              activation_status={activation_status}
-              trackUserEvent={trackUserEvent}
-              partnerType={user.partner_type}
-            />
-
-            <IntegratingAPIStep
-              activation_status={activation_status}
-              fuxStatus={fuxStatus}
-              partnerType={user.partner_type}
-              orgName={orgName}
-            />
-
-            <CommissionStep
-              activation_status={activation_status}
-              fuxStatus={fuxStatus}
-              partnerType={user.partner_type}
-              history={history}
-              trackUserEvent={trackUserEvent}
-            />
-          </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </ErrorBoundary>
   );
 };
 

@@ -20,6 +20,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import ProductWrapper from 'common/ui/ProductWrapper';
+
 @withRouter
 @connect(
   (state) => ({
@@ -245,7 +246,7 @@ export default class SubMerchantsList extends Component {
       });
     }
     return (
-      <Fragment>
+      <>
         <Announcement user={this.props.user} mode={this.props.mode} />
         <ProductWrapper
           tabsData={tabsData}
@@ -326,7 +327,7 @@ export default class SubMerchantsList extends Component {
             </div>
           </content>
         </ProductWrapper>
-      </Fragment>
+      </>
     );
   }
 }

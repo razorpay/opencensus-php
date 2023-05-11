@@ -13,6 +13,7 @@ import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as ApplicationActions from 'merchant/reducers/applications';
+
 class ApplicationContainer extends Component {
   static contextTypes = {
     confirm: PropTypes.func,

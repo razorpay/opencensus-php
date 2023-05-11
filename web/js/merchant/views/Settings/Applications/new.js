@@ -437,7 +437,7 @@ class AppDetails extends Component {
   render() {
     const { type, user } = this.props;
     return (
-      <Fragment>
+      <>
         <div class="col-md-offset-2 col-md-10">
           <h4 class="form-header text-left">{type === 'dev' ? 'Development' : 'Production'}:</h4>
         </div>
@@ -488,7 +488,7 @@ class AppDetails extends Component {
             <span>{info(user)[type]}</span>
           </small>
         </div>
-      </Fragment>
+      </>
     );
   }
 }

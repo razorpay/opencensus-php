@@ -8,6 +8,7 @@ import {
 } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
 import ProductListItem from './ProductListItem';
 import { TODO_PD } from 'merchant/views/PartnerDashboard/TypesDeclare';
+import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 
 interface ReferralGuideT {
   partnerName: string;
@@ -82,7 +83,7 @@ export const ReferralGuide: React.FC<ReferralGuideT> = ({
   const productList = orgPrdList[orgCode];
 
   return (
-    <div>
+    <ErrorBoundary team={Teams?.PARTNERSHIP} rank={Ranks.P1} resetOnProps>
       {isFetching ? (
         <ProductShimmer />
       ) : (
@@ -160,7 +161,7 @@ export const ReferralGuide: React.FC<ReferralGuideT> = ({
           )}
         </div>
       )}
-    </div>
+    </ErrorBoundary>
   );
 };
 

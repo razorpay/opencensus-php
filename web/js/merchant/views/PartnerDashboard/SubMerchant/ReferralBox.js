@@ -6,6 +6,7 @@ import SelectBox from 'merchant/views/PartnerDashboard/SubMerchant/components/Se
 import ShareReferralLink from 'assets/onboarding/share-referral-link.png';
 import Image from 'common/ui/Image';
 import ShowWhen from 'merchant/components/ShowWhen';
+import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 
 export default function ReferralBox({
   user,
@@ -100,63 +101,65 @@ export default function ReferralBox({
     );
   }
   return (
-    <div class="referral-box-modal">
-      <ModalHeader title="Share Referral Link" onCloseClick={handleModalClose} />
-      <div className="modal-body">
-        <SelectBox
-          label="Razorpay Payments"
-          description="Invite affiliates to use Razorpay Payment products to collect payments"
-          onClick={() => setProductType(PRODUCT_TYPE.PG)}
-          checked={productType === PRODUCT_TYPE.PG}
-        >
-          {productType === PRODUCT_TYPE.PG ? (
-            <SocialShareGroup
-              referralUrl={pgReferralLink}
-              tracking={tracking}
-              product={PRODUCT_TYPE.PG}
-              partnerID={partnerID}
-            />
-          ) : (
-            ''
-          )}
-        </SelectBox>
-        <ShowWhen additionalCondition={() => user.isPartnershipForCapitalEnabled}>
+    <ErrorBoundary team={Teams?.PARTNERSHIP} rank={Ranks.P1} resetOnProps>
+      <div class="referral-box-modal">
+        <ModalHeader title="Share Referral Link" onCloseClick={handleModalClose} />
+        <div className="modal-body">
           <SelectBox
-            label="Line Of Credit"
-            description="Refer merchants to Capital products like Line Of Credit"
-            onClick={() => setProductType(PRODUCT_TYPE.CAPITAL)}
-            checked={isCapitalProduct}
+            label="Razorpay Payments"
+            description="Invite affiliates to use Razorpay Payment products to collect payments"
+            onClick={() => setProductType(PRODUCT_TYPE.PG)}
+            checked={productType === PRODUCT_TYPE.PG}
           >
-            {isCapitalProduct ? (
+            {productType === PRODUCT_TYPE.PG ? (
               <SocialShareGroup
-                referralUrl={capitalReferralLink}
+                referralUrl={pgReferralLink}
                 tracking={tracking}
-                product={PRODUCT_TYPE.CAPITAL}
+                product={PRODUCT_TYPE.PG}
                 partnerID={partnerID}
               />
             ) : (
               ''
             )}
           </SelectBox>
-        </ShowWhen>
-        <SelectBox
-          label="RazorpayX"
-          description="Invite affiliates to open RazorpayX powered Current Account to process payouts"
-          onClick={() => setProductType(PRODUCT_TYPE.X)}
-          checked={productType === PRODUCT_TYPE.X}
-        >
-          {productType === PRODUCT_TYPE.X ? (
-            <SocialShareGroup
-              referralUrl={bankingReferralLink}
-              tracking={tracking}
-              product={PRODUCT_TYPE.X}
-              partnerID={partnerID}
-            />
-          ) : (
-            ''
-          )}
-        </SelectBox>
+          <ShowWhen additionalCondition={() => user.isPartnershipForCapitalEnabled}>
+            <SelectBox
+              label="Line Of Credit"
+              description="Refer merchants to Capital products like Line Of Credit"
+              onClick={() => setProductType(PRODUCT_TYPE.CAPITAL)}
+              checked={isCapitalProduct}
+            >
+              {isCapitalProduct ? (
+                <SocialShareGroup
+                  referralUrl={capitalReferralLink}
+                  tracking={tracking}
+                  product={PRODUCT_TYPE.CAPITAL}
+                  partnerID={partnerID}
+                />
+              ) : (
+                ''
+              )}
+            </SelectBox>
+          </ShowWhen>
+          <SelectBox
+            label="RazorpayX"
+            description="Invite affiliates to open RazorpayX powered Current Account to process payouts"
+            onClick={() => setProductType(PRODUCT_TYPE.X)}
+            checked={productType === PRODUCT_TYPE.X}
+          >
+            {productType === PRODUCT_TYPE.X ? (
+              <SocialShareGroup
+                referralUrl={bankingReferralLink}
+                tracking={tracking}
+                product={PRODUCT_TYPE.X}
+                partnerID={partnerID}
+              />
+            ) : (
+              ''
+            )}
+          </SelectBox>
+        </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 }

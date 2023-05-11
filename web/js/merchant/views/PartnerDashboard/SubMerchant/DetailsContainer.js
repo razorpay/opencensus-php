@@ -167,23 +167,21 @@ export default class SubmerchantDetailsContainer extends Component {
       capitalProducts,
     } = this.props;
     return (
-      <div>
-        <Details
-          getPannelData={this.getPannelData}
-          isReseller={user.isPartner('reseller')}
-          isSubMerchantKycResellerEnabled={isSubMerchantKycResellerEnabled}
-          trackUserEvent={this.trackUserEvent}
-          isLoading={loading}
-          submerchant={submerchant}
-          error={error}
-          switchMerchant={_switchMerchant}
-          onInviteMerchant={this.handleInviteClick}
-          onResendInvite={this.handleResendInvite}
-          product={this.state.product}
-          isSubMerchantKYCAccess={this.isSubMerchantKYCAccess}
-          capitalProducts={capitalProducts}
-        />
-      </div>
+      <Details
+        getPannelData={this.getPannelData}
+        isReseller={user.isPartner('reseller')}
+        isSubMerchantKycResellerEnabled={isSubMerchantKycResellerEnabled}
+        trackUserEvent={this.trackUserEvent}
+        isLoading={loading}
+        submerchant={submerchant}
+        error={error}
+        switchMerchant={_switchMerchant}
+        onInviteMerchant={this.handleInviteClick}
+        onResendInvite={this.handleResendInvite}
+        product={this.state.product}
+        isSubMerchantKYCAccess={this.isSubMerchantKYCAccess}
+        capitalProducts={capitalProducts}
+      />
     );
   }
 }

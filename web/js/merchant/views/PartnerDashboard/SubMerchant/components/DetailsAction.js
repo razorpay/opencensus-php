@@ -12,6 +12,7 @@ import { withRouter } from 'react-router-dom';
 import WaitingApprovalImg from 'assets/partner-dashboard/waiting-approval.png';
 import DefaultImg from 'assets/partner-dashboard/req-by-email-1.png';
 import Image from 'common/ui/Image';
+import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 
 const DetailsAction = ({
   activation_status = null,
@@ -134,74 +135,80 @@ const DetailsAction = ({
     onClickAction = openKYCForm;
   }
   return (
-    <div className="details-action-container">
-      <div className="submerchant-details-action request-access-kyc">
-        <div className="icon-container">
-          <div className="icon">
-            <img src="/dist/css/assets/partner-dashboard/razorpay-circle.svg" />
+    <ErrorBoundary team={Teams?.PARTNERSHIP} rank={Ranks.P1} resetOnProps>
+      <div className="details-action-container">
+        <div className="submerchant-details-action request-access-kyc">
+          <div className="icon-container">
+            <div className="icon">
+              <img src="/dist/css/assets/partner-dashboard/razorpay-circle.svg" />
+            </div>
+          </div>
+          <div className="details-container">
+            {<strong className="title">{title}</strong>}
+            <br />
+            <p className="description">{description}</p>
+            <div className={`${image === WaitingApprovalImg ? 'waiting-approval' : 'default-img'}`}>
+              <Image src={image} isWebP />
+            </div>
+            {!isHidden && (
+              <AsyncBtn.Primary
+                showLoader={true}
+                pendingState={pendingState}
+                onClick={onClickAction}
+              >
+                {btnText}
+              </AsyncBtn.Primary>
+            )}
           </div>
         </div>
-        <div className="details-container">
-          {<strong className="title">{title}</strong>}
-          <br />
-          <p className="description">{description}</p>
-          <div className={`${image === WaitingApprovalImg ? 'waiting-approval' : 'default-img'}`}>
-            <Image src={image} isWebP />
-          </div>
-          {!isHidden && (
-            <AsyncBtn.Primary showLoader={true} pendingState={pendingState} onClick={onClickAction}>
-              {btnText}
-            </AsyncBtn.Primary>
-          )}
-        </div>
-      </div>
 
-      <div className="submerchant-details-action ">
-        <div className="icon-container">
-          <div className="icon">
-            <img src="/dist/css/assets/partner-dashboard/document-circle.svg" />
+        <div className="submerchant-details-action ">
+          <div className="icon-container">
+            <div className="icon">
+              <img src="/dist/css/assets/partner-dashboard/document-circle.svg" />
+            </div>
+          </div>
+          <div className="details-container">
+            <strong className="title">Documents for KYC</strong>
+            <br />
+            <p className="description">
+              Various business and personal details of the merchant need to be provided in
+              merchant&apos;s KYC
+            </p>
+            <a
+              href="https://razorpay.com/docs/payments/kyc"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() =>
+                props.trackUserEvent('partnerships.dashboard.affiliate_account.pannel', {
+                  cta: 'know_more',
+                })
+              }
+            >
+              <ButtonTrans variant="secondary" size="small">
+                Know More
+              </ButtonTrans>
+            </a>
           </div>
         </div>
-        <div className="details-container">
-          <strong className="title">Documents for KYC</strong>
-          <br />
-          <p className="description">
-            Various business and personal details of the merchant need to be provided in
-            merchant&apos;s KYC
-          </p>
-          <a
-            href="https://razorpay.com/docs/payments/kyc"
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() =>
-              props.trackUserEvent('partnerships.dashboard.affiliate_account.pannel', {
-                cta: 'know_more',
-              })
-            }
-          >
-            <ButtonTrans variant="secondary" size="small">
-              Know More
-            </ButtonTrans>
-          </a>
-        </div>
-      </div>
 
-      <div className="submerchant-details-action ">
-        <div className="icon-container">
-          <div className="icon">
-            <img src="/dist/css/assets/partner-dashboard/rupee-circle.svg" />
+        <div className="submerchant-details-action ">
+          <div className="icon-container">
+            <div className="icon">
+              <img src="/dist/css/assets/partner-dashboard/rupee-circle.svg" />
+            </div>
+          </div>
+          <div className="details-container">
+            <strong className="title">Benefits of Merchant KYC</strong>
+            <br />
+            <p className="description">
+              Your affiliate will start receiving payment settlements in their bank account once
+              their KYC has been approved
+            </p>
           </div>
         </div>
-        <div className="details-container">
-          <strong className="title">Benefits of Merchant KYC</strong>
-          <br />
-          <p className="description">
-            Your affiliate will start receiving payment settlements in their bank account once their
-            KYC has been approved
-          </p>
-        </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 };
 
