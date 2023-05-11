@@ -359,7 +359,7 @@ class customerTest extends TestCase
 
         $this->mockRaven();
 
-        $this->fixturesToCreateToken('100022xtokenl1', '100000003card1', '411140', '10000000000000');
+        $this->fixturesToCreateToken('100022xtokenl1', '100000003card1', '411140', '10000000000000', '10000gcustomer', ['vault' => 'visa', 'status' => 'active']);
 
         // send OTP
         $response = $this->sendOtp('9988776655');

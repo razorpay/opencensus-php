@@ -1976,72 +1976,6 @@ class TokenisationTest extends TestCase
         $this->assertEquals($paymentCard['vault'], 'rzpvault');
     }
 
-    public function testIsRepeatPaymentProcessedWithActualCardOnDisableTokenisedCardPaymentFeature(): void
-    {
-        $this->mockSession();
-
-        $this->mockCardVaultWithMigrateToken();
-
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'variant_on',
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($output);
-
-        $this->mockRazorXTreatment('on');
-
-        $this->fixtures->merchant->addFeatures(['network_tokenization_live', 'network_tokenization_paid'], '100000Razorpay');
-        $this->fixtures->merchant->addFeatures(['network_tokenization_live', 'network_tokenization_paid'], '10000000000000');
-
-        $this->fixtures->merchant->addFeatures([Feature\Constants::DISABLE_TOKENISED_PAYMENT]);
-
-        $this->fixtures->iin->create([
-                                         'iin'     => '400782',
-                                         'country' => 'IN',
-                                         'issuer'  => 'ICIC',
-                                         'network' => 'Visa',
-                                         'type'    => 'credit',
-                                         'flows'   => [
-                                             '3ds' => '1',
-                                             'ivr' => '1',
-                                             'otp' => '1',
-                                         ]
-                                     ]);
-
-        $tokenToken = $this->doFirstPaymentThroughTokenisingTheCard(false);
-
-        $payment = $this->getDefaultTokenIdPaymentArray($tokenToken);
-
-        $payment[Payment::TOKEN] = $tokenToken;
-
-        $paymentResponse = $this->doAuthPayment($payment);
-
-        $payment2 = $this->getDbEntityById('payment', $paymentResponse['razorpay_payment_id']);
-
-        $paymentCard = $payment2->card;
-
-        $token = $this->getToken($payment2);
-
-        $tokenCard = $token->card;
-
-        $this->assertEquals($tokenToken, $token['token']);
-        $this->assertEquals('visa', $tokenCard['vault']);
-        $this->assertEquals('authorized', $payment2['status']);
-        $this->assertEquals("passed", $payment2['two_factor_auth']);
-        $this->assertNotNull($payment2['token_id']);
-        $this->assertNull($paymentCard['trivia']);
-        $this->assertEquals('2024', $paymentCard['expiry_year']);
-        $this->assertEquals('12', $paymentCard['expiry_month']);
-        $this->assertEquals('credit', $paymentCard['type']);
-        $this->assertNull($paymentCard['token_iin']);
-        $this->assertEquals('401200', $paymentCard['iin']);
-        $this->assertEquals($paymentCard['vault'], 'rzpvault');
-    }
-
     protected function mockSession($appToken = 'capp_1000000custapp')
     {
         $data = ['test_app_token' => $appToken];
@@ -2074,22 +2008,6 @@ class TokenisationTest extends TestCase
         $this->app->razorx->method('getTreatment')
             ->willReturnCallback(static function ($mid, $feature, $mode) use ($value) {
                 if ($feature === 'card_payments_authorize_all_terminals') {
-                    return 'off';
-                }
-
-                if ($feature === RazorxTreatment::PAYMENT_PROCESS_THROUGH_TOKENISED_CARD) {
-                    if ($mid === 'HDFC_VISA_credit' || $mid === 'ICIC_AMEX_credit') {
-                        return $value;
-                    }
-
-                    return 'off';
-                }
-
-                if ($feature === RazorxTreatment::PROVISION_GLOBAL_NETWORK_TOKEN) {
-                    if (in_array($mid, Network::NETWORKS_SUPPORTING_GLOBAL_TOKENS, true)) {
-                        return 'on_' . strtolower($mid);
-                    }
-
                     return 'off';
                 }
 

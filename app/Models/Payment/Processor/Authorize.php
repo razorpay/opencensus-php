@@ -102,7 +102,6 @@ use RZP\Jobs\OneCCShopifyCreateOrder;
 use RZP\Jobs\SavedCardTokenisationJob;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Currency\Currency as CurrencyCurrency;
-use RZP\Models\Payment\TokenisationExperiment;
 use RZP\Models\Invoice\Service as InvoiceService;
 use RZP\Models\Invoice\Entity as InvoiceEntity;
 use RZP\Models\Invoice\Constants as InvoiceConstants;
@@ -6133,10 +6132,8 @@ trait Authorize
 
         if (($payment->isMethodCardOrEmi() === true) and ($payment->isGooglePayCard() === false))
         {
-            if ((! empty($input[Processor::USER_CONSENT_FOR_TOKENISATION])) &&
-                ($token->isGlobal()) &&
-                (new Payment\TokenisationExperiment())->shouldCreateLocalTokenOnGlobalCustomer($this->merchant->getId())
-            ) {
+            if ((!empty($input[Processor::USER_CONSENT_FOR_TOKENISATION])) && $token->isGlobal())
+            {
                 // As per RBI guidelines use of global card tokens is not allowed.
                 // Payment flow should newer reach here.
                 $this->trace->warning(TraceCode::GLOBAL_CARD_TOKEN_PAYMENT_SHOULD_NOT_BE_ALLOWED, [
@@ -6314,9 +6311,8 @@ trait Authorize
 
         if ($payment->isMethodCardOrEmi() === true)
         {
-            if (($customer->isGlobal()) &&
-                (new Payment\TokenisationExperiment())->shouldCreateLocalTokenOnGlobalCustomer($this->merchant->getId())
-            ) {
+            if ($customer->isGlobal())
+            {
                 /**
                  * create token with global customer, local merchant and associate token to payment
                  */
@@ -7690,9 +7686,7 @@ trait Authorize
                 return;
             }
 
-            if (($token->isGlobal() === true) &&
-                ((new Payment\TokenisationExperiment())->shouldProvisionGlobalToken($token->card) === false)
-            ) {
+            if ($token->isGlobal() === true) {
                 $this->trace->info(TraceCode::TRACE_TOKEN_MIGRATION_FAILURE, [
                     'isGlobal'     => $token->isGlobal(),
                     'token'      => $token->getId()
@@ -9346,39 +9340,31 @@ trait Authorize
     protected function createCardEntityForTokenisedCard(Token\Entity $token, $input, $payment): array
     {
         $card = $token->card;
+        $this->logTokenisedCardPaymentRoutingInfo($token, false);
 
-        if ((new TokenisationExperiment())->shouldPaymentProcessThroughTokenisedCard($token, $this->merchant) === true)
+        // we are storing tokenPAN in card_mandate table for recurring purposes. so need to make fetchcryptogram
+        if($token->isRecurring() and
+           $token->getRecurringStatus() === Token\RecurringStatus::CONFIRMED)
         {
-            $this->logTokenisedCardPaymentRoutingInfo($token, false);
+            $paymentProcessor = (new Processor($this->merchant));
 
-            // we are storing tokenPAN in card_mandate table for recurring purposes. so need to make fetchcryptogram
-            if($token->isRecurring() and
-               $token->getRecurringStatus() === Token\RecurringStatus::CONFIRMED)
-            {
-                $paymentProcessor = (new Processor($this->merchant));
+            $paymentProcessor->setPayment($this->payment);
 
-                $paymentProcessor->setPayment($this->payment);
-
-                return $paymentProcessor->createCardForNetworkTokenCardMandate($card, $token, [], $payment);
-            }
-
-            $merchant = $card->merchant;
-            // using partner merchant for cryptogram api on token_interoperabilty
-            $partnerMerchantId = $this->app['basicauth']->getPartnerMerchantId();
-
-            if (($token->isRecurring() === false) and
-                (empty($token->getCustomerId()) === false) and
-                $partnerMerchantId !== null )
-            {
-                $merchant = $merchant->getFullManagedPartnerWithTokenInteroperabilityFeatureIfApplicable($merchant);
-            }
-
-            return $this->createCardForNetworkToken($card, $input, $payment, $merchant);
+            return $paymentProcessor->createCardForNetworkTokenCardMandate($card, $token, [], $payment);
         }
 
-        $this->logTokenisedCardPaymentRoutingInfo($token, true);
+        $merchant = $card->merchant;
+        // using partner merchant for cryptogram api on token_interoperabilty
+        $partnerMerchantId = $this->app['basicauth']->getPartnerMerchantId();
 
-        return $this->createActualCardFromTokenisedCard($card, $input);
+        if (($token->isRecurring() === false) and
+            (empty($token->getCustomerId()) === false) and
+            $partnerMerchantId !== null )
+        {
+            $merchant = $merchant->getFullManagedPartnerWithTokenInteroperabilityFeatureIfApplicable($merchant);
+        }
+
+        return $this->createCardForNetworkToken($card, $input, $payment, $merchant);
     }
 
     protected function logTokenisedCardPaymentRoutingInfo(Token\Entity $token, bool $isActualCard): void
@@ -9396,34 +9382,6 @@ trait Authorize
                 'type'      => $card->getType(),
             ],
         ]);
-    }
-
-    /**
-     * Payment processing through actual card number for tokenised card
-     * Fetches the actual card number for tokenised card from vault service
-     * Creates a card entity with actual card number and associates it to payment
-     * Returns card details for gatewayInput for further payment processing
-     *
-     * @param  Card\Entity  $card
-     * @param $input
-     * @return array
-     * @throws Exception\BadRequestException
-     */
-    protected function createActualCardFromTokenisedCard(Card\Entity $card, $input): array
-    {
-        $gateway = $input['payment']['gateway']?? null;
-
-        $actualCardNumber = (new Card\CardVault)->getCardNumber($card->getVaultToken(),$card->toArray(),$gateway);
-
-        $cardInput = [
-            Card\Entity::NUMBER           => $actualCardNumber,
-            Card\Entity::NAME             => $card->getName(),
-            Card\Entity::EXPIRY_MONTH     => $card->getExpiryMonth(),
-            Card\Entity::EXPIRY_YEAR      => $card->getExpiryYear(),
-            Card\Entity::CVV              => $input['card']['cvv'] ?? Card\Entity::DUMMY_CVV,
-        ];
-
-        return $this->createCardEntity($cardInput, true, $this->merchant, $input);
     }
 
     /**

@@ -5,6 +5,7 @@ namespace RZP\Models\Customer\Token;
 use Illuminate\Support\Arr;
 use RZP\Constants;
 use Carbon\Carbon;
+use RZP\Constants\Environment;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
@@ -17,7 +18,6 @@ use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Method;
 use RZP\Jobs\TokenActionsHandler;
-use RZP\Models\Payment\TokenisationExperiment;
 use RZP\Models\Terminal;
 use RZP\Models\Customer\AppToken;
 use RZP\Models\Customer\Token;
@@ -2472,15 +2472,11 @@ class Core extends Base\Core
 
     /**
      * @param Base\PublicCollection|Entity[] $tokens
-     * @param Merchant\Entity                $merchant
      *
      * @return Base\PublicCollection|Entity[]
      */
-    public function addConsentFieldInTokens($tokens, Merchant\Entity $merchant)
+    public function addConsentFieldInTokens($tokens)
     {
-        $shouldNotTakeConsentToConvertGlobalToLocalToken = !((new TokenisationExperiment())
-            ->shouldCreateLocalTokenOnGlobalCustomer($merchant->getId())
-        );
 
         foreach ($tokens as $token)
         {
@@ -2488,12 +2484,7 @@ class Core extends Base\Core
             {
                 $acknowledgedAt = $token->getAcknowledgedAt();
 
-                if (!empty($acknowledgedAt) &&
-                    (
-                        $shouldNotTakeConsentToConvertGlobalToLocalToken ||
-                        $token->isLocal() === true
-                    )
-                ) {
+                if (!empty($acknowledgedAt) && $token->isLocal()) {
                     $token[Entity::CONSENT_TAKEN] = true;
                 }
                 else
@@ -3036,7 +3027,7 @@ class Core extends Base\Core
 
         $cardTokens = $this->removeGlobalCardTokens($cardTokens);
 
-        $cardTokens = $this->removeNonCompliantCardTokens($cardTokens, 'flash_checkout');
+        $cardTokens = $this->removeNonCompliantCardTokens($cardTokens);
 
         $cardTokens = $this->removeNonActiveTokenisedCardTokens($cardTokens);
 
@@ -3550,13 +3541,14 @@ class Core extends Base\Core
      * Reserve Bank of India's (RBI) tokenisation guidelines.
      *
      * @param Base\PublicCollection|array $tokens
-     * @param string $merchantId
      *
      * @return Base\PublicCollection|array
      */
-    public function removeNonCompliantCardTokens($tokens, string $merchantId)
+    public function removeNonCompliantCardTokens($tokens)
     {
-        if ((new TokenisationExperiment())->shouldRemoveNonCompliantCardTokens($merchantId) === false)
+        if (Environment::isEnvironmentQA($this->app['env']) ||
+            Environment::isLowerEnvironment($this->app['env'])
+        )
         {
             return $tokens;
         }
@@ -3635,10 +3627,10 @@ class Core extends Base\Core
 
         $tokens = $this->removeDuplicateCardRecurringTokensIfAny($tokens, $this->merchant);
 
-        $tokens = $this->removeNonCompliantCardTokens($tokens, $this->merchant->getId());
+        $tokens = $this->removeNonCompliantCardTokens($tokens);
 
         $tokens = $this->removeNonActiveTokenisedCardTokens($tokens);
 
-        return $this->addConsentFieldInTokens($tokens, $this->merchant);
+        return $this->addConsentFieldInTokens($tokens);
     }
 }

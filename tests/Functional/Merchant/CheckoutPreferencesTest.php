@@ -2189,45 +2189,6 @@ class CheckoutPreferencesTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
-    public function testGetCheckoutPreferencesWithCovidReliefBothEnable()
-    {
-        $this->mockRazorxTreatmentV2(RazorxTreatment::COVID_19_DONATION_SHOW, 'on');
-
-        $this->ba->publicAuth();
-
-        $this->fixtures->merchant->addFeatures([Feature\Constants::COVID_19_RELIEF]);
-
-        $this->startTest();
-    }
-
-    public function testGetCheckoutPreferencesWithoutCovidReliefBothDisable()
-    {
-        $this->mockRazorxTreatmentV2(RazorxTreatment::COVID_19_DONATION_SHOW, 'off');
-
-        $this->ba->publicAuth();
-
-        $this->startTest();
-    }
-
-    public function testGetCheckoutPreferencesWithoutCovidReliefRazorXOff()
-    {
-        $this->mockRazorxTreatmentV2(RazorxTreatment::COVID_19_DONATION_SHOW, 'off');
-
-        $this->ba->publicAuth();
-
-        $this->fixtures->merchant->addFeatures([Feature\Constants::COVID_19_RELIEF]);
-
-        $this->startTest();
-    }
-
-    public function testGetCheckoutPreferencesWithoutCovidReliefFeatureOff()
-    {
-        $this->mockRazorxTreatmentV2(RazorxTreatment::COVID_19_DONATION_SHOW, 'off');
-
-        $this->ba->publicAuth();
-
-        $this->startTest();
-    }
     protected function mockSplitzTreatment($output)
     {
         $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();

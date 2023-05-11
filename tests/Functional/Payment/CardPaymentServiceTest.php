@@ -3035,16 +3035,6 @@ class CardPaymentServiceTest extends TestCase
     {
         $this->mockSession();
 
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'variant_on',
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($output);
-
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                            ->setConstructorArgs([$this->app])
                            ->setMethods(['getTreatment'])
@@ -4308,16 +4298,6 @@ class CardPaymentServiceTest extends TestCase
 
     public function testIsPaymentProcessedWithTokenisedCardOnGlobalMerchantWhenExpReturnsTrue()
     {
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'variant_on',
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($output);
-
         $this->mockCardVaultWithCryptogram();
 
         $this->createPaymentAndRun('100000Razorpay', '10000gcustomer', 'HDFC', 'Visa');
@@ -4471,15 +4451,6 @@ class CardPaymentServiceTest extends TestCase
             {
                 if ($feature === 'card_payments_authorize_all_terminals' or  $feature === 'store_empty_value_for_non_exempted_card_metadata') {
                     return 'off';
-                }
-
-                if ($feature === RazorxTreatment::PAYMENT_PROCESS_THROUGH_TOKENISED_CARD)
-                {
-                    if ($mid === 'HDFC_VISA_debit')
-                    {
-                        return $value;
-                    }
-                    return 'on';
                 }
 
                 if ($feature === RazorxTreatment::DISABLE_RZP_TOKENISED_PAYMENT)
@@ -5807,16 +5778,6 @@ class CardPaymentServiceTest extends TestCase
 
         $this->mockSession();
         $this->app = App::getFacadeRoot();
-
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'variant_on',
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($output);
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])

@@ -203,8 +203,6 @@ class Checkout
 
         $this->fillTruecallerDetailsIfApplicable($input, $data, $merchant->getId());
 
-        $this->fillCovidReliefDetails($merchant, $data, $mode);
-
         $this->fillMerchantPolicyPage($merchant,$data);
 
         $this->fillPrivacyAndTerms($merchant,$data);
@@ -431,19 +429,6 @@ class Checkout
         $truecallerAuthRequest = (new TruecallerService())->create($input);
 
         $data['truecaller']['request_id'] = $truecallerAuthRequest->getId();
-    }
-
-    protected function fillCovidReliefDetails(Entity $merchant, array & $data, $mode)
-    {
-        $featureEnabled = $merchant->isFeatureEnabled(Feature\Constants::COVID_19_RELIEF);
-
-        $covidRazorX = $this->app->razorx->getTreatment(
-            $merchant->getId(),
-            Merchant\RazorxTreatment::COVID_19_DONATION_SHOW,
-            $mode
-        );
-
-        $data['show_donation'] = $featureEnabled === true && $covidRazorX === 'on';
     }
 
     /**
@@ -979,11 +964,11 @@ class Checkout
 
             $savedTokens = $tokenCore->removeDuplicateCardRecurringTokensIfAny($savedTokens,$merchant);
 
-            $savedTokens = $tokenCore->removeNonCompliantCardTokens($savedTokens, $merchant->getId());
+            $savedTokens = $tokenCore->removeNonCompliantCardTokens($savedTokens);
 
             $savedTokens = $tokenCore->removeNonActiveTokenisedCardTokens($savedTokens);
 
-            $savedTokens = $tokenCore->addConsentFieldInTokens($savedTokens, $merchant);
+            $savedTokens = $tokenCore->addConsentFieldInTokens($savedTokens);
             $custData['tokens'] = $savedTokens->toArrayPublic();
 
             $custData['email'] =  $customer->getEmail();
@@ -1118,7 +1103,7 @@ class Checkout
 
                         $tokensWithoutDisabledCardNetwork = $tokenCore->removeDisabledNetworkTokens($tokensWithoutEmandate, $data[Entity::METHODS][Methods\Entity::CARD_NETWORKS]);
 
-                        $tokensWithoutNonComplianceCards = $tokenCore->removeNonCompliantCardTokens($tokensWithoutDisabledCardNetwork, $merchant->getId());
+                        $tokensWithoutNonComplianceCards = $tokenCore->removeNonCompliantCardTokens($tokensWithoutDisabledCardNetwork);
 
                         $tokensWithoutNonActiveTokenisedCards = $tokenCore->removeNonActiveTokenisedCardTokens($tokensWithoutNonComplianceCards);
 

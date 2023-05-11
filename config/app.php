@@ -422,10 +422,6 @@ return array(
 
     'shopify_1cc_sqs_splitz_experiment_id' => env('SHOPIFY_1CC_SQS_SPLITZ_EXPERIMENT_ID'),
 
-    'global_card_payment_splitz_experiment_id' => env('GLOBAL_CARD_PAYMENT_SPLITZ_EXPERIMENT_ID'),
-
-    'local_token_on_global_customer_experiment_id' => env('LOCAL_TOKEN_ON_GLOBAL_CUSTOMER_EXPERIMENT_ID'),
-
     'void_refund_avs_failed_experiment_id' => env('VOID_REFUND_AVS_FAILED_EXPERIMENT_ID'),
 
     'cmma_limit_breach_trigger_experiment_id' => env('CMMA_LIMIT_BREACH_TRIGGER_EXPERIMENT_ID'),
@@ -511,8 +507,6 @@ return array(
     'checkout_upi_qr_v2_splitz_experiment_id'     => env('CHECKOUT_UPI_QR_V2_SPLITZ_EXPERIMENT_ID'),
 
     'checkout_recurring_redesign_v1_5_splitz_experiment_id' => env('CHECKOUT_RECURRING_REDESIGN_V1_5_SPLITZ_EXPERIMENT_ID'),
-
-    'checkout_remove_saved_card_splitz_experiment_id' => env('CHECKOUT_REMOVE_SAVED_CARD_SPLITZ_EXPERIMENT_ID'),
 
     'checkout_reuse_upi_payment_id_splitz_experiment_id' => env('CHECKOUT_REUSE_UPI_PAYMENT_ID_SPLITZ_EXPERIMENT_ID'),
 

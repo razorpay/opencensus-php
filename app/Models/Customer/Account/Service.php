@@ -700,7 +700,7 @@ class Service extends Base\Service
 
         $tokens = $tokenCore->removeDisabledNetworkTokens($tokens, $merchant->methods->getCardNetworks());
 
-        $tokens = $tokenCore->removeNonCompliantCardTokens($tokens, $merchant->getId());
+        $tokens = $tokenCore->removeNonCompliantCardTokens($tokens);
 
         $tokens = $tokenCore->removeNonActiveTokenisedCardTokens($tokens);
 
@@ -744,13 +744,13 @@ class Service extends Base\Service
             // Fetch existing tokens if exists
             $tokens = $tokenCore->fetchTokensByCustomerForCheckout($customer, $this->merchant);
 
-            $tokens = $tokenCore->removeNonCompliantCardTokens($tokens, $this->merchant->getId());
+            $tokens = $tokenCore->removeNonCompliantCardTokens($tokens);
 
             $tokens = $tokenCore->removeNonActiveTokenisedCardTokens($tokens);
 
             if (($tokens !== null) and ($tokens->count() > 0))
             {
-                $tokens = $tokenCore->addConsentFieldInTokens($tokens, $this->merchant);
+                $tokens = $tokenCore->addConsentFieldInTokens($tokens);
 
                 $result['tokens'] = $tokens->toArrayPublic();
             }

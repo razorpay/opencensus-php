@@ -295,7 +295,7 @@ class Service extends Base\Service
 
         if ($this->mode !== "test")
         {
-            $tokens = $this->core->removeNonCompliantCardTokens($tokens,$this->merchant->getId());
+            $tokens = $this->core->removeNonCompliantCardTokens($tokens);
         }
 
         return $tokens->toArrayPublic();

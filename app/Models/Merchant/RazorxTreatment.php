@@ -530,9 +530,6 @@ final class RazorxTreatment
     // Experiment to use the flow in which there is improvement in GET - /submerchants latency
     const SUBMERCHANTS_FETCH_API_LATENCY_IMPROVE = 'submerchants_fetch_api_latency_improve';
 
-    // Experiment to control payment process through actual card number/tokenised card number for tokenised cards
-    const PAYMENT_PROCESS_THROUGH_TOKENISED_CARD = 'payment_process_through_tokenised_card';
-
     // Experiment to control Emandate Nach payments processing through async worker queues
     const EMANDATE_ASYNC_PAYMENT_PROCESSING_ENABLED = 'emandate_async_payment_processing_enabled';
 
@@ -568,9 +565,6 @@ final class RazorxTreatment
 
     /** @var string Experiment to deprecate tos_acceptance field from /accounts api */
     const IGNORE_TOS_ACCEPTANCE = 'ignore_tos_acceptance';
-
-    /** @var string Experiment to control the provisioning of network tokens for global saved cards. */
-    public const PROVISION_GLOBAL_NETWORK_TOKEN = 'provision_global_network_token';
 
     // Refund source fallback is enabled on merchant or not
     const REFUND_FALLBACK_ENABLED_ON_MERCHANT = 'refund_source_fallback_enabled';

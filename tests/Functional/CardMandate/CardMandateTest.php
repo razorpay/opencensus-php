@@ -625,8 +625,7 @@ class CardMandateTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
 
-        $this->setMockRazorxTreatment(['recurring_tokenisation' => 'on',
-                                       'payment_process_through_tokenised_card' => 'on']);
+        $this->setMockRazorxTreatment(['recurring_tokenisation' => 'on']);
 
         $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
 
@@ -1459,8 +1458,7 @@ class CardMandateTest extends TestCase
 
         $this->ba->privateAuth();
 
-        $this->setMockRazorxTreatment(['payment_process_through_tokenised_card' => 'on',
-                                       'recurring_subsequent_through_tokenised_card' => 'on',
+        $this->setMockRazorxTreatment(['recurring_subsequent_through_tokenised_card' => 'on',
                                        'recurring_tokenisation_not_using_actual_card_iin' => 'on']);
 
         $this->mockCardVaultWithCryptogram();
@@ -2560,8 +2558,7 @@ class CardMandateTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
 
-        $this->setMockRazorxTreatment(['recurring_tokenisation' => 'on',
-            'payment_process_through_tokenised_card' => 'on']);
+        $this->setMockRazorxTreatment(['recurring_tokenisation' => 'on']);
 
         $this->fixtures->create('terminal:shared_billdesk_sihub_terminal');
 

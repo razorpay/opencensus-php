@@ -306,11 +306,11 @@ class Core extends Base\Core
 
             $tokens = $tokenCore->removeDisabledNetworkTokens($tokens, $merchant->methods->getCardNetworks());
 
-            $tokens = $tokenCore->removeNonCompliantCardTokens($tokens, $merchant->getId());
+            $tokens = $tokenCore->removeNonCompliantCardTokens($tokens);
 
             $tokens = $tokenCore->removeNonActiveTokenisedCardTokens($tokens);
 
-            $tokens = $tokenCore->addConsentFieldInTokens($tokens, $merchant);
+            $tokens = $tokenCore->addConsentFieldInTokens($tokens);
 
             $response['tokens'] = $tokens->toArrayPublic();
         }
@@ -426,11 +426,11 @@ class Core extends Base\Core
 
             $tokens = $tokenCore->removeDisabledNetworkTokens($tokens, $merchant->methods->getCardNetworks());
 
-            $tokens = $tokenCore->removeNonCompliantCardTokens($tokens, $merchant->getId());
+            $tokens = $tokenCore->removeNonCompliantCardTokens($tokens);
 
             $tokens = $tokenCore->removeNonActiveTokenisedCardTokens($tokens);
 
-            $tokens = $tokenCore->addConsentFieldInTokens($tokens, $merchant);
+            $tokens = $tokenCore->addConsentFieldInTokens($tokens);
 
             $response['tokens'] = $tokens->toArrayPublic();
         }
