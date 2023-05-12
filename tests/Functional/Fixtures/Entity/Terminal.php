@@ -424,9 +424,9 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
-    public function createCcavenueTerminal()
+    public function createCcavenueTerminal(array $attributes = [])
     {
-        $attributes = [
+        $default  = [
             'merchant_id'           => '10000000000000',
             'gateway'               => 'ccavenue',
             'card'                  => 1,
@@ -438,7 +438,47 @@ class Terminal extends Base
             'enabled_wallets'       => ['paytm'],
         ];
 
+        $attributes = array_merge($default, $attributes);
+
         return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    /**
+     * Create the terminal on ccavenue gateway with UPI collect enabled.
+     *
+     * @return array
+     */
+    public function createCcavenueUpiTerminal()
+    {
+        $attributes = [
+            Method::UPI                   => '1',
+            'type'                        => [
+                Type::NON_RECURRING => '1',
+                Type::DIRECT_SETTLEMENT_WITH_REFUND => '0',
+            ],
+        ];
+
+        return $this->createCcavenueTerminal($attributes);
+    }
+
+    /**
+     * Create the terminal on ccavenue gateway with UPI intent enabled.
+     *
+     * @return array
+     */
+    public function createCcavenueIntentTerminal()
+    {
+        $attributes = [
+            Method::UPI                   => '1',
+            'type'                        => [
+                Type::PAY => '1',
+                Type::NON_RECURRING => '1',
+                Type::DIRECT_SETTLEMENT_WITH_REFUND => '0',
+            ],
+        ];
+
+        return $this->createCcavenueTerminal($attributes);;
+
     }
 
     public function createPinelabsTerminal()

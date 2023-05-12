@@ -368,6 +368,16 @@ class VerifyData extends Base\Mock\Server
 
     public function ccavenue($entities)
     {
+        $method = $entities['payment']['method'];
+
+        if ($method === Payment\Method::UPI)
+        {
+            if ($this->isV2Mock($entities['payment']['description']) === true)
+            {
+                return $this->upiMozartV2($entities);
+            }
+        }
+
         $response = [
             'error'                        => null,
             'next'                         => [],

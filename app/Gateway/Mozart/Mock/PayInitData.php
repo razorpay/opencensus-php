@@ -284,6 +284,16 @@ class PayInitData extends Base\Mock\Server
 
     public function ccavenue($entities)
     {
+        $method = $entities['payment']['method'];
+
+        if ($method === Payment\Method::UPI)
+        {
+            if ($this->isV2Mock($entities['payment']['description']) === true)
+            {
+                return $this->upiMozartV2($entities);
+            }
+        }
+
         $url = $this->route->getUrlWithPublicAuth(
             'mock_mozart_payment_post',
             ['gateway' => 'ccavenue', 'callbackUrl' => $entities['callbackUrl']]);

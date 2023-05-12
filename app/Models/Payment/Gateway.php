@@ -1725,6 +1725,7 @@ class Gateway
             self::PINELABS,
             self::HDFC_EZETAP,
             self::BILLDESK_OPTIMIZER,
+            self::CCAVENUE,
             self::OPTIMIZER_RAZORPAY
         ],
 
@@ -1907,6 +1908,7 @@ class Gateway
         self::PAYTM,
         self::PINELABS,
         self::BILLDESK_OPTIMIZER,
+        self::CCAVENUE,
         self::OPTIMIZER_RAZORPAY,
     ];
 
@@ -3040,7 +3042,8 @@ class Gateway
         Gateway::NETBANKING_RBL,
         Gateway::NETBANKING_HDFC,
         Gateway::BILLDESK_OPTIMIZER,
-        Gateway::OPTIMIZER_RAZORPAY
+        Gateway::CCAVENUE,
+        Gateway::OPTIMIZER_RAZORPAY,
     ];
 
     /**
@@ -3559,6 +3562,7 @@ class Gateway
         Gateway::PAYTM,
         Gateway::PAYU,
         Gateway::BILLDESK_OPTIMIZER,
+        Gateway::CCAVENUE,
         Gateway::OPTIMIZER_RAZORPAY,
     ];
 

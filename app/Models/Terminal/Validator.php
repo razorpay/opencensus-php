@@ -407,6 +407,7 @@ class Validator extends Base\Validator
         Entity::CARD                                    => 'sometimes|boolean|in:0,1',
         Entity::NOTES                                   => 'sometimes|string',
         Entity::ENABLED_WALLETS                         => 'sometimes|array',
+        Entity::UPI                                     => 'sometimes|boolean|in:0,1',
     ];
 
     protected static $pinelabsTerminalRules = [
@@ -924,6 +925,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
         Entity::NOTES                      => 'sometimes|string',
         Entity::ENABLED_WALLETS            => 'sometimes|array',
+        Entity::UPI                        => 'sometimes|boolean|in:0,1',
     ];
 
     protected static $pinelabsEditTerminalRules = [

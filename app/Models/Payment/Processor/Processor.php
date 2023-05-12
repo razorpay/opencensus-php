@@ -4529,12 +4529,13 @@ class Processor
         $gateway = $payment->getGateway();
 
         /**
-         * As async processing approach is not applicable to paytm card,netbanking and wallet
+         * As async processing approach is not applicable to paytm card,net-banking and wallet
          * Checking method if not upi returning an Exceptions
          */
         $method = $payment->getMethod();
 
-        if (($gateway === Payment\Gateway::PAYTM) and ($method !== Payment\Method::UPI))
+        if (($gateway === Payment\Gateway::PAYTM or $gateway === Payment\Gateway::CCAVENUE) and
+            ($method !== Payment\Method::UPI))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_ID);

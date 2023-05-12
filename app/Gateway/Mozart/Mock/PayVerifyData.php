@@ -263,6 +263,16 @@ class PayVerifyData extends Base\Mock\Server
 
     public function ccavenue($entities)
     {
+        $method = $entities['payment']['method'];
+
+        if ($method === Payment\Method::UPI)
+        {
+            if ($this->isV2Mock($entities['payment']['description']) === true)
+            {
+                return $this->upiMozartV2($entities);
+            }
+        }
+
         $response = [
             'external_trace_id' => 'DUMMY_REQUEST_ID',
             'mozart_id' => 'DUMMY_MOZART_ID',
