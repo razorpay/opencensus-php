@@ -13,6 +13,7 @@ use RZP\Exception\BaseException;
 use RZP\Models\Merchant\OneClickCheckout\Shopify;
 use RZP\Models\Merchant\OneClickCheckout\Webhooks;
 use RZP\Models\Merchant\OneClickCheckout\RtoRecommendation;
+use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutService;
 
 class OneClickCheckoutController extends Controller
 {
@@ -345,4 +346,15 @@ class OneClickCheckoutController extends Controller
         return ApiResponse::json($response, 200);
     }
 
+    // Merchant dashboard converts URL param of `GET` req into Request:all()
+    public function handleMerchantDashboardReq()
+    {
+        $input = [
+          'method' => Request::getMethod(),
+          'body'   => Request::all(),
+          'path'   => Request::path(),
+        ];
+        $resp = (new MagicCheckoutService\Service)->handleMerchantDashboardReq($input);
+        return ApiResponse::json($resp, 200);
+    }
 }

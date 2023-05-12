@@ -275,4 +275,7 @@ class Constants
     const FINAL_ADJUSTED_COD_VALUE = 'final_adjusted_cod_value';
 
     const ORDER_STATUS_REFUNDED = 'refunded';
+
+    // Header key for sending MID to Magic Checkout microservice for internal routes.
+    const X_Merchant_Id = 'X-Merchant-Id';
 }

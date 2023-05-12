@@ -4223,7 +4223,7 @@ class Route
         '1cc_shopify_fetch_themes'                  => ['get',        '1cc/admin/merchants/{id}/shopify/themes',                                'OneClickCheckoutController@fetchShopifyThemes'                ],
         '1cc_shopify_insert_theme'                  => ['put',        '1cc/admin/merchants/{id}/shopify/snippets/insert',                  'OneClickCheckoutController@insertShopifySnippet'                ],
         '1cc_shopify_render_magic_snippet'          => ['put',        '1cc/admin/merchants/{id}/shopify/snippets/render',                  'OneClickCheckoutController@renderMagicSnippet'                ],
-
+        '1cc_fetch_dashboard_analytics'             => ['get',        '1cc/analytics',                                        'OneClickCheckoutController@handleMerchantDashboardReq'                ],
 
         'get_affordability_suite'                 => ['get',          'affordability',                                         'AffordabilityController@__invoke'                             ],
 
@@ -6876,7 +6876,7 @@ class Route
         '1cc_cod_order_review',
         '1cc_merchant_order_review_automation_rule_configs_get',
         '1cc_merchant_order_review_automation_rule_configs_upsert',
-
+        '1cc_fetch_dashboard_analytics',
         // splitz
         'splitz_evaluate_bulk_proxy',
 
@@ -11915,7 +11915,7 @@ class Route
             '1cc_merchant_file_upload_audit_create',
             '1cc_merchant_file_upload_audit_list',
             '1cc_cod_order_review',
-
+            '1cc_fetch_dashboard_analytics',
             'growth_get_public_asset_details',
 
             //CAC

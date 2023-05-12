@@ -5,16 +5,21 @@ namespace RZP\Models\Merchant\OneClickCheckout\MagicCheckoutService;
 use App;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Base\Service;
+use Illuminate\Http\Request;
+use RZP\Http\Response\Response;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\IntegrationException;
 use RZP\Http\Request\Requests;
 use RZP\Exception\ServerErrorException;
-
+use RZP\Models\Merchant\OneClickCheckout\Constants;
 
 class Client
 {
-
     protected $app;
+    protected $auth;
+    protected $trace;
+    protected $merchant;
 
     const CONTENT_TYPE                     = 'Content-Type';
     const AUTHORIZATION                    = 'Authorization';
@@ -27,10 +32,11 @@ class Client
         {
             $app = App::getFacadeRoot();
         }
-
         $this->app = $app;
-
         $this->setConfig();
+        $this->auth = $this->app['basicauth'];
+        $this->merchant = $this->auth->getMerchant();
+        $this->trace = $this->app['trace'];
     }
 
     /**
@@ -102,19 +108,25 @@ class Client
         }
     }
 
+    // In case of `GET` requests the $content passed to `Requests::request(...)` must be an
+    /// array as it is converted to URL params.
+    // For other requests it should be a stringified JSON. As PHP treats objects as arrays we need to use
+    // `JSON_FORCE_OBJECT` flag to ensure we always pass `{}` instead of `[]` in the body.
     protected function makeRequest($url, $headers, $content, $method, $options)
     {
-        if (empty($content) === true)
+        if ($method !== "GET")
         {
-            $content = [];
-        } else
-        {
-            $content = json_encode($content);
+            if (empty($content) === true)
+            {
+                $content = json_encode([], JSON_FORCE_OBJECT);
+            }
+            else
+            {
+                $content = json_encode($content);
+            }
         }
-
         return Requests::request($url, $headers, $content, $method, $options);
     }
-
 
     protected function parseAndReturnResponse($response)
     {
@@ -142,11 +154,16 @@ class Client
 
     protected function getHeaders()
     {
-        return [
+        $headers = [
             self::CONTENT_TYPE  => 'application/json',
             self::AUTHORIZATION => $this->getAuthorizationHeader(),
             self::X_REQUEST_ID  => $this->app['request']->getTaskId(),
         ];
+        if (empty($this->merchant) === false)
+        {
+            $headers[Constants::X_Merchant_Id] = $this->merchant->getId();
+        }
+        return $headers;
     }
 
     protected function getAuthorizationHeader(): string
