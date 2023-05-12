@@ -369,7 +369,7 @@ EOT;
 
         $wdaClient = $this->app['wda-client']->wdaClient;
 
-        $response = $wdaClient->fetchEntities($wdaQueryBuilder->build(), $this->newQuery()->getModel());
+        $response = $wdaClient->fetchMultipleWithExpand($wdaQueryBuilder->build(), $this->newQuery()->getModel(),[]);
 
         $collection = new PublicCollection();
 

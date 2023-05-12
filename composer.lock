@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "061e637cea05ef1c6034ae317e06af35",
+    "content-hash": "34d5359f173fe1fa1d271d2e97414af0",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -11637,16 +11637,16 @@
         },
         {
             "name": "razorpay/wda-php-sdk",
-            "version": "v1.2.0",
+            "version": "v1.2.5",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/wda-php-sdk.git",
-                "reference": "a66b3544053e5f0fa14d34b78159b6c8e2f14071"
+                "reference": "d3a463ec158271b8274c990277d9594d64810300"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/wda-php-sdk/zipball/a66b3544053e5f0fa14d34b78159b6c8e2f14071",
-                "reference": "a66b3544053e5f0fa14d34b78159b6c8e2f14071",
+                "url": "https://api.github.com/repos/razorpay/wda-php-sdk/zipball/d3a463ec158271b8274c990277d9594d64810300",
+                "reference": "d3a463ec158271b8274c990277d9594d64810300",
                 "shasum": ""
             },
             "require": {
@@ -11686,7 +11686,7 @@
                 "razorpay",
                 "wda-php-sdk"
             ],
-            "time": "2023-03-03T10:00:33+00:00"
+            "time": "2023-05-05T11:15:04+00:00"
         },
         {
             "name": "react/cache",

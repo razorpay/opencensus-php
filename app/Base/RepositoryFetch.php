@@ -7,6 +7,7 @@ use Illuminate\Pagination\Paginator;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use ReflectionClass;
+use RZP\Constants\Entity;
 use RZP\Constants\Es;
 use RZP\Constants\Mode;
 use RZP\Exception\LogicException;
@@ -465,25 +466,12 @@ trait RepositoryFetch
             "wda_query_builder" => $wdaQueryBuilder->build()->serializeToJsonString(),
         ]);
 
-        $responseArray = $wdaClient->fetchMultipleEntities($wdaQueryBuilder->build());
-
-        $wdaResponse = [];
-
-        $entityType = $query->getModel();
-
-        foreach ($responseArray as $response)
-        {
-            array_push($wdaResponse, $this->sortEntityAndCleanUp($entityType, $response));
-        }
+        $wdaResponse = $wdaClient->fetchMultipleWithExpand($wdaQueryBuilder->build(),$query->getModel(),[]);
 
         $collection = new PublicCollection();
 
         foreach ($wdaResponse as $arr)
         {
-            $entity = $query->newModelInstance();
-
-            $entity->forceFill($arr);
-
             $collection->push($entity);
         }
 
@@ -679,7 +667,7 @@ trait RepositoryFetch
             'route_name'    => $this->app['api.route']->getCurrentRouteName(),
         ]);
 
-        $responseArray = $wdaClient->fetchEntities($wdaQueryBuilder->build(), $query->getModel());
+        $responseArray = $wdaClient->fetchMultipleWithExpand($wdaQueryBuilder->build(), $query->getModel(),[]);
 
         $collection = new PublicCollection();
 
@@ -965,7 +953,7 @@ trait RepositoryFetch
 
         $wdaClient = $this->app['wda-client']->wdaClient;
 
-        $responseArray = $wdaClient->fetchEntities($wdaQueryBuilder->build(), $query->getModel());
+        $responseArray = $wdaClient->fetchMultipleWithExpand($wdaQueryBuilder->build(), $query->getModel(),[]);
 
         if (count($ids) !== count($responseArray))
         {
@@ -1537,7 +1525,7 @@ trait RepositoryFetch
 
         $wdaQueryBuilder->namespace($dbName);
 
-        $response = $wdaClient->fetchEntity($wdaQueryBuilder->build(),$entity);
+        $response = $wdaClient->fetch($wdaQueryBuilder->build(),$entity);
 
         unset($this->app[WDAService::WDA_QUERY_BUILDER]);
 
@@ -1581,27 +1569,27 @@ trait RepositoryFetch
 
         $wdaDifferentIds = [];
 
+        $primaryKeyName = $warmStorageDbCollection[0]->getKeyName();
         foreach($warmStorageDbCollection as $dbResponse)
         {
-            $warmDbMap[$dbResponse->getId()] = $dbResponse;
+            $warmDbMap[$dbResponse[$primaryKeyName]] = $dbResponse;
         }
 
         foreach($wdaResponseCollection as $wdaResponse)
         {
-            if(array_key_exists($wdaResponse->getId(), $warmDbMap) === true)
+            if(array_key_exists($wdaResponse[$primaryKeyName], $warmDbMap) === true)
             {
-                $diffStatus = $this->compareWDAEntityAndLogDifference($wdaResponse->getId(), $wdaResponse->toArray(), $warmDbMap[$wdaResponse->getId()]->toArray(), $extraTrace);
-
+                $diffStatus = $this->compareWDAEntityAndLogDifference($wdaResponse[$primaryKeyName], $wdaResponse->toArray(), $warmDbMap[$wdaResponse[$primaryKeyName]]->toArray(), $extraTrace);
                 if($diffStatus)
                 {
                     return true;
                 }
 
-                unset($warmDbMap[$wdaResponse->getId()]);
+                unset($warmDbMap[$wdaResponse[$primaryKeyName]]);
             }
             else
             {
-                array_push($wdaDifferentIds, $wdaResponse->getId());
+                array_push($wdaDifferentIds, $wdaResponse[$primaryKeyName]);
             }
         }
 
