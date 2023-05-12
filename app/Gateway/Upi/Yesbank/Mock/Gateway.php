@@ -13,7 +13,7 @@ class Gateway extends Yesbank\Gateway
 
     public function getQrRefId($input): string
     {
-        if($input['merchant'] === 'LiveAccountMer')
+        if ($input['terminal']['merchant_id'] === 'LiveAccountMer')
         {
             return throw new Exception\RuntimeException('Invalid Response from Mozart');
         }

@@ -43,6 +43,8 @@ class Generator extends QrCode\Generator
 
     private $terminalId         = null;
 
+    private $gateway            = null;
+
     /**
      * Fetches Bharat QR UPI identifiers for merchant
      * @param Entity $qrCode
@@ -93,6 +95,10 @@ class Generator extends QrCode\Generator
                     'id'          => $qrCode->getId()
                 ]);
 
+                $this->gateway = $terminal->getGateway();
+
+                $this->terminalId = $terminal->getId();
+
                 switch ($terminal->getGateway())
                 {
                     case Gateway::UPI_YESBANK:
@@ -104,8 +110,6 @@ class Generator extends QrCode\Generator
                             throw new InvalidArgumentException('VPA is required for generating QR');
                         }
 
-                        $this->terminalId = $terminal->getId();
-
                         return $vpa;
                     }
 
@@ -113,8 +117,6 @@ class Generator extends QrCode\Generator
                     {
                         if(empty($terminal->getGatewayMerchantId2()) === false)
                         {
-                            $this->terminalId = $terminal->getId();
-
                             return $terminal->getGatewayMerchantId2();
                         }
                     }
@@ -157,7 +159,15 @@ class Generator extends QrCode\Generator
 
     private function getRefIdForQrCode($qrCode)
     {
-        $refId = self::TR_PREFIX . $qrCode->getId() . QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
+        switch ($this->gateway)
+        {
+            case Gateway::UPI_YESBANK:
+                $refId = $qrCode->getId() . QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
+                break;
+
+            default:
+                $refId = self::TR_PREFIX . $qrCode->getId() . QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
+        }
 
         if (($this->terminalId === null) or
             ($qrCode->getUsageType() === UsageType::MULTIPLE_USE) or
@@ -185,6 +195,11 @@ class Generator extends QrCode\Generator
                 $gatewayClass->setGatewayParams($input, $this->mode, $terminal);
 
                 $refId = $gatewayClass->getQrRefId($input);
+
+                if ($this->gateway === Gateway::UPI_YESBANK)
+                {
+                    $refId = $qrCode->getId() . QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
+                }
             }
             catch(\Exception $ex)
             {

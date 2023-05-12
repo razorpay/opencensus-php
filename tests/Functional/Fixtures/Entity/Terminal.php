@@ -3844,6 +3844,33 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createLiveDedicatedUpiYesbankTerminal($attributes)
+    {
+        $termId = Shared::UPI_LIVE_YESBANK_DEDICATED_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => 'LiveAccountMer',
+            'gateway'                   => 'upi_yesbank',
+            'gateway_merchant_id'       => 'razorpayliveupi',
+            'gateway_terminal_id'       => 'nodal account upi yesbank',
+            'gateway_terminal_password' => 'razorpay_password',
+            'vpa'                       => 'randomvpa@yesb',
+            'upi'                       => true,
+            'tpv'                       => 2,
+            'type'                      => [
+                Type::PAY               => '1',
+                Type::NON_RECURRING     => '1',
+                Type::ONLINE            => '1',
+                Type::COLLECT           => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedUpiAxisIntentTpvTerminal(array $override = [])
     {
         $attributes = [

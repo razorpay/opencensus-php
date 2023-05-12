@@ -240,4 +240,12 @@ trait NonVirtualAccountQrCodeTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    private function getTRFieldFromString($qrString)
+    {
+        $queryString = parse_url($qrString, PHP_URL_QUERY);
+
+        parse_str($queryString, $params);
+
+        return $params['tr'];
+    }
 }

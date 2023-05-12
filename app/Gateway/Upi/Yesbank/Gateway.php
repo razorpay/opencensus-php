@@ -1133,7 +1133,7 @@ class Gateway extends Mindgate\Gateway
         }
 
         return [
-            'callback_data' => $input,
+            'callback_data' => $inputFields,
             'qr_data'       => $qrData
         ];
     }

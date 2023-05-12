@@ -8,10 +8,9 @@ use RZP\Models\QrCode\Type;
 use RZP\Services\RazorXClient;
 use RZP\Exception\LogicException;
 use RZP\Tests\Functional\TestCase;
-use RZP\Exception\RuntimeException;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\RazorxTreatment;
-use RZP\Exception\GatewayErrorException;
+use RZP\Exception\InvalidArgumentException;
 use RZP\Models\QrPayment\UnexpectedPaymentReason;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -57,18 +56,17 @@ class UpiYesBankQRCodeTest extends TestCase
     private function runEntityAssertions($response): void
     {
         $qrCodeEntity = $this->getLastEntity('qr_code', true);
+        $this->assertStringContainsString('@yesb', $qrCodeEntity['qr_string']);
+        $trValue = $this->getTRFieldFromString($qrCodeEntity['qr_string']);
+        $this->assertEquals(18, strlen($trValue));
+        $this->assertTrue(str_ends_with($trValue, 'qrv2'));
 
         if($qrCodeEntity['usage'] === 'single_use'){
-            $this->assertStringContainsString('107611570997', $qrCodeEntity['qr_string']);
-            $this->assertStringContainsString('@yesb', $qrCodeEntity['qr_string']);
             $amount = $qrCodeEntity['amount'] / 100;
             $this->assertStringContainsString('am=' . $amount, $qrCodeEntity['qr_string']);
         }
         else
         {
-            $tr = 'RZP' . substr($response['id'], 3, 14) . 'qrv2';
-            $this->assertStringContainsString($tr, $qrCodeEntity['qr_string']);
-            $this->assertStringContainsString('@yesb', $qrCodeEntity['qr_string']);
             if ($qrCodeEntity['fixed_amount'] === true)
             {
                 $amount = $qrCodeEntity['amount'] / 100;
@@ -384,20 +382,22 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testCreateDynamicQrCodeFalseGatewayResponse() :void
     {
-        $this->expectException(LogicException::class);
+        $this->expectException(InvalidArgumentException::class);
 
-        $this->expectExceptionMessage('QrCode creation failed due to error at bank or wallet gateway is not defined');
+        $this->expectExceptionMessage('ErrorCode: QrCode creation failed due to error at bank or wallet gateway is not defined');
 
         $this->enableRazorXTreatmentForQrDedicatedTerminal();
 
-        $response = $this->createQrCode(
+        $this->fixtures->create('terminal:live_dedicated_upi_yesbank_terminal');
+
+        $this->createQrCode(
             [
                 'usage'          => 'single_use',
                 'type'           => 'upi_qr',
                 'fixed_amount'   => true,
                 'payment_amount' => 300,
-            ]);
-
-        $this->runEntityAssertions($response);
+            ],
+            'live',
+            'LiveAccountMer');
     }
 }

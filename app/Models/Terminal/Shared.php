@@ -173,6 +173,7 @@ class Shared
     const NETBANKING_SARASWAT_TERMINAL       = '1000NbSrcbTrmnl';
     const UPI_ICICI_DEDICATED_TERMINAL       = '102IciciDedTml';
     const UPI_YESBANK_DEDICATED_TERMINAL     = '100YesDedTrmnl';
+    const UPI_LIVE_YESBANK_DEDICATED_TERMINAL= '100YesLivTrmnl';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,
