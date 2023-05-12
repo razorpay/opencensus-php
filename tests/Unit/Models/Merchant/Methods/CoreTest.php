@@ -15,7 +15,7 @@ use RZP\Models\Merchant\Methods\Core as MethodsCore;
 
 class CoreTest extends TestCase
 {
-    protected function getMerchantMethodsFixture($upiEnabled, $inAppUPIEnabled, $merchantId)
+    public function getMerchantMethodsFixture($upiEnabled, $inAppUPIEnabled, $merchantId, $intlbankTransferModes = [])
     {
         $methods = [
             'upi'           => $upiEnabled,
@@ -25,7 +25,8 @@ class CoreTest extends TestCase
             'addon_methods' => [
                 'upi' => [
                     'in_app' => $inAppUPIEnabled
-                ]
+                ],
+                'intl_bank_transfer' => $intlbankTransferModes,
             ]
         ];
 
@@ -124,5 +125,41 @@ class CoreTest extends TestCase
 
         $data = (new MethodsCore())->getFormattedMethods($methods->merchant);
         $this->assertEquals($data['in_app'], 1);
+    }
+
+    public function testIntlBankTransferACHIsEnabled()
+    {
+        $intlBankTransferModes = [
+          'ach' => 1,
+        ];
+        $methods = $this->getMerchantMethodsFixture(true, 1,'8vUslVi0uFOSoy', $intlBankTransferModes);
+
+        $data = (new MethodsCore())->getFormattedMethods($methods->merchant);
+        $this->assertEquals(1,$data['intl_bank_transfer']['usd']);
+
+    }
+
+    public function testIntlBankTransferSWIFTIsEnabled()
+    {
+        $intlBankTransferModes = [
+            'swift' => 1,
+        ];
+        $methods = $this->getMerchantMethodsFixture(true, 1,'8vUslVi0uFOSoy', $intlBankTransferModes);
+
+        $data = (new MethodsCore())->getFormattedMethods($methods->merchant);
+        $this->assertEquals(1,$data['intl_bank_transfer']['swift']);
+    }
+
+    public function testIntlBankTransferACHANDSWIFTIsEnabled()
+    {
+        $intlBankTransferModes = [
+            'ach' => 1,
+            'swift' => 1,
+        ];
+        $methods = $this->getMerchantMethodsFixture(true, 1,'8vUslVi0uFOSoy', $intlBankTransferModes);
+
+        $data = (new MethodsCore())->getFormattedMethods($methods->merchant);
+        $this->assertEquals(1,$data['intl_bank_transfer']['usd']);
+        $this->assertEquals(1,$data['intl_bank_transfer']['swift']);
     }
 }

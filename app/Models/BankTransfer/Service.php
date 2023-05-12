@@ -10,9 +10,11 @@ use RZP\Constants\Timezone;
 use RZP\Models\Bank\BankCodes;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Trace\Tracer;
 use Symfony\Component\HttpFoundation\File\File;
+use RZP\Jobs\CrossBorderCommonUseCases;
 
 use RZP\Exception;
 use RZP\Constants;
@@ -39,8 +41,10 @@ use RZP\Jobs\BankTransferCreateProcess;
 use RZP\Models\BankTransfer\Constants as BankTransferConstants;
 use RZP\Models\BankTransfer\Processor as BankTransferProcessor;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Merchant\InternationalIntegration;
 use function GuzzleHttp\default_ca_bundle;
+use RZP\Models\Payment\Processor\IntlBankTransfer;
 
 class Service extends Base\Service
 {
@@ -58,6 +62,8 @@ class Service extends Base\Service
     const CASH_MANAGER_TRANSACTION_NOTIFICATION = 'cash_manager_transaction_notification';
     const PAYMENT_RELEASED_NOTIFICATION = 'payment_released_notification';
     const TRANSFER_COMPLETED_NOTIFICATION = 'transfer_completed_notification';
+    const REGULAR = 'regular';
+    const PRIORITY = 'priority';
 
     /**
      * Service constructor. Sets provider from app auth, and
@@ -924,21 +930,33 @@ class Service extends Base\Service
 
     public function createAccountForCurrencyCloud($input)
     {
+        (new Validator)->validateInput('create_account_for_currency_cloud', $input);
+
         $merchantId = $this->merchant->getId();
 
-        if (!$this->merchant->isInternational() || !($this->merchant->isFeatureEnabled(Feature\Constants::ENABLE_INTL_BANK_TRANSFER)) || !$input['accept_b2b_tnc'])
+        if(!isset($input['va_currency']))
+        {
+            $input['va_currency'] = Currency::USD;
+        }
+        $va_currency = strtoupper($input['va_currency']);
+
+        if(Gateway::isVACurrencySupportedForInternationalBankTransfer($va_currency) === false){
+            throw new \Exception("Currency/Method Not Supported for International Bank Transfer");
+        }
+
+        if (($this->merchant->isInternational() === false) or
+            ($input['va_currency'] === Currency::USD and boolval($input['accept_b2b_tnc']) === false))
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_FEATURE_NOT_ENABLED,null,[
-                'international'              => $this->merchant->isInternational(),
-                'enable_intl_bank_transfer'  => $this->merchant->isFeatureEnabled(Feature\Constants::ENABLE_INTL_BANK_TRANSFER),
-                't&c'                        => $input['accept_b2b_tnc'],
+                'international'         => $this->merchant->isInternational(),
+                't&c'                   => $input['accept_b2b_tnc'],
             ]);
         }
 
         $mutex_key = "create_account_cc_" . $merchantId;
 
         $this->mutex->acquireAndRelease($mutex_key,
-            function () use ($merchantId)
+            function () use ($merchantId,$va_currency)
             {
                 $mii = $this->repo->merchant_international_integrations->getByMerchantIdAndIntegrationEntity(
                     $merchantId,Constants\Entity::CURRENCY_CLOUD);
@@ -950,8 +968,10 @@ class Service extends Base\Service
                         'mii_id'      => $mii->getId(),
                     ]);
                 }
-                else{
-                    try {
+                else
+                {
+                    try
+                    {
                         $requestBody = $this->createRequestBodyForAccountCreation($merchantId);
                     }
                     catch (\Throwable $e)
@@ -979,60 +999,89 @@ class Service extends Base\Service
                     ];
 
                     (new InternationalIntegration\Core)->createMerchantInternationalIntegration($merchantInternationalIntegrations);
-
-                    $mii = $this->repo->merchant_international_integrations->getByMerchantIdAndIntegrationEntity(
-                        $merchantId,Constants\Entity::CURRENCY_CLOUD);
-
-                    (new Merchant\Service)->addFeatureFlag(
-                        [
-                            Feature\Constants::ENABLE_B2B_EXPORT
-                        ], true
-                    );
-
-                    $this->trace->info(TraceCode::B2B_FEATURE_FLAG_ADDED,[
-                        'merchant_id' => $merchantId,
-                        'feature_flag' => Feature\Constants::ENABLE_B2B_EXPORT,
-                    ]);
-
-                    $mii = $this->updateBankAccountDetails($merchantId,$mii);
                 }
+
+                $mii = $this->repo->merchant_international_integrations->getByMerchantIdAndIntegrationEntity(
+                    $merchantId,Constants\Entity::CURRENCY_CLOUD);
+
+                (new Merchant\Service)->addFeatureFlag(
+                    [
+                        Feature\Constants::ENABLE_B2B_EXPORT
+                    ], true
+                );
+
+                $this->trace->info(TraceCode::B2B_FEATURE_FLAG_ADDED,[
+                    'merchant_id' => $merchantId,
+                    'feature_flag' => Feature\Constants::ENABLE_B2B_EXPORT,
+                ]);
+
+                $mii = $this->repo->merchant_international_integrations->getByMerchantIdAndIntegrationEntity(
+                    $merchantId,Constants\Entity::CURRENCY_CLOUD);
+
+                $mii = $this->updateBankAccountDetailsByVACurrency($merchantId,$mii,$va_currency);
+
             },20,
             ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS);
 
             return (new InternationalIntegration\Core)->fetchIntlVirtualBankAccountsForGateway($merchantId,Constants\Entity::CURRENCY_CLOUD);
     }
 
-    public function updateBankAccountDetails($merchantId, $merchantInternationalIntegrations)
+    public function updateBankAccountDetailsByVACurrency($merchantId, $merchantInternationalIntegrations,$va_currency)
     {
-        $bankAccount = array();
-
-        foreach (Payment\Gateway::INTERNATIONAL_BANK_TRANSFER_SUPPORTED_CURRENCIES as $currency)
+        if($va_currency === Gateway::SWIFT)
         {
             $request = [
-                'payment_type'      => 'regular',
+                'payment_type'      => self::PRIORITY,
                 'account_id'        => $merchantInternationalIntegrations->getIntegrationKey(),
                 'contact_id'        => $merchantInternationalIntegrations->getReferenceId(),
-                'currency'          => $currency,
+                'currency'          => Currency::USD,
             ];
-
-            $bankAccountCurrency = $this->getBankAccountDetailsCurrency($request);
-
-            array_push($bankAccount,$bankAccountCurrency);
         }
+        else
+        {
+            $request = [
+                'payment_type'      => self::REGULAR,
+                'account_id'        => $merchantInternationalIntegrations->getIntegrationKey(),
+                'contact_id'        => $merchantInternationalIntegrations->getReferenceId(),
+                'currency'          => $va_currency,
+            ];
+        }
+
+        $bankAccounts = $merchantInternationalIntegrations->getBankAccount();
+
+        $bankAccount = $this->getFundingAccountDetailsByCurrency($request, $va_currency);
+
+        if(isset($bankAccounts) === false || empty($bankAccounts) === true)
+        {
+            $bankAccounts = array();
+        }
+        else{
+            $bankAccounts = json_decode($bankAccounts);
+        }
+        $bankAccounts[] = $bankAccount;
 
         $mii = [
             InternationalIntegration\Entity::MERCHANT_ID        => $merchantId,
             InternationalIntegration\Entity::INTEGRATION_ENTITY => Constants\Entity::CURRENCY_CLOUD,
             InternationalIntegration\Entity::INTEGRATION_KEY    => $merchantInternationalIntegrations->getIntegrationKey(),
             InternationalIntegration\Entity::REFERENCE_ID       => $merchantInternationalIntegrations->getReferenceId(),
-            InternationalIntegration\Entity::BANK_ACCOUNT       => json_encode($bankAccount)
+            InternationalIntegration\Entity::BANK_ACCOUNT       => json_encode($bankAccounts)
         ];
 
-        return (new InternationalIntegration\Core)->editMerchantInternationalIntegrations($mii);
+        $enable_methods = [
+            Merchant\Methods\Entity::INTL_BANK_TRANSFER => [
+                Payment\Gateway::getIntlBankTransferModeByCurrency($va_currency) => 1,
+            ]
+        ];
 
+        $methods = $this->merchant->methods;
+        $methods->setMethods($enable_methods);
+        $this->repo->saveOrFail($methods);
+
+        return (new InternationalIntegration\Core)->editMerchantInternationalIntegrations($mii);
     }
 
-    protected function getBankAccountDetailsCurrency($request)
+    protected function getFundingAccountDetailsByCurrency($request, $va_currency)
     {
         $response = $this->app->mozart->sendMozartRequest('onboarding',Constants\Entity::CURRENCY_CLOUD,'get_funding_account',$request);
 
@@ -1040,8 +1089,8 @@ class Service extends Base\Service
 
         $virtualAccountDetails = [
             'account_number'      => $funding_accounts[0]['account_number'],
-            'va_currency'         => $funding_accounts[0]['currency'],
-            'beneficiary_name'     => $funding_accounts[0]['account_holder_name'],
+            'va_currency'         => $va_currency,
+            'beneficiary_name'    => $funding_accounts[0]['account_holder_name'],
             'bank_name'           => $funding_accounts[0]['bank_name'],
             'bank_address'        => $funding_accounts[0]['bank_address']
         ];
@@ -1091,15 +1140,19 @@ class Service extends Base\Service
         return $requestBody;
     }
 
-    public function notificationsFromCurrencyCloud($input, $header)
+    public function notificationsFromCurrencyCloud($input, $header): array
     {
         $this->trace->info(TraceCode::CURRENCY_CLOUD_NOTIFICATION_REQUEST,[
             'input'  => $input,
             'header' => $header,
         ]);
 
-        if($this->app['env'] != Environment::TESTING)
+        if ($this->app['env'] === Environment::BVT or
+            $this->app['env'] === Environment::AUTOMATION or
+            $this->app['env'] === Environment::TESTING)
         {
+            $this->app['rzp.mode']=Mode::TEST;
+        } else {
             $this->app['rzp.mode']=Mode::LIVE;
         }
 
@@ -1210,57 +1263,123 @@ class Service extends Base\Service
         }
     }
 
-    public function settlementFromCurrencyCloud()
+    public function settleFundsFromCurrencyCloudCron()
     {
         $this->app['rzp.mode']=Mode::LIVE;
 
+        $payload = [
+            'action' => CrossBorderCommonUseCases::INTL_BANK_TRANSFER_SWIFT_SETTLEMENT,
+            'mode'   => $this->mode,
+        ];
+
         foreach (Payment\Gateway::INTERNATIONAL_BANK_TRANSFER_SUPPORTED_CURRENCIES as $currency)
         {
+
+            $payload['body'] = [
+              'settlement_currency' => $currency,
+              'gateway'             => Constants\Entity::CURRENCY_CLOUD,
+            ];
+
             try
             {
-                $request = [
+                CrossBorderCommonUseCases::dispatch($payload)->delay(rand(60,1000) % 601);
+
+                $this->trace->info(TraceCode::CROSS_BORDER_COMMON_USE_CASES_DISPATCHED,[
+                    'payload' => $payload,
+                ]);
+            }
+            catch(\Exception $ex)
+            {
+                $this->trace->info(TraceCode::CROSS_BORDER_COMMON_USE_CASES_DISPATCH_FAILED,[
+                    'payload' => $payload,
+                ]);
+            }
+        }
+
+    }
+
+    public function settlementFromCurrencyCloud($payload)
+    {
+        $this->app['rzp.mode']=Mode::LIVE;
+
+        $gateway = $payload['gateway'];
+        $currency = $payload['settlement_currency'];
+
+        if ($gateway === Constants\Entity::CURRENCY_CLOUD && in_array($currency,Payment\Gateway::INTERNATIONAL_BANK_TRANSFER_SUPPORTED_CURRENCIES))
+        {
+            try{
+
+                $getBalanceRequest = [
                     "currency" => $currency,
                 ];
 
-                $response = $this->callCurrencyCloudGetBalance($request);
+                $getBalanceResponse = $this->callCurrencyCloudGetBalance($getBalanceRequest);
 
-                if(!isset($response['data']['amount']) || $response['data']['amount'] < 1)
+                if(!isset($getBalanceResponse['data']['amount']) || $getBalanceResponse['data']['amount'] < 1)
                 {
-                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR,null,[
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE,null,[
                         'gateway' => Payment\Gateway::CURRENCY_CLOUD,
-                        'data'    => $response['data'],
+                        'data'    => $getBalanceResponse['data'],
+                        'action'  => "get_balance",
                     ]);
                 }
+                $settlementCurrency = Payment\Gateway::getSettlementCurrencyByGateway(Payment\Gateway::CURRENCY_CLOUD, $currency);
 
-                $request = [
-                    'currency'              => $currency,
-                    'amount'                => $response['data']['amount'],
+                $createPaymentRequest = [
+                    'currency'              => $settlementCurrency,
+                    'amount'                => $getBalanceResponse['data']['amount'],
                     'reason'                => 'For Settling Money from RZP House account to Merchants',
-                    'reference'             => $response['data']['id'],
-                    'beneficiary_id'         => $this->getBeneficiaryIdForCurrency($currency),
+                    'reference'             => $getBalanceResponse['data']['id'],
+                    'beneficiary_id'         => $this->getBeneficiaryIdForCurrency($settlementCurrency),
                     'unique_request_id'     => UniqueIdEntity::generateUniqueId()
                 ];
 
-                $response = $this->app->mozart->sendMozartRequest('payments',Constants\Entity::CURRENCY_CLOUD,'payment_create',$request);
+                if($settlementCurrency !== $currency)
+                {
+                    $createConversionRequest = [
+                        'buy_currency'    => $settlementCurrency,
+                        'sell_currency'   => $currency,
+                        'fixed_side'      => 'sell',
+                        'amount'          => $getBalanceResponse['data']['amount'],
+                        'term_agreement'  => "true",
+                    ];
+
+                    $createConversionResponse = $this->app->mozart->sendMozartRequest('payments',$gateway,'create_conversion',$createConversionRequest);
+
+                    if(!isset($createConversionResponse['data']['client_buy_amount']) || $createConversionResponse['data']['client_buy_amount'] < 1)
+                    {
+                        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INSUFFICIENT_BALANCE,null,[
+                            'gateway' => Payment\Gateway::CURRENCY_CLOUD,
+                            'data'    => $createConversionResponse['data'],
+                            'action'  => "create_conversion",
+                        ]);
+                    }
+
+                    $createPaymentRequest['conversion_id'] = $createConversionResponse['data']['id'];
+                    $createPaymentRequest['amount'] = $createConversionResponse['data']['client_buy_amount'];
+
+                }
+
+                $response = $this->app->mozart->sendMozartRequest('payments',$gateway,'payment_create',$createPaymentRequest);
             }
-            catch(\Exception $ex)
+            catch (\Exception $ex)
             {
                 $this->trace->traceException(
                     $ex,
                     null,
                     TraceCode::B2B_PAYMENTS_SETTLED_WITH_BANKING_PARTNER_FAILED,
                     [
-                        'message'   =>  'House Account To Nostro Account Payment Request Failed',
+                        'message'               =>  'House Account To Nostro Account Payment Request Failed',
+                        'currency'              => $currency,
+                        'settlement_currency'   => $settlementCurrency,
                     ]
                 );
             }
         }
-
     }
 
     protected function fundsArrivedFlowFromCurrencyCloud($input)
     {
-
         $mii = (new \RZP\Models\Merchant\InternationalIntegration\Repository)->getByIntegrationEntityAndKey(Constants\Entity::CURRENCY_CLOUD,$input['account_id']);
 
         if(isset($mii)==false)
@@ -1281,7 +1400,7 @@ class Service extends Base\Service
 
         $response = $this->app->mozart->sendMozartRequest('payments',Constants\Entity::CURRENCY_CLOUD,'get_sender_detail',$request);
 
-        $payment = $this->core->createAndAuthorizePaymentForB2B($response['data'],$merchantId);
+        $payment = $this->core->createAndAuthorizePaymentForIntlBankTransfer($response['data'],$merchantId);
 
         return [
             'success' => 'true',

@@ -396,6 +396,7 @@ class Core extends Base\Core
         $data[Entity::COD] = $methods->isCodEnabled();
         $data[Entity::OFFLINE] = $methods->isOfflineEnabled();
         $fpxEnabled = $methods->isFpxEnabled();
+        $data[Entity::INTL_BANK_TRANSFER] = $methods->getIntlBankTransferEnabledForMerchant();
 
 
         if ($netbankingEnabled === true)
@@ -637,6 +638,17 @@ class Core extends Base\Core
         }
 
         return;
+    }
+
+    //method to add ACH and swift payment modes for intl_bank_transfer method
+    public function addIntlBankTransferMethodsIfApplicable(Methods\Entity $methods, array & $data)
+    {
+        $intl_bank_transfer_modes = $methods->getIntlBankTransferEnabledModes();
+
+        foreach (Methods\Entity::getAddonMethodsList(Methods\Entity::INTL_BANK_TRANSFER) as $mode)
+        {
+            $data[Methods\Entity::INTL_BANK_TRANSFER][$mode] = isset($intl_bank_transfer_modes[$mode]) ? (int)$intl_bank_transfer_modes[$mode] : 0 ;
+        }
     }
 
     public function getEnabledAndDisabledBanks($merchant)

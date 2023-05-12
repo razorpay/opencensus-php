@@ -1575,6 +1575,8 @@ class Service extends Base\Service
         if (empty($methods) === false)
         {
             (new Methods\Core)->addCustomTextForCredIfApplicable($this->merchant, $methods, $data['methods']);
+
+            (new Methods\Core)->addIntlBankTransferMethodsIfApplicable($methods, $data['methods']);
         }
 
         return $data;

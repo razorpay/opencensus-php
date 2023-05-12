@@ -26,11 +26,6 @@ class Validator extends Base\Validator
         Entity::PAYMENT_METHODS        => 'sometimes'
     ];
 
-    protected static $getInternationalVirtualAccountByVACurrencyRules = [
-        'currency'                  => 'required_with:amount|string|size:3',
-        'amount'                    => 'required_with:currency|integer|min:100'
-    ];
-
     protected static $postEmerchantpayRequestDataRules = [
         'instruments'                                           => 'sometimes|array',
         'merchant_info'                                         => 'sometimes|array',

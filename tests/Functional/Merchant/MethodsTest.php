@@ -7,6 +7,7 @@ use Event;
 use RZP\Models\Card\SubType;
 use RZP\Models\Feature;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Order\ProductType;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Models\Card\Network;
@@ -1528,6 +1529,69 @@ class MethodsTest extends TestCase
 
         $this->assertEquals(1, $merchantMethods['apps']['giropay']);
     }
+
+    public function testIntlBankTrasnferACHForMerchant()
+    {
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'convertContentToString' => false,
+            'content' => [
+                'intl_bank_transfer' => [
+                    'ach' => 1,
+                ]
+            ],
+        ];
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertTrue($merchantMethods->isIntlBankTransferEnabled('ach'));
+
+    }
+
+    public function testIntlBankTrasnferSWIFTForMerchant()
+    {
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'convertContentToString' => false,
+            'content' => [
+                'intl_bank_transfer' => [
+                    'swift' => 1,
+                ]
+            ],
+        ];
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertTrue($merchantMethods->isIntlBankTransferEnabled('swift'));
+
+    }
+
     public function testEnableOfflineMethod()
     {
         $this->fixtures->merchant->disableAllMethods('10000000000000');
@@ -1586,6 +1650,58 @@ class MethodsTest extends TestCase
 
         $this->assertEquals($offer1->getPublicId(), $response['offers'][0]['id']);
         $this->assertEquals($offer2->getPublicId(), $response['offers'][1]['id']);
+    }
+
+    public function testGetPaymentMethodsAndOffersForCheckoutForB2BExportForPaymentLinkWithOrder(): void
+    {
+        $this->ba->checkoutServiceProxyAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+        $this->fixtures->merchant->addFeatures(['enable_intl_bank_transfer']);
+        $this->fixtures->merchant->enablePaytm();
+        $this->fixtures->merchant->enableIntlBankTransfer();
+
+        $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
+        $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
+
+        $order = $this->fixtures->order->createWithOffers([
+            $offer1,
+            $offer2,
+        ],[
+            'product_type' => ProductType::PAYMENT_LINK_V2
+        ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = ['order' => $order->toArray()];
+
+        $this->startTest($testData);
+    }
+
+    public function testGetPaymentMethodsAndOffersForCheckoutForB2BExportWithNonPaymentLinkOrder(): void
+    {
+        $this->ba->checkoutServiceProxyAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+        $this->fixtures->merchant->addFeatures(['enable_intl_bank_transfer']);
+        $this->fixtures->merchant->enablePaytm();
+        $this->fixtures->merchant->enableIntlBankTransfer();
+
+        $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
+        $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
+
+        $order = $this->fixtures->order->createWithOffers([
+            $offer1,
+            $offer2,
+        ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = ['order' => $order->toArray()];
+
+        $response = $this->startTest($testData);
+        $intlBankTransferMethods = $response['methods']['intl_bank_transfer'];
+        $this->assertEmpty($intlBankTransferMethods);
     }
 
     public function testGetPaymentMethodsAndOffersForCheckoutWithInvoiceId(): void

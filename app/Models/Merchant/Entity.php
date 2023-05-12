@@ -7,6 +7,7 @@ use Config;
 use Carbon\Carbon;
 use Conner\Tagging\Taggable;
 use Razorpay\Trace\Logger;
+use RZP\Models\Payment\Method;
 use RZP\Services\Dcs;
 use RZP\Constants\Mode;
 use RZP\Constants\Product;
@@ -671,6 +672,7 @@ class Entity extends Base\PublicEntity
     const DCC_RECURRING_MARKUP_PERCENTAGE_DEFAULT     = 4;
     const DEFAULT_DCC_MARKUP_PERCENTAGE_FOR_PAYPAL    = 5;
     const DEFAULT_MCC_MARKDOWN_PERCENTAGE             = 2;
+    const DEFAULT_INTL_BANK_TRANSFER_MCC_MARKDOWN_PERCENTAGE = 2;
 
     const COUNTRY_MAXIMUM_AMOUNT = [
         "IN" => [
@@ -2801,8 +2803,14 @@ class Entity extends Base\PublicEntity
         return self::DEFAULT_DCC_MARKUP_PERCENTAGE_FOR_APPS;
     }
 
-    public function getMccMarkdownMarkdownPercentage()
+    public function getMccMarkdownMarkdownPercentage($method = 'default')
     {
+        if($method === Method::INTL_BANK_TRANSFER)
+        {
+            // hard coding mcc mdr to 2 for intl bank transfer
+            return self::DEFAULT_INTL_BANK_TRANSFER_MCC_MARKDOWN_PERCENTAGE;
+        }
+
         $mccMarkdownPaymentConfigEntity = $this->latestMccMarkdownPaymentConfig();
 
         if($mccMarkdownPaymentConfigEntity === null)

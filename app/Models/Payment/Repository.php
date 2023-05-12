@@ -3633,7 +3633,7 @@ EOT;
         if (($obj !== null) and
             ($obj->getAuthenticationGateway() !== null))
         {
-            return Mode::TEST;
+                return Mode::TEST;
         }
 
         //
@@ -3665,8 +3665,8 @@ EOT;
         $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
         return $this->newQueryWithConnection($connectionType)
-                        ->where(Entity::SUBSCRIPTION_ID, $subscriptionId)
-                        ->first();
+                    ->where(Entity::SUBSCRIPTION_ID, $subscriptionId)
+                    ->first();
     }
 
     public function fetchSubscriptionIdAndRecurringType(string $subscriptionId, string $tokenId, $recurringTypes, $paymentStatuses)
@@ -4204,18 +4204,14 @@ EOT;
 
     public function getPaymentsWithReferenceId($gateway, $status, $limit)
     {
-        return $this->repo->useSlave(function () use ($gateway,$status,$limit){
-            $query = $this->newQuery();
-
-            return $query
-                ->where(Entity::GATEWAY, $gateway)
-                ->status($status)
-                ->whereNotNull(Entity::REFERENCE2)
-                ->whereNull(Entity::REFERENCE16)
-                ->orderBy(Entity::CREATED_AT, 'desc')
-                ->limit($limit)
-                ->get();
-        });
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->where(Entity::GATEWAY, $gateway)
+            ->status($status)
+            ->whereNotNull(Entity::REFERENCE2)
+            ->whereNull(Entity::REFERENCE16)
+            ->orderBy(Entity::CREATED_AT, 'desc')
+            ->limit($limit)
+            ->get();
     }
 
     //select * from `payments`

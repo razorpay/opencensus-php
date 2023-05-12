@@ -13298,6 +13298,10 @@ return [
                     '+618888888888' => [
                         'instruments' => [
                             [
+                                'instrument' => 'swift',
+                                'method'     => 'intl_bank_transfer',
+                            ],
+                            [
                                 'instrument' => 'poli',
                                 'method'     => 'app',
                             ],
@@ -13342,6 +13346,10 @@ return [
                 'preferred_methods' => [
                     '+348888888888' => [
                         'instruments' => [
+                            [
+                                'instrument' => 'swift',
+                                'method'     => 'intl_bank_transfer',
+                            ],
                             [
                                 'instrument' => 'trustly',
                                 'method'     => 'app',
@@ -13425,7 +13433,11 @@ return [
                     '+338888888888' => [
                         'instruments' => [
                             [
-                                'instrument' => 'va_usd',
+                                'instrument' => 'usd',
+                                'method'     => 'intl_bank_transfer',
+                            ],
+                            [
+                                'instrument' => 'swift',
                                 'method'     => 'intl_bank_transfer',
                             ],
                             [
@@ -13708,7 +13720,11 @@ return [
                     '+18888888888' => [
                         'instruments' => [
                             [
-                                'instrument' => 'va_usd',
+                                'instrument' => 'usd',
+                                'method'     => 'intl_bank_transfer',
+                            ],
+                            [
+                                'instrument' => 'swift',
                                 'method'     => 'intl_bank_transfer',
                             ],
                             [
@@ -13748,7 +13764,21 @@ return [
         ],
     ],
 
-    'testGetCheckoutPreferencesForCurrencyCloudEnabledWithPL' => [
+    'testGetCheckoutPreferencesForCurrencyCloudACHEnabledWithPL' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'currency' => 'USD'
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesForCurrencyCloudSWIFTEnabledWithPL' => [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',

@@ -228,6 +228,10 @@ class Payment extends Base
         {
             $rule = $this->getRelevantPricingRuleForOffline($rules);
         }
+        else if ($method === PaymentModel\Method::INTL_BANK_TRANSFER)
+        {
+            $rule = $this->getRelevantPricingRuleForIntlBankTransfer($rules);
+        }
         // else if ($method === PaymentModel\Method::TRANSFER)
         // {
         //     $rule = $this->getRelevantPricingRuleForTransfer($rules);
@@ -639,6 +643,21 @@ class Payment extends Base
     protected function getRelevantPricingRuleForOffline($rules)
     {
         return $this->applyAmountRangeFilterAndReturnOneRule($rules);
+    }
+
+    protected function getRelevantPricingRuleForIntlBankTransfer($rules)
+    {
+        $payment = $this->entity;
+
+        $wallet = $payment->getWallet();
+
+        $filter = array(
+            [Pricing\Entity::PAYMENT_NETWORK, $wallet, false, null]
+        );
+
+        $rules = $this->applyFiltersOnRules($rules, $filter);
+
+        return $this->validateAndGetOnePricingRule($rules);
     }
 
     protected function getRelevantPricingRuleForCardlessEmi($rules)

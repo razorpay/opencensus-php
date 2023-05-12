@@ -609,7 +609,7 @@ class BankTransferController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service()->settlementFromCurrencyCloud($input);
+        $response = $this->service()->settleFundsFromCurrencyCloudCron($input);
 
         return ApiResponse::json($response);
     }

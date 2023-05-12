@@ -10,8 +10,10 @@ use RZP\Models\Base\QueryCache\Cacheable;
 use RZP\Models\Card\SubType;
 use RZP\Models\Card\Type;
 use RZP\Models\Emi\DebitProvider;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\Fpx as FpxProcessor;
+use RZP\Models\Payment\Processor\IntlBankTransfer;
 use RZP\Models\Payment\Processor\Netbanking as NetbankingProcessor;
 use RZP\Models\Payment\Processor\App as AppMethod;
 use RZP\Models\Emi\CreditEmiProvider;
@@ -88,6 +90,8 @@ class Entity extends Base\PublicEntity
     const AMEXEASYCLICK = 'amexeasyclick';
     const PAYCASH = 'paycash';
     const CITIBANKREWARDS = 'citibankrewards';
+
+    const INTL_BANK_TRANSFER = 'intl_bank_transfer';
 
     protected $primaryKey = self::MERCHANT_ID;
 
@@ -193,6 +197,7 @@ class Entity extends Base\PublicEntity
         self::FPX,
         self::IN_APP,
         self::BAJAJPAY,
+        self::INTL_BANK_TRANSFER,
     ];
 
     protected $public = [
@@ -247,6 +252,7 @@ class Entity extends Base\PublicEntity
         self::FPX,
         self::IN_APP,
         self::BAJAJPAY,
+        self::INTL_BANK_TRANSFER,
     ];
 
     protected $appends = [
@@ -260,6 +266,7 @@ class Entity extends Base\PublicEntity
         self::CARDLESS_EMI_PROVIDERS ,
         self::PAYLATER_PROVIDERS ,
         self::BAJAJPAY,
+        self::INTL_BANK_TRANSFER,
         self::PAYZAPP,
     ];
 
@@ -400,6 +407,10 @@ class Entity extends Base\PublicEntity
     protected static $addon_methods_names = [
         self::UPI => [
             self::IN_APP
+        ],
+        self::INTL_BANK_TRANSFER => [
+            IntlBankTransfer::ACH,
+            IntlBankTransfer::SWIFT
         ],
         self::CREDIT_EMI => [
             CreditEmiProvider::HDFC,
@@ -628,6 +639,17 @@ class Entity extends Base\PublicEntity
         return ((bool) $this->getApps()[$app]);
     }
 
+    public function isIntlBankTransferEnabled(string $mode = ""): bool
+    {
+        $addonMethods = $this->getAddonMethods();
+
+        if(($addonMethods !== null) and (isset($addonMethods[self::INTL_BANK_TRANSFER])) and (IntlBankTransfer::isValidIntlBankTransferMode($mode)))
+        {
+            return $addonMethods[self::INTL_BANK_TRANSFER][$mode] === 1;
+        }
+        return false;
+    }
+
     public function isSubTypeEnabled(string $subtype): bool
     {
         if (SubType::isValidSubType($subtype) === false)
@@ -783,11 +805,6 @@ class Entity extends Base\PublicEntity
     public function isEmandateEnabled()
     {
         return $this->getAttribute(self::EMANDATE);
-    }
-
-    public function isIntlBankTransferEnabled()
-    {
-        return $this->merchant->isFeatureEnabled(Feature\Constants::ENABLE_B2B_EXPORT);
     }
 
     public function isNachEnabled()
@@ -1078,6 +1095,39 @@ class Entity extends Base\PublicEntity
         return self::$addon_methods_names;
     }
 
+    public static function getAddonMethodsList($method)
+    {
+        return self::$addon_methods_names[$method];
+    }
+
+    public function getIntlBankTransferEnabledModes()
+    {
+        $addon_methods = $this->getAttribute(self::ADDON_METHODS);
+        if(isset($addon_methods[self::INTL_BANK_TRANSFER]) === true)
+        {
+            return $addon_methods[self::INTL_BANK_TRANSFER];
+        }
+        return [];
+    }
+
+    public function getIntlBankTransferEnabledForMerchant()
+    {
+        $intl_bank_transfer_modes = $this->getIntlBankTransferEnabledModes();
+        $intlBankTransfer = [];
+
+        foreach ($this->getAddonMethodsList(self::INTL_BANK_TRANSFER) as $mode)
+        {
+            $intlBankTransfer[strtolower(Gateway::MODE_TO_VA_CURRENCY_ACCOUNT_MAPPING_FOR_INTL_BANK_TRANSFER[$mode])] = isset($intl_bank_transfer_modes[$mode]) ? (int)$intl_bank_transfer_modes[$mode] : 0 ;
+        }
+
+        if($this->merchant->isFeatureEnabled(Feature\Constants::ENABLE_B2B_EXPORT))
+        {
+            $intlBankTransfer['va_usd'] = 1;
+        }
+
+        return $intlBankTransfer;
+    }
+
     public function getInApp()
     {
         $addon_methods = $this->getAttribute(self::ADDON_METHODS);
@@ -1091,6 +1141,11 @@ class Entity extends Base\PublicEntity
     public function getInAppAttribute()
     {
         return $this->getInApp();
+    }
+
+    public function getIntlBankTransferAttribute()
+    {
+        return $this->getIntlBankTransferEnabledModes();
     }
 
     // ----------------------- Getters End -----------------------------------------
@@ -1167,6 +1222,20 @@ class Entity extends Base\PublicEntity
                         $addon_methods[$method][$sub_method] = $input[$sub_method];
                     }
                     unset($input[$sub_method]);
+                }
+                else if (isset($input[$method][$sub_method]) ===  true)
+                {
+                    if(isset($addon_methods[$method]) === false)
+                    {
+                        $addMethod = [];
+                        $addMethod[$sub_method] = $input[$method][$sub_method];
+                        $addon_methods[$method] = $addMethod;
+                    }
+                    else
+                    {
+                        $addon_methods[$method][$sub_method] = $input[$method][$sub_method];
+                    }
+                    unset($input[$method][$sub_method]);
                 }
             }
         }

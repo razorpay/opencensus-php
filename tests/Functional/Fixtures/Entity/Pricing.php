@@ -542,6 +542,32 @@ class Pricing extends Base
                 'fixed_rate'          => 0,
                 'org_id'              => '100000razorpay',
             ],
+            [
+                'id'                  => '1zE31zbybadbq7',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'payment',
+                'payment_method'      => 'intl_bank_transfer',
+                'payment_method_type' => null,
+                'payment_network'     => 'ach',
+                'payment_issuer'      => null,
+                'percent_rate'        => 300,
+                'fixed_rate'          => 0,
+                'org_id'              => '100000razorpay',
+            ],
+            [
+                'id'                  => '1zE31zbybadbq8',
+                'plan_id'             => $pricingPlanId,
+                'plan_name'           => 'testDefaultPlan',
+                'feature'             => 'payment',
+                'payment_method'      => 'intl_bank_transfer',
+                'payment_method_type' => null,
+                'payment_network'     => 'swift',
+                'payment_issuer'      => null,
+                'percent_rate'        => 500,
+                'fixed_rate'          => 0,
+                'org_id'              => '100000razorpay',
+            ],
         ];
 
         return $rows;

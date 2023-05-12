@@ -90,12 +90,24 @@ class Checkout
      */
     private $alternatePaymentInstrumentCountryMapping = array(
         Payment\Gateway::POLI       => [Country::AU],
-        Payment\Gateway::VA_USD     => [Country::US],
         Payment\Gateway::TRUSTLY    => [
             Country::AT,Country::BE,Country::CZ,Country::DK,
             Country::EE,Country::FI,Country::DE,Country::LV,
             Country::LT,Country::NL,Country::NO,Country::PL,
             Country::SK,Country::ES,Country::SE,Country::GB
+        ],
+        Payment\Gateway::VA_USD     => [Country::US],
+        Payment\Gateway::VA_SWIFT   => [
+            Country::US,Country::AU,Country::CA,Country::HR,
+            Country::DK,Country::CZ,Country::HK,Country::HU,
+            Country::IL,Country::KE,Country::MX,Country::NZ,
+            Country::NO,Country::QA,Country::RU,Country::SA,
+            Country::SG,Country::ZA,Country::SE,Country::CH,
+            Country::TH,Country::AE,Country::AT,Country::BE,
+            Country::CZ,Country::DK,Country::EE,Country::FI,
+            Country::DE,Country::LV,Country::LT,Country::NL,
+            Country::NO,Country::PL, Country::SK,Country::ES,
+            Country::SE,Country::GB
         ],
         Payment\Gateway::SOFORT     => [
             Country::AT, Country::BE, Country::DE, Country::IT,
@@ -111,16 +123,18 @@ class Checkout
         Payment\Gateway::TRUSTLY    => Payment\Method::APP,
         Payment\Gateway::POLI       => Payment\Method::APP,
         Payment\Gateway::PAYPAL     => Payment\Method::WALLET,
-        Payment\Gateway::VA_USD     => Payment\Method::INTL_BANK_TRANSFER,);
+        Payment\Gateway::VA_USD     => Payment\Method::INTL_BANK_TRANSFER,
+        Payment\Gateway::VA_SWIFT   => Payment\Method::INTL_BANK_TRANSFER);
 
     /**
      * @var array
      */
     private $instrumentPriority = array(
-        1 => Payment\Gateway::TRUSTLY,
-        2 => Payment\Gateway::POLI,
-        3 => Payment\Gateway::VA_USD ,
-        4 => Payment\Gateway::PAYPAL);
+        1 => Payment\Gateway::VA_USD,
+        2 => Payment\Gateway::VA_SWIFT,
+        3 => Payment\Gateway::TRUSTLY,
+        4 => Payment\Gateway::POLI,
+        5 => Payment\Gateway::PAYPAL);
 
     public function __construct()
     {
@@ -286,7 +300,7 @@ class Checkout
             // This is required by methods that filter methods
             $data['order'] = $order->toArrayPublic();
 
-            $data[Entity::METHODS][Payment\Method::INTL_BANK_TRANSFER] = $this->addCurrencyBasedIntlVirtualAccounts($merchant, $order);
+            $this->resetCurrencyBasedIntlVirtualAccountsIfRequired($order, $data);
 
             $this->resetMethodsIfValidBanksPresent($data, $order, $merchant);
         }
@@ -584,7 +598,7 @@ class Checkout
 
         $data['order'] = (new Order\Core)->getFormattedDataForCheckout($order, $merchant);
 
-        $data[Entity::METHODS][Payment\Method::INTL_BANK_TRANSFER] = $this->addCurrencyBasedIntlVirtualAccounts($merchant, $order);
+        $this->resetCurrencyBasedIntlVirtualAccountsIfRequired( $order, $data);
 
         $configId = (isset($order->checkout_config_id) === true) ? Payment\Config\Entity::getSignedId($order->checkout_config_id) : null;
 
@@ -593,25 +607,20 @@ class Checkout
         $this->resetMethodsIfValidBanksPresent($data, $order, $merchant);
     }
 
-    private function addCurrencyBasedIntlVirtualAccounts($merchant, $order)
+    private function resetCurrencyBasedIntlVirtualAccountsIfRequired($order, & $data):void
     {
-        $result = [];
-
-        // Only show international bank transfer methods if feature flag is enabled and
-        // request comes from the payment link
+        /*
+            If Product is not equal to Payments Links
+            Remove the Intl_Bank_Transfer Enabled Modes
+            From Preferences API Response to avoid showing
+            them on Std Checkout.
+        */
         $productType = $order->getProductType();
-        if (!$merchant->isFeatureEnabled(Feature\Constants::ENABLE_B2B_EXPORT) or $productType != ProductType::PAYMENT_LINK_V2)
-        {
-            return $result;
-        }
 
-        foreach(Payment\Gateway::INTERNATIONAL_BANK_TRANSFER_SUPPORTED_CURRENCIES as $va_currency)
+        if ($productType !== ProductType::PAYMENT_LINK_V2)
         {
-            $method = "va_" . strtolower($va_currency);
-            $result[$method] = 1;
+            $data[Entity::METHODS][Payment\Method::INTL_BANK_TRANSFER] = [];
         }
-
-        return $result;
     }
 
     protected function checkNachStatus(Order\Entity $order, Merchant\Entity $merchant)

@@ -26,6 +26,7 @@ use RZP\Models\VirtualAccount;
 use RZP\Models\Currency;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankTransferRequest;
+use RZP\Models\Payment\Processor\IntlBankTransfer;
 use RZP\Models\Payment\Refund as PaymentRefund;
 use RZP\Models\Payment\Processor\TerminalProcessor;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
@@ -900,17 +901,17 @@ class Core extends Base\Core
         }
     }
 
-    public function createAndAuthorizePaymentForB2B($input,$merchantId)
+    public function createAndAuthorizePaymentForIntlBankTransfer($input,$merchantId)
     {
-        try {
-            $payment = $this->createPaymentEntityForB2B($input,$merchantId);
+        try
+        {
+            $payment = $this->createPaymentEntityForIntlBankTransfer($input,$merchantId);
 
-            $this->createAddressEntityForB2B($input,$payment);
+            $this->saveSenderDetailsForIntlBankTransfer($input,$payment);
 
-            $this->authorizePaymentForB2B($payment);
+            $this->authorizePaymentForIntlBankTransfer($payment);
 
             $this->getNewProcessor($payment->merchant)->autoCapturePaymentIfApplicable($payment);
-
         }
         catch (\Exception $e)
         {
@@ -925,12 +926,31 @@ class Core extends Base\Core
         return $payment;
     }
 
-    protected function createPaymentEntityForB2B($request, $merchantId)
+    protected function createPaymentEntityForIntlBankTransfer($response, $merchantId)
     {
+        // Get Mode For Intl Bank Transfer Payment from get_sender_details API Response
+        $mode = $this->getIntlBankTransferModeFromResponse($response);
+
+        if(in_array($response['currency'], Payment\Gateway::getSupportedCurrenciesForIntlBankTransferByMode($mode),true) === false)
+        {
+            $this->trace->info(TraceCode::INTL_BANK_TRANSFER_CURRENCY_NOT_SUPPORTED,[
+                'merchantId' => $merchantId,
+                'currency'   => $response['currency'],
+                'gateway'    => Payment\Gateway::CURRENCY_CLOUD,
+            ]);
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED, null,
+            [
+                'currency'   => $response['currency'],
+                'gateway'    => Payment\Gateway::CURRENCY_CLOUD,
+            ]);
+        }
+
         $input = [
-            Payment\Entity::AMOUNT      => ((float)$request['amount'])*100,
-            Payment\Entity::CURRENCY    => $request['currency'],
-            Payment\Entity::METHOD      => Payment\Method::INTL_BANK_TRANSFER,
+            Payment\Entity::AMOUNT              => ((float)$response['amount'])*Currency\Currency::getDenomination(strtoupper($response['currency'])),
+            Payment\Entity::CURRENCY            => $response['currency'],
+            Payment\Entity::METHOD              => Payment\Method::INTL_BANK_TRANSFER,
+            Payment\Entity::PROVIDER            => $mode
         ];
 
         $repo = App::getFacadeRoot()['repo'];
@@ -945,9 +965,13 @@ class Core extends Base\Core
 
         $payment->build($input);
 
-        $payment->setReference1($request['id']);
+        $payment->setReference1($response['id']);
 
         $this->paymentCurrencyConversions($payment);
+
+        $payment->setGateway(Constants\Entity::CURRENCY_CLOUD);
+
+        $payment->setInternational();
 
         $this->repo->saveOrFail($payment);
 
@@ -960,7 +984,7 @@ class Core extends Base\Core
 
         $currency = $payment->getCurrency();
 
-        $baseAmount = (new Currency\Core)->getBaseAmount($amount, $currency, $this->merchant->getCurrency());
+        $baseAmount = (new Currency\Core)->getBaseAmount($amount, $currency, $this->merchant->getCurrency(), $input);
 
         // if gateway is doing currency conversions, actual rate used by gateway
         // will use lower than current rates hence we also use merchant / default
@@ -968,14 +992,26 @@ class Core extends Base\Core
         if ($payment->getConvertCurrency() === false ||
             ($currency !== Currency\Currency::INR && $payment->getConvertCurrency() === null))
         {
-            $mccMarkdownPercentage = 1 - $this->merchant->getMccMarkdownMarkdownPercentage() / 100;
+            $input['mcc_mark_down_percent'] = $this->merchant->getMccMarkdownMarkdownPercentage(Payment\Method::INTL_BANK_TRANSFER);
+            $mccMarkdownPercentage = 1 - $input['mcc_mark_down_percent'] / 100;
             $baseAmount = (int) ceil($baseAmount * $mccMarkdownPercentage);
+
+            $paymentMetaInput = [
+                'mcc_applied'           => $input['mcc_applied'],
+                'mcc_mark_down_percent' => $input['mcc_mark_down_percent'],
+                'mcc_forex_rate'        => $input['mcc_forex_rate'],
+                'payment_id'            => $payment->getId(),
+            ];
+
+            $paymentMetaEntity = (new Payment\PaymentMeta\Core)->create($paymentMetaInput);
+
+            $paymentMetaEntity->payment()->associate($payment);
         }
 
         $payment->setBaseAmount($baseAmount);
     }
 
-    protected function createAddressEntityForB2B($response, $payment)
+    protected function saveSenderDetailsForIntlBankTransfer($response, $payment)
     {
         /*
             Sample Address by Gateway - "sender": "Joe Bloggs;1 Street, City, GB, Postcode;GB;1111111111;;00000000",
@@ -999,13 +1035,14 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::ADDRESS_CREATE_REQUEST,[
             'billing_address' => $billingAddressFromInput,
+            'payment_id'   => $payment->getId()
         ]);
 
         (new Address\Core)->create($payment, $payment->getEntity(), $billingAddressFromInput);
 
     }
 
-    protected function authorizePaymentForB2B($payment)
+    protected function authorizePaymentForIntlBankTransfer($payment)
     {
         $payment->setGateway(Constants\Entity::CURRENCY_CLOUD);
 
@@ -1047,6 +1084,21 @@ class Core extends Base\Core
                     'reason'     => 'Payment Not Authorized yet',
                 ]);
             }
+    }
+
+    protected function getIntlBankTransferModeFromResponse(array $response)
+    {
+        $currency = $response['currency'];
+        $receiving_account_iban = $response['receiving_account_iban'];
+
+        if(isset($receiving_account_iban) === true)
+        {
+            return IntlBankTransfer::SWIFT;
+        }
+        else
+        {
+            return Payment\Gateway::getIntlBankTransferModeByCurrency($currency);
+        }
     }
 
     public function createTransactionInLedgerReverseShadowFlow(string $entityId, array $ledgerResponse)

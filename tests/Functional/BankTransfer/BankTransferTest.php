@@ -9336,13 +9336,16 @@ class BankTransferTest extends TestCase
 
         $request = $this->testData[__FUNCTION__]['request'];
 
+        $request['content']['accept_b2b_tnc'] = 1;
+        $request['content']['va_currency'] = "USD";
+
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
 
         $response = $this->sendRequest($request);
 
         $content = $this->getJsonContentFromResponse($response);
 
-        $this->assertCount(count(Gateway::INTERNATIONAL_BANK_TRANSFER_SUPPORTED_CURRENCIES),$content);
+        $this->assertCount(1,$content);
 
         $mii = $this->getLastEntity('merchant_international_integrations',true);
 
@@ -9356,9 +9359,17 @@ class BankTransferTest extends TestCase
 
         $this->assertNotNull($mii['bank_account']);
 
-        foreach($content as $account){
-            $this->assertArrayKeysExist($account,["va_currency","routing_code","routing_type","account_number","beneficiary_name","bank_name","bank_address"]);
-        }
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $request['content']['accept_b2b_tnc'] = 0;
+        $request['content']['va_currency'] = "swift";
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $response = $this->sendRequest($request);
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertCount(2,$content);
 
     }
 
@@ -9405,22 +9416,6 @@ class BankTransferTest extends TestCase
                                                     "routing_code_type" => "wire_routing_number",
                                                     "created_at" => "2022-08-23T11:44:03+00:00",
                                                     "updated_at" => "2022-08-23T11:44:03+00:00"
-                                                ],
-                                                [
-                                                    "id" => "1c3a920b-87fc-4c61-8b47-ce924a348215",
-                                                    "account_id" => "0c96a02f-996c-4856-8364-d7041849bf4d",
-                                                    "account_number" => "0332452785",
-                                                    "account_number_type" => "account_number",
-                                                    "account_holder_name" => "Sid Pvt Limited",
-                                                    "bank_name" => "Community Federal Savings Bank",
-                                                    "bank_address" => "810 Seventh Avenue, New York, NY 10019, US",
-                                                    "bank_country" => "US",
-                                                    "currency" => $data['currency'],
-                                                    "payment_type" => "regular",
-                                                    "routing_code" => "026073150",
-                                                    "routing_code_type" => "ach_routing_number",
-                                                    "created_at" => "2022-08-23T11:44:03+00:00",
-                                                    "updated_at" => "2022-08-23T11:44:03+00:00"
                                                 ]
                                             ]
                                           ]
@@ -9437,7 +9432,7 @@ class BankTransferTest extends TestCase
                                               'value_date'              => "2018-07-04T00:00:00+00:00",
                                               'sender'                  => "David Jenkins; 31 High Street, Brighton, East Sussex, BN1 2NW;GB;1111111111;;00000000",
                                               'receiving_account_number'=> null,
-                                              "receiving_account_iban"  => "GB99OXPH94665099600083",
+                                              "receiving_account_iban"  => null,
                                               "created_at"              => "2018-07-04T14:57:38+00:00",
                                               "updated_at"              => "2018-07-04T14:57:39+00:00",
                                               "status"                  => "successful"
@@ -9537,6 +9532,40 @@ class BankTransferTest extends TestCase
         $this->app->instance('mozart', $mozartServiceMock);
     }
 
+    protected function mockSWIFTPaymentWebhookCurrencyCloud()
+    {
+        $mozartServiceMock = $this->getMockBuilder(\RZP\Services\Mock\Mozart::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['sendMozartRequest'])
+            ->getMock();
+
+        $mozartServiceMock->method('sendMozartRequest')
+            ->will($this->returnCallback(
+                function ($namespace,$gateway,$action,$data)
+                {
+                    if ($action == 'get_sender_detail')
+                    {
+                        return [
+                            'data' => [
+                                'id'                      => "e68301d3-5b04-4c1d-8f8b-13a9b8437040",
+                                'amount'                  => "300",
+                                'currency'                => "USD",
+                                'additional_information'  => "USTRD-0001",
+                                'value_date'              => "2018-07-04T00:00:00+00:00",
+                                'sender'                  => "David Jenkins; 31 High Street, Brighton, East Sussex, BN1 2NW;GB;1111111111;;00000000",
+                                'receiving_account_number'=> null,
+                                "receiving_account_iban"  => "GB99OXPH94665099600083",
+                                "created_at"              => "2018-07-04T14:57:38+00:00",
+                                "updated_at"              => "2018-07-04T14:57:39+00:00",
+                                "status"                  => "successful"
+                            ]
+                        ];
+                    }
+
+                }));
+    }
+
+
     public function testFailCreateAccountForCurrencyCloud()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
@@ -9577,11 +9606,12 @@ class BankTransferTest extends TestCase
 
         $paymentEntity = $this->getLastPayment('payment', 'true');
 
-        $this->assertEquals($paymentEntity['status'], 'authorized');
-        $this->assertEquals($paymentEntity['gateway'], 'currency_cloud');
-        $this->assertEquals($paymentEntity['method'], 'intl_bank_transfer');
-        $this->assertEquals($paymentEntity['base_amount'],294000);
-        $this->assertEquals($paymentEntity['amount'],30000);
+        $this->assertEquals('authorized',$paymentEntity['status']);
+        $this->assertEquals('currency_cloud',$paymentEntity['gateway']);
+        $this->assertEquals('intl_bank_transfer',$paymentEntity['method']);
+        $this->assertEquals('ach',$paymentEntity['wallet']);
+        $this->assertEquals(297000,$paymentEntity['base_amount']);
+        $this->assertEquals(30000,$paymentEntity['amount']);
     }
 
     public function testCashManagerTransactionNotificationForCurrencyCloudWithHeaderInInput()
@@ -9605,11 +9635,41 @@ class BankTransferTest extends TestCase
 
         $paymentEntity = $this->getLastPayment(true);
 
-        $this->assertEquals($paymentEntity['status'], 'authorized');
-        $this->assertEquals($paymentEntity['gateway'], 'currency_cloud');
-        $this->assertEquals($paymentEntity['method'], 'intl_bank_transfer');
-        $this->assertEquals($paymentEntity['base_amount'],294000);
-        $this->assertEquals($paymentEntity['amount'],30000);
+        $this->assertEquals('authorized',$paymentEntity['status']);
+        $this->assertEquals('currency_cloud',$paymentEntity['gateway']);
+        $this->assertEquals('intl_bank_transfer',$paymentEntity['method']);
+        $this->assertEquals('ach',$paymentEntity['wallet']);
+        $this->assertEquals(297000,$paymentEntity['base_amount']);
+        $this->assertEquals(30000,$paymentEntity['amount']);
+    }
+
+    public function testCashManagerSWIFTTransactionFlow()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->create('merchant_international_integrations',[
+            'merchant_id' => $merchantDetail['merchant_id'],
+            'integration_entity' => 'currency_cloud',
+            'integration_key' => '15b78101-0142-44a1-9758-8f7262429e9b',
+            'notes' => [],
+        ]);
+
+        $this->mockSWIFTPaymentWebhookCurrencyCloud();
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $response = $this->sendRequest($request);
+
+        $paymentEntity = $this->getLastPayment(true);
+
+        $this->assertEquals('authorized',$paymentEntity['status']);
+        $this->assertEquals('currency_cloud',$paymentEntity['gateway']);
+        $this->assertEquals('intl_bank_transfer',$paymentEntity['method']);
+        $this->assertEquals('swift',$paymentEntity['wallet']);
+        $this->assertEquals(294000,$paymentEntity['base_amount']);
+        $this->assertEquals(30000,$paymentEntity['amount']);
     }
 
     public function testCashManagerTransactionNotificationForCurrencyCloudWithDifferentMcc()
@@ -9636,14 +9696,14 @@ class BankTransferTest extends TestCase
 
         $paymentEntity = $this->getLastPayment(true);
 
-        $this->assertEquals($paymentEntity['status'], 'authorized');
-        $this->assertEquals($paymentEntity['gateway'], 'currency_cloud');
-        $this->assertEquals($paymentEntity['method'], 'intl_bank_transfer');
-        $this->assertEquals($paymentEntity['base_amount'],288000);
-        $this->assertEquals($paymentEntity['amount'],30000);
+        $this->assertEquals('authorized',$paymentEntity['status']);
+        $this->assertEquals('currency_cloud',$paymentEntity['gateway']);
+        $this->assertEquals('intl_bank_transfer',$paymentEntity['method']);
+        $this->assertEquals(297000,$paymentEntity['base_amount']);
+        $this->assertEquals(30000,$paymentEntity['amount']);
     }
 
-    public function testTransferCompletedNotificationFromCurrencyCloud()
+    public function testTransferCompletedNotificationACHFromCurrencyCloud()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
@@ -9654,6 +9714,7 @@ class BankTransferTest extends TestCase
         $this->fixtures->pricing->create([
             'plan_id'        => 'IntbnkTrnsfrId',
             'payment_method' => 'intl_bank_transfer',
+            'payment_network' => 'ach',
             'feature'             => 'payment',
             'percent_rate'    => 300,
         ]);
@@ -9675,6 +9736,63 @@ class BankTransferTest extends TestCase
         $firstResponse = $this->makeRequestAndGetContent($firstRequest);
 
         $paymentEntity = $this->getLastPayment('payment',true);
+
+        $secondRequest = $this->testData[__FUNCTION__]['request'];
+
+        Payment::verifyIdAndStripSign($paymentEntity['id']);
+
+        $secondRequest['content']['reason'] = "Sub Account Transfer to House; " . $paymentEntity['id'];
+
+        $secondResponse = $this->makeRequestAndGetContent($secondRequest);
+
+        $updatedPaymentEntity = $this->getLastPayment('payment',true);
+
+        $this->assertEquals($updatedPaymentEntity['status'],'captured');
+    }
+
+    public function testTransferCompletedNotificationSWIFTFromCurrencyCloud()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->merchant->edit($merchantDetail['merchant_id'], ['live' => true, 'activated' => 1]);
+
+        $this->fixtures->pricing->create([
+            'plan_id'        => 'IntbnkTrnsfrId',
+            'payment_method' => 'intl_bank_transfer',
+            'payment_network' => 'ach',
+            'feature'             => 'payment',
+            'percent_rate'    => 300,
+        ]);
+
+        $this->fixtures->pricing->create([
+            'plan_id'        => 'IntbnkTrnsfrId',
+            'payment_method' => 'intl_bank_transfer',
+            'payment_network' => 'swift',
+            'feature'             => 'payment',
+            'percent_rate'    => 500,
+        ]);
+
+        $this->merchantAssignPricingPlan('IntbnkTrnsfrId', $merchantDetail['merchant_id']);
+
+        $this->fixtures->create('merchant_international_integrations',[
+            'merchant_id' => $merchantDetail['merchant_id'],
+            'integration_entity' => 'currency_cloud',
+            'integration_key' => '15b78101-0142-44a1-9758-8f7262429e9b',
+            'notes' => [],
+        ]);
+
+        $this->mockSWIFTPaymentWebhookCurrencyCloud();
+
+        $this->ba->directAuth();
+
+        $firstRequest = $this->testData['testCashManagerTransactionNotificationForCurrencyCloud']['request'];
+        $firstResponse = $this->makeRequestAndGetContent($firstRequest);
+
+        $paymentEntity = $this->getLastPayment('payment',true);
+
+        $this->mockMozartResponseForCurrencyCloud();
 
         $secondRequest = $this->testData[__FUNCTION__]['request'];
 

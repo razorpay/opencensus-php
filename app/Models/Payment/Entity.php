@@ -1158,7 +1158,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         if (($input[Entity::METHOD] === Method::CARDLESS_EMI) or
             ($input[Entity::METHOD] === Method::PAYLATER) or
-            ($input[Entity::METHOD] === Method::APP))
+            ($input[Entity::METHOD] === Method::APP) or
+            ($input[Entity::METHOD] === Method::INTL_BANK_TRANSFER))
         {
             $this->setAttribute(self::WALLET, $input[self::PROVIDER]);
         }

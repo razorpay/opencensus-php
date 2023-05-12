@@ -3410,6 +3410,17 @@ class CheckoutPreferencesTest extends TestCase
         $this->session($data);
     }
 
+    protected function addIntlBankTransferMethodForMerchant($intlBankTransferModes, $merchantId)
+    {
+        $methods = [
+            'addon_methods' => [
+                'intl_bank_transfer' => $intlBankTransferModes,
+            ],
+            'disabled_banks' => [],
+            'banks' => '[]',
+        ];
+        return $this->fixtures->edit('methods',$merchantId, $methods);
+    }
 
     public function testGetCheckoutPersonalisationForNonLoggedInUnitedStatesUsers()
     {
@@ -3425,9 +3436,40 @@ class CheckoutPreferencesTest extends TestCase
     }
 
 
-    public function testGetCheckoutPreferencesForCurrencyCloudEnabledWithPL()
+    public function testGetCheckoutPreferencesForCurrencyCloudACHEnabledWithPL()
     {
-        $this->fixtures->merchant->addFeatures(['enable_b2b_export']);
+        $intlBankTransferModes = [
+            'ach' => 1,
+            'swift'=> 0,
+        ];
+        $this->addIntlBankTransferMethodForMerchant($intlBankTransferModes,self::DEFAULT_MERCHANT_ID);
+        $order = $this->fixtures->order->create(['product_type' => 'payment_link_v2']);
+
+        $this->fixtures->create('merchant_international_integrations', [
+            InternationalIntegration\Entity::MERCHANT_ID => self::DEFAULT_MERCHANT_ID,
+            InternationalIntegration\Entity::INTEGRATION_ENTITY => Gateway::CURRENCY_CLOUD,
+            InternationalIntegration\Entity::INTEGRATION_KEY => "1029329285-19298",
+            InternationalIntegration\Entity::NOTES => [],
+            InternationalIntegration\Entity::BANK_ACCOUNT => $this->getBankAccountMockData(),
+        ]);
+
+        $this->ba->publicAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['content']['order_id'] = $order->getPublicId();
+
+        $response = $this->startTest($testData);
+        $this->assertEquals(1,$response['methods']['intl_bank_transfer']['usd']);
+        $this->assertEquals(0,$response['methods']['intl_bank_transfer']['swift']);
+    }
+
+    public function testGetCheckoutPreferencesForCurrencyCloudSWIFTEnabledWithPL()
+    {
+        $intlBankTransferModes = [
+            'ach' => 0,
+            'swift'=> 1,
+        ];
+        $this->addIntlBankTransferMethodForMerchant($intlBankTransferModes,self::DEFAULT_MERCHANT_ID);
         $order = $this->fixtures->order->create(['product_type' => 'payment_link_v2']);
 
         $this->fixtures->create('merchant_international_integrations', [
@@ -3445,13 +3487,17 @@ class CheckoutPreferencesTest extends TestCase
 
         $response = $this->startTest($testData);
 
-        $this->assertNotNull($response['methods']['intl_bank_transfer']);
-        $this->assertEquals(count(Gateway::INTERNATIONAL_BANK_TRANSFER_SUPPORTED_CURRENCIES), count($response['methods']['intl_bank_transfer']));
+        $this->assertEquals(0,$response['methods']['intl_bank_transfer']['usd']);
+        $this->assertEquals(1,$response['methods']['intl_bank_transfer']['swift']);
     }
 
     public function testGetCheckoutPreferencesForCurrencyCloudEnabledWithoutPL()
     {
-        $this->fixtures->merchant->addFeatures(['enable_b2b_export']);
+        $intlBankTransferModes = [
+            'ach' => 1,
+            'swift'=> 0,
+        ];
+        $this->addIntlBankTransferMethodForMerchant($intlBankTransferModes,self::DEFAULT_MERCHANT_ID);
         // product type is not 'payment_link_v2'
         $order = $this->fixtures->order->create(['product_type' => 'payment_page']);
 
@@ -3471,17 +3517,17 @@ class CheckoutPreferencesTest extends TestCase
         $response = $this->startTest($testData);
 
         $this->assertNotNull($response['methods']['intl_bank_transfer']);
-        $this->assertEquals(0, count($response['methods']['intl_bank_transfer']));
+        $this->assertEmpty($response['methods']['intl_bank_transfer']);
     }
 
     public function testGetCheckoutPreferencesForCurrencyCloudNotEnabled()
     {
         $this->ba->publicAuth();
-
-        $response = $this->startTest();
-
+        $testData = $this->testData[__FUNCTION__];
+        $response = $this->startTest($testData);
         $this->assertNotNull($response['methods']['intl_bank_transfer']);
-        $this->assertEquals(0, count($response['methods']['intl_bank_transfer']));
+        $this->assertEquals(0,$response['methods']['intl_bank_transfer']['usd']);
+        $this->assertEquals(0,$response['methods']['intl_bank_transfer']['swift']);
     }
 
     public function testGetPreferencesWhenEmailOptionalOnCheckoutAndShowEmailOnCheckoutFeaturesEnabledExpectsBothTheFeatureFlagsInPreferencesResponse()

@@ -23,6 +23,7 @@ use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\CardlessEmi;
+use RZP\Models\Payment\Processor\IntlBankTransfer;
 
 class Gateway
 {
@@ -214,8 +215,9 @@ class Gateway
     const INDUSIND_DEBIT_EMI = 'indusind_debit_emi';
     const CURRENCY_CLOUD     = 'currency_cloud';
 
-    const VA_USD             = 'va_usd';
-
+    const VA_SWIFT = 'swift';
+    const VA_USD   = 'usd';
+    const SWIFT = 'SWIFT';
     const OPTIMIZER_RAZORPAY = "optimizer_razorpay";
 
     //
@@ -1476,7 +1478,7 @@ class Gateway
     const GATEWAY_TO_SETTLEMENT_CURRENCY_MAPPING = [
         self::CHECKOUT_DOT_COM => [Currency::USD],
         self::EMERCHANTPAY => [Currency::EUR,Currency::GBP,Currency::AUD],
-        self::CURRENCY_CLOUD => [Currency::USD],
+        self::CURRENCY_CLOUD => [Currency::USD, Currency::EUR, Currency::GBP, Currency::AUD, Currency::CAD],
     ];
 
     public static $scroogeFileBasedRefundGatewaysWithTimestamps = [
@@ -3689,13 +3691,38 @@ class Gateway
     ];
 
     const INTERNATIONAL_BANK_TRANSFER_SUPPORTED_CURRENCIES = [
-        Currency::USD,
+        Currency::USD, Currency::AUD, Currency::CAD, Currency::HRK, Currency::DKK,
+        Currency::CZK, Currency::EUR, Currency::HKD, Currency::HUF, Currency::ILS,
+        Currency::KES, Currency::MXN, Currency::NZD, Currency::NOK, Currency::QAR,
+        Currency::RUB, Currency::SAR, Currency::SGD, Currency::ZAR, Currency::SEK,
+        Currency::CHF, Currency::THB, Currency::GBP, Currency::AED
     ];
 
     // List of Debit Emi Gateways that support the OTP flow for a given payment
     public static $OtpSupportDebitEmiGateways =[
         Payment\Gateway::KOTAK_DEBIT_EMI,
         Payment\Gateway::INDUSIND_DEBIT_EMI
+    ];
+
+    const CURRENCIES_SUPPORTED_BY_INTL_BANK_TRANSFER_BY_MODE = [
+        IntlBankTransfer::SWIFT => [
+            Currency::USD, Currency::AUD, Currency::CAD, Currency::HRK, Currency::DKK,
+            Currency::CZK, Currency::EUR, Currency::HKD, Currency::HUF, Currency::ILS,
+            Currency::KES, Currency::MXN, Currency::NZD, Currency::NOK, Currency::QAR,
+            Currency::RUB, Currency::SAR, Currency::SGD, Currency::ZAR, Currency::SEK,
+            Currency::CHF, Currency::THB, Currency::GBP, Currency::AED
+        ],
+        IntlBankTransfer::ACH => [Currency::USD]
+    ];
+
+    const CURRENCY_TO_MODE_MAPPING_FOR_INTL_BANK_TRANSFER = [
+        Currency::USD              => IntlBankTransfer::ACH,
+        self::SWIFT                => IntlBankTransfer::SWIFT
+    ];
+
+    const MODE_TO_VA_CURRENCY_ACCOUNT_MAPPING_FOR_INTL_BANK_TRANSFER = [
+        IntlBankTransfer::SWIFT => self::SWIFT,
+        IntlBankTransfer::ACH => Currency::USD
     ];
 
     public static function isNonTerminalGateway(string $gateway)
@@ -5005,11 +5032,47 @@ class Gateway
         return self::GATEWAY_TO_SETTLEMENT_CURRENCY_MAPPING[$gateway][0];
     }
 
-    public static function isCurrencySupportedForInternationalBankTransfer($currency) : bool
+    public static function getSettlementCurrencyByGateway($gateway, $currency)
     {
-        return (in_array($currency, self::INTERNATIONAL_BANK_TRANSFER_SUPPORTED_CURRENCIES, true));
+        if(array_key_exists($gateway,self::GATEWAY_TO_SETTLEMENT_CURRENCY_MAPPING) === false)
+        {
+            return null;
+        }
+
+        if(in_array($currency,self::GATEWAY_TO_SETTLEMENT_CURRENCY_MAPPING[$gateway]) === true)
+        {
+            return $currency;
+        }
+
+        return self::GATEWAY_TO_SETTLEMENT_CURRENCY_MAPPING[$gateway][0];
     }
 
+    public static function isVACurrencySupportedForInternationalBankTransfer($currency) : bool
+    {
+        return ((array_key_exists($currency,self::CURRENCY_TO_MODE_MAPPING_FOR_INTL_BANK_TRANSFER)) === true);
+    }
+
+    public static function getSupportedCurrenciesForIntlBankTransferByMode($mode) : array
+    {
+        if((array_key_exists($mode,self::CURRENCIES_SUPPORTED_BY_INTL_BANK_TRANSFER_BY_MODE)) === true){
+            return self::CURRENCIES_SUPPORTED_BY_INTL_BANK_TRANSFER_BY_MODE[$mode];
+        }
+        return [];
+    }
+
+    /**
+     * @throws Exception\BadRequestException when mapping for supported currencies don't exist in intlBankTransfer
+     */
+    public static function getIntlBankTransferModeByCurrency($currency) : string
+    {
+        if((array_key_exists($currency,self::CURRENCY_TO_MODE_MAPPING_FOR_INTL_BANK_TRANSFER)) === true)
+        {
+            return self::CURRENCY_TO_MODE_MAPPING_FOR_INTL_BANK_TRANSFER[$currency];
+        }
+        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_MODE_NOT_SUPPORTED, [
+            'currency' => $currency
+        ]);
+    }
     /**
      List of Debit Emi Gateways
      */

@@ -116,6 +116,9 @@ class Plan extends PublicCollection
                     case Method::APP:
                         $rule[Entity::PAYMENT_NETWORK_NAME] = Processor\App::getName($network);
                         break;
+                    case Method::INTL_BANK_TRANSFER:
+                        $rule[Entity::PAYMENT_NETWORK_NAME] = Processor\IntlBankTransfer::getName($network);
+                        break;
 
                     default:
                         break;

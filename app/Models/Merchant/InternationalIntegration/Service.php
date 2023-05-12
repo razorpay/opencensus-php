@@ -608,8 +608,6 @@ class Service extends Base\Service
     {
         $merchantId = $this->merchant->getMerchantId();
 
-        (new Validator)->validateInput('getInternationalVirtualAccountByVACurrency',$input);
-
         return (new Core())->getInternationalVirtualAccountByVACurrency($input, $merchantId, $va_currency);
     }
 

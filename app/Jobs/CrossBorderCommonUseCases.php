@@ -3,6 +3,8 @@
 namespace RZP\Jobs;
 
 use App;
+use RZP\Constants\Mode;
+use RZP\Models\BankTransfer;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Base\RepositoryManager;
@@ -17,6 +19,7 @@ class CrossBorderCommonUseCases extends Job
 
     const MAX_RETRY_DELAY = 300;
 
+    const INTL_BANK_TRANSFER_SWIFT_SETTLEMENT = 'INTL_BANK_TRANSFER_SWIFT_SETTLEMENT';
     const MERCHANT_ONBOARD_NETWORK = 'MERCHANT_ONBOARD_NETWORK';
     const EMERCHANTPAY_ONBOARDING_VIA_MAF = 'EMERCHANTPAY_ONBOARDING_VIA_MAF';
 
@@ -67,6 +70,9 @@ class CrossBorderCommonUseCases extends Job
 
             switch($action)
             {
+                case self::INTL_BANK_TRANSFER_SWIFT_SETTLEMENT:
+                    (new BankTransfer\Service())->settlementFromCurrencyCloud($this->payload['body']);
+                    break;
                 case self::MERCHANT_ONBOARD_NETWORK:
                     (new AttributeService())->onboardMerchantOnNetworks($this->payload['body']);
                     break;
@@ -132,10 +138,12 @@ class CrossBorderCommonUseCases extends Job
      *
      * @return void
      */
-    protected function setMode(array $payload)
+    protected function setMode(array $payload): void
     {
         if (array_key_exists(self::MODE, $payload) === true) {
             $this->mode = $payload[self::MODE];
+        } else {
+            $this->mode = Mode::LIVE;
         }
     }
 

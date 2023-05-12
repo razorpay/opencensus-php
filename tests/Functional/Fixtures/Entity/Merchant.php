@@ -529,6 +529,11 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, ['paytm' => true]);
     }
 
+    public function enableIntlBankTransfer($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['addon_methods'=> ['intl_bank_transfer' => ['ach'=>1,'swift'=>1]]]);
+    }
+
     public function disablePaytm($id = '10000000000000')
     {
         return $this->fixtures->edit('methods', $id, ['paytm' => false]);

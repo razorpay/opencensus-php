@@ -6,6 +6,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\InternationalIntegration;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use Unit\Models\Merchant\Methods\CoreTest;
 
 class MerchantInternationalIntegrationTest Extends TestCase
 {
@@ -17,6 +18,17 @@ class MerchantInternationalIntegrationTest Extends TestCase
         $this->testDataFilePath = __DIR__ . '/helpers/MerchantInternationalIntegrationData.php';
 
         parent::setUp();
+    }
+
+    protected function addIntlBankTransferMethodForMerchant($intlbankTransferModes, $merchantId)
+    {
+        $methods = [
+            'merchant_id'   => $merchantId,
+            'addon_methods' => [
+                'intl_bank_transfer' => $intlbankTransferModes,
+            ]
+        ];
+        return $this->fixtures->create('methods', $methods);
     }
 
     public function testFetchInternationalVirtualAccounts()
@@ -33,7 +45,10 @@ class MerchantInternationalIntegrationTest Extends TestCase
             InternationalIntegration\Entity::BANK_ACCOUNT => $this->getBankAccountMockData(),
         ]);
 
-        $this->fixtures->merchant->addFeatures('enable_b2b_export',$merchantDetail['merchant_id']);
+        $intlBankTransferModes = [
+            'ach' => 1
+        ];
+        $methods = $this->addIntlBankTransferMethodForMerchant($intlBankTransferModes, $merchantDetail['merchant_id']);
 
         $request = $this->testData[__FUNCTION__]['request'];
 
@@ -64,7 +79,10 @@ class MerchantInternationalIntegrationTest Extends TestCase
             InternationalIntegration\Entity::BANK_ACCOUNT => $this->getBankAccountMockData(),
         ]);
 
-        $this->fixtures->merchant->addFeatures('enable_b2b_export',$merchantDetail['merchant_id']);
+        $intlBankTransferModes = [
+            'ach' => 1
+        ];
+        $methods = $this->addIntlBankTransferMethodForMerchant($intlBankTransferModes, $merchantDetail['merchant_id']);
 
         $request = $this->testData[__FUNCTION__]['request'];
 
@@ -94,63 +112,6 @@ class MerchantInternationalIntegrationTest Extends TestCase
 
     }
 
-    public function testFetchInternationalVirtualAccountsByVACurrencyAmountAndCurrency()
-    {
-        $merchantDetail = $this->fixtures->create('merchant_detail');
-
-        $this->fixtures->create('merchant_international_integrations', [
-            InternationalIntegration\Entity::MERCHANT_ID => $merchantDetail['merchant_id'],
-            InternationalIntegration\Entity::INTEGRATION_ENTITY => Gateway::CURRENCY_CLOUD,
-            InternationalIntegration\Entity::INTEGRATION_KEY => "1029329285-19298",
-            InternationalIntegration\Entity::NOTES => [],
-            InternationalIntegration\Entity::BANK_ACCOUNT => $this->getBankAccountMockData(),
-        ]);
-
-        $this->fixtures->merchant->addFeatures('enable_b2b_export',$merchantDetail['merchant_id']);
-
-        $request = $this->testData[__FUNCTION__]['request'];
-
-        $va_currency = "USD";
-
-        $request['url'] = "/international/virtual_account/" . $va_currency . "?amount=%s&currency=%s";
-
-        $amount = 100;
-        $currency = "INR";
-
-        $request['url'] = sprintf($request['url'], $amount, $currency);
-
-        $key = $this->fixtures->create('key', ['merchant_id' => $merchantDetail['merchant_id']]);
-
-        $key = $key->getKey();
-
-        $this->ba->publicAuth('rzp_test_' . $key);
-
-        $response = $this->sendRequest($request);
-
-        $content = $this->getJsonContentFromResponse($response);
-
-        $this->assertNotNull($content);
-
-        $this->assertNotNull($content['account']);
-        $this->assertNotNull($content['amount']);
-        $this->assertNotNull($content['currency']);
-        $this->assertNotNull($content['symbol']);
-
-        $virtual_account = $content['account'];
-
-        $this->assertArrayKeysExist($virtual_account,["va_currency","routing_code","routing_type","account_number","beneficiary_name","bank_name","bank_address"]);
-
-        $this->assertEquals($va_currency, $virtual_account['va_currency']);
-
-        $this->assertEquals($va_currency, $content['currency']);
-
-        // 10 as Mock Exchange Rate and 3 Percent Markup
-        $this->assertEquals(1030, $content['amount']);
-
-        $this->assertEquals("$", $content['symbol']);
-
-    }
-
     public function testFetchInternationalVirtualAccountsByVACurrencyNotSupported()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
@@ -163,7 +124,10 @@ class MerchantInternationalIntegrationTest Extends TestCase
             InternationalIntegration\Entity::BANK_ACCOUNT => $this->getBankAccountMockData(),
         ]);
 
-        $this->fixtures->merchant->addFeatures('enable_b2b_export',$merchantDetail['merchant_id']);
+        $intlBankTransferModes = [
+            'ach' => 1
+        ];
+        $methods = $this->addIntlBankTransferMethodForMerchant($intlBankTransferModes, $merchantDetail['merchant_id']);
 
         $request = $this->testData[__FUNCTION__]['request'];
 
@@ -200,7 +164,10 @@ class MerchantInternationalIntegrationTest Extends TestCase
             InternationalIntegration\Entity::BANK_ACCOUNT => $this->getBankAccountMockData("USD"),
         ]);
 
-        $this->fixtures->merchant->addFeatures('enable_b2b_export',$merchantDetail['merchant_id']);
+        $intlBankTransferModes = [
+            'ach' => 1
+        ];
+        $methods = $this->addIntlBankTransferMethodForMerchant($intlBankTransferModes, $merchantDetail['merchant_id']);
 
         $request = $this->testData[__FUNCTION__]['request'];
 
@@ -222,7 +189,7 @@ class MerchantInternationalIntegrationTest Extends TestCase
         $this->assertEquals($virtual_account['routing_type'],"ach_routing_number");
     }
 
-    public function testFetchIntlVAWithPreferredRoutingCodeConfigNotPresent()
+    public function testFetchIntlVAWithPreferredRoutingCodeConfigNotPresentSWIFT()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
@@ -233,10 +200,13 @@ class MerchantInternationalIntegrationTest Extends TestCase
             InternationalIntegration\Entity::INTEGRATION_ENTITY => Gateway::CURRENCY_CLOUD,
             InternationalIntegration\Entity::INTEGRATION_KEY => "1029329285-19298",
             InternationalIntegration\Entity::NOTES => [],
-            InternationalIntegration\Entity::BANK_ACCOUNT => $this->getBankAccountMockData("GBP"),
+            InternationalIntegration\Entity::BANK_ACCOUNT => $this->getBankAccountMockData("SWIFT"),
         ]);
 
-        $this->fixtures->merchant->addFeatures('enable_b2b_export',$merchantDetail['merchant_id']);
+        $intlBankTransferModes = [
+            'swift' => 1
+        ];
+        $methods = $this->addIntlBankTransferMethodForMerchant($intlBankTransferModes, $merchantDetail['merchant_id']);
 
         $request = $this->testData[__FUNCTION__]['request'];
 
@@ -254,8 +224,8 @@ class MerchantInternationalIntegrationTest Extends TestCase
         $virtual_account = $content[0];
 
         // Asserting Routing Code and Type as First Index (Default)
-        $this->assertEquals($virtual_account['routing_code'],"123456");
-        $this->assertEquals($virtual_account['routing_type'],"sort_code");
+        $this->assertEquals($virtual_account['routing_code'],"TCCLGB123");
+        $this->assertEquals($virtual_account['routing_type'],"bic_swift");
     }
 
     private function getBankAccountMockData($va_currency = "USD") : string{
@@ -264,7 +234,7 @@ class MerchantInternationalIntegrationTest Extends TestCase
                 return '[{"bank_name": "Community Federal Savings Bank", "va_currency": "USD", "bank_address": "810 Seventh Avenue, New York, NY 10019, US", "account_number": "0335086498", "routing_details": [{"routing_code": "026073150", "routing_type": "ach_routing_number"}, {"routing_code": "026073008", "routing_type": "wire_routing_number"}], "beneficiary_name": "ALPHA CORP"}]';
             case "GBP":
                 return '[{"bank_name": "Community Federal Savings Bank", "va_currency": "GBP", "bank_address": "12 Steward Street, The Steward Building, London, E1 6FQ, GB", "account_number": "92979037", "routing_details": [{"routing_code": "123456", "routing_type": "sort_code"}], "beneficiary_name": "ALPHA CORP"}]';
-            default:
+            case "SWIFT":
                 return '[{"bank_name": "Community Federal Savings Bank", "va_currency": "SWIFT", "bank_address": "12 Steward Street, The Steward Building, London, E1 6FQ, GB", "account_number": "GB51TCCL12345692979037", "routing_details": [{"routing_code": "TCCLGB123", "routing_type": "bic_swift"}], "beneficiary_name": "ALPHA CORP"}]';
         }
     }

@@ -10,6 +10,7 @@ use RZP\Models\Currency\Currency;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\BankTransfer;
 use RZP\Models\Feature\Constants;
+use RZP\Models\Payment\Processor\IntlBankTransfer;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
@@ -32,11 +33,18 @@ class Core extends Base\Core
     const ROUTING_TYPE      = 'routing_type';
     const ROUTING_CODE      = 'routing_code';
     const ROUTING_DETAILS   = 'routing_details';
+    const STATUS            = 'status';
+    const ACTIVATED         = 'activated';
+    const DEACTIVATED       = 'deactivated';
 
     // Routing Code Types
 
     const WIRE_ROUTING_NUMBER   = 'wire_routing_number';
     const ACH_ROUTING_NUMBER    = 'ach_routing_number';
+
+    public static $preferredRoutingCodeMapping = [
+        Currency::USD => self::ACH_ROUTING_NUMBER
+    ];
 
     public function createMerchantInternationalIntegration($input)
     {
@@ -180,7 +188,7 @@ class Core extends Base\Core
 
             if(count($virtual_bank_accounts) === 0)
             {
-                throw new \Exception("No Virtual Account Found");
+                return [];
             }
 
             return $virtual_bank_accounts;
@@ -200,38 +208,43 @@ class Core extends Base\Core
     {
         try
         {
+            if(str_starts_with($va_currency,"va_"))
+            {
+                $va_currency = substr($va_currency,3);
+            }
+
             $va_currency = strtoupper($va_currency);
 
-            if(Gateway::isCurrencySupportedForInternationalBankTransfer($va_currency) === false){
-                throw new \Exception("Currency Not Supported for International Bank Transfer");
+            if(Gateway::isVACurrencySupportedForInternationalBankTransfer($va_currency) === false){
+                throw new \Exception("Currency/Method Not Supported for International Bank Transfer");
             }
 
              $virtual_bank_accounts = $this->fetchIntlVirtualBankAccountsForGateway($merchantId,Gateway::CURRENCY_CLOUD);
 
              if(count($virtual_bank_accounts) === 0)
              {
-                 throw new \Exception("No Virtual Account Found");
+                 return [];
              }
 
              $response = [];
 
              $response[self::ACCOUNT] = $this->fetchVirtualAccountByVACurrencyFromVirtualAccounts($virtual_bank_accounts,$va_currency);
 
-             if(isset($input[self::AMOUNT]) === true && isset($input[self::CURRENCY]) === true)
-             {
-                 $currency = $input[self::CURRENCY];
-                 $amount = $input[self::AMOUNT];
+            if(isset($input[self::AMOUNT]) === true && isset($input[self::CURRENCY]) === true)
+            {
+                $currency = $input[self::CURRENCY];
+                $amount = $input[self::AMOUNT];
 
-                 $currency = strtoupper($currency);
+                $currency = strtoupper($currency);
 
-                 $merchant = $this->repo->merchant->findOrFail($merchantId);
+                $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-                 $response[self::AMOUNT]     = $this->getConvertedAmount($va_currency,$currency,$amount, $merchant->getDccMarkupPercentageForIntlBankTransfer());
-                 $response[self::CURRENCY]   = $va_currency;
-                 $response[self::SYMBOL]     = Currency::SYMBOL[$va_currency];
+                $response[self::AMOUNT]     = $this->getConvertedAmount($va_currency,$currency,$amount, $merchant->getDccMarkupPercentageForIntlBankTransfer());
+                $response[self::CURRENCY]   = $va_currency;
+                $response[self::SYMBOL]     = Currency::SYMBOL[$va_currency];
 
-                 return $response;
-             }
+                return $response;
+            }
 
              return $response;
         }
@@ -268,11 +281,6 @@ class Core extends Base\Core
     {
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        if($merchant->isFeatureEnabled(Constants::ENABLE_B2B_EXPORT) === false)
-        {
-            return [];
-        }
-
         $mii = $this->repo->merchant_international_integrations
             ->getByMerchantIdAndIntegrationEntity($merchantId, $gateway);
 
@@ -287,23 +295,6 @@ class Core extends Base\Core
 
                 return [];
             }
-
-            $bank_accounts_json = $mii->getBankAccount();
-
-            // Fetch Bank Accounts By Calling CC API
-            if(isset($bank_accounts_json) === false)
-            {
-                $mutex_key = "fetch_cc_va_" . $merchantId;
-
-                $this->mutex->acquireAndRelease($mutex_key,
-                function () use ($merchantId,$mii)
-                {
-                    return (new BankTransfer\Service)->updateBankAccountDetails($merchantId,$mii);
-                },20,
-                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS);
-            }
-
-            $mii->reload();
 
             $bank_accounts_json = $mii->getBankAccount();
 
@@ -323,6 +314,10 @@ class Core extends Base\Core
 
             $bank_accounts = [];
 
+            $methods = $this->repo->methods->getMethodsForMerchant($merchant);
+
+            $intl_bank_transfer_modes = $methods->getIntlBankTransferEnabledModes();
+
             foreach($bank_accounts_map as $key => $account)
             {
                 $preferredRoutingCode = $this->getPreferredRoutingCodeByCurrency($account[self::VA_CURRENCY],$account[self::ROUTING_DETAILS]);
@@ -331,6 +326,10 @@ class Core extends Base\Core
 
                 $account[self::ROUTING_TYPE] = $preferredRoutingCode[self::ROUTING_TYPE];
                 $account[self::ROUTING_CODE] = $preferredRoutingCode[self::ROUTING_CODE];
+
+                $mode = Gateway::getIntlBankTransferModeByCurrency($account[self::VA_CURRENCY]);
+
+                $account[self::STATUS] = $intl_bank_transfer_modes[$mode] ? self::ACTIVATED : self::DEACTIVATED;
 
                 array_push($bank_accounts,$account);
             }
@@ -371,11 +370,8 @@ class Core extends Base\Core
 
     private function getPreferredRoutingCodeByCurrency($va_currency,$routing_details)
     {
-        $preferredRoutingCodeMapping = [
-            Currency::USD => self::ACH_ROUTING_NUMBER
-        ];
 
-        if(array_key_exists($va_currency,$preferredRoutingCodeMapping) === false)
+        if(array_key_exists($va_currency,self::$preferredRoutingCodeMapping) === false)
         {
             return $routing_details[0];
         }
@@ -383,7 +379,7 @@ class Core extends Base\Core
         {
             foreach ($routing_details as $routing_detail)
             {
-                if($routing_detail[self::ROUTING_TYPE] === $preferredRoutingCodeMapping[$va_currency]){
+                if($routing_detail[self::ROUTING_TYPE] === self::$preferredRoutingCodeMapping[$va_currency]){
                     return $routing_detail;
                 }
             }

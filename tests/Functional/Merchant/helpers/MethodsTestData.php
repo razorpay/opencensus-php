@@ -1064,6 +1064,79 @@ return [
             ],
         ],
     ],
+    'testGetPaymentMethodsAndOffersForCheckoutForB2BExportForPaymentLinkWithOrder' => [
+        'request' => [
+            'url' => '/internal/methods_offers/checkout',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'entity' => 'methods',
+                    'card' => true,
+                    'intl_bank_transfer' => [
+                        'usd' => 1,
+                        'swift' => 1
+                    ],
+                ],
+                'offers' => [
+                    [
+                        'name' => "Test Offer",
+                        'payment_method' => "card",
+                        'payment_network' => "VISA",
+                        'issuer' => "HDFC",
+                        'type' => "instant",
+                        'original_amount' => 100000,
+                        'amount' => 90000,
+                    ],
+                    [
+                        'name' => "Test Offer",
+                        'payment_method' => "card",
+                        'payment_network' => "VISA",
+                        'issuer' => "HDFC",
+                        'type' => "instant",
+                        'original_amount' => 100000,
+                        'amount' => 90000,
+                    ]
+                ]
+            ],
+        ],
+    ],
+    'testGetPaymentMethodsAndOffersForCheckoutForB2BExportWithNonPaymentLinkOrder' => [
+        'request' => [
+            'url' => '/internal/methods_offers/checkout',
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'entity' => 'methods',
+                    'card' => true,
+                    'intl_bank_transfer' => [],
+                ],
+                'offers' => [
+                    [
+                        'name' => "Test Offer",
+                        'payment_method' => "card",
+                        'payment_network' => "VISA",
+                        'issuer' => "HDFC",
+                        'type' => "instant",
+                        'original_amount' => 100000,
+                        'amount' => 90000,
+                    ],
+                    [
+                        'name' => "Test Offer",
+                        'payment_method' => "card",
+                        'payment_network' => "VISA",
+                        'issuer' => "HDFC",
+                        'type' => "instant",
+                        'original_amount' => 100000,
+                        'amount' => 90000,
+                    ]
+                ]
+            ],
+        ],
+    ],
     'testGetPaymentMethodsAndOffersForCheckoutWithInvoiceId' => [
         'request' => [
             'url' => '/internal/methods_offers/checkout',

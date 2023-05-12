@@ -84,6 +84,7 @@ use RZP\Models\Invoice\Entity as InvoiceEntity;
 use RZP\Models\Invoice\Constants as InvoiceConstants;
 use RZP\Models\Invoice\Type as InvoiceType;
 use RZP\Models\GenericDocument\Service as DocumentService;
+use RZP\Models\Payment\Processor\IntlBankTransfer;
 
 class Service extends Base\Service
 {
@@ -2478,6 +2479,8 @@ class Service extends Base\Service
 
         $this->updateCurrencyWrapperForAppsIfApplicable($input, $merchant, $data);
 
+        $this->updateCurrencyWrapperForIntlBankTransfer($input, $merchant, $data);
+
         if (isset($input['order_id']) === true)
         {
             $order = $this->repo->order->findByPublicIdAndMerchant($input['order_id'], $this->merchant);
@@ -2617,6 +2620,41 @@ class Service extends Base\Service
             $currencyInfo['all_currencies'] = array_intersect_key(
                                                           $currencyInfo['all_currencies'],
                                                           array_flip($enabledCurrencyList));
+
+            $data = array_merge($data, $currencyInfo);
+        }
+    }
+
+
+    public function updateCurrencyWrapperForIntlBankTransfer($input, $merchant, & $data)
+    {
+        $mode = Gateway::CURRENCY_TO_MODE_MAPPING_FOR_INTL_BANK_TRANSFER[strtoupper($input['provider'])];
+
+        if ((isset($mode) === false) or
+            (IntlBankTransfer::isValidIntlBankTransferMode($mode) === false)) {
+            return;
+        }
+
+        $enabledCurrencyList = Gateway::getSupportedCurrenciesForIntlBankTransferByMode($mode);
+
+        if (empty($enabledCurrencyList) === true) {
+            return;
+        }
+
+        if ((isset($input['currency']) === true) and
+            (isset($input['amount']) === true)) {
+            $amount = $input['amount'];
+            $currency = $input['currency'];
+
+            // For Method Intl Bank Transfer Default DCC Markup is set as 3
+            $currencyInfo = $this->getDCCInfo($amount, $currency, $merchant->getDccMarkupPercentageForIntlBankTransfer());
+
+            // First Currency in Currency Map is set as default currency for an app.
+            $currencyInfo['provider_currency'] = in_array($input['currency'], $enabledCurrencyList, true) ? $input['currency'] : $enabledCurrencyList[0];
+
+            $currencyInfo['all_currencies'] = array_intersect_key(
+                $currencyInfo['all_currencies'],
+                array_flip($enabledCurrencyList));
 
             $data = array_merge($data, $currencyInfo);
         }

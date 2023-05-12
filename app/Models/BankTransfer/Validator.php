@@ -15,6 +15,8 @@ class Validator extends Base\Validator
     protected $entity;
 
     const IFSC_LENGTH = 11;
+    const VA_CURRENCY = 'va_currency';
+    const ACCEPT_B2B_TNC = 'accept_b2b_tnc';
 
     protected static $createRules = [
         Entity::PAYER_NAME              => 'nullable|string|max:100',
@@ -83,6 +85,11 @@ class Validator extends Base\Validator
         Entity::AMOUNT         => 'required|numeric|min:0',
         Entity::REQ_UTR        => 'required|string|max:255',
         Entity::PAYEE_ACCOUNT  => 'required|string|max:40',
+    ];
+
+    public static $createAccountForCurrencyCloudRules = [
+        self::VA_CURRENCY       => 'sometimes|string|max:5',
+        self::ACCEPT_B2B_TNC    => 'sometimes|boolean',
     ];
 
     protected function validateMode($attribute, $mode)

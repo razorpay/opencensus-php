@@ -49,7 +49,7 @@ return [
         ]
     ],
 
-    'testFetchIntlVAWithPreferredRoutingCodeConfigNotPresent' => [
+    'testFetchIntlVAWithPreferredRoutingCodeConfigNotPresentSWIFT' => [
         'request'  => [
             'url'       => '/international/virtual_accounts',
             'method'    => 'GET',

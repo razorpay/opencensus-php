@@ -30,6 +30,7 @@ use RZP\Models\Payment\Processor\App as AppMethod;
 use RZP\Models\Admin\Org\Entity as Org;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\BankingAccountStatement\Channel as BASChannel;
+use RZP\Models\Payment\Processor\IntlBankTransfer as IntlBankTransferMethod;
 
 class Validator extends Base\Validator
 {
@@ -715,6 +716,15 @@ class Validator extends Base\Validator
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Provider selected for app should be valid');
+            }
+        }
+
+        if ($input[Entity::PAYMENT_METHOD] === Payment\Method::INTL_BANK_TRANSFER)
+        {
+            if (IntlBankTransferMethod::isValidIntlBankTransferMode($input[Entity::PAYMENT_NETWORK]) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Mode selected for Intl Bank Transfer should be valid');
             }
         }
 

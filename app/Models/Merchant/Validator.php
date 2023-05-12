@@ -418,6 +418,7 @@ class Validator extends Base\Validator
         Methods\Entity::PAYTM    => 'sometimes|bool',
         Methods\Entity::PHONEPE  => 'sometimes|bool',
         Methods\Entity::IN_APP  => 'sometimes|bool',
+        Methods\Entity::INTL_BANK_TRANSFER  => 'sometimes|sequential_array',
         Methods\Entity::UPI      => 'sometimes|bool',
     ];
 
