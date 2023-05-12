@@ -280,7 +280,13 @@ class Entity extends Base\PublicEntity
     {
         $merchantWebsiteDetail = $this->getAttribute(self::MERCHANT_WEBSITE_DETAILS);
 
-        return $merchantWebsiteDetail[$sectionName][Constants::SECTION_STATUS] ?? null;
+        if(isset($merchantWebsiteDetail[$sectionName]) and
+           isset($merchantWebsiteDetail[$sectionName][Constants::SECTION_STATUS]))
+        {
+            return $merchantWebsiteDetail[$sectionName][Constants::SECTION_STATUS];
+        }
+
+        return null;
     }
 
     /*

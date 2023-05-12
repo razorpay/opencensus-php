@@ -155,9 +155,11 @@ class Validator extends \Razorpay\Spine\Validation\Validator
                     return true;
                 }
             }
-            catch (\Exception $e)
+            catch (\Throwable $e)
             {
                 $this->getTrace()->traceException($e, Logger::ERROR, TraceCode::ACTIVE_URL_VALIDATION_FAILURE_EXCEPTION);
+
+                return false;
             }
         }
         throw new BadRequestValidationFailureException(
