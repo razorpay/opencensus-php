@@ -93,6 +93,7 @@ class Constants
     const EnableOTM = 'enable_otm';
     const AdminPasswordResetEnabled = 'admin_password_reset_enabled';
     const OneCCMultipleShipping = 'one_cc_multiple_shipping';
+    const IrctcReportEnabled = 'irctc_report_enabled';
     const QrImagePartnerName = 'show_partner_name_on_qr_image';
     const QrImageContent = 'get_qr_image_content';
     const QrCodes = 'qr_codes';
@@ -195,6 +196,7 @@ class Constants
         self::DynamicCurrencyConversionCybs => 'rzp/pg/merchant/payments/banking_program/Cards',
         self::AdminPasswordResetEnabled => 'rzp/pg/org/banking/admin/Features',
         self::OneCCMultipleShipping => 'rzp/pg/merchant/checkout/magic/Configuration',
+        self::IrctcReportEnabled => "rzp/pg/merchant/report/Irctc",
         self::QrImagePartnerName => 'rzp/pg/merchant/upi/qr/QrCode',
         self::QrImageContent => 'rzp/pg/merchant/upi/qr/QrCode',
         self::QrCodes => 'rzp/pg/merchant/upi/qr/QrCode',
@@ -299,6 +301,7 @@ class Constants
         APIFeaturesConstants::CUSTOMER_FEE_DONT_SETTLE                      => self::PostpaidMerchantsDontSettleCustomerFees,
         APIFeaturesConstants::ORG_ADMIN_PASSWORD_RESET                      => self::AdminPasswordResetEnabled,
         APIFeaturesConstants::ONE_CC_SHOPIFY_MULTIPLE_SHIPPING              => self::OneCCMultipleShipping,
+        APIFeaturesConstants::IRCTC_REPORT                                  => self::IrctcReportEnabled,
         APIFeaturesConstants::QR_IMAGE_PARTNER_NAME                         => self::QrImagePartnerName,
         APIFeaturesConstants::QR_IMAGE_CONTENT                              => self::QrImageContent,
         APIFeaturesConstants::QR_CODES                                      => self::QrCodes,
@@ -375,6 +378,7 @@ class Constants
             "order_receipt_unique"=> "client",
             "postpaid_merchants_dont_settle_customer_fees"=> "direct",
             "dynamic_currency_conversion_cybs" => "direct",
+            "irctc_report" => "direct",
         ],
         "org" => [
             "disable_free_credit_unreg"=> "client",

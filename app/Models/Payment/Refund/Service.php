@@ -2859,9 +2859,24 @@ class Service extends Base\Service
 
     protected function getPaymentFromReservationIdForCustomerDetails($reservationId)
     {
-        $featureEntities = $this->repo->feature->findMerchantsHavingFeatures([Feature\Constants::IRCTC_REPORT]);
 
-        $irctcMerchantIds = $featureEntities->pluck(Feature\Entity::ENTITY_ID)->toArray();
+        $dcs = $this->app['dcs'];
+
+        $featureEntities = $dcs->fetchByFeatureName(Feature\Constants::IRCTC_REPORT);
+
+        if(empty($featureEntities))
+        {
+
+            $featureEntities = $this->repo->feature->findMerchantsHavingFeatures([Feature\Constants::IRCTC_REPORT]);
+
+            $irctcMerchantIds = $featureEntities->pluck(Feature\Entity::ENTITY_ID)->toArray();
+
+        }
+        else
+        {
+
+            $irctcMerchantIds = array_column($featureEntities,Feature\Entity::ENTITY_ID);
+        }
 
         $payment = $this->repo->useSlave(function () use ($reservationId, $irctcMerchantIds)
         {
