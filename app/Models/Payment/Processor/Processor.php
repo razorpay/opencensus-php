@@ -566,8 +566,7 @@ class Processor
     private function canRouteThroughRearchFlowForMY(array $input)
     {
         // Always true for current product state except for test mode in production
-        if ((app()->isEnvironmentProduction() === true) and
-                ($this->mode === Mode::TEST))
+        if (app()->isEnvironmentProduction() === true  and ($this->mode === Mode::TEST))
         {
             return false;
         }

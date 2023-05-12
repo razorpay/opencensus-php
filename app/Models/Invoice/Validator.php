@@ -965,7 +965,7 @@ class Validator extends Base\Validator
         // Counts total payment attempts
         $invoice          = $this->entity;
         $isPartialPayment = ($invoice->getAmount() !== $payment->getAmount());
-        $dimensions       = $invoice->getMetricDimensions(['is_partial_payment' => (int) $isPartialPayment]);
+        $dimensions       = $invoice->getMetricDimensions(['is_partial_payment' => (int) $isPartialPayment, 'merchant_country_code' => (string) $invoice->merchant->getCountry()]);
         $this->getTrace()->count(Metric::INVOICE_PAYMENT_ATTEMPTS_TOTAL, $dimensions);
 
         $this->validateInvoicePayable();
@@ -1313,7 +1313,7 @@ class Validator extends Base\Validator
         $international = $invoice->merchant->isInternational();
 
         // Non International accounts should not create PL in other currencies.
-        if (($international !== true) and ($currency !== Currency::INR))
+        if (($international !== true) and ($currency !==  $invoice->merchant->getCurrency()))
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_INTERNATIONAL_NOT_ENABLED,

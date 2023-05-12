@@ -2,9 +2,11 @@
 
 namespace RZP\Tests\Unit\Models\Invoice;
 
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Invoice;
 use RZP\Models\Merchant;
 use RZP\Constants\Entity as E;
+use RZP\Tests\Functional\Invoice\InvoiceTest;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
@@ -34,6 +36,29 @@ class ViewDataSerializerTestHosted extends TestCase
         $this->assertNotEmpty($actual['invoice']['issued_at_formatted']);
         $this->assertNotEmpty($actual['invoice']['date_formatted']);
         $this->assertNotEmpty($actual['invoice']['expire_by_formatted']);
+    }
+
+    public function testGetInvoiceForMyMerchant()
+    {
+        $org = $this->fixtures->create('org:curlec_org');
+
+        $this->fixtures->org->addFeatures([FeatureConstants::ORG_CUSTOM_BRANDING],$org->getId());
+
+        $this->fixtures->merchant->edit('10000000000000', ['country_code' => 'MY','org_id'    => $org->getId()]);
+        $invoice  = $this->createInvoiceWithPayment();
+
+        $invoice['issued_at'] = 1681340400;
+        $invoice['expire_by'] = 1681340400;
+        $invoice['currency'] = 'MYR';
+        $actual   = (new Invoice\ViewDataSerializerHosted($invoice))->serializeForHosted();
+
+        $this->assertNotEmpty($actual['invoice']['issued_at_formatted']);
+        $this->assertNotEmpty($actual['invoice']['date_formatted']);
+        $this->assertNotEmpty($actual['invoice']['expire_by_formatted']);
+        $this->assertNotEmpty($actual['org']['branding']['security_branding_logo']);
+
+        $this->assertEquals('13 Apr 2023', $actual['invoice']['issued_at_formatted']);
+        $this->assertEquals('13 Apr 2023', $actual['invoice']['expire_by_formatted']);
     }
 
     /**

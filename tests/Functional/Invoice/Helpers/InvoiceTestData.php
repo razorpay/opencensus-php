@@ -1380,6 +1380,114 @@ return [
         ]
     ],
 
+    'testCreateIssuedInvoiceForMYMerchant' => [
+        'request' => [
+            'url'       => '/invoices',
+            'method'    => 'post',
+            'content'   => [
+                'line_items'     => [
+                    [
+                        'name'   => 'Abc Def',
+                        'amount' => 1000,
+                        'currency'=> 'MYR',
+
+                    ]
+                ],
+                'customer'       => [
+                    'name'       => 'Abc Def',
+                    'email'      => 'test@rzp.com',
+                ],
+                'draft'          => '0',
+                'currency'       => 'MYR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'               => 'invoice',
+                'receipt'              => null,
+                'customer_details'     => [
+                    'name'    => 'Abc Def',
+                    'email'   => 'test@rzp.com',
+                    'contact' => null,
+                ],
+                'line_items'           => [
+                    [
+                        'quantity'         => 1,
+                        'name'             => 'Abc Def',
+                        'description'      => null,
+                        'amount'           => 1000,
+                        'currency'         => 'MYR'
+                    ]
+                ],
+                'payment_id'           => null,
+                'status'               => 'issued',
+                'paid_at'              => null,
+                'sms_status'           => 'pending',
+                'email_status'         => 'pending',
+                'amount'               => 1000,
+                'description'          => null,
+                'notes'                => [],
+                'currency'             => 'MYR',
+                'view_less'            => true,
+                'type'                 => 'invoice',
+            ]
+        ]
+    ],
+
+    'testCreateDraftInvoiceForMYMerchant' => [
+    'request' => [
+        'url'       => '/invoices',
+        'method'    => 'post',
+        'content'   => [
+            'line_items'     => [
+                [
+                    'name'   => 'Abc Def',
+                    'amount' => 1000,
+                    'currency'=> 'MYR',
+
+                ]
+            ],
+            'customer'       => [
+                'name'       => 'Abc Def',
+                'email'      => 'test@rzp.com',
+            ],
+            'draft'          => '1',
+            'currency'       => 'MYR',
+        ],
+    ],
+    'response' => [
+        'content' => [
+            'entity'               => 'invoice',
+            'receipt'              => null,
+            'customer_details'     => [
+                'name'    => 'Abc Def',
+                'email'   => 'test@rzp.com',
+                'contact' => null,
+            ],
+            'line_items'           => [
+                [
+                    'quantity'         => 1,
+                    'name'             => 'Abc Def',
+                    'description'      => null,
+                    'amount'           => 1000,
+                    'currency'         => 'MYR'
+                ]
+            ],
+            'payment_id'           => null,
+            'status'               => 'draft',
+            'paid_at'              => null,
+            'sms_status'           => 'pending',
+            'email_status'         => 'pending',
+            'amount'               => 1000,
+            'description'          => null,
+            'notes'                => [],
+            'currency'             => 'MYR',
+            'view_less'            => true,
+            'type'                 => 'invoice',
+        ]
+    ]
+],
+
     'testCreateInvoiceWithReceiptMandatoryFailure' => [
         'request' => [
             'url'     => '/invoices',

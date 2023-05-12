@@ -12,10 +12,10 @@ class Timezone
         self::MYT => 'MYT',
     ];
 
-    public static function getTimeZoneAbbrevation(string $country='IN')
+    public static function getTimeZoneAbbrevation(string $timeZone='IST')
     {
-        if (array_key_exists($country, self::$timeZoneAbbrevationMap)){
-            return self::$timeZoneAbbrevationMap[$country];
+        if (array_key_exists($timeZone, self::$timeZoneAbbrevationMap)){
+            return self::$timeZoneAbbrevationMap[$timeZone];
         }
     }
 }

@@ -17,6 +17,7 @@ use RZP\Models\Invoice\Reminder;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Mail\Invoice as InvoiceMail;
 use RZP\Models\Merchant\Preferences;
+use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 
 class Notifier extends Base\Core
 {
@@ -221,7 +222,7 @@ class Notifier extends Base\Core
             return false;
         }
 
-        $dimensions = $this->invoice->getMetricDimensions(['email_type' => 'issued']);
+        $dimensions = $this->invoice->getMetricDimensions(['email_type' => 'issued', 'merchant_country_code' => (string) $this->invoice->merchant->getCountry()]);
         $this->trace->count(Metric::INVOICE_EMAIL_NOTIFY_TOTAL, $dimensions);
 
         $viewPayload = (new ViewDataSerializer($this->invoice))->serializeForInternal();
@@ -294,7 +295,7 @@ class Notifier extends Base\Core
             return false;
         }
 
-        $dimensions = $this->invoice->getMetricDimensions(['sms_type' => 'issued']);
+        $dimensions = $this->invoice->getMetricDimensions(['sms_type' => 'issued', 'merchant_country_code' => (string) $this->invoice->merchant->getCountry()]);
         $this->trace->count(Metric::INVOICE_SMS_NOTIFY_TOTAL, $dimensions);
 
         $request = $this->getRavenSendInvoiceRequestInput($contact, $reminders, $newShortUrl);
@@ -1256,12 +1257,14 @@ class Notifier extends Base\Core
     {
         if (isset($viewPayload['invoice']['expire_by']) === true)
         {
-            $viewPayload['invoice']['expire_by_formatted'] = Utility::getTimestampFormatted(
+            $viewPayload['invoice']['expire_by_formatted'] = Utility::getTimestampFormattedByTimeZone(
                 $viewPayload['invoice']['expire_by'],
-                'jS M, Y');
+                'jS M, Y', $this->invoice->merchant->getTimeZone());
         }
 
         $viewPayload['org'] = $this->invoice->merchant->org->toArrayPublic();
+
+        $org = $this->invoice->merchant->org;
 
         $branding = [
             'show_rzp_logo' => true,
@@ -1270,9 +1273,12 @@ class Notifier extends Base\Core
 
         if($this->invoice->merchant->shouldShowCustomOrgBranding() === true)
         {
-            $branding['show_rzp_logo'] = false;
-
-            $branding['branding_logo'] = $this->invoice->merchant->org->getEmailLogo() ?: 'https://cdn.razorpay.com/static/assets/hostedpages/axis_logo.png';
+            if(ORG_ENTITY::isOrgCurlec($org->getId()) === true){
+                $branding = array_merge((new Core)->getCurlecBrandingConfig(), $branding);
+            }else{
+                $branding['show_rzp_logo'] = false;
+            }
+            $branding['branding_logo'] = $org->getInvoiceLogo() ?: 'https://cdn.razorpay.com/static/assets/hostedpages/axis_logo.svg';
         }
 
         $viewPayload['org']['branding'] = $branding;

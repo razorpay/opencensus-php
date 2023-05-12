@@ -129,7 +129,7 @@ class Issued extends Base
 
     protected function addReplyTo()
     {
-        $replyTo = Constants::MAIL_ADDRESSES[Constants::NOREPLY];
+        $replyTo = $this->getSenderEmail();
 
         $merchantId = $this->data['merchant']['id'] ?? '';
 
@@ -138,7 +138,9 @@ class Issued extends Base
             $replyTo = Constants::MERCHANT_CUSTOM_MAIL_ADDRESSES[$merchantId] ?? $replyTo;
         }
 
-        $this->replyTo($replyTo);
+        $header = $this->getSenderHeader();
+
+        $this->replyTo($replyTo, $header);
 
         return $this;
     }

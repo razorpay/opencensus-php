@@ -28,7 +28,7 @@ class Core extends Base\Core
 
         $this->setItemAssociationAndModifyInput($lineItem, $input, $merchant);
 
-        $this->removeTaxFieldsForInternational($morphEntity, $input);
+        $this->removeTaxFieldsForInternational($morphEntity, $input, $merchant);
 
         //
         // For Backward compatibility: If without ITEM_ID (template),
@@ -108,7 +108,7 @@ class Core extends Base\Core
 
         $this->setItemAssociationAndModifyInput($lineItem, $input, $merchant);
 
-        $this->removeTaxFieldsForInternational($morphEntity, $input);
+        $this->removeTaxFieldsForInternational($morphEntity, $input, $merchant);
 
         $lineItem->edit($input);
 
@@ -378,9 +378,9 @@ class Core extends Base\Core
      * @param Base\PublicEntity $morphEntity
      * @param array             $input
      */
-    protected function removeTaxFieldsForInternational(Base\PublicEntity $morphEntity, array & $input)
+    protected function removeTaxFieldsForInternational(Base\PublicEntity $morphEntity, array & $input, $merchant)
     {
-        if ((method_exists($morphEntity, 'isInternational') === true) and ($morphEntity->isInternational() === true))
+        if ((method_exists($morphEntity, 'isGSTTaxationApplicable') === true) and ($morphEntity->isGSTTaxationApplicable($merchant) === false))
         {
             $taxAttributes = Validator::TAX_ATTRIBUTES;
 

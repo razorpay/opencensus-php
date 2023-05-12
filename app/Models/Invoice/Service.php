@@ -523,7 +523,7 @@ class Service extends Base\Service
 
         $invoice = $this->repo->invoice->findByPublicId($invoiceId);
 
-        $this->trace->count(Metric::INVOICE_VIEW_TOTAL, $invoice->getMetricDimensions());
+        $this->trace->count(Metric::INVOICE_VIEW_TOTAL, $invoice->getMetricDimensions(['merchant_country_code' => (string) $invoice->merchant->getCountry()]));
 
         $invoice->getValidator()->validateInvoiceViewable();
 
@@ -544,7 +544,7 @@ class Service extends Base\Service
 
         $invoice = $this->repo->invoice->findByPublicId($invoiceId);
 
-        $this->trace->count(Metric::INVOICE_VIEW_TOTAL, $invoice->getMetricDimensions());
+        $this->trace->count(Metric::INVOICE_VIEW_TOTAL, $invoice->getMetricDimensions([], $invoice->merchant));
 
         $invoice->getValidator()->validateInvoiceViewable();
 

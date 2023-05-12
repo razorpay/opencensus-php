@@ -22,7 +22,7 @@ class Payment extends Validator
         Entity::UPDATED_AT          => 'sometimes',
         'gateway_terminal_id'       => 'sometimes',
         Entity::AMOUNT              => 'required|integer',
-        Entity::CURRENCY            => 'required|in:INR,USD',
+        Entity::CURRENCY            => 'required|in:INR,USD,MYR',
         Entity::BASE_AMOUNT         => 'sometimes|integer',
         Entity::BASE_CURRENCY       => 'sometimes|string',
         Entity::STATUS              => 'required|in:created,authorized,captured,failed,refunded,pending',

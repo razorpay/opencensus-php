@@ -94,6 +94,14 @@ class Utility
         return date($format, $epoch);
     }
 
+    public static function getTimestampFormattedByTimeZone($epoch, $format, $timeZone)
+    {
+        $timeStamp = Carbon::createFromTimestamp($epoch, $timeZone);
+
+        return  $timeStamp->format($format);
+    }
+
+
     public static function getAmountComponents($amount, $currency)
     {
         $currencySymbol = Currency\Currency::SYMBOL[$currency] ?: 'INR';

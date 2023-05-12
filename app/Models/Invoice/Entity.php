@@ -1215,11 +1215,12 @@ class Entity extends Base\PublicEntity
      */
     public function getMetricDimensions(array $extra = []): array
     {
-        return $extra + [
+        $extra =  $extra + [
             'type'             => (string) $this->getType(),
             'has_batch'        => (int) $this->hasBatch(),
             'has_subscription' => (int) $this->hasSubscription(),
-        ];
+            ];
+        return  $extra;
     }
 
     public function getInternalRef()
@@ -1238,7 +1239,7 @@ class Entity extends Base\PublicEntity
         $this->setCustomerName($customer->getName());
         $this->setCustomerContact($customer->getContact());
         $this->setCustomerEmail($customer->getEmail());
-        $this->setCustomerGstin($customer->getGstin());
+        $this->setCustomerGstin($customer->getGstin(), $customer->merchant);
 
         // Retrieves primary billing and shipping addresses and associates the same with invoice
         $repo = App::getFacadeRoot()['repo'];
@@ -1266,7 +1267,7 @@ class Entity extends Base\PublicEntity
         $this->setCustomerName(null);
         $this->setCustomerContact(null);
         $this->setCustomerEmail(null);
-        $this->setCustomerGstin(null);
+        $this->setCustomerGstin(null, $this->merchant);
     }
 
     public function setCustomerName($customerName)
@@ -1284,9 +1285,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CUSTOMER_CONTACT, $customerContact);
     }
 
-    public function setCustomerGstin($customerGstin)
+    public function setCustomerGstin($customerGstin, $merchant)
     {
-        if ($this->isInternational() === false)
+        if ($this->isGSTTaxationApplicable($merchant))
         {
             $this->setAttribute(self::CUSTOMER_GSTIN, $customerGstin);
         }
@@ -1531,9 +1532,20 @@ class Entity extends Base\PublicEntity
         return $details;
     }
 
-    public function isInternational(): bool
+    public function isInternational(Merchant\Entity $merchant): bool
     {
-        return ($this->getCurrency() !== Currency::INR);
+        return ($this->getCurrency() !== $merchant->getCurrency());
+    }
+
+    public function isGSTTaxationApplicable(Merchant\Entity $merchant): bool
+    {
+        $isCurrencyInr = $this->getCurrency() == Currency::INR;
+
+        if( $merchant == null){
+            return $isCurrencyInr;
+        }
+
+        return $isCurrencyInr && $merchant->getCountry() == "IN";
     }
 
     /**

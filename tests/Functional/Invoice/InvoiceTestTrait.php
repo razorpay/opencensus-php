@@ -66,6 +66,36 @@ trait InvoiceTestTrait
         return $payment;
     }
 
+
+    protected function makePaymentForInvoiceAndAssertForMyMerchant(array $invoice)
+    {
+        $payment = $this->getDefaultPaymentArrayForMYMerchant();
+
+        $this->app['config']->set('applications.pg_router.mock', true);
+
+        $payment['order_id'] = $invoice['order_id'];
+        $payment['amount']   = $invoice['amount'];
+        $payment['invoice_id']   = $invoice['id'];
+
+        $payment = $this->doAuthAndGetPaymentForMyMerchant(
+            $payment,
+            [
+                'status'   => 'captured',
+                'order_id' => $invoice['order_id'],
+                'invoice_id' => $invoice['id'],
+            ]
+        );
+
+        $order   = $this->getLastEntity('order', true);
+        $invoice = $this->getLastEntity('invoice', true);
+
+        $this->assertEquals($payment['id'], $invoice['payment_id']);
+        $this->assertEquals($order['status'], 'paid');
+        $this->assertEquals($invoice['status'], 'paid');
+
+        return $payment;
+    }
+
     /**
      * Returns expected upsert index params for ES client method bulkUpsert method.
      *

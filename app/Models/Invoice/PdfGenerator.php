@@ -68,7 +68,7 @@ class PdfGenerator extends Base\Core
 
         $duration = millitime() - $timeStarted;
 
-        $this->trace->histogram(Metric::INVOICE_PDF_GEN_DURATION_MILLISECONDS, $duration);
+        $this->trace->histogram(Metric::INVOICE_PDF_GEN_DURATION_MILLISECONDS, $duration, ['merchant_country_code' => (string) $this->invoice->merchant->getCountry()]);
 
         $file = (new FileStore\Creator())
             ->name($this->invoice->getPdfFilename())
@@ -85,7 +85,7 @@ class PdfGenerator extends Base\Core
         $localFilePath = $file->getFullFilePath();
 
         (new FileUploadUfh())->uploadToUfh($localFilePath, $this->invoice);
-        
+
         return $file;
     }
 

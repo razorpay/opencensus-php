@@ -9,6 +9,7 @@ use App;
 use RZP\Base\JitValidator;
 use RZP\Constants\Environment;
 use RZP\Mail\System\Trace;
+use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Offer;
@@ -192,7 +193,7 @@ class Core extends Base\Core
         $this->unsetPIIData($invoiceCreatedTrace);
 
         $this->trace->info(TraceCode::INVOICE_CREATED, $invoiceCreatedTrace);
-        $this->trace->count(Metric::INVOICE_CREATED_TOTAL, $invoice->getMetricDimensions());
+        $this->trace->count(Metric::INVOICE_CREATED_TOTAL, $invoice->getMetricDimensions(['merchant_country_code' => (string) $merchant->getCountry()]));
 
         $this->repo->loadRelations($invoice);
 
@@ -765,7 +766,7 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             }, $maxAttempts);
 
-        $this->trace->count(Metric::INVOICE_EXPIRED_TOTAL, $invoice->getMetricDimensions());
+        $this->trace->count(Metric::INVOICE_EXPIRED_TOTAL, $invoice->getMetricDimensions(['merchant_country_code' => (string) $invoice->merchant->getCountry()]));
 
         // Sends expiration mails to customer asynchronously
         $this->eventService->dispatch('api.invoice.expired', [$invoice]);
@@ -850,7 +851,7 @@ class Core extends Base\Core
 
             }, $maxAttempts);
 
-        $this->trace->count(Metric::INVOICE_DELETED_TOTAL, $invoice->getMetricDimensions());
+        $this->trace->count(Metric::INVOICE_DELETED_TOTAL, $invoice->getMetricDimensions(['merchant_country_code' => (string) $invoice->merchant->getCountry()]));
     }
 
     /**
@@ -1701,7 +1702,7 @@ class Core extends Base\Core
         $invoice->updateStatusPostCapture($payment);
 
         $isPartialPayment = ($invoice->getAmount() !== $payment->getAmount());
-        $dimensions = $invoice->getMetricDimensions(['is_partial_payment' => (int) $isPartialPayment]);
+        $dimensions = $invoice->getMetricDimensions(['is_partial_payment' => (int) $isPartialPayment, 'merchant_country_code' => (string) $invoice->merchant->getCountry()]);
         $this->trace->count(Metric::INVOICE_PAID_TOTAL, $dimensions);
 
         $this->repo->saveOrFail($invoice);
@@ -1715,5 +1716,12 @@ class Core extends Base\Core
                                'invoice_status'                => $invoice->getStatus(),
                            ]
         );
+    }
+
+    public  function  getCurlecBrandingConfig(){
+        $branding = [];
+        $branding['show_rzp_logo'] = true;
+        $branding['security_branding_logo'] = "https://cdn.razorpay.com/static/assets/i18n/malaysia/security-branding.png";
+        return $branding;
     }
 }

@@ -222,6 +222,37 @@ trait PaymentTrait
         return $this->getAndMatchPayment($id, $paymentResponse);
     }
 
+    protected function doAuthAndGetPaymentForMyMerchant($payment = null, $paymentResponse = [])
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArrayForMYMerchant();
+        }
+        $this->app['config']->set('applications.pg_router.mock', true);
+
+        $amount = $payment['amount'];
+        $currency = $payment['currency'];
+
+        $payment = $this->fixtures->payment->createAuthorized(
+            [
+                'order_id'   => explode("_", $payment['order_id'])[1],
+                'amount'   => $amount,
+                'currency' => $currency,
+            ]);
+
+        $payment = $this->capturePayment(
+            'pay_' . $payment['id'],
+            $amount, $currency, $amount);
+
+        $id = $payment['razorpay_payment_id'];
+
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+
+        $func = $trace[1]['function'];
+
+        return $payment;
+    }
+
     public function createRefundFromPayments($payments)
     {
         foreach ($payments as $payment)
@@ -1673,6 +1704,29 @@ trait PaymentTrait
         return $this->runRequestResponseFlow($testData);
     }
 
+    protected function getAndMatchPaymentForMyMerchant($id, $paymentResponse = [])
+    {
+        $testData['request']['url'] = '/payments/'.$id;
+        $testData['request']['method'] = 'GET';
+
+        $defaults = array(
+            'id'                => $id,
+            'status'            => 'authorized',
+            'refund_status'     => null,
+            'amount_refunded'   => 0,
+            'error_code'        => null,
+            'error_description' => null,
+            'order_id'          => null,
+            'currency'          => 'MYR',
+            'entity'            => 'payment');
+
+        $payment = array_merge($defaults, $paymentResponse);
+        $testData['response']['content'] = $payment;
+
+        $this->ba->privateAuth();
+        return $this->runRequestResponseFlow($testData);
+    }
+
     protected function fetchPayment($paymentId, $content = [])
     {
         $request['url'] = '/payments/'.$paymentId;
@@ -1772,6 +1826,24 @@ trait PaymentTrait
             'name'              => 'Harshil',
             'expiry_month'      => '12',
             'expiry_year'       => '2024',
+            'cvv'               => '566',
+        );
+
+
+        return $payment;
+    }
+
+    protected function getDefaultPaymentArrayForMYMerchant()
+    {
+        $payment = $this->getDefaultPaymentArrayNeutral();
+
+        $payment['currency'] = 'MYR';
+
+        $payment['card'] = array(
+            'number'            => '5140241918501669',
+            'name'              => 'Harshil',
+            'expiry_month'      => '12',
+            'expiry_year'       => '2030',
             'cvv'               => '566',
         );
 

@@ -4,6 +4,7 @@ namespace RZP\Models\Invoice;
 
 use Carbon\Carbon;
 use Config;
+use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Feature;
@@ -135,19 +136,25 @@ class ViewDataSerializerHosted extends Base\Core
         $branding = [
             'show_rzp_logo' => true,
             'branding_logo' => '',
+             ORG_ENTITY::BUSINESS_NAME => $org->getBusinessName(),
         ];
 
         if($this->merchant->shouldShowCustomOrgBranding() === true)
         {
-            $branding['show_rzp_logo'] = false;
-
+            if(ORG_ENTITY::isOrgCurlec($org->getId()) === true){
+                $branding = array_merge($this->core->getCurlecBrandingConfig(), $branding);
+            }else{
+                $branding['show_rzp_logo'] = false;
+            }
             $branding['branding_logo'] = $org->getInvoiceLogo() ?: 'https://cdn.razorpay.com/static/assets/hostedpages/axis_logo.svg';
+
         }
 
         return [
             'branding'  => $branding
         ];
     }
+
 
     /**
      * Get view preferences for this Merchant
@@ -457,11 +464,11 @@ class ViewDataSerializerHosted extends Base\Core
 
         $this->addFormattedAmountAttributesForInvoice($serialized);
 
-        $this->addFormattedEpochAttributesForInvoice($serialized);
+        $this->addFormattedEpochAttributesForInvoice($serialized, $this->invoice->merchant);
 
         $this->addSubscriptionAttributesForInvoice($serialized);
 
-        $this->addExternalEntityAttributesForInvoice($serialized);
+        $this->addExternalEntityAttributesForInvoice($serialized, $this->invoice->merchant);
 
         return $serialized;
     }
@@ -646,12 +653,12 @@ class ViewDataSerializerHosted extends Base\Core
             });
     }
 
-    protected function addFormattedEpochAttributesForInvoice(array & $serialized)
+    protected function addFormattedEpochAttributesForInvoice(array & $serialized, Merchant\Entity $merchant)
     {
         foreach (self::$epochs as $key)
         {
             $value = $serialized[$key];
-            $formatted = ($value === null ? null : Carbon::createFromTimestamp($value, Timezone::IST)->format('j M Y'));
+            $formatted = ($value === null ? null : Carbon::createFromTimestamp($value, $merchant->getTimeZone())->format('j M Y'));
             $serialized[$key . '_formatted'] = $formatted;
         }
     }
@@ -737,7 +744,7 @@ class ViewDataSerializerHosted extends Base\Core
         }
     }
 
-    protected function addExternalEntityAttributesForInvoice(array & $serialized)
+    protected function addExternalEntityAttributesForInvoice(array & $serialized, Merchant\Entity $merchant)
     {
         $externalEntity = $this->invoice->entity;
 
@@ -752,7 +759,7 @@ class ViewDataSerializerHosted extends Base\Core
             $expireAt = $serialized[E::SUBSCRIPTION_REGISTRATION][SubscriptionRegistration\Entity::EXPIRE_AT] ?? null;
 
             $formattedExpireAt = ($expireAt === null ? null :
-                Carbon::createFromTimestamp($expireAt, Timezone::IST)->format('j M Y'));
+                Carbon::createFromTimestamp($expireAt, $merchant->getTimeZone())->format('j M Y'));
             $serialized[E::SUBSCRIPTION_REGISTRATION]['expire_at_formatted'] = $formattedExpireAt;
 
             $serialized
@@ -925,7 +932,7 @@ class ViewDataSerializerHosted extends Base\Core
                     'timestamp'            => $payment->getUpdatedAt(),
                     'captured_at'          => $payment->getAttribute('captured_at'),
                     'amount_spread'        => $payment->getAmountComponents(),
-                    'created_at_formatted' => Utility::getTimestampFormatted($payment->getCreatedAt(), 'jS M, Y'),
+                    'created_at_formatted' => Utility::getTimestampFormattedByTimeZone($payment->getCreatedAt(), 'jS M, Y', $merchant->getTimeZone()),
                     'method'               => $payment->getMethodWithDetail(),
                     'notes'                => $payment->getNotes(),
                 ];

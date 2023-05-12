@@ -406,7 +406,7 @@ class Generator extends Base\Core
 
         // Saves merchant specific details in invoice as copy e.g. merchant label & gstin to use
 
-        if ($invoice->isInternational() === false)
+        if ($invoice->isGSTTaxationApplicable($this->merchant) === true)
         {
             $invoice->setMerchantGstin($this->merchant->getGstin());
         }
@@ -701,7 +701,7 @@ class Generator extends Base\Core
 
         if (($invoiceHasCustomer === true) or ($inputHasCustomerId === true))
         {
-            $this->overrideCustomerOfInvoiceWithDetails($details);
+            $this->overrideCustomerOfInvoiceWithDetails($details, $this->merchant);
         }
         else
         {
@@ -717,7 +717,7 @@ class Generator extends Base\Core
      *
      * @param array $details
      */
-    protected function overrideCustomerOfInvoiceWithDetails(array $details)
+    protected function overrideCustomerOfInvoiceWithDetails(array $details, Merchant\Entity $merchant)
     {
         $this->invoice->getValidator()->validateInput('editCustomerDetails', $details);
 
@@ -734,7 +734,7 @@ class Generator extends Base\Core
         {
             $setter = 'setCustomer' . studly_case($attribute);
 
-            $this->invoice->$setter($value);
+            $this->invoice->$setter($value, $merchant);
         }
     }
 
