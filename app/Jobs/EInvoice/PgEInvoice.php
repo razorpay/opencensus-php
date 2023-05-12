@@ -13,6 +13,8 @@ class PgEInvoice extends Job
 {
     const MAX_ATTEMPTS = 5;
 
+    public $timeout = 1800;
+
     protected $merchantId;
 
     protected $type;
