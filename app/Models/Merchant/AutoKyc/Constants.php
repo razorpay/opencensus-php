@@ -16,11 +16,21 @@ class Constants
 {
     const ENTITY = 'entity';
     const IN     = 'in';
+    const EXPERIMENT_ID    = 'experiment_id';
+    const DEFAULT_VALUE    = 'default_value';
 
     const DEFAULT_CONDITION = [
         'entity' => E::MERCHANT_DETAIL,
         'in'     => [POIStatus::VERIFIED]
     ];
+
+    const DEFAULT_SIGNATORY_VERIFICATION_CONDITION = [
+        'entity'            => E::MERCHANT_VERIFICATION_DETAIL,
+        'in'                => [POIStatus::VERIFIED],
+        self::EXPERIMENT_ID => 'signatory_validations_experiment_id',
+        self::DEFAULT_VALUE => true
+    ];
+
 
     const POI_CONDITION = self::DEFAULT_CONDITION;
 
@@ -37,9 +47,11 @@ class Constants
     const MSME_DOC_VERIFICATION_CONDITION = self::DEFAULT_CONDITION;
 
     const DEFAULT_VERIFICATION_DETAIL_CONDITION = [
-        'entity' => E::MERCHANT_VERIFICATION_DETAIL,
-        'in'     => [POIStatus::VERIFIED]
+        'entity'            => E::MERCHANT_VERIFICATION_DETAIL,
+        'in'                => [POIStatus::VERIFIED],
+        self::DEFAULT_VALUE => false
     ];
+
 
     const CIN_CONDITION = self::DEFAULT_CONDITION;
 
@@ -85,108 +97,132 @@ class Constants
         ],
 
         BusinessType::INDIVIDUAL => [
-            Operator:: AND => [
-                Entity::POI_VERIFICATION_STATUS => self::POI_CONDITION,
-                Operator:: AND                  => [
-                    Operator:: AND => self::BANK_DETAILS_VERIFICATION_CONDITION,
-                    Operator:: OR  => self::POA_VERIFICATION_CONDITION
-                ]
-            ]
+            Operator::AND => [
+                Operator:: AND => [
+                    Entity::POI_VERIFICATION_STATUS => self::POI_CONDITION,
+                    Operator:: AND                  => [
+                        Operator:: AND => self::BANK_DETAILS_VERIFICATION_CONDITION,
+                        Operator:: OR  => self::POA_VERIFICATION_CONDITION
+                    ]
+                ],
+                'signatory_validation|number' => self::DEFAULT_SIGNATORY_VERIFICATION_CONDITION,
+            ],
         ],
 
         BusinessType::PROPRIETORSHIP => [
-            Operator:: AND => [
-                Entity::POI_VERIFICATION_STATUS => self::POI_CONDITION,
-                Operator:: OR                   => [
-                    Entity::GSTIN_VERIFICATION_STATUS              => self::GSTIN_CONDITION,
-                    Entity::SHOP_ESTABLISHMENT_VERIFICATION_STATUS => self::SHOP_ESTABLISHMENT_CONDITION,
-                    Entity::MSME_DOC_VERIFICATION_STATUS           => self::MSME_DOC_VERIFICATION_CONDITION,
-                    /* added the following for handling shop establishment document in the new merchant_verification_detail table
-                     * the format followed is 'artefact_type|artefact_identifier'
-                     */
-                    'shop_establishment|doc'                       => self::DEFAULT_VERIFICATION_DETAIL_CONDITION,
-                    'gstin|doc'                                    => self::DEFAULT_VERIFICATION_DETAIL_CONDITION
+            Operator::AND => [
+                Operator:: AND                => [
+                    Entity::POI_VERIFICATION_STATUS => self::POI_CONDITION,
+                    Operator:: OR                   => [
+                        Entity::GSTIN_VERIFICATION_STATUS              => self::GSTIN_CONDITION,
+                        Entity::SHOP_ESTABLISHMENT_VERIFICATION_STATUS => self::SHOP_ESTABLISHMENT_CONDITION,
+                        Entity::MSME_DOC_VERIFICATION_STATUS           => self::MSME_DOC_VERIFICATION_CONDITION,
+                        /* added the following for handling shop establishment document in the new merchant_verification_detail table
+                         * the format followed is 'artefact_type|artefact_identifier'
+                         */
+                        'shop_establishment|doc'                       => self::DEFAULT_VERIFICATION_DETAIL_CONDITION,
+                        'gstin|doc'                                    => self::DEFAULT_VERIFICATION_DETAIL_CONDITION
+                    ],
+                    Operator:: AND                  => [
+                        Operator:: AND => self::BANK_DETAILS_VERIFICATION_CONDITION,
+                        Operator:: OR  => self::POA_VERIFICATION_CONDITION
+                    ]
                 ],
-                Operator:: AND                  => [
-                    Operator:: AND => self::BANK_DETAILS_VERIFICATION_CONDITION,
-                    Operator:: OR  => self::POA_VERIFICATION_CONDITION
-                ]
-            ]
+                'signatory_validation|number' => self::DEFAULT_SIGNATORY_VERIFICATION_CONDITION,
+            ],
         ],
 
         BusinessType::PRIVATE_LIMITED => [
-            Operator:: AND => [
-                Entity::POI_VERIFICATION_STATUS         => self::POI_CONDITION,
-                Entity::COMPANY_PAN_VERIFICATION_STATUS => self::COMPANY_PAN_CONDITION,
-                Operator:: AND                          => [
-                    Operator:: AND => self::BANK_DETAILS_VERIFICATION_CONDITION,
-                    Operator:: OR  => self::POA_VERIFICATION_CONDITION
+            Operator::AND => [
+                Operator:: AND                => [
+                    Entity::POI_VERIFICATION_STATUS         => self::POI_CONDITION,
+                    Entity::COMPANY_PAN_VERIFICATION_STATUS => self::COMPANY_PAN_CONDITION,
+                    Operator:: AND                          => [
+                        Operator:: AND => self::BANK_DETAILS_VERIFICATION_CONDITION,
+                        Operator:: OR  => self::POA_VERIFICATION_CONDITION
+                    ],
+                    Operator:: OR                           => [
+                        Entity::CIN_VERIFICATION_STATUS    => self::CIN_CONDITION,
+                        'certificate_of_incorporation|doc' => self::DEFAULT_VERIFICATION_DETAIL_CONDITION
+                    ]
                 ],
-                Operator:: OR                           => [
-                    Entity::CIN_VERIFICATION_STATUS    => self::CIN_CONDITION,
-                    'certificate_of_incorporation|doc' => self::DEFAULT_VERIFICATION_DETAIL_CONDITION
-                ]
-            ]
+                'signatory_validation|number' => self::DEFAULT_SIGNATORY_VERIFICATION_CONDITION,
+            ],
         ],
 
         BusinessType::PUBLIC_LIMITED => [
-            Operator:: AND => [
-                Entity::POI_VERIFICATION_STATUS         => self::POI_CONDITION,
-                Entity::COMPANY_PAN_VERIFICATION_STATUS => self::COMPANY_PAN_CONDITION,
-                Operator:: AND                          => [
-                    Operator:: AND => self::BANK_DETAILS_VERIFICATION_CONDITION,
-                    Operator:: OR  => self::POA_VERIFICATION_CONDITION
+            Operator::AND => [
+                Operator:: AND                => [
+                    Entity::POI_VERIFICATION_STATUS         => self::POI_CONDITION,
+                    Entity::COMPANY_PAN_VERIFICATION_STATUS => self::COMPANY_PAN_CONDITION,
+                    Operator:: AND                          => [
+                        Operator:: AND => self::BANK_DETAILS_VERIFICATION_CONDITION,
+                        Operator:: OR  => self::POA_VERIFICATION_CONDITION
+                    ],
+                    Operator:: OR                           => [
+                        Entity::CIN_VERIFICATION_STATUS    => self::CIN_CONDITION,
+                        'certificate_of_incorporation|doc' => self::DEFAULT_VERIFICATION_DETAIL_CONDITION
+                    ]
                 ],
-                Operator:: OR                           => [
-                    Entity::CIN_VERIFICATION_STATUS    => self::CIN_CONDITION,
-                    'certificate_of_incorporation|doc' => self::DEFAULT_VERIFICATION_DETAIL_CONDITION
-                ]
-            ]
+                'signatory_validation|number' => self::DEFAULT_SIGNATORY_VERIFICATION_CONDITION,
+            ],
         ],
 
         BusinessType::PARTNERSHIP => [
-            Operator:: AND => [
-                Entity::POI_VERIFICATION_STATUS          => self::POI_CONDITION,
-                Entity::COMPANY_PAN_VERIFICATION_STATUS  => self::COMPANY_PAN_CONDITION,
-                Entity::BANK_DETAILS_VERIFICATION_STATUS => self::DEFAULT_CONDITION,
-                'partnership_deed|doc'                   => self::DEFAULT_VERIFICATION_DETAIL_CONDITION,
-                Operator:: OR                            => self::POA_VERIFICATION_CONDITION,
-            ]
-        ],
-
-        BusinessType::TRUST    => [
-            Operator:: AND => [
-                Entity::POI_VERIFICATION_STATUS             => self::POI_CONDITION,
-                Entity::COMPANY_PAN_VERIFICATION_STATUS     => self::COMPANY_PAN_CONDITION,
-                Operator:: OR                               => self::POA_VERIFICATION_CONDITION,
-                Entity::BANK_DETAILS_VERIFICATION_STATUS    => self::DEFAULT_CONDITION,
-                'trust_society_ngo_business_certificate|doc'=> self::DEFAULT_VERIFICATION_DETAIL_CONDITION,
-            ]
-        ],
-
-        BusinessType::SOCIETY    => [
-            Operator:: AND => [
-                Entity::POI_VERIFICATION_STATUS             => self::POI_CONDITION,
-                Entity::COMPANY_PAN_VERIFICATION_STATUS     => self::COMPANY_PAN_CONDITION,
-                Operator:: OR                               => self::POA_VERIFICATION_CONDITION,
-                Entity::BANK_DETAILS_VERIFICATION_STATUS    => self::DEFAULT_CONDITION,
-                'trust_society_ngo_business_certificate|doc'=> self::DEFAULT_VERIFICATION_DETAIL_CONDITION
-            ]
-        ],
-
-        BusinessType::LLP  => [
-            Operator:: AND => [
-                Entity::POI_VERIFICATION_STATUS         => self::POI_CONDITION,
-                Entity::COMPANY_PAN_VERIFICATION_STATUS => self::COMPANY_PAN_CONDITION,
-                Operator:: AND                          => [
-                    Operator:: AND => self::BANK_DETAILS_VERIFICATION_CONDITION,
-                    Operator:: OR  => self::POA_VERIFICATION_CONDITION
+            Operator::AND => [
+                Operator:: AND                => [
+                    Entity::POI_VERIFICATION_STATUS          => self::POI_CONDITION,
+                    Entity::COMPANY_PAN_VERIFICATION_STATUS  => self::COMPANY_PAN_CONDITION,
+                    Entity::BANK_DETAILS_VERIFICATION_STATUS => self::DEFAULT_CONDITION,
+                    'partnership_deed|doc'                   => self::DEFAULT_VERIFICATION_DETAIL_CONDITION,
+                    Operator:: OR                            => self::POA_VERIFICATION_CONDITION,
                 ],
-                Operator:: OR                           => [
-                    Entity::CIN_VERIFICATION_STATUS    => self::CIN_CONDITION,
-                    'certificate_of_incorporation|doc' => self::DEFAULT_VERIFICATION_DETAIL_CONDITION,
-                ]
-            ]
+                'signatory_validation|number' => self::DEFAULT_SIGNATORY_VERIFICATION_CONDITION,
+            ],
+        ],
+
+        BusinessType::TRUST => [
+            Operator::AND => [
+                Operator:: AND                => [
+                    Entity::POI_VERIFICATION_STATUS              => self::POI_CONDITION,
+                    Entity::COMPANY_PAN_VERIFICATION_STATUS      => self::COMPANY_PAN_CONDITION,
+                    Operator:: OR                                => self::POA_VERIFICATION_CONDITION,
+                    Entity::BANK_DETAILS_VERIFICATION_STATUS     => self::DEFAULT_CONDITION,
+                    'trust_society_ngo_business_certificate|doc' => self::DEFAULT_VERIFICATION_DETAIL_CONDITION,
+                ],
+                'signatory_validation|number' => self::DEFAULT_SIGNATORY_VERIFICATION_CONDITION,
+            ],
+        ],
+
+        BusinessType::SOCIETY => [
+            Operator::AND => [
+                Operator:: AND                => [
+                    Entity::POI_VERIFICATION_STATUS              => self::POI_CONDITION,
+                    Entity::COMPANY_PAN_VERIFICATION_STATUS      => self::COMPANY_PAN_CONDITION,
+                    Operator:: OR                                => self::POA_VERIFICATION_CONDITION,
+                    Entity::BANK_DETAILS_VERIFICATION_STATUS     => self::DEFAULT_CONDITION,
+                    'trust_society_ngo_business_certificate|doc' => self::DEFAULT_VERIFICATION_DETAIL_CONDITION
+                ],
+                'signatory_validation|number' => self::DEFAULT_SIGNATORY_VERIFICATION_CONDITION,
+            ],
+        ],
+
+        BusinessType::LLP => [
+            Operator::AND => [
+                Operator:: AND                => [
+                    Entity::POI_VERIFICATION_STATUS         => self::POI_CONDITION,
+                    Entity::COMPANY_PAN_VERIFICATION_STATUS => self::COMPANY_PAN_CONDITION,
+                    Operator:: AND                          => [
+                        Operator:: AND => self::BANK_DETAILS_VERIFICATION_CONDITION,
+                        Operator:: OR  => self::POA_VERIFICATION_CONDITION
+                    ],
+                    Operator:: OR                           => [
+                        Entity::CIN_VERIFICATION_STATUS    => self::CIN_CONDITION,
+                        'certificate_of_incorporation|doc' => self::DEFAULT_VERIFICATION_DETAIL_CONDITION,
+                    ]
+                ],
+                'signatory_validation|number' => self::DEFAULT_SIGNATORY_VERIFICATION_CONDITION,
+            ],
         ],
     ];
 

@@ -5587,7 +5587,8 @@ class Core extends Base\Core
         $autoKycDone = (new Parser)->parse($conditions, function($key, $condition) use ($merchantDetails) {
 
             $entity = $condition[AutoKyc\Constants::ENTITY];
-            $in     = $condition[AutoKyc\Constants::IN];
+
+            $in = $condition[AutoKyc\Constants::IN];
 
             switch ($entity)
             {
@@ -5596,7 +5597,7 @@ class Core extends Base\Core
                 case E::STAKEHOLDER:
                     return $this->verifyStakeHolderCondition($merchantDetails, $key, $in);
                 case E::MERCHANT_VERIFICATION_DETAIL:
-                    return $this->verifyBusinessVerificationCondition($merchantDetails, $key, $in);
+                    return $this->verifyBusinessVerificationCondition($merchantDetails, $key, $in, $condition);
             }
         });
 
@@ -5721,11 +5722,32 @@ class Core extends Base\Core
         return $conditions;
     }
 
-    protected function verifyBusinessVerificationCondition(Entity $merchantDetails, string $key, array $in)
+    protected function verifyBusinessVerificationCondition(Entity $merchantDetails, string $key, array $in, array $condition = null )
     {
         $businessType = $merchantDetails->getBusinessType();
 
         [$type, $identifier] = explode('|', $key);
+
+        $experimentId = $condition[AutoKyc\Constants::EXPERIMENT_ID] ?? null;
+
+        $defaultValue = $condition[AutoKyc\Constants::DEFAULT_VALUE] ?? null ;
+
+        if (empty($experimentId) === false)
+        {
+            $splitzResult = (new Merchant\Detail\Core())->getSplitzResponse($merchantDetails->getId(), $experimentId);
+
+            $isExperimentEnabled = ($splitzResult === 'true');
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'SplitzResult'             => $splitzResult,
+                'isSignatoryValidationExp' => $isExperimentEnabled
+            ]);
+
+            if ($isExperimentEnabled === false)
+            {
+                return $defaultValue;
+            }
+        }
 
         if ((in_array($businessType, BusinessType::getCOIApplicableBusinessTypes(), true) === true) && ($type == Constant::CERTIFICATE_OF_INCORPORATION))
         {
@@ -5742,7 +5764,7 @@ class Core extends Base\Core
 
             if ($isExperimentEnabledForCOI === false)
             {
-                return false;
+                return $defaultValue;
             }
         }
 
@@ -5754,7 +5776,7 @@ class Core extends Base\Core
 
         if (empty($verificationDetail) === true)
         {
-            return false;
+            return $defaultValue;
         }
 
         return in_array(

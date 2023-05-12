@@ -606,6 +606,8 @@ return array(
 
     'magic_qr_v2_experiment_id'  => env('MAGIC_QR_V2_EXP_ID'),
 
+    'signatory_validations_experiment_id' => env('SIGNATORY_VALIDATIONS_EXPERIMENT_ID'),
+    
     'artefacts_signatory_validations_experiment_id'      => env('ARTEFACTS_SIGNATORY_VALIDATIONS_EXPERIMENT_ID'),
 
     'one_cc_auto_submit_otp_experiment_id' => env('1CC_AUTO_SUBMIT_OTP_EXP_ID'),

@@ -2,8 +2,11 @@
 
 
 namespace Unit\Models\Merchant\AutoKyc;
+
+use Mockery;
 use RZP\Services\RazorXClient;
 use RZP\Models\Merchant\Detail;
+use RZP\Services\SplitzService;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\VerificationDetail;
 use RZP\Models\Merchant\Detail\BusinessType;
@@ -11,6 +14,43 @@ use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Partner\Core as PartnerCore;
 class TrustAutoKycTest extends TestCase
 {
+    protected $splitzMock;
+
+    protected function getSplitzMock()
+    {
+        if ($this->splitzMock === null)
+        {
+            $this->splitzMock = Mockery::mock(SplitzService::class, [$this->app])->makePartial();
+
+            $this->app->instance('splitzService', $this->splitzMock);
+        }
+
+        return $this->splitzMock;
+    }
+
+    protected function mockSplitzTreatment($input = [], $output = [])
+    {
+        return $this->getSplitzMock()
+                    ->shouldReceive('evaluateRequest')
+                    ->atLeast()
+                    ->once()
+                    ->with($input)
+                    ->andReturn($output);
+    }
+
+    protected function mockAllSplitzTreatment($output = [
+        "response" => [
+            "variant" => [
+                "name" => 'enable',
+            ]
+        ]
+    ])
+    {
+        return $this->getSplitzMock()
+                    ->shouldReceive('evaluateRequest')
+                    ->andReturn($output);
+    }
+
     protected function mockRazorxTreatment()
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -70,6 +110,16 @@ class TrustAutoKycTest extends TestCase
 
     public function testAutoKycForTrustIfTrustSocietyNgoBusinessCertificateIsVerified()
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $this->mockRazorxTreatment();
 
         $fixtures = $this->createAndFetchFixtures([], [
@@ -104,6 +154,16 @@ class TrustAutoKycTest extends TestCase
 
     public function testAutoKycForTrustIfBankAccountVerified()
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $this->mockRazorxTreatment();
 
         $fixtures = $this->createAndFetchFixtures([
@@ -136,6 +196,16 @@ class TrustAutoKycTest extends TestCase
 
     public function testAutoKycForTrustIfPOIVerified()
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $this->mockRazorxTreatment();
 
         $fixtures = $this->createAndFetchFixtures([
@@ -168,6 +238,16 @@ class TrustAutoKycTest extends TestCase
 
     public function testAutoKycForTrustIfCompanyPanVerified()
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $this->mockRazorxTreatment();
 
         $fixtures = $this->createAndFetchFixtures([
@@ -200,6 +280,16 @@ class TrustAutoKycTest extends TestCase
 
     public function testAutoKycForTrustIfPoaVerifiedAndAadharEkycNotVerified()
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $this->mockRazorxTreatment();
 
         $fixtures = $this->createAndFetchFixtures([
@@ -217,6 +307,16 @@ class TrustAutoKycTest extends TestCase
 
     public function testAutoKycForTrustIfPoaNotVerifiedAndAadharEkycVerified()
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $this->mockRazorxTreatment();
 
         $fixtures = $this->createAndFetchFixtures([
@@ -245,6 +345,81 @@ class TrustAutoKycTest extends TestCase
         $core = new Detail\Core();
 
         $merchantDetail = $fixtures['merchant_detail'];
+        $isAutoKycDone  = $core->isAutoKycDone($merchantDetail);
+        $this->assertFalse($isAutoKycDone);
+
+    }
+
+    public function testAutoKycForTrustIfPoaNotVerifiedAndAadharEkycVerifiedSignatoryVerified()
+    {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'true',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
+        $this->mockRazorxTreatment();
+
+        $fixtures = $this->createAndFetchFixtures([
+                                                      Detail\Entity::POA_VERIFICATION_STATUS => 'failed'
+                                                  ], [], ['aadhaar_esign_status'             => 'verified',
+                                                          'aadhaar_verification_with_pan_status' => 'verified']);
+
+
+        $core = new Detail\Core();
+
+        $merchantDetail = $fixtures['merchant_detail'];
+
+        $this->fixtures->create(
+            'merchant_verification_detail', [
+                                              'merchant_id'         => $merchantDetail->getId(),
+                                              'artefact_type'       => Constant::SIGNATORY_VALIDATION,
+                                              'artefact_identifier' => 'number',
+                                              'status'              => 'verified'
+                                          ]
+        );
+
+        $isAutoKycDone  = $core->isAutoKycDone($merchantDetail);
+        $this->assertTrue($isAutoKycDone);
+
+    }
+
+    public function testAutoKycForTrustIfPoaVerifiedAndAadharEkycNotVerifiedSignatoryNotVerified()
+    {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'true',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
+        $this->mockRazorxTreatment();
+
+        $fixtures = $this->createAndFetchFixtures([
+                                                      Detail\Entity::POA_VERIFICATION_STATUS => 'verified'
+                                                  ], [],['aadhaar_esign_status'              => 'failed',
+                                                         'aadhaar_verification_with_pan_status' => 'failed']);
+
+        $core = new Detail\Core();
+
+        $merchantDetail = $fixtures['merchant_detail'];
+
+        $this->fixtures->create(
+            'merchant_verification_detail', [
+                                              'merchant_id'         => $merchantDetail->getId(),
+                                              'artefact_type'       => Constant::SIGNATORY_VALIDATION,
+                                              'artefact_identifier' => 'number',
+                                              'status'              => 'failed'
+                                          ]
+        );
+
         $isAutoKycDone  = $core->isAutoKycDone($merchantDetail);
         $this->assertFalse($isAutoKycDone);
 

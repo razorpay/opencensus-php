@@ -3,8 +3,10 @@
 
 namespace Unit\Models\Merchant\AutoKyc;
 
+use Mockery;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Services\SplitzService;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Models\Merchant\Detail\BusinessType;
@@ -13,6 +15,43 @@ use RZP\Services\RazorXClient;
 
 class AadhaarVerificationTest extends TestCase
 {
+    protected $splitzMock;
+
+    protected function mockSplitzTreatment($input = [], $output = [])
+    {
+        return $this->getSplitzMock()
+                    ->shouldReceive('evaluateRequest')
+                    ->atLeast()
+                    ->once()
+                    ->with($input)
+                    ->andReturn($output);
+    }
+
+    protected function mockAllSplitzTreatment($output = [
+        "response" => [
+            "variant" => [
+                "name" => 'enable',
+            ]
+        ]
+    ])
+    {
+        return $this->getSplitzMock()
+                    ->shouldReceive('evaluateRequest')
+                    ->andReturn($output);
+    }
+
+    protected function getSplitzMock()
+    {
+        if ($this->splitzMock === null)
+        {
+            $this->splitzMock = Mockery::mock(SplitzService::class, [$this->app])->makePartial();
+
+            $this->app->instance('splitzService', $this->splitzMock);
+        }
+
+        return $this->splitzMock;
+    }
+
     protected function mockRazorxTreatment()
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -88,6 +127,16 @@ class AadhaarVerificationTest extends TestCase
 
     public function testAutoKycForUnregAadhaarNotVerifiedPoaVerified()
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $fixtures = $this->createAndFetchFixtures(
             BusinessType::NOT_YET_REGISTERED,
             [
@@ -156,6 +205,16 @@ class AadhaarVerificationTest extends TestCase
 
     public function testAutoKycForUnregisteredAadhaarLinkedAndVerified()
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $fixtures = $this->createAndFetchFixtures(BusinessType::NOT_YET_REGISTERED, [], [
             "aadhaar_linked"                       => 1,
             "aadhaar_esign_status"                 => 'verified',
@@ -218,6 +277,16 @@ class AadhaarVerificationTest extends TestCase
 
     public function testAutoKycForProprietorshipAadhaarLinkedAndVerified()
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $fixtures = $this->createAndFetchFixtures(BusinessType::PROPRIETORSHIP, [], [
             "aadhaar_linked"                       => 1,
             "aadhaar_esign_status"                 => 'verified',
@@ -239,6 +308,16 @@ class AadhaarVerificationTest extends TestCase
      */
     public function testAutoKycForProprietorshipAadhaarNotVerifiedPoaVerified()
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $fixtures = $this->createAndFetchFixtures(
             BusinessType::PROPRIETORSHIP,
             [
@@ -308,6 +387,16 @@ class AadhaarVerificationTest extends TestCase
 
     public function testAutoKycForPublicAadhaarLinkedAndVerified()
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $fixtures = $this->createAndFetchFixtures(BusinessType::PUBLIC_LIMITED, [], [
             "aadhaar_linked"                       => 1,
             "aadhaar_esign_status"                 => 'verified',
@@ -329,6 +418,16 @@ class AadhaarVerificationTest extends TestCase
      */
     public function testAutoKycForPublicAadhaarNotVerifiedPoaVerified()
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $fixtures = $this->createAndFetchFixtures(
             BusinessType::PUBLIC_LIMITED,
             [
@@ -398,6 +497,16 @@ class AadhaarVerificationTest extends TestCase
 
     public function testAutoKycForPrivateAadhaarLinkedAndVerified()
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $fixtures = $this->createAndFetchFixtures(BusinessType::PRIVATE_LIMITED, [], [
             "aadhaar_linked"                       => 1,
             "aadhaar_esign_status"                 => 'verified',
@@ -419,6 +528,16 @@ class AadhaarVerificationTest extends TestCase
      */
     public function testAutoKycForPrivateAadhaarNotVerifiedPoaVerified()
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $fixtures = $this->createAndFetchFixtures(
             BusinessType::PRIVATE_LIMITED,
             [
@@ -488,6 +607,16 @@ class AadhaarVerificationTest extends TestCase
 
     public function testAutoKycForLLPAadhaarLinkedAndVerified()
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $fixtures = $this->createAndFetchFixtures(BusinessType::LLP, [], [
             "aadhaar_linked"                       => 1,
             "aadhaar_esign_status"                 => 'verified',
@@ -509,6 +638,16 @@ class AadhaarVerificationTest extends TestCase
      */
     public function testAutoKycForLLPAadhaarNotVerifiedPoaVerified()
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $fixtures = $this->createAndFetchFixtures(
             BusinessType::LLP,
             [
@@ -582,6 +721,16 @@ class AadhaarVerificationTest extends TestCase
 
     public function testAutoKycForTrustAadhaarLinkedAndVerified()
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $this->mockRazorxTreatment();
         $fixtures = $this->createAndFetchFixtures(BusinessType::TRUST, [], [
             "aadhaar_linked"                       => 1,
@@ -604,6 +753,16 @@ class AadhaarVerificationTest extends TestCase
      */
     public function testAutoKycForTrustAadhaarNotVerifiedPoaVerified()
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $this->mockRazorxTreatment();
         $fixtures = $this->createAndFetchFixtures(
             BusinessType::TRUST,
@@ -678,6 +837,16 @@ class AadhaarVerificationTest extends TestCase
 
     public function testAutoKycForSocietyAadhaarLinkedAndVerified()
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $this->mockRazorxTreatment();
         $fixtures = $this->createAndFetchFixtures(BusinessType::SOCIETY, [], [
             "aadhaar_linked"                       => 1,
@@ -700,6 +869,16 @@ class AadhaarVerificationTest extends TestCase
      */
     public function testAutoKycForSocietyAadhaarNotVerifiedPoaVerified()
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $this->mockRazorxTreatment();
         $fixtures = $this->createAndFetchFixtures(
             BusinessType::SOCIETY,

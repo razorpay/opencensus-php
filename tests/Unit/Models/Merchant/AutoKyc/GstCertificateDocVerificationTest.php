@@ -3,8 +3,10 @@
 
 namespace Unit\Models\Merchant\AutoKyc;
 
+use Mockery;
 use RZP\Services\RazorXClient;
 use RZP\Models\Merchant\Detail;
+use RZP\Services\SplitzService;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\VerificationDetail;
 use RZP\Models\Merchant\Detail\BusinessType;
@@ -12,6 +14,8 @@ use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Partner\Core as PartnerCore;
 class GstCertificateDocVerificationTest extends TestCase
 {
+    protected $splitzMock;
+
     protected function mockRazorxTreatment()
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -23,6 +27,41 @@ class GstCertificateDocVerificationTest extends TestCase
 
         $this->app->razorx->method('getTreatment')
                           ->willReturn('on');
+    }
+
+    protected function getSplitzMock()
+    {
+        if ($this->splitzMock === null)
+        {
+            $this->splitzMock = Mockery::mock(SplitzService::class, [$this->app])->makePartial();
+
+            $this->app->instance('splitzService', $this->splitzMock);
+        }
+
+        return $this->splitzMock;
+    }
+
+    protected function mockSplitzTreatment($input = [], $output = [])
+    {
+        return $this->getSplitzMock()
+                    ->shouldReceive('evaluateRequest')
+                    ->atLeast()
+                    ->once()
+                    ->with($input)
+                    ->andReturn($output);
+    }
+
+    protected function mockAllSplitzTreatment($output = [
+        "response" => [
+            "variant" => [
+                "name" => 'enable',
+            ]
+        ]
+    ])
+    {
+        return $this->getSplitzMock()
+                    ->shouldReceive('evaluateRequest')
+                    ->andReturn($output);
     }
 
     protected function createAndFetchFixtures($customMerchantAttributes, $customVerificationDetailAttributes)
@@ -100,6 +139,16 @@ class GstCertificateDocVerificationTest extends TestCase
     {
         $this->mockRazorxTreatment();
 
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $fixtures = $this->createAndFetchFixtures([], [
             VerificationDetail\Entity::STATUS => 'verified'
         ]);
@@ -138,6 +187,16 @@ class GstCertificateDocVerificationTest extends TestCase
     {
         $this->mockRazorxTreatment();
 
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $fixtures = $this->createAndFetchFixtures([
                                                       Detail\Entity::MSME_DOC_VERIFICATION_STATUS           => 'failed',
                                                       Detail\Entity::GSTIN_VERIFICATION_STATUS              => 'verified',
@@ -157,6 +216,16 @@ class GstCertificateDocVerificationTest extends TestCase
     public function testAutoKycForProprietorshipIfGstCertificateDocIsNotVerifiedButMsmeDocIsVerified()
     {
         $this->mockRazorxTreatment();
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
 
         $fixtures = $this->createAndFetchFixtures([
                                                       Detail\Entity::MSME_DOC_VERIFICATION_STATUS           => 'verified',
@@ -178,6 +247,16 @@ class GstCertificateDocVerificationTest extends TestCase
     public function testAutoKycForProprietorshipIfGstCertificateDocIsNotVerifiedButSGstInIsVerified()
     {
         $this->mockRazorxTreatment();
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
 
         $fixtures = $this->createAndFetchFixtures([
                                                       Detail\Entity::MSME_DOC_VERIFICATION_STATUS           => 'failed',

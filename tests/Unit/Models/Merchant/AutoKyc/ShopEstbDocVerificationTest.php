@@ -3,14 +3,53 @@
 
 namespace Unit\Models\Merchant\AutoKyc;
 
+use Mockery;
 use RZP\Services\RazorXClient;
 use RZP\Models\Merchant\Detail;
+use RZP\Services\SplitzService;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\VerificationDetail;
 use RZP\Models\Merchant\Detail\BusinessType;
 
 class ShopEstbDocVerificationTest extends TestCase
 {
+    protected $splitzMock;
+
+    protected function mockSplitzTreatment($input = [], $output = [])
+    {
+        return $this->getSplitzMock()
+                    ->shouldReceive('evaluateRequest')
+                    ->atLeast()
+                    ->once()
+                    ->with($input)
+                    ->andReturn($output);
+    }
+
+    protected function mockAllSplitzTreatment($output = [
+        "response" => [
+            "variant" => [
+                "name" => 'enable',
+            ]
+        ]
+    ])
+    {
+        return $this->getSplitzMock()
+                    ->shouldReceive('evaluateRequest')
+                    ->andReturn($output);
+    }
+
+    protected function getSplitzMock()
+    {
+        if ($this->splitzMock === null)
+        {
+            $this->splitzMock = Mockery::mock(SplitzService::class, [$this->app])->makePartial();
+
+            $this->app->instance('splitzService', $this->splitzMock);
+        }
+
+        return $this->splitzMock;
+    }
+
     protected function mockRazorxTreatment()
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -67,6 +106,16 @@ class ShopEstbDocVerificationTest extends TestCase
 
     public function testAutoKycForProprietorshipIfShopEstbDocIsVerified()
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $this->mockRazorxTreatment();
 
         $fixtures = $this->createAndFetchFixtures([], [
@@ -105,6 +154,16 @@ class ShopEstbDocVerificationTest extends TestCase
 
     public function testAutoKycForProprietorshipIfShopEstbDocIsNotVerifiedButGstinIsVerified()
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $this->mockRazorxTreatment();
 
         $fixtures = $this->createAndFetchFixtures([
@@ -125,6 +184,16 @@ class ShopEstbDocVerificationTest extends TestCase
 
     public function testAutoKycForProprietorshipIfShopEstbDocIsNotVerifiedButMsmeDocIsVerified()
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $this->mockRazorxTreatment();
 
         $fixtures = $this->createAndFetchFixtures([
@@ -146,6 +215,16 @@ class ShopEstbDocVerificationTest extends TestCase
 
     public function testAutoKycForProprietorshipIfShopEstbDocIsNotVerifiedButShopEstbIsVerified()
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $this->mockRazorxTreatment();
 
         $fixtures = $this->createAndFetchFixtures([
@@ -167,6 +246,16 @@ class ShopEstbDocVerificationTest extends TestCase
 
     public function testAutoKycForProprietorshipIfShopEstbDocExpIsOff()
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $fixtures = $this->createAndFetchFixtures([
             Detail\Entity::MSME_DOC_VERIFICATION_STATUS             => 'failed',
             Detail\Entity::GSTIN_VERIFICATION_STATUS                => 'verified',

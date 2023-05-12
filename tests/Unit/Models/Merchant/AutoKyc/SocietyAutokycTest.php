@@ -3,15 +3,54 @@
 
 namespace Unit\Models\Merchant\AutoKyc;
 
+use Mockery;
 use RZP\Services\RazorXClient;
 use RZP\Models\Merchant\Detail;
+use RZP\Services\SplitzService;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\VerificationDetail;
 use RZP\Models\Merchant\Detail\BusinessType;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
-use RZP\Models\Partner\Core as PartnerCore;
+
 class SocietyAutokycTest extends TestCase
 {
+    protected $splitzMock;
+
+    protected function mockSplitzTreatment($input = [], $output = [])
+    {
+        return $this->getSplitzMock()
+                    ->shouldReceive('evaluateRequest')
+                    ->atLeast()
+                    ->once()
+                    ->with($input)
+                    ->andReturn($output);
+    }
+
+    protected function mockAllSplitzTreatment($output = [
+        "response" => [
+            "variant" => [
+                "name" => 'enable',
+            ]
+        ]
+    ])
+    {
+        return $this->getSplitzMock()
+                    ->shouldReceive('evaluateRequest')
+                    ->andReturn($output);
+    }
+
+    protected function getSplitzMock()
+    {
+        if ($this->splitzMock === null)
+        {
+            $this->splitzMock = Mockery::mock(SplitzService::class, [$this->app])->makePartial();
+
+            $this->app->instance('splitzService', $this->splitzMock);
+        }
+
+        return $this->splitzMock;
+    }
+
     protected function mockRazorxTreatment()
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
@@ -71,6 +110,16 @@ class SocietyAutokycTest extends TestCase
 
     public function testAutoKycForSocietyIfTrustSocietyNgoBusinessCertificateIsVerified()
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $this->mockRazorxTreatment();
 
         $fixtures = $this->createAndFetchFixtures([], [
@@ -105,6 +154,16 @@ class SocietyAutokycTest extends TestCase
 
     public function testAutoKycForSocietyIfBankAccountVerified()
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $this->mockRazorxTreatment();
 
         $fixtures = $this->createAndFetchFixtures([
@@ -137,6 +196,16 @@ class SocietyAutokycTest extends TestCase
 
     public function testAutoKycForSocietyIfPOIVerified()
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $this->mockRazorxTreatment();
 
         $fixtures = $this->createAndFetchFixtures([
@@ -169,6 +238,16 @@ class SocietyAutokycTest extends TestCase
 
     public function testAutoKycForSocietyIfCompanyPanVerified()
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $this->mockRazorxTreatment();
 
         $fixtures = $this->createAndFetchFixtures([
@@ -201,6 +280,16 @@ class SocietyAutokycTest extends TestCase
 
     public function testAutoKycForSocietyIfPoaVerifiedAndAadharEkycNotVerified()
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $this->mockRazorxTreatment();
 
         $fixtures = $this->createAndFetchFixtures([
@@ -218,6 +307,16 @@ class SocietyAutokycTest extends TestCase
     }
     public function testAutoKycForSocietyIfPoaNotVerifiedAndAadharEkycVerified()
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $this->mockRazorxTreatment();
 
         $fixtures = $this->createAndFetchFixtures([
