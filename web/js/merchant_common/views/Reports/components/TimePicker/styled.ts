@@ -10,14 +10,26 @@ import {
 import { reportsTheme } from 'merchant_common/views/Reports/configs';
 import { BaseValidationStyledProps } from 'merchant_common/views/Reports/components/types';
 
-export const SelectedRangeInfoBadge = styled.div`
-  background: #f2f4f8;
-  border-radius: ${({ theme }) => reportsTheme(theme).FIELD_BORDER_RADIUS};
+export const SelectedRangeInfoBadge = styled.div<{ focused: boolean }>`
   padding: 8px;
   display: flex;
   cursor: pointer;
   justify-content: space-between;
   align-items: center;
+  ${({ theme, focused }) => {
+    const { FIELD_BORDER_RADIUS, FIELD_FOCUS_COLOR_L3, FIELD_FOCUS_COLOR_L1, FIELD_BG_COLOR } =
+      reportsTheme(theme);
+    const bgColor = focused ? FIELD_FOCUS_COLOR_L1 : '#f2f4f8';
+
+    return `
+    background: ${bgColor};
+    border-bottom: 1px solid ${focused ? FIELD_FOCUS_COLOR_L3 : ' #f2f4f8'};
+    border-radius: ${FIELD_BORDER_RADIUS};
+    &: hover {
+    background: ${focused ? bgColor : FIELD_BG_COLOR};
+  }
+  `;
+  }}
 `;
 
 export const TimePickerContainer = styled.div`

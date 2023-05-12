@@ -15,7 +15,7 @@ import { parseConfigsViaCommonExceptions } from './downloadModal.config';
  * @param {SessionReducerState} session `session.user` object from the redux state.
  * @param {unknown} accounts `accounts` from the redux state.
  * @param {ModeType} mode `session.mode` from the redux state.
- * @returns {RefDashboardConfigType} a config with all the exceptions defined to modify core reports behaviour wrt a given dashboardType passed.
+ * @returns {RefDashboardConfigType} a config with all the exceptions defined to modify core reports behavior wrt a given dashboardType passed.
  */
 export const getReportsDashboardConfig = (
   dashboardType: DashboardType,

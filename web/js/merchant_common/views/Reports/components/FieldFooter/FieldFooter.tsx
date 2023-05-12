@@ -11,7 +11,7 @@ export const FieldFooter = ({
   errorText?: string;
 }) => {
   return (validation ? Boolean(helpText) : Boolean(errorText)) ? (
-    <Box marginTop={'spacing.2'} display="flex" alignItems="center">
+    <Box marginTop="spacing.2" display="flex" alignItems="center">
       {!validation ? (
         <InfoIcon marginRight="spacing.1" color="feedback.icon.negative.lowContrast" size="small" />
       ) : null}

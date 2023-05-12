@@ -28,7 +28,7 @@ export const preDefinedDurations = [
     value: getPastMonthRange(),
   },
   {
-    label: 'Past Quater',
+    label: 'Past Quarter',
     value: getPastMonthRange(),
   },
 ];

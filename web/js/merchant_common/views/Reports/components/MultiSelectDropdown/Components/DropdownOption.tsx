@@ -78,7 +78,7 @@ export const Option = <ItemType, AllowMultiple>(
   );
 };
 
-export const OptionForwarededRef = React.forwardRef(Option) as <ItemType, AllowMultiple>(
+export const OptionForwardedRef = React.forwardRef(Option) as <ItemType, AllowMultiple>(
   x: OptionPropsType<ItemType, AllowMultiple>,
   key: any,
 ) => JSX.Element;

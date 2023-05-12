@@ -5,7 +5,7 @@ import {
 } from 'merchant_common/views/Reports/components/MultiSelectDropdown/styled';
 import { useTheme } from 'merchant_common/views/Reports/hooks';
 import { Text, IconButton, CloseIcon } from 'merchant_common/views/Reports/components';
-import { SingleOrMulipleItem } from 'merchant_common/views/Reports/components/types';
+import { SingleOrMultipleItem } from 'merchant_common/views/Reports/components/types';
 
 export const SelectedOptionsContainer = <ItemType, AllowMultiple>({ value, refKey, onChange }) => {
   const { theme } = useTheme();
@@ -19,7 +19,7 @@ export const SelectedOptionsContainer = <ItemType, AllowMultiple>({ value, refKe
         ),
         1,
       );
-      onChange(copySelectedItems as SingleOrMulipleItem<ItemType, AllowMultiple>);
+      onChange(copySelectedItems as SingleOrMultipleItem<ItemType, AllowMultiple>);
     }
   };
 

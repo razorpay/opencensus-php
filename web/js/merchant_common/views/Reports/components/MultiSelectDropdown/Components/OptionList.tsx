@@ -6,8 +6,8 @@ import {
   NonVirtualList,
 } from 'merchant_common/views/Reports/components/MultiSelectDropdown/styled';
 import List from 'rc-virtual-list';
-import { Option, OptionForwarededRef } from './DropdownOption';
-import { SingleOrMulipleItem } from 'merchant_common/views/Reports/components/types';
+import { Option, OptionForwardedRef } from './DropdownOption';
+import { SingleOrMultipleItem } from 'merchant_common/views/Reports/components/types';
 
 export const OptionList = <ItemType, AllowMultiple>({
   isValidated,
@@ -31,15 +31,15 @@ export const OptionList = <ItemType, AllowMultiple>({
   const onOptionSelect = (item: ItemType) => {
     if (shouldAllowMultiple) {
       if (value && Array.isArray(value)) {
-        onChange([...value, item] as SingleOrMulipleItem<ItemType, AllowMultiple>);
+        onChange([...value, item] as SingleOrMultipleItem<ItemType, AllowMultiple>);
       } else {
         // just a fail safe
-        onChange([item] as SingleOrMulipleItem<ItemType, AllowMultiple>);
+        onChange([item] as SingleOrMultipleItem<ItemType, AllowMultiple>);
       }
       setSearchFor('');
       if (typeof onSearchInput === 'function') onSearchInput('');
     } else {
-      onChange(item as SingleOrMulipleItem<ItemType, AllowMultiple>);
+      onChange(item as SingleOrMultipleItem<ItemType, AllowMultiple>);
     }
     if (shouldCloseDropdownOnSelect) {
       handleDropdownClose();
@@ -63,7 +63,7 @@ export const OptionList = <ItemType, AllowMultiple>({
             itemKey={refKey ? refKey : 'id'}
           >
             {(item) => (
-              <OptionForwarededRef<ItemType, AllowMultiple>
+              <OptionForwardedRef<ItemType, AllowMultiple>
                 item={item}
                 itemHeight={itemHeight}
                 renderCustomOption={renderCustomOption}

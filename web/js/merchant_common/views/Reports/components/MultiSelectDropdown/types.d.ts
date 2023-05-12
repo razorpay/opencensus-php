@@ -7,10 +7,10 @@ export interface OptionPropsType<ItemType, AllowMultiple> {
   labelKey?: string;
   onClick: (x: ItemType) => void;
   renderCustomOption?: (x: ItemType) => JSX.Element;
-  value: SingleOrMulipleItem<ItemType, AllowMultiple> | undefined;
+  value: SingleOrMultipleItem<ItemType, AllowMultiple> | undefined;
 }
 
-export type SingleOrMulipleItem<ItemType, AllowMultiple> = AllowMultiple extends true
+export type SingleOrMultipleItem<ItemType, AllowMultiple> = AllowMultiple extends true
   ? ItemType[]
   : ItemType;
 
@@ -44,7 +44,7 @@ export type DefaultDropdownProps<ItemType, AllowMultiple, Virtualized> = {
    * True by default, when false dropdown list will not close on option selection
    */
   shouldCloseDropdownOnSelect?: boolean;
-  defaultValue?: SingleOrMulipleItem<ItemType, AllowMultiple>;
+  defaultValue?: SingleOrMultipleItem<ItemType, AllowMultiple>;
   helpText?: string;
   errorText?: string;
   /**
@@ -53,7 +53,7 @@ export type DefaultDropdownProps<ItemType, AllowMultiple, Virtualized> = {
   disabled?: boolean;
   label?: string;
   isLoading?: boolean;
-  onChange: (x: SingleOrMulipleItem<ItemType, AllowMultiple>) => void;
+  onChange: (x: SingleOrMultipleItem<ItemType, AllowMultiple>) => void;
   /**
    * A callback fired on input search.
    */
@@ -72,7 +72,7 @@ export type DefaultDropdownProps<ItemType, AllowMultiple, Virtualized> = {
    * Function when called, returns the validation state
    */
   validate?: () => boolean;
-  value: SingleOrMulipleItem<ItemType, AllowMultiple> | undefined;
+  value: SingleOrMultipleItem<ItemType, AllowMultiple> | undefined;
   /**
    * To enable virtual list, powered by "rc-virtual-list".
    */

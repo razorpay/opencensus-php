@@ -69,6 +69,7 @@ export const TimePicker = ({
     <TimePickerContainer ref={timePickerRef}>
       {!disableInput ? (
         <SelectedRangeInfoBadge
+          focused={shouldShowPicker}
           aria-label={`Selected Time Is ${selectedTime}`}
           onClick={() => setShowPicker(true)}
         >

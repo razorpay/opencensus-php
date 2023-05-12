@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import moment from 'moment';
 import {
   DateRangePickerPropsType,
@@ -33,6 +33,7 @@ export const DateRangePicker = ({
   const [viewMode, setViewMode] = useState<keyof typeof ViewMode>('date');
   const [calendarIndex, setCalendarIndex] = useState<0 | 1>(0);
   const { theme } = useTheme();
+  const shouldAnimateRef = useRef(true);
   const [visibleRange, setVisibleRange] = useState<VisibleRangeType>(
     initialVisibleRange ?? (isCompactView ? [moment()] : [moment(), moment().add(1, 'month')]),
   );
@@ -101,7 +102,7 @@ export const DateRangePicker = ({
     switch (viewMode) {
       case 'date':
         return visibleRange.map((refDayMoment, index) => (
-          <DateGridWrapper key={index}>
+          <DateGridWrapper animate={shouldAnimateRef.current} key={index}>
             <DayGrid
               refDayMoment={refDayMoment}
               daySize={daySize}
@@ -167,6 +168,10 @@ export const DateRangePicker = ({
       setVisibleRange(range);
     }
   }, [isCompactView]);
+
+  useEffect(() => {
+    if (shouldAnimateRef?.current && viewMode != 'date') shouldAnimateRef.current = false;
+  }, [viewMode]);
 
   const isPrevClickAllowed =
     viewMode === 'year' ? visibleYearsRangeIndex >= MIN_YEAR_WINDOW_INDEX_INCLUSIVE : true;

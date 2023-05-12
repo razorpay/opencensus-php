@@ -162,8 +162,8 @@ export const SelectedRangeInfoBadge = styled.div`
   border-radius: 2px;
   padding: 8px;
   display: flex;
-  cursor: pointer;
   margin-right: 5px;
+  border-bottom: 1px solid #f2f4f8;
 `;
 
 export const RangeSection = styled.div`
@@ -212,9 +212,8 @@ export const NavigationContainer = styled.div<{ disabled: boolean }>`
 
 export const DateRangeContainer = styled(FlexJustifyContentCenter)``;
 
-export const DateGridWrapper = styled.div<{ topOffset?: number }>`
+export const DateGridWrapper = styled.div<{ topOffset?: number; animate?: boolean }>`
   margin: 10px;
-  animation: slideFromTop 250ms linear;
 
   @keyframes slideFromTop {
     0% {
@@ -238,9 +237,15 @@ export const DateGridWrapper = styled.div<{ topOffset?: number }>`
     }
   }
 
-  ${({ theme }) => `
+  ${({ theme, animate }) => `
+  ${
+    animate &&
+    `
+  animation: slideFromTop 250ms linear;
   @media (max-width: ${theme.breakpoints.m}px) {
     animation: slideFromBottom 220ms linear;
+  }
+  `
   }
 `}
 `;
