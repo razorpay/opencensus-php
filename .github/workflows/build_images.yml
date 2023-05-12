@@ -239,6 +239,14 @@ jobs:
                               "ephemeral_db": false,
                               "replicas": 1
                           }
+                      },
+                      {
+                          "name": "payment-links",
+                          "commit_id": "",
+                          "chart_values": {
+                              "ephemeral_db": false,
+                              "replicas": 1
+                          }
                       }
                   ]
             }

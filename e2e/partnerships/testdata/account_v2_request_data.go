@@ -151,3 +151,22 @@ var CreateAccountTestCases = map[string]AccountV2TestCase{
 		},
 	},
 }
+
+var UpdateAccountTestCases = map[string]AccountV2TestCase{
+	"Update_Pan": {
+		Description: "Update account request with pan details",
+		Req: dtos.AccountsV2Request{
+			LegalInfo: &dtos.LegalInfo{
+				Pan: "ABCCD1234A",
+			},
+		},
+	},
+	"Update_Pan2": {
+		Description: "Update account request with different pan details",
+		Req: dtos.AccountsV2Request{
+			LegalInfo: &dtos.LegalInfo{
+				Pan: "ABCCD1234B",
+			},
+		},
+	},
+}

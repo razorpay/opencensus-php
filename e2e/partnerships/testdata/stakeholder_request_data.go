@@ -14,16 +14,16 @@ var StakeholderTestCases = map[string]StakeholderTestCase{
 			PercentageOwnership: 40,
 			Name:                "Rzp Test QA Merchant",
 			Email:               "rahul@acme.com",
-			Relationship: dtos.Relationship{
+			Relationship: &dtos.Relationship{
 				Director:  false,
 				Executive: true,
 			},
-			Phone: dtos.Phone{
+			Phone: &dtos.Phone{
 				Primary:   "7074757474",
 				Secondary: "7074757474",
 			},
-			Addresses: dtos.StakeholderAddresses{
-				Residential: dtos.Residential{
+			Addresses: &dtos.StakeholderAddresses{
+				Residential: &dtos.Residential{
 					Street:     "507, Koramangala 2nd block",
 					City:       "Bangalore",
 					State:      "Karnataka",
@@ -31,11 +31,19 @@ var StakeholderTestCases = map[string]StakeholderTestCase{
 					Country:    "IN",
 				},
 			},
-			Kyc: dtos.Kyc{
+			Kyc: &dtos.Kyc{
 				Pan: "ABCPD1234A",
 			},
 			Notes: map[string]interface{}{
 				"random_key_by_partner": "random_value2",
+			},
+		},
+	},
+	"Update_Pan": {
+		Description: "Update stakeholder request with pan details",
+		Req: dtos.StakeholderRequest{
+			Kyc: &dtos.Kyc{
+				Pan: "ABCPD1234B",
 			},
 		},
 	},

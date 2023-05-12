@@ -5,13 +5,13 @@ type AccountsV2 interface {
 }
 
 type AccountsV2Request struct {
-	Email                      string                 `json:"email"`
-	Phone                      string                 `json:"phone"`
-	LegalBusinessName          string                 `json:"legal_business_name"`
+	Email                      string                 `json:"email,omitempty"`
+	Phone                      string                 `json:"phone,omitempty"`
+	LegalBusinessName          string                 `json:"legal_business_name,omitempty"`
 	CustomerFacingBusinessName string                 `json:"customer_facing_business_name,omitempty"`
-	BusinessType               string                 `json:"business_type"`
-	ContactName                string                 `json:"contact_name"`
-	ReferenceId                string                 `json:"reference_id"`
+	BusinessType               string                 `json:"business_type,omitempty"`
+	ContactName                string                 `json:"contact_name,omitempty"`
+	ReferenceId                string                 `json:"reference_id,omitempty"`
 	Profile                    *Profile               `json:"profile,omitempty"`
 	LegalInfo                  *LegalInfo             `json:"legal_info,omitempty"`
 	Brand                      *Brand                 `json:"brand,omitempty"`
@@ -19,7 +19,7 @@ type AccountsV2Request struct {
 	TosAcceptance              *TosAcceptance         `json:"tos_acceptance,omitempty"`
 	ContactInfo                *ContactInfo           `json:"contact_info,omitempty"`
 	Apps                       *Apps                  `json:"apps,omitempty"`
-	NoDocOnboarding            bool                   `json:"no_doc_onboarding"`
+	NoDocOnboarding            bool                   `json:"no_doc_onboarding,omitempty"`
 }
 
 type Address struct {
@@ -75,4 +75,12 @@ type Apps struct {
 
 func (p *AccountsV2Request) SetEmail(email string) {
 	p.Email = email
+}
+
+func (p *AccountsV2Request) SetBusinessType(businessType string) {
+	p.BusinessType = businessType
+}
+
+func (p *AccountsV2Request) SetLegalInfo(legalInfo *LegalInfo) {
+	p.LegalInfo = legalInfo
 }

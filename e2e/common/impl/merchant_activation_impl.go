@@ -38,3 +38,16 @@ func UpdateMerchantActivationStatus(t *testing.T, merchantId string, activationS
 	json.Unmarshal([]byte(obj.Raw()), &res)
 	return res
 }
+
+func SendMockBvsValidationEvent(t *testing.T, validationData linked_account_activation.MockBVSValidationEventRequest) {
+	httpexpect.New(t, e2e.Config.App.Hostname).POST("/v1/mock-bvs-validation").
+		WithBasicAuth(e2e.Config.SubMerchant.Username, e2e.Config.SubMerchant.Password).
+		WithJSON(validationData).
+		WithHeaders(map[string]string{
+			"X-Dashboard-User-id":   e2e.Config.SubMerchant.User,
+			"X-Dashboard-User-Role": e2e.Config.SubMerchant.Role,
+			"Content-Type":          "application/json",
+		}).
+		Expect().
+		Status(http.StatusOK)
+}

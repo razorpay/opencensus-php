@@ -5,35 +5,35 @@ type StakeholderRequest struct {
 	PercentageOwnership float64                `json:"percentage_ownership,omitempty"`
 	Name                string                 `json:"name,omitempty"`
 	Email               string                 `json:"email,omitempty"`
-	Relationship        Relationship           `json:"relationship,omitempty"`
-	Phone               Phone                  `json:"phone,omitempty"`
-	Addresses           StakeholderAddresses   `json:"addresses,omitempty"`
-	Kyc                 Kyc                    `json:"kyc,omitempty"`
+	Relationship        *Relationship          `json:"relationship,omitempty"`
+	Phone               *Phone                 `json:"phone,omitempty"`
+	Addresses           *StakeholderAddresses  `json:"addresses,omitempty"`
+	Kyc                 *Kyc                   `json:"kyc,omitempty"`
 	Notes               map[string]interface{} `json:"notes,omitempty"`
 }
 
 type Relationship struct {
-	Director  bool `json:"director"`
-	Executive bool `json:"executive"`
+	Director  bool `json:"director,omitempty"`
+	Executive bool `json:"executive,omitempty"`
 }
 
 type Phone struct {
-	Primary   string `json:"primary"`
-	Secondary string `json:"secondary"`
+	Primary   string `json:"primary,omitempty"`
+	Secondary string `json:"secondary,omitempty"`
 }
 
 type StakeholderAddresses struct {
-	Residential Residential `json:"residential"`
+	Residential *Residential `json:"residential,omitempty"`
 }
 
 type Residential struct {
-	Street     string `json:"street"`
-	City       string `json:"city"`
-	State      string `json:"state"`
-	PostalCode string `json:"postal_code"`
-	Country    string `json:"country"`
+	Street     string `json:"street,omitempty"`
+	City       string `json:"city,omitempty"`
+	State      string `json:"state,omitempty"`
+	PostalCode string `json:"postal_code,omitempty"`
+	Country    string `json:"country,omitempty"`
 }
 
 type Kyc struct {
-	Pan string `json:"pan"`
+	Pan string `json:"pan,omitempty"`
 }

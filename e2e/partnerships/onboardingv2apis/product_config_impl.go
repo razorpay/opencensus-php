@@ -33,7 +33,7 @@ func UpdateProductConfig(t *testing.T, accountId string, productConfigId string,
 
 func FetchProductConfig(t *testing.T, accountId string, productConfigId string) dtos.ProductConfigResponse {
 	var productConfigResponse dtos.ProductConfigResponse
-	obj := httpexpect.New(t, e2e.Config.App.Hostname).PATCH(e2e.PRODUCT_CONFIG_V2, accountId, productConfigId).
+	obj := httpexpect.New(t, e2e.Config.App.Hostname).GET(e2e.PRODUCT_CONFIG_V2, accountId, productConfigId).
 		WithBasicAuth(e2e.Config.OnboardingAPIsPartner.Username, e2e.Config.OnboardingAPIsPartner.Password).
 		Expect().
 		Status(http.StatusOK).Body()
