@@ -236,6 +236,31 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function insertMissingStatementsNeo(array $input, array $updateParams = [])
+    {
+        $input = $input + [Constants::ACTION => Constants::INSERT];
+
+        (new Validator())->validateInput('insert_statement', $input);
+
+        $accountNumber = $input[Entity::ACCOUNT_NUMBER];
+
+        $channel = $input[Entity::CHANNEL];
+
+        $missingStatements = $this->core()->getMissingRecordsFromRedisForAccount($accountNumber, $channel);
+
+        $response = $this->core()->insertMissingStatementsNeo($input, $missingStatements, $updateParams);
+
+        $response[$accountNumber][Constants::INSERT_MISSING_STATEMENT] = Constants::SUCCESS;
+
+        $this->trace->info(
+            TraceCode::BAS_MISSING_STATEMENTS_INSERTION_ASYNC_SUCCESS,
+            [
+                Entity::CHANNEL => $channel
+            ]);
+
+        return $response;
+    }
+
     public function insertMissingStatements(array $input): array
     {
         (new Validator())->validateInput('insert_statement', $input);

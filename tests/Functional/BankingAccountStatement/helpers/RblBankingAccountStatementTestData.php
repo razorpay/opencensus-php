@@ -1130,6 +1130,21 @@ return [
         ]
     ],
 
+    'testRblMissingAccountStatementInsertAsync' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/cron/insert_missing/rbl',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'action'          => 'insert'
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
     'testfetchRblMissingAccountStatementWithInvalidDateRange' => [
         'request'  => [
             'method'  => 'POST',

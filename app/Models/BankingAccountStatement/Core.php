@@ -38,6 +38,7 @@ use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Jobs\BankingAccountStatementReconNeo;
 use RZP\Models\Admin\Validator as AdminValidator;
+use RZP\Jobs\BankingAccountMissingStatementInsert;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Models\BankingAccountStatement\Processor\Source;
@@ -91,7 +92,7 @@ class Core extends Base\Core
 
     const RETRY_COUNT_FOR_ID_GENERATION = 100;
 
-    const DEFAULT_RX_MISSING_STATEMENTS_INSERTION_LIMIT = 50;
+    const DEFAULT_RX_MISSING_STATEMENTS_INSERTION_LIMIT = 100;
 
     /**
      * Constant containing regex for identifying gateway ref number pattern in a statement's description for every bank.
@@ -552,6 +553,239 @@ class Core extends Base\Core
         }
 
         return [$fetchMore, $paginationKey, $bankTransactions, $mismatchAmountFound];
+    }
+
+    public function insertMissingStatementsNeo(array $input, array $missingStatements, array $updateParams)
+    {
+        $insertStartTime = microtime(true);
+
+        $accountNumber = $input[Entity::ACCOUNT_NUMBER];
+
+        $response = [];
+
+        $channel = $input[Entity::CHANNEL];
+
+        $missingStatementsBeforeDedupe = $missingStatements;
+
+        $basDetails = $this->getBasDetails($accountNumber, $channel,[Details\Status::UNDER_MAINTENANCE, Details\Status::ACTIVE]);
+
+        if (isset($basDetails) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
+        }
+
+        $variant = $this->app->razorx->getTreatment(
+            $basDetails->getMerchantId(),
+            Merchant\RazorxTreatment::OPTIMISE_INSERTION_LOGIC,
+            $this->mode ?? Constants\Mode::LIVE,
+            2
+        );
+
+        [$hasMore, $updateParams] = $this->mutex->acquireAndRelease(
+            'banking_account_statement_fetch_' . $accountNumber . '_' . $channel,
+            function () use ($channel, $accountNumber, $missingStatements, $updateParams, $variant)
+            {
+                $countOfMissingRecords = count($missingStatements);
+
+                if ($countOfMissingRecords === 0)
+                {
+                    $this->trace->info(TraceCode::BAS_MISSING_RECORDS_INSERTION_COMPLETE,
+                        [
+                            'account_number' => $accountNumber,
+                            'merchant_id'    => $this->basDetails->getMerchantId(),
+                            'params'         => $updateParams,
+                            'count'          => $countOfMissingRecords,
+                        ]);
+
+                    if (empty($updateParams) === false)
+                    {
+                        try
+                        {
+                            BankingAccountStatementUpdate::dispatch($this->mode, $updateParams)->delay(15);
+
+                            $this->trace->info(TraceCode::BAS_UPDATE_QUEUE_DISPATCH_SUCCESS,
+                                [
+                                    'account_number' => $accountNumber,
+                                    'merchant_id'    => $this->basDetails->getMerchantId(),
+                                    'params'         => $updateParams
+                                ]);
+                        }
+                        catch(\Exception $exception)
+                        {
+                            $this->trace->traceException(
+                                $exception,
+                                null,
+                                TraceCode::BAS_UPDATE_QUEUE_DISPATCH_FAILURE,
+                                [
+                                    'account_number' => $accountNumber,
+                                    'merchant_id'    => $this->basDetails->getMerchantId(),
+                                    'channel'        => $channel
+                                ]
+                            );
+                        }
+                    }
+                    return [false, []];
+                }
+                else
+                {
+                    $this->trace->info(TraceCode::BAS_MISSING_RECORDS_INSERTION_COUNT,
+                        [
+                            'account_number'             => $accountNumber,
+                            'params'                     => $updateParams,
+                            'count_of_records_to_insert' => $countOfMissingRecords,
+                            'merchant_id'                => $this->basDetails->getMerchantId()
+                        ]);
+
+                    $insertLimit = self::DEFAULT_RX_MISSING_STATEMENTS_INSERTION_LIMIT;
+
+                    $missingStatements = array_slice($missingStatements, 0, $insertLimit);
+
+                    $this->isStatementUnderFix = true;
+
+                    $this->setBasDetailsForStatementFix($accountNumber, $channel);
+
+                    if ($variant === 'on')
+                    {
+                        $insertedBasEntities = $this->optimiseSaveMissingAccountStatements($accountNumber, $channel, $missingStatements);
+                    }
+                    else
+                    {
+                        $insertedBasEntities = $this->saveMissingAccountStatements($accountNumber, $channel, $missingStatements);
+                    }
+
+                    $this->pushMissingStatementsLinkingEventsToLedger($accountNumber, $channel, $insertedBasEntities);
+
+                    if (empty($insertedBasEntities) === true)
+                    {
+                        //if no inserted entities then we need to remove under_maintenance mode for merchant.
+                        $this->releaseBasDetailsFromStatementFix($accountNumber, $channel);
+
+                        return [false, []];
+                    }
+
+                    $basIdToAmountMap = [];
+
+                    $createdAt = $insertedBasEntities[0]->getCreatedAt();
+
+                    $latestCorrectedId = $insertedBasEntities[0]->getId();
+
+                    foreach ($insertedBasEntities as $basEntity)
+                    {
+                        $basIdToAmountMap[$basEntity->getId()] = $basEntity->getNetAmountBasedOnTransactionType();
+
+                        $createdAt = min($createdAt, $basEntity->getCreatedAt());
+
+                        $latestCorrectedId = min($latestCorrectedId, $basEntity->getId());
+                    }
+
+                    $delay = 5;
+
+                    if (empty($updateParams) === false)
+                    {
+                        $updateParams['update_before'] = Carbon::now()->getTimestamp() + $delay;
+
+                        $amountBasIdMap = $updateParams['bas_id_to_amount_map'];
+
+                        $updateParams['bas_id_to_amount_map'] = array_merge($amountBasIdMap, $basIdToAmountMap);
+
+                        $updateParams['created_at'] = min($updateParams['created_at'], $createdAt);
+
+                        $updateParams['last_corrected_id'] = min($updateParams['last_corrected_id'], $latestCorrectedId);
+
+                    }
+                    else
+                    {
+                        $updateParams = [
+                            'channel'              => $channel,
+                            'account_number'       => $accountNumber,
+                            'merchant_id'          => $this->basDetails->getMerchantId(),
+                            'balance_id'           => $this->basDetails->getBalanceId(),
+                            'bas_id_to_amount_map' => $basIdToAmountMap,
+                            'created_at'           => $createdAt,
+                            'update_before'        => Carbon::now()->getTimestamp() + $delay,
+                            'latest_corrected_id'  => $latestCorrectedId,
+                            'batch_number'         => 0
+                        ];
+                    }
+
+                    return [true, $updateParams];
+                }
+            },
+            1800,
+            ErrorCode::BAD_REQUEST_ANOTHER_BANKING_ACCOUNT_STATEMENT_FETCH_IN_PROGRESS
+        );
+
+        $insertEndTime = microtime(true);
+
+        $this->trace->info(TraceCode::BAS_MISSING_STATEMENT_INSERTED_SUCCESSFULLY, [
+            'response_time'       => $insertEndTime - $insertStartTime,
+            'variant'             => $variant
+        ]);
+
+        try
+        {
+            if(empty($missingStatementsBeforeDedupe) === false)
+            {
+                $this->removeInsertedMissingRecordsForAccountFromRedis($accountNumber, $channel, $missingStatementsBeforeDedupe);
+            }
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                null,
+                TraceCode::REMOVAL_OF_INSERTED_STATEMENTS_FROM_REDIS_FAILURE,
+                [
+                    'account_number' => $accountNumber,
+                    'channel'        => $channel,
+                    'merchant_id'    => $this->basDetails->getMerchantId()
+                ]
+            );
+
+            $response['message'] = 'Missing statements got inserted and linked successfully.
+                                    Dispatched for updating BAS entities.
+                                    Removal of inserted missing statements from redis got failed.';
+        }
+
+        if ($hasMore === true)
+        {
+            $this->trace->info(TraceCode::BAS_INSERT_QUEUE_DISPATCH_INIT,
+                [
+                    'account_number' => $accountNumber,
+                    'params'         => $updateParams,
+                    'merchant_id'    => $this->basDetails->getMerchantId()
+                ]);
+
+            try
+            {
+                BankingAccountMissingStatementInsert::dispatch($this->mode, $input, $updateParams)->delay(5);
+
+                $this->trace->info(TraceCode::BAS_INSERT_QUEUE_DISPATCH_SUCCESS,
+                    [
+                        'account_number' => $accountNumber,
+                        'params'         => $updateParams,
+                        'merchant_id'    => $this->basDetails->getMerchantId()
+                    ]);
+            }
+            catch(\Throwable $exception)
+            {
+                $this->trace->traceException(
+                    $exception,
+                    null,
+                    TraceCode::BAS_INSERT_QUEUE_DISPATCH_FAILURE,
+                    [
+                        'account_number' => $accountNumber,
+                        'channel'        => $channel,
+                        'merchant_id'    => $this->basDetails->getMerchantId()
+                    ]
+                );
+
+                $response['message'] = 'Missing statements previous batch successfully inserted and linked.
+                                    Dispatch for insertion of further batch got FAILED.';
+            }
+        }
+
+        return $response;
     }
 
     public function insertMissingStatements(string $accountNumber, string $channel, array $missingStatements, bool $dryRunMode = false)
@@ -1518,8 +1752,12 @@ class Core extends Base\Core
                         'bas_details_status' => $basDetailEntity->getStatus(),
                     ]);
 
-                if (($basDetailEntity->getStatus() !== Details\Status::ACTIVE) or
-                    ($basDetailEntity->getStatus() === Details\Status::UNDER_MAINTENANCE))
+                if ($basDetailEntity->getStatus() === Details\Status::UNDER_MAINTENANCE)
+                {
+                     return;
+                }
+
+                if ($basDetailEntity->getStatus() !== Details\Status::ACTIVE)
                 {
                     throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_LOCK_BAS_DETAILS_FOR_STATEMENT_FIX_FAILURE);
                 }

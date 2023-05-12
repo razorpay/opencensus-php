@@ -531,6 +531,10 @@ return [
         'live'       => env('AWS_BANKING_ACCOUNT_STATEMENT_RECON_PROCESS_NEO_TEST_QUEUE'),
     ],
 
+    'missing_account_statement_insert' => [
+        'live'       => env('AWS_MISSING_ACCOUNT_STATEMENT_INSERT_LIVE_QUEUE'),
+    ],
+
     'banking_account_statement_processor' => [
         'test'       => env('AWS_BANKING_ACCOUNT_STATEMENT_PROCESSOR_TEST_QUEUE'),
         'live'       => env('AWS_BANKING_ACCOUNT_STATEMENT_PROCESSOR_LIVE_QUEUE'),

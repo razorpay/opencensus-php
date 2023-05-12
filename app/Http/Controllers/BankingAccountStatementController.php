@@ -125,6 +125,15 @@ class BankingAccountStatementController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function insertMissingStatementsAsync($channel)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->insertMissingStatementsNeo($input + ['channel' => $channel]);
+
+        return ApiResponse::json($response);
+    }
+
     public function detectMissingStatements($channel)
     {
         $input = Request::all();

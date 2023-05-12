@@ -3381,6 +3381,9 @@ class Route
         'banking_account_statement_detect_missing'      => ['post',     'banking_account_statement/detect_missing/{channel}',        'BankingAccountStatementController@detectMissingStatements'                   ],
         'banking_account_statement_detect_missing_cron' => ['post',     'banking_account_statement/cron/detect_missing/{channel}',   'BankingAccountStatementController@detectMissingStatements'                   ],
 
+        'banking_account_statement_async_insert_missing'      => ['post',     'banking_account_statement/insert_missing/{channel}',        'BankingAccountStatementController@insertMissingStatementsAsync'        ],
+        'banking_account_statement_async_insert_missing_cron' => ['post',     'banking_account_statement/cron/insert_missing/{channel}',   'BankingAccountStatementController@insertMissingStatementsAsync'        ],
+
         'banking_account_activation_detail_create'=> ['post',     'banking_accounts/activation/{id}/details',                   'BankingAccountController@postCreateActivationDetail'       ],
         'banking_account_activation_detail'
         .'_update'                                => ['patch',    'banking_accounts/activation/{id}/details',                   'BankingAccountController@patchActivationDetail'            ],
@@ -5300,12 +5303,16 @@ class Route
         'banking_account_statement_process_cron',
         'banking_account_statement_fetch_missing_cron',
         'banking_account_statement_automate_recon_cron',
+        'banking_account_statement_async_insert_missing_cron',
         'banking_account_statement_detect_missing_cron',
+
         'banking_account_statement_process_pool',
         'banking_account_send_notification_to_spoc_cron',
         'banking_account_statement_channel_fetch',
         'banking_account_statement_fetch_missing',
+        'banking_account_statement_async_insert_missing',
         'banking_account_statement_detect_missing',
+
         'subscription_registration_auto_charge',
         'token_pause_not_supported_card_tokens',
         'partner_submerchant_map',
@@ -8180,7 +8187,9 @@ class Route
         'developer_console_admin_action',
 
         'banking_account_statement_fetch_missing',
+        'banking_account_statement_async_insert_missing',
         'banking_account_statement_detect_missing',
+
 
         // Self serve workflow admin routes
         'workflow_config_create_admin',
@@ -9652,8 +9661,11 @@ class Route
 
         'admin_collect_info_merchant_details_patch'        =>Permission::UPDATE_MERCHANT_INSTRUMENT_REQUEST,
 
-        'banking_account_statement_fetch_missing'    => Permission::FETCH_MISSING_BAS,
-        'banking_account_statement_detect_missing'   => Permission::FETCH_MISSING_BAS,
+
+        'banking_account_statement_fetch_missing'        => Permission::FETCH_MISSING_BAS,
+        'banking_account_statement_async_insert_missing' => Permission::FETCH_MISSING_BAS,
+        'banking_account_statement_detect_missing'       => Permission::FETCH_MISSING_BAS,
+
 
         'merchant_features_edit'                     => Permission::UPDATE_MERCHANT_FEATURE,
         'enable_non_3ds_self_serve'                  => Permission::ENABLE_NON_3DS_PROCESSING,
@@ -14389,7 +14401,9 @@ class Route
             'banking_account_statement_insert_missing_cron',
             'banking_account_statement_fetch_missing_cron',
             'banking_account_statement_automate_recon_cron',
+            'banking_account_statement_async_insert_missing_cron',
             'banking_account_statement_detect_missing_cron',
+
             'create_test_payouts_for_downtime_detection_icici',
             'create_test_payouts_for_downtime_detection_yesb',
             'check_status_of_test_payouts',

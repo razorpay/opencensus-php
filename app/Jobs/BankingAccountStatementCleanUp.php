@@ -184,7 +184,7 @@ class BankingAccountStatementCleanUp extends Job
                             'clean_up_config' => $this->cleanUpConfig,
                         ]);
 
-                        $BASCore->dispatchIntoQueueAndRetryIfFailure(Constants::BANKING_ACCOUNT_STATEMENT_RECON_PROCESS_NEO, [
+                        $BASCore->dispatchIntoQueueAndRetryIfFailure(Constants::BANKING_ACCOUNT_MISSING_STATEMENT_INSERT, [
                             BAS\Entity::CHANNEL        => $this->params[BAS\Entity::CHANNEL],
                             BAS\Entity::ACCOUNT_NUMBER => $this->params[BAS\Entity::ACCOUNT_NUMBER]
                         ], 120);

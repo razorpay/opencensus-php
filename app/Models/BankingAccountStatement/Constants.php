@@ -17,6 +17,7 @@ class Constants
     const ACCOUNT_NUMBERS_PRESENT       = 'account_numbers_present';
     const FETCH_MISSING_STATEMENT       = 'fetch_missing_statement';
     const UPDATE_MISSING_STATEMENT      = 'update_missing_statement';
+    const INSERT_MISSING_STATEMENT      = 'insert_missing_statement';
     const DEFAULT                       = 'default';
     const SUSPECTED_MISMATCH_TIMESTAMP  = 'suspected_mismatch_timestamp';
 
@@ -32,4 +33,5 @@ class Constants
     // Recon Job Constants
     const BANKING_ACCOUNT_STATEMENT_CLEAN_UP          = 'BankingAccountStatementCleanUp';
     const BANKING_ACCOUNT_STATEMENT_RECON_PROCESS_NEO = 'BankingAccountStatementReconProcessNeo';
+    const BANKING_ACCOUNT_MISSING_STATEMENT_INSERT    = 'BankingAccountMissingStatementInsert';
 }
