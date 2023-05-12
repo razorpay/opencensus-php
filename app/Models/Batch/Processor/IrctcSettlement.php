@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Batch\Processor;
 
+use RZP\Error\ErrorCode;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
@@ -31,12 +32,32 @@ class IrctcSettlement extends Base
             Payment\Entity::CURRENCY => $payment->getCurrency()
         ];
 
-        // We do not capture the payment if its already refunded
-        if (($payment->isPartiallyOrFullyRefunded() === false) and
-            ($payment->hasBeenCaptured() === false))
-        {
-            $paymentProcessor->capture($payment, $params);
-        }
+        $resource = $payment->getId() . "_" . "transaction";
+        $mutex_timeout = 5;
+        $retry_count  = 3;
+        $min_retry_delay = 100;
+        $max_retry_delay = 300;
+
+        // Prevent duplicate transactions with mutex lock.
+        $this->mutex->acquireAndRelease(
+            $resource,
+
+            function () use ($payment,$params,$paymentProcessor){
+
+                // We do not capture the payment if its already refunded
+                if (($payment->isPartiallyOrFullyRefunded() === false) and
+                    ($payment->hasBeenCaptured() === false))
+                {
+                    $paymentProcessor->capture($payment, $params);
+                }},
+
+            $mutex_timeout,
+            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS,
+            $retry_count,
+            $min_retry_delay,
+            $max_retry_delay,
+ );
+
 
         $entry[Batch\Header::STATUS] = Batch\Status::SUCCESS;
     }
