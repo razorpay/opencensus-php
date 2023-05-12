@@ -30,12 +30,17 @@ export const INIT_FORM_STATE = {
   },
 };
 
+export const WALLET_AUTO_DEBIT_KEY = 'ENABLE_AUTO_DEBIT';
+
 export const SKIP_VALIDATION_KEYS = [
   'Gateway Name',
   'TPV',
   'optimizer_seamless_disabled',
   'Sodexo',
+  WALLET_AUTO_DEBIT_KEY,
 ];
+
+export const SKIP_PAYTM_AUTO_DEBIT_VALIDATION_KEYS = ['CLIENT_KEY', 'CLIENT_SECRET']; // These fields are only required if the wallet auto debit is enabled on paytm
 
 export const PROVIDER_KEYS = {
   SODEXO: 'Sodexo',

@@ -1017,6 +1017,10 @@ export default class User {
     return this.isFeatureEnabled('raas');
   }
 
+  get isPaytmAutoDebitEnabled() {
+    return this.isFeatureEnabled('paytm_auto_debit');
+  }
+
   get isOptimizerOnboardingEnabled() {
     return this.getExpStatus('optimizer_onboarding');
   }

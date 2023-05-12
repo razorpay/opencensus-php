@@ -2,6 +2,14 @@ import React, { Fragment } from 'react';
 
 import { titleCase } from 'common/utils/rzp-utils';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
+import { WALLET_AUTO_DEBIT_KEY } from 'merchant/views/Navigator/constants';
+
+const IGNORE_FIELDS = [
+  'Payment Methods',
+  'UPI Features',
+  'optimizer_seamless_disabled',
+  WALLET_AUTO_DEBIT_KEY,
+];
 
 function APIDetails({ providerDetails }) {
   return (
@@ -11,10 +19,7 @@ function APIDetails({ providerDetails }) {
         value={() => (
           <div className="provider-api-details">
             {providerDetails.map(([key, values], index) => {
-              if (
-                !['Payment Methods', 'UPI Features', 'optimizer_seamless_disabled'].includes(key) &&
-                !key.includes('metadata')
-              ) {
+              if (!IGNORE_FIELDS.includes(key) && !key.includes('metadata')) {
                 return (
                   <Fragment key={index}>
                     <div className="key-name">{titleCase(key)}</div>

@@ -27,6 +27,8 @@ import {
   NETBANKING_FEATURES,
   UPI_FEATURES,
   SKIP_VALIDATION_KEYS,
+  SKIP_PAYTM_AUTO_DEBIT_VALIDATION_KEYS,
+  WALLET_AUTO_DEBIT_KEY,
   PROVIDER_KEYS,
 } from 'merchant/views/Navigator/constants';
 
@@ -149,7 +151,7 @@ export default class AddProvider extends React.Component {
       provider_st.Gateway = provider;
       provider_st.Provider_name = provider;
 
-      const { activeProviders } = this.props;
+      const { activeProviders, user } = this.props;
       let num = 1;
       activeProviders.forEach((item) => {
         if (provider_st.Provider_name === item.Provider_name) {
@@ -159,16 +161,18 @@ export default class AddProvider extends React.Component {
       });
 
       // Paytm by default enable wallets
-      if (
-        provider === 'paytm' &&
-        prevState.providers?.paytm?.['Payment Methods']?.data_value?.indexOf('wallet') !== -1
-      ) {
-        provider_st.Gateway_details['Payment Methods'] = ['wallet'];
-        provider_st.Gateway_details.wallet_metadata = {
-          wallets:
-            prevState.providers?.[provider]?.['Payment Methods']?.meta_data?.wallet_metadata
-              ?.wallets || [],
-        };
+      if (provider === 'paytm') {
+        if (user?.isPaytmAutoDebitEnabled) {
+          provider_st.Gateway_details.ENABLE_AUTO_DEBIT = false;
+        }
+        if (prevState.providers?.paytm?.['Payment Methods']?.data_value?.indexOf('wallet') !== -1) {
+          provider_st.Gateway_details['Payment Methods'] = ['wallet'];
+          provider_st.Gateway_details.wallet_metadata = {
+            wallets:
+              prevState.providers?.[provider]?.['Payment Methods']?.meta_data?.wallet_metadata
+                ?.wallets || [],
+          };
+        }
       }
 
       if ([...HAVE_NETBANKING_FEATURES, ...HAVE_UPI_FEATURES].includes(provider)) {
@@ -335,6 +339,12 @@ export default class AddProvider extends React.Component {
     const { provider, providers } = this.state;
     const selectedProviderWithAcquirer = this.getSelectedProviderWithAcquirer();
 
+    const { user } = this.props;
+    let paytmAutoDebitEnabled = false;
+    if (user?.isPaytmAutoDebitEnabled && selectedProviderWithAcquirer === 'paytm') {
+      paytmAutoDebitEnabled = provider?.Gateway_details?.[WALLET_AUTO_DEBIT_KEY];
+    }
+
     for (const key of Object.keys(providers[selectedProviderWithAcquirer])) {
       const value = provider?.Gateway_details?.[key];
 
@@ -342,7 +352,20 @@ export default class AddProvider extends React.Component {
         if (value?.length === 0) {
           return false;
         }
-      } else if (!SKIP_VALIDATION_KEYS.includes(key) && !value) {
+      } else if (
+        user?.isPaytmAutoDebitEnabled &&
+        selectedProviderWithAcquirer === 'paytm' &&
+        key === WALLET_AUTO_DEBIT_KEY
+      ) {
+        if (provider?.Gateway_details?.[key]) {
+          paytmAutoDebitEnabled = true;
+        }
+        // Paytm wallet auto debit not enabled then no need to check for the fields which are only required for wallet auto debit
+      } else if (
+        !(!paytmAutoDebitEnabled && SKIP_PAYTM_AUTO_DEBIT_VALIDATION_KEYS.includes(key)) &&
+        !SKIP_VALIDATION_KEYS.includes(key) &&
+        !value
+      ) {
         return false;
       }
     }
@@ -431,6 +454,14 @@ export default class AddProvider extends React.Component {
         ];
       }
       provider.Gateway_details.wallet_metadata.wallets = prevSelectedWallets;
+      return { provider };
+    });
+  };
+
+  changeEnableAutoDebitSwitch = (isChecked) => {
+    this.setState((prevState) => {
+      const { provider } = prevState;
+      provider.Gateway_details.ENABLE_AUTO_DEBIT = isChecked;
       return { provider };
     });
   };
@@ -586,6 +617,7 @@ export default class AddProvider extends React.Component {
       provider,
       selectedProvider,
     } = this.state;
+    const { user } = this.props;
 
     if (redirect) return <Redirect to={redirect} />;
 
@@ -755,6 +787,8 @@ export default class AddProvider extends React.Component {
                           validationErrors={validationErrors}
                           changeGatewayDetails={this.changeGatewayDetails}
                           changeGatewayWallets={this.changeGatewayWallets}
+                          changeEnableAutoDebitSwitch={this.changeEnableAutoDebitSwitch}
+                          user={user}
                           toggleMethods={this.toggleMethods}
                         />
                       </div>

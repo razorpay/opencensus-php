@@ -12,7 +12,12 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
 import { trackOptimizerEvents } from 'merchant/views/Navigator/track';
 import { gatewayLogos, WalletLabels } from 'merchant/views/Navigator/components/util';
-import { TPV_OPTIONS, SEAMLESS_PROVIDERS, PROVIDER_KEYS } from 'merchant/views/Navigator/constants';
+import {
+  TPV_OPTIONS,
+  SEAMLESS_PROVIDERS,
+  PROVIDER_KEYS,
+  WALLET_AUTO_DEBIT_KEY,
+} from 'merchant/views/Navigator/constants';
 
 import APIDetails from './components/APIDetails';
 import NoProviderFound from './components/NoProviderFound';
@@ -21,6 +26,7 @@ import NoProviderFound from './components/NoProviderFound';
 @connect(
   (state) => {
     return {
+      user: state?.session?.user,
       providers: state.navigator.terminalProviders,
     };
   },
@@ -42,7 +48,7 @@ export default class ProviderDetails extends Component {
   };
 
   render() {
-    const { providers = {} } = this.props;
+    const { providers = {}, user } = this.props;
     const provider = providers.find((item) => item.Terminal_id === this.props.id);
 
     if (provider) {
@@ -57,6 +63,7 @@ export default class ProviderDetails extends Component {
         'UPI Features': upiFeatures,
         'Payment Methods': paymentMethods,
         optimizer_seamless_disabled,
+        [WALLET_AUTO_DEBIT_KEY]: walletAutoDebit,
       } = provider?.Gateway_details || {};
 
       let strPaymentMethods = paymentMethods?.join(', ') ?? '';
@@ -123,6 +130,15 @@ export default class ProviderDetails extends Component {
                       <EntityDetailRow
                         label="Wallets Enabled"
                         value={() => walletsNames.join(', ')}
+                      />
+                    </div>
+                  )}
+
+                  {provider?.Gateway === 'paytm' && user?.isPaytmAutoDebitEnabled && (
+                    <div className="list-group details-row-container">
+                      <EntityDetailRow
+                        label="Wallet auto-debit Enabled"
+                        value={walletAutoDebit ? 'Yes' : 'No'}
                       />
                     </div>
                   )}

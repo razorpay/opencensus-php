@@ -6,6 +6,8 @@ import Tooltip from 'common/ui/Tooltip';
 
 import { WalletsMultiSelect } from './WalletsMultiSelect';
 import { getTPVOptions } from 'merchant/views/Navigator/components/AddProvider/util';
+import { titleCase } from 'common/utils/rzp-utils';
+import { WalletAutoDebit } from './WalletAutoDebit';
 import { METHODS, PROVIDER_KEYS } from 'merchant/views/Navigator/constants';
 
 export function Step3({
@@ -16,6 +18,8 @@ export function Step3({
   validationErrors,
   changeGatewayDetails,
   changeGatewayWallets,
+  changeEnableAutoDebitSwitch,
+  user,
   toggleMethods,
 }) {
   const selectedProviderDetails = providers?.[selectedProvider] ?? {};
@@ -23,10 +27,25 @@ export function Step3({
   const walletOptions =
     selectedProviderDetails?.['Payment Methods']?.meta_data?.wallet_metadata?.wallets ?? [];
 
+  const PAYTM_AUTO_DEBIT_FIELDS = ['ENABLE_AUTO_DEBIT', 'CLIENT_KEY', 'CLIENT_SECRET'];
+
+  const paytmAutoDebitFields = [0, 1, 2];
+
   // Filter out the fields that are required in this step i.e step 3.
   const fields = Object.entries(selectedProviderDetails).reduce((acc, [label, value]) => {
     if (!['Gateway Name', 'optimizer_seamless_disabled', PROVIDER_KEYS.SODEXO].includes(label)) {
-      acc.push({ label, ...value });
+      // Need to show auto debit fields at the end of the list in mentioned order
+      if (selectedProvider === 'paytm' && PAYTM_AUTO_DEBIT_FIELDS.includes(label)) {
+        if (label === 'ENABLE_AUTO_DEBIT') {
+          paytmAutoDebitFields[0] = { label, ...value };
+        } else if (label === 'CLIENT_KEY') {
+          paytmAutoDebitFields[1] = { label, ...value };
+        } else if (label === 'CLIENT_SECRET') {
+          paytmAutoDebitFields[2] = { label, ...value };
+        }
+      } else {
+        acc.push({ label, ...value });
+      }
     }
     return acc;
   }, []);
@@ -203,6 +222,57 @@ export function Step3({
           </div>
         );
       })}
+      {selectedProvider === 'paytm' &&
+        user.isPaytmAutoDebitEnabled &&
+        paytmAutoDebitFields?.map(({ label = '', data_type, data_value }) => {
+          if (label === 'ENABLE_AUTO_DEBIT') {
+            return (
+              <WalletAutoDebit
+                key={label}
+                label={label}
+                provider={provider}
+                changeEnableAutoDebitSwitch={changeEnableAutoDebitSwitch}
+              />
+            );
+          }
+          if (provider?.Gateway_details?.ENABLE_AUTO_DEBIT) {
+            return (
+              <div className="col-xs-12" key={label}>
+                <div className="row">
+                  <div className="col-xs-3">
+                    <label for="name" className="gateway-detail-title">
+                      {titleCase(label)}
+                    </label>
+                  </div>
+                  <div className="col-xs-6">
+                    {!isEdit ? (
+                      <label className="provider-details-read-only">
+                        {provider?.Gateway_details?.[label] || ''}
+                      </label>
+                    ) : (
+                      <>
+                        <Input
+                          id={label}
+                          name={label?.toLowerCase()}
+                          type={data_type === 'string' ? 'text' : 'number'}
+                          value={provider?.Gateway_details?.[label] || ''}
+                          placeholder={data_value}
+                          onChange={changeGatewayDetails}
+                        />
+                        {validationErrors[label] && (
+                          <div className="provider-details-validation-error">
+                            {validationErrors[label]}
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          }
+          return null;
+        })}
     </div>
   );
 }
