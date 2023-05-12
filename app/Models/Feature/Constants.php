@@ -1842,6 +1842,7 @@ class Constants
 
     const CHECKOUT_FEATURES = [
         self::GOOGLE_PAY,
+        DcsConstants::EligibilityCheckDecline,
         self::CUSTOMER_ADDRESS,
         self::IRCTC_METHODS,
         self::GOOGLE_PAY_OMNICHANNEL,
@@ -2486,6 +2487,7 @@ class Constants
         DcsConstants::RefundEnabled           => true,  // Example Feature for DCS
         DcsConstants::DisableAutoRefund       => true,  // Example Feature for DCS
         DcsConstants::EligibilityEnabled      => true,
+        DcsConstants::EligibilityCheckDecline => true,
         DcsConstants::EmailOptionalOnCheckout => true,
         DcsConstants::ShowEmailOnCheckout     => true,
         DcsConstants::CvvLessFlowDisabled     => true,

@@ -615,9 +615,10 @@ return array(
     'one_cc_email_hidden_on_checkout_experiment_id' => env('1CC_EMAIL_HIDDEN_ON_CHECKOUT_EXP_ID'),
 
     'one_cc_conversion_address_improvements_experiment_id' => env('1CC_CONVERSION_ADDRESS_IMPROVEMENTS_EXP_ID'),
-    
+
     'emerchantpay_maf_generation_via_sqs_experiement_id' => env('EMERCHANTPAY_MAF_GENERATION_VIA_SQS_EXPERIMENT_ID'),
 
     'emi_via_card_screen_splitz_experiment_id' => env('EMI_VIA_CARD_SCREEN_SPLITZ_EXPERIMENT_ID'),
 
+    'eligibility_on_std_checkout_splitz_experiment_id' =>env('ELIGIBILITY_ON_STD_CHECKOUT_SPLITZ_EXPERIMENT_ID'),
 );

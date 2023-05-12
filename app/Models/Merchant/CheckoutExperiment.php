@@ -44,6 +44,7 @@ class CheckoutExperiment
         // initialise with default values which we want to see if experiment fails for some reason
         $this->experimentResults = [
             'checkout_redesign_v1_5'                             => false,
+            'eligibility_on_std_checkout'                        => false,
             'upi_ux'                                             => 'variant_1',
             'emi_ux_revamp'                                      => true,
             'upi_qr_v2'                                          => false,
@@ -202,6 +203,14 @@ class CheckoutExperiment
             'app.checkout_recurring_upi_autopay_psp_splitz_experiment_id',
             'RecurringUpiPsp',
             'recurring_upi_all_psp',
+            ['merchant_id' => $this->merchantId]
+        );
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.eligibility_on_std_checkout_splitz_experiment_id',
+            'EligibilityOnStdCheckout',
+            'eligibility_on_std_checkout',
             ['merchant_id' => $this->merchantId]
         );
 
@@ -489,6 +498,13 @@ class CheckoutExperiment
         ];
 
         $this->experimentResults = array_merge($this->experimentResults, $oneCcExperiments);
+    }
+
+    private function handleEligibilityOnStdCheckoutResponse($response):bool
+    {
+        $variant = $response['variant']['name'] ?? '';
+
+        return $variant === 'variant_on';
     }
 
     private function handleCheckoutRedesignResponse($response): bool

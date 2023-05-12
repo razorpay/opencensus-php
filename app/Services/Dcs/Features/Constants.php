@@ -14,6 +14,7 @@ class Constants
     const RefundEnabled = 'refund_enabled';
     const DisableAutoRefund = 'disable_auto_refund';
     const EligibilityEnabled = 'eligibility_enabled';
+    const EligibilityCheckDecline = 'eligibility_check_decline';
     const ShowEmailOnCheckout = 'show_email_on_checkout';
     const EmailOptionalOnCheckout = 'email_optional_oncheckout';
     const UpiNumberDisabled = 'upi_number_disabled';
@@ -114,6 +115,7 @@ class Constants
         self::RefundEnabled => "example/pg/merchant/refund/Features",
         self::DisableAutoRefund => "example/pg/merchant/refund/Features",
         self::EligibilityEnabled => "rzp/pg/merchant/affordability/EligibilityFeatures",
+        self::EligibilityCheckDecline => "rzp/pg/merchant/affordability/EligibilityFeatures",
         self::ShowEmailOnCheckout => "rzp/pg/merchant/checkout/EmailFieldCustomizationFeatures",
         self::EmailOptionalOnCheckout => "rzp/pg/merchant/checkout/EmailFieldCustomizationFeatures",
         self::UpiNumberDisabled => "rzp/pg/merchant/checkout/Upi",
@@ -217,6 +219,7 @@ class Constants
         self::RefundEnabled                                                 => self::RefundEnabled,
         self::DisableAutoRefund                                             => self::DisableAutoRefund,
         self::EligibilityEnabled                                            => self::EligibilityEnabled,
+        self::EligibilityCheckDecline                                       => self::EligibilityCheckDecline,
         self::ShowEmailOnCheckout                                           => self::ShowEmailOnCheckout,
         self::EmailOptionalOnCheckout                                       => self::EmailOptionalOnCheckout,
         self::CvvLessFlowDisabled                                           => self::CvvLessFlowDisabled,
@@ -319,6 +322,7 @@ class Constants
         self::RefundEnabled => 'direct',
         self::DisableAutoRefund => 'direct',
         self::EligibilityEnabled => 'client',
+        self::EligibilityCheckDecline => 'client',
         self::AutoCommissionInvoiceDisabled => 'direct',
         self::AffordabilityWidgetSet => 'client',
         self::EnableMerchantExpiryForPL => 'direct',
@@ -352,6 +356,7 @@ class Constants
     public static $dcsReadEnabledFeatures = [
         "merchant" => [
             "eligibility_enabled"=> "client",
+            "eligibility_check_decline" => "client",
             "auto_comm_inv_disabled"=> "direct",
             "affordability_widget_set"=> "client",
             "enable_customer_amount"=> "direct",

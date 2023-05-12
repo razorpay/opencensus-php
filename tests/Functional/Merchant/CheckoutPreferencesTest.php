@@ -3550,6 +3550,25 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertTrue($response['features'][Dcs\Features\Constants::EmailOptionalOnCheckout]);
     }
 
+    public function testGetPreferenceWithFeatureFlagEligibilityCheckDeclineAndEligibilityOnStdCheckoutExperimentPresentInPreferencesResponse()
+    {
+        $this->fixtures->merchant->addFeatures([
+            Dcs\Features\Constants::EligibilityCheckDecline,
+        ]);
+
+        $expDetails[] = [
+            'experiment_id' => 'app.eligibility_on_std_checkout_splitz_experiment_id',
+            'result' => 'variant_on'
+        ];
+
+        $this->mockCheckoutBulkExperiment($expDetails);
+
+        $response = $this->getPreferences();
+
+        $this->assertTrue($response['features'][Dcs\Features\Constants::EligibilityCheckDecline]);
+        $this->assertTrue($response['experiments']['eligibility_on_std_checkout']);
+    }
+
     public function testGetPreferencesWhenShowEmailOnCheckoutFeaturesEnabledExpectsShowEmailOnCheckoutFeatureFlagInPreferencesResponse()
     {
         $this->fixtures->merchant->addFeatures([
