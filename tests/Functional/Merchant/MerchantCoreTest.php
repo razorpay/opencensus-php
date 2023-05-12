@@ -346,7 +346,8 @@ class MerchantCoreTest extends OAuthTestCase
         $this->assertArrayKeysExist($result, ['merchant_info', 'count', 'error']);
         $this->assertArrayKeysExist($result['merchant_info'][0], ['merchant','merchant_detail','merchant_business_detail','merchant_website','merchant_verification_detail','bvs_validation','merchant_document']);
         $this->assertEquals(1, $result['count']);
-        $this->assertEquals("", $result['error']);
+        $this->assertEquals("", $result['error']['code']);
+        $this->assertEquals("", $result['error']['description']);
     }
 
     public function testFetchAllMerchantEntitiesRelatedInfoWithEmail()
@@ -357,6 +358,7 @@ class MerchantCoreTest extends OAuthTestCase
         $this->assertArrayKeysExist($result, ['merchant_info', 'count', 'error']);
         $this->assertArrayKeysExist($result['merchant_info'][0], ['merchant','merchant_detail','merchant_business_detail','merchant_website','merchant_verification_detail','bvs_validation','merchant_document']);
         $this->assertEquals(1, $result['count']);
-        $this->assertEquals("", $result['error']);
+        $this->assertEquals("", $result['error']['code']);
+        $this->assertEquals("", $result['error']['description']);
     }
 }
