@@ -33,3 +33,4 @@
 <div id="react-root" class="react-root"></div>
 <script src="{{$cdn}}/dist/admin-entry.js"></script>
 <script src="//js.hs-scripts.com/5558946.js"></script>
+@include('partials/blade-coverage-script')
