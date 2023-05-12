@@ -304,6 +304,7 @@ class Entity
     const HDFC                   = 'hdfc';
     const ATOM                   = 'atom';
     const PAYU                   = 'payu';
+    const OPTIMIZER_RAZORPAY     = 'optimizer_razorpay';
     const BT_RBL                 = 'bt_rbl';
     const CASHFREE               = 'cashfree';
     const ZAAKPAY                = 'zaakpay';
@@ -1222,6 +1223,7 @@ class Entity
         self::BILLDESK_OPTIMIZER     => \RZP\Gateway\Upi\BilldeskOptimizer::class,
         self::PINELABS               => \RZP\Gateway\Upi\Pinelabs::class,
         self::PAYU                   => \RZP\Gateway\Upi\Payu::class,
+        self::OPTIMIZER_RAZORPAY     => \RZP\Gateway\Upi\OptimizerRazorpay::class,
         self::UPI_MINDGATE           => \RZP\Gateway\Upi\Mindgate::class,
         self::UPI_JUSPAY             => \RZP\Gateway\Upi\Juspay::class,
         self::UPI_SBI                => \RZP\Gateway\Upi\Sbi::class,
@@ -1542,6 +1544,7 @@ class Entity
         self::BILLDESK_OPTIMIZER     => \RZP\Gateway\Upi\Base::class,
         self::PINELABS               => \RZP\Gateway\Upi\Base::class,
         self::PAYU                   => \RZP\Gateway\Upi\Base::class,
+        self::OPTIMIZER_RAZORPAY     => \RZP\Gateway\Upi\Base::class,
         self::PAYTM                  => \RZP\Gateway\Upi\Base::class,
         self::UPI_KOTAK              => \RZP\Gateway\Upi\Base::class,
         self::UPI_RZPRBL             => \RZP\Gateway\Upi\Base::class,

@@ -2143,7 +2143,12 @@ class Gateway extends Base\Gateway
             ],
             Payment\Gateway::PAYU => [
                 Action::CHECK_BIN => null
-            ]
+            ],
+            Payment\Gateway::OPTIMIZER_RAZORPAY => [
+                Action::PAY_INIT      => null,
+                Action::PAY_VERIFY    => null,
+                Action::VERIFY        => null,
+            ],
         ];
 
         return $previousActionForStep[$gateway][$this->action];
@@ -2333,6 +2338,11 @@ class Gateway extends Base\Gateway
                 Action::PAY_VERIFY          => null,
                 Action::MANDATE_REVOKE      => null,
                 Action::UPDATE_TOKEN        => null,
+            ],
+            Payment\Gateway::OPTIMIZER_RAZORPAY => [
+                Action::PAY_INIT      => null,
+                Action::PAY_VERIFY    => null,
+                Action::VERIFY        => null,
             ],
         ];
 

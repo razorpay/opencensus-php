@@ -1468,6 +1468,11 @@ class Netbanking
         return self::$gatewaySupportedBanks[Gateway::BILLDESK_OPTIMIZER]['retail'];
     }
 
+    public static function getOptimizerRazorpaySupportedBanks()
+    {
+        return self::$gatewaySupportedBanks[Gateway::OPTIMIZER_RAZORPAY]['retail'];
+    }
+
     public static function getDirectlyNetbankingBanks()
     {
         return array_merge(self::$self, self::$selfCorp);
@@ -1590,6 +1595,11 @@ class Netbanking
     public static function isBilldesk_OptimizerSupportedBank($bank)
     {
         return in_array($bank, self::getBilldeskOptimizerSupportedBanks(), true) === true;
+    }
+
+    public static function isOptimizer_RazorpaySupportedBank($bank)
+    {
+        return in_array($bank, self::getOptimizerRazorpaySupportedBanks(), true) === true;
     }
 
     public static function isNetbankingBankDirectlySupported($bank): bool
