@@ -4,7 +4,7 @@ import {
   EcosystemOverallSummaryContainer,
   EcosystemStatusIconContainer,
 } from 'merchant/views/EcosystemDowntimes/styles';
-import { titleCase } from 'common/utils/rzp-utils';
+import { toTitleCase } from '@razorpay/blade/utils';
 import { METHOD_NAMES_MAP, STATUS } from 'merchant/views/EcosystemDowntimes/constants';
 import { ActivityIcon, Text } from '@razorpay/blade/components';
 
@@ -30,7 +30,7 @@ const EcosystemOverallSummary = (): JSX.Element => {
           <Text contrast="low" size="medium" variant="body" weight="bold">
             Few drops noticed in{' '}
             {downtimesForMethods
-              .map((method) => METHOD_NAMES_MAP?.[method] || titleCase(method))
+              .map((method) => METHOD_NAMES_MAP?.[method] || toTitleCase(method))
               .join(', ')}
           </Text>
         ) : (

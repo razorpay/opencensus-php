@@ -1,6 +1,6 @@
 import React from 'react';
 import MethodsContainer from 'merchant/views/EcosystemDowntimes/containers/MethodsContainer';
-import { screen, waitFor, render, server } from 'test-utils';
+import { screen, waitFor, render, server, userEvent } from 'test-utils';
 import { EcosystemDowntimeProvider } from 'merchant/views/EcosystemDowntimes/context';
 import { ongoingDowntimesHandler, resolvedDowntimesHandler } from './mocks/handlers';
 import * as analytics from 'common/utils/analytics';
@@ -52,6 +52,10 @@ describe('<MethodsContainer/>', () => {
         timeout: 4000,
       },
     );
+
+    expect(screen.getByTestId('Notification--error')).toHaveTextContent(
+      'Something went wrong while fetching downtimes',
+    );
   });
 
   test('should trigger page view event once MethodsContainer mounts ', async () => {
@@ -69,6 +73,23 @@ describe('<MethodsContainer/>', () => {
       actionName: 'Viewed',
       screen: 'Transactions - Ecosystem Health',
       properties: expect.any(Object),
+    });
+  });
+
+  test('should open downtime details if clicked on instrument', async () => {
+    server.use(
+      resolvedDowntimesHandler({ isSuccess: true }),
+      ongoingDowntimesHandler({ isSuccess: true }),
+    );
+    render(<App />);
+    await waitFor(() => {
+      expect(screen.queryByTestId('ecosystem-health-loader')).not.toBeInTheDocument();
+    });
+
+    await userEvent.click(screen.getByText('VISA'));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('ecosystem-downtime-details')).toBeInTheDocument();
     });
   });
 });

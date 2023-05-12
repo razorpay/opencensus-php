@@ -103,7 +103,7 @@ const SuccessRateSummary = ({
     return (
       <AlertWrapper aria-label="no-payments-sr">
         <Alert
-          description={`No payments were attempted via ${instrumentName}, ${methodName} in the past one week`}
+          description={`No payments were attempted via ${instrumentName} (${methodName}) in the past one week`}
           intent="information"
           isDismissible={false}
         />

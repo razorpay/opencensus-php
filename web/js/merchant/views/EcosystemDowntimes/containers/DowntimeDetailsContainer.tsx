@@ -91,6 +91,7 @@ const DowntimeDetailsContainer = (): JSX.Element | null => {
         <SuccessRateSummary isMobile={isMobile} srKey={srKey} instrument={key} method={method} />
       ) : null}
       <DowntimeDetailsCurrentStatus
+        instrument={focusedInstrument}
         isMobile={isMobile}
         activeDowntime={activeDowntimeForInstrument}
       />

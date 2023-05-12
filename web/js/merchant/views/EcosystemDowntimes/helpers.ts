@@ -1,6 +1,7 @@
 import moment from 'moment';
 import {
   INSTRUMENT_CODES_MAP,
+  INSTRUMENT_TYPE_NAMES_MAP,
   METHOD_NAMES_MAP,
   STATUS,
   accessInstrumentList,
@@ -8,6 +9,7 @@ import {
 import type {
   DowntimeDictionaryType,
   DowntimeMetaDataType,
+  InstrumentGroupTypes,
   MethodInstrumentDataListType,
   MethodsInstrumentListType,
   PreviousDowntimeDictionaryType,
@@ -15,6 +17,12 @@ import type {
   SuccessRateResponseType,
 } from './types';
 import { toTitleCase } from '@razorpay/blade/utils';
+
+export const extractInstrumentType = (keys: string[]): string | null => {
+  const ignoreFields = ['method', 'srKey'];
+  const type = keys.find((key) => !ignoreFields.includes(key));
+  return type && INSTRUMENT_TYPE_NAMES_MAP?.[type] ? type : null;
+};
 
 export const _prepareDowntimeObj = ({
   currentDowntimeObj,
@@ -25,11 +33,10 @@ export const _prepareDowntimeObj = ({
 }) => {
   if (!method || !instrumentType || !instrumentValue) return null;
   //cloning and appending to the current downtime obj
-
   let activeDowntimesObj = currentDowntimeObj;
   //null checks on properties
-  const isMethodAvailable = activeDowntimesObj?.[method];
-  const isMethodInstrumentTypeAvailable = activeDowntimesObj?.[method]?.[instrumentType];
+  const isMethodAvailable = Boolean(activeDowntimesObj?.[method]);
+  const isMethodInstrumentTypeAvailable = Boolean(activeDowntimesObj?.[method]?.[instrumentType]);
 
   if (!isMethodAvailable) {
     activeDowntimesObj = {
@@ -57,15 +64,19 @@ export const getSupportedMethodInstrumentDictionary = (): StaticInstrumentMappin
   const methodInstrumentList = accessInstrumentList();
   return methodInstrumentList.reduce((acc, instrument) => {
     const method = instrument.method;
-    const instrumentType = Object.keys(instrument).filter((item) => item !== 'method')?.[0];
-    const instrumentValue = instrument?.[instrumentType];
-    return _prepareDowntimeObj({
-      currentDowntimeObj: acc,
-      method,
-      instrumentType,
-      instrumentValue,
-      data: true,
-    });
+    const instrumentType = extractInstrumentType(Object.keys(instrument));
+
+    if (method && instrumentType) {
+      const instrumentValue = instrument?.[instrumentType];
+      return _prepareDowntimeObj({
+        currentDowntimeObj: acc,
+        method,
+        instrumentType,
+        instrumentValue,
+        data: true,
+      });
+    }
+    return acc;
   }, {});
 };
 
@@ -80,6 +91,7 @@ export const processOnGoingDowntimes = (
     const instrumentValue = instrument[instrumentType];
     return !!supportEntities?.[method]?.[instrumentType]?.[instrumentValue];
   });
+
   return filteredDowntimeData.reduce((acc, currentActiveDowntime) => {
     const { method, instrument } = currentActiveDowntime;
     const instrumentType = Object.keys(instrument)?.[0];
@@ -159,14 +171,16 @@ export const processPreviousDowntimes = (
   }, {});
 };
 
-export const getInstrumentList = (): MethodInstrumentDataListType => {
+export const getInstrumentList = ({
+  activeDowntimes,
+}: {
+  activeDowntimes?: DowntimeDictionaryType | null;
+}): MethodInstrumentDataListType => {
   const data: MethodsInstrumentListType[] = accessInstrumentList();
   return data.reduce((acc, item) => {
     const intermediateAcc = acc;
     const { method, srKey } = item;
-    const subGroup = Object.keys(item)
-      .filter((item) => item !== 'method' && item !== 'srKey')
-      .pop();
+    const subGroup = extractInstrumentType(Object.keys(item));
     if (method && subGroup) {
       const instrument = item[subGroup];
 
@@ -174,13 +188,24 @@ export const getInstrumentList = (): MethodInstrumentDataListType => {
       if (!intermediateAcc?.[method]?.[subGroup]) {
         intermediateAcc[method][subGroup] = [];
       }
-      intermediateAcc[method][subGroup].push({
+
+      //sorting based on downtimes(if any)
+      const downtime = activeDowntimes?.[method]?.[subGroup]?.[instrument];
+      const severity = downtime?.severity || STATUS.operational.slug;
+      let instruments = [...intermediateAcc[method][subGroup]];
+      const newInstrumentObject = {
         key: instrument,
         name: INSTRUMENT_CODES_MAP?.[instrument].name || instrument,
         logo: INSTRUMENT_CODES_MAP?.[instrument].logo,
+        weight: STATUS[severity].weight,
         srKey,
-      });
+      };
+      instruments = [...instruments, newInstrumentObject];
+      instruments = instruments.sort((firstIns, secondIns) => secondIns.weight - firstIns.weight);
+
+      intermediateAcc[method][subGroup] = instruments;
     }
+
     return intermediateAcc;
   }, {});
 };
@@ -203,11 +228,18 @@ export const groupAllDowntimesByMethod = (
   const downtimes = activeDowntimes?.[method];
   if (!downtimes) return [];
 
-  const subGroups = Object.values(downtimes);
+  const subGroups = Object.values(downtimes) as Record<
+    InstrumentGroupTypes,
+    DowntimeMetaDataType
+  >[];
+
   return subGroups
-    .reduce((acc: DowntimeMetaDataType[], item: DowntimeMetaDataType) => {
-      return [...acc, ...Object.values(item)];
-    }, [])
+    .reduce(
+      (acc: DowntimeMetaDataType[], item: Record<InstrumentGroupTypes, DowntimeMetaDataType>) => {
+        return [...acc, ...Object.values(item)];
+      },
+      [],
+    )
     .sort(
       ({ severity: firstSeverity }, { severity: secondSeverity }) =>
         STATUS[secondSeverity].weight - STATUS[firstSeverity].weight,
@@ -217,12 +249,12 @@ export const groupAllDowntimesByMethod = (
 export const getDowntimeHeaderAndDescription = (
   downtime: DowntimeMetaDataType,
 ): Record<string, string | JSX.Element> => {
-  const { severity, instrument, created_at } = downtime;
+  const { severity, instrument, begin } = downtime;
 
   const heading = `${STATUS?.[severity]?.text} Downtime`;
   const icon = STATUS[severity]?.icon;
 
-  const time = moment(created_at * 1000).format('DD/MM, HH:mm');
+  const time = moment(begin * 1000).format('DD/MM, HH:mm');
   const instrumentName = INSTRUMENT_CODES_MAP[Object.values(instrument)?.[0] as string]?.name;
   const description = `${instrumentName} (started at ${time})`;
 
@@ -243,7 +275,7 @@ export const getRemainingTime = (seconds: number): string => {
 
 type getDowntimesAfterTimestampParamTypes = {
   activeDowntimeForInstrument?: DowntimeMetaDataType;
-  pastDowntimesForInstrument: DowntimeMetaDataType[];
+  pastDowntimesForInstrument?: DowntimeMetaDataType[];
   timestamp: number;
 };
 export const getDowntimesAfterTimestamp = ({

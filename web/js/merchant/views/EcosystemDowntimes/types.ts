@@ -2,6 +2,7 @@ import type { Dispatch } from 'react';
 
 export type EcosystemDowntimesProviderType = {
   children: React.ReactNode;
+  showNotification: (payload) => void;
 };
 
 type InstrumentField = 'logo' | 'name' | 'key' | 'method' | 'group';
@@ -9,6 +10,10 @@ type InstrumentField = 'logo' | 'name' | 'key' | 'method' | 'group';
 export interface InstrumentMetaData extends Record<InstrumentField, string> {
   srKey: string | null;
 }
+
+export type MethodType = 'card' | 'emandate' | 'netbanking' | 'upi';
+
+export type InstrumentGroupTypes = 'issuer' | 'vpa_handle' | 'network' | 'bank' | 'psp';
 
 export type EcosystemDowntimesActionType = {
   type: EcosystemDowntimesActions;
@@ -24,8 +29,6 @@ export type EcosystemDowntimesActions =
   | 'SET_ACTIVE_DOWNTIMES'
   | 'SET_FOCUSED_INSTRUMENT'
   | 'SET_PREVIOUS_DOWNTIMES';
-
-export type InstrumentGroupTypes = 'issuer' | 'vpa_handle' | 'network' | 'bank' | 'psp';
 
 export type InstrumentMapType = {
   [key in InstrumentGroupTypes]?: string;
@@ -51,21 +54,23 @@ export interface DowntimeMetaDataType {
   duration?: string;
 }
 
-export interface DowntimeDictionaryType {
-  [key: string]: {
-    [key: string]: DowntimeMetaDataType;
+export type DowntimeDictionaryType = {
+  [key in MethodType]?: {
+    [key in InstrumentGroupTypes]?: {
+      [key: string]: DowntimeMetaDataType;
+    };
   };
-}
+};
 
-export interface PreviousDowntimeDictionaryType {
-  [key: string]: {
-    [key: string]: {
+export type PreviousDowntimeDictionaryType = {
+  [key in MethodType]?: {
+    [key in InstrumentGroupTypes]?: {
       [key: string]: {
         previousDowntimes: DowntimeMetaDataType[];
       };
     };
   };
-}
+};
 
 export interface EcosystemQueryFieldTypes {
   isOngoingDowntimesError?: boolean;
@@ -108,16 +113,17 @@ export interface DowntimeResponseType {
   data: DowntimeMetaDataType[];
 }
 
-export interface MethodInstrumentDataListType {
-  [key: string]: {
-    [key: string]: {
+export type MethodInstrumentDataListType = {
+  [key in MethodType]?: {
+    [key in InstrumentGroupTypes]?: {
       key: string;
       logo: string;
       name: string;
+      weight: number;
       srKey: string | null;
     }[];
   };
-}
+};
 
 export interface DowntimeSummaryFieldTypes {
   name: string;
@@ -129,12 +135,9 @@ export interface DowntimeSummaryFieldTypes {
   }) => string | number;
 }
 
-type methodsTypes = 'card' | 'upi' | 'netbanking' | 'emandate';
-type instrumentGroupTypes = 'issuer' | 'bank' | 'vpa_handle' | 'network';
-
 export type StaticInstrumentMappingType = {
-  [key in methodsTypes]?: {
-    [key in instrumentGroupTypes]?: {
+  [key in MethodType]?: {
+    [key in InstrumentGroupTypes]?: {
       [key: string]: boolean;
     };
   };

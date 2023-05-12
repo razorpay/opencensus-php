@@ -37,7 +37,7 @@ describe('<SuccessRateSummary/>', () => {
 
     await waitFor(() => {
       expect(screen.getByLabelText('no-payments-sr')).toHaveTextContent(
-        'No payments were attempted via State Bank Of India, Cards in the past one week',
+        'No payments were attempted via State Bank Of India (Cards) in the past one week',
       );
     });
   });

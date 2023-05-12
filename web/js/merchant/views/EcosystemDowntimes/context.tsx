@@ -5,17 +5,19 @@ import {
   fetchOngoingDowntimes,
   fetchResolvedDowntimes,
 } from 'merchant/views/EcosystemDowntimes/services';
-import { useSnackbar } from 'common/components/SnackBar/SnackbarContext';
 import moment from 'moment';
 import type {
   EcosystemDowntimesContextType,
-  EcosystemDowntimesProviderType,
   EcosystemDowntimesActionType,
   EcosystemDowntimesInitialState,
   DowntimeMetaDataType,
+  EcosystemDowntimesProviderType,
 } from 'merchant/views/EcosystemDowntimes/types';
 import { merge } from 'common/utils/immutable';
 import { processOnGoingDowntimes, processPreviousDowntimes } from './helpers';
+import { compose } from 'redux';
+import { connect } from 'react-redux';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 const initialState: EcosystemDowntimesInitialState = {
   activeDowntimes: {},
@@ -50,17 +52,18 @@ export const EcosystemDowntimeContext = createContext<EcosystemDowntimesContextT
   refreshData: () => {},
 });
 
-export const EcosystemDowntimeProvider = ({
+const ContextProvider = ({
   children,
+  showNotification,
 }: EcosystemDowntimesProviderType): JSX.Element => {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const snackbar = useSnackbar();
   const queryCache = useQueryCache();
 
-  const handleOnError = (err: { error: string }): void => {
-    if (err?.error) {
-      snackbar.error(err?.error);
-    }
+  const handleOnError = (): void => {
+    showNotification({
+      type: 'error',
+      message: 'Something went wrong while fetching downtimes',
+    });
   };
 
   const onOngoingApiSuccess = (data: DowntimeMetaDataType[]) => {
@@ -148,3 +151,11 @@ export const EcosystemDowntimeProvider = ({
     </EcosystemDowntimeContext.Provider>
   );
 };
+
+const EcosystemDowntimeProvider = compose(
+  connect(null, {
+    showNotification,
+  }),
+)(ContextProvider);
+
+export { EcosystemDowntimeProvider };

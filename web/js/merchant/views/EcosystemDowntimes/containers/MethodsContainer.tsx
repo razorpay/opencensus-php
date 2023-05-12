@@ -9,21 +9,24 @@ import {
   MethodsContainerStyled,
 } from 'merchant/views/EcosystemDowntimes/styles';
 import { getInstrumentList } from 'merchant/views/EcosystemDowntimes/helpers';
-import { titleCase } from 'common/utils/rzp-utils';
 import {
   ecosystemHealthPageView,
   trackEcosystemDowntimeEvents,
 } from 'merchant/views/EcosystemDowntimes/events';
 import EcosystemOverallSummary from 'merchant/views/EcosystemDowntimes/components/EcosystemOverallSummary';
-import { ACTIONS, METHOD_NAMES_MAP } from 'merchant/views/EcosystemDowntimes/constants';
+import {
+  ACTIONS,
+  INSTRUMENT_TYPE_NAMES_MAP,
+  METHOD_NAMES_MAP,
+} from 'merchant/views/EcosystemDowntimes/constants';
 import EcosystemMethodSummary from 'merchant/views/EcosystemDowntimes/components/EcosystemMethodSummary';
 import EcosystemHealthError from 'merchant/views/EcosystemDowntimes/components/EcosystemHealthError';
 import { Text, Heading } from '@razorpay/blade/components';
 import DowntimeDetailsContainer from './DowntimeDetailsContainer';
 import { Modal, ModalBody } from 'common/components/Modal';
+import { toTitleCase } from '@razorpay/blade/utils';
 
 const MethodsContainer = (): JSX.Element => {
-  const instrumentMap = useMemo(() => getInstrumentList(), []);
   const { state, dispatch } = useContext(EcosystemDowntimeContext);
   const [isDetailsOpen, setIsDetailsOpen] = useState<boolean>(false);
   const {
@@ -33,6 +36,7 @@ const MethodsContainer = (): JSX.Element => {
     isOngoingDowntimesError,
     isPreviousDowntimesError,
   } = state;
+  const instrumentMap = useMemo(() => getInstrumentList({ activeDowntimes }), [activeDowntimes]);
 
   const isError = isOngoingDowntimesError || isPreviousDowntimesError;
 
@@ -75,7 +79,7 @@ const MethodsContainer = (): JSX.Element => {
             <div key={method}>
               <MethodName>
                 <Heading size="small" type="normal" variant="regular" weight="bold">
-                  {METHOD_NAMES_MAP?.[method] || titleCase(method)}
+                  {METHOD_NAMES_MAP?.[method] || toTitleCase(method)}
                 </Heading>
               </MethodName>
               <EcosystemMethodSummary method={method} />
@@ -85,7 +89,7 @@ const MethodsContainer = (): JSX.Element => {
                   <MethodsListContainer key={group}>
                     <ul>
                       <Text contrast="low" size="medium" type="normal" variant="body" weight="bold">
-                        {titleCase(group)}
+                        {INSTRUMENT_TYPE_NAMES_MAP?.[group] || toTitleCase(group)}
                       </Text>
                       {instruments.map((instrument) => (
                         <li role="listitem" key={`${method}_${instrument.key}`}>

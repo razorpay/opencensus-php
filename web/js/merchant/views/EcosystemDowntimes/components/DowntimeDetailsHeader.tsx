@@ -2,8 +2,11 @@ import React from 'react';
 import type { InstrumentMetaData } from 'merchant/views/EcosystemDowntimes/types';
 import { DowntimeDetailsHeaderStyled } from 'merchant/views/EcosystemDowntimes/styles';
 import { Heading, Text } from '@razorpay/blade/components';
-import { METHOD_NAMES_MAP } from 'merchant/views/EcosystemDowntimes/constants';
-import { humanize } from 'common/utils/rzp-utils';
+import {
+  INSTRUMENT_TYPE_NAMES_MAP,
+  METHOD_NAMES_MAP,
+} from 'merchant/views/EcosystemDowntimes/constants';
+import { toTitleCase } from '@razorpay/blade/utils';
 
 type DowntimeDetailsHeaderType = {
   instrument: InstrumentMetaData;
@@ -21,16 +24,21 @@ const DowntimeDetailsHeader = ({
         <img src={logo} height={30} width={30} />
       </div>
       <div className="instrument-name">
-        <Heading size="medium" type="normal" weight="bold">
+        <Heading
+          size="medium"
+          type="normal"
+          weight="bold"
+          testID="downtime-details-header-instrumnt-name"
+        >
           {name}
         </Heading>
-        <div className="instrument-details">
+        <div className="instrument-details" aria-label="downtime-details-header-subtext">
           <Text size={isMobile ? 'small' : 'medium'} type="subdued">
             {METHOD_NAMES_MAP[method]}
           </Text>
           <div className="separator" />
           <Text size={isMobile ? 'small' : 'medium'} type="subdued">
-            {humanize(group)}
+            {INSTRUMENT_TYPE_NAMES_MAP[group] || toTitleCase(group)}
           </Text>
         </div>
       </div>

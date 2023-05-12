@@ -10,6 +10,7 @@ import {
   getInstrumentList,
   _prepareDowntimeObj,
   getSrDatPointsFromResponse,
+  extractInstrumentType,
 } from 'merchant/views/EcosystemDowntimes/helpers';
 import {
   downtime_mock_response,
@@ -82,9 +83,9 @@ describe('Helpers', () => {
     jest.useFakeTimers('modern').setSystemTime(new Date(2023, 1, 3));
 
     const pastDowntimes = processPreviousDowntimes(previous_downtimes_mock.data);
-    const pastDowntimesForMockInstrument = pastDowntimes.netbanking.bank.ICIC.previousDowntimes;
+    const pastDowntimesForMockInstrument = pastDowntimes?.netbanking?.bank?.ICIC;
     const response = getDowntimesAfterTimestamp({
-      pastDowntimesForInstrument: pastDowntimesForMockInstrument,
+      pastDowntimesForInstrument: pastDowntimesForMockInstrument?.previousDowntimes,
       timestamp: moment(new Date(2023, 1, 3)).startOf('day').unix(),
     });
     expect(response.totalDuration).toBe('4mins');
@@ -140,7 +141,7 @@ describe('Helpers', () => {
       { method: 'upi', srKey: null },
     ]);
 
-    const list = getInstrumentList();
+    const list = getInstrumentList({ activeDowntimes: null });
     const methods = Object.keys(list);
     expect(methods.length).toBe(1);
 
@@ -187,6 +188,25 @@ describe('Helpers', () => {
     expect(response3?.card?.network?.visa).toBe('mockData');
   });
 
+  test('getInstrumentList should return instruments in correct order', () => {
+    const spy = jest.spyOn(constants, 'accessInstrumentList');
+    spy.mockReturnValue([
+      { method: 'card', network: 'VISA', srKey: 'card.network.Visa' },
+      { method: 'card', network: 'AMEX', srKey: 'card.network.American Express' },
+      { method: 'card', network: 'DICL', srKey: 'card.network.Diners Club' },
+      { method: 'upi', srKey: null },
+      { method: 'card', network: 'RUPAY', srKey: 'card.network.Rupay' },
+    ]);
+
+    const response = getInstrumentList({
+      activeDowntimes: processOnGoingDowntimes(downtime_mock_response.data),
+    });
+
+    const cardsNetworkInstruments = response.card?.network;
+    expect(cardsNetworkInstruments?.[0]?.key).toBe('VISA');
+    expect(cardsNetworkInstruments?.[1]?.key).toBe('RUPAY');
+  });
+
   test('getSrDatPointsFromResponse should return with correct sr datapoints if response provided', () => {
     const props = {
       srResponse: sr_mock_response,
@@ -208,5 +228,27 @@ describe('Helpers', () => {
 
     const srData = getSrDatPointsFromResponse(props);
     expect(srData.isError).toBe(true);
+  });
+
+  test('extractInstrumentType should return the correct instrument type', () => {
+    const instrumentObj = {
+      method: 'card',
+      srKey: 'card.network.VISA',
+      network: 'VISA',
+    };
+
+    const instrumentType = extractInstrumentType(Object.keys(instrumentObj));
+    expect(instrumentType).toBe('network');
+
+    const instrumentTypeWithEmpty = extractInstrumentType(Object.keys({}));
+    expect(instrumentTypeWithEmpty).toBeNull();
+
+    const instrumentObjUnsupported = {
+      method: 'card',
+      srKey: 'card.network.VISA',
+      unsupportedType: 'unsupported',
+    };
+    const instrumentTypeUnsupported = extractInstrumentType(Object.keys(instrumentObjUnsupported));
+    expect(instrumentTypeUnsupported).toBeNull();
   });
 });

@@ -226,3 +226,11 @@ export const DOWNTIME_SUMMARY_FIELDS = [
 ];
 
 export const SR_QUERY_CACHE_KEY = 'successRate';
+
+export const INSTRUMENT_TYPE_NAMES_MAP = {
+  issuer: 'Issuer',
+  bank: 'Bank',
+  network: 'Network',
+  vpa_handle: 'VPA handle',
+  psp: 'PSP apps',
+};

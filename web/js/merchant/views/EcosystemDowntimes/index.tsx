@@ -25,7 +25,7 @@ type EcosystemDowntimesProps = {
 const EcosystemDowntimes = ({ mode, showMobileNav }: EcosystemDowntimesProps): JSX.Element => {
   return (
     <ErrorBoundary
-      tags={['ecosystemDowntimes', 'availabilityAndDowntime']}
+      tags={{ page: 'ecosystemDowntimes' }}
       FallbackComponent={() => (
         <SuspenseWithLoader>
           <StatusDetails AppMode={mode} showMobileNav={showMobileNav} isForceOpen />
