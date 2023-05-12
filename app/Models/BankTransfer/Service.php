@@ -23,6 +23,7 @@ use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Models\Admin;
 use RZP\Constants\Mode;
+use RZP\Models\Address;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
@@ -1181,6 +1182,77 @@ class Service extends Base\Service
         return [];
     }
 
+    // Collect customer billing address from merchant dashboard
+    // https://razorpay.slack.com/archives/C024U3B04LD/p1682496775025409?thread_ts=1681996740.555379&cid=C024U3B04LD
+    public function createAddressEntityForB2B($input = [], $paymentId = '')
+    {
+        $this->trace->info(TraceCode::ADDRESS_CREATE_REQUEST, $input);
+
+        [$payment, $addresses] = $this->getAddressEntityForB2B($paymentId);
+
+        if ((in_array($this->app['env'], [Environment::TESTING, Environment::TESTING_DOCKER]) === false) and
+            ($addresses->isNotEmpty() === true))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, $addresses, 
+                        [
+                            'error_desc' => 'Address already saved',
+                            'error_code' => 'BAD_REQUEST_ERROR',
+                        ]);
+        }
+
+        if ((empty($input) === false) and
+            (isset($input['country']) === true) and
+            ((strtolower($input['country']) === 'in') or (strtolower($input['country']) === 'ind') or (strtolower($input['country']) === 'india')))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, $input, 
+                        [
+                            'error_desc' => 'Invalid country',
+                            'error_code' => 'BAD_REQUEST_ERROR',
+                        ]);
+        }
+
+        $formattedAddress = [
+            'type'      => Address\Type::BILLING_ADDRESS,
+            'name'      => $input['name'],
+            'zipcode'   => $input['zipcode'],
+            'line1'     => $input['line1'],
+            'city'      => $input['city'],
+            'country'   => $input['country'],
+            'state'     => $input['state'] ?? '',
+        ];
+
+        return (new Address\Core)->create($payment, $payment->getEntity(), $formattedAddress);
+    }
+
+    public function getAddressEntityForB2B($paymentId = '')
+    {
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::ENABLE_INTL_BANK_TRANSFER) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, 
+                        [
+                            'error_desc' => 'Merchant not allowed',
+                            'error_code' => 'BAD_REQUEST_ERROR',
+                        ]);
+        }
+
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
+
+        if (($payment->isAuthorized() === false) or 
+            ($payment->isB2BExportCurrencyCloudPayment() === false))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, 
+                        [
+                            'error_desc' => 'Invalid payment status or method',
+                            'error_code' => 'BAD_REQUEST_ERROR',
+                        ]);
+        }
+
+        $addresses = $this->repo->address->fetchAddressesForEntity($payment,
+            ['type'=> Address\Type::BILLING_ADDRESS]);
+
+        return [$payment, $addresses];
+    }
+
 
     public function captureCronForB2BPayments($input)
     {
@@ -1210,13 +1282,21 @@ class Service extends Base\Service
 
                     continue;
                 }
+
+                // merchant should add customer billing address before payments can be captured
+                $addresses = $this->repo->address->fetchAddressesForEntity($payment,
+                                ['type'=> Address\Type::BILLING_ADDRESS]);
+
                 // Transfer_id which we get from CC is stored in Reference16 attribute
-                if($payment->getReference16() != null or !$merchant->isFeatureEnabled(Feature\Constants::ENABLE_SETTLEMENT_FOR_B2B))
+                if($payment->getReference16() != null or 
+                    !$merchant->isFeatureEnabled(Feature\Constants::ENABLE_SETTLEMENT_FOR_B2B) or 
+                    ($addresses->isEmpty() === true))
                 {
                     $this->trace->info(TraceCode::B2B_TRANSFER_COMPLETION_PENDING,[
                         'payment_id'                => $payment->getId(),
                         'payment_transfer_id'       => $payment->getReference16(),
                         'settlement_flow_by_risk'   => $merchant->isFeatureEnabled(Feature\Constants::ENABLE_SETTLEMENT_FOR_B2B),
+                        'address_empty'             => ($addresses->isEmpty() ? 'yes' : 'no'),
                     ]);
 
                     continue;
@@ -1427,6 +1507,19 @@ class Service extends Base\Service
         $payment_id = trim(explode(";",$reason)[1]);
 
         $payment = $this->repo->payment->findOrFail($payment_id);
+
+        // merchants should add customer billing addresses before payments can be captured
+        $addresses = $this->repo->address->fetchAddressesForEntity($payment,
+            ['type'=> Address\Type::BILLING_ADDRESS]);
+
+        if ($addresses->isEmpty() === true)
+        {
+             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, 
+                        [
+                            'error_desc' => 'Address not present',
+                            'error_code' => 'BAD_REQUEST_ERROR',
+                        ]);
+        }
 
         $payment->setGatewayCaptured(true);
 

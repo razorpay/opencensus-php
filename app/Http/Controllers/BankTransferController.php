@@ -714,4 +714,22 @@ class BankTransferController extends Controller
         return ApiResponse::json($response);
 
     }
+
+    public function createAddressEntityForB2B(string $paymentId)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createAddressEntityForB2B($input, $paymentId);
+
+        return ApiResponse::json($response);
+
+    }
+
+    public function getAddressEntityForB2B(string $paymentId)
+    {
+        [$payment, $addresses] = $this->service()->getAddressEntityForB2B($paymentId);
+
+        return ApiResponse::json($addresses->first());
+
+    }
 }

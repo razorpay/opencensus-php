@@ -9743,6 +9743,8 @@ class BankTransferTest extends TestCase
 
         $secondRequest['content']['reason'] = "Sub Account Transfer to House; " . $paymentEntity['id'];
 
+        $this->collectAddress($paymentEntity, $merchantUser['id']);
+
         $secondResponse = $this->makeRequestAndGetContent($secondRequest);
 
         $updatedPaymentEntity = $this->getLastPayment('payment',true);
@@ -9800,6 +9802,8 @@ class BankTransferTest extends TestCase
 
         $secondRequest['content']['reason'] = "Sub Account Transfer to House; " . $paymentEntity['id'];
 
+        $this->collectAddress($paymentEntity, $merchantUser['id']);
+
         $secondResponse = $this->makeRequestAndGetContent($secondRequest);
 
         $updatedPaymentEntity = $this->getLastPayment('payment',true);
@@ -9833,6 +9837,8 @@ class BankTransferTest extends TestCase
 
         $this->fixtures->merchant->addFeatures('enable_settlement_for_b2b',$merchantDetail['merchant_id']);
 
+        $this->collectAddress($paymentEntity, $merchantUser['id']);
+
         $this->ba->cronAuth();
         $secondRequest = $this->testData[__FUNCTION__]['request'];
         $secondResponse = $this->sendRequest($secondRequest);
@@ -9850,6 +9856,47 @@ class BankTransferTest extends TestCase
 
         $response = $this->sendRequest($request);
 
+    }
+
+    // test for collecting customer billing address
+    // https://razorpay.slack.com/archives/C024U3B04LD/p1682496775025409?thread_ts=1681996740.555379&cid=C024U3B04LD
+    public function testAddressCollection()
+    {
+        $payment = $this->fixtures->create('payment', ['merchant_id' => '10000000000000', 'status' => 'authorized', 'method' => 'intl_bank_transfer', 'gateway' => 'currency_cloud']);
+
+        $response = $this->collectAddress($payment);
+    }
+
+    protected function collectAddress($payment, $merchantUserId = null)
+    {
+        $this->fixtures->merchant->addFeatures('enable_intl_bank_transfer', $payment['merchant_id']);
+
+        $addressPayload = [
+            'url' => '/v1/b2b-exports/' . $payment['public_id'] . '/address',
+            'method' => 'put',
+            'content' => [
+                'name'      => 'business_name',
+                'zipcode'   => '201301',
+                'line1'     => 'address_line1',
+                'city'      => 'city',
+                'country'   => 'us',
+            ]
+        ];
+
+        $this->ba->proxyAuth('rzp_test_' . $payment['merchant_id'], $merchantUserId);
+
+        $response = $this->makeRequestAndGetContent($addressPayload);
+
+        $this->assertNotNull($response);
+        $this->assertEquals($response['entity_type'], 'payment');
+        $this->assertEquals($response['entity_id'], preg_replace('/^pay_/', '', $payment['id']));
+        $this->assertEquals($response['name'], $addressPayload['content']['name']);
+        $this->assertEquals($response['zipcode'], $addressPayload['content']['zipcode']);
+        $this->assertEquals($response['line1'], $addressPayload['content']['line1']);
+        $this->assertEquals($response['city'], $addressPayload['content']['city']);
+        $this->assertEquals($response['country'], $addressPayload['content']['country']);
+
+        return $response;
     }
 
 

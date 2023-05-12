@@ -2282,6 +2282,8 @@ class Route
         'fetch_international_virtual_accounts'              => ['get',      'international/virtual_accounts',                 'MerchantController@getInternationalVirtualAccounts'            ],
         'fetch_international_virtual_account_by_vacurrency' => ['get',      'international/virtual_account/{va_currency}',   'MerchantController@getInternationalVirtualAccountByVACurrency' ],
         'payment_update_b2b_invoice'                        => ['patch',    'payment/{id}/update_b2b_invoice_details',        'PaymentController@updateB2BInvoiceDetails'                     ],
+        'b2b_invoice_collect_address'                       => ['put',      'b2b-exports/{payment_id}/address',        'BankTransferController@createAddressEntityForB2B' ],
+        'b2b_invoice_show_address'                          => ['get',      'b2b-exports/{payment_id}/address',        'BankTransferController@getAddressEntityForB2B' ],
 
         'capture_cron_for_b2b_payments'        => ['post',     'b2b/payments/capture',                              'BankTransferController@captureCronForB2BPayments'                   ],
         'notifications_for_b2b'                => ['post',     'international/virtual_accounts/payment/create',     'BankTransferController@notificationsFromCurrencyCloud'                         ],
@@ -2435,6 +2437,8 @@ class Route
         //Location Route
         'country_fetch'                            => ['get',      'countries',                                       'LocationController@getCountryDetails'                              ],
         'state_fetch'                              => ['get',      'states/{id}',                                     'LocationController@getstateDetailsFromCountryCode'                              ],
+        'state_fetch_internal'                     => ['get',      'states/{id}/internal',                               'LocationController@getstateDetailsFromCountryCode'                              ],
+
         //FIRS Document Route
         'firs_document_categorize'                 => ['post',      'merchant/firs',                                 'LambdaController@processLambdaFIRS'                                ],
         'firs_document_fetch'                      => ['get',       'merchant/firs',                                 'DocumentController@fetchFIRSDocuments'                             ],
@@ -6000,6 +6004,9 @@ class Route
         'payment_links_subscription_deactivate',
         'payment_links_subscription_fetch',
         'payment_update_b2b_invoice',
+        'b2b_invoice_collect_address',
+        'b2b_invoice_show_address',
+        'state_fetch_internal',
         'fetch_international_virtual_accounts',
         'create_international_virtual_accounts',
         'fetch_balance_international_virtual_account',
@@ -10602,6 +10609,9 @@ class Route
             'payout_international_virtual_account',
             'fetch_all_payouts_international_virtual_account',
             'payment_update_b2b_invoice',
+            'b2b_invoice_collect_address',
+            'b2b_invoice_show_address',
+            'state_fetch_internal',
             'collect_info_merchant_details_patch',
             'mob_fetch_multiple_intents',
             'mob_fetch_intent',

@@ -907,7 +907,13 @@ class Core extends Base\Core
         {
             $payment = $this->createPaymentEntityForIntlBankTransfer($input,$merchantId);
 
-            $this->saveSenderDetailsForIntlBankTransfer($input,$payment);
+            // Merchants should add customer billing address from merchant dashboard
+            // https://razorpay.slack.com/archives/C024U3B04LD/p1682496775025409?thread_ts=1681996740.555379&cid=C024U3B04LD
+            // Commenting for now
+            // 
+            // $this->createAddressEntityForB2B($input,$payment);
+            // 
+            // $this->saveSenderDetailsForIntlBankTransfer($input,$payment);
 
             $this->authorizePaymentForIntlBankTransfer($payment);
 
