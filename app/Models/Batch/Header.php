@@ -212,6 +212,10 @@ class Header
     const MERCHANT_CONFIG_INHERITANCE_MERHCANT_ID        = 'Merchant Id';
 
     //
+    const PGOS_RMDETAILS_BULK_MERCHANT_ID = 'Merchant ID';
+    const PGOS_RMDETAILS_BULK_NAME = 'RM Name';
+    const PGOS_RMDETAILS_BULK_EMAILS = 'RM Emails';
+
     // Bulk journal create headers
     //
     const CURRENCY_LEDGER = 'currency';
@@ -4569,7 +4573,18 @@ class Header
                 self::ERROR_DESCRIPTION,
             ],
         ],
-
+        Type::PGOS_RMDETAILS_BULK => [
+            self::INPUT => [
+              self::PGOS_RMDETAILS_BULK_MERCHANT_ID,
+              self::PGOS_RMDETAILS_BULK_NAME,
+              self::PGOS_RMDETAILS_BULK_EMAILS,
+          ],
+            self::OUTPUT => [
+                self::PGOS_RMDETAILS_BULK_MERCHANT_ID,
+                self::PGOS_RMDETAILS_BULK_NAME,
+                self::PGOS_RMDETAILS_BULK_EMAILS,
+            ]
+        ],
         Type::NACH_MIGRATION => [
             self::INPUT => [
                 self::NACH_MIGRATION_START_DATE,
