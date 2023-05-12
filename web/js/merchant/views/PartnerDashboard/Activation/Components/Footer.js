@@ -1,7 +1,10 @@
 import React from 'react';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Loader from './Loader';
-import { FOOTER_BUTTONS } from '../utils/ActivationUtils';
+import ShowWhen from 'merchant/components/ShowWhen';
+import Input from 'common/new-ui/Input';
+import { classList } from 'common/utils/rzp-utils';
+import { FOOTER_BUTTONS } from 'merchant/views/PartnerDashboard/Activation/utils/ActivationUtils';
 
 const Save = ({ saveCurrentTab }) => <Button onClick={saveCurrentTab}>Save</Button>;
 
@@ -44,6 +47,10 @@ const Footer = ({
   saveCurrentTab,
   canSubmitNeedsClarification,
   submitClarifications,
+  isConsentTNC,
+  setIsConsentTNC,
+  activeTab,
+  isFormSubmitted,
 }) => {
   const buttons = [];
 
@@ -69,10 +76,44 @@ const Footer = ({
   }
 
   return (
-    <footer>
-      <Loader isSaving={isSaving} defaultMsg={defaultMsg} />
-      {buttons}
+    <footer className="reverse-flex">
+      <Loader isSaving={isSaving} defsaultMsg={defaultMsg} />
+      <div className="footer-content">
+        <ShowWhen additionalCondition={() => activeTab == 2 && !isFormSubmitted}>
+          <FooterCheckBox
+            canSubmitL1Form={canSubmitL1Form}
+            checkbox={isConsentTNC}
+            setCheckBox={setIsConsentTNC}
+          />
+        </ShowWhen>
+        {buttons}
+      </div>
     </footer>
+  );
+};
+
+const FooterCheckBox = ({ canSubmitL1Form, checkbox, setCheckBox }) => {
+  return (
+    <div className="subfooter">
+      <Input.Check
+        checked={checkbox}
+        onChange={() => setCheckBox(!checkbox)}
+        autoRender={true}
+        disabled={!canSubmitL1Form}
+        className={classList('footer-checkbox', !canSubmitL1Form ? 'checkbox-cursor' : '')}
+      />
+      <span>
+        I agree to Razorpay{' '}
+        <a
+          className="text-primary"
+          target="_blank"
+          rel="noopener noreferrer"
+          href="https://razorpay.com/terms/"
+        >
+          Terms and Conditions
+        </a>
+      </span>
+    </div>
   );
 };
 

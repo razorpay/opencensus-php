@@ -3187,7 +3187,7 @@ export function ActivationField(field) {
         }
         {...rest}
       />
-      {key === this.lastFieldNameUnderNCWebsiteCompliance.current &&
+      {key === this.lastFieldNameUnderNCWebsiteCompliance?.current &&
         this.isOnKYCTab() &&
         activation_status === 'needs_clarification' &&
         user.isWebsiteComplianceFlowEnabled &&
@@ -3285,7 +3285,7 @@ function handleInstantActivationSuccess(props) {
   }
 }
 
-function CustomField(props) {
+export function CustomField(props) {
   const {
     name,
     disabled,
@@ -3306,7 +3306,7 @@ function CustomField(props) {
 
   switch (name) {
     case 'business_name':
-      const businessName = selected.company_name;
+      const businessName = selected?.company_name;
 
       if (typeof validator === 'function' && isPresent(businessName)) {
         error = validator(businessName);

@@ -4,12 +4,15 @@ import { ModalAsideNav } from 'common/new-ui/Wizard';
 import { merchantFetch } from 'merchant/utils/ajax';
 import ContactDetails from './Components/ContactDetails';
 import BusinessDetails from './Components/BusinessDetails';
+import AddressDetails, { validateBothAddressSame } from './Components/AddressDetails';
 import Footer from './Components/Footer';
 import {
   FOOTER_BUTTONS,
   displayCompanyPAN,
   isUnregisteredBusiness,
   isValidIFSC,
+  getPincodeDetails,
+  getAddressDetailsValidity,
 } from './utils/ActivationUtils';
 import {
   validateCompanyPAN,
@@ -19,7 +22,7 @@ import {
 import { isValidGSTIN, checkIsObjectEmpty, classList } from 'common/utils/rzp-utils';
 import mainFormTabsContent from 'merchant/components/Activation/ActivationFormMap';
 import { getNeedsClarificationTabsData } from './Components/NeedsClarificationsMap';
-import useActivation from './Hooks/useActivation';
+import useActivation, { fetchActivationData } from './Hooks/useActivation';
 import NeedsClarification from './Components/NeedsClarifications';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { showPartnerKYCStatusModal, hidePartnerKYCStatusModal } from 'merchant/reducers/home';
@@ -31,12 +34,16 @@ import { withRouter } from 'react-router-dom';
 import KYCStatusModal from './Components/KYCStatus/KYCStatusModal';
 import { compose } from 'redux';
 import rTracking from 'react-tracking';
+import debounce from 'common/utils/debounce';
 
 const Activation = (props) => {
   const [activeTab, setActiveTab] = useState(0);
   const [contactDetails, setContactDetails] = useState({});
   const [businessDetails, setBusinessDetails] = useState({});
+  const [addressDetails, setAddressDetails] = useState({});
   const [loading, setLoading] = useState(true);
+  const [progress, setProgress] = useState(0);
+  const [isConsentTNC, setIsConsentTNC] = useState(false);
   const [formState, setFormState] = useState({});
   const [isSaving, setIsSaving] = useState();
   const [isFormLocked, setIsFormLocked] = useState(false);
@@ -44,14 +51,15 @@ const Activation = (props) => {
   const [canSubmitL1Form, setCanSubmitL1Form] = useState(false);
   const [isContactDetailsValid, setIsContactDetailsValid] = useState(false);
   const [isBusinessDetailsValid, setIsBusinessDetailsValid] = useState(false);
+  const [isAddressDetailsValid, setIsAddressDetailsValid] = useState(false);
   const [canSubmitFormAPI, setCanSubmitFormAPI] = useState(false);
   const [NCFields, setNCFields] = useState();
   const { data } = useActivation();
   const [commentlist, setCommentlist] = useState([]);
-  const [tabs, setTabs] = useState(['Contact Details', 'Business Details']);
+  const [tabs, setTabs] = useState(['Contact Details', 'Business Details', 'Address Details']);
   const currentTabsValidity = useMemo(() => {
-    return [isContactDetailsValid, isBusinessDetailsValid];
-  }, [isContactDetailsValid, isBusinessDetailsValid]);
+    return [isContactDetailsValid, isBusinessDetailsValid, isAddressDetailsValid];
+  }, [isContactDetailsValid, isBusinessDetailsValid, isAddressDetailsValid]);
   const [ncFormResponse, setNCFormResponse] = useState({
     bank_proof: 'cancelled_cheque',
   });
@@ -61,12 +69,24 @@ const Activation = (props) => {
     setActiveTab(currentTab);
   };
 
+  const convertToBoolean = (value) => {
+    if (value && typeof value === 'string') {
+      if (value.toLowerCase() === 'true') return true;
+      if (value.toLowerCase() === 'false') return false;
+    }
+    return value;
+  };
+
   const onFormChange = (e) => {
     const { name: field, value } = e.target;
+    let updatedValue = value;
+
+    // since the value we get from event is a string this check converts it into boolean
+    if (field === 'isOpAddressSameAsRegAddress') updatedValue = convertToBoolean(value);
     setFormState((state) => {
       return {
         ...state,
-        [field]: value,
+        [field]: updatedValue,
       };
     });
   };
@@ -105,6 +125,28 @@ const Activation = (props) => {
       has_gstin: activationData.gstin && activationData.gstin !== '' ? '0' : '1',
       gstin: activationData.gstin,
     });
+
+    const addressDetailsData = {
+      business_registered_address: activationData.business_registered_address,
+      business_registered_pin: activationData.business_registered_pin,
+      business_registered_city: activationData.business_registered_city,
+      business_registered_state: activationData.business_registered_state,
+      business_operation_address: activationData.business_operation_address,
+      business_operation_pin: activationData.business_operation_pin,
+      business_operation_city: activationData.business_operation_city,
+      business_operation_state: activationData.business_operation_state,
+    };
+    setAddressDetails({
+      ...addressDetailsData,
+      ...activationData.partner_activation.documents,
+    });
+    setFormState((state) => {
+      return {
+        ...state,
+        isOpAddressSameAsRegAddress: validateBothAddressSame(addressDetailsData),
+      };
+    });
+
     setIsFormLocked(
       activationData.partner_activation?.locked ||
         ['needs_clarification', 'under_review', 'kyc_qualified_unactivated'].includes(
@@ -114,6 +156,21 @@ const Activation = (props) => {
     setIsFormSubmitted(activationData.partner_activation?.submitted);
     setCanSubmitFormAPI(activationData.partner_activation?.can_submit);
   };
+
+  const autoFillFromPinCode = debounce((e) => {
+    const { name: field, value } = e.target;
+    getPincodeDetails(value).then((data) => {
+      const cityField = `${field.slice(0, -3)}city`;
+      const stateField = `${field.slice(0, -3)}state`;
+      setFormState((state) => {
+        return {
+          ...state,
+          [cityField]: data.city,
+          [stateField]: data.state_code,
+        };
+      });
+    });
+  }, 1500);
 
   useEffect(() => {
     async function fetchData() {
@@ -143,7 +200,7 @@ const Activation = (props) => {
             ) || [];
           setNCFields(ndcFields);
           setTabs((currentTabs) => [...currentTabs, 'Needs Clarification']);
-          setActiveTab(2);
+          setActiveTab(3);
         }
       }
       setLoading(false);
@@ -220,18 +277,40 @@ const Activation = (props) => {
         isGSTValid &&
         isBankDetailsValid,
     );
-  }, [businessDetails, contactDetails, formState]);
+
+    // update address details
+
+    const addressDetailsValidity = getAddressDetailsValidity(addressDetails, formState);
+    let isAddressDetailsValid = false;
+    if (
+      formState.isOpAddressSameAsRegAddress === 1 ||
+      addressDetails.isOpAddressSameAsRegAddress === 1
+    )
+      isAddressDetailsValid = addressDetailsValidity.isRegisteredAddressValid;
+    else
+      isAddressDetailsValid =
+        addressDetailsValidity.isRegisteredAddressValid &&
+        addressDetailsValidity.isOperationalAddressValid;
+    setIsAddressDetailsValid(isAddressDetailsValid);
+  }, [businessDetails, contactDetails, addressDetails, formState]);
 
   useEffect(() => {
-    setCanSubmitL1Form(isContactDetailsValid && isBusinessDetailsValid && canSubmitFormAPI);
-  }, [isContactDetailsValid, isBusinessDetailsValid, canSubmitFormAPI]);
+    setCanSubmitL1Form(
+      isContactDetailsValid && isBusinessDetailsValid && isAddressDetailsValid && canSubmitFormAPI,
+    );
+  }, [
+    isContactDetailsValid,
+    isBusinessDetailsValid,
+    isAddressDetailsValid,
+    canSubmitFormAPI,
+    isConsentTNC,
+  ]);
 
   const getFooterButtons = () => {
     const footerButtons = [];
-    const isLastTab = activeTab === 1;
-    // const isBusinessDetailsStep = activeTab === 1;
+    const isLastTab = activeTab === 2;
 
-    if (activeTab === 2) {
+    if (activeTab === 3) {
       footerButtons.push(FOOTER_BUTTONS.SUBMIT_CLARIFICATIONS);
       return footerButtons;
     }
@@ -248,6 +327,31 @@ const Activation = (props) => {
     }
 
     return footerButtons;
+  };
+
+  const getAddressDetailsData = (isOpAddressSameAsRegAddress) => {
+    if (isOpAddressSameAsRegAddress)
+      return {
+        business_registered_address: formState.business_registered_address,
+        business_registered_pin: formState.business_registered_pin,
+        business_registered_city: formState.business_registered_city,
+        business_registered_state: formState.business_registered_state,
+        business_operation_address: formState.business_registered_address,
+        business_operation_pin: formState.business_registered_pin,
+        business_operation_city: formState.business_registered_city,
+        business_operation_state: formState.business_registered_state,
+      };
+    else
+      return {
+        business_registered_address: formState.business_registered_address,
+        business_registered_pin: formState.business_registered_pin,
+        business_registered_city: formState.business_registered_city,
+        business_registered_state: formState.business_registered_state,
+        business_operation_address: formState.business_operation_address,
+        business_operation_pin: formState.business_operation_pin,
+        business_operation_city: formState.business_operation_city,
+        business_operation_state: formState.business_operation_state,
+      };
   };
 
   const getRequestData = () => {
@@ -271,6 +375,10 @@ const Activation = (props) => {
         bank_account_name: formState.bank_account_name,
         gstin: formState.gstin,
       };
+    } else if (activeTab === 2) {
+      if (String(formState.isOpAddressSameAsRegAddress) === 'true')
+        reqData = getAddressDetailsData(true);
+      else reqData = getAddressDetailsData(false);
     }
     return reqData;
   };
@@ -293,12 +401,120 @@ const Activation = (props) => {
 
   const next = async () => {
     await saveCurrentTab();
-    setActiveTab(1);
+    setActiveTab(activeTab + 1);
+  };
+
+  const onFileUpload = (uploadedFile, field) => {
+    const onUploadProgress = (progressEvent) => {
+      setProgress(Math.round((100 * progressEvent.loaded) / progressEvent.total));
+    };
+    if (uploadedFile) {
+      const formData = new FormData();
+      formData.append('document_type', field);
+      formData.append('file', uploadedFile);
+      formData.append('is_partner_kyc', '1');
+      merchantFetch({
+        url: 'merchant/documents/upload',
+        method: 'POST',
+        data: formData,
+        mode: 'live',
+        onUploadProgress,
+      })
+        .then((response) => {
+          if (response.data) {
+            updateActivationState(response.data);
+            setFormState((state) => {
+              return {
+                ...state,
+                [field]: uploadedFile,
+              };
+            });
+            props.showNotification({
+              type: 'success',
+              message: 'File uploaded successfully',
+            });
+          }
+          return response;
+        })
+        .catch((err) => {
+          if (err.errors.length && err.errors[0]) {
+            props.showNotification({
+              type: 'error',
+              message: err.errors,
+            });
+          }
+          return err;
+        });
+    }
+  };
+
+  const onFileClose = (fileId, field) => {
+    if (fileId) {
+      merchantFetch({
+        url: `merchant/documents/doc_${fileId}`,
+        method: 'delete',
+        mode: 'live',
+      })
+        .then((res) => {
+          if (res.success) {
+            props.showNotification({
+              type: 'success',
+              message: 'File deleted successfully',
+            });
+
+            setFormState((state) => {
+              return {
+                ...state,
+                [field]: null,
+              };
+            });
+
+            fetchActivationData()
+              .then((data) => {
+                updateActivationState(data);
+              })
+              .catch(() => {
+                props.showNotification({
+                  type: 'error',
+                  message: 'Something went wrong!',
+                });
+              });
+          }
+        })
+        .catch(() => {
+          props.showNotification({
+            type: 'error',
+            message: 'File Not Found!',
+          });
+        });
+    } else {
+      setFormState((state) => {
+        return {
+          ...state,
+          [field]: null,
+        };
+      });
+    }
   };
 
   const submitForm = async () => {
     const reqData = getRequestData();
-    reqData.submit = 1;
+    reqData.submit = '1';
+    reqData.consent = isConsentTNC;
+    reqData.documents_detail = [
+      {
+        type: 'Privacy Policy',
+        url: 'https://razorpay.com/privacy/',
+      },
+      {
+        type: 'Service Agreement',
+        url: 'https://razorpay.com/agreement/',
+      },
+      {
+        type: 'Terms & Conditions',
+        url: 'https://razorpay.com/terms/',
+      },
+    ];
     await saveCurrentTab();
     setIsSaving(true);
     const activationData = await merchantFetch({
@@ -328,7 +544,7 @@ const Activation = (props) => {
   }, [activeTab]);
 
   const isOnKYCTab = () => {
-    return activeTab === 2;
+    return activeTab === 3;
   };
 
   const hasFilledClarificationDetails = () => {
@@ -524,7 +740,12 @@ const Activation = (props) => {
                         setFormState={setFormState}
                         formState={formState}
                         businessDetails={businessDetails}
+                        addressDetails={addressDetails}
                         onFormChange={onFormChange}
+                        progress={progress}
+                        onFileUpload={onFileUpload}
+                        onFileClose={onFileClose}
+                        autoFillFromPinCode={autoFillFromPinCode}
                         isFormLocked={isFormLocked}
                         data={data}
                         NCFields={NCFields}
@@ -547,6 +768,10 @@ const Activation = (props) => {
                 saveCurrentTab={saveCurrentTab}
                 canSubmitNeedsClarification={hasFilledClarificationDetails}
                 submitClarifications={submitClarifications}
+                isConsentTNC={isConsentTNC}
+                setIsConsentTNC={setIsConsentTNC}
+                activeTab={activeTab}
+                isFormSubmitted={isFormSubmitted}
               />
             </div>
           </ModalContent>
@@ -563,6 +788,8 @@ const RenderActivationFrom = (props) => {
     case 1:
       return <BusinessDetails {...props} />;
     case 2:
+      return <AddressDetails {...props} />;
+    case 3:
       return <NeedsClarification {...props} />;
     default:
       return <ContactDetails contactDetails={props.contactDetails} {...props} />;

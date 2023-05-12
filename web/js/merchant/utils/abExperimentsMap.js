@@ -224,7 +224,7 @@ export default {
     'HhTUjZcw4WsE2V',
 
     // prod experiment ids
-    'HmbfCtIa68aQcC',
+    'KPe5dzVS6UCAiG',
   ],
   pp_zapier_announcement: [
     // beta

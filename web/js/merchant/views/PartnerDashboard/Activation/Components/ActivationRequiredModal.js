@@ -44,18 +44,20 @@ export default ({ onCloseClick, partnerActivationStatus }) => {
       );
     } else if (partnerActivationStatus === 'needs_clarification') {
       modalBody = (
-        <div>
-          You cannot switch to live mode as your account isn't activated yet.
-          {modalAction}
+        <div class="Modal__actions">
+          Your KYC details require further clarifications. Update required details within 1 day,
+          otherwise your settlements might get paused.
+          <NavLink to={partnerKycURL} onClick={onCloseClick}>
+            <button class="btn btn-primary btn-block">Update Details</button>
+          </NavLink>
         </div>
       );
     } else {
       modalBody = (
         <div>
-          You can only use Razorpay in test mode until your account is activated.
-          <br />
-          Your account is Under Review. We will reach out on your contact email for all updates or
-          any clarifications that we may require.
+          You can only use Razorpay in test mode until your account is activated. Your account is
+          Under Review. We will reach out on your contact email for all updates or any
+          clarifications that we may require.
           {modalAction}
         </div>
       );

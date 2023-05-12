@@ -3,8 +3,13 @@ import { Formik } from 'formik';
 import * as Yup from 'yup';
 import TextInput from '@razorpay/blade-old/src/atoms/TextInput';
 import { FormSection, Field, GetTouchedFields } from 'merchant/views/onboarding/mobile/Form';
-import { useActivationFormState, isTabComplete } from '../../Hooks/store';
-import useActivation, { getRequestData } from '../../Hooks/useActivation';
+import {
+  useActivationFormState,
+  isTabComplete,
+} from 'merchant/views/PartnerDashboard/Activation/Hooks/store';
+import useActivation, {
+  getRequestData,
+} from 'merchant/views/PartnerDashboard/Activation/Hooks/useActivation';
 
 const contactDetailsSchema = Yup.object().shape({
   contact_name: Yup.string()

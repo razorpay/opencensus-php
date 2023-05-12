@@ -12,10 +12,15 @@ import {
   isUnregisteredBusiness,
   displayCompanyPAN,
   PROPRIETORSHIP,
-} from '../../utils/ActivationUtils';
+} from 'merchant/views/PartnerDashboard/Activation/utils/ActivationUtils';
 import { getDetailsForIFSC } from 'common/utils/rzp-utils';
-import { useActivationFormState, isTabComplete } from '../../Hooks/store';
-import useActivation, { getRequestData } from '../../Hooks/useActivation';
+import {
+  useActivationFormState,
+  isTabComplete,
+} from 'merchant/views/PartnerDashboard/Activation/Hooks/store';
+import useActivation, {
+  getRequestData,
+} from 'merchant/views/PartnerDashboard/Activation/Hooks/useActivation';
 
 const businessDetailsSchema = ({ hasGSTIN }) =>
   Yup.object().shape({
@@ -103,16 +108,6 @@ const BusinessDetails = ({ isFormLocked, isFormSubmitted, tracking, partnerID })
     ) : null;
   };
 
-  const fetchDefaultIfscInfo = () => {
-    if (businessDetails.bank_branch_ifsc.value) {
-      // eslint-disable-next-line babel/no-unused-expressions
-      getDetailsForIFSC(businessDetails.bank_branch_ifsc.value)?.then((info) => {
-        const defaultBranchIfscInfo = info ? `${info.Bank}, ${info.Branch}` : '';
-        setBranchIfscInfo(defaultBranchIfscInfo);
-      });
-    }
-  };
-
   useEffect(() => {
     tracking.trackEvent(
       window.rzpQ.onbr().interaction('partnerships.partner_KYC.form_open', {
@@ -120,7 +115,6 @@ const BusinessDetails = ({ isFormLocked, isFormSubmitted, tracking, partnerID })
         section: 'Business Details',
       }),
     );
-    fetchDefaultIfscInfo();
   }, []);
 
   const handleSubmit = (updatedDetails) => {

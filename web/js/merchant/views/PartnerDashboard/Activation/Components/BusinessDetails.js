@@ -16,7 +16,7 @@ import {
   isUnregisteredBusiness,
   displayCompanyPAN,
   PROPRIETORSHIP,
-} from '../utils/ActivationUtils';
+} from 'merchant/views/PartnerDashboard/Activation/utils/ActivationUtils';
 
 const BusinessDetails = ({
   businessDetails,

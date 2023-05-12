@@ -579,7 +579,9 @@ class App extends Component {
         }
       }
       const newIsPartnerModeEnabled =
-        location.pathname.startsWith('/partners') && user.isIndependentPartnerKYCEnabled;
+        location.pathname.startsWith('/partners') &&
+        user.isIndependentPartnerKYCEnabled &&
+        user.partner_type === 'reseller';
       if (isPartnerModeEnabled !== newIsPartnerModeEnabled) {
         this.setState({
           isPartnerModeEnabled: newIsPartnerModeEnabled,
@@ -902,7 +904,10 @@ class App extends Component {
       );
     }
     const user = this.props.user;
-    if (mode === 'live' && !user.isActivated) {
+    const merchantId = user?.merchant.id;
+    const isPartnerActivated =
+      user?.merchants[merchantId]?.partner?.activation_status === 'activated';
+    if (mode === 'live' && !isPartnerActivated) {
       this.props.tracking.trackEvent(
         window.rzpQ.onbr().interaction('partnerships.partner_KYC.pop_up', {
           partnerID: this.props.user?.merchant.id,

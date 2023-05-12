@@ -17,11 +17,13 @@ import SaveAndExitModal from './SaveAndExitModal';
 import React, { useState, useEffect } from 'react';
 import ContactDetails from './ContactDetails';
 import BusinessDetails from './BusinessDetails';
+import AddressDetails from './AddressDetails';
 import useActivation from 'merchant/views/PartnerDashboard/Activation/Hooks/useActivation';
 import { useActivationFormState } from 'merchant/views/PartnerDashboard/Activation/Hooks/store';
 import { SnackbarProvider } from 'common/components/SnackBar/SnackbarContext';
 import { showPartnerKYCStatusModal, hidePartnerKYCStatusModal } from 'merchant/reducers/home';
 import KYCStatusModal from 'merchant/views/PartnerDashboard/Activation/Components/KYCStatus/KYCStatusModal';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
 const RenderMwebActivationForm = (props) => {
   const [isSaveAndExitModalOpen, setIsSaveAndExitModalOpen] = useState(false);
@@ -32,13 +34,16 @@ const RenderMwebActivationForm = (props) => {
   const isBusinessDetailsCompleted = useActivationFormState(
     (state) => state.isBusinessDetailsCompleted,
   );
+  const isAddressDetailsCompleted = useActivationFormState(
+    (state) => state.isAddressDetailsCompleted,
+  );
   const [activeTabId, setActiveTabId] = useState('contact_details');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType] = useState('');
 
   const { submitted: isFormSubmitted } = data?.partner_activation || {};
   const isFormLocked =
-    data?.partner_activation?.isFormLocked ||
+    data?.partner_activation?.can_submit ||
     data?.partner_activation?.activation_status === 'needs_clarification';
 
   useEffect(() => {
@@ -104,20 +109,46 @@ const RenderMwebActivationForm = (props) => {
           partnerID={props.user?.merchant.id}
         />
       </Tab>,
+      <Tab
+        key="address_details"
+        title="Address Details"
+        tabId="address_details"
+        completed={isAddressDetailsCompleted}
+      >
+        <AddressDetails
+          isFormLocked={isFormLocked}
+          partnerID={props.user?.merchant.id}
+          showNotification={props.showNotification}
+        />
+      </Tab>,
     ];
     return tabs;
   };
 
   const submitForm = () => {
+    const { tracking, showNotification } = props;
     const reqData = {
       submit: '1',
     };
-    postData(reqData);
-    props.tracking.trackEvent(
-      window.rzpQ.onbr().interaction('partnerships.partner_KYC.submit&verify', {
-        partnerID: props.user?.merchant.id,
-      }),
-    );
+    postData(reqData)
+      .then((res) => {
+        if (res.success) {
+          tracking.trackEvent(
+            window.rzpQ.onbr().interaction('partnerships.partner_KYC.submit&verify', {
+              partnerID: props.user?.merchant.id,
+            }),
+          );
+          showNotification('Submitted Successfully');
+          window.location = '/app/partners';
+        }
+      })
+      .catch((err) => {
+        if (err && Array.isArray(err.errors)) {
+          showNotification(err.errors[0]);
+        } else {
+          showNotification('Please try again!!!');
+        }
+      });
   };
 
   const handleNextClick = () => {
@@ -126,6 +157,9 @@ const RenderMwebActivationForm = (props) => {
         setActiveTabId('business_details');
         break;
       case 'business_details':
+        setActiveTabId('address_details');
+        break;
+      case 'address_details':
         if (!isFormSubmitted) {
           submitForm();
         }
@@ -140,17 +174,19 @@ const RenderMwebActivationForm = (props) => {
       case 'contact_details':
         return isContactDetailsCompleted;
       case 'business_details':
+        return isBusinessDetailsCompleted;
+      case 'address_details':
         if (!isFormLocked) {
-          return isBusinessDetailsCompleted;
+          return isAddressDetailsCompleted;
         }
-        return false;
+        return true;
       default:
         return false;
     }
   };
 
   const getNextText = () => {
-    if (activeTabId === 'business_details' && !isFormSubmitted) {
+    if (activeTabId === 'address_details' && !isFormSubmitted) {
       return 'Submit And Verify';
     }
     return 'Next';
@@ -266,7 +302,7 @@ export default compose(
         user: state.session.user,
       };
     },
-    { showPartnerKYCStatusModal, hidePartnerKYCStatusModal },
+    { showPartnerKYCStatusModal, hidePartnerKYCStatusModal, showNotification },
   ),
   rTracking(() => window.rzpQ.component('PartnerKYCFormMweb')),
 )(RenderMwebActivationForm);

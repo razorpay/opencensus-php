@@ -3,7 +3,7 @@ import { useActivationFormState, isTabComplete } from './store';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { useQuery, useQueryCache, useMutation } from 'react-query';
 import { useSnackbar } from 'common/components/SnackBar/SnackbarContext';
-import activationFormatter from '../utils/ActivationFormatter';
+import activationFormatter from 'merchant/views/PartnerDashboard/Activation/utils/ActivationFormatter';
 
 export const fetchActivationData = async () => {
   const data = await merchantFetch({ url: 'partner/activation', mode: 'live' });
@@ -32,6 +32,12 @@ export const getRequestData = (prevDetails, updatedDetails) => {
   }, {});
   return reqData;
 };
+
+export const uploadFileData = (data) =>
+  merchantFetch({ url: 'merchant/documents/upload', method: 'POST', data, mode: 'live' });
+
+export const deleteFileData = (fileId) =>
+  merchantFetch({ url: `merchant/documents/doc_${fileId}`, method: 'DELETE', mode: 'live' });
 
 export default function useActivation() {
   const snackbar = useSnackbar();
@@ -62,21 +68,33 @@ export default function useActivation() {
   const setBusinessDetailsCompleted = useActivationFormState(
     (state) => state.setBusinessDetailsCompleted,
   );
+  const setAddressDetailsCompleted = useActivationFormState(
+    (state) => state.setAddressDetailsCompleted,
+  );
   const setHasGSTIN = useActivationFormState((state) => state.setHasGSTIN);
 
   useEffect(() => {
     if (status === 'success') {
       const isContactDetailsTabComplete = isTabComplete(data, 'contact_details');
       const isBusinessDetailsTabComplete = isTabComplete({ ...data }, 'business_details');
+      const isAddressDetailsTabComplete = isTabComplete({ ...data }, 'address_details');
       setContactDetailsCompleted(isContactDetailsTabComplete);
       setBusinessDetailsCompleted(isBusinessDetailsTabComplete);
+      setAddressDetailsCompleted(isAddressDetailsTabComplete);
       if (data.gstin && data.gstin === '') {
         setHasGSTIN(true);
       } else {
         setHasGSTIN(false);
       }
     }
-  }, [status, data, setContactDetailsCompleted, setBusinessDetailsCompleted, setHasGSTIN]);
+  }, [
+    status,
+    data,
+    setContactDetailsCompleted,
+    setBusinessDetailsCompleted,
+    setAddressDetailsCompleted,
+    setHasGSTIN,
+  ]);
 
   return { status, data, postData };
 }

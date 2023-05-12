@@ -2,7 +2,7 @@ import React from 'react';
 import Input from 'common/new-ui/Input';
 import Form from 'common/new-ui/Form';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { ActivationField, defaultFieldProps } from 'merchant/components/Activation';
+import { defaultFieldProps, ActivationField } from 'merchant/components/Activation';
 import { prevent } from 'common/utils/rzp-utils';
 import { connect } from 'react-redux';
 import { showNotification } from 'merchant_common/reducers/notifications';
