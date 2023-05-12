@@ -393,6 +393,22 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
+    public function filterMerchantIdsByOrg(array $mids, array $orgIdList): array
+    {
+        $detailMerchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+        $merchantIdColumn       = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
+        $merchantOrgIdColumn    = $this->repo->merchant->dbColumn(Merchant\Entity::ORG_ID);
+
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+            ->join(Table::MERCHANT, $merchantIdColumn, '=', $detailMerchantIdColumn)
+            ->select(Entity::MERCHANT_ID)
+            ->whereIn(Entity::MERCHANT_ID, $mids)
+            ->whereIn($merchantOrgIdColumn, $orgIdList)
+            ->get()
+            ->pluck(Entity::MERCHANT_ID)
+            ->toArray();
+    }
+
     public function filterL1NotSubmittedMerchantIds(int $from, int $to): array
     {
         $detailMerchantIdColumn             = $this->dbColumn(Entity::MERCHANT_ID);

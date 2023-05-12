@@ -15,6 +15,8 @@ class Constants
 
     const NetbankingConfigurations = 'netbanking_configurations';
 
+    const CustomHardLimitConfigurations = "custom_hard_limit_configurations";
+
     const DirectAccountsPayoutModeConfig = 'direct_accounts_payout_mode_config';
 
     /**
@@ -23,6 +25,7 @@ class Constants
     public static $configurationsToDCSKeyMapping = [
         self::EmandateMerchantConfigurations => "rzp/pg/merchant/emandate/DebitConfiguration",
         self::NetbankingConfigurations       => "rzp/pg/merchant/netbanking/banking_program/NetBankingConfiguration",
+        self::CustomHardLimitConfigurations  => "rzp/pg/org/onboarding/banking_program/Config",
         self::DirectAccountsPayoutModeConfig => "rzp/x/merchant/payouts/direct_accounts/PayoutModeConfig",
     ];
 

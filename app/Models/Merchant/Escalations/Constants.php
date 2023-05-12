@@ -30,6 +30,7 @@ class Constants
     const ESCALATION_CACHE_KEY                              = 'onboarding_escalation_timestamp';
     const SEGMENT_MTU_CACHE_KEY                             = 'onboarding_segment_mtu_timestamp';
     const NO_DOC_ESCALATION_CACHE_KEY                       = 'no_doc_onboarding_escalation_timestamp';
+    const BANKING_ORG_ESCALATION_CACHE_KEY                  = 'banking_org_onboarding_escalation_timestamp';
     const START_TIME                                        = 'start_time';
     const END_TIME                                          = 'end_time';
     // request payload constants
@@ -67,6 +68,7 @@ class Constants
 
     const PAYMENTS_ESCALATION = 'payments_escalation';
     const NO_DOC_PAYMENTS_ESCALATION = 'no_doc_payments_escalation';
+    const BANKING_ORG_PAYMENTS_ESCALATION = 'banking_org_payments_escalation';
 
     const KEY = 'key';
     const INTERVAL = 'interval';
@@ -82,7 +84,12 @@ class Constants
             self::KEY                       => self::NO_DOC_ESCALATION_CACHE_KEY,
             self::ALLOWED_OPEN_STATUSES     => Status::MERCHANT_NO_DOC_OPEN_STATUSES,
             self::INTERVAL                  => 1800
-        ]
+        ],
+        self::BANKING_ORG_PAYMENTS_ESCALATION => [
+            self::KEY                       => self::BANKING_ORG_ESCALATION_CACHE_KEY,
+            self::ALLOWED_OPEN_STATUSES     => Status::MERCHANT_OPEN_STATUSES,
+            self::INTERVAL                  => 300
+        ],
     ];
 
 
@@ -115,6 +122,16 @@ class Constants
 
     const SOFT_LIMIT_IA_V2              = 'soft_limit_ia_v2';
     const HARD_LIMIT_IA_V2              = 'hard_limit_ia_v2';
+
+    const DEFAULT_ESCALATION_TRANSACTION_LIMIT_FOR_KYC_PENDING = 5000000;
+    const THRESHOLD_BEFORE_TRANSACTION_LIMIT_FOR_KYC_PENDING = 1500000;
+    const THRESHOLD_AFTER_TRANSACTION_LIMIT_FOR_KYC_PENDING = 1000000000;
+    const ASSIGN_CUSTOM_HARD_LIMIT = "assign_custom_hardlimit";
+    const CUSTOM_TRANSACTION_LIMIT_FOR_KYC_PENDING = "custom_transaction_limit_for_kyc_pending";
+    const NAME = 'name';
+    const ENTITY_TYPE = 'entity_type';
+    const ENTITY_ID = 'entity_id';
+    const ORG_ID = "org_id";
 
     const PAYMENTS_ESCALATION_MATRIX = [
         0          => [
@@ -316,6 +333,205 @@ class Constants
         ]
     ];
 
+    const BANKING_ORG_PAYMENTS_ESCALATION_MATRIX = [
+        0          => [
+            [
+                self::DESCRIPTION => "transacted after L1",
+                self::TO          => self::ADMIN,
+                self::CONDITIONS  => [
+                    DEntity::ACTIVATION_FORM_MILESTONE          => DConstants::L1_SUBMISSION,
+                    DEntity::ACTIVATION_STATUS                  => Status::MERCHANT_OPEN_STATUSES,
+                    FeatureConstants::DISABLED_FEATURE          => FeatureConstants::NO_DOC_ONBOARDING
+                ],
+                self::MILESTONE   => 'L1',
+                self::ACTIONS     => [
+                    [
+                        self::HANDLER => MerchantTagsHandler::class
+                    ]
+                ],
+            ]
+        ],
+        100000     => [
+            [
+                self::DESCRIPTION => "soft limit breach on activated mcc pending",
+                self::TO          => self::MERCHANT,
+                self::CONDITIONS  => [
+                    DEntity::ACTIVATION_STATUS                  => Status::ACTIVATED_MCC_PENDING,
+                    DEntity::BUSINESS_WEBSITE                   => self::IS_NOT_NULL,
+                    FeatureConstants::DISABLED_FEATURE          => FeatureConstants::NO_DOC_ONBOARDING
+                ],
+                self::MILESTONE   => 'soft_limit_level_1',
+                self::ACTIONS     => [
+                    [
+                        self::HANDLER => CommunicationHandler::class,
+                        self::PARAMS  => [
+                            'event' => Events::ACTIVATED_MCC_PENDING_SOFT_LIMIT_BREACH
+                        ]
+                    ],
+                ],
+                self::ENABLE      => false
+            ],
+        ],
+        500000     => [
+            [
+                self::DESCRIPTION => "payments breach of 5k after L1, before L2",
+                self::TO          => self::MERCHANT,
+                self::CONDITIONS  => [
+                    DEntity::ACTIVATION_FORM_MILESTONE          => DConstants::L1_SUBMISSION,
+                    DEntity::ACTIVATION_STATUS                  => Status::MERCHANT_OPEN_STATUSES,
+                    FeatureConstants::DISABLED_FEATURE          => FeatureConstants::NO_DOC_ONBOARDING
+                ],
+                self::MILESTONE   => 'L1',
+                self::ACTIONS     => [
+                    [
+                        self::HANDLER => CommunicationHandler::class,
+                        self::PARAMS  => [
+                            'event' => Events::PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION
+                        ]
+                    ]
+                ]
+            ]
+        ],
+        1000000    => [
+            [
+                self::DESCRIPTION => "payments breach of 10k after L1, before L2",
+                self::TO          => self::MERCHANT,
+                self::CONDITIONS  => [
+                    DEntity::ACTIVATION_FORM_MILESTONE          => DConstants::L1_SUBMISSION,
+                    DEntity::ACTIVATION_STATUS                  => Status::MERCHANT_OPEN_STATUSES,
+                    FeatureConstants::DISABLED_FEATURE          => FeatureConstants::NO_DOC_ONBOARDING
+                ],
+                self::MILESTONE   => 'L1',
+                self::ACTIONS     => [
+                    [
+                        self::HANDLER => CommunicationHandler::class,
+                        self::PARAMS  => [
+                            'event' => Events::PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION
+                        ]
+                    ]
+                ]
+            ]
+        ],
+        self::THRESHOLD_BEFORE_TRANSACTION_LIMIT_FOR_KYC_PENDING    => [
+            [
+                self::DESCRIPTION => "payments breach of 15k after L1, before L2",
+                self::TO          => self::MERCHANT,
+                self::CONDITIONS  => [
+                    DEntity::ACTIVATION_FORM_MILESTONE          => DConstants::L1_SUBMISSION,
+                    DEntity::ACTIVATION_STATUS                  => Status::MERCHANT_OPEN_STATUSES,
+                    FeatureConstants::DISABLED_FEATURE          => FeatureConstants::NO_DOC_ONBOARDING
+                ],
+                self::MILESTONE   => 'L1',
+                self::ACTIONS     => [
+                    [
+                        self::HANDLER => CommunicationHandler::class,
+                        self::PARAMS  => [
+                            'event' => Events::PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED
+                        ]
+                    ],
+                    [
+                        self::HANDLER => DisablePaymentsHandler::class,
+                    ]
+                ]
+            ],
+            [
+                self::DESCRIPTION => "hard limit breach on activated mcc pending",
+                self::TO          => self::ADMIN,
+                self::CONDITIONS  => [
+                    DEntity::ACTIVATION_STATUS => Status::MERCHANT_L2_OPEN_STATUSES
+                ],
+                self::MILESTONE   => 'hard_limit_level_1',
+                self::ACTIONS     => [],  // This is getting escalated from v1 so disabling actions from here.
+                self::ENABLE      => false
+            ],
+            [
+                self::DESCRIPTION => "1 days after hard limit breach on activated mcc pending",
+                self::TO          => self::MERCHANT,
+                self::CONDITIONS  => [
+                    DEntity::ACTIVATION_STATUS => Status::MERCHANT_L2_OPEN_STATUSES,
+                ],
+                self::MILESTONE   => 'hard_limit_level_2',
+                self::ACTIONS     => [
+                    [
+                        self::HANDLER => CommunicationHandler::class,
+                        self::PARAMS  => [
+                            'event' => Events::ACTIVATED_MCC_PENDING_HARD_LIMIT_BREACH
+                        ]
+                    ],
+                ],
+                self::ENABLE      => false
+            ],
+            [
+                self::DESCRIPTION => "funds on hold on activated mcc pending",
+                self::TO          => self::MERCHANT,
+                self::CONDITIONS  => [
+                    DEntity::ACTIVATION_STATUS => Status::MERCHANT_L2_OPEN_STATUSES,
+                ],
+                self::MILESTONE   => 'hard_limit_level_4',
+                self::ACTIONS     => [],
+                self::ENABLE      => false
+            ],
+            [
+                self::DESCRIPTION => "reminder funds on hold for activated mcc pending",
+                self::TO          => self::MERCHANT,
+                self::CONDITIONS  => [
+                    DEntity::ACTIVATION_STATUS => Status::NEEDS_CLARIFICATION,
+                ],
+                self::MILESTONE   => 'funds_on_hold_reminder',
+                self::ACTIONS     => [
+                    [
+                        self::HANDLER => CommunicationHandler::class,
+                        self::PARAMS  => [
+                            'event' => Events::FUNDS_ON_HOLD_REMINDER
+                        ]
+                    ],
+                ],
+                self::ENABLE      => false
+            ],
+        ],
+        self::DEFAULT_ESCALATION_TRANSACTION_LIMIT_FOR_KYC_PENDING => [
+            [
+                self::DESCRIPTION => "funds on hold on activated mcc pending",
+                self::TO          => self::MERCHANT,
+                self::CONDITIONS  => [
+                    DEntity::ACTIVATION_STATUS  => Status::MERCHANT_L2_OPEN_STATUSES,
+                    'action_state'              => Status::ACTIVATED_MCC_PENDING
+                ],
+                self::MILESTONE   => 'hard_limit_level_4',
+                self::ACTIONS     => [
+                    [
+                        self::HANDLER => FundsOnHoldHandler::class,
+                    ],
+                    [
+                        self::HANDLER => CommunicationHandler::class,
+                        self::PARAMS  => [
+                            'event' => Events::FUNDS_ON_HOLD
+                        ]
+                    ],
+                    [
+                        self::HANDLER => EscalationHandler::class,
+                    ]
+                ],
+            ]
+        ],
+        self::THRESHOLD_AFTER_TRANSACTION_LIMIT_FOR_KYC_PENDING => [
+            [
+                self::DESCRIPTION => "payments breach of 1cr after L2",
+                self::TO          => self::MERCHANT,
+                self::CONDITIONS  => [
+                    DEntity::ACTIVATION_FORM_MILESTONE          => DConstants::L2_SUBMISSION,
+                    DEntity::ACTIVATION_STATUS                  => Status::MERCHANT_OPEN_STATUSES,
+                    FeatureConstants::DISABLED_FEATURE          => FeatureConstants::NO_DOC_ONBOARDING
+                ],
+                self::MILESTONE   => 'L2',
+                self::ACTIONS     => [
+                    [
+                        self::HANDLER => DisablePaymentsHandler::class,
+                    ]
+                ]
+            ]
+        ]
+    ];
     /**
      * This config is based on milestone as key instead of threshold, since for no_doc onboarded merchants the gmv limit threshold can vary.
      * The config format here is similar to the payment escalation matrix config as given above

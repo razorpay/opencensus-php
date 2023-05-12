@@ -446,7 +446,7 @@ class Service extends Base
         return $res;
     }
 
-    private function getAggregateKey(array $data)
+    public function getAggregateKey(array $data)
     {
         $data[SDKConstants::NAMESPACE] = (key_exists(SDKConstants::NAMESPACE, $data) &&
             ($data[SDKConstants::NAMESPACE] !== null || $data[SDKConstants::NAMESPACE] !== '')) ? $data[SDKConstants::NAMESPACE] : '';

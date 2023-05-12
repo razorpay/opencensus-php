@@ -22,7 +22,7 @@ class Service extends Base\Service
 
             $this->trace->count(Metric::PAYMENT_ESCALATION_SUCCESS_TOTAL);
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             $this->trace->info(TraceCode::ESCALATION_ATTEMPT_FAILED, [
                 'type'  => 'PaymentEscalations',
@@ -30,6 +30,27 @@ class Service extends Base\Service
             ]);
 
             $this->trace->count(Metric::PAYMENT_ESCALATION_FAIL_TOTAL);
+        }
+    }
+
+    public function handleBankingOrgOnboardingEscalationsCron($input)
+    {
+        $core      = (new Core);
+
+        try
+        {
+            $core->handlePaymentEscalationsForBankingOrg();
+
+            $this->trace->count(Metric::BANKING_ORG_PAYMENT_ESCALATION_SUCCESS_TOTAL);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(TraceCode::ESCALATION_ATTEMPT_FAILED, [
+                'type'  => 'BankingOrgPaymentEscalations',
+                'error' => $e->getMessage()
+            ]);
+
+            $this->trace->count(Metric::BANKING_ORG_PAYMENT_ESCALATION_FAIL_TOTAL);
         }
     }
 

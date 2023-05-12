@@ -116,6 +116,7 @@ class Route
 
         'merchant_report'                          => ['post',     'merchants/admin/report',                         'MerchantController@handleReport'                     ],
         'merchant_onboarding_escalations'          => ['post',     'merchants/onboarding/escalations',               'MerchantController@handleOnboardingEscalationsCron'  ],
+        'banking_org_merchant_onboarding_escalations'=> ['post',   'merchants/banking_org_onboarding/escalations',   'MerchantController@handleBankingOrgOnboardingEscalationsCron'  ],
         'merchant_onboarding_cron_jobs'            => ['post',     'merchants/onboarding/cron_jobs',                  'MerchantController@handleOnboardingCronjobs'  ],
         'merchant_onboarding_crons'                => ['post',     'merchants/onboarding/{cronType}/crons',          'MerchantController@handleOnboardingCrons'            ],
         'merchant_risk_crons'                      => ['post',     'merchants/risk/crons/{cronType}',                'MerchantController@handleOnboardingCrons'            ],
@@ -4935,6 +4936,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'banking_org_merchant_onboarding_escalations',
         'payments_rearch_backfill',
         'update_shopify_1cc_credentials',
         'payments_api_backfill',
@@ -14388,6 +14390,7 @@ class Route
         ],
 
         'cron' => [
+            'banking_org_merchant_onboarding_escalations',
             'payments_rearch_backfill',
             'dcc_invoice_generation_cron',
             'payments_api_backfill',

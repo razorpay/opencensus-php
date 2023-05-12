@@ -10,6 +10,8 @@ use Mockery;
 use RZP\Models\State;
 use RZP\Constants\Mode;
 use RZP\Services\CareServiceClient;
+use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
+use RZP\Services\Dcs\Features\Service as DCSService;
 use RZP\Services\Mock\HarvesterClient;
 use RZP\Mail\Merchant\MerchantOnboardingEmail;
 use RZP\Notifications\Onboarding\Events;
@@ -36,6 +38,8 @@ class CoreTest extends TestCase
         ]);
         $merchantId     = $merchantDetail->getMerchantId();
 
+        $this->mockDCS();
+
         (new Escalations\Core)->triggerPaymentEscalations(false);
 
         $escalation = $this->getDbLastEntity('merchant_onboarding_escalations', 'live');
@@ -53,12 +57,69 @@ class CoreTest extends TestCase
 
         $this->createTransaction($merchantId, 'payment', 900);
 
+        $this->mockDCS();
+
         (new Escalations\Core)->triggerPaymentEscalations(false);
 
         $escalation = $this->getDbLastEntity('merchant_onboarding_escalations', 'live');
 
         // Verify no escalation is triggered for the merchant
         $this->assertEmpty($escalation);
+    }
+
+    private function mockDCS($hardlimit = 0,$entityId=null,$orgexists = false)
+    {
+        $dcsConfigService = $this->getMockBuilder( DcsConfigService::class)
+            ->setConstructorArgs([$this->app])
+            ->getMock();
+
+
+        $this->app->instance('dcs_config_service', $dcsConfigService);
+
+        if ($orgexists){
+            $this->app->dcs_config_service->method('fetchEntityIdsWithValueByConfigNameAndFieldNameFromDcs')
+                ->willReturn([
+                        $entityId => true,
+                ]);
+        }else{
+            $this->app->dcs_config_service->method('fetchEntityIdsWithValueByConfigNameAndFieldNameFromDcs')->willReturn([]);
+        }
+
+        if ($hardlimit !=0){
+            $this->app->dcs_config_service->method('fetchConfiguration')
+                ->willReturn([Escalations\Constants::ASSIGN_CUSTOM_HARD_LIMIT => true,Escalations\Constants::CUSTOM_TRANSACTION_LIMIT_FOR_KYC_PENDING => $hardlimit]);
+        }else{
+            $this->app->dcs_config_service->method('fetchConfiguration')->willReturn([Escalations\Constants::ASSIGN_CUSTOM_HARD_LIMIT => false]);
+        }
+
+    }
+
+    private function mockDCSThrowException()
+    {
+        $dcsConfigService = $this->getMockBuilder( DcsConfigService::class)
+            ->setConstructorArgs([$this->app])
+            ->getMock();
+
+
+        $this->app->instance('dcs_config_service', $dcsConfigService);
+
+        $this->app->dcs_config_service->method('fetchEntityIdsWithValueByConfigNameAndFieldNameFromDcs')->willThrowException(new \Exception('Mocked exception'));
+    }
+
+    public function mockfetchCustomHardLimitConfig($hardlimit = 0) {
+        $dcsConfigService = $this->getMockBuilder( DcsConfigService::class)
+            ->setConstructorArgs([$this->app])
+            ->getMock();
+
+
+        $this->app->instance('dcs_config_service', $dcsConfigService);
+
+        if ($hardlimit !=0){
+            $this->app->dcs_config_service->method('fetchConfiguration')
+                ->willReturn([Escalations\Constants::ASSIGN_CUSTOM_HARD_LIMIT => true,Escalations\Constants::CUSTOM_TRANSACTION_LIMIT_FOR_KYC_PENDING => $hardlimit]);
+        }else{
+            $this->app->dcs_config_service->method('fetchConfiguration')->willReturn([Escalations\Constants::ASSIGN_CUSTOM_HARD_LIMIT => false]);
+        }
     }
 
     /**
@@ -77,6 +138,8 @@ class CoreTest extends TestCase
         $merchantId = $merchantDetail->getMerchantId();
 
         $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 1000);
+
+        $this->mockDCS();
 
         $existingEscalation = $this->addEscalation('soft_limit', 100000);
 
@@ -97,6 +160,8 @@ class CoreTest extends TestCase
 
         $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 5000);
 
+        $this->mockDCS();
+
         (new Escalations\Core)->triggerPaymentEscalations(false);
 
         $escalation = $this->getDbLastEntity('merchant_onboarding_escalations', 'live');
@@ -116,6 +181,8 @@ class CoreTest extends TestCase
         $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 10000);
 
         $this->addEscalation('L1', 500000);
+
+        $this->mockDCS();
 
         (new Escalations\Core)->triggerPaymentEscalations(false);
 
@@ -138,6 +205,8 @@ class CoreTest extends TestCase
         $this->addEscalation('L1', 1000000);
 
         $this->mockPinot($merchantDetail->getMerchantId(), 15000);
+
+        $this->mockDCS();
 
         (new Escalations\Core)->triggerPaymentEscalations(false);
 
@@ -166,6 +235,8 @@ class CoreTest extends TestCase
         ]);
 
         $this->mockPinot($merchantDetail->getMerchantId(), $limit + 200);
+
+        $this->mockDCS();
 
         (new Escalations\Core)->triggerPaymentEscalations(false);
 
@@ -204,6 +275,8 @@ class CoreTest extends TestCase
         $this->fixtures->edit('merchant_detail', $merchantId, [
             MerchantDetail\Entity::ACTIVATION_STATUS => MerchantDetail\Status::NEEDS_CLARIFICATION
         ]);
+
+        $this->mockDCS();
 
         (new Escalations\Core)->triggerPaymentEscalations(false);
 
@@ -247,6 +320,8 @@ class CoreTest extends TestCase
             MerchantDetail\Entity::ACTIVATION_STATUS => MerchantDetail\Status::UNDER_REVIEW
         ]);
 
+        $this->mockDCS();
+
         (new Escalations\Core)->triggerPaymentEscalations(false);
 
         $merchant = $this->getDbEntityById('merchant', $merchantId);
@@ -279,6 +354,8 @@ class CoreTest extends TestCase
 
         $this->createTransaction($merchantId, 'payment', 10000);
 
+        $this->mockDCS();
+
         (new Escalations\Core)->triggerPaymentEscalations(false);
 
         $escalation = $this->getDbLastEntity('merchant_onboarding_escalations', 'live');
@@ -305,6 +382,8 @@ class CoreTest extends TestCase
         ]);
 
         $this->createTransaction($merchantId, 'payment', 10000);
+
+        $this->mockDCS();
 
         (new Escalations\Core)->triggerPaymentEscalations(false);
 
@@ -333,6 +412,8 @@ class CoreTest extends TestCase
 
         $this->createTransaction($merchantId, 'payment', 10000);
 
+        $this->mockDCS();
+
         (new Escalations\Core)->triggerPaymentEscalations();
 
         $escalation = $this->getDbLastEntity('merchant_onboarding_escalations', 'live');
@@ -360,11 +441,185 @@ class CoreTest extends TestCase
 
         $this->createTransaction($merchantId, 'payment', 10000);
 
+        $this->mockDCS();
+
         (new Escalations\Core)->triggerPaymentEscalations();
 
         $escalation = $this->getDbLastEntity('merchant_onboarding_escalations', 'live');
 
         // Verify no escalation is triggered for the merchant
+        $this->assertEmpty($escalation);
+    }
+
+    /**
+     * Scenario:
+     * -1 merchant is moved to activated mcc pending state
+     * -2 merchant org is HDFC (Non Razorpay Org)
+     * -3 merchant has accepted payment of worth 30k+200
+     * -4 custom limit feature flag is enable ion HDFC org
+     * -5 and a custom hard limit of 30k is assign using Mock
+     * -6 Escalation should not be triggered by handleOnboardingEscalationsCron if timbound = true
+     * -6 But Escalation should be triggered by handleBankingOrgOnboardingEscalationsCron as GMV is crossing hard limit
+     * -7 asserting to check if right Escalation and Action triggered
+     */
+    public function testBankingOrgEscalationCustomTransactionLimitNonRazorpayOrg()
+    {
+        $limit = 30000;
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        Mail::fake();
+
+        $this->createAndFetchMocks(true);
+
+        [$merchantDetail] = $this->createAndFetchFixturesForMilestone('hard_limit');
+
+
+        $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->on('live')->edit('merchant', $merchantDetail->getMerchantId(), [
+            'org_id' => Org::HDFC_ORG
+        ]);
+
+        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', $limit);
+        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 200);
+
+        $this->fixtures->create('state', [
+            State\Entity::ENTITY_ID     => $merchantDetail->getMerchantId(),
+            State\Entity::NAME          => MerchantDetail\Status::ACTIVATED_MCC_PENDING,
+            State\Entity::ENTITY_TYPE   => 'merchant_detail'
+        ]);
+
+        $this->mockPinot($merchantDetail->getMerchantId(), $limit + 200);
+
+        $this->mockDCS($limit*100,Org::HDFC_ORG,true);
+
+        (new Escalations\Core)->triggerPaymentEscalations(true);
+
+        $escalation = $this->getDbLastEntity('merchant_onboarding_escalations', 'live');
+
+        $this->assertEmpty($escalation);
+
+        (new Escalations\Core)->handlePaymentEscalationsForBankingOrg();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantDetail->getMerchantId());
+
+        $this->assertTrue($merchant->getAttribute(MerchantEntity::HOLD_FUNDS));
+
+        $paymentEscalationMatrix = Escalations\Constants::BANKING_ORG_PAYMENTS_ESCALATION_MATRIX;
+
+        if ($limit*100 != Escalations\Constants::DEFAULT_ESCALATION_TRANSACTION_LIMIT_FOR_KYC_PENDING and
+            $limit*100 > Escalations\Constants::THRESHOLD_BEFORE_TRANSACTION_LIMIT_FOR_KYC_PENDING and
+            $limit*100 < Escalations\Constants::THRESHOLD_AFTER_TRANSACTION_LIMIT_FOR_KYC_PENDING){
+
+            $paymentEscalationMatrix[$limit*100] = $paymentEscalationMatrix[Escalations\Constants::DEFAULT_ESCALATION_TRANSACTION_LIMIT_FOR_KYC_PENDING];
+
+            unset($paymentEscalationMatrix[Escalations\Constants::DEFAULT_ESCALATION_TRANSACTION_LIMIT_FOR_KYC_PENDING]);
+        }
+
+        $this->verifyEscalationAndAction('hard_limit_level_4', $limit * 100,false,$paymentEscalationMatrix);
+    }
+
+    /**
+     * Scenario:
+     * -1 merchant is moved to activated mcc pending state
+     * -2 merchant org is HDFC (Non Razorpay Org)
+     * -3 merchant has accepted payment of worth 50k+200
+     * -3 custom limit feature flag is not enable on HDFC org, so
+     * -6 No Escaltion should triggered by handleBankingOrgOnboardingEscalationsCron cron job
+     * -7 but Escalation should triggered by handleOnboardingEscalationsCron cron if timbound = true
+     */
+    public function testBankingOrgEscalationDefaultTransactionLimitNonRazorpayOrg()
+    {
+        $limit = 50000;
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        Mail::fake();
+
+        $this->createAndFetchMocks(true);
+
+        [$merchantDetail] = $this->createAndFetchFixturesForMilestone('hard_limit');
+
+
+        $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->on('live')->edit('merchant', $merchantDetail->getMerchantId(), [
+            'org_id' => Org::HDFC_ORG
+        ]);
+
+        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', $limit);
+        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 200);
+
+        $this->fixtures->create('state', [
+            State\Entity::ENTITY_ID     => $merchantDetail->getMerchantId(),
+            State\Entity::NAME          => MerchantDetail\Status::ACTIVATED_MCC_PENDING,
+            State\Entity::ENTITY_TYPE   => 'merchant_detail'
+        ]);
+
+        $this->mockPinot($merchantDetail->getMerchantId(), $limit + 200);
+
+        $this->mockDCS($limit*100);
+
+        (new Escalations\Core)->handlePaymentEscalationsForBankingOrg();
+
+        $escalation = $this->getDbLastEntity('merchant_onboarding_escalations', 'live');
+
+        $this->assertEmpty($escalation);
+
+        (new Escalations\Core)->triggerPaymentEscalations(true);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantDetail->getMerchantId());
+
+        $this->assertTrue($merchant->getAttribute(MerchantEntity::HOLD_FUNDS));
+
+        $this->verifyEscalationAndAction('hard_limit_level_4', $limit * 100);
+
+}
+
+    /**
+     * Scenario:
+     * call to Dcs for fetching org having this fearure failed
+     */
+    public function testBankingOrgEscalationDCSFetchFailedNonRazorpayOrg(){
+        $limit = 30000;
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        Mail::fake();
+
+        $this->createAndFetchMocks(true);
+
+        [$merchantDetail] = $this->createAndFetchFixturesForMilestone('hard_limit');
+
+
+        $this->fixtures->org->createHdfcOrg();
+
+        $this->fixtures->on('live')->edit('merchant', $merchantDetail->getMerchantId(), [
+            'org_id' => Org::HDFC_ORG
+        ]);
+
+        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', $limit);
+        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 200);
+
+        $this->fixtures->create('state', [
+            State\Entity::ENTITY_ID     => $merchantDetail->getMerchantId(),
+            State\Entity::NAME          => MerchantDetail\Status::ACTIVATED_MCC_PENDING,
+            State\Entity::ENTITY_TYPE   => 'merchant_detail'
+        ]);
+
+        $this->mockPinot($merchantDetail->getMerchantId(), $limit + 200);
+
+        $this->mockDCSThrowException();
+
+        try {
+            (new Escalations\Core)->handlePaymentEscalationsForBankingOrg();
+        }catch (\Exception $e) {
+            $this->assertEquals('Mocked exception', $e->getMessage());
+        }
+
+        $escalation = $this->getDbLastEntity('merchant_onboarding_escalations', 'live');
+
         $this->assertEmpty($escalation);
     }
 
@@ -440,6 +695,8 @@ class CoreTest extends TestCase
         ]);
 
         $this->createTransaction($merchantId, 'payment', 10000);
+
+        $this->mockDCS();
 
         (new Escalations\Core)->triggerPaymentEscalations(false);
 
@@ -847,6 +1104,8 @@ class CoreTest extends TestCase
 
         $this->mockPinot($merchantId, 5050);
 
+        $this->mockDCS();
+
         $escalationCoreMock->triggerPaymentEscalations(false);
 
         $escalations = $this->getDbEntities('merchant_onboarding_escalations',[],'live');
@@ -891,6 +1150,8 @@ class CoreTest extends TestCase
 
         $this->mockPinot($merchantDetail->getMerchantId(), 10000);
 
+        $this->mockDCS();
+
         $escalationCoreMock->triggerPaymentEscalations(false);
 
         $escalations = $this->getDbEntities('merchant_onboarding_escalations',[],'live');
@@ -933,6 +1194,8 @@ class CoreTest extends TestCase
         $this->addEscalation('soft_limit_ia_v2',1000000);
 
         $this->mockPinot($merchantDetail->getMerchantId(), 15200);
+
+        $this->mockDCS();
 
         $escalationCoreMock->triggerPaymentEscalations(false);
 
@@ -1050,10 +1313,10 @@ class CoreTest extends TestCase
                      ->willReturn([$dataFromPinot]);
     }
 
-    private function verifyEscalationAndAction($milestone, $threshold, $emptyAction = false)
+    private function verifyEscalationAndAction($milestone, $threshold, $emptyAction = false, $paymentsEscalationConfig = Escalations\Constants::PAYMENTS_ESCALATION_MATRIX)
     {
         $expectedEscalationConfig = null;
-        foreach (Escalations\Constants::PAYMENTS_ESCALATION_MATRIX[$threshold] as $config)
+        foreach ( $paymentsEscalationConfig[$threshold] as $config)
         {
             if ($config[Escalations\Constants::MILESTONE] === $milestone)
             {

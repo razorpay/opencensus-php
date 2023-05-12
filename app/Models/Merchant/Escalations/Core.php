@@ -8,6 +8,7 @@ use Razorpay\Trace\Logger;
 use RZP\Models\Base;
 use RZP\Models\Coupon;
 use RZP\Constants\Mode;
+use RZP\Services\Dcs\Configurations\Constants as DcsConstants;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant;
@@ -30,6 +31,8 @@ class Core extends Base\Core
 {
     protected $cache;
 
+    protected $mode;
+
     const DATA_LAKE_WEB_ATTRIBUTION_QUERY               = "select * from hive.aggregate_pa.mid_attribution where mid in (%s)";
 
     const DATA_LAKE_WEB_ATTRIBUTION_FIRST_TOUCH_QUERY   = "select * from hive.aggregate_pa.payments_product where merchant_id in (%s) and first_txn = 1";
@@ -39,6 +42,11 @@ class Core extends Base\Core
         parent::__construct();
 
         $this->cache = $this->app['cache'];
+
+        if (isset($this->app['rzp.mode']))
+        {
+            $this->mode = $this->app['rzp.mode'];
+        }
     }
 
     public function getEscalationConfigForThresholdAndMilestone($merchantDetails, $threshold, $milestone)
@@ -772,6 +780,14 @@ class Core extends Base\Core
             $merchantsGMVList = array_column($queryResponse, "amount", Entity::MERCHANT_ID);
         }
 
+        // these banking org merchants need custom escalation matrix so can't escalate for them in this flow
+        // another cron handlePaymentEscalationsForBankingOrg is handling escalation for these merchants
+        $bankingOrgMerchantsHavingFeature = $this->filterMerchantWithBankingOrgHavingFeature(Constants::ASSIGN_CUSTOM_HARD_LIMIT,$merchantIdList);
+
+        $merchantIdList = array_diff($merchantIdList, $bankingOrgMerchantsHavingFeature);
+
+        $merchantsGMVList = array_intersect_key($merchantsGMVList, array_flip($merchantIdList));
+
         // fetch the existing escalations triggered for merchants
         $escalations = $this->fetchEscalationMapForMerchants($merchantIdList);
 
@@ -1040,6 +1056,86 @@ class Core extends Base\Core
             'escalation_duration'           => (microtime(true) - $escalationStartTime) * 1000,
             'escalation_type'               => 'xpress_escalation'
         ]);
+    }
+
+    public function handlePaymentEscalationsForBankingOrg(){
+
+        [$merchantIdList, $merchantsGMVList] = $this->filterMerchantsWithGmvUsingEscalationType(Constants::BANKING_ORG_PAYMENTS_ESCALATION, true);
+
+        if($merchantIdList === null)
+        {
+            return;
+        }
+
+        $merchantIdList = $this->filterMerchantWithBankingOrgHavingFeature(Constants::ASSIGN_CUSTOM_HARD_LIMIT,$merchantIdList);
+
+        $merchantsGMVList = array_intersect_key($merchantsGMVList, array_flip($merchantIdList));
+
+
+        // fetch the existing escalations triggered for merchants
+        $escalations = $this->fetchEscalationMapForMerchants($merchantIdList);
+
+        $skippedMerchants = [];
+
+        foreach ($merchantsGMVList as $merchantId => $amount)
+        {
+            try
+            {
+                [$triggered, $reason] = (new Handler)->triggerBankingOrgPaymentEscalation(
+                    $merchantId, $amount, $escalations[$merchantId] ?? []
+                );
+
+                if ($triggered === false)
+                {
+                    $skippedMerchants[] = [
+                        'merchant_id' => $merchantId,
+                        'reason'      => $reason
+                    ];
+                }
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->error(TraceCode::ESCALATION_ATTEMPT_FAILED, [
+                    'merchant_id' => $merchantId,
+                    'type'        => Constants::BANKING_ORG_PAYMENTS_ESCALATION,
+                    'exception'   => $e->getMessage()
+                ]);
+            }
+        }
+
+        if (empty($skippedMerchants) === false)
+        {
+            $this->trace->info(TraceCode::ESCALATION_ATTEMPT_SKIPPED, [
+                'skippedMerchants' => $skippedMerchants,
+                'type'             => Constants::BANKING_ORG_PAYMENTS_ESCALATION,
+            ]);
+        }
+    }
+
+    private function filterMerchantWithBankingOrgHavingFeature($featurename, $merchantIdList){
+
+        try {
+            $dcsConfigService = app('dcs_config_service');
+
+            $entityIdsWithFeature = $dcsConfigService->fetchEntityIdsWithValueByConfigNameAndFieldNameFromDcs(DcsConstants::CustomHardLimitConfigurations,$featurename,$this->mode);
+
+            $orgIdList = [];
+            foreach ($entityIdsWithFeature as $entityId => $value) {
+                if (is_bool($value) and $value === true) {
+                    $orgIdList[] = $entityId;
+                }
+            }
+
+            $filteredMerchantIdList = $this->repo->merchant_detail->filterMerchantIdsByOrg($merchantIdList,$orgIdList);
+
+            return $filteredMerchantIdList;
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, null, TraceCode::ENTITIES_HAVING_FEATURE_DCS_FETCH_ERROR,[$featurename]);
+
+            throw $ex;
+        }
     }
 
     private function filterNoDocEscalatedMerchants(array $merchantIds, int $threshold, array $merchantsGMVList): array

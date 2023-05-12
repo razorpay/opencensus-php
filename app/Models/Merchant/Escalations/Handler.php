@@ -16,6 +16,8 @@ use Illuminate\Foundation\Application;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Http\Controllers\CmmaProxyController;
+use RZP\Exception;
+use RZP\Services\Dcs\Configurations\Constants as DcsConstants;
 
 class Handler
 {
@@ -38,6 +40,13 @@ class Handler
      */
     protected $trace;
 
+    /**
+     * Test/Live mode
+     *
+     * @var string
+     */
+    protected $mode;
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -45,6 +54,11 @@ class Handler
         $this->repo = $this->app['repo'];
 
         $this->trace = $this->app['trace'];
+
+        if (isset($this->app['rzp.mode']))
+        {
+            $this->mode = $this->app['rzp.mode'];
+        }
     }
 
     private function getEscalatedMilestonesForThreshold($threshold, $existingEscalations)
@@ -62,10 +76,11 @@ class Handler
         return $milestones;
     }
 
-    private function getNextPossibleEscalation($breachedAmount, $existingEscalations, $merchantDetails)
+    private function getNextPossibleEscalation($breachedAmount, $existingEscalations, $merchantDetails, $paymentEscalationMatrix = Constants::PAYMENTS_ESCALATION_MATRIX)
     {
-        $escalationMatrix = array_reverse(Constants::PAYMENTS_ESCALATION_MATRIX, true);
+        ksort($paymentEscalationMatrix);
 
+        $escalationMatrix = array_reverse($paymentEscalationMatrix, true);
         /*
          * loop over all escalations and pick the one closest to breachedAmount and not yet triggered
          */
@@ -100,6 +115,68 @@ class Handler
         }
 
         return [null, null];
+    }
+
+    private function getCustomEscalationMatrixForBankingOrg($orgId){
+
+        $defaultEscalationMatrix = Constants::BANKING_ORG_PAYMENTS_ESCALATION_MATRIX;
+
+        try
+        {
+            $res = $this->fetchCustomHardLimitConfig([Constants::ORG_ID => $orgId]);
+
+            $isEnableAssignHardLimit = $res[Constants::ASSIGN_CUSTOM_HARD_LIMIT] ?? false;
+
+            if ($isEnableAssignHardLimit === true and (isset($res[Constants::CUSTOM_TRANSACTION_LIMIT_FOR_KYC_PENDING]) === true) and
+                ($res[Constants::CUSTOM_TRANSACTION_LIMIT_FOR_KYC_PENDING] !== 0))
+            {
+                if ($res[Constants::CUSTOM_TRANSACTION_LIMIT_FOR_KYC_PENDING] != Constants::DEFAULT_ESCALATION_TRANSACTION_LIMIT_FOR_KYC_PENDING and
+                    $res[Constants::CUSTOM_TRANSACTION_LIMIT_FOR_KYC_PENDING] > Constants::THRESHOLD_BEFORE_TRANSACTION_LIMIT_FOR_KYC_PENDING and
+                    $res[Constants::CUSTOM_TRANSACTION_LIMIT_FOR_KYC_PENDING] < Constants::THRESHOLD_AFTER_TRANSACTION_LIMIT_FOR_KYC_PENDING){
+
+                    $customMatrix = $defaultEscalationMatrix;
+
+                    $customMatrix[$res[Constants::CUSTOM_TRANSACTION_LIMIT_FOR_KYC_PENDING]] = $defaultEscalationMatrix[Constants::DEFAULT_ESCALATION_TRANSACTION_LIMIT_FOR_KYC_PENDING];
+
+                    unset($customMatrix[Constants::DEFAULT_ESCALATION_TRANSACTION_LIMIT_FOR_KYC_PENDING]);
+
+                    return $customMatrix;
+                }
+            }
+
+            return $defaultEscalationMatrix;
+
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, null, TraceCode::CUSTOM_HARD_LIMIT_CONFIG_FETCH_ERROR, [$orgId]);
+
+            throw $ex;
+        }
+    }
+
+    private function fetchCustomHardLimitConfig($input){
+        $this->trace->info(
+            TraceCode::CUSTOM_HARD_LIMIT_CONFIG_FETCH_REQUEST,
+            [
+                "input_data" => $input
+            ]);
+
+        $dcsConfigService = app('dcs_config_service');
+
+        if (isset($input[Constants::ORG_ID]) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Org id is mandatory parameter');
+        }
+
+        $key = DcsConstants::CustomHardLimitConfigurations;
+
+        $fields = [Constants::ASSIGN_CUSTOM_HARD_LIMIT, Constants::CUSTOM_TRANSACTION_LIMIT_FOR_KYC_PENDING];
+
+        $orgId = $input[Constants::ORG_ID];
+
+        return $dcsConfigService->fetchConfiguration($key, $orgId, $fields, $this->mode);
     }
 
     public function canTriggerEscalation($merchantDetails, $escalationConfig): bool
@@ -174,6 +251,34 @@ class Handler
 
         $this->triggerEscalation(
             $merchantId, $breachedAmount, $breachedThreshold, $nextEscalation, Constants::PAYMENT_BREACH);
+
+        return [true, null];
+    }
+
+    public function triggerBankingOrgPaymentEscalation(string $merchantId, int $breachedAmount, array $existingEscalations)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        $merchantDetails = $merchant->merchantDetail;
+
+        $customEscalationMatrix = $this->getCustomEscalationMatrixForBankingOrg($merchant->org->getId());
+
+        [$breachedThreshold, $nextEscalation] = $this->getNextPossibleEscalation(
+            $breachedAmount, $existingEscalations, $merchantDetails,$customEscalationMatrix);
+
+        if(empty($nextEscalation) === true)
+        {
+            return [false, "no next escalation found for amount ". $breachedAmount];
+        }
+
+        $isEnabled = $nextEscalation[Constants::ENABLE] ?? true;
+
+        if($isEnabled === false)
+        {
+            return [false, "escalation not enabled for threshold ".$breachedThreshold];
+        }
+
+        $this->triggerEscalation(
+            $merchantId, $breachedAmount, $breachedThreshold, $nextEscalation, Constants::BANKING_ORG_PAYMENTS_ESCALATION);
 
         return [true, null];
     }
