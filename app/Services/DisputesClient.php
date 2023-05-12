@@ -67,7 +67,7 @@ class DisputesClient
             'base_uri' => $this->config['base_url'],
             'auth'     => [
                 $this->config['auth']['username'],
-                'dispute_secret',
+                $this->config['auth']['secret'],
             ]]);
     }
 
