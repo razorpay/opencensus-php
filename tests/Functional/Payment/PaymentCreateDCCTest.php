@@ -302,6 +302,35 @@ class PaymentCreateDCCTest extends TestCase
         return $id;
     }
 
+    public function testPaymentValidateMCCS2SForShaadiCom()
+    {
+        $payment = $this->payment;
+        $features = array('s2s','s2s_json','shaadi_com_new_currency');
+
+        $this->fixtures->merchant->addFeatures($features);
+        $payment['amount'] = 5000;
+        $payment['currency'] = 'KWD';
+
+        $responseContent = $this->doS2SPrivateAuthJsonPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $responseContent);
+        $this->assertArrayHasKey('next', $responseContent);
+        $this->assertArrayHasKey('action', $responseContent['next'][0]);
+        $this->assertArrayHasKey('url', $responseContent['next'][0]);
+
+        $redirectContent = $responseContent['next'][0];
+
+        $this->assertTrue($this->isRedirectToDCCInfoUrl($redirectContent['url']));
+
+        $id = getTextBetweenStrings($redirectContent['url'], '/payments/', '/dcc_info');
+
+        $paymentEntity = $this->getEntityById('payment', $id,true);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals($paymentEntity['id'], 'pay_' . $paymentMeta['payment_id']);
+        $this->assertEquals(10,$paymentMeta['mcc_forex_rate']);
+    }
+
     protected function enableFeatureOnMerchant($feature){
         $features[] = $feature;
         $this->fixtures->merchant->addFeatures($features);

@@ -161,7 +161,7 @@ class Core extends Base\Core
         $baseAmount = (int) ceil($baseAmount);
 
         $input['mcc_applied'] = true;
-        $input['mcc_forex_rate'] = $rates[Currency::INR]*$denominationFactor;
+        $input['mcc_forex_rate'] = $rates[Currency::INR];
 
         return $baseAmount;
     }
