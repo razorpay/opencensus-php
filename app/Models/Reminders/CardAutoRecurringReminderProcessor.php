@@ -15,6 +15,34 @@ class CardAutoRecurringReminderProcessor extends ReminderProcessor
 {
     public function process(string $entity, string $namespace, string $id, array $data)
     {
+        // We were getting 2 parallel calls from reminder service and both of the payments
+        // were going through the gateway, resulting in unexpected payment status. Hence, adding mutex
+        // to avoid data race condition.
+        
+        if ($this->isExperimentEnabledForMutexReminder($id) === true)
+        {
+            $this->trace->info(TraceCode::PAYMENT_CARD_RECURRING_VIA_MUTEX_LOCK, [
+                'paymentId'    => $id
+            ]);
+
+            $mutexKey = 'card_recurring_reminder_' . $id;
+
+            return $this->app['api.mutex']->acquireAndRelease(
+            $mutexKey,
+            function() use ($id)
+            {
+                return $this->processPayment($id);
+            },
+            120);
+        }
+        else
+        {
+            return $this->processPayment($id);
+        }
+    }
+
+    public function processPayment(string $id)
+    {
         $payment = (new Payment\Core)->retrievePaymentById($id);
 
         if($payment->isAuthorized() === true or $payment->isCaptured() === true)
@@ -198,6 +226,33 @@ class CardAutoRecurringReminderProcessor extends ReminderProcessor
                 $e,
                 null,
                 TraceCode::RECURRING_SUBSEQUENT_TOKENISATION_RAZORX_EXPERIMENT
+            );
+        }
+
+        return false;
+    }
+
+    public function isExperimentEnabledForMutexReminder($key): bool
+    {
+        try
+        {
+            $variant = $this->app['razorx']->getTreatment(
+                $key,
+                Merchant\RazorxTreatment::RECURRING_SUBSEQUENT_VIA_MUTEX_LOCK,
+                $this->mode
+            );
+
+            if (strtolower($variant) === 'on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::RECURRING_SUBSEQUENT_MUTEX_LOCK_RAZORX_FAILURE
             );
         }
 
