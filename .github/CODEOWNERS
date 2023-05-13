@@ -130,6 +130,18 @@ app/Models/Merchant/Stakeholder/Entity.php                    @razorpay/identity
 app/Models/Merchant/BusinessDetail/Entity.php                 @razorpay/identity-core
 app/Models/Merchant/Website/Entity.php                        @razorpay/identity-core
 
+#
+# Merchant Related Repository
+#
+# Blocking PR merge on merchant related repositories as account-service is now owner for merchant-related entities and hence repositories.
+# Any update on these repositories, will require explicit approval from platform identity team.
+app/Models/Merchant/Repository.php                            @razorpay/identity-core
+app/Models/Merchant/Detail/Repository.php                     @razorpay/identity-core
+app/Models/Merchant/Document/Repository.php                   @razorpay/identity-core
+app/Models/Merchant/Email/Repository.php                      @razorpay/identity-core
+app/Models/Merchant/Stakeholder/Repository.php                @razorpay/identity-core
+app/Models/Merchant/BusinessDetail/Repository.php             @razorpay/identity-core
+app/Models/Merchant/Website/Repository.php                    @razorpay/identity-core
 
 #
 # Merchant Acquisitions Entities
