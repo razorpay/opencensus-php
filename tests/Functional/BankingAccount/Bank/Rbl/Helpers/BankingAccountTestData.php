@@ -619,7 +619,7 @@ return [
             'content' => [
                 'serviceability' => false,
                 'business_type_supported' => false,
-                'errorMessage' => null
+                'errorMessage' => 'The city field is required.;No Pincode Match Found!'
             ],
         ],
     ],

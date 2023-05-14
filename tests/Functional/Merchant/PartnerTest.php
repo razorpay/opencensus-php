@@ -1804,6 +1804,8 @@ class PartnerTest extends OAuthTestCase
 
     public function testFetchBankingAccountEntitiesForPartnerSubmerchantsWithInvalidRole()
     {
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
         $mode = Mode::TEST;
 
         $this->allowAdminToAccessPartnerMerchant();
@@ -1877,6 +1879,8 @@ class PartnerTest extends OAuthTestCase
 
     public function testFetchBankingAccountEntitiesForPartnerSubmerchantsWithRole()
     {
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
         $mode = Mode::TEST;
 
         $this->allowAdminToAccessPartnerMerchant();
@@ -1958,6 +1962,8 @@ class PartnerTest extends OAuthTestCase
 
     public function testFetchBankingAccountEntitiesForPartnerSubmerchants()
     {
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
         $this->createPartnerAndAddMultipleSubmerchants();
 
         $this->fixtures->on('live')->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => Merchant\Constants::BANK_CA_ONBOARDING_PARTNER]);

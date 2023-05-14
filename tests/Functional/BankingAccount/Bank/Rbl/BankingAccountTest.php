@@ -107,6 +107,7 @@ class BankingAccountTest extends TestCase
         $this->app['redis']->sadd('rbl_pincode_set', $pincodeList);
 
         $this->app['config']->set('applications.banking_account.mock', true);
+        $this->app['config']->set('applications.banking_account_service.mock', true);
         $this->app['config']->set('applications.salesforce.mock', true);
 
         $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
@@ -481,7 +482,31 @@ class BankingAccountTest extends TestCase
 
         $basMock = Mockery::mock(BankingAccountService::class, [$this->app])->makePartial();
 
-        $basMock->shouldNotReceive('sendRequestAndProcessResponse');
+        $basMock->shouldReceive('sendRequestAndProcessResponse')
+            ->andReturn([
+            'data' => [
+                'serviceability' => [
+                    [
+                        'is_serviceable'        => true,
+                        'partner_bank'          => 'RBL',
+                        'unserviceable_reasons' => null,
+                    ],
+                    [
+                        'is_serviceable'        => false,
+                        'partner_bank'          => 'ICICI',
+                        'unserviceable_reasons' => [
+                            "PIN_CODE_UNSERVICEABLE"
+                        ],
+                    ]
+                ],
+                'pincode_details' => [
+                    'city'      => 'belgaum',
+                    'state'     => 'karnatka',
+                    'region'    => 'south',
+                    'error'     => ''
+                ]
+            ]
+        ]);
 
         $this->app->instance('banking_account_service', $basMock);
 
@@ -504,203 +529,6 @@ class BankingAccountTest extends TestCase
         Mail::assertNotQueued(XProActivation::class);
     }
 
-    public function testCreateBankingAccountFromMerchantDashboardServiceabilityExperiment()
-    {
-        $attribute = ['activation_status' => 'activated'];
-
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
-
-        $splitzMockInput = [
-            'id'            => '10000000000000',
-            'experiment_id' => 'L2UsfwrU1dDxE4',
-        ];
-
-        $splitzMockOutput = [
-            'response' => [
-                'variant' => [
-                    'name' => 'active'
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($splitzMockInput, $splitzMockOutput);
-
-        $basMock = Mockery::mock(BankingAccountService::class, [$this->app])->makePartial();
-
-        $basMock->shouldReceive('sendRequestAndProcessResponse')
-            ->andReturn(
-                [
-                    'data' => [
-                        'serviceability' => [
-                            [
-                                'is_serviceable'        => true,
-                                'partner_bank'          => 'RBL',
-                                'unserviceable_reasons' => null,
-                            ],
-                            [
-                                'is_serviceable'        => false,
-                                'partner_bank'          => 'ICICI',
-                                'unserviceable_reasons' => [
-                                    "PIN_CODE_UNSERVICEABLE"
-                                ],
-                            ]
-                        ],
-                        'pincode_details' => [
-                            'city'      => 'belgaum',
-                            'state'     => 'karnatka',
-                            'region'    => 'south',
-                            'error'     => ''
-                        ]
-                ]
-            ]);
-
-        $this->app->instance('banking_account_service', $basMock);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-        $this->ba->addXOriginHeader();
-
-        $resp = $this->createBankingAccountFromDashboard([
-            Entity::PINCODE => '591143'
-        ]);
-
-        $this->assertEquals(true, $resp['serviceability']);
-    }
-
-    public function testCreateBankingAccountFromMerchantDashboardServiceabilityExperimentUnknownPincode()
-    {
-        $attribute = ['activation_status' => 'activated'];
-
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
-
-        $splitzMockInput = [
-            'id'            => '10000000000000',
-            'experiment_id' => 'L2UsfwrU1dDxE4',
-        ];
-
-        $splitzMockOutput = [
-            'response' => [
-                'variant' => [
-                    'name' => 'active'
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($splitzMockInput, $splitzMockOutput);
-
-        $basMock = Mockery::mock(BankingAccountService::class, [$this->app])->makePartial();
-
-        $basMock->shouldReceive('sendRequestAndProcessResponse')
-            ->andReturn(
-                [
-                    'data' => [
-                        'serviceability' => [
-                            [
-                                'is_serviceable'        => false,
-                                'partner_bank'          => 'RBL',
-                                'unserviceable_reasons' => [
-                                    "PIN_CODE_UNSERVICEABLE"
-                                ],
-                            ],
-                            [
-                                'is_serviceable'        => false,
-                                'partner_bank'          => 'ICICI',
-                                'unserviceable_reasons' => [
-                                    "PIN_CODE_UNSERVICEABLE"
-                                ],
-                            ]
-                        ],
-                        'pincode_details' => [
-                            'city'      => '',
-                            'state'     => '',
-                            'region'    => '',
-                            'error'     => 'No Pincode Match Found!'
-                        ]
-                    ]
-                ]);
-
-        $this->app->instance('banking_account_service', $basMock);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-        $this->ba->addXOriginHeader();
-
-        $resp = $this->createBankingAccountFromDashboard([
-            Entity::PINCODE => '000000'
-        ]);
-
-        $this->assertEquals(false, $resp['serviceability']);
-    }
-
-    public function testUpdateBankingAccountFromDashboardServiceabilityExperiment()
-    {
-        $attribute = ['activation_status' => 'activated'];
-
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
-
-        $this->ba->addXOriginHeader();
-
-        $bankingAccount = $this->createBankingAccountFromDashboard([
-            Entity::PINCODE => '591143'
-        ]);
-
-        $splitzMockInput = [
-            'id'            => '10000000000000',
-            'experiment_id' => 'L2UsfwrU1dDxE4',
-        ];
-
-        $splitzMockOutput = [
-            'response' => [
-                'variant' => [
-                    'name' => 'active'
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($splitzMockInput, $splitzMockOutput);
-
-        $basMock = Mockery::mock(BankingAccountService::class, [$this->app])->makePartial();
-
-        $basMock->shouldReceive('sendRequestAndProcessResponse')
-            ->andReturn(
-                [
-                    'data' => [
-                        'serviceability' => [
-                            [
-                                'is_serviceable'        => true,
-                                'partner_bank'          => 'RBL',
-                                'unserviceable_reasons' => null,
-                            ],
-                            [
-                                'is_serviceable'        => false,
-                                'partner_bank'          => 'ICICI',
-                                'unserviceable_reasons' => [
-                                    "PIN_CODE_UNSERVICEABLE"
-                                ],
-                            ]
-                        ],
-                        'pincode_details' => [
-                            'city'      => 'belgaum',
-                            'state'     => 'karnatka',
-                            'region'    => 'south',
-                            'error'     => ''
-                        ]
-                    ]
-                ]);
-
-        $this->app->instance('banking_account_service', $basMock);
-
-        $dataToReplace = [
-            'request' => [
-                'url' => '/banking_accounts_dashboard/' . $bankingAccount['id']
-            ]
-        ];
-
-        $this->startTest($dataToReplace);
-    }
-
     public function testCreateBankingAccountAndSubmitFormMerchantDashboard()
     {
         $attribute = ['activation_status' => 'activated'];
@@ -710,12 +538,6 @@ class BankingAccountTest extends TestCase
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
 
         $this->ba->addXOriginHeader();
-
-        $basMock = Mockery::mock(BankingAccountService::class, [$this->app])->makePartial();
-
-        $basMock->shouldNotReceive('sendRequestAndProcessResponse');
-
-        $this->app->instance('banking_account_service', $basMock);
 
         $bankingAccount = $this->createBankingAccountFromDashboard();
 
