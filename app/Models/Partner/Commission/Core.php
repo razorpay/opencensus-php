@@ -370,6 +370,7 @@ class Core extends Base\Core
         foreach ($batches as $batch)
         {
             CommissionCapture::dispatch($this->mode, $batch);
+            $this->dispatchCommissionCaptureToPRTS($partner->getId(), $batch);
         }
 
         return count($commissionIds);
@@ -474,7 +475,7 @@ class Core extends Base\Core
                     ]
                 );
 
-                $this->pushJobToSQS($data);
+                $this->pushJobToSQS($data,  'partnerships_commission', TraceCode::PRTS_COMMISSION_DUAL_WRITE_DISPATCHED);
                 $this->trace->count(Metric::PARTNERSHIP_COMMISSION_SYNC_JOB_PUSH_SUCCESS);
             }));
         }
@@ -490,14 +491,66 @@ class Core extends Base\Core
         }
     }
 
+
+    public function dispatchCommissionCaptureToPRTS(string $partnerId, array $commissionIds): void
+    {
+        $properties = [
+            'id'            => $partnerId,
+            'experiment_id' => $this->app['config']->get('app.partnership_service_commission_shadow_phase_exp_id'),
+        ];
+
+        $isExpEnabled = (new Merchant\Core)->isSplitzExperimentEnable(
+            $properties, 'enable', TraceCode::PRTS_COMMISSION_CALCULATION_SHADOW_PHASE_SPLITZ_ERROR
+        );
+
+        if (!$isExpEnabled)
+        {
+            return;
+        }
+        try
+        {
+            $data = [
+                'commission_ids' => $commissionIds
+            ];
+
+            \Event::dispatch(new TransactionalClosureEvent(function() use ($data) {
+                // Job will be dispatched only if the transaction commits.
+                $this->trace->info(
+                    TraceCode::PRTS_COMMISSION_CAPTURE_DISPATCHING,
+                    [
+                        'mode' => $this->mode,
+                        'ids'  => $data['commission_ids'],
+                    ]
+                );
+
+                $this->pushJobToSQS($data, 'prts_commission_capture', TraceCode::PRTS_COMMISSION_CAPTURE_DISPATCHED);
+                $this->trace->count(Metric::PARTNERSHIP_COMMISSION_CAPTURE_JOB_PUSH_SUCCESS);
+            }));
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PRTS_COMMISSION_CAPTURE_DISPATCH_FAILED,
+                $data
+            );
+            $this->trace->count(Metric::PARTNERSHIP_COMMISSION_CAPTURE_JOB_PUSH_FAILURE);
+        }
+    }
+
     /**
      * Pushes the job to the SQS queue. If environment is devstack, localstack is used.
+     *
      * @param $data
+     * @param $queueName
+     * @param $traceCode
+     *
      * @return void
      */
-    private function pushJobToSQS($data): void
+    private function pushJobToSQS($data, $queueName, $traceCode): void
     {
-        $queueName = $this->config->get('queue.partnerships_commission.' . $this->app['rzp.mode']);
+        $queueName = $this->config->get('queue.' . $queueName . '.'. $this->app['rzp.mode']);
 
         if (in_array(app('env'), self::LOCALSTACK_ENVIRONMENTS, true) === true)
         {
@@ -511,9 +564,9 @@ class Core extends Base\Core
         $messageId = $this->app['queue']->connection($connection)->pushRaw(json_encode($data), $queueName);
 
         $this->trace->info(
-            TraceCode::PRTS_COMMISSION_DUAL_WRITE_DISPATCHED,
+            $traceCode,
             [
-                'id' => $data['commission']['id'],
+                'data' => $data,
                 'messageId' => $messageId
             ]
         );
