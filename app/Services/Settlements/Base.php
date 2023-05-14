@@ -52,7 +52,7 @@ class Base
     const SETTLEMENT_INSERT_EXTERNAL_TRANSACTIONS = '/twirp/rzp.settlements.external_transaction.v1.RecordExternalTransactionAPI/InsertExternalTransaction';
     const SETTLEMENT_UPDATE_TRANSACTIONS_COUNT    = '/twirp/rzp.settlements.external_transaction.v1.RecordExternalTransactionAPI/UpdateTransactionCountOfExecution';
     const SETTLEMENT_UPDATE_EXECUTION_STATUS      = '/twirp/rzp.settlements.external_transaction.v1.RecordExternalTransactionAPI/UpdateStatusofOptimiserExecution';
-
+    const SETTLEMENT_LEDGER_RECON_TRIGGER         = '/twirp/rzp.settlements.ledger_recon.v1.LedgerReconService/LedgerRecon';
 
     protected $trace;
 

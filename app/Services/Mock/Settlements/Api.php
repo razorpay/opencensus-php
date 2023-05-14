@@ -164,4 +164,9 @@ class Api extends BaseSettlementsApi
     {
         return [];
     }
+
+    public function ledgerReconCronTrigger(array $input, $mode = null) : array
+    {
+        return ['status' => 'TRIGGERED'];
+    }
 }

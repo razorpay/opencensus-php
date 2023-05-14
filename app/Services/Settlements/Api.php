@@ -138,7 +138,30 @@ class Api extends Base
         return $this->makeRequest(self::PROCESS_CUSTOM_SETTLEMENTS_FILE, $input, self::SERVICE_API, $mode);
     }
 
+    public function ledgerReconCronTrigger(array $input, $mode = null) : array
+    {
+
+        if((isset($input['fetch_active_mtu']) === false)){
+            $input['fetch_active_mtu'] = false;
+        }
+
+         if((isset( $input['baseline_discrepancy']) === false)){
+             $input['baseline_discrepancy'] = false;
+         }
+
+
+        $this->trace->info(
+            TraceCode::SETTLEMENT_SERVICE_LEDGER_CRON_TRIGGER,
+            [
+                'mode'        => $mode,
+                'request_data'=> $input
+            ]);
+
+        return $this->makeRequest(self::SETTLEMENT_LEDGER_RECON_TRIGGER, $input, self::SERVICE_API, $mode);
+    }
+
     /**
+     *
      * ledgerCronActiveMtuCheck used to check if merchant is already added as ledger cron active mtu
      * @param array $input
      * @param null $mode

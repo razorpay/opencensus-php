@@ -2098,11 +2098,10 @@ class Service extends Base\Service
 
     public function settlementsLedgerInconsistencyDebug($input)
     {
-        (new Validator)->validateInput('settlement_ledger_inconsistency_debug', $input);
 
         $from = Carbon::now(Timezone::IST)->subMonth()->getTimestamp();
 
-        $to  = Carbon::now(Timezone::IST)->getTimestamp();
+        $to = Carbon::now(Timezone::IST)->getTimestamp();
 
         // increasing allowed system limit
         RuntimeManager::setMemoryLimit('1024M');
@@ -2117,59 +2116,31 @@ class Service extends Base\Service
                 'input' => $input,
             ]);
 
-        if((isset($input['from']) === true) and (isset($input['to']) ===true ))
+        if ((isset($input['from']) === true) and (isset($input['to']) === true))
         {
             $from = $input['from'];
 
-            $to   = $input ['to'];
+            $to = $input ['to'];
         }
 
         $merchantIds = [];
 
-        if(empty($input['merchant_ids']) === false)
+        if (empty($input['merchant_ids']) === false)
         {
             $merchantIds = $input['merchant_ids'];
-
-            $cronId = $this->addLedgerCronExecution(self::LEDGER_RECON_TRIGGERED_MANUAL, count($merchantIds));
-
-            $this->dispatchForLedgerDiscrepancyCheck($merchantIds, $cronId);
         }
-        else if((isset($input['fetch_active_mtu']) === true) and ($input['fetch_active_mtu'] === true))
-        {
-            $merchantIds = $this->repo->balance->getMerchantsWithBalanceUpdatedInTimeRange($from, $to);
 
-            $cronId = $this->addLedgerCronExecution(self::LEDGER_RECON_TRIGGERED_SYSTEM, count($merchantIds));
+        $input['from'] = $from;
+        $input['to'] = $to;
 
-            $setBaselineZero = false;
-
-            if((isset($input['set_baseline_zero']) === true) and ($input['set_baseline_zero'] === true))
-            {
-                $setBaselineZero = true;
-            }
-
-            $this->dispatchForLedgerDiscrepancyCheck($merchantIds, $cronId, $setBaselineZero);
-
-            if(count($merchantIds) === 0)
-            {
-                $this->ledgerCronExecutionUpdate($cronId, self::LEDGER_RECON_STATE_PROCESSED, 0);
-            }
-        }
-        else if((isset($input['fetch_active_mtu']) === true) and ($input['fetch_active_mtu'] === false))
-        {
-            $cronId = $this->addLedgerCronExecution(self::LEDGER_RECON_TRIGGERED_SYSTEM);
-
-            $merchantIds = $this->fetchAndDispatchLedgerCronActiveMTUs($cronId);
-
-            if(count($merchantIds) === 0)
-            {
-                $this->ledgerCronExecutionUpdate($cronId, self::LEDGER_RECON_STATE_PROCESSED, 0);
-            }
-        }
+        $response = app('settlements_api')->ledgerReconCronTrigger($input, $this->mode);
 
         $this->trace->info(
             TraceCode::SETTLEMENT_DEBUGGING_FRAMEWORK_PUSH_COMPLETE,
             [
                 'count'      => count($merchantIds),
+                'response'   => $response,
+                'input'      => $input,
                 'time_taken' => get_diff_in_millisecond($startTime),
             ]);
 
