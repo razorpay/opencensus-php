@@ -881,6 +881,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTLEMENT_NOT_SKIPPING_BANK_ACCOUNT_RECENT_CREATION  = 'SETTLEMENT_NOT_SKIPPING_BANK_ACCOUNT_RECENT_CREATION';
     const SETTLEMENT_MERCHANT_DASHBOARD_FETCH_REQUEST           = 'SETTLEMENT_MERCHANT_DASHBOARD_FETCH_REQUEST';
     const DEBUG_LOGGING                                         = 'DEBUG_LOGGING';
+    const DEBUG_LOGGING_REARCH                                  = 'DEBUG_LOGGING_REARCH';
     const PAYMENT_WITH_INCORRECT_TID                            = 'PAYMENT_WITH_INCORRECT_TID';
     const RRN_BACKFILLING_INPUT                                 = 'RRN_BACKFILLING_INPUT';
     const RRN_PAYMENT_DATA                                      = 'RRN_PAYMENT_DATA';

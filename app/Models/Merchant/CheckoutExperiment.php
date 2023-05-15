@@ -67,6 +67,7 @@ class CheckoutExperiment
             'checkout_downtime'                                  => 'control',
             'upi_number'                                         => 'control',
             'cvv_less'                                           => false,
+            'cvv_less_rupay'                                     => false,
             'enable_auto_submit'                                 => 'control',
             'dcc_vas_merchants'                                  => false,
             'emi_via_cards_revamp'                               => false,
@@ -293,6 +294,14 @@ class CheckoutExperiment
             'app.checkout_cvv_less_splitz_experiment_id',
             'CvvLess',
             'cvv_less',
+            ['merchant_id' => $this->merchantId]
+        );
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.checkout_cvv_less_rupay_splitz_experiment_id',
+            'CvvLessRupay',
+            'cvv_less_rupay',
             ['merchant_id' => $this->merchantId]
         );
 
@@ -654,6 +663,13 @@ class CheckoutExperiment
         return $variant === 'variant_on';
     }
 
+    private function handleCvvLessRupayResponse($response): bool
+    {
+        $variant = $response['variant']['name'] ?? '';
+
+        return $variant === 'variant_on';
+    }
+
     private function handleMagicGeneralExperimentResponse($response): string
     {
         return $response['variant']['name'] ?? 'control';
@@ -663,7 +679,7 @@ class CheckoutExperiment
     {
         return $response['variant']['name'] ?? 'control';
     }
-    
+
     private function handleDccVasMerchantsResponse($response): bool
     {
         $variant = $response['variant']['name'] ?? '';

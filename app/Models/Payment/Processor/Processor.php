@@ -608,6 +608,11 @@ class Processor
     private function canRouteThroughRearchFlow(array & $input)
     {
         $this->verifyMerchantIsLiveForLiveRequest();
+        $this->trace->info(
+            TraceCode::DEBUG_LOGGING_REARCH,
+            [
+                'input' => $input
+            ]);
 
         try
         {
@@ -3524,7 +3529,7 @@ class Processor
 
     protected function isCardAbsentforTokenisedPayment($token, $input) : bool
     {
-        if(($token->card->isAmex() || $token->card->isVisa()) && ((array_key_exists('card', $input) === false) or (!isset($input['card']))))
+        if(($token->card->isAmex() || $token->card->isVisa() || $token->card->isRuPay() ) && ((array_key_exists('card', $input) === false) or (!isset($input['card']))))
         {
             return true;
         }

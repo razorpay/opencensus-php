@@ -500,6 +500,8 @@ return array(
 
     'checkout_cvv_less_splitz_experiment_id' => env('CHECKOUT_CVV_LESS_SPLITZ_EXPERIMENT_ID'),
 
+    'checkout_cvv_less_rupay_splitz_experiment_id' => env('CHECKOUT_CVV_LESS_RUPAY_SPLITZ_EXPERIMENT_ID'),
+
     'checkout_redesign_v1_5_splitz_experiment_id' => env('CHECKOUT_REDESIGN_V1_5_SPLITZ_EXPERIMENT_ID'),
 
     'checkout_upi_qr_v2_splitz_experiment_id'     => env('CHECKOUT_UPI_QR_V2_SPLITZ_EXPERIMENT_ID'),
