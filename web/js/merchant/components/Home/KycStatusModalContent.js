@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { SAMPLE_TICKET } from 'merchant/views/TicketSupport/components/data';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, getCommonSegmentProperties } from 'common/utils/rzp-utils';
+import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 
 export const kycModalContent = (args = {}) => {
   const activationState = getActivationState(
@@ -16,7 +17,9 @@ export const kycModalContent = (args = {}) => {
   );
   const L2_dedupe_blocked = activationState === 'L2_dedupe_blocked';
   const activationFormUrl = args.isActivationFormFullView ? '/kyc' : '/activation';
+  const isSignupWithEasyOnboarding = args?.user?.user?.signup_campaign === EASY_ONBOARDING;
   const expiryDate = getNcExpiryDate(args.activationData?.kyc_clarification_reasons);
+
   switch (activationState) {
     case 'L2_dedupe_blocked':
     case 'L1_dedupe_blocked': {
@@ -474,7 +477,7 @@ export const kycModalContent = (args = {}) => {
         background: 'pending',
         button: (
           <Link
-            to={activationFormUrl}
+            to={!isSignupWithEasyOnboarding ? activationFormUrl : ''}
             onClick={() => {
               args.trackEvents({
                 objectName: 'Pop Up CTA',
@@ -485,6 +488,19 @@ export const kycModalContent = (args = {}) => {
                   'CTA Label': 'Update Details',
                 },
               });
+              if (isSignupWithEasyOnboarding) {
+                args.trackEvents({
+                  objectName: 'redirect to easy-dashboard CTA',
+                  actionName: 'Redirect',
+                  screen: 'home page',
+                  properties: {
+                    'CTA Label': 'Update Details',
+                  },
+                });
+                window.open(window.EASY_ONBOARDING_URL, '_self', 'noopener');
+              } else {
+                history.push(activationFormUrl);
+              }
               args.onClose();
             }}
             className="btn btn-primary"
@@ -507,17 +523,30 @@ export const kycModalContent = (args = {}) => {
         background: 'pending',
         button: (
           <Link
-            to={activationFormUrl}
+            to={!isSignupWithEasyOnboarding ? activationFormUrl : ''}
             onClick={() => {
               args.trackEvents({
                 objectName: 'Pop Up CTA',
-                actionName: 'Clicked',
+                actionName: 'Redirect',
                 screen: 'home page',
                 properties: {
                   'Pop-up Label': 'KYC under review',
                   'CTA Label': 'Update Details',
                 },
               });
+              if (isSignupWithEasyOnboarding) {
+                args.trackEvents({
+                  objectName: 'redirect to easy-dashboard CTA',
+                  actionName: 'Redirect',
+                  screen: 'home page',
+                  properties: {
+                    'CTA Label': 'Update Details',
+                  },
+                });
+                window.open(window.EASY_ONBOARDING_URL, '_self', 'noopener');
+              } else {
+                history.push(activationFormUrl);
+              }
               args.onClose();
             }}
             className="btn btn-primary"

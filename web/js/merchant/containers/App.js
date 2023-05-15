@@ -64,6 +64,7 @@ import currencies from '../constants/currency';
 import { setRecommendedProduct } from 'merchant/components/Activation/ActivationUtils';
 import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
+import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 
 // const WebViewHeader = lazy(() =>
 //   import(/* webpackChunkName: 'webview header' */ 'merchant/components/HeaderNav/WebViewHeader'),
@@ -148,6 +149,7 @@ class App extends Component {
   // nosemgrep
   UNSAFE_componentWillMount() {
     const user = window.rzp_user;
+    const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
 
     // Init lumberjack
     initLumberjack();
@@ -379,7 +381,14 @@ class App extends Component {
     const signUpFormStatus = LocalStorageService.getItem('sign_up_exp_status');
     if (user?.merchants && Object.keys(user.merchants).length === 1) {
       if (this.props.user?.isActivationFormFullView) {
-        if (!user?.activation_form_milestone && !user?.activated) {
+        if (isSignupWithEasyOnboarding) {
+          this.props.trackEvents({
+            objectName: 'redirect to easy-dashboard CTA',
+            actionName: 'Redirect',
+            screen: 'KYC Document',
+          });
+          window.open(window.EASY_ONBOARDING_URL, '_self', 'noopener');
+        } else if (!user?.activation_form_milestone && !user?.activated) {
           if (isMobileDevice()) {
             this.props.history.push('/onboarding/steps');
           } else {
@@ -405,7 +414,14 @@ class App extends Component {
           },
         });
         LocalStorageService.setItem('sign_up_exp_status', 'kyc_form_fill_started');
-        if (isMobileDevice()) {
+        if (isSignupWithEasyOnboarding) {
+          this.props.trackEvents({
+            objectName: 'redirect to easy-dashboard CTA',
+            actionName: 'Redirect',
+            screen: 'KYC Document',
+          });
+          window.open(window.EASY_ONBOARDING_URL, '_self', 'noopener');
+        } else if (isMobileDevice()) {
           this.props.history.push('/onboarding/steps');
         } else {
           this.props.history.push('/activation');

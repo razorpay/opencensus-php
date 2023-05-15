@@ -70,7 +70,7 @@ export default class TestMode extends Component {
             <TestProducts
               // eslint-disable-next-line no-sequences
               onClick={() => (track.viewTestProducts(), this.props.showProductsModal())}
-            />
+            />{' '}
             to find the right fit for your use-case
           </span>
         );
@@ -87,7 +87,6 @@ export default class TestMode extends Component {
                 rel="noreferrer noopener"
                 className="btn-link"
                 href="https://razorpay.com/docs"
-                rel="noreferrer noopener"
               >
                 documentation
               </a>{' '}

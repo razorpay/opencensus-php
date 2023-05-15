@@ -211,7 +211,11 @@ export const data = ({ type, openModal, bankAccount, user, workflowEta }: Data):
                 objectName: 'Banner Complete KYC',
                 actionName: 'Clicked',
               });
-              window.location.href = 'https://dashboard.razorpay.com/app/activation';
+              if (window.rzp_user?.user?.signup_campaign === 'easy_onboarding') {
+                window.location.href = window.EASY_ONBOARDING_URL;
+              } else {
+                window.location.href = 'https://dashboard.razorpay.com/app/activation';
+              }
             },
             text: 'Complete KYC',
           },

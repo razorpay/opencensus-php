@@ -9,6 +9,7 @@ import { storeWithInitialState } from 'merchant/store';
 import { createMemoryHistory } from 'history';
 import * as modals from 'merchant_common/reducers/modals';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
+import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 
 jest.mock('merchant/views/TicketSupport/utils', () => ({
   CreateTicketEmitter: {
@@ -50,6 +51,7 @@ describe('SettlementsBanner', () => {
 
   const history = createMemoryHistory();
   history.push = jest.fn();
+  window.open = jest.fn();
 
   const App = ({ initialState = state, ...rest }) => {
     return (
@@ -91,6 +93,7 @@ describe('SettlementsBanner', () => {
         user: {
           isActivated: true,
           activation_status: 'under_review',
+          isActivationFormFullView: false,
         },
       },
     };
@@ -118,6 +121,28 @@ describe('SettlementsBanner', () => {
     await waitFor(() => {
       expect(history.push).toHaveBeenCalledTimes(2);
       expect(history.push).toHaveBeenCalledWith('/kyc');
+    });
+
+    initialState = {
+      ...state,
+      session: {
+        ...state.session,
+        user: {
+          isActivated: true,
+          activation_status: 'under_review',
+          isActivationFormFullView: true,
+          user: {
+            ...state.session.user.user,
+            signup_campaign: EASY_ONBOARDING,
+          },
+        },
+      },
+    };
+    rerender(<App initialState={initialState} />);
+    userEvent.click(screen.getByText(/Complete KYC/));
+    await waitFor(() => {
+      expect(history.push).toHaveBeenCalledWith('');
+      expect(window.open).toHaveBeenCalledWith(window.EASY_ONBOARDING_URL, '_self', 'noopener');
     });
   });
 

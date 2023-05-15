@@ -18,6 +18,7 @@ import PartnerNavLinks from './PartnerNavLinks';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 
 const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds)/;
 const ACCOUNTS_ROUTES_REGEX = /^\/(trustedbadge|profile|credits|addfunds|referrals)/;
@@ -181,6 +182,16 @@ export default class Sidebar extends Component {
         },
       });
       window.open(needsClarificationOnEasyUrl, '_self', 'noopener');
+    } else if (user?.user?.signup_campaign === EASY_ONBOARDING) {
+      this.props.trackEvents({
+        objectName: 'redirect to easy-dashboard CTA',
+        actionName: 'Redirect',
+        screen: 'home page',
+        properties: {
+          'CTA Label': 'Account Activation',
+        },
+      });
+      window.open(window.EASY_ONBOARDING_URL, '_self', 'noopener');
     } else if (user.isOnboardingV2Enabled && isMobileDevice()) {
       this.props.history.push('/onboarding/steps');
     } else if (user.isActivationFormFullView) {

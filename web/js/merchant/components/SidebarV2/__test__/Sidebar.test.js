@@ -6,9 +6,11 @@ import SidebarV2 from 'merchant/components/SidebarV2';
 import * as fetchNavigationItems from 'merchant/reducers/leftNav';
 import * as devices from 'merchant/components/Home/data';
 import { FALLBACK_PRODUCTS } from 'merchant/components/SidebarV2/utils/Fallback';
+import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 
 describe('SidebarV2', () => {
   const fetchNavigationSpy = jest.spyOn(fetchNavigationItems, 'fetchLeftNavItems');
+  window.open = jest.fn();
 
   const renderApp = ({ initialState = state, props } = {}) =>
     render(<SidebarV2 {...props} />, {
@@ -136,6 +138,38 @@ describe('SidebarV2', () => {
       });
       await userEvent.click(activationBtn);
       expect(history.location.pathname).toEqual('/activation');
+    });
+
+    test('should redirect merchant to easy-dashboard if merchant signup via easy_onboarding', async () => {
+      renderApp({
+        initialState: {
+          ...state,
+          session: {
+            user: {
+              isActivationFormFullView: false,
+              isAllowedView: () => true,
+              user: {
+                signup_campaign: EASY_ONBOARDING,
+              },
+            },
+          },
+          leftNav: {
+            loading: false,
+            error: 'Error',
+            data: [],
+          },
+        },
+      });
+      await waitFor(() => {
+        expect(screen.getByText('Activation Progress Bar')).toBeInTheDocument();
+      });
+      const activationBtn = screen.getByRole('button', {
+        name: 'Click Activation',
+      });
+      await userEvent.click(activationBtn);
+      await waitFor(() => {
+        expect(window.open).toHaveBeenCalledWith(window.EASY_ONBOARDING_URL, '_self', 'noopener');
+      });
     });
   });
 });

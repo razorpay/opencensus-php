@@ -34,6 +34,8 @@ import { Routes, SidebarPropsInterface } from './typings';
 import { trackViewedBankingNavBar } from 'merchant/components/Sidebar/ga';
 import { getIsBankingEnabled } from 'merchant/components/Sidebar/helpers';
 import { LOYALTY_PRODUCTS_SECTION } from 'merchant/components/SidebarV2/utils/Fallback';
+import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
+import { analyticsTrack } from 'common/utils/analytics';
 import { trackEvents } from 'merchant/reducers/trackEvents';
 
 const SideBar = (props: SidebarPropsInterface): JSX.Element => {
@@ -55,6 +57,8 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
   const [activeTab, setActiveTab] = useState<string>('');
   const isExternalRedirect = org?.external_redirect_url_text && org?.external_redirect_url;
   const [isTwoSecondsTimeoutReached, setIsTwoSecondsTimeoutReached] = useState(false);
+  const { signup_campaign } = (user?.user as Record<string, unknown>) ?? {};
+  const isSignupWithEasyOnboarding = signup_campaign === EASY_ONBOARDING;
 
   useEffect(() => {
     fetchLeftNavItems();
@@ -77,6 +81,16 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
         includeScreenResolution: true,
       });
       window.open(EASY_DASHBOARD_NC_LANDING_URL, '_self', 'noopener');
+    } else if (isSignupWithEasyOnboarding) {
+      analyticsTrack({
+        objectName: 'redirect to easy-dashboard CTA',
+        actionName: 'Redirect',
+        screen: 'home page',
+        properties: {
+          'CTA Label': 'Account Activation',
+        },
+      });
+      window.open(window.EASY_ONBOARDING_URL, '_self', 'noopener');
     } else if (user.isOnboardingV2Enabled && isMobile) {
       history.push(ONBOARDING_STEPS_URL);
     } else if (user.isActivationFormFullView) {
