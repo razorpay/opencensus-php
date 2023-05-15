@@ -424,6 +424,8 @@ class UserRolesScope
             'fd_reserve_balance_ticket_status'              => Role::ALL_ROLES,
             'migrate_reseller_to_aggregator'                => [Role::ADMIN, Role::OWNER, Role::MANAGER],
             'migrate_aggregator_to_reseller'                => [Role::ADMIN, Role::OWNER, Role::MANAGER],
+            'migrate_reseller_to_pure_platform'             => [Role::ADMIN, Role::OWNER, Role::MANAGER],
+            'migrate_pure_platform_to_reseller'             => [Role::ADMIN, Role::OWNER, Role::MANAGER],
             'internal_migrate_reseller_to_aggregator'       => [Role::ADMIN, Role::OWNER, Role::MANAGER],
             'internal_migrate_aggregator_to_reseller'       => [Role::ADMIN, Role::OWNER, Role::MANAGER],
             'fetch_merchant_balance_configs'                => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::FINANCE, Role::SELLERAPP, Role::SUPPORT, Role::SELLERAPP_PLUS, Role::RBL_SUPERVISOR, Role::AGENT,],

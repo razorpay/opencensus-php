@@ -3056,13 +3056,15 @@ class Route
         'partner_send_daily_transacted_submerchant_events' => ['post', 'partner/send_daily_transacted_submerchant_events',  'PartnerController@sendSubmerchantFirstTransactionSegmentEvents'],
 
         // Partner types migration routes
-        'bulk_migrate_aggregator_to_reseller'      => ['put',      'partner/migrate_aggregator_to_reseller/bulk',       'MerchantController@bulkMigrateAggregatorToResellerPartner'         ],
-        'bulk_migrate_reseller_to_aggregator'      => ['put',      'partner/migrate_reseller_to_aggregator/bulk',       'PartnerController@bulkMigrateResellerToAggregatorPartner'],
-        'internal_migrate_reseller_to_aggregator'  => ['put',      'partner/migrate_reseller_to_aggregator/internal',   'PartnerController@migrateResellerToAggregatorPartner'              ],
-        'internal_migrate_aggregator_to_reseller'  => ['put',      'partner/migrate_aggregator_to_reseller/internal',   'MerchantController@migrateAggregatorToResellerPartner'             ],
-        'migrate_reseller_to_aggregator'           => ['put',      'partner/migrate_reseller_to_aggregator',            'PartnerController@migrateResellerToAggregatorPartner'    ],
-        'migrate_aggregator_to_reseller'           => ['put',      'partner/migrate_aggregator_to_reseller',            'MerchantController@migrateAggregatorToResellerPartner'             ],
-        'partner_remove_switch_merchant_access'    => ['put',      'partner/remove_submerchant_dashboard_access/bulk',  'MerchantController@removeSubmerchantDashboardAccessOfPartner'      ],
+        'bulk_migrate_aggregator_to_reseller'      => ['put',      'partner/migrate_aggregator_to_reseller/bulk',       'MerchantController@bulkMigrateAggregatorToResellerPartner'      ],
+        'bulk_migrate_reseller_to_aggregator'      => ['put',      'partner/migrate_reseller_to_aggregator/bulk',       'PartnerController@bulkMigrateResellerToAggregatorPartner'       ],
+        'internal_migrate_reseller_to_aggregator'  => ['put',      'partner/migrate_reseller_to_aggregator/internal',   'PartnerController@migrateResellerToAggregatorPartner'           ],
+        'internal_migrate_aggregator_to_reseller'  => ['put',      'partner/migrate_aggregator_to_reseller/internal',   'MerchantController@migrateAggregatorToResellerPartner'          ],
+        'migrate_reseller_to_aggregator'           => ['put',      'partner/migrate_reseller_to_aggregator',            'PartnerController@migrateResellerToAggregatorPartner'           ],
+        'migrate_aggregator_to_reseller'           => ['put',      'partner/migrate_aggregator_to_reseller',            'MerchantController@migrateAggregatorToResellerPartner'          ],
+        'migrate_reseller_to_pure_platform'        => ['put',      'partner/migrate_reseller_to_pure_platform',         'PartnerController@migrateResellerToPurePlatformPartner'         ],
+        'migrate_pure_platform_to_reseller'        => ['put',      'partner/migrate_pure_platform_to_reseller',         'PartnerController@migratePurePlatformToResellerPartner'         ],
+        'partner_remove_switch_merchant_access'    => ['put',      'partner/remove_submerchant_dashboard_access/bulk',  'MerchantController@removeSubmerchantDashboardAccessOfPartner'   ],
 
 
         // partner kyc access
@@ -7511,6 +7513,8 @@ class Route
 
         'migrate_reseller_to_aggregator',
         'migrate_aggregator_to_reseller',
+        'migrate_reseller_to_pure_platform',
+        'migrate_pure_platform_to_reseller',
 
         //  Uploading bank refund file
         'gateway_file_bank_refunds_upload',
@@ -8992,6 +8996,8 @@ class Route
         'bulk_migrate_reseller_to_aggregator'      => Permission::EDIT_PARTNERS,
         'migrate_reseller_to_aggregator'           => Permission::EDIT_PARTNERS,
         'migrate_aggregator_to_reseller'           => Permission::EDIT_PARTNERS,
+        'migrate_reseller_to_pure_platform'        => Permission::EDIT_PARTNERS,
+        'migrate_pure_platform_to_reseller'        => Permission::EDIT_PARTNERS,
         'partner_remove_switch_merchant_access'    => Permission::EDIT_PARTNERS,
         'backfill_merchant_applications'           => Permission::ADMIN_MANAGE_PARTNERS,
         'backfill_referred_application'            => Permission::ADMIN_MANAGE_PARTNERS,
@@ -13153,6 +13159,8 @@ class Route
             'bulk_migrate_reseller_to_aggregator',
             'migrate_reseller_to_aggregator',
             'migrate_aggregator_to_reseller',
+            'migrate_reseller_to_pure_platform',
+            'migrate_pure_platform_to_reseller',
             'patch_internal_instrument_request_by_id',
             'pause_internal_instrument_request_by_id',
             'patch_internal_instrument_requests',

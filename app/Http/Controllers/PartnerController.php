@@ -106,6 +106,22 @@ class PartnerController extends Controller
         return ApiResponse::json([$response]);
     }
 
+    public function migrateResellerToPurePlatformPartner()
+    {
+        $input = Request::all();
+        // TODO: Service implementation is to be taken up in different PR
+
+        return ApiResponse::json([]);
+    }
+
+    public function migratePurePlatformToResellerPartner()
+    {
+        $input = Request::all();
+        // TODO: Service implementation is to be taken up in different PR
+
+        return ApiResponse::json([]);
+    }
+
     public function getPartnerSalesPOC()
     {
         $input = Request::all();
