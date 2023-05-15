@@ -1,5 +1,5 @@
 const applyFilterForMultiSelect = (selected, option, labelKey) => {
-  return selected
+  return selected && Array.isArray(selected)
     ? selected.findIndex((m) =>
         typeof m === 'string' ? m === option : m[labelKey] === option[labelKey],
       ) < 0
@@ -30,7 +30,13 @@ const applyFilterForQuery = (option, labelKey, searchFor) => {
   );
 };
 
-export const getFilteredItems = (options, selected, labelKey, searchFor, shouldAllowMultiple) => {
+export const getFilteredItems = (
+  options = [],
+  selected,
+  labelKey,
+  searchFor,
+  shouldAllowMultiple,
+) => {
   return options.filter((option) => {
     return (
       (shouldAllowMultiple
