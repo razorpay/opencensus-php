@@ -2889,9 +2889,9 @@ class ActivationTest extends OAuthTestCase
 
         $this->startTest($testData);
 
-        // @todo: Lock the form once submitted. Change this to assertTrue then
         $merchantDetail = $this->getDbEntityById('merchant_detail', $merchantId, 'test');
-        $this->assertFalse($merchantDetail->isLocked());
+
+        $this->assertTrue($merchantDetail->isLocked());
 
         // under_review to rejected
         $this->changeActivationStatus(

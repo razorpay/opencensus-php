@@ -3243,6 +3243,24 @@ class Core extends Base\Core
             'Activation Status' => $input[Entity::ACTIVATION_STATUS]
         ]);
 
+        if ($input[Entity::ACTIVATION_STATUS] === Status::UNDER_REVIEW)
+        {
+            // Locking the activation form when the merchant is moved to under review state
+            $merchantDetails->setLocked(true);
+
+            $this->repo->saveOrFail($merchantDetails);
+
+            // Merchants should not be allowed to go to under review state when they are in rejected state
+            // by any other auth except the admin auth from admin dashboard.
+
+            if (($merchantDetails->getActivationStatus() === Status::REJECTED) and
+                (($this->app['basicauth']->isAdminAuth()) === false))
+            {
+                throw new BadRequestValidationFailureException(
+                    'Rejected merchants are not allowed to submit activation form');
+            }
+        }
+
         if ($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED)
         {
             // to check website validations for the merchant while fully activating the merchant

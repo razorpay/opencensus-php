@@ -1969,7 +1969,7 @@ class MerchantDetailTest extends OAuthTestCase
 
         $responseContent['clarification_mode'] = 'email';
 
-        $responseContent['locked']             = false;
+        $responseContent['locked']             = true;
     }
 
     protected function changeActivationStatusFromNeedsClarificationToUnderReview(& $requestContent, & $responseContent)

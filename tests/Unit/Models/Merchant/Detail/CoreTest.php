@@ -2669,6 +2669,77 @@ class CoreTest extends TestCase
         $this->assertEquals(Status::UNDER_REVIEW, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
+    // Below testcase is to check merchant should not go in under review
+    // state if it is rejected from merchant auth
+    public function testUpdateActivationStatusForRejectedToUnderReviewMerchants()
+    {
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['isAutoKycDone'])
+                               ->getMock();
+
+        $merchantDetails      = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'blacklist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'rejected',
+            'submitted'                 => true,
+            'business_website'          => null
+        ]);
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::UNDER_REVIEW,
+        ];
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->app['basicauth']->setMerchant($merchantDetails->merchant);
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('Rejected merchants are not allowed to submit activation form');
+
+        $detailCoreMock->updateActivationStatus($merchantDetails->merchant, $activationStatusData, $merchantDetails->merchant);
+    }
+
+    public function testUpdateActivationStatusToUnderReviewMerchantsActivationFormLocked()
+    {
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['isAutoKycDone'])
+                               ->getMock();
+
+        $merchantDetails      = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'needs_clarification',
+            'submitted'                 => true,
+            'business_website'          => null
+        ]);
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::UNDER_REVIEW,
+        ];
+
+        $this->ba->adminAuth();
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->assertEquals(false, $merchantDetails->islocked());
+
+        $detailCoreMock->updateActivationStatus($merchantDetails->merchant, $activationStatusData, $merchantDetails->merchant);
+
+        $merchantDetailData = $this->getDbEntityById('merchant_detail', $merchantDetails->getMerchantId())->toArray();
+
+        $this->assertEquals(true, $merchantDetailData['locked']);
+
+    }
+
     // Below test case is to check that the merchant(registered) should not go from nc to amp
     // if he has been in Nc already
 
