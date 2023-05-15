@@ -4,6 +4,7 @@ namespace RZP\Services\Dcs\Features;
 
 use Razorpay\Dcs\Kv\V1\ApiException;
 use Razorpay\Trace\Logger;
+use RZP\Constants\HyperTrace;
 use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Models\Base\Collection;
@@ -16,6 +17,7 @@ use RZP\Models\Feature\Entity;
 use Razorpay\Dcs\DataFormatter;
 use RZP\Services\Dcs\Features\Constants as DcsConstants;
 use Razorpay\Dcs\Constants as SDKConstants;
+use RZP\Trace\Tracer;
 
 class Service extends Base
 {
@@ -167,8 +169,7 @@ class Service extends Base
 
     protected function getMode()
     {
-        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
-        return $mode;
+        return $this->app['rzp.mode'] ?? Mode::LIVE;
     }
 
     /**
@@ -188,51 +189,45 @@ class Service extends Base
         $actualDcsFeatureName = Utility::extractActualDcsName($featureName);
         $key = DcsConstants::$featureToDCSKeyMapping[$featureName];
         $data = DataFormatter::toKeyMapWithOutId($key);
-        $res = null;
+        $response = Tracer::inspan(['name' => HyperTrace::DCS_FETCH_FEATURE],
+            function() use ($entityId, $actualDcsFeatureName,$apiFeatureName, $data, $mode) {
+                $res = null;
 
-        $this->trace->info(TraceCode::DCS_FETCH_REQUEST_RECEIVED, [
-            'feature_name' => $actualDcsFeatureName,
-            'request_data' => $data,
-            'id' =>  $entityId,
-            'key' => $key,
-            'mode' => $mode,
-        ]);
+                $response = $this->client($mode)->fetchMultiple($data, [$entityId], [$actualDcsFeatureName]);
+                if ($response === null) {
+                    return $res;
+                }
 
-        $response = $this->client($mode)->fetchMultiple($data, [$entityId], [$actualDcsFeatureName]);
-        if ($response === null) {
-            return $res;
-        }
+                $kvs = $response->getKvs() == null ? [] : $response->getKvs();
+                foreach ($kvs as $kv) {
+                    $key = $kv->getKey();
+                    $features = DataFormatter::unMarshal($kv->getValue(), DataFormatter::convertDCSKeyToClassName($key));
 
-        $kvs =  $response->getKvs() == null ? []: $response->getKvs();
-        foreach ($kvs as $kv)
-        {
-            $key = $kv->getKey();
-            $features = DataFormatter::unMarshal($kv->getValue(), DataFormatter::convertDCSKeyToClassName($key));
+                    $data = [
+                        Entity::NAME => $apiFeatureName,
+                        Entity::ENTITY_TYPE => Type::getAPIEntityTypeFromDCSType($key->getEntity()),
+                        Entity::ENTITY_ID => $entityId,
+                    ];
 
-            $data = [
-                Entity::NAME => $apiFeatureName,
-                Entity::ENTITY_TYPE => Type::getAPIEntityTypeFromDCSType($key->getEntity()),
-                Entity::ENTITY_ID => $entityId,
-            ];
+                    if ($features[$actualDcsFeatureName] === true) {
+                        $entity = (new Entity)->build($data);
+                        $entity->setEntityType(Type::getAPIEntityTypeFromDCSType($key->getEntity()));
+                        $entity->setEntityId($entityId);
+                        $res = $entity;
+                        break;
+                    }
+                }
 
-           if ($features[$actualDcsFeatureName] === true){
-               $entity = (new Entity)->build($data);
-               $entity->setEntityType(Type::getAPIEntityTypeFromDCSType($key->getEntity()));
-               $entity->setEntityId($entityId);
-               $res = $entity;
-               break;
-           }
-        }
+                return $res;
+            });
 
-        $this->trace->info(TraceCode::DCS_FETCH_RESPONSE_RECEIVED, [
-            'feature_name' => $actualDcsFeatureName,
-            'response_data' => $res,
-            'id' =>  $entityId,
-            'key' => $key,
-            'mode' => $mode,
-        ]);
+        Tracer::addAttribute('dcs_feature_name' , $actualDcsFeatureName);
+        Tracer::addAttribute('api_feature_name' , $featureName);
+        Tracer::addAttribute('mode' , $mode);
+        Tracer::addAttribute('entity_id' , $entityId);
+        Tracer::addAttribute('function', __FUNCTION__);
 
-        return $res;
+        return $response;
     }
 
     /**
@@ -251,60 +246,50 @@ class Service extends Base
     public function fetchByEntityIdAndFeatureNames(string $entityId, array $featureNames, $mode = Mode::TEST,
                                                    $aggregate = false, $entityType = "")
     {
-        $data = [] ;
-        $res = [];
-        foreach ($featureNames as $dcsFeatureName)
-        {
-            $key = DcsConstants::$featureToDCSKeyMapping[$dcsFeatureName];
-            $data[$key][] = Utility::extractActualDcsName($dcsFeatureName);
-        }
-
-        $this->trace->info(TraceCode::DCS_FETCH_REQUEST_RECEIVED, [
-            'feature_names' => $featureNames,
-            'id' =>  $entityId,
-            'data' => $data,
-            'mode' => $mode,
-        ]);
-
-        $response = $this->client($mode)->fetchMultipleKeysWithID($data, $entityId, $aggregate, $entityType);
-        if ($response === null) {
-            return $res;
-        }
-        $kvs =  $response->getKvs() == null ? []: $response->getKvs();
-
-        foreach ($kvs as $kv)
-        {
-            $kvkey = $kv->getKey();
-            $keyFeatures = DataFormatter::unMarshal($kv->getValue(), DataFormatter::convertDCSKeyToClassName($kvkey));
-            $dcsKey = DataFormatter::convertDCSKeyToClassName($kvkey);
-            foreach ($data[DataFormatter::convertDCSKeyToStringWithOutEntityId($kvkey)] as $featureName)
-            {
-                if ($keyFeatures[$featureName] === true)
-                {
-                    $entity_data = [
-                        Entity::NAME => DcsConstants::apiFeatureNameFromDcsName($featureName, $dcsKey),
-                        Entity::ENTITY_TYPE => Type::getAPIEntityTypeFromDCSType($kvkey->getEntity()),
-                        Entity::ENTITY_ID => $entityId,
-                        ];
-
-                    $entity = (new Entity)->build($entity_data);
-                    $entity->generateAndSetUniqueId();
-                    $entity->setEntityType(Type::getAPIEntityTypeFromDCSType($kvkey->getEntity()));
-                    $entity->setEntityId($entityId);
-                    $res[] = $entity;
+        $response = Tracer::inspan(['name' => HyperTrace::DCS_FETCH_FEATURES_AGGREGATE],
+            function() use ($entityId, $featureNames, $aggregate, $entityType, $mode) {
+                $data = [] ;
+                $res = [];
+                foreach ($featureNames as $dcsFeatureName) {
+                    $key = DcsConstants::$featureToDCSKeyMapping[$dcsFeatureName];
+                    $data[$key][] = Utility::extractActualDcsName($dcsFeatureName);
                 }
-            }
-        }
 
-        $this->trace->info(TraceCode::DCS_FETCH_RESPONSE_RECEIVED, [
-            'feature_names' => $featureNames,
-            'response_data' => $res,
-            'id' =>  $entityId,
-            'key' => $key,
-            'mode' => $mode,
-        ]);
+                $response = $this->client($mode)->fetchMultipleKeysWithID($data, $entityId, $aggregate, $entityType);
+                if ($response === null) {
+                    return $res;
+                }
+                $kvs = $response->getKvs() == null ? [] : $response->getKvs();
 
-        return $res;
+                foreach ($kvs as $kv) {
+                    $kvkey = $kv->getKey();
+                    $keyFeatures = DataFormatter::unMarshal($kv->getValue(), DataFormatter::convertDCSKeyToClassName($kvkey));
+                    $dcsKey = DataFormatter::convertDCSKeyToClassName($kvkey);
+                    foreach ($data[DataFormatter::convertDCSKeyToStringWithOutEntityId($kvkey)] as $featureName) {
+                        if ($keyFeatures[$featureName] === true) {
+                            $entity_data = [
+                                Entity::NAME => DcsConstants::apiFeatureNameFromDcsName($featureName, $dcsKey),
+                                Entity::ENTITY_TYPE => Type::getAPIEntityTypeFromDCSType($kvkey->getEntity()),
+                                Entity::ENTITY_ID => $entityId,
+                            ];
+
+                            $entity = (new Entity)->build($entity_data);
+                            $entity->generateAndSetUniqueId();
+                            $entity->setEntityType(Type::getAPIEntityTypeFromDCSType($kvkey->getEntity()));
+                            $entity->setEntityId($entityId);
+                            $res[] = $entity;
+                        }
+                    }
+                }
+
+                return $res;
+            });
+        Tracer::addAttribute('feature_names' , $featureNames);
+        Tracer::addAttribute('mode' , $mode);
+        Tracer::addAttribute('entity_id' , $entityId);
+        Tracer::addAttribute('function', __FUNCTION__);
+
+        return $response;
     }
 
     /**
@@ -314,7 +299,7 @@ class Service extends Base
      * @param string $apiFeatureName
      * @param string $mode
      * @return array
-     * @throws ApiException
+     * @throws ApiException|Exception\ServerErrorException
      */
     public function fetchByEntityIdsAndName(array $entityIds, string $apiFeatureName, $mode = Mode::TEST)
     {
@@ -322,49 +307,42 @@ class Service extends Base
         $actualDcsFeatureName = Utility::extractActualDcsName($featureName);
         $key = DcsConstants::$featureToDCSKeyMapping[$featureName];
         $data = DataFormatter::toKeyMapWithOutId($key);
-        $res = [];
 
-        $this->trace->info(TraceCode::DCS_FETCH_REQUEST_RECEIVED, [
-            'feature_name' => $actualDcsFeatureName,
-            'request_data' => $data,
-            'ids' =>  $entityIds,
-            'key' => $key,
-            'mode' => $mode,
-        ]);
+        $response = Tracer::inspan(['name' => HyperTrace::DCS_FETCH_FEATURES_AGGREGATE],
+            function() use ($data, $entityIds, $apiFeatureName, $actualDcsFeatureName, $mode) {
+                $res = [];
+                $response = $this->client($mode)->fetchMultiple($data, $entityIds, [$actualDcsFeatureName]);
+                if ($response === null) {
+                    return $res;
+                }
+                $kvs = $response->getKvs() == null ? [] : $response->getKvs();
+                foreach ($kvs as $kv) {
+                    $key = $kv->getKey();
 
-        $response = $this->client($mode)->fetchMultiple($data, $entityIds, [$actualDcsFeatureName]);
-        if ($response === null) {
-            return $res;
-        }
-        $kvs =  $response->getKvs() == null ? []: $response->getKvs();
-        foreach ($kvs as $kv)
-        {
-            $key = $kv->getKey();
+                    $features = DataFormatter::unMarshal($kv->getValue(), DataFormatter::convertDCSKeyToClassName($key));
 
-            $features = DataFormatter::unMarshal($kv->getValue(), DataFormatter::convertDCSKeyToClassName($key));
+                    $data = [
+                        Entity::NAME => $apiFeatureName,
+                        Entity::ENTITY_TYPE => Type::getAPIEntityTypeFromDCSType($key->getEntity()),
+                        Entity::ENTITY_ID => $key->getEntityId(),
+                    ];
 
-            $data = [
-                Entity::NAME => $apiFeatureName,
-                Entity::ENTITY_TYPE => Type::getAPIEntityTypeFromDCSType($key->getEntity()),
-                Entity::ENTITY_ID => $key->getEntityId(),
-            ];
+                    if ($features[$actualDcsFeatureName] === true) {
+                        $entity = (new Entity)->build($data);
+                        $entity->setEntityType(Type::getAPIEntityTypeFromDCSType($key->getEntity()));
+                        $entity->setEntityId($key->getEntityId());
+                        $res[] = $entity;
+                    }
+                }
 
-            if ($features[$actualDcsFeatureName] === true){
-                $entity = (new Entity)->build($data);
-                $entity->setEntityType(Type::getAPIEntityTypeFromDCSType($key->getEntity()));
-                $entity->setEntityId($key->getEntityId());
-                $res[] = $entity;
-            }
-        }
-
-        $this->trace->info(TraceCode::DCS_FETCH_RESPONSE_RECEIVED, [
-            'feature_name' => $actualDcsFeatureName,
-            'request_data' => $data,
-            'response' => $res,
-            'mode' => $mode,
-        ]);
-
-        return $res;
+                return $res;
+            });
+        Tracer::addAttribute('request_data' , $data);
+        Tracer::addAttribute('mode' , $mode);
+        Tracer::addAttribute('dcs_feature_name' , $actualDcsFeatureName);
+        Tracer::addAttribute('api_feature_name' , $featureName);
+        Tracer::addAttribute('function', __FUNCTION__);
+        return $response;
     }
 
     /**
@@ -402,48 +380,46 @@ class Service extends Base
     private function handleAggregateQueries($data, $mode)
     {
         $key = $this->getAggregateKey($data);
-        $this->trace->info(TraceCode::DCS_FETCH_REQUEST_RECEIVED, [
-            'request_data' => $data,
-            'key' => $key,
-            'mode' => $mode,
-        ]);
 
-        $response = $this->client($mode)->aggregateFetch($data);
+        $response = Tracer::inspan(['name' => HyperTrace::DCS_FETCH_FEATURES_AGGREGATE],
+            function() use ($key, $data, $mode) {
 
-        $res = [];
-        if ($response === null) {
-            return $res;
-        }
-        $kvs =  $response->getKvs() == null ? []: $response->getKvs();
-        foreach ($kvs as $index => $kv)
-        {
-            $data = DataFormatter::unMarshal($kv->getValue(), DataFormatter::convertDCSKeyToClassName($kv->getKey()));
+                $response = $this->client($mode)->aggregateFetch($data);
 
-            $dcsKey = $kv->getKey();
-            foreach ($data as $featureName => $enabled){
-                if ($enabled === true)
-                {
-                    $buildData = [
-                        Entity::NAME => DcsConstants::apiFeatureNameFromDcsName($featureName, $dcsKey),
-                        Entity::ENTITY_TYPE => Type::getAPIEntityTypeFromDCSType($kv->getKey()->getEntity()),
-                        Entity::ENTITY_ID => $kv->getKey()->getEntityId(),
-                    ];
-
-                    $entity = (new Entity)->build($buildData);
-                    $entity->setEntityType(Type::getAPIEntityTypeFromDCSType($kv->getKey()->getEntity()));
-                    $entity->setEntityId($kv->getKey()->getEntityId());
-                    $res[] = $entity;
+                $res = [];
+                if ($response === null) {
+                    return $res;
                 }
-            }
-        }
+                $kvs = $response->getKvs() == null ? [] : $response->getKvs();
+                foreach ($kvs as $index => $kv) {
+                    $data = DataFormatter::unMarshal($kv->getValue(), DataFormatter::convertDCSKeyToClassName($kv->getKey()));
 
-        $this->trace->info(TraceCode::DCS_FETCH_RESPONSE_RECEIVED, [
-            'response' => $res,
-            'key' => $key,
-            'mode' => $mode,
-            ]);
+                    $dcsKey = $kv->getKey();
+                    foreach ($data as $featureName => $enabled) {
+                        if ($enabled === true) {
+                            $buildData = [
+                                Entity::NAME => DcsConstants::apiFeatureNameFromDcsName($featureName, $dcsKey),
+                                Entity::ENTITY_TYPE => Type::getAPIEntityTypeFromDCSType($kv->getKey()->getEntity()),
+                                Entity::ENTITY_ID => $kv->getKey()->getEntityId(),
+                            ];
 
-        return $res;
+                            $entity = (new Entity)->build($buildData);
+                            $entity->setEntityType(Type::getAPIEntityTypeFromDCSType($kv->getKey()->getEntity()));
+                            $entity->setEntityId($kv->getKey()->getEntityId());
+                            $res[] = $entity;
+                        }
+                    }
+                }
+
+                return $res;
+            });
+
+        Tracer::addAttribute('key' , $key);
+        Tracer::addAttribute('mode' , $mode);
+        Tracer::addAttribute('function' , __FUNCTION__);
+        Tracer::addAttribute('response_count' , sizeof($response));
+
+        return $response;
     }
 
     public function getAggregateKey(array $data)

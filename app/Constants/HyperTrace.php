@@ -316,4 +316,9 @@ class HyperTrace
     const REQUEST_LOG_HANDLER_UNEXPECTED_EXCEPTION                                              = 'request_log_handler_unexpected_exception';
     const BAS_ENTRY_FOR_A_FAILED_PAYOUT                                                         = 'bas_entry_for_a_failed_payout';
     const TRANSACTION_FOUND_DURING_PAYOUT_PROCESSED                                             = 'transaction_found_during_payout_processed';
+
+    //DCS
+    const DCS_FETCH_FEATURE                                                                     = 'dcs.fetch.feature';
+    const DCS_EDIT_FEATURE                                                                      = 'dcs.edit.feature';
+    const DCS_FETCH_FEATURES_AGGREGATE                                                          = 'dcs.fetch.feature.aggregate';
 }
