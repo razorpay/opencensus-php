@@ -7,8 +7,18 @@ import type {
   StateReturnType,
   CountryReturnType,
   BuyerAddressType,
+  BuyerAddressModalProps,
+  UseBuyerAddressStateTypes,
 } from 'merchant/views/Transactions/B2bPayments/components/BuyerAddressModal/types';
 ///- types
+
+// apis
+import {
+  getStatesWithCountryCode,
+  getBuyerAddressForPayment,
+  saveBuyerAddressForPayment,
+} from 'merchant/views/Transactions/B2bPayments/components/BuyerAddressModal/api';
+///- apis
 
 // constants
 import { COUNTRY_CODES } from 'common/components/CountryCodeInput/constant';
@@ -18,29 +28,19 @@ import {
 } from 'merchant/views/Transactions/B2bPayments/components/BuyerAddressModal/constants';
 ///- constants
 
-export const useBuyerAddressState = (_args: {
-  paymentId: string;
-  onClose: () => void;
-  showNotification: (arg: { type: string; message: string }) => void;
-}): {
-  isStatesLoading: boolean;
-  isAddressLoading: boolean;
-  isAddressSaving: boolean;
-  states: StateReturnType;
-  countries: CountryReturnType;
-  buyerAddress: BuyerAddressType;
-  isAddressAlreadyExists: boolean;
-  onCountrySelect: (code: string) => void;
-  onSaveAddress: (values: { [x: string]: string }) => void;
-} => {
+export const useBuyerAddressState = ({
+  onClose,
+  paymentId,
+  showNotification,
+}: BuyerAddressModalProps): UseBuyerAddressStateTypes => {
   const countries = useMemo<CountryReturnType>(
     () => COUNTRY_CODES.filter((country) => ALLOWED_COUNTRIES.includes(country.code)),
     [],
   );
-  const [states] = useState<StateReturnType>([]);
+  const [states, setStates] = useState<StateReturnType>([]);
   const [isStatesLoading, setStatesLoading] = useState(false);
   const [isAddressLoading, setAddressLoading] = useState(false);
-  const [buyerAddress] = useState<BuyerAddressType>(BUYER_ADDRESS_INITIAL_STATE);
+  const [buyerAddress, setBuyerAddress] = useState<BuyerAddressType>(BUYER_ADDRESS_INITIAL_STATE);
   const [isAddressSaving, setAddressSaving] = useState(false);
   const isAddressAlreadyExists = useMemo(() => {
     if (buyerAddress) {
@@ -52,16 +52,48 @@ export const useBuyerAddressState = (_args: {
   const onCountrySelect = (countryCode: string) => {
     if (countryCode) {
       setStatesLoading(true);
+      getStatesWithCountryCode(countryCode)
+        .then(setStates)
+        .finally(() => setStatesLoading(false));
     }
   };
 
   const onLoadAddress = useCallback(() => {
     setAddressLoading(true);
-  }, []);
+    getBuyerAddressForPayment(paymentId)
+      .then((address) => {
+        setBuyerAddress(address || BUYER_ADDRESS_INITIAL_STATE);
+      })
+      .finally(() => {
+        setAddressLoading(false);
+      });
+  }, [paymentId]);
 
-  const onSaveAddress = useCallback((_values: { [x: string]: string }) => {
-    setAddressSaving(true);
-  }, []);
+  const onSaveAddress = useCallback(
+    (values: { [x: string]: string }) => {
+      setAddressSaving(true);
+      saveBuyerAddressForPayment(paymentId, values)
+        .then((res) => {
+          if (res.success) {
+            showNotification({
+              type: 'success',
+              message: 'Buyer address updated successfully',
+            });
+          }
+        })
+        .catch(({ errors }) => {
+          showNotification({
+            type: 'error',
+            message: errors,
+          });
+        })
+        .finally(() => {
+          setAddressSaving(false);
+          onClose();
+        });
+    },
+    [onClose, paymentId, showNotification],
+  );
 
   useEffect(() => {
     onLoadAddress();
