@@ -700,9 +700,11 @@ class Service extends Base\Service
         // NOTE: promotions is not set if the 1ccResetAPI call fails, until CX team fixes it
         // keep the null check here
         $response = [
-            'total_amount'     => $orderArray['amount'],
+            'total_amount'     => $shopifyOrder['order']['total_price']*100,
+            'total_amount_rzp' => $orderArray['amount'],
             'promotions'       => $orderArray['promotions'] ?? [],
             'shipping_fee'     => $orderArray['shipping_fee'],
+            'cod_fee'          => $payment['method'] === 'cod' ? $orderArray['cod_fee'] : 0,
             'order_id'         => $shopifyOrder['order']['name'],
             'id'               => $shopifyOrder['order']['id'],
             'total_tax'        => $shopifyOrder['order']['total_tax'],
