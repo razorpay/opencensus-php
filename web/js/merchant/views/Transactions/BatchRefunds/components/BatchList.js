@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import DataTable from 'common/ui/Table/DataTable';
+// eslint-disable-next-line no-restricted-imports
 import HeaderAction from 'common/ui/HeaderAction';
 import { batchId, totalCount, status, createdAt } from 'common/ui/item/pair';
 import {

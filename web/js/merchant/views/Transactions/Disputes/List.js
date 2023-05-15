@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import DisputeListFilter from 'merchant/views/Transactions/Disputes/components/DisputeListFilter';
 import { fetchDisputes as fetchAll } from 'merchant/reducers/collection';
 import DataTable from 'common/ui/Table/DataTable';
+// eslint-disable-next-line no-restricted-imports
 import HeaderAction from 'common/ui/HeaderAction';
 import { titleCase, daysFromToday, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { getTime } from 'common/ui/item';

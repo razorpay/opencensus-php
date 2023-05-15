@@ -4,6 +4,7 @@ import { bindActionCreators } from 'redux';
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import Alert from 'common/ui/Forms/Alert';
+// eslint-disable-next-line no-restricted-imports
 import HeaderAction from 'common/ui/HeaderAction';
 import ShowWhen from 'merchant/components/ShowWhen';
 import SuccessRateFilter from 'merchant/views/Transactions/SuccessRate/components/SuccessRateFilter';

@@ -43,7 +43,7 @@ module.exports = {
       { allowSameFolder: true, rootDir: 'web/js' },
     ],
     'no-restricted-imports': [
-      'warn',
+      'error',
       {
         patterns: [
           // Add your import pattern here

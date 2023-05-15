@@ -16,6 +16,7 @@ import {
 // components
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import Button from 'common/new-ui/Button';
+// eslint-disable-next-line no-restricted-imports
 import HeaderAction from 'common/ui/HeaderAction';
 import ListContainer from 'merchant/containers/ListContainer';
 import PaymentTable from 'merchant/views/Transactions/UploadInvoice/components/PaymentTable';

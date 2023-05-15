@@ -4,6 +4,7 @@ import {
   getCommonAnalyticsProperties,
   getURLQueryParams,
 } from 'common/utils/rzp-utils';
+// eslint-disable-next-line no-restricted-imports
 import HeaderAction from 'common/ui/HeaderAction';
 import DocsLink from 'merchant/components/DocsLink';
 import EmptyList from 'merchant/components/EmptyList';

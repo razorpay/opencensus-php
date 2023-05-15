@@ -15,6 +15,7 @@ import {
 } from 'merchant/views/Transactions/B2bPayments/analytics';
 
 // components
+// eslint-disable-next-line no-restricted-imports
 import HeaderAction from 'common/ui/HeaderAction';
 import ListContainer from 'merchant/containers/ListContainer';
 import ListTable from 'merchant/views/Transactions/B2bPayments/components/ListTable';
