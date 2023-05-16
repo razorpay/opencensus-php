@@ -20,6 +20,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Jobs\CapturePartnershipConsents;
 use RZP\Jobs\SubmerchantFirstTransactionEvent ;
 use RZP\Services\Segment\EventCode as SegmentEvent;
+use RZP\Jobs\MigrateResellerToPurePlatformPartnerJob;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 
 class Service extends Base\Service
@@ -225,6 +226,20 @@ class Service extends Base\Service
         return $this->core()->bulkMigrateResellerToAggregatorPartner($input);
     }
 
+    public function migrateResellerToPurePlatformPartner(array $input)
+    {
+        (new Validator())->validateInput('resellerToPurePlatformMigration', $input);
+
+        if ($this->isResellerToPurePlatformSwitchExpEnabled($input['merchant_id']) === false)
+        {
+            return ['success' => true, 'errorMessage' => "Partner is not allowed for partner type switch"];
+        }
+
+        MigrateResellerToPurePlatformPartnerJob::dispatch($input['merchant_id']);
+
+        return ['triggered' => 'true', 'input' => $input];
+    }
+
     /**
      * migrates a single reseller partner to aggregator partner
      *
@@ -254,6 +269,21 @@ class Service extends Base\Service
         }
 
         return ['success' => $result, 'errorMessage' => $result !== true ? "Invalid merchant for migration" :null];
+    }
+
+    /**
+     * Checks whether partner is allowed to switch partner type.
+     *
+     * @return bool
+     */
+    private function isResellerToPurePlatformSwitchExpEnabled(string $merchantId): bool
+    {
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.reseller_to_pure_platform_switch_exp_id'),
+        ];
+
+        return $this->merchantCore->isSplitzExperimentEnable($properties, 'enable');
     }
 
     /**

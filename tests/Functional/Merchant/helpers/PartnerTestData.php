@@ -2535,6 +2535,7 @@ return [
             ]
         ]
     ],
+
     'testAggregatorToResellerBulkUpdate' => [
         'request' => [
             'content' => [
@@ -2547,6 +2548,19 @@ return [
         ],
         'response' => [
             'content' => []
+        ]
+    ],
+
+    'testMigrateResellerToPurePlatform' => [
+        'request' => [
+            'content' => [
+                'merchant_id'   => 'DefaultPartner',
+            ],
+            'url'     => '/partner/migrate_reseller_to_pure_platform',
+            'method'  => 'PUT',
+        ],
+        'response' => [
+            'content' => [ 'triggered' => 'true', 'input' => [ 'merchant_id'   => 'DefaultPartner' ] ]
         ]
     ],
 

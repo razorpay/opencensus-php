@@ -20,6 +20,10 @@ class Validator extends Base\Validator
         'new_auth_create' => 'required|boolean',
     ];
 
+    protected static $resellerToPurePlatformMigrationRules = [
+        'merchant_id'     => 'required|alpha_num|size:14',
+    ];
+
     protected static $regenerateReferralLinkRules = [
         'partner_ids' => 'required|array'
     ];

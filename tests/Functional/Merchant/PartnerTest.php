@@ -5,17 +5,23 @@ namespace RZP\Tests\Functional\Merchant\Partner;
 use Config;
 use DB;
 use Mail;
+use Event;
+use Queue;
 use Carbon\Carbon;
 use RZP\Constants\Country;
 use RZP\Constants\Mode;
 use App\User\Constants;
 use RZP\Constants\Timezone;
 use RZP\Exception\BadRequestException;
+use Neves\Events\TransactionalClosureEvent;
+use RZP\Jobs\MigrateResellerToPurePlatformPartnerJob;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Batch;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Error\PublicErrorCode;
+use RZP\Models\Partner\NotifyPartnerAboutPartnerTypeSwitch;
+use RZP\Mail\Merchant\ResellerToPurePlatformPartnerSwitchEmail;
 use RZP\Models\Merchant\Consent\Details\Repository as MerchantConsentDetailsRepo;
 use RZP\Models\Pricing\DefaultPlan;
 use RZP\Models\User\BankingRole;
@@ -84,6 +90,12 @@ class PartnerTest extends OAuthTestCase
         $this->fixtures->merchant_detail->create(['merchant_id' => self::DEFAULT_SUBMERCHANT_ID]);
 
         $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
+
+        $this->storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $this->storkMock);
+
+        $this->merchantTestUtil = new MerchantTest();
 
         $this->ba->privateAuth();
     }
@@ -4875,6 +4887,122 @@ class PartnerTest extends OAuthTestCase
         $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_MERCHANT_ID);
 
         $this->startTest();
+    }
+
+    public function testMigrateResellerToPurePlatform(): void
+    {
+        Mail::fake();
+        Event::fake();
+        $this->mockAllSplitzTreatment();
+
+        list($partnerId, $app, $subMerchant) = $this->createResellerPartnerAndSubmerchant();
+
+        $this->authServiceMock
+            ->expects($this->exactly(1))
+            ->method('sendRequest')
+            ->with( 'applications/'.$app->getId(), 'PUT', ['merchant_id' => $partnerId] )
+            ->willReturn([]);
+
+        $this->startTest();
+
+        Event::assertDispatched(TransactionalClosureEvent::class);
+
+        $partner = $this->getDbEntity('merchant', ['id' => $partnerId]);
+        $subMerchant = $this->getDbEntity('merchant', ['id' => $subMerchant->getId()]);
+
+        $this->assertEquals('pure_platform', $partner->getPartnerType());
+
+        $this->assertEquals([], $this->getDbEntities('merchant_application')->toArray());
+        $this->assertEquals([], $this->getDbEntities('partner_config')->toArray());
+        $this->assertEquals([], $this->getDbEntities('merchant_access_map')->toArray());
+        $this->assertEquals([], $this->getDbEntities('partner_kyc_access_state')->toArray());
+        $this->assertEquals([], $subMerchant->tagNames());
+    }
+
+    public function testMigrateResellerToPurePlatformJobSent(): void
+    {
+        Queue::fake();
+        $this->mockAllSplitzTreatment();
+
+        $defaultPartnerId = 'DefaultPartner';
+
+        $this->createResellerPartnerAndSubmerchant();
+
+        $testData = $this->testData['testMigrateResellerToPurePlatform'];
+        $this->startTest($testData);
+
+        Queue::assertPushed(
+            MigrateResellerToPurePlatformPartnerJob::class,
+            function ($job) use($defaultPartnerId) {
+                $this->assertEquals($defaultPartnerId, $job->getMerchantId());
+
+                return true;
+            }
+        );
+    }
+
+    public function testNotifyPartnerAboutPartnerTypeSwitch()
+    {
+        Mail::fake();
+        $this->mockAllSplitzTreatment();
+        $defaultPartnerId = 'DefaultPartner';
+
+        $this->testMigrateResellerToPurePlatform();
+
+        $partner = $this->getDbEntity('merchant', ['id' => $defaultPartnerId]);
+        $notifyUsecase = new NotifyPartnerAboutPartnerTypeSwitch($partner);
+
+        $this->merchantTestUtil->expectStorkSmsRequest(
+            $this->storkMock,
+            'sms.partnerships.partner_type_reseller_to_pure_platform',
+            $partner->merchantDetail->getContactMobile(),
+            [ 'partnerName'   => $partner->getName() ]
+        );
+
+        $notifyUsecase->notify();
+
+        Mail::assertSent(ResellerToPurePlatformPartnerSwitchEmail::class, function ($mail) use($partner) {
+            $subject = 'Partner account type updated to Platform Partner type';
+            $from = [
+                0 => [
+                    'name'    => 'Razorpay Partner Program',
+                    'address' => 'partnercommunication@razorpay.com',
+                ]
+            ];
+            $to = [
+                0 => [
+                    'address' => $partner->getEmail(),
+                    'name'    => $partner->getName(),
+                ]
+            ];
+
+            $this->assertSame($subject, $mail->subject);
+            $this->assertArraySelectiveEquals($from, $mail->from);
+            $this->assertArraySelectiveEquals($to, $mail->to);
+            $this->assertSame('emails.mjml.merchant.partner.notify.reseller_to_pure_platform_switch', $mail->view);
+            $this->assertEquals('IN', $mail->viewData['country_code']);
+
+            return true;
+
+        });
+    }
+
+    private function createResellerPartnerAndSubmerchant(string $submerchantId = '101submerchant', string $appId = 'reseller84ifke')
+    {
+        list($partner, $app) = $this->createPartnerAndApplication(['partner_type' => 'reseller'], ['id' => $appId]);
+
+        $partnerId = $partner->getId();
+        $this->fixtures->merchant->edit($partnerId, ['name' => 'et', 'website' => 'http://www.monahan.com/harum-fuga-quae-culpa-quod']);
+        $this->createConfigForPartnerApp($app->getId());
+
+        list($subMerchant, $accessMap) = $this->createSubMerchant($partner, $app, ['id' => $submerchantId], ['id' => 'J00dqRlTeStNzb']);
+        $this->createConfigForPartnerApp($app->getId(), $subMerchant->getId());
+        $this->createMerchantUser($subMerchant->getId());
+        $subMerchant->tag('ref-'.$partnerId);
+
+        $this->ba->adminAuth();
+
+        return [$partnerId, $app, $subMerchant];
     }
 
     private function mockSubmerchantFetchMultipleOptimisedExperiment(): void

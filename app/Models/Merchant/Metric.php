@@ -241,6 +241,9 @@ final class Metric
     const RESELLER_TO_AGGREGATOR_MIGRATION_SUCCESS = 'reseller_to_aggregator_migration_success';
     const RESELLER_TO_AGGREGATOR_MIGRATION_FAILURE = 'reseller_to_aggregator_migration_failure';
 
+    const RESELLER_TO_PURE_PLATFORM_MIGRATION_SUCCESS = 'reseller_to_pure_platform_migration_success';
+    const RESELLER_TO_PURE_PLATFORM_MIGRATION_FAILURE = 'reseller_to_pure_platform_migration_failure';
+
     const COMMISSION_INVOICE_FINANCE_AUTO_APPROVED = 'commission_invoice_finance_auto_approved';
     const COMMISSION_INVOICE_FINANCE_UNDER_REVIEW  = 'commission_invoice_finance_under_review';
     const COMMISSION_INVOICE_FINANCE_AUTO_APPROVAL_FAILURE_TOTAL  = 'commission_invoice_finance_auto_approval_failure_total';

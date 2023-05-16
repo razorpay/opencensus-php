@@ -35,6 +35,8 @@ class Constants
     const ADD_MULTIPLE_ACCOUNT          = 'add_multiple_accounts';
     const PHANTOM                       = 'phantom';
 
+    const RESELLER_TO_PURE_PLATFORM_PARTNER_SWITCH_EMAIL_TEMPLATE = 'emails.mjml.merchant.partner.notify.reseller_to_pure_platform_switch';
+
     /**
      * List of partner types that can get a settlement on behalf of a submerchant
      *

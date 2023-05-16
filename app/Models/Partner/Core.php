@@ -57,7 +57,7 @@ class Core extends Detail\Core
     /**
      * @var Merchant\Core
      */
-    private $merchantCore;
+    protected $merchantCore;
 
     /**
      * @var Merchant\MerchantApplications\Core
@@ -1036,18 +1036,12 @@ class Core extends Detail\Core
      */
     private function updateResellerToAggregator(string $merchantId, bool $newAuthCreate) : bool
     {
-        $merchant = $this->repo->merchant->find($merchantId);
-        if ($merchant === null || $merchant->isResellerPartner() === false) {
-            $this->trace->info(
-                TraceCode::RESELLER_TO_AGGREGATOR_UPDATE_INVALID_PARTNER,
-                ['merchant_id' => $merchantId]
-            );
-
-            $this->trace->count(
-                Metric::RESELLER_TO_AGGREGATOR_MIGRATION_FAILURE,
-                [ 'code' => TraceCode::RESELLER_TO_AGGREGATOR_UPDATE_INVALID_PARTNER ]
-            );
-
+        $merchant = $this->fetchResellerPartner(
+            $merchantId,
+            TraceCode::RESELLER_TO_AGGREGATOR_UPDATE_INVALID_PARTNER,
+            Metric::RESELLER_TO_AGGREGATOR_MIGRATION_FAILURE
+        );
+        if ($merchant === null) {
             return false;
         }
 
@@ -1076,6 +1070,20 @@ class Core extends Detail\Core
             );
         }
         return $result;
+    }
+
+    protected function fetchResellerPartner($merchantId, $traceCode, $metricCode): ?Merchant\Entity
+    {
+        $merchant = $this->repo->merchant->find($merchantId);
+        if ($merchant === null || $merchant->isResellerPartner() === false)
+        {
+            $this->trace->info($traceCode, ['merchant_id' => $merchantId]);
+            $this->trace->count($metricCode, [ 'code' => $traceCode ]);
+
+            return null;
+        }
+
+        return $merchant;
     }
 
     /**
