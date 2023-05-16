@@ -4,6 +4,7 @@ namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 
 use Carbon\Carbon;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Payment\Gateway;
 use RZP\Models\QrCode;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
@@ -373,6 +374,68 @@ class Entity extends QrCode\Entity
     public function getClosedAt()
     {
         return $this->getAttribute(self::CLOSED_AT);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isIciciQr()
+    {
+        $qrMetaData = $this->fetchQrStringMetaData();
+
+        if (str_contains($qrMetaData['pa'], 'icici') === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getQrVpa()
+    {
+        $qrMetaData = $this->fetchQrStringMetaData();
+        if (isset($qrMetaData['tr']) === false)
+        {
+            return null;
+        }
+
+        return $qrMetaData['tr'];
+    }
+
+    /**
+     * @return array|null
+     */
+    public function fetchQrStringMetaData()
+    {
+        $qrString = $this->getAttribute(self::QR_STRING);
+
+        if (isset($qrString) === false)
+        {
+            return null;
+        }
+        $parts = parse_url($qrString);
+        $query = [];
+        parse_str($parts['query'], $query);
+
+        return $query;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isGatewayGeneratedRefid()
+    {
+        $qrMetaData = $this->fetchQrStringMetaData();
+
+        if (str_contains($qrMetaData['tr'], $this->getAttribute(self::ID)) === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 
 }

@@ -2275,4 +2275,22 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->closeQrCode($response['id']);
     }
 
+    public function testSingleUseQrCodeWithCloseBy()
+    {
+        $this->enableRazorXTreatmentForQrDedicatedTerminal();
+
+        $closeBy = str_replace([':', '-', ' '], '', Carbon::now(Timezone::IST)->toDateTimeString());
+
+        $qrCode = $this->createQrCode(
+            ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
+             'close_by' => $closeBy ,'name' => 'Mitasha']
+        );
+
+        $this->assertEquals('single_use', $qrCode['usage']);
+        $this->assertEquals(1, $qrCode['fixed_amount']);
+        $this->assertEquals(100, $qrCode['payment_amount']);
+        $this->assertEquals('upi_qr' , $qrCode['type']);
+        $this->assertEquals('active', $qrCode['status']);
+    }
+
 }

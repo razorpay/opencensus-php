@@ -149,6 +149,8 @@ class Core extends QrCode\Core
 
         $qrCode->setCloseReason($closeReason);
 
+        $this->generator->closeQrCodeOnGateway($qrCode);
+
         $vpaId = $this->repo->vpa->findVpaByEntityIdAndEntityType($qrCode->getId(), $qrCode->getEntityName());
 
         $this->repo->transaction(function() use ($qrCode, $vpaId)
