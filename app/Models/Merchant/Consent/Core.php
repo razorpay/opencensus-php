@@ -131,6 +131,8 @@ class Core extends Base\Core
      */
     public function processRetryStoreLegalDocuments(array $merchantIdList)
     {
+        $mapConsentUrlToFileContent = [];
+
         foreach ($merchantIdList as $merchantId)
         {
             try
@@ -150,7 +152,7 @@ class Core extends Base\Core
 
                     $consentDetails[DEConstants::DOCUMENTS_DETAIL] = [$consents];
 
-                    $documents_detail = (new DetailService())->getDocumentsDetails($consentDetails);
+                    $documents_detail = (new DetailService())->getDocumentsDetails($consentDetails, $mapConsentUrlToFileContent);
 
                     $legalDocumentsInput = [
                         DEConstants::DOCUMENTS_DETAIL               => $documents_detail,

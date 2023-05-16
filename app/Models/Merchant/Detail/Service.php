@@ -3812,8 +3812,16 @@ class Service extends Base\Service
      * @param $documentDetailInput
      * @return string|string[]|null
      */
-    public function getFileContentInHtml($url)
+    public function getFileContentInHtml($url, array &$mapConsentUrlToFileContent = [])
     {
+        // if html content is fetched in the request for the same url will store in array and return
+        // rather than fetching it again
+
+        if (empty($mapConsentUrlToFileContent[$url]) === false)
+        {
+            return $mapConsentUrlToFileContent[$url];
+        }
+
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -3854,7 +3862,7 @@ class Service extends Base\Service
             $this->trace->info(
                 TraceCode::STORAGE_CONSENT_FETCH_DOCUMENT,
                 [
-                    'message' => 'Couldnot fetch correct body of the document'
+                    'message' => 'Could not fetch correct body of the document'
                 ]);
         }
 
@@ -3867,7 +3875,9 @@ class Service extends Base\Service
 
         curl_close($ch);
 
-        return $final_content_body;
+        $mapConsentUrlToFileContent[$url] = $final_content_body;
+
+        return $mapConsentUrlToFileContent[$url];
     }
 
     private function get_match($content)
@@ -3993,7 +4003,7 @@ class Service extends Base\Service
      *
      * @return array
      */
-    public function getDocumentsDetails($input): array
+    public function getDocumentsDetails($input, array &$mapConsentUrlToFileContent = []): array
     {
         $documentDetailsInput = $input[DEConstants::DOCUMENTS_DETAIL];
 
@@ -4006,16 +4016,16 @@ class Service extends Base\Service
             $document_detail = [
                 "type"         => $consentType,
                 "content_type" => "html",
-                "content"      => $this->getDocumentDetailsContent($documentDetailInput)
+                "content"      => $this->getDocumentDetailsContent($documentDetailInput, $mapConsentUrlToFileContent)
             ];
 
-            array_push($documents_detail, $document_detail);
+            $documents_detail[] = $document_detail;
         }
 
         return $documents_detail;
     }
 
-    private function getDocumentDetailsContent($input) : string
+    private function getDocumentDetailsContent($input, array &$mapConsentUrlToFileContent = []) : string
     {
         $isTestingEnvironment = $this->app['env'] === Environment::TESTING;
 
@@ -4029,7 +4039,7 @@ class Service extends Base\Service
             return $input[DEConstants::CONTENT];
         }
 
-        return $this->getFileContentInHtml($input['url']);
+        return $this->getFileContentInHtml($input['url'], $mapConsentUrlToFileContent);
     }
 
     private function sendSelfServeSuccessAnalyticsEventToSegmentForAddOrUpdateBusinessWebsite(string $event)
