@@ -7,10 +7,19 @@ import OnboardingCardShimmer from 'merchant/views/onboarding/mobile/OnboardingCa
 import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
 import useEscalation from 'merchant/views/onboarding/mobile/hooks/useEscalation';
 import CurrentActivationProgress from 'merchant/views/onboarding/mobile/OnboardingCard/CurrentActivationProgress';
-import { fireEvent, render, screen, waitForElementToBeRemoved, waitFor, server } from 'test-utils';
+import {
+  fireEvent,
+  render,
+  screen,
+  waitForElementToBeRemoved,
+  waitFor,
+  server,
+  cleanup,
+} from 'test-utils';
 import { fetchEligibilityHandler } from 'merchant/views/onboarding/mobile/OnboardingCard/handlers';
 
-afterEach(() => {
+beforeEach(() => {
+  cleanup();
   ActivationDB.reset();
 });
 
@@ -39,7 +48,9 @@ test('should render null incase of activation progress is 90 and activation stat
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(screen.queryByText('% complete')).not.toBeInTheDocument();
+  await waitFor(() => {
+    expect(screen.queryByText('% complete')).not.toBeInTheDocument();
+  });
 });
 
 test('should render correct message for poi_verification_status = incorrect_details', async () => {
@@ -50,12 +61,14 @@ test('should render correct message for poi_verification_status = incorrect_deta
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(
-    screen.getByText(Messages.POI_VERIFICATION_STATUS.incorrect_details.title),
-  ).toBeInTheDocument();
-  expect(
-    screen.getByText(Messages.POI_VERIFICATION_STATUS.incorrect_details.description),
-  ).toBeInTheDocument();
+  await waitFor(() => {
+    expect(
+      screen.getByText(Messages.POI_VERIFICATION_STATUS.incorrect_details.title),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(Messages.POI_VERIFICATION_STATUS.incorrect_details.description),
+    ).toBeInTheDocument();
+  });
 });
 
 test('should render correct message for poi_verification_status = failed', async () => {
@@ -66,8 +79,12 @@ test('should render correct message for poi_verification_status = failed', async
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(screen.getByText(Messages.POI_VERIFICATION_STATUS.failed.title)).toBeInTheDocument();
-  expect(screen.getByText(Messages.POI_VERIFICATION_STATUS.failed.description)).toBeInTheDocument();
+  await waitFor(() => {
+    expect(screen.getByText(Messages.POI_VERIFICATION_STATUS.failed.title)).toBeInTheDocument();
+    expect(
+      screen.getByText(Messages.POI_VERIFICATION_STATUS.failed.description),
+    ).toBeInTheDocument();
+  });
 });
 
 test('should render correct message for poi_verification_status = pending', async () => {
@@ -91,12 +108,14 @@ test('should render correct message for bank_details_verification_status = faile
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(
-    screen.getByText(Messages.BANK_DETAILS_VERIFICATION_STATUS.failed.title),
-  ).toBeInTheDocument();
-  expect(
-    screen.getByText(Messages.BANK_DETAILS_VERIFICATION_STATUS.failed.description),
-  ).toBeInTheDocument();
+  await waitFor(() => {
+    expect(
+      screen.getByText(Messages.BANK_DETAILS_VERIFICATION_STATUS.failed.title),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(Messages.BANK_DETAILS_VERIFICATION_STATUS.failed.description),
+    ).toBeInTheDocument();
+  });
 });
 
 test('should render correct message for activation_status = under_review if payment is enabled', async () => {
@@ -110,14 +129,16 @@ test('should render correct message for activation_status = under_review if paym
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(
-    screen.getByText(Messages.ACTIVATION_STATUS_UNDER_REVIEW.new_flow.title),
-  ).toBeInTheDocument();
-  expect(
-    screen.getByText(
-      Messages.ACTIVATION_STATUS_UNDER_REVIEW.new_flow.description_with_payment_enable,
-    ),
-  ).toBeInTheDocument();
+  await waitFor(() => {
+    expect(
+      screen.getByText(Messages.ACTIVATION_STATUS_UNDER_REVIEW.new_flow.title),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        Messages.ACTIVATION_STATUS_UNDER_REVIEW.new_flow.description_with_payment_enable,
+      ),
+    ).toBeInTheDocument();
+  });
 });
 
 test('should render correct message for activation_status = needs_clarification', async () => {
@@ -130,13 +151,15 @@ test('should render correct message for activation_status = needs_clarification'
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(
-    screen.getByText(Messages.ACTIVATION_STATUS_NEEDS_CLARIFICATION.title),
-  ).toBeInTheDocument();
-  expect(
-    screen.getByText(Messages.ACTIVATION_STATUS_NEEDS_CLARIFICATION.description.normal),
-  ).toBeInTheDocument();
-  fireEvent.click(screen.getByText('Clarify Details'));
+  await waitFor(() => {
+    fireEvent.click(screen.getByText('Clarify Details'));
+    expect(
+      screen.getByText(Messages.ACTIVATION_STATUS_NEEDS_CLARIFICATION.title),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(Messages.ACTIVATION_STATUS_NEEDS_CLARIFICATION.description.normal),
+    ).toBeInTheDocument();
+  });
 });
 
 test('should render correct message for activation_status = activated', async () => {
@@ -149,9 +172,11 @@ test('should render correct message for activation_status = activated', async ()
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(screen.getByText(Messages.ACTIVATION_STATUS_ACTIVATED.title)).toBeInTheDocument();
-  expect(screen.getByText(Messages.ACTIVATION_STATUS_ACTIVATED.description)).toBeInTheDocument();
-  fireEvent.click(screen.getByText('Switch To Live Mode'));
+  await waitFor(() => {
+    fireEvent.click(screen.getByText('Switch To Live Mode'));
+    expect(screen.getByText(Messages.ACTIVATION_STATUS_ACTIVATED.title)).toBeInTheDocument();
+    expect(screen.getByText(Messages.ACTIVATION_STATUS_ACTIVATED.description)).toBeInTheDocument();
+  });
 });
 
 test('should render correct message of dedupe for L1', async () => {
@@ -168,8 +193,10 @@ test('should render correct message of dedupe for L1', async () => {
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(screen.getByText(Messages.DEDUPE.title)).toBeInTheDocument();
-  expect(screen.getByText(Messages.DEDUPE.description)).toBeInTheDocument();
+  await waitFor(() => {
+    expect(screen.getByText(Messages.DEDUPE.title)).toBeInTheDocument();
+    expect(screen.getByText(Messages.DEDUPE.description)).toBeInTheDocument();
+  });
 });
 
 test('should render correct message of dedupe for L2', async () => {
@@ -184,9 +211,11 @@ test('should render correct message of dedupe for L2', async () => {
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(screen.getByText(Messages.DEDUPE.title)).toBeInTheDocument();
-  expect(screen.getByText(Messages.DEDUPE.description)).toBeInTheDocument();
-  fireEvent.click(screen.getByText('Contact Support'));
+  await waitFor(() => {
+    fireEvent.click(screen.getByText('Contact Support'));
+    expect(screen.getByText(Messages.DEDUPE.title)).toBeInTheDocument();
+    expect(screen.getByText(Messages.DEDUPE.description)).toBeInTheDocument();
+  });
 });
 
 test('should render correct message if L1 is not submitted', async () => {
@@ -196,9 +225,11 @@ test('should render correct message if L1 is not submitted', async () => {
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(screen.getByText(Messages.ACTIVATION_PROGRESS.title)).toBeInTheDocument();
-  expect(screen.getByText(Messages.ACTIVATION_PROGRESS.description)).toBeInTheDocument();
-  fireEvent.click(screen.getByText('Submit KYC'));
+  await waitFor(() => {
+    fireEvent.click(screen.getByText('Submit KYC'));
+    expect(screen.getByText(Messages.ACTIVATION_PROGRESS.title)).toBeInTheDocument();
+    expect(screen.getByText(Messages.ACTIVATION_PROGRESS.description)).toBeInTheDocument();
+  });
 });
 
 test('should render correct message if activation_status = rejected', async () => {
@@ -210,8 +241,10 @@ test('should render correct message if activation_status = rejected', async () =
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(screen.getByText(Messages.ACTIVATION_STATUS_REJECTED.title)).toBeInTheDocument();
-  expect(screen.getByText(Messages.ACTIVATION_STATUS_REJECTED.description)).toBeInTheDocument();
+  await waitFor(() => {
+    expect(screen.getByText(Messages.ACTIVATION_STATUS_REJECTED.title)).toBeInTheDocument();
+    expect(screen.getByText(Messages.ACTIVATION_STATUS_REJECTED.description)).toBeInTheDocument();
+  });
 });
 
 test('should render correct message if flow is greylist', async () => {
@@ -226,8 +259,10 @@ test('should render correct message if flow is greylist', async () => {
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(screen.getByText(Messages.GREYLIST_STEP.title)).toBeInTheDocument();
-  expect(screen.getByText(Messages.GREYLIST_STEP.description)).toBeInTheDocument();
+  await waitFor(() => {
+    expect(screen.getByText(Messages.GREYLIST_STEP.title)).toBeInTheDocument();
+    expect(screen.getByText(Messages.GREYLIST_STEP.description)).toBeInTheDocument();
+  });
 });
 
 test('should render correct message for under review tnc flow', async () => {
@@ -238,10 +273,12 @@ test('should render correct message for under review tnc flow', async () => {
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(screen.getByText(Messages.GENERATE_TNC.under_review.old_title)).toBeInTheDocument();
-  expect(screen.getByText(Messages.GENERATE_TNC.under_review.description)).toBeInTheDocument();
-  expect(screen.getByText('View submitted details')).toBeInTheDocument();
-  expect(screen.getByText('Generate Terms And Conditions')).toBeInTheDocument();
+  await waitFor(() => {
+    expect(screen.getByText(Messages.GENERATE_TNC.under_review.old_title)).toBeInTheDocument();
+    expect(screen.getByText(Messages.GENERATE_TNC.under_review.description)).toBeInTheDocument();
+    expect(screen.getByText('View submitted details')).toBeInTheDocument();
+    expect(screen.getByText('Generate Terms And Conditions')).toBeInTheDocument();
+  });
 });
 
 test('should render correct message for activated mcc pendingw tnc flow', async () => {
@@ -252,10 +289,12 @@ test('should render correct message for activated mcc pendingw tnc flow', async 
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(screen.getByText(Messages.GENERATE_TNC.mcc_pending.title)).toBeInTheDocument();
-  expect(screen.getByText(Messages.GENERATE_TNC.mcc_pending.description)).toBeInTheDocument();
-  expect(screen.getByText('Generate Terms And Conditions')).toBeInTheDocument();
-  fireEvent.click(screen.getByText('Generate Terms And Conditions'));
+  await waitFor(() => {
+    expect(screen.getByText('Generate Terms And Conditions')).toBeInTheDocument();
+    fireEvent.click(screen.getByText('Generate Terms And Conditions'));
+    expect(screen.getByText(Messages.GENERATE_TNC.mcc_pending.description)).toBeInTheDocument();
+    expect(screen.getByText(Messages.GENERATE_TNC.mcc_pending.title)).toBeInTheDocument();
+  });
 });
 
 test('should render correct message when merchant reached hard limit', async () => {
@@ -269,9 +308,11 @@ test('should render correct message when merchant reached hard limit', async () 
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(screen.getByText(Messages.HARD_LIMIT_REACHED.title)).toBeInTheDocument();
-  expect(screen.getByText(Messages.HARD_LIMIT_REACHED.description)).toBeInTheDocument();
-  expect(screen.getByText('More details')).toBeInTheDocument();
+  await waitFor(() => {
+    expect(screen.getByText(Messages.HARD_LIMIT_REACHED.title)).toBeInTheDocument();
+    expect(screen.getByText(Messages.HARD_LIMIT_REACHED.description)).toBeInTheDocument();
+    expect(screen.getByText('More details')).toBeInTheDocument();
+  });
 });
 
 test('should render correct message for activated_mcc_pending', async () => {
@@ -283,12 +324,14 @@ test('should render correct message for activated_mcc_pending', async () => {
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(
-    screen.getByText(Messages.ACTIVATION_STATUS_ACTIVATED_MCC_PENDING.new_title),
-  ).toBeInTheDocument();
-  expect(
-    screen.getByText(Messages.ACTIVATION_STATUS_ACTIVATED_MCC_PENDING.new_description),
-  ).toBeInTheDocument();
+  await waitFor(() => {
+    expect(
+      screen.getByText(Messages.ACTIVATION_STATUS_ACTIVATED_MCC_PENDING.new_title),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(Messages.ACTIVATION_STATUS_ACTIVATED_MCC_PENDING.new_description),
+    ).toBeInTheDocument();
+  });
 });
 
 test('should not render any message', async () => {

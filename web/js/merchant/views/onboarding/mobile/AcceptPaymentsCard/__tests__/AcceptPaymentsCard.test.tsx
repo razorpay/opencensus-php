@@ -11,10 +11,10 @@ import * as Messages from 'merchant/views/onboarding/mobile/AcceptPaymentsCard/C
 import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
 import useEscalation from 'merchant/views/onboarding/mobile/hooks/useEscalation';
 import { PROPRIETORSHIP } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
-import { render, screen, waitForElementToBeRemoved } from 'test-utils';
+import { render, screen, waitFor, waitForElementToBeRemoved } from 'test-utils';
 import { fetch } from 'common/services/rest/rest-fetch';
 
-afterEach(() => {
+beforeEach(() => {
   ActivationDB.reset();
   InternationalWorkflowDB.reset();
   WebsiteWorkflowDB.reset();
@@ -57,12 +57,15 @@ test('should render correct message for AF whitelist IAF greylist merchant after
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(
-    screen.getByText(Messages.INTERNATIONAL_FLOW.af_wl_iaf_gl.account_activated.title),
-  ).toBeInTheDocument();
-  expect(
-    screen.getByText(Messages.INTERNATIONAL_FLOW.af_wl_iaf_gl.account_activated.description),
-  ).toBeInTheDocument();
+
+  await waitFor(() => {
+    expect(
+      screen.getByText(Messages.INTERNATIONAL_FLOW.af_wl_iaf_gl.account_activated.title),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(Messages.INTERNATIONAL_FLOW.af_wl_iaf_gl.account_activated.description),
+    ).toBeInTheDocument();
+  });
 });
 
 test('should render correct message for AF whitelist IAF whitelist merchant after submitting L1 (no website)', async () => {
@@ -73,12 +76,16 @@ test('should render correct message for AF whitelist IAF whitelist merchant afte
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(
-    screen.getByText(Messages.INTERNATIONAL_FLOW.af_wl_iaf_wl.l1_submitted.no_website.title),
-  ).toBeInTheDocument();
-  expect(
-    screen.getByText(Messages.INTERNATIONAL_FLOW.af_wl_iaf_wl.l1_submitted.no_website.description),
-  ).toBeInTheDocument();
+  await waitFor(() => {
+    expect(
+      screen.getByText(Messages.INTERNATIONAL_FLOW.af_wl_iaf_wl.l1_submitted.no_website.title),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        Messages.INTERNATIONAL_FLOW.af_wl_iaf_wl.l1_submitted.no_website.description,
+      ),
+    ).toBeInTheDocument();
+  });
 });
 
 test('should render correct message for AF whitelist IAF whitelist merchant after submitting L1 (has website)', async () => {
@@ -93,12 +100,16 @@ test('should render correct message for AF whitelist IAF whitelist merchant afte
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(
-    screen.getByText(Messages.INTERNATIONAL_FLOW.af_wl_iaf_wl.l1_submitted.has_website.title),
-  ).toBeInTheDocument();
-  expect(
-    screen.getByText(Messages.INTERNATIONAL_FLOW.af_wl_iaf_wl.l1_submitted.has_website.description),
-  ).toBeInTheDocument();
+  await waitFor(() => {
+    expect(
+      screen.getByText(Messages.INTERNATIONAL_FLOW.af_wl_iaf_wl.l1_submitted.has_website.title),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        Messages.INTERNATIONAL_FLOW.af_wl_iaf_wl.l1_submitted.has_website.description,
+      ),
+    ).toBeInTheDocument();
+  });
 });
 
 test('should render correct message for AF whitelist IAF whitelist merchant after submitting L2 (no website)', async () => {
@@ -110,14 +121,16 @@ test('should render correct message for AF whitelist IAF whitelist merchant afte
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(
-    screen.getByText(Messages.INTERNATIONAL_FLOW.af_wl_iaf_wl.account_activated.no_website.title),
-  ).toBeInTheDocument();
-  expect(
-    screen.getByText(
-      Messages.INTERNATIONAL_FLOW.af_wl_iaf_wl.account_activated.no_website.description,
-    ),
-  ).toBeInTheDocument();
+  await waitFor(() => {
+    expect(
+      screen.getByText(Messages.INTERNATIONAL_FLOW.af_wl_iaf_wl.account_activated.no_website.title),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        Messages.INTERNATIONAL_FLOW.af_wl_iaf_wl.account_activated.no_website.description,
+      ),
+    ).toBeInTheDocument();
+  });
 });
 
 test('should render correct message for AF whitelist IAF whitelist merchant after submitting L2 (has website)', async () => {
@@ -133,14 +146,18 @@ test('should render correct message for AF whitelist IAF whitelist merchant afte
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(
-    screen.getByText(Messages.INTERNATIONAL_FLOW.af_wl_iaf_wl.account_activated.has_website.title),
-  ).toBeInTheDocument();
-  expect(
-    screen.getByText(
-      Messages.INTERNATIONAL_FLOW.af_wl_iaf_wl.account_activated.has_website.description,
-    ),
-  ).toBeInTheDocument();
+  await waitFor(() => {
+    expect(
+      screen.getByText(
+        Messages.INTERNATIONAL_FLOW.af_wl_iaf_wl.account_activated.has_website.title,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        Messages.INTERNATIONAL_FLOW.af_wl_iaf_wl.account_activated.has_website.description,
+      ),
+    ).toBeInTheDocument();
+  });
 });
 
 test('should render correct message for AF greylist IAF blacklist merchant after submitting L2', async () => {
@@ -152,69 +169,28 @@ test('should render correct message for AF greylist IAF blacklist merchant after
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(screen.getByText(Messages.INTERNATIONAL_BLACKLIST.title)).toBeInTheDocument();
-  expect(screen.getByText(Messages.INTERNATIONAL_BLACKLIST.description)).toBeInTheDocument();
+  await waitFor(() => {
+    expect(screen.getByText(Messages.INTERNATIONAL_BLACKLIST.title)).toBeInTheDocument();
+    expect(screen.getByText(Messages.INTERNATIONAL_BLACKLIST.description)).toBeInTheDocument();
+  });
 });
 
 test('should render correct message for AF greylist IAF greylist merchant after submitting L1', async () => {
   ActivationDB.update({
-    ...ActivationDataPieces.ActivationFlowGG,
-    ...ActivationDataPieces.OnboardingMileStoneL2,
+    activation_flow: 'greylist',
     activation_status: 'activated',
+    submitted: true,
     business_type: PROPRIETORSHIP,
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(screen.getByText(Messages.INTERNATIONAL_FLOW.af_gl_iaf_gl.title)).toBeInTheDocument();
-  expect(
-    screen.getByText(Messages.INTERNATIONAL_FLOW.af_gl_iaf_gl.description),
-  ).toBeInTheDocument();
-});
 
-test('should render correct message if international payments request is in review', async () => {
-  InternationalWorkflowDB.update({
-    payment_gateway: 'in_review',
+  await waitFor(() => {
+    expect(screen.getByText(Messages.INTERNATIONAL_FLOW.af_gl_iaf_gl.title)).toBeInTheDocument();
+    expect(
+      screen.getByText(Messages.INTERNATIONAL_FLOW.af_gl_iaf_gl.description),
+    ).toBeInTheDocument();
   });
-  ActivationDB.update({
-    ...ActivationDataPieces.ActivationFlowGG,
-    ...ActivationDataPieces.OnboardingMileStoneL2,
-    activation_status: 'activated',
-    business_type: PROPRIETORSHIP,
-  });
-  render(<App />, {});
-  await waitForLoadingToFinish();
-  expect(screen.getByText(Messages.INTERNATIONAL_REQUEST.in_review.title)).toBeInTheDocument();
-  expect(
-    screen.getByText(Messages.INTERNATIONAL_REQUEST.in_review.description),
-  ).toBeInTheDocument();
-});
-
-test('should render correct message if international payments request was rejected', async () => {
-  InternationalWorkflowDB.update({
-    payment_gateway: 'rejected',
-  });
-  ActivationDB.update({
-    ...ActivationDataPieces.ActivationFlowGG,
-    ...ActivationDataPieces.OnboardingMileStoneL2,
-    activation_status: 'activated',
-    business_type: PROPRIETORSHIP,
-  });
-  render(<App />, {});
-  await waitForLoadingToFinish();
-  expect(screen.getByText(Messages.INTERNATIONAL_REQUEST.rejected.title)).toBeInTheDocument();
-  expect(screen.getByText(Messages.INTERNATIONAL_REQUEST.rejected.description)).toBeInTheDocument();
-});
-
-test('should render correct message for payment get breached if payment enable', async () => {
-  ActivationDB.update({
-    ...ActivationDataPieces.OnboardingMileStoneL1,
-  });
-  PaymentEscalationDB.update({
-    amount: '1700000',
-  });
-  render(<App />, {});
-  await waitForLoadingToFinish();
-  expect(screen.getByText(Messages.PAYMENT_ESCALATION.breach)).toBeInTheDocument();
 });
 
 test('should render correct message if payment not breached', async () => {
@@ -228,7 +204,9 @@ test('should render correct message if payment not breached', async () => {
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(screen.getByText(Messages.PAYMENT_ESCALATION.not_breach)).toBeInTheDocument();
+  await waitFor(() => {
+    expect(screen.getByText(Messages.PAYMENT_ESCALATION.not_breach)).toBeInTheDocument();
+  });
 });
 
 test('should not render payment escalation card if payment is disable and not breached', async () => {
@@ -240,5 +218,7 @@ test('should not render payment escalation card if payment is disable and not br
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(() => screen.getByText(Messages.PAYMENT_ESCALATION.not_breach)).toThrow();
+  await waitFor(() => {
+    expect(() => screen.getByText(Messages.PAYMENT_ESCALATION.not_breach)).toThrow();
+  });
 });

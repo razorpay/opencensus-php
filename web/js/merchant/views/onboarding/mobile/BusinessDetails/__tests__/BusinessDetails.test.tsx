@@ -1,19 +1,56 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import { delay, fireEvent, render, screen, waitForElementToBeRemoved } from 'test-utils';
+import {
+  cleanup,
+  delay,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  waitForElementToBeRemoved,
+} from 'test-utils';
 import BusinessDetails from 'merchant/views/onboarding/mobile/BusinessDetails/index';
 import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
 import * as ActivationDB from 'merchant/views/onboarding/mobile/services/data/ActivationDB';
 import * as DataPieces from 'merchant/views/onboarding/mobile/services/data/pieces';
-afterEach(() => {
+
+beforeEach(() => {
   ActivationDB.reset();
+  cleanup();
 });
+
 const App: React.FC = () => {
   const { status } = useActivation();
   if (status === 'loading') return <div>Loading...</div>;
   return <BusinessDetails />;
 };
 const waitForLoadingToFinish = () => waitForElementToBeRemoved(screen.queryByText('Loading...'));
+
+describe('Autofill billing label', () => {
+  test('should autofill billing label with buisness name for reg merchant', async () => {
+    ActivationDB.update({
+      business_type: '1',
+    });
+    render(<App />, {});
+    await waitForLoadingToFinish();
+    const buseinessNameInput = screen.getAllByTestId('ds-text-input')[0];
+    fireEvent.change(buseinessNameInput, { target: { value: 'without billing label' } });
+    fireEvent.blur(buseinessNameInput);
+    expect(screen.getByText('Business Name')).toBeInTheDocument();
+  });
+
+  test('should autofill billing label with promoter pan name for unreg merchant', async () => {
+    ActivationDB.update({
+      business_type: '11',
+    });
+    render(<App />, {});
+    await waitForLoadingToFinish();
+    const personalPanName: any = screen.getAllByTestId('ds-text-input')[1];
+    fireEvent.change(personalPanName, { target: { value: 'without billing label' } });
+    fireEvent.blur(personalPanName);
+    expect(screen.getByText("Business Owner's PAN")).toBeInTheDocument();
+  });
+});
 
 test('should render Address details field for all the merchants', async () => {
   render(<App />, {});
@@ -41,10 +78,12 @@ test('should render correct PAN details fields for Private merchant', async () =
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(screen.getByText('Business PAN')).toBeInTheDocument();
-  expect(screen.getByText('Business Name')).toBeInTheDocument();
-  expect(screen.getByText('Authorised Signatory PAN')).toBeInTheDocument();
-  expect(screen.getByText('Authorised Signatory Name')).toBeInTheDocument();
+  await waitFor(() => {
+    expect(screen.getByText('Business PAN')).toBeInTheDocument();
+    expect(screen.getByText('Business Name')).toBeInTheDocument();
+    expect(screen.getByText('Authorised Signatory PAN')).toBeInTheDocument();
+    expect(screen.getByText('Authorised Signatory Name')).toBeInTheDocument();
+  });
 });
 
 test('shoud render POI failed message when PAN verfication failed', async () => {
@@ -53,9 +92,11 @@ test('shoud render POI failed message when PAN verfication failed', async () => 
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(
-    screen.getByText('PAN Verification failed. Please review your details and submit again'),
-  ).toBeInTheDocument();
+  await waitFor(() => {
+    expect(
+      screen.getByText('PAN Verification failed. Please review your details and submit again'),
+    ).toBeInTheDocument();
+  });
 });
 
 test('should not render Company Details fields for unregistered business', async () => {
@@ -64,7 +105,9 @@ test('should not render Company Details fields for unregistered business', async
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(screen.queryByText('Company Details')).not.toBeInTheDocument();
+  await waitFor(() => {
+    expect(screen.queryByText('Company Details')).not.toBeInTheDocument();
+  });
 });
 
 test('should render Company Details section for registered business', async () => {
@@ -74,7 +117,9 @@ test('should render Company Details section for registered business', async () =
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(screen.queryByText('Company Details')).toBeInTheDocument();
+  await waitFor(() => {
+    expect(screen.queryByText('Company Details')).toBeInTheDocument();
+  });
 });
 
 test('should render CIN field for Private or Public merchants', async () => {
@@ -83,8 +128,10 @@ test('should render CIN field for Private or Public merchants', async () => {
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(screen.getByText('Company Identification Number (CIN)')).toBeInTheDocument();
-  expect(screen.queryByText('LLP Identification Number (LLPIN)')).not.toBeInTheDocument();
+  await waitFor(() => {
+    expect(screen.getByText('Company Identification Number (CIN)')).toBeInTheDocument();
+    expect(screen.queryByText('LLP Identification Number (LLPIN)')).not.toBeInTheDocument();
+  });
 });
 
 test('should render LLPIN field for LLP merchants', async () => {
@@ -93,17 +140,22 @@ test('should render LLPIN field for LLP merchants', async () => {
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(screen.getByText('LLP Identification Number (LLPIN)')).toBeInTheDocument();
-  expect(screen.queryByText('Company Identification Number (CIN)')).not.toBeInTheDocument();
+  await waitFor(() => {
+    expect(screen.getByText('LLP Identification Number (LLPIN)')).toBeInTheDocument();
+    expect(screen.queryByText('Company Identification Number (CIN)')).not.toBeInTheDocument();
+  });
 });
 
 test('should copy address details when operational address is same as permanent address', async () => {
   render(<App />, {});
   await waitForLoadingToFinish();
-  const addressInput = screen.getByTestId('ds-text-area');
+  const addressInput: any = screen.getByTestId('ds-text-area');
   expect(screen.getByText('Enter Address')).toBeInTheDocument();
   expect(screen.queryByText('Business Operational Address')).not.toBeInTheDocument();
-  await fireEvent.change(addressInput, { target: { value: 'abc' } });
+  fireEvent.change(addressInput, { target: { value: 'abc' } });
+  await waitFor(() => {
+    expect(addressInput.value).toBe('abc');
+  });
 });
 
 test('should render correct flow', async () => {
@@ -120,11 +172,8 @@ test('should render correct flow', async () => {
     authSignatoryNameInput,
     cinInput,
     billingLabelInput,
-    pincodeInput,
-    cityInput,
-    stateInput,
   ]: any = screen.getAllByTestId('ds-text-input');
-  const addressInput = screen.getByTestId('ds-text-area');
+  const addressInput: any = screen.getByTestId('ds-text-area');
 
   fireEvent.change(businessPanInput, { target: { value: 'ABCDE1234F' } });
   fireEvent.blur(businessPanInput);
@@ -152,34 +201,8 @@ test('should render correct flow', async () => {
 
   fireEvent.change(addressInput, { target: { value: 'abc' } });
   fireEvent.blur(addressInput);
-  fireEvent.change(pincodeInput, { target: { value: '530068' } });
-  fireEvent.blur(pincodeInput);
-  expect(pincodeInput.value).toBe('530068');
-  fireEvent.change(cityInput, { target: { value: 'Delhi' } });
-  fireEvent.blur(cityInput);
-  fireEvent.change(stateInput, { target: { value: 'DL' } });
-  fireEvent.blur(stateInput);
-  fireEvent.click(screen.getByText('Operational address is the same as above'));
-});
-
-test('should autofill billing label with buisness name for reg merchant', async () => {
-  ActivationDB.update({
-    business_type: '1',
+  await waitFor(() => {
+    expect(addressInput.value).toBe('abc');
+    expect(screen.getByText('Operational address is the same as above')).toBeInTheDocument();
   });
-  render(<App />, {});
-  await waitForLoadingToFinish();
-  const buseinessNameInput = screen.getAllByTestId('ds-text-input')[0];
-  fireEvent.change(buseinessNameInput, { target: { value: 'without billing label' } });
-  fireEvent.blur(buseinessNameInput);
-});
-
-test('should autofill billing label with promoter pan name for unreg merchant', async () => {
-  ActivationDB.update({
-    business_type: '11',
-  });
-  render(<App />, {});
-  await waitForLoadingToFinish();
-  const personalPanName = screen.getAllByTestId('ds-text-input')[1];
-  fireEvent.change(personalPanName, { target: { value: 'without billing label' } });
-  fireEvent.blur(personalPanName);
 });

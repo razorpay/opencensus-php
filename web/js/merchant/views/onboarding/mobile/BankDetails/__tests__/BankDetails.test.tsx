@@ -1,11 +1,12 @@
 import React from 'react';
 import BankDetails from 'merchant/views/onboarding/mobile/BankDetails/index';
-import { fireEvent, render, screen, waitForElementToBeRemoved, waitFor } from 'test-utils';
+import { fireEvent, render, screen, waitForElementToBeRemoved, waitFor, cleanup } from 'test-utils';
 import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
 import * as ActivationDB from 'merchant/views/onboarding/mobile/services/data/ActivationDB';
 
-afterEach(() => {
+beforeEach(() => {
   ActivationDB.reset();
+  cleanup();
 });
 
 const App: React.FC = () => {
@@ -31,17 +32,8 @@ test('should render Bank Details fields and not Company Details fields for unreg
 
   fireEvent.change(accNumber, { target: { value: '123456778' } });
   fireEvent.blur(accNumber);
-});
-
-test('should show bank verification status error for unreg type', async () => {
-  ActivationDB.update({
-    business_type: '11',
-    bank_details_verification_status: 'not_matched',
-  });
-  render(<App />, {});
-  await waitForLoadingToFinish();
   await waitFor(() => {
-    expect(screen.getByText(UNREG_BANK_ERROR)).toBeInTheDocument();
+    expect(accNumber.value).toBe('123456778');
   });
 });
 
@@ -54,5 +46,17 @@ test('should show bank verification status error for reg type', async () => {
   await waitForLoadingToFinish();
   await waitFor(() => {
     expect(screen.getByText(REG_BANK_ERROR)).toBeInTheDocument();
+  });
+});
+
+test('should show bank verification status error for unreg type', async () => {
+  ActivationDB.update({
+    business_type: '11',
+    bank_details_verification_status: 'not_matched',
+  });
+  render(<App />, {});
+  await waitForLoadingToFinish();
+  await waitFor(() => {
+    expect(screen.getByText(UNREG_BANK_ERROR)).toBeInTheDocument();
   });
 });

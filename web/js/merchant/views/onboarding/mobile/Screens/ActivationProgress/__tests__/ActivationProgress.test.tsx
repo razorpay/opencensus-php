@@ -4,7 +4,7 @@ import ActivationProgress from 'merchant/views/onboarding/mobile/Screens/Activat
 import * as ActivationDB from 'merchant/views/onboarding/mobile/services/data/ActivationDB';
 import * as ActivationDataPieces from 'merchant/views/onboarding/mobile/services/data/pieces';
 import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
-import { render, screen, waitForElementToBeRemoved, fireEvent } from 'test-utils';
+import { render, screen, waitForElementToBeRemoved, fireEvent, waitFor } from 'test-utils';
 
 afterEach(() => {
   ActivationDB.reset();
@@ -69,18 +69,21 @@ test('should render greylist flow and milestone = L1', async () => {
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(screen.getByText('Submit KYC details')).toBeInTheDocument();
-  expect(
-    screen.getByText(
-      'Submit all the details and get your KYC approved to complete account activation and enable settlements',
-    ),
-  ).toBeInTheDocument();
-  expect(screen.getByText('Contact Details')).toBeInTheDocument();
-  expect(screen.getByText('Business Overview')).toBeInTheDocument();
-  expect(screen.getByText('Business Details')).toBeInTheDocument();
-  expect(screen.getByText('Bank and Business Details')).toBeInTheDocument();
-  expect(screen.getByText('Documents Upload')).toBeInTheDocument();
-  fireEvent.click(screen.getByText('Submit KYC'));
+  await waitFor(() => {
+    expect(screen.getByText('Submit KYC details')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Submit all the details and get your KYC approved to complete account activation and enable settlements',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Contact Details')).toBeInTheDocument();
+    expect(screen.getByText('Business Overview')).toBeInTheDocument();
+    expect(screen.getByText('Business Details')).toBeInTheDocument();
+    expect(screen.getByText('Bank and Business Details')).toBeInTheDocument();
+    expect(screen.getByText('Documents Upload')).toBeInTheDocument();
+    fireEvent.click(screen.getByText('Submit KYC'));
+    expect(screen.queryByText('What Are Settlements')).toBeInTheDocument();
+  });
 });
 
 test('should render nc flow', async () => {
@@ -93,13 +96,16 @@ test('should render nc flow', async () => {
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(screen.getByText('Submit KYC details')).toBeInTheDocument();
-  expect(
-    screen.getByText(
-      'Please provide clarification regarding some issues with your submitted details by on your web dashboard',
-    ),
-  ).toBeInTheDocument();
-  fireEvent.click(screen.getByText('Clarify Details'));
+  await waitFor(() => {
+    expect(screen.getByText('Submit KYC details')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Please provide clarification regarding some issues with your submitted details by on your web dashboard',
+      ),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByText('Clarify Details'));
+    expect(screen.queryByText('What Are Settlements')).toBeInTheDocument();
+  });
 });
 
 test('should render under review flow', async () => {
@@ -112,11 +118,14 @@ test('should render under review flow', async () => {
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(screen.getByText('Submit KYC details')).toBeInTheDocument();
-  expect(
-    screen.getByText('You have submitted all the details. Our team is reviewing them'),
-  ).toBeInTheDocument();
-  fireEvent.click(screen.getByText('Contact Details'));
+  await waitFor(() => {
+    expect(screen.getByText('Submit KYC details')).toBeInTheDocument();
+    expect(
+      screen.getByText('You have submitted all the details. Our team is reviewing them'),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByText('Contact Details'));
+    expect(screen.queryByText('What Are Settlements')).toBeInTheDocument();
+  });
 });
 
 test('should render activated_mcc_pending flow', async () => {
@@ -129,10 +138,12 @@ test('should render activated_mcc_pending flow', async () => {
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(screen.getByText('Submit KYC details')).toBeInTheDocument();
-  expect(
-    screen.getByText(
-      'Payments and settlements have been enabled. We might do some periodic checks for your KYC and ask for clarifications',
-    ),
-  ).toBeInTheDocument();
+  await waitFor(() => {
+    expect(screen.getByText('Submit KYC details')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Payments and settlements have been enabled. We might do some periodic checks for your KYC and ask for clarifications',
+      ),
+    ).toBeInTheDocument();
+  });
 });

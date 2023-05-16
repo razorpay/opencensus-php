@@ -83,4 +83,5 @@ test('renders all the input fields of the form correctly', async () => {
   await waitFor(() => fireEvent.change(appCheckbox, { target: { checked: false } }));
   await waitFor(() => fireEvent.change(websiteCheckbox, { target: { checked: false } }));
   await waitFor(() => fireEvent.change(liveWebsiteOrAppCheckbox, { target: { checked: false } }));
+  expect(screen.getByText('Business Type')).toBeInTheDocument();
 });

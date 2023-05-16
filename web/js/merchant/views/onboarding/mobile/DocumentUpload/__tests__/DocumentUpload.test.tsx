@@ -165,7 +165,9 @@ test('should show aadhaar error message', async () => {
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(screen.queryByText(/Input document does not match Aadhaar back/i)).toBeInTheDocument();
+  await waitFor(() => {
+    expect(screen.queryByText(/Input document does not match Aadhaar back/i)).toBeInTheDocument();
+  });
 });
 
 test('should not show aadhaar ekyc for Trust Business Type', async () => {
@@ -175,5 +177,7 @@ test('should not show aadhaar ekyc for Trust Business Type', async () => {
   });
   render(<App />, {});
   await waitForLoadingToFinish();
-  expect(screen.queryByText('Aadhaar Verification ( via OTP )')).toBeNull();
+  await waitFor(() => {
+    expect(screen.queryByText('Aadhaar Verification ( via OTP )')).toBeNull();
+  });
 });
