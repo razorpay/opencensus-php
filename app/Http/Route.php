@@ -15568,6 +15568,7 @@ class Route
         'magic_checkout_service' => [
             'internal_1cc_configs_get',
             'update_shopify_1cc_credentials',
+            '1cc_get_shopify_configs',
         ],
         'rto_prediction_service_api_web' => [
             'internal_1cc_order_review',
