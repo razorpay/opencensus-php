@@ -50,6 +50,7 @@ class Validator extends Base\Validator
 
     protected function validateAcceptedCurrency($attribute, $currency)
     {
+
         if (in_array($currency, Currency::SUPPORTED_CURRENCIES, true) === false)
         {
             throw new BadRequestValidationFailureException(

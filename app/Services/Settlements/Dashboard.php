@@ -383,7 +383,7 @@ class Dashboard extends Base
      * @throws RuntimeException
      * @throws \Throwable
      */
-    public function createBankAccount($input, $mode, $isOrgAccount = false)
+    public function createBankAccount($input, $mode, $isOrgAccount = false, $merchant = null)
     {
         $this->trace->info(
             TraceCode::SETTLEMENT_SERVICE_BANK_ACCOUNT_REQUEST,
@@ -397,7 +397,7 @@ class Dashboard extends Base
             return null;
         }
 
-        $req = $this->getBankAccountCreateRequestForSettlementService($input,'payout', $isOrgAccount);
+        $req = $this->getBankAccountCreateRequestForSettlementService($input,'payout', $isOrgAccount, $merchant);
 
         (new Validator)->validateInput('create_bank_account', $req);
 

@@ -102,7 +102,7 @@ class Core extends Base\Core
 
                 if ($this->settlementServiceRamp($ba->getMerchantId()) === true) {
                     if ($this->app['basicauth']->isAdminAuth() === true) {
-                        app('settlements_dashboard')->createBankAccount($ba, $this->mode);
+                        app('settlements_dashboard')->createBankAccount($ba, $this->mode, false, $merchant);
                     } else {
                         app('settlements_api')->migrateBankAccount($ba, $this->mode, "payout", $merchant);
                     }
@@ -145,7 +145,7 @@ class Core extends Base\Core
         {
             if( $this->app['basicauth']->isAdminAuth() === true )
             {
-                app('settlements_dashboard')->createBankAccount($ba, $this->mode);
+                app('settlements_dashboard')->createBankAccount($ba, $this->mode, false, $merchant);
             }
             else
             {
