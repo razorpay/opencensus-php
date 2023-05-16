@@ -446,6 +446,8 @@ final class RazorxTreatment
     // Experiment to send looker link with downtimes notifications to slack
     const DOWNTIMES_LOOKER_TO_SLACK = 'downtime_looker_to_slack';
 
+    const BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE = 'bulk_payout_ca_va_segregation_payouts_service';
+
     // Experiment to send create validation metadata to BVS
     const BVS_CREATE_VALIDATION_METADATA = 'BVS_CREATE_VALIDATION_METADATA';
 

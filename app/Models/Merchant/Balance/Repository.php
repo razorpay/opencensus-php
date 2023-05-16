@@ -471,6 +471,23 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
+    public function getBalancesForAccountNumbersForTypeBanking($accountNumbers, $merchantID)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::ACCOUNT_NUMBER, $accountNumbers)
+                    ->where(Entity::MERCHANT_ID, $merchantID)
+                    ->where(Entity::TYPE, Type::BANKING)
+                    ->get();
+    }
+
+    public function getBalancesByMerchantIDForTypeBanking($merchantID)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, $merchantID)
+                    ->where(Entity::TYPE, Type::BANKING)
+                    ->get();
+    }
+
     public function getBalanceByIdFromWhatsappDB(string $id)
     {
         $idColumn = $this->dbColumn(Entity::ID);

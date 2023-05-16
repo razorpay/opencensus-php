@@ -1226,6 +1226,8 @@ class PublicErrorDescription
 
     const BAD_REQUEST_TO_EMAIL_ID_MISSING_FOR_INTEGRATION_INVITATION           = 'to_email_id missing for integration invitation';
 
+    const SERVER_ERROR_CA_MERCHANT_IN_BULK_PAYOUT_VA_FLOW                      = 'CA merchant should not come into Bulk Payout VA flow';
+    const SERVER_ERROR_BALANCE_RECORDS_NOT_AVAILABLE_FOR_MERCHANT              = 'Balance records are not available for the merchant';
     const BAD_REQUEST_BULK_PAYOUTS_PAYOUT_HEADER_MISMATCH                      = 'Payout amount header needs to be of either rupees or paise type';
     const BAD_REQUEST_VA_TO_VA_PAYOUTS_BLOCKED                                 = 'Payouts to RazorpayX Lite account is not enabled for your account. Please contact support for any further assistance';
     const BAD_REQUEST_VA_TO_VA_PAYOUTS_NOT_ALLOWED                             = 'Payouts between different RazorpayX Lite accounts is not allowed. Please contact support for any further assistance';

@@ -3954,7 +3954,8 @@ class Base extends BaseCore
      */
     protected function isPayoutServiceIfApplicable(array $input) : bool
     {
-        if ($this->mode == Mode::LIVE)
+        if (($this->mode == Mode::LIVE) and
+            ($this->balance->getAccountType() === AccountType::SHARED))
         {
             $this->isPayoutServiceEnabled = $this->merchant->isFeatureEnabled(Features::PAYOUT_SERVICE_ENABLED);
 

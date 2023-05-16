@@ -1927,11 +1927,295 @@ class Service extends Base\Service
      */
     public function createBulkPayout(array $input): array
     {
-        if ($this->merchant->isFeatureEnabled(Features::PAYOUT_SERVICE_ENABLED) === true)
+        $this->trace->info(
+            TraceCode::CREATE_BULK_PAYOUT_INPUT,
+            [
+                'input' => $input
+            ]);
+
+        if ($this->merchant->isFeatureEnabled(Features::PAYOUT_SERVICE_ENABLED) === false)
         {
-            return $this->payoutServiceBulkPayoutsClient->createBulkPayoutViaMicroservice($input);
+            return $this->createBulkPayoutForAPI($input);
+        }
+        else
+        {
+            $merchantID = $this->merchant->getId();
+
+            $variant = $this->app->razorx->getTreatment(
+                $merchantID,
+                RazorxTreatment::BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE,
+                $this->mode,
+                Payout\Entity::RAZORX_RETRY_COUNT
+            );
+
+            $this->trace->info(
+                TraceCode::BULK_PAYOUT_CA_EXPERIMENT_VALUE,
+                [
+                    'variant'     => $variant,
+                    'mode'        => $this->mode,
+                    'merchant_id' => $merchantID,
+                ]);
+
+            if (strtolower($variant) === 'on')
+            {
+                // Merchant onboarded on both CA and VA
+                return $this->handleBulkCreationForPSEnabledMerchant($input, $merchantID);
+            }
+            else
+            {
+                $merchantEnabledOnCA = $this->checkIfMerchantIsEnabledOnDirectAccount($merchantID);
+
+                if ($merchantEnabledOnCA === true)
+                {
+                    $this->trace->error(TraceCode::CA_MERCHANT_IN_BULK_PAYOUT_VA_FLOW,
+                                        [
+                                            'input'   => $input,
+                                            'variant' => $variant,
+                                        ]);
+
+                    throw new ServerErrorException(
+                        'CA merchant should not come into Bulk Payout VA flow',
+                        ErrorCode::SERVER_ERROR_CA_MERCHANT_IN_BULK_PAYOUT_VA_FLOW,
+                        [
+                            'input'   => $input,
+                            'variant' => $variant,
+                        ]
+                    );
+                }
+
+                // Merchant onboarded only on VA
+                return $this->payoutServiceBulkPayoutsClient->createBulkPayoutViaMicroservice($input);
+            }
+        }
+    }
+
+    private function getBalancesForBulkInput(array $input, $merchantID)
+    {
+        $accountNumbers = array_column($input, PayoutBatchHelper::RAZORPAYX_ACCOUNT_NUMBER);
+
+        $accountNumbers = array_map('trim', $accountNumbers);
+
+        $uniqueAccountNumbers = array_unique($accountNumbers);
+
+        $balances = $this->repo->balance->
+        getBalancesForAccountNumbersForTypeBanking($uniqueAccountNumbers, $merchantID);
+
+        $balanceArray = $balances->toArray();
+
+        $balanceIDs = array_column($balanceArray, Entity::ID);
+
+        $this->trace->info(
+            TraceCode::BALANCES_FOR_BULK_PAYOUT_INPUT,
+            [
+                Entity::BALANCE_IDS => $balanceIDs
+            ]);
+
+        return $balances;
+    }
+
+    private function getPayoutServiceAndApiInput(array $input, $merchantID)
+    {
+        $balances = $this->getBalancesForBulkInput($input, $merchantID);
+
+        $accountNumbersAccountTypeMap = [];
+
+        foreach ($balances as $balance)
+        {
+            $accountNumber = $balance->getAccountNumber();
+
+            $accountNumbersAccountTypeMap[$accountNumber] = $balance->getAccountType();
         }
 
+        $apiInput = [];
+
+        $psInput = [];
+
+        foreach($input as $item)
+        {
+            $accountNumber = trim($item[PayoutBatchHelper::RAZORPAYX_ACCOUNT_NUMBER]) ?? null;
+
+            if ($accountNumbersAccountTypeMap[$accountNumber] == Merchant\Balance\AccountType::SHARED)
+            {
+                $psInput[] = $item;
+            }
+            else if ($accountNumbersAccountTypeMap[$accountNumber] == Merchant\Balance\AccountType::DIRECT)
+            {
+                $apiInput[] = $item;
+            }
+            else
+            {
+                // Considering this as default case. In case of invalid account number we are going to send
+                // it to API for processing. This will add correct error response for corresponding invalid
+                // account number row and send it to batch service.
+                $apiInput[] = $item;
+            }
+        }
+
+        return array($psInput, $apiInput);
+    }
+
+    private function checkIfMerchantIsEnabledOnDirectAccount($merchantID)
+    {
+        $balances = $this->repo->balance->
+        getBalancesByMerchantIDForTypeBanking($merchantID);
+
+        $balanceArray = $balances->toArray();
+
+        $balanceIDs = array_column($balanceArray, Entity::ID);
+
+        $this->trace->info(
+            TraceCode::BALANCES_FOR_BULK_PAYOUT_MERCHANT,
+            [
+                Entity::BALANCE_IDS => $balanceIDs,
+            ]);
+
+        if (empty($balanceArray) === true)
+        {
+            $this->trace->error(TraceCode::BALANCE_RECORDS_NOT_AVAILABLE_FOR_MERCHANT,
+                                [
+                                    Entity::MERCHANT_ID => $merchantID,
+                                    Entity::BALANCE_IDS => $balanceIDs,
+                                ]);
+
+            throw new ServerErrorException(
+                'Balance records are not available for the merchant',
+                ErrorCode::SERVER_ERROR_BALANCE_RECORDS_NOT_AVAILABLE_FOR_MERCHANT,
+                [
+                    Entity::MERCHANT_ID => $merchantID,
+                    Entity::BALANCE_IDS => $balanceIDs,
+                ]
+            );
+        }
+
+        foreach ($balances as $balance)
+        {
+            $accountType = strtolower($balance->getAccountType());
+
+            if ($accountType === Merchant\Balance\AccountType::DIRECT)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function handleBulkCreationForPSEnabledMerchant(array $input, $merchantID)
+    {
+        list($psInput, $apiInput) = $this->getPayoutServiceAndApiInput($input, $merchantID);
+
+        $this->trace->info(
+            TraceCode::BULK_PAYOUTS_API_PS_INPUT,
+            [
+                'ps_input'  => $psInput,
+                'api_input' => $apiInput,
+            ]);
+
+        $finalResponse = new Base\PublicCollection;
+
+        /**
+         * TODO Proceed with Direct Account Payout creation if Payout Service creation fails
+         * JIRA Link: https://razorpay.atlassian.net/browse/XPE-644
+         *
+         * We don't want to proceed with direct account payout creation incase if PS
+         * doesn't send 2xx. Hence we return exception received from PS to batch service
+         * so that whole input will be retried.
+         */
+        try
+        {
+            if (empty($psInput) === false)
+            {
+                $psResponse = $this->payoutServiceBulkPayoutsClient->
+                createBulkPayoutViaMicroservice($psInput);
+
+                if (isset($psResponse['items']) === true)
+                {
+                    $psPayouts = $psResponse['items'];
+
+                    foreach ($psPayouts as $psPayout)
+                    {
+                        $finalResponse->push($psPayout);
+                    }
+                }
+            }
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::BULK_PAYOUT_CREATION_PS_FAILED,
+                [
+                    'input'     => $input,
+                    'ps_input'  => $psInput,
+                    'api_input' => $apiInput,
+                ]);
+
+            throw $exception;
+        }
+
+        try
+        {
+            if (empty($apiInput) === false)
+            {
+                $apiResponse = $this->createBulkPayoutForAPI($apiInput);
+
+                if (isset($apiResponse['items']) === true)
+                {
+                    $apiPayouts = $apiResponse['items'];
+
+                    foreach ($apiPayouts as $apiPayout)
+                    {
+                        $finalResponse->push($apiPayout);
+                    }
+                }
+            }
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::BULK_PAYOUT_CREATION_API_FAILED,
+                [
+                    'input'     => $input,
+                    'ps_input'  => $psInput,
+                    'api_input' => $apiInput,
+                ]);
+
+            /**
+             * TODO Proceed with Direct Account Payout creation if Payout Service creation fails
+             * JIRA Link: https://razorpay.atlassian.net/browse/XPE-644
+             *
+             *  We want batch service to retry if input contains only direct account payouts.
+             *  If it is mix of shared and direct, we don't want to retry for direct since it
+             *  can cause a lot of retries that can cause issues in system.
+             */
+            if (empty($psInput) === true)
+            {
+                throw $exception;
+            }
+        }
+
+        try
+        {
+            return $finalResponse->toArrayWithItems();
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::BULK_PAYOUT_FAILED_POST_CREATION,
+                [
+                    'input'          => $input,
+                    'final_response' => $finalResponse,
+                ]);
+        }
+    }
+
+    private function createBulkPayoutForAPI(array $input)
+    {
         $payoutBatch = new Base\PublicCollection;
 
         $validator = new Validator;
@@ -1983,20 +2267,20 @@ class Service extends Base\Service
                         $validator->validateIdempotencyKey($idempotencyKey, $batchId);
 
                         $existingPayout = $this->repo->payout->fetchByIdempotentKey($item[Entity::IDEMPOTENCY_KEY],
-                            $this->merchant->getId(),
-                            $batchId
+                                                                                    $this->merchant->getId(),
+                                                                                    $batchId
                         );
 
                         if ($existingPayout !== null)
                         {
                             $this->trace->info(TraceCode::PAYOUT_EXIST_WITH_SAME_IDEMPOTENCY_KEY,
-                                [
-                                    'input' => $existingPayout->toArrayPublic(),
-                                    Entity::IDEMPOTENCY_KEY => $item[Entity::IDEMPOTENCY_KEY],
-                                ]);
+                                               [
+                                                   'input' => $existingPayout->toArrayPublic(),
+                                                   Entity::IDEMPOTENCY_KEY => $item[Entity::IDEMPOTENCY_KEY],
+                                               ]);
 
                             $payoutBatch->push($existingPayout->toArrayPublic() +
-                                [Entity::IDEMPOTENCY_KEY => $existingPayout->getIdempotencyKey()]);
+                                               [Entity::IDEMPOTENCY_KEY => $existingPayout->getIdempotencyKey()]);
                         }
                         else
                         {
@@ -2017,14 +2301,14 @@ class Service extends Base\Service
                                 $contact = $this->contactCore->processEntryForContact($item, $batchId, $createDuplicate);
 
                                 $fundAccount = $this->fundAccountService->createFundAcccount($item,
-                                    $contact,
-                                    $batchId,
-                                    $createDuplicate);
+                                                                                             $contact,
+                                                                                             $batchId,
+                                                                                             $createDuplicate);
                             }
 
                             $payout = $this->processEntryForPayoutForFundAccount($item,
-                                $fundAccount,
-                                $batchId
+                                                                                 $fundAccount,
+                                                                                 $batchId
                             );
 
                             $payoutArr = $payout->toArrayPublic() + [Entity::IDEMPOTENCY_KEY => $idempotencyKey];
@@ -2035,8 +2319,8 @@ class Service extends Base\Service
                     catch (Exception\BaseException $exception)
                     {
                         $this->trace->traceException($exception,
-                            Trace::INFO,
-                            TraceCode::BATCH_SERVICE_BULK_BAD_REQUEST
+                                                     Trace::INFO,
+                                                     TraceCode::BATCH_SERVICE_BULK_BAD_REQUEST
                         );
 
                         $exceptionData = [
@@ -2060,8 +2344,8 @@ class Service extends Base\Service
                     catch (\Throwable $throwable)
                     {
                         $this->trace->traceException($throwable,
-                            Trace::CRITICAL,
-                            TraceCode::BATCH_SERVICE_BULK_EXCEPTION
+                                                     Trace::CRITICAL,
+                                                     TraceCode::BATCH_SERVICE_BULK_EXCEPTION
                         );
 
                         $exceptionData = [
