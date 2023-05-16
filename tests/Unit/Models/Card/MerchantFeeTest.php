@@ -4,8 +4,10 @@ namespace RZP\Tests\Unit\Models\Card;
 
 use Mockery;
 
+use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Models\Card;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Pricing;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -1583,6 +1585,7 @@ class MerchantFeeTest extends TestCase
 
     public function testRuleLevelFeeModelPostpaidForNetBanking()
     {
+        $this->app['rzp.mode'] = Mode::LIVE;
         $plan = [
                 'plan_id'             => 'TestPlan1',
                 'plan_name'           => 'TestPlan1',
@@ -1636,6 +1639,15 @@ class MerchantFeeTest extends TestCase
         $payment->transaction()->associate($transaction);
 
         $fee = (new Pricing\Fee);
+
+        //Razorx FeatureFlag FEE_MODEL_OVERRIDE disabled
+        $this->mockRazorxControl();
+        $fee->calculateMerchantFees($payment);
+
+        $this->assertEquals($payment->transaction->getFeeModel(),null);
+
+        //Razorx FeatureFlag FEE_MODEL_OVERRIDE enabled
+        $this->mockRazorx();
 
         $fee->calculateMerchantFees($payment);
 
@@ -2202,6 +2214,22 @@ class MerchantFeeTest extends TestCase
     }
 
 
+    private function mockRazorxControl()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    return "control";
+                }));
+    }
 
     private function mockRazorx()
     {

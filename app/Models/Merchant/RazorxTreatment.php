@@ -766,4 +766,7 @@ final class RazorxTreatment
      * Razorx flag to enable timeout of upi collect payment with input expiry time
      */
     const ENABLE_TIMEOUT_ON_UPI_COLLECT_EXPIRY = 'enable_timeout_on_upi_collect_expiry';
+
+    // FeatureFlag to toggle Pricing Rule Fee Model override for BPCL
+    const FEE_MODEL_OVERRIDE = 'FEE_MODEL_OVERRIDE';
 }

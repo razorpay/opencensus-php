@@ -766,33 +766,26 @@ class Payment extends Base
 
         try {
 
-            $allowedMerchantIds = [Pricing\BuyPricing::BPCL_TEST_MERCHANT_ID];
-
-            if ((in_array($payment->merchant->getId(),$allowedMerchantIds) === true) and
-                ($payment->merchant !== null) and
-                (empty($payment->transaction) === false))
+            if ($payment->isEligibleForFeeModelOverride())
             {
                 $feeModel = $this->validateAndGetFeeModel($this->pricingRules);
 
                 if (empty($feeModel) === false) {
 
-                    $redis = $this->app['redis']->connection();
+                    $mode = $this->app['rzp.mode'] ?? null;
+                    $feeModelOverride = $this->app->razorx->getTreatment($payment->getMerchantId(), RazorxTreatment::FEE_MODEL_OVERRIDE, $mode);
 
-                    $redisKey = Pricing\BuyPricing::BPCL_TRANSACTION_COUNTER;
-
-                    $currentCount = $redis->get($redisKey);
-
-                    if ($currentCount === null or $currentCount < Pricing\BuyPricing::BPCL_TRANSACTION_LIMIT) {
+                    if ($feeModelOverride == RazorxTreatment::RAZORX_VARIANT_ON) {
 
                         $this->trace->info(TraceCode::RULE_LEVEL_FEE_MODEL,
                             [
                                 'fee_model' => $feeModel,
-                                'counter' => $currentCount
+                                'merchant_id' => $payment->getMerchantId(),
+                                'payment_id' => $payment->getId(),
+                                'transaction_id' => $payment->transaction->getId(),
                             ]);
 
                         $payment->transaction->setFeeModel($feeModel);
-
-                        $redis->incr($redisKey);
 
                     }
                 }

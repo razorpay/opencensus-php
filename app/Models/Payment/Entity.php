@@ -333,6 +333,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     const feeCurrencyAmount                      = "fee_currency_amount";
 
+    const FEE_MODEL_OVERRIDE_MERCHANT_IDS = [Pricing\BuyPricing::BPCL_TEST_MERCHANT_ID, Pricing\BuyPricing::BPCL_MERCHANT_ID];
+
     protected static $sign      = 'pay';
 
     protected $entity           = 'payment';
@@ -6533,5 +6535,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             ]);
 
         return (strtolower($variant) === 'on');
+    }
+
+    public function isEligibleForFeeModelOverride(): bool {
+        return
+            (
+                ($this->merchant !== null) and
+                (in_array($this->merchant->getId(),self::FEE_MODEL_OVERRIDE_MERCHANT_IDS) === true) and
+                (empty($this->transaction) === false)
+            );
     }
 }
