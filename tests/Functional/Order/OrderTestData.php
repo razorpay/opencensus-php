@@ -2383,6 +2383,30 @@ return [
         ],
     ],
 
+    'testUpdateOrderSuccessThroughOrderOutbox' => [
+        'request' => [
+            'url'       => '/order_outbox/retry',
+            'method'    => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                "successful entries count" => 1
+            ],
+        ],
+    ],
+
+    'testUpdateOrderFailureThroughOrderOutbox' => [
+        'request' => [
+            'url'       => '/order_outbox/retry',
+            'method'    => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                "failed entries count" => 1
+            ],
+        ],
+    ],
+
     'testCreateOrderWithAmountGreaterThanMaxAmountAndCurrencyUSD' => [
         'request'   => [
             'content' => [

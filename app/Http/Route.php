@@ -4044,6 +4044,10 @@ class Route
         'delete_merchants_ledger'                         => ['post',      'ledger_service/delete_merchants',                           'LedgerController@deleteMerchants'],
         'create_ledger_journal_cron'                      => ['post',      'ledger_service/create_journal_cron',                        'LedgerController@createJournalCron'],
 
+        // Order Outbox cron
+        'order_outbox_retry'                              => ['post',      'order_outbox/retry',                                        'OrderOutboxController@retryOrderUpdate'                ],
+        'order_outbox_partition_cron'                     => ['post',      'order_outbox/partition',                                    'OrderOutboxController@createOrderOutboxPartition'      ],
+
         'merchant_risk_data'                      => ['get',       'merchants/{id}/risk/data',                              'MerchantController@getMerchantRiskData'],
 
 
@@ -5858,6 +5862,10 @@ class Route
         'workflow_config_create_internal',
         'downtime_auto_resolve_cron',
         'merchant_validate_public_auth_over_internal_auth',
+
+        //Order Outbox
+        'order_outbox_retry',
+        'order_outbox_partition_cron',
 
         //Capital cord card for payouts
         'corp_card_banking_account_create',
@@ -14700,6 +14708,10 @@ class Route
             'downtime_auto_resolve_cron',
             'ledger_outbox_partition_cron',
             'token_hq_cron',
+
+            //Order Outbox
+            'order_outbox_retry',
+            'order_outbox_partition_cron',
         ],
 
         'subscriptions' => [
@@ -16923,6 +16935,7 @@ class Route
         'payout_links_shopify_customers_data_request'       => HeartbeatLagChecker::SLAVE,
         'create_local_tokens_from_consents_bulk'            => HeartbeatLagChecker::SLAVE,
         'ledger_outbox_retry'                               => HeartBeatLagChecker::MASTER,
+        'order_outbox_retry'                                => HeartBeatLagChecker::MASTER,
     ];
 
     public static $terminalsServiceFormRequestsRoutes = [

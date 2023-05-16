@@ -122,6 +122,11 @@ class Metric
     const QUEUE_JOB_WORKER_TIMEOUT              = 'queue_job_worker_timeout';
     const QUEUE_JOB_WORKER_EXCEPTION            = 'queue_job_worker_exception';
 
+    // Order Outbox
+    const ORDER_OUTBOX_SOFT_DELETE_FAILURE                  = 'order_outbox_soft_delete_failure';
+    const ORDER_OUTBOX_CRON_RETRY_FAILURE                   = 'order_outbox_cron_retry_failure';
+    const ORDER_OUTBOX_SYNC_UPDATE_FAILURE                  = 'order_outbox_sync_update_failure';
+
     // PG ledger Reverse shadow
 
     const PG_LEDGER_OUTBOX_PUSH_FAILURE                         = 'pg_ledger_outbox_push_failure';

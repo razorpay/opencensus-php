@@ -578,6 +578,19 @@ final class FactoryData
                                                 ]
         );
 
+        $factory(\RZP\Models\OrderOutbox\Entity::class, [
+                'id'              => $faker->uniqueid,
+                'order_id'        => $faker->uniqueid,
+                'merchant_id'     => '10000000000000',
+                'event_name'      => 'order_paid_event',
+                'payload'         => '{"amount_paid":1000,"status":"paid"}',
+                'is_deleted'      => 0,
+                'retry_count'     => 0,
+                'created_at'      => $faker->timestamp,
+                'updated_at'      => $faker->timestamp,
+            ]
+        );
+
        $factory(\RZP\Models\Order\OrderMeta\Entity::class, [
            'id'              => $faker->uniqueid,
            'type'            => 'tax_invoice',

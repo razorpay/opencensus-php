@@ -42,6 +42,7 @@ use RZP\Base\Database\Connectors\MySqlConnector;
  * @property Models\PayoutLink\Repository                        $payout_link
  * @property Models\Feature\Repository                           $feature
  * @property Models\Order\Repository                             $order
+ * @property Models\OrderOutbox\Repository                       $order_outbox
  * @property Models\Order\Product\Repository                     $product
  * @property Models\Order\OrderMeta\Repository                   $order_meta
  * @property Models\Payment\Analytics\Repository                 $payment_analytics

@@ -2640,6 +2640,73 @@ class OrderTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateOrderSuccessThroughOrderOutbox()
+    {
+        $orderId = $this->fixtures->generateUniqueId();
+
+        $this->enablePgRouterConfig();
+        $pgService = Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('pg_router', $pgService);
+
+        $pgService->shouldReceive('updateInternalOrder')
+            ->with(Mockery::type('array'), Mockery::type('string'), Mockery::type('string'), Mockery::type('bool'))
+            ->andReturnUsing(function (array $input, string $orderId, string $merchantId, bool $throwExceptionOnFailure)
+            {
+                $this->fixtures->stripSign($orderId);
+
+                $order = [
+                    "amount_paid"   => 1000,
+                    "status"        => "paid",
+                ];
+
+                return (new Order\Entity())->forceFill($order);
+            });
+
+        $orderOutbox = $this->fixtures->create('order_outbox', [
+            'order_id'      => $orderId,
+            'created_at'    => Carbon::yesterday(Timezone::IST)->addHour(1)->timestamp
+        ]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $orderOutbox->reload();
+
+        $this->assertNotNull($orderOutbox['deleted_at']);
+    }
+
+    public function testUpdateOrderFailureThroughOrderOutbox()
+    {
+        $orderId = $this->fixtures->generateUniqueId();
+
+        $this->enablePgRouterConfig();
+        $pgService = Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('pg_router', $pgService);
+
+        $pgService->shouldReceive('updateInternalOrder')
+            ->with(Mockery::type('array'), Mockery::type('string'), Mockery::type('string'), Mockery::type('bool'))
+            ->andReturnUsing(function (array $input, string $orderId, string $merchantId, bool $throwExceptionOnFailure)
+            {
+                throw new Exception\ServerErrorException('PG Router Response cannot be null', ErrorCode::SERVER_ERROR_PGROUTER_SERVICE_FAILURE);;
+            });
+
+        $orderOutbox = $this->fixtures->create('order_outbox', [
+            'order_id'      => $orderId,
+            'created_at'    => Carbon::yesterday(Timezone::IST)->addHour(1)->timestamp
+        ]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $orderOutbox->reload();
+
+        $this->assertNull($orderOutbox['deleted_at']);
+    }
+
     public function testCreateOrderWithInvalidValidProductType()
     {
         $this->startTest();
@@ -3081,7 +3148,7 @@ class OrderTest extends TestCase
 
         $this->assertEquals($offer1->getPublicId(), $response['offers'][0]['id']);
     }
-    
+
     public function testCurrencyForTurkishLiraEnabled()
     {
         $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => false]);

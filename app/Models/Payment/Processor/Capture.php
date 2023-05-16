@@ -30,6 +30,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\Capture as CaptureJob;
 use RZP\Models\Merchant\Preferences;
 use RZP\Listeners\ApiEventSubscriber;
+use RZP\Jobs\Order\OrderUpdateByOutbox;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Offer;
 use Neves\Events\TransactionalClosureEvent;
@@ -38,6 +39,8 @@ use RZP\Base\Database\DetectsLostConnections;
 use RZP\Models\Merchant\Balance\BalanceConfig;
 use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Models\Ledger\Constants as LedgerConstants;
+use RZP\Models\OrderOutbox\Entity as OrderOutboxEntity;
+use RZP\Models\OrderOutbox\Constants as OrderOutboxConstants;
 use RZP\Models\QrCode\NonVirtualAccountQrCode as NonVAQr;
 use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 use RZP\Jobs\MerchantBasedBalanceUpdateV1;
@@ -1440,31 +1443,88 @@ trait Capture
 
         $order = $payment->order;
 
-        $paidAmount = $payment->getAdjustedAmountWrtMCCCustFeeBearer($originalPaymentFee);
+        $this->mutex->acquireAndRelease(
+            $order->getId() . "_order_update_after_capture",
+            function () use ($payment, $originalPaymentFee, $order) {
 
-        $paidAmount = $payment->getAmountWithoutConvenienceFeeIfApplicable($paidAmount, $order);
+                $isOrderOutboxEnabled = false;
 
-        $order->incrementAmountPaidBy($paidAmount);
+                $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),
+                         Merchant\RazorxTreatment::ORDER_OUTBOX_ONBOARDING, $this->mode);
 
-        $this->updateOrderStatusPaidIfApplicable($order, $payment);
+                if (strtolower($variant) === 'on')
+                {
+                    $isOrderOutboxEnabled = true;
+                }
 
-        if ($order->isExternal() === true)
-        {
-            $input = [
-                Order\Entity::AMOUNT_PAID => $order->getAmountPaid()
-            ];
+                $this->trace->info(TraceCode::ORDER_OUTBOX_ONBOARDING_RAZORX_VARIANT, [
+                    'merchant_id'           => $payment->getMerchantId(),
+                    'variant'               => $variant,
+                    'isOrderOutboxEnabled'  => $isOrderOutboxEnabled,
+                ]);
 
-            if ($order->getStatus() === Order\Status::PAID)
-            {
-                $input[Order\Entity::STATUS] = Order\Status::PAID;
+                if ($isOrderOutboxEnabled === true)
+                {
+                    // Updating order fields(amount_paid and status) if we have an entry in the order outbox table
+                    $order = (new Order\Core)->mergeOrderOutbox($order);
+                }
+
+                $paidAmount = $payment->getAdjustedAmountWrtMCCCustFeeBearer($originalPaymentFee);
+
+                $paidAmount = $payment->getAmountWithoutConvenienceFeeIfApplicable($paidAmount, $order);
+
+                $order->incrementAmountPaidBy($paidAmount);
+
+                $this->updateOrderStatusPaidIfApplicable($order, $payment);
+
+                if ($order->isExternal() === true) {
+                    $outboxerEvent = OrderOutboxConstants::ORDER_AMOUNT_PAID_EVENT;
+
+                    $input = [
+                        Order\Entity::AMOUNT_PAID => $order->getAmountPaid()
+                    ];
+
+                    if ($order->getStatus() === Order\Status::PAID) {
+                        $input[Order\Entity::STATUS] = Order\Status::PAID;
+
+                        $outboxerEvent = OrderOutboxConstants::ORDER_STATUS_PAID_EVENT;
+                    }
+
+                    if ($isOrderOutboxEnabled === true)
+                    {
+                        $outbokerInput = [
+                            OrderOutboxEntity::ORDER_ID => $order->getId(),
+                            OrderOutboxEntity::MERCHANT_ID => $order->getMerchantId(),
+                            OrderOutboxEntity::EVENT_NAME => $outboxerEvent,
+                            OrderOutboxEntity::PAYLOAD => json_encode($input),
+                        ];
+
+                        $orderOutbox = new OrderOutboxEntity;
+
+                        $orderOutbox->build($outbokerInput);
+
+                        //Saving the order update in the in the order outboxer table,
+                        //the order update to pg-router will go in sync on the basis of db commit hook
+                        $this->repo->saveorFail($orderOutbox);
+
+                        \Event::dispatch(new TransactionalClosureEvent(function () use ($orderOutbox) {
+                            OrderUpdateByOutbox::dispatchNow($this->mode, $orderOutbox->getId());
+
+                            $this->trace->info(TraceCode::ORDER_OUTBOX_PUSH_SUCCESS, [
+                                'order_outbox' => $orderOutbox,
+                            ]);
+                        }));
+                    }
+                    else
+                    {
+                        $this->app['pg_router']->updateInternalOrder($input,$order->getId(),$order->getMerchantId(), true);
+                    }
+
+                } else {
+                    $this->repo->saveOrFail($order);
+                }
             }
-
-            $this->app['pg_router']->updateInternalOrder($input,$order->getId(),$order->getMerchantId(), true);
-        }
-        else
-        {
-            $this->repo->saveOrFail($order);
-        }
+        );
 
         $this->trace->info(
             TraceCode::ORDER_STATUS_PAID,

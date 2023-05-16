@@ -29,6 +29,7 @@ class Base
         'user'                  => \RZP\Models\User\Entity::class,
         'batch'                 => \RZP\Models\Batch\Entity::class,
         'order'                 => \RZP\Models\Order\Entity::class,
+        'order_outbox'          => \RZP\Models\OrderOutbox\Entity::class,
         'order_meta'            => \RZP\Models\Order\OrderMeta\Entity::class,
         'token'                 => \RZP\Models\Customer\Token\Entity::class,
         'device'                => \RZP\Models\Device\Entity::class,

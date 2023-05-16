@@ -174,6 +174,7 @@ class Entity
     const TOKENISED_IIN              = 'tokenised_iin';
     const TOKEN_CARD                 = 'token_card';
     const LEDGER_OUTBOX              = 'ledger_outbox';
+    const ORDER_OUTBOX               = 'order_outbox';
 
     const RAW_ADDRESS                = 'raw_address';
     const FUND_TRANSFER_ATTEMPT      = 'fund_transfer_attempt';
@@ -1055,6 +1056,7 @@ class Entity
         self::USER                      => \RZP\Models\User::class,
         self::OFFER                     => \RZP\Models\Offer::class,
         self::ORDER                     => \RZP\Models\Order::class,
+        self::ORDER_OUTBOX              => \RZP\Models\OrderOutbox::class,
         self::ORDER_META                => \RZP\Models\Order\OrderMeta::class,
         self::TOKEN                     => \RZP\Models\Customer\Token::class,
         self::GEO_IP                    => \RZP\Models\GeoIP::class,

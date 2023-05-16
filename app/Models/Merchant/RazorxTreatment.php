@@ -69,6 +69,9 @@ final class RazorxTreatment
     // Razorx treatment constant, allows system to call ledger service.
     const LEDGER_ONBOARDING_PG_MERCHANT = 'ledger_onboarding_pg_merchant';
 
+    // Razorx treatment constant, for onboarding the order update via order outbox.
+    const ORDER_OUTBOX_ONBOARDING = 'order_outbox_onboarding';
+
     // Decide whom to use k8s batch upload job instead of queue worker
     const K8S_BATCH_TREATMENT   = 'k8s-batch-upload';
 

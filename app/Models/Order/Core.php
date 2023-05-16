@@ -26,6 +26,7 @@ use RZP\Models\BankAccount\Beneficiary;
 use RZP\Jobs\UpdateSyncedOrderPgRouter;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\OrderOutbox\Constants as OrderOutboxConstants;
 use RZP\Models\SubscriptionRegistration;
 
 class Core extends Base\Core
@@ -627,6 +628,48 @@ class Core extends Base\Core
         }
 
         $this->repo->config->findByPublicIdAndMerchant($configId, $this->merchant);
+    }
+
+    public function mergeOrderOutbox(Entity $order)
+    {
+        $orderOutbox = $this->repo->order_outbox->fetchByOrderId($order->getId());
+
+        $this->trace->info(TraceCode::ORDER_OUTBOX_FETCH,
+            [
+                OrderOutboxConstants::ORDER_OUTBOX         => $orderOutbox
+            ]
+        );
+
+        if (empty($orderOutbox) === false)
+        {
+            $orderOutboxPayload = $payload = json_decode($orderOutbox->getPayload(), true);
+
+            switch ($orderOutbox->getEventName())
+            {
+                case OrderOutboxConstants::ORDER_AMOUNT_PAID_EVENT:
+                    $orderAmountPaid = $orderOutboxPayload[Entity::AMOUNT_PAID];
+
+                    $order->setAmountPaid($orderAmountPaid);
+                    break;
+
+                case OrderOutboxConstants::ORDER_STATUS_PAID_EVENT:
+                    $orderAmountPaid = $orderOutboxPayload[Entity::AMOUNT_PAID];
+                    $orderStatus = $orderOutboxPayload[Entity::STATUS];
+
+                    $order->setAmountPaid($orderAmountPaid);
+                    $order->setStatus($orderStatus);
+                    break;
+
+            }
+
+            $this->trace->info(TraceCode::ORDER_UPDATE_BY_OUTBOX_ENTITY,
+                [
+                    'order'     => $order
+                ]
+            );
+        }
+
+        return $order;
     }
 
     public function dispatchOrderToPGRouter($data)

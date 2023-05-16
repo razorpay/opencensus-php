@@ -15,6 +15,15 @@ return [
         ],
     ],
 
+    'testCaptureWithOrderOutbox' => [
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'entity' => 'payment',
+            ],
+        ],
+    ],
+
     'testBulkCapture' => [
         'response' => [
             'content' => [
