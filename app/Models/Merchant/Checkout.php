@@ -147,7 +147,6 @@ class Checkout
 
     public function getPreferences(Entity $merchant, $mode, array $input)
     {
-
         Locale::setLocale($input, $merchant->getId());
 
         $this->tracePreferencesRequest($merchant, $mode, $input);

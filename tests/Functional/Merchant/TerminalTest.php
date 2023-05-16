@@ -13,6 +13,7 @@ use Illuminate\Cache\Events\KeyForgotten;
 
 use RZP\Models\Currency\Currency;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Terminal;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -4113,6 +4114,58 @@ class TerminalTest extends TestCase
         $terminal = $this->getEntityById('terminal', $tid, true);
 
         $this->assertEquals($newTerminalMerchantId, $terminal['gateway_merchant_id']);
+    }
+
+    public function testCreateWalletBoostTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $terminal = $this->getLastEntity('terminal', true);
+
+        $this->assertTrue(in_array(Wallet::BOOST, $terminal[Terminal\Entity::ENABLED_WALLETS]));
+    }
+
+    public function testCreateWalletMCashTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $terminal = $this->getLastEntity('terminal', true);
+
+        $this->assertTrue(in_array(Wallet::MCASH, $terminal[Terminal\Entity::ENABLED_WALLETS]));
+    }
+
+    public function testCreateWalletTouchNGoTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $terminal = $this->getLastEntity('terminal', true);
+
+        $this->assertTrue(in_array(Wallet::TOUCHNGO, $terminal[Terminal\Entity::ENABLED_WALLETS]));
+    }
+
+    public function testCreateWalletGrabPayTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $terminal = $this->getLastEntity('terminal', true);
+
+        $this->assertTrue(in_array(Wallet::GRABPAY, $terminal[Terminal\Entity::ENABLED_WALLETS]));
     }
 
     public function testFetchMerchantsInfoForIIR()

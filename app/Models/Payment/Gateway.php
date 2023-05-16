@@ -172,7 +172,6 @@ class Gateway
     const GIROPAY            = 'giropay';
     const UMOBILE            = 'umobile';
 
-
     const ACQUIRER_HDFC         = 'hdfc';
     const ACQUIRER_ICIC         = 'icic';
     const ACQUIRER_AXIS         = 'axis';

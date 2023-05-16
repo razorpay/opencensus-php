@@ -398,7 +398,6 @@ class Core extends Base\Core
         $fpxEnabled = $methods->isFpxEnabled();
         $data[Entity::INTL_BANK_TRANSFER] = $methods->getIntlBankTransferEnabledForMerchant();
 
-
         if ($netbankingEnabled === true)
         {
             $banks = $methods->getSupportedBanks();

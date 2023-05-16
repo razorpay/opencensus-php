@@ -1621,6 +1621,8 @@ class MethodsTest extends TestCase
 
         $this->fixtures->merchant->activate('10000000000000');
 
+        $this->fixtures->merchant->enableAdditionalWallets([Wallet::MCASH, Wallet::GRABPAY, Wallet::TOUCHNGO, Wallet::BOOST]);
+
         $this->fixtures->merchant->enablePaytm();
 
         $this->startTest();
@@ -1760,6 +1762,146 @@ class MethodsTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertTrue($response[Wallet::BAJAJPAY]);
+    }
+
+    public function testEnableGrabPay()
+    {
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertFalse($merchantMethods->isGrabpayEnabled());
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'grabpay' => 1,
+            ],
+        ];
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertTrue($response[Wallet::GRABPAY]);
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertTrue(($merchantMethods->toArray())[Wallet::GRABPAY]);
+
+        $this->assertTrue(($merchantMethods->toArrayPublic())[Wallet::GRABPAY]);
+    }
+
+    public function testEnableBoost()
+    {
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertFalse($merchantMethods->isBoostEnabled());
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'boost' => 1,
+            ],
+        ];
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertTrue($response[Wallet::BOOST]);
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertTrue(($merchantMethods->toArray())[Wallet::BOOST]);
+
+        $this->assertTrue(($merchantMethods->toArrayPublic())[Wallet::BOOST]);
+    }
+
+    public function testEnableMCash()
+    {
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertFalse($merchantMethods->isMcashEnabled());
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'mcash' => 1,
+            ],
+        ];
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertTrue($response[Wallet::MCASH]);
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertTrue(($merchantMethods->toArray())[Wallet::MCASH]);
+
+        $this->assertTrue(($merchantMethods->toArrayPublic())[Wallet::MCASH]);
+    }
+
+    public function testEnableTouchngo()
+    {
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertFalse($merchantMethods->isTouchngoEnabled());
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'touchngo' => 1,
+            ],
+        ];
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertTrue($response[Wallet::TOUCHNGO]);
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertTrue(($merchantMethods->toArray())[Wallet::TOUCHNGO]);
+
+        $this->assertTrue(($merchantMethods->toArrayPublic())[Wallet::TOUCHNGO]);
     }
 
     public function testEnablePayzappWallet()

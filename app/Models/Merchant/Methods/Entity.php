@@ -71,6 +71,10 @@ class Entity extends Base\PublicEntity
     const FPX               = 'fpx';
     const IN_APP            = 'in_app';
     const BAJAJPAY          = 'bajajpay';
+    const GRABPAY           = 'grabpay';
+    const TOUCHNGO          = 'touchngo';
+    const BOOST             = 'boost';
+    const MCASH             = 'mcash';
 
     const DEBIT_EMI_PROVIDERS = 'debit_emi_providers';
     const CREDIT_EMI_PROVIDERS  = 'credit_emi_providers';
@@ -144,6 +148,10 @@ class Entity extends Base\PublicEntity
         self::FPX,
         self::ADDON_METHODS,
         self::BAJAJPAY,
+        self::BOOST,
+        self::MCASH,
+        self::GRABPAY,
+        self::TOUCHNGO,
     ];
 
     protected $visible = [
@@ -197,6 +205,10 @@ class Entity extends Base\PublicEntity
         self::FPX,
         self::IN_APP,
         self::BAJAJPAY,
+        self::BOOST,
+        self::MCASH,
+        self::GRABPAY,
+        self::TOUCHNGO,
         self::INTL_BANK_TRANSFER,
     ];
 
@@ -252,6 +264,10 @@ class Entity extends Base\PublicEntity
         self::FPX,
         self::IN_APP,
         self::BAJAJPAY,
+        self::BOOST,
+        self::MCASH,
+        self::GRABPAY,
+        self::TOUCHNGO,
         self::INTL_BANK_TRANSFER,
     ];
 
@@ -268,6 +284,10 @@ class Entity extends Base\PublicEntity
         self::BAJAJPAY,
         self::INTL_BANK_TRANSFER,
         self::PAYZAPP,
+        self::BOOST,
+        self::MCASH,
+        self::GRABPAY,
+        self::TOUCHNGO,
     ];
 
 
@@ -380,7 +400,12 @@ class Entity extends Base\PublicEntity
         self::PAYCASH,
         self::CITIBANKREWARDS,
         self::BAJAJPAY,
+        self::BOOST,
+        self::GRABPAY,
+        self::TOUCHNGO,
+        self::MCASH
     );
+
 
     protected static $additional_wallet_names = [
         self::ITZCASH,
@@ -390,6 +415,10 @@ class Entity extends Base\PublicEntity
         self::CITIBANKREWARDS,
         self::BAJAJPAY,
         self::PAYZAPP,
+        self::TOUCHNGO,
+        self::GRABPAY,
+        self::MCASH,
+        self::BOOST
     ];
 
     protected static $aff_method_public_name_mapping = [
@@ -723,6 +752,26 @@ class Entity extends Base\PublicEntity
         return $this->getBajajPay();
     }
 
+    public function isBoostEnabled(): bool
+    {
+        return $this->getBoost();
+    }
+
+    public function isMcashEnabled(): bool
+    {
+        return $this->getMCash();
+    }
+
+    public function isTouchngoEnabled(): bool
+    {
+        return $this->getTouchNGo();
+    }
+
+    public function isGrabpayEnabled(): bool
+    {
+        return $this->getGrabPay();
+    }
+
     public function isMobikwikEnabled()
     {
         return $this->getAttribute(self::MOBIKWIK);
@@ -1037,6 +1086,26 @@ class Entity extends Base\PublicEntity
     public function getBajajPay(): bool
     {
         return in_array(self::BAJAJPAY, $this->getAttribute(self::ADDITIONAL_WALLETS));
+    }
+
+    public function getGrabPay(): bool
+    {
+        return in_array(self::GRABPAY, $this->getAttribute(self::ADDITIONAL_WALLETS));
+    }
+
+    public function getBoost(): bool
+    {
+        return in_array(self::BOOST, $this->getAttribute(self::ADDITIONAL_WALLETS));
+    }
+
+    public function getMCash(): bool
+    {
+        return in_array(self::MCASH, $this->getAttribute(self::ADDITIONAL_WALLETS));
+    }
+
+    public function getTouchNGo(): bool
+    {
+        return in_array(self::TOUCHNGO, $this->getAttribute(self::ADDITIONAL_WALLETS));
     }
 
     public function getPayzapp(): bool
@@ -1687,6 +1756,26 @@ class Entity extends Base\PublicEntity
     protected function getBajajPayAttribute()
     {
         return $this->getBajajPay();
+    }
+
+    protected function getMCashAttribute()
+    {
+        return $this->getMCash();
+    }
+
+    protected function getGrabPayAttribute()
+    {
+        return $this->getGrabPay();
+    }
+
+    protected function getTouchNGoAttribute()
+    {
+        return $this->getTouchNGo();
+    }
+
+    protected function getBoostAttribute()
+    {
+        return $this->getBoost();
     }
 
     protected function getPayzappAttribute()

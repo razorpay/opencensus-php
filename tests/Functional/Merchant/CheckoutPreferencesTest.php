@@ -3691,6 +3691,42 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertTrue($response['methods']['wallet']['bajajpay']);
     }
 
+    public function testPreferencesForBoost()
+    {
+        $this->fixtures->merchant->enableAdditionalWallets([Wallet::BOOST]);
+        $this->ba->publicAuth();
+        $response = $this->getPreferences();
+        $this->assertArrayHasKey(Wallet::BOOST, $response['methods']['wallet']);
+        $this->assertTrue($response['methods']['wallet']['boost']);
+    }
+
+    public function testPreferencesForMCash()
+    {
+        $this->fixtures->merchant->enableAdditionalWallets([Wallet::MCASH]);
+        $this->ba->publicAuth();
+        $response = $this->getPreferences();
+        $this->assertArrayHasKey(Wallet::MCASH, $response['methods']['wallet']);
+        $this->assertTrue($response['methods']['wallet']['mcash']);
+    }
+
+    public function testPreferencesForTouchNGO()
+    {
+        $this->fixtures->merchant->enableAdditionalWallets([Wallet::TOUCHNGO]);
+        $this->ba->publicAuth();
+        $response = $this->getPreferences();
+        $this->assertArrayHasKey(Wallet::TOUCHNGO, $response['methods']['wallet']);
+        $this->assertTrue($response['methods']['wallet']['touchngo']);
+    }
+
+    public function testPreferencesForGrabPay()
+    {
+        $this->fixtures->merchant->enableAdditionalWallets([Wallet::GRABPAY]);
+        $this->ba->publicAuth();
+        $response = $this->getPreferences();
+        $this->assertArrayHasKey(Wallet::GRABPAY, $response['methods']['wallet']);
+        $this->assertTrue($response['methods']['wallet']['grabpay']);
+    }
+
     public function testGetPreferencesWhenCvvLessFlowDisabledOnMerchantExpectsCvvLessFlowDisabled()
     {
         $expDetails[] = [

@@ -4841,6 +4841,98 @@ return [
         ]
     ],
 
+    'testCreateWalletBoostTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'eghl',
+                'gateway_merchant_id'       => '98982332',
+                'gateway_secure_secret'     => 'randomsecret123',
+                'gateway_secure_secret2'    => 'randomsecret1234',
+                'gateway_access_code'       => '9591',
+                'enabled_wallets'           => ['boost'],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway'                   => 'eghl',
+                'gateway_merchant_id'       => '98982332',
+                //Secrets are not return back in response
+                'gateway_access_code'       => '9591',
+                'enabled_wallets'           => ['boost'],
+            ]
+        ]
+    ],
+
+    'testCreateWalletMCashTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'eghl',
+                'gateway_merchant_id'       => '98982332',
+                'gateway_secure_secret'     => 'randomsecret123',
+                'gateway_secure_secret2'    => 'randomsecret1234',
+                'gateway_access_code'       => '9591',
+                'enabled_wallets'           => ['mcash'],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway'                   => 'eghl',
+                'gateway_merchant_id'       => '98982332',
+                //Secrets are not return back in response
+                'gateway_access_code'       => '9591',
+                'enabled_wallets'           => ['mcash'],
+            ]
+        ]
+    ],
+
+    'testCreateWalletGrabPayTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'eghl',
+                'gateway_merchant_id'       => '98982332',
+                'gateway_secure_secret'     => 'randomsecret123',
+                'gateway_secure_secret2'    => 'randomsecret1234',
+                'gateway_access_code'       => '9591',
+                'enabled_wallets'           => ['grabpay'],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway'                   => 'eghl',
+                'gateway_merchant_id'       => '98982332',
+                //Secrets are not return back in response
+                'gateway_access_code'       => '9591',
+                'enabled_wallets'           => ['grabpay'],
+            ]
+        ]
+    ],
+
+    'testCreateWalletTouchNGoTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'eghl',
+                'gateway_merchant_id'       => '98982332',
+                'gateway_secure_secret'     => 'randomsecret123',
+                'gateway_secure_secret2'    => 'randomsecret1234',
+                'gateway_access_code'       => '9591',
+                'enabled_wallets'           => ['touchngo'],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway'                   => 'eghl',
+                'gateway_merchant_id'       => '98982332',
+                //Secrets are not return back in response
+                'gateway_access_code'       => '9591',
+                'enabled_wallets'           => ['touchngo'],
+            ]
+        ]
+    ],
+
     'testFetchMerchantsInfoForIIR' => [
         'request' => [
             'url'     => '/internal/iir/merchants',

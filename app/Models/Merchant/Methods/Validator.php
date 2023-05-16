@@ -79,6 +79,10 @@ class Validator extends Base\Validator
         Entity::ADDON_METHODS      => 'sometimes|array',
         Entity::IN_APP             => 'sometimes|boolean',
         Entity::BAJAJPAY           => 'sometimes|boolean',
+        Entity::MCASH              => 'sometimes|boolean',
+        Entity::GRABPAY            => 'sometimes|boolean',
+        Entity::TOUCHNGO           => 'sometimes|boolean',
+        Entity::BOOST              => 'sometimes|boolean',
         Entity::INTL_BANK_TRANSFER => 'sometimes|array',
         Entity::INTL_BANK_TRANSFER.'.*' => 'sometimes|boolean',
     ];

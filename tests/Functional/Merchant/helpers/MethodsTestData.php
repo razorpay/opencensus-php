@@ -934,7 +934,11 @@ return [
                         'UTIB' => 'Axis Bank',
                     ],
                     'wallet' => [
-                        'paytm' => true,
+                        'paytm'    => true,
+                        'grabpay'  => true,
+                        'touchngo' => true,
+                        'boost'    => true,
+                        'mcash'    => true
                     ],
                     'emi' => false,
                     'upi' => false,
