@@ -1694,11 +1694,31 @@ class Gateway extends Base\Gateway
             $timeout = $this->app['config']->get($credTimeoutConfig);
         }
 
+        if(($gateway === Payment\Gateway::CCAVENUE) and
+            ($this->action) === Action::PAY_INIT and
+            ($this->isUpiCollectFlow($input) === true))
+        {
+            $ccavenueTimeoutConfig = 'applications.mozart.ccavenue_collect_request_timeout';
+
+            $timeout = $this->app['config']->get($ccavenueTimeoutConfig);
+        }
+
         if ((is_null($timeout) === false) and
             (is_numeric($timeout) === true))
         {
             $mozartRequest['options']['timeout'] = $timeout;
         }
+    }
+
+    protected function isUpiCollectFlow($input)
+    {
+        if((isset($input['upi']['flow']) === true)
+            and ($input['upi']['flow'] === "collect"))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function getTerminalOnboardingMozartRequestArray($input)
