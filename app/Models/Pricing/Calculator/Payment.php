@@ -652,7 +652,7 @@ class Payment extends Base
         $wallet = $payment->getWallet();
 
         $filter = array(
-            [Pricing\Entity::PAYMENT_NETWORK, $wallet, false, null]
+            [Pricing\Entity::PAYMENT_NETWORK, $wallet, true, null]
         );
 
         $rules = $this->applyFiltersOnRules($rules, $filter);

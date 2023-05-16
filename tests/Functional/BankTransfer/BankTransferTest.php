@@ -9610,7 +9610,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('currency_cloud',$paymentEntity['gateway']);
         $this->assertEquals('intl_bank_transfer',$paymentEntity['method']);
         $this->assertEquals('ach',$paymentEntity['wallet']);
-        $this->assertEquals(297000,$paymentEntity['base_amount']);
+        $this->assertEquals(294000,$paymentEntity['base_amount']);
         $this->assertEquals(30000,$paymentEntity['amount']);
     }
 
@@ -9639,7 +9639,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('currency_cloud',$paymentEntity['gateway']);
         $this->assertEquals('intl_bank_transfer',$paymentEntity['method']);
         $this->assertEquals('ach',$paymentEntity['wallet']);
-        $this->assertEquals(297000,$paymentEntity['base_amount']);
+        $this->assertEquals(294000,$paymentEntity['base_amount']);
         $this->assertEquals(30000,$paymentEntity['amount']);
     }
 
@@ -9678,7 +9678,7 @@ class BankTransferTest extends TestCase
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
 
-        $mccMarkdownPercent = 4;
+        $mccMarkdownPercent = 2;
         $this->fixtures->merchant->addMccMarkdownPaymentConfig($mccMarkdownPercent,$merchantDetail['merchant_id']);
 
         $this->fixtures->create('merchant_international_integrations',[
@@ -9699,7 +9699,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals('authorized',$paymentEntity['status']);
         $this->assertEquals('currency_cloud',$paymentEntity['gateway']);
         $this->assertEquals('intl_bank_transfer',$paymentEntity['method']);
-        $this->assertEquals(297000,$paymentEntity['base_amount']);
+        $this->assertEquals(294000,$paymentEntity['base_amount']);
         $this->assertEquals(30000,$paymentEntity['amount']);
     }
 
