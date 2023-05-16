@@ -5290,6 +5290,12 @@ class Core extends Base\Core
 
         $autoKyc = $this->isAutoKycDone($merchantDetails);
 
+        $this->trace->info(TraceCode::MERCHANT_AUTO_KYC_DONE_FLAG, [
+            'merchant_id'      => $merchantDetails->getId(),
+            'business_type'    => $merchantDetails->getBusinessType(),
+            'is_auto_kyc_done' => $autoKyc,
+        ]);
+
         if ($autoKyc === true)
         {
             switch ($merchantDetails->getBusinessType())
@@ -5313,6 +5319,10 @@ class Core extends Base\Core
                     }
             }
         }
+
+        $this->trace->info(TraceCode::MERCHANT_ACTIVATION_STATUS_UNDER_REVIEW_DEFAULT, [
+            'merchant_id'   => $merchantDetails->getId(),
+        ]);
 
         return Status::UNDER_REVIEW;
     }
@@ -5340,6 +5350,11 @@ class Core extends Base\Core
     {
         if ($merchantDetails->merchant->getOrgId() !== Org\Entity::RAZORPAY_ORG_ID)
         {
+            $this->trace->info(TraceCode::MERCHANT_ORG_ID_NOT_RAZORPAY_ORG_ID, [
+                'merchant_id'   => $merchantDetails->getId(),
+                'org_id'        => $merchantDetails->merchant->getOrgId(),
+            ]);
+
             return Status::UNDER_REVIEW;
         }
 
@@ -5347,6 +5362,10 @@ class Core extends Base\Core
         // Linked Account wont be in activated_mcc_pending or activated_kyc_pending state ever.
         if ($merchantDetails->merchant->isLinkedAccount() === true)
         {
+            $this->trace->info(TraceCode::MERCHANT_ACTIVATED_AS_LINKED_ACCOUNT, [
+                'merchant_id'   => $merchantDetails->getId(),
+            ]);
+
             return Status::ACTIVATED;
         }
 
@@ -5569,6 +5588,11 @@ class Core extends Base\Core
                 if ($gstValidationCompleted === false and
                     (BusinessType::isGstinVerificationExcludedBusinessTypes($merchantDetails->getBusinessTypeValue()) === false))
                 {
+                    $this->trace->info(TraceCode::GST_VALIDATION_NOT_COMPLETED, [
+                        'merchant_id'   => $merchantDetails->getId(),
+                        'business_type' => $businessType,
+                    ]);
+
                     return false;
                 }
                 $conditions = $this->fetchAutoKycConditionsForRouteNoDocKyc($merchantDetails);
@@ -5587,11 +5611,21 @@ class Core extends Base\Core
                 if ($merchantDetails->merchant->isLinkedAccount() === true)
                 {
                     $conditions = AutoKyc\Constants::LINKED_ACCOUNT_VERIFICATION_CONDITIONS;
+
+                    $this->trace->info(TraceCode::LINKED_ACCOUNT_VERIFICATION_CONDITIONS_SET, [
+                        'merchant_id'  => $merchantDetails->getId(),
+                        'conditions'    => $businessType,
+                    ]);
                 }
                 else
                 {
                     if (isset(AutoKyc\Constants::AUTO_KYC_VERIFICATION_CONDITIONS[$businessType]) === false)
                     {
+                        $this->trace->info(TraceCode::AUTO_KYC_CONDITIONS_NOT_SET, [
+                            'merchant_id'   => $merchantDetails->getId(),
+                            'business_type' => $businessType,
+                        ]);
+
                         return false;
                     }
                     else
@@ -5608,6 +5642,12 @@ class Core extends Base\Core
 
             $in = $condition[AutoKyc\Constants::IN];
 
+            $this->trace->info(TraceCode::AUTO_KYC_PARSER_DEBUG, [
+                'merchant_id'   => $merchantDetails->getId(),
+                'entity'        => $entity,
+                'condition'     => $in,
+            ]);
+
             switch ($entity)
             {
                 case E::MERCHANT_DETAIL:
@@ -5619,8 +5659,17 @@ class Core extends Base\Core
             }
         });
 
+        $this->trace->info(TraceCode::AUTO_KYC_DONE_AFTER_PARSER, [
+            'merchant_id'       => $merchantDetails->getId(),
+            'is_auto_kyc_done'  => $autoKycDone,
+        ]);
+
         if ($this->isAutoKycEnabled($merchantDetails) === false)
         {
+            $this->trace->info(TraceCode::AUTO_KYC_NOT_ENABLED, [
+                'merchant_id'       => $merchantDetails->getId(),
+            ]);
+
             return false;
         }
 
