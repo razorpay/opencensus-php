@@ -5297,7 +5297,7 @@ class Core extends Base\Core
     public function listSubmerchants(Entity $partner, array $params)
     {
         $params['skip'] = $params['skip'] ?? 0;
-        $params['count'] = $params['count'] ?? self::DEFAULT_SUBMERCHANT_FETCH_LIMIT;
+        $params['count'] = $params['count'] ?? Service::DEFAULT_SUBMERCHANT_FETCH_LIMIT;
 
         $offset = $params['skip'] ?? 0;
 
@@ -5527,7 +5527,7 @@ class Core extends Base\Core
     }
 
     private function getPartnerSubMerchantDataV2(
-        PublicCollection $submerchants, Entity $partner, User\Entity $partnerUser,
+        PublicCollection $submerchants, Entity $partner, User\Entity $partnerUser = null,
         string $product = null, bool $isExpEnabled = false
     ): PublicCollection
     {
@@ -5555,7 +5555,7 @@ class Core extends Base\Core
                 ];
                 unset($submerchant[Detail\Entity::ACTIVATION_STATUS]);
 
-                $subMerchantOwner = $this->getNonPartnerOwnerV2($submerchant, $partnerUser, $product);
+                $subMerchantOwner = ( empty($partnerUser) === false) ? $this->getNonPartnerOwnerV2($submerchant, $partnerUser, $product) : null;
                 if (empty($subMerchantOwner) === true)
                 {
                     $submerchant[Entity::USER] = null;
@@ -5604,22 +5604,22 @@ class Core extends Base\Core
     /**
      * Sets the partner attributes in the instance of Merchant\Entity so that toArrayPartner() can be used later.
      *
-     * @param Entity      $submerchant
-     * @param Entity      $partner
-     * @param User\Entity $partnerUser
-     * @param string|null $product
-     * @param bool        $isExpEnabled // experiment to enable the low latency flow
+     * @param Entity             $submerchant
+     * @param Entity             $partner
+     * @param User\Entity|null   $partnerUser
+     * @param string|null        $product
+     * @param bool               $isExpEnabled // experiment to enable the low latency flow
      *
      * @return Entity
      */
-    protected function getPartnerSubmerchantData(Entity $submerchant, Entity $partner, User\Entity $partnerUser,
+    protected function getPartnerSubmerchantData(Entity $submerchant, Entity $partner, User\Entity $partnerUser = null,
                                                  string $product = null, bool $isExpEnabled = false): Entity
     {
         $submerchant[Entity::DETAILS] = [
             Detail\Entity::ACTIVATION_STATUS => $submerchant->getAttribute(Detail\Entity::ACTIVATION_STATUS),
         ];
 
-        $subMerchantOwner = $this->getNonPartnerOwner($submerchant, $partnerUser, $product);
+        $subMerchantOwner = ( empty($partnerUser) === false) ? $this->getNonPartnerOwner($submerchant, $partnerUser, $product) : null;
 
         if (empty($subMerchantOwner) === true)
         {
