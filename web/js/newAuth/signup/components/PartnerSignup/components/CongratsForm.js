@@ -70,13 +70,23 @@ const CongratsForm = ({
         .catch((err) => {
           setIsLoading(false);
           const error_description = err.errors?.[0];
+          trackWithSegment({
+            objectName: 'Form Field Validation',
+            actionName: 'Error',
+            location: SCREEN_NAME[STEPS.CONGRATS],
+            properties: {
+              errorMessage: error_description,
+              fieldLabel: 'Contact Email',
+              funnelStage: 'L1',
+            },
+          });
           if (error_description === EMAIL_ALREADY_TAKEN_ERROR_DESC) {
             setEmailError('email_already_taken');
             setShowError(true);
           } else
             showNotification({
               type: 'error',
-              message: err.errors?.[0] || 'Please try again',
+              message: error_description || 'Please try again',
             });
         });
     } else if (label === 'addLater') {

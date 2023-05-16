@@ -1,12 +1,16 @@
 import React from 'react';
 import CongratsForm from 'newAuth/signup/components/PartnerSignup/components/CongratsForm';
-import { render, screen } from 'test-utils';
+import { render, screen, userEvent, waitFor } from 'test-utils';
+import * as trackEvents from 'newAuth/trackEvents';
+import { mockEmailOtpSendError } from './mocks/once-handlers';
 
 const defaultProps = {
-  contactEmail: 'some email',
+  contactEmail: '',
   setContactEmail: () => {},
   setStep: () => {},
+  setEmailToken: () => {},
   showNotification: () => {},
+  onboardAllAsResellerFlag: true,
 };
 
 describe('CongratsForm', () => {
@@ -21,5 +25,30 @@ describe('CongratsForm', () => {
         /Please share your Email with us, so that we can send you all important communication./i,
       ),
     ).toBeInTheDocument();
+  });
+
+  test('should fire form validation error tracking event when error on email CTA', async () => {
+    const trackWithSegmentSpy = jest.spyOn(trackEvents, 'trackWithSegment');
+    mockEmailOtpSendError();
+    renderApp();
+    const emailInput = screen.getByLabelText('Your email (optional)');
+    expect(emailInput).toBeVisible();
+    await userEvent.type(emailInput, 'a@b.com');
+    const emailSubmitButton = screen.getByRole('button', { name: 'Submit' });
+    expect(emailSubmitButton).toBeVisible();
+    await userEvent.click(emailSubmitButton);
+
+    await waitFor(() => {
+      expect(trackWithSegmentSpy).toHaveBeenCalledWith({
+        objectName: 'Form Field Validation',
+        actionName: 'Error',
+        location: 'Congrats Screen',
+        properties: {
+          errorMessage: 'That email is already taken.',
+          fieldLabel: 'Contact Email',
+          funnelStage: 'L1',
+        },
+      });
+    });
   });
 });

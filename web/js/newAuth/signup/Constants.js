@@ -37,6 +37,7 @@ export const SCREEN_NAME = {
   [BUSINESS_TYPE_SELECTION]: 'Business Type Screen',
   [PARTNER_TYPE_SELECTION]: 'Partner Type Screen',
   [EMAIL_VERIFICATION]: 'Email Verify OTP',
+  [CONGRATS]: 'Congrats Screen',
 };
 
 export const MOBILE_MAX_OTP_TRIES = 5;

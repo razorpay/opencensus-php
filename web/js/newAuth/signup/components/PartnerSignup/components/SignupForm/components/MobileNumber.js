@@ -63,6 +63,16 @@ const MobileNumber = ({
       .catch((err) => {
         setIsLoading(false);
         const error_code = err.errors?.[0].internal_error_code;
+        trackWithSegment({
+          objectName: 'Form Field Validation',
+          actionName: 'Error',
+          location: SCREEN_NAME[STEPS.MOBILE_NUMBER],
+          properties: {
+            errorMessage: error_code,
+            fieldLabel: 'Phone Number',
+            funnelStage: 'L1',
+          },
+        });
         if (error_code === 'BAD_REQUEST_CONTACT_MOBILE_ALREADY_EXISTS') {
           setErrorCode('mobile_already_exists');
           setShowError(true);
