@@ -44,8 +44,7 @@ describe('Platform Fee List', () => {
     expect(screen.getByText('Platform Fee Amount')).toBeInTheDocument();
     expect(screen.getAllByText('Status')).toHaveLength(2);
 
-    // TODO: see why this was failing
-    // expect(screen.getByText(platformFeeData.items[0].id)).toBeInTheDocument();
+    expect(screen.getByText(platformFeeData.items[0].id)).toBeInTheDocument();
   });
 
   test('should render empty table if items are empty', async () => {
@@ -63,8 +62,7 @@ describe('Platform Fee List', () => {
     await waitFor(() => {
       expect(screen.getByText('Platform Fee Id')).toBeInTheDocument();
     });
-    // TODO: see why this was failing
-    //expect(screen.getByText(platformFeeData.items[0].recipient)).toBeInTheDocument();
+    expect(screen.getByText(platformFeeData.items[0].recipient)).toBeInTheDocument();
 
     const countInput = screen.getByLabelText('Count');
     expect(countInput).toBeInTheDocument();

@@ -10,6 +10,7 @@ export const platformFeeListSuccess = (response = platformFeeData) => {
         success: true,
         data: response,
       }),
+      ctx.delay(50),
     );
   });
 };
