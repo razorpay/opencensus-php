@@ -238,7 +238,7 @@ const WebhookEntity = lazy(() =>
 );
 const WithdrawalDetails = lazy(() =>
   import(
-    /* webpackChunkName: "CashAdvanceWithdrawalDetails" */ '../views/Capital/CashAdvance/WithdrawalDetails'
+    /* webpackChunkName: "CashAdvanceWithdrawalDetails" */ '../views/Capital/CashAdvance/components/WithdrawalDetails'
   ),
 );
 const RepaymentDetails = lazy(() =>

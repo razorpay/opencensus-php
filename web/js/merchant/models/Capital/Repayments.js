@@ -1,8 +1,8 @@
-import { merchantFetch } from '../../utils/ajax';
-import ajax from 'common/utils/ajax';
-import GenericEntity from '../GenericEntity';
+import { merchantFetch } from 'merchant/utils/ajax';
+import GenericEntity from 'merchant/models/GenericEntity';
 
 export default class RepaymentEntity extends GenericEntity {
+  // eslint-disable-next-line no-useless-constructor
   constructor() {
     super();
   }
@@ -26,7 +26,7 @@ export default class RepaymentEntity extends GenericEntity {
   fetchRepayments(data) {
     return this.request(`${this.resourceUrlPrefix('repayments')}`, data, null, {
       method: 'get',
-    }).catch((e) => {
+    }).catch(() => {
       return {
         data: {
           repayments: [],
@@ -39,6 +39,17 @@ export default class RepaymentEntity extends GenericEntity {
     return this.request(`${this.resourceUrlPrefix('plans_balances')}`, data, null, {
       method: 'get',
     });
+  }
+
+  fetchCollectedAmount(plan_id) {
+    return this.request(
+      `${this.resourceUrlPrefix('plans')}/collected_amount?plan_ids=${plan_id}`,
+      null,
+      null,
+      {
+        method: 'get',
+      },
+    );
   }
 
   createRepayment(data) {
