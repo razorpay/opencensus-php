@@ -1,109 +1,86 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { connect } from 'react-redux';
 
-import BatchUpload from 'merchant/containers/BatchNew/Upload';
-import setGaTrack from 'merchant/containers/BatchNew/ga';
 import {
   createWalletAccountsBatch,
   validateWalletAccountsBatch,
   createWalletLoadsBatch,
   validateWalletLoadsBatch,
+  validateContainerLoadsBatch,
+  createContainerLoadsBatch,
 } from 'merchant/reducers/batches';
-import styled from 'styled-components';
-const gaEvents = setGaTrack('Dashboard - Route - BU');
-
-export const DISPLAY_MESSAGES = {
-  process: 'The file is being processed. Please wait as this may take some time.',
-  success: 'The file has been processed successfully.',
-  error: 'There was an error while processing the file. Please try again after some time.',
-  exceed: 'The file size exceeds the maximum size limit. Please upload a smaller file.',
-};
-
-interface InfoProps {
-  sampleUrl?: string;
-  points: string[];
-}
-
-const OrderedList = styled.ol`
-  padding-inline-start: 24px;
-`;
-
-export const InfoComponent = ({ sampleUrl, points = [] }: InfoProps): JSX.Element => (
-  <div className="modal-info">
-    <h5 className="modal-info-heading">KEEP IN MIND</h5>
-    <OrderedList className="validate-modal-ul">
-      {sampleUrl && (
-        <li>
-          File should follow the template format. Download{' '}
-          <a className="btn-link" href={sampleUrl}>
-            <strong>sample file</strong>
-          </a>{' '}
-          for the template.
-        </li>
-      )}
-      {points.map((point, index) => (
-        <li key={index}>{point}</li>
-      ))}
-    </OrderedList>
-  </div>
-);
-
-const baseBatchUpload =
-  ({
-    batchType,
-    title,
-    docUrl,
-    points = [],
-  }: {
-    batchType: string;
-    title: string;
-    docUrl?: string;
-    points: string[];
-  }) =>
-  ({ createBatch, validateBatch }) =>
-    (
-      <BatchUpload
-        title={title}
-        docUrl={docUrl}
-        displayMsgs={DISPLAY_MESSAGES}
-        acceptFileInfo={['csv']}
-        createBatch={createBatch}
-        validateBatch={validateBatch}
-        gaEvents={gaEvents}
-        maxRows={50000}
-        maxFileSize={10485760} // 10 MB
-        batchType={batchType}
-        validateModalInfo={
-          <InfoComponent sampleUrl={`/files/sample_${batchType}.xlsx`} points={points} />
-        }
-        sampleUrl={`/files/sample_${batchType}.xlsx`}
-      />
-    );
+import InputSelector from 'merchant/views/Wallet/BatchActions/components/InputSelector';
+import { BatchUploadWrapper } from 'merchant/views/Wallet/BatchActions/components/BatchUploadWrapper';
+import { BATCH_TYPES, WALLET_LOAD_TYPES } from './constants';
 
 export const AccountsBatchUpload = connect(null, {
-  createBatch: createWalletAccountsBatch,
-  validateBatch: validateWalletAccountsBatch,
-})(
-  baseBatchUpload({
-    batchType: 'create_wallet_accounts',
-    title: 'Batch Accounts Upload',
-    points: [
+  createBatch: createWalletAccountsBatch as () => void,
+  validateBatch: validateWalletAccountsBatch as () => void,
+})(({ createBatch, validateBatch }) => (
+  <BatchUploadWrapper
+    batchType={BATCH_TYPES.CREATE_WALLET_ACCOUNTS}
+    title="Batch Accounts Upload"
+    points={[
       'partner_customer_id, contact should be unique for each account.',
       'The number of rows in the file should not exceed 50 thousand.',
-    ],
-  }),
-);
+    ]}
+    createBatch={createBatch}
+    validateBatch={validateBatch}
+  />
+));
 
 export const LoadsBatchUpload = connect(null, {
-  createBatch: createWalletLoadsBatch,
-  validateBatch: validateWalletLoadsBatch,
-})(
-  baseBatchUpload({
-    batchType: 'create_wallet_loads',
-    title: 'Create Batch Loads',
-    points: [
-      'Ensure you have enough balance in your escrow account, loads would fail incase balance is insufficient.',
-      'Category can have values of topup, cashback, refund.',
-    ],
-  }),
-);
+  createBatch: createWalletLoadsBatch as () => void,
+  validateBatch: validateWalletLoadsBatch as () => void,
+  validateContainerLoadsBatch: validateContainerLoadsBatch as () => void,
+  createContainerLoadsBatch: createContainerLoadsBatch as () => void,
+})(({ createBatch, validateBatch, createContainerLoadsBatch, validateContainerLoadsBatch }) => {
+  const [provider, setProvider] = useState<'accounts' | 'container'>('accounts');
+
+  const selectedBatch = useMemo(() => {
+    const batchType =
+      provider === WALLET_LOAD_TYPES.ACCOUNTS
+        ? BATCH_TYPES.CREATE_WALLET_LOADS
+        : BATCH_TYPES.CREATE_WALLET_CONTAINER_LOADS;
+    let selectedValidateBatch, selectedCreateBatch, selectedBatchType;
+    if (provider === WALLET_LOAD_TYPES.CONTAINER) {
+      selectedValidateBatch = validateContainerLoadsBatch;
+      selectedCreateBatch = createContainerLoadsBatch;
+      selectedBatchType = BATCH_TYPES.CREATE_WALLET_CONTAINER_LOADS;
+    } else {
+      selectedValidateBatch = validateBatch;
+      selectedCreateBatch = createBatch;
+      selectedBatchType = batchType;
+    }
+
+    const sampleUrl = `/files/sample_${batchType}.xlsx`;
+
+    return {
+      selectedValidateBatch,
+      selectedCreateBatch,
+      selectedBatchType,
+      sampleUrl,
+    };
+  }, [
+    createBatch,
+    createContainerLoadsBatch,
+    provider,
+    validateBatch,
+    validateContainerLoadsBatch,
+  ]);
+
+  return (
+    <BatchUploadWrapper
+      batchType={selectedBatch.selectedBatchType}
+      docUrl={selectedBatch.sampleUrl}
+      title="Create Batch Loads"
+      points={[
+        'Ensure you have enough balance in your escrow account, loads would fail incase balance is insufficient.',
+        'Category can have values of topup, cashback, refund.',
+      ]}
+      createBatch={selectedBatch.selectedCreateBatch}
+      validateBatch={selectedBatch.selectedValidateBatch}
+      component={<InputSelector setInput={setProvider} />}
+    />
+  );
+});

@@ -1,7 +1,6 @@
 import React from 'react';
 import { getByText, render } from '@testing-library/react';
-
-import { InfoComponent } from 'merchant/views/Wallet/BatchActions/BatchUpload';
+import { InfoComponent } from 'merchant/views/Wallet/BatchActions/components/InfoComponent';
 
 describe('BatchUpload: infoComponent tests', () => {
   test('should render infoComponent as expected', () => {

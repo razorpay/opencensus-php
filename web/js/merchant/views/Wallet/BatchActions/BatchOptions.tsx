@@ -41,7 +41,12 @@ export const CreateBatchOptions = (props: CreateBatchOptionsProps): JSX.Element 
         data-testid="batch-type-option"
         className="panel panel-default"
         style={{ marginBottom: 0 }}
-        onClick={() => openModal({ component: <LoadsBatchUpload />, size: 'large' })}
+        onClick={() =>
+          openModal({
+            component: <LoadsBatchUpload />,
+            size: 'large',
+          })
+        }
       >
         <div className="panel-body">
           <div className="description">

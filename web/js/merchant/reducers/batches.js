@@ -437,11 +437,14 @@ export const fetchRouteBatchDetails = fetchBatchDetails();
 export const fetchAllWalletBatches = fetchBatches([
   'create_wallet_accounts',
   'create_wallet_loads',
+  'create_wallet_container_loads',
 ]);
 export const createWalletAccountsBatch = createBatch('create_wallet_accounts');
 export const validateWalletAccountsBatch = validateBatch('create_wallet_accounts');
 export const createWalletLoadsBatch = createBatch('create_wallet_loads');
 export const validateWalletLoadsBatch = validateBatch('create_wallet_loads');
+export const createContainerLoadsBatch = createBatch('create_wallet_container_loads');
+export const validateContainerLoadsBatch = validateBatch('create_wallet_container_loads');
 
 /* reducers */
 export const refundBatchesReducer = makeActionCollectionReducer(REFUND);
