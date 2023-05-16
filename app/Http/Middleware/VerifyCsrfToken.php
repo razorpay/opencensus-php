@@ -8,6 +8,8 @@ use App\Trace\Trace;
 use App\Trace\TraceCode;
 use GraphQL\Language\Parser;
 use Illuminate\Http\Request;
+use Razorpay\Api\Errors\ErrorCode;
+use Razorpay\Api\Errors\BadRequestError;
 use Illuminate\Session\TokenMismatchException;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken as BaseVerifier;
 
@@ -77,20 +79,32 @@ class VerifyCsrfToken extends BaseVerifier
 
             $input = $request->input();
 
-            if (isset($input['operations']) === true)
+            try
             {
-                $operations = json_decode($input['operations'], true);
+                if (isset($input['operations']) === true)
+                {
+                    $operations = json_decode($input['operations'], true);
 
-                $queryData = Parser::parse($operations['query']);
+                    $queryData = Parser::parse($operations['query']);
+                }
+                else if (isset($input['query']) === true)
+                {
+                    $queryData = Parser::parse($input['query']);
+                }
             }
-            else if (isset($input['query']) === true)
+            catch (\Throwable $e)
             {
-                $queryData = Parser::parse($input['query']);
+                app('trace')->info(TraceCode::ERROR_PARSING_GRAPH_PAYLOAD_DATA, [
+                    'context' => $e,
+                ]);
+
+                throw new BadRequestError('Invalid Payload', ErrorCode::BAD_REQUEST_ERROR, 400);
             }
 
             // If the graph query is to seek org information
             // skip CSRF token check
-            if ($this->isOperationName(self::ORGANISATION_INFORMATION, $queryData) === true)
+            if ((isset($queryData) === true) and
+                ($this->isOperationName(self::ORGANISATION_INFORMATION, $queryData) === true))
             {
                 return $next($request);
             }
