@@ -1,0 +1,123 @@
+import React, { useState, useEffect } from 'react';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+
+//redux actions
+import { fetchB2bAccounts } from 'merchant/reducers/b2bExports/actions';
+import { openModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+import lazy from 'merchant/routes/LazyLoader';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+
+//analytics
+import { trackTandCPopupOpened } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/analytics';
+
+//utils
+import { fetchPurposeCode } from 'merchant/reducers/profile';
+import { LocalWireTransferPropsInterface } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/types';
+
+//components
+import ErrorBoundary, { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
+import InstrumentContainer from 'merchant/views/Settings/PaymentMethods/components/InstrumentContainer';
+import InstrumentRow from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/InstrumentRow';
+import withBankTransferConfig from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/BankTransferConfig';
+
+//Styles
+import './LocalWireTransfer.styl';
+
+const AcknowledgementPopup = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "AcknowledgementPopup" */ 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/AcknowledgementPopup'
+    ),
+);
+
+const LocalWireTransfer: React.FC<LocalWireTransferPropsInterface> = ({
+  leafList,
+  config,
+  apiError,
+  fetchB2bAccounts,
+  fetchPurposeCode,
+  showNotification,
+  openModal,
+  ...data
+}) => {
+  const { containerStatus, containerError, accounts, shouldShowAction, shouldShowListAction } =
+    config;
+
+  const [isOpen, setIsOpen] = useState<boolean | string>(false);
+
+  /**
+   * acknowledgement popup is opened to get T&C approval from merchant
+   * before account activation
+   */
+  const onRequest = () => {
+    trackTandCPopupOpened();
+    openModal({
+      size: 'medium',
+      component: (
+        <SuspenseWithLoader>
+          <AcknowledgementPopup />
+        </SuspenseWithLoader>
+      ),
+    });
+  };
+
+  /**
+   * We are calling the fetch purpose code api to check if purpose code is
+   * attached with the merchant or not, depending upon which we'll ask merchant
+   * to update the purpose code
+   */
+  useEffect(() => {
+    fetchPurposeCode();
+    if (!accounts?.length) fetchB2bAccounts();
+  }, []);
+
+  //this handles api errors
+  useEffect(() => {
+    if (apiError) {
+      showNotification({
+        type: 'error',
+        message: apiError?.errors,
+      });
+    }
+  }, [apiError]);
+
+  return (
+    <ErrorBoundary rank={Ranks.P1} team={Teams.CROSS_BORDER} resetOnProps>
+      <InstrumentContainer
+        containerStatus={containerStatus}
+        showAction={shouldShowAction}
+        showListAction={shouldShowListAction}
+        leafList={leafList}
+        onInstrumentRequest={onRequest}
+        instrumentRow={InstrumentRow}
+        accounts={accounts}
+        isOpen={isOpen}
+        setIsOpen={setIsOpen}
+        error={containerError}
+        {...data}
+      />
+    </ErrorBoundary>
+  );
+};
+
+const mapStateToProps = (state) => ({
+  apiError: state.b2bExportsAccounts.error,
+});
+
+const mapDispatchToProps = (dispatch) =>
+  bindActionCreators(
+    {
+      fetchB2bAccounts,
+      fetchPurposeCode,
+      showNotification,
+      openModal,
+    },
+    dispatch,
+  );
+
+export default withBankTransferConfig(
+  connect(mapStateToProps, mapDispatchToProps)(LocalWireTransfer),
+);

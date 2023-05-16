@@ -19,6 +19,7 @@ import { INSTRUMENTS, tabs } from './ApmOnboarding/constants';
 import { REQUESTABLE, GREYED } from 'merchant/views/Settings/PaymentMethods/constants';
 
 //Components
+import ErrorBoundary, { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 import ApmOnboarding from './ApmOnboarding';
 import InstrumentContainer from './InstrumentContainer/index';
 import {
@@ -160,16 +161,18 @@ const InstantBankTransfer = ({
   }, [formData]);
 
   return (
-    <div className="instant-bank-transfer">
-      <InstrumentContainer
-        onButtonClick={onRequest}
-        buttonText={formData?.instruments?.length ? 'Edit Draft' : 'Request'}
-        showButton={showRequestButton()}
-        leafList={leafList}
-        showListAction={showListAction()}
-        onInstrumentRequest={onInstrumentButtonClick}
-      />
-    </div>
+    <ErrorBoundary rank={Ranks.P1} team={Teams.CROSS_BORDER} resetOnProps>
+      <div className="instant-bank-transfer">
+        <InstrumentContainer
+          onButtonClick={onRequest}
+          buttonText={formData?.instruments?.length ? 'Edit Draft' : 'Request'}
+          showAction={showRequestButton()}
+          leafList={leafList}
+          showListAction={showListAction()}
+          onInstrumentRequest={onInstrumentButtonClick}
+        />
+      </div>
+    </ErrorBoundary>
   );
 };
 

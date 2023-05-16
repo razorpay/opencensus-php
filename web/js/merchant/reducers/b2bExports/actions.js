@@ -22,13 +22,20 @@ const fetchB2bAccounts = () => {
   };
 };
 
-const activateB2bAccounts = () => {
-  const resource = new B2bExportsResource();
-  return {
-    type: B2B_EXPORTS_ACTIVATE_ACCOUNTS,
-    payload: resource.activate(),
-  };
-};
+const activateAccountPending = (payload) => ({
+  type: `${B2B_EXPORTS_ACTIVATE_ACCOUNTS}::PENDING`,
+  payload,
+});
+
+const activateAccountSuccess = (payload) => ({
+  type: `${B2B_EXPORTS_ACTIVATE_ACCOUNTS}::SUCCESS`,
+  payload,
+});
+
+const activateAccountError = (payload) => ({
+  type: `${B2B_EXPORTS_ACTIVATE_ACCOUNTS}::ERROR`,
+  payload,
+});
 
 const uploadInvoicePending = (payload) => ({
   type: `${B2B_EXPORTS_UPLOAD_INVOICE}::PENDING`,
@@ -156,9 +163,11 @@ export {
   getInvoiceDetailsError,
   getInvoiceDetails,
   fetchB2bAccounts,
-  activateB2bAccounts,
   setFeatureFlag,
   uploadB2bInvoice,
+  activateAccountError,
+  activateAccountPending,
+  activateAccountSuccess,
   fetchAccountBalance,
   createPayout,
   createPayoutPending,

@@ -5,7 +5,6 @@ import {
   uploadInvoiceError,
   uploadInvoiceSuccess,
   uploadInvoicePending,
-  activateB2bAccounts,
   getInvoiceDetails,
   getInvoiceDetailsSuccess,
   getInvoiceDetailsPending,
@@ -29,7 +28,6 @@ export const b2bReducers = {
 
 export const b2bActions = {
   fetchB2bAccounts,
-  activateB2bAccounts,
   uploadInvoice,
   uploadInvoiceError,
   uploadInvoiceSuccess,

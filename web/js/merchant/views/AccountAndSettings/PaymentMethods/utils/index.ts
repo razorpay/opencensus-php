@@ -12,7 +12,8 @@ export const isInternationalLeafItemDisabled = ({
   const { slug } = leafList || {};
 
   return (
-    (slug === 'localcurrencytransfer' && !isB2BEnabled) ||
+    (slug === 'localcurrencytransfer' && (!isB2BEnabled || !user?.international)) ||
+    (slug === 'swiftbanktransfer' && (!isB2BEnabled || !user?.international)) ||
     (slug === 'instantbanktransfer' && !user?.international)
   );
 };

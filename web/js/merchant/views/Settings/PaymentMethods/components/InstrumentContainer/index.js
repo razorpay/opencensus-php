@@ -1,7 +1,10 @@
 import { connect } from 'react-redux';
+import { Button } from '@razorpay/blade/components';
 import Instrument from './Instrument';
 import InternationalStatusLabel from 'merchant/components/InternationalStatusLabel';
+import ErrorContainer from 'merchant/views/Settings/PaymentMethods/components/InstrumentContainer/ErrorContainer';
 import { GREYED, REQUESTABLE } from 'merchant/views/Settings/PaymentMethods/constants';
+import './InstrumentList.styl';
 
 /*
  * @param  {*} leafList instrument list
@@ -19,7 +22,7 @@ const InstrumentContainer = (props) => {
     leafList,
     buttonText = 'Request',
     containerStatus = GREYED,
-    showButton = true,
+    showAction = true,
     showListAction = true,
     onButtonClick,
     instrumentRow,
@@ -36,36 +39,38 @@ const InstrumentContainer = (props) => {
   return (
     <div className="instruments-methods-container">
       <div className="top-container">
-        <div className="left-text-wrapper">
-          {listHeader ? <h4>{listHeader}</h4> : null}
-          {listDescription ? <p>{listDescription}</p> : null}
-        </div>
-        {showButton &&
-          ([REQUESTABLE, GREYED].includes(containerStatus) ? (
-            <button
-              className="pull-right btn btn-primary"
-              disabled={isActivating}
-              onClick={onRequest}
-              type="button"
-            >
-              {isActivating ? 'Processing...' : buttonText}
-            </button>
-          ) : (
-            <InternationalStatusLabel status={containerStatus} />
-          ))}
-      </div>
-      {error ? (
-        <div className="bottom-container">
-          <div className="error-message">
-            <i className="i i-info-outline" />
-            <p className="message">{error?.message}</p>
+        <div className="action-wrapper">
+          <div className="left-text-wrapper">
+            {listHeader ? <h4>{listHeader}</h4> : null}
+            {listDescription ? <p>{listDescription}</p> : null}
           </div>
-          <div className="action">{error?.action}</div>
+          {showAction &&
+            ([REQUESTABLE, GREYED].includes(containerStatus) ? (
+              <div className="request-cta">
+                <Button
+                  variant="primary"
+                  isLoading={isActivating}
+                  size="small"
+                  isFullWidth
+                  onClick={onRequest}
+                >
+                  {buttonText}
+                </Button>
+              </div>
+            ) : (
+              <InternationalStatusLabel status={containerStatus} />
+            ))}
         </div>
-      ) : null}
+        {error ? <ErrorContainer message={error.message} action={error.action} /> : null}
+      </div>
       <div className="method-list-container">
         {list?.map((leafItem, index) => (
-          <InstrumentRow key={index} data={leafItem} showAction={showListAction} {...props} />
+          <InstrumentRow
+            key={index}
+            data={leafItem}
+            showInstrumentAction={showListAction}
+            {...props}
+          />
         ))}
       </div>
     </div>

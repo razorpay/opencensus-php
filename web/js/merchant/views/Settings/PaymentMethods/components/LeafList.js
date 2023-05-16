@@ -2,15 +2,43 @@ import React, { useState, useRef, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { Link } from 'react-router-dom';
+import lazy from 'merchant/routes/LazyLoader';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import LeafListItem from './LeafListItem';
 import { analyticsTrack } from 'common/utils/analytics';
 import { fetchFeatureStatus } from 'merchant/reducers/config';
 import { setFeatureFlag } from 'merchant/reducers/b2bExports/actions';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import Paypal from './Paypal';
-import International from './International';
-import LocalWireTransfer from './LocalWireTransfer/index';
-import InstantBankTransfer from './InstantBankTransfer';
+
+const Paypal = lazy(() =>
+  import(
+    /* webpackChunkName: "Paypal" */ 'merchant/views/Settings/PaymentMethods/components/Paypal'
+  ),
+);
+
+const International = lazy(() =>
+  import(
+    /* webpackChunkName: "International" */ 'merchant/views/Settings/PaymentMethods/components/International'
+  ),
+);
+
+const LocalWireTransfer = lazy(() =>
+  import(
+    /* webpackChunkName: "LocalWireTransfer" */ 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer'
+  ),
+);
+
+const InstantBankTransfer = lazy(() =>
+  import(
+    /* webpackChunkName: "InstantBankTransfer" */ 'merchant/views/Settings/PaymentMethods/components/InstantBankTransfer'
+  ),
+);
+
+const SwiftBankTransfer = lazy(() =>
+  import(
+    /* webpackChunkName: "SwiftBankTransfer" */ 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/SwiftBankTransfer'
+  ),
+);
 
 const fircClickHandler = () => {
   analyticsTrack({
@@ -105,14 +133,39 @@ const LeafList = ({
         return <p class="all-inactive">No banks active for you. Add more banks to catch up.</p>;
       }
     }
-    if (leafList?.slug === 'localcurrencytransfer' && user?.international)
-      return <LocalWireTransfer leafList={leafList} />;
+    if (leafList?.slug === 'localcurrencytransfer')
+      return (
+        <SuspenseWithLoader>
+          <LocalWireTransfer leafList={leafList} />
+        </SuspenseWithLoader>
+      );
     if (leafList?.slug === 'instantbanktransfer') {
-      return <InstantBankTransfer leafList={leafList} />;
+      return (
+        <SuspenseWithLoader>
+          <InstantBankTransfer leafList={leafList} />
+        </SuspenseWithLoader>
+      );
+    }
+    if (leafList?.slug === 'swiftbanktransfer') {
+      return (
+        <SuspenseWithLoader>
+          <SwiftBankTransfer leafList={leafList} />
+        </SuspenseWithLoader>
+      );
     }
     return list.map((leafItem) => {
-      if (leafItem.slug === 'internationalcards') return <International />;
-      else if (leafItem.slug === 'paypal') return <Paypal instrument={leafItem} />;
+      if (leafItem.slug === 'internationalcards')
+        return (
+          <SuspenseWithLoader>
+            <International />
+          </SuspenseWithLoader>
+        );
+      else if (leafItem.slug === 'paypal')
+        return (
+          <SuspenseWithLoader>
+            <Paypal instrument={leafItem} />
+          </SuspenseWithLoader>
+        );
       else if (
         ['itzcash', 'paycash', 'citibankrewards', 'cardless_emi.sezzle'].includes(leafItem.slug) &&
         leafItem.status !== 'activated'
@@ -126,7 +179,12 @@ const LeafList = ({
   return (
     <div class={`level-3 ${instrument.leafList && instrument.leafList.length > 1 && 'overflowY'}`}>
       {instrument.leafList.map((leafList) => {
-        if (leafList.slug === 'localcurrencytransfer' && !isB2BEnabled) return null;
+        if (
+          (leafList?.slug === 'localcurrencytransfer' || leafList?.slug === 'swiftbanktransfer') &&
+          !isB2BEnabled &&
+          !user?.international
+        )
+          return null;
         if (leafList?.slug === 'instantbanktransfer' && !user?.international) return null;
         return (
           <React.Fragment key={leafList.header}>

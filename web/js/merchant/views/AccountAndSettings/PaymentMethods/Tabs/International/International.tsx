@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { connect } from 'react-redux';
+import lazy from 'merchant/routes/LazyLoader';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import PaymentMethodsSection from 'merchant/views/AccountAndSettings/PaymentMethods/components/Section';
 import { PaymentMethodsFields } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings/section';
 import { setFeatureFlag as setFeatureFlagFn } from 'merchant/reducers/b2bExports/actions';
@@ -7,9 +9,6 @@ import { fetchFeatureStatus as fetchFeatureStatusFn } from 'merchant/reducers/co
 import { bindActionCreators } from 'redux';
 import { MerchantICProductStatus } from 'merchant/views/AccountAndSettings/PaymentMethods/typings';
 import { isInternationalLeafItemDisabled } from 'merchant/views/AccountAndSettings/PaymentMethods/utils';
-import LocalWireTransfer from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer';
-import InstantBankTransfer from 'merchant/views/Settings/PaymentMethods/components/InstantBankTransfer';
-import Paypal from 'merchant/views/Settings/PaymentMethods/components/Paypal';
 import LeafListItem from 'merchant/views/Settings/PaymentMethods/components/LeafListItem';
 import {
   LeafListItemSection,
@@ -33,6 +32,34 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import IntoViewUsingQueryParams from 'common/ui/IntoViewUsingQueryParams';
 import { showWorkflowStatus } from 'merchant/views/Account/Profile/components/WorkflowRequests/utils';
 import { fetchUser as fetchUserFn } from 'merchant/reducers/session';
+
+const Paypal = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "Paypal" */ 'merchant/views/Settings/PaymentMethods/components/Paypal'
+    ),
+);
+
+const LocalWireTransfer = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "LocalWireTransfer" */ 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer'
+    ),
+);
+
+const InstantBankTransfer = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "InstantBankTransfer" */ 'merchant/views/Settings/PaymentMethods/components/InstantBankTransfer'
+    ),
+);
+
+const SwiftBankTransfer = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "SwiftBankTransfer" */ 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/SwiftBankTransfer'
+    ),
+);
 
 type NewType = {
   user: User;
@@ -108,10 +135,24 @@ const International = ({
   }, []);
 
   const renderLeafListItem = (leafList: LeafListItemType) => {
-    if (leafList.slug === 'localcurrencytransfer' && user?.international) {
-      return <LocalWireTransfer leafList={leafList} />;
+    if (leafList.slug === 'localcurrencytransfer') {
+      return (
+        <SuspenseWithLoader>
+          <LocalWireTransfer leafList={leafList} />
+        </SuspenseWithLoader>
+      );
+    } else if (leafList?.slug === 'swiftbanktransfer') {
+      return (
+        <SuspenseWithLoader>
+          <SwiftBankTransfer leafList={leafList} />
+        </SuspenseWithLoader>
+      );
     } else if (leafList.slug === 'instantbanktransfer') {
-      return <InstantBankTransfer leafList={leafList} />;
+      return (
+        <SuspenseWithLoader>
+          <InstantBankTransfer leafList={leafList} />
+        </SuspenseWithLoader>
+      );
     }
 
     return leafList.list.map((leafListItem) => {
@@ -139,7 +180,9 @@ const International = ({
               elementRef={listItemRef}
               key={leafListItem.name}
             >
-              <Paypal {...commonProps} isIERevamp />
+              <SuspenseWithLoader>
+                <Paypal {...commonProps} isIERevamp />
+              </SuspenseWithLoader>
             </IntoViewUsingQueryParams>
           );
         default:

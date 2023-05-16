@@ -99,13 +99,19 @@ function b2bExportsTransactionsReducer(state = transactionInitialStates, action)
 function b2bExportsAccountsReducer(
   state = {
     isLoading: false,
-    isActivating: false,
     data: [],
+    error: null,
     featureFlags: {
-      isAccountCreated: false,
       isB2BEnabled: false,
     },
-    error: null,
+    localBankTransfer: {
+      isActivating: false,
+      error: null,
+    },
+    intBankTransfer: {
+      isActivating: false,
+      error: null,
+    },
   },
   action,
 ) {
@@ -127,21 +133,23 @@ function b2bExportsAccountsReducer(
       });
     }
     case `${B2B_EXPORTS_ACTIVATE_ACCOUNTS}::PENDING`: {
-      return set(state, 'isActivating', true);
+      return set(state, action.payload?.type, {
+        isActivating: true,
+        error: null,
+      });
     }
     case `${B2B_EXPORTS_ACTIVATE_ACCOUNTS}::ERROR`: {
-      return merge(state, {
+      return set(state, action.payload?.type, {
         isActivating: false,
-        error: action.payload,
+        error: action.payload?.error,
       });
     }
     case `${B2B_EXPORTS_ACTIVATE_ACCOUNTS}::SUCCESS`: {
       return merge(state, {
-        isActivating: false,
-        data: action.payload.data,
-        featureFlags: {
-          ...state.featureFlags,
-          isAccountCreated: true,
+        data: action.payload?.response,
+        [action.payload?.type]: {
+          isActivating: false,
+          error: null,
         },
       });
     }
@@ -161,7 +169,6 @@ function b2bExportsAccountBalanceReducer(
     isLoading: false,
     data: null,
     error: false,
-    errorMessage: 'Failed to check account balance. Try again after sometime.',
   },
   action,
 ) {

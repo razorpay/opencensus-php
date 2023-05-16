@@ -46,6 +46,19 @@ jest.mock('merchant/views/Settings/PaymentMethods/components/InstantBankTransfer
   ),
 }));
 
+jest.mock(
+  'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/SwiftBankTransfer',
+  () => ({
+    __esModule: true,
+    default: ({ leafList }) => (
+      <div data-testid="swift-bank-transfer">
+        <p>Swift Bank Transfer: {leafList.name}</p>
+        <p>Swift Bank Transfer: {leafList.slug}</p>
+      </div>
+    ),
+  }),
+);
+
 jest.mock('merchant/views/Settings/PaymentMethods/components/Paypal', () => ({
   __esModule: true,
   default: ({ instrument }) => (
@@ -119,6 +132,7 @@ describe('International', () => {
     expect(screen.getByText(/Paypal name: Paypal/i)).toBeInTheDocument();
     expect(screen.getByText(/Paypal slug: paypal/i)).toBeInTheDocument();
     expect(screen.getByTestId('instant-wire-transfer')).toBeInTheDocument();
+    expect(screen.getByTestId('swift-bank-transfer')).toBeInTheDocument();
     expect(screen.getByTestId('local-wire-transfer')).toBeInTheDocument();
     expect(screen.getByTestId('firc-banner')).toBeInTheDocument();
   });

@@ -1,0 +1,110 @@
+export type ActivateAccountResponseType = {
+  status: number;
+  success?: boolean;
+  data?: Array<AccountType>;
+};
+
+export type ActivateAccountBodyType = {
+  va_currency: string;
+  accept_b2b_tnc: boolean;
+  type: string;
+};
+
+export type AccountType = {
+  va_currency: string;
+  routing_code: string;
+  routing_type: string;
+  account_number: string;
+  beneficiary_name: string;
+  bank_name: string;
+  bank_address: string;
+  status: string;
+};
+
+export type ListItemType = {
+  icon?: string;
+  description?: string;
+  message?: string;
+  name: string;
+  status: string;
+  slug: string;
+  vaCurrency: string;
+};
+
+export type LeafListType = {
+  listHeader?: string;
+  listDescription?: string;
+  list: Array<ListItemType>;
+};
+
+export type ContainerErrorType = {
+  message: string;
+  action: JSX.Element;
+};
+
+export type DetailFieldType = {
+  label: string;
+  key: string;
+};
+
+export type BankTransferConfigType = {
+  accounts: Array<AccountType>;
+  shouldShowAction: boolean;
+  shouldShowListAction: boolean;
+  containerStatus: string;
+  containerError: ContainerErrorType | boolean;
+};
+
+export interface LocalWireTransferPropsInterface {
+  leafList: LeafListType;
+  config: BankTransferConfigType;
+  apiError: { errors?: Array<string> };
+  fetchPurposeCode: () => void;
+  fetchB2bAccounts: () => void;
+  showNotification: (payload: { type: string; message: unknown }) => void;
+  openModal: (payload: { size: string; component: JSX.Element }) => void;
+  data: unknown;
+}
+
+export interface PopupPropsInterface {
+  showNotification: (payload: { type: string; message: unknown }) => void;
+  closeModal: () => void;
+  activateAccount: (va_currency: string, accept_b2b_tnc?: number, type?: string) => void;
+}
+
+export interface TogglePropsInterface {
+  isOpen: boolean | string;
+  currency: string;
+  onToggleClick: () => void;
+}
+
+export interface InstrumentRowPropsInterface {
+  accounts: Array<AccountType>;
+  data: ListItemType;
+  isOpen: boolean | string;
+  isLoading: boolean;
+  setIsOpen: (currency: boolean | string) => void;
+  props: unknown;
+}
+
+export interface BankTransferConfigInterface {
+  accounts: Array<AccountType>;
+  isFetching: boolean;
+  user: { promoter_pan_name: string | null };
+  fircData: { data: { purpose_code: string | null } };
+  openModal: (payload: { size: string; component: JSX.Element }) => void;
+  props: unknown;
+}
+
+export interface AccountBalancePropsInterface {
+  vaCurrency: string;
+  isLoading: boolean;
+  accountBalance: { data?: { USD?: { amount?: string; balance?: string } } };
+  fetchAccountBalance: (currency: string) => void;
+  createPayoutPending: () => void;
+  createPayoutSuccess: () => void;
+  fetchBeneficiaryDetailsSuccess: (data: { amount: string; reason: string }) => void;
+  showNotification: (payload: { type: string; message: unknown }) => void;
+  openModal: (payload: { size: string; component: JSX.Element }) => void;
+  closeModal: () => void;
+}

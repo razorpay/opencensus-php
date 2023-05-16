@@ -5,6 +5,7 @@ import { Badge, InfoIcon } from '@razorpay/blade/components';
 const statusMap = {
   request_rejected: 'label-danger-light',
   rejected: 'label-danger-light',
+  deactivated: 'label-danger-light',
   disabled: 'label-muted',
   access_requested: 'label-primary-light',
   in_review: 'label-primary-light',

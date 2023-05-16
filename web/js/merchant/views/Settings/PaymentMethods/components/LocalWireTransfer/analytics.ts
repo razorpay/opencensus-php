@@ -1,7 +1,7 @@
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
-const track = ({ properties, ...args }) => {
+const track = ({ properties = {}, ...args }) => {
   analyticsTrack({
     objectName: 'b2b accounts',
     screen: 'settings',
@@ -14,7 +14,7 @@ const track = ({ properties, ...args }) => {
   });
 };
 
-export const trackAccountCopied = (currency) => {
+export const trackAccountCopied = (currency: string) => {
   track({
     objectName: 'b2b accounts Copied',
     actionName: 'clicked',

@@ -967,6 +967,24 @@ export const initialState = {
             },
           ],
         },
+        {
+          header: 'SWIFT Transfers (International)',
+          listHeader: 'International Money Transfer',
+          listDescription: 'Set up a SWIFT account to accept payments in various currencies',
+          slug: 'swiftbanktransfer',
+          list: [
+            {
+              name: 'SWIFT Account',
+              description: 'Accept payments in more than 30 currencies',
+              message:
+                'Share the below details with your international customers to receive payments in various currencies',
+              vaCurrency: 'SWIFT',
+              status: 'greyed',
+              slug: 'international.swift',
+              icon: 'https://cdn.razorpay.com/static/assets/instrument-request/swift.svg',
+            },
+          ],
+        },
       ],
     },
   ],

@@ -8,6 +8,11 @@ $label-color = #162F56BD
 $tick-color = #528FF0
 
 .firc-container
+  // This is only needed for desktop
+  @media (min-width 500px) {
+    min-width: 375px
+  }
+
   .modal-header
     color: $heading-color
 
