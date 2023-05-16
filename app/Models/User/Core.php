@@ -73,6 +73,15 @@ class Core extends Base\Core
 {
     const VERIFY_SUPPORT_CONTACT = 'verify_support_contact';
 
+    /**
+     * For `/user` API, we fetch the merchants user is part of
+     * For some users, fetching too many merchants is causing timeout
+     * Reducing this to 50 from 1000
+     * https://razorpay.slack.com/archives/C7WEGELHJ/p1680530247334459
+     */
+    const USER_MERCHANTS_FETCH_COUNT = 1000;
+    const USER_MERCHANTS_FETCH_COUNT_EXPERIMENT = 50;
+
     public static $actionToTemplateMapping = [
         'create_payout'                => 'Sms.User.Create_payout.V3',
         'sub_virtual_account_transfer' => 'Sms.User.Sub_virtual_account_transfer.V2',
@@ -605,7 +614,7 @@ class Core extends Base\Core
             'experiment_id' => $this->app['config']->get('app.enable_signups'),
         ];
 
-       return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'variables');
+        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'variables');
     }
 
     public function edit(Entity $user, array $input, $operation = 'edit')
@@ -3615,9 +3624,26 @@ class Core extends Base\Core
 
         $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 
+        $limit = self::USER_MERCHANTS_FETCH_COUNT;
 
+        $properties = [
+            'id'            => $user->getId(),
+            'experiment_id' => $this->app['config']->get('app.user_fetch_merchant_list_limit_exp_id'),
+        ];
 
-        $merchantEntities = $user->merchants()->where(Merchant\Entity::SUSPENDED_AT, null)->take(1000)->get();
+        $merchantListLimitExpEnabled = (new Merchant\Core())->isSplitzExperimentEnable($properties, Constants::ACTIVE, TraceCode::USER_FETCH_MERCHANT_LIST_LIMIT_ERROR);
+
+        if ($merchantListLimitExpEnabled)
+        {
+            $limit = self::USER_MERCHANTS_FETCH_COUNT_EXPERIMENT;
+        }
+
+        $this->trace->info(TraceCode::USER_FETCH_MERCHANT_LIST_LIMIT, [
+            'user_id'   => $user->getId(),
+            'limit'     => $limit,
+        ]);
+
+        $merchantEntities = $user->merchants()->where(Merchant\Entity::SUSPENDED_AT, null)->take($limit)->get();
 
         $merchantIdsWithCrossOrgFeature = (new Feature\Repository)->findMerchantIdsHavingFeatures([Features::CROSS_ORG_LOGIN]);
 

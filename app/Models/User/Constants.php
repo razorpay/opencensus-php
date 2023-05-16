@@ -200,6 +200,8 @@ class Constants
     const UNLOCK = 'unlock';
     const UN_VERIFY = 'un_verify';
 
+    const ACTIVE = 'active';
+
     // This is a temporary hack to remove captcha on the below user emails.
     const WHITELIST_CAPTCHA_EMAILS = [
         "gaurav.morajkar@concentrix.com",

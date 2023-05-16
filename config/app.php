@@ -479,6 +479,7 @@ return array(
     'merchant_activation_ineligible'                        => env('MERCHANT_ACTIVATION_INELIGIBLE'),
     'partner_invoice_auto_approval_exp_id'                  => env('PARTNER_INVOICE_AUTO_APPROVAL_EXP_ID'),
     'cmma_post_onboarding_foh_removal_splitz_experiment_id' => env('CMMA_POST_ONBOARDING_FOH_REMOVAL_SPLITZ_EXPERIMENT_ID'),
+    'user_fetch_merchant_list_limit_exp_id'                 => env('USER_FETCH_MERCHANT_LIST_LIMIT_EXP_ID'),
     'enable_signups'                                        => env('ENABLE_SIGNUPS'),
 
     'permission_id_edit_merchant_hold_funds'  => env('EDIT_MERCHANT_HOLD_FUNDS'),
