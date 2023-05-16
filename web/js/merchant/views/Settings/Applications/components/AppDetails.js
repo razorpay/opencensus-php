@@ -65,9 +65,7 @@ export default function AppDetails(props) {
             <div class="app-created-on">
               {isConnected ? 'Approved' : 'Created'} on:{' '}
               <Time
-                value={
-                  props.isRevokeApplicationEnabled ? data.access_granted_at.date : data.created_at
-                }
+                value={props.isRevokeApplicationEnabled ? data.access_granted_at : data.created_at}
                 format="DD MMM YYYY"
               />
             </div>

@@ -3,9 +3,7 @@ export const oauthApplications = [
     application_id: '1',
     application_name: 'Hello',
     logo_url: '/dummy/logo',
-    access_granted_at: {
-      date: '2023-05-04T16:14:01.832Z',
-    },
+    access_granted_at: '2023-05-04T16:14:01.832Z',
   },
 ];
 
