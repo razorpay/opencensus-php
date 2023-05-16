@@ -361,6 +361,14 @@ class VerifyData extends Base\Mock\Server
         }
     }
 
+    public function optimizer_razorpay($entities)
+    {
+        if ($this->isV2Mock($entities['payment']['description']))
+        {
+            return $this->upiMozartV2($entities);
+        }
+    }
+
     public static function cred($entities)
     {
         return;

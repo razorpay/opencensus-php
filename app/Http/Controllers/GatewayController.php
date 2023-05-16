@@ -612,6 +612,7 @@ class GatewayController extends Controller
             case Gateway::UPI_AXIS:
             case Gateway::CASHFREE:
             case Gateway::PAYTM:
+            case Gateway::OPTIMIZER_RAZORPAY:
             case Gateway::PAYU:
             case Gateway::CCAVENUE:
                 // Used for PayU emandate as well, since gateway does not allow setting

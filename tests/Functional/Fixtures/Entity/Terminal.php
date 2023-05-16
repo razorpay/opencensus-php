@@ -528,6 +528,40 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createOptimizerRazorpayTerminal(array $override)
+    {
+        $attributes = [
+            'merchant_id'            => '10000000000000',
+            'gateway'                => 'optimizer_razorpay',
+            'card'                   => 1,
+            'upi'                    => 1,
+            'netbanking'             => 0,
+            'gateway_merchant_id'    => 'abcd',
+            'gateway_secure_secret'  => 'secret',
+            'mode'                   => 2,
+            'type'                      => [
+                Type::OPTIMIZER => '1',
+                TYPE::NON_RECURRING => '1'
+            ],
+        ];
+        $attributes = array_merge($attributes, $override);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createOptimizerRazorpayIntentTerminal(array $override)
+    {
+        $attributes = [
+            'type'                      => [
+                Type::OPTIMIZER => '1',
+                TYPE::PAY   => '1',
+                TYPE::NON_RECURRING => '1'
+            ]
+        ];
+
+        return $this->createOptimizerRazorpayTerminal($attributes);
+    }
+
     public function createIngenicoTerminal()
     {
         $attributes = [

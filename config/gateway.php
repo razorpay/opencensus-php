@@ -167,7 +167,7 @@ return [
     'mock_zaakpay'                => env('ZAAKPAY_MOCK'),
     'mock_pinelabs'               => env('PINELABS_MOCK'),
     'mock_ingenico'               => env('INGENICO_MOCK'),
-    'mock_billdesk_otptimzer'     => env('BILLDESK_OPTIMIZER'),
+    'mock_billdesk_optimizer'     => env('BILLDESK_OPTIMIZER'),
     'mock_optimizer_razorpay'     => env('OPTIMIZER_RAZORPAY'),
     'mock_hitachi'                => env('HITACHI_MOCK'),
     'mock_esigner_digio'          => env('ESIGNER_DIGIO_MOCK'),

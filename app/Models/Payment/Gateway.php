@@ -1604,7 +1604,7 @@ class Gateway
             self::INGENICO,
             self::BILLDESK_OPTIMIZER,
             self::HDFC_EZETAP,
-            self::OPTIMIZER_RAZORPAY
+            self::OPTIMIZER_RAZORPAY,
         ],
 
         Method::NETBANKING => [
@@ -1659,7 +1659,7 @@ class Gateway
             self::NETBANKING_DBS,
             self::INGENICO,
             self::BILLDESK_OPTIMIZER,
-            self::OPTIMIZER_RAZORPAY
+            self::OPTIMIZER_RAZORPAY,
         ],
 
         //
@@ -1726,7 +1726,7 @@ class Gateway
             self::HDFC_EZETAP,
             self::BILLDESK_OPTIMIZER,
             self::CCAVENUE,
-            self::OPTIMIZER_RAZORPAY
+            self::OPTIMIZER_RAZORPAY,
         ],
 
         Method::AEPS => [
@@ -3352,7 +3352,7 @@ class Gateway
         Gateway::ZAAKPAY,
         Gateway::INGENICO,
         Gateway::BILLDESK_OPTIMIZER,
-        Gateway::OPTIMIZER_RAZORPAY
+        Gateway::OPTIMIZER_RAZORPAY,
     ];
 
     /**
@@ -3532,7 +3532,7 @@ class Gateway
         Gateway::CHECKOUT_DOT_COM => Gateway::CHECKOUT_DOT_COM,
         Gateway::INGENICO         => Gateway::INGENICO,
         Gateway::BILLDESK_OPTIMIZER => Gateway::BILLDESK_OPTIMIZER,
-        Gateway::OPTIMIZER_RAZORPAY => Gateway::OPTIMIZER_RAZORPAY
+        Gateway::OPTIMIZER_RAZORPAY => Gateway::OPTIMIZER_RAZORPAY,
     ];
 
     // in case of any changes in gateway config, please contact smart routing team
@@ -4521,7 +4521,7 @@ class Gateway
             self::KOTAK_DEBIT_EMI,
             self::INDUSIND_DEBIT_EMI,
             self::AXIS_TOKENHQ,
-            self::OPTIMIZER_RAZORPAY
+            self::OPTIMIZER_RAZORPAY,
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -4565,7 +4565,7 @@ class Gateway
             self::KOTAK_DEBIT_EMI,
             self::INDUSIND_DEBIT_EMI,
             self::AXIS_TOKENHQ,
-            self::OPTIMIZER_RAZORPAY
+            self::OPTIMIZER_RAZORPAY,
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -4626,7 +4626,7 @@ class Gateway
             self::INGENICO,
             self::NETBANKING_ICICI,
             self::BILLDESK_OPTIMIZER,
-            self::OPTIMIZER_RAZORPAY
+            self::OPTIMIZER_RAZORPAY,
         ];
 
         $isRouted = in_array($gateway, $gateways, true);
@@ -4778,7 +4778,7 @@ class Gateway
             self::NETBANKING_EQUITAS,
             self::WALLET_BAJAJ,
             self::WALLET_PAYPAL,
-            self::OPTIMIZER_RAZORPAY
+            self::OPTIMIZER_RAZORPAY,
         ];
 
         $acquirerGateways = [
