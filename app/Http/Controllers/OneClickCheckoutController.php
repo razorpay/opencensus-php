@@ -291,7 +291,7 @@ class OneClickCheckoutController extends Controller
 
     public function adminWhitelistCoupons(string $merchantId)
     {
-        $data = Request::getContent();
+        $data = Request::all();
         [$res, $status] = (new Service())->adminWhitelistCoupons($merchantId, $data);
         return ApiResponse::json($res, $status);
     }

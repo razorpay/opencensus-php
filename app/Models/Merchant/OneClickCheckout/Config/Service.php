@@ -1039,7 +1039,6 @@ class Service extends Base\Service
      */
     public function adminWhitelistCoupons(string $merchantId, $input): array
     {
-        $input = utf8_decode(urldecode($input));
         $this->merchant = $this->repo->merchant->find($merchantId);
 
         if ($this->merchant === null)
@@ -1061,7 +1060,7 @@ class Service extends Base\Service
 
         $res = $this->app['integration_service_client']->makeMultipartRequest(
             self::WHITELIST_COUPONS_UPLOAD_PATH . $key->getPublicKey(),
-            $input,
+            $input["data"],
         );
 
         if($res->getStatusCode() != 200 && $res->getStatusCode() != 400)
