@@ -261,9 +261,12 @@ abstract class Processor extends Base\Core
                 if (($this->isVirtualAccountDueToBeClosed($entity) === true) or
                     ($this->virtualAccount->isClosed() === true))
                 {
-                    $result = $this->shouldDelayUnexpectedPaymentRefund();
+                    $isVirtualAccountNotClosed = !$this->virtualAccount->isClosed();
 
-                    if ($result === true)
+                    $shouldDelayRefund = (($this->shouldDelayUnexpectedPaymentRefund() === true) and
+                               ($isVirtualAccountNotClosed === true));
+
+                    if ($shouldDelayRefund === true)
                     {
                         $payment = $paymentProcessor->getPayment();
 

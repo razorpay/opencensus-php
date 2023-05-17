@@ -5523,8 +5523,15 @@ class BankTransferTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('bank_transfer', $payment['method']);
         $this->assertEquals('refunded', $payment['status']);
+        $this->assertNull($payment['refund_at']);
         $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
         $this->assertEquals('bank_account', $payment['receiver_type']);
+
+        $refund = $this->getLastEntity('refund', true);
+        $this->assertEquals($payment['id'], $refund['payment_id']);
+        $this->assertEquals('created', $refund['status']);
+        $this->assertEquals(5000000, $refund['amount']);
+        $this->assertEquals('Virtual Account is closed', $refund['notes']['refund_reason']);
 
         $this->runBankTransferRequestAssertions(
             true,
