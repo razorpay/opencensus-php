@@ -4,6 +4,7 @@ namespace RZP\Services\Dcs\Features;
 
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Exception\ServerErrorException;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Feature\Constants as APIFeaturesConstants;
@@ -109,6 +110,7 @@ class Constants
     const AggregatorAccessToSubmerchantReportEnabled = 'aggregator_access_to_submerchant_report_enabled';
     const OptimizerRazorpayVas = 'razorpay_vas';
 
+    public static $validDcsKeys = [];
     /**
      * Stores the mapping of the features to their corresponding dcs keys
      */
@@ -213,11 +215,22 @@ class Constants
         self::OptimizerRazorpayVas => 'rzp/pg/merchant/optimizer/OnboardingFeatures'
     ];
 
+    public static function isValidDcsKeyAndName(string $key, string $name): bool
+    {
+        foreach (self::$featureToDCSKeyMapping as $featureName => $dcsKey) {
+            if (($key === $dcsKey) && ($featureName == $name)) {
+                return true;
+            }
+
+        }
+        return false;
+    }
+
     /**
      * Stores the mapping of the api feature name to their corresponding dcs feature names
      * This is required for migrating features.
      */
-    public static $apiFeatureNameToDCSFeatureName = [
+    public static array $apiFeatureNameToDCSFeatureName = [
         self::RefundEnabled                                                 => self::RefundEnabled,
         self::DisableAutoRefund                                             => self::DisableAutoRefund,
         self::EligibilityEnabled                                            => self::EligibilityEnabled,
@@ -321,7 +334,7 @@ class Constants
     /**
      * Stores the mapping of the Merchant features to their corresponding handlers
      */
-    public static $dcsNewMerchantFeatures = [
+    public static array $dcsNewMerchantFeatures = [
         self::RefundEnabled => 'direct',
         self::DisableAutoRefund => 'direct',
         self::EligibilityEnabled => 'client',
@@ -348,7 +361,7 @@ class Constants
     /**
      * Stores the mapping of the Prg features to their corresponding handlers
      */
-    public static $dcsNewOrgFeatures = [
+    public static array $dcsNewOrgFeatures = [
         self::AdditionalFieldsHdfcOnboarding => 'direct',
         self::HideInstrumentRequest         => 'direct',
         self::QualityCheckIntimationEmail   => 'direct',
@@ -356,7 +369,8 @@ class Constants
         self::AdminPasswordResetEnabled => 'direct',
     ];
 
-    public static $dcsReadEnabledFeatures = [
+    public static array $loadedReadEnabledFeatures = [];
+    public static array $dcsReadEnabledFeatures = [
         "merchant" => [
             "eligibility_enabled"=> "client",
             "eligibility_check_decline" => "client",
@@ -389,15 +403,22 @@ class Constants
     public static function dcsReadEnabledFeaturesByEntityType(string $entityType = null,
                                                               bool $withDcsNames = false, bool $isTestCases = false, bool $isProduction = false): array
     {
-
-        $adminService = new AdminService;
-        $dcsReadEnabledOrg = [];
-        $dcsReadEnabledMerchant = [];
-        $dcsReadEnabledFeatures = self::$dcsReadEnabledFeatures;
-        if ($isTestCases === true || $isProduction === false)
+        if (empty(self::$loadedReadEnabledFeatures) === true)
         {
-            $dcsReadEnabledFeatures = $adminService->getConfigKey(['key' => ConfigKey::DCS_READ_WHITELISTED_FEATURES]);
+            $adminService = new AdminService;
+
+            $dcsReadEnabledFeatures = $adminService->getConfigKey(
+                ['key' => ConfigKey::DCS_READ_WHITELISTED_FEATURES]);
+            self::$loadedReadEnabledFeatures =  $dcsReadEnabledFeatures;
         }
+        else
+        {
+
+            $dcsReadEnabledFeatures = self::$loadedReadEnabledFeatures;
+        }
+
+        $dcsReadEnabledMerchant = [];
+        $dcsReadEnabledOrg = [];
 
         if (key_exists(Type::ORG, $dcsReadEnabledFeatures) === true)
         {
@@ -481,6 +502,9 @@ class Constants
         return self::$apiFeatureNameToDCSFeatureName[$name];
     }
 
+    /**
+     * @throws ServerErrorException
+     */
     public static function apiFeatureNameFromDcsName($name, $dcsKey = ""): string
     {
         $dcsFeatureNameToAPIFeatureName = array_flip(self::$apiFeatureNameToDCSFeatureName);
@@ -488,19 +512,16 @@ class Constants
         {
             $dcsName = Utility::searchAndReturnDcsNameWithCorrespondingColonSeparator($dcsFeatureNameToAPIFeatureName,$name,$dcsKey);
 
-            s($dcsName,$name);
             if ((empty($dcsName) === false) and
                 (key_exists($dcsName, $dcsFeatureNameToAPIFeatureName) === true))
             {
                 return $dcsFeatureNameToAPIFeatureName[$dcsName];
             }
-            $ex = new Exception\ServerErrorException(
+            throw new Exception\ServerErrorException(
                 'Dcs feature name missing in $dcsFeatureNameToAPIFeatureName please check with dcs team',
 
                 ErrorCode::SERVER_ERROR_DCS_SERVICE_FAILURE,
                 "missing dcs feature name in the map");
-
-            throw $ex;
         }
 
         return $dcsFeatureNameToAPIFeatureName[$name];

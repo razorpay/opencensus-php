@@ -216,6 +216,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DCS_FETCH_ENABLED_FEATURES                            = 'DCS_FETCH_ENABLED_FEATURES';
     const DCS_FETCH_REQUEST_FAILED                              = 'DCS_FETCH_REQUEST_FAILED';
     const DCS_FETCH_RESPONSE_RECEIVED                           = 'DCS_FETCH_RESPONSE_RECEIVED';
+    const DCS_MISSING_FIELD                                     = 'DCS_MISSING_FIELD';
     const SERVER_ERROR_DCS_SERVICE_FAILURE                      = 'SERVER_ERROR_DCS_SERVICE_FAILURE';
     const DCS_SERVICE_RETRY                                     = 'DCS_SERVICE_RETRY';
     const DCS_RAZORX_EXPERIMENT                                 = 'DCS_RAZORX_EXPERIMENT';
