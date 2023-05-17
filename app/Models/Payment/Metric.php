@@ -58,12 +58,14 @@ class Metric extends Base\Core
     const PAYMENT_CAPTURE_QUEUE                 = 'payment_capture_queue';
     const PAYMENT_CAPTURED_VERIFY               = 'payment_captured_verify';
     const PAYMENT_CREATE_REQUEST_TIME           = 'payment_create_request_time';
+    const PAYMENT_CALLBACK_REQUEST_TIME         = 'payment_callback_request_time';
     const PAYMENT_CREATE_REQUEST_TIME_PG_ROUTER = 'payment_create_request_time_pg_router';
     const PAYMENT_FAILED                        = 'payment_failed';
     const PAYMENT_FAILED_PG_ROUTER              = 'payment_failed_pg_router';
     const PAYMENT_PROCESS_FAILED                = 'payment_process_failed';
     const PAYMENT_CAPTURE_FAILED                = 'payment_capture_failed';
     const PAYMENT_REQUEST_ROUTE                 = 'payment_request_route';
+    const PAYMENT_CALLBACK_ROUTE                = 'payment_callback_route';
     const SHIELD_FRAUD_DETECTION_FAILED         = 'shield_fraud_detection_failed';
     const SHIELD_FRAUD_DETECTION_SKIPPED        = 'shield_fraud_detection_skipped';
     const SHIELD_INTEGRATION_ERROR              = 'shield_integration_error';
@@ -162,6 +164,19 @@ class Metric extends Base\Core
         $this->trace->histogram(self::PAYMENT_CREATE_REQUEST_TIME, $requestTime, $dimensions);
     }
 
+
+  public function pushCallbackRequestTimeMetrics(Entity $payment, int $requestTime)
+    {
+        $route  = $this->app['api.route']->getCurrentRouteName();
+
+        $dimensions = [
+            self::LABEL_PAYMENT_METHOD  => $payment->getMethod(),
+            self::PAYMENT_CALLBACK_ROUTE => $route,
+            self::LABEL_PAYMENT_GATEWAY => $payment->getGateway()
+        ];
+
+        $this->trace->histogram(self::PAYMENT_CALLBACK_REQUEST_TIME, $requestTime, $dimensions);
+    }
     public function pushCapturedMetrics(Entity $payment)
     {
         $dimensions = $this->getDefaultDimentions($payment);

@@ -8092,6 +8092,24 @@ class Processor
         }
     }
 
+  protected function logCallbackRequestTime($payment, $startTime)
+    {
+        try
+        {
+            $requestTime = get_diff_in_millisecond($startTime);
+
+            (new Payment\Metric)->pushCallbackRequestTimeMetrics($payment, $requestTime);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PAYMENT_ERROR_LOGGING_REQUEST_TIME_METRIC
+            );
+        }
+    }
+
     protected function logPGRouterRequestTime($payment, $startTime)
     {
         try

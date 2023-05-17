@@ -57,8 +57,11 @@ trait Callback
      */
     private function coreCallback($id, $hash, array $gatewayInput)
     {
+
+       $startTime = microtime(true);
         // Axis migs started sending us card number in callback. This is a quickfix to
         // ignore the card number right before the callback is processed.
+
         unset($gatewayInput['realPan']);
         LocaleCore::setLocale($gatewayInput, $this->merchant->getId());
 
@@ -102,6 +105,8 @@ trait Callback
         $this->verifyCurrency($gatewayInput, $payment);
 
         $response = $this->acquireLockAndProcessCallback($payment, $gatewayInput);
+
+         $this->logCallbackRequestTime($payment,$startTime);
 
         return $response;
     }
