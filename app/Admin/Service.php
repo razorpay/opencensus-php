@@ -1677,26 +1677,56 @@ class Service extends Base\Service
 
             $apiBaseUrl = ApiUrl::getApiBaseUrl();
             // removing the /v1/ part at the end in the apiURL obtained from config
-            $apiURL = substr($apiBaseUrl, 0, -4) . '/commit.txt';
+
+            // Checking on base URL instead of commit.txt
+            // To fail liveliness of API, commit.txt file is deleted. Dashboard still hits commit.txt file
+            // This sends 4xx URL not found from API and dashboard triggers false alerts
+            $apiURL = substr($apiBaseUrl, 0, -4);
 
             $options = [
                 'timeout' => Config::get('api.request_timeout')
             ];
 
-            $start_time = microtime(true);
+            $shouldRetry = true;
 
-            $APIConnection = Requests::request($apiURL, array(), array(), Requests::GET, $options);
-
-            $end_time = microtime(true);
-
-            $time_taken = $end_time - $start_time;
-
-            // log if response time is more then 180 seconds
-            if ($time_taken > 180)
+            for ($count = 1, $sleepTime = 2; $count <= 3 && $shouldRetry === true; $count++, $sleepTime = $sleepTime * 2)
             {
-                Trace::info(TraceCode::API_SLOW_RESPONSE_CALL, [
-                    'api_response_time' => $time_taken,
-                ]);
+                $start_time = microtime(true);
+
+                $APIConnection = Requests::request($apiURL, array(), array(), Requests::GET, $options);
+
+                $end_time = microtime(true);
+
+                $time_taken = $end_time - $start_time;
+
+                // log if response time is more then 180 seconds
+                if ($time_taken > 180)
+                {
+                    $shouldRetry = false;
+
+                    Trace::info(TraceCode::API_SLOW_RESPONSE_CALL, [
+                        'api_response_time' => $time_taken,
+                    ]);
+                }
+
+                else if ($APIConnection->status_code === 200)
+                {
+                    $shouldRetry = false;
+                }
+
+                else
+                {
+                    $shouldRetry = true;
+
+                    Trace::info(TraceCode::API_HEALTH_STATUS_CHECK_FAIL, [
+                        'status_code'   => $APIConnection->status_code,
+                        'body'          => $APIConnection->body,
+                        'count'         => $count,
+                        'time_taken'    => $time_taken,
+                    ]);
+
+                    sleep($sleepTime);
+                }
             }
 
             if ($APIConnection->status_code !== 200)
