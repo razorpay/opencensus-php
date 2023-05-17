@@ -27,4 +27,13 @@ class StorkController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function removeSuppressionListEntry()
+    {
+        $input = Request::all();
+
+        $data = (new Stork)->removeSuppressionListEntry($input);
+
+        return ApiResponse::json($data);
+    }
 }

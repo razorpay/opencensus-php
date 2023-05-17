@@ -38,6 +38,9 @@ class Stork
     // path to deleteRateLimitThreshold
     const DELETE_RATE_LIMIT_PATH = '/twirp/rzp.stork.sms.v1.SMSAPI/DeleteRateLimit';
 
+    // path to removeSuppressionListEntry
+    const REMOVE_FROM_SUPPRESSION_LIST_PATH = '/twirp/rzp.stork.suppression.v1.SuppressionAPI/RemoveFromSuppressionList';
+
     // mocked response params for the sendSms route.
     const MESSAGE_ID          = 'message_id';
     const TEST_MESSAGE_ID     = '10000000000msg';
@@ -596,5 +599,11 @@ class Stork
     {
         $this->init(app('rzp.mode'));
         return $this->requestAndGetParsedBody(self::DELETE_RATE_LIMIT_PATH, $payload);
+    }
+
+    public function removeSuppressionListEntry(array $payload)
+    {
+        $this->init(app('rzp.mode'));
+        return $this->requestAndGetParsedBody(self::REMOVE_FROM_SUPPRESSION_LIST_PATH, $payload);
     }
 }
