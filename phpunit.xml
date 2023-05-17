@@ -22,9 +22,6 @@
         </exclude>
     </coverage>
     <testsuites>
-        <testsuite name="Dcs Test Suite">
-            <directory>./tests/Unit/Services/Dcs</directory>
-        </testsuite>
         <testsuite name="Application Test Suite">
             <directory>./tests/Functional/AccessControlHistoryLogs/</directory>
             <directory>./tests/Functional/VendorPayment/</directory>
@@ -58,6 +55,7 @@
             <directory>./tests/Functional/OneClickCheckout/</directory>
             <directory>./tests/Functional/PayoutOutbox/</directory>
             <directory>./tests/Functional/Location/</directory>
+            <directory>./tests/Unit/Services/Dcs</directory>
             <file>./tests/Functional/Merchant/PartnerTest.php</file>
         </testsuite>
         <testsuite name="Application-1 Test Suite">

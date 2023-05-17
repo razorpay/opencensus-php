@@ -2,9 +2,7 @@
 
 namespace RZP\Jobs\DCS;
 
-use RZP\Error\ErrorCode;
 use RZP\Jobs\Job;
-use RZP\Exception;
 use RZP\Models\Feature;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\TraceCode;
@@ -38,55 +36,40 @@ class AssignFeatures extends Job
 
         RuntimeManager::setMaxExecTime($this->timeout);
 
-        $this->trace->info(TraceCode::DCS_EDIT_FEATURE_SCHEDULED_JOB, [
-            'input' => $this->input
-        ]);
+        $this->trace->info(TraceCode::DCS_EDIT_FEATURE_SCHEDULED_JOB);
 
         try
         {
             $offset = 0;
 
             $i = 0;
-            $variant = $this->getDcsEditVariant($this->input['name'], $this->mode);
-            if ($variant === 'control')
-            {
-                $data = [
-                    'variant'  => $variant,
-                    'name'    => $this->input['name'],
-                    'type'    => $this->input['entity_type'],
-                    'mode'      => $this->mode
-                ];
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_DCS_DISABLED, null, $data);
-            }
 
             while (true)
             {
-                $entityIds = $this->repoManager
+                $merchantIds = $this->repoManager
                     ->feature
-                    ->fetchEntityIdsWithFeatureInChunks($this->input['name'], $this->input['entity_type'], $offset, self::LIMIT);
+                    ->fetchMerchantIdsWithFeatureInChunks($this->input['name'], $offset, self::LIMIT);
 
                 $i++;
 
                 $offset = $i * self::LIMIT;
 
-                if (empty($entityIds) === true)
+                if (empty($merchantIds) === true)
                 {
                     break;
                 }
 
                 $this->trace->info(TraceCode::DCS_EDIT_FEATURE_SCHEDULED_JOB_MERCHANT_IDS, [
-                    "entity_ids"  =>  $entityIds,
-                    'offset' => $offset,
-                    'limit' => self::LIMIT
+                    "merchant_ids"  =>  $merchantIds
                 ]);
 
-                foreach ($entityIds as $entityId)
+                $variant = $this->getDcsEditVariant($this->input['name'], $this->mode);
+                foreach ($merchantIds as $merchantId)
                 {
-                    AssignMerchantFeatures::dispatch($this->mode, $variant, $this->input['name'], $this->input['entity_type'], $entityId);
+                    AssignMerchantFeatures::dispatch($this->mode, $variant, $this->input['name'], $this->input['entity_type'], $merchantId);
 
                     $this->trace->info(TraceCode::DCS_EDIT_FEATURE_SCHEDULED_FOR_MERCHANT_JOB_DISPATCHED, [
-                        "entity_id"   =>  $entityId
+                        "merchant_id"   =>  $merchantId
                     ]);
                 }
             }

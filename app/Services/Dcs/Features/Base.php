@@ -48,17 +48,17 @@ class Base
     /**
      * @var Client
      */
-    protected Client $testClient ;
+    protected $testClient ;
 
     /**
      * @var Client
      */
-    protected Client $liveClient ;
+    protected $liveClient ;
 
     /**
-     * @var Cache
+     * @var mixed
      */
-    protected mixed $cache;
+    private $cache;
 
     /**
      * DCS Base constructor.
@@ -77,6 +77,8 @@ class Base
 
         $this->config  = $app['config']->get('applications.dcs');
 
+        $this->repo = $app['repo'];
+
         $this->razorx = $app['razorx'];
 
         $this->cache = $this->app['cache'];
@@ -85,7 +87,7 @@ class Base
         $this->initializeClientWithMode(Mode::LIVE);
     }
 
-    public function initializeClientWithMode($mode): void
+    public function initializeClientWithMode($mode)
     {
         $creds  = new UserCredentials();
         $cache = new Cache();
@@ -117,7 +119,7 @@ class Base
      * @return void
      * @throws Exception\ServerErrorException
      */
-    protected function throwServerRequestException(\Throwable $e,bool $throwException =  true): void
+    protected function throwServerRequestException(\Throwable $e,bool $throwException =  true)
     {
         $errorCode = ErrorCode::SERVER_ERROR_DCS_SERVICE_FAILURE;
 

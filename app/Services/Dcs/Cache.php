@@ -31,7 +31,7 @@ class Cache implements CacheInterface
     /**
      * @inheritdoc
      */
-    public function remove($key): void
+    public function remove($key)
     {
         $this->cache->forget($key);
     }
@@ -39,7 +39,7 @@ class Cache implements CacheInterface
     /**
      * @inheritdoc
      */
-    public function set($key, $value, $ttl = 0): void
+    public function set($key, $value, $ttl = 0)
     {
         $message = [
             'action' => 'cache_set',

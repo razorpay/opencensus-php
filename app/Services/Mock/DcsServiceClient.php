@@ -23,7 +23,7 @@ class DcsServiceClient extends DcsService
         parent::__construct($app);
     }
 
-    public function initializeClientWithMode($mode): void
+    public function initializeClientWithMode($mode)
     {
         $creds  = new UserCredentials();
         $cache = new Cache();

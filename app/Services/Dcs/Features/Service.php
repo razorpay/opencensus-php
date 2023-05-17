@@ -7,10 +7,7 @@ use Razorpay\Trace\Logger;
 use RZP\Constants\HyperTrace;
 use RZP\Constants\Mode;
 use RZP\Exception;
-use RZP\Services\Dcs\Cache;
-use RZP\Exception\BadRequestException;
-use RZP\Exception\ServerErrorException;
-use RZP\Models\Base\PublicCollection;
+use RZP\Models\Base\Collection;
 use RZP\Models\Feature\Metric as FeatureMetric;
 use RZP\Services\Dcs\ExternalService;
 use RZP\Services\Dcs\ExternalService\Constants;
@@ -28,7 +25,7 @@ class Service extends Base
     /**
      * @var mixed|null
      */
-    private mixed $desc;
+    private $desc;
 
     public function __construct($app = null)
     {
@@ -43,10 +40,11 @@ class Service extends Base
      * @param string $variant
      * @param bool $isAssignment
      * @param string $mode
+     * @return void
      * @throws Exception\ServerErrorException
      * @throws \Exception|\Throwable
      */
-    public function editFeature(Entity $entity, string $variant, bool $isAssignment, string $mode = Mode::TEST)
+    public function editFeature(Entity $entity, string $variant, bool $isAssignment, $mode = Mode::TEST)
     {
         $dcsFeatureName = DcsConstants::dcsFeatureNameFromAPIName($entity->getName());
         if ($isAssignment === true)
@@ -87,7 +85,6 @@ class Service extends Base
 
                     // TODO change it to what ever client it is base on mode
                 $res = $this->client($mode)->patch($data, $entity->getEntityId(), $value, [$actualDcsFeatureName], $this->getAuditInfo());
-
                 $this->trace->info(TraceCode::DCS_SERVICE_SUCCESSFUL_RESPONSE, [
                     'action' => 'assign',
                     'responseEntityId' => $entity->getEntityId(),
@@ -109,8 +106,6 @@ class Service extends Base
 
                 throw $ex;
             }
-            $cache_key = $this->app->environment() .'_'. $mode.'_dcs_fetch_by_id_type_'.$entity->getEntityId().'_'.$entity->getEntityType();
-            (new Cache())->remove($cache_key);
         }
         catch (\Throwable $e)
         {
@@ -139,8 +134,9 @@ class Service extends Base
         }
     }
 
-    public function getDcsEnabledFeatures(string $entityType, string $entityId, string $mode = null) : PublicCollection
+    public function getDcsEnabledFeatures(string $entityType, string $entityId, string $mode = null) : \Illuminate\Support\Collection
     {
+        $res = collect();
         if ($mode === null || $mode = '')
         {
             $mode = $this->getMode();
@@ -151,19 +147,24 @@ class Service extends Base
             'mode' => $mode,
             'function' => __FUNCTION__
         ];
-
-        try
-        {
+        try {
             $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_TOTAL, $dimension);
-            return $this->fetchByEntityIdAndEntityType($entityId, $entityType, $mode);
-        }
-        catch (\Throwable $e)
-        {
+            $dcsFeatures = array_keys(DcsConstants::dcsReadEnabledFeaturesByEntityType($entityType, true,
+                $this->app->runningUnitTests(), $this->app->isEnvironmentProduction()));
+
+            if( sizeof($dcsFeatures) === 0)
+            {
+                return $res;
+            }
+            $response = $this->fetchByEntityIdAndFeatureNames($entityId, $dcsFeatures,
+                ($mode === null) ? $this->getAppMode() : $mode, true, $entityType);
+            $res = collect($response);
+        } catch (\Throwable $e) {
             $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_FAILURE_TOTAL, $dimension);
             $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
         }
 
-        return new PublicCollection();
+        return $res;
     }
 
     protected function getMode()
@@ -177,32 +178,28 @@ class Service extends Base
      * @param string $entityId
      * @param string $apiFeatureName
      * @param string $mode
-     * @return Entity|null
+     * @return Entity
      * @throws ApiException
-     * @throws BadRequestException
-     * @throws ServerErrorException
+     * @throws Exception\BadRequestException
+     * @throws Exception\ServerErrorException
      */
-    public function fetchByEntityIdAndName(string $entityId, string $apiFeatureName, string $mode = Mode::TEST): ?Entity
+    public function fetchByEntityIdAndName(string $entityId, string $apiFeatureName, $mode = Mode::TEST)
     {
         $featureName = DcsConstants::dcsFeatureNameFromAPIName($apiFeatureName);
         $actualDcsFeatureName = Utility::extractActualDcsName($featureName);
         $key = DcsConstants::$featureToDCSKeyMapping[$featureName];
         $data = DataFormatter::toKeyMapWithOutId($key);
-
         $response = Tracer::inspan(['name' => HyperTrace::DCS_FETCH_FEATURE],
-            function() use ($entityId, $actualDcsFeatureName,$apiFeatureName, $data, $mode)
-            {
+            function() use ($entityId, $actualDcsFeatureName,$apiFeatureName, $data, $mode) {
                 $res = null;
 
                 $response = $this->client($mode)->fetchMultiple($data, [$entityId], [$actualDcsFeatureName]);
-                if ($response === null)
-                {
-                    return null;
+                if ($response === null) {
+                    return $res;
                 }
 
-                $kvs =  $response->getKvs() == null ? []: $response->getKvs();
-                foreach ($kvs as $kv)
-                {
+                $kvs = $response->getKvs() == null ? [] : $response->getKvs();
+                foreach ($kvs as $kv) {
                     $key = $kv->getKey();
                     $features = DataFormatter::unMarshal($kv->getValue(), DataFormatter::convertDCSKeyToClassName($key));
 
@@ -212,14 +209,13 @@ class Service extends Base
                         Entity::ENTITY_ID => $entityId,
                     ];
 
-                   if ($features[$actualDcsFeatureName] === true)
-                   {
-                       $entity = (new Entity)->build($data);
-                       $entity->setEntityType(Type::getAPIEntityTypeFromDCSType($key->getEntity()));
-                       $entity->setEntityId($entityId);
-                       $res = $entity;
-                       break;
-                   }
+                    if ($features[$actualDcsFeatureName] === true) {
+                        $entity = (new Entity)->build($data);
+                        $entity->setEntityType(Type::getAPIEntityTypeFromDCSType($key->getEntity()));
+                        $entity->setEntityId($entityId);
+                        $res = $entity;
+                        break;
+                    }
                 }
 
                 return $res;
@@ -247,12 +243,11 @@ class Service extends Base
      * @throws Exception\BadRequestException
      * @throws Exception\ServerErrorException
      */
-    public function fetchByEntityIdAndFeatureNames(string $entityId, array $featureNames, string $mode = Mode::TEST,
-                                                   bool   $aggregate = false, string $entityType = ""): array
+    public function fetchByEntityIdAndFeatureNames(string $entityId, array $featureNames, $mode = Mode::TEST,
+                                                   $aggregate = false, $entityType = "")
     {
         $response = Tracer::inspan(['name' => HyperTrace::DCS_FETCH_FEATURES_AGGREGATE],
-            function() use ($entityId, $featureNames, $aggregate, $entityType, $mode)
-            {
+            function() use ($entityId, $featureNames, $aggregate, $entityType, $mode) {
                 $data = [] ;
                 $res = [];
                 foreach ($featureNames as $dcsFeatureName) {
@@ -266,28 +261,26 @@ class Service extends Base
                 }
                 $kvs = $response->getKvs() == null ? [] : $response->getKvs();
 
-                foreach ($kvs as $kv)
-                {
+                foreach ($kvs as $kv) {
                     $kvkey = $kv->getKey();
                     $keyFeatures = DataFormatter::unMarshal($kv->getValue(), DataFormatter::convertDCSKeyToClassName($kvkey));
                     $dcsKey = DataFormatter::convertDCSKeyToClassName($kvkey);
-                    foreach ($data[DataFormatter::convertDCSKeyToStringWithOutEntityId($kvkey)] as $featureName)
-                    {
-                        if ($keyFeatures[$featureName] === true)
-                        {
+                    foreach ($data[DataFormatter::convertDCSKeyToStringWithOutEntityId($kvkey)] as $featureName) {
+                        if ($keyFeatures[$featureName] === true) {
                             $entity_data = [
                                 Entity::NAME => DcsConstants::apiFeatureNameFromDcsName($featureName, $dcsKey),
                                 Entity::ENTITY_TYPE => Type::getAPIEntityTypeFromDCSType($kvkey->getEntity()),
                                 Entity::ENTITY_ID => $entityId,
                             ];
 
-                    $entity = (new Entity)->build($entity_data);
-                    $entity->setEntityType(Type::getAPIEntityTypeFromDCSType($kvkey->getEntity()));
-                    $entity->setEntityId($entityId);
-                    $res[] = $entity;
+                            $entity = (new Entity)->build($entity_data);
+                            $entity->generateAndSetUniqueId();
+                            $entity->setEntityType(Type::getAPIEntityTypeFromDCSType($kvkey->getEntity()));
+                            $entity->setEntityId($entityId);
+                            $res[] = $entity;
+                        }
+                    }
                 }
-            }
-        }
 
                 return $res;
             });
@@ -306,11 +299,9 @@ class Service extends Base
      * @param string $apiFeatureName
      * @param string $mode
      * @return array
-     * @throws ApiException
-     * @throws BadRequestException
-     * @throws ServerErrorException
+     * @throws ApiException|Exception\ServerErrorException
      */
-    public function fetchByEntityIdsAndName(array $entityIds, string $apiFeatureName, string $mode = Mode::TEST): array
+    public function fetchByEntityIdsAndName(array $entityIds, string $apiFeatureName, $mode = Mode::TEST)
     {
         $featureName = DcsConstants::dcsFeatureNameFromAPIName($apiFeatureName);
         $actualDcsFeatureName = Utility::extractActualDcsName($featureName);
@@ -360,70 +351,15 @@ class Service extends Base
      * @param string $entityType
      * @param string $entityId
      * @param string $mode
-     * @return PublicCollection
+     * @return array
      * @throws \Exception
      */
-    public function fetchByEntityIdAndEntityType(string $entityId,
-                                                 string $entityType,
-                                                 string $mode = Mode::TEST): PublicCollection
+    public function fetchByEntityIdAndEntityType(string $entityType, string $entityId, $mode = Mode::TEST)
     {
-        $response = new PublicCollection();
         $data = [];
         $data[SDKConstants::ENTITY_ID] = $entityId ;
-        $type = '';
-        if ($entityType === Type::ORG)
-        {
-            $type = $entityType;
-        }
-
-        if (empty($type) === false)
-        {
-            $data[SDKConstants::ENTITY] = $entityType ;
-        }
-        $env = $this->app->environment();
-
-        $cacheKey = $env .'_'. $mode.'_dcs_fetch_by_id_type_'. $entityId.'_'.$entityType;
-
-        $enabled_features = $this->cache->get($cacheKey);
-
-        if ($enabled_features === null)
-        {
-            $apiFeatures = DcsConstants::dcsReadEnabledFeaturesByEntityType($entityType, false,
-                $this->app->runningUnitTests(), $this->app->isEnvironmentProduction());
-
-            if(sizeof($apiFeatures) === 0)
-            {
-                return $response;
-            }
-
-            $features_with_id = $this->handleAggregateQueries($data, $mode, true);
-            $features = $features_with_id[$entityId];
-            $enabled_features = [];
-            foreach ($features as $feature)
-            {
-                if (key_exists($feature, $apiFeatures?:[]))
-                {
-                    $enabled_features[] = $feature;
-                }
-            }
-
-            $this->cache->set($cacheKey, $enabled_features, 30);
-        }
-
-        foreach ($enabled_features as $feature_name)
-        {
-            $attributes = [
-                Entity::NAME => $feature_name,
-                Entity::ENTITY_TYPE => $entityType,
-                Entity::ENTITY_ID => $entityId,
-            ];
-            $entity = new Entity();
-            $entity->forceFill($attributes);
-            $entity->setEntityType($entityType);
-            $response->push($entity);
-        }
-
-        return $response;
+        $data[SDKConstants::ENTITY] = $entityType ;
+        return $this->handleAggregateQueries($data, $mode);
     }
 
     /**
@@ -431,107 +367,49 @@ class Service extends Base
      *
      * @param string $apiFeatureName
      * @param string $mode
-     * @param string $entityType
-     * @return PublicCollection
-     * @throws ApiException
-     * @throws ServerErrorException
+     * @return array
      */
-    public function fetchByFeatureName(string $apiFeatureName,
-                                       string $entityType = Type::MERCHANT,
-                                       string $mode = Mode::TEST): PublicCollection
+    public function fetchByFeatureName(string $apiFeatureName, $mode = Mode::TEST)
     {
-        $response = new PublicCollection();
         $featureName = DcsConstants::dcsFeatureNameFromAPIName($apiFeatureName);
         $key = DcsConstants::$featureToDCSKeyMapping[$featureName];
-        $data = [];
-
-        $env = $this->app->environment();
-
-        $cacheKey = $env .'_'. $mode.'_dcs_fetch_by_name'.'_'.$apiFeatureName;
-
-        $enabled_ids = $this->cache->get($cacheKey);
-
-        if ($enabled_ids === null &&
-            DcsConstants::isDcsReadEnabledFeature($apiFeatureName, false, $key, $this->app->isEnvironmentProduction()))
-        {
-            $enabled_ids = [];
-            $features_with_id = $this->handleAggregateQueries($data, $mode, true);
-
-            foreach ($features_with_id as $id => $features)
-            {
-                foreach ($features as $feature)
-                {
-                    if ($feature === $apiFeatureName)
-                    {
-                        $enabled_ids[] = $id;
-                    }
-                }
-            }
-
-            $this->cache->set($cacheKey, $enabled_ids, 30);
-        }
-
-        foreach ($enabled_ids as $entityId)
-        {
-            $attributes = [
-                Entity::NAME => $featureName,
-                Entity::ENTITY_TYPE => $entityType,
-                Entity::ENTITY_ID => $entityId,
-            ];
-            $entity = new Entity();
-            $entity->forceFill($attributes);
-            $response->push($entity);
-        }
-
-        return $response;
+        $data = DataFormatter::toKeyMapWithOutId($key);
+        return $this->handleAggregateQueries($data, $mode);
     }
 
-    /**
-     * @throws ApiException
-     * @throws ServerErrorException
-     */
-    private function handleAggregateQueries($data, $mode, $disableCache = false): array
+    private function handleAggregateQueries($data, $mode)
     {
         $key = $this->getAggregateKey($data);
 
         $response = Tracer::inspan(['name' => HyperTrace::DCS_FETCH_FEATURES_AGGREGATE],
-            function() use ($disableCache, $key, $data, $mode) {
+            function() use ($key, $data, $mode) {
 
-        $response = $this->client($mode)->aggregateFetch($key, $disableCache);
+                $response = $this->client($mode)->aggregateFetch($data);
 
                 $res = [];
                 if ($response === null) {
                     return $res;
                 }
                 $kvs = $response->getKvs() == null ? [] : $response->getKvs();
-                foreach ($kvs as $index => $kv)
-                {
+                foreach ($kvs as $index => $kv) {
                     $data = DataFormatter::unMarshal($kv->getValue(), DataFormatter::convertDCSKeyToClassName($kv->getKey()));
 
-            $dcsKey = $kv->getKey();
-            $keyStr = DataFormatter::convertDCSKeyToStringWithOutEntityId($dcsKey);
-            foreach ($data as $featureName => $enabled)
-            {
-                if (($enabled === true) &&
-                        (DcsConstants::isValidDcsKeyAndName($keyStr, $featureName) === true))
-                {
-                    // this tries to fetch api name from dcs_name and key if it is missing we will catch the exception
-                    // and log DCS_MISSING_FIELD log, we can identify anf fix it
-                    try
-                    {
-                        $res[$dcsKey->getEntityId()][] = DcsConstants::apiFeatureNameFromDcsName($featureName, $keyStr);
-                    }
-                    catch (\Throwable)
-                    {
-                        $this->trace->info(TraceCode::DCS_MISSING_FIELD, [
-                            'dcs_field_name' => $res,
-                            'key' => $keyStr,
-                            'mode' => $mode,
-                        ]);
+                    $dcsKey = $kv->getKey();
+                    foreach ($data as $featureName => $enabled) {
+                        if ($enabled === true) {
+                            $buildData = [
+                                Entity::NAME => DcsConstants::apiFeatureNameFromDcsName($featureName, $dcsKey),
+                                Entity::ENTITY_TYPE => Type::getAPIEntityTypeFromDCSType($kv->getKey()->getEntity()),
+                                Entity::ENTITY_ID => $kv->getKey()->getEntityId(),
+                            ];
+
+                            $entity = (new Entity)->build($buildData);
+                            $entity->setEntityType(Type::getAPIEntityTypeFromDCSType($kv->getKey()->getEntity()));
+                            $entity->setEntityId($kv->getKey()->getEntityId());
+                            $res[] = $entity;
+                        }
                     }
                 }
-            }
-        }
 
                 return $res;
             });
@@ -564,15 +442,12 @@ class Service extends Base
       return $data;
     }
 
-    public static function isDcsFeature($featureName): bool
+    public static function isDcsFeature($featureName)
     {
         // seems to be wrong
         return key_exists($featureName, DcsConstants::$featureToDCSKeyMapping) || key_exists($featureName, DcsConstants::$apiFeatureNameToDCSFeatureName);
     }
 
-    /**
-     * @throws ServerErrorException
-     */
     public function handleDcsFeatures(Entity $entity, $value , $mode = Mode::TEST)
     {
         $dcsFeatureName = DcsConstants::dcsFeatureNameFromAPIName($entity->getName());
@@ -614,7 +489,7 @@ class Service extends Base
        return $svc->handleResponse($res);
     }
 
-    protected function getAuditInfo(): array
+    protected function getAuditInfo()
     {
         if($this->auth->isAdminAuth() === true)
         {

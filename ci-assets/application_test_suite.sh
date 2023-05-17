@@ -4,7 +4,6 @@ log_file_name="test-output.log"
 export START_TIME=$(date +%s)
 echo "start-time: ${START_TIME}"
 SUITE_NAME="Application Test Suite" php vendor/phpunit/phpunit/phpunit -d memory_limit=4096M --testsuite "Application Test Suite" >> $log_file_name
-php vendor/phpunit/phpunit/phpunit -d memory_limit=4096M --testsuite "Dcs Test Suite" >> $log_file_name
 export TEST_SUITE_STATUS=$((TEST_SUITE_STATUS + $?))
 export END_TIME=$(date +%s)
 echo "end-time: ${END_TIME}"

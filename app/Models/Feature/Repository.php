@@ -41,16 +41,15 @@ class Repository extends Base\Repository
 
         $query = ($mode === null) ? $this->newQuery() : $this->newQueryWithConnection($mode);
 
-        $apiResponse = $query->where(Entity::ENTITY_TYPE, $entityType)
+//        $dcs = $this->app['dcs'];
+//        $res = $dcs->getDcsEnabledFeatures($entityType, $entityId, $mode);
+
+        return $query->where(Entity::ENTITY_TYPE, $entityType)
             ->where(Entity::ENTITY_ID, $entityId)
             ->remember($cacheTtl)
             ->cacheTags($cacheTags)
             ->get();
 
-        $dcs = $this->app['dcs'];
-        $dcsResponse = $dcs->getDcsEnabledFeatures($entityType, $entityId, $mode);
-
-        return $apiResponse->concat($dcsResponse)->unique(Entity::NAME);
     }
 
     public function findByEntityTypeEntityIdAndNameOrFail(string $entityType, string $entityId, string $featureName)
@@ -94,8 +93,7 @@ class Repository extends Base\Repository
 
     public function findByEntityTypeEntityIdAndName(string $entityType, string $entityId, string $featureName)
     {
-        if (DcsFeaturesConstants::isDcsReadEnabledFeature($featureName,
-                false, "", $this->app->isEnvironmentProduction()) === true)
+        if (DcsFeaturesConstants::isDcsReadEnabledFeature($featureName, false, "", $this->app->isEnvironmentProduction()) === true)
         {
             $dimension = [
                 'feature_name' => $featureName,
@@ -193,7 +191,7 @@ class Repository extends Base\Repository
 
     public function findMerchantWithFeatures(string $merchantId, array $featureNames)
     {
-        $dcsRes = new PublicCollection();
+        $dcsRes = collect();
         $apiFeatures = $featureNames;
         $dimension = [
             'feature_name' => 'many',
@@ -205,13 +203,13 @@ class Repository extends Base\Repository
         {
             $dcsFeatures = array_intersect($featureNames, array_keys(
                 DcsFeaturesConstants::dcsReadEnabledFeaturesByEntityType(
-                    Constants::MERCHANT,false, $this->app->runningUnitTests(), $this->app->isEnvironmentProduction())
+                    Constants::MERCHANT, $this->app->runningUnitTests(), $this->app->isEnvironmentProduction())
             ));
             if (sizeof($dcsFeatures) !== 0) {
                 $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_TOTAL, $dimension);
                 $dcs = $this->app['dcs'];
                 $response = $dcs->fetchByEntityIdAndFeatureNames($merchantId, $dcsFeatures, $this->getAppMode());
-                $dcsRes = new PublicCollection($response);
+                $dcsRes = collect($response);
                 $apiFeatures = array_diff($featureNames, $dcsFeatures);
                 if (sizeof($apiFeatures) === 0)
                 {
@@ -224,18 +222,18 @@ class Repository extends Base\Repository
             $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_FAILURE_TOTAL, $dimension);
             $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
         }
-        $apiResponse = $this->newQuery()
-            ->select(Entity::NAME)
-            ->whereIn(Entity::NAME, $apiFeatures)
-            ->where(Entity::ENTITY_TYPE, 'merchant')
-            ->where(Entity::ENTITY_ID, $merchantId)
-            ->get();
-        return $apiResponse->concat($dcsRes)->unique(Entity::NAME);
+
+        return $this->newQuery()
+                    ->select(Entity::NAME)
+                    ->whereIn(Entity::NAME, $apiFeatures)
+                    ->where(Entity::ENTITY_TYPE, 'merchant')
+                    ->where(Entity::ENTITY_ID, $merchantId)
+                    ->get();
     }
 
     public function findMerchantWithFeaturesOnConnection(string $merchantId, array $featureNames, $mode)
     {
-        $dcsRes = new PublicCollection();
+        $dcsRes = [];
         $apiFeatures = $featureNames;
         $dimension = [
             'feature_name' => 'many',
@@ -253,7 +251,7 @@ class Repository extends Base\Repository
                 $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_TOTAL, $dimension);
                 $dcs = $this->app['dcs'];
                 $response = $dcs->fetchByEntityIdAndFeatureNames($merchantId, $dcsFeatures, $mode);
-                $dcsRes = (new PublicCollection($response))->pluck(Entity::NAME)->toArray();
+                $dcsRes = collect($response)->pluck(Entity::NAME)->toArray();
                 $apiFeatures = array_diff($featureNames, $dcsFeatures);
                 if (sizeof($apiFeatures) === 0) {
                     return $dcsRes;
@@ -303,17 +301,6 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
-    public function fetchEntityIdsWithFeatureInChunks(string $featureName,string $entityType, $skip, $limit)
-    {
-        return $this->newQuery()
-            ->where(Entity::NAME, $featureName)
-            ->where(Entity::ENTITY_TYPE, $entityType)
-            ->skip($skip)
-            ->take($limit)
-            ->pluck(Entity::ENTITY_ID)
-            ->toArray();
-    }
-
     public function fetchMerchantIdsWithFeatureWithPagination(string $featureName,
                                                               $skip,
                                                               $limit,
@@ -356,6 +343,7 @@ class Repository extends Base\Repository
 
     public function getMerchantIdsHavingFeature(string $featureName, array $merchantIds)
     {
+        $dcsRes = collect();
         if (DcsFeaturesConstants::isDcsReadEnabledFeature($featureName, false, "", $this->app->isEnvironmentProduction()) === true)
         {
             $dimension = [
@@ -369,7 +357,7 @@ class Repository extends Base\Repository
                 $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_TOTAL, $dimension);
                 $dcs = $this->app['dcs'];
                 $res = $dcs->fetchByEntityIdsAndName($merchantIds, $featureName, $this->getAppMode());
-                $dcsRes = new PublicCollection($res);
+                $dcsRes = collect($res);
                 return $dcsRes->pluck(Entity::ENTITY_ID)->toArray();
             }
             catch(\Throwable $e)
