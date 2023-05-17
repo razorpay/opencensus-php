@@ -1568,8 +1568,12 @@ trait RepositoryFetch
         $warmDbMap = [];
 
         $wdaDifferentIds = [];
+        $primaryKeyName = 'id';
+        if (sizeof($warmStorageDbCollection  ) > 0)
+        {
+           $primaryKeyName = $warmStorageDbCollection[0]->getKeyName();
+        }
 
-        $primaryKeyName = $warmStorageDbCollection[0]->getKeyName();
         foreach($warmStorageDbCollection as $dbResponse)
         {
             $warmDbMap[$dbResponse[$primaryKeyName]] = $dbResponse;
