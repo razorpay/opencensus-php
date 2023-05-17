@@ -3115,6 +3115,50 @@ class OrderTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchOrderDetailsForCheckoutWithExpandOrder(): void
+    {
+        $this->fixtures->merchant->addFeatures([
+            FeatureConstants::TPV,
+            FeatureConstants::ONE_CLICK_CHECKOUT,
+        ]);
+
+        $orderData = [
+            Order\Entity::AMOUNT                              => 50000,
+            Order\Entity::RECEIPT                             => 'R1',
+            Order\Entity::BANK_ACCOUNT                        => [
+                'account_number' => '040304030403040',
+                'ifsc'           => 'UTIB0003098',
+                'name'           => 'ThisIsAwesome',
+            ],
+            Order\Entity::METHOD                              => 'netbanking',
+            Order\OrderMeta\Order1cc\Fields::LINE_ITEMS_TOTAL => 50000,
+            Order\OrderMeta\Order1cc\Fields::LINE_ITEMS       => [
+                [
+                    Order\OrderMeta\Order1cc\Fields::LINE_ITEM_NAME     => 'Line Item 1',
+                    Order\OrderMeta\Order1cc\Fields::LINE_ITEM_PRICE    => 10000,
+                    Order\OrderMeta\Order1cc\Fields::LINE_ITEM_QUANTITY => 1,
+                ],
+                [
+                    Order\OrderMeta\Order1cc\Fields::LINE_ITEM_NAME     => 'Line Item 2',
+                    Order\OrderMeta\Order1cc\Fields::LINE_ITEM_PRICE    => 20000,
+                    Order\OrderMeta\Order1cc\Fields::LINE_ITEM_QUANTITY => 2,
+                ],
+            ],
+        ];
+
+        $order = $this->createOrder($orderData);
+
+        $this->ba->checkoutServiceProxyAuth();
+
+        $orderId = str_replace('order_', '', $order['id']);
+
+        $this->testData[__FUNCTION__]['request']['content']['order_id'] = $order['id'];
+        $this->testData[__FUNCTION__]['response']['content']['order']['id'] = $orderId;
+        $this->testData[__FUNCTION__]['response']['content']['order']['order_metas'][0]['order_id'] = $orderId;
+
+        $this->startTest();
+    }
+
     public function test1CCOrderWithOffer()
     {
         $this->fixtures->merchant->addFeatures(FeatureConstants::ONE_CLICK_CHECKOUT);

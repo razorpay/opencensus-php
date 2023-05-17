@@ -567,12 +567,46 @@ class Service extends Base\Service
         $validator = new Validator();
         $validator->validateInput('fetch_order_details_for_checkout', $input);
 
+        /** @var Entity $order */
+        $order = null;
+
+        if (empty($input['order']) && !empty($input['order_id'])) {
+            $order = $this->repo->order->findByPublicId($input['order_id']);
+
+            $input['order'] = $order->toArrayPublic();
+        }
+
         // create order entity using forcefill
-        $order = $this->app['pg_router']->getOrderEntityFromOrderAttributes($input['order']);
+        $order = $order ?? $this->app['pg_router']->getOrderEntityFromOrderAttributes($input['order']);
 
         $validator->validateNachStatusForCheckout($order);
 
-        return (new Core())->getFormattedDataForCheckout($order, $this->merchant);
+        $core = new Core();
+
+        $response = $core->getFormattedDataForCheckout($order, $this->merchant);
+
+        $expand = $input['expand'] ?? [];
+
+         if (in_array('order', $expand, true)) {
+             $orderAttributes = array_merge($order->toArray(), $order->toArrayInternal());
+             Entity::stripSignWithoutValidation($orderAttributes['id']);
+
+             if (!empty($orderAttributes[Entity::ORDER_META_1CC])) {
+                 // Keeping response contract same as PG Router's response
+                 $orderAttributes['order_metas'] = $orderAttributes[Entity::ORDER_META_1CC];
+                 unset($orderAttributes[Entity::ORDER_META_1CC]);
+             }
+
+             $accountNumber = $orderAttributes[Entity::ACCOUNT_NUMBER] ?? '';
+
+             if ($accountNumber !== '') {
+                 $orderAttributes[Entity::ACCOUNT_NUMBER] = $core->getMaskedAccountNumber($accountNumber);
+             }
+
+             $response['order'] = $orderAttributes;
+         }
+
+        return $response;
     }
 
     public function fetchMultiple($input)

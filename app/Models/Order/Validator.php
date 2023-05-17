@@ -104,8 +104,15 @@ class Validator extends Base\Validator
         IFSC::UJVN => 'USFB',
     ];
 
+    /**
+     * @var string[] Validation rules for fetching order
+     *
+     * @see Service::fetchOrderDetailsForCheckout()
+     */
     protected static $fetchOrderDetailsForCheckoutRules = [
-        'order'    => 'required|array',
+        'expand'   => 'sometimes|array|in:order',
+        'order_id' => 'required_if:order,null|public_id',
+        'order'    => 'required_if:order_id,null|array',
     ];
 
     protected function getBankCodeMapping($bank)

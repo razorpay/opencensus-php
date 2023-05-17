@@ -145,6 +145,20 @@ class Checkout
         $this->repo = $this->app['repo'];
     }
 
+    /**
+     * NOTE: This is not maintained anymore & is present here only for history purposes.
+     *
+     * @param Entity $merchant Merchant for whom checkout preferences need to be fetched
+     * @param string $mode     Request mode (live/test)
+     * @param array  $input    GET request params
+     *
+     * @return array Preferences Response
+     *
+     * @throws Exception\BadRequestException
+     *
+     * @deprecated Please use preferences exposed by `checkout-service`
+     * @see \RZP\Services\CheckoutService::getCheckoutPreferencesFromCheckoutService()
+     */
     public function getPreferences(Entity $merchant, $mode, array $input)
     {
         Locale::setLocale($input, $merchant->getId());
