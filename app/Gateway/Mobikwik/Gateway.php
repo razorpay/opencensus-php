@@ -659,12 +659,7 @@ class Gateway extends Base\Gateway
 
     protected function getMobikwikMerchantName($merchant) : string
     {
-        if ($this->isMobikwikOffersEnabled($merchant) === true)
-        {
-            return $merchant->getFilteredDba();
-        }
-
-        return 'Razorpay';
+        return $merchant->getFilteredDba();
     }
 
     protected function isMobikwikOffersEnabled($merchant) : bool

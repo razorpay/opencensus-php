@@ -310,7 +310,7 @@ class MobikwikGatewayTest extends TestCase
         $this->mockServerRequestFunction(
             function($content)
             {
-                $this->assertEquals('Razorpay', $content['merchantname']);
+                $this->assertEquals('Test Merchant', $content['merchantname']);
             });
 
         $this->doAuthPayment($payment);
