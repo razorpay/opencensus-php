@@ -20,6 +20,8 @@ class CommissionInvoiceReminder extends Mailable
         parent::__construct();
 
         $this->data = $data;
+
+        $this->countryCode = $data['country_code'];
     }
 
     protected function addSender()
