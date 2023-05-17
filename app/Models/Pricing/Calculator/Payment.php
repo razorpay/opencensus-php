@@ -27,6 +27,9 @@ class Payment extends Base
 {
     const FLEXMONEY      = 'flexmoney';
     const HCIN_IFSC      = 'HCIN';
+    const KRBE_IFSC      = 'KRBE';
+    const CSHE_IFSC      = 'CSHE';
+    const TVSC_IFSC      = 'TVSC';
 
     protected static $flexMoneyIssuers = [
           IFSC::BARB,
@@ -36,6 +39,9 @@ class Payment extends Base
           IFSC::IDFB,
           IFSC::ICIC,
           self::HCIN_IFSC,
+          self::KRBE_IFSC,
+          self::CSHE_IFSC,
+          self::TVSC_IFSC,
     ];
 
     protected function getBasicPricingRule(Pricing\Plan $pricing, $feature)

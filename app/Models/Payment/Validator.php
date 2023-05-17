@@ -1005,7 +1005,9 @@ class Validator extends Base\Validator
         switch ($input['method'])
         {
             case Payment\Method::CARDLESS_EMI:
-                if ((CardlessEmi::exists($input['provider']) === false) or $input['provider'] == CardlessEmiProvider::ZESTMONEY )
+                $isDisabledInstrument = in_array($input['provider'], CardlessEmiProvider::$disabledInstruments, true);
+
+                if ((CardlessEmi::exists($input['provider']) === false) or ($isDisabledInstrument === true))
                 {
                     throw new Exception\BadRequestValidationFailureException(
                         'Provider is not supported for cardless emi',

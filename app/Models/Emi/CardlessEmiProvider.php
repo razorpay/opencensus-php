@@ -21,6 +21,9 @@ class CardlessEmiProvider
     const IDFB = 'idfb';
     const HCIN = 'hcin';
     const CARDLESS_EMI = 'cardless_emi';
+    const KRBE = 'krbe';
+    const CSHE = 'cshe';
+    const TVSC = 'tvsc';
 
     protected static $providers = [
         self::ZESTMONEY,
@@ -33,7 +36,15 @@ class CardlessEmiProvider
         self::FDRL,
         self::IDFB,
         self::HCIN,
+        self::KRBE,
+        self::CSHE,
+        self::TVSC,
+    ];
 
+    public static $disabledInstruments = [
+        self::HCIN,
+        self::FDRL,
+        self::ZESTMONEY
     ];
 
     public static function checkProviderValidity($provider)

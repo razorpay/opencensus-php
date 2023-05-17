@@ -271,6 +271,9 @@ function disableEmptyInputs(form) {
                 <option value="walnut369">Walnut369</option>
                 <option value="lazypay">Lazypay</option>
                 <option value="barb">Bank of Baroda</option>
+                <option value="krbe">KreditBee</option>
+                <option value="cshe">CASHe</option>
+                <option value="tvsc">TVS Credit</option>
             </select>
         </td>
     </tr>

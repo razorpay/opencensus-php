@@ -472,7 +472,7 @@ class CardlessEmiGatewayTest extends TestCase
 
         $this->fixtures->create('methods:default_methods', ['merchant_id' => $subMerchantId]);
 
-        $this->fixtures->merchant->enableCardlessEmiProviders(['hdfc' => 1 , 'kkbk' => 1,'fdrl' => 1 , 'idfb' => 1,'icic' => 1 , 'hcin' => 1, 'barb' => 1] , $subMerchantId);
+        $this->fixtures->merchant->enableCardlessEmiProviders(['hdfc' => 1 , 'kkbk' => 1, 'idfb' => 1,'icic' => 1 , 'barb' => 1, 'cshe' => 1, 'tvsc' => 1, 'krbe' => 1] , $subMerchantId);
 
         $this->fixtures->merchant->enableCardlessEmi($subMerchantId);
 

@@ -68,6 +68,18 @@ class AffordabilityTest extends TestCase
             'enabled' => true,
             'min_amount' => 20000,
         ],
+        'krbe' => [
+            'enabled' => true,
+            'min_amount' => 240000,
+        ],
+        'cshe' => [
+            'enabled' => true,
+            'min_amount' => 100000,
+        ],
+        'tvsc' => [
+            'enabled' => true,
+            'min_amount' => 300000,
+        ],
     ];
 
     private $expectedPaylaterResponse = [

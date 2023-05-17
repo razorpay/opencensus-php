@@ -455,15 +455,17 @@ class FlexMoneyGatewayTest extends CardlessEmiGatewayTest
 
         $this->assertEquals($preferences['methods']['cardless_emi']['kkbk'],true);
 
-        $this->assertEquals($preferences['methods']['cardless_emi']['fdrl'],true);
-
         $this->assertEquals($preferences['methods']['cardless_emi']['idfb'],true);
 
         $this->assertEquals($preferences['methods']['cardless_emi']['icic'],true);
 
-        $this->assertEquals($preferences['methods']['cardless_emi']['hcin'],true);
-
         $this->assertEquals($preferences['methods']['cardless_emi']['barb'],true);
+
+        $this->assertEquals($preferences['methods']['cardless_emi']['krbe'],true);
+
+        $this->assertEquals($preferences['methods']['cardless_emi']['cshe'],true);
+
+        $this->assertEquals($preferences['methods']['cardless_emi']['tvsc'],true);
 
         $this->resetPublicAuthToTestAccount();
     }

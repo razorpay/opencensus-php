@@ -469,7 +469,10 @@ class Entity extends Base\PublicEntity
             CardlessEmiProvider::KKBK,
             CardlessEmiProvider::FDRL,
             CardlessEmiProvider::IDFB,
-            CardlessEmiProvider::HCIN
+            CardlessEmiProvider::HCIN,
+            CardlessEmiProvider::KRBE,
+            CardlessEmiProvider::CSHE,
+            CardlessEmiProvider::TVSC,
         ],
         self::PAYLATER => [
             Paylaterprovider::GETSIMPL,

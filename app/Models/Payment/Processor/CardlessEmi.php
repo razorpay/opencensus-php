@@ -28,8 +28,14 @@ class CardlessEmi
     const ICIC = 'icic';
     const HCIN = 'hcin';
     const BARB = 'barb';
+    const KRBE = 'krbe';
+    const CSHE = 'cshe';
+    const TVSC = 'tvsc';
 
     const HCIN_IFSC = 'HCIN';
+    const KRBE_IFSC = 'KRBE';
+    const CSHE_IFSC = 'CSHE';
+    const TVSC_IFSC = 'TVSC';
 
     /** @var int[] The minimum order/transaction amount in paisa for each cardless emi provider. */
     public const MIN_AMOUNTS = [
@@ -45,6 +51,9 @@ class CardlessEmi
         self::IDFB         => 500000, // Rs. 5000
         self::FDRL         => 500000, // Rs. 5000
         self::HCIN         => 50000,  // Rs. 500
+        self::KRBE         => 240000, // Rs. 2400
+        self::CSHE         => 100000, // Rs. 1000
+        self::TVSC         => 300000, // Rs. 3000
     ];
 
     public static $fullName = [
@@ -58,6 +67,9 @@ class CardlessEmi
     // Add dashboard display names for providers which and are not banks and are not present in IFSC repo
     public static $fullDisplayName = [
         self::HCIN_IFSC  => 'Home Credit',
+        self::KRBE_IFSC  => 'KreditBee',
+        self::CSHE_IFSC  => 'CASHe',
+        self::TVSC_IFSC  => 'TVS Credit',
     ];
 
     public static $fullNameForSupportedBanks = [
@@ -68,6 +80,9 @@ class CardlessEmi
         self::ICIC      => 'icic',
         self::HCIN      => 'hcin',
         self::BARB      => 'barb',
+        self::KRBE      => 'krbe',
+        self::CSHE      => 'cshe',
+        self::TVSC      => 'tvsc',
     ];
 
     public static $supportedBanks = [
@@ -79,6 +94,9 @@ class CardlessEmi
             IFSC::IDFB,
             IFSC::ICIC,
             self::HCIN_IFSC,
+            self::KRBE_IFSC,
+            self::CSHE_IFSC,
+            self::TVSC_IFSC,
         ]
     ];
 
@@ -91,6 +109,9 @@ class CardlessEmi
             IFSC::KKBK,
             IFSC::ICIC,
             self::HCIN_IFSC,
+            self::KRBE_IFSC,
+            self::CSHE_IFSC,
+            self::TVSC_IFSC,
         ]
     ];
 

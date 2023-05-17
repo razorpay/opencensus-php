@@ -93,8 +93,10 @@ class Core extends Base\Core
             CardlessEmiProvider::KKBK => '0',
             CardlessEmiProvider::FDRL => '0',
             CardlessEmiProvider::IDFB => '0',
-            CardlessEmiProvider::HCIN => '0'
-
+            CardlessEmiProvider::HCIN => '0',
+            CardlessEmiProvider::KRBE => '0',
+            CardlessEmiProvider::CSHE => '0',
+            CardlessEmiProvider::TVSC => '0',
         ]
     ];
     const defaultPaylaterProvidersWhitelisted =[
@@ -1305,7 +1307,11 @@ class Core extends Base\Core
 
             foreach ($providers as $index => $instrument) {
 
-                if ($instrument == CardlessEmiProvider::ZESTMONEY or isset($cardlessEmiProviders[$instrument]) == false or $cardlessEmiProviders[$instrument] == 0) {
+                $isDisabledInstrument = in_array($instrument, CardlessEmiProvider::$disabledInstruments, true);
+
+                if ($isDisabledInstrument === true or isset($cardlessEmiProviders[$instrument]) == false or
+                    $cardlessEmiProviders[$instrument] == 0)
+                {
 
                     unset($providers[$index]);
 

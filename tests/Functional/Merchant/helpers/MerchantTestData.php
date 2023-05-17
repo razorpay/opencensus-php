@@ -4000,12 +4000,6 @@ return [
                                     'provider' => 'flexmoney',
                                 ],
                             ],
-                            'FDRL' => [
-                                'powered_by' => [
-                                    'method' => 'cardless_emi',
-                                    'provider' => 'flexmoney',
-                                ],
-                            ],
                             'ICIC' => [
                                 'powered_by' => [
                                     'method' => 'cardless_emi',

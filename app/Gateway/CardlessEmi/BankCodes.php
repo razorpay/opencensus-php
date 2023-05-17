@@ -20,6 +20,9 @@ class BankCodes
         CardlessEmi::ICIC => '14360',                      // ICICI Bank
         CardlessEmi::HCIN => '13860',                      // Home Credit
         CardlessEmi::BARB => '19080',                      // Bank of baroda
+        CardlessEmi::KRBE => '20240',                      // Kredit Bee
+        CardlessEmi::CSHE => '20400',                      // CASHe
+        CardlessEmi::TVSC => '20600',                      // TVS Credit
     ];
 
     public static function getBankCode($ifsc)

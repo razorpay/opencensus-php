@@ -871,7 +871,10 @@ class MethodsTest extends TestCase
                     'kkbk'  => "1",
                     'fdrl'  => "0",
                     'idfb'  => "1",
-                    'hcin'  => "1"
+                    'hcin'  => "1",
+                    'krbe'  => "1",
+                    'cshe'  => "1",
+                    'tvsc'  => "1",
                 ]
             ],
         ];
@@ -890,7 +893,10 @@ class MethodsTest extends TestCase
             'kkbk'  => 1,
             'fdrl'  => 0,
             'idfb'  => 1,
-            'hcin'  => 1
+            'hcin'  => 1,
+            'krbe'  => 1,
+            'cshe'  => 1,
+            'tvsc'  => 1,
         ], array_slice($merchantMethods->getCardlessEmiProviders(), 0, 10));
     }
 

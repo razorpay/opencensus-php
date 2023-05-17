@@ -598,6 +598,12 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertEquals($response['methods']['cardless_emi']['icic'],true);
 
         $this->assertEquals($response['methods']['cardless_emi']['hcin'],true);
+
+        $this->assertEquals($response['methods']['cardless_emi']['krbe'],true);
+
+        $this->assertEquals($response['methods']['cardless_emi']['cshe'],true);
+
+        $this->assertEquals($response['methods']['cardless_emi']['tvsc'],true);
     }
 
     public function testGetCheckoutPreferencesForPaylaterTestMode()
@@ -1064,7 +1070,19 @@ class CheckoutPreferencesTest extends TestCase
     {
         $this->fixtures->merchant->enableCardlessEmi();
 
-        $this->fixtures->merchant->enableCardlessEmiProviders(['hdfc' => 1 , 'icic' => 1 , 'barb' => 1 , 'kkbk' => 1 , 'fdrl' => 1 , 'idfb' => 1 , 'hcin' => 1]);
+        $this->fixtures->merchant->enableCardlessEmiProviders(
+            [
+                'hdfc' => 1 ,
+                'icic' => 1 ,
+                'barb' => 1 ,
+                'kkbk' => 1 ,
+                'fdrl' => 1 ,
+                'idfb' => 1 ,
+                'hcin' => 1 ,
+                'krbe' => 1 ,
+                'cshe' => 1 ,
+                'tvsc' => 1 ,
+            ]);
 
         $this->fixtures->create('terminal:cardlessEmiFlexMoneySubproviderTerminal');
 
@@ -1123,6 +1141,8 @@ class CheckoutPreferencesTest extends TestCase
 
     public function testGetCheckoutPreferencesWithAmountGreaterForHomeCreditCardlessEmi()
     {
+        $this->markTestSkipped("hcin is deprecated");
+
         $this->fixtures->merchant->enableCardlessEmi();
 
         $this->fixtures->merchant->enableCardlessEmiProviders([ 'hcin' => 1]);
@@ -1161,19 +1181,22 @@ class CheckoutPreferencesTest extends TestCase
     {
         $this->fixtures->merchant->enableCardlessEmi();
 
-        $this->fixtures->merchant->enableCardlessEmiProviders(['hdfc' => 1 , 'icic' => 1 , 'barb' => 1 , 'kkbk' => 1 , 'fdrl' => 1 , 'idfb' => 1 , 'hcin' => 1]);
+        $this->fixtures->merchant->enableCardlessEmiProviders(['hdfc' => 1 , 'icic' => 1 , 'barb' => 1 , 'kkbk' => 1 , 'fdrl' => 1 , 'idfb' => 1 , 'hcin' => 1, 'krbe' => 1, 'cshe' => 1, 'tvsc' => 1]);
 
         $this->fixtures->create('terminal:cardlessEmiFlexMoneySubproviderTerminal');
         $this->fixtures->create('terminal:cardlessEmiZestMoneyTerminal');
 
         $response = $this->getPreferences();
 
-        $this->assertEquals(7, count($response['methods']['cardless_emi']));
+        $this->assertEquals(8, count($response['methods']['cardless_emi']));
 
         $this->assertArrayHasKey('kkbk', $response['methods']['cardless_emi']);
         $this->assertArrayHasKey('hdfc', $response['methods']['cardless_emi']);
 //        $this->assertArrayHasKey('zestmoney', $response['methods']['cardless_emi']);
         $this->assertArrayHasKey('barb', $response['methods']['cardless_emi']);
+        $this->assertArrayHasKey('cshe', $response['methods']['cardless_emi']);
+        $this->assertArrayHasKey('krbe', $response['methods']['cardless_emi']);
+        $this->assertArrayHasKey('tvsc', $response['methods']['cardless_emi']);
     }
 
     public function testGetCheckoutPreferencesWithAmountGreater()
