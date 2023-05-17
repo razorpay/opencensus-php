@@ -4,8 +4,8 @@ import { useMemo, useState, useCallback, useRef } from 'react';
 import { paymentId, amount, createdAt, status } from 'common/ui/item/pair';
 
 // components
-import Button from 'common/new-ui/Button';
 import EntityTable from 'merchant/components/EntityTable';
+import { Button, UploadIcon, PlusIcon, EyeIcon, Link } from '@razorpay/blade/components';
 
 // styles
 import './styles.styl';
@@ -16,7 +16,14 @@ const paymentMethodColumn = {
   value: () => 'Bank Transfer',
 };
 
-const ListTable = ({ onUpload, onView, uploadState, invoiceFetching, ...props }) => {
+const ListTable = ({
+  onUpload,
+  onView,
+  uploadState,
+  invoiceFetching,
+  onBuyerAddressClick,
+  ...props
+}) => {
   const [selectedPaymentId, setSelectedPaymentId] = useState(null);
   const fileUploaderRef = useRef(null);
 
@@ -41,8 +48,12 @@ const ListTable = ({ onUpload, onView, uploadState, invoiceFetching, ...props })
     () => ({
       title: 'Actions',
       value: ({ b2b_export_invoice, id, status } = {}) => {
+        const handleView = () => onView(b2b_export_invoice);
+        const handleBuyerAddress = () => onBuyerAddressClick(id);
+        const handleUpload = () => handleUploadClick(id);
+
         if (uploadState[id]) {
-          return <Button.Transparent>Uploading...</Button.Transparent>;
+          return 'Uploading...';
         }
         if (b2b_export_invoice && invoiceFetching?.[b2b_export_invoice]) {
           return 'Loading...';
@@ -50,26 +61,52 @@ const ListTable = ({ onUpload, onView, uploadState, invoiceFetching, ...props })
 
         if (b2b_export_invoice) {
           return (
-            <Button.Transparent
-              className="b2b-payment-doc-view-btn"
-              iconBefore="eye"
-              onClick={() => onView(b2b_export_invoice)}
-            >
-              View
-            </Button.Transparent>
+            <>
+              <Button
+                className="b2b-payment-doc-view-btn"
+                variant="tertiary"
+                size="xsmall"
+                icon={EyeIcon}
+                onClick={handleView}
+              >
+                View
+              </Button>
+              {status !== 'captured' && (
+                <Link
+                  variant="button"
+                  icon={PlusIcon}
+                  size="medium"
+                  marginLeft="spacing.5"
+                  onClick={handleBuyerAddress}
+                >
+                  Add/Update Buyer Address
+                </Link>
+              )}
+            </>
           );
         }
         if (status === 'authorized') {
           return (
-            <Button.Transparent iconBefore="upload" onClick={() => handleUploadClick(id)}>
-              Upload
-            </Button.Transparent>
+            <>
+              <Link variant="button" icon={UploadIcon} size="medium" onClick={handleUpload}>
+                Upload
+              </Link>
+              <Link
+                variant="button"
+                icon={PlusIcon}
+                size="medium"
+                marginLeft="spacing.5"
+                onClick={handleBuyerAddress}
+              >
+                Add/Update Buyer Address
+              </Link>
+            </>
           );
         }
         return null;
       },
     }),
-    [handleUploadClick, onView, uploadState, invoiceFetching],
+    [uploadState, invoiceFetching, onView, handleUploadClick, onBuyerAddressClick],
   );
 
   return (
@@ -85,6 +122,7 @@ const ListTable = ({ onUpload, onView, uploadState, invoiceFetching, ...props })
         className="b2b-file-uploader"
         accept="application/msword, application/vnd.ms-excel, text/plain, application/pdf, image/*"
         onChange={handleFileSelect}
+        data-testid="b2b-file-uploader"
       />
     </>
   );

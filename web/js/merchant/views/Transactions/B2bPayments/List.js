@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { lazy } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
@@ -23,11 +23,21 @@ import ListFilter from 'merchant/views/Transactions/B2bPayments/components/ListF
 import EmptyComponent from 'merchant/views/Transactions/B2bPayments/components/EmptyComponent';
 import InfoBanner from 'merchant/views/Transactions/B2bPayments/components/InfoBanner';
 import ErrorBoundary, { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 
 // actions
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { b2bActions } from 'merchant/reducers/b2bExports';
 import { fetchB2bPayments } from 'merchant/reducers/collection';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+
+// Lazy loaded components
+const BuyerAddressModalLazy = lazy(() =>
+  import(
+    /* webpackChunkName: 'BuyerAddressModal' */ 'merchant/views/Transactions/B2bPayments/components/BuyerAddressModal'
+  ),
+);
+///- Lazy loaded components
 
 class PaymentsListContainer extends ListContainer {
   onFilterSubmit = (params) => {
@@ -137,6 +147,22 @@ class PaymentsListContainer extends ListContainer {
     }
   };
 
+  openBuyerAddressModal = (paymentId) => {
+    const { openModal, closeModal, showNotification } = this.props;
+    openModal({
+      component: (
+        <SuspenseWithLoader>
+          <BuyerAddressModalLazy
+            paymentId={paymentId}
+            onClose={closeModal}
+            showNotification={showNotification}
+          />
+        </SuspenseWithLoader>
+      ),
+      size: 'xlarge',
+    });
+  };
+
   componentDidMount() {
     trackShown();
   }
@@ -181,6 +207,7 @@ class PaymentsListContainer extends ListContainer {
             paginate={this.paginate}
             onView={this.onView}
             onUpload={this.onUploadInvoice}
+            onBuyerAddressClick={this.openBuyerAddressModal}
           />
         </div>
       </ErrorBoundary>
@@ -201,6 +228,8 @@ const mapDispatchToProps = (dispatch) => {
       getInvoiceDetailsPending: b2bActions.getInvoiceDetailsPending,
       getInvoiceDetailsError: b2bActions.getInvoiceDetailsError,
       getInvoiceDetailsSuccess: b2bActions.getInvoiceDetailsSuccess,
+      openModal,
+      closeModal,
     },
     dispatch,
   );

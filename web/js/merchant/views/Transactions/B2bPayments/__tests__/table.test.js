@@ -1,6 +1,5 @@
 // testing utils
-import { render, fireEvent, waitFor } from '@testing-library/react';
-import '@testing-library/jest-dom/extend-expect';
+import { render, fireEvent, waitFor, userEvent, screen } from 'test-utils';
 
 // router
 import { MemoryRouter as Router, Route } from 'react-router-dom';
@@ -73,35 +72,37 @@ describe('Test <ListTable />', () => {
     expect(renderComponent({ items: [] })).toBeDefined();
   });
   test('Should show loading state', () => {
-    const { container } = renderComponent({ items: [], loading: true });
-    expect(container.querySelector('.spinner')).toBeInTheDocument();
+    renderComponent({ items: [], loading: true });
+    expect(screen.getByTestId('spinner')).toBeInTheDocument();
   });
   test('Should render payment in table', () => {
-    const { getByText } = renderComponent({ items: testTxn, uploadState: {} });
-    expect(getByText('Captured')).toBeInTheDocument();
+    renderComponent({ items: testTxn, uploadState: {} });
+    expect(screen.getByText('Captured')).toBeInTheDocument();
   });
   test('Should show view action if payment has invoice id', () => {
-    const { getByText } = renderComponent({ items: testTxn, uploadState: {} });
-    expect(getByText('View')).toBeInTheDocument();
+    renderComponent({ items: testTxn, uploadState: {} });
+    expect(screen.getByText('VIEW')).toBeInTheDocument();
   });
   test('Should show upload button if payment status is authorized and invoice id is null', () => {
-    const { getByText } = renderComponent({
+    renderComponent({
       items: testTxn.map((txn) => ({ ...txn, b2b_export_invoice: null, status: 'authorized' })),
       uploadState: {},
     });
-    expect(getByText('Upload')).toBeInTheDocument();
+    expect(screen.getByText('Upload')).toBeInTheDocument();
   });
-  test('Should upload the invoice', async () => {
+  test('Should trigger upload invoice', async () => {
     const onUpload = jest.fn();
-    const { getByText, container } = renderComponent({
+    renderComponent({
       items: testTxn.map((txn) => ({ ...txn, b2b_export_invoice: null, status: 'authorized' })),
       uploadState: {},
       onUpload,
     });
     const file = new File(['(⌐□_□)'], 'testImage.png', { type: 'image/png' });
-    fireEvent.click(getByText('Upload'));
+    await userEvent.click(screen.getByText('Upload'));
+
     await waitFor(() =>
-      fireEvent.change(container.querySelector('.b2b-file-uploader'), {
+      // TODO: debug the issue, why userEvent not able to triggered upload file on the input
+      fireEvent.change(screen.getByTestId('b2b-file-uploader'), {
         target: {
           files: [file],
         },
@@ -109,5 +110,44 @@ describe('Test <ListTable />', () => {
     );
     expect(onUpload).toHaveBeenCalled();
     expect(onUpload).toHaveBeenCalledWith('id', file);
+  });
+
+  test('should trigger callback for add buyer address', async () => {
+    const onBuyerAddressClick = jest.fn();
+
+    renderComponent({
+      items: testTxn.map((txn) => ({ ...txn, b2b_export_invoice: null, status: 'authorized' })),
+      uploadState: {},
+      onBuyerAddressClick,
+    });
+
+    await userEvent.click(screen.getByText('Add/Update Buyer Address'));
+    expect(onBuyerAddressClick).toHaveBeenCalledWith('id');
+  });
+
+  test('should not show upload and add buyer address buttons if payment captured', () => {
+    renderComponent({
+      items: testTxn,
+      uploadState: {},
+    });
+
+    expect(screen.queryByText('Upload')).not.toBeInTheDocument();
+    expect(screen.queryByText('Add/Update Buyer Address')).not.toBeInTheDocument();
+    expect(screen.getByText('VIEW')).toBeInTheDocument();
+  });
+
+  test('should show add buyer address button if invoice is uploaded and payment is authorized', () => {
+    renderComponent({
+      items: testTxn.map((txn) => ({
+        ...txn,
+        b2b_export_invoice: 'doc_randomId',
+        status: 'authorized',
+      })),
+      uploadState: {},
+    });
+
+    expect(screen.queryByText('Upload')).not.toBeInTheDocument();
+    expect(screen.getByText('Add/Update Buyer Address')).toBeInTheDocument();
+    expect(screen.getByText('VIEW')).toBeInTheDocument();
   });
 });
