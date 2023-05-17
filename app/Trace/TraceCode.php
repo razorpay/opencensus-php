@@ -4037,6 +4037,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const QR_PAYER_NAME_EMPTY                                   = 'Payer name is empty in the request payload';
     const QR_REQUEST_PAYLOAD_EMPTY                              = 'Request payload field is empty';
     const QR_JSON_REQUEST_PAYLOAD_EMPTY                         = 'Json request payload field is empty';
+    const QR_PAYMENT_ACQUIRER_DATA                              = 'QR_PAYMENT_ACQUIRER_DATA';
 
     //upi status cache
     const UPI_CACHE_STORE_ERROR                                 = 'UPI_CACHE_STORE_ERROR';

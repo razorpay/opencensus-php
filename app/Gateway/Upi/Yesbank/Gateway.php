@@ -80,6 +80,12 @@ class Gateway extends Mindgate\Gateway
 
         if ($this->isBharatQrPayment() === true)
         {
+            $this->trace->info(
+                TraceCode::QR_PAYMENT_ACQUIRER_DATA,
+                [
+                    'input' => $input,
+                ]);
+
             $input[Fields::CUST_REF_ID] = $input['data']['upi'][Fields::NPCI_REFERENCE_ID] ?? '';
 
             $input[Entity::TYPE] = Base\Type::PAY;
