@@ -864,6 +864,11 @@ class EventCode
         'name'  => 'x.ca.freshdesk_ticket.create'
     ];
 
+    const X_CA_ONBOARDING_FRESHDESK_TICKET_CREATE_ICICI = [
+        'group' => 'onboarding',
+        'name'  => 'x.ca.freshdesk_ticket.create.icici'
+    ];
+
     const X_CA_ONBOARDING_RBL_WEBHOOK_FAILURE = [
         'group' => 'onboarding',
         'name'  => 'x.ca.rbl.webhook.failure'

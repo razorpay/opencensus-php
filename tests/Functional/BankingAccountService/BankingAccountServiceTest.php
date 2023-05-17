@@ -6,6 +6,7 @@ use App;
 use Carbon\Carbon;
 
 use Illuminate\Support\Facades\Mail;
+use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Mail\BankingAccount\Activation\StatusChange;
 use RZP\Models\Admin;
@@ -24,6 +25,7 @@ use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\BankingAccount\XProActivation;
 use RZP\Models\BankingAccountService\Constants;
+use RZP\Tests\Functional\Helpers\MocksDiagTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
@@ -36,6 +38,7 @@ class BankingAccountServiceTest extends TestCase
 {
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
+    use MocksDiagTrait;
     use RequestResponseFlowTrait;
 
     protected $config;
@@ -1216,6 +1219,32 @@ class BankingAccountServiceTest extends TestCase
         ];
 
         $this->fixtures->create('merchant_detail', $merchantDetailArray);
+
+        $expectedPayload = [
+            'merchant_id'               => '10000000000000',
+            'CA_Preferred_Phone'        => '33322323',
+            'CA_Preferred_Email'        => 'abc@def.com',
+            'merchant_name'             => 'test merchant',
+            'merchant_email'            => 'test@test.com',
+            'merchant_phone'            => '929292929',
+            'constitution'              => 'PRIVATE_LIMITED',
+            'pincode'                   => '332332',
+            'sales_team'                => 'SELF_SERVE',
+            'account_manager_name'      => 'test_name',
+            'account_manager_email'     => 'testemail@test.com',
+            'account_manager_phone'     => '33332222',
+        ];
+
+        $diagMock = $this->createAndReturnDiagMock();
+
+        $diagMock->shouldReceive('trackOnboardingEvent')
+            ->once()
+            ->withArgs(function($eventData, $merchant, $ex, $actualData) use ($expectedPayload) {
+                $this->assertEquals($expectedPayload, $actualData);
+                $this->assertEquals(EventCode::X_CA_ONBOARDING_FRESHDESK_TICKET_CREATE_ICICI, $eventData);
+                return true;
+            })
+            ->andReturnNull();
 
         Mail::fake();
 

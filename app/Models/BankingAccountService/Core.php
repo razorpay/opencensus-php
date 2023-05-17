@@ -7,10 +7,12 @@ use Illuminate\Http\Request;
 use Mail;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Mode;
+use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Mail\BankingAccount\CurrentAccount;
 use RZP\Models\BankingAccount;
+use RZP\Models\BankingAccount\Entity;
 use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
 use RZP\Models\BankingAccountStatement;
 use RZP\Models\Base;
@@ -506,6 +508,9 @@ class Core extends Base\Core
      */
     public function notifyOpsAboutLead($input)
     {
+        /* @var Merchant\Entity $merchant*/
+        $merchant = $this->repo->merchant->find($input[Constants::MERCHANT_ID]);
+
         try
         {
             $mailer = new CurrentAccount($input);
@@ -518,6 +523,8 @@ class Core extends Base\Core
                     'merchant_id'              => $input[Constants::MERCHANT_ID],
                     'message'                  => 'Mail Sent'
                 ]);
+
+            $this->app['diag']->trackOnboardingEvent(EventCode::X_CA_ONBOARDING_FRESHDESK_TICKET_CREATE_ICICI, $merchant, null, $input);
         }
         catch(\Exception $e)
         {
