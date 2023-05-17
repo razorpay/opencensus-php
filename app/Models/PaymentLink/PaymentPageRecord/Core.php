@@ -102,6 +102,10 @@ class Core extends Base\Core
 
         $response[Entity::PAYMENT_LINK_ID] = $id;
 
+        $response[Entity::MERCHANT_ID] = $paymentPage->getMerchantId();
+
+        $response = $this->populateCustomFieldSchema($id, $response);
+
         $batch_id = Batch::silentlyStripSign($batch_id);
         $response[Entity::BATCH_ID] = $batch_id;
 
@@ -232,4 +236,28 @@ class Core extends Base\Core
         return $resp;
     }
 
+    public function populateCustomFieldSchema(string $id, array $response): array
+    {
+        $allFields = (new Settings())->getSettings($id, 'payment_link', PaymentLink::ALL_FIELDS);
+
+        $allFields = json_decode($allFields['value'], true);
+
+        $otherDetails = json_decode($response[Entity::OTHER_DETAILS], true);
+
+        $custom_field_schema = [];
+
+        foreach ($otherDetails as $title => $value)
+        {
+            if (array_key_exists($title, $allFields) === true)
+            {
+                $fieldTitle = $allFields[$title];
+
+                $custom_field_schema[$fieldTitle] = ['key' => $title, 'value' => $value, 'dataType' => Constants::STRING];
+            }
+        }
+
+        $response[Entity::CUSTOM_FIELD_SCHEMA] = json_encode($custom_field_schema);
+
+        return $response;
+    }
 }

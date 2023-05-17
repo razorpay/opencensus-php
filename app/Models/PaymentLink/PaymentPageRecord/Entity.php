@@ -35,12 +35,14 @@ class Entity extends Base\PublicEntity
     const PHONE                 = 'phone';
     const CONTACT               = 'contact';
     const CONTACTS              = 'contacts';
+    const MERCHANT_ID           = 'merchant_id';
     const OTHER_DETAILS         = 'other_details';
     const PATTERN               = 'pattern';
     const REQUIRED              = 'required';
     const SMS_NOTIFY            = 'sms_notify';
     const EMAIL_NOTIFY          = 'email_notify';
     const MANDATORY             = 'mandatory';
+    const CUSTOM_FIELD_SCHEMA   = 'custom_field_schema';
     const TOTAL_PENDING_PAYMENTS= 'total_pending_payments';
     const TOTAL_PENDING_REVENUE = 'total_pending_revenue';
 
@@ -55,12 +57,14 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::EMAIL,
         self::CONTACT,
+        self::MERCHANT_ID,
         self::STATUS,
         self::OTHER_DETAILS,
         self::TOTAL_AMOUNT,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
+        self::CUSTOM_FIELD_SCHEMA,
     ];
 
     protected $public = [
@@ -72,12 +76,14 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::EMAIL,
         self::CONTACT,
+        self::MERCHANT_ID,
         self::STATUS,
         self::OTHER_DETAILS,
         self::TOTAL_AMOUNT,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
+        self::CUSTOM_FIELD_SCHEMA,
     ];
 
     protected $fillable = [
@@ -88,12 +94,14 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::EMAIL,
         self::CONTACT,
+        self::MERCHANT_ID,
         self::STATUS,
         self::OTHER_DETAILS,
         self::TOTAL_AMOUNT,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
+        self::CUSTOM_FIELD_SCHEMA,
     ];
 
     public static $secondary_ref_ids = [

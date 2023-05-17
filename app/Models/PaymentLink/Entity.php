@@ -123,6 +123,7 @@ class Entity extends Base\PublicEntity
     const SELECTED_INPUT_FIELD         = 'selected_udf_field';
     const CUSTOM_SERIAL_NUMBER         = 'enable_custom_serial_number';
     const ENABLE_80G_DETAILS           = 'enable_80g_details';
+    const ALL_FIELDS                   = 'all_fields';
 
     const DEFAULT_PAYMENT_HANDLE               = 'default_payment_handle';
     const DEFAULT_PAYMENT_HANDLE_PAGE_ID       = 'default_payment_handle_page_id';
@@ -578,6 +579,11 @@ class Entity extends Base\PublicEntity
     public function getDescription()
     {
         return $this->getAttribute(self::DESCRIPTION);
+    }
+
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
     }
 
     public function getMetaDescription()

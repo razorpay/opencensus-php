@@ -499,6 +499,63 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testPaymentPageCreateForFileUploadAllFieldsInSettings()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+
+        $res = $this->startTest();
+
+        $entity = $this->getDbLastEntity("payment_link");
+
+        $entityArray = $entity->toArray();
+
+        self::assertEquals($entityArray['view_type'], 'file_upload_page');
+
+        $settings = $this->getDbLastEntity("settings");
+
+        self::assertEquals($settings['key'], 'all_fields');
+
+        self::assertEquals($settings['value'], "{\"Email\":\"field_1\",\"Phone\":\"field_2\",\"contact\":\"field_3\",\"Address\":\"field_4\"}");
+
+        return $res['id'];
+    }
+
+    public function testPaymentPageUpdateForFileUploadAllFieldsInSettings()
+    {
+        $id = $this->testPaymentPageCreateForFileUploadAllFieldsInSettings();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/'. $id;
+
+        $this->startTest();
+
+        $settings = $this->getDbLastEntity("settings");
+
+        self::assertEquals($settings['key'], 'all_fields');
+
+        self::assertEquals($settings['value'], "{\"Email\":\"field_1\",\"Phone\":\"field_2\",\"contact\":\"field_3\",\"Address\":\"field_4\",\"Father Name\":\"field_5\"}");
+    }
+
+    public function testCreatePaymentPageRecordWithCustomFieldsSchema()
+    {
+        $id = $this->testPaymentPageCreateForFileUploadAllFieldsInSettings();
+
+        $batch_id = 'batch_KoGILWQCoVkOz5';
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/'. $id. '/create_record/'. $batch_id;
+
+        $this->ba->batchAppAuth();
+
+        $resp = $this->startTest();
+
+        s($resp);
+
+        $entity = $this->getDbLastEntity("payment_page_record");
+
+        $entityArray = $entity->toArray();
+
+        $this->assertEquals($entityArray['custom_field_schema'], '{"field_4": {"key": "Address", "value": "test", "dataType": "string"}}');
+    }
+
     public function testPaymentPageCreateForFileUpload()
     {
         $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);

@@ -7164,3 +7164,6 @@ ALTER TABLE admins
 
 ALTER TABLE upi
     ADD COLUMN gateway_error TEXT DEFAULT NULL;
+
+ALTER TABLE payment_page_records
+    ADD COLUMN merchant_id CHAR(14) COLLATE utf8mb4_bin;

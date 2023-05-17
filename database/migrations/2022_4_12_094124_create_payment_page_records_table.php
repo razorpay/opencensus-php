@@ -26,6 +26,8 @@ class CreatePaymentPageRecordsTable extends Migration
 
             $table->char(Entity::BATCH_ID, Entity::ID_LENGTH);
 
+            $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
+
             $table->string(Entity::PRIMARY_REFERENCE_ID, 50);
 
             $table->string(Entity::EMAIL, 255)
@@ -56,6 +58,7 @@ class CreatePaymentPageRecordsTable extends Migration
 
             $table->index(Entity::PRIMARY_REFERENCE_ID);
 
+            $table->json(Entity::CUSTOM_FIELD_SCHEMA);
         });
     }
 

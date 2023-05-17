@@ -123,6 +123,16 @@ class Core extends Base\Core
 
         $settings[Entity::VERSION] = Version::V2;
 
+        if (($merchant->isFeatureEnabled(Feature::FILE_UPLOAD_PP) === true) and
+            (isset($settings[Entity::UDF_SCHEMA])))
+        {
+            $udfSchema = json_decode($settings[Entity::UDF_SCHEMA], true);
+
+            $allFields = $this->generateAllFieldsFromUDF($udfSchema);
+
+            $settings[Entity::ALL_FIELDS] = json_encode($allFields);
+
+        }
 
         (new Validator())->validatePayerNameAndExpiryForCreate($merchant, $input);
 
@@ -195,6 +205,43 @@ class Core extends Base\Core
         });
 
         return $paymentLink;
+    }
+
+    public function generateAllFieldsFromUDF(array $udfSchema): array
+    {
+        $allFields = [];
+
+        $fieldCount = 1;
+
+        foreach ($udfSchema as $udf)
+        {
+            $allFields[$udf['title']] = 'field_'.$fieldCount;
+
+            $fieldCount++;
+        }
+
+        return $allFields;
+    }
+
+
+    public function  updateAllFieldsFromUDF(array $udfSchema, array $allFields): array
+    {
+        $newFields = [];
+
+        $totalFields = count($allFields);
+        foreach ($udfSchema as $udf)
+        {
+            $title = $udf['title'];
+
+            if (array_key_exists($title, $allFields) === false)
+            {
+                $totalFields++;
+
+                $newFields[$title] = 'field_'.$totalFields;
+            }
+        }
+
+        return array_merge($allFields, $newFields);
     }
 
     public function validateBulkUploadFlow($input, $merchant, $paymentLink = null)
@@ -469,6 +516,21 @@ class Core extends Base\Core
                     });
 
                     $settings[Entity::VERSION] = Version::V2;
+                }
+
+                if ($this->merchant->isFeatureEnabled(Feature::FILE_UPLOAD_PP) === true)
+                {
+                    $allFields = json_decode($paymentLink->getSettings(Entity::ALL_FIELDS), true);
+
+                    if (isset($settings[Entity::UDF_SCHEMA])) {
+
+                        $udfSchema = json_decode($settings[Entity::UDF_SCHEMA], true);
+
+                        $allFields = $this->updateAllFieldsFromUDF($udfSchema, $allFields);
+
+                        $settings[Entity::ALL_FIELDS] = json_encode($allFields);
+
+                    }
                 }
 
                 $paymentLink->edit($input);
