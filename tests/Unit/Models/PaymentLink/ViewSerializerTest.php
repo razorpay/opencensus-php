@@ -110,4 +110,21 @@ class ViewSerializerTest extends TestCase
             [true, '', false],
         ];
     }
+
+    public function testPPBatchUpload()
+    {
+        $attributes = [ PaymentLink\Entity::VIEW_TYPE => PaymentLink\ViewType::FILE_UPLOAD_PAGE ];
+
+        $pl = $this->createPaymentLink(self::TEST_PL_ID, $attributes);
+        $mockViewSerializer = \Mockery::mock(ViewSerializer::class, [$pl])->makePartial();
+        $mockViewSerializer->shouldAllowMockingProtectedMethods();
+
+        // mock addSettingsOfPaymentLink method call
+        $mockViewSerializer->shouldReceive('addSettingsOfPaymentLink')->andReturn([]);
+        $serialized = $mockViewSerializer->serializeForHosted();
+
+        $serialized['payment_link']['settings']['udf_schema']= "[{\"name\":\"pri__ref__id\",\"title\":\"Primary Reference ID\",\"required\":true,\"type\":\"string\",\"pattern\":\"alphanumeric\",\"options\":[],\"settings\":{\"position\":1}},{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":2}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":[],\"settings\":{\"position\":3}},{\"name\":\"blood_group\",\"title\":\"blood group\",\"required\":false,\"type\":\"string\",\"settings\":{\"position\":4}}]";
+
+        $this->assertTrue($mockViewSerializer->isPPBatchUpload($serialized));
+    }
 }

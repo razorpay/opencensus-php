@@ -456,6 +456,8 @@ class ViewSerializer extends Base\Core
      */
     public function updateNoneCachedHostedKeys(array $data): array
     {
+        $data['is_pp_batch_upload'] = $this->isPPBatchUpload($data);
+
         $data = $this->updateKeyLessHeader($data);
 
         $data = $this->updateViewPreferences($data);
@@ -465,5 +467,19 @@ class ViewSerializer extends Base\Core
         $data['environment'] = $this->app->environment();
 
         return $data;
+    }
+
+    public function isPPBatchUpload(array $data): bool
+    {
+        $udfSchema = $data['payment_link']['settings']['udf_schema'];
+
+        $udfSchemaDecode = json_decode($udfSchema, true);
+
+        foreach ($udfSchemaDecode as $key) {
+            if ($key['name'] === Entity::PRI_REF_ID) {
+                return true;
+            }
+        }
+        return false;
     }
 }
