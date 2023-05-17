@@ -41,6 +41,7 @@ class Service extends Base\Service
     const SERVICEABLE = 'serviceable';
     const COD =  'cod';
     const DISABLE_SHIPPING_CACHE_RESET = 'disable_shipping_cache_reset'; //shipping cache fix backward compatibility
+    const DEFAULT_SHIPPING_VARIANT = "__default";
 
     /**
      * Get Merchant Serviceability and COD Serviceability for a given Address
@@ -422,7 +423,21 @@ class Service extends Base\Service
             return null;
         }
 
+
         $shippingVariants = (new Merchant1ccConfig\Core())->getShippingVariants($mid) ?? [];
+
+        if (empty($shippingVariants) === true)
+        {
+            return null;
+        }
+
+        // Create shippingVariantsDict to check if the products are matching.
+        // If they are not, mark them as the default variant
+        $shippingVariantsDict = [];
+        foreach ($shippingVariants as $variant)
+        {
+            $shippingVariantsDict[$variant['name']] = 1;
+        }
 
         // For now, there's only 1 strategy.
         // Product based strategy gives priority to the first variant in the array
@@ -432,14 +447,22 @@ class Service extends Base\Service
                 $productTypes = [];
                 foreach ($orderMetaArray[Fields::LINE_ITEMS] as $item)
                 {
-                    $productTypes[$item[Fields::LINE_ITEM_TYPE] ?? ''] = 1;
+                    $productType = $item[Fields::LINE_ITEM_TYPE] ?? '';
+                    if($shippingVariantsDict[$productType] === 1)
+                    {
+                        $productTypes[$productType] = 1;
+                    }
+                    else
+                    {
+                        $productTypes[self::DEFAULT_SHIPPING_VARIANT] = 1;
+                    }
                 }
                 foreach ($shippingVariants as $shippingVariant) {
                     if (isset($productTypes[$shippingVariant['name']]) === false)
                     {
                         continue;
                     }
-                    return $shippingVariant['variant'];
+                    return $shippingVariant['variant'] ?? null;
                 }
         }
 
