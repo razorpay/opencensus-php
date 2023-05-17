@@ -850,6 +850,7 @@ class Gateway
         IFSC::UTIB,
         IFSC::YESB,
         IFSC::ZCBL,
+        IFSC::PSIB,
     ];
 
     // disabled for all auth types
@@ -863,8 +864,7 @@ class Gateway
         IFSC::JIOP,
         IFSC::PSIB,
         IFSC::SYNB,
-        IFSC::UJVN,
-        IFSC::UCBA,
+        IFSC::UJVN
     ];
 
     const EMANDATE_NB_DIRECT_BANKS = [
