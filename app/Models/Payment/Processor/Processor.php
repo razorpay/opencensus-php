@@ -823,6 +823,7 @@ class Processor
                                 $cardInput = $this->getCardInputForRearch($cryptogram, $card, $input);
                                 //modify input for cards
                                 $input[Payment\Entity::CARD] = $cardInput;
+                                $input[Payment\Entity::TOKEN] = $token->getId();
                                 return true;
                             }
                         } else {
