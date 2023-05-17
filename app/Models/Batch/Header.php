@@ -1551,6 +1551,15 @@ class Header
     const WALLET_LOAD_CATEGORY = 'Category (Optional)';
     const WALLET_LOAD_REFERENCE_ID = 'Reference ID (Optional)';
 
+    // Wallet create container load batch headers
+    const WALLET_CONTAINER_LOAD_USER_ID = "User ID";
+    const WALLET_CONTAINER_LOAD_PROGRAM_ID = "Program ID";
+    const WALLET_CONTAINER_LOAD_AMOUNT = 'Amount (In Paise)';
+    const WALLET_CONTAINER_LOAD_REFERENCE_ID = 'Reference ID (Optional)';
+    const WALLET_CONTAINER_LOAD_DESCRIPTION = 'Description (Optional)';
+    const WALLET_CONTAINER_LOAD_NOTES = 'Notes (Optional)';
+
+
     // consent collection for creation of local tokens
     //input
     const CONSENT_COLLECTION_MERCHANT_ID = 'merchantId';
@@ -1575,6 +1584,14 @@ class Header
     const MANDATORY_HEADERS_FOR_WALLET_LOADS = [
         Header::WALLET_LOAD_CONTACT,
         Header::WALLET_LOAD_AMOUNT
+    ];
+
+    // mandatory headers for wallet container load batch
+
+    const MANDATORY_HEADERS_FOR_WALLET_CONTAINER_LOADS = [
+           Header::WALLET_CONTAINER_LOAD_USER_ID,
+        Header::WALLET_CONTAINER_LOAD_PROGRAM_ID,
+        Header::WALLET_CONTAINER_LOAD_AMOUNT
     ];
 
 
@@ -5217,6 +5234,18 @@ class Header
             ],
             self::OUTPUT => []
         ],
+
+        Type::CREATE_WALLET_CONTAINER_LOADS => [
+            self::INPUT => [
+                self::WALLET_CONTAINER_LOAD_USER_ID,
+                self::WALLET_CONTAINER_LOAD_PROGRAM_ID,
+                self::WALLET_CONTAINER_LOAD_AMOUNT,
+                self::WALLET_CONTAINER_LOAD_REFERENCE_ID,
+                self::WALLET_CONTAINER_LOAD_DESCRIPTION,
+                self::WALLET_CONTAINER_LOAD_NOTES
+            ],
+            self::OUTPUT => []
+        ],
     ];
 
     /**
@@ -5394,6 +5423,11 @@ class Header
         if ($type === Type::CREATE_WALLET_LOADS)
         {
             self::validateWalletBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_WALLET_LOADS);
+        }
+
+        if ($type === Type::CREATE_WALLET_CONTAINER_LOADS)
+        {
+            self::validateWalletBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_WALLET_CONTAINER_LOADS);
         }
 
         // For payouts, we do not want to match exact headers, because we are allowing some headers to be skipped.
