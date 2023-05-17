@@ -40,6 +40,9 @@ export const getReportsDashboardConfig = (
                 return false;
               case config?.name === 'Monthly Invoice Report' && session.user.isSupportRole:
                 return false;
+              case config?.name === 'Optimiser Settlements' &&
+                session.user.isOptimizerRZPVASEnabled:
+                return false;
               default:
                 return true;
             }

@@ -242,4 +242,46 @@ describe('User model', () => {
     const isIssuingBulkUploadEnabled = user.isIssuingBulkUploadEnabled;
     expect(isIssuingBulkUploadEnabled).toBe(true);
   });
+
+  describe('isOptimizerEnabled', () => {
+    const user = getDefaultUserObj();
+    test('should return false when both "raas" and "optimizer_razorpay_vas" features are enabled', () => {
+      user.isFeatureEnabled = jest
+        .fn()
+        .mockReturnValueOnce(true) // raas feature is enabled
+        .mockReturnValueOnce(true); // optimizer_razorpay_vas feature is enabled
+
+      expect(user.isOptimizerEnabled).toBe(false);
+    });
+
+    test('should return true when "raas" feature is enabled but "optimizer_razorpay_vas" feature is disabled', () => {
+      user.isFeatureEnabled = jest
+        .fn()
+        .mockReturnValueOnce(true) // raas feature is enabled
+        .mockReturnValueOnce(false); // optimizer_razorpay_vas feature is disabled
+
+      expect(user.isOptimizerEnabled).toBe(true);
+    });
+
+    test('should return false when "raas" feature is disabled', () => {
+      user.isFeatureEnabled = jest.fn().mockReturnValueOnce(false); // raas feature is disabled
+
+      expect(user.isOptimizerEnabled).toBe(false);
+    });
+  });
+
+  describe('isOptimizerRZPVASEnabled', () => {
+    const user = getDefaultUserObj();
+    test('should return true when "optimizer_razorpay_vas" feature is enabled', () => {
+      user.isFeatureEnabled = jest.fn().mockReturnValue(true);
+
+      expect(user.isOptimizerRZPVASEnabled).toBe(true);
+    });
+
+    test('should return false when "optimizer_razorpay_vas" feature is disabled', () => {
+      user.isFeatureEnabled = jest.fn().mockReturnValue(false);
+
+      expect(user.isOptimizerRZPVASEnabled).toBe(false);
+    });
+  });
 });

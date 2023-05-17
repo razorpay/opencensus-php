@@ -119,7 +119,10 @@ export const Step1 = (props) => {
     changeGateway();
   };
 
-  const onRadioChange = (e) => toggleSeamless(Boolean(e.target.value));
+  const onRadioChange = ({ target }) => {
+    const parsedValue = target.value === 'true';
+    toggleSeamless(parsedValue);
+  };
 
   const radioFeedback = () => {
     const contentExist = SEAMLESS_CONTENT?.hasOwnProperty(selectedProvider);

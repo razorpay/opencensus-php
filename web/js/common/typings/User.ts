@@ -49,6 +49,7 @@ type Getters = {
   isSettlementV3RevampEnabled: boolean;
   isSingleReconEnabled: boolean;
   isOptimizerEnabled: boolean;
+  isOptimizerRZPVASEnabled: boolean;
   isWebsiteComplianceFlowEnabled: boolean;
   isBundlePricingEnabled: boolean;
 };

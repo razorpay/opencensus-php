@@ -1013,8 +1013,12 @@ export default class User {
     return ((this.experiments || user?.experiments || {})[name] || {}).result === 'on';
   }
 
+  get isOptimizerRZPVASEnabled() {
+    return this.isFeatureEnabled('optimizer_razorpay_vas');
+  }
+
   get isOptimizerEnabled() {
-    return this.isFeatureEnabled('raas');
+    return this.isFeatureEnabled('raas') && !this.isOptimizerRZPVASEnabled;
   }
 
   get isPaytmAutoDebitEnabled() {

@@ -225,6 +225,7 @@ class GenerateReportPanel extends React.PureComponent {
           (configType && user.findTag(configType)) || (configName && user.findTag(configName));
         if (i18TagFound) return false;
         if (config?.name === 'Monthly Invoice Report' && user.isSupportRole) return false;
+        if (config?.name === 'Optimiser Settlements' && user.isOptimizerRZPVASEnabled) return false;
         return true;
       });
     }
