@@ -11,12 +11,15 @@ use RZP\Exception\BadRequestException;
 use RZP\Services\Mock\ApachePinotClient;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
 
 class AccountTest extends TestCase
 {
     use RequestResponseFlowTrait;
     use DbEntityFetchTrait;
+    use HeimdallTrait;
+
 
     protected function setUp(): void
     {
@@ -409,5 +412,123 @@ class AccountTest extends TestCase
         $this->ba->settlementsAuth();
 
         $this->startTest($testData);
+    }
+
+    public function testSuspendStatusPropagationToLinkedAccountWhenMerchantIsSuspended()
+    {
+        $parentMerchant = $this->getLastEntity('merchant', true);
+
+        $this->fixtures->create('merchant:marketplace_account',
+            ['id' => '10000000000001', 'parent_id' => $parentMerchant['id']]);
+        $this->fixtures->create('merchant:marketplace_account',
+            ['id' => '10000000000002', 'parent_id' => $parentMerchant['id']]);
+        $this->fixtures->create('merchant:marketplace_account',
+            ['id' => '10000000000003', 'parent_id' => $parentMerchant['id']]);
+        $this->fixtures->create('merchant:marketplace_account',
+            ['id' => '10000000000004', 'parent_id' => $parentMerchant['id']]);
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
+
+        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $parentMerchant['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $suspendedMerchantIds = [
+            $parentMerchant['id'], '10000000000001', '10000000000002', '10000000000003', '10000000000004'
+        ];
+
+        foreach ($suspendedMerchantIds as $suspendedMerchantId)
+        {
+            $merchant = $this->getDbEntityById('merchant', $suspendedMerchantId);
+
+            $this->assertNotNull($merchant['suspended_at']);
+            $this->assertTrue($merchant['hold_funds']);
+            $this->assertFalse($merchant['live']);
+
+            if ($suspendedMerchantId !== $parentMerchant['id'])
+            {
+                $this->assertEquals('account_suspended_due_to_parent_merchant_suspension', $merchant['hold_funds_reason']);
+            }
+        }
+    }
+
+    public function testUnsuspendStatusPropagationToLinkedAccountWhenMerchantIsUnsuspended()
+    {
+        $parentMerchant = $this->getLastEntity('merchant', true);
+
+        $this->fixtures->edit('merchant', $parentMerchant['id'],
+            [
+                'suspended_at' => time(), 'hold_funds' => true, 'live' => false
+            ]);
+        $this->fixtures->create('merchant:marketplace_account',
+            [
+                'id' => '10000000000001', 'parent_id' => $parentMerchant['id'], 'suspended_at' => time(),
+                'live' => false, 'hold_funds' => true, 'hold_funds_reason' => 'suspended due to XYZ'
+            ]);
+        $this->fixtures->create('merchant:marketplace_account',
+            [
+                'id' => '10000000000002', 'parent_id' => $parentMerchant['id'], 'suspended_at' => time(),
+                'live' => false, 'hold_funds' => true, 'hold_funds_reason' => 'suspended due to XYZ'
+            ]);
+        $this->fixtures->create('merchant:marketplace_account',
+            [
+                'id' => '10000000000003', 'parent_id' => $parentMerchant['id'], 'suspended_at' => time(),
+                'live' => false, 'hold_funds' => true, 'hold_funds_reason' => 'account_suspended_due_to_parent_merchant_suspension'
+            ]);
+        $this->fixtures->create('merchant:marketplace_account',
+            [
+                'id' => '10000000000004', 'parent_id' => $parentMerchant['id'], 'suspended_at' => time(),
+                'live' => false, 'hold_funds' => true, 'hold_funds_reason' => 'account_suspended_due_to_parent_merchant_suspension'
+            ]);
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, 'org_'.$this->org->id);
+
+        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $parentMerchant['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $unsuspendedMerchantIds = [
+            $parentMerchant['id'], '10000000000003', '10000000000004'
+        ];
+        $suspendedMerchantIds = [
+            '10000000000001', '10000000000002'
+        ];
+
+        foreach ($unsuspendedMerchantIds as $unsuspendedMerchantId)
+        {
+            $merchant = $this->getDbEntityById('merchant', $unsuspendedMerchantId);
+
+            $this->assertNull($merchant['suspended_at']);
+            $this->assertFalse($merchant['hold_funds']);
+            $this->assertTrue($merchant['live']);
+            $this->assertNull($merchant['hold_funds_reason']);
+        }
+
+        foreach ($suspendedMerchantIds as $suspendedMerchantId)
+        {
+            $merchant = $this->getDbEntityById('merchant', $suspendedMerchantId);
+
+            $this->assertNotNull($merchant['suspended_at']);
+            $this->assertTrue($merchant['hold_funds']);
+            $this->assertFalse($merchant['live']);
+            $this->assertEquals('suspended due to XYZ', $merchant['hold_funds_reason']);
+        }
+    }
+
+    public function setAdminForInternalAuth()
+    {
+        $this->org = $this->fixtures->create('org');
+
+        $this->addAssignablePermissionsToOrg($this->org);
+
+        $this->authToken = $this->getAuthTokenForOrg($this->org);
     }
 }

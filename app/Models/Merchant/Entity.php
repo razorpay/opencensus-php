@@ -1367,6 +1367,8 @@ class Entity extends Base\PublicEntity
         $this->setHoldFunds(true);
 
         $this->fireEventWithMerchantPayload('api.account.suspended');
+
+        (new Core())->suspendLinkedAccountsOfParentMerchantIfPresent($this->getMerchantId());
     }
 
     public function unsuspend()
@@ -1376,6 +1378,8 @@ class Entity extends Base\PublicEntity
         $this->setHoldFunds(false);
 
         $this->fireEventWithMerchantPayload('api.account.unsuspended');
+
+        (new Core())->unsuspendLinkedAccountsOfParentMerchantIfPresent($this->getMerchantId());
     }
 
     public function isCACEnabled() :bool

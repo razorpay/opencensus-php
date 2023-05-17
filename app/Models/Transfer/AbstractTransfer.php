@@ -228,6 +228,13 @@ abstract class AbstractTransfer
             return;
         }
 
+        $isTransferFailed = $this->failTransferIfLinkedAccountIsSuspended($transfer, $merchant);
+
+        if ($isTransferFailed === true)
+        {
+            return;
+        }
+
         $deadlockRetryAttempts = 3;
 
         try
@@ -490,5 +497,39 @@ abstract class AbstractTransfer
         }
 
         return $this->causedByLostConnection($e);
+    }
+
+    protected function failTransferIfLinkedAccountIsSuspended(Entity $transfer, Merchant\Entity $merchant): bool
+    {
+        try
+        {
+            (new Core())->validateLinkedAccountActivationStatusAndBankVerificationStatus($transfer, $merchant);
+        }
+        catch (BadRequestException $ex)
+        {
+            if ($ex->getError()->getInternalErrorCode() === ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_SUSPENDED)
+            {
+                $transfer->setFailed();
+
+                $transfer->setMessage($ex->getMessage());
+
+                $this->verifyAndSetErrorCode($transfer, $ex->getCode());
+
+                $this->repo->saveOrFail($transfer);
+
+                $this->fireTransferFailedWebhookIfApplicable($transfer);
+
+                $this->trace->info(
+                    TraceCode::TRANSFER_FAILED_AS_LINKED_ACCOUNT_IS_SUSPENDED,
+                    [
+                        'transfer_id'         => $transfer->getId(),
+                        'linked_account_id'   => $transfer->getToId(),
+                    ]);
+
+                return true;
+            }
+        }
+
+        return false;
     }
 }

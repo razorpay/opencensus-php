@@ -477,4 +477,40 @@ return [
             ],
         ],
     ],
+
+    'testSuspendStatusPropagationToLinkedAccountWhenMerchantIsSuspended' => [
+        'request' => [
+            'content' => [
+                'action' => 'suspend'
+            ],
+            'url' => '/merchants/%s/action',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'merchant',
+                'activated' => false,
+                'live' => false,
+                'hold_funds' => true,
+            ]
+        ]
+    ],
+
+    'testUnsuspendStatusPropagationToLinkedAccountWhenMerchantIsUnsuspended' => [
+        'request' => [
+            'content' => [
+                'action' => 'unsuspend'
+            ],
+            'url' => '/merchants/%s/action',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'merchant',
+                'activated' => false,
+                'live' => true,
+                'hold_funds' => false,
+            ]
+        ]
+    ],
 ];

@@ -1560,6 +1560,37 @@ class Repository extends Base\Repository
         return $childMerchantIds;
     }
 
+    public function fetchUnsuspendedLinkedAccountMids($merchantId, $offset = 0)
+    {
+        $childMerchantIds = $this->newQueryWithConnection($this->getSlaveConnection())
+                                 ->select(Entity::ID)
+                                 ->where(Entity::PARENT_ID, $merchantId)
+                                 ->whereNull(Entity::SUSPENDED_AT)
+                                 ->offset($offset)
+                                 ->limit(1000)
+                                 ->get()
+                                 ->pluck(Entity::ID)
+                                 ->toArray();
+
+        return $childMerchantIds;
+    }
+
+    public function fetchLinkedAccountMidsSuspendedDueToParentMerchantSuspension($merchantId, $offset = 0)
+    {
+        $childMerchantIds = $this->newQueryWithConnection($this->getSlaveConnection())
+                                 ->select(Entity::ID)
+                                 ->where(Entity::PARENT_ID, $merchantId)
+                                 ->whereNotNull(Entity::SUSPENDED_AT)
+                                 ->where(Entity::HOLD_FUNDS_REASON, Constants::ACCOUNT_SUSPENDED_DUE_TO_PARENT_MERCHANT_SUSPENSION)
+                                 ->offset($offset)
+                                 ->limit(1000)
+                                 ->get()
+                                 ->pluck(Entity::ID)
+                                 ->toArray();
+
+        return $childMerchantIds;
+    }
+
     public function fetchActivatedLinkedAccountIdsForParentMerchant(string $parentMerchantId)
     {
         return $this->newQuery()
@@ -2113,6 +2144,54 @@ class Repository extends Base\Repository
         $entities['total_merchants_onboarded'] = $total_merchants_onboarded;
 
         return $entities;
+    }
+
+    public function updateLinkedAccountsAsSuspendedOrUnsuspendedInBulk(array $linkedAccountMids, bool $shouldSuspend)
+    {
+        $countOfLinkedAccounts = count($linkedAccountMids);
+
+        if ($countOfLinkedAccounts === 0)
+        {
+            return 0;
+        }
+
+        if ($shouldSuspend === true)
+        {
+            $updateColumnValues = [
+                Entity::SUSPENDED_AT      => time(),
+                Entity::LIVE              => false,
+                Entity::HOLD_FUNDS        => true,
+                Entity::HOLD_FUNDS_REASON => Constants::ACCOUNT_SUSPENDED_DUE_TO_PARENT_MERCHANT_SUSPENSION
+            ];
+        }
+        else
+        {
+            $updateColumnValues = [
+                Entity::SUSPENDED_AT       => null,
+                Entity::LIVE               => true,
+                Entity::HOLD_FUNDS         => false,
+                Entity::HOLD_FUNDS_REASON  => null,
+            ];
+        }
+
+        foreach ([Mode::LIVE, Mode::TEST] as $mode)
+        {
+            $updatedCount = $this->newQueryWithConnection($mode)
+                ->whereIn(Entity::ID, $linkedAccountMids)
+                ->update($updateColumnValues);
+
+            if ($updatedCount !== $countOfLinkedAccounts)
+            {
+                throw new Exception\LogicException(
+                    'Failed to update status for expected number of linked accounts',
+                    null,
+                    [
+                        'suspend'  => $shouldSuspend,
+                        'expected' => $countOfLinkedAccounts,
+                        'updated'  => $updatedCount,
+                    ]);
+            }
+        }
     }
 
     public function filterNonBusinessBankingMerchants(array $merchantIds)

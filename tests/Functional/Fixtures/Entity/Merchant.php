@@ -237,9 +237,13 @@ class Merchant extends Base
         $parentId = $data['parent_id'] ?? '10000000000000';
 
         $merchantData = [
-            MerchantEntity::ID              => $accountId,
-            MerchantEntity::PARENT_ID       => $parentId,
-            MerchantEntity::PRICING_PLAN_ID => '1hDYlICobzOCYt'
+            MerchantEntity::ID                => $accountId,
+            MerchantEntity::PARENT_ID         => $parentId,
+            MerchantEntity::PRICING_PLAN_ID   => '1hDYlICobzOCYt',
+            MerchantEntity::HOLD_FUNDS_REASON => $data[MerchantEntity::HOLD_FUNDS_REASON] ?? null,
+            MerchantEntity::SUSPENDED_AT      => $data[MerchantEntity::SUSPENDED_AT] ?? null,
+            MerchantEntity::LIVE              => $data[MerchantEntity::LIVE] ?? true,
+            MerchantEntity::HOLD_FUNDS        => $data[MerchantEntity::HOLD_FUNDS] ?? false,
         ];
 
         if(array_key_exists(MerchantEntity::EMAIL, $data))

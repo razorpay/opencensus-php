@@ -10021,6 +10021,82 @@ class Core extends Base\Core
         return $this->isSplitzExperimentEnable($properties, 'enable');
     }
 
+    public function suspendLinkedAccountsOfParentMerchantIfPresent(string $parentMerchantId)
+    {
+        $iteration = 0;
+
+        do
+        {
+            $offset = $iteration * 1000;
+
+            $linkedAccountMids = $this->repo->merchant->fetchUnsuspendedLinkedAccountMids($parentMerchantId, $offset);
+
+            $this->trace->info(
+                TraceCode::LINKED_ACCOUNTS_FETCHED_FOR_SUSPENSION,
+                [
+                    'parent_merchant_id'    => $parentMerchantId,
+                    'linked_account_ids'    => $linkedAccountMids,
+                    'linked_accounts_count' => count($linkedAccountMids),
+                    'iteration'             => $iteration,
+                ]
+            );
+
+            $this->repo->transactionOnLiveAndTest(function () use ($linkedAccountMids) {
+                $this->repo->merchant->updateLinkedAccountsAsSuspendedOrUnsuspendedInBulk($linkedAccountMids, true);
+            });
+
+            $this->trace->info(
+                TraceCode::LINKED_ACCOUNTS_SUSPENSION_SUCCESSFUL,
+                [
+                    'parent_merchant_id' => $parentMerchantId,
+                    'linked_account_ids' => $linkedAccountMids,
+                    'iteration'          => $iteration,
+                ]
+            );
+
+            $iteration += 1;
+        }
+        while (empty($linkedAccountMids) === false);
+    }
+
+    public function unsuspendLinkedAccountsOfParentMerchantIfPresent(string $parentMerchantId)
+    {
+        $iteration = 0;
+
+        do
+        {
+            $offset = $iteration * 1000;
+
+            $linkedAccountMids = $this->repo->merchant->fetchLinkedAccountMidsSuspendedDueToParentMerchantSuspension($parentMerchantId, $offset);
+
+            $this->trace->info(
+                TraceCode::LINKED_ACCOUNTS_FETCHED_FOR_UNSUSPENSION,
+                [
+                    'parent_merchant_id'    => $parentMerchantId,
+                    'linked_account_ids'    => $linkedAccountMids,
+                    'linked_accounts_count' => count($linkedAccountMids),
+                    'iteration'             => $iteration
+                ]
+            );
+
+            $this->repo->transactionOnLiveAndTest(function() use ($linkedAccountMids) {
+                $this->repo->merchant->updateLinkedAccountsAsSuspendedOrUnsuspendedInBulk($linkedAccountMids, false);
+            });
+
+            $this->trace->info(
+                TraceCode::LINKED_ACCOUNTS_UNSUSPENSION_SUCCESSFUL,
+                [
+                    'parent_merchant_id'    => $parentMerchantId,
+                    'linked_account_ids'    => $linkedAccountMids,
+                    'iteration'             => $iteration,
+                ]
+            );
+
+            $iteration += 1;
+        }
+        while (empty($linkedAccountMids) === false);
+    }
+
     public function addFeatureFlagForMerchant(Entity $merchant, string $featureFlag)
     {
         $merchantId = $merchant->getId();
