@@ -1038,7 +1038,8 @@ class Entity
     ];
 
     const ARCHIVED_ENTITIES = [
-        self::CARD
+        self::CARD,
+        self::PAYMENT,
     ];
 
     public static $namespace = [

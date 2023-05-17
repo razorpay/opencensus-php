@@ -337,18 +337,6 @@ trait ArchivedCore
             $archivalFallbackConfigEnabled = $this->isArchivalFallbackConfigKeyEnabled($entityName);
         }
 
-        // Logging critical info for debugging
-        if ($entityName === Entity::PAYMENT)
-        {
-            $app['trace']->info(TraceCode::ARCHIVAL_FALLBACK_ENABLEMENT_CONFIG, [
-                'extra_log_data'                   => $logData,
-                'runningInQueue'                   => $isWorkerPod,
-                'instance_type'                    => getenv('INSTANCE_TYPE'),
-                $archivalFallbackEnvKey            => $archivalFallbackEnvValue,
-                'archival_fallback_config_enabled' => $archivalFallbackConfigEnabled,
-            ]);
-        }
-
         // Note : Explicitly setting `==` for $archivalFallbackEnvValue to handle env datatype conversions. Do not change to `===`
         return (($archivalFallbackEnvValue == true) or ($archivalFallbackConfigEnabled === true));
     }

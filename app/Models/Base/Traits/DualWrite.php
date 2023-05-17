@@ -328,19 +328,6 @@ trait DualWrite
 
         $dualWriteEnvValue = getenv($dualWriteEnvKey);
 
-        // Logging critical info for debugging
-        if ($tableName === 'payments')
-        {
-            $app['trace']->info(TraceCode::DUAL_WRITE_CONFIG, [
-                'id'                   => $this->getId(),
-                $dualWriteEnvKey       => $dualWriteEnvValue,
-                'runningInQueue'       => $app->runningInQueue(),
-                'instance_type'        => getenv('INSTANCE_TYPE'),
-                'is_worker_pod_env'    => getenv('IS_WORKER_POD'),
-                'is_worker_pod_config' => $app['config']->get('worker.is_worker_pod'),
-            ]);
-        }
-
         // Note : Explicitly setting `==` to handle env datatype conversions. Do not change to `===`
         if ($dualWriteEnvValue == true)
         {
