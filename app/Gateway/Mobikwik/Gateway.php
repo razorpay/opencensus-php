@@ -350,7 +350,11 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        $this->trace->info(TraceCode::GATEWAY_CREATE_USER_REQUEST, $request);
+        $traceRequest = $request;
+
+        unset($traceRequest['content']['otp']);
+
+        $this->trace->info(TraceCode::GATEWAY_CREATE_USER_REQUEST, $traceRequest);
 
         $response = $this->sendGatewayRequest($request);
         $content = $this->xmlToArray($response->body);
@@ -434,7 +438,11 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_OTP_SUBMIT_REQUEST, $request);
+        $traceRequest = $request;
+
+        unset($traceRequest['content']['otp']);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_OTP_SUBMIT_REQUEST, $traceRequest);
 
         $response = $this->sendGatewayRequest($request);
         $responseArray = $this->xmlToArray($response->body);
