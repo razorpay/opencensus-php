@@ -2,8 +2,6 @@
 
 namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 
-use RZP\Error;
-use RZP\Exception;
 use RZP\Models\Vpa;
 use RZP\Models\QrCode;
 use RZP\Models\Settings;
@@ -159,69 +157,6 @@ class Generator extends QrCode\Generator
         return $this->generateUpiQrIntentUrl($vpa, $qrCode);
     }
 
-    public function closeQrCodeOnGateway($qrCode)
-    {
-        if ($qrCode->isGatewayGeneratedRefid() === true)
-        {
-            return null;
-        }
-
-        if ($qrCode->isIciciQr() === false)
-        {
-            return null;
-        }
-
-        $gateway  = GATEWAY::UPI_ICICI;
-        $params   = array(Terminal\Entity::GATEWAY_MERCHANT_ID2 => $qrCode->getQrVpa());
-        $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $params);
-
-        if (($terminal instanceof Terminal\Entity) === false)
-        {
-            throw new Exception\LogicException(TraceCode::QR_CODE_UPI_QR_TERMINAL_NOT_FOUND_FOR_MERCHANT,
-                                               Error\ErrorCode::SERVER_ERROR_NO_TERMINAL_FOUND,
-                                               [
-                                                   'merchant_id' => $qrCode->merchant->getId(),
-                                               ]);
-        }
-
-        return $this->generateRefId($qrCode, $terminal);
-    }
-
-    private function generateRefId($qrCode, $terminal)
-    {
-        $input = [
-            'qr_code'  => $qrCode->toArray(),
-            'terminal' => $terminal->toArray(),
-            'merchant' => $qrCode->merchant,
-        ];
-
-        $gatewayClass = $this->app['gateway']->gateway($terminal->getGateway());
-
-        if (method_exists($gatewayClass, 'getQrRefId') === true)
-        {
-            try
-            {
-                $gatewayClass->setGatewayParams($input, $this->mode, $terminal);
-
-                $refId = $gatewayClass->getQrRefId($input);
-
-                if ($this->gateway === Gateway::UPI_YESBANK)
-                {
-                    $refId = $qrCode->getId() . QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
-                }
-            }
-            catch (\Exception $ex)
-            {
-                throw new BadRequestException('QrCode creation failed due to error at bank or wallet gateway',
-                                              ErrorCode::BAD_REQUEST_QR_CODE_REF_ID_GENERATION_FAILURE,
-                                              null,
-                                              null);
-            }
-        }
-
-        return $refId;
-    }
-
     private function getRefIdForQrCode($qrCode)
     {
         switch ($this->gateway)
@@ -245,7 +180,37 @@ class Generator extends QrCode\Generator
                          ->terminal
                          ->getById($this->terminalId);
 
-        return $this->generateRefId($qrCode,$terminal);
+        $input = [
+            'qr_code'  => $qrCode->toArray(),
+            'terminal' => $terminal->toArray(),
+            'merchant' => $qrCode->merchant,
+        ];
+
+        $gatewayClass = $this->app['gateway']->gateway($terminal->getGateway());
+
+        if (method_exists($gatewayClass, 'getQrRefId') === true)
+        {
+            try
+            {
+                $gatewayClass->setGatewayParams($input, $this->mode, $terminal);
+
+                $refId = $gatewayClass->getQrRefId($input);
+
+                if ($this->gateway === Gateway::UPI_YESBANK)
+                {
+                    $refId = $qrCode->getId() . QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
+                }
+            }
+            catch(\Exception $ex)
+            {
+                throw new BadRequestException('QrCode creation failed due to error at bank or wallet gateway',
+                    ErrorCode::BAD_REQUEST_QR_CODE_REF_ID_GENERATION_FAILURE,
+                    null,
+                    null);
+            }
+        }
+
+        return $refId;
     }
 
     private function generateUpiQrIntentUrl($vpa, $qrCode)
