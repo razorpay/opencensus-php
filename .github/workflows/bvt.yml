@@ -1,0 +1,185 @@
+name: Run BVT in Devstack Post Approval
+on:
+  workflow_dispatch:
+#  pull_request_review:
+#    types: [ submitted ]
+jobs:
+  # Add cancel job
+  cancel:
+    name: Cancel Previous Runs
+    if: always()
+    runs-on: [ self-hosted, api ]
+    timeout-minutes: 3
+    steps:
+      - uses: styfle/cancel-workflow-action@0.9.0
+        with:
+          workflow_id: "bvt.yaml"
+          access_token: ${{ github.token }}
+  # PR Approval Request Workflowc
+  pull_request_approved:
+    if: github.event.review.state == 'approved'
+    runs-on: [ self-hosted, api ]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: Print Base branch
+        run: echo ${{ github.event.pull_request.base.ref }}
+      - name: backmerge-master
+        id: backmerge
+        uses: devmasx/merge-branch@master
+        with:
+          type: now
+          from_branch: ${{ github.event.pull_request.base.ref }}
+          message: Rebased `master` into ${{ github.event.pull_request.head.ref }} branch
+          target_branch: ${{ github.event.pull_request.head.ref }}
+          github_token: ${{ secrets.PREM_CI_BOT_TOKEN }}
+      - name: Comments
+        if: ${{failure()}}
+        uses: mshick/add-pr-comment@v2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          message: |
+            **Conflict Error Please back-merge manually**
+          allow-repeats: true
+      - name: Approve if PR is rebased with master
+        if: ${{success()}}
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          GITHUB_TOKEN=${{ secrets.PREM_CI_BOT_TOKEN }}
+          # Make PATCH request to update the pull request
+          curl -X PATCH \
+          -H "Authorization: Bearer $GITHUB_TOKEN" \
+          -H "Accept: application/vnd.github.v3+json" \
+          -d '{"maintainer_can_modify": false}' \
+          "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUMBER"
+      - name: checkout lastest code from PR
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+      # Validate existence of Roast PR NUmber Field
+      - name: Validate existence of roastPRNumber Field
+        uses: actions/github-script@v6
+        id: roast-pr-number
+        with:
+          result-encoding: string
+          script: |
+            const regex = /roastprnumber.*/i;
+            roastPRNumberFlag = regex.test(context.payload.pull_request.body.toLowerCase())
+            return Boolean(roastPRNumberFlag)
+        # Fetch PR Number for Roast mentioned in description
+      - name: Fetch PR Number for Roast
+        uses: actions/github-script@v6
+        if: ${{steps.roast-pr-number.outputs.result == 'true'}}
+        id: roastPRNumber
+        with:
+          result-encoding: string
+          script: |
+            roastPRNumberStr = context.payload.pull_request.body.toLowerCase()
+            var roastPRNumberValueRow = (roastPRNumberStr.substring(roastPRNumberStr.indexOf("roastprnumber"))).split("\n")
+            var prNumberValue = roastPRNumberValueRow[0].split("|")
+            var prNumber = prNumberValue[1].trim()
+            return prNumber
+      - name: Print PR Number
+        run: echo ${{ steps.roastPRNumber.outputs.result }}
+        # Get Roast PR State if its approved or not
+      - name: Run Roast API PR flow if value is not null
+        id: get_pr_state
+        if: ${{steps.roastPRNumber.outputs.result != null }}
+        uses: actions/github-script@v6
+        with:
+          result-encoding: string
+          github-token: ${{ secrets.CI_BOT_TOKEN }}
+          script: |
+            pullnumber = parseInt(${{steps.roastPRNumber.outputs.result}})
+            const result = await github.pulls.listReviews({
+              owner: context.payload.repository.owner.login,
+              repo: 'roast',
+              pull_number: pullnumber,
+              per_page: 100
+            })
+            const prState = result.data.filter(f => f.state.toLowerCase().includes("approved")).length > 0
+            return Boolean(prState)
+        # Get Target Branch for Roast Repo
+      - name: Get Roast Branch for PR
+        id: roast-branch
+        if: |
+          steps.roastPRNumber.outputs.result != null  && steps.get_pr_state.outputs.result == 'true'
+        uses: actions/github-script@v6
+        with:
+          result-encoding: string
+          github-token: ${{ secrets.CI_BOT_TOKEN }}
+          script: |
+            const response = await github.pulls.get({
+              owner: context.payload.repository.owner.login,
+              repo: 'roast',
+              pull_number: ${{steps.roastPRNumber.outputs.result}},
+            })
+            const roastBranch = response.data.head.ref
+            return String(roastBranch)
+        # Rebase Master to a roast branch in Roast Repo
+      - name: Rebase master to a branch
+        id: rebase-branch
+        if: |
+          steps.roastPRNumber.outputs.result != null  && steps.get_pr_state.outputs.result == 'true'
+        uses: linhbn123/rebase-pull-requests@v1.0.1
+        with:
+          repository: 'razorpay/roast'
+          head: 'razorpay:${{ steps.roast-branch.outputs.result }}'
+          base: 'master'
+          token: ${{ secrets.CI_BOT_TOKEN }}
+      - name: Comments
+        if: ${{failure()}}
+        uses: mshick/add-pr-comment@v2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          message: |
+            **Conflict Error Please rebase manually**
+            allow-repeats: true
+        # Fetch the latest commit of the Roast Repo
+      - name: Fetch latest Commit of the PR in Roast after rebase
+        id: latest-commit
+        if: |
+          steps.roastPRNumber.outputs.result != null  && steps.get_pr_state.outputs.result == 'true'
+        uses: actions/github-script@v6
+        with:
+          result-encoding: string
+          github-token: ${{ secrets.CI_BOT_TOKEN }}
+          script: |
+            const response = await github.pulls.get({
+              owner: context.payload.repository.owner.login,
+              repo: 'roast',
+              pull_number: ${{steps.roastPRNumber.outputs.result}},
+              })
+              const latestCommit = response.data.head.sha
+              return String(latestCommit)
+      - name: Get Build Image Workflow Status
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+          WORKFLOW: build_images.yml
+        run: |
+          echo "WORKFLOW_STATUS=$(sh ./.github/actions/getWorkflowStatus.sh)" >> $GITHUB_ENV
+      - name: Check Workflow Status
+        run: echo $WORKFLOW_STATUS
+      - name: Log Workflow Status
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+          WORKFLOW: build_images.yml
+          API_HEADER: "Accept: application/vnd.github.v3+json"
+        run: |
+          cat build_image_workflow_log.txt
+      - name: Run bvt suite on devstack if PR approved && Build Image workflow succeeded
+        if: env.WORKFLOW_STATUS == 'success'
+        env:
+          SPINNAKER_PASSWORD: ${{ secrets.SPINNAKER_PASSWORD }}
+          #WEBHOOK_TRIGGER: api-pr-commit-devstack
+          WEBHOOK_TRIGGER: api-devstack-testing
+          GITHUB_TOKEN: ${{ github.token }}
+          ROAST_PR_COMMIT: ${{steps.latest-commit.outputs.result}}
+          GIT_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+          SKIP_DEVSTACK: false
+        run: |
+          sh ./.github/actions/triggerDevstack.sh
