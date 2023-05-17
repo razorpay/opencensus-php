@@ -307,10 +307,15 @@ class Config
         //TODO: control logging from env variable as we might want to disable logging due to high volume.
         // commented out for now
         // enabling for api workers on proxySQL go-live, can be removed after this.
-         $this->app['trace']->info(TraceCode::PROXY_SQL_CONNECTION, [
-             'type'              => $type,
-             'proxy_sql_config'  => $proxysqlConfig,
-             'user'              => $user,
-         ]);
+        $runningInQueue = app()->runningInQueue();
+        if ($runningInQueue === true) {
+            $jobName = app('worker.ctx')->getJobName();
+            $this->app['trace']->info(TraceCode::PROXY_SQL_CONNECTION, [
+                'type'              => $type,
+                'proxy_sql_config'  => $proxysqlConfig,
+                'user'              => $user,
+                'job_name'          => $jobName,
+            ]);
+        }
     }
 }
