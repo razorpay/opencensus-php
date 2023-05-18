@@ -1582,6 +1582,21 @@ class BankingAccountServiceTest extends TestCase
         $this->assertEquals(Validator::SME, $baad1->getSalesTeam());
     }
 
+    public function testTokenizeValueViaVault()
+    {
+        $this->ba->bankingAccountServiceAppAuth();
+
+        $this->mockCardVault(function ()
+        {
+            return [
+                'success' => true,
+                'token'   => 'dummy-token'
+            ];
+        });
+
+        $this->startTest();
+    }
+
     public function testBasNotifyXProActivation()
     {
         Mail::fake();

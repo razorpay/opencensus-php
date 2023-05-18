@@ -8,7 +8,11 @@ use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
+use RZP\Exception\ServerErrorException;
+use RZP\Models\BankingAccount\Gateway\Processor;
 use RZP\Models\Base;
+use RZP\Models\Card\BuNamespace;
+use RZP\Services\CardVault as CardVaultService;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base\Core;
@@ -867,6 +871,60 @@ class Service extends Base\Service
         }
 
         return $res;
+    }
+
+    protected function tokenizeValueViaVault(string $element) : string
+    {
+        $request = [
+            'namespace'    => Processor::CREDENTIALS_VAULT_NAMESPACE,
+            'bu_namespace' => BuNamespace::RAZORPAYX_NODAL_CERTS,
+            'secret'       => $element,
+        ];
+
+        /** @var CardVaultService $cardVaultService */
+        $cardVaultService = app('card.cardVault');
+
+        $response = $cardVaultService->createVaultToken($request);
+
+        return $response[CardVaultService::TOKEN];
+    }
+
+    /**
+     * @throws ServerErrorException
+     */
+    public function tokenizeValues($input): array
+    {
+        $secretsPairs    = $input['secrets'];
+        $tokenizedValues = [];
+
+        try
+        {
+            foreach ($secretsPairs as $secretsPair)
+            {
+                $key   = $secretsPair['key'];
+                $value = $secretsPair['value'];
+
+                $tokenizedValue    = $this->tokenizeValueViaVault($value);
+                $tokenizedValues[] = [
+                    'key'   => $key,
+                    'token' => $tokenizedValue,
+                ];
+            }
+
+            return [
+                'tokenized_values' => $tokenizedValues
+            ];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::BANKING_ACCOUNT_SERVICE_ERROR_TOKENIZING_VALUES
+            );
+
+            throw new Exception\ServerErrorException('Error while tokenizing values', ErrorCode::SERVER_ERROR);
+        }
     }
 
     public function getFreeSlotForBankingAccount($input): array

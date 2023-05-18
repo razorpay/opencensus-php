@@ -248,5 +248,14 @@ class BasController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function tokenizeValues()
+    {
+        $input = Request::all();
+
+        $data =  $this->service->tokenizeValues($input);
+
+        return ApiResponse::json($data);
+    }
 }
 

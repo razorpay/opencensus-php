@@ -1149,4 +1149,29 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testTokenizeValueViaVault' => [
+        'request' => [
+            'url'       => '/bas/tokenize_values',
+            'method'    => 'POST',
+            'content'   => [
+                'secrets'   => [
+                    [
+                        'key'   => 'dummy-key',
+                        'value' => 'dummy-value'
+                    ]
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'   => [
+                'tokenized_values'  => [
+                    [
+                        'key'   => 'dummy-key',
+                        'token' => 'dummy-token'
+                    ]
+                ]
+            ]
+        ]
+    ]
 ];
