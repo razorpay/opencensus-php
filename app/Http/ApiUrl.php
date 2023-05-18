@@ -30,7 +30,6 @@ class ApiUrl
             'https://echo-api.razorpay.in/v1/',
         ],
         'production' => [
-            'https://api.razorpay.com/v1/',
             'https://api-canary.razorpay.com/v1/',
             'https://api-dark.razorpay.com/v1/',
             'https://k8s-prod-api.razorpay.com/v1/',
