@@ -2556,6 +2556,18 @@ class Processor
         return $coproto;
     }
 
+    protected function addIpAndUserAgent(& $input, $payment)
+    {
+        $analytics = $payment->getMetadata('payment_analytics');
+
+        if($analytics['library'] === Payment\Analytics\Metadata::CHECKOUTJS)
+        {
+            $input['device']['ip_address'] = $analytics['ip'];
+            $input['device']['user_agent'] =  $analytics['user_agent'];
+        }
+
+    }
+
     protected function preProcessPaymentInputsForPayLater($input, $payment)
     {
         $this->verifyPayLaterEnabled();
@@ -2582,6 +2594,13 @@ class Processor
                                             });
 
                 $input['payment'] = $payment->toArray();
+
+                $variantFlag = $this->app->razorx->getTreatment($this->merchant->getId(),RazorxTreatment::SEND_USER_DETAILS_TO_GETSIMPL,  $this->mode);
+
+                if($variantFlag === 'on')
+                {
+                    $this->addIpAndUserAgent($input,$payment);
+                }
 
                 $input['contact'] = $payment['contact'];
                 break;

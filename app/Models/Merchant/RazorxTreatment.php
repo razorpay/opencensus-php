@@ -762,6 +762,9 @@ final class RazorxTreatment
     // Expt to handle non terminal payouts after migration
     const NON_TERMINAL_MIGRATION_HANDLING       = 'non_terminal_migration_handling';
 
+    // Experiment for sending user details to getsimpl
+    const SEND_USER_DETAILS_TO_GETSIMPL         = 'send_user_details_to_getsimpl';
+  
     /**
      * Razorx flag to enable timeout of upi collect payment with input expiry time
      */
@@ -769,4 +772,5 @@ final class RazorxTreatment
 
     // FeatureFlag to toggle Pricing Rule Fee Model override for BPCL
     const FEE_MODEL_OVERRIDE = 'FEE_MODEL_OVERRIDE';
+  
 }
