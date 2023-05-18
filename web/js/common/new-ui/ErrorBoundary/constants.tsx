@@ -26,6 +26,7 @@ export enum Teams {
   AVAILABILITY_AND_DOWNTIME = 'Availability And Downtime',
   RAZORPAY_X = 'RazorpayX',
   MERCHANT_REPORTING = 'Merchant Reporting',
+  MAGIC_CHECKOUT = 'Magic Checkout',
 }
 
 // Maintain this list in ascending order
@@ -86,7 +87,7 @@ export const RoutesConfig = {
   '/invoices/new': Teams.PG_DASHBOARD,
   '/items': Teams.PG_DASHBOARD,
   '/keys': Teams.PG_DASHBOARD,
-  '/magic': Teams.CHECKOUT,
+  '/magic': Teams.MAGIC_CHECKOUT,
   '/notification-settings': Teams.PG_DASHBOARD,
   '/notification-settings/email': Teams.PG_DASHBOARD,
   '/notification-settings/sms': Teams.PG_DASHBOARD,

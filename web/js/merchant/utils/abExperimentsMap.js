@@ -636,6 +636,12 @@ export default {
     // prod experiment ids
     'LZi2wmeOZSCjtX',
   ],
+
+  magic_order_analytics: [
+    'Llo1U1DSWpyLdp',
+    //prod
+    'LpVdcs5lXhlpdV',
+  ],
   show_resume_onboarding: [
     // stage
     'LklQDqgOLE7NNi',

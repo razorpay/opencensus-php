@@ -497,6 +497,10 @@ export default class User {
     return this.getExpStatus('magic_rto_analytics_v2_live');
   }
 
+  get isMagicOrderAnalyticsEnabled() {
+    return getSplitzExperimentVariant('magic_order_analytics')?.variables?.result === 'on';
+  }
+
   get isMagicCODOrderAutomationEnabled() {
     const accessRoles = [
       rolesList.OWNER,

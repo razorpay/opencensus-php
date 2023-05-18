@@ -1,4 +1,4 @@
-const Pager = ({ totalPages, current, onNext, onPrev }) => {
+const Pager = ({ totalPages, current, onNext, onPrev, prevLabel = 'prev', nextLabel = 'next' }) => {
   return (
     <div className="paginate btn-group pull-right">
       <button
@@ -8,7 +8,7 @@ const Pager = ({ totalPages, current, onNext, onPrev }) => {
         onClick={onPrev}
       >
         <i className="i i-chevron-left" />
-        <span>prev</span>
+        <span>{prevLabel}</span>
       </button>
       <button
         type="button"
@@ -16,7 +16,7 @@ const Pager = ({ totalPages, current, onNext, onPrev }) => {
         disabled={current === totalPages}
         onClick={onNext}
       >
-        <span>next</span>
+        <span>{nextLabel}</span>
         <i className="i i-chevron-right" />
       </button>
     </div>

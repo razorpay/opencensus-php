@@ -3,6 +3,8 @@ import MagicSettings from 'merchant/views/MagicCheckout/Settings';
 import RTOAnalytics from 'merchant/views/MagicCheckout/RTOAnalytics';
 import OrderStatusUpload from 'merchant/views/MagicCheckout/OrderStatusUpload';
 import CODOrdersTab from 'merchant/views/MagicCheckout/CODOrdersTab';
+import OrderAnalytics from 'merchant/views/MagicCheckout/OrderAnalytics';
+
 /**
  * Order of tabs:
  * 1. Settings
@@ -36,6 +38,12 @@ const routes = [
     path: '/magic/analytics',
     condition: (_user) => _user.isMagicRTOAnalyticsEnabled,
     Component: RTOAnalytics,
+  },
+  {
+    tabName: 'Order Analytics',
+    path: '/magic/order-analytics',
+    condition: (_user) => _user.isMagicOrderAnalyticsEnabled,
+    Component: OrderAnalytics,
   },
   {
     tabName: 'COD Orders',

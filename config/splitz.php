@@ -301,6 +301,7 @@ return [
         // Ecosystem Downtimes UI - Availability and Downtime
         'ECOSYSTEM_DOWNTIMES' => env('ECOSYSTEM_DOWNTIMES',''),
 
+        'MAGIC_ORDER_ANALYTICS'  => env('MAGIC_ORDER_ANALYTICS', ''),
         // For showing Ternimal status banner on dashboard.
         'SHOW_TERMINAL_STATUS_BANNER' => env('SHOW_TERMINAL_STATUS_BANNER','')
     ]

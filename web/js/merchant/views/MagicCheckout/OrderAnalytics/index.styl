@@ -1,0 +1,215 @@
+.magic-analytics-container
+  width: 100%
+  min-height: 400px
+  position: relative
+  background-color: #FFF
+  padding 15px
+
+  .coming-soon-alert
+    border 1px solid #008CB352
+    margin-top 10px
+
+  .sticky-header
+    position sticky
+    top 53px
+    background #FFF
+    z-index 130
+    border: 1px solid #E0E8F4;
+    box-shadow: 0 0 0 #3F3F44, 0 1px 3px #3F3F4426;
+    margin-bottom 10px
+    padding 15px
+
+  .dashboard-header
+    display flex
+    justify-content flex-end
+    align-items center
+
+    .date-range-container
+      display flex
+      flex-direction: column
+      align-items: flex-end
+
+      .PowerSelect__TriggerLabel
+        max-width: 120px
+
+      .last-updated
+        margin-top 5px
+        text-align: right;
+
+        i
+          font-style: normal
+
+  .charts-container
+    display grid
+    grid-template-columns: repeat(4, 1fr)
+    grid-gap: 10px
+
+    .chart-item
+      position relative
+      border: 1px solid #E0E8F4
+      border-radius: 2px
+      margin-bottom 0
+
+    .panel-topbar-heading
+      font-size: 16px
+      font-weight: 700
+
+    .panel-heading-aggregate-value
+      font-size: 24px
+      font-weight: 700
+
+    .magic-chart-container
+      position: relative
+      height: 220px
+
+    .chart-full-width
+      grid-column: span 4
+
+    .chart-half-width
+      grid-column: span 2
+
+      @media (max-width 1125px)
+        grid-column: span 4
+
+    .chart-two-thirds-width
+      grid-column: span 3
+
+      @media (max-width 1125px)
+        grid-column: span 4
+
+    .chart-one-thirds-width
+      grid-column: span 1
+
+    .panel-body
+      height: auto
+      min-height: 150px
+
+    .magic-utm-panel-header
+      display flex
+      justify-content: space-between
+      align-items: center
+
+      .panel-select
+        display flex
+        align-items: center
+
+        .select-text-label
+          font-weight: 700
+          margin-right 10px
+
+      .magic-utm-table-select
+        min-width: 150px
+        margin 0
+
+    .order-analytics-table-wrapper
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: space-between;
+
+      .order-percent
+        margin-left 3px
+
+      .data-table
+        width 100%
+
+    .utm-source
+      display flex
+      align-items: center
+
+      .source-icon
+        display: inline-block
+        margin-left: 5px;
+
+        img
+          height 20px
+
+        .google
+          height 15px
+
+    .order-analytics-table
+      border: 1px solid #E2E2E2;
+      border-collapse: separate;
+      border-radius: 2px;
+
+      .product-name
+        width 75%
+
+      th
+        background-color #F5F6F7
+        border none
+
+      th,
+      td
+        p
+          max-width: 160px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+
+        &:last-child
+          text-align: right
+
+        &:first-child
+          text-align: left
+
+      & > thead:first-child > tr:first-child > th
+        border-top: 0
+
+      tr:nth-child(odd)
+        background-color: #FFF;
+
+      tr:hover
+        background-color #F5F5F5
+
+.magic-tooltip-wrapper
+  background-color: #FFFFFFEB;
+  box-shadow: 0 8px 30px #00000021;
+  padding: 8px;
+  border-radius: 2px
+
+  .tooltip-date
+    margin-bottom 10px
+    font-size: 12px
+    color: #6E7477
+
+  .magic-tooltip-info
+    display flex
+    align-items: center
+    justify-content: space-between
+    font-size: 14px
+
+    .magic-tooltip-visual
+      display flex
+      align-items: center
+
+      .tooltip-graph-color
+        width 20px
+        height 10px
+        display inline-block
+        margin-right 10px
+
+    .tooltip-graph-value
+      font-weight: 700;
+
+.shimmer-widget
+  height 50px
+  margin-top: 5px
+  width 150px
+  position: relative
+  display: inline-block
+  background: #F6F7F8
+  background-size: 800px 104px
+  background-image: linear-gradient(to right, #F6F7F8 0%, #EDEEF1 20%, #F6F7F8 40%, #F6F7F8 100%)
+  animation: placeshimmer 1s forwards infinite linear
+  background-repeat: no-repeat
+
+@keyframes placehshimmer {
+  0% {
+    background-position: -468px 0;
+  }
+
+  100% {
+    background-position: 468px 0;
+  }
+}
