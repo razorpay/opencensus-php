@@ -35,8 +35,8 @@ class Constants {
         'IN' => [
             self::LOGO_URL => 'https://cdn.razorpay.com/logo_invert.png',
             self::SHOW_VIEW_SETTLEMENG_GUIDE_OPTION => true,
-            self::SHOW_UTR => false,
-            self::SHOW_ACC_NO => false,
+            self::SHOW_UTR => true,
+            self::SHOW_ACC_NO => true,
             self::RAISE_REQUEST_ON_MAIL => false,
             self::RAISE_REQUEST_REDIRECT_LINK => 'https://dashboard.razorpay.com/#/app/dashboard#request',
             self::CURRENCY_LOGO => Currency::SYMBOL[Currency::INR],
