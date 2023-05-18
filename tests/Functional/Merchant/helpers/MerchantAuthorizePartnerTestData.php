@@ -15,7 +15,8 @@ return [
         'response' => [
             'content' => [
                 'partner_access'                   => true,
-                'partner_name'                     => 'Amazon Inc'
+                'partner_name'                     => 'Amazon Inc',
+                'partner_type'                     => 'aggregator'
             ],
         ],
     ],
@@ -31,7 +32,8 @@ return [
         'response' => [
             'content' => [
                 'partner_access'                   => false,
-                'partner_name'                     => 'Amazon Inc'
+                'partner_name'                     => 'Amazon Inc',
+                'partner_type'                     => 'aggregator'
             ],
         ],
     ],

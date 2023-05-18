@@ -9949,7 +9949,8 @@ class Core extends Base\Core
 
         return [
             Constants::PARTNER_ACCESS => $partnerAccess,
-            Constants::PARTNER_NAME   => $partner->merchantDetail->getBusinessName()
+            Constants::PARTNER_NAME   => $partner->merchantDetail->getBusinessName(),
+            Entity::PARTNER_TYPE      => $partner->getPartnerType()
         ];
     }
 
