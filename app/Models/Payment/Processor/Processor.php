@@ -608,12 +608,6 @@ class Processor
     private function canRouteThroughRearchFlow(array & $input)
     {
         $this->verifyMerchantIsLiveForLiveRequest();
-        $this->trace->info(
-            TraceCode::DEBUG_LOGGING_REARCH,
-            [
-                'input' => $input
-            ]);
-
         try
         {
             $result = '';
