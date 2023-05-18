@@ -15,7 +15,7 @@ jobs:
         with:
           workflow_id: "bvt.yaml"
           access_token: ${{ github.token }}
-  # PR Approval Request Workflowc
+  # PR Approval Request Workflow
   pull_request_approved:
     if: github.event.review.state == 'approved'
     runs-on: [ self-hosted, api ]
@@ -175,8 +175,7 @@ jobs:
         if: env.WORKFLOW_STATUS == 'success'
         env:
           SPINNAKER_PASSWORD: ${{ secrets.SPINNAKER_PASSWORD }}
-          #WEBHOOK_TRIGGER: api-pr-commit-devstack
-          WEBHOOK_TRIGGER: api-devstack-testing
+          WEBHOOK_TRIGGER: api-pr-commit-devstack
           GITHUB_TOKEN: ${{ github.token }}
           ROAST_PR_COMMIT: ${{steps.latest-commit.outputs.result}}
           GIT_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
