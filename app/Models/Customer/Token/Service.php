@@ -515,6 +515,10 @@ class Service extends Base\Service
 
                     $token->setSource(TokenConstants::ISSUER);
 
+                    //UsedCount and UsedAt set for token fetch in checkout.
+                    $token->setUsedCount(1);
+                    $token->setUsedAt(Carbon::now()->getTimestamp());
+
                     $this->repo->saveOrFail($token);
 
                     $asyncTokenisationJobId = "pushtokenmigrate";
