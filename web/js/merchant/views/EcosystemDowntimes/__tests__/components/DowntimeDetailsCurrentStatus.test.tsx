@@ -35,7 +35,7 @@ describe('<DowntimeDetailsCurrentStatus/>', () => {
     };
     render(<DowntimeDetailsCurrentStatus {...props} />);
     expect(screen.getByLabelText('downtime-details-current-status')).toHaveTextContent(
-      'High Severity Downtime',
+      'Ongoing High Severity Downtime',
     );
   });
 });

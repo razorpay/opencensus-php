@@ -213,14 +213,14 @@ export const DOWNTIME_SUMMARY_FIELDS = [
   {
     name: 'downtimesInLast24hrs',
     description: 'Downtime Duration',
-    information: '(last 24 hours)',
+    information: `(from ${moment(new Date()).format('DD MMM')}, 00:00)`,
     value: (params: {
       activeDowntimeForInstrument: DowntimeMetaDataType;
       pastDowntimesForInstrument: DowntimeMetaDataType[];
     }): string | number =>
       getDowntimesAfterTimestamp({
         ...params,
-        timestamp: moment(new Date()).subtract(24, 'hours').unix(),
+        timestamp: moment().startOf('day').unix(),
       })?.totalDuration,
   },
 ];
