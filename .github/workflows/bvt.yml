@@ -13,13 +13,26 @@ jobs:
     steps:
       - uses: styfle/cancel-workflow-action@0.9.0
         with:
+          all_but_latest: true
           workflow_id: "bvt.yaml"
           access_token: ${{ github.token }}
   # PR Approval Request Workflow
   pull_request_approved:
     if: github.event.review.state == 'approved'
     runs-on: [ self-hosted, api ]
+    needs: [cancel]
     steps:
+      - name: Get Current Workflow Link
+        id: workflow_run
+        run: echo "::set-output name=url::https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+      - name: Post Workflow Link as Comment
+        uses: mshick/add-pr-comment@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          message: |
+            `Devstack BVT GitHub Workflow:`  [View the progress here](${{ steps.workflow_run.outputs.url }})
+          allow-repeats: true
       - name: checkout
         uses: actions/checkout@v3
       - name: Print Base branch
@@ -30,7 +43,7 @@ jobs:
         with:
           type: now
           from_branch: ${{ github.event.pull_request.base.ref }}
-          message: Rebased `master` into ${{ github.event.pull_request.head.ref }} branch
+          message: Merged `master` into `${{ github.event.pull_request.head.ref }}` branch
           target_branch: ${{ github.event.pull_request.head.ref }}
           github_token: ${{ secrets.PREM_CI_BOT_TOKEN }}
       - name: Comments
@@ -40,7 +53,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           message: |
-            **Conflict Error Please back-merge manually**
+            **A conflict error has occurred. Please perform a manual back-merge and obtain PR approval to re-run the BVT.**
           allow-repeats: true
       - name: Approve if PR is rebased with master
         if: ${{success()}}
@@ -160,6 +173,7 @@ jobs:
           BRANCH: ${{ github.event.pull_request.head.ref }}
           WORKFLOW: build_images.yml
         run: |
+          echo "commit id: $(jq --raw-output .pull_request.head.sha "$GITHUB_EVENT_PATH")"
           echo "WORKFLOW_STATUS=$(sh ./.github/actions/getWorkflowStatus.sh)" >> $GITHUB_ENV
       - name: Check Workflow Status
         run: echo $WORKFLOW_STATUS
@@ -182,3 +196,21 @@ jobs:
           SKIP_DEVSTACK: false
         run: |
           sh ./.github/actions/triggerDevstack.sh
+      - name: Post comment for devstack initated
+        if: ${{success()}} && env.WORKFLOW_STATUS == 'success'
+        uses: mshick/add-pr-comment@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          message: |
+            The BVT test on Devstack has been initiated. Kindly wait until the test is completed.
+          allow-repeats: true
+      - name: Post comment for devstack failed to initated
+        if: env.WORKFLOW_STATUS != 'success'
+        uses: mshick/add-pr-comment@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          message: |
+            The BVT trigger was unsuccessful due to a failure in image creation.
+          allow-repeats: true
