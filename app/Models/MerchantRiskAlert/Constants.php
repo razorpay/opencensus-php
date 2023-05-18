@@ -29,10 +29,6 @@ class Constants
         self::MERCHANT_AUTHORIZED_LIFETIME_PAYMENTS_COUNT => 'merchant_fact_authorized_payment_count_ltd',
     ];
 
-    const PINOT_RAS_QUERY    = 'SELECT * FROM pinot.merchant_risk_fact WHERE merchants_id = \'%s\'';
-
-    const DRUID_RAS_QUERY    = 'SELECT * FROM druid.merchant_risk_fact WHERE merchants_id = \'%s\'';
-
     const ACTION_MANUAL_FOH      = 'manual';
     const ACTION_AUTO_FOH        = 'auto';
     const ACTION_AUTO_REVIEW_FOH = 'auto_review';
