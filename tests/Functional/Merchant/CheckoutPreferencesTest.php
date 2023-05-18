@@ -4,6 +4,8 @@ namespace RZP\Tests\Functional\Merchant;
 
 use DB;
 use App;
+use DOMDocument;
+use Illuminate\Http\Response;
 use Mail;
 use Event;
 use Redis;
@@ -13,6 +15,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Merchant\Store\Core as StoreCore;
 use RZP\Models\TrustedBadge\Entity as TrustedBadge;
+use RZP\Services\CheckoutService;
 use RZP\Services\Mock;
 use RZP\Models\Base\EsDao;
 use RZP\Services\UfhService;
@@ -3815,6 +3818,46 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertTrue($response['features'][Dcs\Features\Constants::CvvLessFlowDisabled]);
     }
 
+    public function testCheckoutV1ApiPreferencesThroughCheckoutService(): void
+    {
+        $this->ba->publicAuth();
+
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/checkout',
+            'content' => [],
+        ];
+
+        $splitzMockResponse = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variant_on',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzMockResponse);
+
+        $checkoutServiceMockResponse = [
+            'merchant_key' => 'rzp_test_TheTestAuthKey',
+            'merchant_name' => 'checkout_service',
+            'methods' => [
+                'card' => true,
+            ],
+        ];
+        $this->mockCheckoutService($checkoutServiceMockResponse);
+
+        $response = $this->sendRequest($request);
+        $responseContent = $response->getOriginalContent();
+
+        $prefData = $this->extractPreferencesDataFromHtmlResponseString($responseContent);
+
+        $this->assertNotNull($prefData);
+        $this->assertEquals('rzp_test_TheTestAuthKey', $prefData['merchant_key']);
+        $this->assertEquals('checkout_service', $prefData['merchant_name']);
+        $this->assertEquals(true, $prefData['methods']['card']);
+    }
+
     protected function mockCheckoutBulkExperiment($experimentIdsWithExpectedResult)
     {
         $output = [];
@@ -3843,6 +3886,50 @@ class CheckoutPreferencesTest extends TestCase
         $this->splitzMock
             ->shouldReceive('bulkCallsToSplitz')
             ->andReturn($output);
+    }
+
+    protected function mockCheckoutService($output)
+    {
+        $this->checkoutServiceMock = Mockery::mock(CheckoutService::class)->makePartial();
+
+        $this->app->instance('checkout_service', $this->checkoutServiceMock);
+
+        $this->checkoutServiceMock
+            ->shouldReceive('getCheckoutPreferencesFromCheckoutService')
+            ->andReturn(new Response($output, 200, []));
+    }
+
+    protected function extractPreferencesDataFromHtmlResponseString(string $htmlResponse)
+    {
+        $dom = new DOMDocument();
+        $dom->loadHTML($htmlResponse);
+
+        $prefData = null;
+
+        // Get all the script elements in the HTML
+        $scriptElements = $dom->getElementsByTagName('script');
+
+        // Loop through each script element and extract its data
+        foreach ($scriptElements as $scriptElement) {
+            $scriptData = $scriptElement->nodeValue;
+
+            // Use regular expressions to match variable assignments
+            $pattern = '/var\s+(\w+)\s*=\s*(.*);/i';
+            preg_match_all($pattern, $scriptData, $matches, PREG_SET_ORDER);
+
+            // Loop through each match and get the variable name and value
+            foreach ($matches as $match) {
+                $variableName = $match[1];
+                $variableValue = $match[2];
+
+                if ($variableName === "preferences") {
+                    $prefData = json_decode($variableValue, true);
+                    break;
+                }
+            }
+        }
+
+        return $prefData;
     }
 
     private function getBankAccountMockData($va_currency = "USD") : string{

@@ -849,6 +849,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerMagicCheckoutCouponService();
 
+        $this->registerCheckoutService();
     }
 
     protected function registerCacheManager()
@@ -2558,6 +2559,18 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton('magic_checkout_coupon_service', function($app)
         {
             return new MagicCheckoutCouponService($app);
+        });
+    }
+
+    protected function registerCheckoutService(): void
+    {
+        $this->app->singleton('checkout_service', function($app)
+        {
+            $mock = $app['config']->get('applications.checkout_service.mock');
+
+            $implementation = $mock ? Mock\CheckoutService::class : CheckoutService::class;
+
+            return new $implementation($app);
         });
     }
 }

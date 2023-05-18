@@ -12,8 +12,10 @@ use RZP\Constants\Entity as E;
 use RZP\Error\Error;
 use RZP\Exception;
 use RZP\Constants\Entity;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Key;
+use RZP\Models\Merchant\CheckoutExperiment;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Merchant\PaymentLimit\Service;
 use RZP\Models\Report;
@@ -38,6 +40,8 @@ use RZP\Models\Merchant\BusinessDetail;
 
 class MerchantController extends Controller
 {
+    const SET_COOKIE_HEADER = 'set-cookie';
+
     public function postCreateMerchant()
     {
         $input = Request::all();
@@ -876,13 +880,42 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $prefs = $this->service()->getCheckoutPreferences($input);
+        $responseHeaders = [];
+
+        /** @var BasicAuth $ba */
+        $ba = $this->app['basicauth'];
+        $merchantId = $ba->getMerchantId() ?? '';
+
+        if ((new CheckoutExperiment([], $merchantId))->shouldRoutePreferencesTrafficThroughCheckoutService(
+            $this->app['config']->get('app.checkout_service_preferences_splitz_experiment_id')
+        )) {
+            $merchantKey = $ba->getPublicKey() ?? '';
+
+            if ($merchantKey !== '') {
+                $input['key_id'] = $merchantKey;
+            }
+
+            /** @var HttpResponse */
+            $preferencesResponse = $this->app['checkout_service']->getCheckoutPreferencesFromCheckoutService($input);
+
+            $preferencesResponseHeaders = $preferencesResponse->headers->all();
+            $setCookieHeader = $preferencesResponseHeaders[self::SET_COOKIE_HEADER][0] ?? '';
+
+            if (!empty($setCookieHeader)) {
+                $responseHeaders[self::SET_COOKIE_HEADER] = $setCookieHeader;
+            }
+
+            $prefs = $preferencesResponse->getOriginalContent();
+        } else {
+            $prefs = $this->service()->getCheckoutPreferences($input);
+        }
 
         $data = $this->getCheckoutCommon($input);
 
         $data['preferences'] = $prefs;
 
-        return ApiResponse::generateResponse($data);
+        return ApiResponse::generateResponse($data)
+            ->withHeaders($responseHeaders);
     }
 
     public function getCheckoutPublic()

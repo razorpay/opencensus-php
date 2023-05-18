@@ -10442,7 +10442,6 @@ class Route
      * List of routes, requiring session changes
      */
     public static $session = [
-        'checkout',
         'merchant_checkout_preferences',
         /*
          * customer ticket rules for support page

@@ -1498,8 +1498,11 @@ return [
     ],
 
     'checkout_service' => [
+        'mock'     => env('CHECKOUT_SERVICE_MOCK', true),
+        'url'      => env('CHECKOUT_SERVICE_URL'),
+        'timeout'  => env('CHECKOUT_SERVICE_TIMEOUT'),
         // secret used by checkout service to call API monolith
-        'secret'    => env('CHECKOUT_SERVICE_API_MONOLITH_SECRET'),
+        'secret'   => env('CHECKOUT_SERVICE_API_MONOLITH_SECRET'),
     ],
 
     'trusted_badge' => [

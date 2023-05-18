@@ -121,6 +121,35 @@ class CheckoutExperiment
         return $this->experimentResults;
     }
 
+    public function shouldRoutePreferencesTrafficThroughCheckoutService(
+        string $experimentId,
+    ): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $experimentId,
+                'request_data'  => json_encode(['merchant_id' => $this->merchantId]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            return $variant === 'variant_on';
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::CHECKOUT_SERVICE_PREFERENCES_ROUTING_SPLITZ_ERROR
+            );
+        }
+
+        return false;
+    }
+
     /**
      * This method fills experiment data for all experiments we want to send to splitz service.
      * if you want to add new experiment, call the $this->fillExperimentData with your own parameters. just make sure
