@@ -11,7 +11,7 @@ test.describe.parallel('Test partner dashboard landing page @flow=home', () => {
     await page.locator('text="Partner"').click();
 
     const partnerDashboardWelcomeText = page.locator(
-      'text=Welcome to Partner dashboard, PlayWright Test Account!',
+      'text=Welcome to Reseller Partner dashboard, PlayWright Test Account!',
     );
     await expect(partnerDashboardWelcomeText).toBeVisible();
   });

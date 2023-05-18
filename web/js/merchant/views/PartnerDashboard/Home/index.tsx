@@ -24,6 +24,7 @@ import Loader from 'common/ui/Loader';
 import DashboardBanner from 'common/ui/DashboardBanner';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import { CapitalReferralCard } from 'merchant/views/PartnerDashboard/Home/Components/ReferralGuide/CapitalReferralCard';
+import PageHeading from './Components/PageHeading';
 
 // eslint-disable-next-line prettier/prettier
 const AggregatorFormLazy = React.lazy(
@@ -204,7 +205,7 @@ const Home = ({
   return (
     <div className="partner-dashboard-home">
       <DashboardBanner />
-      <h2 className="page-heading">{`Welcome to Partner dashboard, ${partnerName}!`}</h2>
+      <PageHeading org={org} user={user} partnerName={partnerName} />
       <ShowWhen
         additionalCondition={(currentUser) =>
           currentUser.isPartner() && !currentUser.isPartner('fully_managed')

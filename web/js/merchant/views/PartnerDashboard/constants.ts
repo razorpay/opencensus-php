@@ -51,3 +51,11 @@ export const ORG_CUSTOM_CODE = {
 };
 
 export const NOT_AVAILABLE = 'N/A';
+
+export const PARTNER_TYPE_DISPLAY_NAMES = {
+  reseller: 'Reseller',
+  aggregator: 'Aggregator',
+  pure_platform: 'Platform',
+  bank: 'Bank',
+  fully_managed: 'Fully Managed',
+};
