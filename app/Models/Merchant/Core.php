@@ -5296,8 +5296,6 @@ class Core extends Base\Core
      */
     public function listSubmerchants(Entity $partner, array $params)
     {
-        $params['skip'] = $params['skip'] ?? 0;
-        $params['count'] = $params['count'] ?? Service::DEFAULT_SUBMERCHANT_FETCH_LIMIT;
 
         $offset = $params['skip'] ?? 0;
 

@@ -7392,6 +7392,9 @@ class Service extends Base\Service
         $validator->validateInput('list_submerchants', $input);
         $validator->validateIsPartner($partner);
 
+        $input['skip'] = $input['skip'] ?? 0;
+        $input['count'] = $input['count'] ?? self::DEFAULT_SUBMERCHANT_FETCH_LIMIT;
+
         $startTime = millitime();
         $isExpEnabled = $this->isSubmerchantFetchMultipleOptimisationExpEnabled($partner->getId());
 
