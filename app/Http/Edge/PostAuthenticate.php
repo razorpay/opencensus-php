@@ -192,7 +192,7 @@ final class PostAuthenticate
             $this->reqCtx->passportAttrsMismatch = true;
 
             // It reports mismatches only for scenarios which are expected to be handled at edge presently.
-            $shouldReport = $this->isPrivateAuth() or $this->isOAuth() or $this->isPublicAuth();
+            $shouldReport = $this->isPrivateAuth() || $this->isOAuth() || $this->isPublicAuth() || $this->isPartnerAuth();
 
             if ($shouldReport === true)
             {

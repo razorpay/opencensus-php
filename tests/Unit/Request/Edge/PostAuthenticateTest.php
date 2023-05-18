@@ -9,6 +9,7 @@ use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\Edge\PostAuthenticate;
 use RZP\Tests\Unit\Request\Traits\HasRequestCases;
 use \Mockery;
+use RZP\Trace\TraceCode;
 
 class PostAuthenticateTest extends TestCase
 {
@@ -525,6 +526,72 @@ class PostAuthenticateTest extends TestCase
             [$passport, NULL, NULL, NULL, "live", "true", false, true],
             [$passport, NULL, NULL, NULL, "live", "true", false, false],
             [$passport, NULL, NULL, NULL, "live", NULL, false, false],
+        ];
+    }
+    
+    /**
+     * @dataProvider getLogsPassportMismatchMetricsCases
+     *
+     * @param bool $private
+     * @param bool $public
+     * @param bool $oauth
+     * @param bool $partner
+     */
+    public function logsPassportMismatchMetrics(bool $private, bool $public, bool $oauth, bool $partner)
+    {
+        $passport = new Passport\Passport;
+        $passport->identified = true;
+        $passport->authenticated = true;
+        $passport->mode = "live";
+        
+        $request = $this->mockPrivateRouteWithPartnerAuthToken();
+        app('request.ctx')->init();
+        app('request.ctx')->resolveKeyIdIfApplicable();
+        $reqCtx = app('request.ctx.v2');
+
+        $trace = Mockery::mock('Razorpay\Trace\Logger');
+        $this->app->instance("trace", $trace);
+
+        $ba = $this->mockBasicAuth();
+        $ba->expects($this->once())->method('getMode')->willReturn("test");
+        $ba->expects($this->once())->method('getMerchantId')->willReturn("testmerchantid");
+        $ba->expects($this->exactly(2))->method('getRequestMetricDimensions')->willReturn([]);
+        $ba->expects($this->once())->method('getPublicKey')->willReturn('testpublickey');
+
+        $reqCtx->passport = $passport;
+
+        $pa = new PostAuthenticate;
+        $pa->expects($this->once())->method('ensureRequestContextAdditionalAttrs')->with($request)->willReturn(null);
+        $pa->expects($this->once())->method('reportAuthenticationMismatches')->with($passport->authenticated, $request)->willReturn(null);
+        $pa->expects($this->once())->method('reportImpersonationMismatches')->with($passport->authenticated, $request)->willReturn(null);
+        $pa->expects($this->once())->method('reportAuthorizationEnforcementMismatches')->with($passport->authenticated, $request)->willReturn(null);
+        $pa->expects($this->once())->method('updateAPIPassport')->willReturn(null);
+
+        $pa->expects($this->once())->method('isPrivateAuth')->willReturn($private);
+        $pa->expects($this->once())->method('isOAuth')->willReturn($oauth);
+        $pa->expects($this->once())->method('isPublicAuth')->willReturn($public);
+        $pa->expects($this->once())->method('isPartnerAuth')->willReturn($partner);
+
+        $svc->shouldReceive('histogram')->times(1);
+        //there shouldn't be any exceptions
+        $svc->shouldReceive('error')->times(0);
+        $svc->shouldReceive('count')->times(1);
+        $svc->shouldReceive('warning')->with(TraceCode::PASSPORT_ATTRS_MISMATCH, Mockery::type('array'));
+
+        $pa->handle(true, $request); 
+    }
+    
+    public function getLogsPassportMismatchMetricsCases()
+    {
+        return [
+            // Case 1 - private auth
+            [true, false, false, false],
+            // Case 2 - public auth
+            [false, true, false, false],
+            // Case 3 - oauth
+            [false, false, true, false],
+            // Case 4 - partner auth
+            [false, false, false, true]
         ];
     }
 }
