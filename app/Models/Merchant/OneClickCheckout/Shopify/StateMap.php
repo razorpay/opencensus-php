@@ -227,6 +227,7 @@ class StateMap
             '140133' => 'PB',
             '605100' => 'TN',
             '605101' => 'TN',
+            '140603' => 'PB'
         ];
 
         $shopifyStateCode = $pinCodeMap[$pinCode] ?? null;
