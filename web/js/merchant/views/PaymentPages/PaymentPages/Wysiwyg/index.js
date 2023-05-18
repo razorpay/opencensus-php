@@ -36,7 +36,6 @@ import {
   rupeesToPaise,
   classList,
 } from 'common/utils/rzp-utils';
-import { merchantFetch } from 'merchant/utils/ajax';
 
 import {
   initDefaultFormItems,
@@ -145,8 +144,6 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     isPageReady: false,
     isTemplatesViewOpened: !this.props.id, // isTemplatesViewOpened = false if editing existing Payment page
     onSvelteAppMount: false,
-    merchant_tnc: null,
-    isMerchantDataLoaded: false,
     formItemsBackup: [],
     isEntityLoaded: false,
     isMagicSettingsModalOpen: false,
@@ -306,7 +303,6 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     if (!isEditExistingId && this.props.user.isPaymentPageStorefrontEnabled) {
       this.props.updateTemplateType(null, 'custom');
     }
-    this.fetchMerchantDetails();
 
     this.props.initDefaultFormItems();
 
@@ -371,22 +367,6 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     });
     this._isMounted = false;
   }
-
-  fetchMerchantDetails = () => {
-    const { mode, user } = this.props;
-    merchantFetch({ url: `merchant/${user.id}/tnc`, mode })
-      .then((res) => {
-        if (this._isMounted) {
-          this.setState({ merchant_tnc: !res.error ? res.data : null });
-        }
-        return res;
-      })
-      .finally(() => {
-        if (this._isMounted) {
-          this.setState({ isMerchantDataLoaded: true });
-        }
-      });
-  };
 
   handleClose = () => {
     trackWYSIWYGCloseIntent();
@@ -891,13 +871,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     // close modal & add Shiprocket fields to the filtered FORM_ITEMS [update store] & update SR field in redux
     window.removeEventListener('resize', this.debouncedHandleModalPosition);
 
-    const {
-      setShiprocketModal,
-      updateData,
-      FORM_ITEMS,
-      replaceInFormItems,
-      magicCheckout,
-    } = this.props;
+    const { setShiprocketModal, updateData, FORM_ITEMS, replaceInFormItems, magicCheckout } =
+      this.props;
     this.setState({ formItemsBackup: [] });
     setShiprocketModal(false);
 
@@ -919,13 +894,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   };
 
   removeShiprocket = () => {
-    const {
-      FORM_ITEMS,
-      replaceInFormItems,
-      updateData,
-      updateMagicData,
-      magicCheckout,
-    } = this.props;
+    const { FORM_ITEMS, replaceInFormItems, updateData, updateMagicData, magicCheckout } =
+      this.props;
     const { prevAddedFields: magicPrevAddedFields } = magicCheckout;
     // remove shiprocket fields from form items & update SR field in redux
     let MODIFIED_FORM_ITEMS = [...FORM_ITEMS];
@@ -1162,8 +1132,6 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       isPageReady,
       isPageLoadError,
       onSvelteAppMount,
-      merchant_tnc,
-      isMerchantDataLoaded,
       isEntityLoaded,
       isMagicSettingsModalOpen,
       magicFeeRule,
@@ -1189,7 +1157,6 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       brand_color:
         this.props.config.brand_color || this.props.org.merchant_styles?.checkout_theme_color,
       image: this.props.user.logo_url,
-      tnc_link: merchant_tnc ? merchant_tnc.link : null,
     };
 
     if (paymentPageEntity) {
@@ -1284,7 +1251,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           </div>
         );
       }
-    } else if (isPageReady && isMerchantDataLoaded) {
+    } else if (isPageReady) {
       content = (
         <React.Fragment>
           {onSvelteAppMount && !user.logo_url && <MerchantLogoTooltip />}
