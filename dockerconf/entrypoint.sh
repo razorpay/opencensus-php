@@ -5,13 +5,23 @@ set -euo pipefail
 # ref doc: <TODO>
 term_to_winch() {
   echo "Caught SIGQUIT signal!"
+  # Using CHILD=$! for initializing the pid, initializes it with the nginx pid.
+  # Initializing CHILD with the nginx PID can cause a "pid not found" error and result in an abrupt termination of the pod.
+  # To achieve a graceful termination, it is necessary to kill the php-fpm master process, which will subsequently terminate
+  # the worker processes. Once all the php-fpm processes have been successfully terminated, the pod can be gracefully terminated.
+  # To ensure this, a while loop has been included to check for any ongoing php-fpm processes before the function is completed.
+  # If there are active processes, the loop will pause for 1 second before rechecking.
+  CHILD=`pgrep "php-fpm: master process"`
   # We do this so before graceful shutdown we remove the pod from the service by failing the readiness probe.
   touch /app/public/graceful-shutdown.txt
   # Wait for readiness probe to fail so no additional requests are received
   sleep 12
-  # Translate the SIGTERM we caught to a SIGWINCH for the child processes
+  # Translate the SIGTERM we caught to a SIGQUIT for the child processes
   kill -s SIGQUIT "$CHILD"
-  wait "$CHILD"
+  while pgrep "php-fpm"
+  do
+    sleep 1
+  done
   echo "Child exited"
 }
 
@@ -56,9 +66,6 @@ chown -R nginx:nginx /app/storage/logs
 # /tmp needs to writable by all processes.
 chmod 777 /tmp
 
-/usr/sbin/php-fpm81 &
-
-CHILD=$!
-wait "$CHILD"
+/usr/sbin/php-fpm81
 
 /usr/sbin/nginx -g 'daemon off;'
