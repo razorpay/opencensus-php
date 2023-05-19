@@ -93,6 +93,23 @@ export const validateBatch = (batchType) => (file, progressTracker) => {
   return _validateBatch(file, progressTracker, batchType);
 };
 
+const _validatePaymentPageBatch = ({ file, progressTracker, batchType, id }) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('type', batchType);
+  formData.append('config[payment_page_id]', id);
+
+  return {
+    type: getValidateActionName(BATCH),
+    payload: merchantFetch({
+      url: 'batches/validate',
+      method: 'post',
+      data: formData,
+      onUploadProgress: progressTracker,
+    }),
+  };
+};
+
 /////
 
 /* method to create action for fetching batch list */
@@ -327,6 +344,27 @@ export const fetchPaymentLinkBatches = (params) => {
   };
 };
 
+/* action for payment page batch */
+export const fetchPaymentPageBatches = (params) => {
+  //for new batches
+  params.with_config = '1';
+
+  return (dispatch) => {
+    return dispatch({
+      type: BATCH_LIST,
+      payload: fetchBatchesAjax(params, 'payment_page').then((res) => {
+        const listOfBatchIds = res.data?.items.map((item) => {
+          return item.id;
+        });
+
+        dispatch(fetchIssuableBatchList(listOfBatchIds));
+
+        return res;
+      }),
+    });
+  };
+};
+
 export const fetchPaymentLinkBatchesDetails = (params) => {
   const user = store.getState().session.user;
   const id = params.id;
@@ -369,6 +407,14 @@ export const createPaymentLinkBatch = (data) => {
   const batchType = user.isPaymentlinksV2Enabled ? 'payment_link_v2' : 'payment_link';
 
   return _createBatch(data, batchType);
+};
+
+export const createPaymentPageBatch = (data) => {
+  return _createBatch(data, 'payment_page');
+};
+
+export const validatePaymentPageBatch = (file, progressTracker, id) => {
+  return _validatePaymentPageBatch({ file, progressTracker, batchType: 'payment_page', id });
 };
 
 export const cancelPaymentLinkBatch = (batchId) => {

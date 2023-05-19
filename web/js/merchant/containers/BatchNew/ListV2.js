@@ -15,6 +15,7 @@ import { batchDownload } from 'merchant/reducers/batches';
 import PopoverComponent, { PopoverBody, PopoverTitle } from 'common/ui/Popover';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { DocLink } from 'merchant/components/DocsLink';
+import Spinner from 'common/ui/Spinner';
 import track from './track';
 
 const batchStatus = {
@@ -31,7 +32,7 @@ class BatchList extends ListContainer {
   constructor(props) {
     super(props);
     const isVisible =
-      props.user.isAllowedView('payment_links_batch_uploads') &&
+      props.user?.isAllowedView('payment_links_batch_uploads') &&
       props.user.isPLBatchUploadEnabled &&
       (!props.user.isSellerAppRole || props.user.isPaymentLinkBatchEnabledForSellerAppRole);
     this.state = {
@@ -111,20 +112,36 @@ class BatchList extends ListContainer {
       onSearchAnalytics = () => {},
       trackPagination,
       showUploadForAdminOrOwner = false,
+      batchType,
+      onSampleFileDownload,
+      isPaymentPageDetailsLoading,
     } = this.props;
     const { user } = session;
     const showBatchUploadButton = showUploadForAdminOrOwner ? user?.isAdminOrOwner : true;
     const { tabsData } = this.state;
+    const showDownloadSampleFile = sampleUrl && batchType !== 'payment_page';
     return (
       <ProductWrapper
         tabsData={tabsData}
         extra={
           <>
-            {sampleUrl && (
+            <ShowWhen additionalCondition={() => showDownloadSampleFile}>
               <a class="btn btn-link" href={sampleUrl} onClick={this.downloadSampleFile}>
                 Download Sample File
               </a>
-            )}
+            </ShowWhen>
+            <ShowWhen additionalCondition={() => batchType === 'payment_page'}>
+              {isPaymentPageDetailsLoading && <Spinner />}
+              {!isPaymentPageDetailsLoading && (
+                <button
+                  type="button"
+                  className="btn btn-link hidden-xs"
+                  onClick={onSampleFileDownload}
+                >
+                  Download Sample File
+                </button>
+              )}
+            </ShowWhen>
             <ShowWhen
               additionalCondition={(usr) => usr.isOrgAllowedFunctionality('external_links')}
             >

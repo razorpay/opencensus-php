@@ -138,13 +138,36 @@ export const paymentPagesHandlers = [
       ctx.delay(50),
     );
   }),
-  rest.get('*/merchant/api/*/payment_pages/*/details', (req, res, ctx) => {
+  rest.get('*/merchant/api/*/payment_pages/pl_LpoFCooJAk0a2j/details', (req, res, ctx) => {
     return res(
       ctx.status(200),
       ctx.json({
         status_code: 200,
         success: true,
         data: paymentPageDetails,
+      }),
+      ctx.delay(50),
+    );
+  }),
+  rest.get('*/merchant/api/*/payment_pages/pl_parsingerrortest/details', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 200,
+        success: true,
+        data: {},
+      }),
+      ctx.delay(50),
+    );
+  }),
+
+  rest.get('*/merchant/api/*/payment_pages/pl_apierrortest/details', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 400,
+        success: false,
+        errors: merchantTnCError,
       }),
       ctx.delay(50),
     );

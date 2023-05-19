@@ -73,6 +73,9 @@ const PaymentPages = lazy(() =>
 const PaymentPagesDetails = lazy(() =>
   import(/* webpackChunkName: "PaymentPages" */ 'merchant/views/PaymentPages/PaymentPages/Details'),
 );
+const BatchUploadContainer = lazy(() =>
+  import(/* webpackChunkName: "PaymentPages" */ 'merchant/views/PaymentPages/BatchUpload'),
+);
 const InvoicesContainer = lazy(() =>
   import(/* webpackChunkName: "Invoices" */ 'merchant/views/Invoices'),
 );
@@ -534,6 +537,11 @@ export default class Content extends Component {
               user.isPaymentPageStorefrontEnabled
             }
             isStorefrontPage
+          />
+          <ShowWhenRoute
+            path="/paymentpages/batchuploads/:id/:title"
+            component={BatchUploadContainer}
+            additionalCondition={(user) => user.isPaymentPageFileUploadEnabled}
           />
           <ShowWhenRoute
             path="/paymentpages"

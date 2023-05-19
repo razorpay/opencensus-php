@@ -18,6 +18,8 @@ import moment from 'moment';
 import axios from 'axios';
 import { SENSITIVE_FIELDS } from 'common/constant';
 import { acronyms, shortenText } from './acronyms';
+import { saveAs } from 'file-saver';
+import { utils, write } from 'xlsx';
 
 moment.updateLocale('en', {
   relativeTime: {
@@ -1563,4 +1565,25 @@ export const isProductionEnv = () => window.APP_ENV === 'production';
 
 export const randomInt = (min, max) => {
   return Math.floor(Math.random() * (max - min + 1) + min);
+};
+
+export const exportFileAsExcel = ({ finalDataSend, fileName, fileFormat }) => {
+  const fileType = fileFormat === 'xlsx' ? 'xlsx' : 'csv';
+  const obj = finalDataSend.reduce(
+    (obj, item) => {
+      const json = utils.json_to_sheet(item.data);
+      obj.Sheets[item.category] = json;
+      obj.SheetNames.push(item.category);
+      return obj;
+    },
+    { Sheets: {}, SheetNames: [] },
+  );
+  let excelBuffer;
+  if (fileType === 'xlsx') {
+    excelBuffer = write(obj, { bookType: 'xlsx', type: 'array' });
+  } else if (fileType === 'csv') {
+    excelBuffer = utils.sheet_to_csv(obj.Sheets[obj.SheetNames[0]]);
+  }
+  const data = new Blob([excelBuffer], { type: fileType });
+  saveAs(data, `${fileName}.${fileFormat}`);
 };
