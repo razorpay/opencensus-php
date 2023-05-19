@@ -17,7 +17,7 @@ export const getStatesWithCountryCode = (
     }
 
     const request: Promise<StateReturnType> = merchantFetch({
-      url: `states/${countryCode.toLowerCase()}/proxy`,
+      url: `states/${countryCode.toLowerCase()}/internal`,
       mode: 'live',
     })
       .then((response) => {
