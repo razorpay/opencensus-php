@@ -325,6 +325,7 @@ class Route
         'scrooge_refund_back_write'                => ['post',     'scrooge/back_write_refund',                      'RefundController@scroogeBackWriteRefund'                           ],
         'refund_create_batch_service'              => ['post',     'refunds/batch_service',                          'RefundController@postCreateBatchRefund'                            ],
         'scrooge_fetch_refund_email_data'          => ['post',     'scrooge/fetch_refund_email_data',                'RefundController@scroogeFetchRefundEmailData'                      ],
+        'scrooge_fetch_refund_transaction_data'    => ['get',      'scrooge/fetch_refund_transaction_data',          'RefundController@scroogeFetchRefundtransactionData'                 ],
         'raw_address_create_batch_service'         => ['post',     'raw_address/batch_service',                      'RawAddressController@postCreateBatch'                              ],
         'raw_address_create_bulk'                       => ['post',     'raw_address/create/bulk',                             'RawAddressController@createAddressBulk'                              ],
         //'raw_address_kafka_consume_test'          => ['post',     'raw_address/kafka_consume',                     'RawAddressController@consumeAddressFromKafka'                      ],
@@ -5205,6 +5206,7 @@ class Route
         'emerchantpay_apm_onboard_maf',
         'scrooge_entities_fetch',
         'scrooge_fetch_refund_email_data',
+        'scrooge_fetch_refund_transaction_data',
         'scrooge_public_entities_fetch',
         'scrooge_refund_back_write',
         'fund_transfer_attempt_modes',
@@ -14942,6 +14944,7 @@ class Route
             'refund_fetch_status',
             'scrooge_entities_fetch',
             'scrooge_fetch_refund_email_data',
+            'scrooge_fetch_refund_transaction_data',
             'feature_get_multiple_internal',
             'scrooge_public_entities_fetch',
             'fund_transfer_attempt_modes',
@@ -17157,7 +17160,7 @@ class Route
         'reconciliate_via_batch_service',
         'refund_verify_call',
         'refund_gateway_call',
-
+        'scrooge_fetch_refund_transaction_data',
         // following route will soon deprecate the usage of refunds table
         // https://razorpay.slack.com/archives/CNXC0JHQF/p1649071336054049
         'payment_verify_new',

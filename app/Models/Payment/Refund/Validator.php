@@ -207,6 +207,10 @@ class Validator extends Base\Validator
         'refund'        => 'required|array',
     ];
 
+    protected static $refundTransactionDataRules = [
+        'refund_id'     => 'required|unsigned_id|max:14',
+    ];
+
     protected static $setUnprocessedRefundsConfigRules = [
         'refund_ids'   => 'required|sequential_array|max:5000',
         'refund_ids.*' => 'required|filled|unsigned_id|size:14',

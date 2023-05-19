@@ -446,4 +446,13 @@ class RefundController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function scroogeFetchRefundTransactionData()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->getRefundTransactionData($input);
+
+        return ApiResponse::json($response);
+    }
 }

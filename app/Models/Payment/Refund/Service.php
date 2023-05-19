@@ -3894,4 +3894,27 @@ class Service extends Base\Service
 
         return $this->slicingDetailsforSecurity($paymentDetails);
     }
+
+    /**
+     * Gets Transaction Related data for scrooge
+     *
+     * @param $input
+     * @return array
+     * @throws \Throwable
+     */
+    public function getRefundTransactionData($input)
+    {
+        (new Validator)->validateInput('refund_transaction_data', $input);
+
+        $response = [];
+
+        $transaction = $this->repo->transaction->findByEntityIdWithoutMerchant($input[RefundConstants::REFUND_ID]);
+
+        //Can add more data here in future if needed related to transaction
+        $transaction_data ['transaction_id'] = $transaction->getId();
+
+        $response['transaction_data'] = $transaction_data;
+
+        return $response;
+    }
 }

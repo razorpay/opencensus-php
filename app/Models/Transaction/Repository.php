@@ -910,6 +910,15 @@ class Repository extends Base\Repository
         return $txn;
     }
 
+    public function findByEntityIdWithoutMerchant($entityId)
+    {
+        $txn = $this->newQuery()
+            ->where(Transaction\Entity::ENTITY_ID, '=', $entityId)
+            ->first();
+
+        return $txn;
+    }
+
     public function fetchBySettlement($setl, $txnToRelationFetchMap)
     {
         $txns = $this->newQuery()
