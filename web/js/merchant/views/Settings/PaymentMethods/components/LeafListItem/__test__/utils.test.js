@@ -6,11 +6,14 @@ import {
   GREYED,
   ACTIVATED,
   REQUESTED,
+  ZESTMONEY,
+  GETSIMPL,
 } from 'merchant/views/Settings/PaymentMethods/constants';
 
 import {
   getListClass,
   displayName,
+  disabledMessagesForInstrument,
 } from 'merchant/views/Settings/PaymentMethods/components/LeafListItem/utils';
 
 describe('getListClass', () => {
@@ -91,5 +94,27 @@ describe('displayName', () => {
     render(html);
 
     expect(screen.queryByTestId('intermediate-ins-name')).toBeInTheDocument();
+  });
+});
+
+describe('isAffordabilityDisabledInstrument', () => {
+  test('Should return info messgae if instrument is zestmoney', () => {
+    expect(disabledMessagesForInstrument(ZESTMONEY, REQUESTED)).toBe(
+      `${ZESTMONEY} has temporarily disabled its services. We will keep you updated on when they are resumed.`,
+    );
+  });
+
+  test('Should return info messgae if instrument is getSimpl', () => {
+    expect(disabledMessagesForInstrument(GETSIMPL, REQUESTED)).toBe(
+      `${GETSIMPL} has paused onboarding of new merchants. We will keep you updated on when the onboarding resumes.`,
+    );
+  });
+
+  test('Should not return info messgae if instrument is getSimpl and status is Activated', () => {
+    expect(disabledMessagesForInstrument(GETSIMPL, ACTIVATED)).toBeNull();
+  });
+
+  test('Should not return info messgae for other providers', () => {
+    expect(disabledMessagesForInstrument('HDFC', ACTIVATED)).toBeNull();
   });
 });

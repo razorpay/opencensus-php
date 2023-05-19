@@ -13,6 +13,9 @@ export const REINITATED = 'reinitiated';
 export const WEBSITE_DETAILS = 'website_details';
 export const MERCHANT_DOCUMENTS = 'merchant_documents';
 export const MERCHANT_DETAILS = 'merchant_details';
+export const ZESTMONEY = 'ZestMoney';
+export const GETSIMPL = 'Simpl';
+export const DISABLED_INSTRUMENT = [ZESTMONEY, GETSIMPL];
 
 export const statusClass = {
   Request: 'btn btn-primary',

@@ -41,6 +41,7 @@ import {
   statusClass,
   statusPopoverText,
   additionalDetailsStatus,
+  DISABLED_INSTRUMENT,
 } from 'merchant/views/Settings/PaymentMethods/constants';
 import { RequestedStatus } from 'merchant/views/Settings/PaymentMethods/components/InstrumentStatuses/RequestedStatus';
 import RejectedAndActionRequired from 'merchant/views/Settings/PaymentMethods/components/InstrumentStatuses/RejectedAndActionRequired';
@@ -386,6 +387,9 @@ class LeafListItem extends React.Component {
       ['2', '11'].includes(user?.business_type) &&
       isMissingInfo?.some((field) => field.name === 'merchant_details|gstin');
 
+    const isInstrumentDisabled =
+      instrument.status === GREYED || DISABLED_INSTRUMENT.includes(instrument.name);
+
     return (
       <li className={getListClass({ status: instrument.status, path: instrument.path, user })}>
         <div>
@@ -495,7 +499,7 @@ class LeafListItem extends React.Component {
                 <div className="flex-end">
                   <Button
                     testID="pm-request-cta"
-                    isDisabled={instrument.status === GREYED}
+                    isDisabled={isInstrumentDisabled}
                     isLoading={this.state.loading}
                     onClick={this.handleRequest}
                   >
