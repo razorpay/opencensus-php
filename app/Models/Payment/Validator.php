@@ -77,7 +77,7 @@ class Validator extends Base\Validator
         'card'                          => 'sometimes',
         'bank'                          => 'required_if:method,netbanking,aeps,emandate|string|between:4,6',
         'wallet'                        => 'required_if:method,wallet|custom',
-        'emi_duration'                  => 'required_if:method,emi|integer|in:3,6,9,12,18,24',
+        'emi_duration'                  => 'required_if:method,emi|integer|in:2,3,6,9,12,18,24',
         'description'                   => 'sometimes|nullable|string|max:255|utf8',
         'email'                         => 'sometimes|nullable|email',
         'upi.vpa'                       => 'sometimes_if:method,upi|filled|string',

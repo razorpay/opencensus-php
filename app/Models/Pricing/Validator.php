@@ -48,7 +48,7 @@ class Validator extends Base\Validator
         Entity::PAYMENT_METHOD_SUBTYPE  => 'sometimes_if:payment_method,card,emandate,upi,fund_transfer|nullable',
         Entity::PAYMENT_NETWORK         => 'sometimes|nullable|string',
         Entity::PAYMENT_ISSUER          => 'sometimes|nullable|max:255',
-        Entity::EMI_DURATION            => 'sometimes_if:payment_method,emi|nullable|integer|in:3,6,9,12,18,24',
+        Entity::EMI_DURATION            => 'sometimes_if:payment_method,emi|nullable|integer|in:2,3,6,9,12,18,24',
         Entity::AUTH_TYPE               => 'sometimes|nullable',
         Entity::INTERNATIONAL           => 'sometimes|in:0,1',
         Entity::RECEIVER_TYPE           => 'sometimes_if:payment_method,card,upi|nullable|in:qr_code,vpa,pos',
