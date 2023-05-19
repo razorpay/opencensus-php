@@ -394,7 +394,7 @@ const normalizeConfig = (config) => {
 export const fetchLateAuthConfig = () => {
   return {
     type: FETCH_LATE_AUTH_CONFIG,
-    payload: merchantFetch('payment/config/late_auth'),
+    payload: merchantFetch('payment/config/late_auth?is_default=1'),
   };
 };
 
