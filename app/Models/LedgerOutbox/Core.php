@@ -141,7 +141,12 @@ class Core extends Base\Core
                 TraceCode::PG_LEDGER_ACK_WORKER_FAILURE,
             );
 
-            $this->trace->count(Metric::PG_LEDGER_ACK_WORKER_FAILURE);
+            $this->trace->count(Metric::PG_LEDGER_ACK_WORKER_FAILURE,
+                [
+                    LedgerConstants::TRANSACTOR_EVENT       => $transactorEvent,
+                    LedgerConstants::TRANSACTOR_ID          => $transactorId,
+                    Constants::SOURCE                       => Constants::ACK_WORKER
+                ]);
         }
     }
 
@@ -177,10 +182,6 @@ class Core extends Base\Core
                 $e,
                 Trace::CRITICAL,
                 TraceCode::PG_LEDGER_METRIC_PUSH_FAILURE,
-                [
-                    LedgerConstants::TRANSACTOR_ID    => $transactorId,
-                    LedgerConstants::TRANSACTOR_EVENT => $transactorEvent,
-                ]
             );
         }
     }
@@ -347,18 +348,12 @@ class Core extends Base\Core
 
                     $existingTxn = $this->repo->transaction->find($journal['id']);
 
-                    if ($existingTxn === null)
+                    if (($existingTxn === null) and (!in_array($transactorEvent, Constants::NON_TRANSACTION_EVENTS)) )
                     {
                         $this->trace->debug(TraceCode::PG_LEDGER_TRANSACTION_NOT_FOUND, [
                             constants::ERROR_TYPE               => constants::RECOVERABLE_ERROR,
                             constants::ERROR_MESSAGE            => $errorMessage,
                             LedgerConstants::TRANSACTOR_ID      => $transactorId,
-                            LedgerConstants::TRANSACTOR_EVENT   => $transactorEvent,
-                            Constants::SOURCE                   => Constants::ACK_WORKER,
-                        ]);
-
-                        $this->trace->count(Metric::PG_LEDGER_TRANSACTION_NOT_FOUND, [
-                            constants::ERROR_TYPE               => constants::RECOVERABLE_ERROR,
                             LedgerConstants::TRANSACTOR_EVENT   => $transactorEvent,
                             Constants::SOURCE                   => Constants::ACK_WORKER,
                         ]);
@@ -663,7 +658,7 @@ class Core extends Base\Core
                             LedgerReverseShadowConstants::RETRY_COUNT => $retries
                         ]);
 
-                        $this->updateRetryCount($entry, $retries);
+                        $this->updateRetryCount($entry, $retries, $transactorEvent);
 
                         $failed++;
                         array_push($failedIds, $transactorId);
@@ -714,7 +709,7 @@ class Core extends Base\Core
                     }
                     else
                     {
-                        $this->updateRetryCount($entry, $retries);
+                        $this->updateRetryCount($entry, $retries, $transactorEvent);
                     }
 
                     $failed++;
@@ -731,11 +726,11 @@ class Core extends Base\Core
         ];
     }
 
-    protected function updateRetryCount(Entity $entry, $retries)
+    protected function updateRetryCount(Entity $entry, $retries, $transactorEvent)
     {
         try
         {
-            $this->repo->transaction(function () use ($entry, $retries)
+            $this->repo->transaction(function () use ($entry, $retries, $transactorEvent)
             {
                 $update = [
                     Entity::RETRY_COUNT => $retries,
@@ -744,7 +739,8 @@ class Core extends Base\Core
                 $this->updateOutboxEntry($entry, $update);
 
                 $this->trace->count(Metric::PG_LEDGER_OUTBOX_UPDATE_RETRY_COUNT_SUCCESS, [
-                    Constants::SOURCE => Constants::CRON,
+                    LedgerConstants::TRANSACTOR_EVENT => $transactorEvent,
+                    Constants::SOURCE                 => Constants::CRON,
                 ]);
 
                 $this->trace->info(
@@ -759,7 +755,8 @@ class Core extends Base\Core
         catch (\Throwable $ex)
         {
             $this->trace->count(Metric::PG_LEDGER_OUTBOX_UPDATE_RETRY_COUNT_FAILURE, [
-                Constants::SOURCE => Constants::CRON,
+                LedgerConstants::TRANSACTOR_EVENT => $transactorEvent,
+                Constants::SOURCE                 => Constants::CRON,
             ]);
 
             $this->trace->traceException(
@@ -767,7 +764,8 @@ class Core extends Base\Core
                 500,
                 TraceCode::PG_LEDGER_OUTBOX_UPDATE_RETRY_COUNT_FAILURE,
                 [
-                    Constants::SOURCE => Constants::CRON,
+                    LedgerConstants::TRANSACTOR_EVENT => $transactorEvent,
+                    Constants::SOURCE                 => Constants::CRON,
                 ]
             );
 

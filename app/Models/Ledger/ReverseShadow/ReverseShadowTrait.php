@@ -401,12 +401,6 @@ trait ReverseShadowTrait
 //                            LedgerOutboxConstants::SOURCE          => $source,
 //                        ]);
 //
-//                        $trace->count(Metric::PG_LEDGER_TRANSACTION_NOT_FOUND, [
-//                            LedgerOutboxConstants::ERROR_TYPE      => LedgerOutboxConstants::RECOVERABLE_ERROR,
-//                            Constants::TRANSACTOR_EVENT            => $transactorEvent,
-//                            LedgerOutboxConstants::SOURCE          => $source,
-//                        ]);
-//
 //                        // returning true so that txn creation is retried
 //                        return true;
 //                    }
@@ -448,6 +442,7 @@ trait ReverseShadowTrait
 
             $trace->count(Metric::LEDGER_ACCOUNT_NOT_FOUND, [
                 LedgerOutboxConstants::ERROR_TYPE       => LedgerOutboxConstants::RECOVERABLE_ERROR,
+                Constants::TRANSACTOR_EVENT             => $transactorEvent,
                 LedgerOutboxConstants::SOURCE           => $source,
                 // todo: add account details later
             ]);

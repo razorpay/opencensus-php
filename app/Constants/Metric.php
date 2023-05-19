@@ -139,7 +139,6 @@ class Metric
     const MULTIPLE_LEDGER_ACCOUNTS_FOUND                        = "multiple_ledger_accounts_found";
     const PG_LEDGER_CREATE_JOURNAL_ENTRY_SUCCESS                = 'pg_ledger_create_journal_entry_success';
     const PG_LEDGER_OUTBOX_CRON_RETRY_FAILURE                   = 'pg_ledger_outbox_cron_retry_failure';
-    const PG_LEDGER_TRANSACTION_NOT_FOUND                       = 'pg_ledger_transaction_not_found';
     const PG_LEDGER_CREATE_TRANSACTION_SUCCESS                  = 'pg_ledger_create_transaction_success';
     const PG_LEDGER_CREATE_TRANSACTION_FAILURE                  = 'pg_ledger_create_transaction_failure';
     const PG_LEDGER_OUTBOX_UPDATE_RETRY_COUNT_SUCCESS           = 'pg_ledger_outbox_update_retry_count_success';

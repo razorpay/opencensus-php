@@ -2,6 +2,8 @@
 
 namespace RZP\Models\LedgerOutbox;
 
+use RZP\Models\Ledger\Constants as LedgerConstants;
+
 class Constants
 {
     const PAYMENT  = "payment";
@@ -52,4 +54,9 @@ class Constants
     const OUTBOX_RETRY_DEFAULT_END_TIME = 600;
     const OUTBOX_RETRY_DEFAULT_START_TIME = 864000;
     const DEFAULT_LIMIT             = 100;
+
+    // Transactor events for which transaction is not created
+    const NON_TRANSACTION_EVENTS = [
+        LedgerConstants::GATEWAY_CAPTURED,
+    ];
 }
