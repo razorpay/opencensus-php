@@ -36,6 +36,7 @@ use RZP\Reconciliator\Base\Reconciliate;
 use RZP\Models\Payment\Processor\UpiTrait;
 use RZP\Gateway\Upi\Base\CommonGatewayTrait;
 use RZP\Models\Payment\Verify\Action as VerifyAction;
+use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as QrEntity;
 
 class Gateway extends Base\Gateway
 {
@@ -45,6 +46,8 @@ class Gateway extends Base\Gateway
     const GATEWAY_API_VERSION_3         = 'v3';
     const GATEWAY_API_VERSION_4         = 'v4';
     const VPA_LENGTH                    = 20;
+    const QR_CODE_TIME_FORMAT           = 'd/m/Y H:i:s';
+    const QR_NOT_UPDATE                 = 'N';
 
     use AuthorizeFailed;
     use Base\RecurringTrait;
@@ -745,14 +748,22 @@ class Gateway extends Base\Gateway
         //adding the merchant id here as the merchant id that needs
         //to be sent here is the icici merchant id for razorpay
         $this->input = $input;
+        $qrCode = $input['qr_code'];
 
         $input = [
             Fields::AMOUNT => $this->formatAmount($input['qr_code']['amount']),
             Fields::MERCHANT_ID => $this->getMerchantId(),
             Fields::TERMINAL_ID => $this->getTerminalId($this->input),
             Fields::BILL_NUMBER => '1234',
-            Fields::MERCHANT_TRAN_ID => $input['qr_code']['id'] . QrCode\Constants::QR_CODE_V2_TR_SUFFIX,
+            Fields::MERCHANT_TRAN_ID => $qrCode['id'] . QrCode\Constants::QR_CODE_V2_TR_SUFFIX,
+            Fields::UPDATE => self::QR_NOT_UPDATE,
         ];
+
+        if (isset($qrCode[QrEntity::CLOSE_BY]) === true)
+        {
+            $input[Fields::VALIDITY_END_DATE_TIME] = Carbon::createFromTimestamp($qrCode[QrEntity::CLOSE_BY], Timezone::IST)->format
+            (self::QR_CODE_TIME_FORMAT);
+        }
 
         $path = 'pay_v3';
 

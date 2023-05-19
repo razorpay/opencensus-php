@@ -177,9 +177,14 @@ class Generator extends QrCode\Generator
         }
 
         $terminal = $this->repo
-                         ->terminal
-                         ->getById($this->terminalId);
+            ->terminal
+            ->getById($this->terminalId);
 
+        return $this->generateRefId($qrCode,$terminal);
+    }
+
+    private function generateRefId($qrCode, $terminal)
+    {
         $input = [
             'qr_code'  => $qrCode->toArray(),
             'terminal' => $terminal->toArray(),
@@ -201,12 +206,12 @@ class Generator extends QrCode\Generator
                     $refId = $qrCode->getId() . QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
                 }
             }
-            catch(\Exception $ex)
+            catch (\Exception $ex)
             {
                 throw new BadRequestException('QrCode creation failed due to error at bank or wallet gateway',
-                    ErrorCode::BAD_REQUEST_QR_CODE_REF_ID_GENERATION_FAILURE,
-                    null,
-                    null);
+                                              ErrorCode::BAD_REQUEST_QR_CODE_REF_ID_GENERATION_FAILURE,
+                                              null,
+                                              null);
             }
         }
 

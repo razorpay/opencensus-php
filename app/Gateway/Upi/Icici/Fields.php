@@ -48,4 +48,6 @@ class Fields
     const RESPONSE_CODE             = 'ResponseCode';
     const UMN                       = 'UMN';
     const REMARK                    = 'Remark';
+    const VALIDITY_END_DATE_TIME    = 'validityEndDateTime';
+    const UPDATE                    = 'update';
 }
