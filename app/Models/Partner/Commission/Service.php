@@ -61,10 +61,10 @@ class Service extends Base\Service
     {
         $commission = $this->repo->commission->findByPublicId($id);
 
-        return Tracer::inspan(['name' => HyperTrace::COMMISSIONS_CAPTURE_CORE], function () use ($commission) {
+        return Tracer::inspan(['name' => HyperTrace::COMMISSIONS_CAPTURE_CORE], function () use ($commission, $id) {
 
             $commission = $this->core()->capture($commission)->toArrayPublic();
-            $this->core()->dispatchCommissionCaptureToPRTS($commission->getAttribute(Entity::PARTNER_ID), [$id]);
+            $this->core()->dispatchCommissionCaptureToPRTS($commission[Entity::PARTNER_ID], [$id]);
             return $commission;
 
         });
