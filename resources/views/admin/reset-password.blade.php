@@ -21,9 +21,24 @@
 <script>
   window.addEventListener("load", setEmail);
 
+  // Returns email from url like https://da......?email=abc@gmail.com
+  // Cannot use URLSearchParams since it doesn't work for abc+1@gmail.com
+  function getValueFromParams(key) {
+    var queryString = window.location.search.substr(1);
+    var queryParams = queryString.split('&');
+    var value = null;
+    for (var i = 0; i < queryParams.length; i++) {
+        var pair = queryParams[i].split('=');
+        if (pair[0] === key) {
+            value = decodeURIComponent(pair[1]);
+            break;
+        }
+    }
+    return value;
+  }
+
   function setEmail() {
-    var params = new URLSearchParams(window.location.search)
-    var email = params.get('email');
+    var email = getValueFromParams('email');
     var emailElement = document.querySelector('input[type=email]')
     emailElement.value = email;
   }
@@ -49,7 +64,7 @@
     xhr = new XMLHttpRequest();
 
     var params = new URLSearchParams(window.location.search)
-    var email = params.get('email');
+    var email = getValueFromParams('email');
     var token = params.get('token');
     var pass = document.querySelector('input[name=password]').value;
     var confirmPass = document.querySelector('input[name=confirm-password]').value;
