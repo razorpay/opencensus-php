@@ -585,6 +585,10 @@ final class P2pRoute
             $route->where(['path' => '.*']);
         }
 
+
+        // Attaching error handler to p2p routes
+        $route->middleware('error_handler_setter_for_php_laravel_upgrade');
+
         // We add the web middleware group, conditionally to routes which require cookie / session access.
         if (in_array($name, self::$session, true) === true)
         {
