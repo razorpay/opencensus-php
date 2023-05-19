@@ -190,7 +190,7 @@ class Service extends Base\Service
 
         $qrData = $gatewayResponse['qr_data'];
 
-        (new Validator)->validateInput('gateway_response', $qrData);
+        (new Validator)->validateGatewayResponseData($qrData, $gateway);
 
         $qrCodeId = $qrData[GatewayResponseParams::MERCHANT_REFERENCE];
 
@@ -213,7 +213,9 @@ class Service extends Base\Service
         {
             [$terminal, $gatewayResponse] = $this->getTerminalAndGatewayReponse(json_encode($input), $gatewayClass, $gateway);
 
-            $isQrCodeV2 = $this->isNonVAQrCodePayment($gatewayResponse);
+            //todo: from gateway function (getQrData), gatewayResponse['callbackdata'] does not have 'data' entity inside due
+            // to which getTrFieldForGateway() function returns null, need to fix this asap
+            $isQrCodeV2 = ($this->isNonVAQrCodePayment($gatewayResponse) or ($terminal->isQrV2Terminal() === true));
 
             $qrPayment = $this->findQrPayment($gatewayResponse['qr_data'], $isQrCodeV2);
 

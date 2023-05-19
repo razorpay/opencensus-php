@@ -248,4 +248,12 @@ trait NonVirtualAccountQrCodeTrait
 
         return $params['tr'];
     }
+
+    private function makeUpiPaymentInternal($request)
+    {
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
 }

@@ -25,7 +25,9 @@ use RZP\Constants\Entity as CoreEntity;
 use RZP\Models\QrCode\Entity as QrEntity;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Gateway\Upi\Base\CommonGatewayTrait;
+use RZP\Models\BharatQr\GatewayResponseParams;
 use RZP\Models\Payment\Entity as PaymentEntity;
+use RZP\Models\Terminal\Entity as TerminalEntity;
 
 class Gateway extends Mindgate\Gateway
 {
@@ -116,6 +118,13 @@ class Gateway extends Mindgate\Gateway
 
     public function preProcessServerCallback($input, $isBharatQr = false): array
     {
+        $routeName = $this->app['api.route']->getCurrentRouteName();
+
+        if ($routeName === 'payment_callback_bharatqr_internal')
+        {
+            return $this->getQrData(json_decode($input, true));
+        }
+
         return $this->upiPreProcess(['payload' => $input]);
     }
 
@@ -1086,6 +1095,11 @@ class Gateway extends Mindgate\Gateway
             $response);
 
         return $response;
+    }
+
+    public function getTerminalDetailsFromCallbackIfApplicable($input)
+    {
+        return null;
     }
 
     protected function checkForPaymentFailure($input)
