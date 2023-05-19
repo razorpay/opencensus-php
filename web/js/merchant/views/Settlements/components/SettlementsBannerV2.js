@@ -13,8 +13,7 @@ import { Alert } from '@razorpay/blade/components';
 import { ALERT_INTENT, SETTLEMENT_RETRY_SLA_IN_HOURS, SETTLEMENT_STATUS } from './utils';
 import moment from 'moment/moment';
 import { getFormattedAmount } from 'common/utils/rzp-utils';
-import { analyticsTrack, analyticsTrackWithUserInfo } from 'common/utils/analytics';
-import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 
 export const BannerWrapper = styled.div(
   ({ theme }) => `
@@ -57,8 +56,6 @@ const SettlementsBannerV2 = ({
   const noExecutions = !settlement_amount?.data?.next_settlement_time;
 
   const activationFormUrl = user?.isActivationFormFullView ? '/kyc' : '/activation';
-
-  const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
 
   const nextSettlement = settlement_amount?.data?.settlement_amount;
 
@@ -119,19 +116,7 @@ const SettlementsBannerV2 = ({
       primary: {
         text: 'Submit details now',
         onClick: () => {
-          if (isSignupWithEasyOnboarding) {
-            analyticsTrack({
-              objectName: 'redirect to easy-dashboard CTA',
-              actionName: 'Redirect',
-              screen: 'settlements banner v2',
-              properties: {
-                'CTA Label': 'Submit details now',
-              },
-            });
-            window.open(window.EASY_ONBOARDING_URL, '_self', 'noopener');
-          } else {
-            history.push(activationFormUrl);
-          }
+          history.push(activationFormUrl);
         },
       },
     };
@@ -145,6 +130,7 @@ const SettlementsBannerV2 = ({
       primary: {
         text: 'Complete KYC',
         onClick: () => {
+          history.push(activationFormUrl);
           analyticsTrackWithUserInfo({
             objectName: 'Complete KYC',
             actionName: 'Clicked',
@@ -161,19 +147,6 @@ const SettlementsBannerV2 = ({
               international_payments_enabled: user.international,
             },
           });
-          if (isSignupWithEasyOnboarding) {
-            analyticsTrack({
-              objectName: 'redirect to easy-dashboard CTA',
-              actionName: 'Redirect',
-              screen: 'settlements banner v2',
-              properties: {
-                'CTA Label': 'Complete KYC',
-              },
-            });
-            window.open(window.EASY_ONBOARDING_URL, '_self', 'noopener');
-          } else {
-            history.push(activationFormUrl);
-          }
         },
       },
     };

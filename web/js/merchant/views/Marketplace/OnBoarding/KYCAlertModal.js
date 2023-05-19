@@ -2,8 +2,6 @@ import { Link } from 'react-router-dom';
 
 import ModalHeader from 'common/ui/ModalHeader';
 import rTracking from 'react-tracking';
-import { analyticsTrack } from 'common/utils/analytics';
-import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 
 const KYCAlertModal = ({ user, switchToTestMode, closeModal, tracking }) => {
   if (
@@ -28,7 +26,6 @@ const KYCAlertModal = ({ user, switchToTestMode, closeModal, tracking }) => {
   }
 
   const activationFormUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
-  const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
 
   return (
     <div class="MarketPlace--KYC-Required-Modal">
@@ -41,7 +38,7 @@ const KYCAlertModal = ({ user, switchToTestMode, closeModal, tracking }) => {
         Meanwhile, you can try it out in <a onClick={switchToTestMode}>Test Mode</a>
         <div class="Modal__actions">
           <Link
-            to={!isSignupWithEasyOnboarding ? activationFormUrl : ''}
+            to={activationFormUrl}
             class="btn btn-primary btn-block"
             onClick={() => {
               tracking.trackEvent(
@@ -49,17 +46,6 @@ const KYCAlertModal = ({ user, switchToTestMode, closeModal, tracking }) => {
                   clickSource: 'Route',
                 }),
               );
-              if (isSignupWithEasyOnboarding) {
-                analyticsTrack({
-                  objectName: 'redirect to easy-dashboard CTA',
-                  actionName: 'Redirect',
-                  screen: 'onboarding',
-                  properties: {
-                    'CTA Label': 'Fill KYC Form',
-                  },
-                });
-                window.open(window.EASY_ONBOARDING_URL, '_self', 'noopener');
-              }
               closeModal();
             }}
           >

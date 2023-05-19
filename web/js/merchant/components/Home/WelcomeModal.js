@@ -12,8 +12,6 @@ import imgPaymentGeteway from 'assets/product-recommendation/payment-geteway.svg
 import imgPaymentPage from 'assets/product-recommendation/payment-page.svg';
 import imgPaymentButton from 'assets/product-recommendation/payment-button.svg';
 import imgPaymentLink from 'assets/product-recommendation/payment-link.svg';
-import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
-import { useApp } from 'common/context/App';
 
 const WelcomeModal = ({
   onActivate,
@@ -28,16 +26,12 @@ const WelcomeModal = ({
   referee,
   trackEvents,
   isActivationFormFullView,
-  history,
 }) => {
   const activationFormUrl = isActivationFormFullView ? '/kyc' : '/activation';
 
   const { hasRecommendedProduct } = getRecommendedProductDetails();
 
   const isRecommendProduct = isProductRecommendationEnabled && hasRecommendedProduct;
-
-  const { user } = useApp();
-  const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
 
   const handleActivationClick = () => {
     onActivate();
@@ -241,28 +235,10 @@ const WelcomeModal = ({
         <div className="welcome-modal-actions">
           <ShowWhen additionalCondition={(user) => !user.isOrgAxis}>
             <Link
-              to=""
-              onClick={() => {
-                handleActivationClick();
-
-                if (isSignupWithEasyOnboarding) {
-                  trackEvents({
-                    objectName: 'redirect to easy-dashboard CTA',
-                    actionName: 'Redirect',
-                    screen: 'home page',
-                    properties: {
-                      'CTA Label': 'Submit KYC details',
-                    },
-                  });
-                  window.open(window.EASY_ONBOARDING_URL, '_self', 'noopener');
-                } else {
-                  history.push(
-                    isOnboardingV2Enabled && isMobileDevice()
-                      ? '/onboarding/steps'
-                      : activationFormUrl,
-                  );
-                }
-              }}
+              to={
+                isOnboardingV2Enabled && isMobileDevice() ? '/onboarding/steps' : activationFormUrl
+              }
+              onClick={handleActivationClick}
               className={`btn btn-primary${isMobileDevice() ? ' btn-block' : ''}`}
             >
               Submit KYC details

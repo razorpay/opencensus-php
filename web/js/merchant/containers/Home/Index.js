@@ -74,7 +74,6 @@ import {
   isPaymentMethodEnabled,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import InternationalHPBanner from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/components/InternationalCards/components/InternationalHPBanner';
-import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 
 const Desktop = lazyLoader(() => import(/* webpackChunkName: 'merchantDesktop' */ './Desktop'));
 const Mobile = lazyLoader(() => import(/* webpackChunkName: 'merchantMobile' */ './Mobile'));
@@ -728,8 +727,6 @@ export default class HomeContainer extends Component {
     this.props.fetchSupportDetail();
     this.fetchReferredMerchants();
 
-    const isSignupWithEasyOnboarding = this.props?.user?.user?.signup_campaign === EASY_ONBOARDING;
-
     window.addEventListener('resize', this.onResize);
 
     const shouldShowMobileHotjarSurvey = showWhenUtil({
@@ -776,16 +773,7 @@ export default class HomeContainer extends Component {
           });
           this.onFirstStepClose();
           this.hideWelcomeModalCTAs = false;
-          if (isSignupWithEasyOnboarding) {
-            analyticsTrack({
-              objectName: 'redirect to easy-dashboard CTA',
-              actionName: 'Redirect',
-              screen: 'home page',
-            });
-            window.open(window.EASY_ONBOARDING_URL, '_self', 'noopener');
-          } else {
-            this.props.history.push('/activation');
-          }
+          this.props.history.push('/activation');
         }
       }, 7000);
       this.hideWelcomeModalCTAs = true;

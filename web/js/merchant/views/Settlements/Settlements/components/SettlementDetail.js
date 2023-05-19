@@ -7,10 +7,8 @@ import Time from 'common/ui/Time';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import { bindActionCreators } from 'redux';
-import { analyticsTrack } from 'common/utils/analytics';
 import SamedayUpselling from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/components/Upselling';
 import { SAMEDAY_MODAL_LOCATIONS } from './Modals/ScheduledModal/constants';
-import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 
 class SettlementDetail extends Component {
   handleContactSupport = () => {
@@ -170,7 +168,6 @@ class SettlementDetail extends Component {
     const isOnHold = this.isOnHold();
     const isOnTemporaryHold = this.isOnTemporaryHold();
     const activationFormUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
-    const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
 
     if (
       (user.instantActivation.isWhitelistFlow || user.isUnregisteredBusiness) &&
@@ -189,23 +186,8 @@ class SettlementDetail extends Component {
               KYC Process Details
             </a>
           </div>
-          <Link
-            to={!isSignupWithEasyOnboarding ? activationFormUrl : ''}
-            className="settlement-detail-button-wrapper"
-            onClick={() => {
-              if (isSignupWithEasyOnboarding) {
-                analyticsTrack({
-                  objectName: 'redirect to easy-dashboard CTA',
-                  actionName: 'Redirect',
-                  screen: 'settlements banner v2',
-                  properties: {
-                    'CTA Label': 'Submit details now',
-                  },
-                });
-                window.open(window.EASY_ONBOARDING_URL, '_self', 'noopener');
-              }
-            }}
-          >
+
+          <Link className="settlement-detail-button-wrapper" to={activationFormUrl}>
             <button
               type="button"
               className="btn btn-primary full-width"

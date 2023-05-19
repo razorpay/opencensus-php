@@ -8,8 +8,6 @@ import {
 } from 'merchant_common/reducers/modals';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import SettlementMessage from 'merchant/views/Settlements/InstantSettlements/InstantSettlements/SettlementMessage';
-import { analyticsTrack } from 'common/utils/analytics';
-import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 
 const SettlementsBanner = (props) => {
   const {
@@ -33,7 +31,6 @@ const SettlementsBanner = (props) => {
   const balance = current_balance.data.balance || 0;
 
   const activationFormUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
-  const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
 
   const handleContactSupport = () => {
     closeModal();
@@ -72,23 +69,7 @@ const SettlementsBanner = (props) => {
           <> Settlements will be processed. Once your KYC is submitted and approved. </>
         );
       actions = !user.isSubmitted && (
-        <Link
-          to={!isSignupWithEasyOnboarding ? activationFormUrl : ''}
-          onClick={() => {
-            if (isSignupWithEasyOnboarding) {
-              analyticsTrack({
-                objectName: 'redirect to easy-dashboard CTA',
-                actionName: 'Redirect',
-                screen: 'settlements banner',
-                properties: {
-                  'CTA Label': 'Complete KYC',
-                },
-              });
-              window.open(window.EASY_ONBOARDING_URL, '_self', 'noopener');
-            }
-          }}
-          className="action text-primary"
-        >
+        <Link to={activationFormUrl} className="action text-primary">
           Complete KYC
         </Link>
       );

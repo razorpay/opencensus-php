@@ -15,7 +15,6 @@ import { isOrgFeatureExist } from 'merchant/models/User';
 import { fetchIsAdminAsMerchant } from 'merchant/reducers/profile';
 import LoaderDots from 'common/ui/LoaderDots';
 import { accountAccessHoverDescription } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
-import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 
 const AccountDetails = (props): JSX.Element => {
   const {
@@ -37,7 +36,6 @@ const AccountDetails = (props): JSX.Element => {
 
   const isAccountActivation = isAdminAsMerchant.data || !isOrgFeatureExist('hide_activation_form');
   const activationUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
-  const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
 
   let activationName = 'KYC';
   /* istanbul ignore else */
@@ -101,13 +99,6 @@ const AccountDetails = (props): JSX.Element => {
                       user.activation_status === 'needs_clarification'
                     ) {
                       redirectToEasyNc();
-                    } else if (isSignupWithEasyOnboarding) {
-                      analyticsTrack({
-                        objectName: 'redirect to easy-dashboard CTA',
-                        actionName: 'Redirect',
-                        screen: 'my account',
-                      });
-                      window.open(window.EASY_ONBOARDING_URL, '_self', 'noopener');
                     }
                   }}
                 >

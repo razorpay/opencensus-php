@@ -9,7 +9,7 @@ import { FORM_DATA } from 'merchant/views/AccountAndSettings/BankAccountsAndSett
 import { BANK_ACCOUNT_UPDATE_STEPS } from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/typings';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import * as ModalActions from 'merchant_common/reducers/modals';
-import { render, screen, server, userEvent, waitFor } from 'test-utils';
+import { render, screen, server, userEvent } from 'test-utils';
 
 describe('UploadDocuments', () => {
   const showNotificationSpy = jest.spyOn(NotificationsActions, 'showNotification');
@@ -123,13 +123,11 @@ describe('UploadDocuments', () => {
       server.use(bankAccountUpdateSuccess());
       renderApp();
       await applyForm(true);
-      await waitFor(() => {
-        expect(showNotificationSpy).toHaveBeenCalledWith({
-          type: 'success',
-          message: 'Proofs uploaded successfully',
-        });
-        expect(fetchWorkflowSpy).toHaveBeenCalledTimes(1);
+      expect(showNotificationSpy).toHaveBeenCalledWith({
+        type: 'success',
+        message: 'Proofs uploaded successfully',
       });
+      expect(fetchWorkflowSpy).toHaveBeenCalledTimes(1);
     });
 
     test('should call document upload api on submit action and show error incase api fails', async () => {
