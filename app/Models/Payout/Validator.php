@@ -1440,7 +1440,7 @@ class Validator extends Base\Validator
                 case Settlement\Channel::AXIS :
                 case Settlement\Channel::ICICI :
                 case Settlement\Channel::YESBANK :
-                    if ($this->isUpiModeEnabledForMerchantsDirectAccountOnChannel($merchantId, $channel) === false)
+                    if ((new PayoutModeConfig\Service())->checkIfUpiDirectAccountChannelEnabledForMerchant($merchantId, $channel) === false)
                     {
                         return false;
                     }
@@ -1728,13 +1728,6 @@ class Validator extends Base\Validator
     {
         $featureList = (new FeatureRepo())->findMerchantWithFeatures($merchantId, [Features::RBL_CA_UPI]);
         return (count($featureList) !== 0);
-    }
-
-    public function isUpiModeEnabledForMerchantsDirectAccountOnChannel($merchantId, $channel)
-    {
-        $allowedUpiChannels = (new PayoutModeConfig\Service())->fetchAllowedUpiChannelsForMerchant($merchantId);
-
-        return in_array($channel, $allowedUpiChannels, true);
     }
 
     public function validatebulkPurposeCreation(int $count)

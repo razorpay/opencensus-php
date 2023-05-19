@@ -116,10 +116,24 @@ class Service extends Base\Service
 
         $dcsConfigService = app('dcs_config_service');
 
-        return $dcsConfigService->fetchConfiguration($key, $merchantId, $fields, $this->mode);
+        $config = $dcsConfigService->fetchConfiguration($key, $merchantId, $fields, $this->mode);
+
+        $res = [];
+
+        if (isset($config[Constants::ALLOWED_UPI_CHANNELS]) === true)
+        {
+            $res[Constants::ALLOWED_UPI_CHANNELS] = [];
+
+            foreach ($config[Constants::ALLOWED_UPI_CHANNELS] as $allowedChannel)
+            {
+                $res[Constants::ALLOWED_UPI_CHANNELS][] = $allowedChannel;
+            }
+        }
+
+        return $res;
     }
 
-    public function fetchAllowedUpiChannelsForMerchant($merchantId)
+    public function checkIfUpiDirectAccountChannelEnabledForMerchant($merchantId, $channel): bool
     {
         try
         {
@@ -131,7 +145,7 @@ class Service extends Base\Service
 
             if (isset($config[Constants::ALLOWED_UPI_CHANNELS]) === true)
             {
-                return $config[Constants::ALLOWED_UPI_CHANNELS];
+                return in_array($channel, $config[Constants::ALLOWED_UPI_CHANNELS], true);
             }
         }
         catch(\Throwable $throwable)
@@ -145,6 +159,6 @@ class Service extends Base\Service
                 ]);
         }
 
-        return [];
+        return false;
     }
 }
