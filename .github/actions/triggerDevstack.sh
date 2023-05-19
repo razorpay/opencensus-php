@@ -2,7 +2,7 @@
 
 run_devstack() {
   PRNumber=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-  commitId=$(jq --raw-output .pull_request.head.sha "$GITHUB_EVENT_PATH")
+  commitId=${COMMIT_ID}
   skipDevstack=${SKIP_DEVSTACK}
   roastPRCommit=${ROAST_PR_COMMIT}
   WEBHOOK_TRIGGER=${WEBHOOK_TRIGGER}

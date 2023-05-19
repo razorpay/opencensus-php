@@ -1,8 +1,8 @@
 name: Run BVT in Devstack Post Approval
 on:
   workflow_dispatch:
-#  pull_request_review:
-#    types: [ submitted ]
+#   pull_request_review:
+#     types: [ submitted ]
 jobs:
   # Add cancel job
   cancel:
@@ -20,7 +20,7 @@ jobs:
   pull_request_approved:
     if: github.event.review.state == 'approved'
     runs-on: [ self-hosted, api ]
-    needs: [cancel]
+    needs: [ cancel ]
     steps:
       - name: Get Current Workflow Link
         id: workflow_run
@@ -31,7 +31,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           message: |
-            `Devstack BVT GitHub Workflow:`  [View the progress here](${{ steps.workflow_run.outputs.url }})
+            :information_desk_person: `BVT Devstack GitHub Workflow:`  [View the progress here](${{ steps.workflow_run.outputs.url }})
           allow-repeats: true
       - name: checkout
         uses: actions/checkout@v3
@@ -45,7 +45,7 @@ jobs:
           from_branch: ${{ github.event.pull_request.base.ref }}
           message: Merged `master` into `${{ github.event.pull_request.head.ref }}` branch
           target_branch: ${{ github.event.pull_request.head.ref }}
-          github_token: ${{ secrets.PREM_CI_BOT_TOKEN }}
+          github_token: ${{ secrets.CI_BOT_TOKEN }}
       - name: Comments
         if: ${{failure()}}
         uses: mshick/add-pr-comment@v2
@@ -56,10 +56,10 @@ jobs:
             **A conflict error has occurred. Please perform a manual back-merge and obtain PR approval to re-run the BVT.**
           allow-repeats: true
       - name: Approve if PR is rebased with master
-        if: ${{success()}}
+        if: success()
         run: |
           PR_NUMBER=${{ github.event.pull_request.number }}
-          GITHUB_TOKEN=${{ secrets.PREM_CI_BOT_TOKEN }}
+          GITHUB_TOKEN=${{ secrets.CI_BOT_TOKEN }}
           # Make PATCH request to update the pull request
           curl -X PATCH \
           -H "Authorization: Bearer $GITHUB_TOKEN" \
@@ -70,6 +70,35 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
+      - name: Get Latest Commit ID
+        if: success()
+        id: pr_info
+        run: |
+          echo "Sleeping for 10 seconds..."
+          sleep 10
+          PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+          API_URL="https://api.github.com/repos/${{ github.repository }}/pulls/${PR_NUMBER}"
+          API_RESPONSE=$(curl -s -H "Authorization: Bearer ${{ secrets.CI_BOT_TOKEN }}" "$API_URL")
+          LATEST_COMMIT=$(echo "$API_RESPONSE" | jq --raw-output .head.sha)
+          echo "::set-output name=latest_commit::$LATEST_COMMIT"
+      - name: Print Lastest Commit id
+        run: echo ${{ steps.pr_info.outputs.latest_commit }}
+      - name: Update BVT Status Check Link To Master Merge Commit
+        if: ${{ github.sha }} != ${{ steps.pr_info.outputs.latest_commit }} && ${{success()}}
+        run: |
+          STATUS_URL=${{ steps.workflow_run.outputs.url }}
+          STATUS_DESCRIPTION="The BVT test on Devstack has been initiated. Kindly wait until the test is completed."
+          STATUS_CONTEXT="BVT Status Check"
+          curl -X POST \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: Bearer ${{ secrets.CI_BOT_TOKEN }}" \
+            -d '{
+              "state": "pending",
+              "target_url": "'"$STATUS_URL"'",
+              "description": "'"$STATUS_DESCRIPTION"'",
+              "context": "'"$STATUS_CONTEXT"'"
+            }' \
+            "https://api.github.com/repos/${{ github.repository }}/statuses/${{ steps.pr_info.outputs.latest_commit }}"
       # Validate existence of Roast PR NUmber Field
       - name: Validate existence of roastPRNumber Field
         uses: actions/github-script@v6
@@ -93,7 +122,7 @@ jobs:
             var prNumberValue = roastPRNumberValueRow[0].split("|")
             var prNumber = prNumberValue[1].trim()
             return prNumber
-      - name: Print PR Number
+      - name: Print Roast PR Number
         run: echo ${{ steps.roastPRNumber.outputs.result }}
         # Get Roast PR State if its approved or not
       - name: Run Roast API PR flow if value is not null
@@ -142,7 +171,7 @@ jobs:
           base: 'master'
           token: ${{ secrets.CI_BOT_TOKEN }}
       - name: Comments
-        if: ${{failure()}}
+        if: failure()
         uses: mshick/add-pr-comment@v2
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -172,8 +201,9 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           BRANCH: ${{ github.event.pull_request.head.ref }}
           WORKFLOW: build_images.yml
+          COMMIT_ID: ${{ steps.pr_info.outputs.latest_commit }}
         run: |
-          echo "commit id: $(jq --raw-output .pull_request.head.sha "$GITHUB_EVENT_PATH")"
+          echo "commit id: ${{ steps.pr_info.outputs.latest_commit }}"
           echo "WORKFLOW_STATUS=$(sh ./.github/actions/getWorkflowStatus.sh)" >> $GITHUB_ENV
       - name: Check Workflow Status
         run: echo $WORKFLOW_STATUS
@@ -193,17 +223,18 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           ROAST_PR_COMMIT: ${{steps.latest-commit.outputs.result}}
           GIT_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+          COMMIT_ID: ${{ steps.pr_info.outputs.latest_commit }}
           SKIP_DEVSTACK: false
         run: |
           sh ./.github/actions/triggerDevstack.sh
       - name: Post comment for devstack initated
-        if: ${{success()}} && env.WORKFLOW_STATUS == 'success'
+        if: success() && env.WORKFLOW_STATUS == 'success'
         uses: mshick/add-pr-comment@v1
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           message: |
-            The BVT test on Devstack has been initiated. Kindly wait until the test is completed.
+            :white_check_mark: The BVT test on Devstack has been initiated. Kindly wait until the test is completed.
           allow-repeats: true
       - name: Post comment for devstack failed to initated
         if: env.WORKFLOW_STATUS != 'success'
@@ -212,5 +243,37 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           message: |
-            The BVT trigger was unsuccessful due to a failure in image creation.
+            :x: The BVT trigger was unsuccessful due to a failure in image creation. [Retrigger the workflow](${{ steps.workflow_run.outputs.url }})
           allow-repeats: true
+      - name: Update BVT Status Check Link To Master Merge Commit - Success
+        if: ${{ env.WORKFLOW_STATUS == 'success' && github.sha != steps.pr_info.outputs.latest_commit && success() }}
+        run: |
+          STATUS_URL=${{ steps.workflow_run.outputs.url }}
+          STATUS_DESCRIPTION="The BVT test on Devstack has been initiated. Kindly wait until the test is completed."
+          STATUS_CONTEXT="BVT Status Check"
+          curl -X POST \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: Bearer ${{ secrets.CI_BOT_TOKEN }}" \
+            -d '{
+              "state": "success",
+              "target_url": "'"$STATUS_URL"'",
+              "description": "'"$STATUS_DESCRIPTION"'",
+              "context": "'"$STATUS_CONTEXT"'"
+            }' \
+            "https://api.github.com/repos/${{ github.repository }}/statuses/${{ steps.pr_info.outputs.latest_commit }}"
+      - name: Update BVT Status Check Link To Master Merge Commit - Failed
+        if: ${{ env.WORKFLOW_STATUS != 'success' && github.sha != steps.pr_info.outputs.latest_commit }}
+        run: |
+          STATUS_URL=${{ steps.workflow_run.outputs.url }}
+          STATUS_DESCRIPTION="The BVT test on Devstack has been initiated. Kindly wait until the test is completed."
+          STATUS_CONTEXT="BVT Status Check"
+          curl -X POST \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: Bearer ${{ secrets.CI_BOT_TOKEN }}" \
+            -d '{
+              "state": "failure",
+              "target_url": "'"$STATUS_URL"'",
+              "description": "'"$STATUS_DESCRIPTION"'",
+              "context": "'"$STATUS_CONTEXT"'"
+            }' \
+            "https://api.github.com/repos/${{ github.repository }}/statuses/${{ steps.pr_info.outputs.latest_commit }}"
