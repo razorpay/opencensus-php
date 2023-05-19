@@ -4681,6 +4681,113 @@ class Core extends Base\Core
         return [$isGatewayRefNumFound, $gatewayRefNum];
     }
 
+    public function storeFailedUpdateParamsInRedis(array $params)
+    {
+        $accountNumber = $params[Entity::ACCOUNT_NUMBER];
+
+        return $this->mutex->acquireAndRelease(
+            'update_redis_failed_batch_params_' . $accountNumber,
+            function () use ($params) {
+                try
+                {
+                    $this->trace->info(TraceCode::BAS_UPDATE_PARAMS_REDIS_WRITE_REQUEST,
+                        [
+                            'params' => $params,
+                        ]
+                    );
+
+                    $redisKey = $params[Entity::MERCHANT_ID] . '_' . $params[Entity::ACCOUNT_NUMBER] . '_bas_update_params';
+
+                    $failedUpdateParams = json_encode($params);
+
+                    $this->app['redis']->set($redisKey, $failedUpdateParams);
+                }
+                catch (\Throwable $exception)
+                {
+                    $this->trace->traceException(
+                        $exception,
+                        null,
+                        TraceCode::BAS_UPDATE_PARAMS_REDIS_WRITE_FAILED,
+                        [
+                            'params' => $params,
+                        ]
+                    );
+                }
+            },
+            60,
+            ErrorCode::BAD_REQUEST_FAILED_UPDATE_BATCH_PARAMS_UPDATION_IN_PROGRESS,
+            3
+        );
+    }
+
+    public function handleMissingStatementUpdateBatchFailure(array $input): array
+    {
+        $response = [];
+
+        $accountNumbers = $input[BASConstants::ACCOUNT_NUMBERS];
+
+        foreach ($accountNumbers as $accountNumber)
+        {
+            try
+            {
+                $basDetailEntity = $this->getBasDetails($accountNumber, $input['channel'], [Details\Status::UNDER_MAINTENANCE]);
+
+                if (empty($basDetailEntity) === true)
+                {
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BAS_DETAILS_FOR_ACCOUNT_IS_NOT_ACTIVE,
+                        null,
+                        ['account_number' => $accountNumber]);
+                }
+
+                $merchantId = $basDetailEntity->getMerchantId();
+
+                $redisKey = $merchantId. '_' . $accountNumber . '_bas_update_params';
+
+                $params = json_decode($this->app['redis']->get($redisKey), true);
+
+                $this->trace->info(
+                    TraceCode::BAS_MISSING_STATEMENT_BALANCE_UPDATE_TRIGGER_REQUEST,
+                    [
+                        Entity::ACCOUNT_NUMBER => $accountNumber,
+                        'params'               => $params
+                    ]);
+
+                if (empty($params) === false)
+                {
+                    BankingAccountStatementUpdate::dispatch($this->mode, $params);
+
+                    $this->trace->info(TraceCode::BAS_UPDATE_QUEUE_DISPATCH_SUCCESS,
+                        [
+                            Entity::ACCOUNT_NUMBER => $accountNumber,
+                            'params'               => $params
+                        ]);
+
+                    $response[$accountNumber][BASConstants::UPDATE_MISSING_STATEMENT] = BASConstants::SUCCESS;
+                }
+                else
+                {
+                    $response[$accountNumber][BASConstants::UPDATE_MISSING_STATEMENT] = BASConstants::FAILURE;
+                }
+            }
+            catch (\Throwable $exception)
+            {
+                $this->trace->traceException(
+                    $exception,
+                    null,
+                    TraceCode::BAS_UPDATE_QUEUE_DISPATCH_FAILURE,
+                    [
+                        Entity::ACCOUNT_NUMBER => $accountNumber,
+                        'params'               => $params,
+                    ]
+                );
+
+                $response[$accountNumber][BASConstants::UPDATE_MISSING_STATEMENT] = BASConstants::FAILURE;
+            }
+        }
+
+        return $response;
+    }
+
     public function findMatchingBASInFetchedStatements(Entity $basEntity, $fetchedStatements)
     {
         $accountStatementApiVersion = $this->getAccountStatementApiVersion($this->basDetails);
@@ -4983,5 +5090,4 @@ class Core extends Base\Core
 
         return $missingStatementConfig;
     }
-
 }

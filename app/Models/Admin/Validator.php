@@ -170,6 +170,7 @@ class Validator extends Base\Validator
         ConfigKey::RX_BLACKLISTED_VPA_REGEXES_FOR_MERCHANT_PAYOUTS => 'array',
         ConfigKey::RX_CA_MISSING_STATEMENTS_RBL              => 'array',
         ConfigKey::RX_CA_MISSING_STATEMENTS_ICICI            => 'array',
+        ConfigKey::RX_CA_MISSING_STATEMENTS_UPDATION_PARAMS  => 'array',
         ConfigKey::RBL_MISSING_STATEMENT_FETCH_MAX_RECORDS   => 'filled|integer',
         ConfigKey::ICICI_MISSING_STATEMENT_FETCH_MAX_RECORDS => 'filled|integer',
         ConfigKey::RETRY_COUNT_FOR_ID_GENERATION             => 'filled|integer',

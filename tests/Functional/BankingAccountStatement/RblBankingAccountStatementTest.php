@@ -11505,21 +11505,21 @@ class RblBankingAccountStatementTest extends TestCase
         $mozartMock = Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
 
         $mozartMock->shouldReceive('sendRawRequest')
-                   ->andReturnUsing(function(array $request) use ($mockedResponse){
+            ->andReturnUsing(function(array $request) use ($mockedResponse){
 
-                       $requestData = json_decode($request['content'], true);
+                $requestData = json_decode($request['content'], true);
 
-                       if (array_key_exists('from_date',$requestData['entities']['attempt']) === true)
-                       {
-                           return json_encode($this->convertRblV1ResponseToV2Response($mockedResponse));
-                       }
+                if (array_key_exists('from_date',$requestData['entities']['attempt']) === true)
+                {
+                    return json_encode($this->convertRblV1ResponseToV2Response($mockedResponse));
+                }
 
-                       $mockRblResponse = $this->convertRblV1ResponseToV2Response($this->getRblNoDataResponse());
+                $mockRblResponse = $this->convertRblV1ResponseToV2Response($this->getRblNoDataResponse());
 
-                       $mockRblResponse['data']['FetchAccStmtRes']['Header']['Status_Desc'] = "No Records Found";
+                $mockRblResponse['data']['FetchAccStmtRes']['Header']['Status_Desc'] = "No Records Found";
 
-                       return json_encode($mockRblResponse);
-                   })->times(1);
+                return json_encode($mockRblResponse);
+            })->times(1);
 
         $this->app->instance('mozart', $mozartMock);
 
@@ -11622,6 +11622,141 @@ class RblBankingAccountStatementTest extends TestCase
         }
 
         Carbon::setTestNow();
+    }
+
+    public function testRblMissingStatementUpdateTriggerAction()
+    {
+        $basdBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->fixtures->edit(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS,
+            $basdBeforeTest[Entity::ID],
+            [BasDetails\Entity::STATUS => 'under_maintenance']);
+
+        $paramValue =
+            [
+                "last_corrected_id"    => '1234567',
+                "bas_id_to_amount_map" => [
+                    "abcde" => -1233545,
+                    "fghjk" => 3000
+                ]
+            ];
+
+        $encodedParam = json_encode($paramValue);
+
+        $redisKey = '10000000000000_2224440041626905_bas_update_params';
+
+        $this->app['redis']->set($redisKey,$encodedParam);
+
+        $this->ba->adminAuth();
+
+        Queue::fake();
+
+        $this->startTest();
+
+        Queue::assertPushed(BankingAccountStatementUpdate::class, 1);
+    }
+
+    public function testRblMissingStatementFailedBatchUpdate()
+    {
+        $this->fixtures->create('banking_account_statement',
+            [
+                'type'                      => 'credit',
+                'amount'                    => '10000',
+                'channel'                   => 'rbl',
+                'account_number'            => 2224440041626905,
+                'bank_transaction_id'       => 'S429654',
+                'balance'                   => 10000,
+                'transaction_date'          => 1656786600,
+                'posted_date'               => 1656861681,
+                'bank_serial_number'        => 1,
+                'description'               => 'Credit to account',
+                'category'                  => 'customer_initiated',
+                'bank_instrument_id'        => '',
+                'balance_currency'          => 'INR',
+            ]);
+
+        $this->fixtures->create('banking_account_statement',
+            [
+                'type'                      => 'credit',
+                'amount'                    => '11450',
+                'channel'                   => 'rbl',
+                'account_number'            => 2224440041626905,
+                'bank_transaction_id'       => 'S429655',
+                'balance'                   => 21450,
+                'transaction_date'          => 1656786600,
+                'posted_date'               => 1656861781,
+                'bank_serial_number'        => 2,
+                'description'               => 'CREDIT NEFT',
+                'category'                  => 'bank_initiated',
+                'bank_instrument_id'        => '',
+                'balance_currency'          => 'INR',
+            ]);
+
+        $this->fixtures->merchant->addFeatures([Features::DA_LEDGER_JOURNAL_WRITES]);
+
+        $initialBasDetails = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->fixtures->edit(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS,
+            $initialBasDetails[Entity::ID],
+            [BasDetails\Entity::STATUS => 'under_maintenance']);
+
+        $initialStatementClosingBalance = $initialBasDetails[BasDetails\Entity::STATEMENT_CLOSING_BALANCE];
+
+        $initialStatement1 = $this->getDbEntities('banking_account_statement', [
+            'account_number'      => '2224440041626905',
+            'bank_transaction_id' => 'S429654'
+        ])[0];
+
+        $initialStatement2 = $this->getDbEntities('banking_account_statement', [
+            'account_number'      => '2224440041626905',
+            'bank_transaction_id' => 'S429655'
+        ])[0];
+
+        $paramValue = [
+            'channel' => 'rbl',
+            'account_number' => '2224440041626905',
+            'bas_id_to_amount_map' => [
+                $initialStatement1['id'] => 10000
+            ],
+            'created_at' => $initialStatement1['created_at'],
+            'update_before' => Carbon::now()->getTimestamp() + 5,
+            'latest_corrected_id' => $initialStatement1['id'],
+            'batch_number' => 0,
+            'merchant_id' =>'10000000000000',
+            'balance_id' => '',
+        ];
+
+        $encodedParam = json_encode($paramValue);
+
+        $redisKey = '10000000000000_2224440041626905_bas_update_params';
+
+        $this->app['redis']->set($redisKey,$encodedParam);
+
+        $testData = &$this->testData['testRblMissingStatementUpdateTriggerAction'];
+
+        $this->ba->adminAuth();
+
+        $this->startTest($testData);
+
+        $basDetails = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $finalStatementClosingBalance = $basDetails[BasDetails\Entity::STATEMENT_CLOSING_BALANCE];
+
+        $this->assertEquals($initialStatementClosingBalance + 10000, $finalStatementClosingBalance);
+
+        $finalStatement1 = $this->getDbEntities('banking_account_statement', [
+            'account_number'      => '2224440041626905',
+            'bank_transaction_id' => 'S429654'
+        ])[0];
+
+        $finalStatement2 = $this->getDbEntities('banking_account_statement', [
+            'account_number'      => '2224440041626905',
+            'bank_transaction_id' => 'S429655'
+        ])[0];
+
+        $this->assertEquals($initialStatement1->getBalance(), $finalStatement1->getBalance());
+
+        $this->assertEquals($initialStatement2->getBalance() + 10000, $finalStatement2->getBalance());
     }
 
     public function testOptimiseInsertRblMissingAccountStatement()
@@ -11765,13 +11900,11 @@ class RblBankingAccountStatementTest extends TestCase
         ];
 
         $commissionArray = [
-            '',
-            '',
+            "",""
         ];
 
         $taxArray = [
-            '',
-            '',
+            "",""
         ];
 
         $apiTransactionIdArray = [
@@ -13786,6 +13919,7 @@ class RblBankingAccountStatementTest extends TestCase
                     '2224440041626905' => $missingStatementsBeforeInsertion,
                 ],
                 ConfigKey::PREFIX . 'rx_missing_statements_insertion_limit' => 2,
+
                 ConfigKey::PREFIX . 'retry_count_for_id_generation' => 100,
             ]);
 

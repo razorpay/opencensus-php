@@ -3387,6 +3387,8 @@ class Route
         'banking_account_statement_fetch_missing'       => ['post',     'banking_account_statement/fetch_missing/{channel}',         'BankingAccountStatementController@fetchMissingAccountStatementsForChannel'   ],
         'banking_account_statement_fetch_missing_cron'  => ['post',     'banking_account_statement/cron/fetch_missing/{channel}',    'BankingAccountStatementController@fetchMissingAccountStatementsForChannel'   ],
         'banking_account_statement_automate_recon_cron' => ['post',     'banking_account_statement/cron/automate_recon/{channel}',   'BankingAccountStatementController@automateAccountStatementsReconByChannel'   ],
+        'banking_account_statement_update_missing'      => ['post',     'banking_account_statement/update_missing/{channel}',        'BankingAccountStatementController@handleMissingStatementUpdateBatchFailure'  ],
+
         'banking_account_statement_details_create'      => ['post',     'banking_account_statement/details',                         'BankingAccountStatementController@createBankingAccountStatementDetails'      ],
         'banking_account_statement_detect_missing'      => ['post',     'banking_account_statement/detect_missing/{channel}',        'BankingAccountStatementController@detectMissingStatements'                   ],
         'banking_account_statement_detect_missing_cron' => ['post',     'banking_account_statement/cron/detect_missing/{channel}',   'BankingAccountStatementController@detectMissingStatements'                   ],
@@ -5327,6 +5329,7 @@ class Route
         'banking_account_send_notification_to_spoc_cron',
         'banking_account_statement_channel_fetch',
         'banking_account_statement_fetch_missing',
+        'banking_account_statement_update_missing',
         'banking_account_statement_async_insert_missing',
         'banking_account_statement_detect_missing',
 
@@ -8215,6 +8218,7 @@ class Route
         'developer_console_admin_action',
 
         'banking_account_statement_fetch_missing',
+        'banking_account_statement_update_missing',
         'banking_account_statement_async_insert_missing',
         'banking_account_statement_detect_missing',
 
@@ -8711,6 +8715,7 @@ class Route
         'sub_virtual_account_enable_disable'       => Permission::ADMIN_SUB_VIRTUAL_ACCOUNT,
 
         'banking_account_statement_insert_missing' => Permission::INSERT_AND_UPDATE_BAS,
+        'banking_account_statement_update_missing' => Permission::INSERT_AND_UPDATE_BAS,
 
         'process_pending_bank_transfer'            => Permission::ADMIN_PROCESS_PENDING_BANK_TRANSFER,
         'batch_process_by_id'                      => Permission::RETRY_BATCH,
@@ -9696,7 +9701,6 @@ class Route
         'banking_account_statement_fetch_missing'        => Permission::FETCH_MISSING_BAS,
         'banking_account_statement_async_insert_missing' => Permission::FETCH_MISSING_BAS,
         'banking_account_statement_detect_missing'       => Permission::FETCH_MISSING_BAS,
-
 
         'merchant_features_edit'                     => Permission::UPDATE_MERCHANT_FEATURE,
         'enable_non_3ds_self_serve'                  => Permission::ENABLE_NON_3DS_PROCESSING,
@@ -14254,6 +14258,7 @@ class Route
             'ocr_admin_proxy',
 
             'banking_account_statement_fetch_missing',
+            'banking_account_statement_update_missing',
             'banking_account_statement_detect_missing',
 
             //CAC

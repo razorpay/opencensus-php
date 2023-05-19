@@ -236,6 +236,7 @@ class Service extends Base\Service
         return $response;
     }
 
+
     public function insertMissingStatementsNeo(array $input, array $updateParams = [])
     {
         $input = $input + [Constants::ACTION => Constants::INSERT];
@@ -324,6 +325,13 @@ class Service extends Base\Service
 
             throw $exception;
         }
+    }
+
+    public function handleMissingStatementUpdateBatchFailure(array $input): array
+    {
+         $this->trace->info(TraceCode::BAS_MISSING_STATEMENT_BALANCE_UPDATE_TRIGGER_REQUEST, $input);
+
+        return $this->core()->handleMissingStatementUpdateBatchFailure($input);
     }
 
     public function detectMissingStatements(array $input): array

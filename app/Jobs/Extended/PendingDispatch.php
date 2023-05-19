@@ -34,20 +34,30 @@ class PendingDispatch extends \Illuminate\Foundation\Bus\PendingDispatch
     const JOB_DISPATCH_FAILED   = 'job_dispatch_failed';
 
     // Queue config keys to throw error if any.
-    const PAYOUT_POST_CREATE_PROCESS              = 'payout_post_create_process';
-    const PAYOUT_POST_CREATE_PROCESS_LOW_PRIORITY = 'payout_post_create_process_low_priority';
-    const PAYOUT_SERVICE_DUAL_WRITE               = 'payout_service_dual_write';
-    const QUEUED_CREDIT_TRANSFER_REQUESTS         = 'queued_credit_transfer_requests';
-    const MISSING_ACCOUNT_STATEMENT_DETECT        = 'missing_account_statement_detect';
-    const MISSING_ACCOUNT_STATEMENT_RECON         = 'banking_account_statement_recon';
+
+    const PAYOUT_POST_CREATE_PROCESS                  = 'payout_post_create_process';
+    const PAYOUT_POST_CREATE_PROCESS_LOW_PRIORITY     = 'payout_post_create_process_low_priority';
+    const PAYOUT_SERVICE_DUAL_WRITE                   = 'payout_service_dual_write';
+    const QUEUED_CREDIT_TRANSFER_REQUESTS             = 'queued_credit_transfer_requests';
+    const BANKING_ACCOUNT_STATEMENT_UPDATE            = 'banking_account_statement_update';
+    const BANKING_ACCOUNT_STATEMENT_RECON_PROCESS_NEO = 'banking_account_statement_recon_process_neo';
+    const BANKING_ACCOUNT_STATEMENT_RECON_NEO         = 'banking_account_statement_recon_neo';
+    const BANKING_ACCOUNT_STATEMENT_RECON             = 'banking_account_statement_recon';
+    const MISSING_ACCOUNT_STATEMENT_DETECT            = 'missing_account_statement_detect';
+    const MISSING_ACCOUNT_STATEMENT_RECON             = 'banking_account_statement_recon';
+
 
     protected $shouldThrowErrorOnFailure = [
         self::PAYOUT_POST_CREATE_PROCESS,
         self::PAYOUT_POST_CREATE_PROCESS_LOW_PRIORITY,
         self::PAYOUT_SERVICE_DUAL_WRITE,
         self::QUEUED_CREDIT_TRANSFER_REQUESTS,
+        self::BANKING_ACCOUNT_STATEMENT_UPDATE,
+        self::BANKING_ACCOUNT_STATEMENT_RECON,
+        self::BANKING_ACCOUNT_STATEMENT_RECON_NEO,
+        self::BANKING_ACCOUNT_STATEMENT_RECON_PROCESS_NEO,
         self::MISSING_ACCOUNT_STATEMENT_DETECT,
-        self::MISSING_ACCOUNT_STATEMENT_RECON,
+        self::MISSING_ACCOUNT_STATEMENT_RECON
     ];
 
     /**

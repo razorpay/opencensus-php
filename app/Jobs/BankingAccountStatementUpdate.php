@@ -94,6 +94,9 @@ class BankingAccountStatementUpdate extends Job
                 BAS\Metric::LABEL_CHANNEL => $this->params[BAS\Entity::CHANNEL],
             ]);
 
+            //store the current params where update failed so it can be replayed.
+            $BASCore->storeFailedUpdateParamsInRedis($this->params);
+
             $this->delete();
         }
     }

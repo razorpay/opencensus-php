@@ -216,6 +216,7 @@ class ConfigKey
     const ICICI_MISSING_STATEMENT_FETCH_MAX_RECORDS = self::PREFIX . 'icici_missing_statements_fetch_max_records';
     const RETRY_COUNT_FOR_ID_GENERATION             = self::PREFIX . 'retry_count_for_id_generation';
     const RX_MISSING_STATEMENTS_INSERTION_LIMIT     = self::PREFIX . 'rx_missing_statements_insertion_limit';
+    const RX_CA_MISSING_STATEMENTS_UPDATION_PARAMS  = self::PREFIX . 'rx_ca_missing_statements_updation_params';
     const RX_CA_MISSING_STATEMENT_DETECTION_RBL     = self::PREFIX . 'rx_ca_missing_statement_detection_rbl';
     const RX_CA_MISSING_STATEMENT_DETECTION_ICICI   = self::PREFIX . 'rx_ca_missing_statement_detection_icici';
 

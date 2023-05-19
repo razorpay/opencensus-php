@@ -125,6 +125,15 @@ class BankingAccountStatementController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function handleMissingStatementUpdateBatchFailure(string $channel)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->handleMissingStatementUpdateBatchFailure($input + ['channel' => $channel]);
+
+        return ApiResponse::json($response);
+    }
+
     public function insertMissingStatementsAsync($channel)
     {
         $input = Request::all();
