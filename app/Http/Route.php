@@ -15645,7 +15645,8 @@ class Route
         'token_fetch_card',
         'token_fetch',
         'payment_verify_new',
-        'customer_get_saved_status',
+        'payment_fetch_multiple',
+        'customer_get_saved_status'
     ];
 
     protected static $rearchRoutes = [
