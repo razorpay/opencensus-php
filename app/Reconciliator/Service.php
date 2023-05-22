@@ -66,7 +66,7 @@ class Service extends Base\Service
 
     const NAME = 'name';
 
-    const BLACKLISTED_EMAIL_FOR_API_AUTO_RECON_VIA_MAILGUN = ["finances.recon@mg.razorpay.com"];
+    const BLACKLISTED_EMAIL_FOR_API_AUTO_RECON_VIA_MAILGUN = ["finances.recon@mg.razorpay.com", "art-recon@mg.razorpay.com"];
 
     protected $core;
 
