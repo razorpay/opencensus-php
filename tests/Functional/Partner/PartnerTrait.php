@@ -248,6 +248,23 @@ trait PartnerTrait
         return [$application, $accessMap];
     }
 
+    public function setPurePlatformContext(string $mode = 'live'): void
+    {
+        list($application) = $this->createPurePlatFormMerchantAndSubMerchant();
+
+        $client = $this->getAppClientByEnv($application);
+
+        $token = $this->generateOAuthAccessTokenForClient(
+            [
+                'merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+                'scopes' => ['read_write'],
+                'mode' => $mode,
+            ],
+            $client);
+
+        $this->ba->oauthBearerAuth($token->toString());
+    }
+
     public function createPurePlatFormMerchantAndSubMerchant()
     {
         $partner = $this->fixtures->merchant->createAccount(Constants::DEFAULT_PLATFORM_MERCHANT_ID);

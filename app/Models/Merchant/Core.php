@@ -9117,57 +9117,6 @@ class Core extends Base\Core
         }
     }
 
-    /**
-     * @param string|null $publicKey
-     *
-     * @return array|null
-     */
-    public function fetchPartnerAndMerchantFromPublicKey(?string $publicKey): ?array
-    {
-        if (empty($publicKey) === true)
-        {
-            return null;
-        }
-
-        $partner = null;
-
-        $merchant = null;
-
-        $publicKeyParts = explode(BasicAuth::PARTNER_CALLBACK_KEY_DELIMITER, $publicKey);
-
-        $partnerKey = $publicKeyParts[0];
-
-        $validPartnerKey = BasicAuth::isValidPartnerKey($partnerKey);
-
-        if ($validPartnerKey === true)
-        {
-            $keyId = substr($partnerKey, -14);
-
-            $mode = substr($partnerKey, 4, 4);
-
-            $partnerClient = (new OAuthRepo())->getClientByIdAndEnv($keyId, ClientAuthCreds::$clientModes[$mode]);
-
-            $partnerId = $partnerClient->getMerchantId();
-
-            $partner = $this->repo->merchant->findOrFailPublic($partnerId);
-
-            $merchantId = Merchant\Account\Entity::verifyIdAndStripSign($publicKeyParts[1]);
-
-            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-        }
-
-        $this->trace->info(
-            TraceCode::FETCH_PARTNER_AND_MERCHANT_FROM_PUBLIC_KEY,
-            [
-                Constants::PARTNER_ID   => empty($partner) === false ? $partner->getId() : null,
-                Constants::MERCHANT_ID  => empty($merchant) === false ? $merchant->getId() : null,
-                'is_valid_partner_key'  => $validPartnerKey
-            ]
-        );
-
-        return [$partner, $merchant];
-    }
-
     protected function getWebsiteDomainName(string $websiteUrl) : string
     {
         $websiteUrl = $this->preProcessWebsiteForDomainName($websiteUrl);

@@ -2,17 +2,17 @@
 
 namespace RZP\Models\EntityOrigin;
 
-use Razorpay\OAuth\Application as OAuthApp;
 use Razorpay\OAuth\Token as OAuthToken;
+use Razorpay\OAuth\Application as OAuthApp;
 
 use RZP\Models\Base;
-use RZP\Models\Key\Metric;
+use RZP\Models\Order;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Key\Metric;
 use RZP\Models\PaymentLink;
-use RZP\Models\Order;
 use RZP\Constants\Entity as E;
-use RZP\Models\Plan\Subscription;
+use RZP\Http\BasicAuth\ClientAuthCreds;
 use Razorpay\OAuth\Client as OAuthClient;
 
 class Core extends Base\Core
@@ -376,29 +376,31 @@ class Core extends Base\Core
      *
      * @return mixed|null
      */
-    protected function getOriginEntityFromPublicKey(string $publicKey)
+    public function getOriginEntityFromPublicKey(string $publicKey)
     {
         try
         {
-            // publickey will be in format of rzp_mode_partner_clientID-acc_accountId incase of partner auth
+            // public key will be in format of rzp_mode_partner_clientID-acc_accountId in case of partner auth
             // and rzp_mode_oauth_clientID in case of oauth
-            $publicKey    = explode('-', $publicKey)[0];
-            $keyId     = substr($publicKey, -14);
+            $publicKey = explode('-', $publicKey)[0];
+
+            $keyId = substr($publicKey, -14);
 
             $applicationId = null;
+
             if (preg_match(self::PARTNER_KEY_REGEX, $publicKey) === 1)
             {
-                $applicationId     = (new OAuthClient\Repository)->getClientByIdAndEnv(
-                    $keyId, $this->mode == 'test' ? 'dev' : 'prod'
-                )->getApplicationId();
+                $applicationId = (new OAuthClient\Repository)->getClientByIdAndEnv($keyId, ClientAuthCreds::$clientModes[$this->mode])
+                                                             ->getApplicationId();
             }
             else if (preg_match(self::OAUTH_KEY_REGEX, $publicKey) === 1)
             {
                 $token = (new OAuthToken\Repository)->findByTypePublicTokenAndMode($keyId, $this->mode);
+
                 $applicationId = $token->getClient()->getApplicationId();
             }
 
-            return  $applicationId !== null ? (new OAuthApp\Repository)->findOrFail($applicationId) : null ;
+            return  $applicationId !== null ? (new OAuthApp\Repository)->findOrFail($applicationId) : null;
         }
         catch (\Throwable $e)
         {
@@ -408,7 +410,9 @@ class Core extends Base\Core
                     'message'           => $e->getMessage(),
                     'publicKey'         => $publicKey,
                     'stack_trace'       => $e->getTraceAsString(),
-                ]);
+                ]
+            );
+
             return null;
         }
 

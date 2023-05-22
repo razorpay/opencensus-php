@@ -2178,6 +2178,11 @@ class BasicAuth
         return $this->isPartnerAuth;
     }
 
+    public function isOAuth(): bool
+    {
+        return $this->app['request.ctx']->getAuthFlowType() === self::OAUTH;
+    }
+
     public function isPublicAuth()
     {
         return ($this->type === Type::PUBLIC_AUTH);

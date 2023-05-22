@@ -545,6 +545,92 @@ return [
         ],
     ],
 
+    'testCreateOrderTransferWithOAuthForMarketplace' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/orders',
+            'content' => [
+                'amount'    => '50000',
+                'currency'  => 'INR',
+                'transfers' => [
+                    [
+                        'account'  => 'acc_10000000000001',
+                        'amount'   => '10000',
+                        'currency' => 'INR',
+                        'notes'    => [
+                            'roll_no' => 'iec2011025'
+                        ],
+                        'linked_account_notes' => [
+                            'roll_no'
+                        ]
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'amount'    => 50000,
+                'currency'  => 'INR',
+                'transfers' => [
+                    [
+                        'recipient' => 'acc_10000000000001',
+                        'amount'    => 10000,
+                        'currency'  => 'INR',
+                        'notes'    => [
+                            'roll_no' => 'iec2011025'
+                        ],
+                        'linked_account_notes' => [
+                            'roll_no'
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateOrderTransferWithOAuthForMarketplaceWithAppLevelFeature' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/orders',
+            'content' => [
+                'amount'    => '50000',
+                'currency'  => 'INR',
+                'transfers' => [
+                    [
+                        'account'  => 'acc_10000000000001',
+                        'amount'   => '10000',
+                        'currency' => 'INR',
+                        'notes'    => [
+                            'roll_no' => 'iec2011025'
+                        ],
+                        'linked_account_notes' => [
+                            'roll_no'
+                        ]
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'amount'    => 50000,
+                'currency'  => 'INR',
+                'transfers' => [
+                    [
+                        'recipient' => 'acc_10000000000001',
+                        'amount'    => 10000,
+                        'currency'  => 'INR',
+                        'notes'    => [
+                            'roll_no' => 'iec2011025'
+                        ],
+                        'linked_account_notes' => [
+                            'roll_no'
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testCreateOrderTransferEntityOriginWithPartnerAuthForMarketplace' => [
         'request'  => [
             'method'  => 'POST',

@@ -355,6 +355,62 @@ return [
         ],
     ],
 
+    'testCreatePaymentTransferWithOAuthForMarketplace' => [
+        'request' => [
+            'content' => [
+                'transfers' => [
+                    [
+                        'account' => 'acc_10000000000001',
+                        'amount'  => 100,
+                        'currency'=> 'INR',
+                    ],
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity'    => 'transfer',
+                        'recipient' => 'acc_10000000000001',
+                        'amount'    => 100,
+                        'currency'  => 'INR',
+                    ],
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCreatePaymentTransferWithOAuthForMarketplaceWithAppLevelFeature' => [
+        'request' => [
+            'content' => [
+                'transfers' => [
+                    [
+                        'account' => 'acc_10000000000001',
+                        'amount'  => 100,
+                        'currency'=> 'INR',
+                    ],
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity'    => 'transfer',
+                        'recipient' => 'acc_10000000000001',
+                        'amount'    => 100,
+                        'currency'  => 'INR',
+                    ],
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testCreatePaymentTransferEntityOriginWithPartnerAuthForMarketplace' => [
         'request' => [
             'content' => [

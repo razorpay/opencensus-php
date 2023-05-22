@@ -5,6 +5,7 @@ namespace RZP\Http;
 use App;
 use ApiResponse;
 use RZP\Models\Merchant;
+use RZP\Exception\BadRequestException;
 use Illuminate\Foundation\Application;
 
 use RZP\Models\Feature;
@@ -72,9 +73,8 @@ class FeatureAccess
      * Null return indicates available access
      *
      * @param $authReturn
-     * @param $bearerToken
-     *
      * @return null
+     * @throws BadRequestException
      */
     public function verifyFeatureAccess($authReturn)
     {
@@ -96,30 +96,13 @@ class FeatureAccess
 
         $appId = $this->ba->getOAuthApplicationId();
 
-        if (empty($merchantRouteFeatures) === true)
-        {
-            if ($this->enableMarketplaceForMerchantIfApplicable() === true)
-            {
-                $merchantRouteFeatures = [Feature\Constants::MARKETPLACE];
-
-                $this->trace->info(
-                    TraceCode::ALLOW_MARKETPLACE_FEATURE_FOR_SUBMERCHANT,
-                    [
-                        Merchant\Constants::MERCHANT_ID => empty($this->merchant) === false ? $this->merchant->getId() : null
-                    ]
-                );
-            };
-        }
-
-        //
         // If the merchant is directly accessing the resource, allow if it
         // has any of the route features required to access the resource.
-        //
-        if ((empty($appId) === true) and (empty($merchantRouteFeatures) === false))
+        if (empty($appId) === true and empty($merchantRouteFeatures) === false)
         {
             return null;
         }
-        else if(empty($appId) === false)
+        else if (empty($appId) === false)
         {
             // if app is making the request
             $allowAccess = $this->allowAppToAccessRoute($routeFeatures, $merchantRouteFeatures);
@@ -130,12 +113,13 @@ class FeatureAccess
             }
         }
 
-        $this->trace->info(TraceCode::ROUTE_NOT_FOUND,
-                           [
-                               'route_features'          => $routeFeatures,
-                               'merchant_Route_features' => $merchantRouteFeatures,
-                               'app_id_present'          => empty($appId)
-                           ]
+        $this->trace->info(
+            TraceCode::ROUTE_NOT_FOUND,
+            [
+               'route_features'          => $routeFeatures,
+               'merchant_Route_features' => $merchantRouteFeatures,
+               'app_id_present'          => empty($appId)
+            ]
         );
 
         // if app shouldn't access the route on the merchant behalf or
@@ -243,54 +227,24 @@ class FeatureAccess
      * @param array $routeFeatures
      *
      * @return array
+     * @throws BadRequestException
      */
     protected function getMerchantRouteFeatures(array $routeFeatures): array
     {
-        //
-        // If the merchant has at least one of the features
-        // in the $features array enabled, we allow the request
-        //
+        // If the merchant has at least one of the features in the $features array enabled, we allow the request
         $merchantFeatures = $this->merchant->getEnabledFeatures();
 
-        $merchantFeatures = $this->overridePartnerFeature($merchantFeatures);
+        $merchantFeatures = $this->addPartnerFeaturesToMerchantIfApplicable($merchantFeatures);
 
-        $this->trace->info(TraceCode::MERCHANT_FEATURE_ACCESS_DB, [
-            "merchant_feature"     => $merchantFeatures,
-            "orgAndMerchant"       => $routeFeatures,
-        ]);
+        $this->trace->info(
+            TraceCode::MERCHANT_FEATURE_ACCESS_DB,
+            [
+                "merchant_features" => $merchantFeatures,
+                "route_features"    => $routeFeatures,
+            ]
+        );
 
         return array_intersect($routeFeatures, $merchantFeatures);
-    }
-
-    /**
-     * Enable Route product api (payment_transfer, transfer_create) access to sub-merchants for
-     * marketplace partners i.e. partners with route_partnerships and marketplace feature enabled
-     */
-    protected function enableMarketplaceForMerchantIfApplicable(): bool
-    {
-        if ($this->ba->isPartnerAuth() === false)
-        {
-            return false;
-        }
-
-        $currentRoute = $this->route->getCurrentRouteName();
-
-        $applicableRoutes = ['payment_transfer', 'transfer_create'];
-
-        $partner = $this->ba->getPartnerMerchant();
-
-        if (in_array($currentRoute, $applicableRoutes, true) === false or
-            empty($partner) === true or
-            $partner->isRoutePartnershipsEnabled() === false or
-            (new PartnerService())->isMarketplaceTransferExpEnabled($partner) !== true)
-        {
-            return false;
-        }
-
-        $partnerFeatures = $partner->getEnabledFeatures();
-
-        // check if the marketplace feature is enabled for the partner
-        return in_array(Feature\Constants::MARKETPLACE, $partnerFeatures, true);
     }
 
     /**
@@ -305,6 +259,7 @@ class FeatureAccess
      * @param array $merchantRouteFeatures
      *
      * @return bool
+     * @throws BadRequestException
      */
     protected function allowAppToAccessRoute(
         array $routeFeatures,
@@ -365,6 +320,8 @@ class FeatureAccess
         //
 
         $appBlacklistedFeatures = Feature\Entity::$appBlacklistedFeatures;
+
+        $this->removeMarketplaceFeatureAsRestrictedIfApplicable($restrictedAccessFeatures);
 
         //
         // From the features available with the merchant, remove the features using
@@ -434,10 +391,79 @@ class FeatureAccess
     /**
      * This is a temporary fix to copy partner feature to merchants.
      * Will be removed once proper fix is released.
-     * @param $merchantFeatures
-     * @return mixed
+     *
+     * @param array|null $merchantFeatures
+     * @return array|null
+     * @throws BadRequestException
      */
-    protected function overridePartnerFeature($merchantFeatures)
+    protected function addPartnerFeaturesToMerchantIfApplicable(?array $merchantFeatures): ?array
+    {
+        $this->enableQrCodeFeatureForMerchantIfApplicable($merchantFeatures);
+
+        $this->enableMarketplaceForMerchantIfApplicable($merchantFeatures);
+
+        return $merchantFeatures;
+    }
+
+    /**
+     * Enable Route product api (payment_transfer, transfer_create etc) access to sub-merchants for
+     * marketplace partners i.e. partners with route_partnerships and marketplace feature enabled
+     * @throws BadRequestException
+     */
+    private function enableMarketplaceForMerchantIfApplicable(?array & $merchantFeatures): void
+    {
+        if (in_array(Feature\Constants::MARKETPLACE, $merchantFeatures) === false &&
+            $this->shouldEnabledMarketplaceForMerchant() === true)
+        {
+            $merchantFeatures[] = Feature\Constants::MARKETPLACE;
+
+            $this->trace->info(
+                TraceCode::ALLOW_MARKETPLACE_FEATURE_FOR_SUBMERCHANT_SUCCESSFUL,
+                [
+                    Merchant\Constants::MERCHANT_ID => $this->merchant->getId(),
+                    Merchant\Constants::PARTNER_ID  => $this->ba->getPartnerMerchantId()
+                ]
+            );
+        }
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    private function shouldEnabledMarketplaceForMerchant(): bool
+    {
+        if ($this->ba->isPartnerAuth() === false and $this->ba->isOAuth() === false)
+        {
+            return false;
+        }
+
+        $currentRoute = $this->route->getCurrentRouteName();
+
+        $applicableRoutes = [
+            'payment_transfer',
+            'payment_fetch_transfers',
+            'transfer_create',
+            'transfer_fetch',
+            'transfer_fetch_multiple'
+        ];
+
+        $partner = $this->ba->getPartnerMerchant();
+
+        if (empty($partner) === true or
+            in_array($currentRoute, $applicableRoutes, true) === false or
+            in_array($partner->getPartnerType(), [Merchant\Constants::AGGREGATOR, Merchant\Constants::PURE_PLATFORM]) === false or
+            (new PartnerService())->isFeatureEnabledForPartner(Feature\Constants::ROUTE_PARTNERSHIPS, $partner, $this->ba->getOAuthApplicationId()) === false)
+        {
+            return false;
+        }
+
+        $partnerFeatures = $partner->getEnabledFeatures();
+
+        // check if the marketplace feature is enabled for the partner (partner auth + OAuth)
+        return in_array(Feature\Constants::MARKETPLACE, $partnerFeatures, true);
+    }
+
+    private function enableQrCodeFeatureForMerchantIfApplicable(? array & $merchantFeatures): void
     {
         $featureName = Feature\Constants::QR_CODES;
 
@@ -453,10 +479,10 @@ class FeatureAccess
         ];
 
         if(in_array($currentRoute, $whiteListedRoutes) === false || // check if current route belongs to qr_codes
-           in_array($featureName, $merchantFeatures) === true ||    // if merchant already has this feature enabled no need to process further
-           $this->merchant->isLive() === false) // if merchant is not live, no need to do this override by partner
+            in_array($featureName, $merchantFeatures) === true ||    // if merchant already has this feature enabled no need to process further
+            $this->merchant->isLive() === false) // if merchant is not live, no need to do this override by partner
         {
-            return $merchantFeatures;
+            return;
         }
 
         $partners = (new Merchant\Core())->fetchAffiliatedPartners($this->merchant->getId());
@@ -467,26 +493,58 @@ class FeatureAccess
 
         if (empty($partner) === true)
         {
-            return $merchantFeatures;
+            return;
         }
 
-        $isFeatureOverrideAllowedForPartner = (new Merchant\Core)->isRazorxExperimentEnable(
-            $partner->getId(),
+        $isFeatureOverrideAllowedForPartner = (new Merchant\Core)->isRazorxExperimentEnable($partner->getId(),
             Merchant\RazorxTreatment::PARTNER_QR_CODE_FEATURE_OVERRIDE);
 
-        $this->trace->info(TraceCode::MERCHANT_FEATURE_ACCESS, [
-            "Overriden feature by partner experiment enabled" => $isFeatureOverrideAllowedForPartner,
-            "Merchant" => $partner->getId(),
-        ]);
+        $this->trace->info(
+            TraceCode::MERCHANT_FEATURE_ACCESS,
+            [
+                'partner_id'                            => $partner->getId(),
+                'merchant_id'                           => $this->merchant->getId(),
+                'partner_feature_override_exp_enabled'  => $isFeatureOverrideAllowedForPartner,
+            ]
+        );
 
-        if (empty($partner) === false and $isFeatureOverrideAllowedForPartner === true) {
-            $this->trace->info(TraceCode::MERCHANT_FEATURE_ACCESS, [
-                "Overriden feature by partner" => $partner->getId(),
-                "Merchant" => $this->merchant->getId(),
-                "feature" => $featureName,
-            ]);
-            array_push($merchantFeatures, $featureName);
+        if (empty($partner) === false and $isFeatureOverrideAllowedForPartner === true)
+        {
+            $this->trace->info(
+                TraceCode::MERCHANT_FEATURE_ACCESS,
+                [
+                    'overridden_feature_by_partner' => $partner->getId(),
+                    'merchant_id'                   => $this->merchant->getId(),
+                    'feature_name'                  => $featureName,
+                ]
+            );
+
+            $merchantFeatures[] = $featureName;
         }
-        return $merchantFeatures;
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    private function removeMarketplaceFeatureAsRestrictedIfApplicable(array & $restrictedFeatures): void
+    {
+        if ($this->shouldEnabledMarketplaceForMerchant() === true)
+        {
+            $index = array_search(Feature\Constants::MARKETPLACE, $restrictedFeatures);
+
+            if ($index !== false)
+            {
+                unset($restrictedFeatures[$index]);
+
+                $this->trace->info(
+                    TraceCode::UNRESTRICTED_MARKETPLACE_FEATURE_FOR_OAUTH_APPLICATION,
+                    [
+                        Merchant\Constants::MERCHANT_ID     => $this->merchant->getId(),
+                        Merchant\Constants::PARTNER_ID      => $this->ba->getPartnerMerchantId(),
+                        Merchant\Constants::APPLICATION_ID  => $this->ba->getOAuthApplicationId()
+                    ]
+                );
+            }
+        }
     }
 }

@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Partner;
 
-use RZP\Services\SalesForceClient;
 use Throwable;
 use Carbon\Carbon;
 use RZP\Exception;
@@ -19,8 +18,10 @@ use RZP\Models\Partner\Activation;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\CapturePartnershipConsents;
-use RZP\Jobs\SubmerchantFirstTransactionEvent ;
+use RZP\Jobs\SubmerchantFirstTransactionEvent;
+use RZP\Models\Feature\Service as FeatureService;
 use RZP\Services\Segment\EventCode as SegmentEvent;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Jobs\MigrateResellerToPurePlatformPartnerJob;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 
@@ -446,5 +447,52 @@ class Service extends Base\Service
         ];
 
         return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    public function isFeatureEnabledForPartner(string $featureKey, ?Merchant\Entity $partner, ?string $oauthAppId = null): bool
+    {
+        if (empty($partner) === true)
+        {
+            return false;
+        }
+
+        switch ($featureKey)
+        {
+            case FeatureConstants::ROUTE_PARTNERSHIPS:
+                // this feature is coupled with marketplace transfer exp. TODO: remove this exp after 100% ramp-up
+                $isFeatureEnabled = $this->isMarketplaceTransferExpEnabled($partner) && $partner->isRoutePartnershipsEnabled();
+                break;
+
+            case FeatureConstants::SUBM_MANUAL_SETTLEMENT:
+                // this feature is coupled with sub-merchant manual settlement exp. TODO: remove this exp after 100% ramp-up
+                $isFeatureEnabled = $this->isSubmerchantPaymentManualSettlementExpEnabled($partner) && $partner->isSubmerchantManualSettlementEnabled();
+                break;
+
+            // add more cases for other features if needed
+
+            default:
+                $isFeatureEnabled = $partner->isFeatureEnabled($featureKey);
+        }
+
+        // if feature is not enabled for pure platform partner then check if it is enabled for the OAuth app (if passed)
+        if ($isFeatureEnabled === false && $partner->isPurePlatformPartner() === true && in_array($featureKey, FeatureConstants::PARTNER_AND_APP_LEVEL_FEATURES) === true)
+        {
+            $oauthAppId = $oauthAppId ?? $this->app['basicauth']->getOAuthApplicationId();
+
+            return $this->isFeatureEnabledForOAuthApp($featureKey, $oauthAppId);
+        }
+
+        return $isFeatureEnabled;
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    public function isFeatureEnabledForOAuthApp(string $featureKey, string $oauthAppId)
+    {
+        return (new FeatureService())->checkFeatureEnabled(FeatureConstants::APPLICATION, $oauthAppId, $featureKey)[FeatureConstants::STATUS];
     }
 }

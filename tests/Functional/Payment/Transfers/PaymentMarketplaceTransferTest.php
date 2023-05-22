@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Payment\Transfers;
 
 use Carbon\Carbon;
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\User\Role;
 use RZP\Services\RazorXClient;
@@ -11,6 +12,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Exception\BadRequestException;
 use RZP\Tests\Traits\TestsWebhookEvents;
+use RZP\Tests\Functional\Partner\Constants;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -759,6 +761,70 @@ class PaymentMarketplaceTransferTest extends TestCase
         $this->assertEquals($subMerchantId, $transfer->getMerchantId());
     }
 
+    public function testCreatePaymentTransferWithOAuthForMarketplace()
+    {
+        $this->setPurePlatformContext(Mode::TEST);
+
+        $this->fixtures->edit('merchant', '10000000000001', ['parent_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID]);
+
+        $this->setupMarketPlace(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->mockAllSplitzTreatment();
+
+        $this->setRequestData($testData['request']);
+
+        $this->sendRequest($testData['request']);
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $transfer = $this->getDbEntityById('transfer', $response['items'][0]['id']);
+
+        $this->assertEquals(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $transfer->getMerchantId());
+
+        $merchantApplication = $this->getDbLastEntity('merchant_application');
+
+        $this->verifyEntityOrigin($transfer['id'], 'marketplace_app',  $merchantApplication['application_id']);
+    }
+
+    public function testCreatePaymentTransferWithOAuthForMarketplaceWithAppLevelFeature()
+    {
+        $this->setPurePlatformContext(Mode::TEST);
+
+        $this->fixtures->edit('merchant', '10000000000001', ['parent_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID]);
+
+        $this->setupMarketPlace(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->removeFeatures(['route_partnerships'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $merchantApplication = $this->getDbLastEntity('merchant_application');
+
+        $this->fixtures->create('feature',
+            [
+                'name' => 'route_partnerships',
+                'entity_id' => $merchantApplication['application_id'],
+                'entity_type' => 'application',
+            ]
+        );
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->mockAllSplitzTreatment();
+
+        $this->setRequestData($testData['request']);
+
+        $this->sendRequest($testData['request']);
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $transfer = $this->getDbEntityById('transfer', $response['items'][0]['id']);
+
+        $this->assertEquals(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $transfer->getMerchantId());
+
+        $this->verifyEntityOrigin($transfer['id'], 'marketplace_app',  $merchantApplication['application_id']);
+    }
+
     public function testCreatePaymentTransferEntityOriginWithPartnerAuthForMarketplace()
     {
         list($subMerchantId, $client) = $this->setUpPartnerAuthAndGetSubMerchantIdWithClient();
@@ -796,11 +862,11 @@ class PaymentMarketplaceTransferTest extends TestCase
      * @param mixed $subMerchantId
      * @return void
      */
-    private function setupMarketPlace(mixed $subMerchantId): void
+    private function setupMarketPlace(string $subMerchantId, string $partnerId = '10000000000000'): void
     {
-        $this->fixtures->merchant->addFeatures(['marketplace'], '10000000000000');
+        $this->fixtures->merchant->addFeatures(['marketplace'], $partnerId);
 
-        $this->fixtures->merchant->addFeatures(['route_partnerships'], '10000000000000');
+        $this->fixtures->merchant->addFeatures(['route_partnerships'], $partnerId);
 
         $this->fixtures->edit('payment', $this->payment['id'], ['merchant_id' => $subMerchantId,]);
 

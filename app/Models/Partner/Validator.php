@@ -57,6 +57,26 @@ class Validator extends Base\Validator
     }
 
     /**
+     * @throws BadRequestException
+     */
+    public function validateIsAggregatorOrPurePlatformPartner(Entity $partner)
+    {
+        $partnerType = $partner->getPartnerType();
+
+        if (($partnerType !== Merchant\Constants::AGGREGATOR) and ($partnerType !== Merchant\Constants::PURE_PLATFORM))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+                Entity::PARTNER_TYPE,
+                [
+                    Entity::PARTNER_ID   => $partner->getId(),
+                    Entity::PARTNER_TYPE => $partnerType,
+                ]
+            );
+        }
+    }
+
+    /**
      * @param string $fromAppType
      * @param string $toAppType
      *

@@ -39,6 +39,8 @@ class Core extends Base\Core
 
     protected $partner;
 
+    protected $oauthApplicationId;
+
     public function __construct()
     {
         parent::__construct();
@@ -48,6 +50,8 @@ class Core extends Base\Core
         $this->razorx = $this->app['razorx'];
 
         $this->partner = $this->app['basicauth']->getPartnerMerchant();
+
+        $this->oauthApplicationId = $this->app['basicauth']->getOAuthApplicationId();
     }
 
     protected function makeTransferTransaction($input, $merchant, $validator)
@@ -302,9 +306,10 @@ class Core extends Base\Core
 
     /**
      * Fetch parent merchant of a linked account. This function handles one specific scenario where the parent
-     * is partner but $this->merchant will return a sub-merchant (X-Razorpay-Account passed in the header)
-     * which will throw error while fetching account entity from parent id
+     * is partner instead of this->merchant which is a sub-merchant (X-Razorpay-Account passed in the header).
+     * Currently, this use case is applicable for platform transfers under Route + Partnerships.
      *
+     * @param Merchant\Entity|null $merchant
      * @return Merchant\Entity|null
      * @throws Exception\BadRequestException
      */
@@ -312,21 +317,16 @@ class Core extends Base\Core
     {
         $partner = $this->partner;
 
-        if (empty($partner) === true or $partner->isRoutePartnershipsEnabled() === false)
-        {
-            return $merchant ?? $this->merchant;
-        }
-
         $merchant = $merchant ?? $this->merchant;
 
-        (new Merchant\Validator())->validateIsAggregatorPartner($partner);
+        (new \RZP\Models\Partner\Validator())->validateIsAggregatorOrPurePlatformPartner($partner);
 
         (new Merchant\WebhookV2\Validator())->validatePartnerSubMerchantMapping($partner, $merchant);
 
         $this->trace->info(
             TraceCode::FETCH_ROUTE_PARTNERSHIPS_PARENT_ACCOUNT,
             [
-                Merchant\Constants::PARTNER_ID      => $partner->getId(),
+                Merchant\Entity::PARENT_ID          => $partner->getId(),
                 Merchant\Constants::SUBMERCHANT_ID  => $merchant->getId(),
             ]
         );
@@ -334,14 +334,18 @@ class Core extends Base\Core
         return $partner;
     }
 
+    /**
+     * @throws Exception\BadRequestException
+     */
     public function isValidPlatformTransfer() : bool
     {
         $partner = $this->partner;
 
+        $partnerService = (new PartnerService());
+
         if (empty($partner) === true or
-            $partner->getPartnerType() !== Merchant\Constants::AGGREGATOR or
-            $partner->isRoutePartnershipsEnabled() === false or
-            (new PartnerService())->isMarketplaceTransferExpEnabled($this->partner) !== true)
+            in_array($partner->getPartnerType(), [Merchant\Constants::AGGREGATOR, Merchant\Constants::PURE_PLATFORM]) === false or
+            (new PartnerService())->isFeatureEnabledForPartner(Feature\Constants::ROUTE_PARTNERSHIPS, $partner, $this->oauthApplicationId) === false)
         {
             return false;
         }
@@ -352,18 +356,11 @@ class Core extends Base\Core
     /**
      * @throws Exception\BadRequestException
      */
-    public function fetchAccountParentMerchant(?Merchant\Entity $merchant, ?string $publicKey = null): ?Merchant\Entity
+    public function fetchAccountParentMerchant(?Merchant\Entity $merchant, ?string $publicKey = null, Base\Entity $entity = null): ?Merchant\Entity
     {
-        if (empty($this->partner) === true and empty($publicKey) === false)
-        {
-            [$partner,] = (new Merchant\Core())->fetchPartnerAndMerchantFromPublicKey($publicKey);
+        $this->setPartnerContextIfApplicable($publicKey, $entity);
 
-            $this->partner = $partner;
-        }
-
-        $marketplaceTransferExpEnabled = (new PartnerService())->isMarketplaceTransferExpEnabled($this->partner);
-
-        if ($marketplaceTransferExpEnabled === true)
+        if ((new PartnerService())->isFeatureEnabledForPartner(Feature\Constants::ROUTE_PARTNERSHIPS, $this->partner, $this->oauthApplicationId) === true)
         {
             return $this->fetchAccountParentMerchantForMarketplaceTransfer($merchant);
         }
@@ -1433,6 +1430,61 @@ class Core extends Base\Core
                     'transfer_id'           => $payment->getTransferId(),
                     'payment_id'            => $payment->getId()
                 ]);
+        }
+    }
+
+    private function setPartnerContextIfApplicable(?string $publicKey, ?Base\Entity $entity)
+    {
+        if (empty($this->partner) === false)
+        {
+            return;
+        }
+
+        $application = null;
+
+        // if public key is not available for a payment then fetch application from payment entity origin
+        // note: during testing for card payments, it was found that public_key was not getting set, so this
+        // is a fix for such scenarios
+        if (empty($publicKey) === true)
+        {
+            if (empty($entity) === false and $entity->getEntityName() === Constants\Entity::PAYMENT)
+            {
+                $paymentOrigin = $entity->entityOrigin;
+
+                $origin = optional($paymentOrigin)->origin;
+
+                $originType = optional($origin)->getEntityName();
+
+                if ($originType === EntityOrigin\Constants::APPLICATION)
+                {
+                    $application = $origin;
+                }
+            }
+        }
+        else
+        {
+            $application = (new EntityOrigin\Core())->getOriginEntityFromPublicKey($publicKey);
+        }
+
+        // fetch and set partner context from the application
+        // If it's a pure platform partner then set OAuth application id
+        if (empty($application) === false)
+        {
+            $this->partner = (new Merchant\Core())->getPartnerFromApp($application);
+
+            if (empty($this->partner) === false and $this->partner->isPurePlatformPartner() === true)
+            {
+                $this->oauthApplicationId = $application->getId();
+            }
+
+            $this->trace->info(
+                TraceCode::PARTNER_CONTEXT_FOR_PLATFORM_TRANSFER_SET,
+                [
+                    Merchant\Constants::PUBLIC_KEY       => $publicKey,
+                    Merchant\Constants::PARTNER_ID       => $application->getMerchantId(),
+                    Merchant\Constants::APPLICATION_ID   => $application->getId()
+                ]
+            );
         }
     }
 }

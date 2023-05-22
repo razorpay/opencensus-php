@@ -2,11 +2,14 @@
 
 namespace RZP\Tests\Functional\Order\Transfers;
 
+use RZP\Constants\Mode;
+use RZP\Models\EntityOrigin\Core;
 use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Unit\Mock\BasicAuth;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Account\Entity;
 use RZP\Tests\Traits\TestsWebhookEvents;
+use RZP\Tests\Functional\Partner\Constants;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -82,6 +85,70 @@ class OrderTransferTest extends TestCase
         $merchantId = Entity::verifyIdAndStripSign($publicKeyParts[1]);
 
         $this->assertEquals($subMerchantId, $merchantId);
+    }
+
+    public function testCreateOrderTransferWithOAuthForMarketplace()
+    {
+        $this->setPurePlatformContext(Mode::TEST);
+
+        $this->fixtures->edit('merchant', $this->linkedAccountId, ['parent_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID]);
+
+        $this->fixtures->merchant->addFeatures(['marketplace'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->addFeatures(['route_partnerships'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->mockAllSplitzTreatment();
+
+        $response = $this->startTest($testData);
+
+        $transfer = $this->getDbEntityById('transfer', $response['transfers'][0]['id']);
+
+        $this->assertEquals(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $transfer->getMerchantId());
+
+        $order = $this->getDbEntityById('order', $response['id']);
+
+        $this->assertTrue(boolval(preg_match(Core::OAUTH_KEY_REGEX, $order->getPublicKey())));
+
+        $merchantApplication = $this->getDbLastEntity('merchant_application');
+
+        $this->verifyEntityOrigin($transfer->getId(), 'marketplace_app', $merchantApplication['application_id']);
+    }
+
+    public function testCreateOrderTransferWithOAuthForMarketplaceWithAppLevelFeature()
+    {
+        $this->setPurePlatformContext(Mode::TEST);
+
+        $this->fixtures->edit('merchant', $this->linkedAccountId, ['parent_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID]);
+
+        $merchantApplication = $this->getDbLastEntity('merchant_application');
+
+        $this->fixtures->create('feature',
+            [
+                'name' => 'route_partnerships',
+                'entity_id' => $merchantApplication['application_id'],
+                'entity_type' => 'application',
+            ]
+        );
+
+        $this->fixtures->merchant->addFeatures(['marketplace'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->mockAllSplitzTreatment();
+
+        $response = $this->startTest($testData);
+
+        $transfer = $this->getDbEntityById('transfer', $response['transfers'][0]['id']);
+
+        $this->assertEquals(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $transfer->getMerchantId());
+
+        $order = $this->getDbEntityById('order', $response['id']);
+
+        $this->assertTrue(boolval(preg_match(Core::OAUTH_KEY_REGEX, $order->getPublicKey())));
+
+        $this->verifyEntityOrigin($transfer->getId(), 'marketplace_app', $merchantApplication['application_id']);
     }
 
     public function testCreateOrderTransferEntityOriginWithPartnerAuthForMarketplace()
@@ -165,7 +232,6 @@ class OrderTransferTest extends TestCase
         $this->mockAllSplitzTreatment();
 
         $this->startTest($testData);
-
     }
 
     public function testCreateOrderTransferToSuspendedLinkedAccount()

@@ -3762,4 +3762,11 @@ class Constants
         self::OPTIMIZER_ONLY_MERCHANT,
         self::ADMIN_LEAD_PARTNER,
     ];
+
+    // These features can be checked on app level additionally if not enabled at
+    // partner level for pure platform partner
+    const PARTNER_AND_APP_LEVEL_FEATURES = [
+        self::ROUTE_PARTNERSHIPS,
+        self::SUBM_MANUAL_SETTLEMENT
+    ];
 }

@@ -246,18 +246,22 @@ class Entity extends QrCode\Entity
     {
         if (($this->merchant->isFeatureEnabled(Feature\Constants::QR_IMAGE_CONTENT) === true) or
             ($this->getRequestSource() === RequestSource::CHECKOUT) or
-            ($this->isFeatureEnabledForPartner(Feature\Constants::SUBM_QR_IMAGE_CONTENT)))
+            ($this->isSubmQRImageContentFeatureEnabledForPartner() === true))
         {
             $array[self::RESP_IMAGE_CONTENT] = $this->getAttribute(self::QR_STRING);
         }
     }
 
-    public function isFeatureEnabledForPartner(string $featureName)
+    public function isSubmQRImageContentFeatureEnabledForPartner(): bool
     {
+        $featureName = Feature\Constants::SUBM_QR_IMAGE_CONTENT;
+
         $partners = (new Merchant\Core())->fetchAffiliatedPartners($this->merchant->getId());
 
-        $partner = $partners->filter(function(Merchant\Entity $partner) use ($featureName) {
-            return ($partner->isFeatureEnabled($featureName) === true);
+        $partnerService = (new \RZP\Models\Partner\Service());
+
+        $partner = $partners->filter(function(Merchant\Entity $partner) use ($featureName, $partnerService) {
+            return ($partnerService->isFeatureEnabledForPartner($featureName, $partner) === true);
         })->first();
 
         return (empty($partner) === false);

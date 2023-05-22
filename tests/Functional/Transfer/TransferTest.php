@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Transfer;
 use Mail;
 use Mockery;
 
+use RZP\Constants\Mode;
 use RZP\Models\Transfer;
 use RZP\Constants\Entity;
 use RZP\Models\User\Role;
@@ -17,6 +18,7 @@ use RZP\Jobs\Transfers\TransferRecon;
 use RZP\Models\Merchant\RefundSource;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Entity as Payment;
+use RZP\Tests\Functional\Partner\Constants;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Jobs\Transfers\TransferSettlementStatus;
 use RZP\Services\Mock\Mutex as MockMutexService;
@@ -1994,6 +1996,72 @@ class TransferTest extends TestCase
         $this->mockAllSplitzTreatment();
 
         $this->startTest();
+    }
+
+    public function testCreateDirectTransferWithOAuthForMarketplace()
+    {
+        $this->setPurePlatformContext(Mode::TEST);
+
+        $this->fixtures->edit('merchant', $this->linkedAccountId, ['parent_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID]);
+
+        $this->fixtures->merchant->addFeatures(['marketplace'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->addFeatures(['direct_transfer'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->addFeatures(['route_partnerships'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->edit('balance', '10000000000000', ['merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID]);
+
+        $this->testData[__FUNCTION__]['response']['content']['source'] = 'acc_' . Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID;
+
+        $this->mockAllSplitzTreatment();
+
+        $response = $this->startTest();
+
+        $transfer = $this->getDbEntityById('transfer', $response['id']);
+
+        $this->assertEquals(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $transfer->getMerchantId());
+
+        $merchantApplication = $this->getDbLastEntity('merchant_application');
+
+        $this->verifyEntityOrigin($transfer['id'], 'marketplace_app',  $merchantApplication['application_id']);
+    }
+
+    public function testCreateDirectTransferWithOAuthForMarketplaceWithAppLevelFeature()
+    {
+        $this->setPurePlatformContext(Mode::TEST);
+
+        $this->fixtures->edit('merchant', $this->linkedAccountId, ['parent_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID]);
+
+        $this->fixtures->merchant->addFeatures(['marketplace'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->addFeatures(['direct_transfer'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $merchantApplication = $this->getDbLastEntity('merchant_application');
+
+        $this->fixtures->create('feature',
+            [
+                'name' => 'route_partnerships',
+                'entity_id' => $merchantApplication['application_id'],
+                'entity_type' => 'application',
+            ]
+        );
+
+        $this->fixtures->edit('balance', '10000000000000', ['merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID]);
+
+        $this->testData[__FUNCTION__]['response']['content']['source'] = 'acc_' . Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID;
+
+        $this->mockAllSplitzTreatment();
+
+        $response = $this->startTest();
+
+        $transfer = $this->getDbEntityById('transfer', $response['id']);
+
+        $this->assertEquals(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, $transfer->getMerchantId());
+
+        $merchantApplication = $this->getDbLastEntity('merchant_application');
+
+        $this->verifyEntityOrigin($transfer['id'], 'marketplace_app',  $merchantApplication['application_id']);
     }
 
     public function testTransferResponseEntityOriginWithPartnerAuthForMarketplace()

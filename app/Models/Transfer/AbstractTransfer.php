@@ -326,7 +326,7 @@ abstract class AbstractTransfer
      */
     protected function createTransferredPayment($transfer, $payment): Payment\Entity
     {
-        $parentMerchant = (new Core())->fetchAccountParentMerchant($this->merchant, $payment->getPublicKey() ?? null);
+        $parentMerchant = (new Core())->fetchAccountParentMerchant($this->merchant, $payment->getPublicKey() ?? null, $payment);
 
         $to = $this->repo->account->findByIdAndMerchant($transfer->getToId(), $parentMerchant);
 
