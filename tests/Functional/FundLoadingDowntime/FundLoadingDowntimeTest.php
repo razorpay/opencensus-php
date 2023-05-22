@@ -5,6 +5,8 @@ namespace Functional\FundLoadingDowntime;
 use Mail;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundLoadingDowntime\Entity;
 use RZP\Models\FundLoadingDowntime\Constants;
@@ -346,6 +348,10 @@ class FundLoadingDowntimeTest extends TestCase
                       return true;
                   })->andReturn(['message_id' => '10000000000msg']);
 
+        (new AdminService)->setConfigKeys([ConfigKey::UPDATED_SMS_TEMPLATES_RECEIVER_MERCHANTS => [
+            'sms.fund_loading_downtime.creation_1.v1' => [],
+        ]]);
+
         $this->startTest();
 
         $fundLoadingDowntimes = $this->getDbEntities('fund_loading_downtimes')->toArray();
@@ -427,6 +433,136 @@ class FundLoadingDowntimeTest extends TestCase
         $this->assertEqualsCanonicalizing($expectedRecipients, array_unique($recipients));
     }
 
+    public function testCreationFlowWithSMSV3Template()
+    {
+        Mail::fake();
+
+        $this->createMerchantConfigs('10000000000000', ['sagnik1@razorpay.com', 'sagnik11@gmail.com'], ['9468620910', '9468620911']);
+        $this->createMerchantConfigs('10000000000011', ['sagnik2@razorpay.com', 'sagnik11@gmail.com'], ['9468620912', '9468620911']);
+
+        $this->createBankAccount('10000000000000', 'va111111111111', '34340000000000');
+        $this->createBankAccount('10000000000011', 'va222222222222', '56560000000000');
+
+        $this->createBalance('xbalance111111', '10000000000000');
+        $this->createBalance('xbalance222222', '10000000000011');
+
+        $this->createVirtualAccount('10000000000000', 'xbalance111111', 'va111111111111');
+        $this->createVirtualAccount('10000000000011', 'xbalance222222', 'va222222222222');
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        //Since 3 distinct mobile numbers are present, sendSMS call should be made 3 times.
+        $storkMock->shouldReceive('sendSMS')->times(3)
+                  ->withArgs(function($mode, $smsPayload, $mockInTestMode) {
+
+                      $expectedSmsParams                  = $this->getDefaultSmsParams();
+                      $expectedSmsParams['templateName']  = 'sms.fund_loading_downtime.creation_1.v1';
+
+                      if ($smsPayload['ownerId'] == '10000000000011')
+                      {
+                          $expectedSmsParams['contentParams'] = [
+                              'channel' => 'ICICI',
+                              'start1'  => '22Sep 05:52 pm',
+                              'end1'    => 'to 22Sep 06:08 pm',
+                              'modes1'  => 'NEFT,UPI',
+                          ];
+                      }
+                      else
+                      {
+                          $expectedSmsParams['templateName']  = 'sms.fund_loading_downtime.creation_1.v2';
+
+                          $expectedSmsParams['contentParams'] = [
+                              'channel' => 'ICICI',
+                              'timings'  => '22Sep 05:52 pm to 22Sep 06:08 pm',
+                              'modes'  => 'NEFT,UPI',
+                          ];
+                      }
+
+                      $this->assertEquals('test', $mode);
+                      $this->assertEquals(false, $mockInTestMode);
+                      $this->assertArraySelectiveEquals($expectedSmsParams, $smsPayload);
+
+                      return true;
+                  })->andReturn(['message_id' => '10000000000msg']);
+
+        (new AdminService)->setConfigKeys([ConfigKey::UPDATED_SMS_TEMPLATES_RECEIVER_MERCHANTS => [
+            'sms.fund_loading_downtime.creation_1.v1' => ['10000000000000'],
+        ]]);
+
+        $this->startTest();
+
+        $fundLoadingDowntimes = $this->getDbEntities('fund_loading_downtimes')->toArray();
+
+        $downtimeInputs = &$this->testData[__FUNCTION__]['request']['content']['downtime_inputs'];
+
+        $expectedFundLoadingDowntimes = [];
+
+        foreach($downtimeInputs['durations_and_modes'] as $durationAndModes)
+        {
+            $downtime[Entity::TYPE] = $downtimeInputs[Entity::TYPE];
+            $downtime[Entity::SOURCE] = $downtimeInputs[Entity::SOURCE];
+            $downtime[Entity::CHANNEL] = $downtimeInputs[Entity::CHANNEL];
+
+            foreach($durationAndModes['modes'] as $mode)
+            {
+                $downtime[Entity::START_TIME] = $durationAndModes[Entity::START_TIME];
+                $downtime[Entity::END_TIME] = $durationAndModes[Entity::END_TIME] ?? null;
+                $downtime[Entity::MODE] = $mode;
+
+                $expectedFundLoadingDowntimes[] = $downtime;
+            }
+        }
+
+        $this->assertEquals(count($fundLoadingDowntimes), count($expectedFundLoadingDowntimes));
+
+        foreach($expectedFundLoadingDowntimes as $key => $fundLoadingDowntime)
+        {
+            $this->assertArraySelectiveEquals($fundLoadingDowntime, $fundLoadingDowntimes[$key]);
+        }
+
+        $recipients = [];
+
+        Mail::assertQueued(FundLoadingDowntimeMail::class, function($mail) use (& $recipients)
+        {
+            $this->assertSame(Constants::CREATION, $mail->flowType);
+            $this->assertSame('fund_loading_downtime.creation', $mail->templateName);
+
+            $expectedDowntimeParams = [
+                'type'       => 'Scheduled Maintenance Activity',
+                'source'     => 'Partner Bank',
+                'channel'    => "ICICI",
+                'start_time' => '22 Sep 05:52 pm',
+                'end_time'   => 'to 22 Sep 06:08 pm',
+                'modes'      => 'NEFT, UPI',
+            ];
+
+            $this->assertArraySelectiveEquals($expectedDowntimeParams, $mail->emailParams);
+
+            $this->assertSame(
+                [
+                    'name'    => 'Team RazorpayX',
+                    'address' => 'x.support@razorpay.com'
+                ],
+                $mail->from[0]
+            );
+
+            foreach ($mail->to as $recipient)
+            {
+                array_push($recipients, $recipient['address']);
+            }
+
+            $this->assertSame(FundLoadingDowntimeMail::rotatingLight . '[Downtime Alert] : RazorpayX Lite via ICICI | 22 Sep 05:52 pm to 22 Sep 06:08 pm',
+                              $mail->subject);
+
+            return true;
+        });
+
+        $expectedRecipients = ['sagnik1@razorpay.com', 'sagnik2@razorpay.com', 'sagnik11@gmail.com'];
+        $this->assertEqualsCanonicalizing($expectedRecipients, array_unique($recipients));
+    }
+
     public function testUpdationFlow()
     {
         Mail::fake();
@@ -493,6 +629,164 @@ class FundLoadingDowntimeTest extends TestCase
 
                       return true;
                   })->andReturn(['message_id' => '10000000000msg']);
+
+        $this->startTest();
+
+        $updateDetails = &$this->testData[__FUNCTION__]['request']['content']['update_details'];
+
+        $updatedFundLoadingDowntimes = $this->getDbEntities('fund_loading_downtimes')->toArray();
+
+        $expectedFundLoadingDowntimes = [
+            [
+                Entity::ID         => $updateDetails[0][Entity::ID],
+                Entity::START_TIME => $updateDetails[0][Entity::START_TIME],
+                Entity::END_TIME   => $updateDetails[0][Entity::END_TIME],
+                Entity::TYPE       => $attributes[Entity::TYPE],
+                Entity::SOURCE     => $attributes[Entity::SOURCE],
+                Entity::CHANNEL    => $attributes[Entity::CHANNEL]
+            ],
+            [
+                Entity::ID         => $updateDetails[1][Entity::ID],
+                Entity::START_TIME => $updateDetails[1][Entity::START_TIME],
+                Entity::END_TIME   => $updateDetails[1][Entity::END_TIME],
+                Entity::TYPE       => $attributes[Entity::TYPE],
+                Entity::SOURCE     => $attributes[Entity::SOURCE],
+                Entity::CHANNEL    => $attributes[Entity::CHANNEL]
+            ]
+        ];
+
+        foreach ($expectedFundLoadingDowntimes as $key => $downtime)
+        {
+            $this->assertArraySelectiveEquals($downtime, $updatedFundLoadingDowntimes[$key]);
+        }
+
+        $recipients = [];
+
+        Mail::assertQueued(FundLoadingDowntimeMail::class, function($mail) use(& $recipients)
+        {
+            $this->assertSame(Constants::UPDATION, $mail->flowType);
+            $this->assertSame('fund_loading_downtime.updation', $mail->templateName);
+
+            $expectedDowntimeParams = [
+                'type'       => 'Scheduled Maintenance Activity',
+                'source'     => 'Partner Bank',
+                'channel'    => "ICICI",
+                'start_time' => '30 Dec 12:00 am',
+                'end_time'   => 'to 31 Dec 12:00 am',
+                'modes'      => 'IMPS, NEFT',
+            ];
+
+            $this->assertArraySelectiveEquals($expectedDowntimeParams, $mail->emailParams);
+
+            $this->assertSame(
+                [
+                    'name'    => 'Team RazorpayX',
+                    'address' => 'x.support@razorpay.com'
+                ],
+                $mail->from[0]
+            );
+
+            foreach ($mail->to as $recipient)
+            {
+                array_push($recipients, $recipient['address']);
+            }
+
+            $this->assertSame(FundLoadingDowntimeMail::rotatingLight . '[Downtime Updated] : RazorpayX Lite via ICICI | 30 Dec 12:00 am to 31 Dec 12:00 am',
+                              $mail->subject);
+
+            return true;
+        });
+
+        $expectedRecipients = ['sagnik1@razorpay.com', 'sagnik2@razorpay.com', 'sagnik11@gmail.com'];
+        $this->assertEqualsCanonicalizing($expectedRecipients, array_unique($recipients));
+    }
+
+    public function testUpdationFlowWithSMSV3Template()
+    {
+        Mail::fake();
+
+        $currentTime = Carbon::now(Timezone::IST);
+
+        Carbon::setTestNow($currentTime);
+
+        $this->createMerchantConfigs('10000000000000', ['sagnik1@razorpay.com', 'sagnik11@gmail.com'], ['9468620910', '9468620911']);
+        $this->createMerchantConfigs('10000000000011', ['sagnik2@razorpay.com', 'sagnik11@gmail.com'], ['9468620912', '9468620911']);
+
+        $this->createBankAccount('10000000000000', 'va111111111111', '34340000000000');
+        $this->createBankAccount('10000000000011', 'va222222222222', '56560000000000');
+
+        $this->createBalance('xbalance111111', '10000000000000');
+        $this->createBalance('xbalance222222', '10000000000011');
+
+        $this->createVirtualAccount('10000000000000', 'xbalance111111', 'va111111111111');
+        $this->createVirtualAccount('10000000000011', 'xbalance222222', 'va222222222222');
+
+        $attributes = [
+            'id'         => '100000downtime',
+            'type'       => 'Scheduled Maintenance Activity',
+            'source'     => 'Partner Bank',
+            'channel'    => 'icicibank',
+            'mode'       => 'IMPS',
+            'start_time' => Carbon::now(Timezone::IST)->subSeconds(10000)->getTimestamp(),
+            'end_time'   => Carbon::now(Timezone::IST)->addSeconds(10000)->getTimestamp(),
+        ];
+
+        $this->fixtures->create('fund_loading_downtimes', $attributes);
+
+        $attributes = [
+            'id'         => '100001downtime',
+            'type'       => 'Scheduled Maintenance Activity',
+            'source'     => 'Partner Bank',
+            'channel'    => 'icicibank',
+            'mode'       => 'NEFT',
+            'start_time' => Carbon::now(Timezone::IST)->addSeconds(10000)->getTimestamp(),
+            'end_time'   => Carbon::now(Timezone::IST)->addSeconds(20000)->getTimestamp(),
+        ];
+
+        $this->fixtures->create('fund_loading_downtimes', $attributes);
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        //Since 3 distinct mobile numbers are present, sendSMS call should be made 3 times.
+        $storkMock->shouldReceive('sendSMS')->times(3)
+                  ->withArgs(function($mode, $smsPayload, $mockInTestMode) {
+                      $expectedSmsParams                  = $this->getDefaultSmsParams();
+                      $expectedSmsParams['templateName']  = 'sms.fund_loading_downtime.update_1.v1';
+
+                      if ($smsPayload['ownerId'] == '10000000000011')
+                      {
+                          $expectedSmsParams['contentParams'] = [
+                              'channel' => 'ICICI',
+                              'start1'  => '30Dec 12:00 am',
+                              'end1'    => 'to 31Dec 12:00 am',
+                              'modes1'  => 'IMPS,NEFT'
+                          ];
+                      }
+                      else
+                      {
+                          $expectedSmsParams['templateName']  = 'sms.fund_loading_downtime.update_1.v2';
+
+                          $expectedSmsParams['contentParams'] = [
+                              'channel' => 'ICICI',
+                              'timings'  => '30Dec 12:00 am to 31Dec 12:00 am',
+                              'modes'  => 'IMPS,NEFT',
+                          ];
+                      }
+
+                      $this->assertEquals('test', $mode);
+                      $this->assertEquals(false, $mockInTestMode);
+                      $this->assertArraySelectiveEquals($expectedSmsParams, $smsPayload);
+
+                      return true;
+                  })->andReturn(['message_id' => '10000000000msg']);
+
+        (new AdminService)->setConfigKeys([ConfigKey::UPDATED_SMS_TEMPLATES_RECEIVER_MERCHANTS => [
+            'sms.fund_loading_downtime.update_1.v1' => ['10000000000000'],
+        ]]);
+
+        $this->testData[__FUNCTION__] = $this->testData['testUpdationFlow'];
 
         $this->startTest();
 

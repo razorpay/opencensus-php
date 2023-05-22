@@ -12,6 +12,7 @@ use RZP\Models\Admin;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Constants\Environment;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Exception\LogicException;
 use RZP\Jobs\PartnerBankHealthNotification;
 use RZP\Models\Merchant\Balance\AccountType;
@@ -30,6 +31,8 @@ class Notifier extends \RZP\Models\Base\Core
 
     const DISPLAY_NAME   = 'display_name';
     const DEFAULT_SOURCE = 'RazorpayX';
+
+    const PARTNER_BANK_HEALTH_DOWN_V3 = 'partner_bank_health.down_V3';
 
     // make this redis based fetch/update
     const DEFAULT_CONFIG_FETCH_LIMIT = 20;
@@ -235,6 +238,13 @@ class Notifier extends \RZP\Models\Base\Core
         $merchantId    = $config->getMerchantId();
         $mobileNumbers = $config->getNotificationMobileNumbers();
 
+        $smsPayload = $this->updateSmsPayloadIfRequired($merchantId, $smsPayload);
+
+        $this->trace->info(TraceCode::PARTNER_BANK_HEALTH_NOTIFICATION_SMS_EMAIL_PARAMS,
+                           [
+                               'sms_payload'  => $smsPayload,
+                           ]);
+
         if (empty($mobileNumbers) === true)
         {
             return;
@@ -275,6 +285,39 @@ class Notifier extends \RZP\Models\Base\Core
                            [
                                MerchantConstants::MERCHANT_ID => $merchantId
                            ]);
+    }
+
+    public function updateSmsPayloadIfRequired($merchantId, $smsPayload)
+    {
+        $templateName = $smsPayload[SmsConstants::TEMPLATE_NAME];
+
+        if ($templateName != 'partner_bank_health.down')
+        {
+            return $smsPayload;
+        }
+
+        $smsTemplateMerchants = (new Admin\Service)->getConfigKey(['key' => ConfigKey::UPDATED_SMS_TEMPLATES_RECEIVER_MERCHANTS]);
+
+        if (array_key_exists($templateName, $smsTemplateMerchants) === true)
+        {
+            $merchants = $smsTemplateMerchants[$templateName];
+
+            if (($merchants == "*") or
+                (in_array($merchantId, $merchants) == true))
+            {
+                $smsPayload[SmsConstants::TEMPLATE_NAME] = self::PARTNER_BANK_HEALTH_DOWN_V3;
+
+                $contentParams = $smsPayload[SmsConstants::CONTENT_PARAMS];
+                $contentParams['channel_and_mode'] = $contentParams['channel'] . ' for ' . $contentParams['mode'];
+                unset($contentParams['channel']);
+                unset($contentParams['mode']);
+
+                $smsPayload[SmsConstants::CONTENT_PARAMS] = $contentParams;
+            }
+        }
+
+        return $smsPayload;
+
     }
 
     public function sendEmail(ConfigEntity $config, $emailParams)

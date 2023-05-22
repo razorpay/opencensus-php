@@ -17,6 +17,8 @@ class SmsConstants
     const LANGUAGE                    = 'language';
     const CONTENT_PARAMS              = 'contentParams';
     const DELIVERY_CALLBACK_REQUESTED = 'deliveryCallbackRequested';
+    const TIMINGS                     = 'timings';
+    const MODES                       = 'modes';
 
     // Razorpayx
     const RAZORPAYX_SENDER                = 'RZPAYX';

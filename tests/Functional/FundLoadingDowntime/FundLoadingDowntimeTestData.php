@@ -408,6 +408,55 @@ return [
         ],
     ],
 
+    'testCreationFlowWithSMSV3Template' => [
+        'request'  => [
+            'url'     => '/fund_loading/downtime/notification/creation',
+            'method'  => 'POST',
+            'content' => [
+                "send_sms"        => "1",
+                "send_email"      => "1",
+                'downtime_inputs' => [
+                    'type'                => 'Scheduled Maintenance Activity',
+                    'source'              => 'Partner Bank',
+                    'channel'             => 'icicibank',
+                    'durations_and_modes' => [
+                        [
+                            'modes'      => ['NEFT', 'UPI'],
+                            'start_time' => 1632313321, // Wednesday, 22 September 2021 17:52:01 GMT+05:30
+                            'end_time'   => 1632314321, // Wednesday, 22 September 2021 18:08:41 GMT+05:30
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "sms"                  => [
+                    "successes" => 3,
+                    "failures"  => 0,
+                    "skipped"   => 1,
+                ],
+                'email'                => [
+                    "successes" => 3,
+                    "failures"  => 0,
+                    "skipped"   => 1,
+                ],
+                'downtime_information' => [
+                    'type'                => 'Scheduled Maintenance Activity',
+                    'source'              => 'Partner Bank',
+                    'channel'             => 'icicibank',
+                    'durations_and_modes' => [
+                        0 => [
+                            'start_time' => 1632313321,
+                            'end_time'   => 1632314321,
+                            "modes"      => "NEFT,UPI",
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testUpdationFlow' => [
         'request'  => [
             'url'     => '/fund_loading/downtime/notification/updation',

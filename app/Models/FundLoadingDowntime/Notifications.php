@@ -7,8 +7,10 @@ use Mail;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Models\Admin;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Base\RepositoryManager;
 use RZP\Mail\Base\Constants as MailConstant;
 use RZP\Models\Payout\Notifications\SmsConstants;
@@ -58,6 +60,8 @@ class Notifications
      */
     protected $mailInstance;
 
+    protected $templateName = null;
+
 
     const SMS        = 'sms';
     const EMAIL      = 'email';
@@ -92,6 +96,9 @@ class Notifications
         'resolution'   => 'sms.fund_loading_downtime.resolution.v1',
         'cancellation' => 'sms.fund_loading_downtime.cancelation.v1',
     ];
+
+    const SMS_TEMPLATE_UPDATE_1_V2   = 'sms.fund_loading_downtime.update_1.v2';
+    const SMS_TEMPLATE_CREATION_1_V2 = 'sms.fund_loading_downtime.creation_1.v2';
 
     public function __construct($input, $flowType)
     {
@@ -340,6 +347,8 @@ class Notifications
         $response[Constants::MERCHANT_ID]   = $merchantId;
         $smsPayload[SmsConstants::OWNER_ID] = $merchantId;
 
+        $smsPayload = $this->updateSMSParamsAsPerTRAIRegulations($merchantId, $smsPayload);
+
         $this->trace->info(
             TraceCode::FUND_LOADING_DOWNTIME_SMS_TO_MERCHANT_INIT,
             [
@@ -479,6 +488,8 @@ class Notifications
         return $params;
     }
 
+
+
     public function getEmailParams()
     {
         $params[SmsConstants::TEMPLATE_NAME] = $this->getEmailTemplate();
@@ -609,6 +620,57 @@ class Notifications
 
         return $templateName;
 
+    }
+
+    public function updateSMSParamsAsPerTRAIRegulations(string $merchantId, $smsPayload)
+    {
+        $smsTemplateMerchants = (new Admin\Service)->getConfigKey(['key' => ConfigKey::UPDATED_SMS_TEMPLATES_RECEIVER_MERCHANTS]);
+
+        $templateName = $smsPayload[SmsConstants::TEMPLATE_NAME];
+
+        if (array_key_exists($templateName, $smsTemplateMerchants) === true)
+        {
+            $merchants = $smsTemplateMerchants[$templateName];
+
+            if (($merchants == "*") or
+                (in_array($merchantId, $merchants) == true))
+            {
+                switch ($templateName)
+                {
+                    case 'sms.fund_loading_downtime.update_1.v1':
+                        $smsPayload[SmsConstants::TEMPLATE_NAME] = self::SMS_TEMPLATE_UPDATE_1_V2;
+
+                        $contentParams = $smsPayload[SmsConstants::CONTENT_PARAMS];
+                        $contentParams[SmsConstants::TIMINGS] = $contentParams['start1'] . ' ' . $contentParams['end1'];
+                        $contentParams[SmsConstants::TIMINGS] = trim($contentParams[SmsConstants::TIMINGS]);
+                        $contentParams[SmsConstants::MODES] = $contentParams['modes1'];
+                        unset($contentParams['start1']);
+                        unset($contentParams['end1']);
+                        unset($contentParams['modes1']);
+
+                        $smsPayload[SmsConstants::CONTENT_PARAMS] = $contentParams;
+
+                        break;
+
+                    case 'sms.fund_loading_downtime.creation_1.v1':
+                        $smsPayload[SmsConstants::TEMPLATE_NAME] = self::SMS_TEMPLATE_CREATION_1_V2;
+
+                        $contentParams = $smsPayload[SmsConstants::CONTENT_PARAMS];
+                        $contentParams[SmsConstants::TIMINGS] = $contentParams['start1'] . ' ' . $contentParams['end1'];
+                        $contentParams[SmsConstants::TIMINGS] = trim($contentParams[SmsConstants::TIMINGS]);
+                        $contentParams[SmsConstants::MODES] = $contentParams['modes1'];
+                        unset($contentParams['start1']);
+                        unset($contentParams['end1']);
+                        unset($contentParams['modes1']);
+
+                        $smsPayload[SmsConstants::CONTENT_PARAMS] = $contentParams;
+
+                        break;
+                }
+            }
+        }
+
+        return $smsPayload;
     }
 
     /** Does a DB call and fetches the active virtual accounts assigned all mid's in the input array
