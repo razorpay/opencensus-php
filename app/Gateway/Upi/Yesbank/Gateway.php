@@ -25,9 +25,8 @@ use RZP\Constants\Entity as CoreEntity;
 use RZP\Models\QrCode\Entity as QrEntity;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Gateway\Upi\Base\CommonGatewayTrait;
-use RZP\Models\BharatQr\GatewayResponseParams;
 use RZP\Models\Payment\Entity as PaymentEntity;
-use RZP\Models\Terminal\Entity as TerminalEntity;
+
 
 class Gateway extends Mindgate\Gateway
 {
@@ -82,12 +81,6 @@ class Gateway extends Mindgate\Gateway
 
         if ($this->isBharatQrPayment() === true)
         {
-            $this->trace->info(
-                TraceCode::QR_PAYMENT_ACQUIRER_DATA,
-                [
-                    'input' => $input,
-                ]);
-
             $input[Fields::CUST_REF_ID] = $input['data']['upi'][Fields::NPCI_REFERENCE_ID] ?? '';
 
             $input[Entity::TYPE] = Base\Type::PAY;
@@ -1152,8 +1145,17 @@ class Gateway extends Mindgate\Gateway
             $qrData[BharatQr\GatewayResponseParams::NOTES] = $inputFields['meta']['response']['content'][Fields::PAYER_NOTE] ?? '';
         }
 
+        if (isset($input['data']['meta']) === true)
+        {
+            unset($input['data']['meta']);
+        }
+        if (isset($input['data']['_raw']) === true)
+        {
+            unset($input['data']['_raw']);
+        }
+
         return [
-            'callback_data' => $inputFields,
+            'callback_data' => $input,
             'qr_data'       => $qrData
         ];
     }
