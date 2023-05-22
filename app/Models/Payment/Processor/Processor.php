@@ -3543,7 +3543,7 @@ class Processor
 
     protected function isCardAbsentforTokenisedPayment($token, $input) : bool
     {
-        if(($token->card->isAmex() || $token->card->isVisa() || $token->card->isRuPay() ) && ((array_key_exists('card', $input) === false) or (!isset($input['card']))))
+        if(($token->card->isAmex() || $token->card->isVisa() || $token->card->isRuPay() || $token->card->isMasterCard()) && ((array_key_exists('card', $input) === false) or (!isset($input['card']))))
         {
             return true;
         }

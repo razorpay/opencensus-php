@@ -927,7 +927,7 @@ class Core extends Base\Core
         }
 
         if (empty($input['cvv']) && $card->getTrivia() === '1' &&
-            ($card->isVisa() === true || $card->isRuPay() === true))
+            ($card->isVisa() === true || $card->isRuPay() === true || $card->isMasterCard() == true))
         {
             $this->trace->info(
                 TraceCode::CVV_OPTIONAL, []);
