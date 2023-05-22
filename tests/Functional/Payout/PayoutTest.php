@@ -19154,6 +19154,28 @@ class PayoutTest extends OAuthTestCase
         $this->assertArrayNotHasKey(Payout\Entity::ERROR, $updatedPayout);
     }
 
+    public function testFraudDeclineFailureReasonMessage()
+    {
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutId = $payout->getId();
+
+        (new Payout\Core)->updateStatusAfterFtaRecon($payout, [
+            'fta_status'       => 'failed',
+            'failure_reason'   => '',
+            'bank_status_code' => 'FRAUD_DECLINE'
+        ]);
+
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
+
+        $this->assertEquals($updatedPayout[Payout\Entity::FAILURE_REASON],
+                            'Payout rejected by beneficiary bank. Please contact beneficiary bank.');
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS_CODE], 'FRAUD_DECLINE');
+
+    }
+
     public function testNewErrorObjectInPayoutResponse()
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::NEW_BANKING_ERROR]);

@@ -134,7 +134,7 @@ class ErrorCodeMapping
         'INVALID_AMOUNT'                        => 'Payout failed. Contact support for help.',
         'INVALID_VPA'                           => 'Invalid beneficiary VPA/UPI address',
         'COLLECT_REQUEST_REJECTED'              => 'Payout failed. Contact support for help.',
-        'FRAUD_DECLINE'                         => 'Payout failed. Contact support for help.',
+        'FRAUD_DECLINE'                         => 'Payout rejected by beneficiary bank. Please contact beneficiary bank.',
         'CARD_VALIDATION_FAILED'                => 'Payout failed. Contact support for help.',
         'TXN_NOT_ALLOWED'                       => 'Transaction not permitted to beneficiary account.',
         'TXN_NOT_ALLOWED_RETRIABLE'             => 'Transaction not permitted to beneficiary account.',
