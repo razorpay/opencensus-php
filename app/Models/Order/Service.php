@@ -570,14 +570,39 @@ class Service extends Base\Service
         /** @var Entity $order */
         $order = null;
 
-        if (empty($input['order']) && !empty($input['order_id'])) {
-            $order = $this->repo->order->findByPublicId($input['order_id']);
+        if (empty($input['order'])) {
+            if (!empty($input['order_id'])) {
+                 $order = $this->repo->order->findByPublicId($input['order_id']);
 
-            $input['order'] = $order->toArrayPublic();
+                 $input['order'] = $order->toArrayPublic();
+            } elseif (!empty($input['subscription_id'])) {
+                $subscriptionId = $input['subscription_id'];
+
+                if (($pos = strpos($subscriptionId, "_")) !== false) {
+                    $subscriptionId = substr($subscriptionId, $pos + 1);
+                }
+
+                /** @var InvoiceEntity $invoice */
+                $invoice = $this->repo->invoice->fetchIssuedInvoicesOfSubscriptionId($subscriptionId);
+
+                if ($invoice === null || empty($invoice->getOrderId())) {
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_ORDER_DOES_NOT_EXIST, 'subscription_id');
+                }
+
+                $orderId = 'order_' . $invoice->getOrderId();
+
+                $order = $this->repo->order->findByPublicId($orderId);
+
+                $input['order'] = $order->toArrayPublic();
+            }
         }
 
         // create order entity using forcefill
         $order = $order ?? $this->app['pg_router']->getOrderEntityFromOrderAttributes($input['order']);
+
+        if ($order === null || empty($order->getId())) {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ORDER_DOES_NOT_EXIST);
+        }
 
         $validator->validateNachStatusForCheckout($order);
 

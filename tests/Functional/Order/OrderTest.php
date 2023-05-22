@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Order;
 use Mockery;
 use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Order;
 use RZP\Error\ErrorCode;
 use RZP\Models\BankAccount;
@@ -3155,6 +3156,33 @@ class OrderTest extends TestCase
         $this->testData[__FUNCTION__]['request']['content']['order_id'] = $order['id'];
         $this->testData[__FUNCTION__]['response']['content']['order']['id'] = $orderId;
         $this->testData[__FUNCTION__]['response']['content']['order']['order_metas'][0]['order_id'] = $orderId;
+
+        $this->startTest();
+    }
+
+    public function testFetchOrderDetailsForCheckoutWithSubscriptionId(): void
+    {
+        $subscriptionId = UniqueIdEntity::generateUniqueId();
+
+        $orderData = [
+            'id'                       => 'TestOrder10000',
+            'amount'                   => 50000,
+            'partial_payment'          => false,
+            'currency'                 => 'INR',
+            'first_payment_min_amount' => null,
+        ];
+
+        $order = $this->fixtures->order->create($orderData);
+
+        $this->fixtures->invoice->create([
+            'order_id'        => $order->getId(),
+            'subscription_id' => $subscriptionId,
+            'status'          => 'issued',
+        ]);
+
+        $this->ba->checkoutServiceProxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['subscription_id'] = 'sub_' . $subscriptionId;
 
         $this->startTest();
     }

@@ -1230,4 +1230,97 @@ return [
             ],
         ],
     ],
+    'testGetPaymentMethodsAndOffersForCheckoutWithSubscriptionId' => [
+        'request' => [
+            'url' => '/internal/methods_offers/checkout',
+            'method' => 'POST',
+            'content' => [
+                'subscription_id' => '', // Filled by the TestCase
+                'subscription_card_change' => false,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'methods' => [
+                    'entity' => 'methods',
+                    'card' => true,
+                    'debit_card' => true,
+                    'credit_card' => true,
+                    'prepaid_card' => true,
+                    'card_networks' => [
+                        'AMEX' => 0,
+                        'MC' => 1,
+                        'VISA' => 1,
+                    ],
+                    'card_subtype' => [
+                        'consumer' => 1,
+                        'business' => 0,
+                        'premium' => 0
+                    ],
+                    'amex' => false,
+                    'netbanking' => [
+                        'AUBL' => 'AU Small Finance Bank',
+                        'UTIB' => 'Axis Bank',
+                    ],
+                    'wallet' => [
+                        'paytm' => true,
+                    ],
+                    'emi' => false,
+                    'upi' => false,
+                    'cardless_emi' => [],
+                    'paylater' => [],
+                    'google_pay_cards' => false,
+                    'app' => [
+                        'cred' => 0,
+                        'twid' => 0,
+                        'trustly' => 0,
+                        'poli' => 0,
+                        'sofort' => 0,
+                        'giropay' => 0
+                    ],
+                    'gpay' => false,
+                    'emi_types' => [
+                        'credit' => false,
+                        'debit' => false
+                    ],
+                    'debit_emi_providers' => [
+                        'HDFC' => 0,
+                        'KKBK' => 0,
+                        'INDB' => 0
+                    ],
+                    'intl_bank_transfer' => [],
+                    'fpx' => [],
+                    'nach' => false,
+                    'cod' => false,
+                    'offline' => false,
+                    'upi_intent' => true,
+                    'upi_type' => [
+                        'collect' => 0,
+                        'intent' => 0,
+                    ],
+                    'app_meta' => []
+                ],
+                'offers' => [
+                    [
+                        'name' => "Test Offer",
+                        'payment_method' => "card",
+                        'payment_network' => "VISA",
+                        'issuer' => "HDFC",
+                        'type' => "instant",
+                        'original_amount' => 100000,
+                        'amount' => 90000,
+                    ],
+                    [
+                        'name' => "Test Offer",
+                        'payment_method' => "card",
+                        'payment_network' => "VISA",
+                        'issuer' => "HDFC",
+                        'type' => "instant",
+                        'original_amount' => 100000,
+                        'amount' => 90000,
+                    ]
+                ]
+            ],
+        ],
+    ]
 ];

@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Merchant;
 
 use Event;
 
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card\SubType;
 use RZP\Models\Feature;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -1734,6 +1735,41 @@ class MethodsTest extends TestCase
         $testData = $this->testData[__FUNCTION__];
 
         $testData['request']['content']['invoice_id'] = $invoice->getPublicId();
+
+        $response = $this->startTest($testData);
+
+        $this->assertEquals($offer1->getPublicId(), $response['offers'][0]['id']);
+        $this->assertEquals($offer2->getPublicId(), $response['offers'][1]['id']);
+    }
+
+    public function testGetPaymentMethodsAndOffersForCheckoutWithSubscriptionId(): void
+    {
+        $this->ba->checkoutServiceProxyAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->fixtures->merchant->enablePaytm();
+
+        $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
+
+        $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
+
+        $order = $this->fixtures->order->createWithOffers([
+            $offer1,
+            $offer2,
+        ]);
+
+        $subscriptionId = UniqueIdEntity::generateUniqueId();
+
+        $this->fixtures->create('invoice', [
+            'order_id' => $order->getId(),
+            'subscription_id' => $subscriptionId,
+            'status' => 'issued',
+        ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['subscription_id'] = $subscriptionId;
 
         $response = $this->startTest($testData);
 

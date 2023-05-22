@@ -168,6 +168,11 @@ class Service extends Base\Service
         $customerData['contact'] =  $customer->getContact();
         $customerData['is_global_customer'] = $customer->isGlobal();
 
+        // This is required for subscription use-cases
+        if ($customer->hasGlobalCustomer()) {
+            $customerData[Entity::GLOBAL_CUSTOMER_ID] = $customer->getAttribute(Entity::GLOBAL_CUSTOMER_ID);
+        }
+
         if ($appToken !== null &&
             Base\Utility::isUpdatedAndroidSdk($input) &&
             ($appToken->getMerchantId() === Account::SHARED_ACCOUNT)

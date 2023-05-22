@@ -2845,6 +2845,26 @@ return [
         ],
     ],
 
+    'testFetchOrderDetailsForCheckoutWithSubscriptionId' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/internal/orders/checkout',
+            'content' => [
+                'subscription_id' => '', // Filled by the TestCase
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'partial_payment'   => false,
+                'amount'            => 50000,
+                'currency'          => 'INR',
+                'amount_paid'       => 0,
+                'amount_due'        => 50000,
+                'first_payment_min_amount' => null,
+            ],
+        ],
+    ],
+
     'test1CCOrderWithOffer' => [
         'request' => [
             'method' => 'GET',

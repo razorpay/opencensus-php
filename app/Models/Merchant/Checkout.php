@@ -261,6 +261,29 @@ class Checkout
 
                 $this->order = $order;
             }
+        } elseif (!empty($input[Payment\Entity::SUBSCRIPTION_ID])) {
+            $cardChange = (bool) ($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false);
+            $currency = $input['currency'][0] ?? Currency::INR;
+
+            if (($cardChange === false) &&
+                ($currency === Currency::INR)
+            ) {
+                $subscriptionId = $input[Payment\Entity::SUBSCRIPTION_ID];
+
+                if (($pos = strpos($subscriptionId, '_')) !== false) {
+                    $subscriptionId = substr($subscriptionId, $pos + 1);
+                }
+
+                $invoice = $this->repo->invoice->fetchIssuedInvoicesOfSubscriptionId($subscriptionId);
+
+                if ($invoice !== null and $invoice->getOrderId() !== null) {
+                    $orderId = 'order_' . $invoice->getOrderId();
+
+                    $order = $this->setOrGetOrder($orderId, $merchant);
+
+                    $this->order = $order;
+                }
+            }
         }
 
         $data['methods'] = $this->getMerchantPaymentMethodsForCheckout($input, $merchant, $order);
@@ -1413,7 +1436,6 @@ class Checkout
 
             if ((isset($data['subscription']) === true) and
                 ($cardChange === false) and
-                ($this->isSubscriptionOffersEnabled($merchant, $mode) === true) and
                 (isset($input['currency']) === false or
                 (isset($input['currency'][0]) === true and $input['currency'][0] === Currency::INR)))
             {
@@ -1446,34 +1468,6 @@ class Checkout
         {
             $this->checkAndFillNonOrderOffers($merchant, $data);
         }
-    }
-
-    protected function isSubscriptionOffersEnabled(Merchant\Entity $merchant, $mode)
-    {
-        if ($merchant->isFeatureEnabled(Feature\Constants::OFFER_ON_SUBSCRIPTION) === true)
-        {
-            $this->trace->info(TraceCode::OFFER_ON_SUBSCRIPTION, [ 'enabled' => true ]);
-
-            return true;
-        }
-
-        $treatment = $this->app->razorx->getTreatment(
-            $merchant->getId(),
-            Merchant\RazorxTreatment::OFFER_ON_SUBSCRIPTION,
-            $mode
-        );
-
-        if (($treatment === null) or
-            ($treatment !== 'on'))
-        {
-            $this->trace->info(TraceCode::OFFER_ON_SUBSCRIPTION, [ 'enabled' => false ]);
-
-            return false;
-        }
-
-        $this->trace->info(TraceCode::OFFER_ON_SUBSCRIPTION, [ 'enabled' => true ]);
-
-        return true;
     }
 
     protected function checkAndFillOrderOffers(Order\Entity $order, array & $data)

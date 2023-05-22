@@ -113,6 +113,7 @@ class Validator extends Base\Validator
         'expand'   => 'sometimes|array|in:order',
         'order_id' => 'required_if:order,null|public_id',
         'order'    => 'required_if:order_id,null|array',
+        'subscription_id' => 'sometimes|string|public_id',
     ];
 
     protected function getBankCodeMapping($bank)
