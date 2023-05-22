@@ -150,9 +150,19 @@ class Core extends Base\Core
 
             $riskAttributes = $input[Constants::RISK_ATTRIBUTES];
 
+            $workflowTags = $input['workflow_tags'] ?? null;
+
+            $this->trace->info(TraceCode::CREATE_RISK_ACTION_REQUEST,
+                [
+                    'merchant_id'     => $merchantId,
+                    'risk_action'     => $riskAction,
+                    'risk_attributes' => $riskAttributes,
+                    'workflow_tags'   => $workflowTags
+                ]);
+
             $bulkActionId = $input[Constants::BULK_WORKFLOW_ACTION_ID] ?? null;
 
-            $tags = $this->getTagsFromRiskAttributes($riskAttributes);
+            $tags = $this->getTagsFromRiskAttributes($riskAttributes, $workflowTags);
 
             $riskAttributesParams = $this->getParamsForMerchantAction($riskAction, $riskAttributes);
 
@@ -239,7 +249,7 @@ class Core extends Base\Core
         }
     }
 
-    public function getTagsFromRiskAttributes($riskAttributes): array
+    public function getTagsFromRiskAttributes($riskAttributes, $workflowTags): array
     {
         $tag = [];
 
@@ -261,6 +271,10 @@ class Core extends Base\Core
         if(isset($riskAttributes[Constants::RISK_SUB_REASON]) === true)
         {
             $tag[] = Constants::RISK_SUB_REASON_PREFIX . $riskAttributes[Constants::RISK_SUB_REASON];
+        }
+
+        foreach ($workflowTags as $tagName => $tagValue) {
+            $tag[] = $tagName . ':' . $tagValue;
         }
 
         return $tag;

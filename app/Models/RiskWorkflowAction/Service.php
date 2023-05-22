@@ -177,6 +177,17 @@ class Service extends Base\Service
         return (new Core())->createRiskWorkflowAction($input);
     }
 
+    public function createRiskWorkflowActionRas($input)
+    {
+        (new Validator())->validateInput('create_risk_action_ras', $input);
+
+        (new Core())->validateRiskAttributes($input);
+
+        $maker = $this->getMaker();
+
+        return (new Core())->createRiskWorkflowAction($input, $maker);
+    }
+
     public function createRiskWorkflowActionInternal($input)
     {
         (new Validator())->validateInput('create_risk_action_internal', $input);
@@ -196,6 +207,24 @@ class Service extends Base\Service
 
         // NOTE: maker_email (both maker and checker) should be superadmin
         $makerEmail = env(Constants::BULK_RISK_ACTION_INDIVIDUAL_WORKFLOW_MAKER_EMAIL);
+
+        $maker = $this->repo->admin->findByOrgIdAndEmail($makerOrgId, $makerEmail);
+
+        return $maker;
+    }
+
+    private function getMaker()
+    {
+        //using default razorpay org for now, to be fixed by code owner
+        $makerOrgId = Org\Entity::RAZORPAY_ORG_ID;
+
+        // NOTE: maker_email (both maker and checker) should be superadmin
+        $makerEmail = $this->app['config']->get('applications.merchant_risk_alerts.maker_email');
+
+        if (empty($makerEmail) === true)
+        {
+            throw new Exception\LogicException('Merchant Risk Alert Workflow Maker is not initialized');
+        }
 
         $maker = $this->repo->admin->findByOrgIdAndEmail($makerOrgId, $makerEmail);
 

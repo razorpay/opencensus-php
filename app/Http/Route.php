@@ -15366,6 +15366,7 @@ class Route
             'merchant_risk_alerts_details',
             'merchant_risk_alerts_dispute_details',
             'merchant_risk_alerts_set_dedupe_key',
+            'internal_create_risk_action'
         ],
 
         'cyber_crime_helpdesk'  => [

@@ -15,6 +15,7 @@ class Constants
     const RISK_SUB_REASON        = 'risk_sub_reason';
     const RISK_TAG               = 'risk_tag';
     const RISK_SOURCE            = 'risk_source';
+    const RISK_WORKFLOW_TAGS     = 'workflow_tags';
     const TRIGGER_COMMUNICATION  = 'trigger_communication';
     const CLEAR_RISK_TAGS        = 'clear_risk_tags';
 
@@ -30,6 +31,7 @@ class Constants
     const RISK_SOURCE_TXN_MONITORING        = 'transaction_monitoring';
     const RISK_SOURCE_BANK_NW_ALERTS        = 'bank_or_network_alerts';
     const RISK_SOURCE_OTHERS                = 'others';
+    const RISK_SOURCE_MERCHANT_RISK_ALERTS  = 'merchant_risk_alerts';
 
     //risk source allowed values
     const RISK_SOURCES_CSV =
@@ -43,6 +45,7 @@ class Constants
         self::RISK_SOURCE_CUSTOMER_REPORT . ',' .
         self::RISK_SOURCE_TXN_MONITORING . ',' .
         self::RISK_SOURCE_BANK_NW_ALERTS . ',' .
+        self::RISK_SOURCE_MERCHANT_RISK_ALERTS . ',' .
         self::RISK_SOURCE_OTHERS;
 
     // Risk Reasons

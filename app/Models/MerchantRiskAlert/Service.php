@@ -138,6 +138,9 @@ class Service extends Base\Service
         $workflowActions = (new Action\Core)->fetchOpenActionOnEntityOperation(
             $merchant->getId(), Constants::MERCHANT_DETAIL_KEY, Permission\Name::MERCHANT_RISK_ALERT_FOH);
 
+        $workflowActionsForInternationalDisablement = (new Action\Core)->fetchOpenActionOnEntityOperation(
+            $merchant->getId(), Constants::MERCHANT_KEY, Permission\Name::EDIT_MERCHANT_DISABLE_INTERNATIONAL);
+
         $lastUpdatedAt = 0;
         $workflowActionsForLastUpdated = (new Action\Core)->fetchLastUpdatedWorkflowActionInPermissionList(
             $merchant->getId(), Constants::MERCHANT_DETAIL_KEY, [Permission\Name::MERCHANT_RISK_ALERT_FOH]);
@@ -146,14 +149,16 @@ class Service extends Base\Service
         }
 
         $details = [
-            Constants::MERCHANT_FOH_KEY                 => $merchant->isFundsOnHold(),
-            Constants::MERCHANT_LIVE_KEY                => $merchant->isLive(),
-            Constants::MERCHANT_SUSPENDED_KEY           => $merchant->isSuspended(),
-            Constants::MERCHANT_FOH_WORKFLOW_KEY        => $workflowActions->isNotEmpty() === true,
-            Constants::MERCHANT_CREATED_AT              => $merchant->getCreatedAt(),
-            Constants::MERCHANT_HAS_AOV                 => false,
-            Constants::MERCHANT_ODS                     => $merchant->isFeatureEnabled(Feature\Constants::ES_ON_DEMAND),
-            Constants::MERCHANT_LAST_UPDATED_WORKFLOW   => $lastUpdatedAt,
+            Constants::MERCHANT_FOH_KEY                     => $merchant->isFundsOnHold(),
+            Constants::MERCHANT_INTERNATIONAL_KEY           => $merchant->isInternational(),
+            Constants::MERCHANT_LIVE_KEY                    => $merchant->isLive(),
+            Constants::MERCHANT_SUSPENDED_KEY               => $merchant->isSuspended(),
+            Constants::MERCHANT_FOH_WORKFLOW_KEY            => $workflowActions->isNotEmpty() === true,
+            Constants::MERCHANT_INTERNATIONAL_WORKFLOW_KEY  => $workflowActionsForInternationalDisablement->isNotEmpty() === true,
+            Constants::MERCHANT_CREATED_AT                  => $merchant->getCreatedAt(),
+            Constants::MERCHANT_HAS_AOV                     => false,
+            Constants::MERCHANT_ODS                         => $merchant->isFeatureEnabled(Feature\Constants::ES_ON_DEMAND),
+            Constants::MERCHANT_LAST_UPDATED_WORKFLOW       => $lastUpdatedAt,
         ];
 
         $merchantAov = $merchant->merchantDetail->avgOrderValue;

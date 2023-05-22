@@ -4,7 +4,9 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Models\RiskWorkflowAction\Constants;
 use RZP\Models\RiskWorkflowAction\Service;
+use RZP\Trace\TraceCode;
 
 class RiskActionController extends Controller
 {
@@ -33,12 +35,28 @@ class RiskActionController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function createRiskActionRas()
+    {
+        $input = Request::all();
+
+        $response = (new Service())->createRiskWorkflowActionRas($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function createRiskActionInternal()
     {
         $input = Request::all();
 
-        $response = (new Service())->createRiskWorkflowActionInternal($input);
-
+        if (isset($input[Constants::RISK_ATTRIBUTES]) && isset($input[Constants::RISK_ATTRIBUTES][Constants::RISK_SOURCE])
+        && $input[Constants::RISK_ATTRIBUTES][Constants::RISK_SOURCE] === Constants::RISK_SOURCE_MERCHANT_RISK_ALERTS)
+        {
+            $response = (new Service())->createRiskWorkflowActionRas($input);
+        }
+        else
+        {
+            $response = (new Service())->createRiskWorkflowActionInternal($input);
+        }
         return ApiResponse::json($response);
     }
 }

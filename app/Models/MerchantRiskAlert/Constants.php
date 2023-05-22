@@ -4,14 +4,16 @@ namespace RZP\Models\MerchantRiskAlert;
 
 class Constants
 {
-    const MERCHANT_FOH_KEY          = 'merchant_foh';
-    const MERCHANT_LIVE_KEY         = 'merchant_live';
-    const MERCHANT_SUSPENDED_KEY    = 'merchant_suspended';
-    const MERCHANT_FOH_WORKFLOW_KEY = 'merchant_foh_workflow_open';
-    const MERCHANT_CREATED_AT       = 'merchant_created_at';
-    const MERCHANT_MIN_AOV          = 'merchant_min_aov';
-    const MERCHANT_MAX_AOV          = 'merchant_max_aov';
-    const MERCHANT_HAS_AOV          = 'merchant_has_aov';
+    const MERCHANT_FOH_KEY                      = 'merchant_foh';
+    const MERCHANT_INTERNATIONAL_KEY            = 'merchant_international';
+    const MERCHANT_LIVE_KEY                     = 'merchant_live';
+    const MERCHANT_SUSPENDED_KEY                = 'merchant_suspended';
+    const MERCHANT_FOH_WORKFLOW_KEY             = 'merchant_foh_workflow_open';
+    const MERCHANT_INTERNATIONAL_WORKFLOW_KEY   = 'merchant_disable_international_workflow_open';
+    const MERCHANT_CREATED_AT                   = 'merchant_created_at';
+    const MERCHANT_MIN_AOV                      = 'merchant_min_aov';
+    const MERCHANT_MAX_AOV                      = 'merchant_max_aov';
+    const MERCHANT_HAS_AOV                      = 'merchant_has_aov';
 
     const MERCHANT_LAST_UPDATED_WORKFLOW = 'merchant_last_updated_workflow_days';
 
@@ -38,6 +40,8 @@ class Constants
     const MANAGED_MERCHANT_TAG = 'ras_managed_merchant';
 
     const MERCHANT_DETAIL_KEY = 'merchant_detail';
+
+    const MERCHANT_KEY = 'merchant';
 
     const MUTEX_PREFIX = 'merchant_risk_alert_foh:';
 
