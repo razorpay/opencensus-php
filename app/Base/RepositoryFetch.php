@@ -167,6 +167,7 @@ trait RepositoryFetch
                 $this->trace->info(TraceCode::WDA_FETCH_INPUT_LOG, [
                     'input_params'     => $params,
                     'expand_params'    => $expands,
+                    'connection_type'  => $connectionType,
                     'route_auth'       => $this->auth->getAuthType(),
                     'route_name'       => $this->app['api.route']->getCurrentRouteName(),
                 ]);
@@ -275,6 +276,7 @@ trait RepositoryFetch
             elseif ($baseQueryPresent === true)
             {
                 $this->trace->info(TraceCode::WDA_BASE_QUERY_INFO, [
+                    'connection_type'  => $connectionType,
                     'base_query' => $this->baseQuery->toSql(),
                     'route_name' => $this->app['api.route']->getCurrentRouteName(),
                 ]);
