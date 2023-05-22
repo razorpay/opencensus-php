@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { connect } from 'react-redux';
 import { compose, bindActionCreators } from 'redux';
 import rTracking, { useTracking } from 'react-tracking';
@@ -59,6 +59,7 @@ const PricingSubscriptionComponent = ({
   const [isFullView, setFullView] = useState(false);
   const [isChecked, setChecked] = useState(false);
   const [isLoading, setLoading] = useState(false);
+  const checkoutId = useRef('');
   const [selectedPlanId, setSelectedPlanId] = useState('');
   const [togglePlan, setTogglePlan] = useState<TogglePlan>(TogglePlanValue.monthly);
   const { trackEvent } = useTracking({ page: 'Home' });
@@ -97,6 +98,7 @@ const PricingSubscriptionComponent = ({
       payment_id?: string;
       plan_id?: string;
       time_spent?: any;
+      checkout_id?: string;
     },
   ) => {
     const { toggle_switch, cta_value, section, event_name } = trackingObject || {};
@@ -279,6 +281,7 @@ const PricingSubscriptionComponent = ({
       toggle_switch: togglePlan,
       plan_id: plans.id,
       event_name: 'merchant_dashboard.subscription_checkout.success',
+      checkout_id: checkoutId.current,
     });
   };
   const handlePaymentFailure = (response, plans) => {
@@ -289,6 +292,7 @@ const PricingSubscriptionComponent = ({
       toggle_switch: togglePlan,
       plan_id: plans.id,
       event_name: 'merchant_dashboard.subscription_checkout.failure',
+      checkout_id: checkoutId.current,
     });
   };
   const handleCheckoutInitiation = (plans) => {
@@ -297,6 +301,7 @@ const PricingSubscriptionComponent = ({
       toggle_switch: togglePlan,
       plan_id: plans.id,
       event_name: 'merchant_dashboard.checkout_modal.initiated',
+      checkout_id: checkoutId.current,
     });
   };
   const handleCheckoutError = (plans) => {
@@ -339,15 +344,14 @@ const PricingSubscriptionComponent = ({
             name: `Razorpay Pricing Package`,
             description: '18% GST included',
             image: rzpLogo,
-            // eslint-disable-next-line func-names
-            handler: function (response) {
+            handler: (response) => {
               handlePaymentSuccess(response, plans);
             },
           };
           const razorpayCheckout = new window.Razorpay(options);
+          checkoutId.current = razorpayCheckout?.id;
           razorpayCheckout.open();
-          // eslint-disable-next-line func-names
-          razorpayCheckout.on('payment.failed', function (response) {
+          razorpayCheckout.on('payment.failed', (response) => {
             handlePaymentFailure(response, plans);
           });
           handleCheckoutInitiation(plans);
