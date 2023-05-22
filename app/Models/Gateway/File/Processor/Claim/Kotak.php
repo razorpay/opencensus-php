@@ -80,7 +80,7 @@ class Kotak extends NetbankingBase
     {
         if ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE)
         {
-            return $data['payment']['transaction_id']; // payment through nbplus service
+            return $data['gateway']['bank_transaction_id']; // payment through nbplus service
         }
 
         return $data['gateway']['bank_payment_id'];

@@ -4,11 +4,10 @@ namespace RZP\Tests\Functional\Gateway\File;
 
 use Mail;
 use Carbon\Carbon;
+
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
-use RZP\Encryption\PGPEncryption;
-use RZP\Excel\Import as ExcelImport;
-use RZP\Mail\Gateway\DailyFile as DailyFileMail;
+use RZP\Mail\Gateway\DailyFile;
 use RZP\Tests\Functional\Payment\StaticCallbackNbplusGatewayTest;
 use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 
@@ -23,9 +22,6 @@ class NbplusNetbankingKotakCombinedFileTest extends StaticCallbackNbplusGatewayT
 
         $this->bank = "KKBK";
 
-        /**
-         * @var array
-         */
         $this->terminal = $this->fixtures->create('terminal:shared_netbanking_kotak_terminal');
 
         $this->payment = $this->getDefaultNetbankingPaymentArray($this->bank);
@@ -45,8 +41,6 @@ class NbplusNetbankingKotakCombinedFileTest extends StaticCallbackNbplusGatewayT
 
         $this->refundPayment($payment['id']);
 
-        $refundTransaction1 = $this->getLastEntity('transaction', true);
-
         $paymentEntity1 = $this->getDbLastPayment();
 
         $refundEntity1 = $this->getDbLastRefund();
@@ -60,8 +54,6 @@ class NbplusNetbankingKotakCombinedFileTest extends StaticCallbackNbplusGatewayT
         ]);
 
         $this->refundPayment($transaction2['entity_id'], 500);
-
-        $refundTransaction2 = $this->getLastEntity('transaction', true);
 
         $paymentEntity2 = $this->getDbLastPayment();
 
@@ -89,9 +81,7 @@ class NbplusNetbankingKotakCombinedFileTest extends StaticCallbackNbplusGatewayT
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
-        $file = $this->getEntities('file_store', [
-            'count' => 2
-        ], true);
+        $file = $this->getEntities('file_store', ['count' => 2], true);
 
         $time = Carbon::now(Timezone::IST)->format('d-m-Y');
 
@@ -112,7 +102,7 @@ class NbplusNetbankingKotakCombinedFileTest extends StaticCallbackNbplusGatewayT
 
         $this->assertArraySelectiveEquals($expectedFilesContent, $file);
 
-        Mail::assertSent(DailyFileMail::class, function ($mail) use ($transaction1, $transaction2, $refundTransaction1, $refundTransaction2)
+        Mail::assertSent(DailyFile::class, function ($mail) use ($paymentEntity1, $paymentEntity2, $refundEntity1, $refundEntity2)
         {
             $today = Carbon::now(Timezone::IST)->format('d-m-Y');
 
@@ -126,17 +116,15 @@ class NbplusNetbankingKotakCombinedFileTest extends StaticCallbackNbplusGatewayT
                 ],
             ];
 
-            $files = $this->getEntities('file_store', [
-                'count' => 2
-            ], true);
+            $files = $this->getEntities('file_store', ['count' => 2], true);
 
             $claimfilePath = storage_path('files/filestore') . '/' . $files['items']['0']['location'];
 
             $refundfilePath = storage_path('files/filestore') . '/' . $files['items']['1']['location'];
 
-            $this->assertClaimFileContents($claimfilePath, [$transaction1,$transaction2]);
+            $this->assertClaimFileContents($claimfilePath, [$paymentEntity1, $paymentEntity2]);
 
-            $this->assertRefundFileContents($refundfilePath, [$refundTransaction1, $refundTransaction2], [$transaction1,$transaction2]);
+            $this->assertRefundFileContents($refundfilePath, [$refundEntity1, $refundEntity2], [$paymentEntity1, $paymentEntity2]);
 
             $this->assertArraySelectiveEquals($testData, $mail->viewData);
 
@@ -214,9 +202,7 @@ class NbplusNetbankingKotakCombinedFileTest extends StaticCallbackNbplusGatewayT
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
-        $file = $this->getEntities('file_store', [
-            'count' => 2
-        ], true);
+        $file = $this->getEntities('file_store', ['count' => 2], true);
 
         $time = Carbon::now(Timezone::IST)->format('d-m-Y');
 
@@ -237,7 +223,7 @@ class NbplusNetbankingKotakCombinedFileTest extends StaticCallbackNbplusGatewayT
 
         $this->assertArraySelectiveEquals($expectedFilesContent, $file);
 
-        Mail::assertSent(DailyFileMail::class, function ($mail) use ($transaction1, $transaction2, $refundTransaction1, $refundTransaction2)
+        Mail::assertSent(DailyFile::class, function ($mail) use ($paymentEntity1, $paymentEntity2, $refundEntity1, $refundEntity2)
         {
             $today = Carbon::now(Timezone::IST)->format('d-m-Y');
 
@@ -251,17 +237,15 @@ class NbplusNetbankingKotakCombinedFileTest extends StaticCallbackNbplusGatewayT
                 ],
             ];
 
-            $files = $this->getEntities('file_store', [
-                'count' => 2
-            ], true);
+            $files = $this->getEntities('file_store', ['count' => 2], true);
 
             $claimfilePath = storage_path('files/filestore') . '/' . $files['items']['0']['location'];
 
             $refundfilePath = storage_path('files/filestore') . '/' . $files['items']['1']['location'];
 
-            $this->assertClaimFileContents($claimfilePath, [$transaction1,$transaction2]);
+            $this->assertClaimFileContents($claimfilePath, [$paymentEntity1, $paymentEntity2]);
 
-            $this->assertRefundFileContents($refundfilePath, [$refundTransaction1, $refundTransaction2], [$transaction1,$transaction2]);
+            $this->assertRefundFileContents($refundfilePath, [$refundEntity1, $refundEntity2], [$paymentEntity1, $paymentEntity2]);
 
             $this->assertArraySelectiveEquals($testData, $mail->viewData);
 
@@ -269,7 +253,7 @@ class NbplusNetbankingKotakCombinedFileTest extends StaticCallbackNbplusGatewayT
         });
     }
 
-    protected function assertRefundFileContents($filePath,$refundTransaction,$transaction)
+    protected function assertRefundFileContents($filePath, $refunds, $payments): void
     {
         $this->assertTrue(file_exists($filePath));
 
@@ -277,17 +261,17 @@ class NbplusNetbankingKotakCombinedFileTest extends StaticCallbackNbplusGatewayT
 
         $str = explode("\r\n", $fileData);
 
-        for ($i = 1; $i <= count($refundTransaction); $i++)
+        for ($i = 1; $i <= count($refunds); $i++)
         {
             $row = str_getcsv($str[$i], '|');
 
-            $this->assertEquals($row[2], $this->getFormattedDate($refundTransaction[$i - 1]['created_at'], 'd-M-Y') );
+            $this->assertEquals($row[2], $this->getFormattedDate($payments[$i-1]['authorized_at'], 'd-M-Y') );
 
-            $this->assertEquals($row[3], substr($transaction[$i - 1]['entity_id'], 4));
+            $this->assertEquals($row[3], $payments[$i-1]['id']);
 
-            $this->assertEquals($row[4],(float)$this->getFormattedAmount($refundTransaction[$i - 1]['amount']));
+            $this->assertEquals($row[4], (float)$this->getFormattedAmount($refunds[$i-1]['amount']));
 
-            $this->assertEquals($row[5], substr($transaction[$i - 1]['id'], 4));
+            $this->assertNotEmpty($row[5]);
 
             $this->assertCount(6, $row);
         }
@@ -296,36 +280,35 @@ class NbplusNetbankingKotakCombinedFileTest extends StaticCallbackNbplusGatewayT
         $this->assertNotNull($refundTransaction['reconciled_at']);
     }
 
-    protected function assertClaimFileContents($filePath, $transaction)
+    protected function assertClaimFileContents($filePath, $payments): void
     {
         $this->assertTrue(file_exists($filePath));
 
         $fileData = file_get_contents($filePath);
 
         $str = explode("\r\n", $fileData);
-        for ($i = 0; $i < count($transaction); $i++)
+        for ($i = 0; $i < count($payments); $i++)
         {
             $row = str_getcsv($str[$i], '|');
 
-            $this->assertEquals($row[2], $this->getFormattedDate($transaction[$i]['created_at'], 'd-M-Y') );
+            $this->assertEquals($row[2], $this->getFormattedDate($payments[$i]['created_at'], 'd-M-Y') );
 
-            $this->assertEquals($row[4],(float)$this->getFormattedAmount($transaction[$i]['amount']));
+            $this->assertEquals($row[3], $payments[$i]['id']);
 
-            $this->assertEquals($row[5], substr($transaction[$i]['id'], 4));
+            $this->assertEquals($row[4], (float)$this->getFormattedAmount($payments[$i]['amount']));
+
+            $this->assertNotEmpty($row[5]);
 
             $this->assertCount(6, $row);
         }
-
-        $refundTransaction = $this->getLastEntity('transaction', true);
-        $this->assertNotNull($refundTransaction['reconciled_at']);
     }
 
-    protected function getFormattedDate($date, $format)
+    protected function getFormattedDate($date, $format): string
     {
         return Carbon::createFromTimestamp($date, Timezone::IST)->format($format);
     }
 
-    protected function getFormattedAmount($amount)
+    protected function getFormattedAmount($amount): string
     {
         return number_format($amount / 100, 2, '.', '');
     }

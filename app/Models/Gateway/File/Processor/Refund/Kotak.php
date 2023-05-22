@@ -11,6 +11,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
 use RZP\Models\Payment\Refund\Constants;
+use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
 //This code is not being used to generate refund file go to app/Gateway/Netbanking/Kotak/RefundFile.php
@@ -40,6 +41,7 @@ class Kotak extends Base
     public function generateData(PublicCollection $entities): array
     {
         $data = [];
+        $nbplusPaymentIds = [];
         $isTpv = $this->gatewayFile->getTpv();
 
         // Refunds were fetched from scrooge
@@ -55,9 +57,17 @@ class Kotak extends Base
 
                 $data[] = $col;
             }
+
+            if (($payment->getCpsRoute() === PaymentEntity::NB_PLUS_SERVICE) or
+                ($payment->getCpsRoute() === PaymentEntity::NB_PLUS_SERVICE_PAYMENTS))
+            {
+                $nbplusPaymentIds[] = $payment->getId();
+            }
         }
 
         $data = $this->addGatewayEntitiesToDataWithPaymentIds($data, $this->scroogeRefundPaymentIds);
+
+        $data = $this->addNbplusGatewayEntitiesToDataWithNbPlusPaymentIds($data, $nbplusPaymentIds, 'netbanking');
 
         $this->checkIfRefundsAreInValidDateRange($data);
 
@@ -100,7 +110,7 @@ class Kotak extends Base
         if (($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE) or
             ($data['payment']['cps_route'] === Payment\Entity::NB_PLUS_SERVICE_PAYMENTS))
         {
-            return $data['payment']['transaction_id']; // payment through nbplus service
+            return $data['gateway']['bank_transaction_id']; // payment through nbplus service
         }
         return $data['gateway']['bank_payment_id'];
     }

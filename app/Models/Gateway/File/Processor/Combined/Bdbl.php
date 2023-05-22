@@ -3,19 +3,19 @@
 namespace RZP\Models\Gateway\File\Processor\Combined;
 
 use Carbon\Carbon;
+
 use RZP\Error\ErrorCode;
-use RZP\Exception\GatewayFileException;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File\Status;
+use RZP\Exception\GatewayFileException;
 
 class Bdbl extends Base
 {
     const BANK_NAME = 'Bdbl';
-
-    const FILE_TYPE               = FileStore\Type::BDBL_NETBANKING_COMBINED;
-    const EXTENSION               = FileStore\Format::XLSX;
-    const FILE_NAME               = 'SUMMARY_FILE';
+    const FILE_TYPE = FileStore\Type::BDBL_NETBANKING_COMBINED;
+    const EXTENSION = FileStore\Format::XLS;
+    const FILE_NAME = 'SUMMARY_FILE';
 
     protected function formatDataForMail(array $data)
     {
@@ -133,7 +133,7 @@ class Bdbl extends Base
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
                 [
-                    'id'        => $this->gatewayFile->getId(),
+                    'id' => $this->gatewayFile->getId(),
                 ],
                 $e);
         }

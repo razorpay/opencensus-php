@@ -10,6 +10,7 @@ use RZP\Services\Scrooge;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Exception\LogicException;
 use RZP\Services\NbPlus\Netbanking;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Reconciliator\NetbankingDbs\Constants;
@@ -140,6 +141,9 @@ class Dbs extends Base
         return [$returnData, true];
     }
 
+    /**
+     * @throws LogicException
+     */
     public function getStatus($row): string
     {
         if (($row['refund']['status'] === 'processed') and ($row['refund']['processed_source'] === 'GATEWAY_API'))
@@ -154,10 +158,9 @@ class Dbs extends Base
         {
             return 'To be processed';
         }
-        // till request error is resolved from bank end sending the refunds in the file for processing.
         else
         {
-            return 'To be processed';
+            throw new LogicException('Should not reach here');
         }
     }
 
