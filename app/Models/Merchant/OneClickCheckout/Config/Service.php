@@ -516,16 +516,39 @@ class Service extends Base\Service
         foreach ($configs as $config)
         {
             $currentConfig = $config['config'];
-            if (($platform === Constants::SHOPIFY && in_array($currentConfig, Constants::SHOPIFY_RESETTABLE_CONFIGS) === true)
-             || ($platform !== Constants::SHOPIFY && in_array($currentConfig, Constants::NATIVE_RESETTABLE_CONFIGS) === true)) {
+
+            if ($this->shouldResetConfig($platform, $currentConfig) === true)
+            {
                 $config->delete();
             }
+
         }
         $slabs = $this->repo->merchant_slabs->findByMerchantId($merchantId)->getModels();
         foreach ($slabs as $slab)
         {
             $slab->delete();
         }
+    }
+
+    protected function shouldResetConfig(string $platform, string $config): bool
+    {
+        if ($platform === Constants::SHOPIFY && in_array($config, Constants::SHOPIFY_RESETTABLE_CONFIGS))
+        {
+            return true;
+        }
+        if ($platform !== Constants::SHOPIFY && in_array($config, Constants::NATIVE_RESETTABLE_CONFIGS) === true)
+        {
+            return true;
+        }
+        if (in_array($config, Constants::SHOPIFY_SPECIFIC_CONFIGS) === true)
+        {
+            return true;
+        }
+        if (in_array($config, Constants::GIFT_CARD_CONFIGS) === true)
+        {
+            return true;
+        }
+        return false;
     }
 
     public function getCODIntelligenceConfig(string $merchantId) : bool
