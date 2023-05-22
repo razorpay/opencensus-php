@@ -31,6 +31,8 @@ class Sns
 
         $sdk = new Aws\Sdk($this->awsConfig);
 
+        $this->trace = $app['trace'];
+
         // See queue.php file for details.
         $args = [
             'credentials' => new Credentials\FileCache,
@@ -41,14 +43,13 @@ class Sns
         ];
 
         //change the sns endpoint to localstack when the app mode is devserve
-        if (env('APP_MODE') === 'devserve')
+        // the bvt settings added for settlement service with parameter USE_LOCALSTACK
+        if (env('APP_MODE') === 'devserve' || env('USE_LOCALSTACK') === true)
         {
             $args['endpoint'] = 'https://localstack-services.dev.razorpay.in';
         }
 
         $this->client = $sdk->createClient('sns', $args);
-
-        $this->trace = $app['trace'];
     }
 
     public function publish($message, $messageTarget = 'sms')
