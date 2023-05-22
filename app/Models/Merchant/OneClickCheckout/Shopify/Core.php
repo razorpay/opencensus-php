@@ -1086,10 +1086,10 @@ class Core extends Base\Core
         $this->updateShopifyCustomer($client, $order);
 
         // This action is need to handle the orders which is placed with both SE discount and customer specific coupons
-        if($isSEwithCouponApplied === true)
-        {
-            $this->disableUsedCoupon($client, $couponCode, $orderId);
-        }
+        // if($isSEwithCouponApplied === true)
+        // {
+        //     $this->disableUsedCoupon($client, $couponCode, $orderId);
+        // }
 
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_PLACE_ORDER_RES,
