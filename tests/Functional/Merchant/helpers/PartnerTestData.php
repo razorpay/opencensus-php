@@ -2342,6 +2342,62 @@ return [
         ],
     ],
 
+    'testRequestPartnerMigration'   => [
+        'request'   => [
+            'url'       => '/partner/request_migration',
+            'method'    => 'POST',
+            'content'   => [
+                'website_url'    =>  'random.com',
+                'other_info'     =>  'random description',
+                'phone_no'       =>  '9999999999'
+            ],
+        ],
+        'response'  => [
+            'content'       => [
+                'success'  => true,
+            ],
+        ],
+    ],
+
+    'testRequestPartnerMigrationError'   => [
+        'request'   => [
+            'url'       => '/partner/request_migration',
+            'method'    => 'POST',
+            'content'   => [
+                'website_url'    =>  'random.com',
+                'other_info'     =>  'random description',
+                'phone_no'       =>  '9999999999'
+            ],
+        ],
+        'response'  => [
+            'content'       => [],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\ServerErrorException',
+            'internal_error_code' => ErrorCode::SERVER_ERROR_PARTNERSHIPS_FAILURE,
+        ],
+    ],
+
+    'testRequestPartnerMigrationInputValidation'   => [
+        'request'   => [
+            'url'       => '/partner/request_migration',
+            'method'    => 'POST',
+            'content'   => [
+                'other_info'     =>  'random description',
+                'phone_no'       =>  '9999999999'
+            ],
+        ],
+        'response'  => [
+            'content'       => [],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testUpdatePartnerTypeAsBankOnboardingPartner' => [
         'request'  => [
             'url'     => '/banking_accounts/rbl/lms/merchant/admin/partner_type',

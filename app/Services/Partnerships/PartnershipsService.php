@@ -47,6 +47,10 @@ class PartnershipsService extends Base\Service
 
     const LIST_AUDIT_LOG_BY_ENTITY_ID    = 'twirp/rzp.commissions.audit.v1.AuditLogAPI/ListByEntityId';
 
+    const GET_LAST_PARTNER_MIGRATION    = '/twirp/rzp.commissions.partner_migration_audit.v1.PartnerMigrationAuditAPI/GetLastPartnerMigrationAudit';
+
+    const CREATE_PARNTER_MIGRATION_AUDIT    = '/twirp/rzp.commissions.partner_migration_audit.v1.PartnerMigrationAuditAPI/CreatePartnerMigrationAudit';
+
     const ACTIVATED = 'ACTIVATED';
 
     // Tells the client what the content type of the returned content actually is
@@ -196,6 +200,16 @@ class PartnershipsService extends Base\Service
         return $this->sendRequest($parameters, self::LIST_AUDIT_LOG_BY_ENTITY_ID, Requests::POST);
     }
 
+    public function createPartnerMigrationAudit($parameters)
+    {
+        return $this->sendRequest($parameters, self::CREATE_PARNTER_MIGRATION_AUDIT, Requests::POST);
+    }
+
+    public function getLastPartnerMigration($parameters)
+    {
+        return $this->sendRequest($parameters, self::GET_LAST_PARTNER_MIGRATION, Requests::POST);
+    }
+
     /**
      * @throws Exception\InvalidPermissionException
      * @throws Exception\ServerErrorException
@@ -295,6 +309,8 @@ class PartnershipsService extends Base\Service
         }
 
         $partnershipsServiceResponse = ['status_code' => $code, 'response' => $res];
+
+        $this->trace->info(TraceCode::PARTNERSHIPS_REQUEST, $partnershipsServiceResponse);
 
         return $partnershipsServiceResponse;
     }

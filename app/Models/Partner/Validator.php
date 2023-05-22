@@ -28,6 +28,12 @@ class Validator extends Base\Validator
         'partner_ids' => 'required|array'
     ];
 
+    protected static $raisePartnerMigrationRequestRules = [
+        'phone_no'    => 'required|string',
+        'website_url' => 'required|string',
+        'other_info'  => 'required|string',
+    ];
+
     /**
      * @param Merchant\Entity $partner
 

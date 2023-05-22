@@ -13,6 +13,7 @@ use RZP\Constants\Mode;
 use App\User\Constants;
 use RZP\Constants\Timezone;
 use RZP\Exception\BadRequestException;
+use RZP\Tests\Traits\MocksPartnershipsService;
 use Neves\Events\TransactionalClosureEvent;
 use RZP\Jobs\MigrateResellerToPurePlatformPartnerJob;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -64,6 +65,7 @@ class PartnerTest extends OAuthTestCase
     use BatchTestTrait;
     use CreateLegalDocumentsTrait;
     use TestsWebhookEvents;
+    use MocksPartnershipsService;
 
     const PARTNER                       = 'partner';
     const ACTIVATION                    = 'activation';
@@ -4889,6 +4891,40 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testRequestPartnerMigration() : void
+    {
+        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID);
+
+        $expectedResponse = ['status_code'=> 200, 'response'=> []];
+
+        $requestInput = $this->testData[__FUNCTION__]['request']['content'];
+
+        $input = $this->createPartnerMigrationAuditInput($merchant, $requestInput);
+
+        $this->mockPartnershipsServiceTreatment($input, $expectedResponse, 'createPartnerMigrationAudit');
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_MERCHANT_ID);
+
+        $this->startTest();
+    }
+
+    public function testRequestPartnerMigrationError() : void
+    {
+        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID);
+
+        $expectedResponse = ['status_code'=> 401, 'response'=> []];
+
+        $requestInput = $this->testData[__FUNCTION__]['request']['content'];
+
+        $input = $this->createPartnerMigrationAuditInput($merchant, $requestInput);
+
+        $this->mockPartnershipsServiceTreatment($input, $expectedResponse, 'createPartnerMigrationAudit');
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_MERCHANT_ID);
+
+        $this->startTest();
+    }
+  
     public function testMigrateResellerToPurePlatform(): void
     {
         Mail::fake();
@@ -5005,6 +5041,13 @@ class PartnerTest extends OAuthTestCase
         return [$partnerId, $app, $subMerchant];
     }
 
+    public function testRequestPartnerMigrationInputValidation() : void
+    {
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_MERCHANT_ID);
+
+        $this->startTest();
+    }
+
     private function mockSubmerchantFetchMultipleOptimisedExperiment(): void
     {
         $input = [
@@ -5024,6 +5067,26 @@ class PartnerTest extends OAuthTestCase
             ]
         ];
         $this->mockSplitzTreatment($input, $output);
+    }
+
+    private function createPartnerMigrationAuditInput(Merchant\Entity $merchant, array $input)
+    {
+        return [
+            'partner_id'       => $merchant->getId(),
+            'status'           => "requested",
+            'old_partner_type' => $merchant->getPartnerType(),
+            'audit_log'        => [
+                'actor_id'     => $merchant->primaryowner()->getId(),
+                "actor_type"   => $merchant->primaryowner()->getEntityName(),
+                'actor_email'  => $merchant->primaryowner()->getEmail()
+            ],
+            'freshdesk_params' => [
+                'phone_no'     => $input['phone_no'],
+                'website_url'  => $input['website_url'],
+                'description'  => $input['other_info'],
+                'name'         => $merchant->getName()
+            ]
+        ];
     }
 
 }

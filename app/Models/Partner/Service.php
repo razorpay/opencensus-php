@@ -13,6 +13,7 @@ use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Http\RequestHeader;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Metric;
 use RZP\Models\Merchant\Referral;
 use RZP\Models\Partner\Activation;
 use Razorpay\Trace\Logger as Trace;
@@ -349,6 +350,51 @@ class Service extends Base\Service
             'success_ids' => $successIds,
             'failure_ids' => $failureIds
         ];
+    }
+
+    /**
+     * creates a new migration request in partnership service
+     *
+     * @param array $input
+     *
+     * @return bool[]
+     * @throws Exception\ServerErrorException
+     */
+    public function raisePartnerMigrationRequest(array $input): array
+    {
+        (new Validator())->validateInput('raisePartnerMigrationRequest', $input);
+
+        $partner = $this->merchant;
+        $params = [
+            'partner_id'       => $partner->getId(),
+            'status'           => "requested",
+            'old_partner_type' => $partner->getPartnerType(),
+            'audit_log'        => [
+                'actor_id'     => $this->auth->getUser()->getId(),
+                'actor_type'   => $this->auth->getUser()->getEntityName(),
+                'actor_email'  => $this->auth->getUser()->getEmail()
+            ],
+            'freshdesk_params' => [
+                'phone_no'     => $input['phone_no'],
+                'website_url'  => $input['website_url'],
+                'description'  => $input['other_info'],
+                'name'         => $partner->getName()
+            ]
+        ];
+        $partnershipsResponse = $this->app->partnerships->createPartnerMigrationAudit($params);
+
+        if($partnershipsResponse['status_code'] == 200)
+        {
+            $this->trace->count(Metric::PARTNER_MIGRATION_REQUEST_CREATED);
+            return ['success' => true];
+        }
+        else
+        {
+            $this->trace->error(TraceCode::PRTS_PARTNER_MIGRATION_REQUEST_ERROR, $partnershipsResponse['response']);
+            throw new Exception\ServerErrorException(
+            'Error completing the request',
+            ErrorCode::SERVER_ERROR_PARTNERSHIPS_FAILURE);
+        }
     }
 
     public function getPartnerSalesPOC()

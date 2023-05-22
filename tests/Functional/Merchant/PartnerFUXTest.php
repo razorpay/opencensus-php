@@ -7,8 +7,10 @@ namespace Functional\Merchant;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use Razorpay\OAuth\Application;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Tests\Traits\MocksPartnershipsService;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class PartnerFUXTest extends OAuthTestCase
@@ -16,6 +18,8 @@ class PartnerFUXTest extends OAuthTestCase
     use PartnerTrait;
 
     use RequestResponseFlowTrait;
+    use MocksPartnershipsService;
+    use MocksSplitz;
 
     const DEFAULT_MERCHANT_ID    = '10000000000000';
     const DEFAULT_SUBMERCHANT_ID = '10000000000009';
@@ -31,6 +35,48 @@ class PartnerFUXTest extends OAuthTestCase
 
     public function testPartnerFUXDetailsAfterSignUp()
     {
+        $expectedResponse = ['status_code'=> 200, 'response'=> ['partner_migration'=>[]]];
+
+        $input = ['partner_id'=>'10000000000000'];
+
+        $this->mockPartnershipsServiceTreatment($input, $expectedResponse, 'getLastPartnerMigration');
+
+        $this->mockAllSplitzTreatment();
+
+        $this->createResellerPartner();
+
+        $this->ba->proxyAuth();
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+    }
+
+    public function testPartnerFUXDetailsWithPartnerMigrationFlagDisabled()
+    {
+        $expectedResponse = ['status_code'=> 200, 'response'=> ['partner_migration'=>['partner_id'=> '']]];
+
+        $input = ['partner_id'=>'10000000000000'];
+
+        $this->mockPartnershipsServiceTreatment($input, $expectedResponse, 'getLastPartnerMigration');
+
+        $this->mockAllSplitzTreatment();
+
+        $this->createResellerPartner();
+
+        $this->ba->proxyAuth();
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+    }
+
+    public function testPartnerFUXDetailsWithPartnershipServiceError()
+    {
+        $expectedResponse = ['status_code'=> 401, 'response'=> ['error'=>[]]];
+
+        $input = ['partner_id'=>'10000000000000'];
+
+        $this->mockPartnershipsServiceTreatment($input, $expectedResponse, 'getLastPartnerMigration');
+
+        $this->mockAllSplitzTreatment();
+
         $this->createResellerPartner();
 
         $this->ba->proxyAuth();
@@ -40,6 +86,13 @@ class PartnerFUXTest extends OAuthTestCase
 
     public function testPartnerFUXDetailsAfterSubmerchantsAreAdded()
     {
+        $expectedResponse = ['status_code'=> 200, 'response'=> ['partner_migration'=>[]]];
+
+        $input = ['partner_id'=>'10000000000000'];
+
+        $this->mockPartnershipsServiceTreatment($input, $expectedResponse, 'getLastPartnerMigration');
+
+        $this->mockAllSplitzTreatment();
 
         $this->createResellerPartnerSubmerchant(['email' => 'testing@example.com']);
 
@@ -50,6 +103,13 @@ class PartnerFUXTest extends OAuthTestCase
 
     public function testPartnerFUXDetailsAfterSubmerchantsAreLive()
     {
+        $expectedResponse = ['status_code'=> 200, 'response'=> ['partner_migration'=>[]]];
+
+        $input = ['partner_id'=>'10000000000000'];
+
+        $this->mockPartnershipsServiceTreatment($input, $expectedResponse, 'getLastPartnerMigration');
+
+        $this->mockAllSplitzTreatment();
 
         $this->createResellerPartnerSubmerchant(
             [
@@ -65,6 +125,14 @@ class PartnerFUXTest extends OAuthTestCase
 
     public function testAggregatorPartnerFUXDetailsWhenIntegratedWithApi()
     {
+        $expectedResponse = ['status_code'=> 200, 'response'=> ['partner_migration'=>[]]];
+
+        $input = ['partner_id'=>'10000000000000'];
+
+        $this->mockPartnershipsServiceTreatment($input, $expectedResponse, 'getLastPartnerMigration');
+
+        $this->mockAllSplitzTreatment();
+
         $client = $this->setUpPartnerMerchantAppAndGetClient('dev', [], '10000000000000', 'aggregator');
 
         $payment = $this->fixtures->create('payment:authorized');
@@ -86,6 +154,14 @@ class PartnerFUXTest extends OAuthTestCase
 
     public function testFullyManagedPartnerFUXDetailsWhenIntegratedWithApi()
     {
+        $expectedResponse = ['status_code'=> 200, 'response'=> ['partner_migration'=>[]]];
+
+        $input = ['partner_id'=>'10000000000000'];
+
+        $this->mockPartnershipsServiceTreatment($input, $expectedResponse, 'getLastPartnerMigration');
+
+        $this->mockAllSplitzTreatment();
+
         $client = $this->setUpPartnerMerchantAppAndGetClient();
 
         $payment = $this->fixtures->create('payment:authorized');
@@ -107,6 +183,14 @@ class PartnerFUXTest extends OAuthTestCase
 
     public function testPurePlatformPartnerFUXDetailsWhenIntegratedWithApi()
     {
+        $expectedResponse = ['status_code'=> 200, 'response'=> ['partner_migration'=>[]]];
+
+        $input = ['partner_id'=>'10000000000000'];
+
+        $this->mockPartnershipsServiceTreatment($input, $expectedResponse, 'getLastPartnerMigration');
+
+        $this->mockAllSplitzTreatment();
+
         $client = $this->setUpPartnerMerchantAppAndGetClient('dev', [], '10000000000000', 'pure_platform');
 
         $payment = $this->fixtures->create('payment:authorized');
@@ -138,6 +222,14 @@ class PartnerFUXTest extends OAuthTestCase
             'partner_config_id' => $config->getId()
         ];
 
+        $expectedResponse = ['status_code'=> 200, 'response'=> ['partner_migration'=>[]]];
+
+        $input = ['partner_id' => $partner->getId()];
+
+        $this->mockPartnershipsServiceTreatment($input, $expectedResponse, 'getLastPartnerMigration');
+
+        $this->mockAllSplitzTreatment();
+
         $this->fixtures->create('commission:commission_and_sync_es', $commissionAttributes);
 
         $this->ba->proxyAuth('rzp_test_' . $partner->getId());
@@ -155,6 +247,14 @@ class PartnerFUXTest extends OAuthTestCase
             'partner_config_id' => $config->getId()
         ];
 
+        $expectedResponse = ['status_code'=> 200, 'response'=> ['partner_migration'=>[]]];
+
+        $input = ['partner_id' => $partner->getId()];
+
+        $this->mockPartnershipsServiceTreatment($input, $expectedResponse, 'getLastPartnerMigration');
+
+        $this->mockAllSplitzTreatment();
+        
         $this->fixtures->create('commission:commission_and_sync_es', $commissionAttributes);
 
         $this->ba->proxyAuth('rzp_test_' . $partner->getId());

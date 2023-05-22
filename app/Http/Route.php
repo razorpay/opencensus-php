@@ -3054,6 +3054,8 @@ class Route
         'merchant_authorize_partner_status'        => ['get',      'merchant/{id}/authorize/partner',                'MerchantController@getMerchantAuthorizationForPartner'                ],
 
         'partner_sales_poc'                        => ['get',      'partner/sales_poc',                              'PartnerController@getPartnerSalesPOC'           ],
+        'partner_request_migration'                => ['post',     'partner/request_migration',                      'PartnerController@raisePartnerMigrationRequest'           ],
+
 
         //cron route for sending daily transacted submerchant events for all partners
         'partner_send_daily_transacted_submerchant_events' => ['post', 'partner/send_daily_transacted_submerchant_events',  'PartnerController@sendSubmerchantFirstTransactionSegmentEvents'],
@@ -6859,6 +6861,7 @@ class Route
         'partner_activation_save',
 
         'partner_sales_poc',
+        'partner_request_migration',
         // Partner KYC access routes
         'partner_kyc_access_request',
         'partner_kyc_revoke_access',
@@ -10846,6 +10849,7 @@ class Route
             'commissions_invoice_status_change',
             'partner_activation_details',
             'partner_sales_poc',
+            'partner_request_migration',
             'partner_activation_save',
             'partner_kyc_access_request',
             'partner_kyc_revoke_access',

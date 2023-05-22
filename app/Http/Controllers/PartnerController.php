@@ -131,4 +131,13 @@ class PartnerController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function raisePartnerMigrationRequest()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->raisePartnerMigrationRequest($input);
+
+        return ApiResponse::json($response);
+    }
 }

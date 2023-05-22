@@ -288,4 +288,6 @@ final class Metric
     // histogram
     const BALANCE_FETCH_REQUEST_SYNC_CALL_LATENCY = 'balance_fetch_request_sync_call_latency';
     const MAGIC_ANALYTICS_GET_CUSTOMER_INFO_COUNT            = 'magic_analytics_get_customer_info_count';
+
+    const PARTNER_MIGRATION_REQUEST_CREATED = 'PARTNER_MIGRATION_REQUEST_CREATED';
 }

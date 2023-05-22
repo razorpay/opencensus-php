@@ -15,7 +15,42 @@ return [
                 'first_earning_generated' => false,
                 'first_commission_payout' => false,
                 'api_integration' => false,
-                'first_submerchant_accept_payments' => false
+                'first_submerchant_accept_payments' => false,
+                'partner_migration_enabled' => true
+            ]
+        ]
+    ],
+    'testPartnerFUXDetailsWithPartnerMigrationFlagDisabled' => [
+        'request'  => [
+            'url'     => '/partner/first_user_experience',
+            'method'  => 'GET',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'first_submerchant_added' => false,
+                'first_earning_generated' => false,
+                'first_commission_payout' => false,
+                'api_integration' => false,
+                'first_submerchant_accept_payments' => false,
+                'partner_migration_enabled' => false
+            ]
+        ]
+    ],
+    'testPartnerFUXDetailsWithPartnershipServiceError' => [
+        'request'  => [
+            'url'     => '/partner/first_user_experience',
+            'method'  => 'GET',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'first_submerchant_added' => false,
+                'first_earning_generated' => false,
+                'first_commission_payout' => false,
+                'api_integration' => false,
+                'first_submerchant_accept_payments' => false,
+                'partner_migration_enabled' => false
             ]
         ]
     ],

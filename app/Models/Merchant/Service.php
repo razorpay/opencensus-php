@@ -11052,6 +11052,25 @@ class Service extends Base\Service
         $response['first_submerchant_accept_payments'] = $this->repo->merchant_access_map
             ->isLiveSubmerchantPresentForPartner($partnerId);
 
+        if ($this->isPartnerMigrationRequestExperimentEnabled($partnerId) === true)
+        {
+            try
+            {
+                $partnerMigrationResponse = $this->app->partnerships->getLastPartnerMigration(['partner_id' => $partnerId]);
+
+                $this->trace->info(TraceCode::GET_PARTNER_MIGRATION_AUDIT_RESPONSE, $partnerMigrationResponse);
+
+                $response['partner_migration_enabled'] = ($partnerMigrationResponse['status_code'] == 200 and empty($partnerMigrationResponse['response']['partner_migration']));
+            }
+            catch (Throwable $e)
+            {
+                $this->trace->error(TraceCode::PRTS_GET_PARTNER_MIGRATION_AUDIT_ERROR, ['partner_id'=>$partnerId]);
+
+                $response['partner_migration_enabled'] = false;
+            }
+        }
+
+
         return $response;
     }
 
@@ -12046,5 +12065,24 @@ class Service extends Base\Service
         $partnerId = $input[Merchant\Constants::PARTNER_ID];
 
         return $this->core()->getMerchantAuthorizationForPartner($merchantId, $partnerId);
+    }
+
+    /**
+     * Checks whether partner migration request flag is enabled in fux api
+     *
+     * @param string $partnerId
+     *
+     * @return bool
+     */
+    private function isPartnerMigrationRequestExperimentEnabled(string $partnerId): bool
+    {
+        $properties = [
+            'id'            => $partnerId,
+            'experiment_id' => $this->app['config']->get('app.partner_migration_request_flag_enabled'),
+            'request_data'  => json_encode([
+                'mid' => $partnerId,
+            ]),
+        ];
+        return $this->core()->isSplitzExperimentEnable($properties, 'enable');
     }
 }

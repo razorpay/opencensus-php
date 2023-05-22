@@ -471,6 +471,7 @@ return array(
     'product_config_issue_exp_id'                           => env('PRODUCT_CONFIG_ISSUE_EXP_ID'),
     'user_role_migration_for_x_exp_id'                      => env('USER_ROLE_MIGRATION_FOR_X_EXP_ID'),
     'partner_type_migration_exp_id'                         => env('PARTNER_TYPE_MIGRATION_EXP_ID'),
+    'partner_migration_request_flag_enabled'                => env('PARTNER_MIGRATION_REQUEST_FLAG_ENABLED'),
     'reseller_to_pure_platform_switch_exp_id'               => env('RESELLER_TO_PURE_PLATFORM_SWITCH_EXP_ID'),
     'submerchant_fetch_multiple_optimisation_exp_id'        => env('SUBMERCHANT_FETCH_MULTIPLE_OPTIMISATION_EXP_ID'),
     'finance_approval_removal_exp_id'                       => env('FINANCE_APPROVAL_REMOVAL_EXP_ID'),

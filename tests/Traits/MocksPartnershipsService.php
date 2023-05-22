@@ -16,9 +16,9 @@ trait MocksPartnershipsService
     {
         if ($this->partnershipsServiceMock === null)
         {
-            $this->partnershipsServiceMock = Mockery::mock(PartnershipsService::class)->makePartial();
+            $this->partnershipsServiceMock = Mockery::mock('RZP\Services\Partnerships\PartnershipsService', $this->app)->makePartial();
 
-            $this->app->instance('partnershipsService', $this->partnershipsServiceMock);
+            $this->app['partnerships'] = $this->partnershipsServiceMock;
         }
 
         $mock = $this->partnershipsServiceMock
