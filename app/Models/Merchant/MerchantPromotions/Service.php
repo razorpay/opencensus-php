@@ -245,10 +245,6 @@ class Service extends Base\Service
                 $ex = $e;
                 throw $e;
             }
-            if (Session()->has($this->mode . '_app_token') === false) {
-                unset($input['email']);
-                unset($input['contact']);
-            }
 
             $routeToMagicCheckoutService = false;
             try {
