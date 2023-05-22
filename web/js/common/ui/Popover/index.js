@@ -50,8 +50,6 @@ class Popover extends Component {
     this.setState({
       resultantAlignment,
     });
-    // resultantAlignment is left/right/top/bottom when tooltip is visible and undefined when its hidden
-    this.props.onVisibilityChange?.(!!resultantAlignment);
   }
 
   onAdjustment(leftAdjustment, topAdjustment) {

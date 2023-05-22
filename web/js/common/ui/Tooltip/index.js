@@ -113,14 +113,8 @@ class Tooltip extends Component {
     const screenBottom = window.innerHeight;
 
     let { tooltipTop, tooltipLeft } = this.getDimensions(data);
-    const {
-      tooltipWidth,
-      tooltipHeight,
-      paddingLeft,
-      paddingRight,
-      paddingTop,
-      paddingBottom,
-    } = this.getDimensions(data);
+    const { tooltipWidth, tooltipHeight, paddingLeft, paddingRight, paddingTop, paddingBottom } =
+      this.getDimensions(data);
 
     let horizontalAdjustment = this.props.horizontalAdjustment || 0;
     let verticalAdjustment = this.props.verticalAdjustment || 0;
@@ -231,6 +225,7 @@ class Tooltip extends Component {
     this.setState({
       show: true,
     });
+    this.props.onVisibilityChange?.(true);
     return null;
   }
 
@@ -247,7 +242,7 @@ class Tooltip extends Component {
     this.setState({
       show: false,
     });
-
+    this.props.onVisibilityChange?.(false);
     // reset alignment adjustment
     if (this.props.onAlignmentChange) this.props.onAlignmentChange();
   }
@@ -361,6 +356,7 @@ class Tooltip extends Component {
       onAlignmentChange,
       theme,
       parentQuerySelector,
+      onVisibilityChange,
       ...otherProps
     } = this.props;
 
