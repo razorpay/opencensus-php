@@ -28,6 +28,8 @@ class UpiPaymentServiceTest extends TestCase
 
     protected $upiPaymentService;
 
+    protected $pgService;
+
     protected $shouldCreateTerminal = true;
 
     protected function setUp(): void
@@ -42,6 +44,12 @@ class UpiPaymentServiceTest extends TestCase
         $this->upiPaymentService =  Mockery::mock('RZP\Services\UpiPayment\Mock\Service', [$this->app])->makePartial();
 
         $this->app->instance('upi.payments', $this->upiPaymentService);
+
+        $this->pgService = Mockery::mock('RZP\Services\PGRouter', [$this->app])->makePartial();
+
+        $this->app->instance('pg_router', $this->pgService);
+
+        $this->enablePgRouterConfig();
 
         // We have Airtel Gateway Enabled for Service
         $this->terminal = $this->fixtures->create('terminal:shared_upi_airtel_terminal');

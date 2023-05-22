@@ -349,7 +349,7 @@ class Processor
     /**
      * Razorx flag to block merchants from re-arch flow
      */
-    const ALLOW_MERCHANTS_ON_REARCH_UPS = 'allow_merchants_on_rearch_ups';
+    const ALLOW_MERCHANTS_ON_REARCH_UPS_V2 = 'allow_merchants_on_rearch_ups_v2';
 
     /**
      * Razorx flag to indicate which method and gateway are supported by barricade service
@@ -1339,15 +1339,15 @@ class Processor
                 return false;
             }
 
+            if ($this->isUpiPaymentReArchBVTRequest() === true)
+            {
+                return true;
+            }
+
             if ((app()->isEnvironmentQA() === true) and
                 ($this->mode === Mode::LIVE))
             {
                 return false;
-            }
-
-            if ($this->isUpiPaymentReArchBVTRequest() === true)
-            {
-                return true;
             }
 
             if (($this->isUpiRearchRoute($currentRouteName) == false) or
@@ -1443,7 +1443,7 @@ class Processor
             */
 
             // Allow re-arch traffic, merchants added in this flag will be routes via UPS re-arch
-            $result = $this->app->razorx->getTreatment($merchant->getId(), self::ALLOW_MERCHANTS_ON_REARCH_UPS,
+            $result = $this->app->razorx->getTreatment($merchant->getId(), self::ALLOW_MERCHANTS_ON_REARCH_UPS_V2,
             $this->mode);
 
             $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_PAYMENTS_RAZORX_VARIANT,
@@ -1452,7 +1452,7 @@ class Processor
                 'merchant_ramp_variant' => $result,
             ]);
 
-            if ($result === 'on') {
+            if (str_starts_with($result, 'on') === true) {
                 return true;
             }
 
