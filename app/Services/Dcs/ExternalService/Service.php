@@ -122,7 +122,6 @@ class Service
         {
             $this->throwServiceErrorException($ex);
         }
-       return null;
     }
 
     protected function sendRawRequest($request)
@@ -232,7 +231,8 @@ class Service
         throw new Exception\ServerErrorException($e->getMessage(), $errorCode);
     }
 
-    public function buildExternalRequest(string $key, string $entity_id, array $fieldValues, string $mode) {
+    public function buildExternalRequest(string $key, string $entity_id, array $fieldValues, string $mode): array
+    {
         $request = [];
         $request['key'] = $key;
         if($mode === Mode::LIVE)
