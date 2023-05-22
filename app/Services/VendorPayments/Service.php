@@ -4,11 +4,13 @@ namespace RZP\Services\VendorPayments;
 
 use App;
 use Mail;
+use Request;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\User\Entity;
 use RZP\Http\Request\Requests;
+use RZP\Http\RequestHeader;
 use RZP\Http\Response\StatusCode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payout\Entity as PayoutEntity;
@@ -104,6 +106,7 @@ class Service
     const X_MERCHANT_ID            = 'X-Merchant-Id';
     const X_USER_ID                = 'X-User-Id';
     const X_ORG_ID                 = 'X-Org-Id';
+    const DEV_SERVE_USER           = 'rzpctx-dev-serve-user';
 
     const MESSAGE_ID  = 'message_id';
     const RECIPIENT   = 'recipient';
@@ -859,6 +862,10 @@ class Service
         $headers[self::X_USER_ID] = optional($this->app['basicauth']->getUser())->getId() ?? '';
 
         $headers[self::X_ORG_ID] = $this->app['basicauth']->getOrgId() ?? '';
+
+        if(!empty(Request::header(RequestHeader::DEV_SERVE_USER))){
+            $headers[self::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
+        }
 
         if ($mode == null and isset($this->app['rzp.mode']))
         {
