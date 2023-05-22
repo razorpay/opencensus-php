@@ -244,7 +244,6 @@ class Validator extends Base\Validator
         ConfigKey::PAYOUT_ASYNC_APPROVE_DISTRIBUTION_WINDOW_LENGTH                     => 'filled|integer',
         ConfigKey::PAYOUT_ASYNC_APPROVE_PROCESSING_RATE_LIMIT                          => 'filled|integer',
         ConfigKey::PAYOUT_ASYNC_APPROVE_PROCESSING_WINDOW_LENGTH                       => 'filled|integer',
-        ConfigKey::UPI_TURBO_POPULAR_BANK_LIST                                         => 'filled|array',
         ConfigKey::DCS_READ_WHITELISTED_FEATURES                                       => 'filled|array',
         ConfigKey::UNEXPECTED_PAYMENT_DELAY_REFUND                                     => 'filled|integer',
         ConfigKey::DIRECT_TRANSFER_LIMITS                                              => 'filled|array',

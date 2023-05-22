@@ -373,9 +373,6 @@ class ConfigKey
 
     const ACCOUNT_SUB_ACCOUNT_RESTRICTED_PERMISSIONS_LIST = self::PREFIX . 'account_sub_account_restricted_permissions_list';
 
-    // UPI turbo
-    const UPI_TURBO_POPULAR_BANK_LIST           = self::PREFIX . 'upi_turbo_popular_bank_list';
-
     // DCS READ ENABLED
     const DCS_READ_WHITELISTED_FEATURES           = self::PREFIX . 'dcs_reads_whitelisted_features';
 
@@ -537,7 +534,6 @@ class ConfigKey
         self::PAYOUT_SERVICE_DATA_MIGRATION_BUFFER,
         self::RX_ICICI_BLOCK_NON_2FA_NON_BAAS_FOR_CA,
         self::RISK_FOH_TEAM_EMAIL_IDS,
-        self::UPI_TURBO_POPULAR_BANK_LIST,
         self::DCS_READ_WHITELISTED_FEATURES,
         self::UNEXPECTED_PAYMENT_DELAY_REFUND,
         self::DIRECT_TRANSFER_LIMITS,

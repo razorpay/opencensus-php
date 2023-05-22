@@ -2,8 +2,8 @@
 
 namespace RZP\Tests\P2p\Service\UpiAxisOlive\Device;
 
-use RZP\Gateway\P2p\Upi\Axis\Fields;
 use RZP\Tests\Traits\TestsWebhookEvents;
+use RZP\Models\P2p\Preferences\Constants;
 use RZP\Tests\P2p\Service\UpiAxisOlive\TestCase;
 use RZP\Tests\P2p\Service\Base\Traits\EventsTrait;
 use RZP\Tests\P2p\Service\Base\Traits\MetricsTrait;
@@ -30,6 +30,6 @@ class PreferencesTest extends TestCase
 
         $this->assertArrayHasKey('popular_banks', $response);
 
-        $this->assertEquals('119753', $response['popular_banks'][0]["iin"]);
+        $this->assertArraySelectiveEquals(Constants::getPopularBanksList(), $response['popular_banks']);
     }
 }
