@@ -22,9 +22,7 @@ class Service extends Base\Service
     {
         $this->increaseAllowedSystemLimits();
 
-        $limit = $input['limit'] ?? Constants::DEFAULT_LIMIT;
-
-        $response = $this->core->retryOrderUpdate($limit);
+        $response = $this->core->retryOrderUpdate($input);
 
         return $response;
     }

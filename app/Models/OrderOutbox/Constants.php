@@ -16,7 +16,7 @@ class Constants
 
     // Cron
     const MAX_RETRY_COUNT                       = 10;
-    const OUTBOX_RETRY_DEFAULT_END_TIME         = 600;
-    const OUTBOX_RETRY_DEFAULT_START_TIME       = 864000;
+    const OUTBOX_RETRY_DEFAULT_END_TIME         = 120;
+    const OUTBOX_RETRY_DEFAULT_START_TIME       = 3600;
     const DEFAULT_LIMIT                         = 100;
 }

@@ -14,7 +14,7 @@ use RZP\Trace\TraceCode;
 class Core extends Base\Core
 {
     //order outbox cron retries order update request for non-deleted outbox entries
-    public function retryOrderUpdate($limit) : array
+    public function retryOrderUpdate($input) : array
     {
         $successful = 0;
 
@@ -26,8 +26,15 @@ class Core extends Base\Core
 
         $now = time();
 
-        $startTimestamp = $now - Constants::OUTBOX_RETRY_DEFAULT_START_TIME;
-        $endTimestamp = $now - Constants::OUTBOX_RETRY_DEFAULT_END_TIME;
+        $limit = $input['limit'] ?? Constants::DEFAULT_LIMIT;
+
+        $startTimeOffset = $input['start_time_offset'] ?? Constants::OUTBOX_RETRY_DEFAULT_START_TIME;
+
+        $endTimeOffset = $input['end_time_offset'] ?? Constants::OUTBOX_RETRY_DEFAULT_END_TIME;
+
+        $startTimestamp = $now - $startTimeOffset;
+
+        $endTimestamp = $now - $endTimeOffset;
 
         $entries = $this->repo->order_outbox->fetchOldOutboxEntriesForRetry($limit, $startTimestamp, $endTimestamp);
 
