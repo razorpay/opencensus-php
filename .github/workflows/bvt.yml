@@ -18,7 +18,9 @@ jobs:
           access_token: ${{ github.token }}
   # PR Approval Request Workflow
   pull_request_approved:
-    if: github.event.review.state == 'approved'
+    env:
+      old_commit: ${{ github.event.pull_request.head.sha }}
+    if: ${{ (github.event_name == 'workflow_dispatch' || github.event.review.state == 'approved') }}
     runs-on: [ self-hosted, api ]
     needs: [ cancel ]
     steps:
@@ -83,9 +85,12 @@ jobs:
           echo "::set-output name=latest_commit::$LATEST_COMMIT"
       - name: Print Lastest Commit id from PR - Debugging Step
         run: echo ${{ steps.pr_info.outputs.latest_commit }}
-      - name: Update BVT Status Check Link to Latest Merged Commit
-        if: ${{ github.sha }} != ${{ steps.pr_info.outputs.latest_commit }} && ${{success()}}
+      - name: Update BVT Status Check Link to Latest Merged Commit - Pending
+        if: ${{ env.old_commit != steps.pr_info.outputs.latest_commit && success() }}
         run: |
+          echo "env.old_commit: ${{ env.old_commit }}"
+          echo "steps.pr_info.outputs.latest_commit: ${{ steps.pr_info.outputs.latest_commit }}"
+          echo "Condition: ${{ env.old_commit != steps.pr_info.outputs.latest_commit }}"
           STATUS_URL=${{ steps.workflow_run.outputs.url }}
           STATUS_DESCRIPTION="The BVT test on Devstack has been initiated. Kindly wait until the test is completed."
           STATUS_CONTEXT="Run BVT in Devstack Post Approval"
@@ -237,6 +242,8 @@ jobs:
             :white_check_mark: The BVT test on Devstack has been initiated. Kindly wait until the test is completed.
 
             For troubleshooting BVT, please consult this [documentation](https://docs.google.com/document/d/162IkAOyLUQxYc-A6sDllXiiP2VJCyFpqn6-tfZGBhK8/edit#heading=h.exflzwww951h).
+
+            BVT Run Started With Commit Id : `${{ steps.pr_info.outputs.latest_commit }}`
           allow-repeats: true
       - name: Post comment for devstack failed to initated
         if: env.WORKFLOW_STATUS != 'success'
@@ -248,9 +255,11 @@ jobs:
             :x: The BVT trigger was unsuccessful due to a failure in image creation. [Retrigger the workflow](${{ steps.workflow_run.outputs.url }})
 
             For troubleshooting BVT trigger, please consult this [documentation](https://write.razorpay.com/doc/execute-bvt-test-in-devstack-api-repo-haK6b8Q0Bs).
+
+            BVT Run Failed For Commit Id : `${{ steps.pr_info.outputs.latest_commit }}`
           allow-repeats: true
       - name: Update BVT Status Check Link To Master Merge Commit - Success
-        if: ${{ env.WORKFLOW_STATUS == 'success' && github.sha != steps.pr_info.outputs.latest_commit && success() }}
+        if: ${{ env.WORKFLOW_STATUS == 'success' && env.old_commit != steps.pr_info.outputs.latest_commit && success() }}
         run: |
           STATUS_URL=${{ steps.workflow_run.outputs.url }}
           STATUS_DESCRIPTION="The BVT test on Devstack has been initiated. Kindly wait until the test is completed."
@@ -266,7 +275,7 @@ jobs:
             }' \
             "https://api.github.com/repos/${{ github.repository }}/statuses/${{ steps.pr_info.outputs.latest_commit }}"
       - name: Update BVT Status Check Link To Master Merge Commit - Failed
-        if: ${{ env.WORKFLOW_STATUS != 'success' && github.sha != steps.pr_info.outputs.latest_commit }}
+        if: ${{ env.WORKFLOW_STATUS != 'success' && env.old_commit != steps.pr_info.outputs.latest_commit }}
         run: |
           STATUS_URL=${{ steps.workflow_run.outputs.url }}
           STATUS_DESCRIPTION="The BVT test on Devstack has been initiated. Kindly wait until the test is completed."
