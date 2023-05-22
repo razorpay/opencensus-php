@@ -14296,6 +14296,7 @@ class Route
             '1cc_shopify_insert_theme',
             '1cc_shopify_render_magic_snippet',
             'admin_1cc_whitelist_coupons',
+            '1cc_fetch_dashboard_analytics',
 
             // Terminal downtimes
             'manual_downtime_fetch',
