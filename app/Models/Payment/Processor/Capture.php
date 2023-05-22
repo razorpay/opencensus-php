@@ -442,6 +442,19 @@ trait Capture
     {
         try
         {
+            if($this->repo->isTransactionActive())
+            {
+                $ex = new \Exception();
+
+                $this->trace->info(TraceCode::CAPTURE_PAYMENT_TRACE,
+                    [
+                        'payment_id'          => $payment->getPublicId(),
+                        'transaction_level'   => $this->repo->getTransactionLevel(),
+                        'stack_trace'         => $ex->getTraceAsString(),
+                    ]
+                );
+            }
+
             $autoCaptureStartTime = microtime(true);
 
             $autoCaptured = $payment->getAutoCaptured();
@@ -480,6 +493,13 @@ trait Capture
                     $e,
                     Trace::ERROR,
                     TraceCode::PAYMENT_CAPTURE_FAILED_MYSQL_HAS_GONE_AWAY
+                );
+
+                $this->trace->info(TraceCode::RETRY_CAPTURE,
+                    [
+                        'payment_id'          => $payment->getPublicId(),
+                        'transaction_level'   =>  $this->repo->getTransactionLevel()
+                    ]
                 );
 
                 return $this->retryCapture($payment);

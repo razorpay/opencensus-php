@@ -279,7 +279,7 @@ class RepositoryManager extends Illuminate\Support\Manager
     public function saveOrFail($entity, array $options = array())
     {
         $repo = $this->getRepositoryClassFromObject($entity);
-        
+
         return $repo->saveOrFail($entity, $options);
     }
 
@@ -583,6 +583,11 @@ class RepositoryManager extends Illuminate\Support\Manager
     protected function setDefaultDbConn($conn)
     {
         $this->app['config']->set('database.default', $conn);
+    }
+
+    public function getTransactionLevel()
+    {
+        return $this->db->transactionLevel();
     }
 
     public function isTransactionActive()
