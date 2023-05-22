@@ -2297,7 +2297,7 @@ class BasicAuth
      */
     protected function checkAndSetAccountScope()
     {
-        if (($this->isAccountAuthAllowed() === false) or ($this->isPartnerAuth() === true))
+        if (($this->isPartnerAuth() === true) or ($this->isAccountAuthAllowed() === false))
         {
             return null;
         }
@@ -2647,6 +2647,14 @@ class BasicAuth
                 ($this->authCreds->getMerchant()->isPartner())
             ))
         {
+
+            $this->trace->info(TraceCode::ACCOUNT_AUTH_ALLOWED,
+                [
+                    'route'          => $this->route->getCurrentRouteName(),
+                    'partner_id'     => $this->authCreds->getMerchant()->getId(),
+                    'is_marketplace' => $this->authCreds->getMerchant()->isMarketplace(),
+                    'partner_type'   => $this->authCreds->getMerchant()->getPartnerType()
+                ]);
             return true;
         }
 
@@ -2697,14 +2705,19 @@ class BasicAuth
      */
     public function parentAndPartnerCheckForPrivateAuth($account)
     {
+        $route_name = $this->route->getCurrentRouteName();
         if (($account->getParentId() === $this->authCreds->getMerchant()->getId()))
         {
+            $this->trace->info(TraceCode::LINKED_ACCOUNT_USAGE,
+                [
+                    'route'          => $route_name,
+                    'submerchant_id' => $account->getId(),
+                    'partner_id'     => $this->authCreds->getMerchant()->getId()
+                ]);
             return true;
         }
 
-        $route_name = $this->route->getCurrentRouteName();
         $merchantCore = new Merchant\Core;
-
         if ((in_array($route_name, $this->whitelistRoutesForReferrerPartnerAccess, true) === true) and
             ($merchantCore->canSkipWorkflowToAccessSubmerchantKyc($this->authCreds->getMerchant(), $account) === true))
         {
