@@ -68,7 +68,7 @@ const TrafficByUTM = ({ isFetching, data }) => {
         <div className="panel-select">
           <p className="select-text-label">Select</p>
           <Input.Select
-            name="tableView"
+            name="utmOptions"
             options={UTM_OPTIONS}
             value={selectedOption}
             onChange={changeTableView}

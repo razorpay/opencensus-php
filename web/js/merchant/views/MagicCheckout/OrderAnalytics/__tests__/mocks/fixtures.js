@@ -72,7 +72,7 @@ export const API_RESPONSE = {
                 order_count: 96,
                 utm_campaign: [
                   {
-                    label: 'MAY01',
+                    label: 'Magic Test Campaign',
                     sales: 9590400,
                     order_count: 96,
                   },
@@ -104,6 +104,63 @@ export const API_RESPONSE = {
                 utm_campaign: [
                   {
                     label: 'others',
+                    sales: 1287300,
+                    order_count: 15,
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            label: 'direct 1',
+            sales: 1287300,
+            order_count: 15,
+            utm_medium: [
+              {
+                label: 'others 1',
+                sales: 1287300,
+                order_count: 15,
+                utm_campaign: [
+                  {
+                    label: 'others 1',
+                    sales: 1287300,
+                    order_count: 15,
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            label: 'direct 2',
+            sales: 1287300,
+            order_count: 15,
+            utm_medium: [
+              {
+                label: 'others 2',
+                sales: 1287300,
+                order_count: 15,
+                utm_campaign: [
+                  {
+                    label: 'others 2',
+                    sales: 1287300,
+                    order_count: 15,
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            label: 'direct 3',
+            sales: 1287300,
+            order_count: 15,
+            utm_medium: [
+              {
+                label: 'others 3',
+                sales: 1287300,
+                order_count: 15,
+                utm_campaign: [
+                  {
+                    label: 'others 3',
                     sales: 1287300,
                     order_count: 15,
                   },
@@ -337,24 +394,24 @@ export const API_RESPONSE = {
             ],
           },
           {
-            label: 'Whatsapp ',
-            sales: 2971800,
-            order_count: 32,
+            label: 'Paginated Item',
+            sales: 0,
+            order_count: 0,
             utm_medium: [
               {
                 label: 'WHATSAPP',
-                sales: 2971800,
-                order_count: 32,
+                sales: 0,
+                order_count: 0,
                 utm_campaign: [
                   {
                     label: 'MAR05',
-                    sales: 2697300,
-                    order_count: 27,
+                    sales: 0,
+                    order_count: 0,
                   },
                   {
                     label: 'MAY06',
-                    sales: 274500,
-                    order_count: 5,
+                    sales: 0,
+                    order_count: 0,
                   },
                 ],
               },
@@ -388,5 +445,96 @@ export const API_RESPONSE = {
       },
     },
     updated_at: 1683244800,
+  },
+};
+
+export const CHART_OPTIONS = {
+  xPadding: 6,
+  yPadding: 6,
+  xAlign: 'left',
+  yAlign: 'center',
+  bodyFontColor: '#fff',
+  _bodyFontFamily: "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif",
+  _bodyFontStyle: 'normal',
+  _bodyAlign: 'left',
+  bodyFontSize: 12,
+  bodySpacing: 10,
+  titleFontColor: '#fff',
+  _titleFontFamily: "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif",
+  _titleFontStyle: 'bold',
+  titleFontSize: 12,
+  _titleAlign: 'left',
+  titleSpacing: 2,
+  titleMarginBottom: 6,
+  footerFontColor: '#fff',
+  _footerFontFamily: "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif",
+  _footerFontStyle: 'bold',
+  footerFontSize: 12,
+  _footerAlign: 'left',
+  footerSpacing: 2,
+  footerMarginTop: 6,
+  caretSize: 5,
+  cornerRadius: 6,
+  backgroundColor: 'rgba(0,0,0,0.8)',
+  opacity: 1,
+  legendColorBackground: 'rgba(0, 0, 0, 0)',
+  displayColors: true,
+  borderColor: 'rgba(0,0,0,0)',
+  borderWidth: 0,
+  title: ['1683072000000'],
+  beforeBody: [],
+  body: [
+    {
+      before: [],
+      lines: ['total_sales: 78055'],
+      after: [],
+    },
+  ],
+  afterBody: [],
+  footer: [],
+  x: 315.67998779296875,
+  y: 82.542392,
+  caretPadding: 2,
+  labelColors: [
+    {
+      borderColor: '#01BBFF',
+      backgroundColor: {},
+    },
+  ],
+  labelTextColors: ['#fff'],
+  dataPoints: [
+    {
+      xLabel: '2023-05-03T00:00:00.000Z',
+      yLabel: 78055,
+      label: '1683072000000',
+      value: '78055',
+      index: 2,
+      datasetIndex: 0,
+      x: 308.67998779296875,
+      y: 103.542392,
+    },
+  ],
+  width: 123.139892578125,
+  height: 42,
+  caretX: 308.67998779296875,
+  caretY: 103.542392,
+};
+
+export const CHART_ELEM = {
+  _chart: {
+    canvas: {
+      getBoundingClientRect() {
+        return {
+          x: 309,
+          y: 356.1328125,
+          width: 562,
+          height: 220,
+          top: 356.1328125,
+          right: 871,
+          bottom: 576.1328125,
+          left: 309,
+        };
+      },
+    },
   },
 };

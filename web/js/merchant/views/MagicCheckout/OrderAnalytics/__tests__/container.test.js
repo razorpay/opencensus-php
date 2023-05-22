@@ -2,28 +2,20 @@ import React from 'react';
 import OrderAnalytics from 'merchant/views/MagicCheckout/OrderAnalytics/index';
 import '@testing-library/jest-dom/extend-expect';
 import 'react-dates/initialize';
-import { render, screen, server } from 'test-utils';
+import { render, screen, waitFor } from 'test-utils';
 import { Provider } from 'react-redux';
-import { BladeProvider } from '@razorpay/blade/components';
-import { paymentTheme } from '@razorpay/blade/tokens';
 import { storeWithInitialState } from 'merchant/store';
-import { fetchAnalyticsData } from './mocks/handlers';
-import { waitFor } from '@testing-library/react';
 
 const App = ({ state = {}, ...props }) => {
   return (
     <Provider store={storeWithInitialState({ ...state })}>
-      <BladeProvider themeTokens={paymentTheme}>
-        <OrderAnalytics {...props} />
-      </BladeProvider>
+      <OrderAnalytics {...props} />
     </Provider>
   );
 };
 
 describe('Magic - Order Analytics', () => {
   test('should render order analytics tab', async () => {
-    // TODO move to common handlers and remove server.use later. Separate tests at widget level
-    server.use(fetchAnalyticsData());
     render(<App />);
     await waitFor(() => {
       expect(

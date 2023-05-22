@@ -31,6 +31,7 @@ import batchHandler from 'merchant/views/Wallet/BatchActions/__tests__/mocks/han
 import { newAuthHandler } from 'newAuth/signup/components/PartnerSignup/__test__/mocks/handlers';
 import { commisionsHandler } from 'merchant/views/PartnerDashboard/Commissions/__test__/mocks/handlers';
 import { submerchantKYCHandlers } from 'merchant/views/PartnerDashboard/SubMerchant/KYC/__tests__/mocks/handlers';
+import { magicOrderAnalyticsHandler } from 'merchant/views/MagicCheckout/OrderAnalytics/__tests__/mocks/handlers';
 
 export const handlers = [
   ...batchHandler,
@@ -853,4 +854,5 @@ export const handlers = [
   ...newAuthHandler,
   ...commisionsHandler,
   ...submerchantKYCHandlers,
+  ...magicOrderAnalyticsHandler,
 ];
