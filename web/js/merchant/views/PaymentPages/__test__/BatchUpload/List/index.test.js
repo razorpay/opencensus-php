@@ -170,7 +170,11 @@ describe('Batch Payment Page - Batch Details', () => {
   test('should render upload modal', async () => {
     const initialState = {
       session: {
-        user: { isPaymentPageFileUploadEnabled: true, isAllowedView: jest.fn(() => false) },
+        user: {
+          isPaymentPageFileUploadEnabled: true,
+          isAllowedView: jest.fn(() => false),
+          merchant: { country_code: 'IN' },
+        },
       },
       wysiwyg: { isBatchPaymentPages: true },
     };

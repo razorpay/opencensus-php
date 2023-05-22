@@ -174,6 +174,7 @@ export default class NewRegistrationLink extends React.Component {
         formReference1: '',
         formReference2: '',
         frequency: 'monthly',
+        currency: props.user.merchant.currency,
       },
       validTabs: [false, false, false],
     };

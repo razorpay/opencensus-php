@@ -18,6 +18,9 @@ const storeState = {
       user: {
         contact_mobile: '9999999999',
       },
+      merchant: {
+        country_code: 'IN',
+      },
     },
   },
 };

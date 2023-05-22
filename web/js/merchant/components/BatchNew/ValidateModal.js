@@ -2,7 +2,7 @@ import { Component } from 'react';
 import ShowWhen from 'merchant/components/ShowWhen';
 import FileUpload from 'merchant/components/File/Upload';
 import { Link } from 'react-router-dom';
-import { titleCase } from 'common/utils/rzp-utils';
+import { titleCase, monetaryUnitText } from 'common/utils/rzp-utils';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
 import { DocLink } from 'merchant/components/DocsLink';
@@ -54,6 +54,8 @@ class BatchValidateModal extends Component {
     if (batchType === 'payment_link_v2') {
       batchTypeText = 'Payment Link'; // We don't want to unnececssarily expose that merchant is using V2
     }
+    const countryCode = user.merchant.country_code;
+    const monetaryUnit = monetaryUnitText(countryCode);
 
     return (
       <div className={batchClass ? batchClass : 'modal-body'}>
@@ -149,7 +151,7 @@ class BatchValidateModal extends Component {
                 </p>
                 {batchType !== 'virtual_account_edit' ? (
                   <ol className="validate-modal-ul">
-                    <li>The amount mentioned should be in paise.</li>
+                    <li>The amount mentioned should be in {monetaryUnit}.</li>
                     {batchType &&
                       [
                         'refund',

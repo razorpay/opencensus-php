@@ -38,7 +38,8 @@ import { PAPER_NACH_CARD_BANNER_URL, UPDATE_PAYMENT_METHOD_URL } from './constan
 import RTracking from 'react-tracking';
 import analytics from './analytics';
 import './index.styl';
-import DashboardBanner from '../../../common/ui/DashboardBanner';
+import DashboardBanner from 'common/ui/DashboardBanner';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 @connect(
   (state) => ({
@@ -174,7 +175,12 @@ class SubscriptionsController extends React.Component {
               <NavLink to="/plans" onClick={() => analytics.track('subscription.plans.click')}>
                 Plans
               </NavLink>
-              <ShowWhen additionalCondition={(user) => !user.isChargeAtWillEnabled}>
+              <ShowWhen
+                additionalCondition={(user) =>
+                  !user.isChargeAtWillEnabled &&
+                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SubscriptionSettings)
+                }
+              >
                 <NavLink
                   to="/subscriptions/settings"
                   onClick={() => analytics.track('subscription.settings.click')}

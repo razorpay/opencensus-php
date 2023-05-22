@@ -22,6 +22,7 @@ import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 import { PROS, FEATURES_DATA, FEATURES_LINKS } from './data';
 import analytics from 'merchant/views/Subscriptions/analytics';
 import { ONBOARDING_SUBSCRIPTIONS_DESCRIPTION } from 'merchant/views/Subscriptions/constants';
+import imgSubscriptionCurlec from 'assets/product_onboarding/subscription_curlec.svg';
 
 const ORG_FEATURE_DATA = {
   [ORG_CUSTOM_CODE_MAP.RAZORPAY]: [
@@ -30,6 +31,11 @@ const ORG_FEATURE_DATA = {
     FEATURES_DATA.paymentMethods,
   ],
   [ORG_CUSTOM_CODE_MAP.CURLEC]: [FEATURES_DATA.subscriptionLink, FEATURES_DATA.paymentMethods],
+};
+
+const ORG_ONBOARDING_IMG = {
+  [ORG_CUSTOM_CODE_MAP.RAZORPAY]: 'https://razorpay.com/assets/subscriptions/banner.svg',
+  [ORG_CUSTOM_CODE_MAP.CURLEC]: imgSubscriptionCurlec,
 };
 
 @connect((state) => ({
@@ -110,6 +116,7 @@ export default class SubscriptionOnBoarding extends React.Component {
     const { org } = this.props;
     const customCode = org.custom_code;
     const orgBusinessName = org.business_name;
+    const onboardingIMGUrl = ORG_ONBOARDING_IMG[customCode] || ORG_ONBOARDING_IMG.rzp;
     return (
       <OnBoardingWrapper class="Subscription">
         <Slider
@@ -122,7 +129,7 @@ export default class SubscriptionOnBoarding extends React.Component {
               title="Subscription"
               feature={RZPFeatures.SUBSCRIPTIONS}
               pros={PROS}
-              imageUrl="https://razorpay.com/assets/subscriptions/banner.svg"
+              imageUrl={onboardingIMGUrl}
               desc={
                 ONBOARDING_SUBSCRIPTIONS_DESCRIPTION[customCode] ||
                 ONBOARDING_SUBSCRIPTIONS_DESCRIPTION.rzp

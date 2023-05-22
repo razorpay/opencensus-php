@@ -37,6 +37,11 @@ const CURRENCY_DECIMALS = {
   MYR: 2,
 };
 
+const MONETARY_UNIT_TEXT = {
+  IN: 'paise',
+  MY: 'cents',
+};
+
 export function isMobileResolution() {
   return window && window.innerWidth <= 768;
 }
@@ -1587,3 +1592,8 @@ export const exportFileAsExcel = ({ finalDataSend, fileName, fileFormat }) => {
   const data = new Blob([excelBuffer], { type: fileType });
   saveAs(data, `${fileName}.${fileFormat}`);
 };
+/**
+ * @param {String} countryCode -country code of merchant, ex-IN, MY
+ * @returns {String} - monetary unit text
+ */
+export const monetaryUnitText = (countryCode) => MONETARY_UNIT_TEXT[countryCode];

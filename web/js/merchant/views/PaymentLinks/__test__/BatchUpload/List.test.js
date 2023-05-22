@@ -23,6 +23,9 @@ describe('Batch List', () => {
           user: {
             isPaymentlinksV2Enabled: true,
             isAllowedView: () => true,
+            merchant: {
+              country_code: 'IN',
+            },
           },
         },
       },
