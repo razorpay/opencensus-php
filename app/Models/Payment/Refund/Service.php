@@ -1394,6 +1394,19 @@ class Service extends Base\Service
 
             $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
 
+            if($merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW))
+            {
+                $refundId = $refundInput[RefundEntity::ID];
+
+                $txn = $this->repo->transaction->findByEntityId($refundId, $merchant);
+
+                if($txn !== null)
+                {
+                    $this->trace->info(TraceCode::SCROOGE_REFUND_TRANSACTION_ALREADY_EXISTS, $refundInput);
+                    return  RefundHelpers::getScroogeRefundTransactionCreateResponse(null, false, $txn->getId());
+                }
+            }
+
             $result = $this->getNewProcessor($merchant)->scroogeRefundTransactionCreate($payment, $refundInput);
         }
         catch (\Exception $ex)

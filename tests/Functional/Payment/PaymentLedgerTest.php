@@ -2244,6 +2244,8 @@ class PaymentLedgerTest extends TestCase
 
         $txn = $this->getDbLastEntity('transaction');
 
+        $this->assertTrue($txn->isBalanceUpdated());
+
         $ledgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => $paymentId.'-'.'payment_merchant_captured']);
 
         $this->assertEquals($paymentId, 'pay_'.$txn['entity_id']);
@@ -2305,6 +2307,8 @@ class PaymentLedgerTest extends TestCase
         (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
 
         $txn = $this->getDbLastEntity('transaction');
+
+        $this->assertTrue($txn->isBalanceUpdated());
 
         $ledgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => $paymentId.'-'.'payment_merchant_captured']);
 

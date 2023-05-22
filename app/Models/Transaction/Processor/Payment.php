@@ -194,6 +194,7 @@ class Payment extends Base
         }
         else if ($this->source->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
         {
+            $this->txn->setBalanceUpdated(true);
             return true;
         }
         else if (($this->source->merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === true) and
