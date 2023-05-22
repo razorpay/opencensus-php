@@ -40,8 +40,7 @@ const EvidenceUpload = (props) => {
         }));
         setSelectedOptionalDocs(uploadedOtherFile);
       }
-
-      const restDocs = fileTypes.filter((f) => !dispute?.evidence?.[f.name]);
+      const restDocs = fileTypes.filter((f) => f.name !== 'others' && !dispute?.evidence?.[f.name]);
       setDocTypes(restDocs);
     }
   }, [dispute.evidence, fileTypes]);
