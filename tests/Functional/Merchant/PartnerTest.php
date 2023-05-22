@@ -4411,6 +4411,8 @@ class PartnerTest extends OAuthTestCase
 
         $this->ba->privateAuth();
 
+        $this->mockAllSplitzTreatment();
+
         $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
     }
 
@@ -4924,7 +4926,14 @@ class PartnerTest extends OAuthTestCase
 
         $this->startTest();
     }
-  
+
+    public function testRequestPartnerMigrationInputValidation() : void
+    {
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_MERCHANT_ID);
+
+        $this->startTest();
+    }
+
     public function testMigrateResellerToPurePlatform(): void
     {
         Mail::fake();
@@ -4938,6 +4947,7 @@ class PartnerTest extends OAuthTestCase
             ->method('sendRequest')
             ->with( 'applications/'.$app->getId(), 'PUT', ['merchant_id' => $partnerId] )
             ->willReturn([]);
+        $this->mockPartnershipsServiceTreatment([], ['status_code' => 200], 'createPartnerMigrationAudit');
 
         $this->startTest();
 
@@ -4990,9 +5000,13 @@ class PartnerTest extends OAuthTestCase
 
         $this->merchantTestUtil->expectStorkSmsRequest(
             $this->storkMock,
-            'sms.partnerships.partner_type_reseller_to_pure_platform',
+            'Sms.Partnerships.Partner_type_reseller_to_pure_platform_v2',
             $partner->merchantDetail->getContactMobile(),
-            [ 'partnerName'   => $partner->getName() ]
+            [
+                'partnerName'         => $partner->getName() ,
+                'platformDocsLink'    => 'https://razorpay.com/docs/partners/platform/',
+                'partnerSupportEmail' => 'partners@razorpay.com'
+            ]
         );
 
         $notifyUsecase->notify();
@@ -5039,13 +5053,6 @@ class PartnerTest extends OAuthTestCase
         $this->ba->adminAuth();
 
         return [$partnerId, $app, $subMerchant];
-    }
-
-    public function testRequestPartnerMigrationInputValidation() : void
-    {
-        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_MERCHANT_ID);
-
-        $this->startTest();
     }
 
     private function mockSubmerchantFetchMultipleOptimisedExperiment(): void

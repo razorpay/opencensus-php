@@ -48,7 +48,9 @@ class NotifyPartnerAboutPartnerTypeSwitch extends Core
     private function sendSMSToPartnerAboutSwitch()
     {
         $contentParams = [
-            'partnerName'   => $this->partner->getName()
+            'partnerName'           => $this->partner->getName(),
+            'platformDocsLink'      => $this->elfin->shorten(Constants::PURE_PLATFORM_DOCS_LINK),
+            'partnerSupportEmail'   => Constants::PARTNER_SUPPORT_EMAIL
         ];
 
         $smsPayload = [
@@ -60,12 +62,12 @@ class NotifyPartnerAboutPartnerTypeSwitch extends Core
             'ownerId'           => $this->partner->getId(),
             'contentParams'     => $contentParams,
             'sender'            => 'RZRPAY',
-            'templateName'      => 'sms.partnerships.partner_type_reseller_to_pure_platform'
+            'templateName'      => Constants::RESELLER_TO_PURE_PLATFORM_PARTNER_SWITCH_SMS_TEMPLATE
         ];
 
         $tracePayload = [
             'partner_id'          => $this->partner->getId(),
-            'templateName'        => 'sms.partnerships.partner_type_reseller_to_pure_platform'
+            'templateName'        => Constants::RESELLER_TO_PURE_PLATFORM_PARTNER_SWITCH_SMS_TEMPLATE
         ];
         $traceCode      = TraceCode::SEND_RESELLER_TO_PURE_PLATFORM_SMS;
         $errorTraceCode = TraceCode::RESELLER_TO_PURE_PLATFORM_SMS_FAILED;

@@ -215,4 +215,34 @@ class Core
     {
 
     }
+
+    protected function getActorDetails()
+    {
+        $userId = null;
+        $userEmail = null;
+        $userType = 'user';
+        if ($this->app['basicauth']->isAdminAuth() === true)
+        {
+            $userId = $this->app['basicauth']->getAdmin()->getId();
+            $userEmail = $this->app['basicauth']->getAdmin()->getEmail();
+            $userType = 'admin';
+        }
+        elseif (empty($this->app['basicauth']->getUser()) === false)
+        {
+            $userId = $this->app['basicauth']->getUser()->getId();
+            $userEmail = $this->app['basicauth']->getUser()->getEmail();
+        }
+        elseif (empty($this->app['basicauth']->getMerchant()) === false)
+        {
+            $userId = $this->app['basicauth']->getMerchant()->getId();
+            $userEmail = $this->app['basicauth']->getMerchant()->getEmail();
+            $userType = 'merchant';
+        }
+
+        return [
+            'actor_id'      => $userId ?? '100000Razorpay',
+            'actor_email'   => $userEmail ?? 'default@razorpay.in',
+            'actor_type'    => $userType,
+        ];
+    }
 }

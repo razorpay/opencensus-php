@@ -12,6 +12,7 @@ use Monolog\Logger;
 use Illuminate\Support\Str;
 use Illuminate\Http\JsonResponse;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Jobs\PartnerMigrationAuditJob;
 use RZP\Jobs\CrossBorderCommonUseCases;
 use Razorpay\OAuth\Client\Repository as OAuthRepo;
 use \WpOrg\Requests\Exception as RequestsException;
@@ -8700,10 +8701,11 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::BULK_MIGRATE_AGGREGATOR_TO_RESELLER_REQUEST, $traceInfo);
 
         $batches = array_chunk($input['merchant_ids'], $input['batch_size']);
+        $actorDetails = $this->getActorDetails();
 
         foreach ($batches as $batch)
         {
-            BulkMigrateAggregatorToResellerJob::dispatch($batch);
+            BulkMigrateAggregatorToResellerJob::dispatch($batch,$actorDetails);
         }
 
         $this->trace->info(TraceCode::BULK_MIGRATE_AGGREGATOR_TO_RESELLER_SUCCESS, $traceInfo);
@@ -8717,18 +8719,23 @@ class Core extends Base\Core
      * @return  bool
      * @throws  Throwable|LogicException    It will throw an error when updating of partner mapping fails.
      */
-    public function migrateAggregatorToResellerPartner(string $merchantId) : bool
+    public function migrateAggregatorToResellerPartner(string $merchantId, array $actorDetails = []) : bool
     {
 
         $mutex = App::getFacadeRoot()['api.mutex'];
 
         $mutexKey = Constants::AGGREGATOR_TO_RESELLER_UPDATE.$merchantId;
 
+        if(empty($actorDetails) == true)
+        {
+            $actorDetails = $this->getActorDetails();
+        }
+
         return $mutex->acquireAndRelease(
             $mutexKey,
-            function() use ($merchantId)
+            function() use ($merchantId, $actorDetails)
             {
-                return $this->updateAggregatorToReseller($merchantId);
+                return $this->updateAggregatorToReseller($merchantId, $actorDetails);
             },
             Constants::AGGREGATOR_TO_RESELLER_UPDATE_LOCK_TIME_OUT,
             ErrorCode::BAD_REQUEST_AGGREGATOR_TO_RESELLER_MIGRATION_IN_PROGRESS);
@@ -8744,13 +8751,14 @@ class Core extends Base\Core
      * @throws  LogicException
      * @throws  Throwable
      */
-    private function updateAggregatorToReseller(string $merchantId) : bool
+    private function updateAggregatorToReseller(string $merchantId, array $actorDetails) : bool
     {
         $this->trace->info(
             TraceCode::AGGREGATOR_TO_RESELLER_UPDATE_PARTNER_REQUEST,
             ['merchant_id' => $merchantId]);
 
         $merchant = $this->repo->merchant->find($merchantId);
+        $oldPartnerType = $merchant->getPartnerType();
 
         if ($merchant === null || $merchant->isAggregatorPartner() === false)
         {
@@ -8772,6 +8780,7 @@ class Core extends Base\Core
         {
             $this->trace->info(TraceCode::MIGRATE_AGGREGATOR_TO_RESELLER_SUCCESS, ['merchant_id' => $merchant->getId()]);
             $this->trace->count(Metric::AGGREGATOR_TO_RESELLER_MIGRATION_SUCCESS);
+            PartnerMigrationAuditJob::dispatch($merchantId, $actorDetails, $oldPartnerType);
         }
         else
         {

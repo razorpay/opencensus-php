@@ -2598,6 +2598,7 @@ return [
                 'merchant_ids'   => [
                     '10000000000000'
                 ],
+                'batch_size' => 1
             ],
             'url'     => '/partner/migrate_aggregator_to_reseller/bulk',
             'method'  => 'PUT',

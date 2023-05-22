@@ -36,6 +36,9 @@ class Constants
     const PHANTOM                       = 'phantom';
 
     const RESELLER_TO_PURE_PLATFORM_PARTNER_SWITCH_EMAIL_TEMPLATE = 'emails.mjml.merchant.partner.notify.reseller_to_pure_platform_switch';
+    const RESELLER_TO_PURE_PLATFORM_PARTNER_SWITCH_SMS_TEMPLATE = 'Sms.Partnerships.Partner_type_reseller_to_pure_platform_v2';
+    const PURE_PLATFORM_DOCS_LINK = 'https://razorpay.com/docs/partners/platform/';
+    const PARTNER_SUPPORT_EMAIL   = 'partners@razorpay.com';
 
     /**
      * List of partner types that can get a settlement on behalf of a submerchant

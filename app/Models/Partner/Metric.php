@@ -62,6 +62,8 @@ final class Metric
     const PARTNER_CONFIG_AUDIT_SUCCESS                    = 'partner_config_audit_success';
     const PARTNER_CONFIG_AUDIT_FAIL                       = 'partner_config_audit_fail';
 
+    const PARTNER_MIGRATION_AUDIT_JOB_FAILURE_TOTAL   = 'partner_migration_audit_job_failure_total';
+
     const SUBMERCHANT_FIRST_TRANSACTION_LATENCY_IN_MS = 'submerchant_first_transaction_latency_in_ms';
 
     const PARTNERSHIP_COMMISSION_SYNC_JOB_PUSH_SUCCESS    = 'partnership_commission_sync_job_push_success';

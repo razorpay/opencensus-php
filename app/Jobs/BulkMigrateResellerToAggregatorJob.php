@@ -17,6 +17,7 @@ class BulkMigrateResellerToAggregatorJob extends Job
     protected $queueConfigKey = 'commission';
 
     protected $requestParams;
+    protected $actorDetails;
     protected $retry;
 
     /**
@@ -27,11 +28,12 @@ class BulkMigrateResellerToAggregatorJob extends Job
      *
      * @return void
      */
-    public function __construct(array $requestParams, int $retry = null)
+    public function __construct(array $requestParams, array $actorDetails, int $retry = null)
     {
         parent::__construct();
 
         $this->requestParams = $requestParams;
+        $this->actorDetails  = $actorDetails;
         $this->retry         = $retry ?? 0;
     }
 
@@ -52,7 +54,7 @@ class BulkMigrateResellerToAggregatorJob extends Job
         foreach ($this->requestParams as $param) {
             try
             {
-                $core->migrateResellerToAggregatorPartner($param);
+                $core->migrateResellerToAggregatorPartner($param, $this->actorDetails);
             }
             catch (\Throwable $e)
             {
@@ -72,7 +74,7 @@ class BulkMigrateResellerToAggregatorJob extends Job
 
         if (count($failedParams) > 0 && $this->retry < self::MAX_RETRY_ATTEMPT)
         {
-            BulkMigrateResellerToAggregatorJob::dispatch($failedParams, $this->retry + 1);
+            BulkMigrateResellerToAggregatorJob::dispatch($failedParams, $this->actorDetails, $this->retry + 1);
         }
 
         $this->delete();

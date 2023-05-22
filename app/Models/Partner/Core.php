@@ -10,8 +10,10 @@ use RZP\Constants\Mode;
 use RZP\Constants\Product;
 use RZP\Exception;
 use RZP\Trace\Tracer;
+use RZP\Jobs\PartnerMigrationAuditJob;
 use RZP\Jobs\BulkMigrateResellerToAggregatorJob;
 use RZP\Models\Base\PublicCollection;
+use RZP\Jobs\MigrateResellerToPurePlatformPartnerJob;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApplicationsEntity;
 use Razorpay\OAuth\Application as OAuthApp;
 use RZP\Models\User\Role;
@@ -64,17 +66,24 @@ class Core extends Detail\Core
      */
     private $merchantAppCore;
 
+    /**
+     * Elfin: Url shortening service
+     */
+    protected $elfin;
+
     public function __construct()
     {
         parent::__construct();
 
-        $this->appRepo = new OAuth\Application\Repository;
+        $this->appRepo          = new OAuth\Application\Repository;
 
-        $this->activationCore = new Activation\Core;
+        $this->activationCore   = new Activation\Core;
 
-        $this->merchantCore = new Merchant\Core();
+        $this->merchantCore     = new Merchant\Core();
 
-        $this->merchantAppCore = new Merchant\MerchantApplications\Core();
+        $this->merchantAppCore  = new Merchant\MerchantApplications\Core();
+
+        $this->elfin            = $this->app['elfin'];
     }
 
     /**
@@ -986,9 +995,10 @@ class Core extends Detail\Core
         $this->trace->info(TraceCode::BULK_MIGRATE_RESELLER_TO_AGGREGATOR_REQUEST, $traceInfo);
 
         $batches = array_chunk($input['data'], $input['batch_size']);
+        $actorDetails = $this->getActorDetails();
         foreach ($batches as $batch)
         {
-            BulkMigrateResellerToAggregatorJob::dispatch($batch);
+            BulkMigrateResellerToAggregatorJob::dispatch($batch,$actorDetails);
         }
 
         $this->trace->info(TraceCode::BULK_MIGRATE_RESELLER_TO_AGGREGATOR_SUCCESS, $traceInfo);
@@ -997,12 +1007,14 @@ class Core extends Detail\Core
     /**
      * Acquires mutex lock on reseller partner's merchantID and migrates to aggregator partner
      *
-     * @param   array   $input [ "merchant_id" => string, "new_auth_create" => bool ]
+     * @param array $input [ "merchant_id" => string, "new_auth_create" => bool ]
+     * @param array $actorDetails details of the user who made the migration.
      *
      * @return  bool
-     * @throws  Throwable|LogicException It will throw an error when updating of partner mapping fails.
+     * @throws LogicException It will throw an error when updating of partner mapping fails.
+     * @throws Throwable It will throw an error when updating of partner mapping fails.
      */
-    public function migrateResellerToAggregatorPartner(array $input) : bool
+    public function migrateResellerToAggregatorPartner(array $input, array $actorDetails = []) : bool
     {
         (new Validator())->validateInput('resellerToAggregatorMigration', $input);
 
@@ -1012,11 +1024,16 @@ class Core extends Detail\Core
 
         $mutexKey = Constants::RESELLER_TO_AGGREGATOR_UPDATE.$merchantId;
 
+        if(empty($actorDetails) == true)
+        {
+            $actorDetails = $this->getActorDetails();
+        }
+
         return $mutex->acquireAndRelease(
             $mutexKey,
-            function() use ($merchantId, $newAuthCreate)
+            function() use ($merchantId, $newAuthCreate, $actorDetails)
             {
-                return $this->updateResellerToAggregator($merchantId, $newAuthCreate);
+                return $this->updateResellerToAggregator($merchantId, $newAuthCreate, $actorDetails);
             },
             Constants::RESELLER_TO_AGGREGATOR_UPDATE_LOCK_TIME_OUT,
             ErrorCode::BAD_REQUEST_RESELLER_TO_AGGREGATOR_MIGRATION_IN_PROGRESS
@@ -1026,15 +1043,16 @@ class Core extends Detail\Core
     /**
      * Validates partner's existing details and creates supporting entities as required
      *
-     * @param   string   $merchantId        The partner.
-     * @param   bool     $newAuthCreate     Whether to use new auth or old auth of partner.
+     * @param string $merchantId    The partner.
+     * @param bool   $newAuthCreate Whether to use new auth or old auth of partner.
+     * @param array  $actorDetails  details of the user who made the migration.
      *
      * @return  bool
      *
-     * @throws  LogicException
-     * @throws  Throwable
+     * @throws LogicException
+     * @throws Throwable
      */
-    private function updateResellerToAggregator(string $merchantId, bool $newAuthCreate) : bool
+    private function updateResellerToAggregator(string $merchantId, bool $newAuthCreate, array $actorDetails) : bool
     {
         $merchant = $this->fetchResellerPartner(
             $merchantId,
@@ -1044,6 +1062,7 @@ class Core extends Detail\Core
         if ($merchant === null) {
             return false;
         }
+        $oldPartnerType = $merchant->getPartnerType();
 
         $result = null;
         if ($newAuthCreate)
@@ -1061,6 +1080,7 @@ class Core extends Detail\Core
         {
             $this->trace->info(TraceCode::MIGRATE_RESELLER_TO_AGGREGATOR_SUCCESS, ['merchant_id' => $merchant->getId()]);
             $this->trace->count(Metric::RESELLER_TO_AGGREGATOR_MIGRATION_SUCCESS, ['newAuthCreate' => $newAuthCreate]);
+            PartnerMigrationAuditJob::dispatch($merchantId, $actorDetails, $oldPartnerType);
         }
         else
         {
@@ -1084,6 +1104,34 @@ class Core extends Detail\Core
         }
 
         return $merchant;
+    }
+
+    public function auditPartnerMigration( string $merchantId, array $actorDetails,string $oldPartnerType)
+    {
+        $partner = $this->repo->merchant->findOrFail($merchantId);
+
+        $params = [
+            'partner_id'       => $partner->getId(),
+            'status'           => "migrated",
+            'old_partner_type' => $oldPartnerType,
+            'new_partner_type' => $partner->getPartnerType(),
+            'audit_log'        => $actorDetails
+        ];
+
+        $partnershipsResponse = $this->app->partnerships->createPartnerMigrationAudit($params);
+
+        if($partnershipsResponse['status_code'] == 200)
+        {
+            $this->trace->count(Metric::PARTNER_MIGRATION_REQUEST_CREATED);
+            $this->trace->info(TraceCode::PRTS_PARTNER_MIGRATION_REQUEST_SUCCESS, ['merchant_id' => $partner->getId()]);
+        }
+        else
+        {
+            $this->trace->error(TraceCode::PRTS_PARTNER_MIGRATION_REQUEST_ERROR, $partnershipsResponse['response']);
+            throw new Exception\ServerErrorException(
+            'Error completing the request',
+            ErrorCode::SERVER_ERROR_PARTNERSHIPS_FAILURE);
+        }
     }
 
     /**
@@ -1498,5 +1546,19 @@ class Core extends Detail\Core
             return true;
         }
         return false;
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     */
+    public function migrateResellerToPurePlatformPartner(array $input): array
+    {
+        $actorDetails = $this->getActorDetails();
+
+        MigrateResellerToPurePlatformPartnerJob::dispatch($input['merchant_id'],$actorDetails);
+
+        return ['triggered' => 'true', 'input' => $input];
     }
 }

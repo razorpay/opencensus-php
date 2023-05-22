@@ -20,6 +20,7 @@ class MigrateResellerToPurePlatformPartnerJob extends Job
     protected $metricsEnabled = true;
 
     protected $merchantId;
+    protected $actorDetails;
 
     /**
      * Create a new job instance.
@@ -27,11 +28,13 @@ class MigrateResellerToPurePlatformPartnerJob extends Job
      *
      * @return void
      */
-    public function __construct(string $merchantId)
+    public function __construct(string $merchantId, array $actorDetails)
     {
         parent::__construct();
 
         $this->merchantId = $merchantId;
+
+        $this->actorDetails = $actorDetails;
     }
 
     public function handle()
@@ -45,7 +48,9 @@ class MigrateResellerToPurePlatformPartnerJob extends Job
 
         try
         {
-            (new MigrateResellerToPurePlatformPartner())->migrate($this->merchantId);
+            (new MigrateResellerToPurePlatformPartner())->migrate($this->merchantId, $this->actorDetails);
+
+            $this->delete();
         }
         catch (\Throwable $exception)
         {

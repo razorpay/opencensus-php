@@ -237,9 +237,7 @@ class Service extends Base\Service
             return ['success' => true, 'errorMessage' => "Partner is not allowed for partner type switch"];
         }
 
-        MigrateResellerToPurePlatformPartnerJob::dispatch($input['merchant_id']);
-
-        return ['triggered' => 'true', 'input' => $input];
+        return $this->core()->migrateResellerToPurePlatformPartner($input) ;
     }
 
     /**

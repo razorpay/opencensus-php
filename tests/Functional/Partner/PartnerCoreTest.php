@@ -6,8 +6,10 @@ use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Constants\Product;
 use RZP\Models\Partner\Core;
+use RZP\Constants\Mode as EnvMode;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Tests\Traits\MocksPartnershipsService;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Partner\Config\Repository as PartnerConfigRepo;
@@ -17,6 +19,7 @@ class PartnerCoreTest extends OAuthTestCase
 {
     use PartnerTrait;
     use DbEntityFetchTrait;
+    use MocksPartnershipsService;
 
     const RZP_ORG  = '100000razorpay';
 
@@ -60,6 +63,9 @@ class PartnerCoreTest extends OAuthTestCase
             ) = $this->createResellerPartnerAndSubmerchantAndFetchMocks();
 
         $input = ["merchant_id" => $partnerId, "new_auth_create" => true];
+        $this->mockPartnershipsServiceTreatment([], [], 'createPartnerMigrationAudit');
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
         $this->core->migrateResellerToAggregatorPartner($input);
 
         // partner type should be updated as aggregator
@@ -102,6 +108,8 @@ class PartnerCoreTest extends OAuthTestCase
             ->willReturnOnConsecutiveCalls(
                 $app = []
             );
+        $this->mockPartnershipsServiceTreatment([], ['status_code' => 200], 'createPartnerMigrationAudit');
+        $this->app['rzp.mode'] = EnvMode::TEST;
 
         $input = [ "merchant_id" => $partnerId, "new_auth_create" => false ];
         $this->core->migrateResellerToAggregatorPartner($input);

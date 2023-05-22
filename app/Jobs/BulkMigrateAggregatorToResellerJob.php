@@ -19,6 +19,8 @@ class BulkMigrateAggregatorToResellerJob extends Job
     protected $metricsEnabled = true;
 
     protected $merchantIds;
+    protected $actorDetails;
+
     protected $retry;
 
     /**
@@ -28,11 +30,12 @@ class BulkMigrateAggregatorToResellerJob extends Job
      *
      * @return void
      */
-    public function __construct(array $merchantIds, int $retry = null)
+    public function __construct(array $merchantIds, array $actorDetails, int $retry = null)
     {
         parent::__construct();
 
         $this->merchantIds = $merchantIds;
+        $this->actorDetails= $actorDetails;
         $this->retry       = $retry ?? 0;
     }
 
@@ -54,7 +57,7 @@ class BulkMigrateAggregatorToResellerJob extends Job
         foreach ($this->merchantIds as $merchantId) {
             try
             {
-                $core->migrateAggregatorToResellerPartner($merchantId);
+                $core->migrateAggregatorToResellerPartner($merchantId, $this->actorDetails);
             }
             catch (\Throwable $e) {
                 $this->countJobException($e);
@@ -72,7 +75,7 @@ class BulkMigrateAggregatorToResellerJob extends Job
 
         if (count($failedMerchantIds) > 0 && $this->retry < self::MAX_RETRY_ATTEMPT)
         {
-            BulkMigrateAggregatorToResellerJob::dispatch($failedMerchantIds, $this->retry + 1);
+            BulkMigrateAggregatorToResellerJob::dispatch($failedMerchantIds, $this->actorDetails, $this->retry + 1);
         }
 
         $this->delete();

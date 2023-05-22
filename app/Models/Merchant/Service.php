@@ -11064,7 +11064,7 @@ class Service extends Base\Service
             }
             catch (Throwable $e)
             {
-                $this->trace->error(TraceCode::PRTS_GET_PARTNER_MIGRATION_AUDIT_ERROR, ['partner_id'=>$partnerId]);
+                $this->trace->error(TraceCode::PRTS_GET_PARTNER_MIGRATION_AUDIT_ERROR, ['partner_id'=>$partnerId, 'error'=> $e->getMessage()]);
 
                 $response['partner_migration_enabled'] = false;
             }

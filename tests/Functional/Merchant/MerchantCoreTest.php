@@ -4,6 +4,7 @@
 namespace Functional\Merchant;
 
 use RZP\Constants\Mode;
+use RZP\Tests\Traits\MocksPartnershipsService;
 use RZP\Exception\LogicException as LogicException;
 use RZP\Models\Feature;
 use RZP\Models\Merchant\Core;
@@ -25,6 +26,8 @@ class MerchantCoreTest extends OAuthTestCase
     use PartnerTrait;
     use DbEntityFetchTrait;
     use SettlementTrait;
+    use MocksPartnershipsService;
+
 
     const RZP_ORG  = '100000razorpay';
 
@@ -48,6 +51,8 @@ class MerchantCoreTest extends OAuthTestCase
         $this->fixtures->create('referrals');
 
         $this->createCommissionForPartner($merchantId, $submerchantId, $newAppId);
+
+        $this->mockPartnershipsServiceTreatment([], ['status_code' => 200], 'createPartnerMigrationAudit');
 
         $this->core->migrateAggregatorToResellerPartner($merchantId);
 

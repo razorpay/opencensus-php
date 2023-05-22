@@ -9,6 +9,7 @@ use RZP\Models\Merchant\Metric;
 use RZP\Models\Merchant\Entity;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\PublicCollection;
+use RZP\Jobs\PartnerMigrationAuditJob;
 use Neves\Events\TransactionalClosureEvent;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 
@@ -19,22 +20,22 @@ class MigrateResellerToPurePlatformPartner extends Core
         parent::__construct();
     }
 
-    public function migrate(string $merchantId) : bool
+    public function migrate(string $merchantId, array $actorDetails) : bool
     {
         $mutexKey = MerchantConstants::RESELLER_TO_PURE_PLATFORM_MIGRATE.$merchantId;
 
         return $this->mutex->acquireAndRelease(
             $mutexKey,
-            function() use ($merchantId)
+            function() use ($merchantId, $actorDetails)
             {
-                return $this->updateResellerToPurePlatform($merchantId);
+                return $this->updateResellerToPurePlatform($merchantId, $actorDetails);
             },
             MerchantConstants::RESELLER_TO_PURE_PLATFORM_MIGRATE_LOCK_TIME_OUT,
             ErrorCode::BAD_REQUEST_RESELLER_TO_PURE_PLATFORM_MIGRATION_IN_PROGRESS
         );
     }
 
-    public function updateResellerToPurePlatform($merchantId): bool
+    public function updateResellerToPurePlatform(string $merchantId, array $actorDetails): bool
     {
         $partner = $this->fetchResellerPartner(
             $merchantId,
@@ -42,6 +43,7 @@ class MigrateResellerToPurePlatformPartner extends Core
             Metric::RESELLER_TO_PURE_PLATFORM_MIGRATION_FAILURE
         );
         if ($partner === null) return false;
+        $oldPartnerType = $partner->getPartnerType();
 
         $result = $this->deleteAndCreateSupportingEntities($partner);
 
@@ -49,6 +51,8 @@ class MigrateResellerToPurePlatformPartner extends Core
         {
             $this->trace->info(TraceCode::MIGRATE_RESELLER_TO_PURE_PLATFORM_SUCCESS, ['merchant_id' => $partner->getId()]);
             $this->trace->count(Metric::RESELLER_TO_PURE_PLATFORM_MIGRATION_SUCCESS);
+
+            PartnerMigrationAuditJob::dispatch($merchantId, $actorDetails, $oldPartnerType);
         }
         else
         {
@@ -84,9 +88,6 @@ class MigrateResellerToPurePlatformPartner extends Core
                 $this->repo->merchant->saveOrFail($partner);
 
                 $this->notifyPartnerAboutSwitch($partner);
-
-                // TODO: Will add audit logic after https://razorpay.atlassian.net/browse/PLAT-903
-                // $this->auditMigrationForPartner($partner);
             });
         }
         catch (LogicException $e)
