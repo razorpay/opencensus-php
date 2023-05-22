@@ -122,6 +122,7 @@ class Metadata
     const MAGENTO_SUBSCRIPTION      = 'magento-subscription';
     const OPENCART_SUBSCRIPTION     = 'opencart-subscription';
     const BIGCOMMERCE               = 'bigcommerce';
+    const DRUPAL                    = 'drupal';
 
     const INTEGRATION_VALUES = [
         self::WOOCOMMERCE               => 1,
@@ -140,6 +141,7 @@ class Metadata
         self::MAGENTO_SUBSCRIPTION      => 14,
         self::OPENCART_SUBSCRIPTION     => 15,
         self::BIGCOMMERCE               => 16,
+        self::DRUPAL                    => 17,
     ];
 
     // fraud detection keys
