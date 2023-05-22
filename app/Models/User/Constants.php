@@ -487,7 +487,7 @@ class Constants
 
     const API_STORK_RX_SEND_SMS_RAZORX_EXP = 'api_stork_rx_send_sms';
 
-    const API_STORK_SEND_SMS_RAZORX_EXP    = 'api_stork_send_sms';
+    const UPDATE_LOGIN_SIGNUP_TEMPLATE_RAZORX_EXP    = 'update_login_signup_template';
 
     const FETCH_USER_EMAIL_CASE_INSENSITIVE = 'fetch_email_case_insensitive';
 

@@ -1388,6 +1388,32 @@ class Core extends Base\Core
             'THROW_SMS_EXCEPTION_IN_STORK' => true,
         ];
 
+        if($this->app['razorx']->getTreatment($receiver , Constants::UPDATE_LOGIN_SIGNUP_TEMPLATE_RAZORX_EXP , Mode::LIVE) === 'on')
+        {
+            $autoReadOtpText = $origin_value.' #'.$otp['otp'];
+            if(strlen($autoReadOtpText) > 30)
+            {
+                $autoReadOtpText = "";
+            }
+
+            $payload = [
+                'ownerId'               => $ownerId,
+                'ownerType'             => 'merchant',
+                'orgId'                 => $orgId,
+                'destination'           => $receiver,
+                'source'                => 'api.user.' . $input[Entity::ACTION],
+                'templateName'          => 'sms.user.' . $input[Entity::ACTION],
+                'templateNamespace'     => 'platform_acquisition',
+                'sender'                => 'RZRPAY',
+                'language'              => 'english',
+                'contentParams'   => [
+                    'otp'      => $otp['otp'],
+                    'autoread_text'   => $autoReadOtpText,
+                ],
+                'THROW_SMS_EXCEPTION_IN_STORK' => true,
+            ];
+        }
+
         return $payload;
     }
 
