@@ -243,7 +243,7 @@ jobs:
 
             For troubleshooting BVT, please consult this [documentation](https://docs.google.com/document/d/162IkAOyLUQxYc-A6sDllXiiP2VJCyFpqn6-tfZGBhK8/edit#heading=h.exflzwww951h).
 
-            BVT Run Started With Commit Id : `${{ steps.pr_info.outputs.latest_commit }}`
+            BVT Execution Initiated for Commit ID : `${{ steps.pr_info.outputs.latest_commit }}`
           allow-repeats: true
       - name: Post comment for devstack failed to initated
         if: env.WORKFLOW_STATUS != 'success'
@@ -256,7 +256,7 @@ jobs:
 
             For troubleshooting BVT trigger, please consult this [documentation](https://write.razorpay.com/doc/execute-bvt-test-in-devstack-api-repo-haK6b8Q0Bs).
 
-            BVT Run Failed For Commit Id : `${{ steps.pr_info.outputs.latest_commit }}`
+            BVT Execution Failed for Commit ID : `${{ steps.pr_info.outputs.latest_commit }}`
           allow-repeats: true
       - name: Update BVT Status Check Link To Master Merge Commit - Success
         if: ${{ env.WORKFLOW_STATUS == 'success' && env.old_commit != steps.pr_info.outputs.latest_commit && success() }}
