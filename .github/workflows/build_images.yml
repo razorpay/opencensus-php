@@ -1,27 +1,27 @@
-on: [push]
+on: [ push ]
 jobs:
   cancel:
-    runs-on: [api-public]
+    runs-on: [ api-public ]
     name: Cancel Previous Runs
     if: always()
     timeout-minutes: 1
     steps:
-    - uses: styfle/cancel-workflow-action@0.9.0
-      if: github.ref != 'refs/heads/master'
-      name: cancel old workflows
-      id: cancel
-      with:
-        all_but_latest: true
-        workflow_id: "build_images.yml"
-        access_token: ${{ github.token }}
-    - if: github.ref == 'refs/heads/master'
-      name: Don't cancel old workflows
-      id: dont_cancel
-      run: |
-        echo "Don't cancel old workflow"
+      - uses: styfle/cancel-workflow-action@0.9.0
+        if: github.ref != 'refs/heads/master'
+        name: cancel old workflows
+        id: cancel
+        with:
+          all_but_latest: true
+          workflow_id: "build_images.yml"
+          access_token: ${{ github.token }}
+      - if: github.ref == 'refs/heads/master'
+        name: Don't cancel old workflows
+        id: dont_cancel
+        run: |
+          echo "Don't cancel old workflow"
   validate_php_syntax:
-    runs-on: [api-public]
-    needs: [cancel]
+    runs-on: [ api-public ]
+    needs: [ cancel ]
     container:
       image: c.rzp.io/razorpay/onggi:php-8.1-api-web
       options: "--entrypoint /bin/bash"
@@ -31,23 +31,23 @@ jobs:
     continue-on-error: false
     name: Validate PHP Syntax
     steps:
-    - name: checkout
-      id: checkout
-      uses: razorpay/checkout-action@08eef2bd6ada50786812e7351457a762856a532f
-    - name: "Cache dependencies installed with composer"
-      uses: "actions/cache@v3.0.0"
-      with:
-        path: "/github/home/.composer/cache"
-        key: "api-composer-${{ hashFiles('composer.lock') }}"
-    - name: prepare_test
-      run: ci-assets/prepare_test.sh
-      env:
-        GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
-    - name: validate_php_syntax
-      run: ci-assets/validate_php_syntax.sh
+      - name: checkout
+        id: checkout
+        uses: razorpay/checkout-action@08eef2bd6ada50786812e7351457a762856a532f
+      - name: "Cache dependencies installed with composer"
+        uses: "actions/cache@v3.0.0"
+        with:
+          path: "/github/home/.composer/cache"
+          key: "api-composer-${{ hashFiles('composer.lock') }}"
+      - name: prepare_test
+        run: ci-assets/prepare_test.sh
+        env:
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+      - name: validate_php_syntax
+        run: ci-assets/validate_php_syntax.sh
   build-web:
-    runs-on: [api-public]
-    needs: [cancel]
+    runs-on: [ api-public ]
+    needs: [ cancel ]
     continue-on-error: false
     name: Build Web Harbor
     steps:
@@ -77,97 +77,97 @@ jobs:
             git_token=${{ secrets.GIT_TOKEN }}
 
   build-worker:
-     runs-on: [api-public]
-     needs: [ cancel ]
-     continue-on-error: false
-     name: Build Worker Harbor
-     steps:
-       - name: Login to Harbor
-         uses: docker/login-action@v1
-         with:
-           registry: c.rzp.io
-           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
-           password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
-       - name: Set up Docker Buildx
-         id: buildx
-         uses: docker/setup-buildx-action@v1
-       - name: build
-         uses: docker/build-push-action@v2
-         with:
-           tags: c.rzp.io/razorpay/api:worker-${{ github.sha }}
-           push: true
-           file: ./Dockerfile.worker
-           build-args: |
-             GIT_COMMIT_HASH=${{ github.sha }}
-             GIT_USERNAME=rzp
-             ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-8.1-api-web
-             CACHEBUST=${{ github.sha }}
-             ARMORY_IMAGE=c.rzp.io/razorpay/armory:wkhtmltopdf-v182
-             OPENRESTY_IMAGE=c.rzp.io/razorpay/onggi:openresty-1.17.8.2-0-alpine-fat-nosse42
-           secrets: |
-             git_token=${{ secrets.GIT_TOKEN }}
+    runs-on: [ api-public ]
+    needs: [ cancel ]
+    continue-on-error: false
+    name: Build Worker Harbor
+    steps:
+      - name: Login to Harbor
+        uses: docker/login-action@v1
+        with:
+          registry: c.rzp.io
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+      - name: build
+        uses: docker/build-push-action@v2
+        with:
+          tags: c.rzp.io/razorpay/api:worker-${{ github.sha }}
+          push: true
+          file: ./Dockerfile.worker
+          build-args: |
+            GIT_COMMIT_HASH=${{ github.sha }}
+            GIT_USERNAME=rzp
+            ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-8.1-api-web
+            CACHEBUST=${{ github.sha }}
+            ARMORY_IMAGE=c.rzp.io/razorpay/armory:wkhtmltopdf-v182
+            OPENRESTY_IMAGE=c.rzp.io/razorpay/onggi:openresty-1.17.8.2-0-alpine-fat-nosse42
+          secrets: |
+            git_token=${{ secrets.GIT_TOKEN }}
 
   build-checkout:
-     runs-on: [api-public]
-     needs: [cancel]
-     continue-on-error: false
-     name: Build Checkout Harbor
-     steps:
-       - name: Login to Harbor
-         uses: docker/login-action@v1
-         with:
-           registry: c.rzp.io
-           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
-           password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
-       - name: Set up Docker Buildx
-         id: buildx
-         uses: docker/setup-buildx-action@v1
-       - name: build
-         uses: docker/build-push-action@v2
-         with:
-           tags: c.rzp.io/razorpay/api:checkout-${{ github.sha }}
-           push: true
-           file: ./Dockerfile.checkout
-           build-args: |
-             GIT_COMMIT_HASH=${{ github.sha }}
-             GIT_USERNAME=rzp
-             NGINX_IMAGE=c.rzp.io/razorpay/onggi:nginx-alpine-3.12
-           secrets: |
-             git_token=${{ secrets.GIT_TOKEN }}
+    runs-on: [ api-public ]
+    needs: [ cancel ]
+    continue-on-error: false
+    name: Build Checkout Harbor
+    steps:
+      - name: Login to Harbor
+        uses: docker/login-action@v1
+        with:
+          registry: c.rzp.io
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+      - name: build
+        uses: docker/build-push-action@v2
+        with:
+          tags: c.rzp.io/razorpay/api:checkout-${{ github.sha }}
+          push: true
+          file: ./Dockerfile.checkout
+          build-args: |
+            GIT_COMMIT_HASH=${{ github.sha }}
+            GIT_USERNAME=rzp
+            NGINX_IMAGE=c.rzp.io/razorpay/onggi:nginx-alpine-3.12
+          secrets: |
+            git_token=${{ secrets.GIT_TOKEN }}
 
   build-openresty:
-     runs-on: [api-public]
-     needs: [cancel]
-     continue-on-error: false
-     name: Build Openresty Harbor
-     steps:
-       - name: Login to Harbor
-         uses: docker/login-action@v1
-         with:
-           registry: c.rzp.io
-           username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
-           password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
-       - name: Set up Docker Buildx
-         id: buildx
-         uses: docker/setup-buildx-action@v1
-       - name: build
-         uses: docker/build-push-action@v2
-         with:
-           tags: c.rzp.io/razorpay/api:openresty-${{ github.sha }}
-           push: true
-           file: ./Dockerfile.openresty
-           build-args: |
-             GIT_COMMIT_HASH=${{ github.sha }}
-             GIT_USERNAME=rzp
-             ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-8.1-api-web
-             OPENRESTY_IMAGE=c.rzp.io/razorpay/onggi:openresty-1.17.8.2-0-alpine-fat-nosse42
-           secrets: |
-             git_token=${{ secrets.GIT_TOKEN }}
+    runs-on: [ api-public ]
+    needs: [ cancel ]
+    continue-on-error: false
+    name: Build Openresty Harbor
+    steps:
+      - name: Login to Harbor
+        uses: docker/login-action@v1
+        with:
+          registry: c.rzp.io
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+      - name: build
+        uses: docker/build-push-action@v2
+        with:
+          tags: c.rzp.io/razorpay/api:openresty-${{ github.sha }}
+          push: true
+          file: ./Dockerfile.openresty
+          build-args: |
+            GIT_COMMIT_HASH=${{ github.sha }}
+            GIT_USERNAME=rzp
+            ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-8.1-api-web
+            OPENRESTY_IMAGE=c.rzp.io/razorpay/onggi:openresty-1.17.8.2-0-alpine-fat-nosse42
+          secrets: |
+            git_token=${{ secrets.GIT_TOKEN }}
 
   build-e2e:
     name: E2E test build
     runs-on: [ api-public ]
-    needs: [build-web, build-worker, build-checkout, build-openresty]
+    needs: [ build-web, build-worker, build-checkout, build-openresty ]
     steps:
       - uses: actions/checkout@v2
       - name: Login to Harbor
@@ -193,12 +193,12 @@ jobs:
   # Triggers end-to-end test execution with argo workflow as executor
   e2e-test-webhook:
     name: E2E test webhook
-    runs-on: [self-hosted, api]
+    runs-on: [ self-hosted, api ]
     needs: [ build-e2e ]
     steps:
       - uses: actions/checkout@v2
       - name: Find current pr
-      # Find the PR associated with this push, if there is one.
+        # Find the PR associated with this push, if there is one.
         uses: jwalton/gh-find-current-pr@v1.3.0
         id: findPr
         with:
@@ -253,8 +253,8 @@ jobs:
 
   build-slit:
     name: SLIT test build
-    runs-on: [ api-public]
-    needs: [build-web, build-worker, build-checkout, build-openresty]
+    runs-on: [ api-public ]
+    needs: [ build-web, build-worker, build-checkout, build-openresty ]
     steps:
       - uses: actions/checkout@v2
       - name: Login to Harbor
@@ -318,13 +318,13 @@ jobs:
             }
 
   trigger_regression_suite:
-   runs-on: [api-public]
-   name: Regression Suite
-   needs: [ validate_php_syntax, build-web, build-worker, build-checkout, build-openresty]
-   if: github.ref == 'refs/heads/master'
-   steps:
-   - name: Webhook
-     run: |
-       curl -X POST -H "Content-Type: application/json" \
-       -d '{ "branch" : "master" , "commit" : "${{ github.sha }}" , "repo" : "api" }' \
-       https://${{ secrets.SPINNAKER_BASIC_AUTH }}@deploy-github-actions.razorpay.com/webhooks/webhook/x-regression
+    runs-on: [ api-public ]
+    name: Regression Suite
+    needs: [ validate_php_syntax, build-web, build-worker, build-checkout, build-openresty ]
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Webhook
+        run: |
+          curl -X POST -H "Content-Type: application/json" \
+          -d '{ "branch" : "master" , "commit" : "${{ github.sha }}" , "repo" : "api" }' \
+          https://${{ secrets.SPINNAKER_BASIC_AUTH }}@deploy-github-actions.razorpay.com/webhooks/webhook/x-regression

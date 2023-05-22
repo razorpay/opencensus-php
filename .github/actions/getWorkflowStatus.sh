@@ -1,5 +1,5 @@
 #!/bin/sh
-commitId=$(jq --raw-output .pull_request.head.sha "$GITHUB_EVENT_PATH")
+commitId=${COMMIT_ID}
 URI="https://api.github.com"
 API_HEADER="Accept: application/vnd.github.v3+json"
 AUTH_HEADER="Authorization: token ${GITHUB_TOKEN}"

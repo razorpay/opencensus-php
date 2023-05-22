@@ -1,8 +1,8 @@
 name: Run BVT in Devstack Post Approval
 on:
   workflow_dispatch:
-#   pull_request_review:
-#     types: [ submitted ]
+  pull_request_review:
+    types: [ submitted ]
 jobs:
   # Add cancel job
   cancel:
@@ -22,7 +22,7 @@ jobs:
     runs-on: [ self-hosted, api ]
     needs: [ cancel ]
     steps:
-      - name: Get Current Workflow Link
+      - name: Retrieve Current Workflow URL
         id: workflow_run
         run: echo "::set-output name=url::https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
       - name: Post Workflow Link as Comment
@@ -35,9 +35,9 @@ jobs:
           allow-repeats: true
       - name: checkout
         uses: actions/checkout@v3
-      - name: Print Base branch
+      - name: Display Base Branch - Debugging Step
         run: echo ${{ github.event.pull_request.base.ref }}
-      - name: backmerge-master
+      - name: Merge Master into current branch
         id: backmerge
         uses: devmasx/merge-branch@master
         with:
@@ -46,7 +46,7 @@ jobs:
           message: Merged `master` into `${{ github.event.pull_request.head.ref }}` branch
           target_branch: ${{ github.event.pull_request.head.ref }}
           github_token: ${{ secrets.CI_BOT_TOKEN }}
-      - name: Comments
+      - name: Add comment if Backmerge failed
         if: ${{failure()}}
         uses: mshick/add-pr-comment@v2
         env:
@@ -55,7 +55,7 @@ jobs:
           message: |
             **A conflict error has occurred. Please perform a manual back-merge and obtain PR approval to re-run the BVT.**
           allow-repeats: true
-      - name: Approve if PR is rebased with master
+      - name: Approve rebased PR with Master
         if: success()
         run: |
           PR_NUMBER=${{ github.event.pull_request.number }}
@@ -66,11 +66,11 @@ jobs:
           -H "Accept: application/vnd.github.v3+json" \
           -d '{"maintainer_can_modify": false}' \
           "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUMBER"
-      - name: checkout lastest code from PR
+      - name: Checkout Latest Code from PR
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.ref }}
-      - name: Get Latest Commit ID
+      - name: Retrieve Latest Commit ID
         if: success()
         id: pr_info
         run: |
@@ -81,14 +81,14 @@ jobs:
           API_RESPONSE=$(curl -s -H "Authorization: Bearer ${{ secrets.CI_BOT_TOKEN }}" "$API_URL")
           LATEST_COMMIT=$(echo "$API_RESPONSE" | jq --raw-output .head.sha)
           echo "::set-output name=latest_commit::$LATEST_COMMIT"
-      - name: Print Lastest Commit id
+      - name: Print Lastest Commit id from PR - Debugging Step
         run: echo ${{ steps.pr_info.outputs.latest_commit }}
-      - name: Update BVT Status Check Link To Master Merge Commit
+      - name: Update BVT Status Check Link to Latest Merged Commit
         if: ${{ github.sha }} != ${{ steps.pr_info.outputs.latest_commit }} && ${{success()}}
         run: |
           STATUS_URL=${{ steps.workflow_run.outputs.url }}
           STATUS_DESCRIPTION="The BVT test on Devstack has been initiated. Kindly wait until the test is completed."
-          STATUS_CONTEXT="BVT Status Check"
+          STATUS_CONTEXT="Run BVT in Devstack Post Approval"
           curl -X POST \
             -H "Accept: application/vnd.github.v3+json" \
             -H "Authorization: Bearer ${{ secrets.CI_BOT_TOKEN }}" \
@@ -100,7 +100,7 @@ jobs:
             }' \
             "https://api.github.com/repos/${{ github.repository }}/statuses/${{ steps.pr_info.outputs.latest_commit }}"
       # Validate existence of Roast PR NUmber Field
-      - name: Validate existence of roastPRNumber Field
+      - name: Validate existence of roastPRNumber Field - ROAST
         uses: actions/github-script@v6
         id: roast-pr-number
         with:
@@ -110,7 +110,7 @@ jobs:
             roastPRNumberFlag = regex.test(context.payload.pull_request.body.toLowerCase())
             return Boolean(roastPRNumberFlag)
         # Fetch PR Number for Roast mentioned in description
-      - name: Fetch PR Number for Roast
+      - name: Fetch PR Number for Roast - ROAST
         uses: actions/github-script@v6
         if: ${{steps.roast-pr-number.outputs.result == 'true'}}
         id: roastPRNumber
@@ -122,10 +122,10 @@ jobs:
             var prNumberValue = roastPRNumberValueRow[0].split("|")
             var prNumber = prNumberValue[1].trim()
             return prNumber
-      - name: Print Roast PR Number
+      - name: Print Roast PR Number - ROAST
         run: echo ${{ steps.roastPRNumber.outputs.result }}
         # Get Roast PR State if its approved or not
-      - name: Run Roast API PR flow if value is not null
+      - name: Run Roast API PR flow if value is not null - ROAST
         id: get_pr_state
         if: ${{steps.roastPRNumber.outputs.result != null }}
         uses: actions/github-script@v6
@@ -143,7 +143,7 @@ jobs:
             const prState = result.data.filter(f => f.state.toLowerCase().includes("approved")).length > 0
             return Boolean(prState)
         # Get Target Branch for Roast Repo
-      - name: Get Roast Branch for PR
+      - name: Get Roast Branch for PR - ROAST
         id: roast-branch
         if: |
           steps.roastPRNumber.outputs.result != null  && steps.get_pr_state.outputs.result == 'true'
@@ -160,7 +160,7 @@ jobs:
             const roastBranch = response.data.head.ref
             return String(roastBranch)
         # Rebase Master to a roast branch in Roast Repo
-      - name: Rebase master to a branch
+      - name: Rebase master to a branch - ROAST
         id: rebase-branch
         if: |
           steps.roastPRNumber.outputs.result != null  && steps.get_pr_state.outputs.result == 'true'
@@ -170,7 +170,7 @@ jobs:
           head: 'razorpay:${{ steps.roast-branch.outputs.result }}'
           base: 'master'
           token: ${{ secrets.CI_BOT_TOKEN }}
-      - name: Comments
+      - name: Comments if master merge failed - ROAST
         if: failure()
         uses: mshick/add-pr-comment@v2
         env:
@@ -180,7 +180,7 @@ jobs:
             **Conflict Error Please rebase manually**
             allow-repeats: true
         # Fetch the latest commit of the Roast Repo
-      - name: Fetch latest Commit of the PR in Roast after rebase
+      - name: Fetch latest Commit of the PR in Roast after rebase - ROAST
         id: latest-commit
         if: |
           steps.roastPRNumber.outputs.result != null  && steps.get_pr_state.outputs.result == 'true'
@@ -196,7 +196,7 @@ jobs:
               })
               const latestCommit = response.data.head.sha
               return String(latestCommit)
-      - name: Get Build Image Workflow Status
+      - name: Check Build Image Workflow Status
         env:
           GITHUB_TOKEN: ${{ github.token }}
           BRANCH: ${{ github.event.pull_request.head.ref }}
@@ -205,9 +205,9 @@ jobs:
         run: |
           echo "commit id: ${{ steps.pr_info.outputs.latest_commit }}"
           echo "WORKFLOW_STATUS=$(sh ./.github/actions/getWorkflowStatus.sh)" >> $GITHUB_ENV
-      - name: Check Workflow Status
+      - name: Check Workflow Status - Debugging Step
         run: echo $WORKFLOW_STATUS
-      - name: Log Workflow Status
+      - name: Log Workflow Status - Debugging Step
         env:
           GITHUB_TOKEN: ${{ github.token }}
           BRANCH: ${{ github.event.pull_request.head.ref }}
@@ -215,7 +215,7 @@ jobs:
           API_HEADER: "Accept: application/vnd.github.v3+json"
         run: |
           cat build_image_workflow_log.txt
-      - name: Run bvt suite on devstack if PR approved && Build Image workflow succeeded
+      - name: Run BVT Suite on Devstack with Successful Build Image Workflow
         if: env.WORKFLOW_STATUS == 'success'
         env:
           SPINNAKER_PASSWORD: ${{ secrets.SPINNAKER_PASSWORD }}
@@ -235,6 +235,8 @@ jobs:
         with:
           message: |
             :white_check_mark: The BVT test on Devstack has been initiated. Kindly wait until the test is completed.
+
+            For troubleshooting BVT, please consult this [documentation](https://docs.google.com/document/d/162IkAOyLUQxYc-A6sDllXiiP2VJCyFpqn6-tfZGBhK8/edit#heading=h.exflzwww951h).
           allow-repeats: true
       - name: Post comment for devstack failed to initated
         if: env.WORKFLOW_STATUS != 'success'
@@ -244,13 +246,15 @@ jobs:
         with:
           message: |
             :x: The BVT trigger was unsuccessful due to a failure in image creation. [Retrigger the workflow](${{ steps.workflow_run.outputs.url }})
+
+            For troubleshooting BVT trigger, please consult this [documentation](https://write.razorpay.com/doc/execute-bvt-test-in-devstack-api-repo-haK6b8Q0Bs).
           allow-repeats: true
       - name: Update BVT Status Check Link To Master Merge Commit - Success
         if: ${{ env.WORKFLOW_STATUS == 'success' && github.sha != steps.pr_info.outputs.latest_commit && success() }}
         run: |
           STATUS_URL=${{ steps.workflow_run.outputs.url }}
           STATUS_DESCRIPTION="The BVT test on Devstack has been initiated. Kindly wait until the test is completed."
-          STATUS_CONTEXT="BVT Status Check"
+          STATUS_CONTEXT="Run BVT in Devstack Post Approval"
           curl -X POST \
             -H "Accept: application/vnd.github.v3+json" \
             -H "Authorization: Bearer ${{ secrets.CI_BOT_TOKEN }}" \
@@ -266,7 +270,7 @@ jobs:
         run: |
           STATUS_URL=${{ steps.workflow_run.outputs.url }}
           STATUS_DESCRIPTION="The BVT test on Devstack has been initiated. Kindly wait until the test is completed."
-          STATUS_CONTEXT="BVT Status Check"
+          STATUS_CONTEXT="Run BVT in Devstack Post Approval"
           curl -X POST \
             -H "Accept: application/vnd.github.v3+json" \
             -H "Authorization: Bearer ${{ secrets.CI_BOT_TOKEN }}" \
