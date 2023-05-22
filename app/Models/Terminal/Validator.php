@@ -2586,6 +2586,17 @@ class Validator extends Base\Validator
         'mode'                  => 'sometimes|string'
     ];
 
+    protected static $instrumentRuleEvalRules = [
+        Merchant\Detail\Entity::MERCHANT_ID  => 'required',
+        Merchant\Entity::ORG_ID => 'required',
+        Merchant\Entity::CATEGORY => 'required',
+        Merchant\Entity::CATEGORY2 => 'required',
+        Merchant\Detail\Entity::BUSINESS_TYPE => 'required',
+        Merchant\Detail\Entity::ACTIVATION_STATUS => 'required',
+        Merchant\Entity::WEBSITE => 'sometimes',
+        Merchant\Detail\Entity::BUSINESS_SUBCATEGORY => 'required'
+    ];
+
     protected static $hdfcDebitEmiTerminalRules = [
         Entity::GATEWAY              => 'required|in:hdfc_debit_emi',
         Entity::GATEWAY_MERCHANT_ID  => 'required|string',

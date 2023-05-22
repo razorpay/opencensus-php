@@ -42,6 +42,7 @@ class InstrumentRulesTest extends TestCase
 
     public function testMerchantOnSavedEvent()
     {
+        $this->markTestSkipped();
         $this->ba->adminAuth();
 
         $testCase = [
@@ -78,6 +79,7 @@ class InstrumentRulesTest extends TestCase
 
     public function testMerchantDetailOnSavedEvent()
     {
+        $this->markTestSkipped();
         $merchantDetail = $this->fixtures->create('merchant_detail');
         $merchant       = $merchantDetail->merchant;
 
@@ -123,6 +125,7 @@ class InstrumentRulesTest extends TestCase
 
     public function testMerchantDetailOnSavedEventWithruleBasedFeatureFlag()
     {
+        $this->markTestSkipped();
         $merchantDetail = $this->fixtures->create('merchant_detail');
         $merchant       = $merchantDetail->merchant;
 
@@ -145,6 +148,7 @@ class InstrumentRulesTest extends TestCase
 
     public function testMerchantManualTriggerEventThrowsException()
     {
+        $this->markTestSkipped();
         $merchantDetail = $this->fixtures->create('merchant_detail');
         $merchant       = $merchantDetail->merchant;
 

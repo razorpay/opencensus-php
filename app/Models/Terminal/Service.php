@@ -1688,13 +1688,14 @@ class Service extends Base\Service
         $start = millitime();
 
         $eventData = [
-            Merchant\Detail\Entity::MERCHANT_ID         => '',
-            Merchant\Entity::ORG_ID                     => '',
-            Merchant\Entity::CATEGORY                   => '',
-            Merchant\Entity::CATEGORY2                  => '',
-            Merchant\Entity::WEBSITE                    => '',
-            Merchant\Detail\Entity::BUSINESS_TYPE       => '',
-            Merchant\Detail\Entity::ACTIVATION_STATUS   => '',
+            Merchant\Detail\Entity::MERCHANT_ID          => '',
+            Merchant\Entity::ORG_ID                      => '',
+            Merchant\Entity::CATEGORY                    => '',
+            Merchant\Entity::CATEGORY2                   => '',
+            Merchant\Entity::WEBSITE                     => '',
+            Merchant\Detail\Entity::BUSINESS_TYPE        => '',
+            Merchant\Detail\Entity::ACTIVATION_STATUS    => '',
+            Merchant\Detail\Entity::BUSINESS_SUBCATEGORY => '',
         ];
 
         $response = [];
@@ -1730,19 +1731,32 @@ class Service extends Base\Service
              * @var Merchant\Entity $merchant
              */
             $merchant = $this->repo->merchant->findOrFailPublicWithRelations($merchantId, ['merchantDetail']);
-            if ($merchant != null)
+            if ($merchant != null && $merchant->merchantDetail != null)
             {
+
                 $eventData[Merchant\Detail\Entity::MERCHANT_ID] = $merchant->getId();
                 $eventData[Merchant\Entity::ORG_ID] = $merchant->getOrgId();
                 $eventData[Merchant\Entity::CATEGORY] = $merchant->getCategory();
                 $eventData[Merchant\Entity::CATEGORY2] = $merchant->getCategory2();
 
                 $merchantDetail = $merchant->merchantDetail;
-                if ($merchantDetail != null)
+
+                $eventData[Merchant\Detail\Entity::BUSINESS_TYPE] = $merchantDetail->getBusinessType();
+                $eventData[Merchant\Detail\Entity::ACTIVATION_STATUS] = $merchant->getAccountStatus();
+                $eventData[Merchant\Entity::WEBSITE] = $merchantDetail->getWebsite();
+                $eventData[Merchant\Detail\Entity::BUSINESS_SUBCATEGORY] = $merchantDetail->getBusinessSubcategory();
+                try
                 {
-                    $eventData[Merchant\Detail\Entity::BUSINESS_TYPE] = $merchantDetail->getBusinessType();
-                    $eventData[Merchant\Detail\Entity::ACTIVATION_STATUS] = $merchant->getAccountStatus();
-                    $eventData[Merchant\Entity::WEBSITE] = $merchantDetail->getWebsite();
+                    (new Terminal\Validator)->validateInput('instrument_rule_eval', $eventData);
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->error(TraceCode::INSTRUMENT_EVENT_RULES_TRIGGER_SKIPPED,
+                        [
+                            'merchant_id' => $merchantId,
+                            'error' => $e->getMessage(),
+                        ]);
+                    return $response;
                 }
             }
 
