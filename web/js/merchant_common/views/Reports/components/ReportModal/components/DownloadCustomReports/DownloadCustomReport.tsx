@@ -78,7 +78,7 @@ export const DownloadCustomReport = connect(
         // faking loader for keeping the custom flow similar to other flow
         setTimeout(() => {
           window.open(
-            `/${sessionMode}/reports/${selectedConfig?.id}/?year=${year}&month=${month}`,
+            `/${sessionMode}/reports/${selectedConfig?.id}/?year=${year}&month=${month + 1}`,
             '_blank',
           );
           closeModal();
