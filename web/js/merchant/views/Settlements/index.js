@@ -1,40 +1,42 @@
-import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
-import { withRouter } from 'react-router';
-import { connect } from 'react-redux';
-import { Route, Switch, NavLink, Link } from 'react-router-dom';
-import SettlementsListContainer from './Settlements/List';
-import InstantSettlements from './InstantSettlements/InstantSettlements';
+import { AsyncBtn } from 'common/new-ui/Button';
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import DashboardBanner from 'common/ui/DashboardBanner';
+import Loader from 'common/ui/Loader';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
+import { handleNegativeBalanceLimit } from 'common/utils/rzp-utils';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
-import CashAdvanceOrNitroBanner from 'merchant/components/CashAdvanceOrNitroBanner';
 import EarlySettlementsAnnouncement from 'merchant/components/Announcements/EarlySettlements';
 import UltraCampaignBanner from 'merchant/components/Announcements/UltraCampaignBanner';
 import UltraP2CashAdvanceBanner from 'merchant/components/Announcements/UltraP2CashAdvanceBanner';
-import { handleNegativeBalanceLimit } from 'common/utils/rzp-utils';
-import { getSettlementStatus } from 'merchant/views/Capital/utils';
-import { trackOnDemandTabClick } from './trackEvents';
-import ShowWhen from 'merchant/components/ShowWhen';
+import CashAdvanceOrNitroBanner from 'merchant/components/CashAdvanceOrNitroBanner';
 import EasterEgg from 'merchant/components/EasterEgg';
-import ErrorBoundary from 'common/new-ui/ErrorBoundary';
-import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
-import DashboardBanner from 'common/ui/DashboardBanner';
-import SettlementsHeader from './components/SettlementsHeader';
-import SettlementsHeaderV2 from './components/SettlementsHeaderV2';
-import { AsyncBtn } from 'common/new-ui/Button';
+import ShowWhen from 'merchant/components/ShowWhen';
 import { fetchCurrentBalance as fnFetchCurrentBalance } from 'merchant/reducers/home';
-import { fetchSettlementConfig as fnFetchSettlementConfig } from 'merchant/reducers/settlements/details';
 import { fetchBankAccountChangeStatus as fnFetchBankAccountChangeStatus } from 'merchant/reducers/profile';
+import { fetchSettlementConfig as fnFetchSettlementConfig } from 'merchant/reducers/settlements/details';
+import { merchantFetch } from 'merchant/utils/ajax';
+import { getSettlementStatus } from 'merchant/views/Capital/utils';
 import ScheduledModal from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal';
 import {
   POST_ENABLE_TYPES,
   SAMEDAY_MODAL_LOCATIONS,
 } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/constants';
 import { getNoOfDaysAfterEsPartialEnable } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/utils';
-import RouteOndemandSettlements from './RouteOndemandSettlements';
 import EmptySettlementState from 'merchant/views/Settlements/v3/components/EmptyState';
-import SettlementsBannerV2 from 'merchant/views/Settlements/components/SettlementsBannerV2';
 import { StyledEmptySettlementsContainer } from 'merchant/views/Settlements/v3/components/EmptyState/styled';
-import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
+import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
+import PropTypes from 'prop-types';
+import React, { useEffect, useState } from 'react';
+import { connect } from 'react-redux';
+import { withRouter } from 'react-router';
+import { Link, NavLink, Route, Switch } from 'react-router-dom';
+import SettlementsHeader from './components/SettlementsHeader';
+import SettlementsHeaderV2 from './components/SettlementsHeaderV2';
+import InstantSettlements from './InstantSettlements/InstantSettlements';
+import RouteOndemandSettlements from './RouteOndemandSettlements';
+import SettlementsListContainer from './Settlements/List';
+import { trackOnDemandTabClick } from './trackEvents';
+import { hideEmptyState, isEmptyStateVisible } from './v3/utils/common';
 
 const Settlements = ({
   user,
@@ -47,6 +49,11 @@ const Settlements = ({
   openModal,
 }) => {
   const [settlementExists, setSettlementExists] = useState(true);
+  const [showEmptyState, setShowEmptyState] = useState(false);
+  const [isSettlement, setIsSettlement] = useState({
+    loading: true,
+    empty: true,
+  });
   const isOndemandSettlementEnabled = user.isOndemandSettlementEnabled;
   const isOndemandSettlementsRestricted = user.isOndemandSettlementsRestricted;
   const isPartialOndemandSettlementEnabled =
@@ -115,6 +122,34 @@ const Settlements = ({
     }
   };
 
+  const getIsSettlement = () => {
+    merchantFetch({ url: 'settlements?count=1', mode: 'live' })
+      .then((response) => {
+        setIsSettlement({
+          loading: false,
+          empty: !(response?.data?.items?.length > 0),
+        });
+      })
+      .catch(() => {
+        setIsSettlement({
+          loading: false,
+          empty: false,
+        });
+      });
+  };
+
+  const checkEmptyStateValidity = () => {
+    const isVisible = isEmptyStateVisible();
+    if (isVisible) {
+      setShowEmptyState(true);
+    }
+  };
+
+  const handleAction = () => {
+    setShowEmptyState(false);
+    hideEmptyState();
+  };
+
   useEffect(() => {
     checkIfFirstEverSettlement();
     fetchCurrentBalance();
@@ -123,6 +158,8 @@ const Settlements = ({
 
     // opens scheduled modal if pathname is /settlements/enable_automatic
     openEsAutomaticModalIfRoute();
+    checkEmptyStateValidity();
+    getIsSettlement();
   }, []);
 
   const handleSettlementUnlockStatusClick = () => {
@@ -147,12 +184,16 @@ const Settlements = ({
     !user.isAutomaticSettlementEnabled &&
     user.isAutomaticSettlementRestricted;
 
-  const showSettlementsEmptyState = !user.isTransacted && user.isSettlementV3RevampEnabled;
+  const showEmptyStateBanner = user.isSettlementV3RevampEnabled && showEmptyState;
+  const showSettlementsEmptyState = isSettlement.empty && showEmptyStateBanner;
+
+  if (showEmptyStateBanner && isSettlement.loading) {
+    return <Loader />;
+  }
 
   return showSettlementsEmptyState ? (
     <StyledEmptySettlementsContainer>
-      <SettlementsBannerV2 />
-      <EmptySettlementState />
+      <EmptySettlementState handleAction={handleAction} />
     </StyledEmptySettlementsContainer>
   ) : (
     <>

@@ -19,7 +19,7 @@ export default (props) => {
     <tbody>
       {tableRowComponent
         ? typeof tableRowComponent === 'function'
-          ? tableRowComponent()
+          ? tableRowComponent(colSpan)
           : tableRowComponent
         : children}
     </tbody>

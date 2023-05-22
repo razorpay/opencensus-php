@@ -1,6 +1,7 @@
+import { SettlementsCollectionReducerState, User } from 'common/typings';
 import { DateInfo, ERROR_TYPE, SettlementListFilters } from 'merchant/views/Settlements/v3/typings';
 import moment from 'moment';
-import { SettlementsCollectionReducerState, User } from 'common/typings';
+const EMPTY_STATE_KEY = 'settlements_empty_state';
 
 export const getSettlementDate = (timestamp: number): DateInfo => {
   if (!timestamp) return { date: '---', time: '---' };
@@ -57,4 +58,25 @@ export const validateSettlementIdFilters = (
 
     return true;
   });
+};
+
+export const isEmptyStateVisible = (): boolean => {
+  const visibilityStatus = localStorage.getItem(EMPTY_STATE_KEY);
+  if (!visibilityStatus) {
+    return true;
+  }
+  const { expireAt } = JSON.parse(visibilityStatus);
+  if (expireAt && moment().isBefore(expireAt)) {
+    return false;
+  }
+  return true;
+};
+
+export const hideEmptyState = (): void => {
+  localStorage.setItem(
+    EMPTY_STATE_KEY,
+    JSON.stringify({
+      expireAt: moment().add(1, 'days').format(),
+    }),
+  );
 };

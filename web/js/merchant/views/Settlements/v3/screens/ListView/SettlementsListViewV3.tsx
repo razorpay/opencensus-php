@@ -1,17 +1,18 @@
-import React from 'react';
-import {
-  StyledSettlementListTable,
-  StyledSettlementListTableHeaderCell,
-  StyledLoaderCell,
-} from './styled';
-import { Text, Box, useTheme, InfoIcon, Spinner } from '@razorpay/blade/components';
+import { Box, InfoIcon, Spinner, Text, useTheme } from '@razorpay/blade/components';
+import { useBreakpoint } from '@razorpay/blade/utils';
 import { SettlementsCollectionReducerState, User } from 'common/typings';
-import { settlementListViewHeaders, settlementListViewMobileHeaders } from './constants';
+import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
 import TableBody from 'common/ui/TableBody';
+import React from 'react';
+import { settlementListViewHeaders, settlementListViewMobileHeaders } from './constants';
 import SettlementListItem from './ListItem';
 import SettlementListItemMobile from './ListItemMobile';
-import { useBreakpoint } from '@razorpay/blade/utils';
-import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
+import NoSettlement from './NoSettlements';
+import {
+  StyledLoaderCell,
+  StyledSettlementListTable,
+  StyledSettlementListTableHeaderCell,
+} from './styled';
 
 type Props = SettlementsCollectionReducerState & {
   user: User;
@@ -80,6 +81,7 @@ const SettlementsListViewV3 = ({
           isLoading={isLoading}
           rows={settlements}
           emptyTableMsg="No Settlements found!"
+          emptyTableRow={(colSpan) => <NoSettlement colSpan={colSpan} />}
           colSpan={colSpan}
           SpinnerComponent={() => (
             <tr>
