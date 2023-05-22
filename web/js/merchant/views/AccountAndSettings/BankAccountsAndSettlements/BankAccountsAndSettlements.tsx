@@ -26,28 +26,32 @@ import { connect } from 'react-redux';
 import { NavLink, Redirect, Switch } from 'react-router-dom';
 
 const { BANK_ACCOUNT_DETAILS, SETTLEMENT_DETAILS, FIRS } = ROUTES_INFO;
-const BankAccountDetails = lazy(() =>
-  import(
-    /* webpackChunkName: "BankAccountDetails" */ 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetails'
-  ),
+const BankAccountDetails = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "BankAccountDetails" */ 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetails'
+    ),
 );
 
-const BankAccountDetailsV2 = lazy(() =>
-  import(
-    /* webpackChunkName: "BankAccountDetailsV2" */ 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2'
-  ),
+const BankAccountDetailsV2 = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "BankAccountDetailsV2" */ 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2'
+    ),
 );
 
-const SettlementDetails = lazy(() =>
-  import(
-    /* webpackChunkName: "SettlementDetails" */ 'merchant/views/Account/Profile/components/SettlementDetails'
-  ),
+const SettlementDetails = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "SettlementDetails" */ 'merchant/views/Account/Profile/components/SettlementDetails'
+    ),
 );
 
-const FIRCSection = lazy(() =>
-  import(
-    /* webpackChunkName: "FIRCSection" */ 'merchant/views/Account/Profile/components/FIRC/FIRCSection'
-  ),
+const FIRCSection = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "FIRCSection" */ 'merchant/views/Account/Profile/components/FIRC/FIRCSection'
+    ),
 );
 
 const getTabsContent = ({ type, withStyled = true, user }) => {
@@ -58,9 +62,9 @@ const getTabsContent = ({ type, withStyled = true, user }) => {
   };
   const Component = tabs[type];
   return withStyled
-    ? () => (
+    ? (props) => (
         <StyledTabContentContainer className="profile-container content">
-          <Component />
+          <Component {...props} />
         </StyledTabContentContainer>
       )
     : Component;

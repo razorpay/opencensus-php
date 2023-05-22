@@ -18,6 +18,7 @@ const routes = {
   TRANSACTION_LIMITS: '/app/payments-and-refunds-settings/transaction-limits',
   MANAGE_TEAM: '/app/business-settings/team',
   SETTLEMENTS: '/app/settlements',
+  CUSTOMER_SUPPORT_DETAILS: '/app/business-settings/customer-support',
 };
 
 const EmailCredentials = [

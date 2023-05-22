@@ -83,3 +83,20 @@ export const rejectInvitationHandler = ({ isErrorCase = false, errors = [] } = {
     );
   });
 };
+
+export const fetchSupportDetail = () => {
+  return rest.get('*/merchants/supportdetails', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 200,
+        success: true,
+        data: {
+          phone: '9677868778',
+          email: 'support@example.com',
+          url: '',
+        },
+      }),
+    );
+  });
+};

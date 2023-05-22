@@ -1,13 +1,13 @@
 import '@testing-library/jest-dom/extend-expect';
 import * as context from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
 import { titleCase } from 'common/utils/rzp-utils';
-import { getState } from './mocks/fixtures/Profile';
 import Profile from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/sections/Profile';
 import * as modals from 'merchant_common/reducers/modals';
 import React from 'react';
-import { render, screen, userEvent } from 'test-utils';
+import { render, screen, userEvent, waitFor } from 'test-utils';
+import { getState } from './mocks/fixtures/Profile';
 
-describe('Merchant Profile Section', () => {
+describe('Merchant Profile Section Version 1', () => {
   const modalsSpy = jest.spyOn(modals, 'openModal');
 
   const renderApp = ({ props = {}, initialState }) =>
@@ -19,12 +19,14 @@ describe('Merchant Profile Section', () => {
     modalsSpy.mockClear();
   });
 
-  test('should render desktop profile view for merchants', () => {
+  test('should render desktop profile view for merchants', async () => {
     const initialState = getState();
     renderApp({
       initialState,
     });
-    expect(screen.getByText('Your profile')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Your profile')).toBeInTheDocument();
+    });
     expect(screen.getByText(titleCase(initialState.session.user.user.name))).toBeInTheDocument();
     expect(screen.getByText('Owner')).toBeInTheDocument();
     expect(screen.getByText(initialState.session.user.id)).toBeInTheDocument();

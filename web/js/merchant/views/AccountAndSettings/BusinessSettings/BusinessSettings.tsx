@@ -1,39 +1,43 @@
-import React, { Suspense } from 'react';
-import { Route, NavLink, Switch, Redirect } from 'react-router-dom';
-import { connect } from 'react-redux';
-import TestModeBanner from 'merchant/components/TestModeBanner';
-import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
+import Breadcrumb from 'common/components/Breadcrumb';
+import Loader from 'common/components/Loader';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import DashboardBanner from 'common/ui/DashboardBanner';
-import Breadcrumb from 'common/components/Breadcrumb';
+import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
+import TestModeBanner from 'merchant/components/TestModeBanner';
 import lazy from 'merchant/routes/LazyLoader';
-import { BusinessSettingsProps } from './typings';
-import {
-  StyledDivider,
-  StyledTabContentContainer,
-  StyledHeader,
-  StyledTabContainer,
-} from 'merchant/views/AccountAndSettings/styled';
 import {
   accountAndSettingsLink,
   ROUTE_MAP,
 } from 'merchant/views/AccountAndSettings/constants/constants';
-import Loader from 'common/components/Loader';
 import {
-  isGstDetailsEnabled,
-  isTeamManagementAllowed,
+  StyledDivider,
+  StyledHeader,
+  StyledTabContainer,
+  StyledTabContentContainer,
+} from 'merchant/views/AccountAndSettings/styled';
+import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
+import {
   isAccountDetailsEnabled,
+  isGstDetailsEnabled,
   isSupportTicketEnabled,
+  isTeamManagementAllowed,
   shouldShowTeamInvitations,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
-import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
-
-const ContactDetails = lazy(
-  () => import(/* webpackChunkName: "ContactDetails" */ './Tabs/ContactDetails'),
-);
+import React, { Suspense } from 'react';
+import { connect } from 'react-redux';
+import { NavLink, Redirect, Route, Switch } from 'react-router-dom';
+import { BusinessSettingsProps } from './typings';
 
 const AccountDetails = lazy(
-  () => import(/* webpackChunkName: "AccountDetails" */ './Tabs/AccountDetails'),
+  () => import(/* webpackChunkName: "AccountDetails" */ './Tabs/AccountDetails/v1'),
+);
+
+const AccountDetailsV2 = lazy(
+  () => import(/* webpackChunkName: "AccountDetails" */ './Tabs/AccountDetails/v2'),
+);
+
+const ActivationDetails = lazy(
+  () => import(/* webpackChunkName: "ActivationDetails" */ './Tabs/ActivationDetails'),
 );
 
 const BusinessDetails = lazy(
@@ -50,6 +54,10 @@ const CustomerSupportDetails = lazy(
     import(
       /* webpackChunkName: "CustomerSupportDetails" */ 'merchant/views/Account/Profile/components/SupportDetails'
     ),
+);
+
+const CustomerSupportDetailsV2 = lazy(
+  () => import(/* webpackChunkName: "CustomerSupportDetailsV2" */ './Tabs/CustomerSupportDetails'),
 );
 
 const TeamDetails = lazy(
@@ -95,9 +103,9 @@ const BusinessSettings = ({ user, location }: BusinessSettingsProps): JSX.Elemen
           ]}
         />
         <StyledHeader className="scrollable-tab-header">
-          <NavLink to={ROUTES_INFO.CONTACT_DETAILS}>Contact details</NavLink>
+          <NavLink to={ROUTES_INFO.ACCOUNT_DETAILS}>Account details</NavLink>
           <ShowWhen additionalCondition={(user) => isAccountDetailsEnabled(user)}>
-            <NavLink to={ROUTES_INFO.ACCOUNT_DETAILS}>Account details</NavLink>
+            <NavLink to={ROUTES_INFO.ACTIVATION_DETAILS}>Activation details</NavLink>
           </ShowWhen>
           <NavLink to={ROUTES_INFO.BUSINESS_DETAILS}>Business details</NavLink>
           <ShowWhen additionalCondition={(user) => isGstDetailsEnabled(user)}>
@@ -131,34 +139,83 @@ const BusinessSettings = ({ user, location }: BusinessSettingsProps): JSX.Elemen
         <ErrorBoundary resetOnProps>
           <Suspense fallback={<Loader />}>
             <StyledDivider>
-              <StyledTabContentContainer className="content">
-                <main>
-                  <Switch>
-                    <Route path={ROUTES_INFO.CONTACT_DETAILS} component={ContactDetails} />
-                    <Route path={ROUTES_INFO.ACCOUNT_DETAILS} component={AccountDetails} />
-                    <Route path={ROUTES_INFO.BUSINESS_DETAILS} component={BusinessDetails} />
-                    <Route path={ROUTES_INFO.GST_DETAILS} component={GSTDetails} />
-                    <Route
-                      path={ROUTES_INFO.CUSTOMER_SUPPORT_DETAILS}
-                      component={CustomerSupportDetails}
-                    />
-                    <Route path={ROUTES_INFO.MANAGE_TEAM_DETAILS} component={TeamDetails} />
-                    <Route
-                      path="/business-settings/ticket-support/tickets"
-                      component={SupportTickets}
-                    />
-                    <Route
-                      path="/business-settings/ticket-support/:instance/:id/:ticketType/conversation"
-                      component={Conversations}
-                    />
-                    <ShowWhenRoute
-                      path={ROUTES_INFO.TEAM_INVITATIONS}
-                      component={TeamInvitations}
-                      additionalCondition={(user) => shouldShowTeamInvitations(user)}
-                    />
-                  </Switch>
-                </main>
-              </StyledTabContentContainer>
+              <main>
+                <Switch>
+                  <Route
+                    path={ROUTES_INFO.ACCOUNT_DETAILS}
+                    component={user.isContactDetailsRevamp ? AccountDetailsV2 : AccountDetails}
+                  />
+                  <Route
+                    path={ROUTES_INFO.ACTIVATION_DETAILS}
+                    component={(props) => (
+                      <StyledTabContentContainer className="content">
+                        <ActivationDetails {...props} />
+                      </StyledTabContentContainer>
+                    )}
+                  />
+                  <Route
+                    path={ROUTES_INFO.BUSINESS_DETAILS}
+                    component={(props) => (
+                      <StyledTabContentContainer className="content">
+                        <BusinessDetails {...props} />
+                      </StyledTabContentContainer>
+                    )}
+                  />
+                  <Route
+                    path={ROUTES_INFO.GST_DETAILS}
+                    component={(props) => (
+                      <StyledTabContentContainer className="content">
+                        <GSTDetails {...props} />
+                      </StyledTabContentContainer>
+                    )}
+                  />
+                  <Route
+                    path={ROUTES_INFO.CUSTOMER_SUPPORT_DETAILS}
+                    component={(props) => (
+                      <StyledTabContentContainer className="content">
+                        {user.isContactDetailsRevamp ? (
+                          <CustomerSupportDetailsV2 {...props} />
+                        ) : (
+                          <CustomerSupportDetails {...props} />
+                        )}
+                      </StyledTabContentContainer>
+                    )}
+                  />
+                  <Route
+                    path={ROUTES_INFO.MANAGE_TEAM_DETAILS}
+                    component={(props) => (
+                      <StyledTabContentContainer className="content">
+                        <TeamDetails {...props} />
+                      </StyledTabContentContainer>
+                    )}
+                  />
+                  <Route
+                    path="/business-settings/ticket-support/tickets"
+                    component={(props) => (
+                      <StyledTabContentContainer className="content">
+                        <SupportTickets {...props} />
+                      </StyledTabContentContainer>
+                    )}
+                  />
+                  <Route
+                    path="/business-settings/ticket-support/:instance/:id/:ticketType/conversation"
+                    component={(props) => (
+                      <StyledTabContentContainer className="content">
+                        <Conversations {...props} />
+                      </StyledTabContentContainer>
+                    )}
+                  />
+                  <ShowWhenRoute
+                    path={ROUTES_INFO.TEAM_INVITATIONS}
+                    component={(props) => (
+                      <StyledTabContentContainer className="content">
+                        <TeamInvitations {...props} />
+                      </StyledTabContentContainer>
+                    )}
+                    additionalCondition={(user) => shouldShowTeamInvitations(user)}
+                  />
+                </Switch>
+              </main>
             </StyledDivider>
           </Suspense>
         </ErrorBoundary>
@@ -167,10 +224,8 @@ const BusinessSettings = ({ user, location }: BusinessSettingsProps): JSX.Elemen
   );
 };
 
-const mapStateToProps = (state) => {
-  return {
-    user: state.session.user,
-  };
-};
+const mapStateToProps = (state) => ({
+  user: state.session.user,
+});
 
 export default connect(mapStateToProps, null)(BusinessSettings);

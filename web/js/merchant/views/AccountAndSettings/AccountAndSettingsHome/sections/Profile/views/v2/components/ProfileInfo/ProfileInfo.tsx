@@ -1,0 +1,65 @@
+import { Box, CopyIcon, Heading, Text } from '@razorpay/blade/components';
+import React from 'react';
+import { ProfilePhotoContainer, StyledInitialsImage } from './styled';
+// eslint-disable-next-line
+import CustomClipboard from 'common/ui/Clipboard/Custom';
+import { titleCase } from 'common/utils/rzp-utils';
+import { getInitials } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/sections/Profile/views/v2/utils';
+import { User } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
+
+interface ProfileInfoInterface {
+  user: User;
+  userRole: string;
+}
+
+const ProfileInfo = ({ user, userRole }: ProfileInfoInterface): JSX.Element => {
+  const { id: merchantId, logo_url: imageUrl, user: loggedInUser } = user;
+  const { name: loggedInUserName } = loggedInUser;
+  const userNameInitials = getInitials(loggedInUserName);
+
+  return (
+    <Box display="flex" gap={{ base: 'spacing.6', m: 'spacing.7' }} alignItems="center">
+      <ProfilePhotoContainer>
+        {imageUrl ? (
+          <img title="profile-pic" src={imageUrl} alt="user-profile-pic" />
+        ) : userNameInitials ? (
+          <StyledInitialsImage>{userNameInitials}</StyledInitialsImage>
+        ) : (
+          <i className="i i-profile" />
+        )}
+      </ProfilePhotoContainer>
+      <Box
+        display="flex"
+        flexDirection="column"
+        gap={{ base: 'spacing.4', m: 'spacing.5' }}
+        flex="1"
+      >
+        <Box display="flex" flexDirection="column">
+          <Heading size="small" weight="bold">
+            {loggedInUserName ? titleCase(loggedInUserName) : '--'}
+          </Heading>
+          {userRole && (
+            <Text size="medium" type="subdued">
+              {userRole}
+            </Text>
+          )}
+        </Box>
+        <Box display="flex" flexDirection="column">
+          <Text size="medium" type="subdued">
+            Merchant ID
+          </Text>
+          <Box display="flex" gap="spacing.3" alignItems="end">
+            <Text size="medium" weight="bold">
+              {merchantId}
+            </Text>
+            <CustomClipboard value={merchantId}>
+              <CopyIcon color="action.icon.link.default" size="medium" />
+            </CustomClipboard>
+          </Box>
+        </Box>
+      </Box>
+    </Box>
+  );
+};
+
+export default ProfileInfo;

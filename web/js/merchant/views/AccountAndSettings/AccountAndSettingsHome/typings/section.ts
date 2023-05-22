@@ -28,7 +28,6 @@ export enum WebsiteAppSettingsFields {
 }
 
 export enum BusinessSettingsFields {
-  CONTACT_DETAILS = 'contact_details',
   BUSINESS_DETAILS = 'business_details',
   GST_DETAILS = 'gst_details',
   CUSTOMER_SUPPORT_DETAILS = 'customer_support_details',
@@ -36,6 +35,7 @@ export enum BusinessSettingsFields {
   MANAGE_TEAM = 'manage_team',
   SUPPORT_TICKETS = 'support_tickets',
   INVITATIONS = 'invitations',
+  ACTIVATION_DETAILS = 'Activation_details',
 }
 
 export enum PaymentRefundsFields {
@@ -91,8 +91,8 @@ export const WebsiteAppSettingsTitles: Record<WebsiteAppSettingsFields, string> 
 
 export const BusinessSettingsTitles: Record<BusinessSettingsFields, string> = {
   [BusinessSettingsFields.ACCOUNT_DETAILS]: 'Account details',
+  [BusinessSettingsFields.ACTIVATION_DETAILS]: 'Activation details',
   [BusinessSettingsFields.BUSINESS_DETAILS]: 'Business details',
-  [BusinessSettingsFields.CONTACT_DETAILS]: 'Contact details',
   [BusinessSettingsFields.CUSTOMER_SUPPORT_DETAILS]: 'Customer support details',
   [BusinessSettingsFields.GST_DETAILS]: 'GST details',
   [BusinessSettingsFields.INVITATIONS]: 'Invitations',

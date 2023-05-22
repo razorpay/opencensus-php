@@ -1,21 +1,58 @@
-import React, { Component } from 'react';
-import { compose } from 'redux';
-import RTracking from 'react-tracking';
-import { connect } from 'react-redux';
-import { reduxForm, Field } from 'redux-form';
-import AsyncButton from 'react-async-button';
-import { createSupportDetail } from 'merchant/reducers/support_detail';
-import {
-  trackSupportDetailSubmitAction,
-  trackSupportDetailPopupClose,
-} from 'merchant/containers/Home/ga';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import { required, isMobile, isEmail, isUrlLenient, isPhone } from 'common/utils/validators';
 import InputField from 'common/ui/Forms/InputField';
-import { autoPrefixUrls, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
-import VerifyOTP from './VerifyOTPScreen';
+import { autoPrefixUrls, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { isEmail, isMobile, isPhone, isUrlLenient, required } from 'common/utils/validators';
+import {
+  trackSupportDetailPopupClose,
+  trackSupportDetailSubmitAction,
+} from 'merchant/containers/Home/ga';
+import { createSupportDetail } from 'merchant/reducers/support_detail';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import React, { Component } from 'react';
+import AsyncButton from 'react-async-button';
+import { connect } from 'react-redux';
+import RTracking from 'react-tracking';
+import { compose } from 'redux';
+import { Field, reduxForm } from 'redux-form';
+import VerifyOTP from './VerifyOTPScreen';
+
+const PhoneField = () => (
+  <>
+    <label>Support Phone number</label>
+    <Field
+      component={InputField}
+      type="tel"
+      name="phone"
+      class="form-control"
+      pattern="[789][0-9]{9}"
+    />
+  </>
+);
+const EmailField = () => (
+  <>
+    <label class="label-required">Support Email id</label>
+    <Field
+      component={InputField}
+      type="email"
+      name="email"
+      class="form-control"
+      validate={required()}
+    />
+  </>
+);
+const SupportUrlField = () => (
+  <>
+    <label>Support URL</label>
+    <Field component={InputField} type="text" name="url" class="form-control" />
+  </>
+);
+
+const Fields = {
+  phone_number: PhoneField,
+  email: EmailField,
+  website: SupportUrlField,
+};
 
 class MerchantDataCollectionModal extends Component {
   state = { isVerifying: false, newEmail: '', newUrl: '' };
@@ -152,7 +189,7 @@ class MerchantDataCollectionModal extends Component {
   }
 
   render() {
-    const { closeModal, handleSubmit, supportDetail } = this.props;
+    const { closeModal, handleSubmit, supportDetail, isIndividual, editField } = this.props;
     const { isVerifying, newEmail, newPhone, newUrl } = this.state;
     return isVerifying ? (
       <VerifyOTP
@@ -203,30 +240,17 @@ class MerchantDataCollectionModal extends Component {
             return handleSubmit(this.onSubmit)(...e);
           }}
         >
-          <div class="form-group">
-            <label>Support Phone number</label>
-            <Field
-              component={InputField}
-              type="tel"
-              name="phone"
-              class="form-control"
-              pattern="[789][0-9]{9}"
-            />
-          </div>
-          <div class="form-group">
-            <label class="label-required">Support Email id</label>
-            <Field
-              component={InputField}
-              type="email"
-              name="email"
-              class="form-control"
-              validate={required()}
-            />
-          </div>
-          <div class="form-group">
-            <label>Support URL</label>
-            <Field component={InputField} type="text" name="url" class="form-control" />
-          </div>
+          {Object.keys(Fields).map((each) => {
+            const Component = Fields[each];
+            if (isIndividual && editField !== each) {
+              return null;
+            }
+            return (
+              <div class="form-group" key={each}>
+                <Component />
+              </div>
+            );
+          })}
           <div className="merchant-note">
             <strong>Note:</strong> These details will be shared with customer in transaction emails.
           </div>

@@ -537,8 +537,8 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     apiCondition: false,
   },
   {
-    title: SEARCH_PRODUCTS_TITLES.contact_details,
-    url: SEARCH_PRODUCTS_URL.CONTACT_DETAILS,
+    title: SEARCH_PRODUCTS_TITLES.account_details,
+    url: SEARCH_PRODUCTS_URL.ACCOUNT_DETAILS,
     tags: [
       { value: 'Contact name' },
       { value: 'email' },
@@ -551,8 +551,8 @@ export const SEARCH_PRODUCTS: EligibleProducts[] = [
     apiCondition: false,
   },
   {
-    title: SEARCH_PRODUCTS_TITLES.account_details,
-    url: SEARCH_PRODUCTS_URL.ACCOUNT_DETAILS,
+    title: SEARCH_PRODUCTS_TITLES.Activation_details,
+    url: SEARCH_PRODUCTS_URL.ACTIVATION_DETAILS,
     tags: [
       { value: 'Account Status' },
       { value: 'KYC form' },

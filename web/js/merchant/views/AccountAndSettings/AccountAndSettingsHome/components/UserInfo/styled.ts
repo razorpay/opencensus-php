@@ -41,6 +41,13 @@ export const TooltipContainer = styled.div`
       padding: 10px;
       box-shadow: 0px 3px 8px rgba(21, 45, 75, 0.1), 0px 0px 1px rgba(21, 45, 75, 0.1);
       border-radius: 4px;
+      .rzp-popover-content {
+        .rzp-popover-body {
+          div {
+            white-space: pre-line;
+          }
+        }
+      }
     }
   }
 `;

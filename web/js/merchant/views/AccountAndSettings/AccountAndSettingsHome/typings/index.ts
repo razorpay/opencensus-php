@@ -29,6 +29,7 @@ export enum PersonalProfileFields {
   CONTACT_MOBILE = 'contact_mobile',
   EMAIL = 'email',
   PASSWORD = 'password',
+  NAME = 'name',
 }
 
 interface WebsiteSectionData {
@@ -100,7 +101,9 @@ export interface AccountAndSettingsHomePropInterface {
 
 export interface InfoDataPayload {
   user: User;
-  profile: any;
+  profile?: any;
+  isRevampedInfo?: boolean;
+  dataConfig: StoredInfoDataInterface[];
 }
 
 export interface FeatureInterface {
@@ -160,6 +163,7 @@ export interface InfoDataInterface {
     actionName: string;
     properties?: Record<string, string>;
   };
+  editTooltip?: TooltipInterface;
 }
 
 export interface StoredInfoDataInterface extends InfoDataInterface {
@@ -220,4 +224,12 @@ export interface FormPayloadConfigInterface {
 export interface AccountAndProductSectionPropsInterface {
   isMobile?: isMobile;
   sections: SectionCardInterface[];
+}
+
+export interface ProfileViewpropsInterface {
+  isMobile: isMobile;
+  user: User;
+  userRole: string;
+  handleEditClick: () => void;
+  profile: Record<string, unknown>;
 }

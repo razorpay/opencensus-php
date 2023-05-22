@@ -1,4 +1,7 @@
+import { Modules } from 'common/constant/enums';
 import UpdateContactMobile from 'common/ui/UpdateContactMobile';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import User from 'merchant/models/User';
 import { ATTR_DETAILS } from 'merchant/views/Account/constants';
 import MerchantConfigForm from 'merchant/views/Account/Profile/components/MerchantConfigForm';
@@ -10,9 +13,6 @@ import {
 } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
 import EmailSelfServeModal from 'merchant/views/Settings/EmailSelfServe/EmailInput';
 import AddEmailModal from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/AddEmail';
-import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
-import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
-import { Modules } from 'common/constant/enums';
 
 export const updateDisplayNameHandler = (componentScope) => (attributes) => {
   return componentScope
@@ -60,7 +60,7 @@ export const updateContactMobileHandler = (componentScope) => (userData) => {
 };
 
 export const FORM_MAP: Record<
-  PersonalProfileFields,
+  Exclude<PersonalProfileFields, PersonalProfileFields.NAME>,
   (arg0: FormPayloadConfigInterface) => FormConfigInterface
 > = {
   [PersonalProfileFields.DISPLAY_NAME]: ({ props, id }) => {

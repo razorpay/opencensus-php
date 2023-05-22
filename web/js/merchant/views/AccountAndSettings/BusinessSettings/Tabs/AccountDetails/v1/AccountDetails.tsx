@@ -1,27 +1,28 @@
+import { Modules } from 'common/constant/enums';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import TextHighlighter from 'common/ui/TextHighlighter';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getCommonAnalyticsProperties, titleCase } from 'common/utils/rzp-utils';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import DetailRow from 'merchant/components/DetailRow';
+import User from 'merchant/models/User';
+import * as ProfileActions from 'merchant/reducers/profile';
+import { updateSession } from 'merchant/reducers/session';
+import { ATTR_DETAILS } from 'merchant/views/Account/constants';
+import MerchantConfigForm from 'merchant/views/Account/Profile/components/MerchantConfigForm';
+import UserContactMobile from 'merchant/views/Account/Profile/components/UserContactMobile';
+import {
+  ACTION_QUERY_PARAM_KEY,
+  EMAIL_UPDATE,
+  UPDATE_DISPLAY_NAME,
+} from 'merchant/views/Account/Profile/deeplink-constants';
+import { ContactDetailsProps } from 'merchant/views/AccountAndSettings/BusinessSettings/typings';
+import { StyledTabContentContainer } from 'merchant/views/AccountAndSettings/styled';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
 import React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import DetailRow from 'merchant/components/DetailRow';
-import { titleCase, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { analyticsTrack } from 'common/utils/analytics';
-import UserContactMobile from 'merchant/views/Account/Profile/components/UserContactMobile';
-import Popover, { PopoverBody } from 'common/ui/Popover';
-import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
-import TextHighlighter from 'common/ui/TextHighlighter';
-import { ATTR_DETAILS } from 'merchant/views/Account/constants';
-import {
-  EMAIL_UPDATE,
-  UPDATE_DISPLAY_NAME,
-  ACTION_QUERY_PARAM_KEY,
-} from 'merchant/views/Account/Profile/deeplink-constants';
-import User from 'merchant/models/User';
-import MerchantConfigForm from 'merchant/views/Account/Profile/components/MerchantConfigForm';
-import { updateSession } from 'merchant/reducers/session';
-import * as ModalActions from 'merchant_common/reducers/modals';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import * as ProfileActions from 'merchant/reducers/profile';
-import { ContactDetailsProps } from 'merchant/views/AccountAndSettings/BusinessSettings/typings';
-import { Modules } from 'common/constant/enums';
 
 const ContactDetails = ({
   user,
@@ -124,100 +125,102 @@ const ContactDetails = ({
   );
 
   return (
-    <div
-      data-testid="contact-details-section"
-      className={`${isFlowRevamped ? 'list-group details-row-container' : ''}`}
-    >
-      <DetailRow label="Contact Name" value={titleCase(user.contact_name)} />
+    <StyledTabContentContainer className="content">
+      <div
+        data-testid="contact-details-section"
+        className={`${isFlowRevamped ? 'list-group details-row-container' : ''}`}
+      >
+        <DetailRow label="Contact Name" value={titleCase(user.contact_name)} />
 
-      {user.isAdminOrOwner && (
-        <DetailRow
-          label={() => (
-            <div>
-              <span>Display Name</span>
-              <small className="help-content">
-                <i className="i i-info-outline" />
-                <Popover align="top" theme="dark">
-                  <PopoverBody>
-                    <div>
-                      {user?.isOrgCurlec
-                        ? ATTR_DETAILS.curlec_display_name.desc
-                        : ATTR_DETAILS.display_name.desc}
-                    </div>
-                  </PopoverBody>
-                </Popover>
-              </small>
-            </div>
-          )}
-          value={() =>
-            user.display_name ? (
-              <span>
-                {user.display_name}
+        {user.isAdminOrOwner && (
+          <DetailRow
+            label={() => (
+              <div>
+                <span>Display Name</span>
+                <small className="help-content">
+                  <i className="i i-info-outline" />
+                  <Popover align="top" theme="dark">
+                    <PopoverBody>
+                      <div>
+                        {user?.isOrgCurlec
+                          ? ATTR_DETAILS.curlec_display_name.desc
+                          : ATTR_DETAILS.display_name.desc}
+                      </div>
+                    </PopoverBody>
+                  </Popover>
+                </small>
+              </div>
+            )}
+            value={() =>
+              user.display_name ? (
+                <span>
+                  {user.display_name}
+                  <a
+                    className="p-l"
+                    onClick={() => {
+                      analyticsTrack({
+                        objectName: 'dispay name edit',
+                        actionName: 'clicked',
+                        screen: 'my account',
+                        properties: {
+                          action: 'reset',
+                          ...getCommonAnalyticsProperties(window.rzp_user),
+                        },
+                      });
+                      return openChangeDisplayName();
+                    }}
+                    title="Edit Display Name"
+                    data-testid="Edit Display Name"
+                  >
+                    <i className="i i-edit" />
+                  </a>
+                </span>
+              ) : (
                 <a
                   className="p-l"
                   onClick={() => {
                     analyticsTrack({
-                      objectName: 'dispay name edit',
+                      objectName: 'display name edit',
                       actionName: 'clicked',
                       screen: 'my account',
                       properties: {
-                        action: 'reset',
                         ...getCommonAnalyticsProperties(window.rzp_user),
                       },
                     });
                     return openChangeDisplayName();
                   }}
-                  title="Edit Display Name"
-                  data-testid="Edit Display Name"
+                  title="Set Display Name"
+                  data-testid="Set Display Name"
                 >
-                  <i className="i i-edit" />
+                  Set Display Name
                 </a>
-              </span>
-            ) : (
-              <a
-                className="p-l"
-                onClick={() => {
-                  analyticsTrack({
-                    objectName: 'display name edit',
-                    actionName: 'clicked',
-                    screen: 'my account',
-                    properties: {
-                      ...getCommonAnalyticsProperties(window.rzp_user),
-                    },
-                  });
-                  return openChangeDisplayName();
-                }}
-                title="Set Display Name"
-                data-testid="Set Display Name"
-              >
-                Set Display Name
-              </a>
-            )
-          }
-        />
-      )}
-      <DetailRow
-        label={() => labelHandler(EMAIL_UPDATE, 'Contact Email')}
-        value={() => (
-          <a
-            onClick={() => {
-              analyticsTrack({
-                objectName: 'contact email',
-                actionName: 'clicked',
-                screen: 'my account',
-                properties: {
-                  ...getCommonAnalyticsProperties(window.rzp_user),
-                },
-              });
-            }}
-            href={`mailto:${user.email}`}
-          >
-            {user.email}
-          </a>
+              )
+            }
+          />
         )}
-      />
-      <UserContactMobile page={page} />
-    </div>
+        <DetailRow
+          label={() => labelHandler(EMAIL_UPDATE, 'Contact Email')}
+          value={() => (
+            <a
+              onClick={() => {
+                analyticsTrack({
+                  objectName: 'contact email',
+                  actionName: 'clicked',
+                  screen: 'my account',
+                  properties: {
+                    ...getCommonAnalyticsProperties(window.rzp_user),
+                  },
+                });
+              }}
+              href={`mailto:${user.email}`}
+            >
+              {user.email}
+            </a>
+          )}
+        />
+        <UserContactMobile page={page} />
+      </div>
+    </StyledTabContentContainer>
   );
 };
 

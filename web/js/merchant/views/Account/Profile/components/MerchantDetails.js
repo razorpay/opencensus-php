@@ -26,9 +26,9 @@ import IntoView from 'common/ui/IntoView';
 import EditTransactionLimit from './EditTransactionLimit';
 import NeedsClarificationModal from 'merchant/views/Account/Profile/components/WorkflowRequests/NeedsClarificationModal';
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
-import ContactDetails from 'merchant/views/AccountAndSettings/BusinessSettings/Tabs/ContactDetails';
+import AccountDetails from 'merchant/views/AccountAndSettings/BusinessSettings/Tabs/AccountDetails/v1';
 import BusinessDetails from 'merchant/views/AccountAndSettings/BusinessSettings/Tabs/BusinessDetails';
-import AccountDetails from 'merchant/views/AccountAndSettings/BusinessSettings/Tabs/AccountDetails';
+import ActivationDetails from 'merchant/views/AccountAndSettings/BusinessSettings/Tabs/ActivationDetails';
 import BusinessWebsiteDetails from 'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails';
 
 const MerchantDetails = ({ user, openModal, closeModal, tracking }) => {
@@ -72,12 +72,12 @@ const MerchantDetails = ({ user, openModal, closeModal, tracking }) => {
   return (
     <div className="list-group details-row-container">
       <IntoView hashedWith={[EMAIL_UPDATE, CONTACT_NUMBER_UPDATE]}>
-        <ContactDetails isFlowRevamped={false} page="Profile" />
+        <AccountDetails isFlowRevamped={false} page="Profile" />
       </IntoView>
 
       <BusinessDetails isFlowRevamped={false} />
 
-      <AccountDetails isFlowRevamped={false} />
+      <ActivationDetails isFlowRevamped={false} />
 
       {user.isActivated && (
         <IntoView

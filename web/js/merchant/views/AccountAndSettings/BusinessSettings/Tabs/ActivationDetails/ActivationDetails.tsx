@@ -16,7 +16,7 @@ import { fetchIsAdminAsMerchant } from 'merchant/reducers/profile';
 import LoaderDots from 'common/ui/LoaderDots';
 import { accountAccessHoverDescription } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 
-const AccountDetails = (props): JSX.Element => {
+const ActivationDetails = (props): JSX.Element => {
   const {
     user,
     fetchIsAdminAsMerchant,
@@ -169,4 +169,4 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => bindActionCreators({ fetchIsAdminAsMerchant }, dispatch);
 
-export default connect(mapStateToProps, mapDispatchToProps)(AccountDetails);
+export default connect(mapStateToProps, mapDispatchToProps)(ActivationDetails);

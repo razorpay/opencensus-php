@@ -245,6 +245,9 @@ return [
          // Bank Account update Revamp
         'BANK_ACCOUNT_UPDATE_REVAMP'  => env('BANK_ACCOUNT_UPDATE_REVAMP', ''),
 
+        // Contact Details Revamp
+        'CONTACT_DETAILS_REVAMP' => env('CONTACT_DETAILS_REVAMP', ''),
+
         // Settlement Revamp
         'SETTLEMENT_V3_REVAMP' => env('SETTLEMENT_V3_REVAMP', ''),
 

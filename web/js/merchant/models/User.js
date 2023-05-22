@@ -1928,6 +1928,10 @@ export default class User {
     return getSplitzExperimentVariant('get_ticket_migration')?.variables?.result === 'on';
   }
 
+  get isContactDetailsRevamp() {
+    return getSplitzExperimentVariant('contact_details_revamp')?.variables?.result === 'on';
+  }
+
   get showTerminalStatusBanner() {
     return getSplitzExperimentVariant('show_terminal_status_banner')?.variables?.result === 'on';
   }

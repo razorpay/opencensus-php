@@ -21,9 +21,15 @@ function generateRandomEmail() {
   return `${name}.${phone}@razorpay.com`;
 }
 
+function generateRandomWebsiteUrl() {
+  const keyword = Math.random().toString(36).substring(2, 9);
+  return `https://www.youtube.com/${keyword}`;
+}
+
 module.exports = {
   generateRandomText,
   generateRandomPhoneNumber,
   generateRandomName,
   generateRandomEmail,
+  generateRandomWebsiteUrl,
 };

@@ -8,14 +8,14 @@ import { render, screen, waitFor } from 'test-utils';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import * as conditionalUtils from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 
-jest.mock('merchant/views/AccountAndSettings/BusinessSettings/Tabs/AccountDetails', () => ({
+jest.mock('merchant/views/AccountAndSettings/BusinessSettings/Tabs/AccountDetails/v1', () => ({
   __esModule: true,
   default: () => <>AccountDetails</>,
 }));
 
-jest.mock('merchant/views/AccountAndSettings/BusinessSettings/Tabs/ContactDetails', () => ({
+jest.mock('merchant/views/AccountAndSettings/BusinessSettings/Tabs/ActivationDetails', () => ({
   __esModule: true,
-  default: () => <>ContactDetails</>,
+  default: () => <>ActivationDetails</>,
 }));
 
 jest.mock('merchant/views/AccountAndSettings/BusinessSettings/Tabs/BusinessDetails', () => ({
@@ -63,7 +63,7 @@ jest.mock('merchant/views/AccountAndSettings/utils/conditionUtils', () => ({
 
 const renderApp = ({ user, pathname } = {}) => {
   return render(
-    <BusinessSettings location={{ pathname: pathname ?? ROUTES_INFO.CONTACT_DETAILS }} />,
+    <BusinessSettings location={{ pathname: pathname ?? ROUTES_INFO.ACCOUNT_DETAILS }} />,
     {
       initialState: {
         session: {
@@ -92,7 +92,7 @@ describe('Business Settings', () => {
     });
     [
       { path: ROUTES_INFO.ACCOUNT_DETAILS, component: 'AccountDetails' },
-      { path: ROUTES_INFO.CONTACT_DETAILS, component: 'ContactDetails' },
+      { path: ROUTES_INFO.ACTIVATION_DETAILS, component: 'ActivationDetails' },
       { path: ROUTES_INFO.BUSINESS_DETAILS, component: 'BusinessDetails' },
       { path: ROUTES_INFO.GST_DETAILS, component: 'GSTDetails' },
       { path: ROUTES_INFO.CUSTOMER_SUPPORT_DETAILS, component: 'CustomerSupportDetails' },
@@ -117,14 +117,14 @@ describe('Business Settings', () => {
     expect(screen.getByText('TeamInvitations')).toBeInTheDocument();
   });
 
-  testBreadCrumb(renderApp, 'Contact details', ROUTES_INFO.CONTACT_DETAILS);
+  testBreadCrumb(renderApp, 'Account details', ROUTES_INFO.ACCOUNT_DETAILS);
 
   test('should render default links', () => {
     renderApp();
     [
       {
-        path: ROUTES_INFO.CONTACT_DETAILS,
-        name: 'Contact details',
+        path: ROUTES_INFO.ACCOUNT_DETAILS,
+        name: 'Account details',
       },
       {
         path: ROUTES_INFO.BUSINESS_DETAILS,
@@ -146,7 +146,7 @@ describe('Business Settings', () => {
 
   describe('Conditional Links', () => {
     testConditionalLinks(renderApp, [
-      ['Account details', 'isAccountDetailsEnabled', ROUTES_INFO.ACCOUNT_DETAILS],
+      ['Activation details', 'isAccountDetailsEnabled', ROUTES_INFO.ACTIVATION_DETAILS],
       ['GST details', 'isGstDetailsEnabled', ROUTES_INFO.GST_DETAILS],
       ['Manage team', 'isTeamManagementAllowed', ROUTES_INFO.MANAGE_TEAM_DETAILS],
       ['Support Tickets', 'isSupportTicketEnabled', '/business-settings/ticket-support/tickets'],

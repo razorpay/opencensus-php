@@ -502,6 +502,12 @@ export default {
     // prod experiment ids
     'LDbgxp2vBKgkRO',
   ],
+  contact_details_revamp: [
+    // beta experiment ids
+    'LqorEX2cpIwzdP',
+    // prod experiment ids
+    'LqopA89qO1J3sF',
+  ],
   show_payroll_widget_exp: [
     //beta experiment ids
     'KmA4axC7yCGMZe',

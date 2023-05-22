@@ -267,9 +267,9 @@ export const Sections: SectionCardInterface[] = [
     iconBackground: 'linear-gradient(159.37deg, #C592FF 13.68%, #2A86F3 123.84%)',
     subSections: [
       {
-        id: BusinessSettingsFields.CONTACT_DETAILS,
-        title: BusinessSettingsTitles[BusinessSettingsFields.CONTACT_DETAILS],
-        href: ROUTES_INFO.CONTACT_DETAILS,
+        id: BusinessSettingsFields.ACCOUNT_DETAILS,
+        title: BusinessSettingsTitles[BusinessSettingsFields.ACCOUNT_DETAILS],
+        href: ROUTES_INFO.ACCOUNT_DETAILS,
       },
       {
         id: BusinessSettingsFields.BUSINESS_DETAILS,
@@ -291,9 +291,9 @@ export const Sections: SectionCardInterface[] = [
         href: ROUTES_INFO.CUSTOMER_SUPPORT_DETAILS,
       },
       {
-        id: BusinessSettingsFields.ACCOUNT_DETAILS,
-        title: BusinessSettingsTitles[BusinessSettingsFields.ACCOUNT_DETAILS],
-        href: ROUTES_INFO.ACCOUNT_DETAILS,
+        id: BusinessSettingsFields.ACTIVATION_DETAILS,
+        title: BusinessSettingsTitles[BusinessSettingsFields.ACTIVATION_DETAILS],
+        href: ROUTES_INFO.ACTIVATION_DETAILS,
         additionalCondition:
           () =>
           (user: User): boolean =>

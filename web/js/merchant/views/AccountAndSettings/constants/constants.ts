@@ -21,7 +21,7 @@ export const ROUTE_MAP = {
   [ROUTES_INFO.TRANSACTION_LIMITS]: 'Transaction limits',
   [ROUTES_INFO.FEE_BEARER]: 'Fee bearer',
   [ROUTES_INFO.FAILED_PAYMENTS_RETRY]: 'Failed payments retry',
-  [ROUTES_INFO.CONTACT_DETAILS]: 'Contact details',
+  [ROUTES_INFO.ACTIVATION_DETAILS]: 'Activation details',
   [ROUTES_INFO.ACCOUNT_DETAILS]: 'Account details',
   [ROUTES_INFO.BUSINESS_DETAILS]: 'Business details',
   [ROUTES_INFO.GST_DETAILS]: 'GST details',

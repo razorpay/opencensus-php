@@ -1,15 +1,19 @@
 import {
+  HANDLERS,
   InfoDataInterface,
   InfoDataPayload,
-  HANDLERS,
   PersonalProfileFields,
 } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
-import { InfoDataConfig } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/config/profile';
 
-export const getInfoData = ({ user, profile }: InfoDataPayload): InfoDataInterface[] => {
-  return InfoDataConfig.reduce((accumulator, each) => {
+export const getInfoData = ({
+  user,
+  profile,
+  dataConfig,
+  isRevampedInfo,
+}: InfoDataPayload): InfoDataInterface[] => {
+  return dataConfig.reduce((accumulator, each) => {
     const { isVisible, shouldEdit, getValue, ...rest } = each;
-    if (isVisible({ user, profile })) {
+    if (isVisible({ user, profile, isRevampedInfo })) {
       const infoObject = { ...rest };
       infoObject.value = getValue({ user });
       infoObject.isEditEnable = shouldEdit({ user });

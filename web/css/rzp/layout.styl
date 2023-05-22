@@ -93,6 +93,12 @@ body {
 
 .search-header {
   margin-top: $header-height + $universal-search-height;
+
+  @media screen and (max-width $screen-sm-min) {
+    &.test-mode {
+      margin-top: $header-height + $universal-search-height + 8px;
+    }
+  }
 }
 
 .mobile-search-layout {

@@ -1,201 +1,264 @@
-import AccountDetails from 'merchant/views/AccountAndSettings/BusinessSettings/Tabs/AccountDetails';
-import { render, screen, server, waitFor, userEvent } from 'test-utils';
-import { adminAsMerchantHandler } from 'merchant/views/AccountAndSettings/BusinessSettings/__test__/fixtures/handlers';
-import { analyticsTrack } from 'common/utils/analytics';
+import AccountDetails from 'merchant/views/AccountAndSettings/BusinessSettings/Tabs/AccountDetails/v1';
+import { render, screen, waitFor, userEvent, getByTestId, server } from 'test-utils';
+import { titleCase } from 'common/utils/rzp-utils';
+import { ATTR_DETAILS } from 'merchant/views/Account/constants';
+import * as analytics from 'common/utils/analytics';
+import * as selfServeTrack from 'common/utils/selfServeAnalytics';
+import {
+  updateMerchantConfigHandler,
+  updateMerchantConfigErrorHandler,
+} from 'merchant/views/AccountAndSettings/BusinessSettings/__test__/fixtures/handlers';
+import User from 'merchant/models/User';
+import rolesList from 'merchant/helpers/permissions/roles-list';
+import { storeWithInitialState } from 'merchant/store';
 import { testNewStylesUsingFlowRevamped } from 'merchant/views/AccountAndSettings/__test__/mocks/fixtures';
+import 'jest-location-mock';
+import { Modules } from 'common/constant/enums';
 
-jest.mock('common/ui/ProgressBar', () => ({
-  ProgressBar: ({ value }) => <span>Progress Bar - {value}</span>,
+jest.mock('merchant/views/Account/Profile/components/UserContactMobile', () => ({
+  __esModule: true,
+  default: () => <>UserContactMobile</>,
 }));
 
-jest.mock('merchant/components/Home/data', () => ({
-  isMobileDevice: jest.fn().mockReturnValueOnce(true),
+jest.mock('common/ui/Popover', () => ({
+  __esModule: true,
+  default: ({ children }) => <>{children}</>,
+  PopoverBody: ({ children }) => <>{children}</>,
 }));
 
-describe('AccountDetails', () => {
-  const renderApp = ({ userInfo, isFlowRevamped } = {}) => {
-    return render(<AccountDetails isFlowRevamped={isFlowRevamped} />, {
-      initialState: {
-        session: {
-          user: {
-            instantActivation: {
-              isL1Submitted: false,
-            },
-            ...userInfo,
+jest.mock('merchant/views/Account/Profile/components/MerchantConfigForm', () => ({
+  __esModule: true,
+  default: ({ attribute, label, desc, value, updateMerchantConfig }) => (
+    <div data-testid="merchant-config-form">
+      <div data-testid="attribute">{attribute}</div>
+      <div data-testid="label">{label}</div>
+      <div data-testid="desc">{desc}</div>
+      <div data-testid="value">{value}</div>
+      <button
+        type="button"
+        onClick={() => updateMerchantConfig({ display_name: 'John updated display name' })}
+      >
+        Update
+      </button>
+    </div>
+  ),
+}));
+
+const displayName = 'John display name';
+const updatedDisplayName = 'John updated display name';
+const defaultUserInfo = {
+  contact_name: 'john Doe',
+  email: 'jane.doe@razorpay.com',
+};
+
+let reduxStore;
+
+const renderApp = ({ user, isFlowRevamped } = {}) => {
+  reduxStore = storeWithInitialState({
+    session: {
+      user: new User({
+        merchants: {
+          test: {
+            role: user?.isAdminOrOwner ? rolesList.OWNER : rolesList.MANAGER,
           },
         },
-      },
-    });
-  };
+        current: 'test',
+        ...defaultUserInfo,
+        display_name: user?.displayName,
+      }),
+    },
+  });
+  return render(<AccountDetails isFlowRevamped={isFlowRevamped} />, {
+    reduxStore,
+    showModal: true,
+  });
+};
 
-  test('should show loading and account activated, account access, form status are hidden on mount', () => {
+describe('Contact Details', () => {
+  const analyticsTrackMock = jest.spyOn(analytics, 'analyticsTrack');
+  const selfServeTrackInitiateMock = jest.spyOn(selfServeTrack, 'selfServeTrackInitiate');
+
+  beforeEach(() => {
+    analyticsTrackMock.mockClear();
+    selfServeTrackInitiateMock.mockClear();
+    window.location.assign.mockClear();
+  });
+
+  test('should render contact details', () => {
     renderApp();
-    expect(screen.getByTestId('loader-dots')).toBeInTheDocument();
-    expect(screen.getByText('Activation Form Status')).toBeInTheDocument();
+    expect(screen.getByText('Contact Name')).toBeInTheDocument();
+    expect(screen.queryByText(defaultUserInfo.contact_name)).not.toBeInTheDocument();
+    expect(screen.getByText(titleCase(defaultUserInfo.contact_name))).toBeInTheDocument();
+    expect(screen.queryByText('Display Name')).not.toBeInTheDocument();
 
-    ['Account Activated On', 'Account Access'].forEach((text) => {
-      expect(screen.queryByText(text)).not.toBeInTheDocument();
-    });
+    // Contact Email Section
+    expect(screen.getByText('Contact Email')).toBeInTheDocument();
+    const emailLink = screen.getByRole('link', { name: defaultUserInfo.email });
+    expect(emailLink).toBeInTheDocument();
+    expect(emailLink).toHaveAttribute('href', `mailto:${defaultUserInfo.email}`);
+
+    expect(screen.getByText('UserContactMobile')).toBeInTheDocument();
   });
 
-  test('should render account activated info', () => {
-    renderApp({
-      userInfo: {
-        activated: true,
-        activated_at: 1672531201,
-      },
+  describe('When user is admin or owner', () => {
+    test('should show display name section', () => {
+      renderApp({ user: { isAdminOrOwner: true } });
+      expect(screen.getByText('Display Name')).toBeInTheDocument();
+      expect(screen.getByText(ATTR_DETAILS.display_name.desc)).toBeInTheDocument();
     });
-    expect(screen.getByText('Account Activated On')).toBeInTheDocument();
-    expect(screen.getByText('Jan 01 2023, 12:00 am')).toBeInTheDocument();
-  });
 
-  describe('Account Access Info when user is activated', () => {
-    test('should render appropriate messages when key access is false', () => {
-      renderApp({
-        userInfo: {
-          isActivated: true,
-          has_key_access: false,
-        },
+    describe('When user has display name', () => {
+      beforeEach(async () => {
+        renderApp({
+          user: { isAdminOrOwner: true, displayName },
+        });
+        expect(screen.getByText('John display name')).toBeInTheDocument();
+        const editDisplayNameLink = screen.getByTestId('Edit Display Name');
+        expect(editDisplayNameLink).toBeInTheDocument();
+        expect(screen.queryByTestId('Set Display Name')).not.toBeInTheDocument();
+
+        await userEvent.click(editDisplayNameLink);
       });
-      expect(screen.getByText('Account Access')).toBeInTheDocument();
-      expect(screen.getByText('Limited')).toBeInTheDocument();
-      expect(
-        screen.getByText(
-          'You can only access Payment Links and Invoices. Please provide website/app link to get access to our API’s and other products such as Route, Subscriptions, etc.',
-        ),
-      ).toBeInTheDocument();
-    });
 
-    test('should render appropriate messages when key access is true', () => {
-      renderApp({
-        userInfo: {
-          isActivated: true,
-          has_key_access: true,
-        },
+      test('should call analytics on clicking edit display name', async () => {
+        await waitFor(() => {
+          expect(analyticsTrackMock).toHaveBeenCalled();
+          expect(analyticsTrackMock).toHaveBeenCalledWith({
+            objectName: 'dispay name edit',
+            actionName: 'clicked',
+            screen: 'my account',
+            properties: {
+              action: 'reset',
+            },
+          });
+        });
+
+        expect(selfServeTrackInitiateMock).toHaveBeenCalled();
+        expect(selfServeTrackInitiateMock).toHaveBeenCalledWith({
+          selfServeAction: 'Display Name Updated',
+          page: Modules.Profile,
+          screen: Modules.MyAccount,
+        });
       });
-      expect(screen.getByText('Account Access')).toBeInTheDocument();
-      expect(screen.getByText('Complete')).toBeInTheDocument();
-      expect(
-        screen.getByText(
-          /You have access to all products and API keys. Integrate using our robust APIs or request access to products such as Subscriptions, Route, and Smart Collect/i,
-        ),
-      ).toBeInTheDocument();
-    });
-  });
 
-  describe('Activation Form Status when user has submitted L1 and instant activation is not shown', () => {
-    test('should render activation status label', () => {
-      renderApp({
-        userInfo: {
-          activation_status: 'activated',
-          instantActivation: {
-            isL1Submitted: true,
+      test('should show merchant config modal on edit display name', async () => {
+        const merchantConfigFormElement = await screen.findByTestId('merchant-config-form');
+        expect(merchantConfigFormElement).toBeInTheDocument();
+        const attr = 'display_name';
+        const { label, desc } = ATTR_DETAILS[attr];
+        [
+          ({
+            key: 'attribute',
+            value: attr,
           },
-          showInstantActivation: true,
-        },
-      });
-      expect(screen.getByText('KYC Form Status')).toBeInTheDocument();
-      expect(screen.getByText('Activated')).toBeInTheDocument();
-    });
-
-    test("should render progress text when activation_status doesn't exist ", () => {
-      renderApp({
-        userInfo: {
-          instantActivation: {
-            isL1Submitted: true,
+          {
+            key: 'label',
+            value: label,
           },
-          activation_progress: 90,
-          showInstantActivation: true,
-        },
+          {
+            key: 'desc',
+            value: desc,
+          },
+          {
+            key: 'value',
+            value: displayName,
+          }),
+        ].forEach(({ key, value }) => {
+          // as elements of merchant config form
+          const element = getByTestId(merchantConfigFormElement, key);
+          expect(element).toBeInTheDocument();
+          expect(element).toHaveTextContent(value);
+        });
+        expect(screen.getByRole('button', { name: 'Update' })).toBeInTheDocument();
       });
-      expect(screen.getByText('KYC Form Status')).toBeInTheDocument();
-      expect(screen.getByText('90% Completed')).toBeInTheDocument();
-      expect(screen.getByText('Progress Bar - 90')).toBeInTheDocument();
+
+      test('should show success notification and close modal on clicking update in show merchant config modal', async () => {
+        server.use(updateMerchantConfigHandler());
+        const updateButton = await screen.findByRole('button', { name: 'Update' });
+        await userEvent.click(updateButton);
+
+        await waitFor(() => {
+          expect(analyticsTrackMock).toHaveBeenLastCalledWith({
+            objectName: 'display name update',
+            actionName: 'status',
+            screen: 'my account',
+            properties: {
+              status: 'success',
+              newDisplayName: updatedDisplayName,
+            },
+          });
+        });
+
+        expect(screen.getByText('Display name changed successfully.')).toBeInTheDocument();
+        // new display name is updated in store
+        expect(reduxStore.getState().session.user.display_name).toBe(updatedDisplayName);
+        // modal is closed
+        expect(screen.queryByTestId('merchant-config-form')).not.toBeInTheDocument();
+      });
+
+      test('should show error notification on clicking update in show merchant config modal', async () => {
+        server.use(updateMerchantConfigErrorHandler());
+        const updateButton = await screen.findByRole('button', { name: 'Update' });
+        await userEvent.click(updateButton);
+
+        await waitFor(() => {
+          expect(analyticsTrackMock).toHaveBeenLastCalledWith({
+            objectName: 'display name update',
+            actionName: 'status',
+            screen: 'my account',
+            properties: {
+              status: 'failure',
+              newDisplayName: updatedDisplayName,
+              failureReason: 'error in updating display name',
+            },
+          });
+        });
+
+        expect(screen.getByText('error in updating display name')).toBeInTheDocument();
+      });
     });
 
-    test('should be hidden when showInstantActivation is true and isL1Submitted is false', () => {
-      renderApp({
-        userInfo: {
-          showInstantActivation: true,
-        },
+    describe('When user does not have display name', () => {
+      beforeEach(() => {
+        renderApp({ user: { isAdminOrOwner: true } });
       });
-      expect(screen.queryByText('KYC Form Status')).not.toBeInTheDocument();
-      expect(screen.queryByText('Activation Form Status')).not.toBeInTheDocument();
+
+      test('should show set display name link', () => {
+        const setDisplayNameLink = screen.getByTestId('Set Display Name');
+        expect(setDisplayNameLink).toBeInTheDocument();
+        expect(screen.queryByTestId('Edit Display Name')).not.toBeInTheDocument();
+      });
+
+      test('should call analytics and open merchant config modal on clicking set display name', async () => {
+        const setDisplayNameLink = screen.getByTestId('Set Display Name');
+        await userEvent.click(setDisplayNameLink);
+
+        expect(analyticsTrackMock).toHaveBeenCalled();
+        expect(analyticsTrackMock).toHaveBeenCalledWith({
+          objectName: 'display name edit',
+          actionName: 'clicked',
+          screen: 'my account',
+          properties: {},
+        });
+
+        expect(screen.getByTestId('merchant-config-form')).toBeInTheDocument();
+      });
     });
   });
 
-  describe('Account Activation when user is admin', () => {
-    beforeAll(() => {
-      window.rzp_user = {
-        verification: {
-          status: 'activation',
-        },
-      };
-    });
+  test('should call analytics on clicking contact email', async () => {
+    renderApp();
+    const emailLink = screen.getByRole('link', { name: defaultUserInfo.email });
+    await userEvent.click(emailLink);
 
-    beforeEach(() => {
-      server.use(adminAsMerchantHandler);
-    });
-
-    afterAll(() => {
-      window.rzp_user = undefined;
-    });
-
-    const renderAppWithAdminAsMerchant = async (userInfo) => {
-      renderApp({ userInfo });
-      await waitFor(() => {
-        expect(screen.queryByTestId('loader-dots')).not.toBeInTheDocument();
-      });
-    };
-
-    test('should use onboarding/steps as activation link if its a mobile device', async () => {
-      await renderAppWithAdminAsMerchant();
-      const activationLink = screen.getByRole('link', { name: 'Fill Activation Form' });
-      // isMobileDevice returns true only once for the first time
-      expect(activationLink).toHaveAttribute('href', '/onboarding/steps');
-    });
-
-    test('should render link to activation form', async () => {
-      await renderAppWithAdminAsMerchant();
-      const activationLink = screen.getByRole('link', { name: 'Fill Activation Form' });
-      expect(activationLink).toBeInTheDocument();
-      expect(activationLink).toHaveAttribute('href', '/activation');
-      await userEvent.click(activationLink);
-      expect(analyticsTrack).toHaveBeenCalledWith({
-        objectName: 'view KYC form',
-        actionName: 'clicked',
-        screen: 'my account',
-        properties: {
-          status: window.rzp_user.verification.status,
-        },
-      });
-    });
-
-    test('should use kyc as activation link in activationFormFullView', async () => {
-      await renderAppWithAdminAsMerchant({
-        isActivationFormFullView: true,
-      });
-      const activationLink = screen.getByRole('link', { name: 'Fill Activation Form' });
-      expect(activationLink).toHaveAttribute('href', '/kyc');
-    });
-
-    test('should render View activation form as link text when user is activated/submitted/locked', async () => {
-      await renderAppWithAdminAsMerchant({
-        activated: true,
-      });
-      const activationLink = screen.getByRole('link', { name: 'View Activation Form' });
-      expect(activationLink).toBeInTheDocument();
-    });
-
-    test('should render Submit activation form as link text when user activation progress is 100 and user has not submitted', async () => {
-      await renderAppWithAdminAsMerchant({
-        submitted: false,
-        activation_progress: 100,
-      });
-      const activationLink = screen.getByRole('link', { name: 'Submit Activation Form' });
-      expect(activationLink).toBeInTheDocument();
+    expect(analyticsTrackMock).toHaveBeenCalled();
+    expect(analyticsTrackMock).toHaveBeenCalledWith({
+      objectName: 'contact email',
+      actionName: 'clicked',
+      screen: 'my account',
+      properties: {},
     });
   });
 
-  testNewStylesUsingFlowRevamped(renderApp, 'account-details-section');
+  testNewStylesUsingFlowRevamped(renderApp, 'contact-details-section');
 });

@@ -23,22 +23,55 @@ jest.mock('common/components/Collapsible', () => ({ children, open }) => {
 
 jest.mock(
   'merchant/views/AccountAndSettings/AccountAndSettingsHome/components/UserInfo',
-  () => ({ onClick, infoData }) => {
+  () =>
+    ({ onClick, infoData }) => {
+      return (
+        <div>
+          {infoData.map((each, index) => {
+            return (
+              <div key={index}>
+                <span>{each.displayName}</span>
+                {each.isEditEnable && (
+                  <button onClick={() => onClick(each)}>{each.displayName}</button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      );
+    },
+);
+
+jest.mock(
+  'merchant/views/AccountAndSettings/AccountAndSettingsHome/sections/Profile/views/v2/components/Verification',
+  () => () => {
     return (
       <div>
-        {infoData.map((each, index) => {
-          return (
-            <div key={index}>
-              <span>{each.displayName}</span>
-              {each.isEditEnable && (
-                <button onClick={() => onClick(each)}>{each.displayName}</button>
-              )}
-            </div>
-          );
-        })}
+        <span>Verification v2 Module</span>
       </div>
     );
   },
+);
+
+jest.mock(
+  'merchant/views/AccountAndSettings/AccountAndSettingsHome/sections/Profile/views/v2/components/UserInfo',
+  () =>
+    ({ onClick, infoData }) => {
+      return (
+        <div>
+          {infoData.map((each, index) => {
+            return (
+              <div key={index}>
+                <span>{each.displayName}</span>
+                {each.isEditEnable && (
+                  <button onClick={() => onClick(each)}>{each.displayName}</button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      );
+    },
 );
 
 const state = store.getState();
@@ -66,6 +99,7 @@ export const getState = ({ userData = {}, userProfile = {}, appConfig = {} } = {
       isEmailSelfServeEnabled: true,
       isAdminOrOwner: true,
       isContactMobileChangeAllowed: true,
+      isContactDetailsRevamp: false,
       findTag: () => false,
       ...userData,
     },
