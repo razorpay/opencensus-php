@@ -2281,19 +2281,20 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $closeBy = Carbon::now(Timezone::IST)->addSeconds(200)->getTimestamp();
 
-        $qrCode = $this->createQrCode(
+        $this->createQrCode(
             ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
              'close_by' => $closeBy ,'name' => 'Mitasha']
         );
+        $qrCode = $this->getDbLastEntity('qr_code');
 
         $parts = parse_url($qrCode['qr_string']);
         $query = [];
         parse_str($parts['query'], $query);
 
-        $this->assertEquals('single_use', $qrCode['usage']);
+        $this->assertEquals('single_use', $qrCode['usage_type']);
         $this->assertEquals(1, $qrCode['fixed_amount']);
-        $this->assertEquals(100, $qrCode['payment_amount']);
-        $this->assertEquals('upi_qr' , $qrCode['type']);
+        $this->assertEquals(100, $qrCode['amount']);
+        $this->assertEquals('upi_qr' , $qrCode['provider']);
         $this->assertEquals('active', $qrCode['status']);
         $this->assertEquals(true,isset($query['tr']));
     }

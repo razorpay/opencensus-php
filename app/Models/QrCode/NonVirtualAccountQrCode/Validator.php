@@ -14,6 +14,9 @@ class Validator extends QrCode\Validator
 {
     const MIN_CLOSE_BY_DIFF = 120;
 
+    //64800 minutes or 45 days
+    const MAX_CLOSE_BY_DIFF = 64800 * 60;
+
     protected static $createRules = [
         Entity::REQ_PROVIDER   => 'required|in:bharat_qr,upi_qr',
         Entity::NAME           => 'sometimes|custom',
@@ -60,9 +63,18 @@ class Validator extends QrCode\Validator
 
         $minCloseBy = $now->copy()->addSeconds(self::MIN_CLOSE_BY_DIFF);
 
+        $maxCloseBy = $now->copy()->addSeconds(self::MAX_CLOSE_BY_DIFF);
+
         if ($closeBy < $minCloseBy->getTimestamp())
         {
             $message = 'close_by should be at least ' . $minCloseBy->diffForHumans($now) . ' current time';
+
+            throw new BadRequestValidationFailureException($message);
+        }
+
+        if ($closeBy > $maxCloseBy->getTimestamp())
+        {
+            $message = 'QR expiry time cannot be more than ' . $maxCloseBy->diffInMinutes($now) . ' minutes from the current time';
 
             throw new BadRequestValidationFailureException($message);
         }

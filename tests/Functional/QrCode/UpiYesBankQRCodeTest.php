@@ -15,6 +15,7 @@ use RZP\Exception\InvalidArgumentException;
 use RZP\Models\QrPayment\UnexpectedPaymentReason;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\Functional\Helpers\QrCode\NonVirtualAccountQrCodeTrait;
 
 class UpiYesBankQRCodeTest extends TestCase
@@ -364,21 +365,27 @@ class UpiYesBankQRCodeTest extends TestCase
             'LiveAccountMer');
     }
 
-    public function testCreateDynamicQrWithCloseByMoreThanExpectedLimit() :void
+    public function testCreateDynamicQrWithCloseByMoreThanExpectedLimit(): void
     {
+        //Maximum permissible limit of closeBy is 45 days or 64800 minutes
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('QR expiry time cannot be more than 64800 minutes from the current time');
+
         $this->enableRazorXTreatmentForQrDedicatedTerminal();
 
-        $response = $this->createQrCode(
+        $days = 46;
+
+        $this->createQrCode(
             [
                 'usage'          => 'single_use',
                 'type'           => 'upi_qr',
                 'fixed_amount'   => true,
                 'payment_amount' => 300,
-                'close_by'       => Carbon::now()->getTimestamp() + 70000,
+                'close_by'       => Carbon::now()->getTimestamp() + ($days * 24 * 60 * 60),
             ],
         );
-
-        $this->runEntityAssertions($response);
     }
 
     public function testCreateDynamicQrCodeFalseGatewayResponse() :void
