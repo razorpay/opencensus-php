@@ -167,6 +167,17 @@ app/Models/Merchant/Store                          @razorpay/pg-onboarding-servi
 app/Models/Merchant/VerificationDetail             @razorpay/pg-onboarding-service
 
 
+
+# Blocking PR merge on refund files since they are being moved to Scrooge service
+# Any update in these files will require explicit approval from scrooge
+app/Models/Payment/Processor/Refund.php             @razorpay/scrooge
+app/Models/Payment/Refund                           @razorpay/scrooge
+app/Http/Controllers/RefundController.php           @razorpay/scrooge
+app/Http/Controllers/ScroogeController.php          @razorpay/scrooge
+app/Services/Scrooge.php                            @razorpay/scrooge
+app/Models/Base/Traits/ExternalScroogeRepo.php      @razorpay/scrooge
+
+
 #
 # Nocode Entities
 #
