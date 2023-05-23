@@ -7,8 +7,8 @@ use RZP\Models\Merchant;
 use RZP\Constants\Mode;
 use RZP\Models\User\Role;
 use WpOrg\Requests\Response;
-use RZP\Models\Feature\Constants as FName;
 use Illuminate\Database\Eloquent\Factory;
+use RZP\Models\Feature\Constants as FName;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Models\Merchant\MerchantApplications;
 use RZP\Tests\Functional\Fixtures\Entity\User;
@@ -248,7 +248,7 @@ trait PartnerTrait
         return [$application, $accessMap];
     }
 
-    public function setPurePlatformContext(string $mode = 'live'): void
+    public function setPurePlatformContext(string $mode = 'live'): string
     {
         list($application) = $this->createPurePlatFormMerchantAndSubMerchant();
 
@@ -263,6 +263,8 @@ trait PartnerTrait
             $client);
 
         $this->ba->oauthBearerAuth($token->toString());
+
+        return $token->toString();
     }
 
     public function createPurePlatFormMerchantAndSubMerchant()

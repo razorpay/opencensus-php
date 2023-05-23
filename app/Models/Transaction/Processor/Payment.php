@@ -475,7 +475,7 @@ class Payment extends Base
 
     /**
      * Put payments transaction on hold by default for those sub-merchants whose partner have the feature
-     * "subm_manual_settlement" enabled. For this to happen, the payment should be made via partner auth.
+     * "subm_manual_settlement" enabled. For this to happen, the payment should be made via partner auth or OAuth.
      * TODO: remove the try-catch block when no errors are reported
      */
     public static function shouldHoldSubmerchantPayment(PaymentEntity\Entity $payment, Merchant\Entity $merchant): bool
@@ -493,13 +493,17 @@ class Payment extends Base
                 return false;
             }
 
+            $originId = optional($origin)->getId();
+
             /* @var Merchant\Entity */
             $partner = (new Merchant\Core())->getPartnerFromApp($origin);
 
+            $appType = (new Merchant\MerchantApplications\Core())->getDefaultAppTypeForPartner($partner);
+
             if (empty($partner) === true or
-                $partner->isAggregatorPartner() === false or
-                (new PartnerService())->isFeatureEnabledForPartner(Feature\Constants::SUBM_MANUAL_SETTLEMENT, $partner) === false or
-                (new Merchant\AccessMap\Core())->isMerchantMappedToPartnerWithAppType($partner, $merchant, MerchantAppEntity::MANAGED) === false)
+                in_array($partner->getPartnerType(), [Merchant\Constants::AGGREGATOR, Merchant\Constants::PURE_PLATFORM]) === false or
+                (new PartnerService())->isFeatureEnabledForPartner(Feature\Constants::SUBM_MANUAL_SETTLEMENT, $partner, $originId) === false or
+                (new Merchant\AccessMap\Core())->isMerchantMappedToPartnerWithAppType($partner, $merchant, $appType) === false)
             {
                 return false;
             }

@@ -1026,6 +1026,27 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function capturePaymentByOAuth(string $id, int $amount, string $accessToken): mixed
+    {
+        $request = array(
+            'method'  => 'POST',
+            'url'     => '/payments/' . $id . '/capture',
+            'content' => array('amount' => $amount, 'currency' => 'INR'),
+        );
+
+        $this->ba->oauthBearerAuth($accessToken);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertArrayHasKey('amount', $content);
+
+        $this->assertArrayHasKey('status', $content);
+
+        $this->assertEquals($content['status'], 'captured');
+
+        return $content;
+    }
+
     protected function cancelPayment($id, $content = [])
     {
         $request = array(

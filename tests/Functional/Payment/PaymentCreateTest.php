@@ -2,24 +2,25 @@
 
 namespace RZP\Tests\Functional\Payment;
 
-use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\DB;
 use Mail;
 use Mockery;
 use Carbon\Carbon;
-use RZP\Constants\Entity as EntityConstants;
-use RZP\Services\EsClient;
-use RZP\Models\NetbankingConfig;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Factory;
-use RZP\Error\PublicErrorDescription;
+
+use RZP\Constants\Mode;
+use RZP\Services\EsClient;
 use RZP\Models\Card\Network;
 use RZP\Models\Address\Type;
 use RZP\Models\Card\Repository;
-use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Models\NetbankingConfig;
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Card\Entity as CardEntity;
-use RZP\Tests\Functional\Fixtures\Entity\Card;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Tests\Functional\Invoice\InvoiceTestTrait;
+use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
 
 
@@ -55,7 +56,6 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Exception\BadRequestValidationFailureException;
-use RZP\Services\Dcs\Configurations\Constants as DcsConstants;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Tests\Traits\MocksSplitz;
@@ -11465,6 +11465,91 @@ class PaymentCreateTest extends TestCase
         $transaction = $this->getLastEntity('transaction', true);
 
         $this->assertTrue($transaction['on_hold']);
+    }
+
+    public function testPaymentOnOAuthWithSubmManualSettlementEnabled()
+    {
+        $accessToken = $this->setPurePlatformContext(Mode::TEST);
+
+        $featureParams = [
+            Feature\Entity::ENTITY_ID   => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+            Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Feature\Entity::NAME        => 'subm_manual_settlement',
+        ];
+
+        $this->fixtures->create('feature', $featureParams);
+
+        $this->mockAllSplitzTreatment();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthPaymentOAuth($payment);
+
+        $this->capturePaymentByOAuth($response['razorpay_payment_id'], $payment['amount'], $accessToken);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $this->assertEquals($payment['public_id'], $response['razorpay_payment_id']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertTrue($transaction['on_hold']);
+    }
+
+    public function testPaymentOnOAuthWithSubmManualSettlementEnabledOnAppId()
+    {
+        $accessToken = $this->setPurePlatformContext(Mode::TEST);
+
+        $featureParams = [
+            Feature\Entity::ENTITY_ID   => Constants::DEFAULT_PLATFORM_APP_ID,
+            Feature\Entity::ENTITY_TYPE => EntityConstants::APPLICATION,
+            Feature\Entity::NAME        => 'subm_manual_settlement',
+        ];
+
+        $this->fixtures->create('feature', $featureParams);
+
+        $this->mockAllSplitzTreatment();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthPaymentOAuth($payment);
+
+        $this->capturePaymentByOAuth($response['razorpay_payment_id'], $payment['amount'], $accessToken);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $this->assertEquals($payment['public_id'], $response['razorpay_payment_id']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertTrue($transaction['on_hold']);
+    }
+
+    public function testPaymentOnOAuthWithSubmManualSettlementDisabled()
+    {
+        $accessToken = $this->setPurePlatformContext(Mode::TEST);
+
+        $this->mockAllSplitzTreatment();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthPaymentOAuth($payment);
+
+        $this->capturePaymentByOAuth($response['razorpay_payment_id'], $payment['amount'], $accessToken);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $this->assertEquals($payment['public_id'], $response['razorpay_payment_id']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertFalse($transaction['on_hold']);
     }
 
     public function testPaymentS2SOnPartnerAuthWithSubmManualSettlementEnabled()
