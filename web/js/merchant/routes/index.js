@@ -43,6 +43,11 @@ const PaymentPagesSuccess = lazy(() =>
     /* webpackChunkName: "PaymentPagesSuccess" */ 'merchant/views/PaymentPages/PaymentPages/Success'
   ),
 );
+const BatchUploadSubPage = lazy(() =>
+  import(
+    /* webpackChunkName: "PaymentPagesBatchUpload" */ 'merchant/views/PaymentPages/PaymentPages/BatchUploadSubPage'
+  ),
+);
 const PaymentPagesStorefront = lazy(() =>
   import(
     /* webpackChunkName: "PaymentPagesStorefront" */ 'merchant/views/PaymentPages/PaymentPages/CreateEdit/Storefront'
@@ -593,6 +598,18 @@ const fullPageViewsMap = {
     additionalCondition: (user) =>
       user.isAllowedEdit('payment_pages') &&
       !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentPages),
+  },
+  '/paymentpages/fileuploadonpages/new': {
+    component: PaymentPagesWysiwyg,
+    additionalCondition: (user) => user?.isPaymentPageFileUploadEnabled,
+  },
+  '/paymentpages/fileuploadonpages/:id(pl_.+)/batchuploadsubpage': {
+    component: BatchUploadSubPage,
+    additionalCondition: (user) => user?.isPaymentPageFileUploadEnabled,
+  },
+  '/paymentpages/fileuploadonpages/:id(pl_.+)/success': {
+    component: PaymentPagesSuccess,
+    additionalCondition: (user) => user?.isPaymentPageFileUploadEnabled,
   },
   '/paymentpages/:id(pl_.+)/edit': {
     component: PaymentPagesWysiwyg,

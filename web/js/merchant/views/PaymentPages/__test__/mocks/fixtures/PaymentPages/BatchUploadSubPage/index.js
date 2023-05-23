@@ -1,10 +1,10 @@
-import PaymentPagesWysiwyg from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg';
+import BatchUploadSubPage from 'merchant/views/PaymentPages/PaymentPages/BatchUploadSubPage/index';
 import { render } from 'test-utils';
 import store from 'merchant/store';
 const globalState = store.getState();
 
 const renderApp = (initialState = {}, props = {}) => {
-  return render(<PaymentPagesWysiwyg {...props} />, {
+  return render(<BatchUploadSubPage {...props} />, {
     initialState: {
       ...globalState,
       session: {

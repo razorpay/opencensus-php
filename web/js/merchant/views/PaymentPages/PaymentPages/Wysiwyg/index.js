@@ -298,16 +298,25 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   };
 
   componentDidMount() {
-    const isEditExistingId = !!this.props.id;
+    const {
+      isBatchPaymentPages,
+      initDefaultFormItems,
+      id,
+      user,
+      updateTemplateType,
+      tracking,
+      isWebView,
+    } = this.props;
+    const isEditExistingId = !!id;
     // if create flow & storefront enabled, then preselect the empty template
-    if (!isEditExistingId && this.props.user.isPaymentPageStorefrontEnabled) {
-      this.props.updateTemplateType(null, 'custom');
+    if (!isEditExistingId && user.isPaymentPageStorefrontEnabled) {
+      updateTemplateType(null, 'custom');
     }
 
-    this.props.initDefaultFormItems();
+    initDefaultFormItems(isBatchPaymentPages);
 
-    track.init(this.props.tracking.trackEvent, {
-      payment_page_id: this.props.id,
+    track.init(tracking.trackEvent, {
+      payment_page_id: id,
     });
 
     // Load color.js
@@ -336,7 +345,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     document.getElementById('paymentpage-container').classList.add('theme-desktop');
 
     //dispatching event to tell mobile app to hide header in creation flow
-    this.props.isWebView && dispatchWebViewEvent({ eventType: 'HIDE_HEADER' });
+    isWebView && dispatchWebViewEvent({ eventType: 'HIDE_HEADER' });
   }
 
   componentWillUnmount() {
@@ -390,16 +399,20 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   };
 
   initSubApps = () => {
-    const { user } = this.props;
+    const { user, isBatchPaymentPages } = this.props;
     ReactDOM.render(
       <DetailsSection
         supportEmailRef={this.supportEmailRef}
         supportPhoneRef={this.supportPhoneRef}
+        isBatchPaymentPages={isBatchPaymentPages}
       />,
       document.getElementById('details-section'),
     );
     ReactDOM.render(
-      <FormSection hideDynamicPriceField={user?.hideDynamicPriceFieldPP} />,
+      <FormSection
+        hideDynamicPriceField={user.hideDynamicPriceFieldPP}
+        isBatchPaymentPages={isBatchPaymentPages}
+      />,
       document.getElementById('form-section'),
     );
 
@@ -472,7 +485,14 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   )
   handleSavePublish = (label) => {
     const isEditExistingId = !!this.props.id;
-    const { paymentPageEntity, FORM_ITEMS, magicCheckout, user, showNotification } = this.props;
+    const {
+      paymentPageEntity,
+      FORM_ITEMS,
+      magicCheckout,
+      user,
+      showNotification,
+      isBatchPaymentPages,
+    } = this.props;
     const { isMagicCheckoutLive, isPaymentPageMagicEnabled, isNoExpiryMandatoryPP } = user;
     const { enabled: magicEnabled, feeRule: magicFeeRule } = magicCheckout;
     // console.log('Handle Create..', paymentPageEntity);
@@ -553,6 +573,45 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         udf_schema.push(fi);
       }
     });
+    if (isBatchPaymentPages) {
+      const errorMessages = [];
+      if (!paymentPageItems.length) {
+        errorMessages.push(`${errorMessages.length + 1} : Add at least 1 Price field`);
+      } else {
+        const mandatoryPriceFeilds = paymentPageItems?.filter((item) => item?.mandatory);
+        if (mandatoryPriceFeilds.length === 0) {
+          errorMessages.push(
+            `${
+              errorMessages.length + 1
+            } : Please add at least 1 Price field with ‘Make it Optional Item’ not selected.`,
+          );
+        }
+      }
+
+      const primaryRefIdFeilds = FORM_ITEMS?.filter(
+        (item) => item?.name === 'pri__ref__id' && item?.pattern === 'alphanumeric',
+      );
+      if (primaryRefIdFeilds.length === 0) {
+        errorMessages.push(
+          `${errorMessages.length + 1} : Add at least 1 Primary reference ID field`,
+        );
+      }
+
+      if (primaryRefIdFeilds.length > 1) {
+        errorMessages.push(
+          `${errorMessages.length + 1} : Only 1 Input Field may be added as Primary Reference ID`,
+        );
+      }
+
+      if (errorMessages.length > 0) {
+        showNotification({
+          type: 'error',
+          message: errorMessages,
+        });
+
+        return;
+      }
+    }
     // before saving, if there is only one price field, we are marking it as mandatory. (for UX reasons on hosted pages)
     paymentPageItems = convertSinglePriceFieldToMandatory(paymentPageItems);
 
@@ -661,6 +720,9 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
     reqPayload.settings.payment_button_label = settings.payment_button_label;
     reqPayload.payment_page_items = paymentPageItems;
+    if (isBatchPaymentPages) {
+      reqPayload.view_type = 'file_upload_page';
+    }
 
     // console.log('REQ PAYLOAD...', reqPayload);
 
@@ -753,12 +815,15 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   };
 
   onSaveSuccessActions = (resp) => {
-    this.props.markDataSaved();
+    const { isBatchPaymentPages, history, markDataSaved } = this.props;
+    markDataSaved();
     this.isIntentDuplicate = false;
 
     const entityId = resp.data.id;
-
-    this.props.history.push(`/paymentpages/${entityId}/success`);
+    const url = isBatchPaymentPages
+      ? `/paymentpages/fileuploadonpages/${entityId}/batchuploadsubpage`
+      : `/paymentpages/${entityId}/success`;
+    history.push(url);
   };
 
   saveReceiptSettings = (entityId, receipt) => {
@@ -1138,8 +1203,19 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       isMagicCheckoutEnabled,
     } = this.state;
 
-    const { paymentPageEntity, id: payment_page_id, user, FORM_ITEMS, magicCheckout } = this.props;
-
+    const {
+      paymentPageEntity,
+      id: payment_page_id,
+      user,
+      FORM_ITEMS,
+      magicCheckout,
+      isBatchPaymentPages,
+    } = this.props;
+    const createButtonText = isBatchPaymentPages
+      ? 'Save and Proceed to Next Step'
+      : payment_page_id
+      ? 'Save and Update Page'
+      : 'Create and Publish Page';
     const {
       isMagicCheckoutLive,
       isPaymentPageMagicEnabled,
@@ -1211,7 +1287,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
               pendingState="Publishing"
               class="hidden-xs"
             >
-              {payment_page_id ? 'Save and Update Page' : 'Create and Publish Page'}
+              {createButtonText}
             </AsyncBtn.Primary>
             {/* floating container for actions in mobile view */}
             <MobileActionButtons
@@ -1234,7 +1310,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         Edit Payment Page <span> - {payment_page_id}</span>
       </React.Fragment>
     ) : (
-      'Create New Payment Page'
+      `Create New Payment Page${isBatchPaymentPages ? ' (Step 1/2)' : ''}`
     );
 
     if (isPageLoadError) {
@@ -1281,6 +1357,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
             onClose={this.handleIntroClose}
             selectTemplate={this.props.updateTemplateType}
             showCustomTemplate={showCustomTemplatePP}
+            isBatchPaymentPages={isBatchPaymentPages}
           />
         )}
 

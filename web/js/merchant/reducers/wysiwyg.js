@@ -56,10 +56,14 @@ export const updateTemplateType = (data, templateKey) => {
   );
 };
 
-export const initDefaultFormItems = () => {
+export const initDefaultFormItems = (isBatchPaymentPages = false) => {
   return {
     type: INIT_DEFAULT_FORM_ITEMS,
-    payload: { user: store.getState().session.user, org: store.getState().session?.org },
+    payload: {
+      user: store.getState().session.user,
+      org: store.getState().session?.org,
+      isBatchPaymentPages,
+    },
   };
 };
 
@@ -205,7 +209,7 @@ const initialState = {
     value: '',
     planDetails: {},
   }, // custom domain details at a merchant level
-  isBatchPaymentPages: false,
+  isBatchPaymentPages: false, // identify Batch Payment Page flow.
 };
 
 export const reorderFormItems = ({
@@ -231,11 +235,19 @@ export const setIsBatchPaymentPages = (isActive = false) => ({
 export default (state = initialState, action) => {
   switch (action.type) {
     case INIT_DEFAULT_FORM_ITEMS: {
-      const currentUser = action.payload.user;
+      const { isBatchPaymentPages, user, org } = action.payload;
+      const currentUser = user;
 
       const defaultFields = [];
+      if (isBatchPaymentPages) {
+        defaultFields.push(FIXED_FIELDS.primaryRefId);
+        state = {
+          ...state,
+          isBatchPaymentPages,
+        };
+      }
       // if org feature flag 'enable_payer_name_for_pp' is enabled then add Payer Name as default filed.
-      const orgDetails = action.payload.org;
+      const orgDetails = org;
       const showPayerNamePP = orgDetails?.features?.indexOf('enable_payer_name_for_pp') > -1;
       if (showPayerNamePP) {
         const payerNameFiled = FIXED_FIELDS?.name;
@@ -244,11 +256,11 @@ export default (state = initialState, action) => {
         defaultFields.push(payerNameFiled);
       }
 
-      if (!currentUser.isPaymentPageEmailOptional) {
+      if (!currentUser.isPaymentPageEmailOptional || isBatchPaymentPages) {
         defaultFields.push(FIXED_FIELDS.email);
       }
 
-      if (!currentUser.isPaymentPageContactOptional) {
+      if (!currentUser.isPaymentPageContactOptional || isBatchPaymentPages) {
         defaultFields.push(FIXED_FIELDS.phone);
       }
 

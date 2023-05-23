@@ -65,4 +65,12 @@ export const FIXED_FIELDS = {
       ...fUnits.alphabets.schema,
     };
   },
+  get primaryRefId() {
+    return {
+      name: 'pri__ref__id',
+      title: 'Primary Reference ID',
+      required: true,
+      ...fUnits.alphanumeric.schema,
+    };
+  },
 };

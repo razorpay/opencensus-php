@@ -31,7 +31,11 @@ export default class extends React.PureComponent {
   };
 
   render() {
-    const { showCustomTemplate } = this.props;
+    const { showCustomTemplate, isBatchPaymentPages } = this.props;
+    if (isBatchPaymentPages) {
+      this.selectTemplate('custom', null);
+      return '';
+    }
     return (
       <ModalMask maskClosable={false} class="payment-pages-v2-templates view-1" isBlur={true}>
         <Link class="back-btn" to="/paymentpages/" onClick={trackGoBackDashboard}>
