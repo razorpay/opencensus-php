@@ -123,7 +123,7 @@ const Settlements = ({
   };
 
   const getIsSettlement = () => {
-    merchantFetch({ url: 'settlements?count=1', mode: 'live' })
+    merchantFetch({ url: 'settlements?count=1' })
       .then((response) => {
         setIsSettlement({
           loading: false,
