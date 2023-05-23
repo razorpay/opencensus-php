@@ -122,7 +122,7 @@ class GatewayController extends Controller
 
         if ($mode === null)
         {
-            if ($this->shouldRoutePreProcessedCallbackThroughReArch($paymentRepo, $paymentId) === true)
+            if ($this->shouldRoutePreProcessedCallbackThroughReArch($paymentRepo, $paymentId, $input) === true)
             {
                 return $this->app['pg_router']->sendStaticCallbackRequestToPgRouter($paymentId, $input);
             }
@@ -285,7 +285,7 @@ class GatewayController extends Controller
         {
             if ($mode === null)
             {
-                if ($this->shouldRoutePreProcessedCallbackThroughReArch($paymentRepo, $paymentId) === true)
+                if ($this->shouldRoutePreProcessedCallbackThroughReArch($paymentRepo, $paymentId, $input) === true)
                 {
                     $data = $this->app['pg_router']->sendStaticCallbackRequestToPgRouter($paymentId, $input);
                 }
@@ -330,7 +330,7 @@ class GatewayController extends Controller
      * @param mixed $paymentId
      * @return boolean
      */
-    protected function shouldRoutePreProcessedCallbackThroughReArch($paymentRepo, $paymentId)
+    protected function shouldRoutePreProcessedCallbackThroughReArch($paymentRepo, $paymentId, $input)
     {
         try
         {
@@ -351,7 +351,19 @@ class GatewayController extends Controller
             return false;
         }
 
-        return ($payment->isExternal() === true);
+        if ($payment->isExternal() === false)
+        {
+            return false;
+        }
+
+        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_PAYMENTS_CALLBACK_DATA, [
+            'payment_id'    => $payment->getId(),
+            'merchant_id'   => $payment->getMerchantId(),
+            'terminal_id'   => $payment->getTerminalId(),
+            'callback_data' => $input,
+        ]);
+
+        return true;
     }
 
     /**
