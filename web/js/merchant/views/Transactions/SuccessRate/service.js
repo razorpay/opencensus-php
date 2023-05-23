@@ -1,7 +1,7 @@
-import { merchantFetch, merchantFetchWithContentType } from 'merchant/utils/ajax';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 export const getSR = (payload) => {
-  return merchantFetchWithContentType({
+  return merchantFetch({
     url: 'success-rate/merchant/sr',
     mode: 'live',
     method: 'POST',
@@ -25,7 +25,7 @@ export const getOngoingDowntimes = () => {
 };
 
 export const getMerchantError = (payload) => {
-  return merchantFetchWithContentType({
+  return merchantFetch({
     url: 'success-rate/merchant/error',
     mode: 'live',
     method: 'POST',

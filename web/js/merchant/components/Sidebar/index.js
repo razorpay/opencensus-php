@@ -19,7 +19,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
-const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds)/;
+const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds|success-rate)/;
 const ACCOUNTS_ROUTES_REGEX = /^\/(trustedbadge|profile|credits|addfunds|referrals)/;
 const SETTINGS_ROUTES_REGEX = /^\/(config|webhooks|keys|applications)/;
 const INVOICES_ROUTES_REGEX = /^\/(invoices|items)/;

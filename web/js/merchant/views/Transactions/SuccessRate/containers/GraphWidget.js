@@ -68,6 +68,7 @@ const GraphWidget = (props) => {
     const tab = tabPane[tabIndex];
     const lastUpdatedAt = tabs?.[tab.name]?.lastUpdatedAt;
     const diffInSec = lastUpdatedAt ? moment().diff(moment.unix(lastUpdatedAt), 'seconds') : 0;
+    const updateDropdownOptions = tab.name !== 'Overall';
 
     if (tab.name === activeTab) return;
 
@@ -80,14 +81,14 @@ const GraphWidget = (props) => {
         setCardTypeFilter(INITIAL_SELECTED_CARD_TYPE);
       }
 
-      const updateDropdownOptions = tab.name !== 'Overall';
       const payload = queryFilters(updateDropdownOptions);
       fetchSuccessRate({ payload, updateDropdownOptions });
-      const errorsPaylod = getMerchantErrorsPayload(updateDropdownOptions);
-      fetchMerchantErrors(errorsPaylod);
-
-      trackSuccessRateEvents(methodTabClick({ tabName: tab.name }));
     }
+
+    const errorsPaylod = getMerchantErrorsPayload(updateDropdownOptions);
+    fetchMerchantErrors(errorsPaylod);
+
+    trackSuccessRateEvents(methodTabClick({ tabName: tab.name }));
   };
 
   const handleGroupingChange = ({ option }) => {
