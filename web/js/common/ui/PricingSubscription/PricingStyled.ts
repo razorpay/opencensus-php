@@ -14,7 +14,7 @@ const StyledDiv = styled.div(
   `,
 );
 const StyledTable = styled.table(
-  ({ theme }: { theme }) => `
+  ({ theme, pricingPlanLength }: { theme; pricingPlanLength: number }) => `
   width: 100%;
   border-radius: ${theme.border.radius.medium};
   display: table;
@@ -26,14 +26,14 @@ const StyledTable = styled.table(
     & > *::after {
       content: none;
     }
-    & > :nth-child(5) {
+    & > :nth-child(${pricingPlanLength}) {
       box-shadow: 0px 0px 16px rgba(85, 62, 223, 0.2);
       border: 1px solid #bdb3ff;
       border-bottom: none;
     }
   }
   & > :last-child {
-    & > :nth-child(5) {
+    & > :nth-child(${pricingPlanLength}) {
       box-shadow: 0px 0px 16px rgba(85, 62, 223, 0.2);
       border: 1px solid #bdb3ff;
       border-top: none;
@@ -45,7 +45,8 @@ const StyledTable = styled.table(
   }
 `,
 );
-const StyledTr = styled.tr<any>`
+const StyledTr = styled.tr<any>(
+  ({ pricingPlanLength }: { pricingPlanLength: number }) => `
   text-align: center;
 
   & > :not(:first-child) {
@@ -68,7 +69,7 @@ const StyledTr = styled.tr<any>`
       top: -1px;
     }
   }
-  & > :nth-child(5) {
+  & > :nth-child(${pricingPlanLength}) {
     box-shadow: 0px 0px 16px rgba(85, 62, 223, 0.2);
     border-left: 1px solid #bdb3ff;
     border-right: 1px solid #bdb3ff;
@@ -91,7 +92,8 @@ const StyledTr = styled.tr<any>`
       top: -1px;
     }
   }
-`;
+`,
+);
 const StyledTh = styled.th<any>`
   position: relative;
   text-align: center;
@@ -147,9 +149,6 @@ const StyledFooter = styled.div(
     background-color: ${theme.colors.surface.background.level2.lowContrast};
     > button {
         margin-right: 20px;
-    }
-    > button:last-of-type {
-      opacity: .6;
     }
 `,
 );
@@ -244,6 +243,17 @@ const StylePlanName = styled.div`
 
 const StyleWrapper = styled.div`
   padding-bottom: 20px;
+`;
+
+const StylePlanWrapper = styled.div`
+  padding-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #8d7def;
+  & > h6 {
+    color: #8d7def;
+  }
 `;
 const StylePercentageColor = styled.div(
   ({ theme }: { theme }) => `
@@ -358,4 +368,5 @@ export {
   StyleFireImage,
   StyledModalClose,
   StyleInfo,
+  StylePlanWrapper,
 };

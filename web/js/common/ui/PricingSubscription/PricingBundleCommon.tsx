@@ -22,6 +22,7 @@ import {
   PlanLeftSection,
   StyleFireImage,
   StyleInfo,
+  StylePlanWrapper,
 } from './PricingStyled';
 import Loader from 'common/ui/Loader';
 import {
@@ -34,6 +35,7 @@ import {
   Heading,
   Link,
   Box,
+  RupeeIcon,
 } from '@razorpay/blade/components';
 import Image from 'common/ui/Image';
 import {
@@ -48,7 +50,7 @@ const TogglePlanValue = {
   annual: 'annual',
 } as const;
 
-const FooterButton = ({ isFullView, handleToggle, handleClose }: FooterButtonType): JSX.Element => {
+const FooterButton = ({ isFullView, handleToggle }: FooterButtonType): JSX.Element => {
   return (
     <StyledFooter className="pricing-footer">
       <Button
@@ -59,9 +61,6 @@ const FooterButton = ({ isFullView, handleToggle, handleClose }: FooterButtonTyp
         type="button"
       >
         &#127873; &nbsp; View All Benefits
-      </Button>
-      <Button onClick={handleClose('')} size="small" type="button" variant="tertiary">
-        Not Interested
       </Button>
     </StyledFooter>
   );
@@ -77,7 +76,7 @@ const plansDetailsForViewMore = ({
   togglePlan,
 }: ViewMoreParams): JSX.Element => {
   return (
-    <StyledTr key={text}>
+    <StyledTr key={text} pricingPlanLength={pricingPlans?.length}>
       <StyledTd removeCss textAlign verticalAlign={featureIndex === 0 ? undefined : 'baseline'}>
         <PlanLeftSection>
           <Heading contrast="low" size="small" type="normal" variant="regular" weight="bold">
@@ -173,27 +172,27 @@ const getPlanPrice = ({
   handleCheckoutPayment,
 }: GetPlanPriceType): JSX.Element => {
   return (
-    <StylePlanName data-testid={`plan-column-${plans?.id}`}>
+    <StylePlanName data-testid={`plan-column-${plans.id}`}>
       <StylePlanIcon>
-        <Image src={plans.icon?.src} alt={plans.icon?.alt} />
+        <Image src={plans.icon.src} alt={plans.icon.alt} />
       </StylePlanIcon>
       <StyleWrapper>
         <Heading contrast="low" size="small" type="normal" variant="regular" weight="bold">
-          {plans?.title}
+          {plans.title}
         </Heading>
       </StyleWrapper>
-      <StyleWrapper>
-        <Text>{plans?.description}</Text>
-      </StyleWrapper>
-      <Heading contrast="low" size="small" type="normal" variant="regular" weight="bold">
-        {togglePlan === TogglePlanValue.monthly
-          ? `₹${plans?.monthlyPrice.toLocaleString()}/Month`
-          : `₹${plans.annualPrice?.toLocaleString()}/Year`}
-      </Heading>
+      <StylePlanWrapper>
+        <RupeeIcon color="currentColor" size="large" />
+        <Heading contrast="low" size="small" type="normal" variant="regular" weight="bold">
+          {togglePlan === TogglePlanValue.monthly
+            ? `${plans.monthlyPrice.toLocaleString()}/Month`
+            : `${plans.annualPrice.toLocaleString()}/Year`}
+        </Heading>
+      </StylePlanWrapper>
       {togglePlan === TogglePlanValue.monthly ? (
         <StyleMonthlyPrice>
           <Text contrast="high" size="small" type="placeholder" variant="body">
-            ₹{Math.floor(plans?.annualPrice / 12).toLocaleString()}/Month with Annual Plan
+            ₹{Math.floor(plans.annualPrice / 12).toLocaleString()}/Month with Annual Plan
           </Text>
         </StyleMonthlyPrice>
       ) : null}
@@ -202,13 +201,13 @@ const getPlanPrice = ({
           <Text contrast="high" size="small" type="placeholder" variant="body">
             ₹
             {getMonthlyDiscount(
-              plans?.monthlyPrice,
-              plans?.annualPrice,
+              plans.monthlyPrice,
+              plans.annualPrice,
             ).projectedPrice.toLocaleString()}
           </Text>
           <StylePercentageColor>
             <Text>
-              {getMonthlyDiscount(plans?.monthlyPrice, plans?.annualPrice).percentSavings}% Off
+              {getMonthlyDiscount(plans.monthlyPrice, plans.annualPrice).percentSavings}% Off
             </Text>
           </StylePercentageColor>
         </StyleStrikePrice>

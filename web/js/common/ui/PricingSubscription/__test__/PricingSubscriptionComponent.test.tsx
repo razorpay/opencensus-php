@@ -39,10 +39,9 @@ describe('Tests for `PricingSubscriptionComponent` components', () => {
       renderApp({ initialState });
       pricing_bundle.pricingPlans.forEach((pricingPlan) => {
         expect(screen.getByText(pricingPlan.title)).toBeInTheDocument();
-        expect(screen.getByText(pricingPlan.description)).toBeInTheDocument();
         expect(screen.getAllByText(pricingPlan.button.label)).not.toHaveLength(0);
         expect(
-          screen.getByText(`₹${pricingPlan.monthlyPrice.toLocaleString()}/Month`),
+          screen.getByText(`${pricingPlan.monthlyPrice.toLocaleString()}/Month`),
         ).toBeInTheDocument();
         expect(
           screen.getByText(
@@ -62,7 +61,6 @@ describe('Tests for `PricingSubscriptionComponent` components', () => {
     renderApp({ initialState });
 
     expect(screen.getByText('🎁 View All Benefits')).toBeInTheDocument();
-    expect(screen.getByText('Not Interested')).toBeInTheDocument();
   });
 
   test.each(pricing_bundle.featureIdOrder)(
@@ -79,10 +77,9 @@ describe('Tests for `PricingSubscriptionComponent` components', () => {
 
       pricing_bundle.pricingPlans.forEach((pricingPlan) => {
         expect(screen.getByText(pricingPlan.title)).toBeInTheDocument();
-        expect(screen.getByText(pricingPlan.description)).toBeInTheDocument();
         expect(screen.getAllByText(pricingPlan.button.label)).not.toHaveLength(0);
         expect(
-          screen.getByText(`₹${pricingPlan.monthlyPrice.toLocaleString()}/Month`),
+          screen.getByText(`${pricingPlan.monthlyPrice.toLocaleString()}/Month`),
         ).toBeInTheDocument();
         expect(
           screen.getByText(
@@ -106,7 +103,7 @@ describe('Tests for `PricingSubscriptionComponent` components', () => {
       const frequencyToggle = screen.getByRole('checkbox');
       await userEvent.click(frequencyToggle);
 
-      const yearlyPricing = screen.getByText(`₹${pricingPlan.annualPrice.toLocaleString()}/Year`);
+      const yearlyPricing = screen.getByText(`${pricingPlan.annualPrice.toLocaleString()}/Year`);
 
       expect(yearlyPricing).toBeInTheDocument();
 
@@ -141,18 +138,6 @@ describe('Tests for `PricingSubscriptionComponent` components', () => {
     renderApp({ initialState });
 
     const notInterestedButton = screen.getByTestId('close-icon');
-
-    await userEvent.click(notInterestedButton);
-
-    expect(closeModalSpy).toHaveBeenCalledTimes(1);
-  });
-
-  test('`Data from props`: Should close the modal when `Not Interested` button is clicked', async () => {
-    const closeModalSpy = jest.spyOn(modalReducer, 'closeModal');
-    const initialState = getState();
-    renderApp({ initialState });
-
-    const notInterestedButton = screen.getByRole('button', { name: 'Not Interested' });
 
     await userEvent.click(notInterestedButton);
 
@@ -244,10 +229,9 @@ describe('Tests for `PricingSubscriptionComponent` components', () => {
       );
       pricing_bundle.pricingPlans.forEach((pricingPlan) => {
         expect(screen.getByText(pricingPlan.title)).toBeInTheDocument();
-        expect(screen.getByText(pricingPlan.description)).toBeInTheDocument();
         expect(screen.getAllByText(pricingPlan.button.label)).not.toHaveLength(0);
         expect(
-          screen.getByText(`₹${pricingPlan.monthlyPrice.toLocaleString()}/Month`),
+          screen.getByText(`${pricingPlan.monthlyPrice.toLocaleString()}/Month`),
         ).toBeInTheDocument();
         expect(
           screen.getByText(
@@ -266,7 +250,6 @@ describe('Tests for `PricingSubscriptionComponent` components', () => {
     server.use(fetchGSModalHandler({ delay: 0 }));
 
     await waitFor(() => expect(screen.getByText('🎁 View All Benefits')).toBeInTheDocument());
-    expect(screen.getByText('Not Interested')).toBeInTheDocument();
   });
 
   test('`Data from template id`: Should show the full plan information if `View All Benefits` cta is clicked', async () => {
@@ -289,11 +272,10 @@ describe('Tests for `PricingSubscriptionComponent` components', () => {
       );
       pricing_bundle.pricingPlans.forEach((pricingPlan) => {
         expect(screen.getByText(pricingPlan.title)).toBeInTheDocument();
-        expect(screen.getByText(pricingPlan.description)).toBeInTheDocument();
 
         expect(screen.getAllByText(pricingPlan.button.label)).not.toHaveLength(0);
         expect(
-          screen.getByText(`₹${pricingPlan.monthlyPrice.toLocaleString()}/Month`),
+          screen.getByText(`${pricingPlan.monthlyPrice.toLocaleString()}/Month`),
         ).toBeInTheDocument();
         expect(
           screen.getByText(
@@ -317,7 +299,7 @@ describe('Tests for `PricingSubscriptionComponent` components', () => {
       const frequencyToggle = await waitFor(() => screen.getByRole('checkbox'));
       await userEvent.click(frequencyToggle);
 
-      const yearlyPricing = screen.getByText(`₹${pricingPlan.annualPrice.toLocaleString()}/Year`);
+      const yearlyPricing = screen.getByText(`${pricingPlan.annualPrice.toLocaleString()}/Year`);
 
       expect(yearlyPricing).toBeInTheDocument();
 
@@ -389,21 +371,6 @@ describe('Tests for `PricingSubscriptionComponent` components', () => {
     renderApp({ initialState, props: { templateId } });
 
     const notInterestedButton = await waitFor(() => screen.getByTestId('close-icon'));
-
-    await userEvent.click(notInterestedButton);
-
-    expect(closeModalSpy).toHaveBeenCalled();
-  });
-
-  test('`Data from template id`: Should close the modal when `Not Interested` button is clicked', async () => {
-    server.use(fetchGSModalHandler({ delay: 0 }));
-    const closeModalSpy = jest.spyOn(modalReducer, 'closeModal');
-    const initialState = getState();
-    renderApp({ initialState, props: { templateId } });
-
-    const notInterestedButton = await waitFor(() =>
-      screen.getByRole('button', { name: 'Not Interested' }),
-    );
 
     await userEvent.click(notInterestedButton);
 

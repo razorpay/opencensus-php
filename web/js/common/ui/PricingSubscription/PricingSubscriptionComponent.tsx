@@ -460,8 +460,8 @@ const PricingSubscriptionComponent = ({
         pillText={String(pillText)}
         handleClose={handleClose}
       />
-      <StyledTable>
-        <StyledTr headerHeight>
+      <StyledTable pricingPlanLength={pricingPlans?.length}>
+        <StyledTr headerHeight pricingPlanLength={pricingPlans?.length}>
           <StyledTh removeCss>
             <StyleHeroImage>
               <Image src={pricingTag} alt="Pricing Tag" />
@@ -490,9 +490,9 @@ const PricingSubscriptionComponent = ({
           })}
         </StyledTr>
         {featureIdOrder
-          .filter((_, index) => isFullView || index < 2)
+          .filter((_, index) => isFullView || index < 3)
           .map((featureId, index) => renderPlansDetails(featureId, index))}
-        <StyledTr>
+        <StyledTr pricingPlanLength={pricingPlans?.length}>
           <StyledTd removeCss />
           {isFullView &&
             pricingPlans.map((plans) => {
