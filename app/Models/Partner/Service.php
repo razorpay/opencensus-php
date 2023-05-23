@@ -476,10 +476,11 @@ class Service extends Base\Service
         }
 
         // if feature is not enabled for pure platform partner then check if it is enabled for the OAuth app (if passed)
-        if ($isFeatureEnabled === false && $partner->isPurePlatformPartner() === true && in_array($featureKey, FeatureConstants::PARTNER_AND_APP_LEVEL_FEATURES) === true)
+        if ($isFeatureEnabled === false &&
+            empty($oauthAppId) === false &&
+            $partner->isPurePlatformPartner() === true &&
+            in_array($featureKey, FeatureConstants::PARTNER_AND_APP_LEVEL_FEATURES) === true)
         {
-            $oauthAppId = $oauthAppId ?? $this->app['basicauth']->getOAuthApplicationId();
-
             return $this->isFeatureEnabledForOAuthApp($featureKey, $oauthAppId);
         }
 

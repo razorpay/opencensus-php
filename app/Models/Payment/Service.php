@@ -6940,15 +6940,6 @@ class Service extends Base\Service
      */
     public function releaseSubmerchantPayment(string $paymentId): mixed
     {
-        if ($this->app['basicauth']->isPartnerAuth() === false)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_INVALID_AUTH_TYPE,
-                null,
-                [PaymentConstants::PAYMENT_ID => $paymentId]
-            );
-        }
-
         $partner = $this->app['basicauth']->getPartnerMerchant();
 
         $this->trace->info(
@@ -6960,19 +6951,9 @@ class Service extends Base\Service
             ]
         );
 
-        (new Merchant\Validator())->validateIsAggregatorPartner($partner);
+        (new PartnerValidator())->validateIsAggregatorOrPurePlatformPartner($partner);
 
-        (new PartnerValidator())->validateIfSubmerchantManualSettlementEnabled($partner);
-
-        $manualSettlementExpEnabled = (new PartnerService())->isSubmerchantPaymentManualSettlementExpEnabled($partner);
-
-        if ($manualSettlementExpEnabled !== true)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_SUBMERCHANT_MANUAL_SETTLEMENT_EXP_NOT_ENABLED,
-                $partner->getId()
-            );
-        }
+        (new PartnerValidator())->validateIfSubmerchantManualSettlementEnabled($partner, $this->app['basicauth']->getOAuthApplicationId());
 
         Entity::verifyIdAndSilentlyStripSign($paymentId);
 

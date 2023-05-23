@@ -10,6 +10,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Merchant\Entity;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApp;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApplicationsEntity;
 
@@ -139,9 +140,9 @@ class Validator extends Base\Validator
      *
      * @throws BadRequestException
      */
-    public function validateIfSubmerchantManualSettlementEnabled(Entity $partner)
+    public function validateIfSubmerchantManualSettlementEnabled(Entity $partner, ?string $oauthApplicationId)
     {
-        if ($partner->isSubmerchantManualSettlementEnabled() === false)
+        if ((new Service())->isFeatureEnabledForPartner(FeatureConstants::SUBM_MANUAL_SETTLEMENT, $partner, $oauthApplicationId) === false)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_MANUAL_SETTLEMENT_NOT_ALLOWED, $partner->getId());
         }

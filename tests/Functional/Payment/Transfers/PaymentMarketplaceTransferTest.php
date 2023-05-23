@@ -954,6 +954,103 @@ class PaymentMarketplaceTransferTest extends TestCase
         $this->assertFalse($transaction->isSettled());
     }
 
+    public function testReleaseSubmerchantPaymentByPartnerUsingOAuth()
+    {
+        $this->setPurePlatformContext(Mode::TEST);
+
+        $this->fixtures->merchant->addFeatures(['subm_manual_settlement'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->edit('payment', $this->payment['id'], ['merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID]);
+
+        $this->fixtures->edit('payment', $this->payment['id'], ['on_hold' => true]);
+
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->fixtures->edit('transaction', $transaction->id, ['on_hold' => true]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payments/' . $this->payment['id'] . '/settle';
+
+        $this->mockAllSplitzTreatment();
+
+        $this->runRequestResponseFlow($testData);
+
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->assertFalse($transaction->getOnHold());
+
+        $this->assertFalse($transaction->isSettled());
+    }
+
+    public function testReleaseSubmerchantPaymentByPartnerUsingOAuthWithAppLevelFeature()
+    {
+        $this->setPurePlatformContext(Mode::TEST);
+
+        $merchantApplication = $this->getDbLastEntity('merchant_application');
+
+        $this->fixtures->create('feature',
+            [
+                'name' => 'subm_manual_settlement',
+                'entity_id' => $merchantApplication['application_id'],
+                'entity_type' => 'application',
+            ]
+        );
+
+        $this->fixtures->edit('payment', $this->payment['id'], ['merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID]);
+
+        $this->fixtures->edit('payment', $this->payment['id'], ['on_hold' => true]);
+
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->fixtures->edit('transaction', $transaction->id, ['on_hold' => true]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payments/' . $this->payment['id'] . '/settle';
+
+        $this->mockAllSplitzTreatment();
+
+        $this->runRequestResponseFlow($testData);
+
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->assertFalse($transaction->getOnHold());
+
+        $this->assertFalse($transaction->isSettled());
+    }
+
+    public function testReleaseSubmerchantPaymentByInvalidPartnerTypeUsingOAuth()
+    {
+        $this->setPurePlatformContext(Mode::TEST);
+
+        $this->fixtures->merchant->addFeatures(['subm_manual_settlement'], Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->edit('merchant', Constants::DEFAULT_PLATFORM_MERCHANT_ID, ['partner_type' => 'reseller']);
+
+        $this->fixtures->edit('payment', $this->payment['id'], ['merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID]);
+
+        $this->fixtures->edit('payment', $this->payment['id'], ['on_hold' => true]);
+
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->fixtures->edit('transaction', $transaction->id, ['on_hold' => true]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payments/' . $this->payment['id'] . '/settle';
+
+        $this->mockAllSplitzTreatment();
+
+        $this->runRequestResponseFlow($testData);
+
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->assertTrue($transaction->getOnHold());
+
+        $this->assertFalse($transaction->isSettled());
+    }
+
     public function testReleaseSubmerchantPaymentByPartnerWithFeatureDisabled()
     {
         $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();

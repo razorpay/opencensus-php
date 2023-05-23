@@ -1080,7 +1080,6 @@ class PublicErrorDescription
     const BAD_REQUEST_PARTNER_LOGO_NOT_IMAGE                                    = 'The image type is not jpg, jpeg or png';
     const BAD_REQUEST_PARTNER_LOGO_TOO_SMALL                                    = 'The dimensions of the image are too small. Minimum dimensions should be 256x256';
     const BAD_REQUEST_MANUAL_SETTLEMENT_NOT_ALLOWED                             = 'Manual settlements not enabled on the partner account. Please reach out to Razorpay support to enable.';
-    const BAD_REQUEST_SUBMERCHANT_MANUAL_SETTLEMENT_EXP_NOT_ENABLED             = 'The sub-merchant manual payment settlement experiment is not enabled for the partner';
 
     const BAD_REQUEST_PAYMENT_MDR_UPDATE_IN_PROGRESS                            = 'Payments MDR backfill job is currently in progress';
     const BAD_REQUEST_CANNOT_ADD_MERCHANT_USER                                  = 'Cannot add sub-merchant user with given details';

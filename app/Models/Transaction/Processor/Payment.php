@@ -498,8 +498,7 @@ class Payment extends Base
 
             if (empty($partner) === true or
                 $partner->isAggregatorPartner() === false or
-                $partner->isSubmerchantManualSettlementEnabled() === false or
-                (new PartnerService())->isSubmerchantPaymentManualSettlementExpEnabled($partner) !== true or
+                (new PartnerService())->isFeatureEnabledForPartner(Feature\Constants::SUBM_MANUAL_SETTLEMENT, $partner) === false or
                 (new Merchant\AccessMap\Core())->isMerchantMappedToPartnerWithAppType($partner, $merchant, MerchantAppEntity::MANAGED) === false)
             {
                 return false;
