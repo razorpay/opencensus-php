@@ -1,6 +1,7 @@
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import React from 'react';
+// eslint-disable-next-line no-restricted-imports
 import HeaderAction from 'common/ui/HeaderAction';
 import ModalHeader from 'common/ui/ModalHeader';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -105,7 +106,7 @@ class ManageTeamContainer extends React.Component {
         <HeaderAction
           responsive
           target={
-            user.isAccountAndSettingsRevampEnabled ? '.content > main' : 'tabbed-container > header'
+            user.isAccountAndSettingsRevampEnabled ? 'main > .content' : 'tabbed-container > header'
           }
         >
           <div className="btn-toolbar pull-right">
