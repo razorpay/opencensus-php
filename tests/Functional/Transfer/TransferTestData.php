@@ -1035,6 +1035,110 @@ return [
         ],
     ],
 
+    'testFetchMultiplePlatformTransfers' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/transfers?transfer_type=platform',
+            'content' => [],
+        ],
+        'response'  => [
+            'content' => [
+                'count'         => 2,
+                'items'         => [
+                    [
+                        "id"                        => 'trf_LhV9fg1fXklNUG',
+                        "recipient"                 => 'acc_10000000000001',
+                        "currency"                  => "INR",
+                        "amount"                    => 1000,
+                        'status'                    => 'processed',
+                        'amount_reversed'           => 0,
+                        'notes'                     => [],
+                        'fees'                      => 0,
+                        'tax'                       => 0,
+                        'on_hold'                   => false,
+                        'on_hold_until'             => null,
+                        'recipient_settlement_id'   => null,
+                        'linked_account_notes'      => [],
+                    ],
+                    [
+                        "id"                        => 'trf_LhV9fg1fXagWCN',
+                        "recipient"                 => 'acc_10000000000001',
+                        "currency"                  => "INR",
+                        "amount"                    => 1000,
+                        'status'                    => 'processed',
+                        'amount_reversed'           => 0,
+                        'notes'                     => [],
+                        'fees'                      => 0,
+                        'tax'                       => 0,
+                        'on_hold'                   => false,
+                        'on_hold_until'             => null,
+                        'recipient_settlement_id'   => null,
+                        'linked_account_notes'      => [],
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchMultiplePlatformTransfersWithSource' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/transfers?transfer_type=platform&source=pay_LpodrylYxBEsvd',
+            'content' => [],
+        ],
+        'response'  => [
+            'content' => [
+                'count'         => 2,
+                'items'         => [
+                    [
+                        "id"                        => 'trf_LhV9fg1fXklNUG',
+                        "recipient"                 => 'acc_10000000000001',
+                        "currency"                  => "INR",
+                        "amount"                    => 1000,
+                        'status'                    => 'processed',
+                        'amount_reversed'           => 0,
+                        'notes'                     => [],
+                        'fees'                      => 0,
+                        'tax'                       => 0,
+                        'on_hold'                   => false,
+                        'on_hold_until'             => null,
+                        'recipient_settlement_id'   => null,
+                        'linked_account_notes'      => [],
+                    ],
+                    [
+                        "id"                        => 'trf_LhV9fg1fXagWCN',
+                        "recipient"                 => 'acc_10000000000001',
+                        "currency"                  => "INR",
+                        "amount"                    => 1000,
+                        'status'                    => 'processed',
+                        'amount_reversed'           => 0,
+                        'notes'                     => [],
+                        'fees'                      => 0,
+                        'tax'                       => 0,
+                        'on_hold'                   => false,
+                        'on_hold_until'             => null,
+                        'recipient_settlement_id'   => null,
+                        'linked_account_notes'      => [],
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchMultiplePlatformTransfersWithInvalidSource' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/transfers?transfer_type=platform&source=pay_LpodrylYxBFsvd',
+            'content' => [],
+        ],
+        'response'  => [
+            'content' => [
+                'count'         => 0,
+                'items'         => [],
+            ],
+        ],
+    ],
+
     'testCreateDirectTransferWithPartnerAuthForInvalidPartnerType' => [
         'request'   => [
             'method'   => 'POST',

@@ -2092,6 +2092,8 @@ class TransferTest extends TestCase
             'application_id' => 'A0m8HLZLyVIDQ9',
         ]);
 
+        $this->fixtures->edit('merchant', '10000000000001', ['parent_id' => '10000000000003',]);
+
         $this->ba->proxyAuth();
 
         $this->testData[__FUNCTION__]['request']['url'] = '/transfers/trf_LhV9fg1fXagWCN?transfer_type=platform';
@@ -2129,6 +2131,120 @@ class TransferTest extends TestCase
         $this->assertEquals($originType, $entityOrigin['origin_type']);
 
         $this->assertEquals($originId, $entityOrigin['origin_id']);
+    }
+
+    public function testFetchMultiplePlatformTransfers()
+    {
+        $this->createPartnerAndApplication(['id' => '10000000000003', 'email' => 'testmail@mail.info', 'name' => 'partner_test',], ['id' => 'A0m8HLZLyVIDQ9']);
+
+        $this->fixtures->create('transfer', [
+            'id'            => 'LhV9fg1fXagWCN',
+            'status'        => 'processed',
+            'merchant_id'   => '10000000000000',
+            'source_id'     => 'LpodrylYxBEsvd',
+            'source_type'   => 'payment',
+            'to_id'         => '10000000000001',
+            'amount'        => 1000,
+        ]);
+
+        $this->fixtures->create('transfer', [
+            'id'            => 'LhV9fg1fXklNUG',
+            'status'        => 'processed',
+            'merchant_id'   => '10000000000000',
+            'source_id'     => 'LpodrylYxBEsvd',
+            'source_type'   => 'payment',
+            'to_id'         => '10000000000001',
+            'amount'        => 1000,
+        ]);
+
+        $this->fixtures->create('merchant_application', [
+            'id'                => 'FrckQEXGYiwK0d',
+            'merchant_id'       => '10000000000003',
+            'type'              => 'managed',
+            'application_id'    => 'A0m8HLZLyVIDQ9',
+        ]);
+
+        $this->fixtures->edit('merchant', '10000000000001', ['parent_id' => '10000000000003',]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchMultiplePlatformTransfersWithSource()
+    {
+        $this->createPartnerAndApplication(['id' => '10000000000003', 'email' => 'testmail@mail.info', 'name' => 'partner_test',], ['id' => 'A0m8HLZLyVIDQ9']);
+
+        $this->fixtures->create('transfer', [
+            'id'            => 'LhV9fg1fXagWCN',
+            'status'        => 'processed',
+            'merchant_id'   => '10000000000000',
+            'source_id'     => 'LpodrylYxBEsvd',
+            'source_type'   => 'payment',
+            'to_id'         => '10000000000001',
+            'amount'        => 1000,
+        ]);
+
+        $this->fixtures->create('transfer', [
+            'id'            => 'LhV9fg1fXklNUG',
+            'status'        => 'processed',
+            'merchant_id'   => '10000000000000',
+            'source_id'     => 'LpodrylYxBEsvd',
+            'source_type'   => 'payment',
+            'to_id'         => '10000000000001',
+            'amount'        => 1000,
+        ]);
+
+        $this->fixtures->create('merchant_application', [
+            'id'                => 'FrckQEXGYiwK0d',
+            'merchant_id'       => '10000000000003',
+            'type'              => 'managed',
+            'application_id'    => 'A0m8HLZLyVIDQ9',
+        ]);
+
+        $this->fixtures->edit('merchant', '10000000000001', ['parent_id' => '10000000000003',]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchMultiplePlatformTransfersWithInvalidSource()
+    {
+        $this->createPartnerAndApplication(['id' => '10000000000003', 'email' => 'testmail@mail.info', 'name' => 'partner_test',], ['id' => 'A0m8HLZLyVIDQ9']);
+
+        $this->fixtures->create('transfer', [
+            'id'            => 'LhV9fg1fXagWCN',
+            'status'        => 'processed',
+            'merchant_id'   => '10000000000000',
+            'source_id'     => 'LpodrylYxBEsvd',
+            'source_type'   => 'payment',
+            'to_id'         => '10000000000001',
+            'amount'        => 1000,
+        ]);
+
+        $this->fixtures->create('transfer', [
+            'id'            => 'LhV9fg1fXklNUG',
+            'status'        => 'processed',
+            'merchant_id'   => '10000000000000',
+            'source_id'     => 'LpodrylYxBEsvd',
+            'source_type'   => 'payment',
+            'to_id'         => '10000000000001',
+            'amount'        => 1000,
+        ]);
+
+        $this->fixtures->create('merchant_application', [
+            'id'                => 'FrckQEXGYiwK0d',
+            'merchant_id'       => '10000000000003',
+            'type'              => 'managed',
+            'application_id'    => 'A0m8HLZLyVIDQ9',
+        ]);
+
+        $this->fixtures->edit('merchant', '10000000000001', ['parent_id' => '10000000000003',]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
     }
 
     public function testCreateDirectTransferWithPartnerAuthForInvalidPartnerType()

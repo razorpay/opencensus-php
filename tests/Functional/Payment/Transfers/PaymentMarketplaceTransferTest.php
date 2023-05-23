@@ -311,6 +311,54 @@ class PaymentMarketplaceTransferTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testPaymentPlatformTransferFetch()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $id = $this->payment['id'];
+
+        Payment\Entity::verifyIdAndSilentlyStripSign($id);
+
+        $this->fixtures->create('transfer', [
+            'id'            => 'LhV9fg1fXagWCN',
+            'status'        => 'processed',
+            'merchant_id'   => '10000000000000',
+            'source_id'     => $id,
+            'source_type'   => 'payment',
+            'to_id'         => '10000000000001',
+            'amount'        => 1000,
+        ]);
+
+        $this->fixtures->create('transfer', [
+            'id'            => 'LhV9fg1fXagWCD',
+            'status'        => 'processed',
+            'merchant_id'   => '10000000000000',
+            'source_id'     => $id,
+            'source_type'   => 'payment',
+            'to_id'         => '10000000000003',
+            'amount'        => 1000,
+        ]);
+
+        $this->fixtures->create('merchant', [
+            'id'    => '10000000000002',
+            'email' => 'testmail@mail.info',
+            'name'  => 'partner_test',
+        ]);
+
+        $this->fixtures->create('merchant', [
+            'id'        => '10000000000003',
+            'email'     => 'testmail@mail.info',
+            'name'      => 'partner_test',
+            'parent_id' => '10000000000002',
+        ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payments/' . $this->payment['id'] . '/transfers';
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     public function testTransferForSubMerchantCustomerFeeBearer()
     {
         $this->fixtures->create('pricing:standard_plan');

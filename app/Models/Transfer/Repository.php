@@ -102,6 +102,20 @@ class Repository extends Base\Repository
         $query->where(Entity::RECIPIENT_SETTLEMENT_ID, $id);
     }
 
+    protected function addQueryParamExcludedLinkedAccounts($query, $params)
+    {
+        $toAttribute = $this->dbColumn(Entity::TO_ID);
+
+        $query->whereNotIn($toAttribute, $params[Constant::EXCLUDED_LINKED_ACCOUNTS]);
+    }
+
+    protected function addQueryParamIncludedLinkedAccounts($query, $params)
+    {
+        $toAttribute = $this->dbColumn(Entity::TO_ID);
+
+        $query->whereIn($toAttribute, $params[Constant::INCLUDED_LINKED_ACCOUNTS]);
+    }
+
     /**
      * Query: SELECT DISTINCT `source_id` FROM `transfers` WHERE `source_type` = $sourceType AND
      * `status` = 'pending' AND `updated_at` < (now - 3 hours) LIMIT $count

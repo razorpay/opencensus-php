@@ -75,6 +75,8 @@ class Entity extends Base\PublicEntity
     const RECIPIENT_DETAILS = 'recipient_details';
     const PARENT_PAYMENT_ID = 'parent_payment_id';
 
+    const PARTNER_DETAILS = 'partner_details';
+
     protected static $sign = 'trf';
 
     protected $entity = 'transfer';
@@ -124,6 +126,7 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_CODE,
         self::ACCOUNT_CODE_USED,
         self::ERROR_CODE,
+        self::PARTNER_DETAILS,
     ];
 
     protected $public = [
@@ -149,6 +152,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::PROCESSED_AT,
         self::ERROR,
+        self::PARTNER_DETAILS,
     ];
 
     protected $publicSetters = [

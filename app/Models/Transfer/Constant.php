@@ -13,8 +13,12 @@ final class Constant
 
     // platform type transfer
     const PLATFORM          = 'platform';
+    const REGULAR           = 'regular';
     const PARTNER_DETAILS   = 'partner_details';
     const EMAIL             = 'email';
+
+    const EXCLUDED_LINKED_ACCOUNTS = 'excluded_linked_accounts';
+    const INCLUDED_LINKED_ACCOUNTS = 'included_linked_accounts';
 
 
     // Attempts

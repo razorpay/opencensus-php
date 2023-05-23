@@ -1726,7 +1726,7 @@ class Service extends Base\Service
             }
         }
 
-        return $transfers->toArrayPublic();
+        return ((new Transfer\Service())->setPartnerDetailsForTransfers($transfers))->toArrayPublic();
     }
 
     /**

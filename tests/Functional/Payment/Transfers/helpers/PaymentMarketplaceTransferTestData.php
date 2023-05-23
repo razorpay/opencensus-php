@@ -264,6 +264,53 @@ return [
         ],
     ],
 
+    'testPaymentPlatformTransferFetch' => [
+        'request' => [
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'items' => [
+                    [
+                        "id"                        => 'trf_LhV9fg1fXagWCD',
+                        "recipient"                 => 'acc_10000000000003',
+                        "currency"                  => "INR",
+                        "amount"                    => 1000,
+                        'status'                    => 'processed',
+                        'amount_reversed'           => 0,
+                        'notes'                     => [],
+                        'fees'                      => 0,
+                        'tax'                       => 0,
+                        'on_hold'                   => false,
+                        'on_hold_until'             => null,
+                        'recipient_settlement_id'   => null,
+                        'linked_account_notes'      => [],
+                        'partner_details'           => [
+                            'name' => 'partner_test',
+                            'id' => '10000000000002',
+                            'email' => 'testmail@mail.info',
+                        ],
+                    ],
+                    [
+                        "id"                        => 'trf_LhV9fg1fXagWCN',
+                        "recipient"                 => 'acc_10000000000001',
+                        "currency"                  => "INR",
+                        "amount"                    => 1000,
+                        'status'                    => 'processed',
+                        'amount_reversed'           => 0,
+                        'notes'                     => [],
+                        'fees'                      => 0,
+                        'tax'                       => 0,
+                        'on_hold'                   => false,
+                        'on_hold_until'             => null,
+                        'recipient_settlement_id'   => null,
+                        'linked_account_notes'      => [],
+                    ]
+                ],
+            ],
+        ],
+    ],
+
     'testFetchLinkedAccountTransferByPaymentId' => [
         'request' => [
             'method' => 'get',

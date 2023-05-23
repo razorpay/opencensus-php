@@ -27,6 +27,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\AccessMap\Core as AccessMapCore;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 use RZP\Jobs\Transfers\LinkedAccountBankVerificationStatusBackfill;
+use Throwable;
 
 class Service extends Base\Service
 {
@@ -41,7 +42,7 @@ class Service extends Base\Service
 
     public function fetch(string $id, array $input): array
     {
-        $setPlatformTransferDetails = $this->shouldSendPlatformTransferDetails($input);
+        $transferTypeFilter = $this->getTransferTypeFilter($input);
 
         $transfer = Tracer::inSpan(['name' => 'transfer.fetch'], function() use ($id, $input)
         {
@@ -52,9 +53,9 @@ class Service extends Base\Service
 
         $transfer = $transfer->toArrayPublicWithExpand();
 
-        if($setPlatformTransferDetails === true )
+        if($transferTypeFilter === Constant::PLATFORM )
         {
-            $transfer = $this->setPartnerDetailsIfApplicable($id, $transfer);
+            $transfer = $this->setPartnerDetailsForTransfer($transfer);
         }
 
         return $transfer;
@@ -71,8 +72,16 @@ class Service extends Base\Service
 
         $merchantId = $this->merchant->getId();
 
-        $transfers = Tracer::inSpan(['name' => 'transfer.fetch_multiple'], function() use ($input, $merchantId)
+        $transferTypeFilter = $this->getTransferTypeFilter($input);
+
+        $transfers = Tracer::inSpan(['name' => 'transfer.fetch_multiple'], function() use ($transferTypeFilter, $input, $merchantId)
         {
+            if ($transferTypeFilter === Constant::PLATFORM )
+            {
+                $linkedAccountIds = $this->repo->merchant->fetchActivatedLinkedAccountIdsForParentMerchant($this->merchant->getId());
+
+                $input[Constant::EXCLUDED_LINKED_ACCOUNTS] = $linkedAccountIds;
+            }
             return $this->repo
                         ->transfer
                         ->fetch($input, $merchantId);
@@ -1180,9 +1189,9 @@ class Service extends Base\Service
 
     /**
      * @param array $input
-     * @return array
+     * @return string
      */
-    public function shouldSendPlatformTransferDetails(array & $input) : bool
+    public function getTransferTypeFilter(array & $input)
     {
         if (isset($input['transfer_type']) === true)
         {
@@ -1190,46 +1199,69 @@ class Service extends Base\Service
 
             unset($input['transfer_type']);
 
-            return ($type === Constant::PLATFORM);
+            return $type;
         }
 
-        return false;
+        return null;
+    }
+
+    private function setPartnerDetailsForTransfer($transfer)
+    {
+        $linkedAccount = $this->repo->account->findByPublicId($transfer[Entity::RECIPIENT]);
+
+        $parentAccount = $this->repo->merchant->find($linkedAccount->getParentId());
+
+        // Merchant Id and Parent will be same in case of regular transfers.
+        // For Platform transfer parent account id will be partner Id.
+        if($this->merchant->getId() == $parentAccount->getId())
+        {
+            return $transfer;
+        }
+
+        $transfer[Constant::PARTNER_DETAILS] = [
+            MerchantConstant::NAME  => $parentAccount->getName(),
+            MerchantConstant::ID    => $parentAccount->getId(),
+            Constant::EMAIL         => $parentAccount->getEmail(),
+        ];
+
+        return $transfer;
     }
 
     /**
-     * @param string $id
-     * @param $transfer
-     * @return mixed
+     * @param array $transfers
+     * @return array
      */
-    public function setPartnerDetailsIfApplicable(string $id, $transfer)
+    public function setPartnerDetailsForTransfers($transfers)
     {
-        Entity::verifyIdAndStripSign($id);
-
-        $transferOrigin = (new EntityOrigin\Repository())->fetchByEntityTypeAndEntityId(EntityConstant::TRANSFER, $id);
-
-        if (  empty($transferOrigin) === false
-            && $transferOrigin[EntityOrigin\Entity::ORIGIN_TYPE] === EntityOrigin\Constants::MARKETPLACE_APPLICATION
-            && isset($transferOrigin[EntityOrigin\Entity::ORIGIN_ID]) === true)
+        try
         {
-            $merchantApp = (new MerchantApplications\Repository())->fetchMerchantApplication($transferOrigin[EntityOrigin\Entity::ORIGIN_ID], Merchant\Constants::APPLICATION_ID);
+            $linkedAccountIds = $this->repo->merchant->fetchActivatedLinkedAccountIdsForParentMerchant($this->merchant->getId());
 
-            if( $merchantApp->count() === 0)
+            foreach ($transfers as $transfer)
             {
-                return $transfer;
-            }
+                if (in_array($transfer[Entity::TO_ID], $linkedAccountIds) === false)
+                {
+                    $linkedAccount = $this->repo->merchant->find($transfer[Entity::TO_ID]);
+                    $partner = $this->repo->merchant->find($linkedAccount->getParentId());
 
-            $partner = (new Merchant\Core)->getPartnerFromApp($merchantApp->first());
-
-            if ($partner !== null)
-            {
-                $transfer[Constant::PARTNER_DETAILS] = [
-                    MerchantConstant::NAME  => $partner->getName(),
-                    MerchantConstant::ID    => $partner->getId(),
-                    Constant::EMAIL         => $partner->getEmail(),
-                ];
+                    $transfer[Constant::PARTNER_DETAILS] = [
+                        MerchantConstant::NAME  => $partner->getName(),
+                        MerchantConstant::ID    => $partner->getId(),
+                        Constant::EMAIL         => $partner->getEmail(),
+                    ];
+                }
             }
         }
+        catch (Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::TRANSFER_PARTNER_DETAILS_SET_FAILED
+            );
+        }
 
-        return $transfer;
+
+        return $transfers;
     }
 }
