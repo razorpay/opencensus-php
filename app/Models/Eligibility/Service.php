@@ -16,6 +16,8 @@ class Service extends Base\Service
     public const FETCH_ELIGIBILITY_ENDPOINT = "/v1/customers/eligibility";
     public const FETCH_ELIGIBILITY_BY_ID_ENDPOINT = "/v1/customers/eligibility/";
 
+    public const PUBLIC_ELIGIBILITY_ENDPOINT = "/v1/public/customers/eligibility";
+
     public const X_REQUEST_TASK_ID        = 'X-Razorpay-TaskId';
     public const X_PASSPORT_JWT_V1        = 'X-Passport-JWT-V1';
     public const CONTENT_TYPE_HEADER      = 'Content-Type';
@@ -77,6 +79,32 @@ class Service extends Base\Service
         catch (Requests_Exception $e)
         {
             $this->trace->traceException($e, Trace::ERROR, TraceCode::FETCH_ELIGIBILITY_BY_ID_API_REQUEST_FAILED);
+            throw new Exception\ServerErrorException('Error completing the request',
+                ErrorCode::SERVER_ERROR);
+        }
+
+        return $this->formatResponse($response);
+    }
+
+    /**
+     * Fetch Public Customer Eligibility by Input
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public function fetchPublicCustomerEligibility(array $input)
+    {
+        $url = $this->getBaseUrl() . self::PUBLIC_ELIGIBILITY_ENDPOINT;
+
+        try
+        {
+            $response = Requests::post($url, $this->getRequestHeaders(), json_encode($input));
+        }
+        catch (Requests_Exception $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::FETCH_PUBLIC_ELIGIBILITY_API_REQUEST_FAILED);
+
             throw new Exception\ServerErrorException('Error completing the request',
                 ErrorCode::SERVER_ERROR);
         }

@@ -25,4 +25,14 @@ class EligibilityController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function fetchPublicCustomerEligibility()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchPublicCustomerEligibility($input);
+
+        return ApiResponse::json($data);
+    }
+
 }

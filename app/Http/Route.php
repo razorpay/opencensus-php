@@ -4300,6 +4300,7 @@ class Route
         'relay_get_props_history'               => ['get',                    'relay/apps/{app_id}/props/{prop_id}/history',                'RelayController@getPropsHistory'],
         'fetch_customer_eligibility'            => ['post',          'customers/eligibility',                               'EligibilityController@fetchCustomerEligibility'],
         'fetch_customer_eligibility_by_id'      => ['get',           'customers/eligibility/{id}',                          'EligibilityController@fetchCustomerEligibilityById'],
+        'fetch_public_customer_eligibility'     => ['post',          'public/customers/eligibility',                        'EligibilityController@fetchPublicCustomerEligibility'],
         //Capital corp card for payouts
         'corp_card_banking_account_create'      => ['post', 'merchant/onboardCCCForBanking', 'CorpCardController@onboardCapitalCorpCardForRzpX'],
 
@@ -4465,7 +4466,8 @@ class Route
         '1cc_order_notes_update',
         '1cc_apply_gift_card',
         '1cc_remove_gift_card',
-        'offers_fetch_for_order'
+        'offers_fetch_for_order',
+        'fetch_public_customer_eligibility'
     ];
 
     public static $device = [
