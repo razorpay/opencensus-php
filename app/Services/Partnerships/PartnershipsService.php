@@ -289,13 +289,15 @@ class PartnershipsService extends Base\Service
 
     private function getBaseUrl()
     {
-        if($this->mode === Mode::LIVE) {
-            return $this->baseLiveUrl;
-        }
-        else
-        {
-            return $this->baseTestUrl;
-        }
+        // returning live url for now as entities are not sync in live and test mode
+        return $this->baseLiveUrl;
+        //if($this->mode === Mode::LIVE) {
+        //    return $this->baseLiveUrl;
+        //}
+        //else
+        //{
+        //    return $this->baseTestUrl;
+        //}
     }
 
     protected function parseAndReturnResponse($res)
