@@ -16,6 +16,8 @@ class Config
 
     const PROXY_SQL_SERVICE_CONFIG = 'proxy_sql_service_config';
 
+    const PROXY_SQL_ENABLE_PAYMENT_FETCH_REPLICA = 'proxy_sql_enable_payment_fetch_replica';
+
     const PROXY_SQL_ENABLE      = 'PROXY_SQL_ENABLE';
 
     const IS_WORKER_POD         = 'is_worker_pod';
@@ -32,14 +34,7 @@ class Config
 
     const DISABLE               = 'disable';
 
-    const PROXY_CONNECTIONS     = [
-        'live',
-        'test',
-        'slave-test',
-        'slave-live',
-        'payment-fetch-replica-live',
-        'payment-fetch-replica-test',
-    ];
+    public array $proxyConnections;
 
     public bool $isProxySqlSidecarActive;
 
@@ -58,6 +53,13 @@ class Config
         $this->isProxySqlSidecarActive = false;
 
         $this->isProxySqlServiceActive = false;
+
+        $this->proxyConnections = [
+            'live',
+            'test',
+            'slave-test',
+            'slave-live',
+        ];
     }
 
     public function setDatabaseHostsIfApplicable()
@@ -111,11 +113,17 @@ class Config
 
         $user = null;
 
+        if(($this->app['config']->get(self::DATABASE_CONFIG . '.' . self::PROXY_SQL_ENABLE_PAYMENT_FETCH_REPLICA)) === true)
+        {
+            $this->proxyConnections = array_merge($this->proxyConnections,
+                ['payment-fetch-replica-live','payment-fetch-replica-test']);
+        }
+
         try
         {
             foreach ($configs as $connectionName => $config)
             {
-                if ((in_array($connectionName, self::PROXY_CONNECTIONS, true) === true) and
+                if ((in_array($connectionName, $this->proxyConnections, true) === true) and
                     (is_array($config) === true))
                 {
                     if($this->isProxySqlServiceActive === true)

@@ -606,6 +606,8 @@ return array(
 
         'proxy_sql_unix_socket' => env('PROXY_SQL_UNIX_SOCKET'),
 
+        'proxy_sql_enable_payment_fetch_replica' => env('PROXY_SQL_ENABLE_PAYMENT_FETCH_REPLICA', false),
+
         'proxy_sql_service_config' => [
             'host'  => env('PROXY_SQL_SERVICE_HOST'),
             'port'  => env('PROXY_SQL_SERVICE_PORT')
