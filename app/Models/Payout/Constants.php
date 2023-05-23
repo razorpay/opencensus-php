@@ -56,6 +56,8 @@ class Constants
 
     public const MIGRATION_MUTEX_RETRY_COUNT = 1;
 
-    public const BULK_TEMPLATE_CONFIG_KEY = 'BULK_PAYOUT_%s_%s_%s';
+    public const BULK_TEMPLATE_CONFIG_KEY   = 'BULK_PAYOUT_%s_%s_%s';
+
+    public const PAYOUT_ID                  = 'payout_id';
 
 }

@@ -549,6 +549,10 @@ return [
         'live'       => env('AWS_BANKING_ACCOUNT_STATEMENT_UPDATE_LIVE_QUEUE'),
     ],
 
+    'banking_account_statement_source_linking' => [
+        'live'       => env('AWS_BANKING_ACCOUNT_STATEMENT_SOURCE_LINKING_LIVE_QUEUE'),
+    ],
+
     'missing_account_statement_detect' => [
         'live'       => env('AWS_MISSING_ACCOUNT_STATEMENT_DETECT_LIVE_QUEUE'),
     ],

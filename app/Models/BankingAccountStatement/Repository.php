@@ -227,7 +227,7 @@ class Repository extends Base\Repository
 
             if ($source->getEntity() === Constants\Entity::EXTERNAL)
             {
-                $externalLinkedBas[] = $source;
+                $externalLinkedBas[] = $basEntity;
             }
         }
 

@@ -59,6 +59,7 @@ use RZP\Models\BankingAccount\Entity as BaEntity;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
 use RZP\Models\External\Entity as ExternalEntity;
 use RZP\Jobs\BankingAccountMissingStatementInsert;
+use RZP\Jobs\BankingAccountStatementSourceLinking;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -14336,5 +14337,91 @@ class RblBankingAccountStatementTest extends TestCase
             ]);
 
         $this->assertEquals([], $missingStatementDetectionConfig['2224440041626905']);
+    }
+
+    public function testBasSourceLinkingAsyncRetry()
+    {
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        Queue::fake();
+
+        $bas = $this->fixtures->create('banking_account_statement', [
+            'merchant_id'         => '10000000000000',
+            'entity_id'           => 'testExternal00',
+            'entity_type'         => 'external',
+            'utr'                 => '211708954836',
+            'amount'              => 1000,
+            'balance'             => $this->bankingBalance->getBalance() + 1000,
+            'channel'             => 'rbl',
+            'account_number'      => $this->bankingBalance->getAccountNumber(),
+            'bank_transaction_id' => 'M2134215',
+            'type'                => 'debit',
+            'posted_date'         => 1650628967,
+            'description'         => '211708954836-LOAN492836',
+            'category'            => 'customer_initiated',
+            'bank_serial_number'  => 7,
+            'bank_instrument_id'  => "",
+            'transaction_date'    => 1650565810,
+            'transaction_id'      => 'JOPkusQyH3wn3u',
+        ]);
+
+        $this->fixtures->create('external', [
+            'id'                           => 'testExternal00' ,
+            'merchant_id'                  => '10000000000000',
+            'transaction_id'               => 'JOPkusQyH3wn3u',
+            'banking_account_statement_id' => $bas->getId(),
+            'channel'                      => 'rbl',
+            'bank_reference_number'        => $bas->getBankTransactionId(),
+            'utr'                          => '211708954836',
+            'type'                         => $bas->getType(),
+            'amount'                       => $bas->getAmount(),
+            'currency'                     => 'INR',
+            'balance_id'                   => $this->bankingBalance->getId(),
+        ]);
+
+        $payout = $this->fixtures->create('payout', [
+            'merchant_id'     => '10000000000000',
+            'balance_id'      => $this->bankingBalance->getId(),
+            'status'          => 'processed',
+            'transaction_id'  => null,
+            'utr'             => '211708954836',
+            'amount'          => 1000,
+            'channel'         => 'rbl',
+            'mode'            => 'IMPS',
+            'pricing_rule_id' => 'Bbg7fgaDwax04u'
+        ]);
+
+        $payout = $this->fixtures->edit('payout', $payout['id'], [
+            'transaction_id'   => null,
+            'transaction_type' => null,
+            'id'               => 'Bbg7fgaDwax0aa',
+        ]);
+
+        $this->fixtures->create('transaction', [
+            'id'          => 'JOPkusQyH3wn3u',
+            'merchant_id' => '10000000000000',
+            'amount'      => 1000,
+            'balance_id'  => $this->bankingBalance->getId(),
+            'type'        => 'external',
+            'entity_id'   => 'testExternal00',
+        ]);
+
+        $params = [
+            "payout_id" => $payout->getId()
+        ];
+
+        (new BasCore)->retryBasSourceLinkingForProcessedPayout($params);
+
+        Queue::assertNotPushed(BankingAccountStatementSourceLinking::class);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $bas = $this->getDbLastEntity('banking_account_statement');
+
+        $this->assertEquals($payout->getTransactionId(), $bas->getTransactionId());
+
+        $this->assertEquals($bas->getEntityType(), 'payout');
+
+        $this->assertEquals($bas->getEntityId(), $payout->getId());
     }
 }

@@ -80,6 +80,7 @@ use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Jobs\PartnerBankDowntimeHoldPayouts;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
+use RZP\Jobs\BankingAccountStatementSourceLinking;
 use RZP\Jobs\FreePayoutMigrationForPayoutsService;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Payout\Constants as PayoutConstants;
@@ -153,6 +154,8 @@ class Core extends Base\Core
         self::TOKEN_NOT_FOUND,
         self::INVALID_TOKEN
     ];
+
+    const BAS_LINKING_ASYNC_RETRY_DEFAULT_DELAY = 60;
 
     //constants for fund loading downtime detection test payouts
     const BANK                                       = 'bank';
@@ -758,7 +761,7 @@ class Core extends Base\Core
             case Status::PROCESSED:
                 $oldStatus = $payout->getStatus();
 
-                $this->handlePayoutProcessed($payout, null, $ftaStatus, $ftsSourceAccountInformation);
+                $this->handlePayoutProcessed($payout, null, $ftaStatus, $ftsSourceAccountInformation, true);
 
                 if ($this->isHighTpsMerchantWithSubBalance($payout) === false)
                 {
@@ -3579,7 +3582,8 @@ class Core extends Base\Core
         Entity $payout,
         $debit_bas = null,
         string $ftaStatus = null,
-        array $ftsSourceAccountInformation = [])
+        array $ftsSourceAccountInformation = [],
+        $webhookFlow = false)
     {
         if ($payout->isStatusReversed() === true)
         {
@@ -3596,10 +3600,10 @@ class Core extends Base\Core
         {
             $this->mutex->acquireAndRelease(
                 PayoutConstants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
-                function() use ($payout, $ftaStatus, $ftsSourceAccountInformation, $debit_bas) {
+                function() use ($payout, $ftaStatus, $ftsSourceAccountInformation, $debit_bas, $webhookFlow) {
                     $payout->reload();
 
-                    $this->handlePayoutProcessedBase($payout, $ftaStatus, $ftsSourceAccountInformation, $debit_bas);
+                    $this->handlePayoutProcessedBase($payout, $ftaStatus, $ftsSourceAccountInformation, $debit_bas, $webhookFlow);
                 },
                 self::PAYOUT_MUTEX_LOCK_TIMEOUT,
                 ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS,
@@ -3607,7 +3611,7 @@ class Core extends Base\Core
         }
         else
         {
-            $this->handlePayoutProcessedBase($payout, $ftaStatus, $ftsSourceAccountInformation, $debit_bas);
+            $this->handlePayoutProcessedBase($payout, $ftaStatus, $ftsSourceAccountInformation, $debit_bas, $webhookFlow);
         }
     }
 
@@ -3624,7 +3628,8 @@ class Core extends Base\Core
     function handlePayoutProcessedBase(Entity $payout,
                                        string $ftaStatus = null,
                                        array $ftsSourceAccountInformation = [],
-                                       $debit_bas = null): void
+                                       $debit_bas = null,
+                                       $webhookFlow = false): void
     {
         if ($payout->getIsPayoutService() === true)
         {
@@ -3633,7 +3638,7 @@ class Core extends Base\Core
         else
         {
             $bankAccStmt = $this->repo->transaction(
-                function() use ($payout, $debit_bas) {
+                function() use ($payout, $debit_bas, $webhookFlow) {
                     $payout->setStatus(Status::PROCESSED);
 
                     (new PayoutsStatusDetailsCore())->create($payout);
@@ -3643,7 +3648,7 @@ class Core extends Base\Core
                     $bankAccStmt = null;
                     if ($payout->isBalanceAccountTypeDirect() === true)
                     {
-                        $bankAccStmt = $this->handlePayoutTransactionForDirectBanking($payout, $debit_bas);
+                        $bankAccStmt = $this->handlePayoutTransactionForDirectBanking($payout, $debit_bas, $webhookFlow);
 
                         (new FeeRecovery\Core)->handlePayoutStatusUpdate($payout);
                     }
@@ -3878,9 +3883,13 @@ class Core extends Base\Core
      * debit_bas is bas entity with which we want the payout to be linked. This is added for manual
      * linking via admin action
      *
+     * webhookFlow variable is true if this function is getting called from handlePayoutProcessed else false
+     * we are using this variable to check if there exists corresponding debit bas and if not exists
+     * we push for async retry of source linking
+     *
      * @throws Exception\LogicException
      */
-    public function handlePayoutTransactionForDirectBanking(Entity $payout, $debit_bas = null)
+    public function handlePayoutTransactionForDirectBanking(Entity $payout, $debit_bas = null, $webhookFlow = false)
     {
         if ($payout->hasTransaction() === true)
         {
@@ -3928,6 +3937,11 @@ class Core extends Base\Core
                         'payout_id' => $payout->getId(),
                     ]);
 
+                if ($webhookFlow === true)
+                {
+                    $this->pushForAsyncSourceLinkingRetry($payout->getId());
+                }
+
                 return null;
             }
         }
@@ -3962,6 +3976,30 @@ class Core extends Base\Core
         $this->updateTransactionAndSourceToPayout($payout, $transaction);
 
         return $transaction->bankingAccountStatement;
+    }
+
+    public function pushForAsyncSourceLinkingRetry($payoutId)
+    {
+        $params = [
+            PayoutConstants::PAYOUT_ID    => $payoutId,
+        ];
+
+        $this->trace->info(TraceCode::BAS_SOURCE_LINKING_ASYNC_RETRY_DISPATCH_INITIATE, $params);
+
+        try
+        {
+            BankingAccountStatementSourceLinking::dispatch($this->mode, $params)->delay(self::BAS_LINKING_ASYNC_RETRY_DEFAULT_DELAY);
+
+            $this->trace->info(TraceCode::BAS_SOURCE_LINKING_ASYNC_RETRY_DISPATCH_SUCCESS, $params);
+        }
+        catch(\Throwable $throwable)
+        {
+            $this->trace->traceException(
+                $throwable,
+                Trace::ERROR,
+                TraceCode::BAS_SOURCE_LINKING_ASYNC_RETRY_DISPATCH_FAILURE,
+                $params);
+        }
     }
 
     /**

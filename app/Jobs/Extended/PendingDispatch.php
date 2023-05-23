@@ -45,7 +45,7 @@ class PendingDispatch extends \Illuminate\Foundation\Bus\PendingDispatch
     const BANKING_ACCOUNT_STATEMENT_RECON             = 'banking_account_statement_recon';
     const MISSING_ACCOUNT_STATEMENT_DETECT            = 'missing_account_statement_detect';
     const MISSING_ACCOUNT_STATEMENT_RECON             = 'banking_account_statement_recon';
-
+    const BANKING_ACCOUNT_STATEMENT_SOURCE_LINKING    = 'banking_account_statement_source_linking';
 
     protected $shouldThrowErrorOnFailure = [
         self::PAYOUT_POST_CREATE_PROCESS,
@@ -57,7 +57,8 @@ class PendingDispatch extends \Illuminate\Foundation\Bus\PendingDispatch
         self::BANKING_ACCOUNT_STATEMENT_RECON_NEO,
         self::BANKING_ACCOUNT_STATEMENT_RECON_PROCESS_NEO,
         self::MISSING_ACCOUNT_STATEMENT_DETECT,
-        self::MISSING_ACCOUNT_STATEMENT_RECON
+        self::MISSING_ACCOUNT_STATEMENT_RECON,
+        self::BANKING_ACCOUNT_STATEMENT_SOURCE_LINKING,
     ];
 
     /**

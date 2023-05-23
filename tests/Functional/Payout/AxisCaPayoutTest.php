@@ -32,8 +32,10 @@ use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\BankingAccount\Gateway\Fields;
 use RZP\Models\BankingAccount\Core as BACore;
+use RZP\Models\BankingAccountStatement as BAS;
 use RZP\Models\BankingAccountStatement\Details;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
+use RZP\Jobs\BankingAccountStatementSourceLinking;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -1736,5 +1738,127 @@ class AxisCaPayoutTest extends TestCase
         $this->assertEquals($expectedStatus, $payout->getStatus());
 
         $this->assertEquals('UPI', $payout->getMode());
+    }
+
+    public function testAsyncRetryBasSourceLinkingQueuePush()
+    {
+        $this->testCreatePayout();
+
+        Queue::fake();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->create('banking_account_statement',
+            [
+                'type'                      => 'debit',
+                'amount'                    => '104',
+                'channel'                   => 'axis',
+                'account_number'            => '2224440041626905',
+                'utr'                       => 'asdfghjkl',
+                'transaction_id'            => null,
+                'bank_transaction_id'       => 'SDHDH',
+                'balance'                   => 30019891,
+                'transaction_date'          => 1584987183,
+                'merchant_id'               => '10000000000000',
+            ]);
+
+        $payoutId = $payout->getId();
+
+        $this->ba->ftsAuth();
+
+        // Processed Webhook sent from FTS
+        $ftsWebhook = [
+            'bank_processed_time' => '',
+            'bank_account_type'   => null,
+            'bank_status_code'    => 'SUCCESS',
+            'channel'             => 'axis',
+            'extra_info'          => [
+                'beneficiary_name' => 'Chirag',
+                'cms_ref_no'       => '7a452792bee81',
+                'internal_error'   => false,
+                'ponum'            => '',
+            ],
+            'failure_reason'      => '',
+            'fund_transfer_id'    => $attempt['fts_transfer_id'],
+            'gateway_error_code'  => '',
+            'gateway_ref_no'      => 'JKjdVokXZ2KMcP',
+            'mode'                => 'NEFT',
+            'narration'           => '256557209A0A',
+            'remarks'             => '',
+            'return_utr'          => '',
+            'source_account_id'   => 1,
+            'source_id'           => $payoutId,
+            'source_type'         => 'payout',
+            'status'              => 'PROCESSED',
+            'utr'                 => 'asdfghjkl',
+            'status_details'      => null,
+        ];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/update_fts_fund_transfer',
+            'content' => $ftsWebhook,
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        Queue::assertPushed(BankingAccountStatementSourceLinking::class, function($job) use ($payoutId)
+        {
+            $this->assertEquals($payoutId, $job->params['payout_id']);
+
+            return true;
+        });
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->assertEquals(Payout\Status::PROCESSED, $payout['status']);
+        $this->assertEquals(FundTransfer\Mode::NEFT, $payout['mode']);
+        $this->assertEquals(Attempt\Status::PROCESSED, $attempt['status']);
+        $this->assertEquals(FundTransfer\Mode::NEFT, $attempt['mode']);
+        $this->assertEquals(1062, $payout['fees']);
+        $this->assertEquals(162, $payout['tax']);
+    }
+
+    public function testAsyncRetryBasSourceLinkingAttemptForNoQueuePush()
+    {
+        $this->testCreatePayout();
+
+        Queue::fake();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $attempt = $this->getDbLastEntity('fund_transfer_attempt');
+
+        $this->fixtures->edit('payout', $payout->getId(), ['status' => "processed"]);
+
+        $this->fixtures->edit('fund_transfer_attempt', $attempt->getId(), ['status' => "processed"]);
+
+        $this->fixtures->create('banking_account_statement',
+            [
+                'type'                      => 'debit',
+                'amount'                    => '104',
+                'channel'                   => 'axis',
+                'account_number'            => '2224440041626905',
+                'utr'                       => 'asdfghjkl',
+                'transaction_id'            => null,
+                'bank_transaction_id'       => 'SDHDH',
+                'balance'                   => 30019891,
+                'transaction_date'          => 1584987183,
+                'merchant_id'               => '10000000000000',
+            ]);
+
+        $payoutId = $payout->getId();
+
+        $params = [
+            "payout_id" => $payoutId
+        ];
+
+        (new BAS\Core)->retryBasSourceLinkingForProcessedPayout($params);
+
+        Queue::assertNotPushed(BankingAccountStatementSourceLinking::class);
     }
 }

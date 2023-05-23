@@ -4434,6 +4434,16 @@ class Core extends Base\Core
         return $response;
     }
 
+    public function retryBasSourceLinkingForProcessedPayout(array $params)
+    {
+        $payoutId = $params[Payout\Constants::PAYOUT_ID];
+
+        /* @var \RZP\Models\Payout\Entity $payout */
+        $payout = $this->repo->payout->findOrFail($payoutId);
+
+        (new Payout\Core)->handlePayoutTransactionForDirectBanking($payout);
+    }
+
     public function checkReArchFlow(string $accountNumber, string $channel)
     {
         if ($channel === Channel::ICICI)
