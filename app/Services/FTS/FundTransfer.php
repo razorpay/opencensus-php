@@ -268,18 +268,6 @@ class FundTransfer extends Base
 
         if ($sourceType === Constants::PAYOUT)
         {
-            // Note: Yesbank NEFT/RTGS and UPI integration both uses same source account in FTS.
-            // Now, if Mode is UPI then beneficiary registration is not required.
-            // As a result, transfers via mode UPI will not have a entry in beneficiary status entity.
-            // So, adding a temporary fix for this now to enable yesbank UPI.
-            // TODO: Need to have a better way of handling such situations.
-            // Thread: https://razorpay.slack.com/archives/CNXASR0H3/p1576752834010000
-            // JIRA: https://razorpay.atlassian.net/browse/RX-1112
-            if (($this->fta->getChannel() === Channel::YESBANK) and ($this->fta->getMode() === Mode::UPI))
-            {
-                $product = Constants::PAYOUT_REFUND;
-            }
-
             if (($this->fta->isRefund() === true) and
                 ($source->isBalanceAccountTypeDirect() === false) and
                 ($source->isSubAccountPayout() === false))
