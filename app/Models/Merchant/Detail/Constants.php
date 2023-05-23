@@ -166,8 +166,16 @@ class Constants
     const EVENT_TYPE                                    = 'event_type';
     const CMMA_EVENT_NEEDS_CLARIFICATION                = 'case_needs_clarification';
     const CMMA_CASE_EVENTS_KAFKA_TOPIC_ENV_VARIABLE_KEY = 'CMMA_CASE_EVENTS_TOPIC_NAME';
+
+    const ACTIVATION_FORM_SUBMISSION_EVENTS_KAFKA_TOPIC_ENV_VARIABLE_KEY = 'ACTIVATION_FORM_SUBMISSION_EVENTS_TOPIC_NAME';
+
     const CMMA_METRO_MIGRATE_OUT_EXPERIMENT_ID_KEY      = 'app.cmma_metro_migrate_out_experiment_id';
     const ENABLE                                        = 'enable';
+
+    const OLD_ACTIVATION_DATA                           = 'old_activation_data';
+    const UPDATED_ACTIVATION_DATA                       = 'updated_activation_data';
+
+    const ACTIVATION_FORM_SUBMISSION_KAFKA               = 'activation_form_submission_kafka_event';
 
 
     //gstin integration constants

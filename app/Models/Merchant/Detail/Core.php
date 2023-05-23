@@ -156,6 +156,8 @@ use RZP\Models\ClarificationDetail\Service as ClarificationDetailService;
 use RZP\Models\ClarificationDetail\Core as ClarificationDetailCore;
 use RZP\Models\Merchant\Website;
 use RZP\Models\Merchant\Detail\Factory as DetailFactory;
+use RZP\Models\Merchant\Detail\Constants as DEConstants;
+use RZP\Models\Workflow\Action\Differ\Entity as DifferEntity;
 
 class Core extends Base\Core
 {
@@ -361,7 +363,7 @@ class Core extends Base\Core
             unset ($input[Entity::BUSINESS_WEBSITE]);
         }
 
-        return $this->mutex->acquireAndRelease(
+        $mutexTransactionData =  $this->mutex->acquireAndRelease(
             $merchant->getId(),
             function() use ($input, $merchantDetails, $merchant, $originProduct, $oldMerchantDetails, $activationFormMilestone, $startTime,$oldBusinessDetail) {
 
@@ -454,11 +456,65 @@ class Core extends Base\Core
                     }
                 });
 
+
                 return $result;
             },
             Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
             Constants::MERCHANT_MUTEX_RETRY_COUNT);
+
+
+        $this->pushKafkaEventOnActivationFormSubmit($oldMerchantDetails, $merchant);
+
+        return $mutexTransactionData;
+    }
+
+
+    private function pushKafkaEventOnActivationFormSubmit($oldMerchantDetail, $merchant)
+    {
+
+        $merchantId = $merchant->getId();
+
+        $newMerchantDetail = $this->repo->merchant_detail->findOrFailPublic($merchantId);
+
+        $kafkaActivationFormSubmissionEventData = [
+            DifferEntity::ENTITY_ID                => $merchantId,
+            DEConstants::OLD_ACTIVATION_DATA       => $oldMerchantDetail,
+            DEConstants::UPDATED_ACTIVATION_DATA   => $newMerchantDetail,
+            DifferEntity::ENTITY_NAME              => Constants::MERCHANT,
+            DEConstants::EVENT_TYPE                => DEConstants::ACTIVATION_FORM_SUBMISSION_KAFKA,
+        ];
+
+        $activationFormSubmissionEventTopic = env(DEConstants::ACTIVATION_FORM_SUBMISSION_EVENTS_KAFKA_TOPIC_ENV_VARIABLE_KEY);
+
+        $this->app['trace']->info(TraceCode::ACTIVATION_FORM_SUBMISSION_EVENT_KAFKA_PUBLISH, [
+                'data'        => $kafkaActivationFormSubmissionEventData,
+                'topic'       => $activationFormSubmissionEventTopic,
+                'merchant_id' => $merchantId,
+            ]
+        );
+
+        try
+        {
+            (new KafkaProducer($activationFormSubmissionEventTopic, stringify($kafkaActivationFormSubmissionEventData)))->Produce();
+
+            $this->app['trace']->info(TraceCode::ACTIVATION_FORM_SUBMISSION_EVENT_KAFKA_PUBLISH, [
+                    'data'        => "event got published",
+                    'merchant_id' => $merchantId,
+                ]
+            );
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                500,
+                TraceCode::ACTIVATION_FORM_SUBMISSION_EVENT_ENTRY_FAILED,
+                [
+                    "topic" => $activationFormSubmissionEventTopic,
+                ]);
+        }
+
     }
 
     public function storeOnboardingSourceForNoDocMerchants(Merchant\Entity $merchant)
