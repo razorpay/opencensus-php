@@ -43,6 +43,49 @@ enum DownloadModalActionType {
   'Report Download Validation Error' = 'Report Download Validation Error',
 }
 
+enum SchedulesActionType {
+  'Loaded' = 'Loaded',
+  'Schedules Filter Interaction' = 'Schedules Filter Interaction',
+  'Pagination Click' = 'Pagination Click',
+  'Expand Email' = 'Expand Email',
+  'Pause Triggered' = 'Pause Triggered',
+  'Pause Failed' = 'Pause Failed',
+  'Pause Successful' = 'Pause Successful',
+  'Resume Triggered' = 'Resume Triggered',
+  'Resume Failed' = 'Resume Failed',
+  'Resume Successful' = 'Resume Successful',
+  'Delete Triggered' = 'Delete Triggered',
+  'Delete Failed' = 'Delete Failed',
+  'Delete Successful' = 'Delete Successful',
+  'Edit Button Clicked' = 'Edit Button Clicked',
+  'Open Run History Btn Clicked' = 'Open Run History Btn Clicked',
+  'Create Schedule Btn Click' = 'Create Schedule Btn Click',
+  'Schedules Poll Failed' = 'Schedules Poll Failed',
+}
+
+enum ScheduleCreateEditModalActionType {
+  'Opened' = 'Opened',
+  'Modal Section Clicked' = 'Modal Section Clicked',
+  'Enable Emails Switch Toggled' = 'Enable Emails Switch Toggled',
+  'Custom Repetition Toggled' = 'Custom Repetition Toggled',
+  'Close Modal Clicked' = 'Close Modal Clicked',
+  'Save And Close Button Clicked' = 'Save And Close Button Clicked',
+  'Schedule Create Validation Error' = 'Schedule Create Validation Error',
+  'Schedule Edit Validation Error' = 'Schedule Edit Validation Error',
+  'Successful Schedule Creation' = 'Successful Schedule Creation',
+  'Schedule Creation Failed' = 'Schedule Creation Failed',
+}
+
+enum ScheduleRunHistoryActionType {
+  'Loaded' = 'Loaded',
+  'Pagination Click' = 'Pagination Click',
+  'Download Report File Click' = 'Download Report File Click',
+  'Filter Interaction' = 'Filter Interaction',
+  'Modal Closed' = 'Modal Closed',
+  'Logs Poll Failed' = 'Logs Poll Failed',
+  'Report File Download Failed' = 'Report File Download Failed',
+}
+
 const track = ({ properties, dashboardType, ...args }) => {
   analyticsTrack({
     ...args,
@@ -132,6 +175,69 @@ export const trackReportsSection = ({
     screen: 'reports',
     properties: {
       location: 'Reports',
+      ...properties,
+    },
+    dashboardType,
+  });
+};
+
+export const trackScheduleSection = ({
+  actionName,
+  properties,
+  dashboardType,
+}: {
+  actionName: keyof typeof SchedulesActionType;
+  properties?: Record<string, unknown>;
+  dashboardType: DashboardType;
+}) => {
+  track({
+    objectName: 'Schedule Section',
+    actionName,
+    screen: 'reports/schedules',
+    properties: {
+      location: 'Schedules',
+      ...properties,
+    },
+    dashboardType,
+  });
+};
+
+export const trackSchedulesRunHistoryModal = ({
+  actionName,
+  properties,
+  dashboardType,
+}: {
+  actionName: keyof typeof ScheduleRunHistoryActionType;
+  properties?: Record<string, unknown>;
+  dashboardType: DashboardType;
+}) => {
+  track({
+    objectName: 'Schedule Run History Modal',
+    actionName,
+    screen: 'reports/schedules/schedule run history modal',
+    properties: {
+      location: 'Schedules',
+      ...properties,
+    },
+    dashboardType,
+  });
+};
+
+export const trackCreateEditScheduleModal = ({
+  actionName,
+  properties,
+  dashboardType,
+}: {
+  actionName: keyof typeof ScheduleCreateEditModalActionType;
+  properties?: Record<string, unknown>;
+  dashboardType: DashboardType;
+}) => {
+  track({
+    objectName: 'Create Edit Schedule Modal',
+    actionName,
+    screen: 'reports/schedules/create edit schedule modal',
+    properties: {
+      location: 'Schedules',
       ...properties,
     },
     dashboardType,

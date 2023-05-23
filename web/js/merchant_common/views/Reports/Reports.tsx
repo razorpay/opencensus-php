@@ -21,6 +21,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { fetchAccounts } from 'merchant/reducers/marketplace/accounts';
 import { trackReportsSection } from './configs/analytics.config';
 
+// Features Of Reports
 const NAV_LINKS = [
   {
     to: `/reports`,
