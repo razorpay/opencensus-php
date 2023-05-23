@@ -118,6 +118,11 @@ devspace.yaml                                          @razorpay/devstack-devs
 /app/Services/Dcs                                      @razorpay/techcommonplatforms
 
 #
+# Order is owned by core team.
+# It's moved to PG Router.
+#
+/app/Models/Order                                       @razorpay/techpaymentscore
+
 # Merchant Entities
 #
 # Blocking PR merge on certain entities as they are being moved to account service.
