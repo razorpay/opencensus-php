@@ -1,8 +1,8 @@
 export const overviewConfigFilterOptions = (showRecentsOption = false) => {
   const options = [
     {
-      label: 'All Reports',
-      value: 'all',
+      label: 'Report Type',
+      value: 'report_type',
     },
   ];
 
@@ -14,8 +14,8 @@ export const overviewConfigFilterOptions = (showRecentsOption = false) => {
   }
 
   options.push({
-    label: 'Report Type',
-    value: 'report_type',
+    label: 'All Reports',
+    value: 'all',
   });
 
   return options;

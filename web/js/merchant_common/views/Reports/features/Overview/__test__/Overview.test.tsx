@@ -72,7 +72,7 @@ describe('Overview Section', () => {
     await waitFor(() => expect(getRecentConfigsSpy).toHaveBeenCalledTimes(2));
   });
 
-  test('should render all the configs if allConfigs data is loaded in redux state', () => {
+  test('should render all the configs if allConfigs data is loaded in redux state', async () => {
     const reportsCoreState = getOverViewStateWith({
       allConfigs: {
         loading: false,
@@ -86,6 +86,7 @@ describe('Overview Section', () => {
         ...reportsCoreState,
       },
     });
+    await handleFilterDropdownSelectionMock('All Reports');
     const refConfigsContainer = screen.getByLabelText('All Configs Container');
     expect(refConfigsContainer).toBeInTheDocument();
     expect(refConfigsContainer.childNodes.length).toEqual(mockConfigs.length);
