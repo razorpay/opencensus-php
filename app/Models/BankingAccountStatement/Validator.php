@@ -60,15 +60,14 @@ class Validator extends Base\Validator
     ];
 
     protected static $automateAccountStatementReconRules = [
-        Entity::CHANNEL                  => 'required|string|custom',
-        Constants::ACCOUNT_NUMBERS       => 'required|array',
-        Constants::ACCOUNT_NUMBERS . '*' => 'required|string|between:5,40',
-        Constants::ACTION                => 'required|in:insert,fetch,dry_run',
-        Entity::SAVE_IN_REDIS            => 'required|boolean',
-        'new_cron_setup'                 => 'sometimes|boolean',
-        'monitoring_cron'                => 'sometimes|boolean',
-        Entity::FROM_DATE                => 'sometimes|epoch',
-        Entity::TO_DATE                  => 'sometimes|epoch',
+        Entity::CHANNEL            => 'required|string|custom',
+        Constants::ACCOUNT_NUMBERS => 'sometimes|array',
+        Entity::SAVE_IN_REDIS      => 'required|boolean',
+        'new_cron_setup'           => 'sometimes|boolean',
+        'monitoring_cron'          => 'sometimes|boolean',
+        Entity::FROM_DATE          => 'sometimes|epoch',
+        Entity::TO_DATE            => 'sometimes|epoch',
+        Constants::RECON_LIMIT     => 'sometimes|int',
     ];
 
     protected static $accountStatementGenerateValidators = [

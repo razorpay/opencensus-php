@@ -26,7 +26,9 @@ return [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/banking_account_statement/process/icici',
-            'content' => [],
+            'content' => [
+                'blacklist_fetch' => true,
+            ],
         ],
         'response' => [
             'content' => [],
@@ -163,8 +165,8 @@ return [
             'url'     => '/banking_account_statement/insert_missing',
             'content' => [
                 'account_number' => '2224440041626905',
-                'channel' => 'icici',
-                'action'  => 'insert',
+                'channel'        => 'icici',
+                'action'         => 'insert',
             ],
         ],
         'response' => [
@@ -178,8 +180,8 @@ return [
             'url'     => '/banking_account_statement/insert_missing',
             'content' => [
                 'account_number' => '2224440041626905',
-                'channel' => 'icici',
-                'action'  => 'fetch',
+                'channel'        => 'icici',
+                'action'         => 'fetch',
             ],
         ],
         'response' => [
@@ -193,8 +195,8 @@ return [
             'url'     => '/banking_account_statement/insert_missing',
             'content' => [
                 'account_number' => '2224440041626905',
-                'channel' => 'icici',
-                'action'  => 'dry_run',
+                'channel'        => 'icici',
+                'action'         => 'dry_run',
             ],
         ],
         'response' => [

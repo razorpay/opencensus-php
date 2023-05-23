@@ -2,6 +2,7 @@
 
 namespace RZP\Models\BankingAccountStatement;
 
+use DB;
 use Carbon\Carbon;
 
 use RZP\Constants;
@@ -620,5 +621,13 @@ class Repository extends Base\Repository
         }
 
         return $query->first();
+    }
+
+    public function updateBasWithContextAsComment(string $id, int $balance, string $context, string $mode)
+    {
+        $query = "UPDATE /*".$context."*/ banking_account_statement SET balance = ".$balance." ,updated_at = ". now()->getTimestamp() .
+                 " where id = '".$id."';";
+
+        DB::connection($mode)->statement($query);
     }
 }

@@ -7,13 +7,10 @@ use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
-use RZP\Models\Admin;
 use RZP\Trace\TraceCode;
-use RZP\Models\Admin\ConfigKey;
+use RZP\Constants\Timezone;
 use RZP\Models\Settlement\SlackNotification;
-use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\BankingAccountStatement as BAS;
-use RZP\Models\BankingAccountStatement\Details as BASD;
 
 class BankingAccountStatementReconNeo extends Job
 {
@@ -114,15 +111,38 @@ class BankingAccountStatementReconNeo extends Job
                 }
                 else
                 {
-                    $this->trace->info(
-                        TraceCode::MISSING_BANKING_ACCOUNT_STATEMENT_INSERT_REQUEST_DISPATCHED,
+                    $this->trace->info(TraceCode::MISSING_BANKING_ACCOUNT_STATEMENT_INSERT_REQUEST_DISPATCHED,
                         $this->params);
 
-                    BankingAccountStatementReconProcessNeo::dispatch($this->mode,
-                    [
-                        BAS\Entity::CHANNEL        => $this->params['channel'],
-                        BAS\Entity::ACCOUNT_NUMBER => $this->params['account_number']
-                    ])->delay(120);
+                    $missingStatements = $BASCore->getMissingRecordsFromRedisForAccount(
+                        $this->params['account_number'],
+                        $this->params['channel'],
+                        $BASCore->getBasDetails()->getMerchantId()
+                    );
+
+                    if (empty($missingStatements) === false)
+                    {
+                        BankingAccountStatementReconProcessNeo::dispatch($this->mode, [
+                            BAS\Entity::CHANNEL        => $this->params['channel'],
+                            BAS\Entity::ACCOUNT_NUMBER => $this->params['account_number']
+                        ])->delay(120);
+                    }
+                    else
+                    {
+                        $basDetails->reload();
+
+                        $lastReconciledAt = Carbon::createFromTimestamp($this->params[BAS\Entity::TO_DATE], Timezone::IST)->startOfDay()->getTimestamp();
+
+                        $presentLastReconciledAt = $basDetails->getLastReconciledAt();
+
+                        if ((isset($presentLastReconciledAt) === false) or
+                            ($presentLastReconciledAt < $lastReconciledAt))
+                        {
+                            $basDetails->setLastReconciledAt($lastReconciledAt);
+
+                            $basDetails->saveOrFail();
+                        }
+                    }
                 }
 
                 $this->delete();

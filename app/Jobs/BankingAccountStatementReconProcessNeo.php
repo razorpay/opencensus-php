@@ -48,7 +48,7 @@ class BankingAccountStatementReconProcessNeo extends Job
 
         $BasService =  new BankingAccountStatement\Service;
 
-        $this->trace->info(TraceCode::BAS_ENTITIES_BALANCE_UPDATE_REQUEST,
+        $this->trace->info(TraceCode::BAS_ENTITIES_BALANCE_UPDATE_AND_INSERT_REQUEST,
             [
                 'params' => $this->params,
             ]);
@@ -64,7 +64,7 @@ class BankingAccountStatementReconProcessNeo extends Job
             $this->trace->traceException(
                 $exception,
                 null,
-                TraceCode::BAS_ENTITIES_BALANCE_UPDATE_FAILED,
+                TraceCode::BAS_ENTITIES_BALANCE_UPDATE_AND_INSERT_FAILED,
                 [
                     'params' => $this->params,
                 ]);

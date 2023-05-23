@@ -11,14 +11,19 @@ class Constants
     const FAILURE                       = 'failure';
     const DRY_RUN                       = 'dry_run';
     const SUCCESS                       = 'success';
+    const DEFAULT                       = 'default';
+    const RECON_LIMIT                   = 'recon_limit';
+    const NEW_CRON_SETUP                = 'new_cron_setup';
     const PAGINATION_KEY                = 'pagination_key';
     const ACCOUNT_NUMBERS               = 'account_numbers';
+    const MONITORING_CRON               = 'monitoring_cron';
     const EXPECTED_ATTEMPTS             = 'expected_attempts';
+    const IS_AUTOMATED_CLEANUP          = 'is_automated_cleanup';
+    const LAST_RECONCILED_AT_LIMIT      = 'last_reconciled_at_limit';
     const ACCOUNT_NUMBERS_PRESENT       = 'account_numbers_present';
     const FETCH_MISSING_STATEMENT       = 'fetch_missing_statement';
     const UPDATE_MISSING_STATEMENT      = 'update_missing_statement';
     const INSERT_MISSING_STATEMENT      = 'insert_missing_statement';
-    const DEFAULT                       = 'default';
     const SUSPECTED_MISMATCH_TIMESTAMP  = 'suspected_mismatch_timestamp';
 
     // Clean Up tooling Constants
@@ -32,6 +37,6 @@ class Constants
 
     // Recon Job Constants
     const BANKING_ACCOUNT_STATEMENT_CLEAN_UP          = 'BankingAccountStatementCleanUp';
-    const BANKING_ACCOUNT_STATEMENT_RECON_PROCESS_NEO = 'BankingAccountStatementReconProcessNeo';
     const BANKING_ACCOUNT_MISSING_STATEMENT_INSERT    = 'BankingAccountMissingStatementInsert';
+    const BANKING_ACCOUNT_STATEMENT_RECON_PROCESS_NEO = 'worker:banking_account_statement_recon_process_neo';
 }

@@ -211,15 +211,48 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
-    public function getByAccountNumbersAndPaginationKeyNull(string $channel, array $input)
+    public function getByAccountNumbersAndPaginationKeyNull(string $channel, array $accountNumbers)
     {
         return $this->newQuery()
                     ->useWritePdo()
-                    ->whereIn(Entity::ACCOUNT_NUMBER, $input[BASConstant::ACCOUNT_NUMBERS])
-                    ->where(Entity::CHANNEL, $channel)
+                    ->whereIn(Entity::ACCOUNT_NUMBER, $accountNumbers)
+                    ->where(Entity::CHANNEL, '=', $channel)
                     ->whereNull(Entity::PAGINATION_KEY)
                     ->get()
                     ->pluck(Entity::ACCOUNT_NUMBER)
                     ->toArray();
+    }
+
+    public function getByAccountNumbersAndLastReconciledAt(string $channel, array $accountNumbers)
+    {
+        $accountNumberColumn = $this->dbColumn(Entity::ACCOUNT_NUMBER);
+
+        return $this->newQuery()
+                    ->select(Entity::MERCHANT_ID, Entity::ACCOUNT_NUMBER, Entity::LAST_RECONCILED_AT)
+                    ->where(Entity::CHANNEL, '=', $channel)
+                    ->whereIn($accountNumberColumn, $accountNumbers)
+                    ->get()
+                    ->toArray();
+    }
+
+    public function getAccountNumbersWhereGatewayBalanceIsUpdatedRecently(string $channel, $reconLimit)
+    {
+        $fromTimeStamp = Carbon::now(Constants\Timezone::IST)->subDay()->startOfDay()->getTimestamp();
+        $toTimeStamp = Carbon::now(Constants\Timezone::IST)->getTimestamp();
+
+        $query = $this->newQuery()
+                      ->select(Entity::ACCOUNT_NUMBER)
+                      ->where(Entity::CHANNEL, '=', $channel)
+                      ->whereBetween(Entity::GATEWAY_BALANCE_CHANGE_AT, [$fromTimeStamp, $toTimeStamp])
+                      ->useWritePdo();
+
+        if (isset($reconLimit) === true)
+        {
+            $query->limit($reconLimit);
+        }
+
+        return $query->get()
+                     ->pluck(Entity::ACCOUNT_NUMBER)
+                     ->toArray();
     }
 }

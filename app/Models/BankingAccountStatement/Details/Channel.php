@@ -21,6 +21,15 @@ class Channel
         ];
     }
 
+    public static function getChannelsWithNullPaginationKey()
+    {
+        return [
+            self::ICICI,
+            self::AXIS,
+            self::YESBANK,
+        ];
+    }
+
     public static function validate(string $channel = null)
     {
         if (in_array($channel, self::getChannels(), true) === false)

@@ -7165,5 +7165,11 @@ ALTER TABLE admins
 ALTER TABLE upi
     ADD COLUMN gateway_error TEXT DEFAULT NULL;
 
+ALTER TABLE banking_account_statement_details
+    ADD COLUMN last_reconciled_at INTEGER DEFAULT NULL;
+
+ALTER TABLE banking_account_statement_details
+    ADD INDEX banking_account_statement_details_last_reconciled_at_index (last_reconciled_at);
+
 ALTER TABLE payment_page_records
     ADD COLUMN merchant_id CHAR(14) COLLATE utf8mb4_bin;

@@ -94,6 +94,8 @@ class Core extends Base\Core
 
     const DEFAULT_RX_MISSING_STATEMENTS_INSERTION_LIMIT = 100;
 
+    const MISSING_STATEMENTS_REDIS_KEY = "missing_statements_%s_%s";
+
     /**
      * Constant containing regex for identifying gateway ref number pattern in a statement's description for every bank.
      * Here, we maintain an array for every bank because regex can be different for different modes. In case of RBL and ICICI,
@@ -507,6 +509,12 @@ class Core extends Base\Core
                             'is_monitoring'       => $isMonitoring,
                         ]);
 
+                        $this->trace->histogram(Metric::MISSING_STATEMENTS_COUNT, count($missingTransactions), [
+                            Metric::LABEL_CHANNEL => $channel,
+                            'is_monitoring'       => $isMonitoring,
+                            'merchant_id'         => $merchant->getId(),
+                        ]);
+
                         Tracer::startSpanWithAttributes(HyperTrace::MISSING_STATEMENTS_FOUND,
                             [
                                 Metric::LABEL_CHANNEL => $channel
@@ -515,7 +523,7 @@ class Core extends Base\Core
                         if (boolval($input[Entity::SAVE_IN_REDIS]) === true)
                         {
                             // Persisting in redis
-                            $processor->storeMissingStatementsInRedis($missingTransactions, $accountNumber);
+                            $processor->storeMissingStatementsInRedis($missingTransactions, $accountNumber, $merchant->getId());
 
                             $operation = 'Missing records found while fetching the statement for ' . $channel;
 
@@ -559,6 +567,8 @@ class Core extends Base\Core
     {
         $insertStartTime = microtime(true);
 
+        $noOfStatementsInserted = 0;
+
         $accountNumber = $input[Entity::ACCOUNT_NUMBER];
 
         $response = [];
@@ -574,8 +584,10 @@ class Core extends Base\Core
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR);
         }
 
+        $merchantId = $basDetails->getMerchantId();
+
         $variant = $this->app->razorx->getTreatment(
-            $basDetails->getMerchantId(),
+            $merchantId,
             Merchant\RazorxTreatment::OPTIMISE_INSERTION_LOGIC,
             $this->mode ?? Constants\Mode::LIVE,
             2
@@ -583,7 +595,7 @@ class Core extends Base\Core
 
         [$hasMore, $updateParams] = $this->mutex->acquireAndRelease(
             'banking_account_statement_fetch_' . $accountNumber . '_' . $channel,
-            function () use ($channel, $accountNumber, $missingStatements, $updateParams, $variant)
+            function () use ($channel, $accountNumber, $missingStatements, $updateParams, &$noOfStatementsInserted, $variant)
             {
                 $countOfMissingRecords = count($missingStatements);
 
@@ -601,6 +613,7 @@ class Core extends Base\Core
                     {
                         try
                         {
+                            // Todo:: Same check as insertMissingStatements need to be added to check if it is automated_recon
                             BankingAccountStatementUpdate::dispatch($this->mode, $updateParams)->delay(15);
 
                             $this->trace->info(TraceCode::BAS_UPDATE_QUEUE_DISPATCH_SUCCESS,
@@ -655,60 +668,71 @@ class Core extends Base\Core
 
                     $this->pushMissingStatementsLinkingEventsToLedger($accountNumber, $channel, $insertedBasEntities);
 
-                    if (empty($insertedBasEntities) === true)
+                    $noOfStatementsInserted = count($insertedBasEntities);
+
+                    if ((empty($insertedBasEntities) === true) and
+                        (empty($updateParams) === true))
                     {
                         //if no inserted entities then we need to remove under_maintenance mode for merchant.
                         $this->releaseBasDetailsFromStatementFix($accountNumber, $channel);
 
                         return [false, []];
                     }
-
-                    $basIdToAmountMap = [];
-
-                    $createdAt = $insertedBasEntities[0]->getCreatedAt();
-
-                    $latestCorrectedId = $insertedBasEntities[0]->getId();
-
-                    foreach ($insertedBasEntities as $basEntity)
-                    {
-                        $basIdToAmountMap[$basEntity->getId()] = $basEntity->getNetAmountBasedOnTransactionType();
-
-                        $createdAt = min($createdAt, $basEntity->getCreatedAt());
-
-                        $latestCorrectedId = min($latestCorrectedId, $basEntity->getId());
-                    }
-
-                    $delay = 5;
-
-                    if (empty($updateParams) === false)
-                    {
-                        $updateParams['update_before'] = Carbon::now()->getTimestamp() + $delay;
-
-                        $amountBasIdMap = $updateParams['bas_id_to_amount_map'];
-
-                        $updateParams['bas_id_to_amount_map'] = array_merge($amountBasIdMap, $basIdToAmountMap);
-
-                        $updateParams['created_at'] = min($updateParams['created_at'], $createdAt);
-
-                        $updateParams['last_corrected_id'] = min($updateParams['last_corrected_id'], $latestCorrectedId);
-
-                    }
                     else
                     {
-                        $updateParams = [
-                            'channel'              => $channel,
-                            'account_number'       => $accountNumber,
-                            'merchant_id'          => $this->basDetails->getMerchantId(),
-                            'balance_id'           => $this->basDetails->getBalanceId(),
-                            'bas_id_to_amount_map' => $basIdToAmountMap,
-                            'created_at'           => $createdAt,
-                            'update_before'        => Carbon::now()->getTimestamp() + $delay,
-                            'latest_corrected_id'  => $latestCorrectedId,
-                            'batch_number'         => 0
-                        ];
-                    }
+                        if (empty($insertedBasEntities) === true)
+                        {
+                            return [true, $updateParams];
+                        }
 
-                    return [true, $updateParams];
+                        $basIdToAmountMap = [];
+
+                        $createdAt = $insertedBasEntities[0]->getCreatedAt();
+
+                        $latestCorrectedId = $insertedBasEntities[0]->getId();
+
+                        foreach ($insertedBasEntities as $basEntity)
+                        {
+                            $basIdToAmountMap[$basEntity->getId()] = $basEntity->getNetAmountBasedOnTransactionType();
+
+                            $createdAt = min($createdAt, $basEntity->getCreatedAt());
+
+                            $latestCorrectedId = min($latestCorrectedId, $basEntity->getId());
+                        }
+
+                        $delay = 5;
+
+                        if (empty($updateParams) === false)
+                        {
+                            $updateParams['update_before'] = Carbon::now()->getTimestamp() + $delay;
+
+                            $amountBasIdMap = $updateParams['bas_id_to_amount_map'];
+
+                            $updateParams['bas_id_to_amount_map'] = array_merge($amountBasIdMap, $basIdToAmountMap);
+
+                            $updateParams['created_at'] = min($updateParams['created_at'], $createdAt);
+
+                            $updateParams['last_corrected_id'] = min($updateParams['last_corrected_id'], $latestCorrectedId);
+
+                        }
+                        else
+                        {
+                            $updateParams = [
+                                'channel'              => $channel,
+                                'account_number'       => $accountNumber,
+                                'merchant_id'          => $this->basDetails->getMerchantId(),
+                                'balance_id'           => $this->basDetails->getBalanceId(),
+                                'bas_id_to_amount_map' => $basIdToAmountMap,
+                                'created_at'           => $createdAt,
+                                'update_before'        => Carbon::now()->getTimestamp() + $delay,
+                                'latest_corrected_id'  => $latestCorrectedId,
+                                'batch_number'         => 0
+                            ];
+                        }
+
+                        return [true, $updateParams];
+
+                    }
                 }
             },
             1800,
@@ -718,15 +742,21 @@ class Core extends Base\Core
         $insertEndTime = microtime(true);
 
         $this->trace->info(TraceCode::BAS_MISSING_STATEMENT_INSERTED_SUCCESSFULLY, [
+            'merchant_id'         => $merchantId,
             'response_time'       => $insertEndTime - $insertStartTime,
-            'variant'             => $variant
+            'variant'             => $variant,
+            'statements_inserted' => $noOfStatementsInserted,
         ]);
 
         try
         {
-            if(empty($missingStatementsBeforeDedupe) === false)
+            if (empty($missingStatementsBeforeDedupe) === false)
             {
-                $this->removeInsertedMissingRecordsForAccountFromRedis($accountNumber, $channel, $missingStatementsBeforeDedupe);
+                $this->removeInsertedMissingRecordsForAccountFromRedis(
+                    $accountNumber,
+                    $channel,
+                    $merchantId,
+                    $missingStatementsBeforeDedupe);
             }
         }
         catch (\Throwable $exception)
@@ -745,27 +775,29 @@ class Core extends Base\Core
             $response['message'] = 'Missing statements got inserted and linked successfully.
                                     Dispatched for updating BAS entities.
                                     Removal of inserted missing statements from redis got failed.';
+
+            $this->trace->count(Metric::REMOVAL_OF_INSERTED_STATEMENTS_FROM_REDIS_FAILURE);
         }
 
         if ($hasMore === true)
         {
             $this->trace->info(TraceCode::BAS_INSERT_QUEUE_DISPATCH_INIT,
-                [
-                    'account_number' => $accountNumber,
-                    'params'         => $updateParams,
-                    'merchant_id'    => $this->basDetails->getMerchantId()
-                ]);
+                               [
+                                   'account_number' => $accountNumber,
+                                   'params'         => $updateParams,
+                                   'merchant_id'    => $this->basDetails->getMerchantId()
+                               ]);
 
             try
             {
                 BankingAccountMissingStatementInsert::dispatch($this->mode, $input, $updateParams)->delay(5);
 
                 $this->trace->info(TraceCode::BAS_INSERT_QUEUE_DISPATCH_SUCCESS,
-                    [
-                        'account_number' => $accountNumber,
-                        'params'         => $updateParams,
-                        'merchant_id'    => $this->basDetails->getMerchantId()
-                    ]);
+                                   [
+                                       'account_number' => $accountNumber,
+                                       'params'         => $updateParams,
+                                       'merchant_id'    => $this->basDetails->getMerchantId()
+                                   ]);
             }
             catch(\Throwable $exception)
             {
@@ -788,7 +820,12 @@ class Core extends Base\Core
         return $response;
     }
 
-    public function insertMissingStatements(string $accountNumber, string $channel, array $missingStatements, bool $dryRunMode = false)
+    public function insertMissingStatements(
+        string $accountNumber,
+        string $channel,
+        string $merchantId,
+        array $missingStatements,
+        bool $dryRunMode = false)
     {
         $insertStartTime = microtime(true);
 
@@ -921,10 +958,37 @@ class Core extends Base\Core
             return $response;
         }
 
+        $jobName = app('worker.ctx')->getJobName() ?? null;
+
+        // Set last_reconciled_at if the inserted statments have been found to be 0. This means, all the statements have been
+        // already inserted and the merchant is properly reconciled till T-1
+        if (($jobName === BASConstants::BANKING_ACCOUNT_STATEMENT_RECON_PROCESS_NEO) and
+            ($noOfStatementsInserted === 0))
+        {
+            $basDetails->reload();
+
+            $lastReconciledAt = Carbon::now(Timezone::IST)->subDay()->startOfDay()->getTimestamp();
+
+            $presentLastReconciledAt = $basDetails->getLastReconciledAt();
+
+            if ((isset($presentLastReconciledAt) === false) or
+                ($presentLastReconciledAt < $lastReconciledAt))
+            {
+                $basDetails->setLastReconciledAt($lastReconciledAt);
+
+                $this->repo->saveOrFail($basDetailEntity);
+            }
+        }
+
         try
         {
             if (empty($params) === false)
             {
+                if ($jobName === BASConstants::BANKING_ACCOUNT_STATEMENT_RECON_PROCESS_NEO)
+                {
+                    $params[BASConstants::IS_AUTOMATED_CLEANUP] = true;
+                }
+
                 BankingAccountStatementUpdate::dispatch($this->mode, $params)->delay(10);
 
                 $this->trace->info(TraceCode::BAS_UPDATE_QUEUE_DISPATCH_SUCCESS,
@@ -954,7 +1018,7 @@ class Core extends Base\Core
 
         try
         {
-            $this->removeInsertedMissingRecordsForAccountFromRedis($accountNumber, $channel, $missingStatementsBeforeDedupe);
+            $this->removeInsertedMissingRecordsForAccountFromRedis($accountNumber, $channel, $merchantId, $missingStatementsBeforeDedupe);
         }
         catch (\Exception $exception)
         {
@@ -1018,9 +1082,15 @@ class Core extends Base\Core
             $insertedBasIds         = [];
             $insertedTransactionIds = [];
 
+            $lastTransaction = $this->repo->banking_account_statement
+                                               ->findLatestByAccountNumberAndChannel($accountNumber, $channel);
+
+            $postedDateOfLastTransaction = isset($lastTransaction) === true ? $lastTransaction[Entity::POSTED_DATE] : null;
+
             foreach ($groupedMissingStatements as $postedDate => $groupOfStatements)
             {
-                $insertionDetails = $this->getInsertionDetailsForMissingStatement($merchantId, $accountNumber, $channel, $groupOfStatements[0]);
+                $insertionDetails = $this->getInsertionDetailsForMissingStatement(
+                    $merchantId, $accountNumber, $channel, $groupOfStatements[0], $postedDateOfLastTransaction);
 
                 $this->trace->info(TraceCode::BAS_MISSING_STATEMENTS_INSERTION_DETAILS, [
                     'account_number'    => $accountNumber,
@@ -1172,9 +1242,15 @@ class Core extends Base\Core
 
             $groupedStatementsBasedOnInsertion = [];
 
+            $lastTransaction = $this->repo->banking_account_statement
+                ->findLatestByAccountNumberAndChannel($accountNumber, $channel);
+
+            $postedDateOfLastTransaction = isset($lastTransaction) === true ? $lastTransaction[Entity::POSTED_DATE] : null;
+
             foreach ($groupedMissingStatements as $postedDate => $groupOfStatements)
             {
-                $insertionDetails = $this->getInsertionDetailsForMissingStatement($merchantId, $accountNumber, $channel, $groupOfStatements[0]);
+                $insertionDetails = $this->getInsertionDetailsForMissingStatement(
+                    $merchantId, $accountNumber, $channel, $groupOfStatements[0], $postedDateOfLastTransaction);
 
                 $this->trace->info(TraceCode::BAS_MISSING_STATEMENTS_INSERTION_DETAILS, [
                     'account_number'    => $accountNumber,
@@ -1320,25 +1396,38 @@ class Core extends Base\Core
         });
     }
 
-    public function getInsertionDetailsForMissingStatement(string $merchantId, string $accountNumber, string $channel, array $statement)
+    public function getInsertionDetailsForMissingStatement(
+        string $merchantId,
+        string $accountNumber,
+        string $channel,
+        array $statement,
+        $postedDateOfLastTransaction = null)
     {
         $postedDate = $statement[Entity::POSTED_DATE];
 
-        $postedDateWindow = (new Admin\Service)->getConfigKey(
-            [
-                'key' => Admin\ConfigKey::RX_POSTED_DATE_WINDOW_FOR_PREVIOUS_BAS_SEARCH
-            ]);
+        [$postedDateWindow, $findingPreviousBasIdCounter] = $this->findPostedDateWindowForFetchingPreviousBasId($postedDate, $postedDateOfLastTransaction);
 
-        if (empty($postedDateWindow) === true)
+        do
         {
-            $postedDateWindow = self::POSTED_DATE_WINDOW_FOR_PREVIOUS_BAS_SEARCH;
-        }
+            $previousPostedDate = $postedDate - $postedDateWindow;
 
-        $previousPostedDate = $postedDate - $postedDateWindow;
+            $previousBasId = $this->repo->banking_account_statement->fetchPreviousBasIdToInsertMissingRecord(
+                $merchantId,
+                $accountNumber,
+                $channel,
+                $postedDate,
+                $previousPostedDate);
 
-        $previousBasId = $this->repo
-                              ->banking_account_statement
-                              ->fetchPreviousBasIdToInsertMissingRecord($merchantId, $accountNumber, $channel, $postedDate, $previousPostedDate);
+            if (empty($previousBasId) === false)
+            {
+                break;
+            }
+
+            $postedDate = $previousPostedDate;
+
+            $findingPreviousBasIdCounter--;
+
+        } while ($findingPreviousBasIdCounter > 0);
 
         if (empty($previousBasId) === false)
         {
@@ -1355,8 +1444,6 @@ class Core extends Base\Core
         }
         else
         {
-            // Work In Progress
-
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ERROR,
                 null,
@@ -1365,20 +1452,34 @@ class Core extends Base\Core
                     'account_number' => $accountNumber,
                     'channel'        => $channel,
                 ],
-                'cannot generate previous bas entity for posted_date' . $postedDate);
-
-//            // If there is no previous entity, then we are inserting the statement at the start for the account number
-//            // so we decided to generate bas_id from posted date of the statement and
-//            // transaction_id from 1 second after posted date
-//            return [
-//                Entity::ID               => Entity::generateUniqueIdFromTimestamp($statement[Entity::POSTED_DATE]),
-//                Entity::CREATED_AT       => $statement[Entity::POSTED_DATE],
-//                Entity::UPDATED_AT       => $statement[Entity::POSTED_DATE],
-//                Entity::BALANCE          => 0,
-//                Entity::TRANSACTION_ID   => Entity::generateUniqueIdFromTimestamp($statement[Entity::POSTED_DATE] + 1),
-//                'transaction_created_at' => $statement[Entity::POSTED_DATE] + 1,
-//            ];
+                'Cannot generate previous bas entity for posted_date: ' . $postedDate);
         }
+    }
+
+    public function findPostedDateWindowForFetchingPreviousBasId($postedDate, $postedDateOfLastTransaction)
+    {
+        $findingPreviousBasIdCounter = 3;
+
+        $postedDateWindow = (new Admin\Service)->getConfigKey(
+            [
+                'key' => Admin\ConfigKey::RX_POSTED_DATE_WINDOW_FOR_PREVIOUS_BAS_SEARCH
+            ]);
+
+        if (empty($postedDateWindow) === true)
+        {
+            $postedDateWindow = self::POSTED_DATE_WINDOW_FOR_PREVIOUS_BAS_SEARCH;
+        }
+
+        $postedDateWindowStart = $postedDate - $postedDateWindow;
+
+        if ($postedDateOfLastTransaction < $postedDateWindowStart)
+        {
+            $postedDateWindow = ($postedDate - $postedDateOfLastTransaction) + $postedDateWindow;
+
+            $findingPreviousBasIdCounter = 1;
+        }
+
+        return [$postedDateWindow, $findingPreviousBasIdCounter];
     }
 
     protected function generateNextUnUsedIdForEntity(string $id, array $insertedIds, string $entityName, bool $optimised = false)
@@ -1439,6 +1540,7 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::BAS_INSERTION_MAX_ITERATION, [
             'max_attempts'              => $maxAttempts,
             'attempts_taken_to_find_id' => $maxAttempts - $attempts,
+            'generated_ids'             => $generatedIds,
             'entity'                    => $entityName,
             'id_generated'              => $id,
             'optimised'                 => $optimised,
@@ -1511,9 +1613,11 @@ class Core extends Base\Core
 
         $channel = $input[Entity::CHANNEL];
 
+        $isAutomatedCleanUp = $input[BASConstants::IS_AUTOMATED_CLEANUP] ?? false;
+
         [$hasMore, $params] = $this->mutex->acquireAndRelease(
             'banking_account_statement_fetch_' . $accountNumber . '_' . $channel,
-            function () use ($channel, $accountNumber, $input)
+            function () use ($channel, $accountNumber, $input, $isAutomatedCleanUp)
             {
                 $merchantId = $input[Entity::MERCHANT_ID];
 
@@ -1576,7 +1680,7 @@ class Core extends Base\Core
                             'balance_id'                 => $balanceId,
                         ]);
 
-                    $this->updateBasDetailsEntityConsideringMissingStatements($accountNumber, $channel, $basIdToAmountMap);
+                    $this->updateBasDetailsEntityConsideringMissingStatements($accountNumber, $channel, $basIdToAmountMap, $isAutomatedCleanUp);
 
                     $lastBankTransaction = null;
 
@@ -1648,6 +1752,7 @@ class Core extends Base\Core
                         'batch_number'         => $batchNumber + 1,
                         'merchant_id'          => $merchantId,
                         'balance_id'           => $balanceId,
+                        'is_automated_cleanup' => $isAutomatedCleanUp,
                     ];
 
                     return [true, $params];
@@ -1679,6 +1784,8 @@ class Core extends Base\Core
     {
         $this->repo->transaction(function() use ($basEntities, $basIdToAmountMap, & $latestCorrectedBasId, & $createdAt)
         {
+            $jobName = app('worker.ctx')->getJobName() ?? '';
+
             /** @var Entity $basEntity */
             foreach ($basEntities as $basEntity)
             {
@@ -1700,11 +1807,7 @@ class Core extends Base\Core
 
                 $correctBalance = $previousBalance + $correctionAmount;
 
-                $basEntity->setBalance($correctBalance);
-
-                $basEntity->setConnection($this->mode);
-
-                $this->repo->saveOrFail($basEntity);
+                $this->repo->banking_account_statement->updateBasWithContextAsComment($id, $correctBalance, $jobName, $this->mode);
 
                 $traceData = [
                     'bas_id'            => $id,
@@ -1714,17 +1817,11 @@ class Core extends Base\Core
                     'correction_amount' => $correctionAmount,
                 ];
 
-                if($txn !== null)
+                if ($txn !== null)
                 {
-                    $txn->setBalance($correctBalance, 0, false);
+                    $this->repo->transaction->updateTransactionWithContextAsComment($txn->getId(), $correctBalance, $jobName, $this->mode);
 
-                    $txn->setConnection($this->mode);
-
-                    $this->repo->saveOrFail($txn);
-
-                    $traceData = $traceData + [
-                            'txn_id'    => $txn->getId()
-                        ];
+                    $traceData = $traceData + ['txn_id' => $txn->getId()];
                 }
 
                 $createdAt = max($createdAt, $basEntity->getCreatedAt());
@@ -1796,7 +1893,7 @@ class Core extends Base\Core
 
                 if ($basDetailEntity->getStatus() !== Details\Status::UNDER_MAINTENANCE)
                 {
-                    throw new Exception\BadRequestException(ErrorCode::RELEASE_BAS_DETAILS_FROM_STATEMENT_FIX_FAILURE, null, null);
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_RELEASE_BAS_DETAILS_FROM_STATEMENT_FIX_FAILURE, null, null);
                 }
 
                 $basDetailEntity->setStatus(Details\Status::ACTIVE);
@@ -1815,12 +1912,13 @@ class Core extends Base\Core
         );
     }
 
-    protected function updateBasDetailsEntityConsideringMissingStatements(string $accountNumber, string $channel, array $basIdToAmountMap)
+    protected function updateBasDetailsEntityConsideringMissingStatements(
+        string $accountNumber, string $channel, array $basIdToAmountMap, $isAutomatedCleanUp)
     {
         $basDetailEntity = $this->getBasDetails($accountNumber, $channel, [Details\Status::UNDER_MAINTENANCE]);
 
         $this->mutex->acquireAndRelease('banking_account_statement_details_' . $basDetailEntity->getId(),
-            function () use ($accountNumber, $channel, $basIdToAmountMap, $basDetailEntity)
+            function () use ($accountNumber, $channel, $basIdToAmountMap, $basDetailEntity, $isAutomatedCleanUp)
             {
                 $basDetailEntity->reload();
 
@@ -1840,6 +1938,19 @@ class Core extends Base\Core
                     $basDetailEntity->setPaginationKey(null);
                 }
 
+                if ($isAutomatedCleanUp === true)
+                {
+                    $lastReconciledAt = Carbon::now(Timezone::IST)->subDay()->startOfDay()->getTimestamp();
+
+                    $presentLastReconciledAt = $basDetailEntity->getLastReconciledAt();
+
+                    if ((isset($presentLastReconciledAt) === false) or
+                        ($presentLastReconciledAt < $lastReconciledAt))
+                    {
+                        $basDetailEntity->setLastReconciledAt($lastReconciledAt);
+                    }
+                }
+
                 $this->repo->saveOrFail($basDetailEntity);
             },
             30,
@@ -1847,33 +1958,34 @@ class Core extends Base\Core
         );
     }
 
-    public function getMissingRecordsFromRedisForAccount(string $accountNumber, string $channel)
+    public function getMissingRecordsFromRedisForAccount(string $accountNumber, string $channel, string $merchantId)
     {
-        $merchantMissingStatementList = (new Admin\Service)->getConfigKey(
-            [
-                'key' => Admin\ConfigKey::PREFIX . 'rx_ca_missing_statements_' . $channel
-            ]);
+        $redisKey = sprintf(self::MISSING_STATEMENTS_REDIS_KEY, $merchantId, $accountNumber);
 
-        if ((array_key_exists($accountNumber, $merchantMissingStatementList) === true) and
-            (empty($merchantMissingStatementList[$accountNumber]) === false))
+        $getMissingStatements = $this->app['redis']->get($redisKey);
+
+        $merchantMissingStatementList = (isset($getMissingStatements) === true) ?
+            json_decode($getMissingStatements, true) : null;
+
+        if (empty($merchantMissingStatementList) === false)
         {
-            $missingStatements = $merchantMissingStatementList[$accountNumber];
+            $missingStatements = $merchantMissingStatementList;
 
-            $this->trace->info(TraceCode::BAS_MISSING_RECORDS_TO_INSERT,
-                [
-                    'account_number'         => $accountNumber,
-                    'channel'                => $channel,
-                    'count'                  => count($missingStatements),
-                    'missing_statements'     => $missingStatements,
-                ]);
+            $this->trace->info(TraceCode::BAS_MISSING_RECORDS_TO_INSERT, [
+                'merchant_id'        => $merchantId,
+                'account_number'     => $accountNumber,
+                'channel'            => $channel,
+                'count'              => count($missingStatements),
+                'missing_statements' => $missingStatements,
+            ]);
         }
         else
         {
-            $this->trace->info(TraceCode::BAS_NO_MISSING_RECORDS_TO_INSERT,
-                [
-                    'account_number'         => $accountNumber,
-                    'channel'                => $channel,
-                ]);
+            $this->trace->info(TraceCode::BAS_NO_MISSING_RECORDS_TO_INSERT, [
+                'merchant_id'    => $merchantId,
+                'account_number' => $accountNumber,
+                'channel'        => $channel,
+            ]);
 
             $missingStatements = [];
         }
@@ -1881,63 +1993,93 @@ class Core extends Base\Core
         return $missingStatements;
     }
 
-    public function removeInsertedMissingRecordsForAccountFromRedis(string $accountNumber, string $channel, array $insertedStatements)
+    public function removeInsertedMissingRecordsForAccountFromRedis(
+        string $accountNumber,
+        string $channel,
+        string $merchantId,
+        array $insertedStatements)
     {
         $retryCount = 2;
 
-        $this->mutex->acquireAndRelease('update_redis_missing_statements_recon_' . $channel,
-            function () use ($accountNumber, $channel, $insertedStatements)
-            {
-                $merchantMissingStatementList = (new Admin\Service)->getConfigKey(
-                    [
-                        'key' => Admin\ConfigKey::PREFIX . 'rx_ca_missing_statements_' . $channel
-                    ]);
+        try
+        {
+            $this->mutex->acquireAndRelease('update_redis_missing_statements_recon_' . $accountNumber . '_' . $merchantId,
+                function() use ($accountNumber, $channel, $merchantId, $insertedStatements) {
 
-                if (array_key_exists($accountNumber, $merchantMissingStatementList) === true)
-                {
-                    $missingStatementsFromRedis = $merchantMissingStatementList[$accountNumber];
+                    $startTime = microtime(true);
 
-                    $this->trace->info(TraceCode::REMOVAL_OF_INSERTED_STATEMENTS_FROM_REDIS_INIT,
-                        [
+                    $redis = $this->app['redis'];
+
+                    $redisKey = sprintf(self::MISSING_STATEMENTS_REDIS_KEY, $merchantId, $accountNumber);
+
+                    $getMissingStatements = $redis->get($redisKey);
+
+                    $merchantMissingStatementList = (isset($getMissingStatements) === true) ?
+                        json_decode($getMissingStatements, true) : null;
+
+                    if (empty($merchantMissingStatementList) === false)
+                    {
+                        $this->trace->info(TraceCode::REMOVAL_OF_INSERTED_STATEMENTS_FROM_REDIS_INIT, [
+                            'merchant_id'                => $merchantId,
                             'account_number'             => $accountNumber,
                             'inserted_statements'        => $insertedStatements,
-                            'missing_statement_in_redis' => $missingStatementsFromRedis
-                         ]);
+                            'missing_statement_in_redis' => $merchantMissingStatementList
+                        ]);
 
-                    // array_diff did not work as expected for nested arrays, so statements are converted to json and then compared
-                    $diff = array_values(array_diff(
-                        array_map('json_encode', $missingStatementsFromRedis),
-                        array_map('json_encode', $insertedStatements)
-                    ));
+                        // array_diff did not work as expected for nested arrays, so statements are converted to json and then compared
+                        $diff = array_values(array_diff(
+                                                 array_map('json_encode', $merchantMissingStatementList),
+                                                 array_map('json_encode', $insertedStatements)
+                                             ));
 
-                    $missingStatementsAfterInsertion = array_map('json_decode', $diff, array_map('boolval', $diff));
+                        $missingStatementsAfterInsertion = array_map('json_decode', $diff, array_map('boolval', $diff));
 
-                    $merchantMissingStatementList[$accountNumber] = $missingStatementsAfterInsertion;
+                        $redis->set($redisKey, json_encode($missingStatementsAfterInsertion));
 
-                    $this->setConfigKeys([
-                        Admin\ConfigKey::PREFIX . 'rx_ca_missing_statements_' . $channel => $merchantMissingStatementList
-                    ]);
+                        $endTime = microtime(true);
 
-                    $this->trace->info(TraceCode::REMOVAL_OF_INSERTED_STATEMENTS_FROM_REDIS_SUCCESS,
-                        [
+                        $this->trace->info(TraceCode::REMOVAL_OF_INSERTED_STATEMENTS_FROM_REDIS_SUCCESS, [
+                            'merchant_id'                        => $merchantId,
                             'account_number'                     => $accountNumber,
-                            'missing_statements_after_insertion' => $missingStatementsAfterInsertion
+                            'missing_statements_after_insertion' => count($missingStatementsAfterInsertion),
+                            'total_time_taken'                   => $endTime - $startTime,
                         ]);
-                }
-                else
-                {
-                    $this->trace->info(TraceCode::BAS_MISSING_RECORDS_EXTERNALLY_DELETED,
-                        [
-                            'account_number'         => $accountNumber,
-                            'channel'                => $channel,
-                            'inserted_statements'    => $insertedStatements
+                    }
+                    else
+                    {
+                        $this->trace->info(TraceCode::BAS_MISSING_RECORDS_EXTERNALLY_DELETED, [
+                            'merchant_id'         => $merchantId,
+                            'account_number'      => $accountNumber,
+                            'channel'             => $channel,
+                            'inserted_statements' => $insertedStatements
                         ]);
-                }
-            },
-            300,
-            ErrorCode::BAD_REQUEST_CANNOT_EDIT_MISSING_RECORDS_ON_REDIS,
-            $retryCount
-        );
+                    }
+                },
+                300,
+                ErrorCode::BAD_REQUEST_CANNOT_EDIT_MISSING_RECORDS_ON_REDIS,
+                $retryCount
+            );
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->count(Metric::MISSING_STATEMENT_REDIS_INSERT_FAILURES, [
+                Metric::LABEL_CHANNEL => $channel,
+                'action'              => 'updation'
+            ]);
+
+            $this->trace->traceException(
+                $exception,
+                null,
+                TraceCode::INSERTION_OF_MISSING_STATEMENTS_INTO_REDIS_FAILURE,
+                [
+                    Entity::MERCHANT_ID    => $merchantId,
+                    Entity::ACCOUNT_NUMBER => $accountNumber,
+                    Entity::CHANNEL        => $channel
+                ]
+            );
+
+            Tracer::startSpanWithAttributes(HyperTrace::MISSING_STATEMENT_REDIS_INSERT_FAILURES);
+        }
     }
 
     protected function pushMissingStatementsLinkingEventsToLedger(string $accountNumber, string $channel, array $insertedBasEntities)
@@ -3980,6 +4122,8 @@ class Core extends Base\Core
             $inactiveDurationLimit = self::DEFAULT_BANKING_ACCOUNT_STATEMENT_INACTIVE_DURATION_RATE_LIMIT;
         }
 
+        $blacklistStatementFetch = (empty($input['blacklist_fetch']) === false) ? $input['blacklist_fetch'] : false;
+
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_STATEMENT_DISPATCH_JOB_CRON_INITIATED,
             [
@@ -4008,7 +4152,8 @@ class Core extends Base\Core
 
         foreach ($bankingAccountDetails as $bankingAccountDetail)
         {
-            if ($this->checkIfBlackListedMerchant($bankingAccountDetail->merchant->getId()) === true)
+            if ((boolval($blacklistStatementFetch) === true) and
+                ($this->checkIfBlackListedMerchant($bankingAccountDetail->merchant->getId()) === true))
             {
                 continue;
             }
@@ -4114,12 +4259,15 @@ class Core extends Base\Core
 
     public function fetchMissingAccountStatementsForChannel($channel, $input, $isNewCron = false, $isMonitoring = false)
     {
-        $this->trace->info(
-            TraceCode::FETCH_MISSING_ACCOUNT_STATEMENTS_INITIATED,
-            [
-                'channel' => $channel,
-                'input'   => $input
-            ]);
+        $merchantId = $input[Entity::MERCHANT_ID] ?? null;
+
+        $this->trace->info(TraceCode::FETCH_MISSING_ACCOUNT_STATEMENTS_INITIATED, [
+            'channel'     => $channel,
+            'input'       => $input,
+            'merchant_id' => $merchantId,
+        ]);
+
+        unset($input[Entity::MERCHANT_ID]);
 
         $countOfStatements = $this->repo->banking_account_statement->getCountOfStatementsInGivenPostedDateRange($channel, $input);
 
@@ -4262,6 +4410,213 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+
+    public function automateAccountStatementsReconByChannel(string $channel, array $input)
+    {
+        $startTime = microtime(true);
+
+        $accountNumbers = $input[BASConstants::ACCOUNT_NUMBERS] ?? [];
+
+        $isNewCron = ((isset($input[BASConstants::NEW_CRON_SETUP]) === true) and
+                      (boolval(BASConstants::NEW_CRON_SETUP) === true));
+
+        $isMonitoringCron = ((isset($input[BASConstants::MONITORING_CRON]) === true) and
+                             (boolval(BASConstants::MONITORING_CRON) === true));
+
+        $inputFromDate = $input[Entity::FROM_DATE] ?? null;
+
+        $inputToDate = $input[Entity::TO_DATE] ?? null;
+
+        $reconLimit = $input[BASConstants::RECON_LIMIT] ?? null;
+
+        $lastReconciledAtLimit = $input[BASConstants::LAST_RECONCILED_AT_LIMIT] ?? null;
+
+        $this->trace->info(TraceCode::AUTOMATED_ACCOUNT_STATEMENTS_RECON_INITIATED, [
+            Entity::CHANNEL                       => $channel,
+            BASConstants::ACCOUNT_NUMBERS_PRESENT => count($accountNumbers),
+        ]);
+
+        // Get Account numbers from gateway_balance_change_at which are recently changed if no account numbers are
+        // provided beforehand in the input.
+        $accountNumbers = $this->getAccountNumbersForAutomatedCARecon($accountNumbers, $channel, $reconLimit);
+
+        // Decide From and To Date from last_reconciled_at from basDetails
+        $reconDetails = $this->getFromAndToDateFromLastReconciledAt($accountNumbers, $channel, $lastReconciledAtLimit);
+
+        $response = [];
+
+        foreach ($reconDetails as $reconDetail)
+        {
+            try
+            {
+                $fromDate = (int) ($inputFromDate ?? $reconDetail[Entity::FROM_DATE]);
+
+                $toDate = (int) ($inputToDate ?? $reconDetail[Entity::TO_DATE]);
+
+                $fetchInput = [
+                    Entity::CHANNEL        => $channel,
+                    Entity::ACCOUNT_NUMBER => $reconDetail[Entity::ACCOUNT_NUMBER],
+                    Entity::MERCHANT_ID    => $reconDetail[Entity::MERCHANT_ID],
+                    Entity::FROM_DATE      => $fromDate,
+                    Entity::TO_DATE        => $toDate,
+                    Entity::SAVE_IN_REDIS  => $input[Entity::SAVE_IN_REDIS] ?? true,
+                ];
+
+                $this->fetchMissingAccountStatementsForChannel($channel, $fetchInput, $isNewCron, $isMonitoringCron);
+
+                $response[$reconDetail[Entity::ACCOUNT_NUMBER]][BASConstants::FETCH_MISSING_STATEMENT] = BASConstants::SUCCESS;
+            }
+            catch (\Throwable $exception)
+            {
+                $this->trace->traceException(
+                    $exception,
+                    null,
+                    TraceCode::AUTOMATED_ACCOUNT_STATEMENTS_RECON_FETCH_DISPATCH_FAILED,
+                    [
+                        Entity::ACCOUNT_NUMBER => $reconDetail[Entity::ACCOUNT_NUMBER],
+                        Entity::CHANNEL        => $channel
+                    ]
+                );
+
+                $response[$reconDetail[Entity::ACCOUNT_NUMBER]][BASConstants::FETCH_MISSING_STATEMENT] = BASConstants::FAILURE;
+            }
+        }
+
+        $endTime = microtime(true);
+
+        $this->trace->info(TraceCode::AUTOMATED_ACCOUNT_STATEMENTS_RECON_FETCH_DISPATCH_SUCCESS, [
+            Entity::CHANNEL            => $channel,
+            'response_time'            => $endTime - $startTime,
+            'count_of_account_numbers' => count($reconDetails),
+        ]);
+
+        return $response;
+    }
+
+    public function getAccountNumbersForAutomatedCARecon($accountNumbers, $channel, $reconlimit)
+    {
+        // Give priority to account number from Cron input if passed.
+        if (empty($accountNumbers) === false)
+        {
+            $this->filterAccountNumbersWithPaginationKeyPresent($accountNumbers, $channel);
+        }
+        else
+        {
+            $priorityAccountNumbers = (new AdminService)->getConfigKey(['key' => ConfigKey::CA_RECON_PRIORITY_ACCOUNT_NUMBERS]);
+
+            if (empty($priorityAccountNumbers) === false)
+            {
+                $reconlimit -= count($priorityAccountNumbers);
+
+                $reconlimit = max($reconlimit, 0);
+            }
+
+            // Find Account numbers on the basis of gateway_balance_change_at from start of T-1 day to current time
+            $accountNumbers = $this->repo->banking_account_statement_details->getAccountNumbersWhereGatewayBalanceIsUpdatedRecently(
+                $channel, $reconlimit);
+
+            $this->filterAccountNumbersWithPaginationKeyPresent($accountNumbers, $channel);
+
+            $accountNumbers = array_unique(array_merge($accountNumbers, $priorityAccountNumbers));
+        }
+
+        return array_values($accountNumbers);
+    }
+
+    public function filterAccountNumbersWithPaginationKeyPresent(&$accountNumbers, $channel)
+    {
+        if (in_array($channel, basDetails\Channel::getChannelsWithNullPaginationKey()) === false)
+        {
+            $accountNumbersWithPaginationKeyNull = $this->repo->banking_account_statement_details
+                ->getByAccountNumbersAndPaginationKeyNull($channel, $accountNumbers);
+
+            if (count($accountNumbersWithPaginationKeyNull) > 0)
+            {
+                $this->trace->info(TraceCode::AUTOMATED_RECON_FOUND_ACCOUNT_NUMBERS_WITH_NULL_PAGINATION_KEY, [
+                    Entity::CHANNEL               => $channel,
+                    BasConstants::ACCOUNT_NUMBERS => $accountNumbersWithPaginationKeyNull,
+                    'count_of_account_numbers'    => count($accountNumbersWithPaginationKeyNull)
+                ]);
+
+                $this->trace->histogram(
+                    Metric::MISSING_STATEMENT_RECON_PAGINATION_KEY_ALREADY_NULL,
+                    count($accountNumbersWithPaginationKeyNull), [
+                        Entity::CHANNEL => $channel
+                    ]
+                );
+
+                $accountNumbers = array_diff($accountNumbers, $accountNumbersWithPaginationKeyNull);
+            }
+        }
+    }
+
+    public function getFromAndToDateFromLastReconciledAt($accountNumbers, $channel, $lastReconciledAtLimit)
+    {
+        $reconDetails = [];
+
+        $secondsPerDay = Carbon::HOURS_PER_DAY * Carbon::MINUTES_PER_HOUR * Carbon::SECONDS_PER_MINUTE;
+
+        $merchantIdAccNumberAndLastReconciledAtDetails = $this->repo->banking_account_statement_details
+            ->getByAccountNumbersAndLastReconciledAt($channel, $accountNumbers);
+
+        foreach ($merchantIdAccNumberAndLastReconciledAtDetails as $merchantIdAccNumberAndLastReconciledAtDetail)
+        {
+            $reconDetail = [];
+
+            $reconDetail[basDetails\Entity::LAST_RECONCILED_AT] = $lastReconciledAt =
+                $merchantIdAccNumberAndLastReconciledAtDetail[basDetails\Entity::LAST_RECONCILED_AT];
+
+            $reconDetail[basDetails\Entity::ACCOUNT_NUMBER] =
+                $merchantIdAccNumberAndLastReconciledAtDetail[basDetails\Entity::ACCOUNT_NUMBER];
+
+            $reconDetail[basDetails\Entity::MERCHANT_ID] =
+                $merchantIdAccNumberAndLastReconciledAtDetail[basDetails\Entity::MERCHANT_ID];
+
+            /**
+             * If the merchant's reconciled_at is set to be 23rd May, it means all the statements are reconciled till
+             * 23rd May, 11:59:59 PM.
+             * if current start of day is greater than last_reconciled_at + 86400 (no of seconds in a day),
+             *   then from_date is set to be last_reconciled_at
+             * else
+             *   from_date is set to be T-1 day's start of the day.
+             */
+            if ((isset($lastReconciledAt) === true) and
+                (($lastReconciledAt + $secondsPerDay) < Carbon::now(Timezone::IST)->startOfDay()->getTimestamp()))
+            {
+                if ((isset($lastReconciledAtLimit) === true) and
+                    ($lastReconciledAtLimit < (Carbon::now(Timezone::IST)->getTimestamp() - $lastReconciledAt))) {
+
+                    $this->trace->error(TraceCode::LAST_RECONCILED_AT_LIMIT_EXCEEDED_FOR_RECON, [
+                        'last_reconciled_at_limit' => $lastReconciledAtLimit,
+                        'recon_details'            => $reconDetail,
+                    ]);
+
+                    continue;
+                }
+
+                $reconDetail[Entity::FROM_DATE] = Carbon::createFromTimestamp($lastReconciledAt, Timezone::IST)->addDay()->startOfDay()->getTimestamp();
+
+                $reconDetail[Entity::TO_DATE] = Carbon::now(Timezone::IST)->subDay()->endOfDay()->getTimestamp();
+            }
+
+            if ((isset($reconDetail[Entity::FROM_DATE]) === false) or
+                (isset($reconDetail[Entity::TO_DATE]) === false) or
+                ($reconDetail[Entity::FROM_DATE] >= $reconDetail[Entity::TO_DATE]))
+            {
+                $this->trace->error(TraceCode::DEFAULT_FROM_AND_TO_DATE_CHOOSEN_FOR_RECON, [
+                    'recon_details' => $reconDetail,
+                ]);
+
+                $reconDetail[Entity::FROM_DATE] = Carbon::now(Timezone::IST)->subDay()->startOfDay()->getTimestamp();
+
+                $reconDetail[Entity::TO_DATE] = Carbon::now(Timezone::IST)->subDay()->endOfDay()->getTimestamp();
+            }
+
+            $reconDetails[] = $reconDetail;
+        }
+
+        return $reconDetails;
     }
 
     // Adding a delay in dispatch and default is 0 min delay.

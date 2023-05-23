@@ -34,5 +34,6 @@ final class Metric
     const BAS_FETCH_COMPLETED_DURATION_SECONDS                = 'bas_fetch_completed_duration_seconds.histogram';
     const BAS_UPDATE_COMPLETED_DURATION_SECONDS               = 'bas_update_completed_duration_seconds.histogram';
     const BAS_INSERT_COMPLETED_DURATION_SECONDS               = 'bas_insert_completed_duration_seconds.histogram';
+    const MISSING_STATEMENTS_COUNT                            = 'missing_statements_count.histogram';
 }
 

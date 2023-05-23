@@ -56,6 +56,9 @@ class CreateBankingAccountStatementDetailsTable extends Migration
             $table->integer(Entity::BALANCE_LAST_FETCHED_AT)
                   ->nullable();
 
+            $table->integer(Entity::LAST_RECONCILED_AT)
+                  ->nullable();
+
             $table->string(Entity::PAGINATION_KEY)
                   ->nullable();
 
@@ -66,6 +69,8 @@ class CreateBankingAccountStatementDetailsTable extends Migration
             $table->unique([Entity::ACCOUNT_NUMBER, Entity::CHANNEL]);
 
             $table->index([Entity::ACCOUNT_NUMBER, Entity::CHANNEL]);
+
+            $table->index([Entity::LAST_RECONCILED_AT]);
         });
     }
 

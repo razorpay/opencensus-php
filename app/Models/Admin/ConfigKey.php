@@ -219,6 +219,7 @@ class ConfigKey
     const RX_CA_MISSING_STATEMENTS_UPDATION_PARAMS  = self::PREFIX . 'rx_ca_missing_statements_updation_params';
     const RX_CA_MISSING_STATEMENT_DETECTION_RBL     = self::PREFIX . 'rx_ca_missing_statement_detection_rbl';
     const RX_CA_MISSING_STATEMENT_DETECTION_ICICI   = self::PREFIX . 'rx_ca_missing_statement_detection_icici';
+    const CA_RECON_PRIORITY_ACCOUNT_NUMBERS         = self::PREFIX . 'ca_recon_priority_account_numbers';
 
     // this is used to limit the number of records fetched while querying db to get low balance configs in order
     // to reduce the load

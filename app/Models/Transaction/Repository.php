@@ -2822,4 +2822,12 @@ class Repository extends Base\Repository
             ]);
         }
     }
+
+    public function updateTransactionWithContextAsComment(string $id, int $balance, string $context, string $mode)
+    {
+        $query = "UPDATE /*" . $context . "*/ transactions SET balance = " . $balance . " ,updated_at = " . now()->getTimestamp() .
+                 " where id = '" . $id . "';";
+
+        DB::connection($mode)->statement($query);
+    }
 }

@@ -849,10 +849,11 @@ class IciciBankingAccountStatementTest extends TestCase
 
         $this->startTest();
 
-        $merchantMissingStatementList = (new AdminService)->getConfigKey(
-            [
-                'key' => ConfigKey::RX_CA_MISSING_STATEMENTS_ICICI
-            ]);
+        $redisKey = 'missing_statements_10000000000000_2224440041626905';
+
+        $merchantMissingStatementList = json_decode($this->app['redis']->get($redisKey), true);
+
+        $this->app['redis']->del($redisKey);
 
         $basExpected = [
             BasEntity::ACCOUNT_NUMBER        => '2224440041626905',
@@ -868,7 +869,7 @@ class IciciBankingAccountStatementTest extends TestCase
 
         $this->assertTrue($boolMetricCaptured);
 
-        $this->assertArraySubset($basExpected, array_first($merchantMissingStatementList['2224440041626905']));
+        $this->assertArraySubset($basExpected, array_first($merchantMissingStatementList));
     }
 
     public function testIciciDisableAccountStatementFetch()
@@ -2724,13 +2725,11 @@ class IciciBankingAccountStatementTest extends TestCase
                 'balance_currency'    => 'INR',
             ]];
 
-        (new AdminService)->setConfigKeys(
-            [
-                ConfigKey::PREFIX . 'rx_ca_missing_statements_' . 'icici'   => [
-                    '2224440041626905' => $missingStatementsBeforeInsertion,
-                ],
-                ConfigKey::PREFIX . 'rx_missing_statements_insertion_limit' => 1
-            ]);
+        (new AdminService)->setConfigKeys([ConfigKey::PREFIX . 'rx_missing_statements_insertion_limit' => 1]);
+
+        $redisKey = 'missing_statements_10000000000000_2224440041626905';
+
+        $this->app['redis']->set($redisKey, json_encode($missingStatementsBeforeInsertion));
 
         $initialBasEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
 
@@ -2774,12 +2773,11 @@ class IciciBankingAccountStatementTest extends TestCase
 
         $this->startTest();
 
-        $merchantMissingStatementList = (new AdminService)->getConfigKey(
-            [
-                'key' => ConfigKey::PREFIX . 'rx_ca_missing_statements_' . 'icici'
-            ]);
+        $merchantMissingStatementList = json_decode($this->app['redis']->get($redisKey), true);
 
-        $this->assertArraySubset($missingStatementsBeforeInsertion[1], $merchantMissingStatementList['2224440041626905'][0]);
+        $this->app['redis']->del($redisKey);
+
+        $this->assertArraySubset($missingStatementsBeforeInsertion[1], $merchantMissingStatementList[0]);
 
         $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
 
@@ -2894,13 +2892,15 @@ class IciciBankingAccountStatementTest extends TestCase
             'balance_currency'          => 'INR',
         ];
 
-        (new AdminService)->setConfigKeys([ConfigKey::PREFIX . 'rx_ca_missing_statements_' . 'icici' => [
-            $statement['account_number'] => [$statement],
-        ]]);
+        $redisKey = 'missing_statements_10000000000000_2224440041626905';
+
+        $this->app['redis']->set($redisKey, json_encode([$statement]));
 
         $this->ba->adminAuth();
 
         $response = $this->startTest();
+
+        $this->app['redis']->del($redisKey);
 
         $this->assertEquals(1, $response['number_of_missing_statements']);
 
@@ -2909,24 +2909,26 @@ class IciciBankingAccountStatementTest extends TestCase
 
     public function testIciciInsertMissingAccountStatementWhileInProgress()
     {
-        (new AdminService)->setConfigKeys([ConfigKey::PREFIX . 'rx_ca_missing_statements_' . 'icici' => [
-            '2224440041626915' => [
-                [
-                    'type'                      => 'credit',
-                    'amount'                    => '100',
-                    'currency'                  => 'INR',
-                    'channel'                   => 'icici',
-                    'account_number'            => '2224440041626915',
-                    'bank_transaction_id'       => 'S71034964',
-                    'balance'                   => 1000100,
-                    'transaction_date'          => 1613586600,
-                    'posted_date'               => 1613627140,
-                    'bank_serial_number'        => 'S71034964',
-                    'description'               => 'INF/NEFT/023629961691/SBIN0050103/TestIcici/Boruto',
-                    'balance_currency'          => 'INR',
-                ]
-            ],
-        ]]);
+        $missingStatement = [
+            [
+                'type'                => 'credit',
+                'amount'              => '100',
+                'currency'            => 'INR',
+                'channel'             => 'icici',
+                'account_number'      => '2224440041626915',
+                'bank_transaction_id' => 'S71034964',
+                'balance'             => 1000100,
+                'transaction_date'    => 1613586600,
+                'posted_date'         => 1613627140,
+                'bank_serial_number'  => 'S71034964',
+                'description'         => 'INF/NEFT/023629961691/SBIN0050103/TestIcici/Boruto',
+                'balance_currency'    => 'INR',
+            ]
+        ];
+
+        $redisKey = 'missing_statements_10000000000000_2224440041626915';
+
+        $this->app['redis']->set($redisKey, json_encode($missingStatement));
 
         $mockMutex = new MockMutexService($this->app);
 
@@ -2968,6 +2970,10 @@ class IciciBankingAccountStatementTest extends TestCase
             300);
 
         $basDetails->reload();
+
+        $this->app['redis']->del($redisKey);
+
+        $this->assertEquals(BasDetails\Status::ACTIVE, $basDetails->getStatus());
     }
 
     public function testDryRunInsertMissingAccountStatement()
@@ -2985,24 +2991,26 @@ class IciciBankingAccountStatementTest extends TestCase
                 ConfigKey::RETRY_COUNT_FOR_ID_GENERATION => 100
             ]);
 
-        (new AdminService)->setConfigKeys([ConfigKey::PREFIX . 'rx_ca_missing_statements_' . 'icici' => [
-            '2224440041626905' => [
-                [
-                    'type'                      => 'credit',
-                    'amount'                    => '100',
-                    'currency'                  => 'INR',
-                    'channel'                   => 'icici',
-                    'account_number'            => '2224440041626905',
-                    'bank_transaction_id'       => 'S71034964',
-                    'balance'                   => 1000100,
-                    'transaction_date'          => 1613586600,
-                    'posted_date'               => 1613627140,
-                    'bank_serial_number'        => 'S71034964',
-                    'description'               => 'INF/NEFT/023629961691/SBIN0050103/TestIcici/Boruto',
-                    'balance_currency'          => 'INR',
-                ]
-            ],
-        ]]);
+        $missingStatements = [
+            [
+                'type'                => 'credit',
+                'amount'              => '100',
+                'currency'            => 'INR',
+                'channel'             => 'icici',
+                'account_number'      => '2224440041626905',
+                'bank_transaction_id' => 'S71034964',
+                'balance'             => 1000100,
+                'transaction_date'    => 1613586600,
+                'posted_date'         => 1613627140,
+                'bank_serial_number'  => 'S71034964',
+                'description'         => 'INF/NEFT/023629961691/SBIN0050103/TestIcici/Boruto',
+                'balance_currency'    => 'INR',
+            ]
+        ];
+
+        $redisKey = 'missing_statements_10000000000000_2224440041626905';
+
+        $this->app['redis']->set($redisKey, json_encode($missingStatements));
 
         $initialBasEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
 
@@ -3024,12 +3032,11 @@ class IciciBankingAccountStatementTest extends TestCase
 
         $this->startTest();
 
-        $merchantMissingStatementList = (new AdminService)->getConfigKey(
-            [
-                'key' => ConfigKey::PREFIX . 'rx_ca_missing_statements_' . 'icici'
-            ]);
+        $merchantMissingStatementList = json_decode($this->app['redis']->get($redisKey), true);
 
-        $this->assertCount(1, $merchantMissingStatementList['2224440041626905']);
+        $this->assertCount(1, $merchantMissingStatementList);
+
+        $this->app['redis']->del($redisKey);
 
         $basEntries = $this->getDbEntities('banking_account_statement', ['account_number' => '2224440041626905']);
 

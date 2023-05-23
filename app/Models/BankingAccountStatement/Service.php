@@ -9,8 +9,8 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
-use RZP\Constants\Mode as EnvMode;
 use RZP\Jobs\MissingAccountStatementDetection;
+use RZP\Models\BankingAccountStatement\Details as BASD;
 
 class Service extends Base\Service
 {
@@ -52,83 +52,7 @@ class Service extends Base\Service
     {
         (new Validator())->validateInput(Validator::AUTOMATE_ACCOUNT_STATEMENT_RECON, $input + ['channel' => $channel]);
 
-        $this->trace->info(
-            TraceCode::AUTOMATED_ACCOUNT_STATEMENTS_RECON_INITIATED,
-            [
-                Entity::CHANNEL                    => $channel,
-                Constants::ACCOUNT_NUMBERS_PRESENT => count($input[Constants::ACCOUNT_NUMBERS]),
-            ]);
-
-        $attempts = [];
-
-        $response = [];
-
-        $isNewCron = ((isset($input['new_cron_setup']) === true) && (boolval($input['new_cron_setup']) === true));
-
-        $isMonitoringCron = ((isset($input['monitoring_cron']) === true) && (boolval($input['monitoring_cron']) === true));
-
-        $accountNumbersWithPaginationKeyNull = $this->repo->banking_account_statement_details->getByAccountNumbersAndPaginationKeyNull($channel, $input);
-
-        if (count($accountNumbersWithPaginationKeyNull) > 0)
-        {
-            $this->trace->info(
-                TraceCode::AUTOMATED_ACCOUNT_STATEMENTS_RECON_FETCH_DISPATCH_FAILED,
-                [
-                    Entity::CHANNEL              => $channel,
-                    'pagination_key_not_present' => true,
-                ]);
-
-            $this->trace->count(Metric::MISSING_STATEMENT_RECON_PAGINATION_KEY_ALREADY_NULL);
-
-            $input[Constants::ACCOUNT_NUMBERS] = array_diff($input[Constants::ACCOUNT_NUMBERS], $accountNumbersWithPaginationKeyNull);
-        }
-
-        foreach ($input[Constants::ACCOUNT_NUMBERS] as $accountNumber)
-        {
-            try
-            {
-                $fromDate = (int) ($input[Entity::FROM_DATE] ?? Carbon::now(Timezone::IST)->subDay()->startOfDay()->getTimestamp());
-                $toDate = (int) ($input[Entity::TO_DATE] ?? Carbon::now(Timezone::IST)->subDay()->endOfDay()->getTimestamp());
-
-                //fetch will be always T-1 in this cron
-                $fetchInput =
-                [
-                    Entity::CHANNEL        => $channel,
-                    Entity::ACCOUNT_NUMBER => $accountNumber,
-                    Entity::FROM_DATE      => $fromDate,
-                    Entity::TO_DATE        => $toDate,
-                    Entity::SAVE_IN_REDIS  => $input[Entity::SAVE_IN_REDIS] ?? true,
-                ];
-
-                $attempts[$accountNumber] = $this->core()->fetchMissingAccountStatementsForChannel($channel, $fetchInput, $isNewCron, $isMonitoringCron);
-
-                $response[$accountNumber][Constants::FETCH_MISSING_STATEMENT] = Constants::SUCCESS;
-            }
-            catch (\Throwable $exception)
-            {
-                $this->trace->traceException(
-                    $exception,
-                    null,
-                    TraceCode::AUTOMATED_ACCOUNT_STATEMENTS_RECON_FETCH_DISPATCH_FAILED,
-                    [
-                        Entity::ACCOUNT_NUMBER => $accountNumber,
-                        Entity::CHANNEL        => $channel
-                    ]
-                );
-
-                $response[$accountNumber][Constants::FETCH_MISSING_STATEMENT] = Constants::FAILURE;
-            }
-        }
-
-        $this->trace->info(
-            TraceCode::AUTOMATED_ACCOUNT_STATEMENTS_RECON_FETCH_DISPATCH_SUCCESS,
-            [
-                Entity::CHANNEL => $channel,
-                'environment'   => $this->app->environment('testing'),
-                'mode'          => $this->mode
-            ]);
-
-        return $response;
+        return $this->core()->automateAccountStatementsReconByChannel($channel, $input);
     }
 
     public function updateSourceLinking(array $input)
@@ -214,24 +138,14 @@ class Service extends Base\Service
         }
         catch (\Throwable $exception)
         {
-            $this->trace->traceException(
-                $exception,
-                null,
-                TraceCode::AUTOMATED_ACCOUNT_STATEMENTS_RECON_UPDATE_DISPATCH_FAILED,
-                [
-                    Entity::ACCOUNT_NUMBER => $accountNumber,
-                    Entity::CHANNEL => $channel
-                ]
-            );
-
             $response[$accountNumber][Constants::UPDATE_MISSING_STATEMENT] = Constants::FAILURE;
+
+            throw $exception;
         }
 
-        $this->trace->info(
-            TraceCode::AUTOMATED_ACCOUNT_STATEMENTS_RECON_UPDATE_DISPATCH_SUCCESS,
-            [
-                Entity::CHANNEL => $channel,
-            ]);
+        $this->trace->info(TraceCode::BAS_ENTITIES_INSERT_AND_BALANCE_UPDATE_DISPATCH_SUCCESS, [
+            Entity::CHANNEL => $channel,
+        ]);
 
         return $response;
     }
@@ -247,7 +161,21 @@ class Service extends Base\Service
 
         $channel = $input[Entity::CHANNEL];
 
-        $missingStatements = $this->core()->getMissingRecordsFromRedisForAccount($accountNumber, $channel);
+        if (isset($updateParams[Entity::MERCHANT_ID]) === false)
+        {
+            $basDetails = $this->core()->getBasDetails($accountNumber, $channel, [
+                BASD\Status::UNDER_MAINTENANCE,
+                BASD\Status::ACTIVE
+            ]);
+
+            $merchantId = $basDetails->getMerchantId();
+        }
+        else
+        {
+            $merchantId = $updateParams[Entity::MERCHANT_ID];
+        }
+
+        $missingStatements = $this->core()->getMissingRecordsFromRedisForAccount($accountNumber, $channel, $merchantId);
 
         $response = $this->core()->insertMissingStatementsNeo($input, $missingStatements, $updateParams);
 
@@ -270,7 +198,13 @@ class Service extends Base\Service
 
         $channel = $input[Entity::CHANNEL];
 
-        $missingStatements = $this->core()->getMissingRecordsFromRedisForAccount($accountNumber, $channel);
+        $basCore = $this->core();
+
+        $basDetails = $basCore->getBasDetails($accountNumber, $channel);
+
+        $merchantId = $basDetails[Entity::MERCHANT_ID];
+
+        $missingStatements = $this->core()->getMissingRecordsFromRedisForAccount($accountNumber, $channel, $merchantId);
 
         if ($input[Constants::ACTION] === Constants::FETCH)
         {
@@ -296,7 +230,7 @@ class Service extends Base\Service
 
         try
         {
-            $response = $this->core()->insertMissingStatements($accountNumber, $channel, $missingStatements, $dryRunMode);
+            $response = $basCore->insertMissingStatements($accountNumber, $channel, $merchantId, $missingStatements, $dryRunMode);
 
             return $response;
         }

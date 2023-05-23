@@ -1085,7 +1085,7 @@ return [
         ],
     ],
 
-    'testRblAutomatedReconForMissingStatements' => [
+    'testE2ERblAutomatedReconFlow' => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/banking_account_statement/cron/automate_recon/rbl',
@@ -1094,13 +1094,13 @@ return [
                     '2224440041626905'
                 ],
                 'save_in_redis'   => true,
-                'action'          => 'insert'
+                'new_cron_setup'  => true,
             ],
         ],
         'response' => [
             'content' => [
                 '2224440041626905' => [
-                    'fetch_missing_statement'  => 'success'
+                    'fetch_missing_statement' => 'success'
                 ]
             ]
         ]
@@ -1134,7 +1134,6 @@ return [
                     '2224440041626905'
                 ],
                 'save_in_redis'   => true,
-                'action'          => 'fetch',
                 'from_date'       => '1683225000',
                 'to_date'         => '1683268199',
                 'new_cron_setup'  => true,
@@ -1143,6 +1142,64 @@ return [
         'response' => [
             'content' => [
                 '2224440041626905' => [
+                    'fetch_missing_statement' => 'success'
+                ]
+            ]
+        ]
+    ],
+
+    'testRblAutomatedReconWithMismatchedChannel' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/cron/automate_recon/icici',
+            'content' => [
+                'account_numbers' => [
+                    '2224440041626905'
+                ],
+                'save_in_redis'   => true,
+                'from_date'       => '1683225000',
+                'to_date'         => '1683268199',
+                'new_cron_setup'  => true,
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testRblAutomatedReconWithAccountsWithLastReconciledAt' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/cron/automate_recon/rbl',
+            'content' => [
+                'account_numbers' => [],
+                'save_in_redis'   => true,
+                'new_cron_setup'  => true,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                '2224440041626906' => [
+                    'fetch_missing_statement' => 'success'
+                ]
+            ]
+        ]
+    ],
+
+    'testRblAutomatedReconWithPriorityAccountNumbers' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/cron/automate_recon/rbl',
+            'content' => [
+                'account_numbers' => [],
+                'save_in_redis'   => true,
+                'new_cron_setup'  => true,
+                'recon_limit'     => 6,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                '2224440041626906' => [
                     'fetch_missing_statement' => 'success'
                 ]
             ]

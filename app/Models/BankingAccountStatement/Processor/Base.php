@@ -271,96 +271,100 @@ abstract class Base extends BaseCore
         return $this->getStartOfFinancialYear($this->basDetails->getCreatedAt());
     }
 
-    public function storeMissingStatementsInRedis(array $missingStatements, $accountNumber)
+    public function storeMissingStatementsInRedis(array $missingStatements, $accountNumber, $merchantId)
     {
         $channel = $this->channel;
 
-        $this->app['api.mutex']->acquireAndRelease(
-            'update_redis_missing_statements_recon_' . $channel,
-            function() use ($accountNumber, $channel, $missingStatements)
-            {
-                $redisKey = Admin\ConfigKey::PREFIX . 'rx_ca_missing_statements_' . $channel;
+        try
+        {
+            $this->app['api.mutex']->acquireAndRelease(
+                'update_redis_missing_statements_recon_' . $accountNumber . '_' . $merchantId,
+                function() use ($accountNumber, $channel, $missingStatements, $merchantId) {
 
-                $merchantMissingStatementList = (new Admin\Service)->getConfigKey(['key' => $redisKey]);
+                    $startTime = microtime(true);
 
-                //Check for redaction
-                $this->trace->info(
-                    TraceCode::MISSING_STATEMENTS_REDIS_UPDATE,
-                    [
+                    $redis = $this->app['redis'];
+
+                    $redisKey = sprintf(BasCore::MISSING_STATEMENTS_REDIS_KEY, $merchantId, $accountNumber);
+
+                    $getMissingStatements = $redis->get($redisKey);
+
+                    $merchantMissingStatementList = (isset($getMissingStatements) === true) ?
+                        json_decode($getMissingStatements, true) : null;
+
+                    if (empty($merchantMissingStatementList) === true)
+                    {
+                        $merchantMissingStatementList = array_values($missingStatements);
+                    }
+                    else
+                    {
+                        $encodedMissingStatements = array_map('json_encode', $missingStatements);
+
+                        $encodedExistingMissingStatements = array_map(
+                            'json_encode',
+                            $merchantMissingStatementList
+                        );
+
+                        $encodedUniqueMissingStatements = array_values(array_diff(
+                                                                           $encodedMissingStatements,
+                                                                           $encodedExistingMissingStatements
+                                                                       ));
+
+                        $uniqueMissingStatements = array_map(
+                            'json_decode',
+                            $encodedUniqueMissingStatements,
+                            array_map('boolval', $encodedUniqueMissingStatements)
+                        );
+
+                        $existingMissingStatements = array_map(
+                            'json_decode',
+                            $encodedExistingMissingStatements,
+                            array_map('boolval', $encodedExistingMissingStatements)
+                        );
+
+                        $merchantMissingStatementList = array_merge(
+                            $existingMissingStatements,
+                            $uniqueMissingStatements
+                        );
+                    }
+
+                    $redis->set($redisKey, json_encode($merchantMissingStatementList));
+
+                    $endTime = microtime(true);
+
+                    $this->trace->info(TraceCode::MISSING_STATEMENTS_REDIS_UPDATE_SUCCESS, [
                         Entity::ACCOUNT_NUMBER   => $accountNumber,
-                        'current_redis_value'    => isset($merchantMissingStatementList[$accountNumber]) ?? [],
-                        'new_missing_statements' => $missingStatements,
+                        Entity::MERCHANT_ID      => $merchantId,
+                        'current_redis_count'    => count($merchantMissingStatementList),
+                        'new_missing_statements' => count($missingStatements),
+                        'total_time_taken'       => $endTime - $startTime,
                     ]);
+                },
+                60,
+                TraceCode::MISSING_BAS_UPDATE_IN_PROGRESS,
+                3
+            );
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->count(Metric::MISSING_STATEMENT_REDIS_INSERT_FAILURES, [
+                Metric::LABEL_CHANNEL => $channel,
+                'action'              => 'insertion'
+            ]);
 
-                if (empty($merchantMissingStatementList) === true)
-                {
-                    $merchantMissingStatementList = [];
-                }
+            $this->trace->traceException(
+                $exception,
+                null,
+                TraceCode::INSERTION_OF_MISSING_STATEMENTS_INTO_REDIS_FAILURE,
+                [
+                    Entity::MERCHANT_ID    => $merchantId,
+                    Entity::ACCOUNT_NUMBER => $accountNumber,
+                    Entity::CHANNEL        => $channel
+                ]
+            );
 
-                if (in_array($accountNumber, array_keys($merchantMissingStatementList)) === true)
-                {
-                    $encodedMissingStatements = array_map('json_encode', $missingStatements);
-
-                    $encodedExistingMissingStatements = array_map(
-                        'json_encode',
-                        $merchantMissingStatementList[$accountNumber]
-                    );
-
-                    $encodedUniqueMissingStatements = array_values(array_diff(
-                        $encodedMissingStatements,
-                        $encodedExistingMissingStatements
-                    ));
-
-                    $uniqueMissingStatements = array_map(
-                        'json_decode',
-                        $encodedUniqueMissingStatements,
-                        array_map('boolval', $encodedUniqueMissingStatements)
-                    );
-
-                    $existingMissingStatements = array_map(
-                        'json_decode',
-                        $encodedExistingMissingStatements,
-                        array_map('boolval', $encodedExistingMissingStatements)
-                    );
-
-                    $merchantMissingStatementList[$accountNumber] = array_merge(
-                        $existingMissingStatements,
-                        $uniqueMissingStatements
-                    );
-                }
-                else
-                {
-                    $merchantMissingStatementList[$accountNumber] = array_values($missingStatements);
-                }
-
-                try
-                {
-                    (new BasCore)->setConfigKeys([$redisKey => $merchantMissingStatementList]);
-                }
-                catch (\Exception $exception)
-                {
-                    $this->trace->count(Metric::MISSING_STATEMENT_REDIS_INSERT_FAILURES, [
-                        Metric::LABEL_CHANNEL => $channel,
-                    ]);
-
-                    $this->trace->traceException(
-                        $exception,
-                        null,
-                        TraceCode::INSERTION_OF_MISSING_STATEMENTS_INTO_REDIS_FAILURE,
-                        [
-                            'account_number' => $accountNumber,
-                            'channel'        => $channel
-                        ]
-                    );
-
-                    Tracer::startSpanWithAttributes(HyperTrace::MISSING_STATEMENT_REDIS_INSERT_FAILURES);
-                }
-
-            },
-            60,
-            TraceCode::MISSING_BAS_UPDATE_IN_PROGRESS,
-            3
-        );
+            Tracer::startSpanWithAttributes(HyperTrace::MISSING_STATEMENT_REDIS_INSERT_FAILURES);
+        }
     }
 
     public function compareAndReturnMatchedBASFromFetchedStatements($fetchedStatements = []): array
