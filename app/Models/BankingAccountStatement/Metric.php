@@ -21,7 +21,6 @@ final class Metric
     const MISSING_STATEMENT_BATCH_INSERT_FAILURE              = 'missing_statement_batch_insert_failure';
     const MISSING_STATEMENTS_FOUND                            = 'missing_statements_found';
     const STATEMENT_BALANCES_DO_NOT_MATCH                     = 'statement_balances_do_not_match';
-    const MISSING_STATEMENT_RECON_PAGINATION_KEY_ALREADY_NULL = 'missing_statement_recon_pagination_key_already_null';
     const INSERT_AND_UPDATE_BAS_FAILURE                       = 'insert_and_update_bas_failure';
     const BAS_UPDATE_QUEUE_DISPATCH_FAILURE                   = 'bas_update_queue_dispatch_failure';
     const REMOVAL_OF_INSERTED_STATEMENTS_FROM_REDIS_FAILURE   = 'removal_of_inserted_statements_from_redis_failure';
@@ -35,5 +34,6 @@ final class Metric
     const BAS_UPDATE_COMPLETED_DURATION_SECONDS               = 'bas_update_completed_duration_seconds.histogram';
     const BAS_INSERT_COMPLETED_DURATION_SECONDS               = 'bas_insert_completed_duration_seconds.histogram';
     const MISSING_STATEMENTS_COUNT                            = 'missing_statements_count.histogram';
+    const MISSING_STATEMENT_RECON_PAGINATION_KEY_ALREADY_NULL = 'missing_statement_recon_pagination_key_already_null.histogram';
 }
 

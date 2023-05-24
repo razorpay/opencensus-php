@@ -976,7 +976,7 @@ class Core extends Base\Core
             {
                 $basDetails->setLastReconciledAt($lastReconciledAt);
 
-                $this->repo->saveOrFail($basDetailEntity);
+                $this->repo->saveOrFail($basDetails);
             }
         }
 
@@ -4444,6 +4444,13 @@ class Core extends Base\Core
         // Decide From and To Date from last_reconciled_at from basDetails
         $reconDetails = $this->getFromAndToDateFromLastReconciledAt($accountNumbers, $channel, $lastReconciledAtLimit);
 
+        $this->trace->info(TraceCode::AUTOMATED_ACCOUNT_STATEMENTS_RECON_FILTER, [
+            Entity::CHANNEL    => $channel,
+            'recon_limit'      => $reconLimit,
+            'msg'              => 'filter by last reconciled at method',
+            'priority_acc_nos' => count($reconDetails),
+        ]);
+
         $response = [];
 
         foreach ($reconDetails as $reconDetail)
@@ -4512,13 +4519,33 @@ class Core extends Base\Core
                 $reconlimit = max($reconlimit, 0);
             }
 
+            $this->trace->info(TraceCode::AUTOMATED_ACCOUNT_STATEMENTS_RECON_FILTER, [
+                Entity::CHANNEL    => $channel,
+                'recon_limit'      => $reconlimit,
+                'priority_acc_nos' => count($priorityAccountNumbers),
+            ]);
+
             // Find Account numbers on the basis of gateway_balance_change_at from start of T-1 day to current time
             $accountNumbers = $this->repo->banking_account_statement_details->getAccountNumbersWhereGatewayBalanceIsUpdatedRecently(
                 $channel, $reconlimit);
 
+            $this->trace->info(TraceCode::AUTOMATED_ACCOUNT_STATEMENTS_RECON_FILTER, [
+                Entity::CHANNEL    => $channel,
+                'recon_limit'      => $reconlimit,
+                'msg'              => 'filter by gateway balance',
+                'priority_acc_nos' => count($accountNumbers),
+            ]);
+
             $this->filterAccountNumbersWithPaginationKeyPresent($accountNumbers, $channel);
 
             $accountNumbers = array_unique(array_merge($accountNumbers, $priorityAccountNumbers));
+
+            $this->trace->info(TraceCode::AUTOMATED_ACCOUNT_STATEMENTS_RECON_FILTER, [
+                Entity::CHANNEL    => $channel,
+                'recon_limit'      => $reconlimit,
+                'msg'              => 'filter by array unique',
+                'priority_acc_nos' => count($accountNumbers),
+            ]);
         }
 
         return array_values($accountNumbers);
@@ -4547,6 +4574,12 @@ class Core extends Base\Core
                 );
 
                 $accountNumbers = array_diff($accountNumbers, $accountNumbersWithPaginationKeyNull);
+
+                $this->trace->info(TraceCode::AUTOMATED_ACCOUNT_STATEMENTS_RECON_FILTER, [
+                    Entity::CHANNEL    => $channel,
+                    'msg'              => 'filter by pagination_key',
+                    'priority_acc_nos' => count($accountNumbers),
+                ]);
             }
         }
     }
