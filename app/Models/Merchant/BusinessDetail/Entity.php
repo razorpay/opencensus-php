@@ -166,6 +166,8 @@ class Entity extends Base\PublicEntity
             Constants::ANDROID_APP_PRESENT        => false,
             Constants::IOS_APP_PRESENT            => false,
             Constants::OTHERS_PRESENT             => false,
+            Constants::WHATSAPP_SMS_EMAIL         => false,
+            Constants::SOCIAL_MEDIA_URLS          => [],
         ];
     }
 

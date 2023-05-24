@@ -161,6 +161,8 @@ class Validator extends Base\Validator
         BDConstants::IOS_APP_PRESENT            => 'sometimes|boolean',
         BDConstants::OTHERS_PRESENT             => 'sometimes|boolean',
         BDConstants::ANDROID_APP_PRESENT        => 'sometimes|boolean',
+        BDConstants::WHATSAPP_SMS_EMAIL         => 'sometimes|boolean',
+        BDConstants::SOCIAL_MEDIA_URLS          => 'sometimes|array',
         BDConstants::CONSENT                    => 'sometimes|boolean',
         BDConstants::DOCUMENTS_DETAIL           => 'sometimes|array',
 
@@ -296,6 +298,8 @@ class Validator extends Base\Validator
         BDConstants::IOS_APP_PRESENT                     => 'sometimes|boolean',
         BDConstants::OTHERS_PRESENT                      => 'sometimes|boolean',
         BDConstants::ANDROID_APP_PRESENT                 => 'sometimes|boolean',
+        BDConstants::WHATSAPP_SMS_EMAIL                  => 'sometimes|boolean',
+        BDConstants::SOCIAL_MEDIA_URLS                   => 'sometimes|array',
         Entity::IEC_CODE                                 => 'sometimes|string|max:20',
         BDConstants::CONSENT                             => 'sometimes|boolean',
         BDConstants::DOCUMENTS_DETAIL                    => 'sometimes|array',

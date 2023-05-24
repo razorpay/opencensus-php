@@ -3845,6 +3845,48 @@ return [
         'status_code' => 200,
     ],
 
+    'testAddSocialMediaAndWhatsappUrls' => [
+        'request'  => [
+            'content' => [
+                'whatsapp_sms_email' => true,
+                'social_media_urls' => [
+                    [
+                        'platform' => 'facebook',
+                        'url' => 'https://www.facebook.com/Meta/'
+                    ],
+                    [
+                        'platform' => 'twitter',
+                        'url' => 'https://www.twitter.com/_anant_mishra/'
+                    ]
+                ],
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_business_detail' => [
+                    'website_details' => [
+                        'whatsapp_sms_email' => '1',
+                        'social_media_urls' => [
+                            [
+                                'platform' => 'facebook',
+                                'url' => 'https://www.facebook.com/Meta/'
+                            ],
+                            [
+                                'platform' => 'twitter',
+                                'url' => 'https://www.twitter.com/_anant_mishra/'
+                            ]
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testMerchantActivationOtpSendBanking'  => [
         'request'  => [
             'url'     => '/merchant/activation/otp/send',

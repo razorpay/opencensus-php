@@ -181,6 +181,15 @@ class ActivationTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testAddSocialMediaAndWhatsappUrls()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->setupKycSubmissionForInstantlyActivatedMerchant($merchantId);
+
+        $this->startTest();
+    }
+
     public function testInstantActivationWithInvalidActivationFormMilestone()
     {
         $this->ba->proxyAuth('rzp_test_' .self::DEFAULT_MERCHANT_ID);

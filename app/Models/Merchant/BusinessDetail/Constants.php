@@ -26,6 +26,8 @@ class Constants
     const ANDROID_APP_PRESENT        = 'android_app_present';
     const IOS_APP_PRESENT            = 'ios_app_present';
     const OTHERS_PRESENT             = 'others_present';
+    const WHATSAPP_SMS_EMAIL         = 'whatsapp_sms_email';
+    const SOCIAL_MEDIA_URLS          = 'social_media_urls';
 
     // Lead Score Components
     const GSTIN_SCORE                = 'gstin_score';
@@ -75,6 +77,8 @@ class Constants
         self::ANDROID_APP_PRESENT,
         self::IOS_APP_PRESENT,
         self::OTHERS_PRESENT,
+        self::WHATSAPP_SMS_EMAIL,
+        self::SOCIAL_MEDIA_URLS,
     ];
 
     const MERCHANT_SELECTED_PLUGIN = 'merchant_selected_plugin';
