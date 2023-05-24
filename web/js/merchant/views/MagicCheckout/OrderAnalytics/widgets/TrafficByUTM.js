@@ -62,7 +62,7 @@ const TrafficByUTM = ({ isFetching, data }) => {
         <div className="panel-info">
           <p className="panel-topbar-heading">{data?.title}</p>
           <p className="panel-heading-subtext">
-            Sources, mediums, campaings to track you data better
+            Sources, mediums, campaigns to track your data better
           </p>
         </div>
         <div className="panel-select">

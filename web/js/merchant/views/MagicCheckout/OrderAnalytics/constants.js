@@ -5,11 +5,14 @@ import {
   total_sales,
   total_orders,
 } from 'merchant/views/MagicCheckout/OrderAnalytics/common/cellItem';
-import FbPixelImage from 'assets/payment_pages/fb-pixel-logo.svg';
 
 import { i18HumanReadableCurrency, i18HumanReadableNumerals } from 'common/utils/numerals';
 
 import lazy from 'merchant/routes/LazyLoader';
+import FbIcon from 'assets/payment_pages/fb-pixel-logo.svg';
+import GoogleIcon from 'assets/google-icon-transparent.svg';
+import InstagramIcon from 'assets/instagram-logo.svg';
+import WhatsAppIcon from 'assets/whatsapp.svg';
 
 const AverageOrderValue = lazy(() =>
   import(
@@ -287,8 +290,8 @@ export const UTM_KEYS = {
 export const LIMIT = 10;
 
 export const UTM_SOURCE_ICONS = {
-  facebook: FbPixelImage,
-  google: '/img/google-icon.svg',
-  whatsapp: '/img/whatsapp.svg',
-  instagram: '/img/instagram-logo.svg',
+  facebook: FbIcon,
+  google: GoogleIcon,
+  whatsapp: WhatsAppIcon,
+  instagram: InstagramIcon,
 };
