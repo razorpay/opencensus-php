@@ -383,7 +383,7 @@ class Core extends Base\Core
                     return $routing_detail;
                 }
             }
-            return $routing_detail[0];
+            return $routing_details[0];
         }
     }
 

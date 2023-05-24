@@ -6,6 +6,7 @@ use App;
 use Cache;
 use Carbon\Carbon;
 use RZP\Constants\Environment;
+use RZP\Constants\Product;
 use RZP\Constants\Timezone;
 use RZP\Models\Bank\BankCodes;
 use RZP\Models\Bank\IFSC;
@@ -46,6 +47,8 @@ use RZP\Models\Currency\Currency;
 use RZP\Models\Merchant\InternationalIntegration;
 use function GuzzleHttp\default_ca_bundle;
 use RZP\Models\Payment\Processor\IntlBankTransfer;
+use RZP\Models\Pricing\Service as PricingService;
+use RZP\Models\Pricing\Entity as PricingEntity;
 
 class Service extends Base\Service
 {
@@ -1002,6 +1005,29 @@ class Service extends Base\Service
                     (new InternationalIntegration\Core)->createMerchantInternationalIntegration($merchantInternationalIntegrations);
                 }
 
+                try{
+                    //assign default pricing in case we are on-boarding the merchant for the first time
+                    $this->setDefaultPricing($merchantId,$va_currency);
+                } catch (\Throwable $e) {
+
+                    $this->trace->traceException(
+                        $e,
+                        null,
+                        TraceCode::B2B_EXPORT_DEFAULT_PRICING_PLAN_CREATION_FAILED,
+                        [
+                            'merchant_id'   =>  $merchantId,
+                            'va_currency'  =>  $va_currency,
+                        ]
+                    );
+
+                    throw new Exception\BadRequestException(ErrorCode::SERVER_ERROR_UNABLE_TO_ASSIGN_PRICING_PLAN_FOR_B2B_EXPORT,
+                        null,
+                        [
+                            'error_desc' => $e->getMessage(),
+                            'error_code' => $e->getCode(),
+                        ]);
+                }
+
                 $mii = $this->repo->merchant_international_integrations->getByMerchantIdAndIntegrationEntity(
                     $merchantId,Constants\Entity::CURRENCY_CLOUD);
 
@@ -1020,7 +1046,6 @@ class Service extends Base\Service
                     $merchantId,Constants\Entity::CURRENCY_CLOUD);
 
                 $mii = $this->updateBankAccountDetailsByVACurrency($merchantId,$mii,$va_currency);
-
             },20,
             ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_OPERATION_IN_PROGRESS);
 
@@ -1193,7 +1218,7 @@ class Service extends Base\Service
         if ((in_array($this->app['env'], [Environment::TESTING, Environment::TESTING_DOCKER]) === false) and
             ($addresses->isNotEmpty() === true))
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, $addresses, 
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, $addresses,
                         [
                             'error_desc' => 'Address already saved',
                             'error_code' => 'BAD_REQUEST_ERROR',
@@ -1204,7 +1229,7 @@ class Service extends Base\Service
             (isset($input['country']) === true) and
             ((strtolower($input['country']) === 'in') or (strtolower($input['country']) === 'ind') or (strtolower($input['country']) === 'india')))
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, $input, 
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, $input,
                         [
                             'error_desc' => 'Invalid country',
                             'error_code' => 'BAD_REQUEST_ERROR',
@@ -1228,7 +1253,7 @@ class Service extends Base\Service
     {
         if ($this->merchant->isFeatureEnabled(Feature\Constants::ENABLE_INTL_BANK_TRANSFER) === false)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, 
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null,
                         [
                             'error_desc' => 'Merchant not allowed',
                             'error_code' => 'BAD_REQUEST_ERROR',
@@ -1237,10 +1262,10 @@ class Service extends Base\Service
 
         $payment = $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
 
-        if (($payment->isAuthorized() === false) or 
+        if (($payment->isAuthorized() === false) or
             ($payment->isB2BExportCurrencyCloudPayment() === false))
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, 
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null,
                         [
                             'error_desc' => 'Invalid payment status or method',
                             'error_code' => 'BAD_REQUEST_ERROR',
@@ -1288,8 +1313,8 @@ class Service extends Base\Service
                                 ['type'=> Address\Type::BILLING_ADDRESS]);
 
                 // Transfer_id which we get from CC is stored in Reference16 attribute
-                if($payment->getReference16() != null or 
-                    !$merchant->isFeatureEnabled(Feature\Constants::ENABLE_SETTLEMENT_FOR_B2B) or 
+                if($payment->getReference16() != null or
+                    !$merchant->isFeatureEnabled(Feature\Constants::ENABLE_SETTLEMENT_FOR_B2B) or
                     ($addresses->isEmpty() === true))
                 {
                     $this->trace->info(TraceCode::B2B_TRANSFER_COMPLETION_PENDING,[
@@ -1341,6 +1366,121 @@ class Service extends Base\Service
                 );
             }
         }
+    }
+
+    /**
+     * @throws \Exception in case pricing plan is not set
+     */
+    private function setDefaultPricing($merchantId, $va_currency):void {
+
+        $defaultPricing =  $this->getDefaultPricingForInternationalBankTransfer($merchantId,$va_currency);
+
+        $pricingPlan = (new PricingService)->postAddBulkPricingRules([$defaultPricing]);
+
+        if($pricingPlan["items"][0]["success"] === false)
+        {
+            if ($pricingPlan["items"][0]["error"]["code"] === ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED )
+            {
+                // in case the pricing plan is already present don't throw the exception
+                $this->trace->info(TraceCode::B2B_EXPORT_DEFAULT_PRICING_PLAN_CREATION_SUCCESSFUL,[
+                    'merchant_id'   => $merchantId,
+                    'description'  => $pricingPlan["items"][0]["error"]["description"],
+                    'code'   => ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED
+                ]);
+
+                return;
+            }
+
+            throw new Exception\ServerErrorException('Default Pricing plan creation error',
+                ErrorCode:: SERVER_ERROR_UNABLE_TO_ASSIGN_PRICING_PLAN_FOR_B2B_EXPORT,[
+                    'error_desc' => $pricingPlan["items"][0]["error"]["description"],
+                    'error_code' => $pricingPlan["items"][0]["error"]["code"],
+                ]);
+        }
+        else
+        {
+            $this->trace->info(TraceCode::B2B_EXPORT_DEFAULT_PRICING_PLAN_CREATION_SUCCESSFUL,[
+                'merchant_id'   => $merchantId,
+                'pricing_plan'  => $pricingPlan,
+                'va_currency'   => $va_currency
+            ]);
+        }
+    }
+
+    private function getDefaultPricingForInternationalBankTransfer($merchantId, $va_currency):array {
+        $defaultStaticPricing = [
+            PricingEntity::PRODUCT                  =>  Product::PRIMARY,
+            PricingEntity::FEATURE                  =>  \RZP\Models\Pricing\Feature::PAYMENT,
+            PricingEntity::PAYMENT_METHOD           =>  Payment\Method::INTL_BANK_TRANSFER,
+            PricingEntity::PAYMENT_METHOD_SUBTYPE   =>  "",
+            PricingEntity::INTERNATIONAL            =>  "0",
+            PricingEntity::MERCHANT_ID              =>  $merchantId,
+        ];
+
+        $mode = IntlBankTransfer::ACH;
+        if(strcasecmp($va_currency, Gateway::SWIFT) === 0)
+        {
+            $mode = IntlBankTransfer::SWIFT;
+        }
+
+        return array_merge($this->fetchDefaultPricing($mode,$merchantId),$defaultStaticPricing);
+    }
+
+    private function fetchDefaultPricing($mode,$merchantId): array {
+        $defaultPricing = [];
+        if($mode === IntlBankTransfer::SWIFT)
+        {
+            $defaultPricing = array_merge($defaultPricing,$this->fetchSWIFTDefaultPricing());
+            $defaultPricing["idempotency_key"] = $merchantId."_".IntlBankTransfer::SWIFT;
+        }
+        else
+        {
+            $defaultPricing = array_merge($defaultPricing,$this->fetchACHDefaultPricing());
+            $defaultPricing["idempotency_key"] = $merchantId."_".IntlBankTransfer::ACH;
+        }
+
+        return $defaultPricing;
+    }
+
+    private function fetchACHDefaultPricing() : array {
+        $staticPricing = [
+            PricingEntity::PAYMENT_NETWORK  => IntlBankTransfer::ACH,
+            PricingEntity::PERCENT_RATE     => 200,
+            PricingEntity::FIXED_RATE       => 0,
+        ];
+        $defaultPricing = ConfigKey::get(ConfigKey::DEFAULT_PRICING_FOR_ACH);
+
+        if($defaultPricing == null)
+        {
+            return $staticPricing;
+        }
+
+        return [
+            PricingEntity::PAYMENT_NETWORK  => $staticPricing[PricingEntity::PAYMENT_NETWORK],
+            PricingEntity::PERCENT_RATE     => $defaultPricing[PricingEntity::PERCENT_RATE]??$staticPricing[PricingEntity::PERCENT_RATE],
+            PricingEntity::FIXED_RATE       => $defaultPricing[PricingEntity::FIXED_RATE]??$staticPricing[PricingEntity::FIXED_RATE],
+            ];
+    }
+
+    private function fetchSWIFTDefaultPricing() : array {
+        $staticPricing = [
+            PricingEntity::PAYMENT_NETWORK   => IntlBankTransfer::SWIFT,
+            PricingEntity::PERCENT_RATE      => 200,
+            PricingEntity::FIXED_RATE        => 0,
+        ];
+
+        $defaultPricing = ConfigKey::get(ConfigKey::DEFAULT_PRICING_FOR_SWIFT);
+
+        if($defaultPricing == null)
+        {
+            return $staticPricing;
+        }
+
+        return [
+            PricingEntity::PAYMENT_NETWORK   => $staticPricing[PricingEntity::PAYMENT_NETWORK ],
+            PricingEntity::PERCENT_RATE      => $defaultPricing[PricingEntity::PERCENT_RATE]??$staticPricing[PricingEntity::PERCENT_RATE],
+            PricingEntity::FIXED_RATE        => $defaultPricing[PricingEntity::FIXED_RATE]??$staticPricing[PricingEntity::FIXED_RATE],
+        ];
     }
 
     public function settleFundsFromCurrencyCloudCron()
@@ -1514,7 +1654,7 @@ class Service extends Base\Service
 
         if ($addresses->isEmpty() === true)
         {
-             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, 
+             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null,
                         [
                             'error_desc' => 'Address not present',
                             'error_code' => 'BAD_REQUEST_ERROR',

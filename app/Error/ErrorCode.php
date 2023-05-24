@@ -2940,6 +2940,8 @@ class ErrorCode
 
     const ASV_INTERNAL_PARITY_CHECKER_ERROR                                         = 'ASV_INTERNAL_PARITY_CHECKER_ERROR';
 
+    const SERVER_ERROR_UNABLE_TO_ASSIGN_PRICING_PLAN_FOR_B2B_EXPORT                 = 'SERVER_ERROR_UNABLE_TO_ASSIGN_PRICING_PLAN_FOR_B2B_EXPORT';
+
     static function getConstants()
     {
         $oClass = new \ReflectionClass(__CLASS__);

@@ -2167,4 +2167,27 @@ class Pricing extends Base
 
         return $pricingPlanId;
     }
+
+    public function createPricingPlanWithoutMethods($pricingPlanId,$methods):string
+    {
+        $planName = "dummyPlanName";
+        $rows = $this->getDefultPlanArray($pricingPlanId);
+        $newRows = [];
+        foreach ($rows as $row) {
+            if(in_array($row['payment_method'],$methods,true)) {
+                continue;
+            }
+            //removing aadhar_fp as it fails price creation
+            if(isset($row['payment_method_type']) && $row['payment_method_type'] ==='aadhaar_fp') {
+                continue;
+            }
+            $row['id'] = random_alphanum_string(14);
+            $row['plan_name'] = $planName;
+            $newRows[] = $row;
+        }
+
+        $this->addPricingRulesToDb($newRows);
+
+        return $pricingPlanId;
+    }
 }

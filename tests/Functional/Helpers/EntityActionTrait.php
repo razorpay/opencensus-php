@@ -150,6 +150,16 @@ trait EntityActionTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    protected function fetchMerchantPricingPlan( $id = '10000000000000')
+    {
+        $request = [
+            'url' => '/merchants/'.$id.'/pricing',
+            'method' => 'GET',
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function merchantEditCredits($id, $credits)
     {
         $request = array(

@@ -249,6 +249,8 @@ class Validator extends Base\Validator
         ConfigKey::UNEXPECTED_PAYMENT_DELAY_REFUND                                     => 'filled|integer',
         ConfigKey::DIRECT_TRANSFER_LIMITS                                              => 'filled|array',
         ConfigKey::ACCOUNT_SUB_ACCOUNT_RESTRICTED_PERMISSIONS_LIST                     => 'filled|array',
+        ConfigKey::DEFAULT_PRICING_FOR_ACH                                             => 'filled|array',
+        ConfigKey::DEFAULT_PRICING_FOR_SWIFT                                           => 'filled|array',
     ];
 
     protected static $setRedisKeysRules = [

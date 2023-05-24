@@ -381,6 +381,11 @@ class ConfigKey
 
     const DIRECT_TRANSFER_LIMITS                    = self::PREFIX . 'direct_transfer_limits';
 
+    // default pricing plan values for intl_bank_transfer
+    const DEFAULT_PRICING_FOR_ACH                   = self::PREFIX . 'default_pricing_for_ach';
+
+    const DEFAULT_PRICING_FOR_SWIFT                 = self::PREFIX . 'default_pricing_for_swift';
+
     const PUBLIC_KEYS = [
         self::TENANT_ROLES_ENTITY,
         self::TENANT_ROLES_ROUTES,
@@ -540,6 +545,8 @@ class ConfigKey
         self::DIRECT_TRANSFER_LIMITS,
         self::RX_CA_MISSING_STATEMENT_DETECTION_RBL,
         self::RX_CA_MISSING_STATEMENT_DETECTION_ICICI,
+        self::DEFAULT_PRICING_FOR_ACH,
+        self::DEFAULT_PRICING_FOR_SWIFT,
     ];
 
     const REDIS_CONFIG_MAP = [
