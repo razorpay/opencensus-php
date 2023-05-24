@@ -231,7 +231,10 @@ export default function applicationReducer(state = initialState, action) {
 
     case `${REVOKE_ACCESS_TOKEN}::SUCCESS`:
       return merge(state, {
-        tokens: remove(state.tokens, (item) => item.id === action.payload.id),
+        tokens: remove(
+          state.tokens,
+          (item) => item.id ?? item.application_id === action.payload.id,
+        ),
         loading: false,
       });
 
