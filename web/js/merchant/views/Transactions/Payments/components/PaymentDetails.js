@@ -90,7 +90,7 @@ function PaymentDetails(props) {
   });
 
   const initiatePage = params?.init_page;
-  const screen = initiatePage?.split('.')[0];
+  const screen = initiatePage?.split('.')[0] || 'Payment Details';
   const page = initiatePage?.split('.')[1];
 
   const { isRoutePartnershipEnabled, isRoutePlusPartnershipsEnabled } = user;

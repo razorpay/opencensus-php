@@ -1,3 +1,4 @@
+import { Modules } from 'common/constant/enums';
 import { User } from 'common/typings';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
@@ -86,7 +87,7 @@ export const getQueryParamMapping = ({
 export const makeAnalytics = ({
   id,
   value,
-  screen,
+  screen = Modules.BusinessSettings,
   selfServeActionName,
   analyticsEventInfo,
 }: InfoDataInterface & { screen: string }): void => {
