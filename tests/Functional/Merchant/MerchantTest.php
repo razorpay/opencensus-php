@@ -4879,10 +4879,10 @@ Team Razorpay',
             });
     }
 
-    public function expectStorkSmsRequest($storkMock, $templateName, $destination, $expectedParams = [])
+    public function expectStorkSmsRequest($storkMock, $templateName, $destination, $expectedParams = [], $count = 1)
     {
         $storkMock->shouldReceive('sendSms')
-                  ->times(1)
+                  ->times($count)
                   ->with(
                       Mockery::on(function($mockInMode) {
                           return true;

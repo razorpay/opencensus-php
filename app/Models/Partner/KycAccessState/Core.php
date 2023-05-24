@@ -4,6 +4,7 @@ namespace RZP\Models\Partner\KycAccessState;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
 use RZP\Exception;
@@ -101,6 +102,8 @@ class Core extends Base\Core
 
         $this->sendKycAccessRequestEmail($partner, $subMerchantKycAccess);
 
+        $this->sendKycAccessRequestSms($partner, $subMerchantKycAccess);
+
         return $subMerchantKycAccess;
     }
 
@@ -115,10 +118,79 @@ class Core extends Base\Core
         $viewPayload['approve_url'] = $websiteUrl. '/submerchant-kyc-access-request/?' . http_build_query(array('entity_id' => $kycAccess->getEntityId(), 'approve_token' => $kycAccess->getApprovedToken(), 'partner_id' => $kycAccess->getPartnerId()));
         $viewPayload['reject_url'] = $websiteUrl. '/submerchant-kyc-access-request/?' . http_build_query(array('entity_id' => $kycAccess->getEntityId(), 'reject_token' => $kycAccess->getRejectToken(), 'partner_id' => $kycAccess->getPartnerId()));
 
-        $mail = new PartnerEmail\KycAccessRequest($viewPayload);
-        Mail::send($mail);
+        try
+        {
+            $mail = new PartnerEmail\KycAccessRequest($viewPayload);
+            Mail::send($mail);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->count(PartnerMetric::PARTNER_KYC_REQUEST_EMAIL_FAILED);
+
+            $this->trace->traceException($e, Trace::CRITICAL, TraceCode::PARTNER_KYC_REQUEST_EMAIL_FAILED, [
+                'merchant_id'      => $merchant->getId(),
+                'partner_id'       => $partner->getId()
+            ]);
+        }
+
     }
 
+    /**
+     *
+     * Sends  kyc access request Sms to sub merchant with approval and reject option.
+     *
+     * @param Merchant\Entity $partner
+     * @param Entity $kycAccess
+     *
+     */
+    protected function sendKycAccessRequestSms(Merchant\Entity $partner, Entity $kycAccess)
+    {
+        $merchant = $this->repo->merchant->findOrFail($kycAccess->getEntityId());
+
+        $websiteUrl = $this->app['config']->get('app.razorpay_website_url');
+
+        $smsPayload['submerchant_name'] = $merchant->getName();
+        $smsPayload['partner_name']     = $partner->getName();
+
+        $approveUrl    = $websiteUrl. '/submerchant-kyc-access-request/?' . http_build_query(array('entity_id' => $kycAccess->getEntityId(), 'approve_token' => $kycAccess->getApprovedToken(), 'partner_id' => $kycAccess->getPartnerId()));
+        $rejectUrl     = $websiteUrl. '/submerchant-kyc-access-request/?' . http_build_query(array('entity_id' => $kycAccess->getEntityId(), 'reject_token' => $kycAccess->getRejectToken(), 'partner_id' => $kycAccess->getPartnerId()));
+        $smsPayload['approve_url']      = $this->app['elfin']->shorten($approveUrl);
+        $smsPayload['reject_url']       = $this->app['elfin']->shorten($rejectUrl);
+
+        try
+        {
+            if(empty($merchant->merchantDetail->getContactMobile()) === false)
+            {
+                $smsPayload = [
+                    'ownerId'           => $merchant->getId(),
+                    'ownerType'         => 'merchant',
+                    'orgId'             => $merchant->getOrgId(),
+                    'sender'            => 'RZRPAY',
+                    'destination'       => $merchant->merchantDetail->getContactMobile(),
+                    'templateName'      => 'Sms.Submerchant_kyc_access.Requested',
+                    'templateNamespace' => 'partnerships',
+                    'language'          => 'english',
+                    'contentParams'     => [
+                        'subMerchantName'        => $smsPayload['submerchant_name'],
+                        'partnerName'            => $smsPayload['partner_name'],
+                        'approvalUrl'            => $smsPayload['approve_url'],
+                        'rejectUrl'              => $smsPayload['reject_url'],
+                    ]
+                ];
+
+                $this->app->stork_service->sendSms($this->mode, $smsPayload);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->count(PartnerMetric::PARTNER_KYC_REQUEST_SMS_FAILED);
+
+            $this->trace->traceException($e, Trace::CRITICAL, TraceCode::PARTNER_KYC_REQUEST_SMS_FAILED, [
+                'merchant_id'      => $merchant->getId(),
+                'partner_id'       => $partner->getId()
+            ]);
+        }
+    }
     /**
      * Trigger sending Email/SMS/Whatsapp to partner when KYC access request is confirmed or rejected
      *

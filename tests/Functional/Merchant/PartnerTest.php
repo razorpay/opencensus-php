@@ -182,6 +182,18 @@ class PartnerTest extends OAuthTestCase
         $this->ba->proxyAuth();
         $this->createResellerPartnerSubmerchant();
 
+        $this->fixtures->on('test')->edit('merchant_detail', self::DEFAULT_SUBMERCHANT_ID, ['contact_mobile' => '+919123456789']);
+        $this->fixtures->on('live')->edit('merchant_detail', self::DEFAULT_SUBMERCHANT_ID, ['contact_mobile' => '+919123456789']);
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $merchantTestUtil = new MerchantTest();
+        $merchantTestUtil->expectStorkSmsRequest($storkMock, 'Sms.Submerchant_kyc_access.Requested', '+919123456789', [
+            'subMerchantName'      => 'submerchant',
+        ], 2);
+
         $response1 = $this->startTest();
 
         // running twice shouldn't give any error

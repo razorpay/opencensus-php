@@ -82,4 +82,7 @@ final class Metric
     const PARTNERS_KYC_ACTIVATION_STATUS_TOTAL = 'partners_kyc_activation_status_total';
     const PARTNERS_ACTIVATED_TOTAL = 'partners_activated_total';
     const PARTNER_MARKED_SUB_MERCHANT_TOTAL = 'partner_marked_sub_merchant_total';
+
+    const PARTNER_KYC_REQUEST_EMAIL_FAILED   = 'partner_kyc_request_email_failed';
+    const PARTNER_KYC_REQUEST_SMS_FAILED   = 'partner_kyc_request_sms_failed';
 }
