@@ -1,4 +1,4 @@
-const { EmailCredentials, MobileCredentials } = require('./constants');
+const { EmailCredentials, MobileCredentials, ActivatedNotIECredentials } = require('./constants');
 
 function getBaseUrl() {
   const baseUrl = process.env.E2E_BASE_URL || 'https://dashboard.dev.razorpay.in';
@@ -15,6 +15,7 @@ function getCredentials() {
   return {
     emailCred: EmailCredentials,
     mobileCred: MobileCredentials,
+    activatedNotIe: ActivatedNotIECredentials,
   };
 }
 

@@ -34,6 +34,7 @@
     "test:setup": "cd web && yarn test:setup",
     "test:e2e": "cd web && yarn test:e2e",
     "test:e2e:auth": "cd web && yarn test:e2e:auth",
+    "test:e2e:payments-automation": "cd web && yarn test:e2e:payments-automation",
     "test:e2e:flow": "bash run-e2e.sh",
     "test:e2e-infra": "cd web && yarn test:e2e-infra"
   },

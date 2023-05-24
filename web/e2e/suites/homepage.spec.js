@@ -1,6 +1,20 @@
 const { test, expect } = require('@playwright/test');
 const { StorageStatePath, routes } = require('../utils/constants');
 
+const HOMEPAGE_SELECTORS = {
+  analytics: {
+    dropdown: '#analytics-daterange-picker >> .PowerSelect__Trigger',
+    dropdownLabel: '#analytics-daterange-picker >> .PowerSelect__TriggerLabel',
+  },
+  keyMetrics: {
+    dropdown: '#keymetrics-grouping >> .PowerSelect__Trigger',
+    dropdownLabel: '#keymetrics-grouping >> .PowerSelect__TriggerLabel',
+    volumeOption: '.PowerSelect__Option[data-option-index="0"]',
+    paymentmethodOption: '.PowerSelect__Option[data-option-index="1"]',
+  },
+};
+
+test.setTimeout(1 * 60 * 1000);
 test.describe.parallel('Test dashboard landing page @flow=home', () => {
   test.use({
     storageState: StorageStatePath.EMAIL_TEST_LOGIN_STATE,
@@ -15,20 +29,23 @@ test.describe.parallel('Test dashboard landing page @flow=home', () => {
     // const datePicker = page.locator('#analytics-daterange-picker');
     // await expect(datePicker).toBeVisible();
   });
-  test('should show days intervals in analytics chart', async ({ page }) => {
-    const calenderDropdownBtn = await page.locator(
-      "//div[@class='presets-container pull-left']//span[@class='PowerSelect__TriggerStatus']",
-    );
+
+  // roast test selectAndVerifyCalenderDropdownTest
+  test('should show days intervals in analytics chart @suite=payments-automation', async ({
+    page,
+  }) => {
+    await page.waitForSelector(HOMEPAGE_SELECTORS.analytics.dropdown, {
+      state: 'visible',
+    });
+    const calenderDropdownBtn = await page.locator(HOMEPAGE_SELECTORS.analytics.dropdown);
     await expect(calenderDropdownBtn).toBeVisible();
 
     const verifyDropDownOption = async ({ ctaText, ctaIndex, value }) => {
       await calenderDropdownBtn.click();
       await page.locator(`[data-option-index="${ctaIndex}"]`).filter({ hasText: ctaText }).click();
       const selectedOption = await page
-        .locator(
-          "//div[@class='rzp-daterange-picker clearfix']//descendant::div[@class='PowerSelect__Trigger']/div",
-        )
-        .textContent();
+        .locator(HOMEPAGE_SELECTORS.analytics.dropdownLabel)
+        .innerText();
       expect(selectedOption).toEqual(ctaText);
 
       const startDateText = await page.getByPlaceholder('Start Date').inputValue();
@@ -60,34 +77,32 @@ test.describe.parallel('Test dashboard landing page @flow=home', () => {
     });
   });
 
-  test('should show settlement link and redirect to settlement page', async ({ page }) => {
+  // roast test verifySettlementLinkTest
+  test('should show settlement link and redirect to settlement page @suite=payments-automation', async ({
+    page,
+  }) => {
     const settlementRedirectCTA = page.getByRole('link', { name: 'View Settlements' });
     await expect(settlementRedirectCTA).toBeVisible();
     await settlementRedirectCTA.click();
     await expect(page).toHaveURL(routes.SETTLEMENTS);
   });
 
-  test('should show total volume dropdown', async ({ page }) => {
-    const dropDown = await page
-      .locator(
-        '.grouping-dropdown > .rzp-group > div:nth-child(2) > .PowerSelect > .PowerSelect__Trigger > .PowerSelect__TriggerLabel',
-      )
-      .first();
+  // roast test clickAndVerifyByTotalVolumeDropdownTest
+  test('should show total volume dropdown @suite=payments-automation', async ({ page }) => {
+    const dropDown = await page.locator(HOMEPAGE_SELECTORS.keyMetrics.dropdown);
     await expect(dropDown).toBeVisible();
 
-    const dropDownLabel = await page.locator(
-      "//div[@class='PowerSelect react-normal-select PowerSelect--focused']//div[@class='PowerSelect__TriggerLabel']",
-    );
-    expect(dropDownLabel).toBeVisible();
-
     await dropDown.click();
-    const paymentMethodOption = await page.locator('.PowerSelect__Options > div:nth-child(2)');
+    const paymentMethodOption = await page.locator(
+      HOMEPAGE_SELECTORS.keyMetrics.paymentmethodOption,
+    );
     await expect(paymentMethodOption).toBeVisible();
     await paymentMethodOption.click();
+    const dropDownLabel = await page.locator(HOMEPAGE_SELECTORS.keyMetrics.dropdownLabel);
     await expect(await dropDownLabel.innerText()).toBe('By Payment Method');
 
     await dropDown.click();
-    const paymentvolumeOption = await page.locator('.PowerSelect__Options > div:nth-child(1)');
+    const paymentvolumeOption = await page.locator(HOMEPAGE_SELECTORS.keyMetrics.volumeOption);
     await expect(paymentvolumeOption).toBeVisible();
     await paymentvolumeOption.click();
     await expect(await dropDownLabel.innerText()).toBe('By Total Volume');

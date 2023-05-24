@@ -115,6 +115,7 @@
     "test:e2e": "universe-test web-e2e test",
     "test:setup": "universe-test web-e2e install",
     "test:e2e:auth": "yarn test:e2e --grep '@flow=auth' --project 'chromium'",
+    "test:e2e:payments-automation": "yarn test:e2e --grep '@suite=payments-automation' --project 'chromium'",
     "devstack-deploy": "universe-test infra-e2e devstack-deploy",
     "devstack-revert": "universe-test infra-e2e devstack-revert",
     "test:e2e-infra": "universe-test infra-e2e e2e-run",

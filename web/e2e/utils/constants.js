@@ -5,6 +5,7 @@ const StorageStatePath = {
   EMAIL_LIVE_LOGIN_STATE: `${BASE_PATH}/desktop-live-mode-login.json`,
   MOBILE_TEST_LOGIN_STATE: `${BASE_PATH}/mobile-test-mode-login.json`,
   MOBILE_LIVE_LOGIN_STATE: `${BASE_PATH}/mobile-live-mode-login.json`,
+  ACTIVATED_NOT_IE_STATE: `${BASE_PATH}/activated-not-ie-login.json`,
 };
 
 const routes = {
@@ -18,6 +19,11 @@ const routes = {
   TRANSACTION_LIMITS: '/app/payments-and-refunds-settings/transaction-limits',
   MANAGE_TEAM: '/app/business-settings/team',
   SETTLEMENTS: '/app/settlements',
+  GST_DETAILS: '/app/business-settings/gst',
+  SMS_NOTIFICATIONS: '/app/notification-settings/sms',
+  API_KEYS: '/app/website-app-settings/api-keys',
+  WEBHOOKS: '/app/website-app-settings/webhooks',
+  CUSTOMERS: '/app/customers',
   CUSTOMER_SUPPORT_DETAILS: '/app/business-settings/customer-support',
 };
 
@@ -53,9 +59,19 @@ const MobileCredentials = [
   },
 ];
 
+const ActivatedNotIECredentials = [
+  {
+    type: 'activated-not-ie-login.json',
+    username: process.env.ACTIVATED_NOT_IE_USERNAME,
+    password: process.env.ACTIVATED_NOT_IE_PASSWORD,
+    storagePath: StorageStatePath.ACTIVATED_NOT_IE_STATE,
+  },
+];
+
 module.exports = {
   routes,
   EmailCredentials,
   MobileCredentials,
+  ActivatedNotIECredentials,
   StorageStatePath,
 };

@@ -145,7 +145,7 @@ function SmsNotification({ currentUser, showNotification }) {
           {sms_optin ? (
             <b className="text-primary">Enabled</b>
           ) : (
-            <b className="text-faded">Disbaled</b>
+            <b className="text-faded">Disabled</b>
           )}
         </span>
       </div>
