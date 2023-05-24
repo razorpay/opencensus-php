@@ -1964,6 +1964,7 @@ export default class User {
       la: getSplitzExperimentVariant('la_reports_revamp')?.variables?.result === 'on',
       overviewRecents:
         getSplitzExperimentVariant('reports_revamp_recents')?.variables?.result === 'on',
+      schedules: getSplitzExperimentVariant('reports_schedules')?.variables?.result === 'on',
     };
   }
 
