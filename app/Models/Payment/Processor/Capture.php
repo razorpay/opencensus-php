@@ -285,6 +285,12 @@ trait Capture
             return false;
         }
 
+        if ($payment->getCpsRoute() === Payment\Entity::REARCH_CARD_PAYMENT_SERVICE)
+         {
+            $payment->enableCardPaymentService();
+         }
+
+
         $data = $this->getGatewayDataForCapture($payment);
 
         if ($payment->isMethodCardOrEmi())

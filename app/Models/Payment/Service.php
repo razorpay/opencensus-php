@@ -1808,7 +1808,7 @@ class Service extends Base\Service
             $payments = $this->repo->payment->fetchPendingCapturePaymentsBetweenTimestamps($from, $to, $limit);
         }
 
-        $total = $payments->count();
+        $total = sizeof($payments);
         $success = 0;
 
         foreach ($payments as $payment)
