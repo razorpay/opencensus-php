@@ -1276,6 +1276,7 @@ class Service extends Base\Service
         foreach ($txns as $txn)
         {
             $response = [
+                'id'          => $txn->getId(),
                 'amount'      => $txn->getAmount(),
                 'fees'        => $txn->getFee(),
                 'tax'         => $txn->getTax(),
