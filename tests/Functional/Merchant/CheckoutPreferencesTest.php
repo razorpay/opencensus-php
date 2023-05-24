@@ -727,7 +727,8 @@ class CheckoutPreferencesTest extends TestCase
             'issuer'          => 'HDFC',
             'emi_durations'   => [6],
             'payment_network' => null,
-            'payment_method_type' => 'credit'
+            'payment_method_type' => 'credit',
+            'min_amount' => 100000
         ]);
 
         $order = $this->fixtures->order->createWithOffers($offer, [

@@ -69,13 +69,29 @@ class Service extends Base\Service
             {
                 $minEmiAmount = Calculator::calculateMinAmount($minAmount, $plan->getMerchantPayback());
 
-                if ($order->getAmount() >= $minEmiAmount)
+                $minOfferAmount = 0;
+
+                if(isset($emiOfferPlans[$plan->getId()]))
+                {
+                    $offerId = $emiOfferPlans[$plan->getId()];
+
+                    foreach($offers as $offer)
+                    {
+                        if ($offer->getPublicId() === $offerId)
+                        {
+                            $minOfferAmount = $offer->getMinAmount();
+                            break;
+                        }
+                    }
+                }
+
+                if ($order->getAmount() >= max($minEmiAmount,$minOfferAmount) )
                 {
                     $emiOptions[$issuer][] = [
                         'duration'           => $duration,
                         'interest'           => 0,
                         'subvention'         => Subvention::MERCHANT,
-                        'min_amount'         => $minEmiAmount,
+                        'min_amount'         => max($minEmiAmount,$minOfferAmount),
                         'offer_id'           => $emiOfferPlans[$plan->getId()],
                         'merchant_payback'   => $merchant_payback,
                     ];
