@@ -74,7 +74,7 @@ test('should not render msme option for Business Registration Proof if experimen
     'SELECT REGISTRATION PROOF TYPE',
   )[0];
   fireEvent.click(businessRegistrationProofSelect);
-  expect(screen.queryAllByText('Udyam/ MSME Certificate')).toHaveLength(0);
+  expect(screen.queryAllByText('Udyam certificate')).toHaveLength(0);
 });
 
 test('should render msme option for Business Registration Proof if experiment is enabled', async () => {
@@ -104,7 +104,7 @@ test('should render msme option for Business Registration Proof if experiment is
     'SELECT REGISTRATION PROOF TYPE',
   )[0];
   fireEvent.click(businessRegistrationProofSelect);
-  expect(screen.queryAllByText('Udyam/ MSME Certificate')).toHaveLength(1);
+  expect(screen.queryAllByText('Udyam certificate')).toHaveLength(1);
 });
 
 test('should render all option available for Address ', async () => {

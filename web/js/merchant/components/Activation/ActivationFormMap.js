@@ -1601,17 +1601,28 @@ const uploadFields = [
     _cmp: Input.Select,
     _optionsFn: (activation) => {
       const options = [];
+      const BusinessRegisterDocuments = [];
       Object.keys(BUSINESS_PROOF_TYPE_DOCS).forEach((type) => {
         if (
           type !== BUSINESS_PROOF_CERTIFICATE_TYPES.MSME_CERTIFICATE ||
           (type === BUSINESS_PROOF_CERTIFICATE_TYPES.MSME_CERTIFICATE &&
             activation.props.user.isMsmeCertificateEnabled)
         ) {
+          BusinessRegisterDocuments.push(BUSINESS_PROOF_TYPE_DOCS[type]);
           options.push({
             label: BUSINESS_PROOF_TYPE_DOCS[type],
             name: type,
           });
         }
+      });
+      analyticsTrack({
+        objectName: 'Business Registration Documents',
+        actionName: 'Loaded',
+        screen: 'home page',
+        properties: {
+          pageTitle: 'Document Upload',
+          businessProofDocuments: BusinessRegisterDocuments,
+        },
       });
       return options;
     },

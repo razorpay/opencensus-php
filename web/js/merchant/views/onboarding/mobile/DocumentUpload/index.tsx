@@ -251,12 +251,31 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
   }, [addressDoc, businessDoc, bankDoc, additionalDoc, data, hasNonMandatoryEmail]);
 
   useEffect(() => {
+    const BusinessRegisterDocuments: string[] = [];
+    Object.keys(BUSINESS_PROOF_TYPE_DOCS).forEach((business_proof_type) => {
+      if (
+        business_proof_type !== BUSINESS_PROOF_CERTIFICATE_TYPES.MSME_CERTIFICATE ||
+        (business_proof_type === BUSINESS_PROOF_CERTIFICATE_TYPES.MSME_CERTIFICATE &&
+          isMsmeCertificateEnabled)
+      ) {
+        BusinessRegisterDocuments.push(BUSINESS_PROOF_TYPE_DOCS[business_proof_type]);
+      }
+    });
     trackEvents({
       objectName: 'Page',
       actionName: 'Viewed',
       screen: 'home page',
       properties: {
         pageTitle: 'Document Upload',
+      },
+    });
+    trackEvents({
+      objectName: 'Business Registration Documents',
+      actionName: 'Loaded',
+      screen: 'home page',
+      properties: {
+        pageTitle: 'Document Upload',
+        businessProofDocuments: BusinessRegisterDocuments,
       },
     });
   }, []);
