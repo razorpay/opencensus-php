@@ -18,6 +18,7 @@ import {
   BankTransferConfigInterface,
 } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/types';
 import { GREYED, ACTION_REQUIRED } from 'merchant/views/Settings/PaymentMethods/constants';
+import { VA_USD } from 'merchant/views/Settings/PaymentMethods/components/LocalWireTransfer/constants';
 
 const FircFormModal = lazy(
   () =>
@@ -26,7 +27,7 @@ const FircFormModal = lazy(
     ),
 );
 
-const withBankTransferConfig = (Component) => {
+const withBankTransferConfig = (Component, method = VA_USD) => {
   const BankTransferConfig: React.FC<BankTransferConfigInterface> = ({
     accounts,
     isFetching,
@@ -60,7 +61,7 @@ const withBankTransferConfig = (Component) => {
     const getContainerError = (): ContainerErrorType | boolean => {
       if (!purposeCode) {
         return {
-          message: 'Purpose code is required for activating SWIFT account',
+          message: `Purpose code is required for activating ${method} account`,
           action: (
             <p>
               Update your <a onClick={addPurposeCode}>purpose code</a>

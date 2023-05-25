@@ -73,4 +73,7 @@ const mapDispatchToProps = (dispatch) =>
     dispatch,
   );
 
-export default withBankTransferConfig(connect(null, mapDispatchToProps)(SwiftBankTransfer));
+export default withBankTransferConfig(
+  connect(null, mapDispatchToProps)(SwiftBankTransfer),
+  VA_SWIFT,
+);
