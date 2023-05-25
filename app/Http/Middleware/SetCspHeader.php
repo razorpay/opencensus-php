@@ -19,7 +19,7 @@ class SetCspHeader
         $response = $next($request);
 
         $response->headers->set('Content-Security-Policy', $this->getCspPolicy());
-        
+
         if($response instanceof StreamedResponse)
         {
             return $response;
@@ -32,7 +32,7 @@ class SetCspHeader
         $env = \App::environment();
 
         if ($env === 'production') {
-            return 'frame-ancestors self https://razorpay.com https://*.razorpay.com';
+            return 'frame-ancestors self https://razorpay.com https://*.razorpay.com https://razorpay.lightning.force.com';
         }
 
         return 'frame-ancestors self https://*.razorpay.in';
