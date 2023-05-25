@@ -3432,7 +3432,7 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
 
         // reset mock
-        $xsegmentMock->expects($this->any())->method('pushIdentifyandTrackEvent')->willReturn(true);;
+        $this->getXSegmentMock();
 
         $updatedBankingAccount = $this->getDbEntityById('banking_account', $bankingAccount['id']);
 
