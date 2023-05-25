@@ -5993,9 +5993,7 @@ class Service extends Base\Service
             }
         }
 
-        if($merchant->Is3dsDetailsRequiredEnabled()) {
-            $data[EntityConstants::MERCHANT_DETAIL]['authentication_out_of_band'] = $this->getMerchant3DSOnboardingDetails($merchant);
-        }
+        $data[EntityConstants::MERCHANT_DETAIL]['authentication_out_of_band'] = $this->getMerchant3DSOnboardingDetails($merchant);
 
         $isPayoutService = app('basicauth')->isPayoutService();
 
