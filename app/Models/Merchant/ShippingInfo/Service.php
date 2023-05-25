@@ -2,6 +2,10 @@
 
 namespace RZP\Models\Merchant\ShippingInfo;
 
+use RZP\Http\Controllers\MagicCheckoutController;
+use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutService\Client;
+use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutService\Client as MagicCheckoutServiceClient;
+use RZP\Models\Merchant\OneClickCheckout\Shopify\StateMap;
 use RZP\Models\Order\Entity;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator;
@@ -175,6 +179,8 @@ class Service extends Base\Service
 
             $cachedResponse = $this->getShippingInfoFromCache($orderId, $address, $order->getAmount());
 
+            $isDigitalProduct = false;
+
             if (!empty($cachedResponse))
             {
                 $this->trace->debug(TraceCode::MERCHANT_SHIPPING_INFO_NO_UNCACHED_ADDRESS, ["order_id" => $orderId]);
@@ -230,6 +236,8 @@ class Service extends Base\Service
                     'order_id' => $order->toArrayPublic()['notes']['storefront_id'],
                     'address' => array_merge($address, [self::SHIPPING_INFO_ID => 0]),
                 ]);
+                $isDigitalProduct = $decodedResponse['is_digital_product'];
+                unset($decodedResponse['is_digital_product']);
 
                 if (empty($decodedResponse['use_fallback']) === false) {
                     unset($decodedResponse['use_fallback']);
@@ -371,6 +379,87 @@ class Service extends Base\Service
             }
 
             }
+
+            $configs = $this->repo->merchant_1cc_configs->findByMerchantAndConfigArray(
+                $this->merchant->getId(),
+                [Merchant1ccConfig\Type::COD_ENGINE, Merchant1ccConfig\Type::COD_ENGINE_TYPE]
+            );
+
+            $codEngineConfigs = array();
+            foreach ($configs as $config) {
+                $codEngineConfigs[$config->getConfig()] = $config->getValue();
+            }
+            // It will be executed if merchant has opted for magic-cod-engine
+            if ($codEngineConfigs[Merchant1ccConfig\Type::COD_ENGINE] === '1')
+            {
+                $rzpOrderId = $order->getPublicId();
+                $orderAmount = $orderMetaArray['line_items_total'];
+                $inputOrder = [
+                    'id'     => $rzpOrderId,
+                    'amount' => $orderAmount
+                ];
+                // cod engine uses shopify locations codes , override google location with shopify
+                $stateCode = $stateCodeFromName = (new StateMap)->getPincodeMappedStateCode($address['zipcode']);
+
+                if ($stateCode === null)
+                {
+                    $stateCode = (new StateMap)->getShopifyStateCode($address);
+
+                    $stateCodeFromName = (new StateMap)->getShopifyStateCodeFromName($address);
+                }
+                $location = [
+                    'zipcode'      => $address['zipcode'],
+                    'state_code'   => strtoupper($stateCode ?? $stateCodeFromName),
+                    'country_code' => strtoupper($address['country'])
+                ];
+                $codEngineEvaluateRequest = [
+                    'merchant_id' => $this->merchant->getMerchantId(),
+                    'type'        => $codEngineConfigs[Merchant1ccConfig\Type::COD_ENGINE_TYPE],
+                    'order'       => $inputOrder,
+                    'location'    => $location
+                ];
+
+                if ($isDigitalProduct === false)
+                {
+                    // default values in case of failures.
+                    $isCodEligible = false;
+                    $codFee = 0;
+                    try
+                    {
+                        $res = $this->app['magic_checkout_cod_engine_service']->evaluate($codEngineEvaluateRequest);
+                        $isCodEligible = $res['cod'];
+                        $codFee = $res['cod_fee'];
+                    }
+                    catch(\Exception $ex){
+                        $this->trace->count(
+                            Metric::MAGIC_COD_ENGINE_EVALUATE_API_ERROR_COUNT,
+                            array_merge($dimensions, ['code' => $ex->getCode()])
+                        );
+
+                        $this->trace->error(TraceCode::MAGIC_COD_ENGINE_EVALUATE_CALL_ERROR,
+                            [
+                                'code'        => $ex->getCode(),
+                                'message'     => $ex->getMessage(),
+                                'merchant_id' => $this->merchant->getMerchantId()
+                            ]
+                        );
+                    }
+                    $this->trace->info(TraceCode::MAGIC_COD_ENGINE_EVALUATE_CALL_SUCCESS,
+                        [
+                            'response' => $res,
+                        ]
+                    );
+                    $address['cod'] = $isCodEligible;
+                    $address['cod_fee'] = $codFee;
+                    // set cod fee for all shipping methods to support multiple shipping
+                    foreach ($address['shipping_methods'] as &$method)
+                    {
+                        $method['cod'] = $isCodEligible;
+                        $method['cod_fee'] = $codFee;
+                    }
+                }
+            }
+
             $this->cacheMerchantShippingInfo($orderId, $address, $order->getAmount());
             $this->recordShippingInfoResp($address, $dimensions);
             return [self::SHIPPING_INFO_ADDRESSES => [$address]];

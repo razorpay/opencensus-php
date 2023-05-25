@@ -114,6 +114,8 @@ final class Metric
 
     const ZIP_CODE_WITHOUT_ADDRESS_FOUND_COUNT          = 'zip_code_without_address_found_count';
 
+    const MAGIC_COD_ENGINE_EVALUATE_API_ERROR_COUNT     = 'magic_cod_engine_evaluate_api_error_count';
+
     const WOOCOMMERCE_UPDATE_ORDER_STATUS_SUCCESS_COUNT     = 'woocommerce_update_order_status_success_count';
     const WOOCOMMERCE_UPDATE_ORDER_STATUS_ERROR_COUNT       = 'woocommerce_update_order_status_error_count';
     const WOOCOMMERCE_UPDATE_ORDER_STATUS_CALL_TIME         = 'woocommerce_update_order_status_call_time';

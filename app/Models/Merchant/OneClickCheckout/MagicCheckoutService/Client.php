@@ -109,12 +109,12 @@ class Client
     }
 
     // In case of `GET` requests the $content passed to `Requests::request(...)` must be an
-    /// array as it is converted to URL params.
+    // array as it is converted to URL params.
     // For other requests it should be a stringified JSON. As PHP treats objects as arrays we need to use
     // `JSON_FORCE_OBJECT` flag to ensure we always pass `{}` instead of `[]` in the body.
     protected function makeRequest($url, $headers, $content, $method, $options)
     {
-        if ($method !== "GET")
+        if ($method !== "GET" and $method !== "DELETE")
         {
             if (empty($content) === true)
             {
@@ -177,5 +177,4 @@ class Client
             self::TIMEOUT => $this->config['timeout'],
         ];
     }
-
 }

@@ -4249,6 +4249,21 @@ class Route
 
         'get_affordability_suite'                 => ['get',          'affordability',                                         'AffordabilityController@__invoke'                             ],
 
+        // magic checkout service
+        '1cc_create_fee_rules'                          =>['post',      '1cc/shipping/cod/fee_rules',                 'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_create_fee_rule'                           =>['post',      '1cc/shipping/cod/fee_rule' ,                 'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_fetch_fee_rule'                            =>['get',       '1cc/shipping/cod/fee_rule/{fee_rule_id}',    'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_filter_fee_rule'                           =>['post',      '1cc/shipping/cod/fee_rule/filter',           'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_delete_fee_rule'                           =>['delete',    '1cc/shipping/cod/fee_rule/{fee_rule_id}',    'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_create_zone'                               =>['post',      '1cc/shipping/cod/zone',                      'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_update_zone'                               =>['put',       '1cc/shipping/cod/zone',                      'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_add_locations'                             =>['post',      '1cc/shipping/cod/zone/locations/add' ,       'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_remove_locations'                          =>['post',      '1cc/shipping/cod/zone/locations/remove',     'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_fetch_zone'                                =>['get',       '1cc/shipping/cod/zone/{zone_id}',            'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_filter_zone'                               =>['post',      '1cc/shipping/cod/zone/filter',               'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_delete_zone'                               =>['delete',    '1cc/shipping/cod/zone/{zone_id}',            'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_fetch_all_countries_with_zone'             =>['get',       '1cc/shipping/cod/countries',                 'OneClickCheckoutController@handleMerchantDashboardReq'],
+        '1cc_cod_engine_config_summary'                 =>['get',       '1cc/shipping/cod/summary',                   'OneClickCheckoutController@handleMerchantDashboardReq'],
 
      //Tokenisation Bin internal routes
         'create_token_iin'                          =>  ['post',       'tokens/iin',                                       'TokenisedIinController@createIin'                                    ],
@@ -6919,6 +6934,21 @@ class Route
         '1cc_merchant_order_review_automation_rule_configs_get',
         '1cc_merchant_order_review_automation_rule_configs_upsert',
         '1cc_fetch_dashboard_analytics',
+        '1cc_create_fee_rules',
+        '1cc_create_fee_rule',
+        '1cc_fetch_fee_rule',
+        '1cc_filter_fee_rule',
+        '1cc_delete_fee_rule',
+        '1cc_create_zone',
+        '1cc_update_zone',
+        '1cc_add_locations',
+        '1cc_remove_locations',
+        '1cc_fetch_zone',
+        '1cc_filter_zone',
+        '1cc_delete_zone',
+        '1cc_fetch_all_countries_with_zone',
+        '1cc_cod_engine_config_summary',
+
         // splitz
         'splitz_evaluate_bulk_proxy',
 
@@ -11973,6 +12003,21 @@ class Route
             '1cc_merchant_file_upload_audit_list',
             '1cc_cod_order_review',
             '1cc_fetch_dashboard_analytics',
+            '1cc_create_fee_rules',
+            '1cc_create_fee_rule',
+            '1cc_fetch_fee_rule',
+            '1cc_filter_fee_rule',
+            '1cc_delete_fee_rule',
+            '1cc_create_zone',
+            '1cc_update_zone',
+            '1cc_add_locations',
+            '1cc_remove_locations',
+            '1cc_fetch_zone',
+            '1cc_filter_zone',
+            '1cc_delete_zone',
+            '1cc_fetch_all_countries_with_zone',
+            '1cc_cod_engine_config_summary',
+
             'growth_get_public_asset_details',
 
             //CAC

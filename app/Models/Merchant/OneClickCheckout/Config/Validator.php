@@ -54,6 +54,8 @@ class Validator extends Base\Validator
         "manual_control_cod_order"       => 'sometimes|boolean',
         "one_cc_capture_gstin"           => 'sometimes|boolean',
         "one_cc_capture_order_instructions"   => 'sometimes|boolean',
+        "cod_engine"                     => 'sometimes|boolean',
+        "cod_engine_type"                => 'sometimes|string|in:slab_eligibility,slab_charges,location,product'
     ];
 
     protected static $shippingProviderRules = [

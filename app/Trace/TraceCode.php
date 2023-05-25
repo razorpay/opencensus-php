@@ -9756,6 +9756,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ACCOUNT_ID_PASSED_IN_BODY_FOR_MERCHANT_AUTH = 'ACCOUNT_ID_PASSED_IN_BODY_FOR_MERCHANT_AUTH';
 
 
+    const MAGIC_COD_ENGINE_EVALUATE_CALL_SUCCESS            =  'MAGIC_COD_ENGINE_EVALUATE_CALL_SUCCESS';
+    const MAGIC_COD_ENGINE_EVALUATE_CALL_ERROR              = 'MAGIC_COD_ENGINE_EVALUATE_CALL_ERROR';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

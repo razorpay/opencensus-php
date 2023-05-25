@@ -1000,6 +1000,7 @@ class Service extends Base\Service
               'cod'          => false,
               'shipping_fee' => 0,
               'cod_fee'      => null,
+              'is_digital_product' => false
           ];
 
           if (($errorType === 'virtual_product_found' or $cartRequiresShipping === false) and $digitalProductConfigFlagValue === true)
@@ -1013,6 +1014,7 @@ class Service extends Base\Service
                   ]);
 
               $shippingResponse['serviceable'] = true;
+              $shippingResponse['is_digital_product'] = true;
               return $shippingResponse;
           }
           else {
@@ -1050,6 +1052,9 @@ class Service extends Base\Service
                 }
                 $rates['cod'] = false;
                 $rates['cod_fee'] = 0;
+                $rates['is_digital_product'] = true;
+            }else{
+                $rates['is_digital_product'] = false;
             }
         }
 

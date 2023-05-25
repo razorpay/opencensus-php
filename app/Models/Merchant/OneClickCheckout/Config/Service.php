@@ -277,6 +277,13 @@ class Service extends Base\Service
                         $input[Type::DOMAIN_URL]
                     );
                 }
+
+                if (isset($input[Constants::COD_ENGINE_TYPE]) && $updatePlatform === Constants::SHOPIFY) {
+                    (new Core)->associateMerchant1ccConfig(
+                        Constants::COD_ENGINE_TYPE,
+                        $input[Constants::COD_ENGINE_TYPE]
+                    );
+                }
             }
         );
 
@@ -393,6 +400,9 @@ class Service extends Base\Service
 
         if ($merchantPlatformConfig !== null and $merchantPlatformConfig->getValue() === Constants::SHOPIFY)
         {
+            $codEngineTypeConfig = $this->merchant->get1ccConfig(Constants::COD_ENGINE_TYPE);
+            $codEngineType = $codEngineTypeConfig !== null ? $codEngineTypeConfig->getValue() : null;
+
             $config = $this->repo->merchant_1cc_auth_configs->findByConfig(
                 $this->merchant->getId(),
                 Constants::SHOPIFY,
@@ -402,7 +412,8 @@ class Service extends Base\Service
             $response = [
                 "domain_url"      => $domainUrl,
                 'platform'         => Constants::SHOPIFY,
-                Constants::SHOP_ID => ''
+                Constants::SHOP_ID => '',
+                Constants::COD_ENGINE_TYPE => $codEngineType
             ];
 
             $response = array_merge($response, $configFlagsResponse);
@@ -785,8 +796,8 @@ class Service extends Base\Service
         $keyId = $input['key_id'];
         $mode = substr($keyId, 4, 4);
         $this->trace->info(TraceCode::MERCHANT_1CC_CONFIGS_REQUESTED, [
-            'key_id' => $keyId,
-            'mode' => $mode
+                'key_id' => $keyId,
+                'mode' => $mode
         ]);
 
         $this->app['basicauth']->authCreds->setModeAndDbConnection($mode);
@@ -822,7 +833,6 @@ class Service extends Base\Service
                 $result[$key] = $value;
             }
         }
-
         return $result;
     }
 

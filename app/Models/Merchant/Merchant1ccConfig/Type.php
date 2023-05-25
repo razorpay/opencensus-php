@@ -51,4 +51,8 @@ class Type {
     const SHOPIFY_SHIPPING_OVERRIDE = 'shopify_shipping_override';
     const SHIPPING_VARIANT_STRATEGY = 'shipping_variant_strategy';
     const SHIPPING_VARIANTS = 'shipping_variants';
+
+    //cod-engine configs
+    const COD_ENGINE                        = 'cod_engine';
+    const COD_ENGINE_TYPE                   = 'cod_engine_type';
 }

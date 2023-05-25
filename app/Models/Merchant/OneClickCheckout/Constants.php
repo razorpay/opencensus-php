@@ -38,6 +38,8 @@ class Constants
     const ONE_CC_HANDLE_DIGITAL_PRODUCT     = 'one_cc_handle_digital_product';
     const ONE_CC_GUPSHUP_CREDENTIALS        = 'one_cc_gupshup_credentials';
     const ONE_CC_ENABLE_GUPSHUP             = 'one_cc_enable_gupshup';
+    const COD_ENGINE                        = 'cod_engine';
+    const COD_ENGINE_TYPE                   = 'cod_engine_type';
 
     // gift card configs
     const ONE_CC_GIFT_CARD                 = 'one_cc_gift_card';
@@ -161,6 +163,7 @@ class Constants
         self::ONE_CC_CACHE_COUPONS,
         self::ONE_CC_HANDLE_DIGITAL_PRODUCT,
         self::ONE_CC_ENABLE_GUPSHUP,
+        self::COD_ENGINE
     ];
 
     /**
@@ -189,6 +192,7 @@ class Constants
         self::ONE_CC_GA_ANALYTICS,
         self::ONE_CC_FB_ANALYTICS,
         self::ONE_CC_BUY_NOW_BUTTON,
+        self::COD_ENGINE
     ];
 
     const COMMON_CONFIGS = [

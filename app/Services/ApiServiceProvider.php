@@ -115,6 +115,7 @@ use RZP\Models\Merchant\OneClickCheckout\RtoFileUploadAuditService\Service as Rt
 use RZP\Models\Merchant\OneClickCheckout\RtoFeatureReasonProvider\Service as RtoFeatureReasonProviderService;
 use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutService\Client as  MagicCheckoutServiceClient;
 use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutProvider\CouponProvider\Service as MagicCheckoutCouponService;
+use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutProvider\CodEngine\Service as MagicCheckoutCodEngineService;
 use RZP\Models\Merchant\OneClickCheckout\MagicAddressProvider\Service as MagicAddressProviderService;
 use RZP\Models\Merchant\OneClickCheckout\MagicAddressService\Client as MagicAddressServiceClient;
 
@@ -848,6 +849,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerMagicCheckoutServiceClient();
 
         $this->registerMagicCheckoutCouponService();
+
+        $this->registerMagicCodEngineService();
 
         $this->registerCheckoutService();
     }
@@ -2559,6 +2562,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton('magic_checkout_coupon_service', function($app)
         {
             return new MagicCheckoutCouponService($app);
+        });
+    }
+
+    protected function registerMagicCodEngineService()
+    {
+        $this->app->singleton('magic_checkout_cod_engine_service', function($app)
+        {
+            return new MagicCheckoutCodEngineService($app);
         });
     }
 
