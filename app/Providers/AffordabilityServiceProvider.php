@@ -11,6 +11,7 @@ use RZP\Models\Base\AffordabilityObserver;
 use RZP\Models\Emi\Entity as EmiEntity;
 use RZP\Models\Offer\Entity as OfferEntity;
 use RZP\Models\Terminal\Entity as TerminalEntity;
+use RZP\Models\Merchant\Methods\Entity as MethodsEntity;
 use RZP\Services\AffordabilityService;
 use RZP\Services\Mock\AffordabilityService as AffordabilityServiceMock;
 
@@ -33,6 +34,7 @@ class AffordabilityServiceProvider extends ServiceProvider
         EmiEntity::observe(AffordabilityObserver::class);
         OfferEntity::observe(AffordabilityObserver::class);
         TerminalEntity::observe(AffordabilityObserver::class);
+        MethodsEntity::observe(AffordabilityObserver::class);
     }
 
     /**

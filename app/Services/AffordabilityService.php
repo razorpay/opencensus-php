@@ -43,14 +43,22 @@ class AffordabilityService
      *
      * @return bool
      */
-    public function invalidateCache(array $keys): bool
+    public function invalidateCache(array $keys, string $merchantId = null, bool $InvalidateTerminalCache = false, bool $InvalidateMerchantMethodsCache = false, string $terminalMethod = null): bool
     {
-        if (empty($keys)) {
+        if (empty($keys) && $merchantId == null) {
             return true;
         }
 
         $url = $this->baseUrl . self::INVALIDATE_CACHE_ENDPOINT;
-        $data = ['merchant_keys' => $keys];
+
+        if(!empty($keys))
+        {
+            $data = ['merchant_keys' => $keys];
+        }
+        else // for eligibility cache invalidation
+        {
+            $data = ['merchant_id' => $merchantId,'invalidate_terminal_cache' => $InvalidateTerminalCache,'invalidate_merchant_methods_cache' => $InvalidateMerchantMethodsCache, 'terminal_method' => $terminalMethod ];
+        }
 
         try {
             $response = Requests::post($url, $this->getRequestHeaders(), json_encode($data));

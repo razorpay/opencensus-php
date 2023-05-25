@@ -49,6 +49,25 @@ trait InvalidatesAffordabilityCache
         return $this->affordabilityService->invalidateCache($this->getKeys([$merchant->getId()]));
     }
 
+    public function invalidateAffordabilityCacheForEligibility(?MerchantEntity $merchant,bool $InvalidateTerminalCache = false, bool $InvalidateMerchantMethodsCache = false, string $terminalMethod = null): bool
+    {
+
+        if ($merchant === null) {
+            // $merchant in null during tests where method entities
+            // are created from fixtures but their merchant is never created.
+            return true;
+        }
+
+        if (!($merchant->isFeatureEnabled(DcsConstants::EligibilityEnabled)) && ($merchant->isFeatureEnabled(
+                DcsConstants::EligibilityCheckDecline)) ) {
+            // Ignore if feature not enabled
+            return true;
+        }
+
+
+        return $this->affordabilityService->invalidateCache([], $merchant->getId(), $InvalidateTerminalCache, $InvalidateMerchantMethodsCache, $terminalMethod);
+    }
+
     /**
      * Flush checkout-affordability-api cache for all merchants if changes are made at global level.
      *

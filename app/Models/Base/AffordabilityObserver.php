@@ -10,6 +10,7 @@ use RZP\Models\Key\Repository as KeyRepository;
 use RZP\Models\Offer\Entity as OfferEntity;
 use RZP\Models\Terminal\Entity as TerminalEntity;
 use RZP\Models\Terminal\Status as TerminalStatus;
+use RZP\Models\Merchant\Methods\Entity as MethodsEntity;
 use RZP\Services\AffordabilityService;
 
 /**
@@ -25,6 +26,7 @@ final class AffordabilityObserver
         EmiEntity::class => 'handleEmi',
         OfferEntity::class => 'handleOffer',
         TerminalEntity::class => 'handleTerminal',
+        MethodsEntity::class => 'handleMethods',
     ];
 
     /**
@@ -99,6 +101,7 @@ final class AffordabilityObserver
      * @see handleEmi()
      * @see handleOffer()
      * @see handleTerminal()
+     * @see handleMethods()
      *
      * @param $entity
      */
@@ -129,6 +132,17 @@ final class AffordabilityObserver
         $this->invalidateAffordabilityCache($emiPlan->merchant);
     }
 
+
+    /**
+     * Handle the methods entity events.
+     *
+     * @param MethodsEntity $methods
+     */
+    private function handleMethods(MethodsEntity $methods): void
+    {
+        $this->invalidateAffordabilityCacheForEligibility($methods->merchant, false, true);
+    }
+
     /**
      * Handle the offer entity events.
      *
@@ -154,11 +168,13 @@ final class AffordabilityObserver
 
         if ($terminal->isShared()) {
             $this->invalidateAffordabilityCacheForAllMerchants();
+            $this->invalidateAffordabilityCacheForEligibility($terminal->merchant, true, false, $terminal->getGateway());
 
             return;
         }
 
         $this->invalidateAffordabilityCache($terminal->merchant);
+        $this->invalidateAffordabilityCacheForEligibility($terminal->merchant, true, false, $terminal->getGateway());
     }
 
     private function isAffordabilityTerminal(TerminalEntity $terminal): bool
