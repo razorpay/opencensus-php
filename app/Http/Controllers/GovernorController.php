@@ -269,7 +269,7 @@ class GovernorController extends Controller
 
                 $this->app['workflow']
                     ->setEntityAndId(self::GOVERNOR_RULE_EDIT_ENTITY, substr($this->app['request']->getId(),0,12))
-                    ->handle($originalRule, $body);
+                    ->handle([self::RULES => $originalRule], [self::RULES => $body]);
             }
             elseif ($method === self::DELETE)
             {
