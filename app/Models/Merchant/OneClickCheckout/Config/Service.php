@@ -1089,6 +1089,15 @@ class Service extends Base\Service
             ];
         }
 
+        $isWhitelistingEnabled = (new Merchant\Merchant1ccConfig\Core())->get1ccConfigByMerchantIdAndType($merchantId, "one_cc_whitelist_coupons");
+        if ($isWhitelistingEnabled === null or $isWhitelistingEnabled->getValue() != 1)
+        {
+            (new Merchant\Core)->associateMerchant1ccConfig(
+                "one_cc_whitelist_coupons",
+                true
+            );
+        }
+
         $key = $this->repo->key->getKeysForMerchant($this->merchant->getId())->first();
 
         $res = $this->app['integration_service_client']->makeMultipartRequest(
