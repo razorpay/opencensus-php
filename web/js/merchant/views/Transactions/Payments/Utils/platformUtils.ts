@@ -36,25 +36,19 @@ export const platformFeeCalculator = ({
   return { totalFeeAmount, totalFee, totalRazorpayFee, totalTax, platformFee };
 };
 
-const PLATFORM = 'platform';
 interface isPlatformTransactionProps {
   loading: boolean;
-  items: { transfer_type?: string }[];
+  items: { partner_details?: { name: string }; id?: string }[];
 }
 export const isPlatformTransaction = (transfer: isPlatformTransactionProps): boolean => {
   const { loading: isLoading, items } = transfer;
-  if (!isLoading && items.length > 0) {
-    const firstValue = items[0]?.transfer_type; // Get the value of the field for the first object
-    if (firstValue !== PLATFORM) {
-      return false;
-    } else {
-      for (let i = 1; i < items.length; i++) {
-        if (items[i]?.transfer_type !== firstValue) {
-          return false; // If any value is different, return false
-        }
+  if (!isLoading && items.length) {
+    for (let i = 0; i < items.length; i++) {
+      if (!items[i].partner_details) {
+        return false; // check whether all the items of the array meets the condition
       }
-      return true; // If all values are the same, return true
     }
+    return true;
   }
   return false;
 };

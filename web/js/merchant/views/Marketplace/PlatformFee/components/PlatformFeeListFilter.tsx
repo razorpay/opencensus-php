@@ -25,7 +25,7 @@ import { statusMenu } from 'merchant/views/Marketplace/PlatformFee/constants';
 type PlatformFeeFilters = {
   id: string;
   status: string;
-  source_id: string;
+  source: string;
   recipient: string;
   count: string;
 };
@@ -65,7 +65,7 @@ const getDecodedParams = (locationProp = location) => {
 const initState = {
   id: '',
   status: getDecodedParams().status,
-  source_id: '',
+  source: '',
   recipient: '',
   count: getDecodedParams().count || '25',
 };
@@ -123,6 +123,11 @@ export const PlatformFeeListFilter = ({
     setFormData({
       ...initState,
     });
+    setPagination({
+      skip: 0,
+      count: 25,
+    });
+    onSearch('');
   };
 
   return (
@@ -139,8 +144,8 @@ export const PlatformFeeListFilter = ({
       <InputContainer>
         <TextInput
           label="Payment ID"
-          name="source_id"
-          value={formData.source_id}
+          name="source"
+          value={formData.source}
           placeholder="Enter Payment ID"
           onChange={handleChange}
         />

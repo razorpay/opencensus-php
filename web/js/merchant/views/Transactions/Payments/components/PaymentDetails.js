@@ -28,18 +28,13 @@ import { isInteger } from 'common/utils/validators';
 import track from 'merchant/views/Transactions/Payments/track';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import { isOrgFeatureExist } from 'merchant/models/User';
-import lazy from 'merchant/routes/LazyLoader';
 import { isPlatformTransaction } from 'merchant/views/Transactions/Payments/Utils/platformUtils';
+import lazy from 'merchant/routes/LazyLoader';
 
 // styles
 import './Payments.styl';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
-
-//lazy imports
-const PlatformFeeDetails = lazy(() =>
-  import('merchant/views/Transactions/Payments/components/PlatformFeeDetails'),
-);
 
 const INIT_POINT = 'payment-details';
 
@@ -93,9 +88,10 @@ function PaymentDetails(props) {
   const screen = initiatePage?.split('.')[0] || 'Payment Details';
   const page = initiatePage?.split('.')[1];
 
-  const { isRoutePartnershipEnabled, isRoutePlusPartnershipsEnabled } = user;
-  const showPlatformFee =
-    isRoutePlusPartnershipsEnabled && isRoutePartnershipEnabled && isPlatformTransaction(transfers);
+  const showPlatformFee = isPlatformTransaction(transfers);
+  const PlatformFeeDetails = showPlatformFee
+    ? lazy(() => import('merchant/views/Transactions/Payments/components/PlatformFeeDetails'))
+    : null;
 
   const getProductType = useCallback(() => {
     const isQrCode = () => {
