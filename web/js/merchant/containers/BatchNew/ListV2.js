@@ -115,14 +115,16 @@ class BatchList extends ListContainer {
       batchType,
       onSampleFileDownload,
       isPaymentPageDetailsLoading,
+      propsTabData = [],
     } = this.props;
     const { user } = session;
     const showBatchUploadButton = showUploadForAdminOrOwner ? user?.isAdminOrOwner : true;
     const { tabsData } = this.state;
     const showDownloadSampleFile = sampleUrl && batchType !== 'payment_page';
+    const tabData = propsTabData?.length > 0 ? propsTabData : tabsData;
     return (
       <ProductWrapper
-        tabsData={tabsData}
+        tabsData={tabData}
         extra={
           <>
             <ShowWhen additionalCondition={() => showDownloadSampleFile}>

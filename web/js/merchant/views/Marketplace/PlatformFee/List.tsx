@@ -10,14 +10,19 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { recipient, createdAt } from 'common/ui/item/pair';
 import { RZPFeatures } from 'merchant/helpers/data';
 import DataTable from 'common/ui/Table/DataTable';
-import HeaderAction from 'common/ui/HeaderAction';
 import DocsLink from 'merchant/components/DocsLink';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import TransferSource from 'merchant/views/Marketplace/Transfers/components/TransferSource';
 import { RouteTransfersStatusLabel } from 'merchant/components/StatusLabel';
 import { PlatformFeeListFilter } from 'merchant/views/Marketplace/PlatformFee/components/PlatformFeeListFilter';
-import { SpinnerContainer } from 'merchant/views/Marketplace/PlatformFee/components/styles';
+import {
+  SpinnerContainer,
+  ContentBox,
+} from 'merchant/views/Marketplace/PlatformFee/components/styles';
 import { Notification } from 'common/typings/Store/notifications';
+import TestModeBanner from 'merchant/components/TestModeBanner';
+import ProductWrapper from 'common/ui/ProductWrapper';
+import { navItems } from 'merchant/views/Marketplace/NavItems';
 import { fetchTransfers } from './api';
 
 const source = {
@@ -49,9 +54,15 @@ interface PlatformFeeProps {
   showNotification?: ActionCreator<Notification>;
   history: History;
   location: Location;
+  user: any;
 }
 
-const PlatformFee = ({ showNotification, history, location }: PlatformFeeProps): JSX.Element => {
+const PlatformFee = ({
+  showNotification,
+  history,
+  location,
+  user,
+}: PlatformFeeProps): JSX.Element => {
   const [paginationState, setPagination] = useState({
     skip: 0,
     count: 25,
@@ -89,50 +100,60 @@ const PlatformFee = ({ showNotification, history, location }: PlatformFeeProps):
   };
 
   return (
-    <div className="content-wrapper">
-      <HeaderAction>
-        <div className="btn-toolbar pull-right">
+    <ProductWrapper
+      tabsData={navItems(user)}
+      extra={
+        <>
           <TakeATourButton feature={RZPFeatures.ROUTE} />
 
           <DocsLink url="https://razorpay.com/docs/route/" />
-        </div>
-      </HeaderAction>
+        </>
+      }
+    >
+      <ContentBox>
+        <div className="content-wrapper">
+          <TestModeBanner />
 
-      <PlatformFeeListFilter
-        onSearch={(params) => search(params)}
-        count={paginationState.count}
-        location={location}
-        history={history}
-        setPagination={setPagination}
-      />
-      {isLoading ? (
-        <SpinnerContainer>
-          <Spinner testID="spinner" accessibilityLabel="spinner" size="xlarge" />
-        </SpinnerContainer>
-      ) : (
-        <DataTable
-          title="Platform Fee"
-          columns={[
-            platformFeeId,
-            source,
-            recipient,
-            recipientName,
-            platformAmount,
-            createdAt,
-            transferStatus,
-          ]}
-          count={paginationState.count}
-          skip={paginationState.skip}
-          paginate={setPagination}
-          loading={isLoading}
-          items={items}
-        />
-      )}
-    </div>
+          <PlatformFeeListFilter
+            onSearch={(params) => search(params)}
+            count={paginationState.count}
+            location={location}
+            history={history}
+            setPagination={setPagination}
+          />
+          {isLoading ? (
+            <SpinnerContainer>
+              <Spinner testID="spinner" accessibilityLabel="spinner" size="xlarge" />
+            </SpinnerContainer>
+          ) : (
+            <DataTable
+              title="Platform Fee"
+              columns={[
+                platformFeeId,
+                source,
+                recipient,
+                recipientName,
+                platformAmount,
+                createdAt,
+                transferStatus,
+              ]}
+              count={paginationState.count}
+              skip={paginationState.skip}
+              paginate={setPagination}
+              loading={isLoading}
+              items={items}
+            />
+          )}
+        </div>
+      </ContentBox>
+    </ProductWrapper>
   );
 };
 
 export default compose<any>(
   withRouter,
-  connect(null, (dispatch) => bindActionCreators({ showNotification }, dispatch)),
+  connect(
+    (state) => ({ user: state.session.user }),
+    (dispatch) => bindActionCreators({ showNotification }, dispatch),
+  ),
 )(PlatformFee);

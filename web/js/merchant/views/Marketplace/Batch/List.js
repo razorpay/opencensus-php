@@ -2,34 +2,32 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Field } from 'redux-form';
 
-import BatchList from 'merchant/containers/BatchNew/List';
+import BatchList from 'merchant/containers/BatchNew/ListV2';
 import CreateBatch from './CreateBatch';
 
 import setGaTrack from 'merchant/containers/BatchNew/ga';
 
-import {
-  fetchAllRouteBatches as fetchAll,
-} from 'merchant/reducers/batches';
+import { fetchAllRouteBatches as fetchAll } from 'merchant/reducers/batches';
 import { titleCase } from 'common/utils/rzp-utils';
+import { navItems } from 'merchant/views/Marketplace/NavItems';
 
 const typesLabelMap = {
   payment_transfer: 'Transfers',
   linked_account_create: 'Linked Accounts',
   transfer_reversal: 'Reversals',
-}
+};
 
 const typeColumn = {
   title: 'Type',
   value: ({ type }) => typesLabelMap[type] || titleCase(type),
 };
 
-const renderBatchOptions = openUploadModal => (
-  <CreateBatch openUploadModal={openUploadModal} />
-);
+const renderBatchOptions = (openUploadModal) => <CreateBatch openUploadModal={openUploadModal} />;
 
 const gaEvents = setGaTrack('Dashboard - Route - BU');
 
-const emptyResultsDescription = 'Create multiple Transfers, Reversals or linked Accounts, in one go using a batch file. Simply upload a file containing all the information.'
+const emptyResultsDescription =
+  'Create multiple Transfers, Reversals or linked Accounts, in one go using a batch file. Simply upload a file containing all the information.';
 
 const BatchTypeFilterField = () => (
   <div class="form-group list-filter-item">
@@ -43,13 +41,12 @@ const BatchTypeFilterField = () => (
   </div>
 );
 
-@connect(state => ({ user: state.session.user }), {
+@connect((state) => ({ user: state.session.user }), {
   fetchAll,
 })
 export default class BatchListContainer extends Component {
-
   render() {
-
+    const { user } = this.props;
     return (
       <BatchList
         form="batchListFilter"
@@ -60,6 +57,7 @@ export default class BatchListContainer extends Component {
         extraColumns={[typeColumn]}
         multiBatch
         emptyResultsDescription={emptyResultsDescription}
+        propsTabData={navItems(user)}
         {...this.props}
       />
     );

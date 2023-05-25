@@ -51,3 +51,10 @@ export const IconContainer = styled.span(() => ({
   display: 'flex',
   alignItems: 'center',
 }));
+
+export const ContentBox = styled.div`
+  display: block;
+  background-color: #f9fafb;
+  border: 1px solid #e2e8ea;
+  border-top: 0;
+`;

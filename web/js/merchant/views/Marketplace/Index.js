@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Route, Switch, NavLink } from 'react-router-dom';
+import { Route, Switch } from 'react-router-dom';
 
 import { RZPFeatures } from 'merchant/helpers/data';
 
@@ -16,7 +16,6 @@ import { fetchTransfers } from 'merchant/reducers/collection';
 import { fetchAccounts } from 'merchant/reducers/marketplace/accounts';
 
 import DocsLink from 'merchant/components/DocsLink';
-import TestModeBanner from 'merchant/components/TestModeBanner';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import AccountsList from 'merchant/views/Marketplace/Accounts/List';
 import PaymentsList from 'merchant/views/Marketplace/Payments/List';
@@ -28,7 +27,6 @@ import OnBoarding, { getIsAllowedResetRouteBoarding } from './OnBoarding';
 import QuickGuide, { getRouteQuickGuideIsClosed } from './QuickGuide';
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
-import ShowWhen from 'merchant/components/ShowWhen';
 import lazy from 'merchant/routes/LazyLoader';
 
 //lazy loads
@@ -37,7 +35,6 @@ const PlatformFeeList = lazy(() => import('merchant/views/Marketplace/PlatformFe
 const ClonedPaymentsList = (props) => (
   <PaymentsList docUrl="https://razorpay.com/docs/route" {...props} />
 );
-
 @connect(
   (state) => {
     return {
@@ -147,41 +144,18 @@ class MarketplaceContainer extends React.Component {
           </AnnouncementBanner>
         )}
 
-        <tabbed-container>
-          {isQuickGuideOpen && <QuickGuide />}
+        {isQuickGuideOpen ? <QuickGuide className="QuickGuide-v2" /> : null}
 
-          <header id="marketplace-header">
-            <NavLink to="/route/payments">Payments</NavLink>
-            <NavLink to="/route/transfers">Transfers</NavLink>
-            <ShowWhen
-              additionalCondition={(user) =>
-                user.isRoutePartnershipEnabled && user.isRoutePlusPartnershipsEnabled
-              }
-            >
-              <NavLink to="/route/platformfee">Platform Fee</NavLink>
-            </ShowWhen>
-            <NavLink to="/route/reversals">Reversals</NavLink>
-            <NavLink to="/route/accounts">Accounts</NavLink>
-            <NavLink to="/route/batchuploads">
-              Batch Upload <span class="badge bg-success">NEW</span>
-            </NavLink>
-          </header>
-
-          <TestModeBanner />
-
-          <content>
-            <ErrorBoundary resetOnProps>
-              <Switch>
-                <Route path="/route/payments" render={ClonedPaymentsList} />
-                <Route path="/route/transfers" component={TransfersList} />
-                <Route path="/route/platformfee" component={PlatformFeeList} />
-                <Route path="/route/reversals" component={ReversalsList} />
-                <Route path="/route/accounts" component={AccountsList} />
-                <Route path="/route/batchuploads" component={BatchesList} />
-              </Switch>
-            </ErrorBoundary>
-          </content>
-        </tabbed-container>
+        <ErrorBoundary resetOnProps>
+          <Switch>
+            <Route path="/route/payments" render={ClonedPaymentsList} />
+            <Route path="/route/transfers" component={TransfersList} />
+            <Route path="/route/platformfee" component={PlatformFeeList} />
+            <Route path="/route/reversals" component={ReversalsList} />
+            <Route path="/route/accounts" component={AccountsList} />
+            <Route path="/route/batchuploads" component={BatchesList} />
+          </Switch>
+        </ErrorBoundary>
       </div>
     );
   }

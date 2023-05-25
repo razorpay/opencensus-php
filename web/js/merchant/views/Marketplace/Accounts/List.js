@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 
 import { RZPFeatures } from 'merchant/helpers/data';
 
-import HeaderAction from 'common/ui/HeaderAction';
 import Pager from 'common/ui/Pager';
 import Alert from 'common/ui/Forms/Alert';
 
@@ -24,6 +23,9 @@ import AccountCreation from 'merchant/views/Marketplace/Accounts/New';
 import AccountDetails from 'merchant/views/Marketplace/Accounts/Details';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import TestModeBanner from 'merchant/components/TestModeBanner';
+import ProductWrapper from 'common/ui/ProductWrapper';
+import { navItems } from 'merchant/views/Marketplace/NavItems';
 
 @connect(
   (state) => {
@@ -249,11 +251,11 @@ export default class AccountsListContainer extends ListContainer {
     const { loading, accounts, user, showNotification } = this.props;
     const status = this.state.status;
     const isCreationDisabled = user.isRouteLinkedAccountCreationDisabled;
-
     return (
-      <div className="LinkedAccountsList content-wrapper">
-        <HeaderAction>
-          <div className="btn-toolbar pull-right">
+      <ProductWrapper
+        tabsData={navItems(user)}
+        extra={
+          <>
             <ShowWhen additionalCondition={(_user) => !_user.isOrgAxis}>
               <TakeATourButton feature={RZPFeatures.ROUTE} />
             </ShowWhen>
@@ -284,63 +286,69 @@ export default class AccountsListContainer extends ListContainer {
                 <span>Add Account</span>
               </button>
             </ShowWhen>
+          </>
+        }
+      >
+        <content>
+          <div className="LinkedAccountsList content-wrapper">
+            <TestModeBanner />
+
+            <AccountsListFilter
+              form="accountsListFilter"
+              count={this.state.count}
+              onSubmit={this.search}
+              isRouteCodeSupportEnabled={user.isRouteCodeSupportEnabled}
+            />
+
+            <Alert type={status.type} message={status.message} />
+
+            <AccountsList
+              accounts={accounts}
+              isLoading={loading}
+              isDirectTransferEnabled={user.isDirectTransferEnabled}
+              showEditAccountModal={this.showEditAccountModal}
+              onEdit={this.showAccountDetailsModal}
+              isRouteCodeSupportEnabled={user.isRouteCodeSupportEnabled}
+              isCreationDisabled={user.isRouteLinkedAccountCreationDisabled}
+              onToggleDashboardAccess={
+                showWhenUtil({
+                  additionalCondition: (_user) => _user.isAllowedEdit('accounts'),
+                })
+                  ? this.onToggleDashboardAccess
+                  : undefined
+              }
+              onToggleAllowRefunds={
+                showWhenUtil({
+                  additionalCondition: (_user) => _user.isAllowedEdit('accounts'),
+                })
+                  ? this.onToggleAllowRefunds
+                  : undefined
+              }
+            />
+
+            <Pager
+              count={this.state.count}
+              skip={this.state.skip}
+              length={accounts.length}
+              onClick={this.paginate}
+            />
+            {this.state.showAccountDetailsFor && (
+              <AccountDetails
+                accountId={this.state.showAccountDetailsFor}
+                onClose={this.highlightRowAndClose}
+                onSubmitSuccessCB={() => {
+                  showNotification({
+                    type: 'success',
+                    message: 'The account has been activated',
+                  });
+
+                  this.fetchAccounts(this.state.skip, this.state.count);
+                }}
+              />
+            )}
           </div>
-        </HeaderAction>
-
-        <AccountsListFilter
-          form="accountsListFilter"
-          count={this.state.count}
-          onSubmit={this.search}
-          isRouteCodeSupportEnabled={user.isRouteCodeSupportEnabled}
-        />
-
-        <Alert type={status.type} message={status.message} />
-
-        <AccountsList
-          accounts={accounts}
-          isLoading={loading}
-          isDirectTransferEnabled={user.isDirectTransferEnabled}
-          showEditAccountModal={this.showEditAccountModal}
-          onEdit={this.showAccountDetailsModal}
-          isRouteCodeSupportEnabled={user.isRouteCodeSupportEnabled}
-          isCreationDisabled={user.isRouteLinkedAccountCreationDisabled}
-          onToggleDashboardAccess={
-            showWhenUtil({
-              additionalCondition: (_user) => _user.isAllowedEdit('accounts'),
-            })
-              ? this.onToggleDashboardAccess
-              : undefined
-          }
-          onToggleAllowRefunds={
-            showWhenUtil({
-              additionalCondition: (_user) => _user.isAllowedEdit('accounts'),
-            })
-              ? this.onToggleAllowRefunds
-              : undefined
-          }
-        />
-
-        <Pager
-          count={this.state.count}
-          skip={this.state.skip}
-          length={accounts.length}
-          onClick={this.paginate}
-        />
-        {this.state.showAccountDetailsFor && (
-          <AccountDetails
-            accountId={this.state.showAccountDetailsFor}
-            onClose={this.highlightRowAndClose}
-            onSubmitSuccessCB={() => {
-              showNotification({
-                type: 'success',
-                message: 'The account has been activated',
-              });
-
-              this.fetchAccounts(this.state.skip, this.state.count);
-            }}
-          />
-        )}
-      </div>
+        </content>
+      </ProductWrapper>
     );
   }
 }

@@ -189,13 +189,15 @@ export default class PaymentsListContainer extends ListContainer {
 
     return (
       <div className="content-wrapper">
-        <HeaderAction>
-          <div className="btn-toolbar pull-right">
-            {quickTourFeature && <TakeATourButton feature={quickTourFeature} />}
+        {!isRoute ? (
+          <HeaderAction>
+            <div className="btn-toolbar pull-right">
+              {quickTourFeature && <TakeATourButton feature={quickTourFeature} />}
 
-            {docUrl && <DocsLink url={docUrl} />}
-          </div>
-        </HeaderAction>
+              {docUrl && <DocsLink url={docUrl} />}
+            </div>
+          </HeaderAction>
+        ) : null}
 
         <PaymentsListFilter
           form="paymentListFilter"

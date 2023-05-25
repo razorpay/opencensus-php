@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 import { Field, reduxForm, formValueSelector, change } from 'redux-form';
 import AsyncButton from 'react-async-button';
+import PropTypes from 'prop-types';
 import InputField from 'common/ui/Forms/InputField';
 import ModalHeader from 'common/ui/ModalHeader';
 import Alert from 'common/ui/Forms/Alert';
