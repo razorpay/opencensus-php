@@ -457,8 +457,8 @@ class Repository extends Base\Repository
 
     protected function isPgAvailabilityGatewayDowntime($entity): bool
     {
-        if(isset($entity[ENTITY::SOURCE]) === true && $entity[ENTITY::SOURCE] == SOURCE::DOWNTIME_SERVICE){
-            if(isset($entity[ENTITY::GATEWAY])===true && $entity[ENTITY::GATEWAY] != ENTITY::ALL ){
+        if((isset($entity[Entity::SOURCE]) === true) && ($entity[Entity::SOURCE] == Source::DOWNTIME_SERVICE)){
+            if(isset($entity[Entity::GATEWAY])===true && $entity[Entity::GATEWAY] != Entity::ALL ){
                 return true;
             }
 
