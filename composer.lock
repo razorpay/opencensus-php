@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "34d5359f173fe1fa1d271d2e97414af0",
+    "content-hash": "59ab380522c3df343a72ac5675406b8f",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -3452,12 +3452,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/guzzle.git",
-                "reference": "8444a2bacf1960bc6a2b62ed86b8e72e11eebe51"
+                "reference": "aff112895ebd2c59585f5ba3adce0a51c105e164"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/8444a2bacf1960bc6a2b62ed86b8e72e11eebe51",
-                "reference": "8444a2bacf1960bc6a2b62ed86b8e72e11eebe51",
+                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/aff112895ebd2c59585f5ba3adce0a51c105e164",
+                "reference": "aff112895ebd2c59585f5ba3adce0a51c105e164",
                 "shasum": ""
             },
             "require": {
@@ -3474,7 +3474,8 @@
             "require-dev": {
                 "bamarni/composer-bin-plugin": "^1.8.1",
                 "ext-curl": "*",
-                "php-http/client-integration-tests": "^3.0",
+                "php-http/client-integration-tests": "dev-master#2c025848417c1135031fdf9c728ee53d0a7ceaee as 3.0.999",
+                "php-http/message-factory": "^1.1",
                 "phpunit/phpunit": "^8.5.29 || ^9.5.23",
                 "psr/log": "^1.1 || ^2.0 || ^3.0"
             },
@@ -3554,7 +3555,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/guzzle/issues",
-                "source": "https://github.com/guzzle/guzzle/tree/7.6.1"
+                "source": "https://github.com/guzzle/guzzle/tree/7.6"
             },
             "funding": [
                 {
@@ -3570,7 +3571,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-05-15T20:43:01+00:00"
+            "time": "2023-05-21T13:05:55+00:00"
         },
         {
             "name": "guzzlehttp/promises",
@@ -10816,12 +10817,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/config-proto.git",
-                "reference": "a3d829663a5a3c58b71e10cd239aadd698bb153e"
+                "reference": "29960430f6e5cc33a63e2793075ce8fd64b473fc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/config-proto/zipball/a3d829663a5a3c58b71e10cd239aadd698bb153e",
-                "reference": "a3d829663a5a3c58b71e10cd239aadd698bb153e",
+                "url": "https://api.github.com/repos/razorpay/config-proto/zipball/29960430f6e5cc33a63e2793075ce8fd64b473fc",
+                "reference": "29960430f6e5cc33a63e2793075ce8fd64b473fc",
                 "shasum": ""
             },
             "require": {
@@ -10847,7 +10848,7 @@
                 "dcs-config",
                 "razorpay"
             ],
-            "time": "2023-05-12T11:50:36+00:00"
+            "time": "2023-05-23T05:04:04+00:00"
         },
         {
             "name": "razorpay/dcs-php-sdk",
@@ -19138,7 +19139,6 @@
         "symfony/mailgun-mailer": 20,
         "symfony/http-client": 20,
         "razorpay/dcs-php-sdk": 20,
-        "razorpay/config-proto": 20,
         "laracasts/testdummy": 20,
         "roave/no-leaks": 20
     },

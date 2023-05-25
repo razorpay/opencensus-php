@@ -65,6 +65,9 @@ class Constants
     const SubMerchantOnBoardingV2Enabled  = 'submerchant_onboarding_v2_enabled';
     const SubMerchantOnBoardingEnabled = 'submerchant_onboarding_enabled';
     const WebsiteInternationalDisabled = 'website_international_disabled';
+    const RetainSubMerchantName   = 'retain_sub_merchant_name';
+    const SubMerchantCreate = 'sub_merchant_create';
+    const Aggregator  = 'aggregator';
     const AdminLeadPartnerInviteEnabled = 'admin_lead_partner_invite_enabled';
     const SubmerchantInstantActivationViaV2ApiEnabled = 'submerchant_instant_activation_via_v2_api_enabled';
     const MerchantActivationByPartnerEnabled = 'merchant_activation_by_partner_enabled';
@@ -169,6 +172,9 @@ class Constants
         self::SubMerchantOnBoardingV2Enabled  => "rzp/platform/partner/onboarding/Features",
         self::SubMerchantOnBoardingEnabled => "rzp/platform/partner/onboarding/Features",
         self::WebsiteInternationalDisabled => "rzp/platform/partner/onboarding/Features",
+        self::RetainSubMerchantName => "rzp/platform/partner/onboarding/Features",
+        self::SubMerchantCreate     => "rzp/platform/partner/onboarding/Features",
+        self::Aggregator     => "rzp/platform/partner/onboarding/Features",
         self::AdminLeadPartnerInviteEnabled => "rzp/platform/partner/onboarding/Features",
         self::SubmerchantInstantActivationViaV2ApiEnabled => "rzp/platform/partner/onboarding/Features",
         self::MerchantActivationByPartnerEnabled => "rzp/platform/partner/onboarding/Features",
@@ -286,6 +292,9 @@ class Constants
         APIFeaturesConstants::SUBMERCHANT_ONBOARDING_V2                     => self::SubMerchantOnBoardingV2Enabled,
         APIFeaturesConstants::SUBMERCHANT_ONBOARDING                        => self::SubMerchantOnBoardingEnabled,
         APIFeaturesConstants::SKIP_WEBSITE_INTERNAT                         => self::WebsiteInternationalDisabled,
+        APIFeaturesConstants::RETAIN_SUB_MERCHANT_NAME                      => self::RetainSubMerchantName,
+        APIFeaturesConstants::ORG_SUB_MERCHANT_CREATE                       => self::SubMerchantCreate,
+        APIFeaturesConstants::AGGREGATOR                                    => self::Aggregator,
         APIFeaturesConstants::ADMIN_LEAD_PARTNER                            => self::AdminLeadPartnerInviteEnabled,
         APIFeaturesConstants::INSTANT_ACTIVATION_V2_API                     => self::SubmerchantInstantActivationViaV2ApiEnabled,
         APIFeaturesConstants::PARTNER_ACTIVATE_MERCHANT                     => self::MerchantActivationByPartnerEnabled,
