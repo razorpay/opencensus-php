@@ -414,7 +414,7 @@ class Service extends Base
         $response = new PublicCollection();
         $featureName = DcsConstants::dcsFeatureNameFromAPIName($apiFeatureName);
         $key = DcsConstants::$featureToDCSKeyMapping[$featureName];
-        $data = [];
+        $data = DataFormatter::toKeyMapWithOutId($key);
 
         $env = $this->app->environment();
 

@@ -19,6 +19,7 @@ use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Base\ConnectionType;
+use RZP\Services\Dcs\Features\Type;
 use RZP\Services\Ledger as LedgerService;
 
 use RZP\Models\Reversal;
@@ -2875,7 +2876,7 @@ class Service extends Base\Service
 
         $dcs = $this->app['dcs'];
 
-        $featureEntities = $dcs->fetchByFeatureName(Feature\Constants::IRCTC_REPORT);
+        $featureEntities = $dcs->fetchByFeatureName(Feature\Constants::IRCTC_REPORT, Type::MERCHANT, $this->mode);
 
         if(empty($featureEntities))
         {

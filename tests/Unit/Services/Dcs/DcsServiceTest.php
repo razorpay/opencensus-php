@@ -644,7 +644,7 @@ class DcsServiceTest extends TestCase
             ->andReturnUsing(
                 function (array $data, bool $disableCache) {
 
-                    $this->assertEmpty($data[Constants::ENTITY], "Entity Type will be empty");
+                    $this->assertEmpty($data[Constants::ENTITY_ID], "Entity Type will be empty");
                     $this->assertTrue($disableCache, "Cache Should be disabled in library");
                     $return_value = new V1GetEntityAggregateResponse();
                     $keysWithIDAndFieldsEnabled = [

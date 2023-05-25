@@ -67,7 +67,7 @@ class Repository extends Base\Repository
                 $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_TOTAL, $dimension);
                 $dcs = $this->app['dcs'];
                 $res = $dcs->fetchByEntityIdAndName($entityId, $featureName, $this->getAppMode());
-                if (isEmpty($res) === true)
+                if (empty($res) === true)
                 {
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND, null, []);
@@ -235,7 +235,7 @@ class Repository extends Base\Repository
 
     public function findMerchantWithFeaturesOnConnection(string $merchantId, array $featureNames, $mode)
     {
-        $dcsRes = new PublicCollection();
+        $dcsRes = [];
         $apiFeatures = $featureNames;
         $dimension = [
             'feature_name' => 'many',
