@@ -9753,6 +9753,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ACCOUNT_SERVICE_GET_ENTITY_DETAILS_EXCEPTION = 'ACCOUNT_SERVICE_GET_ENTITY_DETAILS_EXCEPTION';
     const ACCOUNT_SERVICE_GET_ENTITY_REQUEST = 'ACCOUNT_SERVICE_GET_ENTITY_REQUEST';
 
+    const ACCOUNT_ID_PASSED_IN_BODY_FOR_MERCHANT_AUTH = 'ACCOUNT_ID_PASSED_IN_BODY_FOR_MERCHANT_AUTH';
+
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

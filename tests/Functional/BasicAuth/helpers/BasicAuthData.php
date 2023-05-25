@@ -1393,6 +1393,64 @@ return [
         ],
     ],
 
+    'testCreateOrderWithAccId' => [
+        'request' => [
+            'content' => [
+                'amount'        => 50000,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+                'account_id'    => 'acc_100000Razorpay',
+                'notes'         => ['key' => 'value']
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'        => 50000,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testOrderEditWithAccId' => [
+        'request'  => [
+            'content' => [
+                'notes' => [
+                    'key1' => 'value1',
+                    'key2' => 'value2',
+                ],
+                'account_id' => 'acc_100000Razorpay',
+            ],
+            'method'  => 'PATCH',
+        ],
+        'response' => [
+            'content' => [
+                'notes' => [
+                    'key1' => 'value1',
+                    'key2' => 'value2',
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testPaymentFetchWithAccId' => [
+        'request'   => [
+            'url'     => '/payments',
+            'method'  => 'get',
+            'content' => [
+                'account_id' => 'acc_100000Razorpay',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
     'testGetPayoutsPurposeApiOnPrivateAuth' => [
         'request' => [
             'method' => 'GET',

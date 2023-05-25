@@ -1127,4 +1127,29 @@ class BasicAuthTest extends TestCase
 
         $this->assertPassport();
     }
+
+    public function testMerchantAuthWithImpersonationOnPost()
+    {
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($this->testData['testCreateOrderWithAccId']);
+    }
+
+    public function testMerchantAuthWithImpersonationOnPatch()
+    {
+        $this->ba->privateAuth();
+
+        $order = $this->runRequestResponseFlow($this->testData['testCreateOrderWithAccId']);
+
+        $this->testData['testOrderEditWithAccId']['request']['url'] = '/orders/' . $order['id'];
+
+        $this->runRequestResponseFlow($this->testData['testOrderEditWithAccId']);
+    }
+
+    public function testMerchantAuthWithImpersonationOnGet()
+    {
+        $this->ba->privateAuth();
+
+        $this->runRequestResponseFlow($this->testData['testPaymentFetchWithAccId']);
+    }
 }

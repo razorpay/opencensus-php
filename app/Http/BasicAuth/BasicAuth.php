@@ -94,6 +94,7 @@ class BasicAuth
     const KEY                     = 'key';
     const KEY_ID                  = 'key_id';
     const MERCHANT_ID             = 'merchant_id';
+    const PARTNER_ID              = 'partner_id';
     const ENTITY_ID               = 'entity_id';
     const ACCOUNT_ID              = 'account_id';
     const SECRET                  = 'secret';
@@ -133,6 +134,12 @@ class BasicAuth
     const PASSPORT_OAUTH_OWNER_TYPE_MERCHANT         = 'merchant';
     const PASSPORT_CONSUMER_TYPE_ADMIN               = 'admin';
     const PASSPORT_CONSUMER_TYPE_USER                = 'user';
+
+    const CONTENT_TYPE                               = 'CONTENT_TYPE';
+
+    const HTTP_METHOD                                = 'method';
+
+    const HTTP_CONTENT_TYPE                          = 'content_type';
 
     // All dashboard applications
     const DASHBOARD_APPS                             = ['admin_dashboard', 'merchant_dashboard', 'dashboard', 'dashboard_guest', 'frontend_graphql',];
@@ -466,6 +473,12 @@ class BasicAuth
      */
     protected $isBankLms = false;
 
+    /**
+     * Used to identify account id passed in body
+     * @var string
+     */
+    protected $accountIdFromBody = null;
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -647,6 +660,9 @@ class BasicAuth
         if (empty($accountId) === true)
         {
             $accountId = $this->request->input('account_id');
+
+            // will return null if doesnt exist and doesnt throw error
+            $this->accountIdFromBody = $this->request->request->get(self::ACCOUNT_ID);
 
             if (empty($accountId) === true)
             {
@@ -842,6 +858,22 @@ class BasicAuth
             if ($error !== null)
             {
                 return $error;
+            }
+
+            // merchant auth request having account id passed in body
+            if (! $this->isPartnerAuth() && ! empty($this->accountIdFromBody))
+            {
+                // this is a temporary log to identify merchants who are using deprecated practice of passing account id in body
+                // this log will be removed post identification of the above said merchants
+                $this->trace->info(TraceCode::ACCOUNT_ID_PASSED_IN_BODY_FOR_MERCHANT_AUTH,
+                    [
+                        self::HTTP_CONTENT_TYPE => $this->request->header(self::CONTENT_TYPE), // will return null if doesnt exist and does not throw any error
+                        self::PARTNER_ID => $this->getMerchantId(),
+                        self::KEY_ID => $this->getPublicKey(),
+                        self::ACCOUNT_ID => $this->accountIdFromBody,
+                        self::ROUTE => $this->route->getCurrentRouteName(),
+                        self::HTTP_METHOD => $this->request->getRealMethod(),
+                    ]);
             }
 
             $checkAndSetPartnerMerchantScope = Tracer::inspan(['name' => HyperTrace::BASIC_AUTH_CHECK_AND_SET_PARTNER_MERCHANT_SCOPE], function () {
