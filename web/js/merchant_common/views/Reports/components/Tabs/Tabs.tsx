@@ -11,7 +11,9 @@ const Tab = withRouter(({ children, to, exact, location }: any) => {
   return (
     <NavLink aria-label={children} to={to} exact={exact} key={to}>
       <Text variant="body" weight="bold" size="medium">
-        <StyledTab active={isActive}>{children}</StyledTab>
+        <StyledTab as="span" active={isActive}>
+          {children}
+        </StyledTab>
       </Text>
     </NavLink>
   );

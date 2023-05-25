@@ -52,6 +52,7 @@ type Getters = {
   isOptimizerRZPVASEnabled: boolean;
   isWebsiteComplianceFlowEnabled: boolean;
   isBundlePricingEnabled: boolean;
+  isCustomReportExtensionsEnabled: boolean;
 };
 
 type UserProperties = {

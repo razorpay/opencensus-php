@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, userEvent } from 'test-utils';
 import { ReportModal } from 'merchant_common/views/Reports/components';
 import * as modalFn from 'merchant_common/reducers/modals';
-import { REPORT_TEST_DASHBOARD } from 'merchant_common/views/Reports/constants';
+import { REPORT_TEST_DASHBOARD, TODAY } from 'merchant_common/views/Reports/constants';
 import { getOverViewStateWith } from 'merchant_common/views/Reports/features/Overview/__test__/fixtures';
 import { mockConfigs } from 'merchant_common/views/Reports/redux/__test__/fixtures/configs.fixtures';
 import * as notification from 'merchant_common/reducers/notifications';
@@ -14,6 +14,14 @@ import * as downloadAPI from 'merchant_common/views/Reports/api/downloadModal';
 import { mockLogs } from 'merchant_common/views/Reports/redux/__test__/fixtures/logs.fixture';
 import { preDefinedDurations } from 'merchant_common/views/Reports/components/ReportModal/components/DownloadReport/data';
 import * as accountsApi from 'merchant/reducers/marketplace/accounts';
+import { defineMatchMedia } from 'merchant_common/views/Reports/components/DateTimeRangePicker/__test__/fixtures';
+import {
+  DEFAULT_FORMATS,
+  DELIMITER_SUPPORT_MAP,
+  FORMATS_PLACEHOLDER,
+} from 'merchant_common/views/Reports/components/ReportModal/components/DownloadReport/components/Formats/constants';
+import { getFormattedDate } from 'merchant_common/views/Reports/components/DateTimeRangePicker/utils';
+import { DATE_HELP_TEXT } from 'merchant_common/views/Reports/components/ReportModal/components/DownloadReport/constants';
 
 const initialState = getOverViewStateWith({
   allConfigs: {
@@ -47,6 +55,24 @@ const TEST_ACCOUNTS_STATE = {
   loading: false,
   error: false,
 };
+
+// Download api params that will be checked against the mock api.
+const defaultDownloadAPIParams = {
+  generatedBy: TEST_USER.current ?? TEST_USER.id,
+  headers: {},
+  payload: {
+    config_id: TEST_CONFIG.id,
+    emails: ['rzp@rzp.com'],
+    start_time: preDefinedDurations[0].value.startDate.clone().unix(),
+    end_time: preDefinedDurations[0].value.endDate.clone().unix(),
+    template_overrides: {
+      file_meta: { extension: 'csv', filename: 'Rzp Doc', delimiter: ',' },
+    },
+  },
+  accountId: undefined,
+};
+
+defineMatchMedia(false);
 
 jest.mock('common/utils/debounce', () => (fn?) => (query) => {
   if (query.length) {
@@ -89,7 +115,7 @@ jest.mock('merchant_common/views/Reports/utils/commonUtils', () => ({
 }));
 jest.spyOn(modalFn, 'closeModal');
 
-describe('Download Custom Reports', () => {
+describe('Download Reports', () => {
   beforeAll(() => {});
 
   const App = ({ configId }: { configId?: string }): JSX.Element => {
@@ -134,7 +160,7 @@ describe('Download Custom Reports', () => {
     render(<App />);
     expect(screen.getByPlaceholderText('Select A Report')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Eg: Monthly Recon Report')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Excel or CSV')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(FORMATS_PLACEHOLDER)).toBeInTheDocument();
     expect(
       screen.queryByPlaceholderText('Select duration covered in each report'),
     ).not.toBeInTheDocument();
@@ -153,14 +179,15 @@ describe('Download Custom Reports', () => {
   test('should be able to fill data', async () => {
     renderDetailedApp();
     await userEvent.type(screen.getByPlaceholderText('Eg: Monthly Recon Report'), 'Rzp Doc');
-    await userEvent.click(screen.getByPlaceholderText('Excel or CSV'));
+    await userEvent.click(screen.getByPlaceholderText(FORMATS_PLACEHOLDER));
     await userEvent.click(screen.getByTestId('CSV'));
     await userEvent.click(screen.getByLabelText('Select Account Field'));
     await userEvent.type(
       screen.getByLabelText('Search An Item Here'),
       'just searching a dummy account',
     );
-    await expect(accountsApi.fetchAccountsApi).toHaveReturned();
+
+    expect(accountsApi.fetchAccountsApi).toHaveReturned();
 
     await userEvent.click(screen.getByLabelText('RZP (DUMMY_ACCOUNT)'));
     await userEvent.click(screen.getByText('What will you receive in this report?'));
@@ -175,29 +202,77 @@ describe('Download Custom Reports', () => {
 
     await userEvent.click(screen.getByLabelText('Start Download'));
 
-    expect(downloadAPI.downloadNewReport).toHaveBeenCalledWith({
-      generatedBy: TEST_USER.current ?? TEST_USER.id,
-      headers: {},
-      payload: {
-        config_id: TEST_CONFIG.id,
-        emails: ['rzp@rzp.com'],
-        start_time: preDefinedDurations[0].value.startDate.clone().unix(),
-        end_time: preDefinedDurations[0].value.endDate.clone().unix(),
-        template_overrides: {
-          file_meta: {
-            extension: 'csv',
-            filename: 'Rzp Doc',
-          },
-        },
-      },
-      accountId: undefined,
-    });
+    expect(downloadAPI.downloadNewReport).toHaveBeenCalledWith(defaultDownloadAPIParams);
 
-    await expect(downloadAPI.downloadNewReport).toHaveReturned();
+    expect(downloadAPI.downloadNewReport).toHaveReturned();
     expect(notification.showNotification).toHaveBeenCalledWith({
       message: REPORT_GENERATE_LOG_POST_SUCCESS,
       type: 'success',
     });
     expect(modalFn.closeModal).toHaveBeenCalled();
+  });
+
+  test('should render helper text according to the date selected from the calendar', async () => {
+    const todaysDate = TODAY.format('[Date is] DD MMMM YYYY');
+
+    renderDetailedApp();
+
+    const helpTextEl = screen.getByText(DATE_HELP_TEXT);
+
+    await userEvent.click(screen.getByText('What will you receive in this report?'));
+
+    // Enable custom date calendar.
+    await userEvent.click(screen.getByLabelText('Custom Switch'));
+    // Click to input field to open calendar.
+    await userEvent.click(screen.getByLabelText('Picker Input Field'));
+    // Select todays date as start date).
+    await userEvent.click(screen.getByLabelText(todaysDate));
+    // Select todays date as end date.
+    await userEvent.click(screen.getByLabelText(todaysDate));
+    // Disable the time format.
+    await userEvent.click(screen.getByLabelText('Include Time Switch'));
+
+    // Outside click.
+    await userEvent.click(screen.getByLabelText('Custom Switch'));
+
+    expect(helpTextEl).toHaveTextContent(
+      getFormattedDate({ startDate: todaysDate, endDate: todaysDate }),
+    );
+  });
+
+  test('should be able to submit data with delimiter', async () => {
+    const { label: formatLabel, value: formatValue } =
+      DEFAULT_FORMATS.find(({ value }) => value === 'txt') || {};
+    const { value: delimiterValue } = DELIMITER_SUPPORT_MAP[formatValue || '']?.[0] || {};
+
+    renderDetailedApp();
+
+    // First block
+    // Click the formats input element to open dropdown.
+    await userEvent.click(screen.getByPlaceholderText(FORMATS_PLACEHOLDER));
+    // Select the format option from the dropdown.
+    await userEvent.click(screen.getByTestId(formatLabel || ''));
+
+    // Second block
+    // Open the second block.
+    await userEvent.click(screen.getByText('What will you receive in this report?'));
+    // Click on the duration input field.
+    await userEvent.click(screen.getByPlaceholderText('Select duration covered in each report'));
+    // Select the option from the dropdown.
+    await userEvent.click(screen.getByTestId(preDefinedDurations[0].label));
+
+    // Start downloading.
+    await userEvent.click(screen.getByLabelText('Start Download'));
+
+    const updatedParams = {
+      ...defaultDownloadAPIParams,
+      payload: {
+        ...defaultDownloadAPIParams.payload,
+        emails: undefined,
+        template_overrides: { file_meta: { extension: formatValue, delimiter: delimiterValue } },
+      },
+    };
+
+    expect(downloadAPI.downloadNewReport).toHaveBeenCalledWith(updatedParams);
   });
 });

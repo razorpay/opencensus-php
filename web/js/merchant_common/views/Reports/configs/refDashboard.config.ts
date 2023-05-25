@@ -1,13 +1,18 @@
+import { SessionReducerState } from 'common/typings';
+
 import { REPORT_CONFIG_TYPE, getCustomConfigs } from '.';
 import {
   DashboardType,
   ModeType,
   RefDashboardConfigType,
 } from 'merchant_common/views/Reports/types';
-import { getMerchantAccounts } from 'merchant_common/views/Reports/utils/commonUtils';
+import {
+  getAvailableFormats,
+  getMerchantAccounts,
+} from 'merchant_common/views/Reports/utils/commonUtils';
 import { BaseConfigType } from 'merchant_common/views/Reports/types/config';
 import { BaseLogPayloadType } from 'merchant_common/views/Reports/types/log';
-import { SessionReducerState } from 'common/typings';
+
 import { parseConfigsViaCommonExceptions } from './downloadModal.config';
 
 /**
@@ -29,6 +34,7 @@ export const getReportsDashboardConfig = (
       headers: {},
       customConfigs: getCustomConfigs(session),
       availableAccounts: getMerchantAccounts(accounts, session?.user),
+      availableFormats: getAvailableFormats(session?.user),
       parseConfigs: (configs: BaseConfigType[]) => {
         if (session?.user?.findTag) {
           return configs.filter((config) => {
@@ -61,6 +67,7 @@ export const getReportsDashboardConfig = (
       headers: { 'X-Report-Type': 'partner' },
       customConfigs: [],
       availableAccounts: undefined,
+      availableFormats: getAvailableFormats(session?.user),
       parseConfigs: (configs: BaseConfigType[]) => configs,
       parsePayloadBeforeSubmit: (payload: BaseLogPayloadType, additionalDetails?) => {
         const parsedPayload = parseConfigsViaCommonExceptions(payload, additionalDetails, mode);
@@ -72,6 +79,7 @@ export const getReportsDashboardConfig = (
       headers: {},
       customConfigs: [],
       availableAccounts: undefined,
+      availableFormats: getAvailableFormats(session?.user),
       parseConfigs: (configs: BaseConfigType[]) => configs,
       parsePayloadBeforeSubmit: (payload: BaseLogPayloadType, additionalDetails?) => {
         const parsedPayload = parseConfigsViaCommonExceptions(payload, additionalDetails, mode);

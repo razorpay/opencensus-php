@@ -109,6 +109,7 @@ const DownloadsTableComponent = connect(
               actionName: 'Downloads Logs Poll Failed',
               dashboardType,
             });
+
             if (typeof abortPresentlyActivePoll.current === 'function') {
               abortPresentlyActivePoll.current();
             }

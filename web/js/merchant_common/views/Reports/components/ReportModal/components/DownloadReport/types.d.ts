@@ -1,7 +1,7 @@
 import { ShowNotificationType } from 'common/typings';
 import { AccountStateType } from 'merchant_common/views/Reports/Types/account';
 import { BaseConfigType } from 'merchant_common/views/Reports/Types/config';
-import { CustomConfigType, DashboardType } from 'merchant_common/views/Reports/types';
+import { CustomConfigType, DashboardType, Format } from 'merchant_common/views/Reports/types';
 import moment from 'moment';
 
 export interface PredefinedDurationType {
@@ -31,4 +31,5 @@ export interface DownloadReportModalPropsType {
   handlePageChange: (x: number) => void;
   dashboardType: DashboardType;
   resetLogsPollOnSubmit?: boolean;
+  availableFormats: Format[];
 }

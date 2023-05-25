@@ -32,14 +32,3 @@ export const preDefinedDurations = [
     value: getPastMonthRange(),
   },
 ];
-
-export const availableFormat = [
-  {
-    label: 'Excel',
-    value: 'xlsx',
-  },
-  {
-    label: 'CSV',
-    value: 'csv',
-  },
-];

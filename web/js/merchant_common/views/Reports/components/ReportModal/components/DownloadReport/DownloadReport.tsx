@@ -1,7 +1,7 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import moment from 'moment';
+
 import { BaseConfigType } from 'merchant_common/views/Reports/types/config';
-import { DownloadReportModalPropsType, PredefinedDurationType } from './types';
 import {
   Button,
   CollapsibleForm,
@@ -23,14 +23,12 @@ import {
   MailIcon,
   UserIcon,
 } from 'merchant_common/views/Reports/components';
-
 import {
   ModalFooter,
   ReportModalHeader,
   ScrollableModalContent,
 } from 'merchant_common/views/Reports/components/ReportModal/styled';
 import { SelectedRangeType } from 'merchant_common/views/Reports/components/DateTimeRangePicker/types';
-import { availableFormat, preDefinedDurations } from './data';
 import { fetchAccountsApi } from 'merchant/reducers/marketplace/accounts';
 import { AccountType } from 'merchant_common/views/Reports/types/account';
 import { MARKET_PLACE_CONFIG_TYPES } from 'merchant_common/views/Reports/configs';
@@ -41,10 +39,17 @@ import {
   REPORT_GENERATE_LOG_POST_SUCCESS,
   REPORT_GENERATE_LOG_POST_INVALID_RES,
 } from 'merchant_common/views/Reports/constants/notifications';
-import { CancelButtonContainer } from './styled';
 import { trackDownloadModal } from 'merchant_common/views/Reports/configs/analytics.config';
 import { patchedSelectOnChange } from 'merchant_common/views/Reports/components/blade.patch';
 import { getFormattedDate } from 'merchant_common/views/Reports/components/DateTimeRangePicker/utils';
+import { Delimiter, Format } from 'merchant_common/views/Reports/types';
+
+import { preDefinedDurations } from './data';
+import { CancelButtonContainer } from './styled';
+import { DownloadReportModalPropsType, PredefinedDurationType } from './types';
+import { Formats } from './components/Formats';
+import { DATE_HELP_TEXT } from './constants';
+import { getAvailableDelimiter } from './components/Formats/utils';
 
 export const DownloadReportModal = ({
   allReportConfigs,
@@ -61,6 +66,7 @@ export const DownloadReportModal = ({
   parsePayloadBeforeSubmit,
   handlePageChange,
   resetLogsPollOnSubmit = true,
+  availableFormats,
 }: DownloadReportModalPropsType): JSX.Element => {
   //toggles.
   const [isCustomDurationEnabled, setCustomDurationEnabled] = useState<boolean>(false);
@@ -69,10 +75,8 @@ export const DownloadReportModal = ({
   // section 1
   const [selectedConfig, setSelectedConfig] = useState<undefined | BaseConfigType>();
   const [saveReportAs, setSaveReportAs] = useState('');
-  const [selectedFormat, setSelectedFormat] = useState<{
-    label: string;
-    value: string;
-  }>();
+  const [selectedFormat, setSelectedFormat] = useState<Format>();
+  const [selectedDelimiter, setSelectedDelimiter] = useState<Delimiter>();
 
   // section 2
   const [selectedPredefinedDurationRange, setSelectedPredefinedDurationRange] = useState<
@@ -117,7 +121,8 @@ export const DownloadReportModal = ({
   };
 
   const validationsForEachSections = [
-    Boolean(selectedConfig),
+    Boolean(selectedConfig) &&
+      Boolean(selectedFormat?.value ? getAvailableDelimiter(selectedFormat).length > 0 : true),
     isCustomDurationEnabled ? validateCustomDuration() : validateDefaultDuration(),
     Boolean(
       isRecipientsEnabled ? recipients && Array.isArray(recipients) && recipients.length : true,
@@ -152,11 +157,16 @@ export const DownloadReportModal = ({
           : selectedPredefinedDurationRange!.value.endDate.clone().unix(),
         emails: isRecipientsEnabled ? recipients : undefined,
         template_overrides:
-          Boolean(selectedFormat?.value) || Boolean(saveReportAs)
+          Boolean(selectedFormat?.value) ||
+          Boolean(saveReportAs) ||
+          Boolean(selectedDelimiter?.value)
             ? {
                 file_meta: {
                   extension: Boolean(selectedFormat?.value) ? selectedFormat?.value : undefined,
                   filename: Boolean(saveReportAs) ? saveReportAs : undefined,
+                  delimiter: Boolean(selectedDelimiter?.value)
+                    ? selectedDelimiter?.value
+                    : undefined,
                 },
               }
             : undefined,
@@ -270,13 +280,13 @@ export const DownloadReportModal = ({
     return (
       <div aria-label={`${name} (${id})`}>
         <Text size="medium" variant="body" weight="bold">
-          {`${name}`}
+          {name}
         </Text>
-        <Box marginTop={'spacing.3'} display={'flex'} alignItems={'center'}>
+        <Box marginTop="spacing.3" display="flex" alignItems="center">
           <Badge icon={UserIcon} variant="neutral">
-            {id.includes('acc_') ? id.replace('acc_', '') : id}
+            {id}
           </Badge>
-          <Badge icon={MailIcon} marginLeft={'spacing.3'} variant="neutral">
+          <Badge icon={MailIcon} marginLeft="spacing.3" variant="neutral">
             {email}
           </Badge>
         </Box>
@@ -286,9 +296,10 @@ export const DownloadReportModal = ({
 
   useEffect(() => {
     if (!params?.selectedConfig) return;
+
     const refConfig = allReportConfigs.find((data) => data.id === params.selectedConfig);
     setSelectedConfig(refConfig);
-  }, [params]);
+  }, [params, allReportConfigs]);
 
   useEffect(() => {
     if (!isRecipientsEnabled) {
@@ -343,7 +354,7 @@ export const DownloadReportModal = ({
                 )}
                 placeholder="Select A Report"
                 validationState={
-                  showErrorInSection === 0 ? (Boolean(selectedConfig) ? 'none' : 'error') : 'none'
+                  showErrorInSection === 0 && !Boolean(selectedConfig) ? 'error' : 'none'
                 }
                 helpText={
                   selectedConfig?.description ?? 'Select report you want to receive report about.'
@@ -378,34 +389,14 @@ export const DownloadReportModal = ({
               necessityIndicator="optional"
             />
 
-            <Dropdown selectionType="single">
-              <SelectInput
-                label="Select Format"
-                name="selectedConfig"
-                onChange={patchedSelectOnChange(({ values }) =>
-                  setSelectedFormat(availableFormat[+values[0]]),
-                )}
-                placeholder="Excel or CSV"
-                validationState="none"
-                helpText="Select the format in which you want to receive the report in."
-                necessityIndicator="optional"
-              />
-              <DropdownOverlay>
-                <ActionList surfaceLevel={2}>
-                  {availableFormat.map(({ label, value }, index) => {
-                    return (
-                      <ActionListItem
-                        key={value}
-                        title={label}
-                        isDefaultSelected={availableFormat[index].value === selectedFormat?.value}
-                        value={index.toString()}
-                        testID={label}
-                      />
-                    );
-                  })}
-                </ActionList>
-              </DropdownOverlay>
-            </Dropdown>
+            <Formats
+              availableFormats={availableFormats}
+              selectedFormat={selectedFormat}
+              selectedDelimiter={selectedDelimiter}
+              setSelectedFormat={setSelectedFormat}
+              setSelectedDelimiter={setSelectedDelimiter}
+              showErrorInSection={showErrorInSection}
+            />
 
             {selectedConfig &&
             MARKET_PLACE_CONFIG_TYPES.includes(selectedConfig.type) &&
@@ -440,7 +431,7 @@ export const DownloadReportModal = ({
           </CollapsibleFormSection>
           <CollapsibleFormSection
             title="What will you receive in this report?"
-            helpText={renderDurationInfo() ?? 'Period of data, time, date etc.'}
+            helpText={renderDurationInfo() ?? DATE_HELP_TEXT}
             endComponent={{
               component: () => (
                 <Switch

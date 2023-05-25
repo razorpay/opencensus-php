@@ -1,7 +1,13 @@
+import { User } from 'common/typings';
+import { uniqueArray, randomInt } from 'common/utils/rzp-utils';
+
 import { prefixEntityValue } from 'merchant_common/helpers/data';
 import { AccountStateType } from 'merchant_common/views/Reports/types/account';
-import { uniqueArray, randomInt } from 'common/utils/rzp-utils';
-import { User } from 'common/typings';
+import { Format } from 'merchant_common/views/Reports/types';
+import {
+  DEFAULT_FORMATS,
+  RPT_FORMAT,
+} from 'merchant_common/views/Reports/components/ReportModal/components/DownloadReport/components/Formats/constants';
 
 export { randomInt };
 
@@ -90,4 +96,14 @@ export const parseReqDataFromConfigs = (configs) => {
     },
     type_title: otherProps?.type_title,
   }));
+};
+
+export const getAvailableFormats = (user?: User): Format[] => {
+  const conditionalFormats: Format[] = [];
+
+  if (user?.isCustomReportExtensionsEnabled) {
+    conditionalFormats.push(RPT_FORMAT);
+  }
+
+  return [...DEFAULT_FORMATS, ...conditionalFormats];
 };

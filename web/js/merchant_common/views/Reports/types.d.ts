@@ -1,4 +1,5 @@
 import { User } from 'common/typings';
+
 import { AccountStateType } from './types/account';
 import { BaseConfigType } from './types/config';
 
@@ -41,6 +42,7 @@ export interface RefDashboardConfigType {
    */
   customConfigs: CustomConfigType[];
   availableAccounts: AccountStateType | undefined;
+  availableFormats: Format[];
   /**
    * A parse fn to transform the report configs payload as defined in the config wrt the dashboard type.
    */
@@ -69,3 +71,10 @@ export interface ReportsPropType {
    */
   dashboard: DashboardType;
 }
+
+export interface Format {
+  label: string;
+  value: string;
+}
+
+export type Delimiter = Format;

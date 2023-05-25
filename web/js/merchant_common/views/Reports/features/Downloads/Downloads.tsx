@@ -168,7 +168,8 @@ const DownloadsSection = connect(
   },
 );
 
-export const Downloads = (props) => {
+export const Downloads = (props): JSX.Element => {
   const dashboardType = useDashboardType();
+
   return <DownloadsSection dashboardType={dashboardType} {...props} />;
 };

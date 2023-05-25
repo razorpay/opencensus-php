@@ -233,7 +233,7 @@ describe('User model', () => {
     expect(isIssuingBulkUploadEnabled).toBe(false);
   });
 
-  test('get isIssuingBulkUploadEnabled: exp enabeld, role criteria met', () => {
+  test('get isIssuingBulkUploadEnabled: exp enabled, role criteria met', () => {
     const user = getDefaultUserObj();
 
     jest.spyOn(user, 'getExpStatus').mockReturnValue(true);
@@ -282,6 +282,22 @@ describe('User model', () => {
       user.isFeatureEnabled = jest.fn().mockReturnValue(false);
 
       expect(user.isOptimizerRZPVASEnabled).toBe(false);
+    });
+  });
+
+  describe('isCustomReportExtensionsEnabled', () => {
+    test('should return true if when org level feature flag - custom_report_extensions is enabled', () => {
+      const user = getDefaultUserObj();
+
+      user.isOrgFeatureEnabled = jest.fn().mockReturnValueOnce(true);
+
+      expect(user.isCustomReportExtensionsEnabled).toBe(true);
+    });
+
+    test('should return true if when org level feature flag - custom_report_extensions is not enabled', () => {
+      const user = getDefaultUserObj();
+
+      expect(user.isCustomReportExtensionsEnabled).toBe(false);
     });
   });
 });

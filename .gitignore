@@ -56,6 +56,7 @@ _ide_helper.php
 # test coverage
 .nyc_output
 web/js/coverage
+web/report.json
 
 web/test-results
 web/e2e/storageState/*
