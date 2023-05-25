@@ -84,7 +84,7 @@ trait Refund
 
     use ReverseShadowTrait;
 
-    public function refund(Payment\Entity $payment, array $input, Batch\Entity $batch = null, $batchId = null)
+    public function refund(Payment\Entity $payment, array $input, Batch\Entity $batch = null, $batchId = null, $unDisputedPayment = false)
     {
         if ($this->isInvalidInstantRefundsRequest($payment, $input) === true)
         {
@@ -106,7 +106,18 @@ trait Refund
                 ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,null, ['app' => $payment->getWallet()]);
         }
 
-        if ($payment->isDisputed() === true)
+        $isPaymentDisputed = ($payment->isDisputed() === true);
+
+        // either the field is set in the input, or if passed by arg, then it's not a disputed payment
+        if ((isset($input[RefundConstants::UNDISPUTED_PAYMENT]) and $input[RefundConstants::UNDISPUTED_PAYMENT] === true) or
+            $unDisputedPayment === true)
+        {
+            $isPaymentDisputed = false;
+
+            unset($input[RefundConstants::UNDISPUTED_PAYMENT]);
+        }
+
+        if ($isPaymentDisputed === true)
         {
             $openNonFraudDisputes = $this->repo->dispute->getOpenNonFraudDisputes($payment);
 
@@ -2986,6 +2997,17 @@ trait Refund
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED);
         }
 
+        // unsetting to avoid validation failures during transfer reversal creation
+        if (isset($input[RefundConstants::UNDISPUTED_PAYMENT]))
+        {
+            $unDisputedPayment = $input[RefundConstants::UNDISPUTED_PAYMENT];
+            unset($input[RefundConstants::UNDISPUTED_PAYMENT]);
+        }
+        else
+        {
+            $unDisputedPayment = false;
+        }
+
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($input, $payment)
         {
             // Determine if transfer reversals should be processed along with the refund
@@ -2997,7 +3019,7 @@ trait Refund
             }
         });
 
-        return $this->refund($payment, $input, $batch, $batchID);
+        return $this->refund($payment, $input, $batch, $batchID, $unDisputedPayment);
     }
 
     protected function checkForDuplicateReceipt(Payment\Entity $payment, array $input = [])

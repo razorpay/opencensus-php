@@ -22,6 +22,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Services\Shield;
 use RZP\Models\Dispute\Constants as DisputeConstants;
+use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Admin\Action;
 use RZP\Models\Payment\Refund;
@@ -215,8 +216,6 @@ class Core extends Base\Core
 
         $dispute->setBackfill($input[Entity::BACKFILL]);
 
-        $paymentId = $dispute->getPaymentId();
-
         $input = $this->preProcessInputForUpdate($dispute, $input);
 
         $this->trace->info(
@@ -224,44 +223,40 @@ class Core extends Base\Core
             array_merge($input, [Entity::ID => $dispute->getId()])
         );
 
-        return $this->mutex->acquireAndRelease(
-            $paymentId,
-            function() use ($dispute, $input) {
+        $parent = $this->checkAndGetParent($input, $dispute);
 
-                $parent = $this->checkAndGetParent($input, $dispute);
+        $dispute->edit($input);
 
-                $dispute->edit($input);
+        $dispute->setAuditAction(Action::EDIT_DISPUTE);
 
-                $dispute->setAuditAction(Action::EDIT_DISPUTE);
+        if ($parent !== null)
+        {
+            $dispute->parent()->associate($parent);
+        }
 
-                if ($parent !== null)
-                {
-                    $dispute->parent()->associate($parent);
-                }
+        return $this->repo->transaction(function() use ($dispute, $input)
+            {
+                $this->handleDisputeClosure($dispute, $input);
 
-                return $this->repo->transaction(function() use ($dispute, $input)
-                {
-                    $this->handleDisputeClosure($dispute, $input);
+                $this->fireDisputeStatusChangeWebhookEvent($dispute);
 
-                    $this->fireDisputeStatusChangeWebhookEvent($dispute);
+                $this->repo->saveOrFail($dispute);
 
-                    $this->repo->saveOrFail($dispute);
+                $this->updateCustomerTicketIfApplicable($dispute);
 
-                    $this->updateCustomerTicketIfApplicable($dispute);
+                $this->generateDisputeEvent($dispute);
 
-                    $this->generateDisputeEvent($dispute);
+                $dispute->refresh();
 
-                    $dispute->refresh();
+                $this->app['disputes']->sendDualWriteToDisputesService($dispute->toDualWriteArray(), Table::DISPUTE, DisputeConstants::UPDATE);
 
-                    $this->app['disputes']->sendDualWriteToDisputesService($dispute->toDualWriteArray(), Table::DISPUTE, DisputeConstants::UPDATE);
-
-                    $this->trace->count(Metrics::DISPUTE_STATUS_CHANGE, [
+                $this->trace->count(Metrics::DISPUTE_STATUS_CHANGE, [
                         'status'    =>  $dispute->getStatus(),
-                    ]);
+                ]);
 
-                    return $dispute;
-                });
+                return $dispute;
             });
+
     }
 
     protected function generateDisputeEvent(Entity $dispute)
@@ -463,15 +458,9 @@ class Core extends Base\Core
             return;
         }
 
-        $payment = $dispute->payment;
-
         $dispute->setResolvedAt(Carbon::now()->getTimestamp());
 
         $dispute->setDeductionReversalAt(null);
-
-        $payment->setDisputed(false);
-
-        $this->repo->saveOrFail($payment);
 
         $skipDeduct = (isset($input[Entity::SKIP_DEDUCTION])) ? boolval($input[Entity::SKIP_DEDUCTION]) : false;
 
@@ -479,6 +468,12 @@ class Core extends Base\Core
         {
             $this->handleDeduction($input, $dispute);
         }
+
+        $payment = $this->repo->payment->findOrFail($dispute->getPaymentId());
+
+        $payment->setDisputed(false);
+
+        $this->repo->saveOrFail($payment);
 
         if ($this->shouldReverse($dispute) === true)
         {
@@ -492,6 +487,13 @@ class Core extends Base\Core
 
         if ($recoveryMethod === RecoveryMethod::ADJUSTMENT)
         {
+            // fetching payment and saving to ensure payment has disputed set to false
+            $payment = $this->repo->payment->findOrFail($dispute->getPaymentId());
+
+            $payment->setDisputed(false);
+
+            $this->repo->payment->saveOrFail($payment);
+
             $this->handleLostDisputeAdjustments($dispute, $input);
 
         }
@@ -507,14 +509,6 @@ class Core extends Base\Core
     public function handleLostDisputeRefunds(Entity $dispute, array $input)
     {
         $acceptedDisputeAmount = $this->getAcceptedDisputeAmount($dispute, $input);
-
-        $payment = $this->repo->payment->findOrFail($dispute->getPaymentId());
-
-        // need to explicitly set and save here because if a payment is already in disputed state
-        // we dont allow refunds on it. in case of an error, this is in a txn block and the txn will be rolled back
-        $payment->setDisputed(false);
-
-        $this->repo->payment->saveOrFail($payment);
 
         $this->createRefundAndUpdateDispute($dispute, $acceptedDisputeAmount);
     }
@@ -574,6 +568,7 @@ class Core extends Base\Core
             Refund\Entity::NOTES  => [
                 'reason' => $dispute->getPublicId(),
             ],
+            RefundConstants::UNDISPUTED_PAYMENT => true // payment must always have disputed set to false here, for refunds to work
         ];
 
         $refundId = (new Payment\Service)->refund(Payment\Entity::getSignedId($dispute->getPaymentId()), $refundCreateInput)[Refund\Entity::ID];
