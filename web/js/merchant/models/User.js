@@ -1026,7 +1026,7 @@ export default class User {
   }
 
   get isPaytmAutoDebitEnabled() {
-    return this.isFeatureEnabled('paytm_auto_debit');
+    return this.isFeatureEnabled('wallet_paytm_auto_debit');
   }
 
   get isOptimizerOnboardingEnabled() {
