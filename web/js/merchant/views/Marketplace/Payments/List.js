@@ -9,11 +9,11 @@ import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import DocsLink from 'merchant/components/DocsLink';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 
-export default connect((state) => ({ ...state.mpPayments, user: state.session.user }), {
+export default connect((state) => ({ ...state.mpPayments }), {
   fetchAll,
 })((props) => (
   <ProductWrapper
-    tabsData={navItems(props.user)}
+    tabsData={navItems(props.isPlatformFeeTabEnabled)}
     extra={
       <>
         {RZPFeatures.ROUTE && <TakeATourButton feature={RZPFeatures.ROUTE} />}

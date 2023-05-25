@@ -1994,17 +1994,8 @@ export default class User {
     return variant?.name === 'enable';
   }
 
-  get isRoutePartnershipEnabled() {
-    const variant = getSplitzExperimentVariant('route_partnerships');
-    return variant?.name === 'enable';
-  }
-
   get isCustomReportExtensionsEnabled() {
     return this.isOrgFeatureEnabled('custom_report_extensions');
-  }
-
-  get isRoutePlusPartnershipsEnabled() {
-    return this.isFeatureEnabled('route_partnerships');
   }
 
   get isShowInternationalPaymentBtnExpEnabled() {

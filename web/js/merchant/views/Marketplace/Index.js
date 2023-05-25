@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Route, Switch } from 'react-router-dom';
+import { Switch } from 'react-router-dom';
 
 import { RZPFeatures } from 'merchant/helpers/data';
 
@@ -25,6 +25,7 @@ import BatchesList from 'merchant/views/Marketplace/Batch/List';
 
 import OnBoarding, { getIsAllowedResetRouteBoarding } from './OnBoarding';
 import QuickGuide, { getRouteQuickGuideIsClosed } from './QuickGuide';
+import Wrapper from './RouteWrapper';
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import lazy from 'merchant/routes/LazyLoader';
@@ -57,7 +58,6 @@ const ClonedPaymentsList = (props) => (
 class MarketplaceContainer extends React.Component {
   componentDidMount() {
     this.initMarketPlace();
-
     this.fetchDataForMarketPlaceOnboarding();
   }
 
@@ -148,12 +148,12 @@ class MarketplaceContainer extends React.Component {
 
         <ErrorBoundary resetOnProps>
           <Switch>
-            <Route path="/route/payments" render={ClonedPaymentsList} />
-            <Route path="/route/transfers" component={TransfersList} />
-            <Route path="/route/platformfee" component={PlatformFeeList} />
-            <Route path="/route/reversals" component={ReversalsList} />
-            <Route path="/route/accounts" component={AccountsList} />
-            <Route path="/route/batchuploads" component={BatchesList} />
+            <Wrapper path="/route/payments" component={ClonedPaymentsList} />
+            <Wrapper path="/route/transfers" component={TransfersList} />
+            <Wrapper path="/route/platformfee" component={PlatformFeeList} />
+            <Wrapper path="/route/reversals" component={ReversalsList} />
+            <Wrapper path="/route/accounts" component={AccountsList} />
+            <Wrapper path="/route/batchuploads" component={BatchesList} />
           </Switch>
         </ErrorBoundary>
       </div>

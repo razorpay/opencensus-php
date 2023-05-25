@@ -248,12 +248,12 @@ export default class AccountsListContainer extends ListContainer {
   };
 
   render() {
-    const { loading, accounts, user, showNotification } = this.props;
+    const { loading, accounts, user, showNotification, isPlatformFeeTabEnabled } = this.props;
     const status = this.state.status;
     const isCreationDisabled = user.isRouteLinkedAccountCreationDisabled;
     return (
       <ProductWrapper
-        tabsData={navItems(user)}
+        tabsData={navItems(isPlatformFeeTabEnabled)}
         extra={
           <>
             <ShowWhen additionalCondition={(_user) => !_user.isOrgAxis}>

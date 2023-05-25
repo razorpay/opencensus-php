@@ -631,12 +631,6 @@ export default {
     // prod experiment ids
     'LGeU9L1JfrImWM',
   ],
-  route_partnerships: [
-    // stage
-    'LSUv3YjjRNYTNU',
-    // prod
-    'LSWn5TOHaKESLS',
-  ],
   COLLECT_MSME_CERTIFICATE_PROPRIETORSHIP: [
     // stage experiment ids
     'LcsX6qhx42WkE0',
