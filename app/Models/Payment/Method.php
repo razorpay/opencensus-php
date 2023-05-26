@@ -81,7 +81,6 @@ class Method
         self::TRANSFER,
         self::BANK_TRANSFER,
         self::OFFLINE,
-        self::INTL_BANK_TRANSFER,
     ];
 
     public static $recurringMethods = [

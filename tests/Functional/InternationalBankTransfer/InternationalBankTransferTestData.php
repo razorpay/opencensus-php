@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Tests\Functional\BankTransfer;
+namespace RZP\Tests\Functional\InternationalBankTransfer;
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;

@@ -687,6 +687,11 @@ class Entity extends Base\PublicEntity
         ]
     ];
 
+    // Increase txn limit for B2B intl_bank_transfer payments
+    // Higher limit is now Rs 8.5L base amount
+    // https://razorpay.slack.com/archives/C024U3B04LD/p1681131023230559
+    const MAX_PAYMENT_AMOUNT_DEFAULT_INTL_BANK_TRANSFER = 85000000;
+
     public function getMaxPaymentAmountDefault()
     {
         $country = $this->getCountry();
@@ -2105,8 +2110,15 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MAX_PAYMENT_AMOUNT);
     }
 
-    public function getMaxPaymentAmountTransactionType($international = false)
+    public function getMaxPaymentAmountTransactionType($international = false, $method = '')
     {
+        // Increase txn limit for B2B intl_bank_transfer payments
+        // https://razorpay.slack.com/archives/C024U3B04LD/p1681131023230559
+        if ((empty($method) === false) && ($method === Method::INTL_BANK_TRANSFER))
+        {
+            return self::MAX_PAYMENT_AMOUNT_DEFAULT_INTL_BANK_TRANSFER;
+        }
+
         if ($international)
         {
             $maxPaymentAmount = $this->getAttribute(self::MAX_INTERNATIONAL_PAYMENT_AMOUNT);

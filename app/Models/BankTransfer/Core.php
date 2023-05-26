@@ -921,11 +921,17 @@ class Core extends Base\Core
         }
         catch (\Exception $e)
         {
+            $error = $e->getError();
+            $errMsg = $e->getMessage() ?? '';
+            $errCode = $error->getInternalErrorCode() ?? '';
+
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED, null,
             [
                 'input'       => $input,
                 'merchant_id' => $merchantId,
                 'gateway'     => Payment\Gateway::CURRENCY_CLOUD,
+                'err_msg'     => $errMsg,
+                'err_code'    => $errCode,
             ]);
         }
 
