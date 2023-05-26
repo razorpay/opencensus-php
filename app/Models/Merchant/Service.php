@@ -12066,6 +12066,50 @@ class Service extends Base\Service
     }
 
     /**
+     * @throws BadRequestException
+     * @throws BadRequestValidationFailureException
+     */
+    public function isFeatureEnabledForPartnerOfSubmerchant(string $featureName, string $merchantId = null): array
+    {
+        (new Feature\Validator())->validateFeatureName($featureName);
+
+        $merchantId = $merchantId ?? $this->merchant->getId();
+
+        $partners = (new Merchant\Core())->fetchAffiliatedPartners($merchantId);
+
+        $partnerService = new \RZP\Models\Partner\Service();
+
+        $merchantApplicationsCore = new MerchantApplications\Core();
+
+        $partner = $partners->filter(function (Merchant\Entity $partner) use ($featureName, $partnerService, $merchantApplicationsCore) {
+            if ($partner->isPurePlatformPartner() === true)
+            {
+                $oauthAppIds = $merchantApplicationsCore->getMerchantAppIds($partner->getId(), ['oauth']);
+
+                foreach ($oauthAppIds as $oauthAppId)
+                {
+                    if ($partnerService->isFeatureEnabledForPartner($featureName, $partner, $oauthAppId) === true)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return ($partnerService->isFeatureEnabledForPartner($featureName, $partner) === true);
+        })->first();
+
+        if (empty($partner) === false)
+        {
+            return [
+                'feature_enabled'               => true,
+                MerchantConstants::PARTNER_ID   => $partner->getId()
+            ];
+        }
+
+        return ['feature_enabled' => false];
+    }
+
+    /**
      * Checks whether partner migration request flag is enabled in fux api
      *
      * @param string $partnerId

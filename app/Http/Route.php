@@ -3030,13 +3030,15 @@ class Route
         'partner_config_fetch_admin'               => ['get',      'partner_configs',                                'PartnerConfigController@getConfig'                                 ],
         'partner_config_edit_admin'                => ['put',      'partner_configs/{id}',                           'PartnerConfigController@update'                                    ],
         'partner_config_fetch'                     => ['get',      'partner_config',                                 'PartnerConfigController@getConfig'                                 ],
-        'partner_config_edit'                      => ['put',      'partner_config/{id}',                            'PartnerConfigController@update'                                     ],
+        'partner_config_edit'                      => ['put',      'partner_config/{id}',                            'PartnerConfigController@update'                                    ],
         'partner_config_edit_logo'                 => ['post',     'partner_config/{id}/logo',                       'PartnerConfigController@uploadLogo'                                ],
         'partner_config_fetch_guest'               => ['get',      'partner_config_guest',                           'PartnerConfigController@getConfig'                                 ],
-        'create_partner_sub_merchant_config'       => ['post',     'partner_configs/submerchant/config',             'PartnerConfigController@createPartnersSubMerchantConfig'                     ],
-        'update_partner_sub_merchant_config'       => ['put',      'partner_configs/submerchant/config',             'PartnerConfigController@updatePartnersSubMerchantConfig'                     ],
-        'fetch_partner_first_user_experience'      => ['get',      'partner/first_user_experience',                  'MerchantController@getFUXDetailsForPartner'              ],
+        'create_partner_sub_merchant_config'       => ['post',     'partner_configs/submerchant/config',             'PartnerConfigController@createPartnersSubMerchantConfig'           ],
+        'update_partner_sub_merchant_config'       => ['put',      'partner_configs/submerchant/config',             'PartnerConfigController@updatePartnersSubMerchantConfig'           ],
+        'fetch_partner_first_user_experience'      => ['get',      'partner/first_user_experience',                  'MerchantController@getFUXDetailsForPartner'                        ],
         'fetch_partner_referral_batch'             => ['post',     'partner_referral/bulk',                          'MerchantController@fetchPartnerReferralViaBatch'                   ],
+        'submerchant_partner_feature_check'        => ['get',      'submerchant/partner_feature_check/{featureName}', 'MerchantController@isFeatureEnabledForPartnerOfSubmerchant'                    ],
+
         //Partner activation routes
         'partner_activation_status'                => ['patch',    'partner/activation/{id}/status',                 'PartnerController@updatePartnerActivationStatus'         ],
         'partner_activation_update'                => ['put',      'partner/activation/{id}',                        'PartnerController@editPartnerActivationDetails'          ],
@@ -7006,6 +7008,7 @@ class Route
         'partner_config_fetch',
         'partner_config_edit',
         'partner_config_edit_logo',
+        'submerchant_partner_feature_check'
     ];
 
     // These will run on internal auth with the assurance
@@ -12045,7 +12048,8 @@ class Route
             'partner_config_fetch',
             'partner_config_edit',
             'partner_config_edit_logo',
-            'wallet_dashboard_proxy'
+            'wallet_dashboard_proxy',
+            'submerchant_partner_feature_check'
         ],
 
         'admin_dashboard' => [
@@ -14350,6 +14354,8 @@ class Route
             // Terminal downtimes
             'manual_downtime_fetch',
             'downtime_manual_resolve',
+
+            'submerchant_partner_feature_check'
         ],
 
         //

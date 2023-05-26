@@ -289,6 +289,24 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function validateFeatureName(?string $featureName)
+    {
+        if (empty(trim($featureName)) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException('Feature name not provided');
+        }
+
+        $allFeatures = array_keys(Constants::$featureValueMap);
+
+        if (in_array($featureName, $allFeatures) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('Invalid feature', $featureName);
+        }
+    }
+
     public function validateFeatureNames(array $featureNames)
     {
         $allFeatures = array_keys(Constants::$featureValueMap);

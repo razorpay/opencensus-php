@@ -264,6 +264,8 @@ class UserRolesScope
             'partner_config_edit'                       => [Role::OWNER, Role::ADMIN],
             'partner_config_edit_logo'                  => [Role::OWNER, Role::ADMIN],
             'submerchants_fetch_capital_applications'   => Role::allExceptPaymentLinkRoles(),
+            'submerchant_partner_feature_check'         => [Role::OWNER, Role::MANAGER, Role::ADMIN],
+
 
             'loc_service'                 => [Role::OWNER, Role::ADMIN],
             'capital_cards_service'       => [Role::OWNER, Role::ADMIN],

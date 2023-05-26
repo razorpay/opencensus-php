@@ -5049,6 +5049,222 @@ class PartnerTest extends OAuthTestCase
         });
     }
 
+    public function testPartnerFeatureCheckBySubmerchantWithFeatureEnabled()
+    {
+        $this->createResellerPartnerSubmerchant();
+
+        $user = $this->createMerchantUser(self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_SUBMERCHANT_ID, $user->id);
+
+        $client = $this->createPartnerApplicationAndGetClientByEnv('dev', ['merchant_id' => '10000000000001', 'partner_type' => 'aggregator']);
+
+        $this->fixtures->merchant->create(['id' => $client->getMerchantId()]);
+
+        // assign the feature to the aggregator partner
+        $this->fixtures->merchant->addFeatures(['route_partnerships'], $client->getMerchantId());
+
+        $this->createMerchantAccessMap($client->getApplicationId(), self::DEFAULT_SUBMERCHANT_ID);
+
+        $accessMap = $this->getDbEntity('merchant_access_map', ['entity_id' => $client->getApplicationId()]);
+
+        $this->fixtures->edit('merchant_access_map', $accessMap['id'], ['entity_owner_id' => $client->getMerchantId()]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/submerchant/partner_feature_check/' . 'route_partnerships';
+
+        $this->startTest($testData);
+    }
+
+    public function testPartnerFeatureCheckBySubmerchantWithInvalidFeatureName()
+    {
+        $this->createResellerPartnerSubmerchant();
+
+        $user = $this->createMerchantUser(self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_SUBMERCHANT_ID, $user->id);
+
+        $client = $this->createPartnerApplicationAndGetClientByEnv('dev', ['merchant_id' => '10000000000001', 'partner_type' => 'aggregator']);
+
+        $this->fixtures->merchant->create(['id' => $client->getMerchantId()]);
+
+        // assign the feature to the aggregator partner
+        $this->fixtures->merchant->addFeatures(['route_partnerships'], $client->getMerchantId());
+
+        $this->createMerchantAccessMap($client->getApplicationId(), self::DEFAULT_SUBMERCHANT_ID);
+
+        $accessMap = $this->getDbEntity('merchant_access_map', ['entity_id' => $client->getApplicationId()]);
+
+        $this->fixtures->edit('merchant_access_map', $accessMap['id'], ['entity_owner_id' => $client->getMerchantId()]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/submerchant/partner_feature_check/route_partnerships_new';
+
+        $this->startTest($testData);
+    }
+
+    public function testPartnerFeatureCheckBySubmerchantWithEmptyFeatureName()
+    {
+        $this->createResellerPartnerSubmerchant();
+
+        $user = $this->createMerchantUser(self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_SUBMERCHANT_ID, $user->id);
+
+        $client = $this->createPartnerApplicationAndGetClientByEnv('dev', ['merchant_id' => '10000000000001', 'partner_type' => 'aggregator']);
+
+        $this->fixtures->merchant->create(['id' => $client->getMerchantId()]);
+
+        // assign the feature to the aggregator partner
+        $this->fixtures->merchant->addFeatures(['route_partnerships'], $client->getMerchantId());
+
+        $this->createMerchantAccessMap($client->getApplicationId(), self::DEFAULT_SUBMERCHANT_ID);
+
+        $accessMap = $this->getDbEntity('merchant_access_map', ['entity_id' => $client->getApplicationId()]);
+
+        $this->fixtures->edit('merchant_access_map', $accessMap['id'], ['entity_owner_id' => $client->getMerchantId()]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/submerchant/partner_feature_check/' . ' ';
+
+        $this->startTest($testData);
+    }
+
+    public function testPartnerFeatureCheckBySubmerchantWithFeatureDisabled()
+    {
+        $this->createResellerPartnerSubmerchant();
+
+        $user = $this->createMerchantUser(self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_SUBMERCHANT_ID, $user->id);
+
+        $client = $this->createPartnerApplicationAndGetClientByEnv('dev', ['merchant_id' => '10000000000001', 'partner_type' => 'aggregator']);
+
+        $this->fixtures->merchant->create(['id' => $client->getMerchantId()]);
+
+        $this->createMerchantAccessMap($client->getApplicationId(), self::DEFAULT_SUBMERCHANT_ID);
+
+        $accessMap = $this->getDbEntity('merchant_access_map', ['entity_id' => $client->getApplicationId()]);
+
+        $this->fixtures->edit('merchant_access_map', $accessMap['id'], ['entity_owner_id' => $client->getMerchantId()]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/submerchant/partner_feature_check/' . 'route_partnerships';
+
+        $this->startTest($testData);
+    }
+
+    public function testPartnerFeatureCheckBySubmerchantWithFeatureEnabledOnOAuthApp()
+    {
+        $this->createResellerPartnerSubmerchant();
+
+        $user = $this->createMerchantUser(self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_SUBMERCHANT_ID, $user->id);
+
+        $client = $this->createPartnerApplicationAndGetClientByEnv('dev', ['merchant_id' => '10000000000001', 'partner_type' => 'aggregator']);
+
+        $this->fixtures->merchant->create(['id' => $client->getMerchantId()]);
+
+        $this->createMerchantAccessMap($client->getApplicationId(), self::DEFAULT_SUBMERCHANT_ID);
+
+        $accessMap = $this->getDbEntity('merchant_access_map', ['entity_id' => $client->getApplicationId()]);
+
+        $this->fixtures->edit('merchant_access_map', $accessMap['id'], ['entity_owner_id' => $client->getMerchantId()]);
+
+        $oauthClient1 = $this->createPartnerApplicationAndGetClientByEnv('dev', ['merchant_id' => '10000000000002', 'partner_type' => 'pure_platform']);
+
+        $this->fixtures->merchant->create(['id' => $oauthClient1->getMerchantId(), 'partner_type' => 'pure_platform']);
+
+        $this->createMerchantAccessMap($oauthClient1->getApplicationId(), self::DEFAULT_SUBMERCHANT_ID);
+
+        $accessMap = $this->getDbEntity('merchant_access_map', ['entity_id' => $oauthClient1->getApplicationId()]);
+
+        $this->fixtures->edit('merchant_access_map', $accessMap['id'], ['entity_owner_id' => $oauthClient1->getMerchantId()]);
+
+        $oauthClient2 = $this->createPartnerApplicationAndGetClientByEnv('dev', ['merchant_id' => '10000000000002', 'partner_type' => 'pure_platform']);
+
+        $this->createMerchantAccessMap($oauthClient2->getApplicationId(), self::DEFAULT_SUBMERCHANT_ID);
+
+        $accessMap = $this->getDbEntity('merchant_access_map', ['entity_id' => $oauthClient2->getApplicationId()]);
+
+        $this->fixtures->edit('merchant_access_map', $accessMap['id'], ['entity_owner_id' => $oauthClient2->getMerchantId()]);
+
+        $oauthClient3 = $this->createPartnerApplicationAndGetClientByEnv('dev', ['merchant_id' => '10000000000002', 'partner_type' => 'pure_platform']);
+
+        $this->createMerchantAccessMap($oauthClient3->getApplicationId(), self::DEFAULT_SUBMERCHANT_ID);
+
+        $accessMap = $this->getDbEntity('merchant_access_map', ['entity_id' => $oauthClient3->getApplicationId()]);
+
+        $this->fixtures->edit('merchant_access_map', $accessMap['id'], ['entity_owner_id' => $oauthClient3->getMerchantId()]);
+
+        $this->fixtures->merchant->addFeatures(['route_partnerships'], $oauthClient2->getApplicationId(), 'application');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/submerchant/partner_feature_check/' . 'route_partnerships';
+
+        // the response will contain partner id and app id as well (since the feature is enabled on the oauth app)
+        $testData['response']['content'] = array_merge($testData['response']['content'], ['partner_id' => '10000000000002']);
+
+        $this->startTest($testData);
+    }
+
+    public function testPartnerFeatureCheckBySubmerchantWithFeatureDisabledOnOAuthApp()
+    {
+        $this->createResellerPartnerSubmerchant();
+
+        $user = $this->createMerchantUser(self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_SUBMERCHANT_ID, $user->id);
+
+        $client = $this->createPartnerApplicationAndGetClientByEnv('dev', ['merchant_id' => '10000000000001', 'partner_type' => 'aggregator']);
+
+        $this->fixtures->merchant->create(['id' => $client->getMerchantId()]);
+
+        $this->createMerchantAccessMap($client->getApplicationId(), self::DEFAULT_SUBMERCHANT_ID);
+
+        $accessMap = $this->getDbEntity('merchant_access_map', ['entity_id' => $client->getApplicationId()]);
+
+        $this->fixtures->edit('merchant_access_map', $accessMap['id'], ['entity_owner_id' => $client->getMerchantId()]);
+
+        $oauthClient1 = $this->createPartnerApplicationAndGetClientByEnv('dev', ['merchant_id' => '10000000000002', 'partner_type' => 'pure_platform']);
+
+        $this->fixtures->merchant->create(['id' => $oauthClient1->getMerchantId(), 'partner_type' => 'pure_platform']);
+
+        $this->createMerchantAccessMap($oauthClient1->getApplicationId(), self::DEFAULT_SUBMERCHANT_ID);
+
+        $accessMap = $this->getDbEntity('merchant_access_map', ['entity_id' => $oauthClient1->getApplicationId()]);
+
+        $this->fixtures->edit('merchant_access_map', $accessMap['id'], ['entity_owner_id' => $oauthClient1->getMerchantId()]);
+
+        $oauthClient2 = $this->createPartnerApplicationAndGetClientByEnv('dev', ['merchant_id' => '10000000000002', 'partner_type' => 'pure_platform']);
+
+        $this->createMerchantAccessMap($oauthClient2->getApplicationId(), self::DEFAULT_SUBMERCHANT_ID);
+
+        $accessMap = $this->getDbEntity('merchant_access_map', ['entity_id' => $oauthClient2->getApplicationId()]);
+
+        $this->fixtures->edit('merchant_access_map', $accessMap['id'], ['entity_owner_id' => $oauthClient2->getMerchantId()]);
+
+        $oauthClient3 = $this->createPartnerApplicationAndGetClientByEnv('dev', ['merchant_id' => '10000000000002', 'partner_type' => 'pure_platform']);
+
+        $this->createMerchantAccessMap($oauthClient3->getApplicationId(), self::DEFAULT_SUBMERCHANT_ID);
+
+        $accessMap = $this->getDbEntity('merchant_access_map', ['entity_id' => $oauthClient3->getApplicationId()]);
+
+        $this->fixtures->edit('merchant_access_map', $accessMap['id'], ['entity_owner_id' => $oauthClient3->getMerchantId()]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/submerchant/partner_feature_check/' . 'route_partnerships';
+
+        $this->startTest($testData);
+    }
+
     private function createResellerPartnerAndSubmerchant(string $submerchantId = '101submerchant', string $appId = 'reseller84ifke')
     {
         list($partner, $app) = $this->createPartnerAndApplication(['partner_type' => 'reseller'], ['id' => $appId]);
@@ -5107,5 +5323,4 @@ class PartnerTest extends OAuthTestCase
             ]
         ];
     }
-
 }

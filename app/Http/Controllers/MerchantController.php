@@ -4031,4 +4031,10 @@ class MerchantController extends Controller
         return $this->app['magic_address_provider_service']->push1ccAddresses($input);
     }
 
+    public function isFeatureEnabledForPartnerOfSubmerchant(string $featureName)
+    {
+        $response = $this->service()->isFeatureEnabledForPartnerOfSubmerchant($featureName);
+
+        return ApiResponse::json($response);
+    }
 }

@@ -2923,4 +2923,97 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testPartnerFeatureCheckBySubmerchantWithFeatureEnabled' => [
+        'request'  => [
+            'url'     => '/submerchant/partner_feature_check/{featureName}',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'feature_enabled' => true,
+                'partner_id' => '10000000000001'
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testPartnerFeatureCheckBySubmerchantWithInvalidFeatureName' => [
+        'request'  => [
+            'url'     => '/submerchant/partner_feature_check/{featureName}',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid feature',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testPartnerFeatureCheckBySubmerchantWithEmptyFeatureName' => [
+        'request'  => [
+            'url'     => '/submerchant/partner_feature_check/{featureName}',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Feature name not provided',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testPartnerFeatureCheckBySubmerchantWithFeatureDisabled' => [
+        'request'  => [
+            'url'     => '/submerchant/partner_feature_check/{featureName}',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'feature_enabled' => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testPartnerFeatureCheckBySubmerchantWithFeatureEnabledOnOAuthApp' => [
+        'request'  => [
+            'url'     => '/submerchant/partner_feature_check/{featureName}',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'feature_enabled' => true,
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testPartnerFeatureCheckBySubmerchantWithFeatureDisabledOnOAuthApp' => [
+        'request'  => [
+            'url'     => '/submerchant/partner_feature_check/{featureName}',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'feature_enabled' => false,
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];
