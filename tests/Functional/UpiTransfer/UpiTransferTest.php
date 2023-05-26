@@ -272,6 +272,132 @@ class UpiTransferTest extends TestCase
         );
     }
 
+    public function testProcessIciciUpiTransferPaymentWithPayerAccountType()
+    {
+        $vpa = $this->createVirtualAccount('test', '10000000000000', 'vpVpaIcici');
+
+        $this->processUpiTransfer(__FUNCTION__, true, Gateway::UPI_ICICI);
+
+        $upiTransfer = $this->getDbLastEntity('upi_transfer');
+        $payment     = $this->getDbLastEntity('payment');
+        $upi         = $this->getLastEntity('upi', true);
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals(Gateway::UPI_ICICI, $payment['gateway']);
+        $this->assertEquals('vpa', $payment['receiver_type']);
+        $this->assertEquals('credit_card', $payment['reference2']);
+
+        $this->assertEquals($upiTransfer['payment_id'], $payment['id']);
+        $this->assertEquals($vpa['address'], $upiTransfer['payee_vpa']);
+
+        $this->assertNotNull($upi['payment_id']);
+        $this->assertTrue(isset($upi['type']));
+        $this->assertEquals($upi['type'], 'pay');
+
+        $this->assertEquals($upiTransfer['expected'], true);
+        $this->assertEquals(null, $upiTransfer['unexpected_reason']);
+        $this->assertNull($upiTransfer['transaction_reference']);
+
+        $this->runUpiTransferRequestAssertions(
+            'upi_icici',
+            true,
+            null,
+            [
+                'intended_virtual_account_id'   => $this->virtualAccountId,
+                'actual_virtual_account_id'     => $this->virtualAccountId,
+                'merchant_id'                   => '10000000000000',
+                'upi_transfer_id'               => $upiTransfer->getPublicId(),
+                'payment_id'                    => $payment->getPublicId(),
+            ]
+        );
+    }
+
+    public function testProcessIciciUpiTransferWithPayerAccountTypeNonCredit()
+    {
+        $vpa = $this->createVirtualAccount('test', '10000000000000', 'vpVpaIcici');
+
+        $this->processUpiTransfer(__FUNCTION__, true, Gateway::UPI_ICICI);
+
+        $upiTransfer = $this->getDbLastEntity('upi_transfer');
+        $payment     = $this->getDbLastEntity('payment');
+        $upi         = $this->getLastEntity('upi', true);
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals(Gateway::UPI_ICICI, $payment['gateway']);
+        $this->assertEquals('vpa', $payment['receiver_type']);
+        $this->assertEquals('bank_account', $payment['reference2']);
+
+        $this->assertEquals($upiTransfer['payment_id'], $payment['id']);
+        $this->assertEquals($vpa['address'], $upiTransfer['payee_vpa']);
+
+        $this->assertNotNull($upi['payment_id']);
+        $this->assertTrue(isset($upi['type']));
+        $this->assertEquals($upi['type'], 'pay');
+
+        $this->assertEquals($upiTransfer['expected'], true);
+        $this->assertEquals(null, $upiTransfer['unexpected_reason']);
+        $this->assertNull($upiTransfer['transaction_reference']);
+
+        $this->runUpiTransferRequestAssertions(
+            'upi_icici',
+            true,
+            null,
+            [
+                'intended_virtual_account_id'   => $this->virtualAccountId,
+                'actual_virtual_account_id'     => $this->virtualAccountId,
+                'merchant_id'                   => '10000000000000',
+                'upi_transfer_id'               => $upiTransfer->getPublicId(),
+                'payment_id'                    => $payment->getPublicId(),
+            ]
+        );
+    }
+
+    public function testProcessIciciUpiTransferPaymentWithInvalidPayerAccountType()
+    {
+        $vpa = $this->createVirtualAccount('test', '10000000000000', 'vpVpaIcici');
+
+        $this->processUpiTransfer(__FUNCTION__, true, Gateway::UPI_ICICI);
+
+        $upiTransfer = $this->getDbLastEntity('upi_transfer');
+        $payment     = $this->getDbLastEntity('payment');
+        $upi         = $this->getLastEntity('upi', true);
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals(Gateway::UPI_ICICI, $payment['gateway']);
+        $this->assertEquals('vpa', $payment['receiver_type']);
+        $this->assertNull($payment['reference2']);
+
+        $this->assertEquals($upiTransfer['payment_id'], $payment['id']);
+        $this->assertEquals($vpa['address'], $upiTransfer['payee_vpa']);
+
+        $this->assertNotNull($upi['payment_id']);
+        $this->assertTrue(isset($upi['type']));
+        $this->assertEquals($upi['type'], 'pay');
+
+        $this->assertEquals($upiTransfer['expected'], true);
+        $this->assertEquals(null, $upiTransfer['unexpected_reason']);
+        $this->assertNull($upiTransfer['transaction_reference']);
+
+        $this->runUpiTransferRequestAssertions(
+            'upi_icici',
+            true,
+            null,
+            [
+                'intended_virtual_account_id'   => $this->virtualAccountId,
+                'actual_virtual_account_id'     => $this->virtualAccountId,
+                'merchant_id'                   => '10000000000000',
+                'upi_transfer_id'               => $upiTransfer->getPublicId(),
+                'payment_id'                    => $payment->getPublicId(),
+            ]
+        );
+    }
+
     public function testProcessIciciUpiTransferPaymentInternal()
     {
         $this->createVirtualAccount('test', '10000000000000', 'vpVpaIcici');
@@ -356,7 +482,7 @@ class UpiTransferTest extends TestCase
     }
 
     public function testProcessIciciUpiTransferPaymentInternalRefund()
-    {      
+    {
         $this->createVirtualAccount('test', '10000000000000', 'vpVpaIcici');
 
         $this->closeVirtualAccount($this->virtualAccountId);

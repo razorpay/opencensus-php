@@ -674,6 +674,62 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals('captured', $response['payment']['status']);
     }
 
+    public function testProcessIciciQrPaymentInternalWithPayerAccountType()
+    {
+        $qrCode = $this->createQrCode();
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData[__FUNCTION__];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+
+        $response = $this->makeUpiIciciPaymentInternal($request);
+
+        $payment     = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals(Gateway::UPI_ICICI, $payment['gateway']);
+        $this->assertEquals('qr_code', $payment['receiver_type']);
+        $this->assertEquals($response['payment']['id'], 'pay_' . $payment['id']);
+        $this->assertEquals('captured', $response['payment']['status']);
+        $this->assertEquals('credit_card', $payment['reference2']);
+    }
+
+    public function testProcessIciciQrPaymentInternalWithInvalidPayerAccountType()
+    {
+        $qrCode = $this->createQrCode();
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData[__FUNCTION__];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+
+        $response = $this->makeUpiIciciPaymentInternal($request);
+
+        $payment     = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals(Gateway::UPI_ICICI, $payment['gateway']);
+        $this->assertEquals('qr_code', $payment['receiver_type']);
+        $this->assertEquals($response['payment']['id'], 'pay_' . $payment['id']);
+        $this->assertEquals('captured', $response['payment']['status']);
+        $this->assertNull($payment['reference2']);
+    }
+
     public function testProcessIciciQrPaymentInternalDuplicate()
     {
         $qrCode = $this->createQrCode();
@@ -2223,6 +2279,99 @@ class NonVirtualAccountQrCodeTest extends TestCase
         ];
 
         $this->createQrCode($input, 'test', '10000000000000', $headers);
+    }
+
+    public function testProcessIciciQrPaymentWithPayerAccountType()
+    {
+        $qrCode = $this->createQrCode(['customer_id' => 'cust_100000customer']);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+
+        $rrn = '000011100101';
+        $payerAccountType = 'CREDIT|0123456';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+        $request['content']['PayerAccountType'] = $payerAccountType;
+
+        $this->makeUpiIciciPayment($request);
+
+        $qrPayment = $this->getLastEntity('qr_payment', true);
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals(1, $qrPayment['expected']);
+        $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
+        $this->assertEquals($rrn, $payment['reference16']);
+        $this->assertEquals('credit_card', $payment['reference2']);
+    }
+
+    public function testProcessIciciQrPaymentWithPayerAccountTypeNonCredit()
+    {
+        $qrCode = $this->createQrCode(['customer_id' => 'cust_100000customer']);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+
+        $rrn = '000011100101';
+        $payerAccountType = 'PPIWALLET';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+        $request['content']['PayerAccountType'] = $payerAccountType;
+
+        $this->makeUpiIciciPayment($request);
+
+        $qrPayment = $this->getLastEntity('qr_payment', true);
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals(1, $qrPayment['expected']);
+        $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
+        $this->assertEquals($rrn, $payment['reference16']);
+        $this->assertEquals('ppiwallet', $payment['reference2']);
+    }
+
+    public function testProcessIciciQrPaymentWithInvalidPayerAccountType()
+    {
+        $qrCode = $this->createQrCode(['customer_id' => 'cust_100000customer']);
+
+        $qrCodeId = $qrCode['id'];
+
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+
+        $rrn = '000011100101';
+        $payerAccountType = 'INVALIDTYPE';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+        $request['content']['PayerAccountType'] = $payerAccountType;
+
+        $this->makeUpiIciciPayment($request);
+
+        $qrPayment = $this->getLastEntity('qr_payment', true);
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals(1, $qrPayment['expected']);
+        $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
+        $this->assertEquals($rrn, $payment['reference16']);
+        $this->assertNull($payment['reference2']);
     }
 
     public function testCloseQrCodeWithOnDemandFeatureFlagDisabled()

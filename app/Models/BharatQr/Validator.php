@@ -29,6 +29,7 @@ class Validator extends Base\Validator
         GatewayResponseParams::MPAN                  => 'required_without:gateway_merchant_id|string',
         GatewayResponseParams::NOTES                 => 'sometimes|string',
         GatewayResponseParams::TRANSACTION_TIME      => 'sometimes|epoch',
+        GatewayResponseParams::PAYER_ACCOUNT_TYPE    => 'sometimes|string',
     ];
 
     protected static $upiYesbankGatewayResponseRules = [

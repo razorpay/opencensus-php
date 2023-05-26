@@ -456,6 +456,7 @@ class Gateway extends Base\Gateway
      */
     protected function parseGatewayResponse(string $response, bool $forceDecryption = false, bool $isUpiTransfer = false): array
     {
+
         if (($forceDecryption === false) or
             (Reconciliate::$isReconRunning === true))
         {
@@ -1668,6 +1669,13 @@ class Gateway extends Base\Gateway
             $qrData[BharatQr\GatewayResponseParams::NOTES] = (string) $input[Fields::REMARK];
         }
 
+        $payerAccountType = $this->getInternalPayerAccountType($input);
+
+        if (isset($payerAccountType) === true)
+        {
+            $qrData[BharatQr\GatewayResponseParams::PAYER_ACCOUNT_TYPE] = $payerAccountType;
+        }
+
         return [
             'callback_data' => $input,
             'qr_data'       => $qrData
@@ -2167,10 +2175,36 @@ class Gateway extends Base\Gateway
             UpiTransfer\GatewayResponseParams::TRANSACTION_REFERENCE => $transactionReference,
         ];
 
+        $payerAccountType = $this->getInternalPayerAccountType($input);
+
+        if (isset($payerAccountType) === true)
+        {
+            $upiTransferData[UpiTransfer\GatewayResponseParams::PAYER_ACCOUNT_TYPE] = $payerAccountType;
+        }
+
         return [
             'callback_data'     => $input,
             'upi_transfer_data' => $upiTransferData
         ];
+    }
+
+    /**
+     * Get internal payer account type from gateway payer account type
+     * @param $input
+     * @return string|void
+     */
+    protected function getInternalPayerAccountType($input)
+    {
+        if (array_key_exists(Fields::PAYER_ACCOUNT_TYPE, $input) === true)
+        {
+            $payerAccountType = explode("|", (string) $input[Fields::PAYER_ACCOUNT_TYPE]);
+
+            if ((sizeof($payerAccountType) > 0) and
+                (in_array(strtolower($payerAccountType[0]), PayerAccountType::SUPPORTED_PAYER_ACCOUNT_TYPES)))
+            {
+                return PayerAccountType::getPayerAccountType(strtolower($payerAccountType[0]));
+            }
+        }
     }
 
     protected function checkCallbackResponseStatus($response, $successStatus = Status::SUCCESS)

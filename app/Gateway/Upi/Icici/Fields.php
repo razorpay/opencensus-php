@@ -48,6 +48,7 @@ class Fields
     const RESPONSE_CODE             = 'ResponseCode';
     const UMN                       = 'UMN';
     const REMARK                    = 'Remark';
+    const PAYER_ACCOUNT_TYPE        = 'PayerAccountType';
     const VALIDITY_END_DATE_TIME    = 'validityEndDateTime';
     const UPDATE                    = 'update';
 }

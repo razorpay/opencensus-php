@@ -308,6 +308,12 @@ class Processor extends Base\Core
 
         $paymentArray = array_merge($paymentArray, $parentPaymentArray);
 
+        // set payer account type, if present.
+        if (array_key_exists(GatewayResponseParams::PAYER_ACCOUNT_TYPE, $this->gatewayInput) === true)
+        {
+            $paymentArray[Payment\Entity::PAYER_ACCOUNT_TYPE] = $this->gatewayInput[GatewayResponseParams::PAYER_ACCOUNT_TYPE];
+        }
+
         if ($this->qrCode->hasOrder() === true)
         {
             $order = $this->qrCode->source;

@@ -156,6 +156,11 @@ class Processor extends VirtualAccount\Processor
 
         $paymentArray = array_merge($paymentArray, $parentPaymentArray);
 
+        if (array_key_exists(GatewayResponseParams::PAYER_ACCOUNT_TYPE, $this->gatewayInput) === true)
+        {
+            $paymentArray[Payment\Entity::PAYER_ACCOUNT_TYPE] = $this->gatewayInput[GatewayResponseParams::PAYER_ACCOUNT_TYPE];
+        }
+
         $merchant = $this->virtualAccount->merchant;
 
         if ($merchant->isFeeBearerCustomerOrDynamic() === true)

@@ -167,6 +167,7 @@ class Validator extends Base\Validator
         'browser.screen_width'                                       => 'sometimes|integer',
         'browser.screen_height'                                      => 'sometimes|integer',
         'network_transaction_id'                                     => 'sometimes',
+        'payer_account_type'                                         => 'sometimes_if:method,upi|nullable|string|max:20',
 
     ];
 
@@ -443,6 +444,7 @@ class Validator extends Base\Validator
         'payment.currency'              => 'required|string',
         'payment.contact'               => 'required',
         'payment.email'                 => 'required|string',
+        'payment.payer_account_type'    => 'sometimes|string',
         'upi'                           => 'required|array',
         'upi.npci_reference_id'         => 'required',
         'upi.merchant_reference'        => 'sometimes',

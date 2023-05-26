@@ -10135,6 +10135,8 @@ trait Authorize
 
             $this->updateAcquirerData($payment, $data);
 
+            $this->setPayerAcccountTypeIfApplicable($payment, $data);
+
             // If payment was earlier failed, then that means it's
             // getting authorized late.
             $payment->setLateAuthorized($wasFailed);
@@ -10308,6 +10310,33 @@ trait Authorize
                 $data['acquirer']);
         }
 
+    }
+
+    /**
+     * This method is used to store payer account type for UPI payments, if present.
+     * @param Payment\Entity $payment
+     * @param $input
+     * @return void
+     */
+    public function setPayerAcccountTypeIfApplicable(Payment\Entity $payment, $data)
+    {
+        // update payer account type in reference2 column, if present.
+        try
+        {
+            if (($payment->isUpi()) === true and
+                (isset($data[Payment\Entity::PAYER_ACCOUNT_TYPE]) === true) and
+                (in_array(strtolower($data[Payment\Entity::PAYER_ACCOUNT_TYPE]), PaymentsUpi\PayerAccountType::SUPPORTED_PAYER_ACCOUNT_TYPES)))
+            {
+                $payment->setReference2(strtolower($data[Payment\Entity::PAYER_ACCOUNT_TYPE]));
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                Trace::ERROR,
+                TraceCode::PAYER_ACCOUNT_TYPE_SAVE_FAILED,
+                $data);
+        }
     }
 
     protected function updateAssociatedPaymentEntities(Payment\Entity $payment, array $data)

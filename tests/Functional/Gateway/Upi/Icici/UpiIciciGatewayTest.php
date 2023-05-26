@@ -1752,6 +1752,38 @@ EOT;
         $this->assertNotEmpty($response['payment_id']);
     }
 
+    public function testUnexpectedPaymentCreationWithPayerAccountType()
+    {
+        $content = $this->buildUnexpectedPaymentRequest();
+        $content['payment']['payer_account_type'] = 'BANK_ACCOUNT';
+
+        $response = $this->makeUnexpectedPaymentAndGetContent($content);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertEquals('bank_account', $payment['reference2']);
+
+        $this->assertTrue($response['success']);
+
+        $this->assertNotEmpty($response['payment_id']);
+    }
+
+    public function testUnexpectedPaymentCreationWithInvalidPayerAccountType()
+    {
+        $content = $this->buildUnexpectedPaymentRequest();
+        $content['payment']['payer_account_type'] = 'INVALIDTYPE';
+
+        $response = $this->makeUnexpectedPaymentAndGetContent($content);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertNull($payment['reference2']);
+
+        $this->assertTrue($response['success']);
+
+        $this->assertNotEmpty($response['payment_id']);
+    }
+
     /**
      * Test unexpected payment request mandatory validation
      */

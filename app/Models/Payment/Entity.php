@@ -331,6 +331,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     const B2BExportInvoice                   = "b2b_export_invoice";
 
+    const PAYER_ACCOUNT_TYPE                 = "payer_account_type";
+    const UPI                                = "upi";
+
     const feeCurrencyAmount                      = "fee_currency_amount";
 
     const FEE_MODEL_OVERRIDE_MERCHANT_IDS = [Pricing\BuyPricing::BPCL_TEST_MERCHANT_ID, Pricing\BuyPricing::BPCL_MERCHANT_ID];
@@ -477,7 +480,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::UPDATED_AT,
         self::AUTHENTICATION_GATEWAY,
         self::FEE_BEARER,
-        self::REFERENCE13
+        self::REFERENCE13,
+        self::UPI
     ];
 
     protected $public = [
@@ -532,7 +536,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::PROVIDER,
         self::SETTLED_BY,
         self::OPTIMIZER_PROVIDER,
-        self::TOKEN
+        self::TOKEN,
+        self::UPI
     ];
 
     protected $webhook = [
@@ -586,7 +591,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::PROVIDER,
         self::SETTLED_BY,
         self::OPTIMIZER_PROVIDER,
-        self::TOKEN
+        self::TOKEN,
+        self::UPI
     ];
 
     protected $reconAppInternal = [
@@ -1990,6 +1996,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     protected function getCapturedAttribute()
     {
         return ($this->getAttribute(self::CAPTURED_AT) !== null);
+    }
+
+    protected function getPayerAccountTypeAttribute()
+    {
+        return $this->getAttribute(self::REFERENCE2);
     }
 
     protected function getAcquirerDataAttribute()
@@ -4566,6 +4577,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         $this->setConvenienceFeeAttributesForDashboard($attributes);
 
+        $this->setUpiIfApplicable($attributes);
+
         return $attributes;
     }
 
@@ -5787,6 +5800,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $data[self::B2BExportInvoice] = $this->getReference2();
         }
 
+        $this->setUpiIfApplicable($data);
 
         // MCC CFB Payments which are in authorized state will have the fees in payment currency,
         // so we are converting it into base currency(INR) and sending it as an additional param to Merchant Dashboard.
@@ -5854,6 +5868,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         if($this->isB2BExportCurrencyCloudPayment() === true){
             $data[self::B2BExportInvoice] = $this->getReference2();
         }
+
+        $this->setUpiIfApplicable($data);
 
         // MCC CFB Payments which are in authorized state will have the fees in payment currency,
         // so we are converting it into base currency(INR) and sending it as an additional param to Merchant Dashboard.
@@ -5927,6 +5943,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $data[self::BASE_AMOUNT] = $this->getBaseAmount();
         }
 
+        $this->setUpiIfApplicable($data);
+
         return $data;
     }
 
@@ -5942,6 +5960,20 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $data['customer_fee'] = $this->getConvenienceFee();
 
             $data['customer_fee_gst'] = $this->getConvenienceFeeGst();
+        }
+    }
+
+    /**
+     * Set UPI block to response if applicable.
+     * @param array $data
+     * @return void
+     */
+    private function setUpiIfApplicable(array &$data)
+    {
+        if (($this->getMethod() === Payment\Method::UPI) and
+            ($this->getReference2() !== null))
+        {
+            $data[self::UPI][self::PAYER_ACCOUNT_TYPE] = $this->getReference2();
         }
     }
 

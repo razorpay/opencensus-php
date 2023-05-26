@@ -28,6 +28,12 @@ class Core extends Base\Core
     {
         $upiTransferInput = $gatewayResponse['upi_transfer_data'];
 
+        if (isset($upiTransferInput['payer_account_type']) === true)
+        {
+            // payer account type is not required in upi transfer entity
+            unset($upiTransferInput['payer_account_type']);
+        }
+
         $this->trace->info(
             TraceCode::UPI_TRANSFER_PAYMENT_PROCESS_REQUEST,
             [

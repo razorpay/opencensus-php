@@ -99,7 +99,6 @@ use RZP\Models\UpiMandate\RecurringType as UPIMandateRecurringType;
 use RZP\Models\Ledger\ReverseShadow\Payments\Core as ReverseShadowPaymentsCore;
 use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
 use RZP\Models\Payment\Method;
-
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Customer\Token\Core as TokenCore;
 
@@ -5949,6 +5948,8 @@ class Processor
         $this->setGooglePayMethodsIfApplicable($payment, $input);
 
         $this->setForceTerminalIdIfApplicable($payment, $input);
+
+        $this->setPayerAcccountTypeIfApplicable($payment, $input);
 
         $this->setAxisTokenHQGatewayIfApplicable($payment, $input);
 

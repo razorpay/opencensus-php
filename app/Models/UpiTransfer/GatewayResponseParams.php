@@ -16,4 +16,5 @@ class GatewayResponseParams
     const NPCI_REFERENCE_ID     = 'npci_reference_id';
     const PROVIDER_REFERENCE_ID = 'provider_reference_id';
     const TRANSACTION_REFERENCE = 'transaction_reference';
+    const PAYER_ACCOUNT_TYPE    = 'payer_account_type';
 }
