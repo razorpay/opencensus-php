@@ -95,6 +95,7 @@ class Base
         return $requestMetadata;
     }
 
+
     /**
      * @throws BadRequestException
      * @throws BaseException
@@ -114,4 +115,27 @@ class Base
             };
         }
     }
+
+    /**
+     * @throws \Exception
+     */
+    public function getByIdForFindOrFail(
+        $id
+    ) {
+
+        try {
+                return $this->getById($id);
+        } catch (\Exception $err) {
+                // we ignore validation and not found errors for find function.
+                if($err->getCode() == ErrorCode::BAD_REQUEST_NO_RECORD_FOUND_FOR_ID ||
+                    $err->getCode() == ErrorCode::BAD_REQUEST_INVALID_ARGUMENT) {
+                    // TODO: Add metric and log for when this happens to do the tracking.
+                    return null;
+                }
+
+                throw $err;
+        }
+    }
+
+
 }

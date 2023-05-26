@@ -38,6 +38,8 @@ class Constant
 
     const GET_BY_MERCHANT_ID = 'get_by_merchant_id';
 
+    const GET_BY_ID = 'get_by_id';
+
     const MERCHANT = 'merchant';
 
     const MERCHANT_WEBSITE = 'merchant_website';

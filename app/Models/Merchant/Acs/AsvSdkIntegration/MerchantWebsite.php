@@ -109,5 +109,5 @@ class MerchantWebsite extends Base
             return $this->getLatestByMerchantId($id, $requestMetadata);
         };
     }
-
+    
 }

@@ -18,7 +18,9 @@ class Constant
 
     // splitz experiment names
     CONST SPLITZ_WEBSITE_READ_MERCHANTID = "splitz_experiment_website_read_merchantid";
+    CONST SPLITZ_WEBSITE_READ_FIND = "splitz_experiment_website_read_find";
 
     // function identifiers
-    CONST GET_WEBSITE_BY_MERCHANT_ID = "getWebsiteDetailsForMerchantId";
+    CONST GET_WEBSITE_BY_MERCHANT_ID = "ASV_MERCHANT_WEBSITE_getWebsiteDetailsForMerchantId";
+    CONST MERCHANT_WEBSITE_FIND = "ASV_MERCHANT_WEBSITE_find";
 }

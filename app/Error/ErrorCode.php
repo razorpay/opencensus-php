@@ -2937,6 +2937,8 @@ class ErrorCode
     const BAD_REQUEST_INVALID_ARGUMENT                                              = 'BAD_REQUEST_INVALID_ARGUMENT';
 
     const ASV_SERVER_ERROR                                                          = 'ASV_SERVER_ERROR';
+    const ASV_MAPPING_NOT_PRESENT_ERROR                                             = 'ASV_MAPPING_NOT_PRESENT_ERROR';
+
 
     const ASV_INTERNAL_PARITY_CHECKER_ERROR                                         = 'ASV_INTERNAL_PARITY_CHECKER_ERROR';
 
