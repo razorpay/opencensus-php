@@ -95,6 +95,7 @@ try{
         <input type="hidden" id="color_depth" name="browser[color_depth]" value="0">
         <input type="hidden" id="screen_width" name="browser[screen_width]" value="0">
         <input type="hidden" id="screen_height" name="browser[screen_height]" value="0">
+        <input type="hidden" id="language" name="browser[language]" value="en-US">
         <input type="hidden" id="auth_step" name="auth_step" value="{{$data['request']['auth_step']}}">
     </form>
 {{--  Iframe--}}
@@ -129,12 +130,14 @@ try{
           const colorDepth = screen.colorDepth;
           const screenWidth = screen.width;
           const screenHeight = screen.height;
+          const language = navigator.language;
           document.getElementById("java_enabled").value = javaEnabled;
           document.getElementById("javascript_enabled").value = javascriptEnabled;
           document.getElementById("timezone_offset").value = timeZoneOffset;
           document.getElementById("color_depth").value = colorDepth;
           document.getElementById("screen_width").value = screenWidth;
           document.getElementById("screen_height").value = screenHeight;
+          document.getElementById("language").value = language;
           document.form3.submit();
       }, 2000);
       </script>

@@ -160,6 +160,7 @@ class Validator extends Base\Validator
         'authentication.authentication_channel'                      => 'sometimes_if:method,card|string|in:browser',
         'browser'                                                    => 'sometimes|array',
         'browser.java_enabled'                                       => 'sometimes|boolean',
+        'browser.language'                                           => 'sometimes|string',
         'browser.javascript_enabled'                                 => 'sometimes|boolean',
         'browser.timezone_offset'                                    => 'sometimes|integer',
         'browser.color_depth'                                        => 'sometimes|integer',
