@@ -565,9 +565,6 @@ final class RazorxTreatment
     // Experiment to control recurring auto payment process through actual card number/tokenised card number for tokenised cards
     const RECURRING_SUBSEQUENT_THROUGH_TOKENISED_CARD = 'recurring_subsequent_through_tokenised_card';
 
-    // Experiment to control recurring auto payment process through mutex lock or not
-    const RECURRING_SUBSEQUENT_VIA_MUTEX_LOCK = 'recurring_subsequent_via_mutex_lock';
-
     /** Experiment to enable recurring transaction for Rupay Cards Merchant Level Control*/
     const RECURRING_THROUGH_RUPAY_CARD_MID = 'recurring_through_rupay_card_mid';
 
