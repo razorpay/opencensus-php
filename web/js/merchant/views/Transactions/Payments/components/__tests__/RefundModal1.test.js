@@ -5,6 +5,7 @@ import {
   payment,
   session,
 } from 'merchant/views/Transactions/Payments/components/__tests__/mocks/fixtures/RefundModal';
+import User from 'merchant/models/User';
 
 describe('RefundModal', () => {
   beforeEach(() => {
@@ -12,7 +13,14 @@ describe('RefundModal', () => {
   });
 
   test('should render refund payment details', () => {
-    renderApp();
+    renderApp({
+      initialState: {
+        session: {
+          ...session,
+          user: new User({ merchants: {} }),
+        },
+      },
+    });
     expect(screen.getByText('Refund Payment')).toBeInTheDocument();
     expect(
       screen.getByText('This payment was made more than 0 months ago, refund not supported'),
@@ -30,9 +38,7 @@ describe('RefundModal', () => {
         },
         session: {
           ...session,
-          user: {
-            merchants: {},
-          },
+          user: new User({ merchants: {} }),
         },
       },
       props: {
@@ -52,9 +58,7 @@ describe('RefundModal', () => {
         },
         session: {
           ...session,
-          user: {
-            merchants: {},
-          },
+          user: new User({ merchants: {} }),
         },
       },
       props: {
@@ -68,6 +72,9 @@ describe('RefundModal', () => {
   test('should render instant refund support details', () => {
     renderApp({
       initialState: {
+        session: {
+          user: new User(),
+        },
         payment: {
           ...payment,
           payment: {
@@ -88,6 +95,9 @@ describe('RefundModal', () => {
     test('should render a payment refund dispute', () => {
       renderApp({
         initialState: {
+          session: {
+            user: new User(),
+          },
           payment: {
             ...payment,
             payment: {
@@ -112,7 +122,14 @@ describe('RefundModal', () => {
     });
 
     test('should render payment refund disputes', () => {
-      renderApp();
+      renderApp({
+        initialState: {
+          session: {
+            ...session,
+            user: new User({ merchants: {} }),
+          },
+        },
+      });
       expect(
         screen.getByText(
           `There are disputes raised against this payment. Kindly check the dispute details before initiating a refund.`,
@@ -122,7 +139,14 @@ describe('RefundModal', () => {
   });
 
   test('should prefill amount to be refunded in refund amount input field', () => {
-    renderApp();
+    renderApp({
+      initialState: {
+        session: {
+          ...session,
+          user: new User({ merchants: {} }),
+        },
+      },
+    });
     const refundInput = screen.getByPlaceholderText('Enter the refund amount');
     expect(refundInput).toHaveValue(
       (payment.payment.amount - payment.payment.amount_refunded) / 100,
@@ -130,7 +154,14 @@ describe('RefundModal', () => {
   });
 
   test('should make refund api call only once on clicking the Yes, Refund multiple times', async () => {
-    renderApp();
+    renderApp({
+      initialState: {
+        session: {
+          ...session,
+          user: new User({ merchants: {} }),
+        },
+      },
+    });
     const issueRefund = screen.getByRole('button', {
       name: /Issue Full refund/,
     });
@@ -145,7 +176,14 @@ describe('RefundModal', () => {
 
   describe('Full refund', () => {
     test('should allow to issue full refund', async () => {
-      renderApp();
+      renderApp({
+        initialState: {
+          session: {
+            ...session,
+            user: new User({ merchants: {} }),
+          },
+        },
+      });
       const reverseAll = screen.getAllByRole('checkbox')[0];
       await userEvent.click(reverseAll);
       const addCommentBtn = screen.getByText('+ Add Comments(Optional)');
@@ -174,6 +212,9 @@ describe('RefundModal', () => {
     test('should allow to issue full refund when instant refund is not enabled with reversals', async () => {
       renderApp({
         initialState: {
+          session: {
+            user: new User(),
+          },
           payment: {
             ...payment,
             payment: {
@@ -209,6 +250,9 @@ describe('RefundModal', () => {
     test('should allow to issue full refund when instant refund is not enabled without reversals', async () => {
       renderApp({
         initialState: {
+          session: {
+            user: new User(),
+          },
           payment: {
             ...payment,
             payment: {
@@ -240,6 +284,9 @@ describe('RefundModal', () => {
     test('should allow to issue partial refund', async () => {
       renderApp({
         initialState: {
+          session: {
+            user: new User(),
+          },
           payment: {
             ...payment,
             payment: {
@@ -271,6 +318,9 @@ describe('RefundModal', () => {
     test('should not allow to issue partial refund with reversals', async () => {
       renderApp({
         initialState: {
+          session: {
+            user: new User(),
+          },
           payment: {
             ...payment,
             payment: {
@@ -301,6 +351,9 @@ describe('RefundModal', () => {
     test('should not allow to issue refunds when amount is greater than the total refundable amount', async () => {
       renderApp({
         initialState: {
+          session: {
+            user: new User(),
+          },
           payment: {
             ...payment,
             payment: {
@@ -325,6 +378,9 @@ describe('RefundModal', () => {
     test('should not allow to issue refunds when amount is less than 1 and currency is INR', async () => {
       renderApp({
         initialState: {
+          session: {
+            user: new User(),
+          },
           payment: {
             ...payment,
             payment: {
@@ -345,6 +401,9 @@ describe('RefundModal', () => {
     test('should not allow to issue refunds when amount is negative and currency is not INR', async () => {
       renderApp({
         initialState: {
+          session: {
+            user: new User(),
+          },
           payment: {
             ...payment,
             payment: {
@@ -366,6 +425,9 @@ describe('RefundModal', () => {
     test('should not allow to issue refunds when amount is not a valid number with atmost 2 decimal places', async () => {
       renderApp({
         initialState: {
+          session: {
+            user: new User(),
+          },
           payment: {
             ...payment,
             payment: {

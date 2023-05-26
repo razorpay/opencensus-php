@@ -6,6 +6,7 @@ import {
   session,
   showWhenUtilSpy,
 } from 'merchant/views/Transactions/Payments/components/__tests__/mocks/fixtures/RefundModal';
+import User from 'merchant/models/User';
 
 describe('RefundModal', () => {
   describe('Instant refund', () => {
@@ -19,7 +20,14 @@ describe('RefundModal', () => {
         showWhenUtilSpy.mockImplementation(
           ({ featureEnabled }) => featureEnabled === 'disable_instant_refunds',
         );
-        renderApp();
+        renderApp({
+          initialState: {
+            session: {
+              ...session,
+              user: new User({ merchants: {} }),
+            },
+          },
+        });
         const instantRefundInput = screen.queryAllByRole('checkbox')[1];
         expect(instantRefundInput).toBeFalsy();
       });
@@ -27,6 +35,9 @@ describe('RefundModal', () => {
       test('should show and allow instant refund checkbox to be toggled when instant refund is enabled', async () => {
         renderApp({
           initialState: {
+            session: {
+              user: new User(),
+            },
             payment: {
               ...payment,
               payment: {
@@ -54,6 +65,9 @@ describe('RefundModal', () => {
     test('should show loading on the screen when instant refund is enabled and current balance is loading', () => {
       renderApp({
         initialState: {
+          session: {
+            user: new User(),
+          },
           payment: {
             ...payment,
             payment: {
@@ -73,6 +87,18 @@ describe('RefundModal', () => {
     test("should show add credits link when instant refund is enabled but couldn't be supported instantly", () => {
       renderApp({
         initialState: {
+          session: {
+            user: new User({
+              experiments: {
+                refund_credit_self_serve: {
+                  result: 'on',
+                },
+                refund_source_fallback_enabled: {
+                  result: 'on',
+                },
+              },
+            }),
+          },
           payment: {
             ...payment,
             payment: {
@@ -88,6 +114,7 @@ describe('RefundModal', () => {
           },
         },
       });
+
       expect(screen.getByText(/Add Credits/)).toBeInTheDocument();
     });
 
@@ -109,9 +136,7 @@ describe('RefundModal', () => {
           },
           session: {
             ...session,
-            user: {
-              merchants: {},
-            },
+            user: new User({ merchants: {} }),
           },
         },
       });
@@ -121,6 +146,9 @@ describe('RefundModal', () => {
     test('should show proper message when instant refund is enabled but instant_refund_support is false', () => {
       renderApp({
         initialState: {
+          session: {
+            user: new User(),
+          },
           payment: {
             ...payment,
             payment: {

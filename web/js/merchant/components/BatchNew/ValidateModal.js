@@ -7,6 +7,7 @@ import { closeModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
 import { DocLink } from 'merchant/components/DocsLink';
 import { bindActionCreators } from 'redux';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 const DEFAULT_MAX_FILE_SIZE = 1048576; // 1MB in bytes.
 
@@ -168,36 +169,43 @@ class BatchValidateModal extends Component {
 
                     {batchType === 'refund' ? (
                       <>
-                        <li>The payment Id for all refunds should be unique.</li>
-                        <li>
-                          Mention refund speed of each payment Id otherwise refunds will be
-                          processed at default refund speed (check{' '}
-                          <strong
-                            className="btn-link"
-                            onClick={() => {
-                              window.rzpAnalytics?.({
-                                eventCategory: `Batch ${titleCase(this.props.batchType)}`,
-                                eventAction: 'Setting -  upload modal',
-                                eventLabel: `Click to setting`,
-                              });
-                              this.props.closeModal();
-                            }}
-                          >
-                            <Link
-                              to={{
-                                pathname: '/config',
-                                hash: 'instantrefunds',
-                              }}
-                            >
-                              settings
-                            </Link>
-                          </strong>{' '}
-                          for default refund speed).
-                        </li>
+                        {user.isOrgCurlec ? (
+                          'Mention refund speed of each payment Id as normal and refunds will be processed at default refund speed.'
+                        ) : (
+                          <>
+                            <li>The payment Id for all refunds should be unique.</li>
+                            <li>
+                              Mention refund speed of each payment Id otherwise refunds will be
+                              processed at default refund speed (check{' '}
+                              <strong
+                                className="btn-link"
+                                onClick={() => {
+                                  window.rzpAnalytics?.({
+                                    eventCategory: `Batch ${titleCase(this.props.batchType)}`,
+                                    eventAction: 'Setting -  upload modal',
+                                    eventLabel: `Click to setting`,
+                                  });
+                                  this.props.closeModal();
+                                }}
+                              >
+                                <Link
+                                  to={{
+                                    pathname: '/config',
+                                    hash: 'instantrefunds',
+                                  }}
+                                >
+                                  settings
+                                </Link>
+                              </strong>{' '}
+                              for default refund speed).
+                            </li>
+                          </>
+                        )}
                       </>
                     ) : (
                       ''
                     )}
+
                     {maxRows && <li>The number of rows should not exceed {maxRows}.</li>}
                     {batchType === 'refund' ? (
                       <li>Once the batch file is submitted, it will be processed after 70 mins.</li>
@@ -226,26 +234,27 @@ class BatchValidateModal extends Component {
                 </p>
               </div>
             )}
-            {batchType === 'refund' && (
-              <p className="process-instant-batch">
-                {' '}
-                <img src={`${window.cdnBaseUrl}/static/assets/notifs/instant-refunds.svg`} /> Retain
-                customers and improve trust by issuing refunds instantly. &nbsp;{' '}
-                <DocLink
-                  onClick={() => {
-                    window.rzpAnalytics?.({
-                      eventCategory: `Batch ${titleCase(this.props.batchType)}`,
-                      eventAction: 'Learn more - upload modal',
-                      eventLabel: `Click to learn more`,
-                    });
-                  }}
-                  target="_blank"
-                  href="https://razorpay.com/docs/payment-gateway/refunds/#how-instant-refunds-work"
-                >
-                  <strong className="btn-link">Learn more</strong>{' '}
-                </DocLink>
-              </p>
-            )}
+            {batchType === 'refund' &&
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.InstantRefunds) && (
+                <p className="process-instant-batch">
+                  {' '}
+                  <img src={`${window.cdnBaseUrl}/static/assets/notifs/instant-refunds.svg`} />{' '}
+                  Retain customers and improve trust by issuing refunds instantly. &nbsp;{' '}
+                  <DocLink
+                    onClick={() => {
+                      window.rzpAnalytics?.({
+                        eventCategory: `Batch ${titleCase(this.props.batchType)}`,
+                        eventAction: 'Learn more - upload modal',
+                        eventLabel: `Click to learn more`,
+                      });
+                    }}
+                    target="_blank"
+                    href="https://razorpay.com/docs/payment-gateway/refunds/#how-instant-refunds-work"
+                  >
+                    <strong className="btn-link">Learn more</strong>{' '}
+                  </DocLink>
+                </p>
+              )}
           </>
         ) : null}
 
