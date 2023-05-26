@@ -697,10 +697,12 @@ class Service extends Base\Service
 
         $countryCode = $orderArray['customer_details']['shipping_address']['country'];
 
+        $shopifyOrderAmount = $shopifyOrder['order']['total_price']*100;
+
         // NOTE: promotions is not set if the 1ccResetAPI call fails, until CX team fixes it
         // keep the null check here
         $response = [
-            'total_amount'     => $shopifyOrder['order']['total_price']*100,
+            'total_amount'     => $shopifyOrderAmount,
             'total_amount_rzp' => $orderArray['amount'],
             'promotions'       => $orderArray['promotions'] ?? [],
             'shipping_fee'     => $orderArray['shipping_fee'],
@@ -717,6 +719,31 @@ class Service extends Base\Service
         // Do not log PII.
         $response['customer_details'] = $orderArray['customer_details'];
         $response['order_status_url'] = $shopifyOrder['order']['order_status_url'];
+
+        if(empty($orderArray['promotions']) === false)
+        {
+            foreach ($orderArray['promotions'] as $promotion) {
+                if(isset($promotion['type']) && $promotion['type'] === 'gift_card')
+                {
+                    $payment['amount'] += $promotion['value'];
+                }
+            }
+        }
+
+        if ($payment['amount'] != $shopifyOrderAmount)
+        {
+            $this->trace->error(
+                 TraceCode::SHOPIFY_1CC_PARTIALLY_PAID_ORDER,
+                 [
+                     'type'             => 'shopify_order_partially_paid',
+                     'order_id'         => $orderId,
+                     'shopify_order_id' => $shopifyOrder['order']['name'] ?? null,
+                     'payment_amount'   => $payment['amount'],
+                     'shopify_order_amount' => $shopifyOrderAmount,
+                 ]);
+
+            $this->monitoring->addTraceCount(Metric::SHOPIFY_PARTIALLY_PAID_ORDER_COUNT, ['error_type' => ShopifyConstants::PARTIALLY_PAID_ORDER]);
+        }
 
         return $response;
     }

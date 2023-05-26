@@ -157,6 +157,7 @@ final class Metric
     const SHOPIFY_REMOVE_TAG_ERROR_COUNT            = 'shopify_remove_tag_status_error_count';
     const SHOPIFY_REMOVE_TAG_CALL_TIME              = 'shopify_remove_tag_call_time';
 
+    const SHOPIFY_PARTIALLY_PAID_ORDER_COUNT         = 'shopify_partially_paid_order_count';
     const SHOPIFY_ORDER_CANCEL_REQUEST_COUNT         = 'shopify_order_cancel_request_count';
     const SHOPIFY_ADD_TAG_REQUEST_COUNT              = 'shopify_add_tag_request_count';
 

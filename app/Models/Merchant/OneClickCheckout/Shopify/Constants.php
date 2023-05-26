@@ -62,4 +62,5 @@ class Constants
     const SHOPIFY_CHECKOUT_ID        = 'shopify_checkout_id';
     const STOREFRONT_ID              = 'storefront_id';
     const NOTES                      = 'notes';
+    const PARTIALLY_PAID_ORDER       = 'partially_paid_order';
 }
