@@ -122,7 +122,11 @@ export const DownloadReportModal = ({
 
   const validationsForEachSections = [
     Boolean(selectedConfig) &&
-      Boolean(selectedFormat?.value ? getAvailableDelimiter(selectedFormat).length > 0 : true),
+      Boolean(
+        selectedFormat?.value && getAvailableDelimiter(selectedFormat).length > 0
+          ? Boolean(selectedDelimiter?.value)
+          : true,
+      ),
     isCustomDurationEnabled ? validateCustomDuration() : validateDefaultDuration(),
     Boolean(
       isRecipientsEnabled ? recipients && Array.isArray(recipients) && recipients.length : true,
