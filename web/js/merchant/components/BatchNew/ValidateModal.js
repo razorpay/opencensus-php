@@ -54,7 +54,7 @@ class BatchValidateModal extends Component {
     if (batchType === 'payment_link_v2') {
       batchTypeText = 'Payment Link'; // We don't want to unnececssarily expose that merchant is using V2
     }
-    const countryCode = user.merchant.country_code;
+    const countryCode = user?.merchant?.country_code ?? 'IN';
     const monetaryUnit = monetaryUnitText(countryCode);
 
     return (
@@ -110,7 +110,7 @@ class BatchValidateModal extends Component {
                   </a>
                   &nbsp;for the template.
                 </li>
-                {batchType === 'partner_submerchant_invite' && user.isPartnershipForXEnabled && (
+                {batchType === 'partner_submerchant_invite' && user?.isPartnershipForXEnabled && (
                   <li>
                     Name and email fields are mandatory for each account &amp; phone number is
                     optional
@@ -160,8 +160,9 @@ class BatchValidateModal extends Component {
                         'linked_account_create',
                       ].indexOf(batchType) === -1 && (
                         <li>
-                          The {user.isPaymentlinksV2Enabled ? 'reference id' : 'receipt id'} for all{' '}
-                          {batchTypeText ? batchTypeText : titleCase(batchType)}s should be unique.
+                          The {user?.isPaymentlinksV2Enabled ? 'reference id' : 'receipt id'} for
+                          all {batchTypeText ? batchTypeText : titleCase(batchType)}s should be
+                          unique.
                         </li>
                       )}
 
