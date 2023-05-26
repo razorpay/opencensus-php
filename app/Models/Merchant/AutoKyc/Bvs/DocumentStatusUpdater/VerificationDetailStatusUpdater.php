@@ -73,6 +73,19 @@ class VerificationDetailStatusUpdater extends BaseStatusUpdater
 
             $payload = $this->getVerificationDetailsPayload($validation, $documentValidationStatus);
 
+            if (in_array($this->artefactType . '-' . $this->validationUnit, MVD\Constants::SIGNATORY_ALLOWED_ARTEFACTS) === true)
+            {
+                $signatoryValidationStatus = $this->getArtefactSignatoryVerificationStatus($validation);
+
+                if (empty($signatoryValidationStatus) === false)
+                {
+                    $payload[MVD\Entity::METADATA] = [
+                        'signatory_validation_status'   => $signatoryValidationStatus,
+                        'bvs_validation_id'             => $this->consumedValidationId
+                    ];
+                }
+            }
+
             (new MVD\Core)->createOrEditVerificationDetail($this->merchantDetails, $payload);
             //
             // if $documentValidationStatus is null then don't send any metrics
@@ -93,6 +106,11 @@ class VerificationDetailStatusUpdater extends BaseStatusUpdater
                 'document_verification_status' => $documentValidationStatus,
                 'bvs_validation_id'            => $this->consumedValidationId
             ]);
+
+            if (in_array($this->artefactType . '-' . $this->validationUnit, MVD\Constants::SIGNATORY_ALLOWED_ARTEFACTS) === true)
+            {
+                $this->handleMerchantSignatory();
+            }
         }
 
         $this->sendConsumedValidationResultEvent();

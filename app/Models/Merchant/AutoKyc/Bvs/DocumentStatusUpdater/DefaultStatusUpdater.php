@@ -17,9 +17,6 @@ use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\BvsValidation\Constants;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\VerificationDetail as MVD;
-use RZP\Models\Merchant\BvsValidation\Entity as Validation;
-use RZP\Models\Merchant\Detail\NeedsClarification\Constants as NCConstants;
-use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 
 
 /**
@@ -67,6 +64,11 @@ class DefaultStatusUpdater extends BaseStatusUpdater
 
     protected function handleArtefactSignatoryValidation()
     {
+        if (in_array($this->artefactType . '-' . $this->validationUnit, MVD\Constants::SIGNATORY_ALLOWED_ARTEFACTS) === false)
+        {
+            return;
+        }
+
         $validation = $this->repo->bvs_validation->getLatestArtefactValidationForOwnerId(
             $this->merchantId,
             $this->artefactType,
@@ -92,8 +94,8 @@ class DefaultStatusUpdater extends BaseStatusUpdater
                     MVD\Entity::ARTEFACT_TYPE       => $this->artefactType,
                     MVD\Entity::ARTEFACT_IDENTIFIER => ($this->validationUnit === ValidationConstants::IDENTIFIER) ? MVD\Constants::NUMBER : MVD\Constants::DOC,
                     MVD\Entity::METADATA            => [
-                                                        'signatory_validation_status' => $signatoryValidationStatus,
-                                                        'bvs_validation_id' => $this->consumedValidationId]
+                                                        'signatory_validation_status'   => $signatoryValidationStatus,
+                                                        'bvs_validation_id'             => $this->consumedValidationId]
                 ];
 
                 (new MVD\Core)->createOrEditVerificationDetail($this->merchantDetails, $input);
@@ -229,113 +231,6 @@ class DefaultStatusUpdater extends BaseStatusUpdater
         $this->merchantDetails->setAttribute($this->documentTypeStatusKey, Constants::PENDING);
 
         $this->updateStakeholderStatusIfApplicable(Constants::PENDING);
-    }
-
-
-    public function getArtefactSignatoryVerificationStatus(Validation $validation): ?string
-    {
-        $ruleExecutionResult = $this->ruleResultVerifier->verifyAndReturnRuleResult($this->merchant, $validation);
-
-        if ($ruleExecutionResult[NCConstants::IS_ARTEFACT_VALIDATED] === false )
-        {
-            return $this->getNotInitiatedStatus();
-        }
-
-        if ($ruleExecutionResult[NCConstants::IS_SIGNATORY_VALIDATED] === true)
-        {
-            return $this->getVerifiedStatus();
-        }
-
-        if ($validation->getValidationStatus() === Constants::FAILED)
-        {
-            foreach (Constants::ERROR_MAPPING as $artifactValidationStatus => $error_codes)
-            {
-                if (array_search($validation->getErrorCode(), $error_codes, true) !== false)
-                {
-                    $func = self::VALIDATION_STATUS_FUNCTION_MAPPING[$artifactValidationStatus] ?? '';
-
-                    if (method_exists($this, $func) === true)
-                    {
-                        return $this->$func();
-                    }
-
-                    throw new LogicException(
-                        ErrorCode::SERVER_ERROR_UNHANDLED_ARTEFACT_VALIDATION_STATUS,
-                        null,
-                        [Constant::STATUS => $artifactValidationStatus]);
-                }
-            }
-
-            //
-            // If no error code is mapped then consider it as failed status
-            //
-            return $this->getFailedStatus();
-        }
-
-        //
-        // If validation is still in pending status
-        //
-
-        return null;
-
-    }
-
-    public function handleMerchantSignatory(): void
-    {
-        $merchantSignatoryStatus = $this->getMerchantSignatoryVerificationStatus($this->merchant);
-
-        $this->app['trace']->info(TraceCode::MERCHANT_SIGNATORY,[
-            "merchant_id"               => $this->merchant->getId(),
-            "merchant_signatory_status" => $merchantSignatoryStatus
-        ]);
-
-        $input = [
-            MVD\Entity::MERCHANT_ID         => $this->merchant->getId(),
-            MVD\Entity::ARTEFACT_TYPE       => Constant::SIGNATORY_VALIDATION,
-            MVD\Entity::ARTEFACT_IDENTIFIER => MVD\Constants::NUMBER,
-            MVD\Entity::STATUS              => $merchantSignatoryStatus
-        ];
-
-        (new MVD\Core)->createOrEditVerificationDetail($this->merchantDetails, $input);
-    }
-
-    public function getMerchantSignatoryVerificationStatus(MerchantEntity $merchant)
-    {
-        $verificationDetails = $this->repo->merchant_verification_detail->getDetailsForMerchant($this->merchant->getId());
-
-        if (empty($verificationDetails) === false)
-        {
-            $notMatchedCount = 0;
-
-            foreach ($verificationDetails as $verificationDetail)
-            {
-                // only checking for artefacts allowed for signatory validation for a particular business type
-                $allowedArtefactsForBusinessType = Constant::SIGNATORY_ARTEFACTS_BUSINESS_TYPE_MAPPING[$merchant->merchantDetail->getBusinessType()] ?? [];
-
-                if (in_array($verificationDetail->getArtefactType() . '-' . $verificationDetail->getArtefactIdentifier(), $allowedArtefactsForBusinessType) === true)
-                {
-                    $signatoryValidationStatus = $verificationDetail['metadata']['signatory_validation_status']?? null;
-
-                    switch ($signatoryValidationStatus)
-                    {
-                        case ValidationConstants::VERIFIED:
-                            return ValidationConstants::VERIFIED;
-
-                        case ValidationConstants::NOT_MATCHED:
-                            $notMatchedCount++;
-                            break;
-
-                        default:
-
-                    }
-                }
-            }
-
-            return $notMatchedCount >= 1 ? ValidationConstants::NOT_MATCHED : ValidationConstants::NOT_INITIATED;
-
-        }
-
-        return BvsValidationConstants::NOT_INITIATED;
     }
 
 }

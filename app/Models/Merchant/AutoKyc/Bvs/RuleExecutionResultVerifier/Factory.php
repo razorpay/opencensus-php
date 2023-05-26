@@ -35,6 +35,9 @@ class Factory
             case Constant::GSTIN.ValidationConstants::IDENTIFIER:
                 return new GSTINRuleResultVerifier($validation);
 
+            case Constant::PARTNERSHIP_DEED.ValidationConstants::PROOF:
+                return new PartnershipDeedRuleResultVerifier($validation);
+
             default :
                 return new DefaultRuleResultVerifier($validation);
         }
