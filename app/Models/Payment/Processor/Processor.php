@@ -813,7 +813,7 @@ class Processor
                                     ],
                                 ]);
                                 $cryptogram = (new Card\CardVault)->fetchCryptogramForPayment($card->getVaultToken(), $merchant);
-                                $cardInput = $this->getCardInputForRearch($cryptogram, $card, $input);
+                                $cardInput = $this->getCardInputForRearch($cryptogram, $card, $input, $token);
                                 //modify input for cards
                                 $input[Payment\Entity::CARD] = $cardInput;
                                 $input[Payment\Entity::TOKEN] = $token->getId();
@@ -1029,7 +1029,7 @@ class Processor
         return false;
     }
 
-    protected function getCardInputForRearch($cryptogram, $card, $input)
+    protected function getCardInputForRearch($cryptogram, $card, $input,$token)
     {
         $input = [
             Card\Entity::NUMBER                 => $cryptogram['token_number'] ?? $cryptogram['card']['number'],
@@ -1074,8 +1074,9 @@ class Processor
             $input["cvv"] = $cryptogram["cvv"];
         }
 
-        if (($this->merchant->isFeatureEnabled(Feature::RAAS)) === true) {
-            $input = $this->getAdditionalOptimizerCardInputForRearch($card, $input);
+        if (($this->merchant->isFeatureEnabled(Feature::RAAS)) === true)
+        {
+            $input = $this->getAdditionalOptimizerCardInputForRearch($token,$input);
         }
 
         return $input;
@@ -1084,10 +1085,9 @@ class Processor
     /* Optimizer gateways required additional network token details, like
      * PAR, TRN, TRID for payment processing
      */
-    protected function getAdditionalOptimizerCardInputForRearch($card, $input)
+    protected function getAdditionalOptimizerCardInputForRearch($token,$input)
     {
-        if (((isset($input[E::CARD][E::TOKENISED]) === false) or ($input[E::CARD][E::TOKENISED] === false)) or
-            ((isset($input[E::TOKEN]) === false) or (isset($input[E::TOKEN]['id']) === false)))
+        if ($input[E::TOKENISED] === false)
         {
             return $input;
         }
@@ -1100,7 +1100,6 @@ class Processor
         $cardInput = $input[E::CARD];
 
         // fetch network token associated with payment
-        $token = (new Repository())->find($input[E::TOKEN]['id']);
         $networkToken = (new TokenCore())->fetchToken($token, false);
 
         assertTrue(empty($networkToken) === false);
@@ -1137,10 +1136,10 @@ class Processor
         $trn = $networkToken[0][E::PROVIDER_DATA][E::TOKEN_REFERENCE_NUMBER] ?? '';
         $nri = $networkToken[0][E::PROVIDER_DATA][E::NETWORK_REFERENCE_ID] ?? '';
 
-        $input[E::CARD][E::PAYMENT_ACCOUNT_REFERENCE] = $par;
-        $input[E::CARD][E::TOKEN_REFERENCE_NUMBER] = $trn;
-        $input[E::CARD][E::TOKEN_REFERENCE_ID] = $trid;
-        $input[E::CARD][E::NETWORK_REFERENCE_ID] = $nri;
+        $input[E::PAYMENT_ACCOUNT_REFERENCE ]= $par;
+        $input[E::TOKEN_REFERENCE_NUMBER ]=  $trn;
+        $input[E::TOKEN_REFERENCE_ID ]= $trid;
+        $input[E::NETWORK_REFERENCE_ID ]=  $nri;
 
         return $input;
     }
