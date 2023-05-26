@@ -63,9 +63,12 @@
     "js/merchant/views/transactions/UploadInvoice/BulkUpload",
     "js/merchant/views/PaymentHandle",
     "js/merchant/views/Account",
+    "js/merchant_common/views/Reports",
+    "js/merchant/components/styled",
     "js/merchant_common/views/Reports/**/*",
     "js/merchant/components/HeaderNav/UniversalSearch",
     "js/merchant/components/Activation",
+    "js/merchant/components/styled",
     "js/merchant/components/Announcements/TerminalStatus"
   ],
   "exclude": ["node_modules", "js/common/utils"],

@@ -1,17 +1,145 @@
 import { fetch } from 'common/services/rest/rest-fetch';
+import { stringifyQueryParams, decodeSensitiveFields } from 'common/utils/rzp-utils';
 
-import type { Account, ListApiParams, ListApiResponse } from 'merchant/views/Wallet/types';
+import { WALLET_BASE_PATH } from 'merchant/views/Wallet/constants';
+
+import type * as types from 'merchant/views/Wallet/types';
 
 export const fetchAccounts = async ({
-  skip,
-  count,
   mode = 'test',
-}: ListApiParams): Promise<ListApiResponse<Account>> => {
+  ...params
+}: types.AccountListApiParams): Promise<types.ListApiResponse<types.Account>> => {
+  params = decodeSensitiveFields(params);
+
   try {
-    const res = await fetch<ListApiResponse<Account>>({
-      url: `wallet/accounts?skip=${skip}&count=${count}`,
+    const res = await fetch<types.ListApiResponse<types.Account>>({
+      url: `${WALLET_BASE_PATH}/accounts${stringifyQueryParams(params)}`,
       mode,
     });
+    res.items = res.items.map((item) => ({
+      ...item,
+      balance: parseInt(String(item.balance), 10),
+      created_at: parseInt(String(item.created_at), 10),
+    }));
+    return res;
+  } catch (e) {
+    throw new Error(e?.response?.errors?.[0]);
+  }
+};
+
+export const fetchTransactions = async ({
+  mode = 'test',
+  ...params
+}: types.TransactionListApiParams): Promise<types.ListApiResponse<types.Transaction>> => {
+  try {
+    const res = await fetch<types.ListApiResponse<types.Transaction>>({
+      url: `${WALLET_BASE_PATH}/transactions${stringifyQueryParams(params)}`,
+      mode,
+    });
+    res.items = res.items.map((item) => ({
+      ...item,
+      amount: parseInt(String(item.amount), 10),
+      credit: parseInt(String(item.credit), 10),
+      debit: parseInt(String(item.debit), 10),
+      created_at: parseInt(String(item.created_at), 10),
+    }));
+    return res;
+  } catch (e) {
+    throw new Error(e?.response?.errors?.[0]);
+  }
+};
+
+export const fetchPayments = async ({
+  skip,
+  count,
+  account_id,
+  mode = 'test',
+}: types.ListApiParams): Promise<types.ListApiResponse<types.WalletPayment>> => {
+  try {
+    const url = `${WALLET_BASE_PATH}/payments?skip=${skip}&count=${count}${
+      account_id ? `&issuing_account_id=${account_id}` : ''
+    }`;
+
+    const res = await fetch<types.ListApiResponse<types.WalletPayment>>({
+      url,
+      mode,
+    });
+    res.items = res.items.map((item) => ({
+      ...item,
+      amount: parseInt(String(item.amount), 10),
+      created_at: parseInt(String(item.created_at), 10),
+    }));
+    return res;
+  } catch (e) {
+    throw new Error(e?.response?.errors?.[0]);
+  }
+};
+
+export const fetchLoads = async ({
+  skip,
+  count,
+  account_id,
+  mode = 'test',
+}: types.ListApiParams): Promise<types.ListApiResponse<types.WalletLoad>> => {
+  try {
+    const url = `${WALLET_BASE_PATH}/loads?skip=${skip}&count=${count}${
+      account_id ? `&issuing_account_id=${account_id}` : ''
+    }`;
+    const res = await fetch<types.ListApiResponse<types.WalletLoad>>({
+      url,
+      mode,
+    });
+    res.items = res.items.map((item) => ({
+      ...item,
+      amount: parseInt(String(item.amount), 10),
+      created_at: parseInt(String(item.created_at), 10),
+    }));
+    return res;
+  } catch (e) {
+    throw new Error(e?.response?.errors?.[0]);
+  }
+};
+
+export const fetchAccountById = async ({
+  id,
+  mode = 'test',
+}: types.DetailApiParams): Promise<types.Account> => {
+  try {
+    const res = await fetch<types.ListApiResponse<types.Account>>({
+      url: `${WALLET_BASE_PATH}/accounts?issuing_account_id=${id}`,
+      mode,
+    });
+
+    const account = res.items?.map((item) => ({
+      ...item,
+      created_at: parseInt(String(item.created_at), 10),
+      balance: parseInt(String(item.balance), 10),
+    }));
+    return account[0];
+  } catch (e) {
+    throw new Error(e?.response?.errors?.[0]);
+  }
+};
+
+export const fetchAccountBalance = async ({
+  id,
+  mode = 'test',
+}: types.DetailApiParams): Promise<types.AccountBalance> => {
+  try {
+    const res = await fetch<types.AccountBalance>({
+      url: `${WALLET_BASE_PATH}/${id}/balance`,
+      mode,
+    });
+
+    res.available_balance = parseInt(String(res.available_balance), 10);
+    res.limits = {
+      monthly_load_limit: parseInt(String(res.limits.monthly_load_limit), 10),
+      monthly_load_limit_used: parseInt(String(res.limits.monthly_load_limit_used), 10),
+      monthly_load_limit_balance: parseInt(String(res.limits.monthly_load_limit_balance), 10),
+      yearly_load_limit: parseInt(String(res.limits.yearly_load_limit), 10),
+      yearly_load_limit_used: parseInt(String(res.limits.yearly_load_limit_used), 10),
+      yearly_load_limit_balance: parseInt(String(res.limits.yearly_load_limit_balance), 10),
+    };
     return res;
   } catch (e) {
     throw new Error(e?.response?.errors?.[0]);

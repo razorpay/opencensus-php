@@ -29,12 +29,22 @@ import { subMerchantListHandlers } from 'merchant/views/PartnerDashboard/SubMerc
 import { instrumentHandlers } from 'merchant/views/AccountAndSettings/PaymentMethods/__test__/mocks/handlers';
 import batchHandler from 'merchant/views/Wallet/BatchActions/__tests__/mocks/handlers';
 import { newAuthHandler } from 'newAuth/signup/components/PartnerSignup/__test__/mocks/handlers';
+import walletFundsHandlers from 'merchant/views/Wallet/Funds/Transactions/__tests__/mocks';
+import walletTransactionHandlers from 'merchant/views/Wallet/Transactions/__tests___/mocks';
+import accountDetailHandlers from 'merchant/views/Wallet/AccountDetail/__tests__/mocks/index';
+import walletLoadsHandlers from 'merchant/views/Wallet/Loads/__tests__/mocks/index';
+import walletPaymentHandlers from 'merchant/views/Wallet/Payments/__tests__/mocks/index';
 import { commisionsHandler } from 'merchant/views/PartnerDashboard/Commissions/__test__/mocks/handlers';
 import { submerchantKYCHandlers } from 'merchant/views/PartnerDashboard/SubMerchant/KYC/__tests__/mocks/handlers';
 import { magicOrderAnalyticsHandler } from 'merchant/views/MagicCheckout/OrderAnalytics/__tests__/mocks/handlers';
 
 export const handlers = [
   ...batchHandler,
+  ...walletFundsHandlers,
+  ...walletTransactionHandlers,
+  ...accountDetailHandlers,
+  ...walletLoadsHandlers,
+  ...walletPaymentHandlers,
 
   // Handles a "Login" mutation
   graphql.mutation('Login', (req, res, ctx) => {

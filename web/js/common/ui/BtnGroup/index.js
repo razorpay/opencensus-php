@@ -6,7 +6,7 @@ export class Btn extends Component {
   constructor(props) {
     super(props);
 
-    this.handleClick = ::this.handleClick;
+    this.handleClick = this.handleClick.bind(this);
   }
 
   handleClick() {
@@ -26,8 +26,7 @@ export class Btn extends Component {
       ...otherProps
     } = this.props;
 
-    otherProps.className =
-      `${className} btn` + `${selected === value ? ' active' : ''}`;
+    otherProps.className = `${className} btn${selected === value ? ' active' : ''}`;
 
     return (
       <button {...otherProps} onClick={this.handleClick}>
@@ -49,7 +48,7 @@ export class BtnGroup extends Component {
       value: props.value || null,
     };
 
-    this.handleBtnClick = ::this.handleBtnClick;
+    this.handleBtnClick = this.handleBtnClick.bind(this);
   }
 
   handleBtnClick(value) {
@@ -64,17 +63,11 @@ export class BtnGroup extends Component {
   }
 
   render() {
-    const {
-      className = '',
-      value,
-      onChange,
-      children,
-      ...otherProps
-    } = this.props;
+    const { className = '', value, onChange, children, ...otherProps } = this.props;
 
     otherProps.className = `${className} rzp-btn-group btn-group`;
 
-    var boundChildren = React.Children.map(children, child => {
+    const boundChildren = React.Children.map(children, (child) => {
       return React.cloneElement(child, {
         onBtnClick: this.handleBtnClick,
         selected: this.state.value,
@@ -86,7 +79,7 @@ export class BtnGroup extends Component {
 }
 
 BtnGroup.propTypes = {
-  children: props => {
+  children: (props) => {
     const { children } = props;
 
     return checkChildrenType(children, [Btn]);

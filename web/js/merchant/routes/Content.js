@@ -559,6 +559,7 @@ export default class Content extends Component {
               !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentHandle)
             }
           />
+
           <ShowWhenRoute
             path="/wallet"
             exact={false}
