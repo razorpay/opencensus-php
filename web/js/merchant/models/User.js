@@ -1898,7 +1898,9 @@ export default class User {
   }
 
   get isApiKeysRevampEnabled() {
-    return getSplitzExperimentVariant('api_keys_revamp')?.variables?.result === 'on';
+    return (
+      getSplitzExperimentVariant('api_keys_revamp')?.variables?.result === 'on' && !this.isOrgCurlec
+    );
   }
 
   get isAccountAndSettingsRevampEnabled() {
