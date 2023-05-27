@@ -302,6 +302,10 @@ class CustomerController extends Controller
                     case ErrorCode::SERVER_ERROR_RUNTIME_ERROR: // Thrown at Services/Raven.php::sendRequest
                         $data = $ex->getError()->toPublicArray(true);
                         return ApiResponse::json($data, 503);
+
+                    case ErrorCode::BAD_REQUEST_INCORRECT_OTP:
+                        $data = $ex->getError()->toPublicArray(true);
+                        return ApiResponse::json($data, 422);
                 }
             }
             throw $ex;

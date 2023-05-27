@@ -23,7 +23,7 @@ class Webhooks extends Base\Core
 {
 
     const REFUND_CREATED = 'refund/created';
-    const REUND_MUTEX_KEY = 'shopify_1cc_refund_order_mutex';
+    const REFUND_MUTEX_KEY = 'shopify_1cc_refund_order_mutex';
 
     const MUTEX_LOCK_TTL_SEC = 60;
     const MAX_RETRY_COUNT = 4;
@@ -113,7 +113,7 @@ class Webhooks extends Base\Core
 
     protected function getMutexKey(string $webhookId): string
     {
-        return self::REUND_MUTEX_KEY . ':' . $webhookId;
+        return self::REFUND_MUTEX_KEY . ':' . $webhookId;
     }
 
     /**
@@ -147,7 +147,9 @@ class Webhooks extends Base\Core
 
         if (empty($configs) === true)
         {
-            $this->trace->count(Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT, ['status' => 'failed']);
+            $this->trace->count(
+                Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT,
+                ['status' => 'failed', 'reason' => 'configs_not_found']);
             $this->trace->error(
                 TraceCode::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_VALIDATION_FAILED,
                 [
@@ -161,7 +163,9 @@ class Webhooks extends Base\Core
 
         if ($isSignatureValid === false)
         {
-            $this->trace->count(Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT, ['status' => 'failed']);
+            $this->trace->count(
+                Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT,
+                ['status' => 'failed', 'reason' => 'signature_validation_failed']);
             return;
         }
 
@@ -177,14 +181,18 @@ class Webhooks extends Base\Core
 
         if (empty($txns['transactions']) === true)
         {
-            $this->trace->count(Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT, ['status' => 'not_applicable']);
+            $this->trace->count(
+                Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT,
+                ['status' => 'not_applicable', 'reason' => 'txns_not_found']);
             return;
         }
 
         $txn = $this->getPrepaidTransaction($txns['transactions']);
         if (empty($txn) === true)
         {
-            $this->trace->count(Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT, ['status' => 'not_applicable']);
+            $this->trace->count(
+                Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT,
+                ['status' => 'not_applicable', 'reason' => 'cod_method']);
             return;
         }
 
@@ -196,7 +204,9 @@ class Webhooks extends Base\Core
         // Structure for all 1cc Razorpay payments
         if (count($keys) !== 2)
         {
-            $this->trace->count(Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT, ['status' => 'not_applicable']);
+            $this->trace->count(
+                Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT,
+                ['status' => 'not_applicable', 'reason' => 'non_rzp_order']);
             $this->trace->error(
                 TraceCode::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_VALIDATION_FAILED,
                 [
@@ -214,7 +224,9 @@ class Webhooks extends Base\Core
         // This error is not documented by them
         if (empty($input['transactions']) === true)
         {
-            $this->trace->count(Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT, ['status' => 'not_applicable']);
+            $this->trace->count(
+                Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT,
+                ['status' => 'not_applicable', 'reason' => 'txns_not_received']);
             $this->trace->error(
                 TraceCode::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_VALIDATION_FAILED,
                 [
@@ -229,7 +241,9 @@ class Webhooks extends Base\Core
 
         if ($payment === null)
         {
-            $this->trace->count(Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT, ['status' => 'failed']);
+            $this->trace->count(
+                Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT,
+                ['status' => 'failed', 'reason' => 'payment_not_found']);
             $this->trace->error(
                 TraceCode::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_VALIDATION_FAILED,
                 [
@@ -242,7 +256,9 @@ class Webhooks extends Base\Core
         // In case of non-1cc orders, we do not lot this as a failure as we could never process this refund.
         if ($payment->hasOrder() === false)
         {
-            $this->trace->count(Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT, ['status' => 'not_applicable']);
+            $this->trace->count(
+                Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT,
+                ['status' => 'not_applicable', 'reason' => 'non_magic_order']);
             return;
         }
 
@@ -253,7 +269,9 @@ class Webhooks extends Base\Core
         $isValid = $this->validator->validateOrderAndPayment($order, $payment, $this->merchant, $merchantRzpOrderId);
         if ($isValid === false)
         {
-            $this->trace->count(Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT, ['status' => 'not_applicable']);
+            $this->trace->count(
+                Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT,
+                ['status' => 'not_applicable', 'reason' => 'internal_validation_failed']);
             return;
         }
 
@@ -261,8 +279,11 @@ class Webhooks extends Base\Core
 
         if ($paymentAmount > $refundFromWebhook)
         {
-            // We consider this as failed as it represents a potential tampering or mismatch in payment amount.
-            $this->trace->count(Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT, ['status' => 'failed']);
+            // We consider this as not applicable as it represents a mismatch in payment amount.
+            // We use number_format function to ensure no rounding off errors can cause this problem.
+            $this->trace->count(
+                Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT,
+                ['status' => 'not_applicable', 'reason' => 'partial_refund']);
             $this->trace->error(
                 TraceCode::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_VALIDATION_FAILED,
                 [
@@ -279,7 +300,9 @@ class Webhooks extends Base\Core
         try
         {
             $res = (new Payment\Service)->refund($paymentId, ['amount' => $paymentAmount]);
-            $this->trace->count(Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT, ['status' => 'refunded']);
+            $this->trace->count(
+                Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT,
+                ['status' => 'refunded', 'reason' => 'success']);
             $this->trace->info(
                 TraceCode::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_SUCCESS,
                 [
@@ -291,7 +314,9 @@ class Webhooks extends Base\Core
         }
         catch (BadRequestException $e)
         {
-            $this->trace->count(Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT, ['status' => 'failed']);
+            $this->trace->count(
+                Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT,
+                ['status' => 'failed', 'reason' => $error['internal_error_code']]);
             $error = $e->getError();
             $this->trace->error(
                 TraceCode::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_FAILED,
@@ -367,7 +392,9 @@ class Webhooks extends Base\Core
           return json_decode($txns, true);
 
         } catch (\Throwable $e) {
-            $this->trace->count(Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT, ['status' => 'failed']);
+            $this->trace->count(
+                Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT,
+                ['status' => 'failed', 'reason' => 'fetch_txns_failed']);
             $this->trace->error(
                 TraceCode::SHOPIFY_1CC_FETCH_TRANSACTIONS_FAILED,
                 [
@@ -449,12 +476,21 @@ class Webhooks extends Base\Core
         {
             $payment = $this->repo->payment->findOrFail($paymentId);
         }
-        catch (\Throwable $exception){}
+        catch (\Throwable $e)
+        {
+            $this->trace->error(
+                TraceCode::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_FAILED,
+                [
+                  'error'      => $e->getMessage(),
+                  'type'       => 'payment_not_found',
+                  'payment_id' => $paymentId,
+              ]);
+        }
 
         return $payment;
     }
 
-protected function processFulfillmentUpdateEvent(array $data)
+    protected function processFulfillmentUpdateEvent(array $data)
     {
         $rawContents = $data['raw_contents'];
         $headers = $data['headers'];

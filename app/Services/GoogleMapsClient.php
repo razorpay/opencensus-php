@@ -18,6 +18,7 @@ class GoogleMapsClient
     protected $apiKey = '';
     protected $mock = false;
     protected $cache = null;
+    protected $trace;
 
     public function __construct()
     {
@@ -26,6 +27,7 @@ class GoogleMapsClient
         $this->apiKey = $app['config']->get('applications.pincodesearch.google_api_key');
         $this->mock = $app['config']->get('applications.pincodesearch.mock') === true;
         $this->cache = $app['cache'];
+        $this->trace = $app['trace'];
     }
 
     protected function buildAutosuggestQuery(string $query, $location): string
@@ -60,6 +62,7 @@ class GoogleMapsClient
 
         if ($json['status'] !== 'OK' && $json['status'] !== 'ZERO_RESULTS')
         {
+            $this->trace->error(TraceCode::ADDRESS_SUGGEST_1CC_ERROR, ['response' => $json]);
             throw new ServerErrorException($json['status'], ErrorCode::SERVER_ERROR);
         }
 

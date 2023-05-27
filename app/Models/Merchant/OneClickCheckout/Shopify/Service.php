@@ -845,7 +845,7 @@ class Service extends Base\Service
             }
             catch (\Exception $e)
             {
-                $this->trace->info(
+                $this->trace->error(
                     TraceCode::SHOPIFY_1CC_UPDATE_EMAIL_FAILED,
                     ['checkout_id' => $checkoutId, 'reason' => $e->getMessage()]);
 

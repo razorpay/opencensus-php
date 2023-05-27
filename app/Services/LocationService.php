@@ -4,6 +4,7 @@ namespace RZP\Services;
 
 use RZP\Constants\Country;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Exception\ServerErrorException;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -17,10 +18,12 @@ class LocationService
     const CACHE_TTL_30_DAY         = 86400 * 30;
 
     protected $cache;
+    protected $trace;
 
     public function __construct($app)
     {
         $this->cache = $app['cache'];
+        $this->trace = $app['trace'];
     }
 
     protected function getCacheKey(string $prefix, string $key): string
@@ -90,8 +93,9 @@ class LocationService
                 $suggestions = (new GoogleMapsClient())->fetchAddressSuggestions($addressQuery, $zipcode, $country);
                 $this->cache->put($cacheKey, $suggestions, self::CACHE_TTL_30_DAY);
             }
-            catch (\Exception $e)
+            catch (\Throwable $e)
             {
+                $this->trace->error(TraceCode::ADDRESS_SUGGEST_1CC_ERROR, ['error' => $e->getMessage()]);
                 throw new ServerErrorException("External Error", ErrorCode::SERVER_ERROR);
             }
         }
