@@ -7249,6 +7249,18 @@ return [
         ],
     ],
 
+    'testReminderNotificationForPayoutPendingOnApprovalWithFcmMigrationExpEnabled' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/pending-payouts-approval-reminder',
+        ],
+        'response' => [
+            'content' => [
+                'reminderEventCount' => 2
+            ],
+        ],
+    ],
+
     'testDashboardSummary' => [
         'request'  => [
             'method'  => 'GET',

@@ -3,6 +3,9 @@
 namespace RZP\PushNotifications\Base;
 
 use App;
+use RZP\Constants\Product;
+use RZP\Models\Merchant\Core;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use Illuminate\Container\Container;
@@ -172,7 +175,21 @@ class PushNotification {
 
                 $request['target_user_campaign_request'] = $clervertapRequest;
 
-                array_push($payload['push_notification_channels'], ['clevertap_request' => $request]);
+                $requestKey = 'clevertap_request';
+                // In the existing implementation, owner_id is merchant however we are overriding it to type user
+                $isExperimentEnabled = $this->checkFcmMigrationExperimentEnabled($this->ownerId);
+                if($isExperimentEnabled)
+                {
+                    $request['push_notification_type'] = 0;
+                    $request['account_name'] = $this->accountName;
+                    //  These changes are required when we change gateway to fcm
+//                    $payload['owner_id'] = $this->tags['userId'];
+//                    $payload['owner_type'] = 'user';
+                    $requestKey = 'push_notification_request';
+                }
+
+
+                array_push($payload['push_notification_channels'], [$requestKey => $request]);
             }
 
             $res = (new Stork($this->mode, $this->originProduct))->sendPushNotification($payload);
@@ -437,5 +454,21 @@ class PushNotification {
     public function setTags(array $tags): void
     {
         $this->tags = $tags;
+    }
+
+    protected function checkFcmMigrationExperimentEnabled(string $merchantId) : bool
+    {
+        $isExperimentEnabled = (new Core())->isSplitzExperimentEnable([
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.fcm_migration_splitz_experiment_id','LtnXHw16gsI88P')
+        ], \RZP\Models\User\Constants::ACTIVE,
+            TraceCode::FCM_MIGRATION_EXPERIMENT_FAILED);
+
+        app()->trace->info(TraceCode::FCM_MIGRATION_EXPERIMENT_STATUS, [
+            'experiment_status' => $isExperimentEnabled,
+            'merchant_id'       => $merchantId,
+        ]);
+
+        return $isExperimentEnabled;
     }
 }

@@ -630,4 +630,6 @@ return array(
     'emi_via_card_screen_splitz_experiment_id' => env('EMI_VIA_CARD_SCREEN_SPLITZ_EXPERIMENT_ID'),
 
     'eligibility_on_std_checkout_splitz_experiment_id' =>env('ELIGIBILITY_ON_STD_CHECKOUT_SPLITZ_EXPERIMENT_ID'),
+
+    'fcm_migration_splitz_experiment_id' => env('FCM_MIGRATION_SPLITZ_EXPERIMENT_ID')
 );

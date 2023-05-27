@@ -3327,7 +3327,8 @@ class BankingAccountTest extends TestCase
                                                               string $merchantId = '10000000000000',
                                                               string $expectedStatus = null,
                                                               string $expectedSubStatus = null,
-                                                              bool $expectException = false
+                                                              bool $expectException = false,
+                                                              bool $fcmMigrationExpEnabled = false
     )
     {
         Mail::fake();
@@ -3415,6 +3416,24 @@ class BankingAccountTest extends TestCase
 
                 if (empty($pushNotificationTitle) === false && empty($pushNotificationBody) === false)
                 {
+                    if($fcmMigrationExpEnabled)
+                    {
+                        $splitzInput = [
+                            'experiment_id' => 'LtnXHw16gsI88P',
+                            'id'            => $merchantId,
+                        ];
+
+                        $splitzOutput = [
+                            'response' => [
+                                'variant' => [
+                                    'name' => 'active',
+                                ]
+                            ]
+                        ];
+
+                        $this->mockSplitzTreatment($splitzInput, $splitzOutput);
+                    }
+
                     $merchant = $this->getDbEntity('merchant', ['id' => $bankingAccount['merchant_id']]);
 
                     $this->mockStork();
@@ -3424,7 +3443,7 @@ class BankingAccountTest extends TestCase
                         'ownerType' => 'merchant',
                         'title' => $pushNotificationTitle,
                         'body' => $pushNotificationBody
-                    ]);
+                    ],$fcmMigrationExpEnabled);
                 }
             }
         }
@@ -3475,7 +3494,7 @@ class BankingAccountTest extends TestCase
         $this->app['config']->set('applications.banking_account_service.mock', true);
     }
 
-    protected function expectStorkSendPushNotificationRequest($expectInput): void
+    protected function expectStorkSendPushNotificationRequest($expectInput,bool $fcmMigrationExpEnabled = false): void
     {
         $this->storkMock
             ->shouldReceive('init')
@@ -3489,14 +3508,28 @@ class BankingAccountTest extends TestCase
                 {
                     return true;
                 }),
-                Mockery::on(function ($params) use ($expectInput)
+                Mockery::on(function ($params) use ($expectInput,$fcmMigrationExpEnabled)
                 {
-                    $title = $params['message']['push_notification_channels'][0]['clevertap_request']['target_user_campaign_request']['content_title'];
-                    $body = $params['message']['push_notification_channels'][0]['clevertap_request']['target_user_campaign_request']['content_body'];
+                    if ($fcmMigrationExpEnabled)
+                    {
+                        $title = $params['message']['push_notification_channels'][0]['push_notification_request']['target_user_campaign_request']['content_title'];
+                        $body = $params['message']['push_notification_channels'][0]['push_notification_request']['target_user_campaign_request']['content_body'];
+                    } else
+                    {
+                        $title = $params['message']['push_notification_channels'][0]['clevertap_request']['target_user_campaign_request']['content_title'];
+                        $body = $params['message']['push_notification_channels'][0]['clevertap_request']['target_user_campaign_request']['content_body'];
+                    }
+
                     $this->assertEquals($expectInput['ownerId'], $params['message']['owner_id']);
                     $this->assertEquals($expectInput['ownerType'], $params['message']['owner_type']);
                     $this->assertEquals($expectInput['title'], $title);
                     $this->assertEquals($expectInput['body'], $body);
+
+                    if($fcmMigrationExpEnabled)
+                    {
+                        $this->assertEquals('razorpayx', $params['message']['push_notification_channels'][0]['push_notification_request']['account_name']);
+                        $this->assertEquals(0, $params['message']['push_notification_channels'][0]['push_notification_request']['push_notification_type']);
+                    }
 
                     return true;
                 })
@@ -3529,6 +3562,17 @@ class BankingAccountTest extends TestCase
         $this->assertUpdateBankingAccountStatusFromTo(
             Status::CREATED,
             Status::ARCHIVED);
+    }
+
+    public function testUpdateBankingAccountStatusCreatedToArchivedWithFcmMigrationExpEnabled()
+    {
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::CREATED,
+            Status::ARCHIVED,
+            null,
+            Status::NOT_SERVICEABLE,
+            null,null,null,'10000000000000',null,null,false,
+            true);
     }
 
     public function testUpdateBankingAccountStatusPickedToProcessed()

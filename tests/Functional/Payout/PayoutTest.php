@@ -55,6 +55,7 @@ use RZP\Models\IdempotencyKey;
 use RZP\Models\PayoutsDetails;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Services\FTS\FundTransfer;
 use RZP\Models\Settlement\Channel;
 use RZP\Constants\Mode as EnvMode;
@@ -120,6 +121,7 @@ use RZP\Models\Payout\Notifications\PayoutProcessedContactCommunication as Payou
 class PayoutTest extends OAuthTestCase
 {
     use OAuthTrait;
+    use MocksSplitz;
     use PayoutTrait;
     use WebhookTrait;
     use PaymentTrait;
@@ -4462,6 +4464,98 @@ class PayoutTest extends OAuthTestCase
         $this->createPayoutWithWorkflowEntities(65432, '2224440041626905', Payout\Purpose::REFUND, 'FXMwu4HMK7ZT0H');
 
         $this->ba->cronAuth('live');
+
+        $this->storkMock
+            ->shouldReceive('requestAndGetParsedBody')
+            ->times(2)
+            ->with(
+                Mockery::on(function ($route)
+                {
+                    return true;
+                }),
+                Mockery::on(function ($params)
+                {
+                    $title = $params['message']['push_notification_channels'][0]['clevertap_request']['target_user_campaign_request']['content_title'];
+                    $body = $params['message']['push_notification_channels'][0]['clevertap_request']['target_user_campaign_request']['content_body'];
+                    $this->assertEquals('merchant', $params['message']['owner_type']);
+                    $this->assertEquals('Approve Pending Payouts', $title);
+                    $this->assertEquals('5 payouts worth ₹1,623.44 pending your approval', $body);
+                    return true;
+                })
+            )
+            ->andReturnUsing(function ()
+            {
+                return [
+                    'success' => true
+                ];
+            });
+
+        $this->startTest();
+    }
+
+    public function testReminderNotificationForPayoutPendingOnApprovalWithFcmMigrationExpEnabled()
+    {
+        $this->liveSetUp();
+
+        $bankingAccountAttributes = [
+            'id'             => 'ABCde1234ABCde',
+            'account_number' => '2224440041626998',
+            'balance_id'     => $this->bankingBalance->getId(),
+            'account_type'   => 'nodal',
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes, 'live');
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->createPayoutWithWorkflowEntities(12345, '2224440041626905', Payout\Purpose::CASHBACK, 'FXMwu4HMK7ZT0C');
+        $this->createPayoutWithWorkflowEntities(23456, '2224440041626905', Payout\Purpose::CASHBACK, 'FXMwu4HMK7ZT0D');
+        $this->createPayoutWithWorkflowEntities(11111, '2224440041626905', Payout\Purpose::SALARY, 'FXMwu4HMK7ZT0F');
+        $this->createPayoutWithWorkflowEntities(50000, '2224440041626905', Payout\Purpose::SALARY, 'FXMwu4HMK7ZT0G');
+        $this->createPayoutWithWorkflowEntities(65432, '2224440041626905', Payout\Purpose::REFUND, 'FXMwu4HMK7ZT0H');
+
+        $this->ba->cronAuth('live');
+
+        $splitzResp = [
+            "response" => [
+                'variant' => [
+                    'name' => 'active',
+                ]
+            ]
+        ];
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.fcm_migration_splitz_experiment_id','LtnXHw16gsI88P');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+        $this->storkMock
+            ->shouldReceive('requestAndGetParsedBody')
+            ->times(2)
+            ->with(
+                Mockery::on(function ($route)
+                {
+                    return true;
+                }),
+                Mockery::on(function ($params)
+                {
+                    $title = $params['message']['push_notification_channels'][0]['push_notification_request']['target_user_campaign_request']['content_title'];
+                    $body = $params['message']['push_notification_channels'][0]['push_notification_request']['target_user_campaign_request']['content_body'];
+                    $this->assertEquals('merchant', $params['message']['owner_type']);
+                    $this->assertEquals('Approve Pending Payouts', $title);
+                    $this->assertEquals('5 payouts worth ₹1,623.44 pending your approval', $body);
+
+                    $this->assertEquals('razorpayx', $params['message']['push_notification_channels'][0]['push_notification_request']['account_name']);
+                    $this->assertEquals(0, $params['message']['push_notification_channels'][0]['push_notification_request']['push_notification_type']);
+
+                    return true;
+                })
+            )
+            ->andReturnUsing(function ()
+            {
+                return [
+                    'success' => true
+                ];
+            });
 
         $this->startTest();
     }
