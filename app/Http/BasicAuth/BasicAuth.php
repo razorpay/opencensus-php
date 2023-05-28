@@ -444,6 +444,18 @@ class BasicAuth
         'merchant_activation_save',
         'merchant_activation_details',
         'merchant_document_upload',
+        'merchant_document_delete',
+        'merchant_store_add',
+        'merchant_store_fetch',
+        'merchant_activation_clarifications_save',
+        'merchant_activation_clarifications_fetch',
+        'merchant_save_business_website',
+        'merchant_website_section_action',
+        'fetch_merchant_escalation',
+        'merchant_fetch_config',
+        'merchant_activation_gst_details',
+        'merchant_document_url_fetch',
+        'merchant_nc_revamp_eligibility',
     ];
 
     /**
