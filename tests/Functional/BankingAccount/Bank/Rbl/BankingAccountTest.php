@@ -1303,6 +1303,8 @@ class BankingAccountTest extends TestCase
 
         $this->app['config']->set('applications.pincodesearcher.mock', true);
 
+        $this->mockBankingAccountService();
+
         $attribute = ['activation_status' => 'activated'];
 
         $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
@@ -1316,6 +1318,8 @@ class BankingAccountTest extends TestCase
 
     public function testCheckWhitelistPincodeServiceableByIcic()
     {
+        $this->mockBankingAccountService();
+
         $attribute = ['activation_status' => 'activated'];
 
         $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
@@ -1332,6 +1336,8 @@ class BankingAccountTest extends TestCase
         $this->app['config']->set('applications.banking_account.mock', true);
 
         $this->app['config']->set('applications.pincodesearcher.mock', true);
+
+        $this->mockBankingAccountService();
 
         $this->ba->adminAuth();
 
