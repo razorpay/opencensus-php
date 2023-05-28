@@ -282,6 +282,20 @@ class Gateway extends Base\Gateway
             $this->formatAmount($callbackData[ConstantsEntity::PAYMENT][Payment\Entity::AMOUNT]),
             number_format($amount, 2, '.', ''));
 
+        //Skips verify condition when we recieve ML01 which is for multiple order ids found.
+        //This is when we have multiple RRN case.
+        //This can be removed once we send rrn also in verify request.
+        if (isset($content[Fields::DATA][0][Fields::CODE]) and $content[Fields::DATA][0][Fields::CODE] === "ML01")
+        {
+            $this->trace->info(TraceCode::UPI_AXIS_SKIP_VERIFY_FOR_MULTIPLE_ORDER_IDS,
+                [
+                    'merchant_reference' => $callbackData['upi']['merchant_reference'],
+                    'npci_reference_id'  => $callbackData['upi']['npci_reference_id'],
+                ]);
+
+            return;
+        }
+
         $this->checkResponseStatus(
             $result,
             [Status::VERIFY_DEEMED, Status::VERIFY_PENDING, Status::VERIFY_SUCCESS],

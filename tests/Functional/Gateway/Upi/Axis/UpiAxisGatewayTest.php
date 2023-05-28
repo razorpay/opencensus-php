@@ -1619,6 +1619,20 @@ class UpiAxisGatewayTest extends TestCase
 
         $this->assertTrue($response['success']);
     }
+    public function testUnexpectedPaymentCreationML01()
+    {
+        $content = $this->buildUnexpectedPaymentRequest();
+        //used this merchant reference to mock verify with ML01
+        $content['upi']['merchant_reference'] = 'IShcnbF6tsOz';
+
+        $content['terminal']['gateway'] = 'upi_axis';
+
+        $response = $this->makeUnexpectedPaymentAndGetContent($content);
+
+        $this->assertNotEmpty($response['payment_id']);
+
+        $this->assertTrue($response['success']);
+    }
 
     /**
      * Tests the payment create for multiple payments with same RRN
