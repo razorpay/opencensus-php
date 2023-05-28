@@ -243,6 +243,7 @@ class Repository extends Base\Repository
         $query = $this->newQuery()
                       ->select(Entity::ACCOUNT_NUMBER)
                       ->where(Entity::CHANNEL, '=', $channel)
+                      ->where(Entity::ACCOUNT_TYPE, '=', AccountType::DIRECT)
                       ->whereBetween(Entity::GATEWAY_BALANCE_CHANGE_AT, [$fromTimeStamp, $toTimeStamp])
                       ->useWritePdo();
 

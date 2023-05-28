@@ -4593,6 +4593,12 @@ class Core extends Base\Core
         $merchantIdAccNumberAndLastReconciledAtDetails = $this->repo->banking_account_statement_details
             ->getByAccountNumbersAndLastReconciledAt($channel, $accountNumbers);
 
+        $this->trace->info(TraceCode::AUTOMATED_ACCOUNT_STATEMENTS_RECON_FILTER, [
+            Entity::CHANNEL    => $channel,
+            'msg'              => 'filter after reconciled_at',
+            'priority_acc_nos' => count($merchantIdAccNumberAndLastReconciledAtDetails),
+        ]);
+
         foreach ($merchantIdAccNumberAndLastReconciledAtDetails as $merchantIdAccNumberAndLastReconciledAtDetail)
         {
             $reconDetail = [];
@@ -4631,6 +4637,10 @@ class Core extends Base\Core
                 $reconDetail[Entity::FROM_DATE] = Carbon::createFromTimestamp($lastReconciledAt, Timezone::IST)->addDay()->startOfDay()->getTimestamp();
 
                 $reconDetail[Entity::TO_DATE] = Carbon::now(Timezone::IST)->subDay()->endOfDay()->getTimestamp();
+
+                $this->trace->error(TraceCode::AUTOMATED_ACCOUNT_STATEMENTS_RECON_FILTER, [
+                    'recon_details' => $reconDetail,
+                ]);
             }
 
             if ((isset($reconDetail[Entity::FROM_DATE]) === false) or
