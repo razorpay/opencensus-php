@@ -37,7 +37,13 @@ import { fireAnalyticsEvents, setTrackData } from 'common/utils/googleAnalytics'
 import { resizeWindow, updateMerchantLiveTransactionFlag } from 'merchant/reducers/app';
 import { fetchEligibilityForNcRevamp } from 'merchant/reducers/home';
 import { matchFullPageView } from 'merchant/routes';
-import { classList, isPresent, isNone, paiseToRupees } from 'common/utils/rzp-utils';
+import {
+  classList,
+  isPresent,
+  isNone,
+  paiseToRupees,
+  mergeCurrencyFormatting,
+} from 'common/utils/rzp-utils';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import ajax, { merchantFetch } from 'merchant/utils/ajax';
 import rolesList from 'merchant/helpers/permissions/roles-list';
@@ -654,7 +660,7 @@ class App extends Component {
           window.currencyList = currencies;
           return;
         }
-        window.currencyList = data;
+        window.currencyList = mergeCurrencyFormatting(data);
       })
       .catch(() => {
         window.currencyList = currencies;

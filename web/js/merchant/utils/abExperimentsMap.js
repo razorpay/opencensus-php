@@ -661,4 +661,10 @@ export default {
     // prod experiment ids
     'LfxXJXWfj87JAx',
   ],
+  n_exponent_support: [
+    // stage experiment
+    'LszehANj9C6W0x',
+    //prod experiment
+    'Lspxsu4DTcptHe',
+  ],
 };

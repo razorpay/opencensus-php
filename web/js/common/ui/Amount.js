@@ -60,7 +60,7 @@ const Amount = ({
   if (testId !== null) {
     attrs['data-testid'] = testId;
   }
-  const amount = getFormattedAmount(value);
+  const amount = getFormattedAmount(value, currency);
 
   const currencySymbol = getCurrencySymbol(currency);
 

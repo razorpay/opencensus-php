@@ -20,6 +20,10 @@ import { SENSITIVE_FIELDS } from 'common/constant';
 import { acronyms, shortenText } from './acronyms';
 import { saveAs } from 'file-saver';
 import { utils, write } from 'xlsx';
+import currencies from 'merchant/constants/currency';
+import { CURRENCY_FORMATTERS } from 'merchant/helpers/currency/helper';
+import abExperimentsMap from 'merchant/utils/abExperimentsMap';
+import { isEmpty } from 'lodash';
 
 moment.updateLocale('en', {
   relativeTime: {
@@ -301,20 +305,71 @@ export const currencySymbols = {
   MYR: 'RM',
 };
 
+export const getSplitzExperimentVariant = (experimentName) => {
+  const splitzExperiments = window.rzp_user?.splitz_experiments;
+  let splitzExperimentVariant = null;
+
+  if (splitzExperiments) {
+    Object.keys(splitzExperiments).forEach((experimentId) => {
+      const splitzExperiment = splitzExperiments[experimentId];
+      if (abExperimentsMap[experimentName]?.includes(experimentId) && !isEmpty(splitzExperiment)) {
+        splitzExperimentVariant = splitzExperiment;
+      }
+    });
+  }
+  return splitzExperimentVariant || {};
+};
+
+//This will be removed once experiment is ramped to 100%
+const isNExponentSupported = () =>
+  getSplitzExperimentVariant('n_exponent_support').variables?.result === 'on';
+
+export const getCurrencyConfig = (currency = 'INR') => {
+  if (isNExponentSupported()) {
+    const currencyList = window.currencyList || currencies;
+    const denomination = currencyList[currency]?.denomination ?? 100;
+    const formatter = currencyList[currency]?.format || currencyList.default.format;
+    return { decimals: denomination.toString().length - 1, formatter };
+  } else {
+    return { decimals: 2, formatter: CURRENCY_FORMATTERS.inr };
+  }
+};
+
+// following regex formats in indian comma separated, i.e. 2,01,20,45,222.66
+export const getFormattedAmount = (amount, currency = 'INR') => {
+  if (isNExponentSupported()) {
+    const { decimals, formatter } = getCurrencyConfig(currency);
+    return formatter((amount / 10 ** decimals).toFixed(decimals), decimals);
+  }
+  return (amount / 100).toFixed(2).replace(numberFormatRegex, '$1,');
+};
+
 export const getFormattedAmountNew = (amount, showCurrency, currency = 'INR') => {
   let formattedAmount;
-  if (currency === 'INR') {
+  if (isNExponentSupported()) {
+    formattedAmount = getFormattedAmount(amount, currency);
+  } else if (currency === 'INR') {
     formattedAmount = getFormattedNumber((amount / 100).toFixed(2));
   } else {
     formattedAmount = (Number(amount) / 100).toFixed(CURRENCY_DECIMALS[currency]).toLocaleString();
   }
-
   return (showCurrency ? currencySymbols[currency] : '') + formattedAmount;
 };
 
-// following regex formats in indian comma separated, i.e. 2,01,20,45,222.66
-export const getFormattedAmount = (amount) => {
-  return (amount / 100).toFixed(2).replace(numberFormatRegex, '$1,');
+//used to merge formatting of local currency list with api response
+export const mergeCurrencyFormatting = (data) => {
+  if (typeof data === 'object') {
+    const mergedData = { ...data };
+    Object.keys(data).forEach((currency) => {
+      const formatting = currencies[currency]?.format;
+      if (formatting) {
+        mergedData[currency].format = formatting;
+      }
+    });
+    mergedData.default = currencies.default;
+    return mergedData;
+  }
+  return currencies;
 };
 
 export const without = (source, keys) => {

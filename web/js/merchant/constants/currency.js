@@ -1,4 +1,10 @@
+import { CURRENCY_FORMATTERS } from 'merchant/helpers/currency/helper';
+
 const currencies = {
+  default: {
+    denomination: 100,
+    format: CURRENCY_FORMATTERS.three,
+  },
   AED: {
     code: '784',
     denomination: 100,
@@ -22,12 +28,14 @@ const currencies = {
     denomination: 100,
     symbol: 'ARS',
     name: 'Argentine Peso',
+    format: CURRENCY_FORMATTERS.threecommadecimal,
   },
   AUD: {
     code: '036',
     denomination: 100,
     symbol: 'A$',
     name: 'Australian Dollar',
+    format: CURRENCY_FORMATTERS.threespaceseparator,
   },
   AWG: {
     code: '533',
@@ -94,6 +102,7 @@ const currencies = {
     denomination: 100,
     symbol: 'CHf',
     name: 'Swiss Franc',
+    format: CURRENCY_FORMATTERS.chf,
   },
   CNY: {
     code: '156',
@@ -106,12 +115,14 @@ const currencies = {
     denomination: 100,
     symbol: 'COL$',
     name: 'Colombian Peso',
+    format: CURRENCY_FORMATTERS.threecommadecimal,
   },
   CRC: {
     code: '188',
     denomination: 100,
     symbol: '₡',
     name: 'Costa Rican Colon',
+    format: CURRENCY_FORMATTERS.threecommadecimal,
   },
   CUP: {
     code: '192',
@@ -124,6 +135,7 @@ const currencies = {
     denomination: 100,
     symbol: 'Kč',
     name: 'Czech Koruna',
+    format: CURRENCY_FORMATTERS.threecommadecimal,
   },
   DKK: {
     code: '208',
@@ -220,6 +232,7 @@ const currencies = {
     denomination: 100,
     symbol: 'kn',
     name: 'Croatian Kuna',
+    format: CURRENCY_FORMATTERS.threecommadecimal,
   },
   HTG: {
     code: '332',
@@ -232,12 +245,14 @@ const currencies = {
     denomination: 100,
     symbol: 'Ft',
     name: 'Hungarian Forint',
+    format: CURRENCY_FORMATTERS.none,
   },
   IDR: {
     code: '360',
     denomination: 100,
     symbol: 'Rp',
     name: 'Indonesian Rupiah',
+    format: CURRENCY_FORMATTERS.threecommadecimal,
   },
   ILS: {
     code: '376',
@@ -250,6 +265,7 @@ const currencies = {
     denomination: 100,
     symbol: '₹',
     name: 'Indian Rupee',
+    format: CURRENCY_FORMATTERS.inr,
   },
   JMD: {
     code: '388',
@@ -376,6 +392,7 @@ const currencies = {
     denomination: 100,
     symbol: 'RM',
     name: 'Malaysian Ringgit',
+    format: CURRENCY_FORMATTERS.myr,
   },
   NAD: {
     code: '516',
@@ -400,6 +417,7 @@ const currencies = {
     denomination: 100,
     symbol: 'NOK',
     name: 'Norwegian Krone',
+    format: CURRENCY_FORMATTERS.threecommadecimal,
   },
   NPR: {
     code: '524',
@@ -448,6 +466,7 @@ const currencies = {
     denomination: 100,
     symbol: '₽',
     name: 'Russian Ruble',
+    format: CURRENCY_FORMATTERS.threecommadecimal,
   },
   SAR: {
     code: '682',
@@ -466,6 +485,7 @@ const currencies = {
     denomination: 100,
     symbol: 'SEK',
     name: 'Swedish Krona',
+    format: CURRENCY_FORMATTERS.threespacecommadecimal,
   },
   SGD: {
     code: '702',
@@ -502,6 +522,7 @@ const currencies = {
     denomination: 100,
     symbol: 'E',
     name: 'Swazi Lilangeni',
+    format: CURRENCY_FORMATTERS.szl,
   },
   THB: {
     code: '764',
@@ -532,6 +553,7 @@ const currencies = {
     denomination: 100,
     symbol: '$U',
     name: 'Uruguayan Peso',
+    format: CURRENCY_FORMATTERS.threecommadecimal,
   },
   UZS: {
     code: '860',
@@ -550,6 +572,25 @@ const currencies = {
     denomination: 100,
     symbol: 'R',
     name: 'South African Rand',
+    format: CURRENCY_FORMATTERS.threespaceseparator,
+  },
+  KWD: {
+    code: '414',
+    denomination: 1000,
+    symbol: 'د.ك',
+    name: 'Kuwaiti Dinar',
+  },
+  BHD: {
+    code: '415',
+    denomination: 1000,
+    symbol: 'د.ب.',
+    name: 'Bahraini Dinar',
+  },
+  OMR: {
+    code: '416',
+    denomination: 1000,
+    symbol: 'ر.ع.',
+    name: 'Omani Rial',
   },
 };
 
