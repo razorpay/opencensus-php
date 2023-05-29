@@ -6,6 +6,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception\BaseException;
 use RZP\Models\Merchant\Acs\ParityChecker\Constant\Constant;
 use RZP\Models\Merchant\Acs\ParityChecker\Entity\MerchantWebsite;
+use RZP\Models\Merchant\Acs\ParityChecker\Entity\MerchantEmail;
 
 class Factory
 {
@@ -18,6 +19,7 @@ class Factory
     {
         $entityParityCheckerClass = match ($entity) {
             Constant::MERCHANT_WEBSITE => MerchantWebsite::class,
+            Constant::MERCHANT_EMAIL => MerchantEmail::class,
             default => throw new BaseException('parity checker class is not defined for entity ' . $entity,
                 ErrorCode::ASV_INTERNAL_PARITY_CHECKER_ERROR),
         };

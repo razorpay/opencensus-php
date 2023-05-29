@@ -3,37 +3,15 @@
 namespace RZP\Models\Merchant\Acs\traits;
 
 use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
-use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\RepoToSdkWrapperMap;
 use RZP\Exception;
 
-trait AsvFetch {
-    public function getEntityDetails(
-        string $callingIdentifier,
-        bool $shouldRouteToAsv,
-        callable $fetchFromAccountServiceCallback,
-        callable $fetchFromDatabaseCallback)
-    {
-        if ($shouldRouteToAsv) {
-            try {
-                $this->trace->info(TraceCode::ACCOUNT_SERVICE_GET_ENTITY_REQUEST, [
-                    "identifier" => $callingIdentifier
-                ]);
-
-                return $fetchFromAccountServiceCallback();
-            } catch (\Exception $e) {
-                $this->trace->traceException($e, Trace::CRITICAL, TraceCode::ACCOUNT_SERVICE_GET_ENTITY_DETAILS_EXCEPTION, [
-                    "identifier" => $callingIdentifier
-                ]);
-            }
-        }
-
-        return $fetchFromDatabaseCallback();
-    }
-
+trait AsvFind
+{
     public function findOrFailDatabase($id, $columns = array('*'), string $connectionType = null)
     {
         return parent::findOrFail($id, $columns, $connectionType);
@@ -47,28 +25,37 @@ trait AsvFetch {
     /**
      * @throws \Exception
      */
-    public function getDetailsFromAsvIgnoreValidationAndNotFound($id) {
+    public function getDetailsFromAsvIgnoreValidationAndNotFound($id)
+    {
         $asvSdkWrapper = RepoToSdkWrapperMap::getWrapperInstance(get_class($this));
 
         return $asvSdkWrapper->getByIdForFindOrFail($id);
     }
+
+    /**
+     * @throws \Exception
+     */
     public function findOrFailAsv($id)
     {
-            $model = $this->getDetailsFromAsvIgnoreValidationAndNotFound($id);
+        $model = $this->getDetailsFromAsvIgnoreValidationAndNotFound($id);
 
-            if($model != null) {
-                return $model;
-            }
+        if ($model != null) {
+            return $model;
+        }
 
-            $this->processDbQueryFailure('find', array('id' => $id, 'columns' => array("*")));
+        $this->processDbQueryFailure('find', array('id' => $id, 'columns' => array("*")));
     }
 
+    /**
+     * @throws BadRequestException
+     * @throws \Exception
+     */
     public function findOrFailPublicAsv($id)
     {
 
         $model = $this->getDetailsFromAsvIgnoreValidationAndNotFound($id);
 
-        if (is_null($model) === false){
+        if (is_null($model) === false) {
             return $model;
         }
 
@@ -82,22 +69,23 @@ trait AsvFetch {
             ErrorCode::BAD_REQUEST_INVALID_ID, null, $data);
     }
 
-    public function findOrFail($id, $columns = array('*'), string $connectionType = null) {
+    public function findOrFail($id, $columns = array('*'), string $connectionType = null)
+    {
 
-        $shouldCallAsv = (new AsvRouter())->shouldCallAccountService($id, $columns, $connectionType, get_class($this), FunctionConstant::FIND_AND_FAIL);
+        $shouldCallAsv = $this->asvRouter->shouldRouteFindToAccountService($id, $columns, $connectionType, get_class($this), FunctionConstant::FIND_AND_FAIL);
 
-        if($shouldCallAsv) {
+        if ($shouldCallAsv === true) {
 
-            $functionIdentifier = get_class($this)." ".FunctionConstant::FIND_AND_FAIL;
+            $functionIdentifier = get_class($this) . " " . FunctionConstant::FIND_AND_FAIL;
 
             try {
                 return $this->findOrFailAsv($id);
             } catch (\Exception $e) {
 
-                if ($e->getCode() == ErrorCode::SERVER_ERROR_DB_QUERY_FAILED){
+                if ($e->getCode() == ErrorCode::SERVER_ERROR_DB_QUERY_FAILED) {
 
                     $this->trace->info(TraceCode::ACCOUNT_SERVICE_THROW_EXCEPTION_AGAIN, [
-                        "functionIdentifier" =>  $functionIdentifier,
+                        "functionIdentifier" => $functionIdentifier,
                         "error_code" => $e->getCode(),
                         "id" => $id,
                     ]);
@@ -106,8 +94,8 @@ trait AsvFetch {
                 }
 
                 $this->trace->traceException($e, Trace::CRITICAL, TraceCode::ACCOUNT_SERVICE_FIND_OR_FAIL_EXCEPTION, [
-                    "id" =>  $id,
-                    "functionIdentifier" =>  $functionIdentifier,
+                    "id" => $id,
+                    "functionIdentifier" => $functionIdentifier,
                 ]);
             }
         }
@@ -115,22 +103,23 @@ trait AsvFetch {
         return $this->findOrFailDatabase($id, $columns, $connectionType);
     }
 
-    public function findOrFailPublic($id, $columns = array('*'), string $connectionType = null) {
+    public function findOrFailPublic($id, $columns = array('*'), string $connectionType = null)
+    {
 
-        $shouldCallAsv = (new AsvRouter())->shouldCallAccountService($id, $columns, $connectionType, get_class($this), FunctionConstant::FIND_AND_FAIL_PUBLIC);
+        $shouldCallAsv = $this->asvRouter->shouldRouteFindToAccountService($id, $columns, $connectionType, get_class($this), FunctionConstant::FIND_AND_FAIL_PUBLIC);
 
-        if($shouldCallAsv) {
+        if ($shouldCallAsv === true) {
 
-            $functionIdentifier = get_class($this)." ".FunctionConstant::FIND_AND_FAIL_PUBLIC;
+            $functionIdentifier = get_class($this) . " " . FunctionConstant::FIND_AND_FAIL_PUBLIC;
 
             try {
                 return $this->findOrFailAsv($id);
             } catch (\Exception $e) {
 
-                if ($e->getCode() == ErrorCode::BAD_REQUEST_INVALID_ID){
+                if ($e->getCode() == ErrorCode::BAD_REQUEST_INVALID_ID) {
 
                     $this->trace->info(TraceCode::ACCOUNT_SERVICE_THROW_EXCEPTION_AGAIN, [
-                        "functionIdentifier" =>  $functionIdentifier,
+                        "functionIdentifier" => $functionIdentifier,
                         "error_code" => $e->getCode(),
                         "id" => $id,
                     ]);
@@ -139,8 +128,8 @@ trait AsvFetch {
                 }
 
                 $this->trace->traceException($e, Trace::CRITICAL, TraceCode::ACCOUNT_SERVICE_FIND_OR_FAIL_EXCEPTION, [
-                    "id" =>  $id,
-                    "functionIdentifier" =>  $functionIdentifier,
+                    "id" => $id,
+                    "functionIdentifier" => $functionIdentifier,
                 ]);
             }
         }
@@ -148,3 +137,4 @@ trait AsvFetch {
         return $this->findOrFailPublicDatabase($id, $columns, $connectionType);
     }
 }
+

@@ -2,6 +2,7 @@
 
 namespace RZP\Jobs;
 
+use RZP\Models\Merchant\Acs\ParityChecker\Helper\FetchMerchant;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
 use Razorpay\Trace\Logger as Trace;
@@ -41,26 +42,12 @@ class TriggerAsvFullParityCheck extends Job
         $batchSize = min(($this->input[Constant::BATCH_SIZE] ?? $this->maxBatchSize), $this->maxBatchSize);
 
         try {
-            $merchantIds = match ($this->input[Constant::PARITY_CHECK_ENTITY]) {
-                Constant::MERCHANT => $this->getMerchantIds(
-                    $this->repoManager->merchant->fetchAllMerchantIDsFromSlaveDB([
-                        Constant::COUNT => $this->input[Constant::COUNT],
-                        Constant::AFTER_ID => $this->input[Constant::AFTER_MERCHANT_ID]
-                    ])->toArray(),
-                    key: Constant::ID),
-                Constant::MERCHANT_WEBSITE => $this->getMerchantIds(
-                    $this->repoManager->merchant_website->fetchAllMerchantIDsFromSlaveDB([
-                        Constant::COUNT => $this->input[Constant::COUNT],
-                        Constant::AFTER_MERCHANT_ID => $this->input[Constant::AFTER_MERCHANT_ID]
-                    ])->toArray(),
-                    key: Constant::MERCHANT_ID),
-                default => $this->getMerchantIds(
-                    $this->repoManager->merchant->fetchAllMerchantIDsFromSlaveDB([
-                        Constant::COUNT => $this->input[Constant::COUNT],
-                        Constant::AFTER_ID => $this->input[Constant::AFTER_MERCHANT_ID]
-                    ])->toArray(),
-                    key: Constant::ID),
-            };
+            $merchantFetch = new FetchMerchant();
+            $merchantIds = $merchantFetch->fetchAllMerchantIdsFromSlaveDB(
+                $this->input[Constant::PARITY_CHECK_ENTITY],
+                $this->input[Constant::COUNT],
+                $this->input[Constant::AFTER_MERCHANT_ID]
+            );
 
             if (count($merchantIds) === 0) {
                 $this->delete();
@@ -70,7 +57,7 @@ class TriggerAsvFullParityCheck extends Job
             $this->trace->info(TraceCode::ASV_TRIGGER_PARITY_CHECK,
                 [Constant::INPUT => $this->input, Constant::LAST_ID => $merchantIds[count($merchantIds) - 1]]);
 
-            $merchantIds = $this->selectSubsetMerchantIds($merchantIds, $this->input[Constant::PARITY_CHECK_PERCENTAGE]);
+            $merchantIds = $merchantFetch->selectSubsetMerchantIds($merchantIds, $this->input[Constant::PARITY_CHECK_PERCENTAGE]);
 
             // calling in batches of size given in input
             $batches = array_chunk($merchantIds, $batchSize);
@@ -92,30 +79,5 @@ class TriggerAsvFullParityCheck extends Job
                 ]
             );
         }
-    }
-
-    function getMerchantIds(array $entityArray, string $key): array
-    {
-        $merchantIds = [];
-        foreach ($entityArray as $entity) {
-            $mid = $entity[$key] ?? '';
-            $merchantIds[] = $mid;
-        }
-
-        return $merchantIds;
-    }
-
-    function selectSubsetMerchantIds(array $merchantIds, int $percentage): array
-    {
-        $subsetMerchantIds = [];
-        foreach ($merchantIds as $merchantId) {
-            $randomInt = rand(1, 100);
-            if ($randomInt > $percentage) {
-                continue;
-            }
-            $subsetMerchantIds[] = $merchantId;
-        }
-
-        return $subsetMerchantIds;
     }
 }

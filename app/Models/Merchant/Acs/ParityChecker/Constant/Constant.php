@@ -44,9 +44,13 @@ class Constant
 
     const MERCHANT_WEBSITE = 'merchant_website';
 
+    const MERCHANT_EMAIL  = 'merchant_email';
+
     const ENTITY = 'entity';
 
     const MERCHANT_ID = 'merchant_id';
+
+    const TYPE  = 'type';
 
     const METHOD = 'method';
 

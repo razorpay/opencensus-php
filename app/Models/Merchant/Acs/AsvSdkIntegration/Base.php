@@ -136,6 +136,4 @@ class Base
                 throw $err;
         }
     }
-
-
 }

@@ -9,11 +9,14 @@ use RZP\Error\PublicErrorCode;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantWebsite as MerchantWebsiteSDKWrapper;
 use RZP\Models\Merchant\Website\Repository as MerchantWebsiteRepository;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantEmail as MerchantEmailSDKWrapper;
+use RZP\Models\Merchant\Email\Repository as MerchantEmailRepository;
 
 
 final class RepoToSdkWrapperMap {
     public const MAP = array(
-        MerchantWebsiteRepository::class => MerchantWebsiteSDKWrapper::class
+        MerchantWebsiteRepository::class => MerchantWebsiteSDKWrapper::class,
+        MerchantEmailRepository::class => MerchantEmailSDKWrapper::class,
     );
 
     /**

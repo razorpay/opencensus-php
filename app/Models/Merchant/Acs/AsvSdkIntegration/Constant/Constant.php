@@ -20,7 +20,13 @@ class Constant
     CONST SPLITZ_WEBSITE_READ_MERCHANTID = "splitz_experiment_website_read_merchantid";
     CONST SPLITZ_WEBSITE_READ_FIND = "splitz_experiment_website_read_find";
 
+    const ASV_SPLITZ_EXPERIMENT_MERCHANT_EMAIL_READ_BY_MERCHANT_ID = 'splitz_experiment_merchant_email_read_by_merchant_id';
+
     // function identifiers
     CONST GET_WEBSITE_BY_MERCHANT_ID = "ASV_MERCHANT_WEBSITE_getWebsiteDetailsForMerchantId";
     CONST MERCHANT_WEBSITE_FIND = "ASV_MERCHANT_WEBSITE_find";
+
+    CONST GET_EMAIL_BY_TYPE_AND_MERCHANT_ID = "getByTypeAndMerchantId";
+
+    CONST GET_EMAIL_BY_MERCHANT_ID = 'getEmailByMerchantId';
 }

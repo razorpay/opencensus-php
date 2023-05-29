@@ -1456,6 +1456,8 @@ return [
         // splitz experiment ids
         'splitz_experiment_website_read_merchantid' => env('ASV_SPLITZ_EXPERIMENT_WEBSITE_READ_MERCHANTID', ''),
         'splitz_experiment_website_read_find' => env('ASV_SPLITZ_EXPERIMENT_WEBSITE_READ_FIND', ''),
+        'splitz_experiment_merchant_email_read_by_merchant_id' => env('ASV_SPLITZ_EXPERIMENT_MERCHANT_EMAIL_READ_BY_MERCHANT_ID', ''),
+        'splitz_experiment_merchant_email_read_by_id' => env('ASV_SPLITZ_EXPERIMENT_MERCHANT_EMAIL_READ_BY_ID', ''),
     ],
 
     'recon'         => [

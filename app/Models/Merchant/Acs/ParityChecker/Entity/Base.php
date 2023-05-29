@@ -51,4 +51,14 @@ class Base
         }
     }
 
+    protected function compareAndLogApiAndAsvResponseForNull(?array $apiResponse, ?array $asvResponse, array $logDetailMatched,
+                                                             array  $additionalLogDetailUnmatched): void
+    {
+        if ($apiResponse === null and $asvResponse === null) {
+            $this->trace->info(TraceCode::ASV_COMPARE_MATCHED, $logDetailMatched);
+        } else {
+            $this->trace->info(TraceCode::ASV_COMPARE_MISMATCH, array_merge($logDetailMatched, $additionalLogDetailUnmatched));
+        }
+    }
+
 }
