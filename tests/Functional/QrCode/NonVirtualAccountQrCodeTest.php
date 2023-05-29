@@ -10,7 +10,6 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\QrCode\Type;
-use RZP\Services\RazorXClient;
 use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\FeeBearer;
@@ -606,6 +605,53 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertStringContainsString($tr, $qrCodeEntity['qr_string']);
         $this->assertStringContainsString('qrmoremegast', $qrCodeEntity['qr_string']);
         $this->assertStringContainsString('@icici', $qrCodeEntity['qr_string']);
+
+        if ($qrCodeEntity['fixed_amount'] === true)
+        {
+            $amount = $qrCodeEntity['amount'] / 100;
+
+            $this->assertStringContainsString('am=' . $amount, $qrCodeEntity['qr_string']);
+        }
+
+        if ($response['type'] === Type::BHARAT_QR)
+        {
+            $this->assertStringContainsString('0518' . substr($response['id'], 3) . 'qrv2', $qrCodeEntity['qr_string']);
+        }
+    }
+
+    private function runEntityAssertionsForDedicatedTerminalQr($response, $terminal, $mode = 'test')
+    {
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, $mode);
+
+        $this->assertEquals($qrCodeEntity['id'], $response['id']);
+
+        $vpa = null;
+        switch ($terminal->getGateway())
+        {
+            case Gateway::UPI_ICICI:
+            {
+                $vpa = $terminal->getGatewayMerchantId2();
+                break;
+            }
+        }
+
+        $this->assertStringContainsString($vpa, $qrCodeEntity['qr_string']);
+
+        switch ($qrCodeEntity['usage'])
+        {
+            case "single_use":
+            {
+                $this->assertStringContainsString('icicirefID', $qrCodeEntity['qr_string']);
+
+                break;
+            }
+            case "multiple_use":
+            {
+                $tr = 'RZP' . substr($response['id'], 3, 14) . 'qrv2';
+                $this->assertStringContainsString($tr, $qrCodeEntity['qr_string']);
+                break;
+            }
+        }
 
         if ($qrCodeEntity['fixed_amount'] === true)
         {
@@ -1404,19 +1450,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     protected function enableRazorXTreatmentForQrBankTransfer()
     {
-        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
-
-        $this->app->instance('razorx', $razorx);
-
-        $razorx->shouldReceive('getTreatment')
-               ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
-               {
-                   if ($featureFlag === (RazorxTreatment::QR_CODE_BANK_TRANSFER))
-                   {
-                       return 'on';
-                   }
-                   return 'control';
-               });
+        $this->setMockRazorxTreatment([RazorxTreatment::QR_CODE_BANK_TRANSFER => RazorxTreatment::RAZORX_VARIANT_ON]);
     }
 
     private function runUpiQrV2Assertion($response, string $usageType)
@@ -1936,7 +1970,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testCreateDynamicQrWithDedicatedTerminal()
     {
-        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+        $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
 
         $this->enableRazorXTreatmentForQrDedicatedTerminal();
 
@@ -1948,16 +1982,13 @@ class NonVirtualAccountQrCodeTest extends TestCase
                                       'live',
                                       'LiveAccountMer');
 
-        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
 
-        $this->assertEquals($qrCodeEntity['id'], $qrCode['id']);
-
-        $this->assertStringContainsString('icicirefID', $qrCodeEntity['qr_string']);
     }
 
     public function testCreateStaticQrWithDedicatedTerminal()
     {
-        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+        $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
 
         $this->enableRazorXTreatmentForQrDedicatedTerminal();
 
@@ -1966,44 +1997,20 @@ class NonVirtualAccountQrCodeTest extends TestCase
                 'usage' => 'multiple_use',
                 'type' => 'upi_qr',
             ],
-            'test',
+            'live',
             'LiveAccountMer');
 
-        $this->runEntityAssertions($response);
+        $this->runEntityAssertionsForDedicatedTerminalQr($response, $terminal);
     }
 
     protected function enableRazorXTreatmentForQrDedicatedTerminal()
     {
-        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
-
-        $this->app->instance('razorx', $razorx);
-
-        $razorx->shouldReceive('getTreatment')
-            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
-            {
-                if ($featureFlag === (RazorxTreatment::DEDICATED_TERMINAL_QR_CODE))
-                {
-                    return 'on';
-                }
-                return 'control';
-            });
+        $this->setMockRazorxTreatment([RazorxTreatment::DEDICATED_TERMINAL_QR_CODE => RazorxTreatment::RAZORX_VARIANT_ON]);
     }
 
     protected function enableRazorXTreatmentForQrOnDemandClose()
     {
-        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
-
-        $this->app->instance('razorx', $razorx);
-
-        $razorx->shouldReceive('getTreatment')
-            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
-            {
-                if ($featureFlag === (RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE))
-                {
-                    return 'on';
-                }
-                return 'control';
-            });
+        $this->setMockRazorxTreatment([RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON]);
     }
 
     public function testProcessPaymentForDynamicQrWithDedicatedTerminal()
@@ -2044,19 +2051,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     protected function enableRazorXTreatmentForClosedQrAutoCapture()
     {
-        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
-
-        $this->app->instance('razorx', $razorx);
-
-        $razorx->shouldReceive('getTreatment')
-            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
-            {
-                if ($featureFlag === (RazorxTreatment::QR_PAYMENT_AUTO_CAPTURE_FOR_CLOSED_QR))
-                {
-                    return 'on';
-                }
-                return 'control';
-            });
+        $this->setMockRazorxTreatment([RazorxTreatment::QR_PAYMENT_AUTO_CAPTURE_FOR_CLOSED_QR => RazorxTreatment::RAZORX_VARIANT_ON]);
     }
 
     public function testDelayedCallbackOnSingleUseQrCode()
@@ -2160,16 +2155,21 @@ class NonVirtualAccountQrCodeTest extends TestCase
     {
         $this->enableRazorXTreatmentForQrDedicatedTerminal();
 
+        $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
         $qrCode = $this->createQrCode(
-            ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
-                'name' => 'Mitasha']
+            [
+                'usage'          => 'single_use',
+                'type'           => 'upi_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 100,
+                'name'           => 'Mitasha'
+            ],
+            'live',
+            'LiveAccountMer'
         );
 
-        $this->assertEquals('single_use', $qrCode['usage']);
-        $this->assertEquals(1, $qrCode['fixed_amount']);
-        $this->assertEquals(100, $qrCode['payment_amount']);
-        $this->assertEquals('upi_qr' , $qrCode['type']);
-        $this->assertEquals('active', $qrCode['status']);
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
     }
 
     public function testSingleUseQrCodeWithoutFixedAmount()
@@ -2188,12 +2188,16 @@ class NonVirtualAccountQrCodeTest extends TestCase
     {
         $this->enableRazorXTreatmentForQrDedicatedTerminal();
 
+        $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
         $qrCode = $this->createQrCode(
             ['usage' => 'multiple_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
-                'name' => 'Mitasha']
+                'name' => 'Mitasha'],
+            'live',
+            'LiveAccountMer'
         );
 
-        $this->runEntityAssertions($qrCode);
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
     }
 
     public function testMultipleUseQrCodeWithCloseBy()
@@ -2213,13 +2217,17 @@ class NonVirtualAccountQrCodeTest extends TestCase
     {
         $this->enableRazorXTreatmentForQrDedicatedTerminal();
 
+        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
         $qrCode = $this->createQrCode(
             ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
-             'name' => 'Mitasha']
+             'name' => 'Mitasha'],
+            'live',
+            'LiveAccountMer'
         );
 
         $this->assertEquals(Status::ACTIVE, $qrCode['status']);
-        $closeResponse = $this->closeQrCode($qrCode['id']);
+        $closeResponse = $this->closeQrCode($qrCode['id'], 'live', 'LiveAccountMer');
 
         $this->assertEquals(Status::CLOSED, $closeResponse['status']);
     }
@@ -2228,9 +2236,13 @@ class NonVirtualAccountQrCodeTest extends TestCase
     {
         $this->enableRazorXTreatmentForQrDedicatedTerminal();
 
+        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
         $qrCode = $this->createQrCode(
             ['usage' => 'multiple_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
-                'name' => 'Mitasha']
+                'name' => 'Mitasha'],
+            'live',
+            'LiveAccountMer'
         );
 
         $this->assertEquals(Status::ACTIVE, $qrCode['status']);
@@ -2238,7 +2250,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->expectException('RZP\Exception\BadRequestException');
         $this->expectExceptionCode(ErrorCode::BAD_REQUEST_CLOSE_STATIC_QR_CODE_FAILURE);
 
-        $this->closeQrCode($qrCode['id']);
+        $this->closeQrCode($qrCode['id'], 'live', 'LiveAccountMer');
     }
 
     public function testCreateQrCodeWithRequestSourceHeader()
@@ -2428,26 +2440,17 @@ class NonVirtualAccountQrCodeTest extends TestCase
     {
         $this->enableRazorXTreatmentForQrDedicatedTerminal();
 
+        $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
         $closeBy = Carbon::now(Timezone::IST)->addSeconds(200)->getTimestamp();
 
-        $this->createQrCode(
-            ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
-             'close_by' => $closeBy ,'name' => 'Mitasha']
+        $qrCode = $this->createQrCode(
+            ['usage'    => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
+             'close_by' => $closeBy, 'name' => 'Mitasha'],
+            'live',
+            'LiveAccountMer'
         );
-        $qrCode = $this->getDbLastEntity('qr_code');
 
-        $parts = parse_url($qrCode['qr_string']);
-        $query = [];
-        parse_str($parts['query'], $query);
-
-        $this->assertEquals('single_use', $qrCode['usage_type']);
-        $this->assertEquals(1, $qrCode['fixed_amount']);
-        $this->assertEquals(100, $qrCode['amount']);
-        $this->assertEquals('upi_qr' , $qrCode['provider']);
-        $this->assertEquals('active', $qrCode['status']);
-        $this->assertEquals(true,isset($query['tr']));
+        $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
     }
-
-
-
 }

@@ -2,7 +2,7 @@
 
 namespace RZP\Tests\Functional\Helpers\QrCode;
 
-use RZP\Models\Order;
+use RZP\Services\RazorXClient;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity;
 
 trait NonVirtualAccountQrCodeTrait
@@ -47,7 +47,7 @@ trait NonVirtualAccountQrCodeTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    private function closeQrCode(string $id)
+    private function closeQrCode(string $id, $mode = 'test', $merchantId = '10000000000000')
     {
         $request = [
             'method'  => 'POST',
@@ -55,6 +55,11 @@ trait NonVirtualAccountQrCodeTrait
         ];
 
         $this->ba->privateAuth();
+
+        if ($mode === 'live')
+        {
+            $this->ba->privateAuth('rzp_live_' . $merchantId);
+        }
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -256,4 +261,26 @@ trait NonVirtualAccountQrCodeTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    protected function setMockRazorxTreatment(array $razorxTreatment, string $defaultBehaviour = 'control')
+    {
+        // Mock Razorx
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function ($mid, $feature, $mode) use ($razorxTreatment, $defaultBehaviour)
+                              {
+                                  if (array_key_exists($feature, $razorxTreatment) === true)
+                                  {
+                                      return $razorxTreatment[$feature];
+                                  }
+
+                                  return strtolower($defaultBehaviour);
+                              }));
+    }
 }

@@ -5,7 +5,6 @@ namespace Functional\QrCode;
 use Carbon\Carbon;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\QrCode\Type;
-use RZP\Services\RazorXClient;
 use RZP\Models\Payment\Gateway;
 use RZP\Exception\LogicException;
 use RZP\Tests\Functional\TestCase;
@@ -79,19 +78,7 @@ class UpiYesBankQRCodeTest extends TestCase
 
     protected function enableRazorXTreatmentForQrDedicatedTerminal() :void
     {
-        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
-
-        $this->app->instance('razorx', $razorx);
-
-        $razorx->allows('getTreatment')
-            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
-            {
-                if ($featureFlag === (RazorxTreatment::DEDICATED_TERMINAL_QR_CODE))
-                {
-                    return 'on';
-                }
-                return 'control';
-            });
+        $this->setMockRazorxTreatment([RazorxTreatment::DEDICATED_TERMINAL_QR_CODE => RazorxTreatment::RAZORX_VARIANT_ON]);
     }
 
     public function testCreateStaticQrWithoutTerminal() :void
