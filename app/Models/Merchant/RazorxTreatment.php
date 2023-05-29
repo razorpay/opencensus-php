@@ -774,4 +774,9 @@ final class RazorxTreatment
 
     const FCM_MIGRATION = 'fcm_migration';
 
+
+    /**
+     * Razorx flag to enable Standard Checkout merchants to be onboarded for Push Token Provisioning
+     */
+    const ENABLE_STANDARD_CHECKOUT_MERCHANTS_ON_PUSH_TOKEN_PROVISIONING = 'enable_standard_checkout_merchants_on_push_token_provisioning';
 }

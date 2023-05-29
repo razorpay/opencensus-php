@@ -30,6 +30,7 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Customer\GatewayToken;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Mpan;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
@@ -473,7 +474,7 @@ class Service extends Base\Service
                     $input['card']['number'] = trim(str_replace(" ", "", $input['card']['number']));
                 }
 
-                $customer = $this->repo->customer->findByPublicIdAndMerchant($input['customer_id'], $this->merchant);
+                $customerIssuer = $this->repo->customer->findByPublicIdAndMerchant($input['customer_id'], $this->merchant);
 
                 //Should be in an async function
 
@@ -487,10 +488,7 @@ class Service extends Base\Service
 
                     $this->merchant = $merchantPushProvisioning;
 
-                    $localCustomer =  (new Customer\Core)->createLocalCustomer([
-                        Customer\Entity::CONTACT       => $customer->getContact(),
-                        Customer\Entity::EMAIL         => $customer->getEmail(),
-                    ], $this->merchant, false);
+                    $customer =  $this->getCustomerByMerchantType($customerIssuer);
 
                     $network = Card\Network::detectNetwork(substr($input['card']['number'], 0, 6));
 
@@ -509,7 +507,10 @@ class Service extends Base\Service
                         Token\Entity::METHOD            => Payment\Method::CARD
                     ];
 
-                    $token = (new Token\Core)->create($localCustomer, $tokenCreateInput);
+                    $token = (new Token\Core)->create($customer, $tokenCreateInput);
+
+                    //Required to override incase of global/standard checkout cases merchant needs to be explicitly set to local merchant.
+                    $token->merchant()->associate($this->merchant);
 
                     $token->setAcknowledgedAt(Carbon::now(Timezone::IST)->getTimestamp());
 
@@ -550,6 +551,28 @@ class Service extends Base\Service
         }
 
         return $response;
+    }
+
+    public function getCustomerByMerchantType($customerIssuer) {
+
+        $merchantForCustomerCreation = $this->merchant;
+
+        $variant = $this->app->razorx->getTreatment($this->merchant->getId(), RazorxTreatment::ENABLE_STANDARD_CHECKOUT_MERCHANTS_ON_PUSH_TOKEN_PROVISIONING, $this->mode);
+
+        if(strtolower($variant) === 'on')
+            $merchantForCustomerCreation = $this->repo->merchant->fetchMerchantFromId(Merchant\Account::SHARED_ACCOUNT);
+
+        $customer =  (new Customer\Core)->createLocalCustomer([
+            Customer\Entity::CONTACT       => $customerIssuer->getContact(),
+            Customer\Entity::EMAIL         => $customerIssuer->getEmail(),
+        ], $merchantForCustomerCreation, false);
+
+        $this->trace->info(
+            TraceCode::TOKEN_PUSH_CUSTOMER_INFO, [
+            'variant' => $variant,
+            'merchantForCustomerCreation' => $merchantForCustomerCreation['id'],
+            'customer' => $customer['id']]);
+        return $customer;
     }
 
     public function tokensPushFetch($id) {

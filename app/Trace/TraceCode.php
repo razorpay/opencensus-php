@@ -8510,6 +8510,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     //Push Token Provisioning
     const TOKEN_PUSH_INFO                                     = 'TOKEN_PUSH_INFO';
+    const TOKEN_PUSH_CUSTOMER_INFO                            = 'TOKEN_PUSH_CUSTOMER_INFO';
     const TOKEN_PUSH_EXCEPTION                                = 'TOKEN_PUSH_EXCEPTION';
     const MANUAL_MERCHANT_WEBHOOK_TRIGGER                     = 'MANUAL_MERCHANT_WEBHOOK_TRIGGER';
     const TOKEN_PUSH_FETCH_INFO                               = 'TOKEN_PUSH_FETCH_INFO';
