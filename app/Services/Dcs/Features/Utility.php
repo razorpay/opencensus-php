@@ -6,6 +6,16 @@ use Illuminate\Support\Str;
 
 class Utility
 {
+    public static array $cachePrefixes = [
+        "d35593be04",
+        "9864630de5",
+        "904e6b365f",
+        "99e065d633",
+        "56336e9d09",
+        "663j6e9h09",
+        "j6396l9d09",
+        "p6x36emd09",
+    ];
     /**
      * Utility to extract the actual name from the DCS feature name if the name contains ":"
      * We have to support this for the features having same name in two separate domains in DCS
@@ -40,5 +50,10 @@ class Utility
         }
 
         return "";
+    }
+
+    public static function getRandomPrefix(): string
+    {
+        return self::$cachePrefixes[array_rand(self::$cachePrefixes)];
     }
 }

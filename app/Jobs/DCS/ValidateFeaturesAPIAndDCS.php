@@ -41,9 +41,12 @@ class ValidateFeaturesAPIAndDCS extends Job
         ]);
 
         try {
-            if (isset($this->input['feature_name']) === true) {
-                $dcsReadEnabledFeatures[] = $this->input['feature_name'];
-            } else {
+            if (isset($this->input['feature_name']) === true)
+            {
+                $dcsReadEnabledFeatures = $this->input['feature_name'];
+            }
+            else
+            {
                 $adminService = new AdminService;
 
                 $dcsReadEnabledFeatures = $adminService->getConfigKey(

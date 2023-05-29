@@ -372,6 +372,7 @@ class Service extends Base
 
             if(sizeof($dcsFeatures) === 0)
             {
+                $this->cache->set($cacheKey, [], 30);
                 return $response;
             }
 

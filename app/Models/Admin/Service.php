@@ -20,6 +20,7 @@ use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
+use RZP\Services\Dcs\Features\Utility;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity;
@@ -741,7 +742,14 @@ class Service extends Base\Service
 
         foreach ($input as $key => $value)
         {
-            $result[] = $this->setConfigKey($key, $value);
+            if (str_contains($key,ConfigKey::DCS_READ_WHITELISTED_FEATURES) === true)
+            {
+                $result[] = $this->setDCSConfigKey($key, $value);
+            }
+            else
+            {
+                $result[] = $this->setConfigKey($key, $value);
+            }
         }
 
         return $result;
@@ -825,6 +833,38 @@ class Service extends Base\Service
         return $data;
     }
 
+    /**
+     * @param string $key
+     * @param mixed $newValue
+     *
+     * @return array
+     */
+    protected function setDCSConfigKey(string $key, $newValue): array
+    {
+        $keys = [];
+        $oldValue = Cache::get($key);
+
+        // setting the key without prefix for the admin dashboard
+        Cache::forever($key, $newValue);
+
+        foreach (Utility::$cachePrefixes as $prefix)
+        {
+            $keys[] = $prefix . '_' .$key;
+
+            Cache::forever($prefix . '_' .$key, $newValue);
+        }
+
+        $data = [
+            'key'       => $keys,
+            'old_value' => $oldValue,
+            'new_value' => $newValue,
+        ];
+
+        $this->trace->info(TraceCode::REDIS_KEY_SET, $data);
+
+        return $data;
+    }
+
     public function getConfigKeys(): array
     {
         $result = [];
@@ -844,7 +884,7 @@ class Service extends Base\Service
         $key = $input['key'];
 
         $config = $this->app['cache']->get($key, []);
-       
+
         return $config;
     }
 

@@ -445,9 +445,9 @@ class Constants
         if (empty(self::$loadedReadEnabledFeatures) === true)
         {
             $adminService = new AdminService;
-
+            $key = Utility::getRandomPrefix() . '_' . ConfigKey::DCS_READ_WHITELISTED_FEATURES;
             $dcsReadEnabledFeatures = $adminService->getConfigKey(
-                ['key' => ConfigKey::DCS_READ_WHITELISTED_FEATURES]);
+                ['key' => $key]);
             self::$loadedReadEnabledFeatures =  $dcsReadEnabledFeatures;
         }
         else
