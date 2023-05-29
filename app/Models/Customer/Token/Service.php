@@ -575,13 +575,14 @@ class Service extends Base\Service
 
                 $token = $this->repo->token->findByPublicId($id);
 
-                $response['status'] = $token['status'];
+                $response[Token\Entity::STATUS] = $token[Token\Entity::STATUS];
+                $response[Token\Entity::CREATED_AT] = $token[Token\Entity::CREATED_AT];
 
                 return $response;
 
             }
 
-            $response['status'] = 'test'; //response for test mode
+            $response[Token\Entity::STATUS] = 'test'; //response for test mode
 
             return  $response;
         }

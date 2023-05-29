@@ -391,7 +391,6 @@ class Entity extends Base\PublicEntity
         self::BILLING_ADDRESS,
         self::USED_AT,
         self::RECURRING_DETAILS,
-        self::CREATED_AT,
         self::ERROR_DESCRIPTION,
         self::INTERNAL_ERROR_CODE
     ];
