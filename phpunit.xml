@@ -114,7 +114,6 @@
             <directory>./tests/Functional/Splitz/</directory>
         </testsuite>
         <testsuite name="Features-1 Test Suite">
-            <directory>./tests/Functional/Currency/</directory>
             <directory>./tests/Functional/Customer/</directory>
             <directory>./tests/Functional/Device/</directory>
             <directory>./tests/Functional/EMI/</directory>
@@ -484,6 +483,9 @@
         </testsuite>
         <testsuite name="SMEP Partnerships Test Suite">
             <directory>./tests/Functional/Partner/</directory>
+        </testsuite>
+        <testsuite name="Cross Border Test Suite">
+            <directory>./tests/Functional/Currency/</directory>
         </testsuite>
     </testsuites>
     <listeners>
