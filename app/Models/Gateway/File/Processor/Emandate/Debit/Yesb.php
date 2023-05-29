@@ -782,6 +782,13 @@ class Yesb extends Base
 
         if(count($sentFiles) !== count($fileInfo))
         {
+            $this->trace->info(
+                TraceCode::GATEWAY_FILE_ERROR_SENDING_FILE,
+                [
+                    'target' => $this->gatewayFile->getTarget(),
+                    'type'   => $this->gatewayFile->getType()
+                ]);
+            
             $this->generateMetric(Metric::EMANDATE_BEAM_ERROR);
 
             throw new GatewayErrorException(

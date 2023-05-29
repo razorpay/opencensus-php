@@ -342,6 +342,13 @@ abstract class Base extends Core
             ($beamResponse['success'] === null) or
             ($beamResponse['failed'] !== null))
         {
+            $this->trace->info(
+                TraceCode::GATEWAY_FILE_ERROR_SENDING_FILE,
+                [
+                    'target' => $this->gatewayFile->getTarget(),
+                    'type'   => $this->gatewayFile->getType()
+                ]);
+            
             throw new Exception\GatewayFileException(ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE,
                 [
                     'beam_response' => $beamResponse,
