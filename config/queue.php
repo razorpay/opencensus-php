@@ -351,9 +351,13 @@ return [
         'test'       => env('AWS_COMMISSION_QUEUE'),
         'live'       => env('AWS_COMMISSION_QUEUE'),
     ],
-    'partnerships_commission' => [
-        'test'      => env('AWS_PARTNERSHIPS_COMMISSION_QUEUE_TEST'),
-        'live'      => env('AWS_PARTNERSHIPS_COMMISSION_QUEUE_LIVE')
+    'prts_commission_create_dual_write' => [
+        'test'      => env('AWS_COMMISSION_CREATE_DUAL_WRITE_QUEUE_TEST'),
+        'live'      => env('AWS_COMMISSION_CREATE_DUAL_WRITE_QUEUE_LIVE')
+    ],
+    'prts_commission_create' => [
+        'test'      => env('AWS_COMMISSION_CREATE_SHADOW_PHASE_QUEUE_TEST'),
+        'live'      => env('AWS_COMMISSION_CREATE_SHADOW_PHASE_QUEUE_LIVE')
     ],
     'prts_commission_capture' => [
         'test'      => env('AWS_PARTNERSHIPS_COMMISSION_CAPTURE_QUEUE_TEST'),
