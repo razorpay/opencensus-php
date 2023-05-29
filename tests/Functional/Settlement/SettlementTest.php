@@ -1027,6 +1027,18 @@ class SettlementTest extends TestCase
         return $partnerBankAccount;
     }
 
+    protected function mockRazorxTreatment(string $returnValue = 'on')
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn($returnValue);
+    }
 
     /**
      * Asserts that the settlement and fta is associated with correct bank account when -
@@ -2990,6 +3002,469 @@ class SettlementTest extends TestCase
         $this->startTest();
 
         Carbon::setTestNow();
+    }
+
+    public function testCustomGefuFileCreation()
+    {
+        $this->app['config']->set('applications.ufh.mock', true);
+
+        $merchants = $this->fixtures->times(5)->create('merchant');
+
+        $org = $this->fixtures->create('org',[
+            'id' => 'IUXvshap3Hbzos',
+            'display_name' => 'HDFC CollectNow Bank'
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name' => 'org_pool_settlement',
+            'entity_id' => 'IUXvshap3Hbzos',
+            'entity_type' => 'org',
+        ]);
+
+        $poolAcc = random_alphanum_string(14);
+
+        $channel = Channel::AXIS;
+
+        $this->mockRazorxTreatment();
+
+        foreach ($merchants as $merchant) {
+
+            $merchantId = $merchant->getId();
+
+            $terminal = $this->fixtures->create(
+                'terminal',
+                [
+                    'id' => random_alphanum_string(14),
+                    'merchant_id' => $merchantId,
+                    'gateway' => 'hdfc',
+                    'gateway_merchant_id' => '250000002',
+                    'gateway_secure_secret' => "1231424",
+                    'gateway_terminal_id' => '250000004',
+                    'card' => 1,
+                    'emi'  => 1,
+                    'mode' => 2,
+                    'type'    => [
+                        'direct_settlement_with_refund' => '1'
+                    ],
+                ]);
+
+
+            $this->fixtures->edit('merchant', $merchant->getId(), [
+                'org_id' => $org['id'],
+                'channel' => $channel,
+                'activated' => true ,
+                'suspended_at' => null
+            ]);
+
+            $this->fixtures->create('balance', ['id' => $merchantId, 'merchant_id' => $merchantId, 'balance' => 5000]);
+
+            $this->fixtures->create(
+                'bank_account',
+                [
+                    'entity_id' => $merchantId,
+                    'account_number'       => $poolAcc, // constant id for all merchant's pool account
+                    'beneficiary_name' => random_string_special_chars(10) ,
+                    'merchant_id' =>$merchantId,
+                    'type'  => 'merchant'
+                ]);
+
+            $this->fixtures->create(
+                'bank_account',
+                [
+                    'entity_id' => $merchantId,
+                    'beneficiary_name' => random_string_special_chars(10) ,
+                    'merchant_id' =>$merchantId,
+                    'type'  => 'org_settlement'
+                ]);
+
+            $createdAt = Carbon::today(Timezone::IST)->subDays(50)->timestamp + 5;
+            $capturedAt = Carbon::today(Timezone::IST)->subDays(50)->timestamp + 10;
+
+            $this->fixtures->times(2)->create(
+                'payment:captured',
+                [
+                    'captured_at' => $capturedAt,
+                    'method'      => 'card',
+                    'merchant_id' => $merchantId,
+                    'amount'      => 100000,
+                    'created_at'  => $createdAt,
+                    'updated_at'  => $createdAt + 10
+                ]
+
+            );
+
+            $createdAt = Carbon::today(Timezone::IST)->setTime(13, 0, 0)->getTimestamp() + 5;
+            $capturedAt = Carbon::today(Timezone::IST)->setTime(13, 0, 0)->getTimestamp() + 10;
+
+            $this->fixtures->times(2)->create(
+                'payment',
+                [
+                    'captured_at' => $capturedAt,
+                    'method'      => 'card',
+                    'merchant_id' => $merchantId,
+                    'amount'      => 100000,
+                    'created_at'  => $createdAt,
+                    'updated_at'  => $createdAt + 10,
+                    'settled_by' => 'bank'
+                ]
+
+            );
+            $this->fixtures->times(2)->create(
+                'payment',
+                [
+                    'captured_at' => $capturedAt,
+                    'method'      => 'upi',
+                    'merchant_id' => $merchantId,
+                    'amount'      => 100000,
+                    'created_at'  => $createdAt,
+                    'updated_at'  => $createdAt + 10,
+                    'settled_by' => 'bank'
+                ]
+
+            );
+        }
+
+        $this->initiateSettlements(Channel::AXIS);
+
+        Carbon::setTestNow(Carbon::tomorrow(Timezone::IST));
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        Carbon::setTestNow();
+    }
+
+    public function testCustomGefuFileWithNonDsAndDsTransactionsCreation()
+    {
+        $this->app['config']->set('applications.ufh.mock', true);
+
+        $merchants = $this->fixtures->times(6)->create('merchant');
+
+        $org = $this->fixtures->create('org',[
+            'id' => 'IUXvshap3Hbzos',
+            'display_name' => 'HDFC CollectNow Bank'
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name' => 'org_pool_settlement',
+            'entity_id' => 'IUXvshap3Hbzos',
+            'entity_type' => 'org',
+        ]);
+
+        $poolAcc = random_alphanum_string(14);
+
+        $channel = Channel::AXIS;
+
+        $this->mockRazorxTreatment();
+
+        $cnt = 0;
+        foreach ($merchants as $merchant) {
+
+            $merchantId = $merchant->getId();
+
+            $terminal = $this->fixtures->create(
+                'terminal',
+                [
+                    'id' => random_alphanum_string(14),
+                    'merchant_id' => $merchantId,
+                    'gateway' => 'hdfc',
+                    'gateway_merchant_id' => '250000002',
+                    'gateway_secure_secret' => "1231424",
+                    'gateway_terminal_id' => '250000004',
+                    'card' => 1,
+                    'emi'  => 1,
+                    'mode' => 2,
+                    'type'    => [
+                        'direct_settlement_with_refund' => '1'
+                    ],
+                ]);
+
+
+            $this->fixtures->edit('merchant', $merchant->getId(), [
+                'org_id' => $org['id'],
+                'channel' => $channel,
+                'activated' => true ,
+                'suspended_at' => null
+            ]);
+
+            $this->fixtures->create('balance', ['id' => $merchantId, 'merchant_id' => $merchantId, 'balance' => 5000]);
+
+            $this->fixtures->create(
+                'bank_account',
+                [
+                    'entity_id' => $merchantId,
+                    'account_number'       => $poolAcc, // constant id for all merchant's pool account
+                    'beneficiary_name' => random_string_special_chars(10) ,
+                    'merchant_id' =>$merchantId,
+                    'type'  => 'merchant'
+                ]);
+
+            $this->fixtures->create(
+                'bank_account',
+                [
+                    'entity_id' => $merchantId,
+                    'beneficiary_name' => random_string_special_chars(10) ,
+                    'merchant_id' =>$merchantId,
+                    'type'  => 'org_settlement'
+                ]);
+
+            if($cnt%3 != 0)
+            {
+                $createdAt = Carbon::today(Timezone::IST)->subDays(50)->timestamp + 5;
+                $capturedAt = Carbon::today(Timezone::IST)->subDays(50)->timestamp + 10;
+
+                $this->fixtures->times(2)->create(
+                    'payment:captured',
+                    [
+                        'captured_at' => $capturedAt,
+                        'method'      => 'card',
+                        'merchant_id' => $merchantId,
+                        'amount'      => 100000,
+                        'created_at'  => $createdAt,
+                        'updated_at'  => $createdAt + 10
+                    ]
+
+                );
+            }
+
+            if($cnt%3 != 1)
+            {
+                $createdAt = Carbon::today(Timezone::IST)->setTime(13, 0, 0)->getTimestamp() + 5;
+                $capturedAt = Carbon::today(Timezone::IST)->setTime(13, 0, 0)->getTimestamp() + 10;
+
+                $this->fixtures->times(2)->create(
+                    'payment',
+                    [
+                        'captured_at' => $capturedAt,
+                        'method'      => 'card',
+                        'merchant_id' => $merchantId,
+                        'amount'      => 100000,
+                        'created_at'  => $createdAt,
+                        'updated_at'  => $createdAt + 10,
+                        'settled_by' => 'bank'
+                    ]
+
+                );
+                $this->fixtures->times(2)->create(
+                    'payment',
+                    [
+                        'captured_at' => $capturedAt,
+                        'method'      => 'upi',
+                        'merchant_id' => $merchantId,
+                        'amount'      => 100000,
+                        'created_at'  => $createdAt,
+                        'updated_at'  => $createdAt + 10,
+                        'settled_by' => 'bank'
+                    ]
+
+                );
+            }
+
+            $cnt = $cnt + 1;
+
+        }
+
+        $this->initiateSettlements(Channel::AXIS);
+
+        Carbon::setTestNow(Carbon::tomorrow(Timezone::IST));
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        Carbon::setTestNow();
+    }
+
+    public function testCustomGefuFileCreationWithMultipleDsTransactionsScenario()
+    {
+        $this->app['config']->set('applications.ufh.mock', true);
+
+        $merchants = $this->fixtures->times(5)->create('merchant');
+
+        $org = $this->fixtures->create('org',[
+            'id' => 'IUXvshap3Hbzos',
+            'display_name' => 'HDFC CollectNow Bank'
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name' => 'org_pool_settlement',
+            'entity_id' => 'IUXvshap3Hbzos',
+            'entity_type' => 'org',
+        ]);
+
+        $poolAcc = random_alphanum_string(14);
+
+        $channel = Channel::AXIS;
+
+        $this->mockRazorxTreatment();
+
+        $cnt = 0;
+        $payId = null;
+
+        foreach ($merchants as $merchant) {
+
+            $merchantId = $merchant->getId();
+
+            $terminal = $this->fixtures->create(
+                'terminal',
+                [
+                    'id' => random_alphanum_string(14),
+                    'merchant_id' => $merchantId,
+                    'gateway' => 'hdfc',
+                    'gateway_merchant_id' => '250000002',
+                    'gateway_secure_secret' => "1231424",
+                    'gateway_terminal_id' => '250000004',
+                    'card' => 1,
+                    'emi'  => 1,
+                    'mode' => 2,
+                    'type'    => [
+                        'direct_settlement_with_refund' => '1'
+                    ],
+                ]);
+
+
+            $this->fixtures->edit('merchant', $merchant->getId(), [
+                'org_id' => $org['id'],
+                'channel' => $channel,
+                'activated' => true ,
+                'suspended_at' => null
+            ]);
+
+            $this->fixtures->create('balance', ['id' => $merchantId, 'merchant_id' => $merchantId, 'balance' => 5000]);
+
+            $this->fixtures->create(
+                'bank_account',
+                [
+                    'entity_id' => $merchantId,
+                    'account_number'       => $poolAcc, // constant id for all merchant's pool account
+                    'beneficiary_name' => random_string_special_chars(10) ,
+                    'merchant_id' =>$merchantId,
+                    'type'  => 'merchant'
+                ]);
+
+            $this->fixtures->create(
+                'bank_account',
+                [
+                    'entity_id' => $merchantId,
+                    'beneficiary_name' => random_string_special_chars(10) ,
+                    'merchant_id' =>$merchantId,
+                    'type'  => 'org_settlement'
+                ]);
+
+            if($cnt%5 == 0)
+            {
+                $createdAt = Carbon::today(Timezone::IST)->setTime(13, 0, 0)->getTimestamp() + 5;
+                $capturedAt = Carbon::today(Timezone::IST)->setTime(13, 0, 0)->getTimestamp() + 10;
+
+                $this->createPaymentForMerchantAt(100000*($cnt+1),$merchantId,$createdAt,'captured','card',$capturedAt);
+
+            }
+            else if ($cnt%5 == 1)
+            {
+                $createdAt = Carbon::today(Timezone::IST)->setTime(13, 0, 0)->getTimestamp() + 5;
+
+                $this->createPaymentForMerchantAt(100000*($cnt+1),$merchantId,$createdAt,'failed');
+
+            }
+            else if($cnt%5 == 2)
+            {
+                $createdAt = Carbon::today(Timezone::IST)->setTime(13, 0, 0)->getTimestamp() + 5;
+
+                $this->createPaymentForMerchantAt(100000*($cnt+1),$merchantId,$createdAt,'authorized');
+            }
+            else if($cnt%5 == 3)
+            {
+                $createdAt = Carbon::today(Timezone::IST)->setTime(13, 0, 0)->getTimestamp() + 5;
+
+                $capturedAt = Carbon::today(Timezone::IST)->setTime(16, 0, 0)->getTimestamp() + 10;
+
+                $id = $this->createPaymentForMerchantAt(100000*($cnt+1),$merchantId,$createdAt,'authorized');
+
+                $this->fixtures->edit('payment', $id, [
+                    'status' => 'captured',
+                    'captured_at' => $capturedAt,
+                ]);
+            }
+            else
+            {
+                $createdAt = Carbon::today(Timezone::IST)->setTime(13, 0, 0)->getTimestamp() + 5;
+
+                $payId = $this->createPaymentForMerchantAt(100000*($cnt+1),$merchantId,$createdAt,'authorized');
+            }
+
+            $cnt = $cnt + 1;
+
+        }
+
+        $this->initiateSettlements(Channel::AXIS);
+
+        Carbon::setTestNow(Carbon::tomorrow(Timezone::IST));
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        Carbon::setTestNow();
+
+        $capturedAt = Carbon::tomorrow(Timezone::IST)->setTime(16, 0, 0)->getTimestamp() + 10;
+
+        $this->fixtures->edit('payment', $payId, [
+            'status' => 'captured',
+            'captured_at' => $capturedAt,
+        ]);
+
+        Carbon::setTestNow(Carbon::now(Timezone::IST)->addDay(2));
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        Carbon::setTestNow();
+    }
+
+    protected function createPaymentForMerchantAt($amount,$merchantId,$createdAt,$status='captured',$method='card',$capturedAt = null)
+    {
+        switch ($status)
+        {
+            case 'authorized' :
+                $paymentId =  $this->fixtures->create('payment', [
+                    'status' => 'authorized',
+                    'method'      => $method,
+                    'merchant_id' => $merchantId,
+                    'amount'      => $amount,
+                    'created_at'  => $createdAt,
+                    'updated_at'  => $createdAt + 10,
+                    'settled_by' => 'bank'
+                ])->getId();
+                break;
+
+            case 'failed':
+                $paymentId =  $this->fixtures->create('payment', [
+                    'status' => 'failed',
+                    'method'      => $method,
+                    'merchant_id' => $merchantId,
+                    'amount'      => $amount,
+                    'created_at'  => $createdAt,
+                    'updated_at'  => $createdAt + 10,
+                    'settled_by' => 'bank'
+                ])->getId();
+                break;
+
+            default :
+                $paymentId =  $this->fixtures->create('payment', [
+                    'status' => 'captured',
+                    'captured_at' => $capturedAt,
+                    'method'      => $method,
+                    'merchant_id' => $merchantId,
+                    'amount'      => $amount,
+                    'created_at'  => $createdAt,
+                    'updated_at'  => $createdAt + 10,
+                    'settled_by' => 'bank'
+                ])->getId();
+        }
+
+        return $paymentId;
     }
 
     public function testGefuFileCreationWithoutPoolAccount()

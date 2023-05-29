@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\PaymentMeta;
 
+use RZP\Base\ConnectionType;
 use RZP\Models\Base;
 
 class Repository extends Base\Repository
@@ -33,6 +34,13 @@ class Repository extends Base\Repository
         return $this->newQuery()
             ->where(Entity::PAYMENT_ID, $paymentId)
             ->first();
+    }
+
+    public function findManyByPaymentIds($paymentIds)
+    {
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+            ->whereIn(Entity::PAYMENT_ID, $paymentIds)
+            ->get();
     }
 
     public function findByReferenceId($transactionId)

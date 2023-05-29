@@ -6695,6 +6695,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTLEMENT_POOL_ACCOUNT_NOT_FOUND                   = 'SETTLEMENT_POOL_ACCOUNT_NOT_FOUND';
     const NIUM_FILE_GENERATION                                = 'NIUM_FILE_GENERATION';
     const EMERCHANTPAY_APM_REQUEST_MAF_GENERATE               = 'EMERCHANTPAY_APM_REQUEST_MAF_GENERATE';
+    const GIFU_FILE_DS_PAYMENT_COUNT                          = 'GIFU_FILE_DS_PAYMENT_COUNT';
 
     // Merchant International Integration
     const MERCHANT_INTERNATIONAL_INTEGRATION_CREATE           = 'MERCHANT_INTERNATIONAL_INTEGRATION_CREATE';

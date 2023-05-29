@@ -4,6 +4,8 @@ namespace RZP\Models\Merchant;
 
 final class RazorxTreatment
 {
+    const GIFU_CUSTOM = 'gifu_custom';
+
     const WEBSITE_ADHERENCE_WHATSAPP_COMMUNICATION         = 'WEBSITE_ADHERENCE_WHATSAPP_COMMUNICATION';
 
     const EDUCATION_OTHERS_BUSINESS_TYPE = 'EDUCATION_OTHERS_BUSINESS_TYPE';

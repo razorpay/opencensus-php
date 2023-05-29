@@ -10,6 +10,7 @@ use RZP\Mail\Base\Constants;
 use RZP\Models\BankAccount\Type;
 use RZP\Models\FileStore\Storage\Base\Bucket;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Settlement\Processor\Base;
 use RZP\Models\FileStore;
 use RZP\Models\Feature;
@@ -88,6 +89,8 @@ class GifuFile extends Base\BaseGifuFile
 
         $totalAmount = 0;
 
+        $modData = [];
+
         $date = Carbon::now()->format('d-m-Y');
 
         $from = $fromTimestamp ?? Carbon::yesterday(Timezone::IST)->addHour(13)->getTimestamp(); // 1 pm
@@ -96,7 +99,51 @@ class GifuFile extends Base\BaseGifuFile
 
         $dataFetch = $this->repo->settlement->getSettlementsBetweenTimePeriodForMerchantIds($input,$from,$to);
 
-        $modData = $this->groupSettlementsByMid($dataFetch);
+        $this->groupSettlementsByMid($dataFetch,$modData);
+
+        $orgId = (new Merchant\Repository)->getMerchantOrg(current($input));
+
+        $experimentResult = $this->app->razorx->getTreatment($orgId, Merchant\RazorxTreatment::GIFU_CUSTOM,$this->mode);
+
+        $isGifuCustomEnabled = ( $experimentResult === 'on' ) ? true : false;
+
+        $dataPayments = null;
+
+        if ($isGifuCustomEnabled === true) {
+            // fetching payments for cards DS
+            $fromForCards = Carbon::yesterday(Timezone::IST)->startOfDay()->getTimestamp(); // 12 Am yesterday
+
+            $toForCards = Carbon::yesterday(Timezone::IST)->endOfDay()->getTimestamp(); // 11:59:59 PM yesterday
+
+            $paymentsForCards = $this->repo->payment->fetchPaymentsForMethodBetweenTimePeriodForMerchantIds($input, $fromForCards, $toForCards, ['card']);
+
+
+            // fetching payments for UPI DS
+            $fromForUpi = Carbon::yesterday(Timezone::IST)->subDays(1)->setTime(23, 0, 0)->getTimestamp(); // 11 pm day before yesterday
+
+            $toForUpi = Carbon::yesterday(Timezone::IST)->setTime(23, 0, 0)->getTimestamp(); // 11 pm yesterday
+
+            $paymentsForUpi = $this->repo->payment->fetchPaymentsForMethodBetweenTimePeriodForMerchantIds($input, $fromForUpi, $toForUpi, ['upi']);
+
+            $dataPayments = $paymentsForCards->concat($paymentsForUpi);
+
+            $this->trace->info(TraceCode::GIFU_FILE_DS_PAYMENT_COUNT,
+                [
+                    'Cards payment count' => $paymentsForCards->count(),
+                    'Upi payments count' => $paymentsForUpi->count()
+
+                ]
+            );
+        }
+
+        $paymentToGatewayAmountMap = [];
+
+        if( $dataPayments != null )
+        {
+            $paymentToGatewayAmountMap = $this->getPaymentToGatewayAmountMap($dataPayments);
+
+            $this->groupPaymentsByMid($dataPayments,$modData);
+        }
 
         $this->trace->info(TraceCode::SETTLEMENT_FILE_MERCHANTS_TO_PROCESS,
             [
@@ -129,9 +176,11 @@ class GifuFile extends Base\BaseGifuFile
                     continue;
                 }
 
-                $amount = $this->getAggregatedSettlementAmount($value);
+                $amount = $this->getAggregatedSettlementAmount($value['settlements'] ?? []);
 
-                $narration = $this->getNarration($value,$mid);
+                $amount = $amount + $this->getAggregatedPaymentAmount($value['payments'] ?? [],$paymentToGatewayAmountMap);
+
+                $narration = $this->getNarration($value['settlements'] ?? [],$mid);
 
                 $brCode = $this->getBrCode($accountNumber);
             }
@@ -211,15 +260,36 @@ class GifuFile extends Base\BaseGifuFile
 
     }
 
-    protected function groupSettlementsByMid($data): array
+    protected  function getPaymentToGatewayAmountMap($payments)
     {
-        $newData = [];
+        $paymentIds = $payments->pluck('id')->toArray();
+
+        $paymentMetaRows = $this->repo->payment_meta->findManyByPaymentIds($paymentIds);
+
+        $paymentToGatewayAmountMap = [];
+        foreach ($paymentMetaRows as $paymentMetaRow) {
+            $paymentToGatewayAmountMap[$paymentMetaRow->payment_id] = $paymentMetaRow->gateway_amount;
+        }
+
+        return $paymentToGatewayAmountMap;
+    }
+
+    protected function groupSettlementsByMid($data, &$modData)
+    {
         foreach ($data as $datum)
         {
             $key = $datum['merchant_id'];
-            $newData[$key][] = $datum;
+            $modData[$key]['settlements'][] = $datum;
         }
-        return $newData;
+    }
+
+    protected function groupPaymentsByMid($data, &$modData)
+    {
+        foreach ($data as $datum)
+        {
+            $key = $datum['merchant_id'];
+            $modData[$key]['payments'][] = $datum;
+        }
     }
 
     protected function getBrCode($data)
@@ -228,6 +298,26 @@ class GifuFile extends Base\BaseGifuFile
             return substr($data,0,4);
 
         return '';
+    }
+
+    protected function getAggregatedPaymentAmount($data, &$paymentToGatewayAmountMap)
+    {
+        $totalSum = 0;
+
+        foreach ($data as $datum)
+        {
+            if ($datum->isHdfcVasDSCustomerFeeBearerSurcharge() === true)
+            {
+                $totalSum = $totalSum + $paymentToGatewayAmountMap[$datum->id];
+            }
+            else
+            {
+                $totalSum = $totalSum + $datum->amount;
+            }
+
+        }
+
+        return $totalSum/100;
     }
 
     protected function getAggregatedSettlementAmount($data)
@@ -277,7 +367,7 @@ class GifuFile extends Base\BaseGifuFile
             ]
         );
 
-        $setlId = $data[0]->id;
+        $setlId = !empty($data) ? $data[0]->id : '';
 
         return $mid . ":" . $setlId . ":" . $tId;
     }

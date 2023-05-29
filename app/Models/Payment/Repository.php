@@ -239,6 +239,16 @@ EOT;
                     ->get();
     }
 
+    public function fetchPaymentsForMethodBetweenTimePeriodForMerchantIds($midList,$from,$to,$method){
+
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+            ->whereBetween(Payment\Entity::CAPTURED_AT, array($from, $to))
+            ->where(Payment\Entity::SETTLED_BY, '!=', 'Razorpay')
+            ->whereIn(Payment\Entity::METHOD,$method)
+            ->whereIn(Payment\Entity::MERCHANT_ID,$midList)
+            ->get();
+    }
+
     public function fetchPendingCapturePaymentsBetweenTimestamps($from, $to, $limit = 100)
     {
         $query = $this->newQuery();
