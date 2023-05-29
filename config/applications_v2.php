@@ -1200,6 +1200,27 @@ return [
             ]
         ]
     ],
+    env('APP_V2_ID_DISPUTES')          => [
+        "name"        => "disputes",
+        "credentials" => [
+            [
+                "username" => env('APP_V2_CREDENTIAL_USERNAME_LIVE_DISPUTES'),
+                "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_DISPUTES'),
+                "mode"     => "live",
+                "roles"    => [
+                    "app.disputes"
+                ]
+            ],
+            [
+                "username" => env('APP_V2_CREDENTIAL_USERNAME_TEST_DISPUTES'),
+                "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_DISPUTES'),
+                "mode"     => "test",
+                "roles"    => [
+                    "app.disputes"
+                ]
+            ]
+        ]
+    ],
     env('APP_V2_ID_FRIEND_BUY_WEBHOOK')          => [
         "name"        => "friend_buy_webhook",
         "credentials" => [

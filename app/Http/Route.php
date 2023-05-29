@@ -182,6 +182,7 @@ class Route
         'payment_redirect_3ds'                     => ['post',     'payments/{x_entity_id}/authentication/redirect', 'PaymentCreateController@postRedirect3ds'                           ],
         'payment_redirect_3ds_get'                 => ['get',      'payments/{x_entity_id}/authentication/redirect', 'PaymentCreateController@postRedirect3ds'                           ],
         'payment_refund'                           => ['post',     'payments/{id}/refund',                           'PaymentController@postRefund'                                      ],
+        'payment_refund_internal'                  => ['post',     'payments/{id}/refund/internal',                  'PaymentController@postRefund'                                      ],
         'payment_payout'                           => ['post',     'payments/{id}/payouts',                          'PaymentController@postPayout'                                      ],
         'payment_get_flows'                        => ['get',      'payment/flows',                                  'PaymentController@getPaymentFlows'                                 ],
         'payment_get_flows_private'                => ['post',     'payment/flows',                                  'PaymentController@getPaymentFlowsPrivate'                          ],
@@ -5528,6 +5529,7 @@ class Route
         'setl_get_transaction_details',
         'payment_authorize_post',
         'gateway_downtimes_archive',
+        'payment_refund_internal',
         'payment_get_authenticate_url',
         'payment_get_authentication_entity',
         'payment_get_authorization_entity',
@@ -15472,6 +15474,10 @@ class Route
 
         'pgos' => [
             'merchant_entities_info'
+        ],
+
+        'disputes' => [
+            'payment_refund_internal'
         ],
 
         'banking_account_service' => [
