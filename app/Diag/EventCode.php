@@ -810,6 +810,11 @@ class EventCode
         'name'  => 'whitelisted_org_admin_onboarding.forgot_password.failure'
     ];
 
+    const MERCHANT_RESET_PASSWORD_BY_TOKEN_SUCCESS = [
+        'group' => 'onboarding',
+        'name'  => 'merchant_onboarding.reset_password_by_token.success'
+    ];
+
     const MERCHANT_ONBOARDING_LOGIN_FAILURE = [
         'group' => 'onboarding',
         'name'  => 'merchant_onboarding.login.failure'
@@ -1454,5 +1459,10 @@ class EventCode
     public const ASYNC_TOKENISATION_FETCH_PAR_NOT_APPLICABLE = [
         'group'   => 'async_tokenisation',
         'name'    => 'async_tokenisation.fetch_par.not_applicable'
+    ];
+
+    const PARTNERSHIPS_CAPITAL_APPLICATION_CREATED  = [
+        'group' => 'onboarding',
+        'name'  => 'partnerships.capital.application_created',
     ];
 }

@@ -2025,6 +2025,11 @@ class Service extends Base\Service
 
             $this->core->setNewPassword($user, $input);
 
+            if (isset($input[Entity::EMAIL]) === true)
+            {
+                $this->core->trackOnboardingEvent($input[Entity::EMAIL], EventCode::MERCHANT_RESET_PASSWORD_BY_TOKEN_SUCCESS);
+            }
+
             // Password reset via mail essentially confirms the email.
             if ($user->getConfirmedAttribute() === false)
             {

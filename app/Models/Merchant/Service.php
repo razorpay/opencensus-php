@@ -11997,12 +11997,13 @@ class Service extends Base\Service
 
         (new Detail\Service)->saveMerchantDetails($merchantDetailsInput, $subMerchant);
 
-        CapitalSubmerchantUtility::createCapitalApplicationForSubmerchant($subMerchant, $createCapitalApplicationInput);
+        CapitalSubmerchantUtility::createCapitalApplicationForSubmerchant($subMerchant, $partner, $createCapitalApplicationInput, PartnerConstants::ADD_MULTIPLE_ACCOUNT);
 
         $response[BatchHeader::CONTACT_MOBILE] = $merchantDetailsInput[BatchHeader::CONTACT_MOBILE];
 
         return $response;
     }
+
     /**
      * Fetches the capital applications for a given product for sub-merchants of a partner
      *

@@ -4,12 +4,14 @@ namespace RZP\Models\Merchant;
 
 use Throwable;
 use RZP\Constants\Mode;
+use RZP\Diag\EventCode;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\User\Role;
 use RZP\Constants\Product;
+use RZP\Http\RequestHeader;
 use Illuminate\Http\Response;
 use RZP\Base\RepositoryManager;
 use Illuminate\Http\JsonResponse;
@@ -377,13 +379,14 @@ class CapitalSubmerchantUtility
 
     /**
      * @param Entity $subMerchant
-     * @param array  $createCapitalApplicationInput
+     * @param Entity $partner
+     * @param array $createCapitalApplicationInput
+     * @param string $source
      *
      * @return void
-     * @throws IntegrationException
-     * @throws Throwable
+     * @throws BadRequestException
      */
-    static function createCapitalApplicationForSubmerchant(Entity $subMerchant, array $createCapitalApplicationInput): void
+    static function createCapitalApplicationForSubmerchant(Entity $subMerchant, Entity $partner, array $createCapitalApplicationInput, string $source): void
     {
         $url = Constants::CREATE_CAPITAL_APPLICATION_LOS_URL;
 
@@ -421,6 +424,16 @@ class CapitalSubmerchantUtility
                     'response' => $response,
                 ]
             );
+
+            $properties = [
+                "source"         => $source,
+                "partner_id"     => $createCapitalApplicationInput[Constants::LEAD_SOURCE_ID],
+                "merchant_id"    => $subMerchant->getId(),
+                "product_id"     => $createCapitalApplicationInput[Constants::PRODUCT_ID],
+                "batch_id"       => app('request')->header(RequestHeader::X_Batch_Id) ?? null
+            ];
+
+            app('diag')->trackOnboardingEvent(EventCode::PARTNERSHIPS_CAPITAL_APPLICATION_CREATED, $partner, null, $properties);
         }
         catch (Throwable $ex)
         {

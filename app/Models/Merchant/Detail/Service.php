@@ -2119,12 +2119,14 @@ class Service extends Base\Service
 
                 CapitalSubmerchantUtility::createCapitalApplicationForSubmerchant(
                     $subMerchant,
+                    $partner,
                     [
                         Constants::LEAD_SOURCE    => "Partner",
                         Constants::LEAD_SOURCE_ID => $partner->getId(),
                         Constants::SOURCE_DETAILS => $partner->getName(),
                         Constants::PRODUCT_ID     => $locProductId
-                    ]
+                    ],
+                    PartnerConstants::REFERRAL
                 );
             }
         }
@@ -2222,8 +2224,9 @@ class Service extends Base\Service
         if ($referralProduct === $requestProduct)
         {
             $mappingInput = [
-                'partner_id' => $referral->getMerchantId(),
-                'source'     => PartnerConstants::REFERRAL
+                'partner_id'     => $referral->getMerchantId(),
+                'source'         => PartnerConstants::REFERRAL,
+                'actual_product' => $referral->getProduct() ?? Product::PRIMARY
             ];
 
             $this->applyPartnerSubMerchantMapping($subMerchant, $mappingInput, $referralProduct);
@@ -2288,6 +2291,7 @@ class Service extends Base\Service
             'partner_id'   => $partner->getId(),
             'source'       => $input['source'],
             'product_group'=> $product,
+            'actual_product' => $input['actual_product']
         ];
 
         $merchantCore = new Merchant\Core;
