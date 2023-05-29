@@ -43,13 +43,13 @@ class PartnershipsService extends Base\Service
 
     const CREATE_AUDIT_LOG            = 'twirp/rzp.commissions.audit.v1.AuditLogAPI/Create';
 
-    const LIST_AUDIT_LOG_BY_ENTITY_IDS    = 'twirp/rzp.commissions.audit.v1.AuditLogAPI/ListByEntityIds';
+    const LIST_AUDIT_LOG_BY_ENTITY_IDS = 'twirp/rzp.commissions.audit.v1.AuditLogAPI/ListByEntityIds';
 
-    const LIST_AUDIT_LOG_BY_ENTITY_ID    = 'twirp/rzp.commissions.audit.v1.AuditLogAPI/ListByEntityId';
+    const LIST_AUDIT_LOG_BY_ENTITY_ID  = 'twirp/rzp.commissions.audit.v1.AuditLogAPI/ListByEntityId';
 
-    const GET_LAST_PARTNER_MIGRATION    = '/twirp/rzp.commissions.partner_migration_audit.v1.PartnerMigrationAuditAPI/GetLastPartnerMigrationAudit';
+    const GET_LAST_PARTNER_MIGRATION   = 'twirp/rzp.commissions.partner_migration_audit.v1.PartnerMigrationAuditAPI/GetLastPartnerMigrationAudit';
 
-    const CREATE_PARNTER_MIGRATION_AUDIT    = '/twirp/rzp.commissions.partner_migration_audit.v1.PartnerMigrationAuditAPI/CreatePartnerMigrationAudit';
+    const CREATE_PARNTER_MIGRATION_AUDIT = 'twirp/rzp.commissions.partner_migration_audit.v1.PartnerMigrationAuditAPI/CreatePartnerMigrationAudit';
 
     const ACTIVATED = 'ACTIVATED';
 

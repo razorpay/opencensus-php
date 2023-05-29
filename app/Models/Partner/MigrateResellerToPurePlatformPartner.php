@@ -142,23 +142,23 @@ class MigrateResellerToPurePlatformPartner extends Core
      * @param   string              $existingAppId
      * @param   PublicCollection    $configs
      * @param   PublicCollection    $accessMaps
-     * @param   PublicCollection    $kyc_states
+     * @param   PublicCollection    $kycStates
      *
      * @return  void
      */
     private function deleteOldRelations(
-        Entity $partner, string $existingAppId, PublicCollection $configs,
-        PublicCollection $accessMaps, PublicCollection $kyc_states
+        Entity           $partner, string $existingAppId, PublicCollection $configs,
+        PublicCollection $accessMaps, PublicCollection $kycStates
     )
     {
         $configs->each(function ($config) {
-           $config->delete();
+            $this->repo->partner_config->deleteOrFail($config);
         });
-        $kyc_states->each(function ($kyc_state) {
-            $kyc_state->delete();
+        $kycStates->each(function ($kycState) {
+            $this->repo->partner_kyc_access_state->deleteOrFail($kycState);
         });
-        $accessMaps->each(function ($access_map) {
-            $access_map->delete();
+        $accessMaps->each(function ($accessMap) {
+            $this->repo->merchant_access_map->deleteOrFail($accessMap);
         });
 
         app('authservice')->deleteApplication($existingAppId, $partner->getId());
