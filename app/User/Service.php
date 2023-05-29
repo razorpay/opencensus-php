@@ -1188,27 +1188,27 @@ class Service extends Base\Service
             );
         }
     }
-    
+
     public function getFirstChunkUserDetails(array $params = [])
     {
         $data = [
           'current'   =>  null
         ];
-    
+
         $errors = (new Validator())->validateInput('user_fetch', $params)->messages();
-    
+
         if(empty($errors) === false)
         {
             return [$errors, []];
         }
-    
+
         $user = Auth::user();
-    
+
         if (app('request.ctx')->isOauthRequest() === true)
         {
             $userId = app('request.ctx')->getUserId();
         }
-    
+
         if (!$user &&
             empty($userId) === true)
         {
@@ -1218,25 +1218,25 @@ class Service extends Base\Service
         {
             $userId = $user->id;
         }
-    
+
         list($error, $genericUser) = $this->getUserFromApi($userId);
 
         if (empty($error) === false)
         {
             return [$error, ['details' => $data, 'currentMerchant' => [], 'genericUser' => []]];
         }
-    
+
         $userDetails = $genericUser->toArray();
-    
+
         $userDetails[Constants::TWO_FA_VERIFIED] = Session::get(
             Constants::TWO_FA_VERIFIED,
             false); //default value is false
-    
+
         //default value is false
         $userDetails[Constants::OAUTH_LOGIN] = Session::get(Constants::OAUTH_LOGIN, false);
-    
+
         $data['user'] = $userDetails;
-    
+
         // Default values in case no merchant is associated
         // with the user account
         $data['pre_signup'] = [];
@@ -1245,18 +1245,18 @@ class Service extends Base\Service
         $data['tags'] = [];
         $data['features'] = [];
         $data['campaigns'] = [];
-    
+
         $currentMerchant = (new Helper)->getCurrentMerchant($genericUser);
-    
+
         if ($currentMerchant === null)
         {
             return [[], ['details' => $data, 'currentMerchant' => [], 'genericUser' => []]];
         }
-    
+
         $data = $data + $currentMerchant->toArray();
-    
+
         $this->traceMerchantActivatedTruthyValue($data, __LINE__);
-    
+
         if ($currentMerchant->role === 'owner')
         {
             $data['primaryOwner'] = true;
@@ -1265,37 +1265,37 @@ class Service extends Base\Service
         {
             $data['primaryOwner'] = false;
         }
-        
+
         return [[], ['details' => $data, 'currentMerchant' => $currentMerchant, 'genericUser' => $genericUser]];
     }
-    
+
     public function getSecondChunkUserDetails(array $chunkData = [], array $params = [],)
     {
         $currentRouteName = \Route::currentRouteName();
-    
+
         $serverName = \Request::server('SERVER_NAME');
-        
+
         $tags = $params[Constants::TAGS] ?? "1";
         $features = $params[Constants::FEATURES] ?? "1";
         $splitzExperiments = $params[Constants::SPLITZ_EXPERIMENTS] ?? "1";
         $experiments = $params[Constants::EXPERIMENTS] ?? "1";
         $payouts = $params[Constants::PAYOUTS] ?? "1";
         $fetchMerchantDetails = $params[Constants::MERCHANT_DETAILS] ?? "1";
-        
+
         $user = Auth::user();
-    
+
         $data = $chunkData['details'];
-        
+
         $merchants = $chunkData['details']['user']['merchants'];
-    
+
         $genericUser = $chunkData['genericUser'];
-    
+
         $currentMerchant =  $chunkData['currentMerchant'];
-    
+
         $activated = false;
-    
+
         $currentMerchantId = $currentMerchant->id;
-        
+
         // If the user is logged in as someone
         if ($currentMerchantId)
         {
@@ -1304,7 +1304,7 @@ class Service extends Base\Service
             // This code will be removed, in few weeks
             //
             $data['current_account_waitlist_number'] = Merchant\Constants::MERCHANT_WAITLIST[$currentMerchantId] ?? null;
-        
+
             $merchantService = new Merchant\Service;
 
             /**
@@ -1319,19 +1319,19 @@ class Service extends Base\Service
                     $activated = true;
                 }
             }
-            
+
 //           Fetch merchant details for current merchant
             if($fetchMerchantDetails === "1")
             {
                 $data = (new MerchantDetails\Service())->updateMerchantDetails($data, $activated, $currentMerchant, $genericUser);
             }
-        
+
             $this->traceMerchantActivatedTruthyValue($data, __LINE__);
-        
+
             foreach ($merchants as $merchant) {
-            
+
                 $data['merchants'][$merchant['id']] = $merchant;
-            
+
                 if ($merchant['id'] === $currentMerchantId)
                 {
                     if ((($this->isPgRenderCall($currentRouteName, $serverName) === false) or
@@ -1344,19 +1344,19 @@ class Service extends Base\Service
                                 'action' => 'FetchStarted'
                             ]
                         );
-                    
+
                         $experiments = $merchantService->getExperiments();
-                    
+
                         $data['experiments'] = $experiments;
-                    
+
                         $this->trace->info(TraceCode::USER_LOGIN, [
                             'experiments' =>  $experiments,
                         ]);
-                    
+
                         $data = $this->updateNewUsersOnlyTypeExperiments($merchant, $data);
-                    
+
                         $data = $this->updateRXCASelfServeExperiment($merchant, $data);
-                    
+
                         $this->trace->info(
                             TraceCode::MERCHANT_EXPERIMENTS, [
                                 'action' => 'FetchEnded',
@@ -1364,37 +1364,37 @@ class Service extends Base\Service
                             ]
                         );
                     }
-                
+
                     $isBankingRequest = ApiUrl::isBankingOriginRequest();
-                
+
                     if($payouts === "1")
                     {
                         $data = $this->appendBankingDetails($data);
                     }
-                
+
                     $data['current'] = $currentMerchantId;
-                
+
                     if ((($this->isPgRenderCall($currentRouteName, $serverName) === false) or
                         ($this->isFieldExcluededInPgRendering(Constants::TAGS) === false)) and
                         ($tags === "1"))
                     {
                         $data['tags'] = $merchantService->getMerchantTags($currentMerchantId);
                     }
-                
+
                     if ((($this->isPgRenderCall($currentRouteName, $serverName) === false) or
                         ($this->isFieldExcluededInPgRendering(Constants::FEATURES) === false)) and
                         ($features === "1"))
                     {
                         $data['features'] = $merchantService->getMerchantFeatures();
                     }
-                
+
                     if ((($this->isPgRenderCall($currentRouteName, $serverName) === false)  or
                         ($this->isFieldExcluededInPgRendering(Constants::SPLITZ_EXPERIMENTS) === false)) and
                         ($splitzExperiments === "1"))
                     {
                         $data[Constants::SPLITZ_EXPERIMENTS] = (new SplitzService())->getSplitzVariantBulk($currentMerchantId);
                     }
-                
+
                     //
                     // Make switch product call only if
                     // 1. Request is banking request and banking_role is null
@@ -1405,32 +1405,32 @@ class Service extends Base\Service
                     {
                         $data = $this->switchProduct($data, $user);
                     }
-                
+
                     if (($isBankingRequest === false))
                     {
                         if (($this->isPgRenderCall($currentRouteName, $serverName) === false) or
                             ($this->isFieldExcluededInPgRendering(Constants::CAMPAIGNS) === false))
-                    
+
                         {
                             // adding this only for PG, if moving campaigns to X, an extra parameter merchant=x is being sent
                             // which is causing validation failure
                             // refer this: https://razorpay.slack.com/archives/C6QPQKVLZ/p1599729634355800
                             $data['campaigns'] = $merchantService->getMerchantActiveCampaigns();
                         }
-                    
+
                         // Fetch partner intent incase current merchant has owner role
                         if ((new Helper)->isOwner($currentMerchant))
                         {
                             $data['partner_intent'] = $merchantService->getPartnerIntent();
                         }
-                    
+
                         // if the merchant is a partner
                         if (empty($data['merchants'][$merchant['id']]['partner_type']) === false)
                         {
                             $data['merchants'][$merchant['id']]['partner'] = [];
-                        
+
                             $configs = $merchantService->fetchPartnerConfigs();
-                        
+
                             if (empty($configs) === false)
                             {
                                 foreach ($configs as $config)
@@ -1445,7 +1445,7 @@ class Service extends Base\Service
                                     }
                                 }
                             }
-                        
+
                             if(in_array($data['merchants'][$merchant['id']]['partner_type'], Constants::PARTNER_ACTIVATION_APPLICABLE_TYPES))
                             {
                                 $data['merchants'][$merchant['id']]['partner']['activation_status'] = $merchantService->fetchPartnerActivationStatus();
@@ -1455,7 +1455,7 @@ class Service extends Base\Service
                 }
             }
         }
-    
+
         // This is to stop leads assigning to sales poc on salesforce
         if ($data['pre_signup_complete'] === false and array_key_exists('rx_ca_self_serve_flow_neo', $data['experiments']) === true)
         {
@@ -1465,21 +1465,21 @@ class Service extends Base\Service
                     'merchant_id' => $currentMerchantId,
                     'x_onboarding_category'   => 'self_serve'
                 ];
-            
+
                 $this->createLeadToSalesforce($payload, $currentMerchantId);
             }
         }
-    
+
         $this->traceMerchantActivatedTruthyValue($data, __LINE__);
-    
+
         if (isset($data['activated']) === true)
         {
             $data['activated'] = (int) $data['activated'];
         }
-    
+
         return [[], ['details' => $data]];
     }
-    
+
     public function getUserDetails(array $params = [])
     {
         $currentRouteName = \Route::currentRouteName();
@@ -2176,15 +2176,11 @@ class Service extends Base\Service
         return [$error, $genericUser];
     }
 
-    public function getPartnerConfig(string $partnerId): array
+    public function getPartnerConfig(array $input): array
     {
-        $this->trace->info(TraceCode::GET_PARTNER_CONFIG_GUEST, ['partner_id' => $partnerId]);
+        $this->trace->info(TraceCode::GET_PARTNER_CONFIG_GUEST, $input);
 
-        $queryParams = [
-            'partner_id' => $partnerId
-        ];
-
-        return $this->requestAPI($queryParams,'partner_config_guest', 'GET');
+        return $this->requestAPI($input,'partner_config_guest', 'GET');
     }
 
     protected function checkAccessOfUserOnMerchant($merchantId)

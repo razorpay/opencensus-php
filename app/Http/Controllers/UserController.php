@@ -1515,9 +1515,7 @@ class UserController extends Controller
     {
         $input = Input::all();
 
-        $partnerId = $input['partner_id'] ?? null;
-
-        list($error, $data, $httpCode) = (new User\Service)->getPartnerConfig($partnerId);
+        list($error, $data, $httpCode) = (new User\Service)->getPartnerConfig($input);
 
         return AppResponse::jsonResponse($error, $data, $httpCode);
     }
