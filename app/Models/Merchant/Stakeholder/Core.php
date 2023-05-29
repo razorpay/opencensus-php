@@ -12,6 +12,7 @@ use RZP\Models\Merchant\Product;
 use RZP\Models\Merchant\AccountV2;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\ProductConfig\AutoUpdateMerchantProducts;
+use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Trace\Tracer;
 use RZP\Http\Controllers\MerchantOnboardingProxyController;
 
@@ -323,34 +324,42 @@ class Core extends Base\Core
 
     public function savePGOSDataToAPI(array $data)
     {
-        if ((new MerchantOnboardingProxyController)->isPGOSMigrationExperimentEnabled(
-                $data[Entity::MERCHANT_ID],
-                MerchantOnboardingProxyController::PGOS_SHADOW_MODE_EXPERIMENT_ID,
-                MerchantOnboardingProxyController::LIVE) === true)
+        $splitzResult = (new Detail\Core)->getSplitzResponse($data[Entity::MERCHANT_ID], 'pgos_migration_dual_writing_exp_id');
+
+        if ($splitzResult === 'variables')
         {
-            $stakeholders = (new Repository())->fetchStakeholders($data["merchant_id"]);
+            $merchant = $this->repo->merchant->find($data[Entity::MERCHANT_ID]);
 
-            if ($stakeholders->isNotEmpty() === true)
+            // dual write only for below merchants
+            // merchants for whom pgos is serving onboarding requests
+            // merchants who are not completely activated
+            if ($merchant->getService() === MerchantConstants::PGOS and
+                $merchant->merchantDetail->getActivationStatus()!=Detail\Status::ACTIVATED)
             {
-                unset($data["merchant_id"]);
+                $stakeholders = (new Repository())->fetchStakeholders($data["merchant_id"]);
 
-                foreach ($stakeholders as $stakeholder)
+                if ($stakeholders->isNotEmpty() === true)
                 {
-                    $stakeholder->edit($data);
+                    unset($data["merchant_id"]);
 
-                    $this->repo->saveOrFail($stakeholder);
+                    foreach ($stakeholders as $stakeholder)
+                    {
+                        $stakeholder->edit($data);
+
+                        $this->repo->saveOrFail($stakeholder);
+                    }
                 }
-            }
-            else
-            {
-                $stakeholder = new Entity;
+                else
+                {
+                    $stakeholder = new Entity;
 
-                $stakeholder->generateId();
+                    $stakeholder->generateId();
 
-                $stakeholder->build($data);
+                    $stakeholder->build($data);
 
-                $this->repo->stakeholder->saveOrFail($stakeholder);
+                    $this->repo->stakeholder->saveOrFail($stakeholder);
 
+                }
             }
         }
     }

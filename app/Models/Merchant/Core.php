@@ -9778,20 +9778,29 @@ class Core extends Base\Core
                     );
     }
 
+    //assuming that a record for the merchant will already be existing in the api database
+    //since singup will be done at api monolith only
+    //so we are only editing the record and not creating it
     public function savePGOSDataToAPI(array $data)
     {
-        if ((new MerchantOnboardingProxyController)->isPGOSMigrationExperimentEnabled(
-                $data[Entity::ID],
-                MerchantOnboardingProxyController::PGOS_SHADOW_MODE_EXPERIMENT_ID,
-                MerchantOnboardingProxyController::LIVE) === true)
+        $splitzResult = (new Detail\Core)->getSplitzResponse($data[Entity::ID], 'pgos_migration_dual_writing_exp_id');
+
+        if ($splitzResult === 'variables')
         {
             $merchant = $this->repo->merchant->find($data[Entity::ID]);
 
-            unset($data[Entity::ID]);
+            // dual write only for below merchants
+            // merchants for whom pgos is serving onboarding requests
+            // merchants who are not completely activated
+            if ($merchant->getService() === Merchant\Constants::PGOS and
+                $merchant->merchantDetail->getActivationStatus()!=Detail\Status::ACTIVATED)
+            {
+                unset($data[Entity::ID]);
 
-            $merchant->edit($data);
+                $merchant->edit($data);
 
-            $this->repo->saveOrFail($merchant);
+                $this->repo->saveOrFail($merchant);
+            }
         }
     }
 

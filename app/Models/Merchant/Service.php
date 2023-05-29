@@ -12065,7 +12065,7 @@ class Service extends Base\Service
 
         return $this->core()->getMerchantAuthorizationForPartner($merchantId, $partnerId);
     }
-
+    
     /**
      * @throws BadRequestException
      * @throws BadRequestValidationFailureException

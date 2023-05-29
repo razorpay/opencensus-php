@@ -748,39 +748,47 @@ class Core extends Base\Core
 
     public function savePGOSDataToAPI(array $data)
     {
-        if ((new MerchantOnboardingProxyController)->isPGOSMigrationExperimentEnabled(
-                $data[Entity::MERCHANT_ID],
-                MerchantOnboardingProxyController::PGOS_SHADOW_MODE_EXPERIMENT_ID,
-                MerchantOnboardingProxyController::LIVE) === true)
+        $splitzResult = (new Detail\Core)->getSplitzResponse($data[Entity::MERCHANT_ID], 'pgos_migration_dual_writing_exp_id');
+
+        if ($splitzResult === 'variables')
         {
-            $document = $this->repo->merchant_document->findDocumentByFileStoreId($data[Entity::FILE_STORE_ID]);
+            $merchant = $this->repo->merchant->find($data[Entity::MERCHANT_ID]);
 
-            if (empty($document) === false)
+            // dual write only for below merchants
+            // merchants for whom pgos is serving onboarding requests
+            // merchants who are not completely activated
+            if ($merchant->getService() === Merchant\Constants::PGOS and
+                $merchant->merchantDetail->getActivationStatus()!=Detail\Status::ACTIVATED)
             {
-                unset($data[Entity::MERCHANT_ID]);
+                $document = $this->repo->merchant_document->findDocumentByFileStoreId($data[Entity::FILE_STORE_ID]);
 
-                $data[Entity::SOURCE] = 'UFH';
+                if (empty($document) === false)
+                {
+                    unset($data[Entity::MERCHANT_ID]);
 
-                $document->edit($data);
+                    $data[Entity::SOURCE] = 'UFH';
 
-                $this->repo->merchant_document->saveOrFail($document);
-            }
-            else
-            {
-                $document = new Entity;
+                    $document->edit($data);
 
-                $data[Entity::SOURCE] = 'UFH';
+                    $this->repo->merchant_document->saveOrFail($document);
+                }
+                else
+                {
+                    $document = new Entity;
 
-                $data[Entity::ENTITY_TYPE] = 'merchant';
+                    $data[Entity::SOURCE] = 'UFH';
 
-                $data[Entity::ENTITY_ID] = $data[Entity::MERCHANT_ID];
+                    $data[Entity::ENTITY_TYPE] = 'merchant';
 
-                $document->generateId();
+                    $data[Entity::ENTITY_ID] = $data[Entity::MERCHANT_ID];
 
-                $document->build($data);
+                    $document->generateId();
 
-                $this->repo->merchant_document->saveOrFail($document);
+                    $document->build($data);
 
+                    $this->repo->merchant_document->saveOrFail($document);
+
+                }
             }
         }
     }

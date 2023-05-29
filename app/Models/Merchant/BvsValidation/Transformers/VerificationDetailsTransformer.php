@@ -26,7 +26,8 @@ class VerificationDetailsTransformer extends Base\Transformer
         ],
         'artefact_type'                => [
             [
-                "column" => 'artefact_type'
+                "column"   => 'artefact_type',
+                "function" => 'mapArtefactType'
             ]
         ],
         'verification_id'              => [
@@ -73,6 +74,26 @@ class VerificationDetailsTransformer extends Base\Transformer
         "ocr"  => "proof"
     ];
 
+    public const ARTEFACT_TYPE_MAPPING = [
+        "aadhaar_front"                          => "aadhaar",
+        "aadhaar_back"                           => "aadhaar",
+        "aadhaar"                                => "aadhaar",
+        "personal_pan"                           => "personal_pan",
+        "business_pan"                           => "business_pan",
+        "voters_id"                              => "voters_id",
+        "passport"                               => "passport",
+        "cin"                                    => "cin",
+        "gstin"                                  => "gstin",
+        "gst_certificate"                        => "gstin",
+        "bank_account"                           => "bank_account",
+        "shop_establishment"                     => "shop_establishment",
+        "msme"                                   => "msme",
+        "partnership_deed"                       => "partnership_deed",
+        "certificate_of_incorporation"           => "certificate_of_incorporation",
+        "trust_society_ngo_business_certificate" => "trust_society_ngo_business_certificate",
+        "llp_deed"                               => "llp_deed",
+    ];
+
     public const VERIFICATION_STATUS_MAPPING = [
         "verified"          => "success",
         "incorrect_details" => "failed",
@@ -90,6 +111,13 @@ class VerificationDetailsTransformer extends Base\Transformer
 
     protected function registerFilters(ArrayTransformer $transformer)
     {
+        $transformer->registerFilter(
+            'mapArtefactType',
+            function($value) {
+                return self::ARTEFACT_TYPE_MAPPING[$value] ?? $value;
+            }
+        );
+
         $transformer->registerFilter(
             'mapVerificationUnit',
             function($value) {

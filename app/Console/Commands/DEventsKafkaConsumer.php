@@ -13,11 +13,11 @@ use Illuminate\Console\Command;
 use RZP\Services\KafkaMessageProcessor;
 
 use RZP\Services\KafkaTrait;
-use function Matrix\trace;
 
 class DEventsKafkaConsumer extends Command
 {
     use KafkaTrait;
+
     /**
      * The name and signature of the console command.
      *
@@ -44,6 +44,7 @@ class DEventsKafkaConsumer extends Command
 
     /**
      * message processor for kafka topics
+     *
      * @var
      */
 
@@ -81,10 +82,18 @@ class DEventsKafkaConsumer extends Command
 
         $this->mode = $this->argument('mode');
 
+        $this->info("topics : " . stringify($topics));
+
+        $topics = $this->getTransformedTopics($topics);
+
+        $this->info("transformed topics : " . stringify($topics));
+
         $consumer->subscribe($topics);
 
+        $this->info("subscribed kafka consumer : " . stringify($topics));
+
         $consumerPollTimeoutMs = env('QUEUE_KAFKA_CONSUMER_POLL_TIMEOUT',
-                            self::DEFAULT_CONSUMER_POLL_TIMEOUT_MS);
+                                     self::DEFAULT_CONSUMER_POLL_TIMEOUT_MS);
 
         while (true)
         {
@@ -117,7 +126,7 @@ class DEventsKafkaConsumer extends Command
         }
     }
 
-    public function getKafkaConsumerConfig() : Conf
+    public function getKafkaConsumerConfig(): Conf
     {
         $conf = $this->getConfig();
 
@@ -128,11 +137,12 @@ class DEventsKafkaConsumer extends Command
         // Overwriting consumer group & offset config for address-dedupe topic
         $topics = $this->argument('topics');
 
-        if(count($topics) == 1 && $topics[0] == env('DEDUPE_KAFKA_TOPIC_NAME')){
+        if (count($topics) == 1 && $topics[0] == env('DEDUPE_KAFKA_TOPIC_NAME'))
+        {
 
             $consumerGroup = env('DEDUPE_KAFKA_CONSUMER_GROUP');
 
-            $this->info('setting consumer group : '.$consumerGroup. ' for topic : '.$topics[0]);
+            $this->info('setting consumer group : ' . $consumerGroup . ' for topic : ' . $topics[0]);
 
             $conf->set('group.id', $consumerGroup);
 
@@ -143,18 +153,26 @@ class DEventsKafkaConsumer extends Command
             $conf->set('fetch.message.max.bytes', env('DEDUPE_KAFKA_FETCH_MESSAGE_MAX_BYTES'));
 
         }
-        else if (count($topics) == 1 && $topics[0] == env('RAW_CONTACTS_KAFKA_TOPIC_NAME'))
+        else
         {
-            $conf->set('session.timeout.ms', env('RAW_CONTACTS_KAFKA_SESSION_TIMEOUT_MS'));
+            if (count($topics) == 1 && $topics[0] == env('RAW_CONTACTS_KAFKA_TOPIC_NAME'))
+            {
+                $conf->set('session.timeout.ms', env('RAW_CONTACTS_KAFKA_SESSION_TIMEOUT_MS'));
+            }
+            else
+            {
+                if (count($topics) == 1 && $topics[0] == env('PG_LEDGER_ACK_TOPIC'))
+                {
+
+                    $consumerGroup = env('QUEUE_KAFKA_COSUMER_GROUP');
+
+                    $this->info('setting consumer group : ' . $consumerGroup . ' for topic : ' . $topics[0]);
+
+                    $conf->set('group.id', $consumerGroup);
+                }
+            }
         }
-        else if (count($topics) == 1 && $topics[0] == env('PG_LEDGER_ACK_TOPIC')){
 
-            $consumerGroup = env('QUEUE_KAFKA_COSUMER_GROUP');
-
-            $this->info('setting consumer group : '.$consumerGroup. ' for topic : '.$topics[0]);
-
-            $conf->set('group.id', $consumerGroup);
-        }
         return $conf;
 
     }
@@ -181,11 +199,41 @@ class DEventsKafkaConsumer extends Command
         {
             $consumer->unsubscribe();
 
+            $topics = $this->getTransformedTopics($topics);
+
             $consumer->subscribe($topics);
 
             $this->info("Message processing failed, retrying" . " Offset -" .
                         $message->offset . " Partition - " . $message->partition);
         }
+    }
+
+    public function getTransformedTopics($topics): array
+    {
+
+        $transformedTopics = [];
+
+        foreach ($topics as $topic)
+        {
+            if (str_contains($topic, KafkaMessageProcessor::PGOS_PROD_CDC_EVENTS) or
+                str_contains($topic, KafkaMessageProcessor::PGOS_STAGE_CDC_EVENTS))
+            {
+                $appMode = env('APP_MODE', 'prod');
+
+                $topic = str_replace($appMode . '-', '', $topic);
+
+                $devstack_label = env('DEVSTACK_LABEL', '');
+
+                if ($devstack_label != '')
+                {
+                    $topic = str_replace('-' . $devstack_label, '', $topic);
+                }
+            }
+
+            array_push($transformedTopics, $topic);
+        }
+
+        return $transformedTopics;
     }
 
     /**
@@ -211,14 +259,17 @@ class DEventsKafkaConsumer extends Command
             return true;
         }
         // Call Processor for processing the message.
-        if(env('DEDUPE_KAFKA_TOPIC_NAME') == $kafkaMessage->topic_name){
+        if (env('DEDUPE_KAFKA_TOPIC_NAME') == $kafkaMessage->topic_name)
+        {
 
-            $this->info('processing message from - '.$kafkaMessage->topic_name);
+            $this->info('processing message from - ' . $kafkaMessage->topic_name);
 
-        }else {
+        }
+        else
+        {
 
             $this->info('processing message from - ' .
-                $kafkaMessage->topic_name . ' topic with payload - ' . $kafkaMessage->payload);
+                        $kafkaMessage->topic_name . ' topic with payload - ' . $kafkaMessage->payload);
 
         }
 
@@ -233,7 +284,7 @@ class DEventsKafkaConsumer extends Command
             $topic = str_replace('-' . $devstack_label, '', $topic);
         }
 
-        if(str_contains($topic,'outbox_jobs_api'))
+        if (str_contains($topic, 'outbox_jobs_api'))
         {
             $topic = 'outbox_jobs_api';
         }
@@ -242,7 +293,7 @@ class DEventsKafkaConsumer extends Command
 
         $infoMessage = ($isProcessed === true) ? 'successful' : 'failed';
 
-        $this->info('message processing - '.$infoMessage);
+        $this->info('message processing - ' . $infoMessage);
 
         return $isProcessed;
 
@@ -264,8 +315,10 @@ class DEventsKafkaConsumer extends Command
         if (json_last_error() !== JSON_ERROR_NONE)
         {
             $this->error('invalid payload received from kafka broker');
+
             return false;
         }
+
         return $payload;
     }
 }

@@ -37,7 +37,7 @@ class VerificationDetailsTransformer extends Base\Transformer
             [
                 "column"    => 'company_pan_verification_status',
                 'condition' => [
-                    'artefact_type'     => 'company_pan',
+                    'artefact_type'     => 'business_pan',
                     'verification_unit' => 'auth'
                 ],
                 "function"  => 'mapVerificationStatus'
@@ -93,7 +93,7 @@ class VerificationDetailsTransformer extends Base\Transformer
             [
                 "column"    => 'company_pan_doc_verification_status',
                 'condition' => [
-                    'artefact_type'     => 'company_pan',
+                    'artefact_type'     => 'business_pan',
                     'verification_unit' => 'ocr'
                 ],
                 "function"  => 'mapVerificationStatus'

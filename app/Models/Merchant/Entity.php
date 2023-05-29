@@ -3777,6 +3777,15 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
+    public function getService()
+    {
+        $app = App::getFacadeRoot();
+
+        $deviceDetail = $app['repo']->user_device_detail->fetchByMerchantIdAndUserRole($this->getId());
+
+        return optional($deviceDetail)->getValueFromMetaData('service');
+    }
+
     public function isSignupSourceIn($signupSourceList): bool
     {
         $app = App::getFacadeRoot();

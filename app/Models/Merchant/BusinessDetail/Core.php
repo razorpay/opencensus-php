@@ -273,31 +273,39 @@ class Core extends Base\Core
 
     public function savePGOSDataToAPI(array $data)
     {
-        if ((new MerchantOnboardingProxyController)->isPGOSMigrationExperimentEnabled(
-                $data[Entity::MERCHANT_ID],
-                MerchantOnboardingProxyController::PGOS_SHADOW_MODE_EXPERIMENT_ID,
-                MerchantOnboardingProxyController::LIVE) === true)
+        $splitzResult = (new Detail\Core)->getSplitzResponse($data[Entity::MERCHANT_ID], 'pgos_migration_dual_writing_exp_id');
+
+        if ($splitzResult === 'variables')
         {
-            $businessDetail = (new Repository())->getBusinessDetailsForMerchantId($data["merchant_id"]);
+            $merchant = $this->repo->merchant->find($data[Entity::MERCHANT_ID]);
 
-            if (empty($businessDetail) === false)
+            // dual write only for below merchants
+            // merchants for whom pgos is serving onboarding requests
+            // merchants who are not completely activated
+            if ($merchant->getService() === MerchantConstants::PGOS and
+                $merchant->merchantDetail->getActivationStatus()!=Detail\Status::ACTIVATED)
             {
-                unset($data["merchant_id"]);
+                $businessDetail = (new Repository())->getBusinessDetailsForMerchantId($data["merchant_id"]);
 
-                $businessDetail->edit($data);
+                if (empty($businessDetail) === false)
+                {
+                    unset($data["merchant_id"]);
 
-                $this->repo->saveOrFail($businessDetail);
-            }
-            else
-            {
-                $businessDetail = new Entity;
+                    $businessDetail->edit($data);
 
-                $businessDetail->generateId();
+                    $this->repo->saveOrFail($businessDetail);
+                }
+                else
+                {
+                    $businessDetail = new Entity;
 
-                $businessDetail->build($data);
+                    $businessDetail->generateId();
 
-                $this->repo->merchant_business_detail->saveOrFail($businessDetail);
+                    $businessDetail->build($data);
 
+                    $this->repo->merchant_business_detail->saveOrFail($businessDetail);
+
+                }
             }
         }
     }

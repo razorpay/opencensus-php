@@ -349,67 +349,75 @@ class Core extends Base\Core
 
     public function savePGOSDataToAPI(array $data)
     {
-        if ((new MerchantOnboardingProxyController)->isPGOSMigrationExperimentEnabled(
-                $data[Entity::MERCHANT_ID],
-                MerchantOnboardingProxyController::PGOS_SHADOW_MODE_EXPERIMENT_ID,
-                MerchantOnboardingProxyController::LIVE) === true)
+        $splitzResult = (new Detail\Core)->getSplitzResponse($data[Entity::MERCHANT_ID], 'pgos_migration_dual_writing_exp_id');
+
+        if ($splitzResult === 'variables')
         {
-            $clarificationDetail = $this->repo->clarification_detail->find($data[Entity::ID]);
+            $merchant = $this->repo->merchant->find($data[Entity::MERCHANT_ID]);
 
-            if (empty($clarificationDetail) === true)
+            // dual write only for below merchants
+            // merchants for whom pgos is serving onboarding requests
+            // merchants who are not completely activated
+            if ($merchant->getService() === Merchant\Constants::PGOS and
+                $merchant->merchantDetail->getActivationStatus()!=Detail\Status::ACTIVATED)
             {
-                $clarificationDetail = new Entity;
+                $clarificationDetail = $this->repo->clarification_detail->find($data[Entity::ID]);
 
-                $clarificationDetail->generateId();
-
-                $this->trace->info(TraceCode::MERCHANT_CREATE_CLARIFICATION_DETAILS, $data);
-
-                $clarificationDetail->build($data);
-
-                $this->repo->clarification_detail->saveOrFail($clarificationDetail);
-
-                foreach ($clarificationDetail->getFields() as $fieldName)
+                if (empty($clarificationDetail) === true)
                 {
-                    $clarificationReasons[$fieldName] = [
-                        [
-                            "reason_type" => $data[Entity::COMMENT_DATA][Constants::TYPE],
-                            "reason_code" => $data[Entity::COMMENT_DATA][Constants::TEXT],
-                            "from"        => $data[Entity::MESSAGE_FROM],
-                            "is_current"  => true,
-                            "nc_count" => $data[Entity::METADATA][Constants::NC_COUNT]
-                        ]
-                    ];
-                }
+                    $clarificationDetail = new Entity;
 
-                if (empty($clarificationReasons) === false)
-                {
-                    $activationInput = [
-                        "kyc_clarification_reasons" => [
-                            "clarification_reasons" => $clarificationReasons
-                        ]
-                    ];
+                    $clarificationDetail->generateId();
 
-                    $kycClarificationReasons = (new Merchant\Detail\Core)->getUpdatedKycClarificationReasons($activationInput, $data[Entity::MERCHANT_ID],$data[Entity::MESSAGE_FROM]);
+                    $this->trace->info(TraceCode::MERCHANT_CREATE_CLARIFICATION_DETAILS, $data);
 
-                    if (empty($kycClarificationReasons) === false)
+                    $clarificationDetail->build($data);
+
+                    $this->repo->clarification_detail->saveOrFail($clarificationDetail);
+
+                    foreach ($clarificationDetail->getFields() as $fieldName)
                     {
-                        $merchantDetails = $this->repo->merchant_detail->findByPublicId($data[Entity::MERCHANT_ID]);
+                        $clarificationReasons[$fieldName] = [
+                            [
+                                "reason_type" => $data[Entity::COMMENT_DATA][Constants::TYPE],
+                                "reason_code" => $data[Entity::COMMENT_DATA][Constants::TEXT],
+                                "from"        => $data[Entity::MESSAGE_FROM],
+                                "is_current"  => true,
+                                "nc_count"    => $data[Entity::METADATA][Constants::NC_COUNT]
+                            ]
+                        ];
+                    }
 
-                        $merchantDetails->setKycClarificationReasons($kycClarificationReasons);
+                    if (empty($clarificationReasons) === false)
+                    {
+                        $activationInput = [
+                            "kyc_clarification_reasons" => [
+                                "clarification_reasons" => $clarificationReasons
+                            ]
+                        ];
 
-                        $this->repo->saveOrFail($merchantDetails);
+                        $kycClarificationReasons = (new Merchant\Detail\Core)->getUpdatedKycClarificationReasons($activationInput, $data[Entity::MERCHANT_ID], $data[Entity::MESSAGE_FROM]);
 
+                        if (empty($kycClarificationReasons) === false)
+                        {
+                            $merchantDetails = $this->repo->merchant_detail->findByPublicId($data[Entity::MERCHANT_ID]);
+
+                            $merchantDetails->setKycClarificationReasons($kycClarificationReasons);
+
+                            $this->repo->saveOrFail($merchantDetails);
+
+                        }
                     }
                 }
-            }
-            else
-            {
-                $this->trace->info(TraceCode::MERCHANT_CREATE_CLARIFICATION_DETAILS, $data);
+                else
+                {
+                    $this->trace->info(TraceCode::MERCHANT_CREATE_CLARIFICATION_DETAILS, $data);
 
-                $clarificationDetail->edit($data);
+                    $clarificationDetail->edit($data);
 
-                $this->repo->clarification_detail->saveOrFail($clarificationDetail);
+                    $this->repo->clarification_detail->saveOrFail($clarificationDetail);
 
+                }
             }
         }
     }

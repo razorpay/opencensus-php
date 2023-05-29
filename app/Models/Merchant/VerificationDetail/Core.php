@@ -7,6 +7,7 @@ use Mail;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Http\Controllers\MerchantOnboardingProxyController;
 
 class Core extends Base\Core
@@ -92,32 +93,40 @@ class Core extends Base\Core
 
     public function savePGOSDataToAPI(array $data)
     {
-        if ((new MerchantOnboardingProxyController)->isPGOSMigrationExperimentEnabled(
-                $data[Entity::MERCHANT_ID],
-                MerchantOnboardingProxyController::PGOS_SHADOW_MODE_EXPERIMENT_ID,
-                MerchantOnboardingProxyController::LIVE) === true)
+        $splitzResult = (new Detail\Core)->getSplitzResponse($data[Entity::MERCHANT_ID], 'pgos_migration_dual_writing_exp_id');
+
+        if ($splitzResult === 'variables')
         {
-            $verification = (new Repository())->getDetailsForTypeAndIdentifier($data[Entity::MERCHANT_ID],
-                                                                               $data[Entity::ARTEFACT_TYPE],
-                                                                               $data[Entity::ARTEFACT_IDENTIFIER]
-            );
+            $merchant = $this->repo->merchant->find($data[Entity::MERCHANT_ID]);
 
-            if (empty($verification) === false)
+            // dual write only for below merchants
+            // merchants for whom pgos is serving onboarding requests
+            // merchants who are not completely activated
+            if ($merchant->getService() === MerchantConstants::PGOS and
+                $merchant->merchantDetail->getActivationStatus()!=Detail\Status::ACTIVATED)
             {
-                $verification->edit($data);
+                $verification = (new Repository())->getDetailsForTypeAndIdentifier($data[Entity::MERCHANT_ID],
+                                                                                   $data[Entity::ARTEFACT_TYPE],
+                                                                                   $data[Entity::ARTEFACT_IDENTIFIER]
+                );
 
-                $this->repo->saveOrFail($verification);
-            }
-            else
-            {
-                $verification = new Entity;
+                if (empty($verification) === false)
+                {
+                    $verification->edit($data);
 
-                $verification->generateId();
+                    $this->repo->saveOrFail($verification);
+                }
+                else
+                {
+                    $verification = new Entity;
 
-                $verification->build($data);
+                    $verification->generateId();
 
-                $this->repo->merchant_verification_detail->saveOrFail($verification);
+                    $verification->build($data);
 
+                    $this->repo->merchant_verification_detail->saveOrFail($verification);
+
+                }
             }
         }
     }

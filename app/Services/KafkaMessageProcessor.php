@@ -25,6 +25,8 @@ class KafkaMessageProcessor
     const MCC_NOTIFICATION_EVENTS       = 'pg-mcc-notification-events';
     const API_PG_LEDGER_ACKNOWLEDGMENTS = 'outbox_jobs_api';
     const MERCHANT_PAYMENTS_ENABLED_CALLBACK_EVENTS = 'merchant-payments-enabled-callback';
+    const PGOS_STAGE_CDC_EVENTS               = 'cdc_events_mysql_stage_pg_onboarding';
+    const PGOS_PROD_CDC_EVENTS               = 'cdc_events_mysql_prod_pg_onboarding';
 
     /** @var Application $app */
     protected $app;
@@ -156,6 +158,10 @@ class KafkaMessageProcessor
 
             case self::MERCHANT_PAYMENTS_ENABLED_CALLBACK_EVENTS:
                 return new MerchantPaymentsEnabledCallbackConsumer($payload, $mode);
+
+            case self::PGOS_STAGE_CDC_EVENTS:
+            case self::PGOS_PROD_CDC_EVENTS:
+                return new KafkaJobs\PgosCdcEventsJob($payload, $mode);
 
             default:
                 return null;

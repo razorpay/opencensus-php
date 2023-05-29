@@ -1900,5 +1900,7 @@ final class Constants
     const PARTNER_ACCESS  = 'partner_access';
     const PARTNER_NAME    = 'partner_name';
 
+    const PGOS  = 'pgos';
+    const API   = 'api';
     const ACCOUNT_SUSPENDED_DUE_TO_PARENT_MERCHANT_SUSPENSION = 'account_suspended_due_to_parent_merchant_suspension';
 }
