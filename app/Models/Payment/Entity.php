@@ -336,7 +336,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     const feeCurrencyAmount                      = "fee_currency_amount";
 
-    const FEE_MODEL_OVERRIDE_MERCHANT_IDS = [Pricing\BuyPricing::BPCL_TEST_MERCHANT_ID, Pricing\BuyPricing::BPCL_MERCHANT_ID];
+    const FEE_MODEL_OVERRIDE_MERCHANT_IDS = [Pricing\BuyPricing::BPCL_TEST_MERCHANT_ID, Pricing\BuyPricing::BPCL_MERCHANT_ID, Pricing\BuyPricing::BPCL_MERCHANT_ID2, Pricing\BuyPricing::BPCL_MERCHANT_ID3 ];
 
     protected static $sign      = 'pay';
 

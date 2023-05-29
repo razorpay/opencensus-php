@@ -143,6 +143,8 @@ class BuyPricing
 
     const BPCL_TEST_MERCHANT_ID              = 'GfjiTEOfQJJBBX';
     const BPCL_MERCHANT_ID              = 'IB52daWxMCAW3Q';
+    const BPCL_MERCHANT_ID2              = 'IF5xd1DuOFTPMS';
+    const BPCL_MERCHANT_ID3              = 'IF60p3c8Dz4zdu';
 
     protected static $cardGateways = [
         self::HDFC,
