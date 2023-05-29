@@ -37,6 +37,7 @@ const EXCLUDED_ACTIVATION_STATUS_LIST = [
   'activated',
   'needs_clarification',
   'activated_kyc_pending',
+  'kyc_qualified_unactivated',
 ];
 
 export function getLatestNeedsClarificationComment(clarificationReasons) {
