@@ -8705,6 +8705,17 @@ class Processor
         return 'callback_' . $payment->getId();
     }
 
+    // If payment has order id then resource will contain order id else will use payment id
+    public function getCallbackOrderMutexResource(Payment\Entity $payment): string
+    {
+        if ($payment->hasOrder() === true)
+        {
+            return 'callback_order_id_' . $payment->getApiOrderId();
+        }
+
+        return 'callback_order_id_' . $payment->getId();
+    }
+
     private function isNetworkUnionPay(array $input)
     {
         if (empty($input['card']['number']) === true)

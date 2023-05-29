@@ -164,67 +164,75 @@ trait Callback
             {
                 try
                 {
-                    // Reload in case it's processed by another thread.
-                    $this->repo->reload($payment);
+                    // Adding the order id mutex for solving multiple captured payment on same order
+                    // If payment has order id then resource will contain order id else payment id
+                    $orderMutex = $this->getCallbackOrderMutexResource($payment);
 
-                    // In case of non - corporate payments, this case is fine.
-                    // In case of corporate and payment already having been authorized
-                    if ($this->shouldProcessSecondS2sCallback($payment) === false)
-                    {
-                        $this->app['segment']->trackPayment(
-                            $payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
-
-                        throw new Exception\BadRequestException(
-                            ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED,
-                            null,
-                            [
-                                'payment_id' => $payment->getId(),
-                                'gateway'    => $payment->getGateway(),
-                                'status'     => $payment->getStatus(),
-                            ]);
-                    }
-
-                    $isS2sCallback = true;
-
-                    $this->processPaymentCallback($payment, $gatewayInput, $isS2sCallback);
-
-                    // For this is firstUpiRecurringPayment and it is not authorized
-                    // We will not follow the further steps.
-                    // We do not just want to rely on payment status being authorized
-                    // Note: Later if needed, one can add another payment check
-                    if (($payment->isUpiRecurring() === true) and
-                        ($payment->hasBeenAuthorized() === false))
-                    {
-                        if ($this->shouldHitDebitOnRecurringForUpi($payment) === true)
+                    $this->mutex->acquireAndRelease($orderMutex,
+                        function() use ($payment, $gatewayInput)
                         {
-                            $this->processRecurringDebitForUpi($payment);
-                        }
+                            // Reload in case it's processed by another thread.
+                            $this->repo->reload($payment);
 
-                        // Since the payment is UPI recurring and not authorized, we can
-                        // skip the further steps on offers and auto capture
-                        return;
-                    }
+                            // In case of non - corporate payments, this case is fine.
+                            // In case of corporate and payment already having been authorized
+                            if ($this->shouldProcessSecondS2sCallback($payment) === false) {
+                                $this->app['segment']->trackPayment(
+                                    $payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
 
-                    // If gateways like Payu did not retun a terminal status
-                    // for emandate payment from webhooks, then we skip all post processing.
-                    if (($payment->isEmandateAutoRecurring() === true) and
-                        ($payment->hasBeenAuthorized() === false) and
-                        (Gateway::isApiBasedAsyncEMandateGateway($payment->getGateway()) === true))
-                    {
-                        $this->trace->info(TraceCode::SKIP_S2S_CALLBACK_POST_PROCESSING,
-                            [
-                                'payment_id'    => $payment->getId(),
-                                'gateway'       => $payment->getGateway(),
-                                'status'        => $payment->getStatus(),
-                                'method'        => $payment->getMethod(),
-                            ]);
+                                throw new Exception\BadRequestException(
+                                    ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED,
+                                    null,
+                                    [
+                                        'payment_id' => $payment->getId(),
+                                        'gateway' => $payment->getGateway(),
+                                        'status' => $payment->getStatus(),
+                                    ]);
+                            }
 
-                        return;
-                    }
+                            $isS2sCallback = true;
 
-                    $this->postPaymentAuthorizeOfferProcessing($payment);
+                            $this->processPaymentCallback($payment, $gatewayInput, $isS2sCallback);
 
-                    $this->autoCapturePaymentIfApplicable($payment);
+                            // For this is firstUpiRecurringPayment and it is not authorized
+                            // We will not follow the further steps.
+                            // We do not just want to rely on payment status being authorized
+                            // Note: Later if needed, one can add another payment check
+                            if (($payment->isUpiRecurring() === true) and
+                                ($payment->hasBeenAuthorized() === false)) {
+                                if ($this->shouldHitDebitOnRecurringForUpi($payment) === true) {
+                                    $this->processRecurringDebitForUpi($payment);
+                                }
+
+                                // Since the payment is UPI recurring and not authorized, we can
+                                // skip the further steps on offers and auto capture
+                                return;
+                            }
+
+                            // If gateways like Payu did not retun a terminal status
+                            // for emandate payment from webhooks, then we skip all post processing.
+                            if (($payment->isEmandateAutoRecurring() === true) and
+                                ($payment->hasBeenAuthorized() === false) and
+                                (Gateway::isApiBasedAsyncEMandateGateway($payment->getGateway()) === true)) {
+                                $this->trace->info(TraceCode::SKIP_S2S_CALLBACK_POST_PROCESSING,
+                                    [
+                                        'payment_id' => $payment->getId(),
+                                        'gateway' => $payment->getGateway(),
+                                        'status' => $payment->getStatus(),
+                                        'method' => $payment->getMethod(),
+                                    ]);
+
+                                return;
+                            }
+
+                            $this->postPaymentAuthorizeOfferProcessing($payment);
+
+                            $this->autoCapturePaymentIfApplicable($payment);
+                        },
+                        60,
+                        ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+                        20, 1000, 2000
+                    );
                 }
                 catch (\Exception $ex)
                 {
@@ -624,33 +632,43 @@ trait Callback
             $resource,
             function() use ($payment, $gatewayInput)
             {
-                // Reload in case it's processed by another thread.
-                $this->repo->reload($payment);
+                // Adding the order id mutex for solving multiple captured payment on same order
+                // If payment has order id then resource will contain order id else payment id
+                $orderMutex = $this->getCallbackOrderMutexResource($payment);
 
-                $isCorporatePayment = $payment->isCorporateNetbanking();
+                return $this->mutex->acquireAndRelease($orderMutex,
+                    function() use ($payment, $gatewayInput)
+                    {
+                        // Reload in case it's processed by another thread.
+                        $this->repo->reload($payment);
 
-                $this->setSubscriptionForCallback($payment);
+                        $isCorporatePayment = $payment->isCorporateNetbanking();
 
-                //
-                // In case of non - corporate payments, this case is fine.
-                // In case of corporate and payment already having been authorized
-                //
-                if ((($isCorporatePayment === false) and
-                     ($payment->isCreated() === false)) or
-                    (($isCorporatePayment === true) and
-                     ($payment->hasBeenAuthorized() === true)))
-                {
-                    return $this->processPaymentCallbackSecondTime($payment);
-                }
+                        $this->setSubscriptionForCallback($payment);
 
-                $callbackData = $this->processPaymentCallback($payment, $gatewayInput);
+                        //
+                        // In case of non - corporate payments, this case is fine.
+                        // In case of corporate and payment already having been authorized
+                        //
+                        if ((($isCorporatePayment === false) and
+                                ($payment->isCreated() === false)) or
+                            (($isCorporatePayment === true) and
+                                ($payment->hasBeenAuthorized() === true))) {
+                            return $this->processPaymentCallbackSecondTime($payment);
+                        }
 
-                if ($payment->getStatus() === Payment\Status::AUTHENTICATED)
-                {
-                    return $this->postPaymentAuthenticateProcessing($payment);
-                }
+                        $callbackData = $this->processPaymentCallback($payment, $gatewayInput);
 
-                return $this->postPaymentAuthorizeProcessing($payment, $callbackData);
+                        if ($payment->getStatus() === Payment\Status::AUTHENTICATED) {
+                            return $this->postPaymentAuthenticateProcessing($payment);
+                        }
+
+                        return $this->postPaymentAuthorizeProcessing($payment, $callbackData);
+                    },
+                    60,
+                    ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+                    20, 1000, 2000
+                );
             },
             60,
             ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,

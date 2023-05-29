@@ -1771,8 +1771,20 @@ class Verify extends Base\Core
 
                 $this->mutex->acquireAndRelease($resource, function() use ($processor, $payment)
                 {
-                    // Attempt to authorize payments whose verification failed
-                    $processor->authorizeFailedPayment($payment);
+                    // Adding the order id mutex for solving multiple captured payment on same order
+                    // If payment has order id then resource will contain order id else payment id
+                    $orderMutex = $processor->getCallbackOrderMutexResource($payment);
+
+                    $this->mutex->acquireAndRelease($orderMutex,
+                        function() use ($processor, $payment)
+                        {
+                            // Attempt to authorize payments whose verification failed
+                            $processor->authorizeFailedPayment($payment);
+                        },
+                        60,
+                        ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+                        20, 1000, 2000
+                    );
                 },
                     60,
                     ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,

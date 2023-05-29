@@ -1427,6 +1427,11 @@ trait Capture
 
             $this->repo->reload($order);
 
+            if($order->isExternal() === true)
+            {
+                $order = $this->repo->order->findOrFail($order->getId());
+            }
+
             if ($this->merchant->isFeatureEnabled(Feature\Constants::DISABLE_AMOUNT_CHECK) === true)
             {
                 return;
