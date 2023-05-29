@@ -2287,6 +2287,7 @@ class Route
         'payment_update_b2b_invoice'                        => ['patch',    'payment/{id}/update_b2b_invoice_details',        'PaymentController@updateB2BInvoiceDetails'                     ],
         'b2b_invoice_collect_address'                       => ['put',      'b2b-exports/{payment_id}/address',        'BankTransferController@createAddressEntityForB2B' ],
         'b2b_invoice_show_address'                          => ['get',      'b2b-exports/{payment_id}/address',        'BankTransferController@getAddressEntityForB2B' ],
+        'b2b_send_notification'                             => ['post',     'b2b-exports/notification',                'BankTransferController@sendNotificationForB2B' ],
 
         'capture_cron_for_b2b_payments'        => ['post',     'b2b/payments/capture',                              'BankTransferController@captureCronForB2BPayments'                   ],
         'notifications_for_b2b'                => ['post',     'international/virtual_accounts/payment/create',     'BankTransferController@notificationsFromCurrencyCloud'                         ],
@@ -5911,6 +5912,8 @@ class Route
 
         'internal_1cc_order_review',
         'ledger_outbox_partition_cron',
+
+        'b2b_send_notification',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -14787,6 +14790,8 @@ class Route
             'downtime_auto_resolve_cron',
             'ledger_outbox_partition_cron',
             'token_hq_cron',
+
+            'b2b_send_notification',
 
             //Order Outbox
             'order_outbox_retry',

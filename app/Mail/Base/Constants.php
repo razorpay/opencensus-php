@@ -70,6 +70,7 @@ class Constants
     const BANKING_POD_TECH              = 'banking_pod_tech';
     const CROSS_BORDER_TECH             = 'cross_border_tech';
     const PARTNER_COMMISSIONS           = 'partner_commissions';
+    const CROSS_BORDER                  = 'cross_border';
 
     const PARTNER_ON_BOARDING_REPLY = 'partner_on_boarding_reply';
 
@@ -136,6 +137,7 @@ class Constants
         self::AFFORDABILITY             => 'tech-onlinepayments-affordability@razorpay.com',
         self::FINOPS                    => 'finances.recon@razorpay.com',
         self::DEVOPS_BEAM               => 'devops+beam@razorpay.com',
+        self::CROSS_BORDER              => 'cross-border@razorpay.com',
     ];
 
     const CURLEC_MAIL_ADDRESSES = [

@@ -2,9 +2,11 @@
 
 namespace RZP\Tests\Functional\InternationalBankTransfer;
 
+use Mail;
 use Mockery;
 use RZP\Models\Pricing\Fee;
 use RZP\Tests\Functional\TestCase;
+use RZP\Mail\Payment\B2bUploadInvoice;
 use RZP\Exception\BadRequestException;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Payment\Entity as Payment;
@@ -285,6 +287,8 @@ class InternationalBankTransferTest extends TestCase
         $this->assertEquals('ach',$paymentEntity['wallet']);
         $this->assertEquals(83300000,$paymentEntity['base_amount']);
         $this->assertEquals(8500000,$paymentEntity['amount']);
+
+        $this->testSendNotificationForB2B($paymentEntity);
     }
 
     public function testCashManagerTransactionNotificationForCurrencyCloudWithHeaderInInput()
@@ -410,6 +414,8 @@ class InternationalBankTransferTest extends TestCase
 
         $paymentEntity = $this->getLastPayment('payment',true);
 
+        $this->testSendNotificationForB2B($paymentEntity);
+
         $secondRequest = $this->testData[__FUNCTION__]['request'];
 
         Payment::verifyIdAndStripSign($paymentEntity['id']);
@@ -466,6 +472,8 @@ class InternationalBankTransferTest extends TestCase
         $firstResponse = $this->makeRequestAndGetContent($firstRequest);
 
         $paymentEntity = $this->getLastPayment('payment',true);
+
+        $this->testSendNotificationForB2B($paymentEntity);
 
         $this->mockMozartResponseForCurrencyCloud();
 
@@ -839,6 +847,40 @@ class InternationalBankTransferTest extends TestCase
         $this->assertEquals($response['country'], $addressPayload['content']['country']);
 
         return $response;
+    }
+
+    protected function testSendNotificationForB2B($payment)
+    {
+        Mail::fake();
+
+        $notificationPayload = [
+            'url' => '/v1/b2b-exports/notification',
+            'method' => 'post',
+            'content' => [
+                'limit' => 1,
+                'offset' => 0,
+                'payment_ids' => [preg_replace('/^pay_/', '', $payment['id'])],
+                'include_merchants' => [$payment['merchant_id']],
+                'exclude_merchants' => ['HgcHwOUQYViVHE'],
+            ]
+        ];
+
+        $this->ba->cronAuth();
+
+        $response = $this->makeRequestAndGetContent($notificationPayload);
+
+        $this->assertNotNull($response);
+        $this->assertEquals($response['email_reports']['upload_invoice']['total_payments'], 1);
+
+        Mail::assertQueued(B2bUploadInvoice::class, function ($mail) use ($payment)
+        {
+            $expectedId = preg_replace('/^pay_/', '', $payment['id']);
+            $actualId = preg_replace('/^pay_/', '', $mail->viewData['payment']['id']);
+
+            $this->assertEquals($expectedId, $actualId);
+
+            return true;
+        });
     }
 
     // Test to increase txn limit for B2B intl_bank_transfer payments

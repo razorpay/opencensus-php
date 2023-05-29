@@ -31,6 +31,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\QrPayment;
 use RZP\Models\BankAccount;
+use RZP\Base\RuntimeManager;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Exception\LogicException;
 use RZP\Models\BankTransferHistory;
@@ -40,6 +41,7 @@ use RZP\Models\VirtualAccount\Metric;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Jobs\BankTransferCreateProcess;
+use RZP\Models\Payment\Processor\Notify;
 use RZP\Models\BankTransfer\Constants as BankTransferConstants;
 use RZP\Models\BankTransfer\Processor as BankTransferProcessor;
 use RZP\Models\Base\UniqueIdEntity;
@@ -1961,6 +1963,109 @@ class Service extends Base\Service
         }
 
         return $responseList;
+    }
+
+    public function sendNotificationForB2B($input)
+    {
+        $this->increaseAllowedSystemLimits();
+
+        // send emails
+        $emailReports = $this->notifyViaEmail($input);
+
+        $consolidateReports = [
+            'email_reports' => $emailReports,
+        ];
+
+        return $consolidateReports;
+    }
+
+    protected function notifyViaEmail($input = [])
+    {
+        if($this->app['env'] != Environment::TESTING)
+        {
+            $this->app['rzp.mode'] = Mode::LIVE; // trigger email in test mode as well
+        }
+
+        $emailReports = [
+            'upload_invoice' => $this->notifyUploadInvoice($input),
+        ];
+
+        return $emailReports;
+
+    }
+
+    protected function notifyUploadInvoice($input = [])
+    {
+        $paymentIds = $input['payment_ids'] ?? []; 
+
+        $includeMerchantList = $input['include_merchants'] ?? [];
+
+        $excludeMerchantList = $input['exclude_merchants'] ?? [];
+
+        $limit = $input['limit'] ?? 0;
+
+        $offset = $input['offset'] ?? 0;
+
+        $payments =  $this->repo->payment->getPaymentsWithoutReferenceId(Constants\Entity::CURRENCY_CLOUD, 
+                                                                        Payment\Status::AUTHORIZED, 
+                                                                        Payment\Method::INTL_BANK_TRANSFER,
+                                                                        $paymentIds,
+                                                                        $includeMerchantList,
+                                                                        $excludeMerchantList,
+                                                                        $limit,
+                                                                        $offset);
+
+        $successCount = 0;
+        $failureCount = 0;
+        $failureTrace = [];
+
+        $event = Payment\Event::B2B_UPLOAD_INVOICE;
+
+        foreach ($payments as $payment)
+        {
+            try
+            {
+                $this->triggerEmail($payment, $event);
+
+                $successCount++;
+            }
+            catch(\Exception $e)
+            {
+                $traceData = [
+                    'input'         => $input ?? "",
+                    'payment_id'    => $payment->getId() ?? "",
+                    'merchant_id'   => $payment->getMerchantId() ?? "",
+                    'error_code'    => $e->getCode() ?? "",
+                    'error_message' => $e->getMessage() ?? "",
+                ];
+
+                array_push($failureTrace, $traceData);
+
+                $failureCount++;
+            }
+        }
+
+        $report = [
+            'total_payments' => count($payments),
+            'success_count'  => $successCount,
+            'failure_count'  => $failureCount,
+            'failure_trace'  => $failureTrace,
+        ];
+
+        $this->trace->info(TraceCode::B2B_NOTIFICATION_REPORT, $report);
+
+        return $report;
+    }
+
+    protected function triggerEmail($payment, $event)
+    {
+        // notify does not throw ex. Will have to check from logs
+        (new Notify($payment))->trigger($event);
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMaxExecTime(7200);
     }
 
 }

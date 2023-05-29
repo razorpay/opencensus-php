@@ -16,6 +16,7 @@ class Event
     const INVOICE_PAYMENT_CAPTURED   = 'invoice_payment_captured';
     const REFUND_RRN_UPDATED         = 'refund_rrn_updated';
     const CUSTOMER_FAILED            = 'customer_failed';
+    const B2B_UPLOAD_INVOICE         = 'b2b_upload_invoice';
 
     const CUSTOMER_EVENTS = [
         self::AUTHORIZED,
@@ -46,6 +47,7 @@ class Event
         self::FAILED_TO_AUTHORIZED,
         self::INVOICE_PAYMENT_CAPTURED,
         self::REFUND_RRN_UPDATED,
+        self::B2B_UPLOAD_INVOICE,
     ];
 
     const INVOICE_EVENTS = [
@@ -63,6 +65,7 @@ class Event
         self::FAILED_TO_AUTHORIZED       => MailTags::FAILED_TO_AUTHORIZED,
         self::CARD_SAVED                 => MailTags::CARD_SAVING,
         self::REFUND_RRN_UPDATED         => MailTags::REFUND_RRN_UPDATE,
+        self::B2B_UPLOAD_INVOICE         => MailTags::B2B_UPLOAD_INVOICE,
     ];
 
     const RECEIPT_EMAIL_EVENTS = [

@@ -732,4 +732,14 @@ class BankTransferController extends Controller
         return ApiResponse::json($addresses->first());
 
     }
+
+    public function sendNotificationForB2B()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->sendNotificationForB2B($input);
+
+        return ApiResponse::json($response);
+
+    }
 }

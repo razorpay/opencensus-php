@@ -4224,6 +4224,57 @@ EOT;
             ->get();
     }
 
+    public function getPaymentsWithoutReferenceId($gateway, 
+                                                  $status, 
+                                                  $method = '', 
+                                                  $paymentIds = [], 
+                                                  $includeMerchantList = [], 
+                                                  $excludeMerchantList = [], 
+                                                  $limit = 0,
+                                                  $offset = 0)
+    {
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+                      ->where(Entity::GATEWAY, $gateway)
+                      ->where(Entity::METHOD, $method)
+                      ->status($status);
+
+        // run cron for specific merchants
+        if (empty($includeMerchantList) === false)
+        {
+            $query = $query->whereIn(Entity::MERCHANT_ID, $includeMerchantList);
+        }
+
+        // do not run cron for specific merchants
+        if (empty($excludeMerchantList) === false)
+        {
+            $query = $query->whereNotIn(Entity::MERCHANT_ID, $excludeMerchantList);
+        }
+
+        // run cron for specific payment
+        if (empty($paymentIds) === false)
+        {
+            $query = $query->whereIn(Entity::ID, $paymentIds);
+        }
+        else
+        {
+            $query = $query->whereNull(Entity::REFERENCE2);
+        }
+
+        $query = $query->orderBy(Payment\Entity::CREATED_AT, 'desc');
+
+        if ($limit > 0)
+        {
+            $query = $query->limit($limit);
+        }
+
+        if ($offset > 0)
+        {
+            $query = $query->offset($offset);
+        }
+
+        return $query->get();
+    }
+
     //select * from `payments`
     // where `payments`.`token_id` = JtXT7fDRwqDzP3
     // and `payments`.`token_id` is not null

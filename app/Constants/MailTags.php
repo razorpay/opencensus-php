@@ -327,6 +327,8 @@ class MailTags
 
     const MERCHANT_ADD_ADDITIONAL_WEBSITE_REJECTION_REASON       = 'merchant_add_additional_website_rejection_reason';
 
+    const B2B_UPLOAD_INVOICE = 'b2b_upload_invoice';
+
     /**
      * Razorpay Trusted Business/Badge Constants
      */
