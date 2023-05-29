@@ -91,7 +91,7 @@ class EdgeProxyController extends Controller
         $path        = $this->getPath($request->path(), $prefixTrim, $prefixAdd);
         $query       = $request->getQueryString();
         $body        = $request->getContent();
-        $contentType = $request->getContentType();
+        $contentType = $request->header(RequestHeader::CONTENT_TYPE);
         $auth        = $hostCfg['auth'];
         $devServeHeader = $request->header(RequestHeader::DEV_SERVE_USER);
 

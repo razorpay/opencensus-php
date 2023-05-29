@@ -29,37 +29,37 @@ class PartnershipsService extends Base\Service
 {
     const CONTENT_TYPE_JSON           = 'application/json';
 
-    const CREATE_RULE_GROUP           = 'twirp/rzp.commissions.rules.rule_group.v1.RuleGroupAPI/Create';
+    const CREATE_RULE_GROUP           = '/twirp/rzp.commissions.rules.rule_group.v1.RuleGroupAPI/Create';
 
-    const HEALTH_CHECK                = 'twirp/rzp.common.health.v1.HealthCheckAPI/Check';
+    const HEALTH_CHECK                = '/twirp/rzp.common.health.v1.HealthCheckAPI/Check';
 
-    const GET_RULE_GROUP_BY_ID        = 'twirp/rzp.commissions.rules.rule_group.v1.RuleGroupAPI/Get';
+    const GET_RULE_GROUP_BY_ID        = '/twirp/rzp.commissions.rules.rule_group.v1.RuleGroupAPI/Get';
 
-    const GET_ALL_RULE_GROUP          = 'twirp/rzp.commissions.rules.rule_group.v1.RuleGroupAPI/List';
+    const GET_ALL_RULE_GROUP          = '/twirp/rzp.commissions.rules.rule_group.v1.RuleGroupAPI/List';
 
-    const UPDATE_RULE_GROUP           = 'twirp/rzp.commissions.rules.v1.RuleGroupAPI/List';
+    const UPDATE_RULE_GROUP           = '/twirp/rzp.commissions.rules.v1.RuleGroupAPI/List';
 
-    const CREATE_RULE                 = 'twirp/rzp.commissions.rules.rule.v1.RuleAPI/Create';
+    const CREATE_RULE                 = '/twirp/rzp.commissions.rules.rule.v1.RuleAPI/Create';
 
-    const GET_RULE                    = 'twirp/rzp.commissions.rules.rule.v1.RuleAPI/Get';
+    const GET_RULE                    = '/twirp/rzp.commissions.rules.rule.v1.RuleAPI/Get';
 
-    const UPDATE_RULE                 = 'twirp/rzp.commissions.rules.rule.v1.RuleAPI/Update';
+    const UPDATE_RULE                 = '/twirp/rzp.commissions.rules.rule.v1.RuleAPI/Update';
 
-    const GET_RULE_BY_RULE_GROUP      = 'twirp/rzp.commissions.rules.rule.v1.RuleAPI/GetByRuleGroup';
+    const GET_RULE_BY_RULE_GROUP      = '/twirp/rzp.commissions.rules.rule.v1.RuleAPI/GetByRuleGroup';
 
-    const CREATE_RULE_CONFIG_MAPPING  = 'twirp/rzp.commissions.rules.rule_config_mapping.v1.RuleConfigMappingAPI/Create';
+    const CREATE_RULE_CONFIG_MAPPING  = '/twirp/rzp.commissions.rules.rule_config_mapping.v1.RuleConfigMappingAPI/Create';
 
-    const UPDATE_RULE_CONFIG_MAPPING  = 'twirp/rzp.commissions.rules.rule_config_mapping.v1.RuleConfigMappingAPI/Update';
+    const UPDATE_RULE_CONFIG_MAPPING  = '/twirp/rzp.commissions.rules.rule_config_mapping.v1.RuleConfigMappingAPI/Update';
 
-    const CREATE_AUDIT_LOG            = 'twirp/rzp.commissions.audit.v1.AuditLogAPI/Create';
+    const CREATE_AUDIT_LOG            = '/twirp/rzp.commissions.audit.v1.AuditLogAPI/Create';
 
-    const LIST_AUDIT_LOG_BY_ENTITY_IDS = 'twirp/rzp.commissions.audit.v1.AuditLogAPI/ListByEntityIds';
+    const LIST_AUDIT_LOG_BY_ENTITY_IDS    = '/twirp/rzp.commissions.audit.v1.AuditLogAPI/ListByEntityIds';
 
-    const LIST_AUDIT_LOG_BY_ENTITY_ID  = 'twirp/rzp.commissions.audit.v1.AuditLogAPI/ListByEntityId';
+    const LIST_AUDIT_LOG_BY_ENTITY_ID    = '/twirp/rzp.commissions.audit.v1.AuditLogAPI/ListByEntityId';
 
-    const GET_LAST_PARTNER_MIGRATION   = 'twirp/rzp.commissions.partner_migration_audit.v1.PartnerMigrationAuditAPI/GetLastPartnerMigrationAudit';
+    const GET_LAST_PARTNER_MIGRATION   = '/twirp/rzp.commissions.partner_migration_audit.v1.PartnerMigrationAuditAPI/GetLastPartnerMigrationAudit';
 
-    const CREATE_PARNTER_MIGRATION_AUDIT = 'twirp/rzp.commissions.partner_migration_audit.v1.PartnerMigrationAuditAPI/CreatePartnerMigrationAudit';
+    const CREATE_PARNTER_MIGRATION_AUDIT = '/twirp/rzp.commissions.partner_migration_audit.v1.PartnerMigrationAuditAPI/CreatePartnerMigrationAudit';
 
     const ACTIVATED = 'ACTIVATED';
 
@@ -129,7 +129,7 @@ class PartnershipsService extends Base\Service
         $this->baseLiveUrl = $PartnershipsConfig['url']['live'];
         $this->baseTestUrl = $PartnershipsConfig['url']['test'];
 
-        $this->key = $PartnershipsConfig['username'];
+        $this->key    = $PartnershipsConfig['username'];
         $this->secret = $PartnershipsConfig['secret'];
 
         $this->skipPassport = $PartnershipsConfig['skip_jwt_passport'];

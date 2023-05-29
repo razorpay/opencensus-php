@@ -13,6 +13,7 @@ return [
         'accounting_integrations_proxy_routes' => ['host_id' => 'accounting_integrations'],
         'accounting_integrations_callback'     => ['host_id' => 'accounting_integrations_direct_api'],
         'wallet_dashboard_proxy'               => ['host_id' => 'wallet'],
+        'partnerships_service_proxy'           => ['host_id' => 'partnerships'],
     ],
 
     // Map- <Host identifier, <Host, Auth[username, password]>>
@@ -58,6 +59,12 @@ return [
             'auth'                => ['', ''],
             'path_prefix_to_skip' => 'v1/wallet/proxy/',
             'path_prefix_to_add'  => 'v1/',
+        ],
+        'partnerships' => [
+            'host'                => env('PARTNERSHIPS_LIVE_URL'),
+            'auth'                => ['api', env('PARTNERSHIPS_API_SECRET')],
+            'path_prefix_to_skip' => 'v1/partnerships/',
+            'path_prefix_to_add'  => '',
         ],
     ],
 ];

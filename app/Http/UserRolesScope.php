@@ -884,6 +884,7 @@ class UserRolesScope
             'partner_request_migration'                            => [Role::OWNER, Role::ADMIN],
             'partner_activation_save'                              => [Role::OWNER, Role::ADMIN],
             'partner_referral_fetch'                               => [Role::OWNER, Role::ADMIN],
+            'partnerships_service_proxy'                           => Role::allExceptPaymentLinkRoles(),
             'merchant_authorize_partner_save'                      => [Role::OWNER, Role::ADMIN],
             'merchant_authorize_partner_status'                    => [Role::OWNER, Role::ADMIN],
             'payment_acknowledge'                                  => [Role::OWNER, Role::ADMIN],

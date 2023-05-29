@@ -3088,6 +3088,8 @@ class Route
         //partnership service usecase routes
         'fetch_commission_configs'                 => ['get',     'commission_configs',                       'CommissionController@fetchCommissionConfigsForPayment'                    ],
         'fetch_partner_commission_invoice_feature' => ['get',     'partner/commission_invoice_feature',       'CommissionInvoiceController@fetchPartnersWithCommissionInvoiceFeature'    ],
+        'partnerships_service_proxy'               => ['post',    'partnerships/{path?}',             'EdgeProxyController@proxy'                                                ],
+
 
         'commissions_get_multiple'                 => ['get',      'commissions',                                    'CommissionController@list'                                         ],
         'commissions_get'                          => ['get',      'commissions/{id}',                               'CommissionController@get'                                          ],
@@ -6146,6 +6148,7 @@ class Route
         'ufh_upload_file',
         'los_service',
         'capital_es_service',
+        'partnerships_service_proxy',
         'user_fetch_for_merchant',
         'send_email_for_pl_service',
         'payment_links_payment_by_id',
@@ -11123,6 +11126,7 @@ class Route
             'list_merchant_notification_config',
             'loc_service',
             'los_service',
+            'partnerships_service_proxy',
             'capital_es_service',
             'mailgun_webhook',
             'merchant_2fa_change_setting',
