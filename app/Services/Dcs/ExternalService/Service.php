@@ -17,6 +17,7 @@ class Service
     const X_RAZORPAY_APP_HEADER    = 'X-Razorpay-App';
     const X_RAZORPAY_TASKID_HEADER = 'X-Razorpay-TaskId';
     const X_RAZORPAY_MODE_HEADER   = 'X-Razorpay-Mode';
+    const X_MODE_HEADER            = 'X-Mode';
     const X_REQUEST_ID             = 'X-Request-ID';
     const X_RAZORPAY_TRACKID       = 'X-Razorpay-TrackId';
     const X_RZP_TESTCASE_ID        = 'X-RZP-TESTCASE-ID';
@@ -103,6 +104,7 @@ class Service
             self::X_RAZORPAY_TASKID_HEADER => $this->app['request']->getTaskId(),
             self::X_REQUEST_ID             => $this->app['request']->getId(),
             self::X_RAZORPAY_TRACKID       => $this->app['req.context']->getTrackId(),
+            self::X_MODE_HEADER            => $this->mode
         ];
 
         return $headers;

@@ -20,5 +20,9 @@ class Constants
         "rzp/pg/merchant/payments/refunds/Features" => "pg-router",
         "rzp/capital/merchant/onboarding/corporatecards/EligibilityFeatures" => "capital-los",
         "rzp/capital/merchant/onboarding/cashadvance/EligibilityFeatures" => "capital-los",
+        "rzp/pg/merchant/refunds/RefundCreation" => "scrooge",
+        "rzp/pg/merchant/refunds/Display" => "scrooge",
+        "rzp/pg/merchant/refunds/Webhook" => "scrooge",
+        "rzp/pg/org/refunds/Display" => "scrooge",
     ];
 }

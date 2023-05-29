@@ -1179,6 +1179,18 @@ return [
                 'password' => env('APP_LOAN_ORIGINATION_SYSTEM_SECRET'),
             ],
         ],
+        'scrooge' => [
+            'live'=>[
+                'url'      => env('SCROOGE_DCS_BASE_URL'),
+                'username' => env('SCROOGE_KEY'),
+                'password' => env('SCROOGE_SECRET'),
+            ],
+            'test'=>[
+                'url'      => env('SCROOGE_DCS_BASE_URL'),
+                'username' => env('SCROOGE_KEY'),
+                'password' => env('SCROOGE_SECRET'),
+            ],
+        ],
     ],
 
     'automation' => [

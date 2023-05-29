@@ -112,6 +112,16 @@ class Constants
     const MerchantPaymentCallbackUrlValidation = 'merchant_payment_callback_url_validation';
     const AggregatorAccessToSubmerchantReportEnabled = 'aggregator_access_to_submerchant_report_enabled';
     const OptimizerRazorpayVas = 'razorpay_vas';
+    const DisplayRefundPendingStatus = 'display_refund_pending_status';
+    const DisplayRefundPublicStatus = 'display_refund_public_status';
+    const DisableCardRefunds = 'disable_card_refunds';
+    const DisableInstantRefunds = 'disable_instant_refunds';
+    const DisableRefunds = 'disable_refunds';
+    const AllowRefundAgedPayments = 'allow_refund_aged_payments';
+    const AllowVoidRefunds = 'allow_void_refunds';
+    const AllowBankTransferRefundNonTpv = 'allow_bank_transfer_refund_non_tpv';
+    const RefundArnWebhookVisibility = 'refund_arn_webhook_visibility';
+    const RefundAttributesLateAuth = 'refund_attributes_late_auth';
 
     public static $validDcsKeys = [];
     /**
@@ -218,7 +228,17 @@ class Constants
         self::EnableTpvForMerchant => 'rzp/pg/merchant/order/Features',
         self::MerchantPaymentCallbackUrlValidation => 'rzp/pg/merchant/security/Features',
         self::AggregatorAccessToSubmerchantReportEnabled => 'rzp/platform/partner/reporting/Features',
-        self::OptimizerRazorpayVas => 'rzp/pg/merchant/optimizer/OnboardingFeatures'
+        self::OptimizerRazorpayVas => 'rzp/pg/merchant/optimizer/OnboardingFeatures',
+        self::DisplayRefundPendingStatus => 'rzp/pg/merchant/refunds/Display',
+        self::DisplayRefundPublicStatus => 'rzp/pg/merchant/refunds/Display',
+        self::DisableCardRefunds => 'rzp/pg/merchant/refunds/RefundCreation',
+        self::DisableInstantRefunds => 'rzp/pg/merchant/refunds/RefundCreation',
+        self::DisableRefunds => 'rzp/pg/merchant/refunds/RefundCreation',
+        self::AllowRefundAgedPayments => 'rzp/pg/merchant/refunds/RefundCreation',
+        self::AllowVoidRefunds => 'rzp/pg/merchant/refunds/RefundCreation',
+        self::AllowBankTransferRefundNonTpv => 'rzp/pg/merchant/refunds/RefundCreation',
+        self::RefundArnWebhookVisibility => 'rzp/pg/merchant/refunds/Webhook',
+        self::RefundAttributesLateAuth => 'rzp/pg/org/refunds/Display'
     ];
 
     public static function isValidDcsKeyAndName(string $key, string $name): bool
@@ -338,6 +358,16 @@ class Constants
         APIFeaturesConstants::CALLBACK_URL_VALIDATION                       => self::MerchantPaymentCallbackUrlValidation,
         APIFeaturesConstants::AGGREGATOR_REPORT                             => self::AggregatorAccessToSubmerchantReportEnabled,
         APIFeaturesConstants::OPTIMIZER_RAZORPAY_VAS                        => self::OptimizerRazorpayVas,
+        APIFeaturesConstants::REFUND_PENDING_STATUS                         => self::DisplayRefundPendingStatus,
+        APIFeaturesConstants::SHOW_REFUND_PUBLIC_STATUS                     => self::DisplayRefundPublicStatus,
+        APIFeaturesConstants::DISABLE_CARD_REFUNDS                          => self::DisableCardRefunds,
+        APIFeaturesConstants::DISABLE_INSTANT_REFUNDS                       => self::DisableInstantRefunds,
+        APIFeaturesConstants::DISABLE_REFUNDS                               => self::DisableRefunds,
+        APIFeaturesConstants::REFUND_AGED_PAYMENTS                          => self::AllowRefundAgedPayments,
+        APIFeaturesConstants::VOID_REFUNDS                                  => self::AllowVoidRefunds,
+        APIFeaturesConstants::NON_TPV_BT_REFUND                             => self::AllowBankTransferRefundNonTpv,
+        APIFeaturesConstants::REFUND_ARN_WEBHOOK                            => self::RefundArnWebhookVisibility,
+        APIFeaturesConstants::SHOW_REFND_LATEAUTH_PARAM                     => self::RefundAttributesLateAuth,
     ];
 
     /**
