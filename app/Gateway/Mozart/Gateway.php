@@ -1703,6 +1703,17 @@ class Gateway extends Base\Gateway
             $timeout = $this->app['config']->get($ccavenueTimeoutConfig);
         }
 
+        if(($gateway === Payment\Gateway::OPTIMIZER_RAZORPAY) and
+            ($this->action) === Action::PAY_INIT and
+            ($this->isUpiCollectFlow($input) === true))
+        {
+            // optimizer_razorpay internally calls ccavenue,
+            // so we need to increase timeout as ccavenue upi call is a sync call
+            $optRzpTimeoutConfig = 'applications.mozart.optrzp_collect_request_timeout';
+
+            $timeout = $this->app['config']->get($optRzpTimeoutConfig);
+        }
+
         if ((is_null($timeout) === false) and
             (is_numeric($timeout) === true))
         {

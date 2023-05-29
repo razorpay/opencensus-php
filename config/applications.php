@@ -126,6 +126,7 @@ return [
         'username'                         => env('MOZART_USERNAME'),
         'cred_eligibility_request_timeout' => env('CRED_ELIGIBILITY_REQUEST_TIMEOUT', .18),
         'ccavenue_collect_request_timeout' => env('CCAVENUE_COLLECT_REQUEST_TIMEOUT', 300),
+        'optrzp_collect_request_timeout'   => env('OPTRZP_COLLECT_REQUEST_TIMEOUT', 300),
 
         'test' => [
             'mock'      => env('MOZART_TEST_MOCK', false),
