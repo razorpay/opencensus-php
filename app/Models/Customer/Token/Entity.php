@@ -154,6 +154,9 @@ class Entity extends Base\PublicEntity
      * Specifies source In case of push token provisioning
      */
     const SOURCE = 'source';
+    const BUSINESS = 'business';
+    const MERCHANT = 'merchant';
+    const ISSUER = 'issuer';
 
     /**
      * Signifies whether user consent has been taken for a saved card for tokenisation
@@ -309,9 +312,8 @@ class Entity extends Base\PublicEntity
         self::COMPLIANT_WITH_TOKENISATION_GUIDELINES,
         self::STATUS,
         self::NOTES,
-        self::ERROR_DESCRIPTION
-        //TODO: uncomment once we are live with push provisioning officially.
-        //self::SOURCE
+        self::ERROR_DESCRIPTION,
+        self::SOURCE
         // TODO: uncomment when we start accepting token as input
         // self::MAX_AMOUNT,
     ];
@@ -1166,6 +1168,9 @@ class Entity extends Base\PublicEntity
         {
             $app = App::getFacadeRoot();
 
+            if(isset($publicArray[self::SOURCE]))
+                $publicArray[self::SOURCE] = $this->getSourcePublic($publicArray[self::SOURCE]);
+
             if($this->hasCardMandate() === true) {
                 $publicArray[self::MAX_AMOUNT] = ($this->cardMandate->getMaxAmount()!==null) ? $this->cardMandate->getMaxAmount():$this->getMaxAmount();
             } else {
@@ -1203,6 +1208,8 @@ class Entity extends Base\PublicEntity
                         'token'   => $this->getPublicId(),
                     ]);
             }
+        } else {
+            unset($publicArray[self::SOURCE]);
         }
 
         if ($this->isNachToken() === true and (new Merchant\Core)->isRazorxExperimentEnable(
@@ -1239,6 +1246,22 @@ class Entity extends Base\PublicEntity
         return $publicArray;
     }
 
+    //This functions stores the appropriate mapping of source database to corresponding source public values.
+    public function getSourcePublic($dbSource) {
+        $sourcePublic = self::BUSINESS;
+
+        switch($dbSource)
+        {
+            case self::MERCHANT:
+                $sourcePublic = self::BUSINESS;
+                break;
+            case self::ISSUER:
+                $sourcePublic = self::ISSUER;
+                break;
+        }
+        return $sourcePublic;
+    }
+
     public function isNachToken()
     {
         return ($this->getMethod() === Payment\Method::NACH);
@@ -1263,6 +1286,9 @@ class Entity extends Base\PublicEntity
     public function toArrayPublicTokenizedCard($serviceProviderTokens)
     {
         $publicArray = parent::toArrayPublic();
+
+        if(isset($publicArray[self::SOURCE]))
+            $publicArray[self::SOURCE] = $this->getSourcePublic($publicArray[self::SOURCE]);
 
         foreach (self::$networkTokenUnsetAttributes as $attribute)
         {
