@@ -32,6 +32,19 @@ class AssignFeatures extends Job
     {
         parent::handle();
 
+        if ((isset($this->input['flow']) === true) and ($this->input['flow'] === 'validate'))
+        {
+            (new ValidateFeaturesAPIAndDCS($this->input, $this->mode))->validate();
+        }
+        else
+        {
+            $this->assign();
+        }
+
+    }
+
+    protected function assign(): void
+    {
         RuntimeManager::setMemoryLimit('2048M');
 
         RuntimeManager::setTimeLimit($this->timeout);
@@ -104,7 +117,6 @@ class AssignFeatures extends Job
             $this->delete();
         }
     }
-
     public function getDcsEditVariant($featureName, $mode)
     {
         $mode = $mode ?? 'live';

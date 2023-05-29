@@ -458,6 +458,42 @@ class Service extends Base
     }
 
     /**
+     * @param string $apiFeatureName
+     * @param string $offset
+     * @param string $limit
+     * @param string $mode
+     * @return array
+     * @throws ApiException
+     * @throws ServerErrorException
+     */
+    public function fetchEntityIdsByFeatureNameInChunks(string $apiFeatureName,
+                                                string $offset, string $limit,
+                                                string $mode = Mode::TEST): array
+    {
+        $featureName = DcsConstants::dcsFeatureNameFromAPIName($apiFeatureName);
+        $key = DcsConstants::$featureToDCSKeyMapping[$featureName];
+
+        $data = DataFormatter::toKeyMapWithOutId($key);
+
+        $enabled_ids = [];
+        $response = $this->handleAggregateQueriesWithOffsetAndLimit($data, $offset, $limit ,$mode);
+        $features_with_id = $response['response'];
+
+        foreach ($features_with_id as $id => $features)
+        {
+            foreach ($features as $feature)
+            {
+                if ($feature === $apiFeatureName)
+                {
+                    $enabled_ids[] = $id;
+                }
+            }
+        }
+
+        return ['enabled_ids' => $enabled_ids, 'returned_offset' => $response['returned_offset']];
+    }
+
+    /**
      * @throws ApiException
      * @throws ServerErrorException
      */
@@ -503,8 +539,63 @@ class Service extends Base
                 }
             }
         }
+            return $res;
+        });
 
-                return $res;
+        Tracer::addAttribute('key' , $key);
+        Tracer::addAttribute('mode' , $mode);
+        Tracer::addAttribute('function' , __FUNCTION__);
+        Tracer::addAttribute('response_count' , sizeof($response));
+
+        return $response;
+    }
+
+    /**
+     * @throws ApiException
+     * @throws ServerErrorException
+     */
+    private function handleAggregateQueriesWithOffsetAndLimit($data, $offset, $limit, $mode): array
+    {
+        $key = $this->getAggregateKey($data);
+
+        $response = Tracer::inspan(['name' => HyperTrace::DCS_FETCH_FEATURES_AGGREGATE],
+            function() use ($key, $data, $mode, $offset, $limit) {
+
+                $dcsResponse = $this->client($mode)->aggregateFetchWithOffsetAndLimit($key, $offset, $limit);
+
+                $res = [];
+                $kvs = $dcsResponse->getKvs() == null ? [] : $dcsResponse->getKvs();
+                $returnedOffset = $dcsResponse->getOffset();
+
+                foreach ($kvs as $index => $kv)
+                {
+                    $data = DataFormatter::unMarshal($kv->getValue(), DataFormatter::convertDCSKeyToClassName($kv->getKey()));
+
+                    $dcsKey = $kv->getKey();
+                    $keyStr = DataFormatter::convertDCSKeyToStringWithOutEntityId($dcsKey);
+                    foreach ($data as $featureName => $enabled)
+                    {
+                        if (($enabled === true) &&
+                            (DcsConstants::isValidDcsKeyAndName($keyStr, $featureName) === true))
+                        {
+                            // this tries to fetch api name from dcs_name and key if it is missing we will catch the exception
+                            // and log DCS_MISSING_FIELD log, we can identify anf fix it
+                            try
+                            {
+                                $res[$dcsKey->getEntityId()][] = DcsConstants::apiFeatureNameFromDcsName($featureName, $keyStr);
+                            }
+                            catch (\Throwable)
+                            {
+                                $this->trace->info(TraceCode::DCS_MISSING_FIELD, [
+                                    'dcs_field_name' => $res,
+                                    'key' => $keyStr,
+                                    'mode' => $mode,
+                                ]);
+                            }
+                        }
+                    }
+                }
+                return ['response'=> $res, "returned_offset" => $returnedOffset];
             });
 
         Tracer::addAttribute('key' , $key);
