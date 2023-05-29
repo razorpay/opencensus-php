@@ -133,7 +133,7 @@ class PartnershipDeedStatusUpdaterTest extends TestCase
                                         'var' => 'each_array_element',
                                     ],
                                     1 => [
-                                        'var' => 'artefact.details.name_of partners',
+                                        'var' => 'artefact.details.name_of_partners',
                                     ],
                                     2 => 60,
                                 ],
@@ -248,7 +248,7 @@ class PartnershipDeedStatusUpdaterTest extends TestCase
                                         'var' => 'each_array_element',
                                     ],
                                     1 => [
-                                        'var' => 'artefact.details.name_of partners',
+                                        'var' => 'artefact.details.name_of_partners',
                                     ],
                                     2 => 60,
                                 ],
@@ -363,7 +363,7 @@ class PartnershipDeedStatusUpdaterTest extends TestCase
                                         'var' => 'each_array_element',
                                     ],
                                     1 => [
-                                        'var' => 'artefact.details.name_of partners',
+                                        'var' => 'artefact.details.name_of_partners',
                                     ],
                                     2 => 60,
                                 ],
