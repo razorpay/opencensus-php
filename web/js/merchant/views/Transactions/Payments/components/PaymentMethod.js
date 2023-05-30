@@ -21,18 +21,30 @@ import { titleCase, getEMI } from 'common/utils/rzp-utils';
  * `bankTransfer` as fetch bank transfer api,
  * the content will be shown according to the Design^
  */
-export default ({ payment, card = {}, bankTransfer = {}, upiTransfer = {}, onUPIClick = {} }) => {
-  const paymentMethod = payment.method;
 
-  const methodKeyMap = {
-    netbanking: 'bank',
-    wallet: 'wallet',
-    emandate: 'emandate',
-    aeps: 'aeps',
-    cardless_emi: 'cardless_emi',
-    paylater: 'paylater',
-    fpx: 'bank',
-  };
+const methodKeyMap = {
+  netbanking: 'bank',
+  wallet: 'wallet',
+  emandate: 'emandate',
+  aeps: 'aeps',
+  cardless_emi: 'cardless_emi',
+  paylater: 'paylater',
+  fpx: 'bank',
+};
+
+const subTypeMap = {
+  consumer: 'Consumer',
+  business: 'Business',
+};
+
+export default ({
+  payment = {},
+  card = {},
+  bankTransfer = {},
+  upiTransfer = {},
+  onUPIClick = {},
+}) => {
+  const paymentMethod = payment.method;
 
   const cardDetails = card || {};
 
@@ -61,11 +73,6 @@ export default ({ payment, card = {}, bankTransfer = {}, upiTransfer = {}, onUPI
 
     const emiPlan = payment.emi_plan;
     const emi = !!emiPlan && getEMI(payment.amount, emiPlan.duration, emiPlan.rate / 100);
-
-    const subTypeMap = {
-      consumer: 'Consumer',
-      business: 'Business',
-    };
 
     const cardTitle = (
       <span>
@@ -133,29 +140,40 @@ export default ({ payment, card = {}, bankTransfer = {}, upiTransfer = {}, onUPI
               <span>{upiTransfer.virtual_account.description}</span>
             )}
 
-          {
-            <div>
-              {upiTransfer && (
-                <div class="row m-b">
-                  <div class="col-sm-12">
-                    <Link to={`/virtualaccounts/${upiTransfer.virtual_account_id}`}>
-                      <code>{upiTransfer.virtual_account_id}</code>
-                    </Link>
-                  </div>
+          <div>
+            {upiTransfer && (
+              <div className="row m-b">
+                <div className="col-sm-12">
+                  <Link to={`/virtualaccounts/${upiTransfer.virtual_account_id}`}>
+                    <code>{upiTransfer.virtual_account_id}</code>
+                  </Link>
                 </div>
-              )}
-              <div class="row">
-                <div class="col-sm-12">
-                  <div class="row">
-                    <div class="col-sm-5 col-xs-5">Payer UPI ID:</div>
-                    <div class="col-sm-7 col-xs-7">
-                      {upiTransfer ? upiTransfer.payer_vpa : payment.vpa}
-                    </div>
+              </div>
+            )}
+            <div className="row">
+              <div className="col-sm-12">
+                <div className="row">
+                  <div className="col-sm-5 col-xs-5">Payer UPI ID:</div>
+                  <div className="col-sm-7 col-xs-7">
+                    {upiTransfer ? upiTransfer.payer_vpa : payment.vpa}
                   </div>
                 </div>
               </div>
             </div>
-          }
+            {/* payment.upi?.payer_account_type only available if payment done via UPI */}
+            {!!payment.upi?.payer_account_type && (
+              <div className="row">
+                <div className="col-sm-12">
+                  <div className="row">
+                    <div className="col-sm-5 col-xs-5">Paid from:</div>
+                    <div className="col-sm-7 col-xs-7">
+                      {titleCase(payment.upi.payer_account_type)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </Definition>
       );
     }
@@ -183,29 +201,33 @@ export default ({ payment, card = {}, bankTransfer = {}, upiTransfer = {}, onUPI
             <PlaceholderLoader />
           ) : (
             <div>
-              <div class="row m-b">
-                <div class="col-sm-12">
+              <div className="row m-b">
+                <div className="col-sm-12">
                   <Link to={`/virtualaccounts/${bankTransfer.virtual_account_id}`}>
                     <code>{bankTransfer.virtual_account_id}</code>
                   </Link>
                 </div>
               </div>
               {!!bankTransfer.payer_bank_account && (
-                <div class="row">
-                  <div class="col-sm-12">
-                    <div class="row">
-                      <div class="col-sm-4 col-xs-5">Payer Name:</div>
-                      <div class="col-sm-8 col-xs-7">{bankTransfer.payer_bank_account.name}</div>
+                <div className="row">
+                  <div className="col-sm-12">
+                    <div className="row">
+                      <div className="col-sm-4 col-xs-5">Payer Name:</div>
+                      <div className="col-sm-8 col-xs-7">
+                        {bankTransfer.payer_bank_account.name}
+                      </div>
                     </div>
-                    <div class="row">
-                      <div class="col-sm-4 col-xs-5">Payer a/c:</div>
-                      <div class="col-sm-8 col-xs-7">
+                    <div className="row">
+                      <div className="col-sm-4 col-xs-5">Payer a/c:</div>
+                      <div className="col-sm-8 col-xs-7">
                         {bankTransfer.payer_bank_account.account_number}
                       </div>
                     </div>
-                    <div class="row">
-                      <div class="col-sm-4 col-xs-5">Payer IFSC:</div>
-                      <div class="col-sm-8 col-xs-7">{bankTransfer.payer_bank_account.ifsc}</div>
+                    <div className="row">
+                      <div className="col-sm-4 col-xs-5">Payer IFSC:</div>
+                      <div className="col-sm-8 col-xs-7">
+                        {bankTransfer.payer_bank_account.ifsc}
+                      </div>
                     </div>
                   </div>
                 </div>

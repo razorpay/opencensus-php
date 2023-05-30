@@ -1,17 +1,14 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import PaymentMethod from 'merchant/views/Transactions/Payments/components/PaymentMethod';
 import { render, screen, fireEvent, checkIfComponentIsEmpty } from 'test-utils';
+import {
+  App,
+  defaultUpiPayment,
+  upiTransferDetails,
+} from 'merchant/views/Transactions/Payments/components/__tests__/mocks/fixtures/PaymentMethod';
+import { titleCase } from 'common/utils/rzp-utils';
 
 describe('PaymentMethod', () => {
-  const defaultProps = {
-    payment: {},
-  };
-
-  const App = (props) => {
-    return <PaymentMethod {...defaultProps} {...props} />;
-  };
-
   test('should not render payment method details when payment method is not present', () => {
     render(<App card={null} />);
     checkIfComponentIsEmpty();
@@ -107,29 +104,40 @@ describe('PaymentMethod', () => {
 
   test('should render payment method details when payment method is upi', () => {
     const upiTransfer = {
-      details: {
-        virtual_account: {
-          description: 'UPI description',
-        },
-        virtual_account_id: 'qwee23234vdsv',
-        payer_vpa: 'payer@vpa',
+      ...upiTransferDetails,
+    };
+
+    const payment = {
+      ...defaultUpiPayment,
+      upi: {
+        payer_account_type: 'bank_account',
       },
     };
-    render(
-      <App
-        payment={{
-          method: 'upi',
-          amount: 20000,
-        }}
-        upiTransfer={upiTransfer}
-        onUPIClick={jest.fn()}
-      />,
-    );
+
+    render(<App payment={payment} upiTransfer={upiTransfer} onUPIClick={jest.fn()} />);
     fireEvent.click(screen.getByText('UPI'));
     expect(screen.getByText(upiTransfer.details.virtual_account.description)).toBeInTheDocument();
     expect(screen.getByText(upiTransfer.details.virtual_account_id)).toBeInTheDocument();
     expect(screen.getByText('Payer UPI ID:')).toBeInTheDocument();
     expect(screen.getByText(upiTransfer.details.payer_vpa)).toBeInTheDocument();
+    expect(screen.getByText('Paid from:')).toBeInTheDocument();
+    expect(screen.getByText(titleCase(payment.upi.payer_account_type))).toBeInTheDocument();
+  });
+
+  test('should not render paid from details when payer_account_type data not available', () => {
+    const upiTransfer = {
+      ...upiTransferDetails,
+    };
+
+    const payment = {
+      ...defaultUpiPayment,
+    };
+
+    render(<App payment={payment} upiTransfer={upiTransfer} onUPIClick={jest.fn()} />);
+    fireEvent.click(screen.getByText('UPI'));
+    expect(screen.getByText('Payer UPI ID:')).toBeInTheDocument();
+    expect(screen.getByText(upiTransfer.details.payer_vpa)).toBeInTheDocument();
+    expect(screen.queryByText('Paid from:')).not.toBeInTheDocument();
   });
 
   test('should not render payment method details when payment method is upi & loading', () => {
@@ -137,18 +145,18 @@ describe('PaymentMethod', () => {
       details: {},
       loading: true,
     };
-    render(
-      <App
-        payment={{
-          method: 'upi',
-          amount: 20000,
-        }}
-        upiTransfer={upiTransfer}
-        onUPIClick={jest.fn()}
-      />,
-    );
+
+    const payment = {
+      ...defaultUpiPayment,
+      upi: {
+        payer_account_type: 'credit_card',
+      },
+    };
+    render(<App payment={payment} upiTransfer={upiTransfer} onUPIClick={jest.fn()} />);
     fireEvent.click(screen.getByText('UPI'));
     expect(screen.queryByText('Payer UPI ID:')).not.toBeInTheDocument();
+    expect(screen.queryByText('Paid from:')).not.toBeInTheDocument();
+    expect(screen.queryByText(titleCase(payment.upi.payer_account_type))).not.toBeInTheDocument();
   });
 
   test('should render payment vpa when payment method is upi & payer vpa is not available', () => {
@@ -157,8 +165,7 @@ describe('PaymentMethod', () => {
       loading: false,
     };
     const payment = {
-      method: 'upi',
-      amount: 20000,
+      ...defaultUpiPayment,
       vpa: 'payment@vpa',
     };
     render(<App payment={payment} upiTransfer={upiTransfer} onUPIClick={jest.fn()} />);
