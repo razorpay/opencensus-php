@@ -25,6 +25,10 @@ class Service extends Base\Service
         // Can't use merchant here because this is a direct route
         $qrCode = $this->repo->qr_code->findByPublicId($id);
 
+        // If the above line doesn't throw an exception, it means the qrCode entity was found
+        // We should now immediately set the merchant context.
+        $this->app['basicauth']->setMerchantById($qrCode->merchant->getId());
+
         $this->trace->info(TraceCode::QR_CODE_IMAGE_DOWNLOAD_REQUEST,
                            [
                                'usage_type'  => $qrCode instanceof NonVaQrEntity ? $qrCode->getUsageType() : null,

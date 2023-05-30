@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Helpers\VirtualAccount;
 
 use RZP\Models\Order;
+use RZP\Constants\Mode;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 
@@ -12,11 +13,12 @@ trait VirtualAccountTrait
 
     private function createVirtualAccount(
         array $input = [],
-        $numeric = true,
-        $descriptor = null,
-        $qrCode = false,
-        $vpa = false,
-        $vpaDescriptor = null)
+              $numeric = true,
+              $descriptor = null,
+              $qrCode = false,
+              $vpa = false,
+              $vpaDescriptor = null,
+              $mode = 'test')
     {
         $defaultValues = $this->getDefaultVirtualAccountRequestArray();
 
@@ -47,7 +49,7 @@ trait VirtualAccountTrait
 
         $attributes = array_merge($defaultValues, $input);
 
-        $this->ba->privateAuth();
+        ($mode === Mode::TEST) ? $this->ba->privateAuth() : $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
         $request = [
             'method'  => 'POST',

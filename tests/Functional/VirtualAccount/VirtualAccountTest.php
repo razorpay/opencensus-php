@@ -4,7 +4,9 @@ namespace RZP\Tests\Functional\VirtualAccount;
 
 use Hash;
 use Cache;
+use Mockery;
 use Carbon\Carbon;
+use RZP\Services\Mock;
 use RZP\Models\Feature;
 use RZP\Models\Terminal;
 use RZP\Models\Settings;
@@ -22,6 +24,7 @@ use RZP\Models\VirtualAccount\Core;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\VirtualAccount\Status;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\ServerErrorException;
 use RZP\Models\VirtualAccount\Constant;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Tests\Traits\TestsWebhookEvents;
@@ -1414,6 +1417,89 @@ class VirtualAccountTest extends TestCase
         $this->sendRequest($request);
     }
 
+    /**
+     * testDownloadQrInLiveModeRegenerationLogicEdgeCase tests the following scenario-
+     * 0. The QR was successfully created in the 1st place.
+     * 1. Someone tries to download the QR in live mode.
+     * 2. The first call to UFH to fetch the file fails with a 5xx. We expect an exception to be raised.
+     * 3. We proceed with regenerating and re-uploading the QR code.
+     * 4. The QR code should be now successfully returned.
+     *
+     * This test case has been return to check for an edge case where merchant context was not getting properly
+     * populated in the above-mentioned scenario.
+     * Refer- https://razorpay.slack.com/archives/C03RY88T214/p1684256312554559?thread_ts=1684255797.766869&cid=C03RY88T214
+    */
+    public function testDownloadQrInLiveModeRegenerationLogicEdgeCase()
+    {
+        // Setup ------------------------------
+        $this->fixtures->merchant->activate();
+
+        $response = $this->createVirtualAccount([
+            'receiver_types'  => 'qr_code',
+            'amount_expected' => 10000,
+        ], mode: 'live');
+
+        $qrCodeId = $response['receivers'][0]['id'];
+
+        $request = [
+            'method' => 'GET',
+            'url'    => '/l/qrcode/' . $qrCodeId,
+        ];
+
+        $this->ba->directAuth();
+        // Setup ends --------------------------
+
+        // Set UFH mocks
+        $ufhServiceMock = Mockery::mock(Mock\UfhService::class, [$this->app])->makePartial();
+
+        // To be thrown to replicate that UFH is down
+        $exception = new ServerErrorException('Unavailable', 'SERVER_ERROR');
+
+        // We only want the above exception to be thrown once.
+        // This shall happen when we try to fetch the file from UFH for the first time in the QR download flow.
+        // Hence, maintaining a count
+        $count = 0;
+
+        // If $exception has never been thrown, throw it and increment count
+        // If it has been thrown once, return the mock data
+        $ufhServiceMock->shouldReceive('fetchFiles')
+            ->andReturnUsing(function() use (&$count, $exception, $qrCodeId) {
+                if ($count == 0) {
+                    ++$count;
+                    throw $exception;
+                }
+                else {
+                    ++$count;
+                    return [
+                        'entity'  => 'collection',
+                        'count'   => 1,
+                        'items'   => [
+                            [
+                                'id'            => 'file_10RandomFileId',
+                                'type'          => $type ?? 'explanation_letter',
+                                'entity_type'   => 'qr_code',
+                                'entity_id'     => $qrCodeId,
+                                'name'          => 'QrCode.jpg',
+                                'location'      => 'random/qrcode/location',
+                                'bucket'        => 'test_bucket',
+                                'mime'          => 'image/jpeg',
+                                'extension'     => 'jpg',
+                                'merchant_id'   => '10000000000000',
+                                'store'         => 's3',
+                            ],
+                        ],
+                    ];
+                }
+            });
+
+        $this->app->instance('ufh.service', $ufhServiceMock);
+
+        $response = $this->sendRequest($request);
+
+        // Assert that a QR image was successfully received in the response.
+        $this->assertContentTypeForResponse('image/png', $response);
+    }
+
     public function testDownloadQrInTestMode()
     {
         $this->fixtures->merchant->activate();
@@ -1432,6 +1518,7 @@ class VirtualAccountTest extends TestCase
             ],
         ];
 
+        // Question for Reviewer: Why do we use live mode here for test mode case?
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
         $request = [
@@ -1454,6 +1541,89 @@ class VirtualAccountTest extends TestCase
         $this->expectException(BadRequestException::class);
 
         $this->sendRequest($request);
+    }
+
+    /**
+     * testDownloadQrInTestModeRegenerationLogicEdgeCase tests the following scenario-
+     * 0. The QR was successfully created in the 1st place.
+     * 1. Someone tries to download the QR in live mode.
+     * 2. The first call to UFH to fetch the file fails with a 5xx. We expect an exception to be raised.
+     * 3. We proceed with regenerating and re-uploading the QR code.
+     * 4. The QR code should be now successfully returned.
+     *
+     * This test case has been return to check for an edge case where merchant context was not getting properly
+     * populated in the above-mentioned scenario.
+     * Refer- https://razorpay.slack.com/archives/C03RY88T214/p1684256312554559?thread_ts=1684255797.766869&cid=C03RY88T214
+     */
+    public function testDownloadQrInTestModeRegenerationLogicEdgeCase()
+    {
+        // Setup ------------------------------
+        $this->fixtures->merchant->activate();
+
+        $response = $this->createVirtualAccount([
+            'receiver_types'  => 'qr_code',
+            'amount_expected' => 10000,
+        ]);
+
+        $qrCodeId = $response['receivers'][0]['id'];
+
+        $request = [
+            'method' => 'GET',
+            'url'    => '/t/qrcode/' . $qrCodeId,
+        ];
+
+        $this->ba->directAuth();
+        // Setup ends --------------------------
+
+        // Set UFH mocks
+        $ufhServiceMock = Mockery::mock(Mock\UfhService::class, [$this->app])->makePartial();
+
+        // To be thrown to replicate that UFH is down
+        $exception = new ServerErrorException('Unavailable', 'SERVER_ERROR');
+
+        // We only want the above exception to be thrown once.
+        // This shall happen when we try to fetch the file from UFH for the first time in the QR download flow.
+        // Hence, maintaining a count
+        $count = 0;
+
+        // If $exception has never been thrown, throw it and increment count
+        // If it has been thrown once, return the mock data
+        $ufhServiceMock->shouldReceive('fetchFiles')
+                       ->andReturnUsing(function() use (&$count, $exception, $qrCodeId) {
+                           if ($count == 0) {
+                               ++$count;
+                               throw $exception;
+                           }
+                           else {
+                               ++$count;
+                               return [
+                                   'entity'  => 'collection',
+                                   'count'   => 1,
+                                   'items'   => [
+                                       [
+                                           'id'            => 'file_10RandomFileId',
+                                           'type'          => $type ?? 'explanation_letter',
+                                           'entity_type'   => 'qr_code',
+                                           'entity_id'     => $qrCodeId,
+                                           'name'          => 'QrCode.jpg',
+                                           'location'      => 'random/qrcode/location',
+                                           'bucket'        => 'test_bucket',
+                                           'mime'          => 'image/jpeg',
+                                           'extension'     => 'jpg',
+                                           'merchant_id'   => '10000000000000',
+                                           'store'         => 's3',
+                                       ],
+                                   ],
+                               ];
+                           }
+                       });
+
+        $this->app->instance('ufh.service', $ufhServiceMock);
+
+        $response = $this->sendRequest($request);
+
+        // Assert that a QR image was successfully received in the response.
+        $this->assertContentTypeForResponse('image/png', $response);
     }
 
     public function testCreateVirtualAccountWithDescriptor()

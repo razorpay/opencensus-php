@@ -75,27 +75,7 @@ class Core extends Base\Core
 
     protected function getUfhService()
     {
-        $ufhServiceMock = $this->app['config']->get('applications.ufh.mock');
-
-        if($ufhServiceMock === false)
-        {
-            $this->ufhService = new UfhService($this->app,
-                                               $this->app['basicauth']->getMerchantId(),
-                                               EntityConstants::QR_CODE);
-        }
-        else
-        {
-            $this->ufhService = new MockUfhService($this->app);
-        }
-
-        if(is_null($this->ufhService) == true)
-        {
-            $this->trace->info(
-                TraceCode::QR_CODE_UFH_SERVICE_NULL
-            );
-
-            return $this->app['ufh.service'];
-        }
+        $this->ufhService = $this->app['ufh.service'];
 
         $this->trace->info(
             TraceCode::QR_CODE_UFH_SERVICE_FETCHED
@@ -106,6 +86,8 @@ class Core extends Base\Core
 
     public function fetchQrCodePathFromUfh(Entity $qrCode)
     {
+        // This shouldn't be needed as the Service layer does set it inside fetchQrCodePath()
+        // Keeping this anyway to avoid breaking other flows that directly call this function (fetchQrCodePathFromUfh())
         $this->app['basicauth']->setMerchantById($qrCode->merchant->getId());
 
         $ufhQueryParams = [
