@@ -234,8 +234,8 @@ class Repository extends Base\Repository
                     ->where(Entity::STATUS, Status::FAILED)
                     ->where(
                         Entity::PROCESSED_AT,
-                        '<',
-                        Carbon::today(Timezone::IST)->getTimestamp()
+                        '<=',
+                        Carbon::now(Timezone::IST)->subHours(3)->getTimestamp()
                     )
                     ->where(Entity::ATTEMPTS, '<', Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS)
                     ->limit($count)
