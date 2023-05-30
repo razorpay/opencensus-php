@@ -53,7 +53,6 @@ class Service extends Base\Service
     const PAGE_SIZE = 1000;
 
     const CACHE_KEY_ORG_DATA = 'org_data_';
-    const CACHE_TTL_ORG_DATA = 60 * 6; // 6 hours
 
     // This is the Admin\Logger trait
     use Logger;
@@ -96,6 +95,11 @@ class Service extends Base\Service
     protected function getIv()
     {
         return openssl_random_pseudo_bytes(12);
+    }
+
+    public function getCacheTime()
+    {
+       return Config::get('app.cache_ttl_org_time_minute');
     }
 
     public function passwordLogin($domain, array $input)
@@ -1444,8 +1448,7 @@ class Service extends Base\Service
         {
             $this->cache->put($cacheKey, $org['id'], 10);
         }
-
-        $this->cache->put($orgDataCacheKey, $org, self::CACHE_TTL_ORG_DATA);
+        $this->cache->put($orgDataCacheKey, $org, $this->getCacheTime());
     }
 
     public function getAdminData($admin)
