@@ -1538,7 +1538,14 @@ class Processor
 
         if ($customer != null)
         {
-            $input[Payment\Entity::CUSTOMER_ID] = $customer->getId();
+            if ($customer->isGlobal())
+            {
+                $input[Payment\Entity::GLOBAL_CUSTOMER_ID] = $customer->getId();
+            }
+            else
+            {
+                $input[Payment\Entity::CUSTOMER_ID] = $customer->getId();
+            }
         }
 
         $paymentData = $this->callPGRouterPaymentCreateBasedOnRoute($input);
