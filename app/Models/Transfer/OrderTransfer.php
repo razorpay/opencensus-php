@@ -22,7 +22,7 @@ class OrderTransfer extends  AbstractTransfer
     {
         try
         {
-            $transfersProcessed = $this->mutex->acquireAndRelease(
+            [$transfersProcessed, $failedTransferToRetry] = $this->mutex->acquireAndRelease(
                 'order_transfer_process_' . $this->payment->getPublicId(),
                 function ()
                 {
@@ -52,6 +52,8 @@ class OrderTransfer extends  AbstractTransfer
                     'count'      => count($transfersProcessed->getIds())
                 ]
             );
+
+            return $failedTransferToRetry;
         }
         catch (\Exception $e)
         {

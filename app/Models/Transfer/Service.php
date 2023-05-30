@@ -1055,6 +1055,8 @@ class Service extends Base\Service
      * update recipient_settlement_id.
      * Takes a data array as input that contains relevant IDs.
      *
+     * This route is used to manually process the transfers from dark env currently.
+     *
      * @param array $input
      * @return void
      * @throws BadRequestValidationFailureException

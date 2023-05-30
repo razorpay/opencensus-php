@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Transfer;
 
+use Exception;
 use Throwable;
 use RZP\Constants;
 use RZP\Trace\Tracer;
@@ -102,6 +103,8 @@ abstract class AbstractTransfer
                 'transferMode' =>  $this->transfermode,
             ]);
 
+        $failedTransferToRetry = [];
+
             foreach ($transfers as $transfer)
             {
                 try
@@ -122,6 +125,12 @@ abstract class AbstractTransfer
                             'transfermode' => $this->transfermode,
                         ]
                     );
+
+                    if ((new Utility)->isRetryableError($e) === true)
+                    {
+                        $failedTransferToRetry[] = $transfer;
+                        continue;
+                    }
 
                     $transfer->setFailed();
 
@@ -152,7 +161,7 @@ abstract class AbstractTransfer
 
         (new Metric())->pushSourceIdProcessingTimeInWorkerMetrics($this->transfermode, ($endTime - $startTime));
 
-        return $transfers;
+        return [$transfers, $failedTransferToRetry];
     }
 
     public function processTransferWithRetry($payment, $transfer)
@@ -165,7 +174,7 @@ abstract class AbstractTransfer
 
                 break;
             }
-            catch (\Illuminate\Database\QueryException $ex)
+            catch (\Illuminate\Database\QueryException | \PDOException $ex)
             {
                 if ($this->isErrorDueToDBLostConnection($ex) === false)
                 {
@@ -491,7 +500,8 @@ abstract class AbstractTransfer
         // errors that are checked by the causedByLostConnection method.
         $message = $e->getMessage();
 
-        if (Str::contains($message, ['Lock wait timeout exceeded',]) === true)
+        if (Str::contains($message, ['Lock wait timeout exceeded',
+                                     'Deadlock found when trying to get lock']) === true)
         {
             return true;
         }

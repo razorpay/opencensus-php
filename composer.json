@@ -95,7 +95,8 @@
         "selective/transformer": "1.2.0",
         "grpc/grpc": "1.52.0",
         "razorpay/account-service-php-sdk": "v1.0.3",
-        "ext-grpc": "*"
+        "ext-grpc": "*",
+        "ext-pdo": "*"
     },
     "repositories": [
         {

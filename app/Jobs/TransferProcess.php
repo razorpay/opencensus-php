@@ -3,10 +3,15 @@
 namespace RZP\Jobs;
 
 use App;
+use Exception;
 use RZP\Constants\Entity;
+use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
 use RZP\Models\Transfer;
 use RZP\Trace\TraceCode;
+use RZP\Models\Transfer\Utility;
+use RZP\Exception\LogicException;
+use RZP\Exception\BadRequestException;
 
 class TransferProcess extends Job
 {
@@ -23,6 +28,8 @@ class TransferProcess extends Job
     public $timeout = 900;
 
     protected $queueConfigKey = 'transfer_process';
+
+    protected const TRANSFER_FAILURE_RETRY_ATTEMPT = 2;
 
     public function __construct(string $mode, $payment, $transfermode = Transfer\Constant::ORDER)
     {
@@ -73,7 +80,14 @@ class TransferProcess extends Job
                 $transfer = new Transfer\PaymentTransfer($this->payment);
             }
 
-            $transfer->process();
+            $failedTransferToRetry = $transfer->process();
+
+            if(empty($failedTransferToRetry) === false)
+            {
+                $this->checkRetry(Utility::INSUFFICIENT_BALANCE_RETRY_INTERVAL);
+            }
+
+            $this->delete();
 
         }
         catch (\Exception $ex)
@@ -88,10 +102,13 @@ class TransferProcess extends Job
                     'transfermode' => $this->transferMode,
                 ]
             );
-        }
-        finally
-        {
-            $this->delete();
+
+            if ((new Utility)->isRetryableError($ex) === true)
+            {
+                $retryTime = (new Utility)->getDelay($ex);
+
+                $this->checkRetry($retryTime);
+            }
         }
     }
 
@@ -108,7 +125,7 @@ class TransferProcess extends Job
         return false;
     }
 
-    private  function getPaymentEntity($paymentId)
+    private function getPaymentEntity($paymentId)
     {
         $app = App::getFacadeRoot();
 
@@ -125,7 +142,7 @@ class TransferProcess extends Job
                 null,
                 TraceCode::TRANSFER_PROCESS_PAYMENT_ID_NOT_FOUND,
                 [
-                    'message'     => 'paymentId not found',
+                    'message'      => 'paymentId not found',
                     'payment_id'   => $this->payment,
                     'transfermode' => $this->transferMode,
                 ]
@@ -134,4 +151,31 @@ class TransferProcess extends Job
             throw $ex;
         }
     }
+
+    protected function checkRetry($delay)
+    {
+        if ($this->attempts() > self::TRANSFER_FAILURE_RETRY_ATTEMPT)
+        {
+            $this->trace->error(
+                TraceCode::TRANSFER_FAILED_POST_ALL_RETRIES,
+                [
+                    'payment_id' => $this->payment,
+                ]
+            );
+
+            $this->delete();
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::TRANSFER_FAILURE_RETRY_DISPATCH,
+                [
+                    'payment_id' => $this->payment,
+                ]
+            );
+
+            $this->release($delay);
+        }
+    }
+
 }

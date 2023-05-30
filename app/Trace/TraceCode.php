@@ -3115,6 +3115,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TRANSFER_PROCESS_QUEUE                                = 'TRANSFER_PROCESS_QUEUE';
     const TRANSFER_PROCESS_PAYMENT_ID_NOT_FOUND                 = 'TRANSFER_PROCESS_PAYMENT_ID_NOT_FOUND';
     const TRANSFER_FAILURE                                      = 'TRANSFER_FAILURE';
+    const TRANSFER_FAILED_POST_ALL_RETRIES                      = 'TRANSFER_FAILED_POST_ALL_RETRIES';
+    const TRANSFER_FAILURE_RETRY_DISPATCH                       = 'TRANSFER_FAILURE_RETRY_DISPATCH';
     const TRANSFER_RECON_INITIATED                              = 'TRANSFER_RECON_INITIATED';
     const TRANSFER_RECON_COMPLETE                               = 'TRANSFER_RECON_COMPLETE';
     const TRANSFER_RECON_ALL_TXN_IDS_UPDATED                    = 'TRANSFER_RECON_ALL_TXN_IDS_UPDATED';
