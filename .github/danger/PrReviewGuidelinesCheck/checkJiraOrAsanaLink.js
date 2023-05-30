@@ -1,3 +1,4 @@
+const { setFailed } = require('@actions/core');
 const { printMessage, universeUsage } = require('../utils');
 const { PR_AUTOMATED_CHECKS } = require('../constants');
 
@@ -23,6 +24,7 @@ function checkJiraOrAsanaLink(title, body) {
       type,
       message,
     });
+    setFailed(message);
     universeUsage.log({
       eventName: PR_AUTOMATED_CHECKS,
       eventProperties: {
