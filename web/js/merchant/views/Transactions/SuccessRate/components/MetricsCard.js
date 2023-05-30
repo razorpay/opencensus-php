@@ -17,7 +17,7 @@ const MetricsCard = ({ isLoading, metric, isActive }) => {
     if (isLoading) {
       return (
         <div>
-          <PlaceholderLoader />
+          <PlaceholderLoader data-testid="metrics-card-loader" />
           <PlaceholderLoader className="placeholder-loader" />
         </div>
       );
@@ -39,7 +39,9 @@ const MetricsCard = ({ isLoading, metric, isActive }) => {
         </div>
         {total ? (
           <h1>
-            <span>{`${getFixedNumber(sr || 0)}%`}</span>
+            <span data-testid={`${name}-metric-card-sr-value`}>{`${getFixedNumber(
+              sr || 0,
+            )}%`}</span>
           </h1>
         ) : (
           <p className="callout-text">{`No payments were made via ${

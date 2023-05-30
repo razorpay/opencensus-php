@@ -53,8 +53,8 @@ const GraphWidget = (props) => {
   } = props;
   const { isLoading, tabLoading, activeTab, metrics, tabs, isDropdownFilterLoading, filters } =
     successRate;
-
   const tabPane = getTabsPane(metrics);
+
   const [isSRDashboardFirstTime, setIsSRDashboardFirstTime] = useLocalStorage(
     `isSRDashboardFirstTime_${user?.current}`,
     true,
@@ -109,7 +109,7 @@ const GraphWidget = (props) => {
   };
 
   return (
-    <div className="metrics-container">
+    <div className="metrics-container" data-testid="success-rate-graph-widget">
       <Tabs
         className="sr-metrics"
         justified={true}
@@ -120,6 +120,7 @@ const GraphWidget = (props) => {
           return (
             <Tab
               key={`${tab.name}-${idx}`}
+              data-testid={`${tab.name}-tab`}
               className={classList((isLoading || tabLoading) && 'loading')}
             >
               <MetricsCard

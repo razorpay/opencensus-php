@@ -39,8 +39,8 @@ const TagGroup = ({ isLoading, tags, selectedTags = [], groupBy = '', onSelect, 
   if (isLoading) {
     return (
       <div className="tag-list">
-        <PlaceholderLoader />
-        <PlaceholderLoader style={{ width: '45%' }} />
+        <PlaceholderLoader data-testid="sr-dashboard-chart-shimmer" />
+        <PlaceholderLoader data-testid="sr-dashboard-chart-shimmer" style={{ width: '45%' }} />
       </div>
     );
   }

@@ -49,7 +49,7 @@ const SuccessRate = (props) => {
   }, []);
 
   return (
-    <div className="sr-dashboard">
+    <div className="sr-dashboard" data-testid="success-rate-container">
       <ErrorBoundary resetOnProps>
         <ShowWhen additionalCondition={(_user) => _user.isOptimizerEnabled}>
           <HeaderAction responsive>
