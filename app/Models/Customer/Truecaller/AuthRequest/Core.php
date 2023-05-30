@@ -2,13 +2,14 @@
 
 namespace RZP\Models\Customer\Truecaller\AuthRequest;
 
-use Illuminate\Support\Facades\Crypt;
+use RZP\Constants\Environment;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\Customer\Truecaller\Client;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 class Core extends BaseCore
 {
@@ -210,7 +211,9 @@ class Core extends BaseCore
         }
 
         try {
-            $response = (new Client())->fetchUserProfile($input['accessToken'], $input['endpoint'], $input['requestId']);
+            $endpoint =  $this->getTruecallerEndpointFromEnv($input['endpoint']);
+
+            $response = (new Client())->fetchUserProfile($input['accessToken'], $endpoint, $input['requestId']);
 
             if (isset($response['error']) === true)
             {
@@ -229,7 +232,12 @@ class Core extends BaseCore
         }
         catch (\Exception $exception)
         {
-            $this->trace->traceException($exception,null,null,TraceCode::TRUECALLER_CALLBACK_ERROR);
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::TRUECALLER_CALLBACK_ERROR,
+                []
+            );
 
             throw $exception;
         }
@@ -302,5 +310,24 @@ class Core extends BaseCore
         }
 
         return $traceInput;
+    }
+
+    /**
+     * Mock app is an internal mock application used to mock the truecaller servers. if the callback request is from this
+     * mock app, we will send the next request to mock-gateway instead of truecaller and return a hardcoded mobile number
+     * as the response. refer more details at:
+     * https://docs.google.com/document/d/1S412Hzy-maQPg62I2qklnHA6PLxHYtSdVeSjt7f323Q/edit?usp=sharing
+     *
+     * @param string $endpointFromCallback
+     * @return string
+     */
+    protected function getTruecallerEndpointFromEnv(string $endpointFromCallback): string
+    {
+        if (getenv('APP_ENV') === Environment::AUTOMATION)
+        {
+            return env('EXTERNAL_MOCK_GO_GATEWAY_DOMAIN') . Constants::TRUECALLER_MOCK_ENDPOINT;
+        }
+
+        return $endpointFromCallback;
     }
 }

@@ -22,6 +22,7 @@ class Constants
     public const PENDING             = 'pending';
     public const SUCCESSFUL          = 'successful';
 
+    public const TRUECALLER_MOCK_ENDPOINT = '/customers/truecaller/user_profile';
 
     public const TRUECALLER_REQUEST_TIMEOUT = 5; // 5 seconds
 
