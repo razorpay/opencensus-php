@@ -72,6 +72,13 @@ class FeaturesTest extends OAuthTestCase
         $this->startTest();
     }
 
+    // We expect an exception in the test, as we are blocking assignment of this feature
+    // Check Test data for expectations.
+    public function testAddBharatQrFeatureToMerchant()
+    {
+        $this->startTest();
+    }
+
     public function testAddDuplicateFeatureToMerchant()
     {
         $this->addFeatures(Mode::TEST);

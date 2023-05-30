@@ -646,9 +646,7 @@ class Core extends Base\Core
 
     protected function verifyBharatQrEnabled(Merchant $merchant)
     {
-        $feature = Feature\Constants::BHARAT_QR;
-
-        if ($merchant->isFeatureEnabled($feature) === false)
+        if ($merchant->isFeatureEnabled(Feature\Constants::BHARAT_QR) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_BHARAT_QR_NOT_ENABLED_FOR_MERCHANT);

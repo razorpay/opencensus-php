@@ -64,7 +64,7 @@ class GatewayProcessor extends BaseGatewayProcessor
             return $this->getGatewayRequestArrayForAdditionalTerminalCreation($subMerchant, $input);
         }
 
-        return $this->getGatewayRequestArrayForMerchantOnboarding($subMerchant, $input);        
+        return $this->getGatewayRequestArrayForMerchantOnboarding($subMerchant, $input);
     }
 
     public function processTerminalData($terminalResponseData, $subMerchant, $gatewayInput)
@@ -74,12 +74,12 @@ class GatewayProcessor extends BaseGatewayProcessor
             $terminalParams = $this->getTerminalCreationParams($gatewayInput, $subMerchant);
 
             $terminal = (new Core)->create($terminalParams, $subMerchant);
-    
+
             $this->assignRequisiteFeatures($subMerchant);
 
             $this->setupCreateReminder($terminal);
-        
-            return $terminal;    
+
+            return $terminal;
         }
 
         $errorCode = ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR;
@@ -293,7 +293,7 @@ class GatewayProcessor extends BaseGatewayProcessor
                             {
                                 return;
                             }
-                        
+
                         throw new Exception\BadRequestException(
                             ErrorCode::GATEWAY_ERROR_TERMINAL_DISABLE_FAILED, null, $response);
                     }
@@ -422,14 +422,14 @@ class GatewayProcessor extends BaseGatewayProcessor
     protected function assignRequisiteFeatures($merchant)
     {
         if ($merchant->isFeatureEnabled(Feature\Constants::BHARAT_QR) === false)
-        {            
+        {
             $featureParam = [
                 Feature\Entity::ENTITY_TYPE => $merchant->getEntityName(),
                 Feature\Entity::ENTITY_ID   => $merchant->getId(),
                 Feature\Entity::NAME        => Feature\Constants::BHARAT_QR,
             ];
-    
-            (new Feature\Core)->create($featureParam, true);    
+
+            (new Feature\Core)->create($featureParam, true);
         }
     }
 

@@ -1979,8 +1979,6 @@ class Constants
         self::DISABLE_MAESTRO                 => true,
         self::DISABLE_RUPAY                   => true,
         self::BLOCK_INTERNATIONAL_RECURRING   => false,
-        self::BHARAT_QR                       => true,
-        self::BHARAT_QR_V2                    => true,
         self::MOBIKWIK_OFFERS                 => true,
         self::SKIP_HOLD_FUNDS_ON_PAYOUT       => true,
         self::REPORT_V2                       => true,

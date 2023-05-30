@@ -52,6 +52,35 @@ return [
         ],
     ],
 
+    'testAddBharatQrFeatureToMerchant' => [
+        'request'   => [
+            'content' => [
+                'names'       => ['bharat_qr','bharat_qr_v2'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ],
+            'url'     => '/features',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard'                => 'true',
+                'HTTP_X-Dashboard-Admin-Username' => 'admin',
+                'HTTP_X-Dashboard-User-Email'     => 'user@rzp.dev',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testAddDuplicateFeatureToMerchant' => [
         'request'   => [
             'content' => [
@@ -1387,8 +1416,6 @@ return [
                     'disable_maestro',
                     'disable_rupay',
                     'block_intl_recurring',
-                    'bharat_qr',
-                    'bharat_qr_v2',
                     'mobikwik_offers',
                     'skip_hold_funds_on_payout',
                     'report_v2',
@@ -1508,8 +1535,6 @@ return [
                         'disable_maestro',
                         'disable_rupay',
                         'block_intl_recurring',
-                        'bharat_qr',
-                        'bharat_qr_v2',
                         'mobikwik_offers',
                         'skip_hold_funds_on_payout',
                         'report_v2',
@@ -1636,8 +1661,6 @@ return [
                     'disable_maestro',
                     'disable_rupay',
                     'block_intl_recurring',
-                    'bharat_qr',
-                    'bharat_qr_v2',
                     'mobikwik_offers',
                     'skip_hold_funds_on_payout',
                     'report_v2',
