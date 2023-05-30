@@ -5,8 +5,10 @@ namespace RZP\Http\Controllers;
 use ApiResponse;
 use Request;
 use Route;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org;
+use RZP\Exception\BadRequestException;
 
 class TerminalController extends Controller
 {
@@ -294,6 +296,23 @@ class TerminalController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function validateUniversalAdminCall(string $path)
+    {
+        $isUniversalRoute = str_contains($path,'universal');
+        if ($isUniversalRoute) {
+            $this->trace->info(TraceCode::TERMINALS_SERVICE_UNIVERSAL_PROXY, ['universal path' => $path]);
+            //it will expect two kind of routes
+            //for eg, valid routes: universal/bulk_terminal_disable, universal/terminal/14_digits_id
+            //invalid routes: universal/bulk/not_14_digits, universal/more_than_25_characters
+            $universalRegex = "/^(\/[[:alnum:]]{4,25})(\/[[:alnum:]]{14})?$/";
+            $relevantPath = str_after($path, 'universal');
+            $isInvalidUrl = !preg_match($universalRegex, $relevantPath);
+
+            if ($isInvalidUrl)
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+    }
+
     public function proxyV2TerminalService()
     {
         $input = Request::all();
@@ -307,6 +326,8 @@ class TerminalController extends Controller
         $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V2, $traceData);
 
         $path = str_replace("v1/terminals/proxy","v2", $path);
+
+        $this->validateUniversalAdminCall($path);
 
         if($path === 'v2/collect_info/merchant/details'){
             $path = 'v2/collect_info/merchant/'.$this->getMerchantId().'/details';

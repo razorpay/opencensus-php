@@ -734,6 +734,7 @@ class Name
     const EDIT_EXTERNAL_ORG_TERMINALS         = 'external_org_edit_terminals';
     const EXECUTE_TERMINAL_TEST               = 'execute_terminal_test';
 
+    const TERMINALS_UNIVERSAL_PROXY           = 'terminals_universal_proxy';
     const VIEW_IIR_DISCREPANCY                = 'view_iir_discrepancy';
     const CREATE_IIR_DISCREPANCY              = 'create_iir_discrepancy';
     const CREATE_DISCREPANCY                  = 'create_discrepancy';

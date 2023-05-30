@@ -11,6 +11,7 @@ use Illuminate\Cache\Events\KeyWritten;
 use Illuminate\Cache\Events\CacheMissed;
 use Illuminate\Cache\Events\KeyForgotten;
 
+use RZP\Http\Controllers\TerminalController;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Payment\Processor\Wallet;
@@ -4644,6 +4645,31 @@ class TerminalTest extends TestCase
         $this->assertEquals( "1", $content['upi']);
         $this->assertEquals( "1", $content['netbanking']);
         $this->assertEquals( "1", $content['card']);
+    }
 
+    public function testUniversalValidRoutes()
+    {
+        $validRoutes = [
+            'universal/bulkterminaldisable',
+            'universal/terminal/fourteendigits',
+        ];
+
+        foreach ($validRoutes as $route) {
+            $this->assertNull((new TerminalController())->validateUniversalAdminCall($route));
+        }
+    }
+
+    public function testInvalidUniversalRoutes()
+    {
+        $invalidRoutes = [
+            'universal/bulk/notFourteenDigits',
+            'universal/moreThanTwentyFiveCharacters',
+        ];
+
+        foreach ($invalidRoutes as $route) {
+            $this->expectException(\RZP\Exception\BadRequestException::class);
+            $this->expectExceptionCode(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+            (new TerminalController())->validateUniversalAdminCall($route);
+        }
     }
 }
