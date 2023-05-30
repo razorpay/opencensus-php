@@ -1,8 +1,8 @@
 import React from 'react';
-import { merchantFetch } from 'merchant/utils/ajax';
-import { set } from 'common/utils/immutable';
 import lodashset from 'lodash/set';
 import cloneDeep from 'lodash/cloneDeep';
+import { merchantFetch } from 'merchant/utils/ajax';
+import { set } from 'common/utils/immutable';
 import { REQUESTED } from 'merchant/views/Settings/PaymentMethods/constants';
 
 const SET_LEAF_INSTRUMENT = 'SET_LEAF_INSTRUMENT';
@@ -121,7 +121,6 @@ export const initialState = {
       actionItems: {},
       slug: 'cards',
       icon: 'card',
-
       leafList: [
         {
           header: 'Domestic Cards',
@@ -631,7 +630,6 @@ export const initialState = {
         },
       ],
     },
-
     {
       name: 'EMI',
       description: 'Credit/Debit cards, Zest money & more',
@@ -987,15 +985,52 @@ export const initialState = {
         },
       ],
     },
+    {
+      name: 'Meal Card/Sodexo',
+      description: 'Cards and Meal Pass',
+      actionItems: {},
+      slug: 'meal-card',
+      icon: 'mealcard',
+      additionalCondition: (user) => user.isSodexoInstrumentEnabled,
+      leafList: [
+        {
+          header: 'Sodexo',
+          description:
+            'Sodexo is supported via PayU. Please make sure it is enabled at downstream gateway too.',
+          list: [
+            {
+              name: 'Sodexo',
+              status: 'greyed',
+              slug: 'domestic.sodexo',
+              icon: 'sodexo',
+            },
+          ],
+        },
+      ],
+    },
   ],
   intermediateInstrument: null,
   leafInstrument: null,
   loading: true,
 };
 
+/**
+ *
+ * @param {Array} pathToFind [cards, domestic, visa]
+ * @param {Array} pg
+ * @returns
+ */
+
 function findPath(pathToFind, pg) {
   let str = 'pg';
-  const root = pathToFind.shift();
+
+  // removes the first element from an array and returns it ->  'cards'
+  let root = pathToFind.shift();
+
+  if (pathToFind.includes('sodexo')) {
+    root = 'meal-card';
+  }
+
   const rootIndex = pg.findIndex((_) => _.slug === root);
 
   function setIntermediateList(intermediateIndex, index, leafIndex) {
@@ -1096,7 +1131,7 @@ export default function instrumentRequestsReducer(state = initialState, action) 
     case `${FETCH_ALL_MERCHANT_INSTRUMENTS}::SUCCESS`: {
       const stateClone = cloneDeep(state);
       action.payload.data.forEach((s) => {
-        const pathToFind = s.instrument.replace('pg.', '').split('.');
+        const pathToFind = s.instrument.replace('pg.', '').split('.'); // pg.cards.domestic.visa -> cards.domestic.visa -> [cards, domestic, visa]
         const path = findPath(pathToFind, pg);
         if (s.comment && ['action_required', 'rejected'].includes(s.status)) {
           const rootPath = path.split('.')[0];

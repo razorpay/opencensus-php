@@ -1,7 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-
 import RootList from './components/RootList';
 import IntermediateList from './components/IntermediateList';
 import LeafList from './components/LeafList';
@@ -9,7 +8,6 @@ import Spinner from 'common/ui/Spinner';
 import Banner from 'common/ui/Banner';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-
 import { showNotification as sN } from 'merchant_common/reducers/notifications';
 import { trackLinkClick } from 'merchantLA/containers/TestModeBanner/ga';
 
@@ -24,8 +22,10 @@ import {
 
 const PaymentMethod = (props) => {
   const {
+    instruments,
     intermediateInstrument,
     loading,
+    user,
     fMI: fetchMerchantInstruments,
     fRI: fetchRequestedInstruments,
     cII: clearIntermediateInstrument,
@@ -33,7 +33,6 @@ const PaymentMethod = (props) => {
     sL: setLoading,
     sN: showNotification,
     gDC: getDiscrepanciesCategories,
-    user,
   } = props;
 
   const fetchAllInstruments = async () => {
@@ -72,11 +71,23 @@ const PaymentMethod = (props) => {
 
   const isActivatedUser = user.activation_status === 'activated';
 
-  return loading ? (
-    <div className="page-spinner-container">
-      <Spinner />
-    </div>
-  ) : (
+  /**
+   * Filter instrument based on 'additionalCondition'
+   * By default, return true for all other intrument method
+   */
+  const filteredInstruments = useMemo(() => {
+    return instruments.filter((instrument) => instrument?.additionalCondition?.(user) ?? true);
+  }, [instruments]);
+
+  if (loading) {
+    return (
+      <div className="page-spinner-container">
+        <Spinner />
+      </div>
+    );
+  }
+
+  return (
     <>
       {!isActivatedUser && (
         <Banner className="no-margin">
@@ -113,7 +124,7 @@ const PaymentMethod = (props) => {
               : 'Raise a request directly from here to enable such payment methods.'}
           </div>
           <div className="methods-view">
-            <RootList />
+            <RootList instruments={filteredInstruments} />
             {intermediateInstrument && Array.isArray(intermediateInstrument.intermediateList) && (
               <IntermediateList instrument={intermediateInstrument} />
             )}
@@ -127,6 +138,7 @@ const PaymentMethod = (props) => {
 
 const mapStateToProps = (state) => {
   return {
+    instruments: state.instrumentRequests.pg,
     intermediateInstrument: state.instrumentRequests.intermediateInstrument,
     loading: state.instrumentRequests.loading,
     user: state.session.user,

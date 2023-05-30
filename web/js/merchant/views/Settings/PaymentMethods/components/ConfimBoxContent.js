@@ -3,42 +3,75 @@ import { STANDARD_PRICING_URL } from 'merchant/views/Settings/PaymentMethods/con
 import Input from 'common/new-ui/Input';
 import { AsyncButton } from 'react-async-button';
 
-const ConfirmBoxContext = ({ numberOfDays, onRequestAbort, onRequest }) => {
-  const [isChecked, setIsChecked] = useState(false);
+const renderConfirmMessage = (instrumentSlug, numberOfDays) => {
+  if (instrumentSlug === 'domestic.sodexo') {
+    return <span>Sodexo will be visible on your checkout journey instantly.</span>;
+  }
 
-  const toggleCheckBox = () => {
-    setIsChecked(!isChecked);
-  };
+  return (
+    <>
+      This instrument will be enabled for you using &nbsp;
+      <span className="toggler-btn">
+        <a href={STANDARD_PRICING_URL} target="_blank" rel="noopener noreferrer">
+          Standard Pricing <i className="i i-external-link" />
+        </a>
+      </span>
+      . Processing the request roughly takes {numberOfDays} working days.
+    </>
+  );
+};
+
+const ConfirmCheckbox = ({ isSodexoInstrument, isChecked, toggleCheckBox }) => {
+  if (isSodexoInstrument) return null;
+
+  return (
+    <Input.Check
+      name="instruments"
+      defaultValue={false}
+      checked={isChecked}
+      onChange={toggleCheckBox}
+      autoRender
+      fieldLabel={
+        "I've added these pages and understand that my request will be rejected without them"
+      }
+    />
+  );
+};
+
+const ConfirmBoxContext = ({ instrumentSlug, numberOfDays, onRequestAbort, onRequest }) => {
+  const isSodexoInstrument = instrumentSlug === 'domestic.sodexo';
+  const [isChecked, setIsChecked] = useState(isSodexoInstrument);
+
+  const toggleCheckBox = () => setIsChecked(!isChecked);
 
   return (
     <>
       <div className="payment-method-confirm-message">
-        This instrument will be enabled for you using &nbsp;
-        <span className="toggler-btn">
-          <a href={STANDARD_PRICING_URL} target="_blank" rel="noopener noreferrer">
-            Standard Pricing <i className="i i-external-link" />
-          </a>
-        </span>
-        . Processing the request roughly takes {numberOfDays} working days.
+        {renderConfirmMessage(instrumentSlug, numberOfDays)}
         <br />
         <br />
-        Please confirm the following pages are added on your website:
-        <ul className="confirm-list">
-          <li>Terms and Conditions</li>
-          <li>Privacy Policy</li>
-          <li>Cancellation and Refund</li>
-          <li>Shipping and Exchange</li>
-          <li>Contact Us</li>
-        </ul>
-        <Input.Check
-          name="instruments"
-          defaultValue={false}
-          checked={isChecked}
-          onChange={toggleCheckBox}
-          autoRender
-          fieldLabel={
-            "I've added these pages and understand that my request will be rejected without them"
-          }
+        {isSodexoInstrument
+          ? 'For a smooth payment experience, please ensure you have enabled the following:'
+          : 'Please confirm the following pages are added on your website:'}
+        {isSodexoInstrument ? (
+          <ul className="confirm-list">
+            <li>PayU as a Gateway Provider on Optimizer</li>
+            <li>Card & Sodexo under PayU on Optimizer</li>
+            <li>Card & Sodexo on PayU's merchant dashboard</li>
+          </ul>
+        ) : (
+          <ul className="confirm-list">
+            <li>Terms and Conditions</li>
+            <li>Privacy Policy</li>
+            <li>Cancellation and Refund</li>
+            <li>Shipping and Exchange</li>
+            <li>Contact Us</li>
+          </ul>
+        )}
+        <ConfirmCheckbox
+          isSodexoInstrument={isSodexoInstrument}
+          isChecked={isChecked}
+          toggleCheckBox={toggleCheckBox}
         />
         <br />
       </div>

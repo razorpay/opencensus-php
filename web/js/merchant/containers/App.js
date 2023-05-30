@@ -521,11 +521,8 @@ class App extends Component {
     }
   }
   componentDidUpdate(prevProps) {
-    const {
-      isFeedbackFormCreated,
-      goLiveNPSEnableTypeForm,
-      nonGoLiveNPSEnableTypeForm,
-    } = this.state;
+    const { isFeedbackFormCreated, goLiveNPSEnableTypeForm, nonGoLiveNPSEnableTypeForm } =
+      this.state;
     const { location } = this.props;
     if (prevProps.location.pathname !== location.pathname) {
       if (
@@ -543,11 +540,8 @@ class App extends Component {
     }
   }
   UNSAFE_componentWillReceiveProps({ user, history, location, baseLocation, org }) {
-    const {
-      goLiveNPSEnableTypeForm,
-      nonGoLiveNPSEnableTypeForm,
-      isPartnerModeEnabled,
-    } = this.state;
+    const { goLiveNPSEnableTypeForm, nonGoLiveNPSEnableTypeForm, isPartnerModeEnabled } =
+      this.state;
     if (user.isAuthenticated) {
       const role = user.userRole;
       this.redirectToRoute(role);

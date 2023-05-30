@@ -41,6 +41,7 @@ export enum ROUTES_INFO {
   WALLET = '/payment-methods/wallet',
   PAY_LATER = '/payment-methods/pay-later',
   INTERNATIONAL_PAYMENTS = '/payment-methods/international-payments',
+  MEAL_CARD = '/payment-methods/meal-card',
 }
 
 export type OldAndNewRouteMapInterface = {

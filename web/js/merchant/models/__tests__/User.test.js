@@ -174,6 +174,40 @@ describe('User model', () => {
     expect(user.isShowInternationalPaymentBtnExpEnabled).toBe(true);
   });
 
+  test('Should return true when `sodexo_instrument` experiment is enabled', () => {
+    window.rzp_user = {
+      ...window.rzp_user,
+      splitz_experiments: {
+        L66ZbgMCeW3l0N: {
+          variables: {
+            result: 'on',
+          },
+        },
+      },
+    };
+
+    const user = getDefaultUserObj();
+
+    expect(user.isSodexoInstrumentEnabled).toBe(true);
+  });
+
+  test('Should return false when `sodexo_instrument` experiment is disabled', () => {
+    window.rzp_user = {
+      ...window.rzp_user,
+      splitz_experiments: {
+        L66ZbgMCeW3l0N: {
+          variables: {
+            result: 'off',
+          },
+        },
+      },
+    };
+
+    const user = getDefaultUserObj();
+
+    expect(user.isSodexoInstrumentEnabled).toBe(false);
+  });
+
   test('should return true when merchant feature flag "file_upload_pp" is set', () => {
     const user = getDefaultUserObj({
       features: [

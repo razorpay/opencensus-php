@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { Link } from 'react-router-dom';
+import { Link as NavLink } from 'react-router-dom';
+import { Text, Link } from '@razorpay/blade/components';
 import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import LeafListItem from './LeafListItem';
@@ -40,7 +41,7 @@ const SwiftBankTransfer = lazy(() =>
   ),
 );
 
-const fircClickHandler = () => {
+const handleViewFirc = () => {
   analyticsTrack({
     objectName: 'FIRC Banner',
     actionName: 'clicked',
@@ -50,6 +51,38 @@ const fircClickHandler = () => {
     },
     toLumberjack: true,
   });
+};
+
+const LinkIcon = () => <i className="i i-external-link" />;
+
+const DocumentLink = ({ link, method }) => {
+  if (!link) return null;
+  return (
+    <Link
+      href={link}
+      iconPosition="right"
+      rel="noreferrer noopener"
+      target="_blank"
+      variant="anchor"
+      icon={LinkIcon}
+      size="small"
+      htmlTitle="Click to learn more"
+      onClick={() =>
+        analyticsTrack({
+          objectName: 'method documentation',
+          actionName: 'clicked',
+          screen: 'settings',
+          properties: {
+            location: 'Payment Methods',
+            methodName: method,
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        })
+      }
+    >
+      Documentation
+    </Link>
+  );
 };
 
 const LeafList = ({
@@ -95,6 +128,7 @@ const LeafList = ({
   }, [instrument]);
 
   if (!instrument) return null;
+
   function renderLeafList(leafList) {
     const analyticsList = {};
     if (leafList.list) {
@@ -128,9 +162,9 @@ const LeafList = ({
       .filter(Boolean);
     if (list.length === 0) {
       if (filter === 'inactive') {
-        return <p class="all-active">All banks are active on your account!</p>;
+        return <p className="all-active">All banks are active on your account!</p>;
       } else if (filter === 'active') {
-        return <p class="all-inactive">No banks active for you. Add more banks to catch up.</p>;
+        return <p className="all-inactive">No banks active for you. Add more banks to catch up.</p>;
       }
     }
     if (leafList?.slug === 'localcurrencytransfer')
@@ -176,8 +210,11 @@ const LeafList = ({
       }
     });
   }
+
   return (
-    <div class={`level-3 ${instrument.leafList && instrument.leafList.length > 1 && 'overflowY'}`}>
+    <div
+      className={`level-3 ${instrument.leafList && instrument.leafList.length > 1 && 'overflowY'}`}
+    >
       {instrument.leafList.map((leafList) => {
         if (
           (leafList?.slug === 'localcurrencytransfer' || leafList?.slug === 'swiftbanktransfer') &&
@@ -186,38 +223,57 @@ const LeafList = ({
         )
           return null;
         if (leafList?.slug === 'instantbanktransfer' && !user?.international) return null;
+
+        function getDescription() {
+          const description = leafList?.description;
+          if (!description) return null;
+
+          // in case of rzp merchant show a custom text for sodexo method
+          if (leafList.header === 'Sodexo' && !user?.isOptimizerEnabled) {
+            return (
+              <Text>
+                This is available for Optimizer merchants only. Please raise a request with our{' '}
+                <Link
+                  href="https://razorpay.com/support/#request"
+                  htmlTitle="Click to learn more"
+                  rel="noreferrer noopener"
+                  target="_blank"
+                  onClick={() =>
+                    analyticsTrack({
+                      objectName: 'support request',
+                      actionName: 'clicked',
+                      screen: 'settings',
+                      properties: {
+                        location: 'Payment Methods',
+                        methodName: instrument?.name,
+                        ...getCommonAnalyticsProperties(window.rzp_user),
+                      },
+                    })
+                  }
+                >
+                  support team
+                </Link>{' '}
+                to get this feature.
+              </Text>
+            );
+          }
+
+          return <Text className="description">{description}</Text>;
+        }
+
         return (
           <React.Fragment key={leafList.header}>
-            <div class="heading">
-              <strong style={{ fontSize: '14px' }}>{leafList.header} </strong>
-              {leafList.docLink && (
-                <span class="toggler-btn">
-                  <a
-                    href={leafList.docLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() =>
-                      analyticsTrack({
-                        objectName: 'method documentation',
-                        actionName: 'clicked',
-                        screen: 'settings',
-                        properties: {
-                          location: 'Payment Methods',
-                          methodName: instrument.name,
-                          ...getCommonAnalyticsProperties(window.rzp_user),
-                        },
-                      })
-                    }
-                  >
-                    Documentation <i class="i i-external-link" style={{ marginLeft: '5px' }} />
-                  </a>
-                </span>
-              )}
+            <div className="level-3--header">
+              <div className="heading">
+                <Text weight="bold">{leafList?.header}</Text>
+                <DocumentLink link={leafList?.docLink} method={instrument?.name} />
+              </div>
+              {getDescription()}
             </div>
             {intermediateInstrument && intermediateInstrument.slug === 'netbanking' && (
-              <div class="filter">
+              <div className="filter">
                 <button
-                  class={`filter-btn ${filter === 'active' ? 'filter-active' : ''}`}
+                  className={`filter-btn${filter === 'active' ? ' filter-active' : ''}`}
                   onClick={() => {
                     setFilter(() => {
                       addShadow();
@@ -238,7 +294,7 @@ const LeafList = ({
                   Active Banks
                 </button>
                 <button
-                  class={`filter-btn ${filter === 'inactive' ? 'filter-active' : ''}`}
+                  className={`filter-btn${filter === 'inactive' ? ' filter-active' : ''}`}
                   onClick={() => {
                     setFilter(() => {
                       addShadow();
@@ -271,8 +327,8 @@ const LeafList = ({
               {renderLeafList(leafList)}
             </ul>
             {leafList.footNote && (
-              <div class="foot-note">
-                <i class="i i-info-outline" />
+              <div className="foot-note">
+                <i className="i i-info-outline" />
                 <p>{leafList.footNote}</p>
               </div>
             )}
@@ -292,16 +348,12 @@ const LeafList = ({
             />
           </div>
           <div className="instrument-firc-content">
-            <div>
+            <p>
               Download monthly <b>e-FIRS </b> directly from the dashboard now!
-            </div>
-            <div>
-              <u>
-                <Link to="/profile/view_firc" onClick={fircClickHandler}>
-                  View FIRS
-                </Link>
-              </u>
-            </div>
+            </p>
+            <NavLink to="/profile/view_firc" onClick={handleViewFirc}>
+              View FIRS
+            </NavLink>
           </div>
         </div>
       )}

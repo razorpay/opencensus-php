@@ -47,6 +47,11 @@ jest.mock('merchant/views/AccountAndSettings/PaymentMethods/Tabs/Paylater', () =
   default: () => <>Paylater</>,
 }));
 
+jest.mock('merchant/views/AccountAndSettings/PaymentMethods/Tabs/MealCard', () => ({
+  __esModule: true,
+  default: () => <>Meal Card/Sodexo</>,
+}));
+
 jest.mock('common/components/Loader', () => ({
   __esModule: true,
   default: () => <div data-testid="loader" />,
@@ -71,21 +76,27 @@ const defaultProps = {
 
 const instrumentsList = instrumentRequests.initialState.pg.map((instrument) => instrument.name);
 
-const renderApp = (isIERevampEnabled = true, props = {}) =>
-  render(<PaymentMethods {...defaultProps} {...props} />, {
+const renderApp = (userObj = {}, props = {}) => {
+  const { isIERevampEnabled = true, isSodexoInstrumentEnabled = true } = userObj;
+  return render(<PaymentMethods {...defaultProps} {...props} />, {
     initialState: {
       session: {
         user: {
           isIERevampEnabled,
+          isSodexoInstrumentEnabled,
         },
       },
     },
   });
+};
 
 describe('PaymentMethods', () => {
   describe('When IE Revamp is false', () => {
     const renderAppIERevampFalse = () =>
-      renderApp(false, { location: { pathname: ROUTES_INFO.PAYMENT_METHODS } });
+      renderApp(
+        { isIERevampEnabled: false },
+        { location: { pathname: ROUTES_INFO.PAYMENT_METHODS } },
+      );
 
     test('should render loader and not payment method shimmer', () => {
       renderAppIERevampFalse();
@@ -133,6 +144,12 @@ describe('PaymentMethods', () => {
       expect(screen.getByRole('link', { name: instrument })).toBeInTheDocument();
     });
 
+    // Test to check if 'Meal Card/Sodexo' is not rendered when isSodexoInstrumentEnabled is false
+    test('should not render "Meal Card/Sodexo" when isSodexoInstrumentEnabled is false', () => {
+      renderApp({ isSodexoInstrumentEnabled: false });
+      expect(screen.queryByRole('link', { name: 'Meal Card/Sodexo' })).not.toBeInTheDocument();
+    });
+
     test.each([
       ['Cards', ROUTES_INFO.CARDS],
       ['UpiQR', ROUTES_INFO.UPI_QR],
@@ -141,6 +158,7 @@ describe('PaymentMethods', () => {
       ['Wallet', ROUTES_INFO.WALLET],
       ['Paylater', ROUTES_INFO.PAY_LATER],
       ['International', ROUTES_INFO.INTERNATIONAL_PAYMENTS],
+      ['Meal Card/Sodexo', ROUTES_INFO.MEAL_CARD],
     ])('should render %s component for %s link', async (content, path) => {
       renderApp();
       await waitFor(() => {
@@ -207,7 +225,7 @@ describe('PaymentMethods', () => {
         const pathname = `${ROUTES_INFO.PAYMENT_METHODS}?instrument=international`;
         window.location.assign(pathname);
 
-        renderApp(true, { ...defaultProps, location: { pathname } });
+        renderApp(undefined, { ...defaultProps, location: { pathname } });
 
         await waitFor(() => {
           expect(defaultProps.history.replace).toHaveBeenLastCalledWith({
@@ -218,7 +236,7 @@ describe('PaymentMethods', () => {
 
       test('should redirect to first instrument when older cards link is opened without any instrument query param', async () => {
         const pathname = ROUTES_INFO.PAYMENT_METHODS;
-        renderApp(true, { ...defaultProps, location: { pathname } });
+        renderApp(undefined, { ...defaultProps, location: { pathname } });
 
         await waitFor(() => {
           expect(defaultProps.history.replace).toHaveBeenLastCalledWith({

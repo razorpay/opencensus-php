@@ -180,9 +180,22 @@ class LeafListItem extends React.Component {
   handleCreateRequest = () => {
     this.setState({ loading: true });
     const { instrument, intermediateInstrument, leafInstrument, instrumentsTat } = this.props;
-    const requestSlug = `pg.${intermediateInstrument && intermediateInstrument.slug}.${
-      leafInstrument && leafInstrument.slug
-    }.${instrument.slug}`.replace(/\.null|\.undefined/g, '');
+    const slugParts = ['pg', intermediateInstrument?.slug, leafInstrument?.slug, instrument?.slug];
+
+    /**
+     * .filter(Boolean) // Filter out any empty or falsy values from slugParts
+     * .join('.') // Join the filtered parts with a period (.) to create the required slug format (e.g., "cards.domestic.visa")
+     * .replace(/\.null|\.undefined/g, '') // Remove occurrences of ".null" and ".undefined" from the slug
+     * .replace(/\.meal-card/g, '.cards'); // For sodexo, backend has not introduced a new method, instead it is part of cards.
+     *  But in UI we isolate Sodexo out of cards, so converting string from 'pg.meal-card.domestic.sodexo' -> 'pg.cards.domestic.sodexo'
+     *  (this conversion helps in retain all redux action update logic same)
+     */
+
+    const requestSlug = slugParts
+      .filter(Boolean)
+      .join('.')
+      .replace(/\.null|\.undefined/g, '')
+      .replace(/\.meal-card/g, '.cards');
 
     this.tracker('instrument', 'requested', 'settings', {
       instrumentName: instrument.name,
@@ -198,6 +211,7 @@ class LeafListItem extends React.Component {
         header: 'Confirmation',
         message: (
           <ConfirmBoxContext
+            instrumentSlug={instrument?.slug}
             numberOfDays={instrumentsTat && instrumentsTat[requestSlug]}
             onRequestAbort={() => this.handleOnCancelRequest(instrument, leafInstrument)}
             onRequest={() => {

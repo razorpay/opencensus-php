@@ -53,6 +53,7 @@ type Getters = {
   isWebsiteComplianceFlowEnabled: boolean;
   isBundlePricingEnabled: boolean;
   isCustomReportExtensionsEnabled: boolean;
+  isSodexoInstrumentEnabled: boolean;
 };
 
 type UserProperties = {

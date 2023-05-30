@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect } from 'react';
+import React, { Suspense, useEffect, useMemo } from 'react';
 import { Route, NavLink, RouteComponentProps } from 'react-router-dom';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
@@ -39,44 +39,56 @@ import {
 import { bindActionCreators } from 'redux';
 import qs from 'query-string';
 
-const Cards = lazy(() =>
-  import(
-    /* webpackChunkName: "PaymentMethods__Cards" */ 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/Cards'
-  ),
+const Cards = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "PaymentMethods__Cards" */ 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/Cards'
+    ),
 );
-const Emi = lazy(() =>
-  import(
-    /* webpackChunkName: "PaymentMethods__Emi" */ 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/Emi'
-  ),
+const Emi = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "PaymentMethods__Emi" */ 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/Emi'
+    ),
 );
-const International = lazy(() =>
-  import(
-    /* webpackChunkName: "PaymentMethods__International" */ 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International'
-  ),
+const International = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "PaymentMethods__International" */ 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International'
+    ),
 );
-const Netbanking = lazy(() =>
-  import(
-    /* webpackChunkName: "PaymentMethods__Netbanking" */ 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/Netbanking'
-  ),
+const Netbanking = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "PaymentMethods__Netbanking" */ 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/Netbanking'
+    ),
 );
-const Paylater = lazy(() =>
-  import(
-    /* webpackChunkName: "PaymentMethods__Paylater" */ 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/Paylater'
-  ),
+const Paylater = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "PaymentMethods__Paylater" */ 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/Paylater'
+    ),
 );
-const UpiQR = lazy(() =>
-  import(
-    /* webpackChunkName: "PaymentMethods__UpiQR" */ 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/UpiQR'
-  ),
+const UpiQR = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "PaymentMethods__UpiQR" */ 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/UpiQR'
+    ),
 );
-const Wallet = lazy(() =>
-  import(
-    /* webpackChunkName: "PaymentMethods__Wallet" */ 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/Wallet'
-  ),
+const Wallet = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "PaymentMethods__Wallet" */ 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/Wallet'
+    ),
 );
-
-const PaymentMethods = lazy(() =>
-  import(/* webpackChunkName: "PaymentMethods" */ 'merchant/views/Settings/PaymentMethods'),
+const MealCard = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "PaymentMethods__MealCard" */ 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/MealCard'
+    ),
+);
+const PaymentMethods = lazy(
+  () => import(/* webpackChunkName: "PaymentMethods" */ 'merchant/views/Settings/PaymentMethods'),
 );
 
 type Props = RouteComponentProps &
@@ -137,6 +149,14 @@ const PaymentMethodsV2 = ({
   };
 
   const isIERevamp = user?.isIERevampEnabled;
+
+  /**
+   * Filter instrument based on 'additionalCondition'
+   * By default, return true for all other intrument method
+   */
+  const filteredInstruments = useMemo(() => {
+    return instruments.filter((instrument) => instrument?.additionalCondition?.(user) ?? true);
+  }, [instruments]);
 
   useEffect(() => {
     const query = qs.parse(window.location.search);
@@ -199,7 +219,7 @@ const PaymentMethodsV2 = ({
         />
         <StyledHeader className="scrollable-tab-header">
           {isIERevamp ? (
-            instruments.map((instrument) => {
+            filteredInstruments.map((instrument) => {
               return (
                 <NavLink
                   to={PaymentMethodsTabsRoutesConfig[instrument.slug]}
@@ -226,6 +246,7 @@ const PaymentMethodsV2 = ({
                 <Route path={ROUTES_INFO.WALLET} component={Wallet} />
                 <Route path={ROUTES_INFO.PAY_LATER} component={Paylater} />
                 <Route path={ROUTES_INFO.INTERNATIONAL_PAYMENTS} component={International} />
+                <Route path={ROUTES_INFO.MEAL_CARD} component={MealCard} />
               </Suspense>
             ) : (
               <Suspense fallback={<Loader />}>

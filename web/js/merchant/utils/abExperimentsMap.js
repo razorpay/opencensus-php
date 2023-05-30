@@ -667,4 +667,10 @@ export default {
     //prod experiment
     'Lspxsu4DTcptHe',
   ],
+  sodexo_instrument: [
+    // beta experiment ids
+    'L66ZbgMCeW3l0N',
+    // prod experiment ids
+    'Lrb3FnfRl2FVmQ',
+  ],
 };

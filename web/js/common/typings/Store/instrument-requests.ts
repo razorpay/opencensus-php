@@ -1,4 +1,5 @@
 import { PaymentMethodsFields } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings/section';
+import User from 'common/typings/User';
 
 export type CommonInstrumentRequestInfo = {
   created_at: number;
@@ -28,6 +29,7 @@ export type InstrumentListItem = CommonInstrumentRequestInfo & {
   intermediateList?: InstrumentListItem[];
   leafList: LeafListItem[];
   slug: PaymentMethodsFields;
+  additionalCondition: (user: User) => boolean;
 };
 
 export type InstrumentsList = InstrumentListItem[];

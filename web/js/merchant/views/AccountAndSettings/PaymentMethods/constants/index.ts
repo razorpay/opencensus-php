@@ -9,4 +9,5 @@ export const PaymentMethodsTabsRoutesConfig = {
   [PaymentMethodsFields.WALLET]: ROUTES_INFO.WALLET,
   [PaymentMethodsFields.PAYLATER]: ROUTES_INFO.PAY_LATER,
   [PaymentMethodsFields.INTERNATIONAL]: ROUTES_INFO.INTERNATIONAL_PAYMENTS,
+  [PaymentMethodsFields.MEAL_CARD]: ROUTES_INFO.MEAL_CARD,
 };

@@ -5,6 +5,7 @@ import Netbanking from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/Ne
 import Paylater from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/Paylater';
 import UpiQR from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/UpiQR';
 import Wallet from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/Wallet';
+import MealCard from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/MealCard';
 import { PaymentMethodsFields } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings/section';
 import { render, screen } from 'test-utils';
 
@@ -21,6 +22,7 @@ describe('Payment Method tabs other than international', () => {
     [PaymentMethodsFields.PAYLATER, Paylater],
     [PaymentMethodsFields.UPI, UpiQR],
     [PaymentMethodsFields.WALLET, Wallet],
+    [PaymentMethodsFields.MEAL_CARD, MealCard],
   ])('should render %s component', (text, Component) => {
     render(<Component />);
     expect(screen.getByText(`type: ${text}`)).toBeInTheDocument();

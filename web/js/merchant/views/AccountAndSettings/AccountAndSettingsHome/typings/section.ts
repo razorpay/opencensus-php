@@ -17,6 +17,7 @@ export enum PaymentMethodsFields {
   WALLET = 'wallet',
   PAYLATER = 'paylater',
   INTERNATIONAL = 'international',
+  MEAL_CARD = 'meal-card',
 }
 
 export enum WebsiteAppSettingsFields {
@@ -79,6 +80,7 @@ export const PaymentMethodsTitles: Record<PaymentMethodsFields, string> = {
   [PaymentMethodsFields.WALLET]: 'Wallet',
   [PaymentMethodsFields.PAYLATER]: 'Pay Later',
   [PaymentMethodsFields.INTERNATIONAL]: 'International payments',
+  [PaymentMethodsFields.MEAL_CARD]: 'Meal Card/Sodexo',
 };
 
 export const WebsiteAppSettingsTitles: Record<WebsiteAppSettingsFields, string> = {

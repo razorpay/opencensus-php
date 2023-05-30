@@ -1017,12 +1017,17 @@ export default class User {
     return ((this.experiments || user?.experiments || {})[name] || {}).result === 'on';
   }
 
+  /** Optimizer related getters - start */
   get isOptimizerRZPVASEnabled() {
     return this.isFeatureEnabled('optimizer_razorpay_vas');
   }
 
   get isOptimizerEnabled() {
     return this.isFeatureEnabled('raas') && !this.isOptimizerRZPVASEnabled;
+  }
+
+  get isSodexoInstrumentEnabled() {
+    return getSplitzExperimentVariant('sodexo_instrument')?.variables?.result === 'on';
   }
 
   get isPaytmAutoDebitEnabled() {
@@ -1041,13 +1046,14 @@ export default class User {
     return this.userRole === rolesList.OWNER && this.current === 'Icmg54HpdK0fdT';
   }
 
-  get isSingleReconEnabled() {
-    return this.isFeatureEnabled('enable_single_recon');
-  }
-
   get hideForNIASupportRole() {
     return !(this.isSupportRole && this.current === 'If9Z0dDl6Vht65');
   }
+
+  get isSingleReconEnabled() {
+    return this.isFeatureEnabled('enable_single_recon');
+  }
+  /** Optimizer related getters - end */
 
   get isOndemandSettlementEnabled() {
     return this.isFeatureEnabled('ES_ON_DEMAND');

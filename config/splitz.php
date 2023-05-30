@@ -310,6 +310,8 @@ return [
         'SHOW_TERMINAL_STATUS_BANNER' => env('SHOW_TERMINAL_STATUS_BANNER',''),
 
         // Cross border payments experiments
-        'N_EXPONENT_SUPPORT' => env('N_EXPONENT_SUPPORT','')
+        'N_EXPONENT_SUPPORT' => env('N_EXPONENT_SUPPORT',''),
+
+        'SODEXO_INSTRUMENT' => env('SODEXO_INSTRUMENT','')
     ]
 ];

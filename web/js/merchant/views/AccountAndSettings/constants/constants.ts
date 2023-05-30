@@ -41,6 +41,7 @@ export const ROUTE_MAP = {
   [ROUTES_INFO.WALLET]: PaymentMethodsTitles.wallet,
   [ROUTES_INFO.PAY_LATER]: PaymentMethodsTitles.paylater,
   [ROUTES_INFO.INTERNATIONAL_PAYMENTS]: PaymentMethodsTitles.international,
+  [ROUTES_INFO.MEAL_CARD]: PaymentMethodsTitles['meal-card'],
   [ROUTES_INFO.TEAM_INVITATIONS]: 'Invitations',
 };
 

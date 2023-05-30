@@ -1,3 +1,5 @@
+import Sodexo from 'assets/payment-methods/sodexo.png';
+
 const instrumentIconEnum = {
   airtelmoney: 'airtelmoney',
   amazonpay: 'amazonpay',
@@ -34,6 +36,7 @@ const instrumentIconEnum = {
   giropay: 'giropay',
   sofort: 'sofort',
   bajajpay: 'bajajpay',
+  sodexo: Sodexo,
 };
 
 function getIconFn(iconName) {
@@ -45,6 +48,9 @@ function getIconFn(iconName) {
 
 export const getIcon = (iconName) => {
   const iconFn = getIconFn(iconName);
+
+  if (iconFn?.includes('https://')) return iconFn; // sodexo is served via 'assets/payment-methods/'
+
   return iconName.includes('https://')
     ? iconName
     : `https://cdn.razorpay.com/static/assets/instrument-request/${iconFn}.png`;

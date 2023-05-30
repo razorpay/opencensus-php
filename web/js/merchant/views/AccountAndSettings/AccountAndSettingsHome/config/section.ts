@@ -140,6 +140,15 @@ export const Sections: SectionCardInterface[] = [
             user.isIERevampEnabled,
       },
       {
+        id: PaymentMethodsFields.MEAL_CARD,
+        title: PaymentMethodsTitles[PaymentMethodsFields.MEAL_CARD],
+        href: ROUTES_INFO.MEAL_CARD,
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            user.isIERevampEnabled && user.isSodexoInstrumentEnabled,
+      },
+      {
         id: PaymentMethodsFields.CARDS,
         title: 'Cards',
         href: `${ROUTES_INFO.PAYMENT_METHODS}?instrument=card`,
@@ -201,6 +210,15 @@ export const Sections: SectionCardInterface[] = [
           () =>
           (user: User): boolean =>
             !user.isIERevampEnabled,
+      },
+      {
+        id: PaymentMethodsFields.MEAL_CARD,
+        title: PaymentMethodsTitles[PaymentMethodsFields.MEAL_CARD],
+        href: `${ROUTES_INFO.PAYMENT_METHODS}?instrument=meal-card`,
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            !user.isIERevampEnabled && user.isSodexoInstrumentEnabled,
       },
     ],
   },
