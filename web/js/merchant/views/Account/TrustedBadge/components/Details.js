@@ -12,7 +12,7 @@ const Details = (props) => {
         </div>
         <div className="section-list">
           {props.details.map((listItem, index) => (
-            <div key={index} className="list-item">
+            <div key={index} className="list-item" data-testid="list-item">
               <span dangerouslySetInnerHTML={{ __html: sanitizer(listItem) }} />
             </div>
           ))}
@@ -21,7 +21,7 @@ const Details = (props) => {
           props.subComponent.map((component) => props.handleSubComponent(component))}
       </div>
       <div className="col-lg-6 image-center">
-        <img src={props.imgSrc} className="intro-image" />
+        <img src={props.imgSrc} className="intro-image" role="image" />
       </div>
     </div>
   );

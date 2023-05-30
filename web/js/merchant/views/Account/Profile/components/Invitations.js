@@ -11,7 +11,7 @@ export default ({ invitations, onAcceptClick, onRejectClick }) => {
           <DetailRow
             key={index}
             label={() => (
-              <span>
+              <span data-testid="invitation-merchant-name">
                 Invitation to join <strong>{invite.merchant_name}</strong>
               </span>
             )}

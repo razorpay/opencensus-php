@@ -1,11 +1,12 @@
 import React, { useRef, useEffect } from 'react';
 import { connect } from 'react-redux';
-import ModalHeader from '../../../../../common/ui/ModalHeader';
-import DataTable from '../../../../../common/ui/Table/DataTable';
+import { bindActionCreators } from 'redux';
+import ModalHeader from 'common/ui/ModalHeader';
+import DataTable from 'common/ui/Table/DataTable';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { creditID, creditsDescription, credits, createdAt } from 'common/ui/item/pair';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
-import { getAnalyticsData } from '../ga';
+import { getAnalyticsData } from 'merchant/views/Account/Credits/ga';
 
 function CreditTable(props) {
   const { closeModal, title, creditItems, type } = props;
@@ -41,4 +42,6 @@ function CreditTable(props) {
     </div>
   );
 }
-export default connect(null, { closeModal })(CreditTable);
+export default connect(null, (dispatch) => bindActionCreators({ closeModal }, dispatch))(
+  CreditTable,
+);

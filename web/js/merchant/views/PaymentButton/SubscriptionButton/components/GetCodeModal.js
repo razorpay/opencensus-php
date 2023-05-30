@@ -1,3 +1,4 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
@@ -5,10 +6,10 @@ import Spinner from 'common/ui/Spinner';
 import Input from 'common/new-ui/Input';
 import ModalHeader from 'common/ui/ModalHeader';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
-import { DocLink } from 'merchant/components/DocsLink'
+import { DocLink } from 'merchant/components/DocsLink';
 
 import { fetchPaymentPageEntity as fetchsubscriptionButtonEntity } from 'merchant/views/PaymentPages/PaymentPages/model';
-import { setIsPaymentButtonCodeUsed } from '../../utils';
+import { setIsPaymentButtonCodeUsed } from 'merchant/views/PaymentButton/utils';
 
 @connect((state) => ({
   user: state.session.user,
@@ -59,6 +60,7 @@ export default class GetCodeModal extends React.Component {
   };
 
   onClickTextArea = () => {
+    /* istanbul ignore next */
     if (!this.textarea) {
       return;
     }

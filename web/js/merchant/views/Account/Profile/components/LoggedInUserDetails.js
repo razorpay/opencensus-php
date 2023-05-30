@@ -3,7 +3,6 @@ import { titleCase, getCommonAnalyticsProperties } from 'common/utils/rzp-utils'
 import Button from 'common/new-ui/Button';
 import { roles, agentRole, RBLRoles, RegistrationLinkRoles } from 'merchant/helpers/data';
 import { connect } from 'react-redux';
-import { compose } from 'redux';
 import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import AddEmailModal from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/AddEmail';
@@ -19,6 +18,7 @@ const LoggedInUserDetails = ({
   openModal,
 }) => {
   const ROLES = { ...roles, ...agentRole, ...RBLRoles, ...RegistrationLinkRoles };
+
   const openAddEmailModal = () => {
     analyticsTrack({
       objectName: 'add email',
@@ -39,10 +39,11 @@ const LoggedInUserDetails = ({
       component: <AddEmailModal screen="my account" />,
     });
   };
+
   return (
     <div class="panel panel-default">
       <div class="list-group details-row-container">
-        <DetailRow label="User Name" value={titleCase(loggedInUser.name)} />
+        <DetailRow label="User Name" value={() => <span>{titleCase(loggedInUser.name)}</span>} />
         <DetailRow
           label="Login Email"
           value={() =>
@@ -50,7 +51,10 @@ const LoggedInUserDetails = ({
               <span>
                 {loggedInUser.email}
                 {isOrgRZP && isEmailSelfServeEnabled && loggedInUserRole === 'owner' ? (
-                  <Button.Transparent onClick={handleUpdateClick}>
+                  <Button.Transparent
+                    onClick={handleUpdateClick}
+                    data-testid="loggedin-user-email-edit"
+                  >
                     <i class="i i-edit p-l" />
                   </Button.Transparent>
                 ) : null}
@@ -63,10 +67,10 @@ const LoggedInUserDetails = ({
           }
         />
         {/* Added check to verify if loggedInUserRole is there or if its a valid role (part of role-list) */}
-        <DetailRow label="Role" value={ROLES[loggedInUserRole]?.label} />
+        <DetailRow label="Role" value={() => <span>{ROLES[loggedInUserRole]?.label}</span>} />
       </div>
     </div>
   );
 };
 
-export default compose(connect(null, { openModal: fnOpenModal }))(LoggedInUserDetails);
+export default connect(null, { openModal: fnOpenModal })(LoggedInUserDetails);

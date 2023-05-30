@@ -6,7 +6,7 @@ import OptOut from './OptOut';
 import Growth from './Growth';
 import Details from './Details';
 import SubText from './SubText';
-import { mergeComponent, sortBy } from '../helper';
+import { mergeComponent, sortBy } from 'merchant/views/Account/TrustedBadge/helper';
 
 const RenderTrustedBadgePage = ({
   status,
@@ -20,14 +20,14 @@ const RenderTrustedBadgePage = ({
   const [modalState, setModalState] = React.useState({ show: false });
 
   const selectedData = React.useMemo(() => data[status], [data, status]);
-  const components = React.useMemo(() => mergeComponent(selectedData, data.components), [
-    data,
-    selectedData,
-  ]);
-  const componentOrder = React.useMemo(() => sortBy(components, selectedData.order), [
-    components,
-    selectedData,
-  ]);
+  const components = React.useMemo(
+    () => mergeComponent(selectedData, data.components),
+    [data, selectedData],
+  );
+  const componentOrder = React.useMemo(
+    () => sortBy(components, selectedData.order),
+    [components, selectedData],
+  );
 
   const handleOptOut = React.useCallback(
     (event) => {
