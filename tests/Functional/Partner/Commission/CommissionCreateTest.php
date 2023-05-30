@@ -259,6 +259,36 @@ class CommissionCreateTest extends TestCase
         $this->assertEquals($commission[Commission\Entity::FEE] - $commission[Commission\Entity::TAX], $commissionComponent->getMerchantPricingAmount() - $commissionComponent->getCommissionPricingAmount());
     }
 
+
+    public function testImplicitVariableOnNONINRPaymentCapture()
+    {
+        $testData = $this->setUpCommissionCreate(['currency' => 'USD']);
+
+        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
+
+        $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            null,
+            [
+                'implicit_plan_id'    => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+            ]);
+
+        $this->startTest($testData);
+
+        list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::IMPLICIT);
+
+        $this->checkClearOnHoldAndSettlement($commission, Config\Entity::DEFAULT_TDS_PERCENTAGE/100);
+
+        $commissionComponent = $this->getDbEntity('commission_component');
+
+        $this->assertEquals($commission[Commission\Entity::ID], $commissionComponent->getCommissionId());
+
+        $this->assertEquals($commission[Commission\Entity::FEE] - $commission[Commission\Entity::TAX], $commissionComponent->getMerchantPricingAmount() - $commissionComponent->getCommissionPricingAmount());
+    }
+
     public function testCommissionTransactionChannelOnPaymentCaptureForMalaysainMerchants()
     {
         $testData = $this->setupCommissionCreateForMalaysianMerchant();

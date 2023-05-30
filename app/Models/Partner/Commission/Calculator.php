@@ -804,7 +804,7 @@ class Calculator extends Base\Core
             Entity::DEBIT       => 0,
             Entity::CREDIT      => $commissionFee,
             Entity::RECORD_ONLY => ($this->getPartnerConfig()->isExplicitRecordOnly() === true) ? 1 : 0,
-            Entity::CURRENCY    => $this->getSource()->getCurrency()
+            Entity::CURRENCY    => $this->getSubMerchant()->getCurrency() ?? 'INR',
         ];
 
         $commission = $this->buildCommission($payload);
