@@ -20,6 +20,7 @@ class Metric extends Base\Core
     const LABEL_SUCCESSFUL           = 'successful';
     const LABEL_REQUEST_SOURCE       = 'request_source';
     const LABEL_ES_SYNC_ERROR_MESSAGE= 'es_sync_error_message';
+    const LABEL_SHARED_TERMINAL      = 'shared_terminal';
 
     protected function getDefaultDimensions($requestSource): array
     {
@@ -38,7 +39,8 @@ class Metric extends Base\Core
         return $dimensions;
     }
 
-    public function pushQrV2PaymentsMetrics($isExpected, $valid, $gateway, $method, $errorMessage, $requestSource)
+    public function pushQrV2PaymentsMetrics($isExpected, $valid, $gateway, $method, $errorMessage, $requestSource,
+                                            $isSharedTerminalPayment)
     {
         $dimensions = $this->getDefaultDimensions($requestSource);
 
@@ -49,6 +51,7 @@ class Metric extends Base\Core
             Metric::LABEL_SUCCESSFUL    => $valid,
             Metric::LABEL_ERROR_MESSAGE => $errorMessage,
             self::LABEL_REQUEST_SOURCE  => $requestSource,
+            self::LABEL_SHARED_TERMINAL => $isSharedTerminalPayment,
         ];
 
         $this->trace->count(

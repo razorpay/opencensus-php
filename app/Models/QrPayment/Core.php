@@ -101,7 +101,10 @@ class Core extends Base\Core
 
             (new QrPaymentRequest\Service())->update($qrPaymentRequest, $isExpected, $qrPayment, $errorMessage, $type);
 
-            (new Metric())->pushQrV2PaymentsMetrics($isExpected, $valid, $gateway, $method, $errorMessage, $requestSource);
+            $isSharedTerminalPayment = $terminal->isShared();
+
+            (new Metric())->pushQrV2PaymentsMetrics($isExpected, $valid, $gateway, $method, $errorMessage,
+                                                    $requestSource, $isSharedTerminalPayment);
         }
 
         return $valid;
