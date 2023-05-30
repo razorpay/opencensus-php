@@ -1337,7 +1337,7 @@ class Selector extends Base\Core
         ($payment->isBharatQr() === false) and ($currency === Currency::INR) and ($payment->isDCC() === false));
 
         if($createTerminalCondition === true) {
-            $hasDirectTerminal = (new TerminalService)->checkDirectTerminalForGateway(
+            $hasDirectTerminal = (new TerminalService)->checkDirectTerminalForFulcrumGateway(
                 $allTerminals,
                 Constants::FULCRUM,
                 $merchant,

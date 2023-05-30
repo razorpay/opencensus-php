@@ -222,6 +222,22 @@ class Service extends Base\Service
         return false;
     }
 
+    public function checkDirectTerminalForFulcrumGateway(array $terminals, $gateway, $merchant, $currency):bool
+    {
+        $category = $merchant->getCategory();
+
+        foreach ($terminals as $terminal)
+        {
+            if (($terminal->getGateway() === $gateway) and
+                ($terminal->supportsCurrency($currency) === true) and
+                ($terminal->getCategory() === $category))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     protected function shouldOnboardMerchantViaTerminalsService($merchant, $gateway)
     {
         if ($gateway === Gateway::WORLDLINE)
