@@ -4,7 +4,7 @@ module.exports = [
   {
     name: 'Merchant',
     path: 'js/merchant/merchant.*.js',
-    limit: '465 KB',
+    limit: '500 KB',
     gzip: true,
   },
   {

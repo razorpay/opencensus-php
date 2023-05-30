@@ -45,6 +45,7 @@ export default function magicSettingsReducer(state = initialState, action) {
         platform: action.payload?.data?.platform || DEFAULT_SELECTED_PLATFORM,
         has_saved_config: !!action.payload.data?.platform,
         cod_slabs: transformToComponentFormat(action.payload.data?.cod_slabs),
+        cod_engine: action.payload.data.cod_engine,
       });
     case ACTIONS.FETCH_MAGIC_SETTINGS_ERROR:
       return merge(state, { status: FETCH_STATUS.ERROR, error: action.payload });

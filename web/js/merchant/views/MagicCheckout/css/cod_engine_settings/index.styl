@@ -1,0 +1,467 @@
+$primaryBlue = #2A86F3;
+$bgBlue = #FAFCFF;
+$white = #FFF;
+$primaryDarkBlue = #162F56;
+$error = #F04F50;
+$tableCell = #F5F6F7;
+$primaryBlueBorder = #528FF0;
+$border = #E2E8EA;
+
+.cod-blocklist-container
+  background $white
+  padding: 20px
+
+.cod-list-container
+  background-color: $bgBlue;
+
+  .content-wrapper
+    padding
+
+  .page-spinner-container
+    background-color: $white;
+
+  .empty-container
+    background: $white;
+    padding: 100px 0;
+    text-align center
+
+    h1
+      color: $primaryDarkBlue;
+      font-weight: 600;
+      font-size: 18px;
+
+    p
+      color: $primaryDarkBlue;
+      opacity: 0.5;
+
+.cod-content-wrapper
+  .cod-content
+    padding: 0 20px 20px;
+    background-color: $white
+
+    .text-container
+      padding: 20px 0 0
+
+      h4
+        margin-bottom 10px
+
+  & > button
+    display: block
+    margin-left: auto
+    margin-top: 25px
+    padding-left: 40px;
+    padding-right: 40px;
+
+    &:disabled
+      cursor not-allowed
+
+  .preview-view
+    margin-top: 15px
+    border-radius: 5px
+    border: 1px solid #E0E8F4
+    padding 0 15px
+    max-width 525px
+
+    .preview-item
+      padding 15px 0
+
+      &:not(:last-child)
+        border-bottom: 1px solid $border
+
+      .heading
+        display flex
+        justify-content: space-between
+        align-items: center
+
+      .rate-text
+        margin-top 5px
+        font-weight: 600;
+
+  .settings-view
+    .cod-setting-item
+      padding: 20px 0;
+      display flex
+      align-items: flex-start;
+      flex-wrap: wrap
+
+      &:not(:last-child)
+        border-bottom: 1px solid $border
+
+      & > div
+        flex 1
+
+      .settings-label-wrapper
+        margin-right 10px
+        max-width: fit-content;
+
+        .error,
+        .error-text
+          color: $error;
+
+      .setting-label
+        width 225px
+        font-size: 16px
+        font-weight: 700;
+        color: #162F56BF;
+
+        .cod-engine-tooltip
+          margin-left 5px
+
+      .required
+        &::after
+          content: "*"
+          position relative
+          color: $error
+
+    .settings-select
+      .Input-elWrapper
+        width 160px
+        border-radius: 4px
+
+        .Input-el
+          height 36px
+
+        &.Select-elWrapper::before
+          margin-top: 17px;
+
+    .cod-settings-toggle
+      .setting-toggle
+        align-items: center
+
+        b
+          margin-left 15px
+
+    .Input
+      margin 0
+
+    .slabs-radio
+      margin-bottom 15px
+
+      .Input .Input--radioLabels
+        .Input-el
+          height 0
+
+        .Input--radio
+          margin 0
+
+    .cod-options-container
+      padding 15px
+      background $bgBlue
+
+      .add-zone-button,
+      .add-slab-button
+        width: 315px;
+        height: 75px;
+        background: $white;
+        border: 1px dashed $primaryBlueBorder;
+        border-radius: 3px;
+        color: $primaryBlue
+        font-weight: 700;
+
+      .cod-table-wrapper
+        max-width: 530px
+        display flex
+        flex-direction: column
+
+        .edit-icon
+          margin-left auto
+
+.slab-modal
+  padding 0
+  min-width 425px
+  max-width: 580px
+
+  .slabs-form-wrapper
+    margin 15px 0
+
+    .slabs-input-container
+      width 140px
+
+      &:not(:last-child)
+        margin-right 25px
+
+      .slabs-input
+        margin: 0
+
+      .slabs-input-header
+        margin-bottom 5px
+
+    .delete-slab
+      display: flex;
+      align-items: center;
+      margin-left: -10px;
+      margin-top 25px
+
+      // stylelint-disable-next-line no-descending-specificity
+      button
+        background: none;
+        border: none;
+
+        svg > path
+          fill $error
+
+.tabs
+  .table
+    tbody
+      tr:nth-child(odd)
+        background-color: $white;
+
+  .settings-table
+    margin-top 10px
+    border: 1px solid #E2E2E2;
+    border-collapse: separate;
+    border-radius: 2px;
+
+    th
+      background-color $tableCell
+      border none
+
+    th,
+    td
+      &:last-child
+        text-align: right
+
+    & > thead:first-child > tr:first-child > th
+      border-top: 0
+
+    .text-left
+      text-align: left;
+      vertical-align: middle;
+
+    td.text-left
+      padding 5px 10px
+
+    .zone-actions
+      justify-content: flex-end
+
+      // stylelint-disable-next-line no-descending-specificity
+      svg > path
+        fill $primaryBlue
+
+      .delete-button
+        margin-left 10px
+
+        svg > path
+          fill $error
+
+  .add-more-button
+    border: 1px solid #E2E2E2;
+    border-top: 1px solid rgb(234 239 240);
+    background: $white;
+    border-bottom-left-radius: 2px
+    border-bottom-right-radius: 2px
+    margin-top: -22px;
+    padding: 12px 10px;
+    color: $primaryBlue;
+    font-weight: 700;
+    cursor pointer
+
+  .single-column
+    // stylelint-disable-next-line no-descending-specificity
+    th
+      // stylelint-disable-next-line no-descending-specificity
+      &:last-child
+        text-align: left
+    // stylelint-disable-next-line no-descending-specificity
+    td
+      // stylelint-disable-next-line no-descending-specificity
+      &:last-child
+        text-align: left
+
+.cod-settings-modal
+  background: $white;
+
+  .modal-header
+    padding: 25px 25px 0;
+
+  .name-container
+    display flex
+    align-items: center
+    margin-top: 25px
+    padding: 0 25px
+
+    .name-error
+      color: $error
+      border-color: $error
+
+    input
+      width: 200px
+
+      &::placeholder
+        font-size 12px
+
+    p
+      margin-right: 25px
+
+  .items-container
+    margin-top 25px
+    padding: 0 25px
+
+    .input-container
+      margin-top 10px
+      position relative
+
+      input
+        padding: 12px 40px
+        background #F6F6F6
+        width: 100%;
+        border-radius: 2px;
+        border: none;
+        color: #414449
+
+        &::placeholder
+          color: #414449
+
+      svg
+        position absolute
+        top: 12px;
+        left: 15px;
+        fill: #414449;
+
+    .items
+      border: 1px solid #F6F6F6;
+      padding: 0 15px;
+      height: 340px
+      margin-top 5px
+
+      .countries-virtualised-list
+        &::-webkit-scrollbar {
+          width: 5px;
+        }
+
+        &::-webkit-scrollbar-track {
+          background: #F6F6F7;
+        }
+
+        &::-webkit-scrollbar-thumb {
+          background-color: $primaryBlue;
+        }
+
+  .actions-container
+    background #528FF01A
+    display flex
+    justify-content: space-between
+    margin-top: 25px;
+    padding: 20px 30px;
+
+    .actions
+      display flex
+      align-items: center
+
+      button:first-child
+        margin-right 25px
+
+.codSettingModal
+  max-width: 100%
+
+.ReactModal__Content.magicProductCategoryModal
+  width: 570px
+
+  .modal-header
+    padding: 0 25px
+    font-size: 20px
+    line-height: 30px;
+    color $primaryDarkBlue
+
+  .confirmation-modal-desc
+    line-height: 20px
+
+.zone-modal
+  width 570px
+
+  .zone-modal-virtualized-container
+    width 100%
+    height 340px
+
+  .disabled
+    opacity 0.5
+    pointer-events: none
+    color: rgb(23 26 30 / 0.5)
+
+  .zone-item
+    display flex
+    justify-content: space-between
+    align-items: center
+    height 60px
+    border-bottom: 1px dashed $border
+
+    .checkbox-wrapper
+      cursor pointer
+      display flex
+      align-items: center
+      flex-grow: 1;
+
+    .zone-checkbox
+      appearance: none;
+      cursor pointer
+      min-width: 20px;
+      margin: 0;
+      min-height: 20px;
+      border: 1px solid #A3AFBF
+      border-radius: 2px;
+
+      &::after
+        // stylelint-disable-next-line font-family-no-missing-generic-family-keyword
+        font-family merchant-icons
+        content "\f125"
+        color $white
+        display none
+        position relative
+        top: 2px;
+        left: 2px;
+        font-size: 14px;
+
+      &:checked
+        border-color: $primaryBlue
+        background: $primaryBlue;
+
+        &::after
+          display block
+
+      &:indeterminate
+        border-color: $primaryBlue
+        background: $primaryBlue;
+
+        &::after
+          left: 4px
+          top 0;
+          content: ""
+          display: block
+          background-image url("assets/line.svg")
+          width 10px
+          height 10px
+
+    .flag
+      margin-left: 20px;
+      display: inline-block;
+      height: 21px;
+      width: 40px;
+      background-repeat: no-repeat;
+      border-radius: 0;
+      background-position-x: 0;
+
+    label
+      padding: 15px;
+      width: 100%;
+      cursor pointer
+
+    .in-zone-text
+      font-size: 12px
+
+    .states-trigger
+      font-size: 14px
+      cursor pointer
+
+      i
+        margin-left 10px
+
+  .empty-text
+    margin-top: 25px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color #4F5663
+
+    p
+      font-size: 14px

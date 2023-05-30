@@ -515,6 +515,10 @@ export default class User {
     );
   }
 
+  get isMagicCODEngineEnabled() {
+    return getSplitzExperimentVariant('magic_cod_engine')?.variables?.result === 'on';
+  }
+
   get isShopifyMagicEnabled() {
     return this.getExpStatus('1cc_shopify_magic_enable');
   }

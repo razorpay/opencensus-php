@@ -2,6 +2,7 @@ import WoocCoupons from 'merchant/views/MagicCheckout/MagicSettings/components/w
 import WoocShippingTab from 'merchant/views/MagicCheckout/MagicSettings/containers/woocommerce/ShippingWrapper';
 
 import MagicIntelligenceTab from 'merchant/views/MagicCheckout/Settings/containers/MagicIntelligenceTab';
+import CODSettingsTab from 'merchant/views/MagicCheckout/Settings/containers/CODSettingsTab';
 import CheckoutSettingsTab from 'merchant/views/MagicCheckout/MagicSettings/containers/shopify/CheckoutSettingsTab';
 
 import NativeCoupons from 'merchant/views/MagicCheckout/MagicSettings/components/native/CheckoutSettings';
@@ -25,6 +26,13 @@ export const TABS = {
       label: 'Store Settings',
       Component: CheckoutSettingsTab,
       condition: (_user) => ACCESS_ROLES.includes(_user.role),
+    },
+    {
+      className: 'cod-settings',
+      path: '/magic/settings/cod-settings',
+      label: 'COD Settings',
+      Component: CODSettingsTab,
+      condition: (_user) => _user.isMagicCODEngineEnabled,
     },
     {
       className: 'intelligence-settings',
@@ -109,47 +117,58 @@ export const SWITCH_TEXTS = {
   enable: {
     codIntelligenceDisabled: {
       header: 'Enable COD Intelligence?',
-      desc:
-        'Realtime review of COD orders will be turned on. Magic Checkout will decide which customer sees COD option based on their past buying history.',
+      desc: 'Realtime review of COD orders will be turned on. Magic Checkout will decide which customer sees COD option based on their past buying history.',
       secondaryCtaLabel: 'Cancel',
       primaryCtaLabel: 'Enable COD Intelligence',
     },
     manualReviewDisabled: {
       header: 'Enable manual review of COD orders?',
-      desc:
-        'Manual review of COD orders will be enabled. You can manually review and take action on each COD order based on RTO risk.',
+      desc: 'Manual review of COD orders will be enabled. You can manually review and take action on each COD order based on RTO risk.',
       secondaryCtaLabel: 'Cancel',
       primaryCtaLabel: 'Enable manual review',
     },
     codIntelligenceEnabled: {
       header: 'Enable COD Intelligence?',
-      desc:
-        'Manual review of COD orders will be disabled. Magic Checkout will decide which customer sees the COD option based on past buying history.',
+      desc: 'Manual review of COD orders will be disabled. Magic Checkout will decide which customer sees the COD option based on past buying history.',
       secondaryCtaLabel: 'Cancel',
       primaryCtaLabel: 'Enable COD Intelligence',
     },
     manualReviewEnabled: {
       header: 'Enable manual review of COD orders?',
-      desc:
-        'Realtime review of COD orders will be disabled. You will have to manually review and take action on each COD order based on RTO risk.',
+      desc: 'Realtime review of COD orders will be disabled. You will have to manually review and take action on each COD order based on RTO risk.',
       secondaryCtaLabel: 'Cancel',
       primaryCtaLabel: 'Enable manual review',
+    },
+    codSettings: {
+      header: 'Enable cash on delivery option?',
+      desc: 'You are about to enable cash on delivery as a payment option. Your customers will be able to choose cash on delivery as a payment option when making a purchase. Please note that this change will apply to all customers',
+      secondaryCtaLabel: 'No, don’t!',
+      primaryCtaLabel: 'Yes, enable',
     },
   },
   disable: {
     codIntelligence: {
       header: 'Disable COD Intelligence?',
-      desc:
-        'Realtime review of COD orders will be disabled. All customers will see the COD option increasing the risk of RTO.',
+      desc: 'Realtime review of COD orders will be disabled. All customers will see the COD option increasing the risk of RTO.',
       secondaryCtaLabel: 'cancel',
       primaryCtaLabel: 'Disable COD Intelligence',
     },
     manualReview: {
       header: 'Disable manual review of COD orders?',
-      desc:
-        'Manual review of COD orders will be disabled. You will not get RTO risk related details for your COD orders.',
+      desc: 'Manual review of COD orders will be disabled. You will not get RTO risk related details for your COD orders.',
       secondaryCtaLabel: 'Cancel',
       primaryCtaLabel: 'Disable manual review',
     },
+    codSettings: {
+      header: 'Disable cash on delivery option?',
+      desc: 'You are about to disable cash on delivery as a payment option. Your customers will no longer be able to choose cash on delivery when making a purchase. Please note that this change will apply to all customers',
+      secondaryCtaLabel: 'No, don’t!',
+      primaryCtaLabel: 'Yes, disable',
+    },
   },
 };
+
+export const COD_SETTINGS_INFO = `Use this setting to enable COD on your store and configure the rules for selectively
+showing COD to customers based on location, products, etc. as well as for setting the
+COD fees. <br /> Please note that this will override any COD settings on your
+Shopify/WooC store.`;

@@ -5,18 +5,20 @@ import isEmpty from '@universe/utils/isEmpty';
 const SettingsToggle = ({ setting, onToggle }) =>
   !isEmpty(setting) && (
     <div className="display-flex checkout-settings-toggle">
-      <div className="setting-label">
-        {setting.label}
-        {setting.description && (
-          <i className="i i-info-outline">
-            <Popover align="bottom" theme="dark">
-              <PopoverBody>
-                <div>{setting.description}</div>
-              </PopoverBody>
-            </Popover>
-          </i>
-        )}
-      </div>
+      {setting.label && (
+        <div className="setting-label">
+          {setting.label}
+          {setting.description && (
+            <i className="i i-info-outline">
+              <Popover theme="dark">
+                <PopoverBody>
+                  <div>{setting.description}</div>
+                </PopoverBody>
+              </Popover>
+            </i>
+          )}
+        </div>
+      )}
       <div className="display-flex setting-toggle">
         <SwitchField
           onChange={(checked, postActionCB) => onToggle(checked, setting.label, postActionCB)}

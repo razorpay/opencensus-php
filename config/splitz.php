@@ -295,6 +295,10 @@ return [
 
         // Payment Pages - Ecommerce
         'PP_ECOMMERCE_SPLITZ' => env('PP_ECOMMERCE_SPLITZ', ''),
+
+        // Magic
+        'MAGIC_COD_ENGINE' => env('MAGIC_COD_ENGINE'),
+
         // Affordability Onboarding for SBI CC EMi and credit card segeration
         'SHOW_SEGREGATED_CREDIT_EMI_METHODS' => env('SHOW_SEGREGATED_CREDIT_EMI_METHODS', ''),
         'SHOW_INTERNATIONAL_PAYMENTS_BUTTON' => env('SHOW_INTERNATIONAL_PAYMENTS_BUTTON', ''),

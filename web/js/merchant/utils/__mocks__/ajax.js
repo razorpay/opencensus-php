@@ -41,6 +41,17 @@ export function merchantFetch(params) {
   return ajax(params);
 }
 
+export function merchantFetchWithContentType(params, contentType = 'application/json') {
+  params.headers = params.headers || {};
+  return merchantFetch({
+    ...params,
+    headers: {
+      ...params.headers,
+      'Content-Type': contentType,
+    },
+  });
+}
+
 export default (url, params = {}, baseUrl = '') => {
   if (typeof url === 'object') {
     params = url;

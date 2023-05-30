@@ -4,6 +4,7 @@ describe('testing constants', () => {
   test('condition should return true if feature is enabled', () => {
     const user = {
       isMagicCODOrderAutomationEnabled: true,
+      isMagicCODEngineEnabled: true,
       role: 'owner',
     };
     Object.keys(TABS).forEach((platform) => {

@@ -19,6 +19,7 @@ const initState = {
   session: {
     user: {
       isMagicCODOrderAutomationEnabled: true,
+      isMagicCODEngineEnabled: true,
       role: 'owner',
     },
   },

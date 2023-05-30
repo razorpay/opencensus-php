@@ -143,6 +143,7 @@ import websiteComplianceReducer from 'merchant/reducers/websitecompliance';
 import pluginReducer from 'merchant/reducers/plugins';
 import { paymentUploadInvoiceReducer } from 'merchant/reducers/paymentUploadInvoice';
 import { reportsReducer as reportsCoreReducer } from 'merchant_common/views/Reports/redux/reducer';
+import { magicCODSettingsReducer } from 'merchant/reducers/magicCheckout/codEngine/reducer';
 
 export default combineReducers({
   modal: modalReducer,
@@ -258,6 +259,7 @@ export default combineReducers({
   magicCODOrders: magicCODOrdersReducer,
   magicCODOrderInfo: magicCODOrderInfoReducer,
   magicCODOrdersAutomation: magicCODOrdersAutomationReducer,
+  magicCODEngine: magicCODSettingsReducer,
   magicBlocklist: blocklistReducer,
   magicAllowlist: allowlistReducer,
   rtoHistoryUpload: rtoHistoryUploadReducer,

@@ -643,7 +643,12 @@ export default {
     // prod experiment ids
     'LZi2wmeOZSCjtX',
   ],
-
+  magic_cod_engine: [
+    // stage experiment ids
+    'Lep0tkId1tRQvA',
+    // prod experiment ids
+    'LfEZDFJoAnktiZ',
+  ],
   magic_order_analytics: [
     'Llo1U1DSWpyLdp',
     //prod

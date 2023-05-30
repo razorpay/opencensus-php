@@ -80,6 +80,7 @@
     "react-tether": "0.6.1",
     "react-tracking": "7.3.0",
     "react-transition-group": "2.9.0",
+    "react-virtualized": "9.22.5",
     "redux": "4.0.5",
     "redux-form": "6.8.0",
     "refiner-js": "1.0.2",
