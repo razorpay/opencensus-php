@@ -122,6 +122,7 @@ class Constants
     const AllowBankTransferRefundNonTpv = 'allow_bank_transfer_refund_non_tpv';
     const RefundArnWebhookVisibility = 'refund_arn_webhook_visibility';
     const RefundAttributesLateAuth = 'refund_attributes_late_auth';
+    const CrossOrgLogin = 'cross_org_login';
 
     public static $validDcsKeys = [];
     /**
@@ -238,7 +239,8 @@ class Constants
         self::AllowVoidRefunds => 'rzp/pg/merchant/refunds/RefundCreation',
         self::AllowBankTransferRefundNonTpv => 'rzp/pg/merchant/refunds/RefundCreation',
         self::RefundArnWebhookVisibility => 'rzp/pg/merchant/refunds/Webhook',
-        self::RefundAttributesLateAuth => 'rzp/pg/org/refunds/Display'
+        self::RefundAttributesLateAuth => 'rzp/pg/org/refunds/Display',
+        self::CrossOrgLogin => 'rzp/platform/merchant/login/CrossLoginFeatures',
     ];
 
     public static function isValidDcsKeyAndName(string $key, string $name): bool
@@ -368,6 +370,7 @@ class Constants
         APIFeaturesConstants::NON_TPV_BT_REFUND                             => self::AllowBankTransferRefundNonTpv,
         APIFeaturesConstants::REFUND_ARN_WEBHOOK                            => self::RefundArnWebhookVisibility,
         APIFeaturesConstants::SHOW_REFND_LATEAUTH_PARAM                     => self::RefundAttributesLateAuth,
+        self::CrossOrgLogin                                                 => self::CrossOrgLogin,
     ];
 
     /**
@@ -432,6 +435,7 @@ class Constants
             "postpaid_merchants_dont_settle_customer_fees"=> "direct",
             "dynamic_currency_conversion_cybs" => "direct",
             "irctc_report" => "direct",
+            "cross_org_login" => "direct",
         ],
         "org" => [
             "disable_free_credit_unreg"=> "client",

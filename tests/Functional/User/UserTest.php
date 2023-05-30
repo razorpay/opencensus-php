@@ -1988,7 +1988,17 @@ class UserTest extends TestCase
             ->setMethods(['pushIdentifyandTrackEvent'])
             ->getMock();
 
+        $dcsMock = $this->getMockBuilder(DCSService::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['fetchEntityIdsByFeatureName'])
+            ->getMock();
+
         $this->app->instance('x-segment', $xsegmentMock);
+        $this->app->instance('dcs', $dcsMock);
+
+        $dcsMock->expects($this->exactly(2))
+            ->method('fetchEntityIdsByFeatureName')
+            ->willReturn([]);
 
         $xsegmentMock->expects($this->exactly(1))
             ->method('pushIdentifyandTrackEvent')

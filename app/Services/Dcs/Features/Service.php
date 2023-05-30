@@ -694,4 +694,10 @@ class Service extends Base
 
         return $request;
     }
+
+    public function fetchEntityIdsByFeatureName(string $apiFeatureName, string $entityType, $mode = Mode::LIVE): array
+    {
+        $res = $this->fetchByFeatureName($apiFeatureName,$entityType, $mode);
+        return $res->pluck(Entity::ENTITY_ID)->toArray();
+    }
 }

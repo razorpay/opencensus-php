@@ -3350,6 +3350,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const USERS_SEND_EMAIL_OTP_FAILED                           = 'USERS_SEND_EMAIL_OTP_FAILED';
     const USER_NOT_FOUND                                        = 'USER_NOT_FOUND';
     const USER_HEADER_MISSING                                   = 'USER_HEADER_MISSING';
+    const FETCH_ENTITY_IDS_BY_FEATURE_NAME                       = 'FETCH_ENTITY_IDS_BY_FEATURE_NAME';
     const USER_LOGIN                                            = 'USER_LOGIN';
     const USER_MOBILE_LOGIN                                     = 'USER_MOBILE_LOGIN';
     const USER_X_MOBILE_APP_DOWNLOAD_LINK                       = 'USER_X_MOBILE_APP_DOWNLOAD_LINK';

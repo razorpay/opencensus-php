@@ -7,6 +7,8 @@ use Mail;
 use Hash;
 use Cache;
 use Config;
+use RZP\Services\Dcs\Features\Constants as DcsConstants;
+use RZP\Services\Dcs\Features\Type;
 use Throwable;
 use Carbon\Carbon;
 use RZP\Exception;
@@ -3671,8 +3673,15 @@ class Core extends Base\Core
 
         $merchantEntities = $user->merchants()->where(Merchant\Entity::SUSPENDED_AT, null)->take($limit)->get();
 
-        $merchantIdsWithCrossOrgFeature = (new Feature\Repository)->findMerchantIdsHavingFeatures([Features::CROSS_ORG_LOGIN]);
+        $merchantIdsWithCrossOrgFeature = $this->app['dcs']->fetchEntityIdsByFeatureName(DcsConstants::CrossOrgLogin, Type::MERCHANT, $this->mode);
 
+        $this->trace->info(TraceCode::FETCH_ENTITY_IDS_BY_FEATURE_NAME, [
+            "Mids fetched from DCS for cross org login feature" => $merchantIdsWithCrossOrgFeature,
+        ]);
+
+        if (empty($merchantIdsWithCrossOrgFeature) ===  true) {
+            $merchantIdsWithCrossOrgFeature = (new Feature\Repository)->findMerchantIdsHavingFeatures([Features::CROSS_ORG_LOGIN]);
+        }
         $filteredMerchants = new Base\PublicCollection;
 
         if($this->app['basicauth']->isAppleWatchApp() === true or $orgId === Org\Entity::BAJAJ_ORG_ID)

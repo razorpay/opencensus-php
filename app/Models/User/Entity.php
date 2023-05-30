@@ -16,6 +16,10 @@ use RZP\Models\Merchant\MerchantUser;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Merchant\Balance\Type as ProductType;
+use RZP\Services\Dcs\Features\Constants as DcsConstants;
+use RZP\Services\Dcs\Features\Service as DCSService;
+use RZP\Services\Dcs\Features\Type;
+use RZP\Trace\TraceCode;
 
 class Entity extends Base\PublicEntity
 {
@@ -616,7 +620,17 @@ class Entity extends Base\PublicEntity
     {
         $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 
-        $merchantIdsWithCrossOrgFeature = (new Feature\Repository)->findMerchantIdsHavingFeatures([Features::CROSS_ORG_LOGIN]);
+        $dcs = app('dcs');
+
+        $merchantIdsWithCrossOrgFeature =  $dcs->fetchEntityIdsByFeatureName(DcsConstants::CrossOrgLogin, Type::MERCHANT, $this->mode);
+
+        app('trace')->info(TraceCode::FETCH_ENTITY_IDS_BY_FEATURE_NAME, [
+            "Mids fetched from DCS for cross org login feature" => $merchantIdsWithCrossOrgFeature,
+        ]);
+
+        if (empty($merchantIdsWithCrossOrgFeature) ===  true) {
+            $merchantIdsWithCrossOrgFeature = (new Feature\Repository)->findMerchantIdsHavingFeatures([Features::CROSS_ORG_LOGIN]);
+        }
 
         $merchantIds = (new MerchantUser\Repository)->returnMerchantIdsForUserId($this->getAttribute(self::ID), 1000);
 
