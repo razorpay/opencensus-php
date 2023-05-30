@@ -43,6 +43,8 @@ class PGRouter
 
     protected $auth;
 
+    protected $currentEndPoint;
+
     const PGRouterOrderSyncUrl = 'v1/sync/order';
 
     const PGRouterUpdateSyncedOrderUrl = 'v1/update/synced/order';
@@ -71,6 +73,12 @@ class PGRouter
     const PGRouterPaymentAuthenticate = '/v1/payments/%s/authenticate';
 
     const PGRouterCreateOrder = 'v1/orders';
+
+    const PGRouterFetchOrder = 'v1/orders/%s';
+
+    const PGRouterUpdateInternalOrder = 'v1/internal/orders/%s';
+
+    const PGRouterUpdateCurrencyRoute   = 'v1/update/currency/rate';
 
     const PGRouterPaymentCreateJson = 'v1/payments/create/json';
 
@@ -102,6 +110,31 @@ class PGRouter
     const RESPONSE_CODE     = 'code';
 
     const MODE = 'mode';
+
+    // Requests will be logged by default or if value for path is true.
+    const REQUEST_LOGGER_MAP = [
+        Requests::POST.'_'.self::PGRouterValidateAndCreatePayment   => true,
+        Requests::GET.'_'.self::PGRouterPaymentCancel               => false,
+        Requests::GET.'_'.self::PGRouterPaymentVerify               => false,
+        Requests::GET.'_'.self::PGRouterFetchCard                   => false,
+        Requests::GET.'_'.self::PGRouterFetchOrderPayments          => false,
+        Requests::GET.'_'.self::PGRouterFetchPayment                => false,
+        Requests::GET.'_'.self::PGRouterFetchOrder                  => false,
+        Requests::PATCH.'_'.self::PGRouterFetchOrder                => false,
+        Requests::POST.'_'.self::PGRouterCreateOrder                => false,
+        Requests::PATCH.'_'.self::PGRouterUpdateCurrencyRoute       => false,
+        Requests::POST.'_'.self::PGRouterOTPSubmitPrivate           => false
+    ];
+
+    const RESPONSE_LOGGER_MAP = [
+        Requests::GET.'_'.self::PGRouterFetchPayment                => false,
+        Requests::GET.'_'.self::PGRouterFetchOrder                  => false,
+        Requests::PATCH.'_'.self::PGRouterFetchOrder                => false,
+        Requests::POST.'_'.self::PGRouterCreateOrder                => false,
+        Requests::PATCH.'_'.self::PGRouterUpdateInternalOrder       => false,
+        Requests::PATCH.'_'.self::PGRouterUpdateCurrencyRoute       => false,
+        Requests::POST.'_'.self::PGRouterOTPSubmitPrivate           => false
+    ];
 
     /**
      * PGRouter constructor.
@@ -235,6 +268,8 @@ class PGRouter
             $url .= '?merchant_id='.$merchantId;
         }
 
+        $this->currentEndPoint = self::PGRouterPaymentCancel;
+
         $output = $this->sendRequest($url, Requests::GET, [], $throwExceptionOnFailure);
 
         return $output['body'];
@@ -251,6 +286,7 @@ class PGRouter
         $this->updateIpandUserAgent($input, true);
 
         $url = sprintf(self::PGRouterPaymentAuthenticate, $id);
+        $this->currentEndPoint = self::PGRouterPaymentAuthenticate;
 
         $output = $this->sendRequest($url, Requests::POST, $input, $throwExceptionOnFailure);
 
@@ -343,6 +379,8 @@ class PGRouter
             $endpoint .= '?merchant_id='.$merchantId;
         }
 
+        $this->currentEndPoint = self::PGRouterFetchCard;
+
         $response = $this->sendRequest($endpoint, Requests::GET, [], false, 2, true);
 
         if (empty($response) === false and isset($response['body']['data']['card']))
@@ -360,6 +398,8 @@ class PGRouter
         $endpoint = $endpoint."?merchant_id=".$merchantId;
 
         $card = null;
+
+        $this->currentEndPoint = self::PGRouterFetchOrderPayments;
 
         $response = $this->sendRequest($endpoint, Requests::GET, [], false, self::DEFAULT_REQUEST_TIMEOUT, true);
 
@@ -401,7 +441,7 @@ class PGRouter
                     if ($paymentEntity->isUpi() === true)
                     {
                         $input = $payment['data']['payment'];
-                        
+
                         (new Payment\Entity)->modifyInput($input);
 
                         $paymentEntity = (new Payment\Entity)->forceFill($input);
@@ -433,6 +473,8 @@ class PGRouter
             $endpoint .= '?merchant_id='.$merchantId;
         }
 
+        $this->currentEndPoint = self::PGRouterFetchPayment;
+
         $card = null;
 
         $response = $this->sendRequest($endpoint, Requests::GET, [], false, 2, true);
@@ -455,19 +497,19 @@ class PGRouter
                 $card->setExternal(true);
 
                 unset($response['body']['data']['payment']['card']);
-            }   
+            }
 
             $payment = (new Payment\Entity)->forceFill($response['body']['data']['payment']);
 
             if ($payment->isUpi() === true)
             {
                 $input = $response['body']['data']['payment'];
-                
+
                 (new Payment\Entity)->modifyInput($input);
 
                 $payment = (new Payment\Entity)->forceFill($input);
             }
-            
+
             if ($card !== null)
             {
                 $payment->card()->associate($card);
@@ -493,6 +535,8 @@ class PGRouter
         }
 
         $endpoint = 'v1/orders/' . $id;
+
+        $this->currentEndPoint = self::PGRouterFetchOrder;
 
         if (empty($merchantId) === false)
         {
@@ -537,6 +581,8 @@ class PGRouter
             $endpoint .= '?merchant_id='.$merchantId;
         }
 
+        $this->currentEndPoint = self::PGRouterFetchOrder;
+
         $response = $this->sendRequest($endpoint, Requests::PATCH, $input, $throwExceptionOnFailure);
 
         return $this->forceFillOrderFromResponse($response);
@@ -550,6 +596,8 @@ class PGRouter
         {
             $endpoint .= '?merchant_id='.$merchantId;
         }
+
+        $this->currentEndPoint = self::PGRouterUpdateInternalOrder;
 
         $response = $this->sendRequest($endpoint, Requests::PATCH, $input, $throwExceptionOnFailure, $timeout, true);
 
@@ -638,6 +686,8 @@ class PGRouter
     {
         $url = sprintf(self::PGRouterOTPSubmitPrivate, $id);
 
+        $this->currentEndPoint = self::PGRouterOTPSubmitPrivate;
+
         $output = $this->sendRequest($url, Requests::POST, $input, $throwExceptionOnFailure);
 
         return $output['body'];
@@ -672,11 +722,11 @@ class PGRouter
 
         if ($retry === true)
         {
-            $response = $this->sendPGRouterRequestWithRetry($request);
+            $response = $this->sendPGRouterRequestWithRetry($request, $endpoint);
         }
         else
         {
-            $response = $this->sendPGRouterRequest($request);
+            $response = $this->sendPGRouterRequest($request, $endpoint);
         }
 
         if (strpos($response->headers['content-type'], 'text/html') !== false)
@@ -695,15 +745,39 @@ class PGRouter
         // SBB Issue - Axis Migs
         unset($traceData["request"]["content"]);
 
-
         unset($traceData["response"]["data"]["payment"]["card"]);
 
-        $this->trace->info(TraceCode::PG_ROUTER_RESPONSE,
-            ["response" => $traceData ?? [],
-                "statusCode" =>  $response->status_code
-            ]);
+
+        $logResponse = $this->shouldLogResponse($endpoint, $method);
+        if($logResponse === true)
+        {
+            $this->trace->info(TraceCode::PG_ROUTER_RESPONSE,
+                ["response" => $traceData ?? [],
+                    "statusCode" => $response->status_code
+                ]);
+        }
+
+        $this->currentEndPoint = "";
 
         return $this->parseResponse($decodedResponse, $response->status_code, $throwExceptionOnFailure, $endpoint);
+    }
+
+    public function shouldLogResponse(string $endpoint, string $method) :bool
+    {
+        $mapKey = $method.'_'.$endpoint;
+        $logResponse = true;
+        if(isset(self::RESPONSE_LOGGER_MAP[$mapKey]))
+        {
+            $logResponse = self::RESPONSE_LOGGER_MAP[$mapKey];
+        }
+        else
+        {
+            if($this->currentEndPoint !== "" and isset(self::RESPONSE_LOGGER_MAP[$method.'_'.$this->currentEndPoint]) === true)
+            {
+                $logResponse = self::RESPONSE_LOGGER_MAP[$method.'_'.$this->currentEndPoint];
+            }
+        }
+        return $logResponse;
     }
 
     /**
@@ -728,9 +802,9 @@ class PGRouter
      * @return \WpOrg\Requests\Response
      * @throws \WpOrg\Requests\Exception
      */
-    protected function sendPGRouterRequest(array $request)
+    protected function sendPGRouterRequest(array $request, string $endpoint)
     {
-        $this->traceRequest($request);
+        $this->traceRequest($request, $endpoint);
 
         try
         {
@@ -763,9 +837,9 @@ class PGRouter
         return $response;
     }
 
-    protected function sendPGRouterRequestWithRetry(array $request)
+    protected function sendPGRouterRequestWithRetry(array $request, string $endpoint)
     {
-        $this->traceRequest($request);
+        $this->traceRequest($request, $endpoint);
 
         $res = null;
         $exception = null;
@@ -824,7 +898,7 @@ class PGRouter
     /**
      * @param array $request
      */
-    protected function traceRequest(array $request)
+    protected function traceRequest(array $request, string $endpoint)
     {
         $traceRequest = $request;
 
@@ -857,7 +931,31 @@ class PGRouter
             $traceRequest['content'] = json_encode($content);
         }
 
-        $this->trace->info(TraceCode::PG_ROUTER_REQUEST, $traceRequest);
+        $logRequest = $this->shouldLogRequest($endpoint, $request['method']);
+
+        if($logRequest === true)
+        {
+            $this->trace->info(TraceCode::PG_ROUTER_REQUEST, $traceRequest);
+        }
+    }
+
+    public function shouldLogRequest(string $endpoint, string $method) :bool
+    {
+        $logRequest = true;
+        $mapKey = $method.'_'.$endpoint;
+        if(isset(self::REQUEST_LOGGER_MAP[$mapKey]))
+        {
+            $logRequest = self::REQUEST_LOGGER_MAP[$mapKey];
+        }
+        else
+        {
+            if($this->currentEndPoint !== "" and isset(self::REQUEST_LOGGER_MAP[$method.'_'.$this->currentEndPoint]) === true)
+            {
+                $logRequest = self::REQUEST_LOGGER_MAP[$method.'_'.$this->currentEndPoint];
+            }
+        }
+
+        return $logRequest;
     }
 
     /**
