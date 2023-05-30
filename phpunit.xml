@@ -210,7 +210,6 @@
             <directory>./tests/Functional/Setting/</directory>
             <directory>./tests/Functional/Settlement/</directory>
             <directory>./tests/Functional/OAuth/</directory>
-            <directory>./tests/Functional/Offer/</directory>
             <directory>./tests/Functional/AppFramework/</directory>
             <directory>./tests/Functional/Pricing/</directory>
         </testsuite>
@@ -486,6 +485,9 @@
         </testsuite>
         <testsuite name="Cross Border Test Suite">
             <directory>./tests/Functional/Currency/</directory>
+        </testsuite>
+        <testsuite name="Affordibility Test Suite">
+        <directory>./tests/Functional/Offer/</directory>
         </testsuite>
     </testsuites>
     <listeners>
