@@ -5223,17 +5223,30 @@ class Service extends Base\Service
 
         $entries = $processor->processBatchFile($movedFile->getPathname());
 
+        if (sizeof($entries) === 0)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_VALIDATION_FAILED,
+                null,
+                null,
+                "File upload failed, atleast 1 filled row required"
+            );
+        }
+
         $batchType = $this->core()->getBatchType($entries);
 
         $response = [];
 
         $statusCode = 200;
 
-        if ($batchType === '')
+        if ($batchType === null)
         {
-            $statusCode = 400;
-
-            return [$response, $statusCode];
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_VALIDATION_FAILED,
+                null,
+                null,
+                "File upload failed, file format doesn't follow any of the templates"
+            );
         }
 
         // redirect to old flow if old template

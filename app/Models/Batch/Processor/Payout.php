@@ -135,7 +135,7 @@ class Payout extends Base
                 ErrorCode::BAD_REQUEST_VALIDATION_FAILED,
                 null,
                 null,
-                "No of sheets should be 1"
+                "File upload failed, only 1 sheet allowed per file"
             );
         }
 

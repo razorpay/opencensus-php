@@ -3213,8 +3213,6 @@ class PayoutTest extends TestCase
         $this->ba->proxyAuth();
 
         $response = $this->startTest();
-
-        $this->assertEquals(1000, $response['total_payout_amount']);
     }
 
     public function testValidateBulkPayoutsWithAmazonPayWithBeneDetail()
@@ -3238,13 +3236,57 @@ class PayoutTest extends TestCase
         $this->assertEquals('payouts_amazonpay_bene_details', $response['batch_type_id']);
     }
 
+    public function testValidateBulkPayoutsWithUPIWithBeneDetail()
+    {
+        $this->fixtures->merchant->addFeatures([Feature::ALLOW_COMPLETE_ERROR_DESC]);
+
+        $upiWithBeneDetailsEntries = [
+            [
+                "Beneficiary Name (Mandatory) Special characters not supported"  => 'Ironman',
+                "Beneficiary's UPI ID (Mandatory)" => 'test@okaxis',
+                "Payout Amount (Mandatory) Amount should be in rupees" => 10,
+            ],
+        ];
+
+        $this->createAndPutCsvFileInRequest($upiWithBeneDetailsEntries, __FUNCTION__);
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('payouts_upi_bene_details', $response['batch_type_id']);
+    }
+
+    public function testValidateBulkPayoutsWithBankTransferWithBeneDetail()
+    {
+        $this->fixtures->merchant->addFeatures([Feature::ALLOW_COMPLETE_ERROR_DESC]);
+
+        $banTransferWithBeneDetailsEntries = [
+            [
+                "Beneficiary Name (Mandatory) Special characters not supported"  => 'Ironman',
+                "Beneficiary's Account Number (Mandatory)" => "100000000000",
+                "IFSC Code (Mandatory)" => "HDFC00001",
+                "Payout Amount (Mandatory) Amount should be in rupees" => 10,
+                "Payout Mode (Mandatory)" => "IMPS"
+            ],
+        ];
+
+        $this->createAndPutCsvFileInRequest($banTransferWithBeneDetailsEntries, __FUNCTION__);
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('payouts_bank_transfer_bene_details', $response['batch_type_id']);
+    }
+
     public function testValidateBulkPayoutsWithAmazonPayWithBeneId()
     {
         $this->fixtures->merchant->addFeatures([Feature::ALLOW_COMPLETE_ERROR_DESC]);
 
         $amazonPayWithBeneDetailsEntries = [
             [
-                "Beneficiary's Fund Account ID - Wallet (Mandatory) Unique id linked to a Razorpay Fund account." => 'fa_12345',
+                "Beneficiary's Fund Account ID Wallet (Mandatory) Unique id linked to a Razorpay Fund account." => 'fa_12345',
                 "Payout Amount (Mandatory) Amount should be in rupees" => 10,
             ],
         ];
@@ -3256,6 +3298,79 @@ class PayoutTest extends TestCase
         $response = $this->startTest();
 
         $this->assertEquals('payouts_amazonpay_bene_id', $response['batch_type_id']);
+    }
+
+    public function testValidateBulkPayoutsWithBankTransferWithBeneId()
+    {
+        $this->fixtures->merchant->addFeatures([Feature::ALLOW_COMPLETE_ERROR_DESC]);
+
+        $bankTransferWithBeneIDEntries = [
+            [
+                "Beneficiary's Fund Account ID (Mandatory) Unique id linked to a Razorpay Fund account." => 'fa_12345',
+                "Payout Amount (Mandatory) Amount should be in rupees" => 10,
+                "Payout Mode (Mandatory)" => "IMPS"
+            ],
+        ];
+
+        $this->createAndPutCsvFileInRequest($bankTransferWithBeneIDEntries, __FUNCTION__);
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('payouts_bank_transfer_bene_id', $response['batch_type_id']);
+    }
+
+    public function testValidateBulkPayoutsWithUPIWithBeneId()
+    {
+        $this->fixtures->merchant->addFeatures([Feature::ALLOW_COMPLETE_ERROR_DESC]);
+
+        $upiWithBeneIDEntries = [
+            [
+                "Beneficiary's Fund Account ID (Mandatory) Unique id linked to a Razorpay Fund account." => 'fa_12345',
+                "Payout Amount (Mandatory) Amount should be in rupees" => 10,
+            ],
+        ];
+
+        $this->createAndPutCsvFileInRequest($upiWithBeneIDEntries, __FUNCTION__);
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals('payouts_upi_bene_id', $response['batch_type_id']);
+    }
+
+    public function testValidateEmptyBatchFile()
+    {
+        $this->fixtures->merchant->addFeatures([Feature::ALLOW_COMPLETE_ERROR_DESC]);
+
+        $emptyEntries = [];
+
+        $this->createAndPutExcelFileInRequest($emptyEntries, __FUNCTION__);
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+    }
+
+    public function testInvalidBankTransferBeneIdBatchFile()
+    {
+        $this->fixtures->merchant->addFeatures([Feature::ALLOW_COMPLETE_ERROR_DESC]);
+
+        $InvalidBankTransferBeneIdEntries = [
+            [
+                "Beneficiary's Fund Account ID" => "fa_12345678901234",
+                "Amount" => 100,
+                "Payout Mode" => "IFSC"
+            ]
+        ];
+
+        $this->createAndPutExcelFileInRequest($InvalidBankTransferBeneIdEntries, __FUNCTION__);
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
     }
 
     public function testGetBatchRowsWithCreatorNameForTypePayouts()

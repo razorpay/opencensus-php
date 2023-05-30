@@ -1365,6 +1365,46 @@ return [
 
     ],
 
+    'testValidateBulkPayoutsWithUPIWithBeneDetail' => [
+        'request'  => [
+            'url'     => '/payouts/batch/validate',
+            'method'  => 'post',
+            'server' => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 200,
+        ],
+
+    ],
+
+    'testValidateBulkPayoutsWithBankTransferWithBeneDetail' => [
+        'request'  => [
+            'url'     => '/payouts/batch/validate',
+            'method'  => 'post',
+            'server' => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 200,
+        ],
+
+    ],
+
     'testValidateBulkPayoutsWithAmazonPayWithBeneId' => [
         'request'  => [
             'url'     => '/payouts/batch/validate',
@@ -1383,6 +1423,96 @@ return [
             'status_code' => 200,
         ],
 
+    ],
+
+    'testValidateBulkPayoutsWithBankTransferWithBeneId' => [
+        'request'  => [
+            'url'     => '/payouts/batch/validate',
+            'method'  => 'post',
+            'server' => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 200,
+        ],
+
+    ],
+
+    'testValidateBulkPayoutsWithUPIWithBeneId' => [
+        'request'  => [
+            'url'     => '/payouts/batch/validate',
+            'method'  => 'post',
+            'server' => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 200,
+        ],
+
+    ],
+
+    'testValidateEmptyBatchFile' => [
+        'request'  => [
+            'url'     => '/payouts/batch/validate',
+            'method'  => 'post',
+            'server' => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'File upload failed, atleast 1 filled row required',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILED,
+        ],
+    ],
+
+    'testInvalidBankTransferBeneIdBatchFile' => [
+        'request'  => [
+            'url'     => '/payouts/batch/validate',
+            'method'  => 'post',
+            'server' => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => "File upload failed, file format doesn't follow any of the templates",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILED,
+        ],
     ],
 
     'testGetBatchRowsWithCreatorNameForTypePayouts' => [

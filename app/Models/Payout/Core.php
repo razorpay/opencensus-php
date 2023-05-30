@@ -4114,13 +4114,16 @@ class Core extends Base\Core
         return $payout->getPurpose() === Purpose::INTER_ACCOUNT_PAYOUT;
     }
 
-    public function getBatchType(array $entries): string
+    /**
+     * @throws BadRequestException
+     */
+    public function getBatchType(array $entries): ?string
     {
         $headers = array_keys(current($entries));
 
         $headers = $this->cleanHeaders($headers);
 
-        $batchType = '';
+        $batchType = null;
 
         if (count($headers) > 11 || count($headers) === 1)
         {
@@ -4130,31 +4133,64 @@ class Core extends Base\Core
         {
             if (in_array(BatchPayoutConstants::BENE_FA_ID_FILE_HEADER, $headers, false) === true)
             {
+                $this->validateMandatoryFileHeaders($headers, BatchPayoutConstants::BANK_TRANSFER_WITH_BENE_ID_BATCH_TYPE);
+
                 $batchType = BatchPayoutConstants::BANK_TRANSFER_WITH_BENE_ID_BATCH_TYPE;
             }
             else
             {
+                $this->validateMandatoryFileHeaders($headers, BatchPayoutConstants::BANK_TRANSFER_WITH_BENE_DETAILS_BATCH_TYPE);
+
                 $batchType = BatchPayoutConstants::BANK_TRANSFER_WITH_BENE_DETAILS_BATCH_TYPE;
             }
         }
         else if (in_array(BatchPayoutConstants::BENE_UPI_ID_FILE_HEADER, $headers, false) === true)
         {
+            $this->validateMandatoryFileHeaders($headers, BatchPayoutConstants::UPI_WITH_BENE_DETAILS_BATCH_TYPE);
+
             $batchType = BatchPayoutConstants::UPI_WITH_BENE_DETAILS_BATCH_TYPE;
         }
         else if (in_array(BatchPayoutConstants::BENE_FA_ID_FILE_HEADER, $headers, false) === true)
         {
+            $this->validateMandatoryFileHeaders($headers, BatchPayoutConstants::UPI_WITH_BENE_ID_BATCH_TYPE);
+
             $batchType = BatchPayoutConstants::UPI_WITH_BENE_ID_BATCH_TYPE;
         }
         else if (in_array(BatchPayoutConstants::BENE_FA_ID_WALLET_FILE_HEADER, $headers, false) === true)
         {
+            $this->validateMandatoryFileHeaders($headers, BatchPayoutConstants::AMAZONPAY_WITH_BENE_ID_BATCH_TYPE);
+
             $batchType = BatchPayoutConstants::AMAZONPAY_WITH_BENE_ID_BATCH_TYPE;
         }
         else if (in_array(BatchPayoutConstants::BENE_PHONE_NUMBER_AMAZONPAY_FILE_HEADER, $headers, false) === true)
         {
+            $this->validateMandatoryFileHeaders($headers, BatchPayoutConstants::AMAZONPAY_WITH_BENE_DETAILS_BATCH_TYPE);
+
             $batchType = BatchPayoutConstants::AMAZONPAY_WITH_BENE_DETAILS_BATCH_TYPE;
         }
 
         return $batchType;
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    private function validateMandatoryFileHeaders(array $headers, string $batchType)
+    {
+        $mandatoryFileHeaders = BatchPayoutConstants::MANDATORY_FILE_HEADERS_FOR_BATCH_TYPE[$batchType];
+
+        foreach ($mandatoryFileHeaders as $mandatoryFileHeader)
+        {
+            if (in_array($mandatoryFileHeader, $headers, false) === false)
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_VALIDATION_FAILED,
+                    null,
+                    null,
+                    "File upload failed, file format doesn't follow any of the templates"
+                );
+            }
+        }
     }
 
     private function cleanHeaders(array $headers): array
