@@ -54,6 +54,15 @@ const Fields = {
   website: SupportUrlField,
 };
 
+const getSupportDetailsPayload = (data) => {
+  return Object.keys(data).reduce((acc, key) => {
+    if (data[key]) {
+      acc[key] = data[key];
+    }
+    return acc;
+  }, {});
+};
+
 class MerchantDataCollectionModal extends Component {
   state = { isVerifying: false, newEmail: '', newUrl: '' };
 
@@ -132,7 +141,9 @@ class MerchantDataCollectionModal extends Component {
       });
       return;
     }
-    createSupportDetail({ email, url: newurl, phone })
+    const supportDetailsPayload = getSupportDetailsPayload({ email, url: newurl, phone });
+
+    createSupportDetail(supportDetailsPayload)
       .then((res) => {
         if (res.success && supportModal) {
           selfServeTrackSuccess({
