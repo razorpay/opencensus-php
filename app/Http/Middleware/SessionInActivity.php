@@ -69,11 +69,11 @@ class SessionInActivity
         if ($this->isMerchantDashboardLoggedIn() === true)
         {
             $skip = true;
-        }
 
-        $this->trace->info(TraceCode::TIMEOUT_TRACES, [
-            'isMerchantDashboardLoggedIn' => $this->isMerchantDashboardLoggedIn()
-        ]);
+            $this->trace->info(TraceCode::APP_NAME, [
+                'isMerchantDashboardLoggedIn' => $skip
+            ]);
+        }
 
         if (($this->isAdminUserAndOrgFeatureEnabledForLogout() === false) and
               $skip === false)
@@ -83,6 +83,11 @@ class SessionInActivity
 
         // Meta data is stored in session with the key _sf2_meta with keys c,u,l as keys (created, updated, lifetime)
         $user = Auth::guard('api');
+
+        if ($skip === true)
+        {
+            $user = Auth::guard('api') ?? Auth::guard('user');
+        }
 
         $lastUsed = $this->getSessionLastUsedAt();
 
@@ -119,7 +124,6 @@ class SessionInActivity
             return $response;
 
         }
-
         if ((empty($user->user()) === false) and (empty($lastUsed) === false) and
             (($currentTime - $lastUsed) > $adminInActivityTime))
         {
@@ -170,7 +174,7 @@ class SessionInActivity
             $merchantInactivityTimeout = $org['merchant_session_timeout_in_seconds'];
         }
 
-        $this->trace->info(TraceCode::TIMEOUT_TRACES, [
+        $this->trace->info(TraceCode::TIMEOUT_VALUE, [
             'Timeout Value' => $merchantInactivityTimeout
         ]);
 

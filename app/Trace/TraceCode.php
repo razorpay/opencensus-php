@@ -146,7 +146,8 @@ class TraceCode
 
     const ADMIN_LOGOUT_ON_INACTIVITY                = 'ADMIN_LOGOUT_ON_INACTIVITY';
     const MERCHANT_LOGOUT_ON_INACTIVITY             = 'MERCHANT_LOGOUT_ON_INACTIVITY';
-    const TIMEOUT_TRACES                            = 'TIMEOUT_TRACES';
+    const APP_NAME                                  = 'APP_NAME';
+    const TIMEOUT_VALUE                             = 'TIMEOUT_VALUE';
 
     const ADMIN_RAW_API_CALL                        = 'ADMIN_RAW_API_CALL';
     const BLOCKED_DUE_TO_SBB_622                    = 'BLOCKED_DUE_TO_SBB_622';
