@@ -5566,6 +5566,7 @@ class Core extends Base\Core
                         function () use ($subMerchantOwner
                         ) {
                             return [
+                                User\Entity::ID             => $subMerchantOwner->id,
                                 User\Entity::EMAIL          => $subMerchantOwner->email,
                                 User\Entity::CONTACT_MOBILE => $subMerchantOwner->contact_mobile
                             ];
@@ -5630,6 +5631,7 @@ class Core extends Base\Core
 
                 // reducing the submerchant owner response and removing toArrayPublic call to improve latency
                 return [
+                    User\Entity::ID             => $subMerchantOwner->id,
                     User\Entity::EMAIL          => $subMerchantOwner->email,
                     User\Entity::CONTACT_MOBILE => $subMerchantOwner->contact_mobile
                 ];

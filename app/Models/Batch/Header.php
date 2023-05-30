@@ -5246,6 +5246,21 @@ class Header
             ],
             self::OUTPUT => []
         ],
+        Type::PARTNER_SUBMERCHANT_REFERRAL_INVITE => [
+            self::INPUT => [
+                self::NAME,
+                self::EMAIL,
+                self::CONTACT_MOBILE
+            ],
+            self::OUTPUT => [
+                self::NAME,
+                self::EMAIL,
+                self::CONTACT_MOBILE,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ]
+        ],
     ];
 
     /**

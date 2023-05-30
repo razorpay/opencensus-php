@@ -63,6 +63,7 @@ class Constants
     const DOWNTIME_NOTIFICATION_WALLET        = 'downtime_notification_wallet';
     const PARTNER_SUBMERCHANT_INVITE    = 'partner_submerchant_invite';
     const PARTNER_SUBMERCHANT_INVITE_INTERNAL    = 'partner_submerchant_invite_internal';
+    const PARTNER_SUBMERCHANT_REFERRAL_INVITE    = 'partner_submerchant_referral_invite';
     const NBPLUS_TECH                   = 'nbplus_tech';
     const BANKING                       = 'banking';
     const OWNER                         = 'owner';
@@ -128,6 +129,7 @@ class Constants
         self::DOWNTIME_NOTIFICATION_WALLET     => 'downtime-notifications-wallet@razorpay.com',
         self::BANKING_ACCOUNT           => 'x.support@razorpay.com',
         self::PARTNER_SUBMERCHANT_INVITE => 'partnercommunication@razorpay.com',
+        self::PARTNER_SUBMERCHANT_REFERRAL_INVITE => 'partnercommunication@razorpay.com',
         self::PARTNER_SUBMERCHANT_INVITE_INTERNAL => ['tarun.rajaputhran@razorpay.com', 'arun.rajendran@razorpay.com', 'satyajit.paul@razorpay.com'],
         self::NBPLUS_TECH               => 'tech.onlinepayments.nbplus@razorpay.com',
         self::SECURITY_ALERTS           => 'security-alerts@razorpay.com',

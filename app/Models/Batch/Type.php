@@ -271,6 +271,8 @@ class Type
 
     const PAYMENT_PAGE = 'payment_page';
 
+    const PARTNER_SUBMERCHANT_REFERRAL_INVITE = 'partner_submerchant_referral_invite';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -578,7 +580,8 @@ class Type
         self::PAYMENT_PAGE,
         self::CREATE_WALLET_ACCOUNTS,
         self::CREATE_WALLET_LOADS,
-        self::CREATE_WALLET_CONTAINER_LOADS
+        self::CREATE_WALLET_CONTAINER_LOADS,
+        self::PARTNER_SUBMERCHANT_REFERRAL_INVITE
     ];
 
     /**
@@ -670,7 +673,8 @@ class Type
         self::PAYMENT_PAGE,
         self::CREATE_WALLET_ACCOUNTS,
         self::CREATE_WALLET_LOADS,
-        self::CREATE_WALLET_CONTAINER_LOADS
+        self::CREATE_WALLET_CONTAINER_LOADS,
+        self::PARTNER_SUBMERCHANT_REFERRAL_INVITE
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data

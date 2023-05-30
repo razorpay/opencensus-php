@@ -204,6 +204,14 @@ class Validator extends Base\Validator
         Entity::CONFIG                  => 'sometimes|array',
     ];
 
+    protected static array $partnerSubmerchantReferralInviteCreateRules = [
+        Entity::TYPE                    => 'required|in:partner_submerchant_referral_invite',
+        Entity::NAME                    => 'filled|string|max:255',
+        Entity::FILE                    => 'required_without:file_id|file|max:60720' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID                 => 'required_without:file|public_id',
+        Entity::CONFIG                  => 'sometimes|array',
+    ];
+
     protected static $paymentPageCreateRules = [
         Entity::TYPE                    => 'required|in:payment_page',
         Entity::NAME                    => 'filled|string|max:255',
@@ -1179,6 +1187,12 @@ class Validator extends Base\Validator
         Header::MIQ_BANK_ACC_NUMBER                  => 'required',
         Header::MIQ_BENEFICIARY_NAME                 => 'required|string|min:3|max:120',
         Header::MIQ_BRANCH_IFSC_CODE                 => 'required|alpha_num|max:11',
+    ];
+
+    protected static $partnerSubmerchantReferralInviteTypeRowRules = [
+        Header::NAME                                 => 'required|alpha_space|max:255',
+        Header::EMAIL                                => 'required|email|max:255',
+        Header::CONTACT_MOBILE                       => 'sometimes|min:10|max:15|contact_syntax'
     ];
 
     public function validateConfig($attribute, $value)
@@ -2921,6 +2935,30 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'The pan field is invalid.',
                 Header::CONTACT_PAN);
+        }
+    }
+
+    public function validatePartnerSubmerchantReferralInviteEntries(array & $entries, array $params, ME $merchant)
+    {
+        $existingKeys = [];
+
+        foreach ($entries as $entry)
+        {
+            $this->validateInput('partnerSubmerchantReferralInviteTypeRow', $entry);
+
+            $email      = $entry[Header::EMAIL] ?? '';
+            $contactNo  = $entry[Header::CONTACT_MOBILE] ?? '';
+
+            $key = strtolower($email+$contactNo);
+
+            // Batch File should not contain multiple entries for the same key
+            if (in_array($key, $existingKeys))
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_BATCH_FILE_DUPLICATE_CONTACTS);
+            }
+
+            $existingKeys[] = $key;
         }
     }
 }

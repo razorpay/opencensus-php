@@ -88,6 +88,7 @@ class MailTags
     const BATCH_RBL_BULK_UPLOAD_COMMENTS_FILE                    = 'batch_rbl_bulk_upload_comments_file';
 
     const BATCH_PARTNER_SUBMERCHANT_INVITE_FILE = 'batch_partner_submerchant_invite_file';
+    const BATCH_PARTNER_SUBMERCHANT_REFERRAL_INVITE_FILE = 'batch_partner_submerchant_referral_invite_file';
 
     const PAYOUT_APPROVAL                  = 'payout_approval';
 

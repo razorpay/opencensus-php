@@ -782,6 +782,7 @@ class PublicErrorDescription
     const BAD_REQUEST_BATCH_FILE_EMPTY                                          = 'The uploaded file does not have any entries';
     const BAD_REQUEST_BATCH_FILE_DUPLICATE_PAYMENT_ID                           = 'The file should not have multiple entries for the same Payment Id';
     const BAD_REQUEST_BATCH_FILE_DUPLICATE_TRANSFER_ID                          = 'The file should not have multiple entries for the same Transfer Id';
+    const BAD_REQUEST_BATCH_FILE_DUPLICATE_CONTACTS                             = 'The file should not have multiple entries for the same Email and Contact Number';
     const BAD_REQUEST_BATCH_FILE_ALREADY_PROCESSED                              = 'The uploaded file is already processed';
     const BAD_REQUEST_BATCH_FILE_UNDER_PROCESSING                               = 'The uploaded file is being processed';
     const BAD_REQUEST_BATCH_FILE_INVALID_SPEED                                  = 'Invalid speed. Should be \'optimum\' or \'normal\'';

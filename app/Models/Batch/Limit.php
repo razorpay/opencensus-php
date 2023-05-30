@@ -72,6 +72,7 @@ class Limit
         Type::CAPTURE_SETTING                       => 1100000,
         Type::PARTNER_SUBMERCHANT_INVITE            => 200,
         TYPE::PARTNER_SUBMERCHANT_INVITE_CAPITAL    => 200,
+        TYPE::PARTNER_SUBMERCHANT_REFERRAL_INVITE   => 200,
         Type::SUBMERCHANT_LINK                      => 50000,
         Type::SUBMERCHANT_DELINK                    => 50000,
         Type::SUBMERCHANT_PARTNER_CONFIG_UPSERT     => 5000,
