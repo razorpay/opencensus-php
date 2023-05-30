@@ -54,6 +54,8 @@ class Gateway extends BaseProcessor
 
     /**
      *  IMPS credit remarks => "IMPS 204813976491 19 02 2021 BOI",
+     *  IMPS credit remarks => "PRO-MMT/IMPS/313818380043/APIL",
+     *  IMPS credit remarks => "FT-MMT/IMPS/312113616259/APILkK97uHZ9EWx/DIPANKARSA/FSFB0000001",
      *  IMPS credit remarks => "MMT/IMPS/105400750777/TestIciciProd06/harsh     /HDFC0000004",
      *  IMPS credit remarks => "MMT IMPS 212211671710 APIJQFQgSvI8qvN MR SATYANAR  SBIN0003281",
      *  NEFT credit remarks => "NEFT-AXISCN0118376057-RAZORPAY SOFTWARE PRIVATE LIMITED-RAZORPAY SOFTWARE PVT L",
@@ -64,6 +66,8 @@ class Gateway extends BaseProcessor
      */
     const CREDIT_REGEX = [
         '/^IMPS ([0-9]{12}) /',
+        '/^PRO-MMT\/IMPS\/(.*?)\//',
+        '/^FT-MMT\/IMPS\/(.*?)\//',
         '/^MMT\/IMPS\/(.*?)\//',
         '/^MMT IMPS ([0-9]{12}) /',
         '/^NEFT-(.*?)-/',
@@ -1133,8 +1137,8 @@ class Gateway extends BaseProcessor
                 TraceCode::BANKING_ACCOUNT_STATEMENT_NO_REGEX_MATCH_FOUND_FOR_UTR,
                 [
                     Entity::TYPE           => $basEntity->getType(),
-                    Entity::CHANNEL        => $basEntity->getChannel(),
-                    Entity::ACCOUNT_NUMBER => $basEntity->getAccountNumber(),
+                    Entity::CHANNEL        => Channel::ICICI,
+                    Entity::MERCHANT_ID    => $basEntity->getMerchantId(),
                     Entity::DESCRIPTION    => $basEntity->getDescription(),
                     'bas_id'               => $basEntity->getId()
                 ]

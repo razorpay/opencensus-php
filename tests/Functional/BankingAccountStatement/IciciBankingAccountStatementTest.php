@@ -312,6 +312,26 @@ class IciciBankingAccountStatementTest extends TestCase
                         "TXNDATE"       => "19-02-2021 04:29:52",
                         "TYPE"          => "CR",
                         "VALUEDATE"     => "19-02-2021",
+                    ],
+                    [
+                        "AMOUNT"        => "1.00",
+                        "BALANCE"       => "104.00",
+                        "CHEQUENO"      => "",
+                        "REMARKS"       => "PRO-MMT/IMPS/313818380043/APIL",
+                        "TRANSACTIONID" => "S86768233",
+                        "TXNDATE"       => "19-02-2021 04:29:52",
+                        "TYPE"          => "CR",
+                        "VALUEDATE"     => "19-02-2021",
+                    ],
+                    [
+                        "AMOUNT"        => "1.00",
+                        "BALANCE"       => "105.00",
+                        "CHEQUENO"      => "",
+                        "REMARKS"       => "FT-MMT/IMPS/312113616259/APILkK97uHZ9EWx/DIPANKARSA/FSFB0000001",
+                        "TRANSACTIONID" => "S86768234",
+                        "TXNDATE"       => "19-02-2021 04:29:52",
+                        "TYPE"          => "CR",
+                        "VALUEDATE"     => "19-02-2021",
                     ]
                 ],
                 "URN"       => "SR189932540",
@@ -928,7 +948,7 @@ class IciciBankingAccountStatementTest extends TestCase
             BasEntity::BANK_TRANSACTION_ID   => trim($txn[F::TRANSACTION_ID]),
             BasEntity::TYPE                  => 'credit',
             BasEntity::AMOUNT                => 100,
-            BasEntity::BALANCE               => 10300,
+            BasEntity::BALANCE               => 10500,
             BasEntity::POSTED_DATE           => 1613689192,
             BasEntity::TRANSACTION_DATE      => 1613673000,
             BasEntity::DESCRIPTION           => trim($txn[F::REMARKS]),
@@ -981,6 +1001,8 @@ class IciciBankingAccountStatementTest extends TestCase
             '115600327157',
             '212211671710',
             '204813976491',
+            '313818380043',
+            '312113616259',
         ];
 
         $utrsActual = $this->getDbEntities(EntityConstants::BANKING_ACCOUNT_STATEMENT)

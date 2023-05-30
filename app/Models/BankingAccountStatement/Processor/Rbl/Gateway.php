@@ -51,7 +51,8 @@ class Gateway extends BaseProcessor
     const PAGINATION_KEY_TTL_IN_WEEKS = 4;
 
     // regex to fetch utr from description
-    const CREDIT_REGEX = '/^(RTGS\/|NEFT\/|UPI\/|R\/UPI\/|R-|IMPS )(.*?)(\/|-| )/';
+    // sample NEFT/SFMS RTN  -  NEFT/SFMS RTN/000311505156/MAGICBRICKS REALTY SERV
+    const CREDIT_REGEX = '/^(RTGS\/|NEFT\/SFMS RTN\/|NEFT\/|UPI\/|R\/UPI\/|R-|IMPS )(.*?)(\/|-| )/';
 
     // sample IMPS - 209821868111_IMPSIN
     const IMPS_CREDIT_REGEX = '/^([0-9]{12})_IMPS/';
@@ -1536,6 +1537,17 @@ class Gateway extends BaseProcessor
         {
             return $match;
         }
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_STATEMENT_NO_REGEX_MATCH_FOUND_FOR_UTR,
+            [
+                Entity::TYPE           => $basEntity->getType(),
+                Entity::CHANNEL        => Channel::RBL,
+                Entity::MERCHANT_ID    => $basEntity->getMerchantId(),
+                Entity::DESCRIPTION    => $basEntity->getDescription(),
+                'bas_id'               => $basEntity->getId()
+            ]
+        );
 
         return null;
     }

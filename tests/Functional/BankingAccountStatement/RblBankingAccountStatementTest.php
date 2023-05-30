@@ -6436,7 +6436,28 @@ class RblBankingAccountStatementTest extends TestCase
                                 'txnId' => '  S429655',
                                 'txnSrlNo' => ' 498',
                                 'valueDate' => '2015-12-29T00:00:00.000'
-                            ]
+                            ],
+                            [
+                                'pstdDate' => '2015-12-29T15:58:12.000',
+                                'transactionSummary' => [
+                                    'instrumentId' => '',
+                                    'txnAmt' => [
+                                        'amountValue' => '1.00',
+                                        'currencyCode' => 'INR'
+                                    ],
+                                    'txnDate' => '2015-12-29T00:00:00.000',
+                                    'txnDesc' => 'NEFT/SFMS RTN/000311505156/MAGICBRICKS REALTY SERV',
+                                    'txnType' => 'C'
+                                ],
+                                'txnBalance' => [
+                                    'currencyCode' => 'INR',
+                                    'amountValue' => '215.50'
+                                ],
+                                'txnCat' => 'TBI',
+                                'txnId' => '  S429656',
+                                'txnSrlNo' => ' 499',
+                                'valueDate' => '2015-12-29T00:00:00.000'
+                            ],
                         ]
                     ],
                     'Header' => [
@@ -14336,6 +14357,7 @@ class RblBankingAccountStatementTest extends TestCase
 
         $utrsExpected = [
             '209821868111',
+            '000311505156',
         ];
 
         $utrsActual = $this->getDbEntities(EntityConstants::BANKING_ACCOUNT_STATEMENT)
