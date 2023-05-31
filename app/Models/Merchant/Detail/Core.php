@@ -5764,6 +5764,22 @@ class Core extends Base\Core
 
     private function isAutoKycEnabled($merchantDetails)
     {
+        try
+        {
+            // - Perform Kyc for Linked Accounts for all business types if the below conditions are met
+            if(($merchantDetails->merchant->isLinkedAccount() === true) and
+                (($merchantDetails->merchant->isFeatureEnabledOnParentMerchant(FeatureConstants::ROUTE_LA_PENNY_TESTING) === true) or
+                    ($merchantDetails->merchant->isFeatureEnabledOnParentMerchant(FeatureConstants::ROUTE_NO_DOC_KYC) === true) or
+                    ($this->isSubmittedViaProductConfigApi() === true)))
+            {
+                return true;
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e);
+        }
+
         if ($merchantDetails->getBusinessType() === BusinessType::PARTNERSHIP
             and $merchantDetails->merchant->isNoDocOnboardingEnabled() === false)
         {

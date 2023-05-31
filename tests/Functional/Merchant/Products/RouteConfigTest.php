@@ -387,6 +387,72 @@ class RouteConfigTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testRouteProductConfigWithoutRouteNoDocEnabledForPartnershipMerchant()
+    {
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $testData = $this->testData['testRouteProductConfigWithoutRouteNoDocEnabledForUnregMerchant'];
+
+        $testData['request']['content']['business_type'] = 'partnership';
+
+        $testData['response']['content']['business_type'] = 'partnership';
+
+        $linkedAccountResponse = $this->runRequestResponseFlow($testData);
+
+        $linkedAccountIdPublic = $linkedAccountResponse['id'];
+
+        $linkedAccountId = Account\Entity::verifyIdAndSilentlyStripSign($linkedAccountResponse['id']);
+
+        $testData = $this->testData["testRouteProductConfigWithRouteNoDocEnabled"];
+
+        $testData['request']['url'] = '/v2/accounts/' . $linkedAccountIdPublic . '/products';
+
+        $merchantProductResponse = $this->makeRequestAndGetContent($testData['request']);
+
+        $productRequirements = $merchantProductResponse['requirements'];
+
+        $fieldReference = array_column($productRequirements, 'field_reference');
+
+        array_multisort($fieldReference, SORT_ASC, $productRequirements);
+
+        $this->assertArraySelectiveEquals($testData['response']['content']['requirements'], $productRequirements);
+
+        //Update requirements
+
+        $testData = $this->testData['testCreateStakeholder'];
+
+        $testData['request']['content']['kyc']['pan'] = 'EBCPK8222J';
+
+        $testData['response']['content']['kyc']['pan'] = 'EBCPK8222J';
+
+        $testData['request']['url'] = '/v2/accounts/' . $linkedAccountIdPublic . '/stakeholders';
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testUpdateRouteConfig'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $linkedAccountIdPublic . '/products/' . $merchantProductResponse['id'];
+
+        $updateResponse = $this->runRequestResponseFlow($testData);
+
+        $this->mockBVSResponse($linkedAccountId);
+
+        $linkedAccountEntity = $this->getDbEntity('merchant_detail',['merchant_id' => $linkedAccountId]);
+
+        $testData = $this->testData['testFetchRouteConfig'];
+
+        $testData['response']['content'] = [
+            'activation_status' => 'activated',
+            'requirements'      =>  [],
+        ];
+
+        $testData['request']['url'] = '/v2/accounts/' .$linkedAccountIdPublic . '/products/' . $merchantProductResponse['id'];
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     public function testActivateRouteProductForUnregistered()
     {
         $this->ba->privateAuth();
