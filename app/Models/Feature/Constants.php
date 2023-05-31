@@ -1268,7 +1268,7 @@ class Constants
     const DISABLE_PAYPAL_AS_BACKUP   =   'disable_paypal_as_backup';
 
     /**
-     * All Ledger Features for RX release
+     * All Ledger Features for RX Virtual accounting release
      */
     const LEDGER_JOURNAL_WRITES = 'ledger_journal_writes';
     const LEDGER_JOURNAL_READS  = 'ledger_journal_reads';

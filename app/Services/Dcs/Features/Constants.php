@@ -112,6 +112,10 @@ class Constants
     const MerchantPaymentCallbackUrlValidation = 'merchant_payment_callback_url_validation';
     const AggregatorAccessToSubmerchantReportEnabled = 'aggregator_access_to_submerchant_report_enabled';
     const OptimizerRazorpayVas = 'razorpay_vas';
+    const LedgerJournalWrites = 'ledger_journal_writes';
+    const LedgerReverseShadow = 'ledger_reverse_shadow';
+    const LedgerJournalReads = 'ledger_journal_reads';
+    const DALedgerJournalWrites = 'da_ledger_journal_writes';
     const DisplayRefundPendingStatus = 'display_refund_pending_status';
     const DisplayRefundPublicStatus = 'display_refund_public_status';
     const DisableCardRefunds = 'disable_card_refunds';
@@ -230,6 +234,10 @@ class Constants
         self::MerchantPaymentCallbackUrlValidation => 'rzp/pg/merchant/security/Features',
         self::AggregatorAccessToSubmerchantReportEnabled => 'rzp/platform/partner/reporting/Features',
         self::OptimizerRazorpayVas => 'rzp/pg/merchant/optimizer/OnboardingFeatures',
+        self::LedgerJournalWrites => 'rzp/platform/merchant/ledger/LedgerRXIntegrationFeatures',
+        self::LedgerReverseShadow => 'rzp/platform/merchant/ledger/LedgerRXIntegrationFeatures',
+        self::LedgerJournalReads => 'rzp/platform/merchant/ledger/LedgerRXIntegrationFeatures',
+        self::DALedgerJournalWrites => 'rzp/platform/merchant/ledger/LedgerRXIntegrationFeatures',
         self::DisplayRefundPendingStatus => 'rzp/pg/merchant/refunds/Display',
         self::DisplayRefundPublicStatus => 'rzp/pg/merchant/refunds/Display',
         self::DisableCardRefunds => 'rzp/pg/merchant/refunds/RefundCreation',
@@ -360,6 +368,10 @@ class Constants
         APIFeaturesConstants::CALLBACK_URL_VALIDATION                       => self::MerchantPaymentCallbackUrlValidation,
         APIFeaturesConstants::AGGREGATOR_REPORT                             => self::AggregatorAccessToSubmerchantReportEnabled,
         APIFeaturesConstants::OPTIMIZER_RAZORPAY_VAS                        => self::OptimizerRazorpayVas,
+        APIFeaturesConstants::LEDGER_JOURNAL_WRITES                         => self::LedgerJournalWrites,
+        APIFeaturesConstants::LEDGER_REVERSE_SHADOW                         => self::LedgerReverseShadow,
+        APIFeaturesConstants::LEDGER_JOURNAL_READS                          => self::LedgerJournalReads,
+        APIFeaturesConstants::DA_LEDGER_JOURNAL_WRITES                      => self::DALedgerJournalWrites,
         APIFeaturesConstants::REFUND_PENDING_STATUS                         => self::DisplayRefundPendingStatus,
         APIFeaturesConstants::SHOW_REFUND_PUBLIC_STATUS                     => self::DisplayRefundPublicStatus,
         APIFeaturesConstants::DISABLE_CARD_REFUNDS                          => self::DisableCardRefunds,
