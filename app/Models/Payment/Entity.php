@@ -2508,6 +2508,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->getAttribute(self::METHOD) === Payment\Method::NETBANKING);
     }
 
+    public function isFpx()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::FPX);
+    }
+
     public function isEmandate()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::EMANDATE);

@@ -289,7 +289,7 @@ class Core extends Base\Core
             {
                 CardsPaymentTransaction::dispatch($data);
             }
-            else if ($payment->isNetbanking() === true)
+            else if ($payment->isNetbanking() === true || $payment->isFpx() === true || $payment->isWallet() === true)
             {
                 $queueName = $this->app['config']->get('queue.payment_nbplus_api_reconciliation.' . $this->mode);
 
