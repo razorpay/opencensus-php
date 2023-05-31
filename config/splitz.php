@@ -313,6 +313,8 @@ return [
         // For showing Ternimal status banner on dashboard.
         'SHOW_TERMINAL_STATUS_BANNER' => env('SHOW_TERMINAL_STATUS_BANNER',''),
 
+        // For showing IS PLUS PLUS IN Settle Now - Capital
+        'CAPITAL_ISPLUSPLUS_SPLITZ' => env('CAPITAL_ISPLUSPLUS_SPLITZ', ''),
         // Cross border payments experiments
         'N_EXPONENT_SUPPORT' => env('N_EXPONENT_SUPPORT',''),
 

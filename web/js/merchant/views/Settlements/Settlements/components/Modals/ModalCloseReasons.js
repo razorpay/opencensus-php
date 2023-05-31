@@ -15,6 +15,7 @@ import {
 } from 'merchant/views/Settlements/trackEvents';
 import { bindActionCreators } from 'redux';
 import Nudge from './ScheduledModal/components/Nudge';
+import { ISPlusPlusReasons } from './IsPlusPlusModal';
 
 class ModalCloseReasons extends Component {
   constructor(props) {
@@ -64,8 +65,11 @@ class ModalCloseReasons extends Component {
 
   render() {
     const { brief } = this.state;
-    const { user, openModal, closeOrigin } = this.props;
+    const { user, openModal, closeOrigin, showISPlusPlus, fromWhere, onFinish } = this.props;
 
+    if (showISPlusPlus) {
+      return <ISPlusPlusReasons onFinish={onFinish} fromWhere={fromWhere} />;
+    }
     return (
       <div class="reasons-close-modal">
         <ModalHeader class="header" title="Reason" />

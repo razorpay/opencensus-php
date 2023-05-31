@@ -360,6 +360,48 @@ export const trackOnDemandPayoutSearch = (values) =>
     },
   });
 
+/* IS++ tracking events */
+export const trackISCheckbox = (fromWhere, checked) =>
+  trackSettleNowEvent({
+    fromWhere,
+    objectName: 'Get extra cash advance (IS)',
+    actionName: checked ? 'Checked' : 'Unchecked',
+  });
+
+export const trackISSettleNowFirstConfirm = (fromWhere, amount, advanceAmount) =>
+  trackSettleNowEvent({
+    fromWhere,
+    objectName: 'Settle Now - First Confirm (IS)',
+    actionName: 'Clicked',
+    additionalProperties: {
+      amount,
+      advanceAmount,
+    },
+  });
+
+export const trackISSettleNowSecondConfirm = (fromWhere) =>
+  trackSettleNowEvent({
+    fromWhere,
+    objectName: 'Settle Now - Second Confirm (IS)',
+    actionName: 'Clicked',
+  });
+
+export const trackISSuccess = (fromWhere) =>
+  trackSettleNowEvent({
+    fromWhere,
+    objectName: 'Settle Now - Get Settlement Balance (IS)',
+    actionName: 'Clicked',
+  });
+
+export const trackISFailure = (fromWhere, reason) =>
+  trackSettleNowEvent({
+    fromWhere,
+    objectName: 'Settle Now - Go to Instant Settlement (IS)',
+    actionName: 'Clicked',
+    additionalProperties: {
+      reason,
+    },
+  });
 export const onDemandModalTrackEvents = {
   trackSettleAmountUpdated,
   trackSettleNowInfoHover,
@@ -368,4 +410,9 @@ export const onDemandModalTrackEvents = {
   trackSettleNowFirstConfirm,
   trackSettleNowSecondConfirm,
   trackSettleNowCancelConfirm,
+  trackISCheckbox,
+  trackISSettleNowFirstConfirm,
+  trackISSettleNowSecondConfirm,
+  trackISSuccess,
+  trackISFailure,
 };

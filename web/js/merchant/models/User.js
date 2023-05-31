@@ -2030,6 +2030,10 @@ export default class User {
   get isEcosystemDowntimeEnabled() {
     return getSplitzExperimentVariant('ecosystem_downtimes')?.variables?.result === 'on';
   }
+
+  get showIsPlusPlusExperiment() {
+    return getSplitzExperimentVariant('capital_isplusplus_splitz')?.variables?.result === 'on';
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

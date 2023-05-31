@@ -1,6 +1,14 @@
 import './OndemandModal.styl';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import {
+  Box,
+  PlusSquareIcon,
+  Text,
+  Amount as BladeAmount,
+  Checkbox,
+  Spinner,
+} from '@razorpay/blade/components';
 import ModalHeader from 'common/ui/ModalHeader';
 import {
   closeModal as fnCloseModal,
@@ -9,6 +17,7 @@ import {
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { isInteger } from 'common/utils/validators';
 import { classList } from 'common/utils/rzp-utils';
+import { setItem, getItem } from 'common/utils/localStorage';
 import ajax from 'merchant/utils/ajax';
 import {
   trackOndemand,
@@ -40,11 +49,12 @@ import UpsellBanners from 'merchant/views/Settlements/Settlements/components/Ups
 import SettleToLinkedAccounts from 'merchant/views/Settlements/Settlements/components/SettleToLinkedAccounts';
 import EnableScheduledBanner from 'merchant/views/Settlements/Settlements/components/SettleToLinkedAccounts/EnableScheduledBanner';
 import SettlementSuccessView from 'merchant/views/Settlements/Settlements/components/SettleToLinkedAccounts/SettlementSuccessView';
+import IsPlusPlusModal from './IsPlusPlusModal';
+import axios from 'axios';
 
 class OndemandModal extends Component {
   constructor(props) {
     super(props);
-
     this.state = {
       isSaving: false,
       isSaved: false,
@@ -70,6 +80,13 @@ class OndemandModal extends Component {
       prefilledAmountUpdated: false,
       isLinkedAccountActive: false,
       linkedAccountsSettlementBalance: 0,
+      /* ISPlusPlus States */
+      hasISPlusPlus:
+        getItem('rzp-capital-is-plus-plus') !== 'true' && props.user.showIsPlusPlusExperiment,
+      MID_LIMIT: {},
+      advanceAmount: 0,
+      wantsISPlusPlus: false,
+      showIsPlusPlusBreakup: false,
     };
 
     this.updateFeeDebounced = debounce(this.updateFee, 300);
@@ -91,9 +108,33 @@ class OndemandModal extends Component {
     );
   };
 
+  renderISConfirmation = () => {
+    const { advanceAmount, amount } = this.state;
+    return (
+      <div className="m-b">
+        Amount to be provided
+        <span className="bold-amount">
+          <Amount
+            value={(amount + advanceAmount) * 100}
+            currency="INR"
+            parentQuerySelector=".modal-body"
+          />
+        </span>
+      </div>
+    );
+  };
+
   gaEventDispatcher = (eventObject) => {
     eventObject.eventCategory = this.props.eventCategory;
     window.rzpAnalytics?.(eventObject);
+  };
+
+  onShowIsPlusPlusBreakup = () => {
+    const { amount, advanceAmount } = this.state;
+    const { fromWhere } = this.props;
+    onDemandModalTrackEvents.trackISSettleNowFirstConfirm(fromWhere, amount, advanceAmount);
+    this.setState({ showIsPlusPlusBreakup: true });
+    this.fetchBreakup();
   };
 
   openConfirmSettlement = async () => {
@@ -145,7 +186,7 @@ class OndemandModal extends Component {
         },
       });
     } catch (error) {
-      // empty catch
+      //empty catch
     }
   };
 
@@ -291,6 +332,13 @@ class OndemandModal extends Component {
 
     trackModalOpen(user.current);
     this.updateFee();
+    /* IS Plus limits fetch */
+    axios
+      .get('https://cdn.razorpay.com/static/assets/capital/is-plus-plus/limits.json')
+      .then(({ data }) =>
+        this.setState({ MID_LIMIT: data, advanceAmount: data[user.current] || 0 }),
+      )
+      .catch(() => {});
   }
 
   componentWillUnmount() {
@@ -537,8 +585,51 @@ class OndemandModal extends Component {
   };
 
   renderPreForMainAccount = () => {
-    const { isLoadingBreakup, validAmount, errors, isSaving, amount, instantFee, tax } = this.state;
+    const {
+      isLoadingBreakup,
+      validAmount,
+      errors,
+      isSaving,
+      amount,
+      instantFee,
+      tax,
+      hasISPlusPlus, // Need to change, pick from localStorage
+      advanceAmount,
+      wantsISPlusPlus,
+      showIsPlusPlusBreakup,
+      MID_LIMIT,
+    } = this.state;
     const { user, settlableAmount, fromWhere, openModal } = this.props;
+
+    const MAX_IS_LIMIT = MID_LIMIT[user.current] || 0;
+
+    if (showIsPlusPlusBreakup) {
+      return (
+        <Box>
+          {isLoadingBreakup ? (
+            <Spinner />
+          ) : (
+            <IsPlusPlusModal
+              instantFee={instantFee}
+              tax={tax}
+              amount={amount + advanceAmount}
+              fromWhere={fromWhere}
+              onFinish={() => {
+                setItem('rzp-capital-is-plus-plus', true);
+                this.setState({
+                  hasISPlusPlus: false,
+                  wantsISPlusPlus: false,
+                  showIsPlusPlusBreakup: false,
+                });
+              }}
+              onGoBack={() => {
+                this.setState({ showIsPlusPlusBreakup: false });
+              }}
+            />
+          )}
+        </Box>
+      );
+    }
 
     return (
       <>
@@ -558,6 +649,43 @@ class OndemandModal extends Component {
               onDemandModalTrackEvents.trackSettleAmountUpdated(fromWhere);
             }}
           />
+          {hasISPlusPlus ? (
+            wantsISPlusPlus ? (
+              <Box marginY="spacing.5">
+                <PlusSquareIcon size="medium" color="action.icon.tertiary.default" />
+                <Input
+                  label="Additional advance"
+                  required={false}
+                  addonBefore={<AmountTooltip currency="INR" parentQuerySelector=".Modal" />}
+                  autoFocus={false}
+                  name="amount"
+                  className="Input Input--Amount"
+                  value={advanceAmount}
+                  onChange={(e) => {
+                    this.setState({ advanceAmount: Number(e.target.value) });
+                  }}
+                />
+                <Box display="flex" flexWrap="wrap" flexDirection="row">
+                  <Text size="medium">Maximum amount available:</Text>
+                  <BladeAmount size="body-small" value={MAX_IS_LIMIT} />
+                </Box>
+              </Box>
+            ) : (
+              <Box marginY="spacing.5" display="flex" justifyContent="space-between">
+                <Checkbox
+                  value={wantsISPlusPlus}
+                  onChange={(e) => {
+                    this.setState({ wantsISPlusPlus: e.isChecked });
+                    onDemandModalTrackEvents.trackISCheckbox(fromWhere, e.isChecked);
+                  }}
+                  size="small"
+                >
+                  Get additional advance
+                </Checkbox>
+                <BladeAmount size="body-small" value={MAX_IS_LIMIT} />
+              </Box>
+            )
+          ) : null}
         </div>
         <div>
           {isLoadingBreakup && validAmount && <div className="loader" />}
@@ -586,7 +714,7 @@ class OndemandModal extends Component {
             className="submit-btn"
             disabled={isSaving || !validAmount || isLoadingBreakup}
             pendingState="Requesting"
-            onClick={this.openConfirmSettlement}
+            onClick={wantsISPlusPlus ? this.onShowIsPlusPlusBreakup : this.openConfirmSettlement}
           >
             Confirm
           </AsyncBtn.Primary>
@@ -612,7 +740,7 @@ class OndemandModal extends Component {
   };
 
   renderPreTransaction = () => {
-    const { isLinkedAccountActive } = this.state;
+    const { isLinkedAccountActive, showIsPlusPlusBreakup } = this.state;
     const { isOndemandRouteSettlementsEnabled } = this.props.user;
 
     const renderMainContent = () => {
@@ -682,7 +810,11 @@ class OndemandModal extends Component {
             {renderMainContent()}
           </div>
 
-          {isLinkedAccountActive ? <EnableScheduledBanner /> : this.breakup()}
+          {isLinkedAccountActive ? (
+            <EnableScheduledBanner />
+          ) : showIsPlusPlusBreakup ? null : (
+            this.breakup()
+          )}
         </div>
       </div>
     );
@@ -735,7 +867,7 @@ class OndemandModal extends Component {
 
   render() {
     const { goBackToInitialModalView, openModal } = this.props;
-    const { closeClicked, isSaved } = this.state;
+    const { closeClicked, isSaved, hasISPlusPlus, wantsISPlusPlus } = this.state;
     return (
       <div className="container-ondemand-modal">
         {!closeClicked ? (
@@ -751,6 +883,16 @@ class OndemandModal extends Component {
             openModal={openModal}
             eventCategory={this.props.eventCategory}
             fromWhere={this.props.fromWhere}
+            showISPlusPlus={hasISPlusPlus && wantsISPlusPlus}
+            onFinish={() => {
+              setItem('rzp-capital-is-plus-plus', true);
+              this.setState({
+                closeClicked: false,
+                hasISPlusPlus: false,
+                wantsISPlusPlus: false,
+                showIsPlusPlusBreakup: false,
+              });
+            }}
           />
         )}
       </div>

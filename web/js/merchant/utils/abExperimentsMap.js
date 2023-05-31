@@ -666,6 +666,12 @@ export default {
     // prod experiment ids
     'LfxXJXWfj87JAx',
   ],
+  capital_isplusplus_splitz: [
+    // stage
+    'LvXOifgSOmvctO',
+    //prod
+    'LvPX2scr7KxnuZ',
+  ],
   n_exponent_support: [
     // stage experiment
     'LszehANj9C6W0x',
