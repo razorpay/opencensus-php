@@ -4,12 +4,15 @@ namespace RZP\Tests\Functional\InternationalBankTransfer;
 
 use Mail;
 use Mockery;
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Pricing\Fee;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Payment\B2bUploadInvoice;
 use RZP\Exception\BadRequestException;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Payment\Entity as Payment;
+use RZP\Mail\Merchant\AuthorizedPaymentsReminder;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -991,5 +994,42 @@ class InternationalBankTransferTest extends TestCase
             $response = $this->sendRequest($testData['request']);
             var_dump($response);
         }, BadRequestException::class, 'No approved preauth transaction was found.');
+    }
+
+    // Stop capture reminder emails being sent to B2B export merchants
+    // for intl_bank_transfer payments.
+    // Slack: https://razorpay.slack.com/archives/C024U3B04LD/p1685525446278749?thread_ts=1685432424.957589&cid=C024U3B04LD
+    public function testCaptureReminderMailNotSent()
+    {
+        Mail::fake();
+
+        $payment = $this->fixtures->create('payment', ['merchant_id' => '10000000000000', 'status' => 'authorized', 'method' => 'intl_bank_transfer', 'gateway' => 'currency_cloud']);
+
+        $createdAt = Carbon::today(Timezone::IST)->subDays(1)->timestamp;
+
+        $payment = $this->fixtures->edit('payment', $payment->getId(),
+            ['authorized_at' => $createdAt, 'created_at' => $createdAt]);
+
+        $cronPayload = [
+            'url' => '/v1/payments/all/reminder',
+            'method' => 'get',
+            'content' => []
+        ];
+
+        $this->ba->cronAuth();
+
+        $response = $this->makeRequestAndGetContent($cronPayload);
+
+        $this->assertNotNull($response);
+
+        $this->assertEquals(0, $response['initial']['counts']['payments']);
+        $this->assertEquals(0, $response['initial']['counts']['merchants']);
+        $this->assertEquals(0, $response['initial']['counts']['failures']);
+
+        $this->assertEquals(0, $response['final']['counts']['payments']);
+        $this->assertEquals(0, $response['final']['counts']['merchants']);
+        $this->assertEquals(0, $response['final']['counts']['failures']);
+
+        Mail::assertNotSent(AuthorizedPaymentsReminder::class);
     }
 }

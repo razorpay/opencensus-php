@@ -1358,11 +1358,19 @@ EOT;
 
     public function getAuthorizedPaymentsBetweenTimestamps($timeLowerLimit, $timeUpperLimit)
     {
+        // Stop capture reminder emails being sent to B2B export merchants
+        // for intl_bank_transfer payments.
+        // Slack: https://razorpay.slack.com/archives/C024U3B04LD/p1685525446278749?thread_ts=1685432424.957589&cid=C024U3B04LD
+        $excludeMethods = [
+            Entity::INTL_BANK_TRANSFER,
+        ];
+
         $query = $this->newQuery();
 
         return $query->status(Payment\Status::AUTHORIZED)
                      ->where(Payment\Entity::CREATED_AT, '<=', $timeUpperLimit)
                      ->where(Payment\Entity::CREATED_AT, '>', $timeLowerLimit)
+                     ->whereNotIn(Entity::METHOD, $excludeMethods)
                      ->get();
     }
 
