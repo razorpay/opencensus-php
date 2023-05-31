@@ -5,25 +5,15 @@ namespace RZP\Services\Partnerships;
 
 use App;
 use Request;
-use Throwable;
 use ApiResponse;
-use RZP\Exception;
-use RZP\Models\Base;
 use RZP\Constants\Mode;
-use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Http\RequestHeader;
-use RZP\Models\Merchant\Core;
-use RZP\Constants\Environment;
-use RZP\Models\Partner\Metric;
 use RZP\Http\Request\Requests;
-use RZP\Models\Order\ProductType;
-use Razorpay\Trace\Logger as Trace;
-use RZP\Models\Base\PublicCollection;
-use RZP\Models\Partner\Commission\Entity;
-use Neves\Events\TransactionalClosureEvent;
-use RZP\Models\Payment\Entity as PaymentEntity;
-use RZP\Models\EntityOrigin\Core as EntityOriginCore;
+use RZP\Models\Base;
+use RZP\Trace\TraceCode;
+use Throwable;
 
 class PartnershipsService extends Base\Service
 {
@@ -62,14 +52,6 @@ class PartnershipsService extends Base\Service
     const CREATE_PARNTER_MIGRATION_AUDIT = '/twirp/rzp.commissions.partner_migration_audit.v1.PartnerMigrationAuditAPI/CreatePartnerMigrationAudit';
 
     const ACTIVATED = 'ACTIVATED';
-
-    const LOCALSTACK_ENVIRONMENTS = [Environment::BETA];
-
-    const COMMISSION_DUAL_WRITE_QUEUE_CONFIG_KEY = 'prts_commission_create_dual_write';
-
-    const COMMISSION_SHADOW_PHASE_QUEUE_CONFIG_KEY = 'prts_commission_create';
-
-    const COMMISSION_CAPTURE_SHADOW_PHASE_QUEUE_CONFIG_KEY = 'prts_commission_capture';
 
     // Tells the client what the content type of the returned content actually is
     const CONTENT_TYPE = 'Content-Type';
@@ -229,236 +211,17 @@ class PartnershipsService extends Base\Service
     }
 
     /**
-     * Dual write Commission in Partnerships service by pushing job to the queue using pushRaw.
-     * @param   Entity  $commission The commission
-     * @return  void
-     */
-    public function createCommissionDualWrite(Entity $commission): void
-    {
-        if(! $this->isDualWriteExpEnabled($commission))
-        {
-            return;
-        }
-        try
-        {
-            $commissionComponent = $this->repo->commission_component->findByCommissionId($commission->getId())->first();
-            $data       = [
-                'commission'          => $commission->attributesToArray(),
-                'commission_component' => $commissionComponent->toArray()
-            ];
-
-            $data['commission']['notes'] = (object) ($data['commission']['notes']);
-
-            \Event::dispatch(new TransactionalClosureEvent(function () use ($data) {
-                // Job will be dispatched only after the transaction commits.
-                $this->trace->info(
-                    TraceCode::PRTS_COMMISSION_DUAL_WRITE_DISPATCHING,
-                    [
-                        'mode' => $this->mode,
-                        'id' => $data['commission']['id'],
-                    ]
-                );
-
-                $messageId = $this->pushRawJob($data, self::COMMISSION_DUAL_WRITE_QUEUE_CONFIG_KEY);
-
-                $this->trace->info(
-                    TraceCode::PRTS_COMMISSION_DUAL_WRITE_DISPATCHED,
-                    [
-                        'id' => $data['commission']['id'],
-                        'messageId' => $messageId
-                    ]
-                );
-                $this->trace->count(Metric::PRTS_COMMISSION_DUAL_WRITE_PUSH_SUCCESS);
-            }));
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::PRTS_COMMISSION_DUAL_WRITE_FAILED,
-                [ $commission->toArrayPublic() ]
-            );
-            $this->trace->count(Metric::PRTS_COMMISSION_DUAL_WRITE_PUSH_FAILURE);
-        }
-    }
-
-    /**
-     * @param string $partnerId
-     * @param array  $commissionIds
-     * This function is used to dispatch the commission capture event to PRTS service when admin actions are triggered
-     */
-    public function dispatchCommissionCaptureToPRTS(string $partnerId, array $commissionIds): void
-    {
-
-        if (!$this->isShadowCommissionPhaseExpEnabled($partnerId))
-        {
-            return;
-        }
-        try
-        {
-            $data = [
-                'commission_ids' => $commissionIds
-            ];
-
-            \Event::dispatch(new TransactionalClosureEvent(function() use ($data) {
-                // Job will be dispatched only if the transaction commits.
-                $this->trace->info(
-                    TraceCode::PRTS_COMMISSION_CAPTURE_DISPATCHING,
-                    [
-                        'mode' => $this->mode,
-                        'ids'  => $data['commission_ids'],
-                    ]
-                );
-
-                $this->pushRawJob($data, self::COMMISSION_CAPTURE_SHADOW_PHASE_QUEUE_CONFIG_KEY);
-
-                $this->trace->info(
-                    TraceCode::PRTS_COMMISSION_CAPTURE_DISPATCHED,
-                    [
-                        'data' => $data,
-                        'mode' => $this->mode,
-                    ]
-                );
-
-                $this->trace->count(Metric::PRTS_COMMISSION_CAPTURE_JOB_PUSH_SUCCESS);
-            }));
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::PRTS_COMMISSION_CAPTURE_DISPATCH_FAILED,
-                $data
-            );
-            $this->trace->count(Metric::PRTS_COMMISSION_CAPTURE_JOB_PUSH_FAILURE);
-        }
-    }
-
-    /**
-     * Creates Commission in Partnerships service in Shadow Phase by pushing job to the queue using pushRaw.
-     *
-     * @param PublicCollection $commissions The commissions.
-     * @param PaymentEntity    $payment     The payment entity.
-     *
-     * @return  void
-     */
-    public function createCommissionShadowPhase(Base\PublicCollection $commissions, PaymentEntity $payment): void
-    {
-        if (!$this->isShadowCommissionPhaseExpEnabled($commissions[0]->getAttribute(Entity::PARTNER_ID)))
-        {
-            return;
-        }
-
-        try
-        {
-            $payload = CommissionCreateEventDataUtil::getPayloadForCommissionCreate($commissions, $payment);
-
-            \Event::dispatch(new TransactionalClosureEvent(function() use ($payload) {
-                // Job will be dispatched only after the transaction commits.
-                $this->trace->info(
-                    TraceCode::PRTS_COMMISSION_SHADOW_PHASE_DISPATCHING,
-                    [
-                        'mode'       => $this->mode,
-                        'payment_id' => $payload['payment']['id'],
-                    ]
-                );
-
-                $messageId = $this->pushRawJob($payload, self::COMMISSION_SHADOW_PHASE_QUEUE_CONFIG_KEY);
-
-                $this->trace->info(
-                    TraceCode::PRTS_COMMISSION_SHADOW_PHASE_DISPATCHED,
-                    [
-                        'id'        => $payload['payment']['id'],
-                        'messageId' => $messageId
-                    ]
-                );
-                $this->trace->count(Metric::PRTS_COMMISSION_SHADOW_PHASE_PUSH_SUCCESS);
-            }));
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::PRTS_COMMISSION_SHADOW_PHASE_FAILED,
-                [$payment->toArrayPublic(), $commissions[0]->toArrayPublic(), $commissions[1]->toArrayPublic()]
-            );
-            $this->trace->count(Metric::PRTS_COMMISSION_SHADOW_PHASE_PUSH_FAILURE);
-        }
-    }
-
-
-    private function isDualWriteExpEnabled(Entity $commission): bool
-    {
-        $properties = [
-            'id'            => $commission->getAttribute(Entity::PARTNER_ID),
-            'experiment_id' => $this->app['config']->get('app.prts_commission_dual_write_exp_id'),
-        ];
-
-        return (new Core())->isSplitzExperimentEnable(
-            $properties, 'enable', TraceCode::PRTS_COMMISSION_DUAL_WRITE_SPLITZ_ERROR
-        );
-    }
-
-    private function isShadowCommissionPhaseExpEnabled(string $partnerID): bool
-    {
-        $properties = [
-            'id'            => $partnerID,
-            'experiment_id' => $this->app['config']->get('app.prts_commission_shadow_phase_exp_id'),
-        ];
-
-        return (new Core())->isSplitzExperimentEnable(
-            $properties, 'enable', TraceCode::PRTS_COMMISSION_SHADOW_PHASE_SPLITZ_ERROR
-        );
-    }
-
-
-    /**
-     * Pushes the job to the SQS queue based on the queue config key and connection.
-     * @param   $data
-     * @param   $queueConfigKey
-     *
-     * @return  string
-     */
-    private function pushRawJob(array $data, string $queueConfigKey): string
-    {
-        $queueName = $this->app['config']->get('queue.' . $queueConfigKey . '.' . $this->app['rzp.mode']);
-        $connection = $this->getQueueConnection();
-
-        return $this->app['queue']->connection($connection)->pushRaw(json_encode($data), $queueName);
-    }
-
-    /**
-     * Fetches the queue connection to use. If environment is devstack, localstack is used.
-     */
-    private function getQueueConnection(): string
-    {
-        if (in_array(app('env'), self::LOCALSTACK_ENVIRONMENTS, true) === true)
-        {
-            return 'sqs_localstack';
-        }
-        else
-        {
-            return 'sqs';
-        }
-    }
-
-    /**
      * @throws Exception\InvalidPermissionException
      * @throws Exception\ServerErrorException
      */
     public function sendAdminRequest($parameters, $path, $method): array
     {
         $admin = $this->auth->getAdmin();
-        if ($admin === null)
-        {
+        if ($admin === null) {
             throw new Exception\InvalidPermissionException('admin authorization required');
         }
-        $adminEmail                               = $admin->getEmail() ?? '';
+        $adminEmail = $admin->getEmail() ?? '';
         $parameters[self::ADMIN_EMAIL_PARAM_NAME] = $adminEmail;
-
         return $this->sendRequest($parameters, $path, $method);
     }
 
@@ -524,7 +287,7 @@ class PartnershipsService extends Base\Service
         ];
     }
 
-    private function getBaseUrl(): string
+    private function getBaseUrl()
     {
         // returning live url for now as entities are not sync in live and test mode
         return $this->baseLiveUrl;
