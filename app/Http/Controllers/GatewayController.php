@@ -13,7 +13,7 @@ use RZP\Models\QrCode;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Diag\EventCode;
-use RZP\Models\Terminal;
+use Razorpay\IFSC\Bank;
 use RZP\Services\NbPlus;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -745,75 +745,17 @@ class GatewayController extends Controller
 
     public function callbackKotak()
     {
-        $inputMsg = Request::get('msg');
+        $method = Payment\Method::NETBANKING;
 
-        $gateway = $this->app['gateway']->gateway('netbanking_kotak');
+        $gateway = Payment\Gateway::NETBANKING_KOTAK;
 
-        $response = $gateway->preProcessServerCallback($inputMsg);
+        $mode = ($this->app->isProduction()) ? Mode::LIVE: Mode::TEST;
 
-        $inputMsg = $response['decrypted_string'];
+        $input['method_type'] = 'retail';
 
-        $input = explode('|', $inputMsg);
+        $input['bank'] = Bank::KKBK;
 
-        $app = \App::getFacadeRoot();
-
-        $paymentOrTraceId = $input[3];
-
-        $paymentIDpresent = $this->app['repo']->netbanking->find($paymentOrTraceId);
-
-        if (isset($paymentIDpresent) === true)
-        {
-            $paymentId = $input[3];
-
-            $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
-
-            $this->app['config']->set('database.default', $mode);
-
-            $this->app['basicauth']->setModeAndDbConnection($mode);
-
-            $payment = $this->app['repo']->payment->findOrFail($paymentId);
-
-            $publicPaymentId = $payment->getpublicID();
-        }
-
-        else
-        {
-            $result = $this->getNetbankingEntityAndModeByTraceId($input[3]);
-
-            $nb = $result['nb'];
-
-            $mode = $result['mode'];
-
-            $trace = $app['trace'];
-
-            // check mode before search
-            $trace->info(
-                TraceCode::NETBANKING_PAYMENT_CALLBACK,
-                [
-                    'input_all' => Request::all(),
-                    'input_msg' => Request::input('msg'),
-                    'input_arr' => $input
-                ]);
-
-            if ($nb === null)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Failed to find requisite trace id: ' . $input[3]);
-            }
-
-            $paymentId = $nb->getPaymentId();
-            $publicPaymentId = $nb->getPublicPaymentId();
-        }
-
-        $payment = $this->repo->payment->findOrFailPublic($paymentId);
-
-        $publicKey = $this->getMerchantKeyForPayment($payment, $mode);
-
-        $url = $this->route->getPublicCallbackUrlWithHash($publicPaymentId, $publicKey);
-
-        $url = $url . '?msg=' . $inputMsg;
-
-        return Redirect::to($url);
+        return $this->staticCallbackGateway($method, $gateway, $mode, $input);
     }
 
     public function callbackCorporation()

@@ -139,7 +139,11 @@ class Gateway extends Base\Gateway
                 'content' => $input['gateway'],
             ]);
 
-        $content = $this->getDataFromResponse($input['gateway']['msg']);
+        $masterKey = $this->getDecryptionSecret();
+
+        $decryptedString = $this->getRsaCrypter($masterKey)->decryptString($input['gateway']['msg']);
+
+        $content = $this->getDataFromResponse($decryptedString);
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK,
             [
@@ -147,7 +151,6 @@ class Gateway extends Base\Gateway
             ]);
 
         $this->validateCallbackChecksum($content);
-
 
         // Unset date because format of date returned
         // is different than what we sent
@@ -198,11 +201,36 @@ class Gateway extends Base\Gateway
     {
         $masterKey = $this->getDecryptionSecret();
 
-        $decryptedString = $this->getRsaCrypter($masterKey)->decryptString($input);
+        $decryptedString = $this->getRsaCrypter($masterKey)->decryptString($input['msg']);
 
-        $response['decrypted_string'] = $decryptedString;
+        return explode('|', $decryptedString);
+    }
 
-        return $response;
+    public function getPaymentIdFromServerCallback($input)
+    {
+        $paymentOrTraceId = $input[3];
+
+        if (strlen($paymentOrTraceId) === 14)
+        {
+            return $paymentOrTraceId;
+        }
+
+        $nb = $this->app['repo']->netbanking->findByVerificationIdAndAction($paymentOrTraceId, Action::AUTHORIZE);
+
+        if ($nb === null)
+        {
+            $this->app['config']->set('database.default', Mode::TEST);
+
+            $nb = $this->app['repo']->netbanking->findByVerificationIdAndAction($paymentOrTraceId, Action::AUTHORIZE);
+        }
+
+        if ($nb === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Failed to find requisite trace id: ' . $paymentOrTraceId);
+        }
+
+        return $nb->getPaymentId();
     }
 
     public function verify(array $input)
