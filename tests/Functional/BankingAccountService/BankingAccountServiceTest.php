@@ -199,6 +199,14 @@ class BankingAccountServiceTest extends TestCase
         $this->assertNotEquals($balance_id1, $response['balance_id']);
     }
 
+    public function testGetMerchantAttributes()
+    {
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_current_accounts', 'ca_allocated_bank', 'RBL');
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_current_accounts', 'ca_proceeded_bank', 'RBL');
+
+        $this->startTest();
+    }
+
     public function testArchive()
     {
         $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_current_accounts', 'ca_allocated_bank', 'ICICI');

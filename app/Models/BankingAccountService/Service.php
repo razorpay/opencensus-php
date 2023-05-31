@@ -11,6 +11,7 @@ use RZP\Exception;
 use RZP\Exception\ServerErrorException;
 use RZP\Models\BankingAccount\Gateway\Processor;
 use RZP\Models\Base;
+use RZP\Constants\Product;
 use RZP\Models\Card\BuNamespace;
 use RZP\Services\CardVault as CardVaultService;
 use RZP\Models\Merchant;
@@ -925,6 +926,15 @@ class Service extends Base\Service
 
             throw new Exception\ServerErrorException('Error while tokenizing values', ErrorCode::SERVER_ERROR);
         }
+    }
+
+    public function getMerchantAttributes(string $merchantId, string $group): array
+    {
+        $merchant = $this->repo->merchant->find($merchantId);
+
+        $attributes = (new Merchant\Attribute\Core())->fetchKeyValues($merchant, Product::BANKING, $group, []);
+
+        return $attributes->toArrayPublic()['items'];
     }
 
     public function getFreeSlotForBankingAccount($input): array

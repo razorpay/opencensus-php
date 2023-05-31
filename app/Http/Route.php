@@ -2879,6 +2879,7 @@ class Route
         'unarchive_icici_banking_account'          => ['post',     'bas/unarchive',                                  'BasController@unArchiveICICIAccount'                               ],
         'bas_banking_accounts_notifications'       => ['post',     'bas/banking_accounts/notifications',             'BasController@handleNotifications'                                 ],
         'bas_tokenize_values'                      => ['post',     'bas/tokenize_values',                            'BasController@tokenizeValues'                                      ],
+        'bas_get_merchant_attributes'              => ['get',      'bas/merchant_attributes/{merchant_id}/{group}',  'BasController@getMerchantAttributes'                               ],
 
         //splitz service
         'splitz_route'                             => ['any',      'service/splitz',                                 'SplitzController@sendRequest'                                      ],
@@ -5052,6 +5053,7 @@ class Route
         'bas_ca_lead_to_sales_force',
         'bas_ca_lead_status_to_sales_force',
         'bas_ca_lead_to_freshdesk',
+        'bas_get_merchant_attributes',
         'rbl_in_progress_lead_to_sales_force',
         'bas_banking_accounts_create',
         'bas_banking_accounts_notifications',
@@ -15507,6 +15509,7 @@ class Route
             'bas_banking_accounts_notifications',
             'merchant_fetch_internal',
             'internal_merchant_fetch',
+            'bas_get_merchant_attributes',
         ],
 
         'myoperator' => [

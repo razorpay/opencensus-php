@@ -39,6 +39,31 @@ return [
         ],
     ],
 
+    'testGetMerchantAttributes' => [
+        'request'  => [
+            'url'     => '/bas/merchant_attributes/10000000000000/x_merchant_current_accounts',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'merchant_id' => '10000000000000',
+                    'product' => 'banking',
+                    'group' => 'x_merchant_current_accounts',
+                    'type' => 'ca_allocated_bank',
+                    'value'=> 'RBL'
+                ],
+                [
+                    'merchant_id' => '10000000000000',
+                    'product' => 'banking',
+                    'group' => 'x_merchant_current_accounts',
+                    'type' => 'ca_proceeded_bank',
+                    'value'=> 'RBL'
+                ],
+            ],
+        ],
+    ],
+
     'testArchive' => [
         'request'  => [
             'url'     => '/bas/archive',

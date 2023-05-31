@@ -257,5 +257,12 @@ class BasController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function getMerchantAttributes(string $merchantId, string $group)
+    {
+        $data =  $this->service->getMerchantAttributes($merchantId, $group);
+
+        return ApiResponse::json($data);
+    }
 }
 
