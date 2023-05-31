@@ -4,6 +4,7 @@ namespace RZP\Models\ClarificationDetail;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Trace\TraceCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\Detail\Status;
@@ -122,8 +123,19 @@ class Validator extends Base\Validator
                 {
                     if (array_key_exists($fieldName, $details[Constants::FIELD_DETAILS]) === false)
                     {
+                        $errorValues = [
+                            'fieldName'    => $fieldName,
+                            'fieldDetails' => $details[Constants::FIELD_DETAILS]
+                        ];
+
+                        $this->getTrace()->info(TraceCode::NC_REVAMP_MISSING_FIELDS,[
+                            $errorValues
+                        ]);
+
                         throw new BadRequestValidationFailureException(
-                            PublicErrorDescription::BAD_REQUEST_REQUIRED_FILEDS_FOR_NC
+                            PublicErrorDescription::BAD_REQUEST_REQUIRED_FIELDS_FOR_NC,
+                            null,
+                            $errorValues
                         );
                     }
                 }

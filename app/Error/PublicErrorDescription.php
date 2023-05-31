@@ -1720,7 +1720,7 @@ class PublicErrorDescription
     const BAD_REQUEST_ROUTE_NOT_ACCESSIBLE_VIA_BANKING                              = 'Route not enabled for banking';
 
     const BAD_REQUEST_INVALID_INPUT_FOR_NC                                          = 'Processing failed because of bad input';
-    const BAD_REQUEST_REQUIRED_FILEDS_FOR_NC                                        = 'Processing failed because input does not have all fields';
+    const BAD_REQUEST_REQUIRED_FIELDS_FOR_NC                                        = 'Processing failed because input does not have all fields';
     const BAD_REQUEST_CLARIFICATIONS_PENDING_NC                                     = 'Processing failed because more clarifications required';
     const BAD_REQUEST_INVALID_DOCUMENT_FOR_NC                                       = 'Processing failed because of invalid document';
     const BAD_REQUEST_INVALID_MERCHANT_STATUS_NC                                    = 'Processing failed because merchant is not in Needs Clarification';

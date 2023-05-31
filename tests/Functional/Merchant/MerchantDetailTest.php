@@ -1090,6 +1090,78 @@ class MerchantDetailTest extends OAuthTestCase
         $this->assertEquals(0, $result->count());
 
     }
+
+    public function testValidateClarificationDetail()
+    {
+        $merchant = $this->fixtures->create('merchant', [
+            'live'       => true,
+            'activated'  => 1,
+            'hold_funds' => true
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
+            'merchant_id' => $merchant->getId(),
+        ]);
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchant->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->mockAllSplitzTreatment();
+
+        // Adding clarification reasons
+
+        $testData = $this->testData['testAddClarificationReasons'];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/clarifications";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest($testData);
+
+        // change activation status
+
+        $testData = $this->testData['changeActivationStatusToNeedsClarification'];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest($testData);
+
+        // save group comments for merchant clarification reasons
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $testData = $this->testData['testSaveGroupCommentsMerchantClarificationReasons'];
+
+        $testData['request']['url'] = "/merchant/activation/clarifications";
+
+        $this->startTest($testData);
+
+        // asserting bad request exception for merchant clarification reasons missing field
+
+        $testData = $this->testData['testSaveGroupMerchantClarificationReasonsMissingField'];
+
+        $testData['request']['url'] = "/merchant/activation/clarifications";
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->startTest($testData);
+    }
+
     public function testGroupMerchantClarificationReasonsFlow()
     {
         Mail::fake();
