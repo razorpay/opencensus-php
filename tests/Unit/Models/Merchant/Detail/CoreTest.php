@@ -1386,6 +1386,45 @@ class CoreTest extends TestCase
         $this->assertArrayHasKey('product_led', $response);
     }
 
+    public function testGetSegmentEventPropertiesForFundsOnHoldActivatedLive()
+    {
+        $core = new DetailCore();
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_website' => 'www.google.com',
+
+        ]);
+
+        $merchant = $merchantDetails->merchant;
+
+        $previousActivationStatus = $merchantDetails->getActivationStatus();
+
+        $splitzInput = [
+            "experiment_id" => "KDU9Zk7cp7SGQy",
+            "id"            => $merchant->getId(),
+        ];
+
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzInput, $splitzOutput);
+
+        $response = $core->getSegmentEventPropertiesforActivationStatusChange($merchant, $merchantDetails, $previousActivationStatus);
+
+        $this->assertArrayHasKey('product_led', $response);
+
+        $this->assertArrayHasKey('activated', $response);
+
+        $this->assertArrayHasKey('live', $response);
+
+        $this->assertArrayHasKey('funds_on_hold', $response);
+    }
+
     public function testSegmentEventPropertiesForMerchantNotProductLed()
     {
         $core = new DetailCore();

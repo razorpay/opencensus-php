@@ -3928,6 +3928,15 @@ class Core extends Base\Core
             $properties['needs_clarification'] = true;
         }
 
+        // Adding additional properties of live, activated and funds on hold
+        // Later these properties need to be sent and updated on segment from wherever they are updated
+
+        $properties += [
+            'funds_on_hold' => $merchant->isFundsOnHold(),
+            'activated'     => $merchant->isActivated(),
+            'live'          => $merchant->isLive()
+        ];
+
         try
         {
 
