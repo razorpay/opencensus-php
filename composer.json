@@ -57,7 +57,7 @@
         "myclabs/deep-copy": "^1.6.1",
         "razorpay/lqext": "^4.0.0",
         "code-lts/laravel-fcm": "^1.7",
-        "razorpay/edge-passport-php": "^4.1.0",
+        "razorpay/edge-passport-php": "^4.1.1",
         "opencensus/opencensus":"v0.7.6.7",
         "opencensus/opencensus-exporter-jaeger": "^0.1.2-alpha",
         "wyndow/fuzzywuzzy": "^0.6.0",

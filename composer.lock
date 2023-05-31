@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "59ab380522c3df343a72ac5675406b8f",
+    "content-hash": "b19a4c68161229c65da8909cb45fb243",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -10950,16 +10950,16 @@
         },
         {
             "name": "razorpay/edge-passport-php",
-            "version": "v4.1.0",
+            "version": "v4.1.1",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/edge-passport-php.git",
-                "reference": "b568e7d208fe18a9b64ee6b417440893fbf9345b"
+                "reference": "deb1bfaf93cc9a5b52eab7e963c2ca10f9fed095"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/edge-passport-php/zipball/b568e7d208fe18a9b64ee6b417440893fbf9345b",
-                "reference": "b568e7d208fe18a9b64ee6b417440893fbf9345b",
+                "url": "https://api.github.com/repos/razorpay/edge-passport-php/zipball/deb1bfaf93cc9a5b52eab7e963c2ca10f9fed095",
+                "reference": "deb1bfaf93cc9a5b52eab7e963c2ca10f9fed095",
                 "shasum": ""
             },
             "require": {
@@ -10987,7 +10987,7 @@
                 }
             ],
             "description": "Passport SDK. To be used by upstream services to consume passport sent by edge service.",
-            "time": "2022-10-19T11:55:46+00:00"
+            "time": "2023-05-30T10:22:31+00:00"
         },
         {
             "name": "razorpay/hodor",

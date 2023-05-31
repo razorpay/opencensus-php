@@ -40,9 +40,9 @@ final class PostAuthenticate
      */
     protected $ba;
 
-    const CONSUMER_TYPE_MERCHANT = "merchant";
-    const PRINCIPAL_TYPE_PARTNER = "partner";
-    const DEFAULT_DOMAIN         = "razorpay";
+    const TYPE_MERCHANT  = "merchant";
+    const TYPE_PARTNER   = "partner";
+    const DEFAULT_DOMAIN = "razorpay";
 
     /**
      * @return void
@@ -222,7 +222,7 @@ final class PostAuthenticate
 
         // For $passport->consumer's scalar attributes.
         ensureSameOrOverride($passport->consumer->id, $this->ba->getMerchantId(), 'consumer.id', $errors);
-        ensureSameOrOverride($passport->consumer->type, self::CONSUMER_TYPE_MERCHANT, 'consumer.type', $errors);
+        ensureSameOrOverride($passport->consumer->type, self::TYPE_MERCHANT, 'consumer.type', $errors);
     }
 
     private function ensureRequestContextPassportForPrivateAuth(Passport\Passport $passport, array &$errors)
@@ -230,21 +230,19 @@ final class PostAuthenticate
         if (!$this->isPrivateAuth()) {
             return;
         }
-        // checks whether consumer is set in passport
-        $apiPassport = $this->ba->getPassport();
-        $passportConsumerExists = ($this->ba->getMerchantId() !== null);
 
-        if (isset($apiPassport['consumer'])) {
-            $passportConsumerExists = ($apiPassport['consumer']['id'] !== null);
-        }
+        // dont rely on apiPassport for now and directly use context from basicauth $this->ba
+        //$apiPassport = $this->ba->getPassport();
+        //$passportConsumerExists = ($this->ba->getMerchantId() !== null);
 
-        $consumerExists = ($this->ba->getMerchantId() !== null);
-        ensureSameExistenceOrOverride($passport->consumer, $passportConsumerExists, 'consumer', $errors, new Passport\ConsumerClaims);
-        if ($consumerExists === true) {
-            // For $passport->consumer's scalar attributes.
-            ensureSameOrOverride($passport->consumer->id, $this->ba->getMerchantId(), 'consumer.id', $errors);
-            ensureSameOrOverride($passport->consumer->type, self::CONSUMER_TYPE_MERCHANT, 'consumer.type', $errors);
-        }
+        //if (isset($apiPassport['consumer'])) {
+        //    $passportConsumerExists = ($apiPassport['consumer']['id'] !== null);
+        //}
+
+        // consumer id will be same for merchant auth with and without impersonation
+        $consumerId = empty($this->ba->getKeyEntity()) ? '' : $this->ba->getKeyEntity()->getMerchantId();
+
+        $this->checkPassportMismatches($passport, $errors, $consumerId, self::TYPE_MERCHANT, self::TYPE_MERCHANT);
     }
 
     private function ensureRequestContextPassportForOAuth(Passport\Passport $passport, array &$errors)
@@ -256,12 +254,12 @@ final class PostAuthenticate
         $isConsumerExpected = true;
         ensureSameExistenceOrOverride($passport->consumer, $isConsumerExpected, 'consumer', $errors, new Passport\ConsumerClaims);
         ensureSameOrOverride($passport->consumer->id, $this->ba->getPartnerMerchantId(), 'consumer.id', $errors);
-        ensureSameOrOverride($passport->consumer->type, self::CONSUMER_TYPE_MERCHANT, 'consumer.type', $errors);
+        ensureSameOrOverride($passport->consumer->type, self::TYPE_MERCHANT, 'consumer.type', $errors);
 
         $isOAuthExpected = true;
         ensureSameExistenceOrOverride($passport->oauth, $isOAuthExpected, 'oauth', $errors, new Passport\OAuthClaims);
         ensureSameOrOverride($passport->oauth->ownerId, $this->ba->getMerchantId(), 'oauth.owner_id', $errors);
-        ensureSameOrOverride($passport->oauth->ownerType, self::CONSUMER_TYPE_MERCHANT, 'oauth.owner_type', $errors);
+        ensureSameOrOverride($passport->oauth->ownerType, self::TYPE_MERCHANT, 'oauth.owner_type', $errors);
         ensureSameOrOverride($passport->oauth->clientId, $this->ba->getOAuthClientId(), 'oauth.client_id', $errors);
         ensureSameOrOverride($passport->oauth->appId, $this->ba->getOAuthApplicationId(), 'oauth.app_id', $errors);
     }
@@ -272,19 +270,10 @@ final class PostAuthenticate
             return;
         }
 
-        $isConsumerExpected = true;
-        ensureSameExistenceOrOverride($passport->consumer, $isConsumerExpected, 'consumer', $errors, new Passport\ConsumerClaims);
-        ensureSameOrOverride($passport->consumer->id, $this->ba->getPartnerMerchantId(), 'consumer.id', $errors);
-        ensureSameOrOverride($passport->consumer->type, self::CONSUMER_TYPE_MERCHANT, 'consumer.type', $errors);
+        // set consumer id based on impersonation
+        $consumerId = $this->ba->getPartnerMerchantId() ?? $this->ba->getMerchantId();
 
-        $isPartnerAuthExpected = true;
-        ensureSameExistenceOrOverride($passport->impersonation, $isPartnerAuthExpected, 'impersonation', $errors, new Passport\ImpersonationClaims);
-
-        ensureSameExistenceOrOverride($passport->impersonation->consumer, $isPartnerAuthExpected, 'impersonation.consumer', $errors, new Passport\ConsumerClaims);
-        ensureSameOrOverride($passport->impersonation->consumer->id, $this->ba->getMerchantId(), 'impersonation.consumer.id', $errors);
-        ensureSameOrOverride($passport->impersonation->consumer->type, self::CONSUMER_TYPE_MERCHANT, 'impersonation.consumer.type', $errors);
-
-        ensureSameOrOverride($passport->impersonation->type, self::PRINCIPAL_TYPE_PARTNER, 'impersonation.type', $errors);
+        $this->checkPassportMismatches($passport, $errors, $consumerId, self::TYPE_PARTNER, self::TYPE_PARTNER);
     }
 
     private function ensureRequestContextPassportForDirectAuth(Passport\Passport $passport, array &$errors)
@@ -323,6 +312,46 @@ final class PostAuthenticate
         return (($this->reqCtx->authType == BasicAuth\Type::PUBLIC_AUTH) &&
             ($this->isPublicCallbackRoute() === false) &&
             ($this->ba->isKeylessPublicAuth() === false));
+    }
+
+    /**
+     * checks for mismatches in passport attributed between edge passport and api
+     * @param Passport\Passport $passport
+     * @param array $errors
+     * @param string $consumerId
+     * @param string $consumerType
+     * @param string $impersonationType
+     */
+    private function checkPassportMismatches(Passport\Passport $passport, array &$errors, string $consumerId,
+                                             string $consumerType, string $impersonationType): void
+    {
+        // set impersonation consumer id
+        $impersonationConsumerId = empty($this->ba->getAccountId()) ? null : $this->ba->getMerchantId();
+        $credentialPublicKey = $this->ba->getPublicKey();
+        $credentialUsername = explode('-', $credentialPublicKey)[0];
+
+        $consumerExists = (empty($consumerId) === false);
+        $impersonationConsumerExists = isset($impersonationConsumerId);
+        $credentialExists = isset($credentialPublicKey);
+
+        // check if consumer exists in passport
+        ensureSameExistenceOrOverride($passport->consumer, $consumerExists, 'consumer', $errors, new Passport\ConsumerClaims);
+        if ($consumerExists === true) {
+            ensureSameOrOverride($passport->consumer->id, $consumerId, 'consumer.id', $errors);
+            ensureSameOrOverride($passport->consumer->type, $consumerType, 'consumer.type', $errors);
+            // check if credential exists in passport
+            ensureSameExistenceOrOverride($passport->credential, $credentialExists, 'credential', $errors, new Passport\CredentialClaims);
+            ensureSameOrOverride($passport->credential->username, $credentialUsername, 'credential.username', $errors);
+            ensureSameOrOverride($passport->credential->publicKey, $credentialPublicKey, 'credential.publickey', $errors);
+            // impersonation block will exist in passport if $impersonationConsumerExists
+            // empty impersonation block without impersonation consumer wont exist
+            ensureSameExistenceOrOverride($passport->impersonation, $impersonationConsumerExists, 'impersonation', $errors, new Passport\ImpersonationClaims);
+            if ($impersonationConsumerExists === true) {
+                ensureSameOrOverride($passport->impersonation->consumer->id, $impersonationConsumerId, 'impersonation.consumer.id', $errors);
+                ensureSameOrOverride($passport->impersonation->consumer->type, self::TYPE_MERCHANT, 'impersonation.consumer.type', $errors);
+                ensureSameOrOverride($passport->impersonation->type, $impersonationType, 'impersonation.type', $errors);
+            }
+        }
     }
 
     /**
