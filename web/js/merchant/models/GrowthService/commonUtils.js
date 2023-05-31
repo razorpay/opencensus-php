@@ -108,7 +108,7 @@ export const getAssetTrackingProperties = (
  * @param {string} stringToInterpolate - url to be opened
  * @returns {*} - returns modified url
  */
-export const stringToLiteral = (stringToInterpolate) => {
+export const stringToLiteral = (stringToInterpolate = '') => {
   const user = getUser();
 
   const database = {

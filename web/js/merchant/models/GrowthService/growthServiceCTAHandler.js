@@ -20,13 +20,18 @@ const PricingSubscriptionComponent = lazy(() =>
   ),
 );
 
-const MODAL_TYPE = {
+export const SUB_ASSET_TYPE = {
+  MODAL: 'MODAL',
+  PRICINGBUNDLE: 'pricing_bundle',
+};
+
+export const MODAL_VARIANT = {
   DEFAULT: 'default',
   THANKYOU: 'thank-you',
   CENTERCTA: 'center-cta',
 };
 
-export const PRICING_BUNDLE_TYPE = {
+export const PRICING_BUNDLE_VARIANT = {
   DEFAULT: 'default',
   READ_ONLY: 'read-only',
 };
@@ -114,21 +119,21 @@ const showThankYouModal = (id) => {
 
 const growthServiceEventHandler = (data, history, tracking_id) => {
   // iterate over data in handler
-  data.forEach((item) => {
+  data?.forEach((item) => {
     if (item?.type === EVENT_TYPE.URL) {
       gSOpenUrl(item?.url, history);
     } else if (item?.type === EVENT_TYPE.TEMPLATE) {
       // open modal
-      if (item?.sub_asset?.type === 'MODAL') {
-        if (item?.sub_asset?.variant == MODAL_TYPE.DEFAULT) {
+      if (item?.sub_asset?.type === SUB_ASSET_TYPE.MODAL) {
+        if (item?.sub_asset?.variant == MODAL_VARIANT.DEFAULT) {
           showGSModal(item?.sub_asset?.id, tracking_id);
-        } else if (item?.sub_asset?.variant == MODAL_TYPE.CENTERCTA) {
+        } else if (item?.sub_asset?.variant == MODAL_VARIANT.CENTERCTA) {
           showGSCenterCTAModal(item?.sub_asset?.id);
         }
-        if (item?.sub_asset?.variant == MODAL_TYPE.THANKYOU) {
+        if (item?.sub_asset?.variant == MODAL_VARIANT.THANKYOU) {
           showThankYouModal(item?.sub_asset?.id);
         }
-      } else if (item.sub_asset?.type === 'pricing_bundle') {
+      } else if (item.sub_asset?.type === SUB_ASSET_TYPE.PRICINGBUNDLE) {
         showPricingBundleModal(item.sub_asset?.id, item.sub_asset?.variant);
       }
     }
@@ -157,7 +162,7 @@ const gSSalesforceEvent = (properties, data, history, tracking_id, tracking) => 
         hidePrevious: true,
       });
       tracking.trackEvent(
-        window.rzpQ.merchantActions().initiated('merchant_dashboard.salesforce.failure', {
+        window.rzpQ?.merchantActions().initiated('merchant_dashboard.salesforce.failure', {
           trackingID: tracking_id,
           pageUrl: window.location.href,
         }),
@@ -177,7 +182,7 @@ const growthServiceCTAHandler = (data, history, tracking_id, tracking) => {
   // iterate over data in handler & check for Saleforce Event Type
   let SFEvent = false;
   let SFProperties = {};
-  data.forEach((item) => {
+  data?.forEach((item) => {
     if (item?.type === EVENT_TYPE.SALESFORCESEVENT) {
       SFEvent = true;
       SFProperties = item?.properties;

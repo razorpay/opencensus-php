@@ -11,7 +11,7 @@ import { render, screen, userEvent, server, waitFor, getByRole } from 'test-util
 import * as modalReducer from 'merchant_common/reducers/modals';
 import * as growthServiceReducer from 'merchant/reducers/growthService';
 import * as capitalUtils from 'merchant/views/Capital/utils';
-import { PRICING_BUNDLE_TYPE } from 'merchant/models/GrowthService/growthServiceCTAHandler';
+import { PRICING_BUNDLE_VARIANT } from 'merchant/models/GrowthService/growthServiceCTAHandler';
 
 describe('Tests for `PricingSubscriptionComponent` components', () => {
   const renderApp = ({ props = {}, initialState = {} }) =>
@@ -148,7 +148,7 @@ describe('Tests for `PricingSubscriptionComponent` components', () => {
     '`Data from props`: Should hide the payment buttons when in read only mode',
     (pricingPlan) => {
       const initialState = getState();
-      renderApp({ initialState, props: { variant: PRICING_BUNDLE_TYPE.READ_ONLY } });
+      renderApp({ initialState, props: { variant: PRICING_BUNDLE_VARIANT.READ_ONLY } });
 
       expect(screen.queryByAltText(pricingPlan.button.label)).toBeNull();
     },
@@ -357,7 +357,7 @@ describe('Tests for `PricingSubscriptionComponent` components', () => {
     (pricingPlan) => {
       server.use(fetchGSModalHandler({ delay: 0 }));
       const initialState = getState();
-      renderApp({ initialState, props: { variant: PRICING_BUNDLE_TYPE.READ_ONLY, templateId } });
+      renderApp({ initialState, props: { variant: PRICING_BUNDLE_VARIANT.READ_ONLY, templateId } });
 
       expect(screen.queryByAltText(pricingPlan.button.label)).toBeNull();
     },

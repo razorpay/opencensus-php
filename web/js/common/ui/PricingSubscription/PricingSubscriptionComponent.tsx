@@ -28,7 +28,7 @@ import type {
   TogglePlan,
 } from 'common/ui/PricingSubscription/PricingSubscriptionProps.type';
 
-import { PRICING_BUNDLE_TYPE } from 'merchant/models/GrowthService/growthServiceCTAHandler';
+import { PRICING_BUNDLE_VARIANT } from 'merchant/models/GrowthService/growthServiceCTAHandler';
 import rzpLogo from 'assets/rzp_logo.jpg';
 import pricingTag from 'assets/pricing-bundle/pricingTag.svg';
 import {
@@ -55,7 +55,7 @@ const PricingSubscriptionComponent = ({
   loading,
   gs_modals = {},
 }: PricingSubscriptionProps): React.ReactElement | null => {
-  const isReadOnly = variant === PRICING_BUNDLE_TYPE.READ_ONLY;
+  const isReadOnly = variant === PRICING_BUNDLE_VARIANT.READ_ONLY;
   const [isFullView, setFullView] = useState(false);
   const [isChecked, setChecked] = useState(false);
   const [isLoading, setLoading] = useState(false);

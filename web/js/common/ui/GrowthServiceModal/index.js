@@ -1,5 +1,5 @@
 import { closeModal as closeModalProp } from 'merchant_common/reducers/modals';
-import { compose } from 'redux';
+import { compose, bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import React, { useEffect } from 'react';
@@ -30,7 +30,7 @@ const GrowthServiceModal = ({
   const backgroundImgUrl = isMobileResolution
     ? gs_modals?.image?.mobile_url
     : gs_modals?.image?.url;
-  const Description = ({ description, type }) => {
+  const Description = ({ description = '', type }) => {
     switch (type) {
       case 'bold':
         return <strong>{description}</strong>;
@@ -74,6 +74,7 @@ const GrowthServiceModal = ({
             className={isMobileResolution ? 'background-img-mweb' : 'background-img-dweb'}
             src={backgroundImgUrl}
             alt={gs_modals?.image?.alt_text}
+            data-testid="gs-modal-img"
           />
         </div>
         <div
@@ -99,7 +100,7 @@ const GrowthServiceModal = ({
               />
             </p>
           </div>
-          <div className="btn-container">
+          <div data-testid="button-wrapper" className="btn-container">
             <AsyncBtn.Primary
               className="btn"
               type="submit"
@@ -129,7 +130,7 @@ const GrowthServiceModal = ({
       <button type="button" id="gs-btn-close" onClick={closeModal}>
         <i className="i i-close" />
       </button>
-      <div id="gs-modal-loader">
+      <div id="gs-modal-loader" data-testid="gs-modal-loader">
         <Loader />;
       </div>
     </>
@@ -146,9 +147,14 @@ export default compose(
         isMobileResolution: state.app.isMobileResolution,
       };
     },
-    {
-      fetchGSModal: fetchGSModalProp,
-      closeModal: closeModalProp,
+    (dispatch) => {
+      return bindActionCreators(
+        {
+          fetchGSModal: fetchGSModalProp,
+          closeModal: closeModalProp,
+        },
+        dispatch,
+      );
     },
   ),
 )(GrowthServiceModal);

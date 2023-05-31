@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { ModalBody, ModalHeader, CloseIconContainer } from 'common/components/Modal/Styled';
 import Button from '@razorpay/blade-old/src/atoms/Button';
 import { closeModal as closeModalProp } from 'merchant_common/reducers/modals';
-import { compose } from 'redux';
+import { compose, bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import rTracking from 'react-tracking';
 import Loader from 'common/ui/Loader';
@@ -61,9 +61,14 @@ export default compose(
         ...state?.growthService?.gs_modals,
       };
     },
-    {
-      fetchGSModal: fetchGSModalProp,
-      closeModal: closeModalProp,
+    (dispatch) => {
+      return bindActionCreators(
+        {
+          fetchGSModal: fetchGSModalProp,
+          closeModal: closeModalProp,
+        },
+        dispatch,
+      );
     },
   ),
 )(ThankYouModal);
