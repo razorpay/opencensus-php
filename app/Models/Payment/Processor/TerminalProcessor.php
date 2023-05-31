@@ -104,7 +104,7 @@ class TerminalProcessor extends Base\Core
 
         $isProduction = $this->app->environment(Environment::PRODUCTION);
 
-        if ($isProduction === true)
+        if ($isProduction === true || $this->shouldBVTRequestHitRouter($this->app['request']->header('X-RZP-TESTCASE-ID')))
         {
             try
             {

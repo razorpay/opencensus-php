@@ -245,4 +245,14 @@ class Core
             'actor_type'    => $userType,
         ];
     }
+
+    protected function shouldBVTRequestHitRouter(?string $rzpTestCaseID): bool
+    {
+        if (empty($rzpTestCaseID) === true)
+        {
+            return false;
+        }
+
+        return ((app()->isEnvironmentQA() === true) and (str_contains($rzpTestCaseID,'_via_router') === true));
+    }
 }

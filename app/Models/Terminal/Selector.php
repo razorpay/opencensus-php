@@ -382,7 +382,8 @@ class Selector extends Base\Core
         if (empty($sortedTerminals) === true)
         {
             if ((($this->isTestMode() === true) or ($this->app->environment('testing') === true))
-                and $this->shouldHitRouterForUpiInAppPayments($payment) != true)
+                and $this->shouldHitRouterForUpiInAppPayments($payment) != true
+                and $this->shouldBVTRequestHitRouter($this->app['request']->header('X-RZP-TESTCASE-ID')) !== true)
             {
                 //
                 // The current list of terminals which were retrieved earlier do
@@ -1029,9 +1030,13 @@ class Selector extends Base\Core
             }
         }
 
-
         // if its a BVT and its an app payment the call should go through router
         if($this->shouldHitRouterForUpiInAppPayments($payment) === true)
+        {
+            return true;
+        }
+
+        if($this->shouldBVTRequestHitRouter($this->app['request']->header('X-RZP-TESTCASE-ID')) === true)
         {
             return true;
         }
