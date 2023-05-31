@@ -159,12 +159,18 @@ class Core extends Base\Core
 
         $this->addAccountFromAccountCodeIfApplicable($input);
 
-        $orderTransfers = [];
+        $orderTransfers = new Base\PublicCollection();
+
+        $paymentTransfers = new Base\PublicCollection();
 
         if ($payment->hasOrder() === true)
         {
             $orderTransfers = $this->repo->transfer->fetchBySourceTypeAndIdAndMerchant(Constants\Entity::ORDER, $payment->getApiOrderId(), $this->merchant);
+
+            $paymentTransfers = $this->repo->transfer->fetchBySourceTypeAndIdAndMerchant(Constants\Entity::PAYMENT, $payment->getApiOrderId(), $this->merchant);
         }
+
+        $allTransfers = $orderTransfers->merge($paymentTransfers);
 
         $parentMerchant = $this->fetchAccountParentMerchant($merchant);
 
@@ -173,7 +179,7 @@ class Core extends Base\Core
             $this->validateLinkedAccountActivationStatusAndBankVerificationStatus($transfer, $parentMerchant);
         }
 
-        (new Validator)->validateTransfers($payment, $input, $orderTransfers);
+        (new Validator)->validateTransfers($payment, $input, $allTransfers);
 
         $totalTransferAmount = 0;
 

@@ -91,8 +91,9 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateTransfers(Payment\Entity $payment, array $transfers, $orderTransfers)
+    public function validateTransfers(Payment\Entity $payment, array $transfers, $allTransfers)
     {
+        // allTransfers contains order and payment transfers
         // Array of recipient ID types sent in the
         // transfer request. (possible: customer, account)
         $keys = [];
@@ -131,7 +132,7 @@ class Validator extends Base\Validator
 
         $this->validateTransferEntities($keys, $transferCount);
 
-        $this->validateTransferAmount($payment, $transferSum, $orderTransfers);
+        $this->validateTransferAmount($payment, $transferSum, $allTransfers);
     }
 
     protected function validateTransferEntities(array $keys, int $transferCount)
@@ -179,7 +180,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateTransferAmount(Payment\Entity $payment, int $transferSum, $orderTransfers)
+    protected function validateTransferAmount(Payment\Entity $payment, int $transferSum, $allTransfers)
     {
         //
         // For now -
@@ -192,19 +193,19 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_AMOUNT_GREATER_THAN_CAPTURED);
         }
 
-        $orderTransferUnprocessedAmount = 0;
+        $totalTransferUnprocessedAmount = 0;
 
-        foreach ($orderTransfers as $orderTransfer)
+        foreach ($allTransfers as $transfer)
         {
-            if (($orderTransfer->getStatus() === Status::CREATED) or
-                ($orderTransfer->getStatus() === Status::PENDING) or
-                ($orderTransfer->getStatus() === Status::FAILED and $orderTransfer->getAttempts() < Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS))
+            if (($transfer->getStatus() === Status::CREATED) or
+                ($transfer->getStatus() === Status::PENDING) or
+                ($transfer->getStatus() === Status::FAILED and $transfer->getAttempts() < Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS))
             {
-                $orderTransferUnprocessedAmount += $orderTransfer->getAmount();
+                $totalTransferUnprocessedAmount += $transfer->getAmount();
             }
         }
 
-        if ($transferSum > ($payment->getAmountUntransferred() - $orderTransferUnprocessedAmount))
+        if ($transferSum > ($payment->getAmountUntransferred() - $totalTransferUnprocessedAmount))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_AMOUNT_GREATER_THAN_UNTRANSFERRED,
@@ -212,7 +213,7 @@ class Validator extends Base\Validator
                 [
                     'sum'           => $transferSum,
                     'untransferred' => $payment->getAmountUntransferred(),
-                    'unprocessed'   => $orderTransferUnprocessedAmount,
+                    'unprocessed'   => $totalTransferUnprocessedAmount,
                 ]);
         }
     }
