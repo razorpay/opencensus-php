@@ -221,7 +221,7 @@ class Service extends Base\Service
      */
     public function bulkMigrateResellerToAggregatorPartner(array $input)
     {
-        if ($this->isPartnerTypeMigrationExpEnabled() === false)
+        if ($this->isPartnerTypeBulkMigrationExpEnabled() === false)
         {
             return ['success' => true, 'errorMessage' => "Merchant is not allowed for migration"];
         }
@@ -232,7 +232,7 @@ class Service extends Base\Service
     {
         (new Validator())->validateInput('resellerToPurePlatformMigration', $input);
 
-        if ($this->isResellerToPurePlatformSwitchExpEnabled($input['merchant_id']) === false)
+        if ($this->isPartnerTypeSwitchExpEnabled($input['merchant_id']) === false)
         {
             return ['success' => true, 'errorMessage' => "Partner is not allowed for partner type switch"];
         }
@@ -249,7 +249,7 @@ class Service extends Base\Service
      */
     public function migrateResellerToAggregatorPartner($input)
     {
-        if ($this->isPartnerTypeMigrationExpEnabled($input['merchant_id']) === false)
+        if ($this->isPartnerTypeSwitchExpEnabled($input['merchant_id']) === false)
         {
             return ['success' => true, 'errorMessage' => "Merchant is not allowed for migration."];
         }
@@ -272,15 +272,20 @@ class Service extends Base\Service
     }
 
     /**
-     * Checks whether partner is allowed to switch partner type.
+     * Checks whether partner merchant is allowed to switch partner type.
+     *
+     * @param string $merchantId
      *
      * @return bool
      */
-    private function isResellerToPurePlatformSwitchExpEnabled(string $merchantId): bool
+    public function isPartnerTypeSwitchExpEnabled(string $merchantId): bool
     {
         $properties = [
             'id'            => $merchantId,
-            'experiment_id' => $this->app['config']->get('app.reseller_to_pure_platform_switch_exp_id'),
+            'experiment_id' => $this->app['config']->get('app.partner_type_switch_exp_id'),
+            'request_data'  => json_encode([
+                'mid' => $merchantId,
+            ]),
         ];
 
         return $this->merchantCore->isSplitzExperimentEnable($properties, 'enable');
@@ -291,7 +296,7 @@ class Service extends Base\Service
      *
      * @return bool
      */
-    private function isPartnerTypeMigrationExpEnabled(string $merchantId = null): bool
+    private function isPartnerTypeBulkMigrationExpEnabled(string $merchantId = null): bool
     {
         if ($this->auth->isAdminAuth() === false)
         {
@@ -300,7 +305,7 @@ class Service extends Base\Service
 
         $properties = [
             'id'            => $merchantId,
-            'experiment_id' => $this->app['config']->get('app.partner_type_migration_exp_id'),
+            'experiment_id' => $this->app['config']->get('app.partner_type_bulk_migration_exp_id'),
         ];
 
         return $this->merchantCore->isSplitzExperimentEnable($properties, 'enable');
@@ -364,6 +369,11 @@ class Service extends Base\Service
         (new Validator())->validateInput('raisePartnerMigrationRequest', $input);
 
         $partner = $this->merchant;
+        if ($this->isPartnerTypeSwitchExpEnabled($partner->getId()) === false)
+        {
+            return ['success' => false, 'errorMessage' => "Partner is not allowed for partner type switch"];
+        }
+
         $params = [
             'partner_id'       => $partner->getId(),
             'status'           => "requested",

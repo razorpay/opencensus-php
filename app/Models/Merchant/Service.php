@@ -131,6 +131,7 @@ use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Models\Pricing\Entity as PricingEntity;
 use RZP\Models\BulkWorkflowAction as BulkAction;
 use RZP\Models\RiskWorkflowAction as RiskAction;
+use RZP\Models\Partner\Service as PartnerService;
 use RZP\Models\Pricing\Feature as PricingFeature;
 use RZP\Models\Settlement\Ondemand\FeatureConfig;
 use Razorpay\OAuth\Application as OAuthApplication;
@@ -262,6 +263,8 @@ class Service extends Base\Service
 
     protected $featureService;
 
+    protected PartnerService $partnerService;
+
     public function __construct()
     {
         parent::__construct();
@@ -269,6 +272,8 @@ class Service extends Base\Service
         $this->mutex = $this->app['api.mutex'];
 
         $this->featureService = new Feature\Service();
+
+        $this->partnerService = new PartnerService();
     }
 
     /**
@@ -11050,7 +11055,7 @@ class Service extends Base\Service
         $response['first_submerchant_accept_payments'] = $this->repo->merchant_access_map
             ->isLiveSubmerchantPresentForPartner($partnerId);
 
-        if ($this->isPartnerMigrationRequestExperimentEnabled($partnerId) === true)
+        if ($this->partnerService->isPartnerTypeSwitchExpEnabled($partnerId) === true)
         {
             try
             {
@@ -11074,7 +11079,7 @@ class Service extends Base\Service
 
     public function bulkMigrateAggregatorToResellerPartner(array $input)
     {
-        if ($this->isPartnerTypeMigrationExperimentEnabled() === false)
+        if ($this->isPartnerTypeBulkMigrationExperimentEnabled() === false)
         {
             return ['success' => true, 'errorMessage' => "Merchant is not allowed for migration"];
         }
@@ -11086,7 +11091,7 @@ class Service extends Base\Service
     {
         $merchantId = $input['merchant_id'];
 
-        if ($this->isPartnerTypeMigrationExperimentEnabled($merchantId) === false)
+        if ($this->partnerService->isPartnerTypeSwitchExpEnabled($merchantId) === false)
         {
             return ['success' => true, 'errorMessage' => "Merchant is not allowed for migration"];
         }
@@ -11453,7 +11458,7 @@ class Service extends Base\Service
         return ['success' => true];
     }
 
-    private function isPartnerTypeMigrationExperimentEnabled(string $merchantId = null): bool
+    private function isPartnerTypeBulkMigrationExperimentEnabled(string $merchantId = null): bool
     {
         if ($this->auth->isAdminAuth() === false)
         {
@@ -11462,7 +11467,7 @@ class Service extends Base\Service
 
         $properties = [
             'id'            => $merchantId,
-            'experiment_id' => $this->app['config']->get('app.partner_type_migration_exp_id'),
+            'experiment_id' => $this->app['config']->get('app.partner_type_bulk_migration_exp_id'),
         ];
 
         return $this->core()->isSplitzExperimentEnable($properties, 'enable');
@@ -12065,7 +12070,7 @@ class Service extends Base\Service
 
         return $this->core()->getMerchantAuthorizationForPartner($merchantId, $partnerId);
     }
-    
+
     /**
      * @throws BadRequestException
      * @throws BadRequestValidationFailureException
@@ -12108,24 +12113,5 @@ class Service extends Base\Service
         }
 
         return ['feature_enabled' => false];
-    }
-
-    /**
-     * Checks whether partner migration request flag is enabled in fux api
-     *
-     * @param string $partnerId
-     *
-     * @return bool
-     */
-    private function isPartnerMigrationRequestExperimentEnabled(string $partnerId): bool
-    {
-        $properties = [
-            'id'            => $partnerId,
-            'experiment_id' => $this->app['config']->get('app.partner_migration_request_flag_enabled'),
-            'request_data'  => json_encode([
-                'mid' => $partnerId,
-            ]),
-        ];
-        return $this->core()->isSplitzExperimentEnable($properties, 'enable');
     }
 }
