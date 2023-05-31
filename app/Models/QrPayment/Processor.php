@@ -92,8 +92,13 @@ class Processor extends Base\Core
         {
             $qrPayment = $this->processPayment($qrPayment);
         }
-        catch(\Exception $ex)
-        {
+        catch(\Exception $ex) {
+            $this->trace->traceException($ex, Trace::INFO, TraceCode::QR_PAYMENT_PROCESSING_FAILED,
+                                         [
+                                             'error_message' => $ex->getMessage(),
+                                             'rrn'           => $qrPayment->getProviderReferenceId()
+                                         ]);
+
             if (UnexpectedPaymentReason::shouldCreateUnexpectedPayment($ex->getMessage()) === true)
             {
                 $this->trace->traceException(
@@ -159,6 +164,12 @@ class Processor extends Base\Core
                     $this->createPayment($paymentInput, $this->callbackData);
 
                     $payment = $paymentProcessor->getPayment();
+
+                    $this->trace->info(TraceCode::QR_CODE_PAYMENT_PROCESSED,
+                                       [
+                                           'payment' => $payment->getId(),
+                                           'rrn'     => $qrPayment->getProviderReferenceId()
+                                       ]);
                 }
 
                 $qrPayment->payment()->associate($payment);
@@ -172,7 +183,22 @@ class Processor extends Base\Core
 
                 $this->repo->saveOrFail($qrPayment);
 
+                $this->trace->info(TraceCode::QR_PAYMENT_SAVED,
+                                   [
+                                       'qr_id'   => $this->qrCode->getId(),
+                                       'payment' => $payment->getId(),
+                                       'rrn'     => $qrPayment->getProviderReferenceId()
+                                   ]);
+
+
                 $this->repo->saveOrFail($payment);
+
+                $this->trace->info(TraceCode::PAYMENT_ENTITY_UPDATE,
+                                   [
+                                       'qr_id'   => $this->qrCode->getId(),
+                                       'payment' => $payment->getId(),
+                                       'rrn'     => $qrPayment->getProviderReferenceId()
+                                   ]);
 
                 $this->updateQrCode($qrPayment);
 
@@ -618,6 +644,13 @@ class Processor extends Base\Core
     {
         if ($qrPayment->isExpected() === true)
         {
+            $this->trace->info(TraceCode::QR_CODE_PAYMENT_INFO_UPDATE,
+                               [
+                                   'qr_payment' => $qrPayment->getId(),
+                                   'qr_id'      => $this->qrCode->getId(),
+                                   'rrn'        => $qrPayment->getProviderReferenceId()
+                               ]);
+
             $this->qrCode->incrementTotalPaymentCount();
 
             $this->qrCode->incrementPaymentAmountReceived($qrPayment->getAmount());
@@ -626,6 +659,13 @@ class Processor extends Base\Core
             {
                 (new NonVirtualAccountQrCode\Core())->close($this->qrCode, NonVirtualAccountQrCode\CloseReason::PAID);
             }
+
+            $this->trace->info(TraceCode::QR_CODE_PAYMENT_INFO_UPDATE_COMPLETE,
+                               [
+                                   'qr_payment' => $qrPayment->getId(),
+                                   'qr_id'      => $this->qrCode->getId(),
+                                   'rrn'        => $qrPayment->getProviderReferenceId()
+                               ]);
         }
     }
 
