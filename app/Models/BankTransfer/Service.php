@@ -1344,6 +1344,8 @@ class Service extends Base\Service
 
                 $response = $this->app->mozart->sendMozartRequest('payments',Constants\Entity::CURRENCY_CLOUD,'create_transfer',$request);
 
+                $payment = $this->repo->payment->findOrFail($payment->getId());
+
                 $payment->setReference16($response['data']['id']);
 
                 $this->repo->payment->saveOrFail($payment);

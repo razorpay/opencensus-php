@@ -1615,6 +1615,8 @@ class Validator extends Base\Validator
 
             $this->failIfSmartCollectUnexpectedPayment($payment);
 
+            $this->failIfIntlBankTransferUnexpectedPayment($payment);
+
             $this->captureAmountValidate($payment, $amount);
 
             $this->captureCurrencyValidate($payment, $currency);
@@ -2052,6 +2054,20 @@ class Validator extends Base\Validator
                 'Invalid purpose type.', 'purpose');
         }
     }
+
+    protected function failIfIntlBankTransferUnexpectedPayment(Entity $payment)
+    {
+        if ($payment->isB2BExportCurrencyCloudPayment() === true)
+        {
+            if (empty($payment->getReference2()) === true ||
+                $payment->merchant->isFeatureEnabled(Feature\Constants::ENABLE_SETTLEMENT_FOR_B2B) === false ||
+                empty($payment->getReference16()) === true)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_INVALID_CAPTURE);
+            }
+        }
+    }
+
 
     protected function failIfSmartCollectUnexpectedPayment(Entity $payment)
     {

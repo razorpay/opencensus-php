@@ -414,6 +414,24 @@ class InternationalBankTransferTest extends TestCase
 
         $paymentEntity = $this->getLastPayment('payment',true);
 
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'] , $merchantUser['id']);
+
+        $request = [
+            'url'    => '/payment/'.$paymentEntity['public_id'].'/update_b2b_invoice_details',
+            'method' => 'patch',
+            'content' => [
+                'document_id' => "doc_1234567890"
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(true, $response['b2b_invoice_updated']);
+
+        $this->fixtures->payment->edit($paymentEntity['id'], ['reference16' => 'e68301d3-5b04-4c1d-8f8b-13a9b8437040']);
+
+        $this->fixtures->merchant->addFeatures('enable_settlement_for_b2b', $merchantDetail['merchant_id']);
+
         $this->testSendNotificationForB2B($paymentEntity);
 
         $secondRequest = $this->testData[__FUNCTION__]['request'];
@@ -423,6 +441,8 @@ class InternationalBankTransferTest extends TestCase
         $secondRequest['content']['reason'] = "Sub Account Transfer to House; " . $paymentEntity['id'];
 
         $this->collectAddress($paymentEntity, $merchantUser['id']);
+
+        $this->ba->directAuth();
 
         $secondResponse = $this->makeRequestAndGetContent($secondRequest);
 
@@ -473,6 +493,24 @@ class InternationalBankTransferTest extends TestCase
 
         $paymentEntity = $this->getLastPayment('payment',true);
 
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'] , $merchantUser['id']);
+
+        $request = [
+            'url'    => '/payment/'.$paymentEntity['public_id'].'/update_b2b_invoice_details',
+            'method' => 'patch',
+            'content' => [
+                'document_id' => "doc_1234567890"
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(true, $response['b2b_invoice_updated']);
+
+        $this->fixtures->payment->edit($paymentEntity['id'], ['reference16' => 'e68301d3-5b04-4c1d-8f8b-13a9b8437040']);
+
+        $this->fixtures->merchant->addFeatures('enable_settlement_for_b2b', $merchantDetail['merchant_id']);
+
         $this->testSendNotificationForB2B($paymentEntity);
 
         $this->mockMozartResponseForCurrencyCloud();
@@ -484,6 +522,8 @@ class InternationalBankTransferTest extends TestCase
         $secondRequest['content']['reason'] = "Sub Account Transfer to House; " . $paymentEntity['id'];
 
         $this->collectAddress($paymentEntity, $merchantUser['id']);
+
+        $this->ba->directAuth();
 
         $secondResponse = $this->makeRequestAndGetContent($secondRequest);
 
@@ -910,4 +950,46 @@ class InternationalBankTransferTest extends TestCase
             }, BadRequestException::class, 'Payment failed');
     }
 
+
+    public function testDirectCaptureFailureForCurrencyCloud()
+    {
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->create('merchant_international_integrations',[
+            'merchant_id' => $merchantDetail['merchant_id'],
+            'integration_entity' => 'currency_cloud',
+            'integration_key' => '15b78101-0142-44a1-9758-8f7262429e9b',
+            'notes' => [],
+        ]);
+
+        $this->mockMozartResponseForCurrencyCloud();
+
+        $this->ba->directAuth();
+
+        $request = $this->testData['testCashManagerTransactionNotificationForCurrencyCloud']['request'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $paymentEntity = $this->getLastPayment('payment', 'true');
+
+        $this->assertEquals('authorized',$paymentEntity['status']);
+        $this->assertEquals('currency_cloud',$paymentEntity['gateway']);
+        $this->assertEquals('intl_bank_transfer',$paymentEntity['method']);
+        $this->assertEquals('ach',$paymentEntity['wallet']);
+        $this->assertEquals(294000,$paymentEntity['base_amount']);
+        $this->assertEquals(30000,$paymentEntity['amount']);
+
+        $testData = $this->testData[__FUNCTION__];
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $testData['request']['url'] = '/payments/' . $paymentEntity['id'] . '/capture';
+        $this->makeRequestAndCatchException(function() use ($testData)
+        {
+            $response = $this->sendRequest($testData['request']);
+            var_dump($response);
+        }, BadRequestException::class, 'No approved preauth transaction was found.');
+    }
 }

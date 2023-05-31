@@ -97,6 +97,20 @@ return [
         ]
     ],
 
+    'testDirectCaptureFailureForCurrencyCloud' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/payments/' . 'id' . '/capture',
+            'content' => [
+                'amount'    => '30000',
+                'currency'  => 'USD',
+            ],
+        ],
+        'response'  => [
+            'content'     => [],
+        ],
+    ],
+
     'testTransferCompletedNotificationSWIFTFromCurrencyCloud' => [
         'request' => [
             'url' => '/international/virtual_accounts/payment/create',
