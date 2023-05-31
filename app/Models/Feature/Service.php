@@ -1571,11 +1571,20 @@ class Service extends Base\Service
 
     public function processDcsMigrationJob(array $input): array
     {
-        AssignFeatures::dispatchNow($input, $this->mode);
-
-        return [
-            'response' => 'DCS Features Assign Job dispatched',
-        ];
+        if ((isset($input['flow']) === true) and ($input['flow'] === 'validate'))
+        {
+            ValidateFeaturesAPIAndDCS::dispatchNow($input, $this->mode);
+            return [
+                'response' => 'DCS Features validate Job dispatched',
+            ];
+        }
+        else
+        {
+            AssignFeatures::dispatchNow($input, $this->mode);
+            return [
+                'response' => 'DCS Features Assign Job dispatched',
+            ];
+        }
     }
 
     public function removePayoutServiceIntermediateIdempotencyFeatures()

@@ -4,7 +4,6 @@ namespace RZP\Jobs\DCS;
 
 use Razorpay\Trace\Logger as Trace;
 use RZP\Base\RuntimeManager;
-use RZP\Constants\Mode;
 use RZP\Jobs\Job;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Admin\Service as AdminService;
@@ -23,13 +22,13 @@ class ValidateFeaturesAPIAndDCS extends Job
     public function __construct($input, $mode)
     {
         parent::__construct($mode);
-
         $this->input = $input;
         $this->mode = $mode;
     }
 
-    public function validate(): void
+    public function handle(): void
     {
+        parent::handle();
         RuntimeManager::setMemoryLimit('2048M');
 
         RuntimeManager::setTimeLimit($this->timeout);
@@ -87,7 +86,7 @@ class ValidateFeaturesAPIAndDCS extends Job
 
         $dcs = App::getFacadeRoot()['dcs'];
         // Fetch entity ids for a feature from API DB
-        foreach ($dcsReadEnabledFeatures as $feature) {
+        foreach ($dcsReadEnabledFeatures as $feature => $readEnabledOn) {
             $offset = 0;
             $index = 0;
 
