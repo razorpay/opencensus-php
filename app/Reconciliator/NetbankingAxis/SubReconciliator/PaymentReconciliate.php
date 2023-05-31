@@ -10,9 +10,9 @@ use RZP\Gateway\Netbanking\Axis;
 
 class PaymentReconciliate extends Base\SubReconciliator\NbPlus\NbPlusServiceRecon
 {
-    const COLUMN_PAYMENT_REF_NO     = 'PRN No';
-    const COLUMN_BANK_PAYMENT_ID    = 'BID';
-    const COLUMN_BANK_CUSTOMER_ID   = 'User Id';
+    const COLUMN_PAYMENT_REF_NO     = 'PRN';
+    const COLUMN_BANK_PAYMENT_ID    = 'TXN ID';
+    const COLUMN_BANK_CUSTOMER_ID   = 'User ID';
     const COLUMN_BANK_CUSTOMER_NAME = 'User Name';
     const COLUMN_PAYMENT_AMOUNT     = 'Amount';
 

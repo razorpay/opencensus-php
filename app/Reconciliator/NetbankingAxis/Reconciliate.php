@@ -10,7 +10,7 @@ class Reconciliate extends Base\Reconciliate
     // For now Axis sends only payee specific
     // refund and combined are left on here for structure
     const SUCCESS = [
-        'payeespecific' => self::PAYMENT,
+        'razorpay mis report' => self::PAYMENT,
         // 'refund'        => self::REFUND,
         // 'combined'      => self::COMBINED
     ];

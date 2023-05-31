@@ -55,9 +55,9 @@ class Reconciliator extends Base\RefundFile
                 Timezone::IST)
                 ->format('Y-m-d');
             $data[] = [
-                'BID'       => 99999, // this is the value used in createNetbanking function used in recon test
+                'TXN ID'       => 99999, // this is the value used in createNetbanking function used in recon test
                 'ITC'       => $row['payment']['id'],
-                'PRN No'    => $row['payment']['id'],
+                'PRN'    => $row['payment']['id'],
                 'Amount'    => $this->getFormattedAmount($row['payment']['amount']),
                 'Date'      => $date,
             ];
@@ -109,7 +109,7 @@ class Reconciliator extends Base\RefundFile
     {
         $date = Carbon::now(Timezone::IST)->format('Ymd');
 
-        $fileName = 'sp_razorpay_payeespecific_' . $date ;
+        $fileName = 'razorpay mis report' . $date ;
 
         return $fileName;
     }

@@ -2102,7 +2102,7 @@ class NetbankingReconciliationTest extends TestCase
 
         $file = $creator->extension('txt')
             ->content($txt)
-            ->name('sp_razorpay_payeespecific')
+            ->name('razorpay mis report')
             ->type($type)
             ->headers(false)
             ->save()
