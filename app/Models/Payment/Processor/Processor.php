@@ -81,6 +81,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\VirtualAccount\Receiver;
 use RZP\Models\SubscriptionRegistration;
+use RZP\Models\Transfer\PaymentTransfer;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Locale\Core as LocaleCore;
 use RZP\Models\Payment\Processor\PayLater;
@@ -89,6 +90,8 @@ use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Transfer\Core as TransferCore;
 use RZP\Services\NbPlus as NbPlusPaymentService;
 use RZP\Tests\Functional\Payment\OtpPaymentTest;
+use CodeOrange\RedisCountingSemaphore\Semaphore;
+use RZP\Models\Transfer\Metric as TransferMetric;
 use RZP\Models\CardMandate\CardMandateNotification;
 use RZP\Models\Transfer\Constant as TransferConstant;
 use RZP\Models\UpiMandate\Status as UpiMandateStatus;
@@ -220,6 +223,12 @@ class Processor
     const CAPTURE_QUEUE_DELAY = 900; // In seconds
 
     const PAYSECURE_CAPTURE_QUEUE_DELAY = 300; // In seconds
+
+    /**
+     * The number of payment transfers to process per merchant in parallel using
+     * a semaphore. This limit is applied to the counting semaphore
+     */
+    const PAYMENT_TRANSFERS_SYNC_PROCESSING_DEFAULT_LIMIT = 2;
 
     /**
      * Core payment service feature flag
@@ -4237,17 +4246,16 @@ class Processor
         }
     }
 
-    protected function createForPayment($payment, $input, $asyncTransfer, $deadLockRetryAttempts)
+    protected function createForPayment($payment, $input, $deadLockRetryAttempts)
     {
-        return $this->repo->transaction(function() use ($payment, $input, $asyncTransfer)
+        return $this->repo->transaction(function() use ($payment, $input)
         {
-            return Tracer::inSpan(['name' => 'payment.transfer.create'], function() use ($payment, $input, $asyncTransfer)
+            return Tracer::inSpan(['name' => 'payment.transfer.create'], function() use ($payment, $input)
             {
                 return (new TransferCore)->createForPayment(
                     $payment,
                     $input['transfers'],
                     $this->merchant,
-                    $asyncTransfer
                 );
             });
         }, $deadLockRetryAttempts);
@@ -4335,6 +4343,11 @@ class Processor
 
         $asyncTransfer = true;
 
+        if ($this->checkIfPaymentTransferSyncProcessingAllowed($input) === true)
+        {
+            $asyncTransfer = false;
+        }
+
         $transfers = $this->mutex->acquireAndRelease(
             $payment->getId(),
             function() use ($payment, $input, $deadLockRetryAttempts, $asyncTransfer)
@@ -4344,7 +4357,7 @@ class Processor
                 $transfers = null;
 
                 try {
-                    $transfers = $this->createForPayment($payment, $input, $asyncTransfer, $deadLockRetryAttempts);
+                    $transfers = $this->createForPayment($payment, $input, $deadLockRetryAttempts);
                 }
                 catch (\Throwable $ex)
                 {
@@ -4354,13 +4367,35 @@ class Processor
 
                     if($causedByLostConnection === true)
                     {
-                        $transfers = $this->createForPayment($payment, $input, $asyncTransfer, $deadLockRetryAttempts);
+                        $transfers = $this->createForPayment($payment, $input, $deadLockRetryAttempts);
                     }
                     else
                     {
                         $this->trace->traceException($ex, null, TraceCode::PAYMENT_TRANSFER_CREATE_EXCEPTION,[]);
 
                         throw $ex;
+                    }
+                }
+
+                if ($asyncTransfer === false)
+                {
+                    try
+                    {
+                        $transfers = $this->processPaymentTransfersInSync($payment);
+                    }
+                    catch (\Throwable $e)
+                    {
+                        $this->trace->traceException(
+                            $e,
+                            null,
+                            TraceCode::PAYMENT_TRANSFER_SYNC_PROCESSING_FAILURE,
+                            [
+                                'payment_id' => $this->payment->getId()
+                            ]
+                        );
+
+                        // If sync processing has failed, dispatch to queue to process it async
+                        $asyncTransfer = true;
                     }
                 }
 
@@ -4383,6 +4418,97 @@ class Processor
 
         return $transfers;
     }
+
+    protected function checkIfPaymentTransferSyncProcessingAllowed(array $input): bool
+    {
+        $transfersCount = count($input);
+
+        $variant = App::getFacadeRoot()->razorx->getTreatment(
+            $this->merchant->getId(),
+            Merchant\RazorxTreatment::ENABLE_TRANSFER_SYNC_PROCESSING_VIA_API,
+            $this->mode
+        );
+
+        $isExperimentEnabled = ($variant === 'on');
+
+        $this->trace->info(TraceCode::PAYMENT_TRANSFER_SYNC_PROCESSING_CHECK,
+            [
+                'merchant'            => $this->merchant->getId(),
+                'isExperimentEnabled' => $isExperimentEnabled,
+                'transfersCount'      => $transfersCount,
+            ]);
+
+        if ($transfersCount <= 3 and ($isExperimentEnabled === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @throws \Exception
+     */
+    protected function processPaymentTransfersInSync(Payment\Entity $payment)
+    {
+        $redis = $this->app['redis']->connection('secure');
+
+        $semaphore = null;
+
+        $limit = (int) (new Admin\Service)->getConfigKey(['key' => ConfigKey::ROUTE_TRANSFER_SYNC_PROCESSING_LIMIT_PER_MID]);
+
+        if (empty($limit) === true)
+        {
+            $limit = self::PAYMENT_TRANSFERS_SYNC_PROCESSING_DEFAULT_LIMIT;
+        }
+
+        try
+        {
+            $semaphoreAcquireStartTime = microtime(true);
+
+            $semaphore = new Semaphore($redis->client(), $this->merchant->getId(), $limit);
+
+            $isSemaphoreAcquired = $semaphore->acquire();
+
+            if ($isSemaphoreAcquired === true)
+            {
+                $timeTakenToAcquireMs = (microtime(true) - $semaphoreAcquireStartTime) * 1000;
+
+                (new TransferMetric())->pushSemaphoreAcquireSuccessMetrics($timeTakenToAcquireMs);
+
+                $this->trace->info(TraceCode::PAYMENT_TRANSFER_PROCESS_IN_SYNC,
+                    [
+                        'payment_id'     => $payment->getId(),
+                        'sem_time_taken_ms' => $timeTakenToAcquireMs
+                    ]
+                );
+
+                $transfer = new PaymentTransfer($payment);
+
+                $transfersSyncProcessStartTime = microtime(true);
+
+                [$transfersProcessed, $failedTransfersToRetry] = $transfer->process();
+
+                $transfersSyncProcessTimeMs = (microtime(true) - $transfersSyncProcessStartTime) * 1000;
+
+                (new TransferMetric())->pushTransfersProcessingTimeInSyncMetrics($transfersSyncProcessTimeMs);
+
+                return $transfersProcessed->merge($failedTransfersToRetry);
+            }
+            else
+            {
+                (new TransferMetric())->pushSemaphoreAcquireFailureMetrics();
+
+                throw new Exception\RuntimeException('Failed to acquire semaphore');
+            }
+        }
+        finally
+        {
+            $semaphore?->release();
+        }
+    }
+
+
 
     /**
      * @throws Exception\BadRequestException

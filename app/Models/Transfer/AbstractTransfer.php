@@ -103,7 +103,7 @@ abstract class AbstractTransfer
                 'transferMode' =>  $this->transfermode,
             ]);
 
-        $failedTransferToRetry = [];
+        $failedTransfersToRetry = [];
 
             foreach ($transfers as $transfer)
             {
@@ -128,7 +128,7 @@ abstract class AbstractTransfer
 
                     if ((new Utility)->isRetryableError($e) === true)
                     {
-                        $failedTransferToRetry[] = $transfer;
+                        $failedTransfersToRetry[] = $transfer;
                         continue;
                     }
 
@@ -161,7 +161,7 @@ abstract class AbstractTransfer
 
         (new Metric())->pushSourceIdProcessingTimeInWorkerMetrics($this->transfermode, ($endTime - $startTime));
 
-        return [$transfers, $failedTransferToRetry];
+        return [$transfers, $failedTransfersToRetry];
     }
 
     public function processTransferWithRetry($payment, $transfer)

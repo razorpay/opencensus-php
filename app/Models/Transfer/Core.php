@@ -153,7 +153,7 @@ class Core extends Base\Core
      * @throws Exception\BadRequestException
      * @throws Exception\LogicException
      */
-    public function createForPayment(Payment\Entity $payment, array $input, Merchant\Entity $merchant, bool $asyncTransfer): Base\PublicCollection
+    public function createForPayment(Payment\Entity $payment, array $input, Merchant\Entity $merchant): Base\PublicCollection
     {
         $this->validateMerchantForTransfer($merchant);
 
@@ -184,6 +184,8 @@ class Core extends Base\Core
         $totalTransferAmount = 0;
 
         $transfers = new Base\PublicCollection;
+
+        $asyncTransfer = true;
 
         foreach ($input as $transfer)
         {
@@ -1236,42 +1238,40 @@ class Core extends Base\Core
         }
     }
 
-    public function dispatchForTransferProcessing(string $sourceType, Payment\Entity $payment)
+    public function dispatchForTransferProcessing(string $sourceType, Payment\Entity $payment, int $delaySecs = 0)
     {
         $merchant = $payment->merchant;
-
-        $delay = 0;
 
         if (($sourceType === Constant::PAYMENT) and
             (($merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === true) or
              ($merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true)))
         {
-            $delay = 15 * 60; // 15 minutes
+            $delaySecs = 15 * 60; // 15 minutes
         }
 
         if ($this->app['api.route']->getCurrentRouteName() === 'payment_transfer_batch')
         {
-            TransferProcessBatch::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delay);
+            TransferProcessBatch::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delaySecs);
 
             return;
         }
         else if (($merchant->isCapitalFloatRouteMerchant() === true) and
                  ($this->isLiveMode() === true))
         {
-            TransferProcessCapitalFloat::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delay);
+            TransferProcessCapitalFloat::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delaySecs);
 
             return;
         }
         else if (($merchant->isSliceRouteMerchant() === true) and
                  ($this->isLiveMode() === true))
         {
-            TransferProcessSlice::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delay);
+            TransferProcessSlice::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delaySecs);
 
             return;
         }
         else if ($merchant->isRouteKeyMerchant() === true)
         {
-            TransferProcessKeyMerchants::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delay);
+            TransferProcessKeyMerchants::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delaySecs);
 
             return;
         }
@@ -1287,14 +1287,14 @@ class Core extends Base\Core
             {
                 case 1:
                 {
-                    TransferProcess::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delay);
+                    TransferProcess::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delaySecs);
 
                     return;
                 }
 
                 case 2:
                 {
-                    TransferProcessSlice::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delay);
+                    TransferProcessSlice::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delaySecs);
 
                     return;
                 }
@@ -1308,14 +1308,14 @@ class Core extends Base\Core
                         ]
                     );
 
-                    TransferProcess::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delay);
+                    TransferProcess::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delaySecs);
 
                     return;
                 }
             }
         }
 
-        TransferProcess::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delay);
+        TransferProcess::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delaySecs);
     }
 
     protected function traceTransferIdsFetchedForSettlementStatusUpdate(string $settlementId, array $transferIds)

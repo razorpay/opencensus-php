@@ -23,7 +23,11 @@ class Metric extends Base\Core
     const BATCH_TRANSFER_PROCESSING_TIME           = 'batch_transfer_processing_time';
     const TRANSFER_PROCESSING_TIME_FOR_CF_AND_SL   = 'transfer_processing_time_for_cf_and_sl';
     const TRANSFER_PROCESSING_TIME_IN_WORKER       = 'transfer_processing_time_in_worker';
+    const TRANSFERS_PROCESSING_TIME_IN_SYNC        = 'transfer_processing_time_in_sync';
     const SOURCE_ID_PROCESSING_TIME_IN_WORKER      = 'source_id_processing_time_in_worker';
+    const SEMAPHORE_ACQUIRE_SUCCESS                = 'semaphore_acquire_success';
+    const SEMAPHORE_ACQUIRE_TIME_TAKEN             = 'semaphore_acquire_time_taken';
+    const SEMAPHORE_ACQUIRE_FAILURE                = 'semaphore_acquire_failure';
 
     public function pushCreateSuccessMetrics(array $input = [])
     {
@@ -106,6 +110,23 @@ class Metric extends Base\Core
         ];
 
         $this->trace->histogram(self::SOURCE_ID_PROCESSING_TIME_IN_WORKER, $processingTime, $dimensions);
+    }
+
+    public function pushTransfersProcessingTimeInSyncMetrics($processingTime)
+    {
+        $this->trace->histogram(self::TRANSFERS_PROCESSING_TIME_IN_SYNC, $processingTime);
+    }
+
+    public function pushSemaphoreAcquireSuccessMetrics($timeTakenToAcquireMs)
+    {
+        $this->trace->count(self::SEMAPHORE_ACQUIRE_SUCCESS);
+
+        $this->trace->histogram(self::SEMAPHORE_ACQUIRE_TIME_TAKEN, $timeTakenToAcquireMs);
+    }
+
+    public function pushSemaphoreAcquireFailureMetrics()
+    {
+        $this->trace->count(self::SEMAPHORE_ACQUIRE_FAILURE);
     }
 
     private function getCreateDefaultDimensions(array $input = [])

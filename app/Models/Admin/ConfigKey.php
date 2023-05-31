@@ -114,6 +114,8 @@ class ConfigKey
     const PAYOUT_SERVICE_DATA_MIGRATION_BATCH_ATTEMPTS = self::PREFIX . 'payout_service_data_migration_batch_attempts';
     const PAYOUT_SERVICE_DATA_MIGRATION_BUFFER         = self::PREFIX . 'payout_service_data_migration_buffer';
 
+    const ROUTE_TRANSFER_SYNC_PROCESSING_LIMIT_PER_MID = self::PREFIX . 'route_transfer_sync_processing_limit_per_mid';
+
     // while creating payouts we fetch balance from gateway at a frequency decided in SLA.
     // So if last fetched at was while ago greater than this value, then we will fetch balance
     // again before creating a payout
@@ -483,6 +485,7 @@ class ConfigKey
         self::ENABLE_DOWNTIME_SERVICE_EMANDATE,
         self::ENABLE_DOWNTIME_SERVICE_UPI,
         self::ENABLE_PAYMENT_DOWNTIME_PHONEPE,
+        self::ROUTE_TRANSFER_SYNC_PROCESSING_LIMIT_PER_MID,
         self::RX_BAS_FORCED_FETCH_TIME_IN_HOURS,
         self::DELAY_RUPAY_CAPTURE,
         self::PAGINATION_ATTRIBUTES_FOR_TRIM_SPACE,

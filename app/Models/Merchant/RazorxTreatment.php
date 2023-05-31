@@ -769,11 +769,15 @@ final class RazorxTreatment
      */
     const ENABLE_TIMEOUT_ON_UPI_COLLECT_EXPIRY = 'enable_timeout_on_upi_collect_expiry';
 
+    /**
+     * Razorx flag to enable sync processing for Route transfers in route transfer creation APIs
+     */
+    const ENABLE_TRANSFER_SYNC_PROCESSING_VIA_API = 'enable_transfer_sync_processing_via_api';
+
     // FeatureFlag to toggle Pricing Rule Fee Model override for BPCL
     const FEE_MODEL_OVERRIDE = 'FEE_MODEL_OVERRIDE';
 
     const FCM_MIGRATION = 'fcm_migration';
-
 
     /**
      * Razorx flag to enable Standard Checkout merchants to be onboarded for Push Token Provisioning

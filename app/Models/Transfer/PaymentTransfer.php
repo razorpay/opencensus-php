@@ -21,7 +21,7 @@ class PaymentTransfer extends  AbstractTransfer
     {
         try
         {
-            [$transfersProcessed, $failedTransferToRetry] = $this->mutex->acquireAndRelease(
+            [$transfersProcessed, $failedTransfersToRetry] = $this->mutex->acquireAndRelease(
                 'payment_transfer_process_' . $this->payment->getPublicId(),
                 function () {
 
@@ -52,7 +52,7 @@ class PaymentTransfer extends  AbstractTransfer
                 ]
             );
 
-            return $failedTransferToRetry;
+            return [$transfersProcessed, $failedTransfersToRetry];
         }
         catch (\Exception $e)
         {

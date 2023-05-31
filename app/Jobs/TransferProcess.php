@@ -44,30 +44,31 @@ class TransferProcess extends Job
     {
         parent::handle();
 
-        $this->trace->info(
-            TraceCode::TRANSFER_PROCESS_QUEUE,
-            [
-                'payment_id'   => $this->payment,
-                'transfermode' => $this->transferMode
-            ]
-        );
-
         try
         {
             $this->payment = $this->getPaymentEntity($this->payment);
 
             // if the balance is not update we would further delay the transfer processing
             // this happens for merchants who are on aysnc balance update flow
-            $delay  = $this->checkProcessingDelay($this->payment);
+            $delay = $this->checkProcessingDelay($this->payment);
 
             if ($delay === true)
             {
-                (new Transfer\Core)->dispatchForTransferProcessing($this->transferMode, $this->payment);
+                // Dispatch with delay of 900s (15 min)
+                (new Transfer\Core)->dispatchForTransferProcessing($this->transferMode, $this->payment, 900);
 
                 $this->delete();
 
                 return;
             }
+
+            $this->trace->info(
+                TraceCode::TRANSFER_PROCESS_QUEUE,
+                [
+                    'payment_id'   => $this->payment,
+                    'transfermode' => $this->transferMode
+                ]
+            );
 
             $transfer = null;
 
@@ -80,9 +81,9 @@ class TransferProcess extends Job
                 $transfer = new Transfer\PaymentTransfer($this->payment);
             }
 
-            $failedTransferToRetry = $transfer->process();
+            [, $failedTransfersToRetry] = $transfer->process();
 
-            if(empty($failedTransferToRetry) === false)
+            if(empty($failedTransfersToRetry) === false)
             {
                 $this->checkRetry(Utility::INSUFFICIENT_BALANCE_RETRY_INTERVAL);
             }

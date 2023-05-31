@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b19a4c68161229c65da8909cb45fb243",
+    "content-hash": "cfd78c982510caec2a9243b1d32d0d06",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -904,6 +904,50 @@
                 "source": "https://github.com/code-lts/Laravel-FCM/tree/1.7.1"
             },
             "time": "2022-05-04T16:52:36+00:00"
+        },
+        {
+            "name": "code-orange/redis-counting-semaphore",
+            "version": "v1.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/code-orange/redis-counting-semaphore.git",
+                "reference": "40f7907c32f6241705da84907fe5dca391ca4006"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/code-orange/redis-counting-semaphore/zipball/40f7907c32f6241705da84907fe5dca391ca4006",
+                "reference": "40f7907c32f6241705da84907fe5dca391ca4006",
+                "shasum": ""
+            },
+            "require": {
+                "predis/predis": "^1.1",
+                "ramsey/uuid": "^3.7|^4.0"
+            },
+            "require-dev": {
+                "symfony/process": "^4.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "CodeOrange\\RedisCountingSemaphore\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Tim van Dalen",
+                    "email": "tim@code-orange.nl"
+                }
+            ],
+            "description": "Distributed counting semaphore implementation for redis",
+            "support": {
+                "issues": "https://github.com/code-orange/redis-counting-semaphore/issues",
+                "source": "https://github.com/code-orange/redis-counting-semaphore/tree/v1.2"
+            },
+            "time": "2020-10-30T12:36:52+00:00"
         },
         {
             "name": "composer/ca-bundle",
@@ -19152,7 +19196,8 @@
         "ext-libxml": "*",
         "ext-gd": "*",
         "ext-curl": "*",
-        "ext-grpc": "*"
+        "ext-grpc": "*",
+        "ext-pdo": "*"
     },
     "platform-dev": [],
     "plugin-api-version": "2.3.0"
