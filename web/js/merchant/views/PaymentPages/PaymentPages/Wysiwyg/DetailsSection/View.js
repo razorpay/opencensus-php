@@ -7,6 +7,7 @@ import Share from './Share';
 import Support from './Support';
 import Terms from './Terms';
 import DonationGoalTracker from './DonationGoalTracker';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 @connect(
   (state) => ({
@@ -42,7 +43,7 @@ export default class View extends React.PureComponent {
   updateData = this.updateData.bind(this);
 
   render() {
-    const { paymentPageEntity, isPageDirty, user } = this.props;
+    const { paymentPageEntity, isPageDirty, user, isBatchPaymentPages } = this.props;
 
     if (!paymentPageEntity) {
       return null;
@@ -66,10 +67,12 @@ export default class View extends React.PureComponent {
             key={paymentPageEntity.id ? `${paymentPageEntity.id}-title` : 'title'}
             updateData={this.updateData}
           />
-          <DonationGoalTracker
-            goal_tracker={paymentPageEntity.settings.goal_tracker}
-            updateData={this.updateData}
-          />
+          <ShowWhen additionalCondition={() => !isBatchPaymentPages}>
+            <DonationGoalTracker
+              goal_tracker={paymentPageEntity.settings.goal_tracker}
+              updateData={this.updateData}
+            />
+          </ShowWhen>
           <Description
             description={paymentPageEntity.description}
             isPageDirty={isPageDirty}

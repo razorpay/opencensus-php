@@ -6,9 +6,11 @@ import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
 import Button from 'common/new-ui/Button';
 import { classList, paiseToRupees } from 'common/utils/rzp-utils';
-import { isMandatoryToBool } from '../Amount/helpers';
-import FIELD_TYPES from '../Amount/helpers/fieldTypes';
-import FieldOptionsDropdownWrapper, { OptionsItem } from '../FieldOptionsDropdown';
+import { isMandatoryToBool } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
+import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
+import FieldOptionsDropdownWrapper, {
+  OptionsItem,
+} from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/FieldOptionsDropdown';
 // eslint-disable-next-line import/no-named-as-default
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
@@ -17,8 +19,14 @@ import { getCurrency } from 'common/ui/Amount';
 import { validateAmount } from 'common/utils/validators';
 
 import ModalHeader from 'common/ui/ModalHeader';
+import ShowWhen from 'merchant/components/ShowWhen';
 
-import track from '../../track';
+import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
+
+import {
+  BATCH_UPLOAD_MSG,
+  FILLED_BY_CUSTOMER,
+} from 'merchant/views/PaymentPages/PaymentPages/constants';
 
 @connect(null, {
   openModal,
@@ -138,10 +146,13 @@ export default class BaseForm extends React.PureComponent {
   };
 
   getREP_Amount(isDisabled) {
-    const { field, currency, isPaymentPageEditMode } = this.props;
+    const { field, currency, isPaymentPageEditMode, isBatchPaymentPages } = this.props;
     const amount = field.item.amount || ''; // Note: If amount is there, then isDisabled = false;
-    const placeholder = isDisabled ? 'To be filled by customer' : '0.00';
-
+    const placeholder = isDisabled
+      ? isBatchPaymentPages
+        ? BATCH_UPLOAD_MSG
+        : FILLED_BY_CUSTOMER
+      : '0.00';
     const minAmountAllowed = isDisabled ? '' : paiseToRupees(getCurrency(currency).min_value);
 
     let inputField = (
@@ -173,7 +184,7 @@ export default class BaseForm extends React.PureComponent {
             parentQuerySelector=".Modal-content .paymentlinks-creator"
           >
             <PopoverBody>
-              Customers can fill custom amount
+              {isBatchPaymentPages ? BATCH_UPLOAD_MSG : 'Customers can fill custom amount'}
               <br />
               {/* TODO: As per the actual limits */}
               (Min: {minAmount}, Max: {maxAmount})
@@ -286,7 +297,14 @@ export default class BaseForm extends React.PureComponent {
   setRefForm = (el) => (this.formEl = el);
 
   render() {
-    const { field, selfIndex, validateSameTitleExists, onCloseForm, onDeleteField } = this.props;
+    const {
+      field,
+      selfIndex,
+      validateSameTitleExists,
+      onCloseForm,
+      onDeleteField,
+      isBatchPaymentPages,
+    } = this.props;
 
     const { hasDescription, disableSubmit, mirrorDisplayName, isMandatory } = this.state;
 
@@ -356,18 +374,20 @@ export default class BaseForm extends React.PureComponent {
             </Button.Transparent>
           }
         >
-          <OptionsItem>
-            <div
-              onClick={
-                !!field.image_url
-                  ? (_) => this.props.onUpdateImage(null)
-                  : this.props.openImageCropper
-              }
-            >
-              <i class="i i-add_image" />
-              {field.image_url ? 'Remove Image' : 'Add Image'}
-            </div>
-          </OptionsItem>
+          <ShowWhen additionalCondition={() => !isBatchPaymentPages}>
+            <OptionsItem>
+              <div
+                onClick={
+                  !!field.image_url
+                    ? (_) => this.props.onUpdateImage(null)
+                    : this.props.openImageCropper
+                }
+              >
+                <i class="i i-add_image" />
+                {field.image_url ? 'Remove Image' : 'Add Image'}
+              </div>
+            </OptionsItem>
+          </ShowWhen>
 
           <OptionsItem isSelected={!!this.state.hasDescription}>
             <div onClick={this.toggleDescriptionField}>
@@ -382,16 +402,17 @@ export default class BaseForm extends React.PureComponent {
               {!this.state.isMandatory ? 'Optional Item' : 'Make it Optional Item'}
             </div>
           </OptionsItem>
-
-          <OptionsItem>
-            <div onClick={this.props.openAdvancedForm}>
-              <i class="i i-options" />
-              <div>
-                Advanced Options
-                <div class="subOption">Add quantity, define rules around quantity, etc.</div>
+          <ShowWhen additionalCondition={() => !isBatchPaymentPages}>
+            <OptionsItem>
+              <div onClick={this.props.openAdvancedForm}>
+                <i class="i i-options" />
+                <div>
+                  Advanced Options
+                  <div class="subOption">Add quantity, define rules around quantity, etc.</div>
+                </div>
               </div>
-            </div>
-          </OptionsItem>
+            </OptionsItem>
+          </ShowWhen>
 
           {typeof selfIndex !== 'undefined' && onDeleteField && (
             <OptionsItem>

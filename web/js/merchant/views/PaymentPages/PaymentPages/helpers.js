@@ -31,3 +31,40 @@ export function transfeeRuleToNormalFormat({ rule_type, flat, slabs }) {
   }
   return { rule_type, flat, slabs };
 }
+
+export const getAlertMsg = ({ isBatchPaymentPages, field }) => {
+  const config = [
+    {
+      condition: !isBatchPaymentPages,
+      message: (
+        <>
+          <b>Mandatory</b> {field?.name} field to be filled by customers.This field cannot be
+          deleted.
+        </>
+      ),
+    },
+    {
+      condition: isBatchPaymentPages && field?.name !== 'pri__ref__id',
+      message: (
+        <>
+          {' '}
+          <b>Mandatory</b> {field?.title} field present in the batch upload file, this field cannot
+          be deleted.
+        </>
+      ),
+    },
+    {
+      condition: isBatchPaymentPages && field?.name === 'pri__ref__id',
+      message: (
+        <>
+          <b>Mandatory</b> {field?.title} to be present in the batch upload file and to be used by
+          customer for validation, this field cannot be deleted.
+        </>
+      ),
+    },
+  ];
+  const finalList = config.filter((obj) => {
+    return obj?.condition;
+  });
+  return finalList[0]?.message;
+};

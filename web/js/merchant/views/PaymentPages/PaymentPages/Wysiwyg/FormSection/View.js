@@ -48,6 +48,7 @@ class SortableFormItemsList extends React.Component {
       onSubmitAmountField,
       isShiprocketSetting,
       showPayerNamePP,
+      isBatchPaymentPages,
     } = this.props;
 
     // disable sorting in mobile view
@@ -71,6 +72,7 @@ class SortableFormItemsList extends React.Component {
                 validateSameTitleExists={validateSameTitleExists}
                 isPaymentPageEditMode={isPaymentPageEditMode}
                 disabled={isSortingDisabled}
+                isBatchPaymentPages={isBatchPaymentPages}
               />
             );
           } else {
@@ -88,6 +90,7 @@ class SortableFormItemsList extends React.Component {
                 disabled={isSortingDisabled}
                 isShiprocket={checkIsShiprocketField(isShiprocketSetting, fi.name)}
                 showPayerNamePP={showPayerNamePP}
+                isBatchPaymentPages={isBatchPaymentPages}
               />
             );
           }
@@ -194,10 +197,26 @@ export default class View extends React.PureComponent {
   };
 
   onSubmitUDFField = (formData, indexInFormItems, isCheckoutOption) => {
-    const { user } = this.props;
+    const { user, isBatchPaymentPages, FORM_ITEMS, showNotification } = this.props;
     // console.log('FORM DATA.....', formData);
     const fieldSchema = constructFieldSchema(formData);
     // console.log('FIELD SCHEMA...', fieldSchema);
+    if (isBatchPaymentPages) {
+      const secondaryRefIds = FORM_ITEMS?.filter((item) => item?.name?.includes('sec__ref__id'));
+      if (formData?.title === 'Primary Reference ID') {
+        fieldSchema.name = 'pri__ref__id';
+      }
+      if (formData?.sec__ref__id === '1') {
+        if (secondaryRefIds.length === 5) {
+          showNotification({
+            type: 'info',
+            message: 'Max 5 Input Field may be added as Seconday Reference ID.',
+          });
+          throw new Error('Max 5 Input Field may be added as Seconday Reference ID.');
+        }
+        fieldSchema.name = `sec__ref__id_${secondaryRefIds.length + 1}`;
+      }
+    }
     const isPayerNameField = user?.showPayerNamePP && formData?.title === 'Payer Name';
     if (isPayerNameField) {
       fieldSchema.name = 'payer__name';
@@ -277,7 +296,14 @@ export default class View extends React.PureComponent {
   }
 
   render() {
-    const { paymentPageEntity, FORM_ITEMS, magicCheckout, updateMagicData, user } = this.props;
+    const {
+      paymentPageEntity,
+      FORM_ITEMS,
+      magicCheckout,
+      updateMagicData,
+      user,
+      isBatchPaymentPages,
+    } = this.props;
     let _hideDynamicPriceField = user?.hideDynamicPriceFieldPP;
     if (!paymentPageEntity) {
       return null;
@@ -318,6 +344,7 @@ export default class View extends React.PureComponent {
                 validateSameTitleExists={this.validateSameTitleExists}
                 isPaymentPageEditMode={isPaymentPageEditMode}
                 hideDynamicPriceField={_hideDynamicPriceField}
+                isBatchPaymentPages={isBatchPaymentPages}
               />
             </div>
           </div>
@@ -346,6 +373,7 @@ export default class View extends React.PureComponent {
             paymentPageEntity?.settings?.partner_webhook_settings?.partner_shiprocket === '1'
           }
           showPayerNamePP={user?.showPayerNamePP}
+          isBatchPaymentPages={isBatchPaymentPages}
         />
 
         {this.props.isShiprocketOpened && <div class="shiprocket-blank-preview" />}
@@ -362,6 +390,7 @@ export default class View extends React.PureComponent {
               validateSameTitleExists={this.validateSameTitleExists}
               isMagicCheckoutEnabled={magicCheckout?.enabled}
               updateMagicData={updateMagicData}
+              isBatchPaymentPages={isBatchPaymentPages}
             />
             <AddAmountButton
               currency={paymentPageEntity.currency}
@@ -371,6 +400,7 @@ export default class View extends React.PureComponent {
               validateSameTitleExists={this.validateSameTitleExists}
               isPaymentPageEditMode={isPaymentPageEditMode}
               hideDynamicPriceField={_hideDynamicPriceField}
+              isBatchPaymentPages={isBatchPaymentPages}
             />
           </div>
         </div>

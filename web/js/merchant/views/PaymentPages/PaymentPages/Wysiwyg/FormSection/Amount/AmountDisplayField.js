@@ -7,9 +7,13 @@ import EditLayer from 'merchant/views/PaymentPages/PaymentPages/components/EditL
 import {
   mapFieldToAmountFieldType,
   isMandatoryToBool,
-} from '../Amount/helpers';
-import FIELD_TYPES from '../Amount/helpers/fieldTypes';
+} from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
+import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 import { getCurrency } from 'common/ui/Amount';
+import {
+  BATCH_UPLOAD_MSG,
+  FILLED_BY_CUSTOMER,
+} from 'merchant/views/PaymentPages/PaymentPages/constants';
 
 const DragHandle = sortableHandle(() => (
   <span class="dragHandle">
@@ -23,12 +27,13 @@ const displayField = ({
   openBaseForm,
   setRef,
   isListSorting,
+  isBatchPaymentPages,
 }) => {
+  const placeHolder = isBatchPaymentPages ? BATCH_UPLOAD_MSG : FILLED_BY_CUSTOMER;
   const fieldType = mapFieldToAmountFieldType(field);
   let addOnAfter;
 
-  const amountDisplay =
-    field.item.amount && Number(field.item.amount).toFixed(2);
+  const amountDisplay = field.item.amount && Number(field.item.amount).toFixed(2);
   let fieldEl = amountDisplay && (
     <div class="Field-el">
       <label>
@@ -61,14 +66,7 @@ const displayField = ({
     }
 
     case FIELD_TYPES.dynamic_price.key: {
-      fieldEl = (
-        <input
-          class="Field-el"
-          type="number"
-          placeholder="To be filled by customer"
-          disabled
-        />
-      );
+      fieldEl = <input class="Field-el" type="number" placeholder={placeHolder} disabled />;
 
       break;
     }
@@ -94,6 +92,9 @@ const displayField = ({
 
       break;
     }
+
+    default:
+      break;
   }
 
   const currencySymbol = getCurrency(currency).symbol;
@@ -105,9 +106,7 @@ const displayField = ({
         field.mandatory && 'Field--required',
         field.image_url && 'Field--has-image',
         isListSorting && 'disable-hover',
-        `Field--currency-${
-          currencySymbol.length > 4 ? 'long' : currencySymbol.length
-        }`
+        `Field--currency-${currencySymbol.length > 4 ? 'long' : currencySymbol.length}`,
       )}
       onClick={openBaseForm}
       setRef={setRef}
@@ -120,12 +119,7 @@ const displayField = ({
         {/*{field.mandatory && <span class="symbol--red">*</span>}*/}
       </div>
       <div class="Field-content">
-        <div
-          class={classList(
-            'Field-wrapper',
-            field._type && 'Field-wrapper--' + field_type
-          )}
-        >
+        <div class={classList('Field-wrapper', field._type && `Field-wrapper--${field._type}`)}>
           <span class="Field-addon Field-addon--before">
             <span>
               {field.image_url && <img src={field.image_url} />}
@@ -138,19 +132,17 @@ const displayField = ({
           <span
             class={classList(
               `Field-addon Field-addon--after`,
-              hasCheckBox && 'Field-addon--after--CheckBox'
+              hasCheckBox && 'Field-addon--after--CheckBox',
             )}
           >
             {addOnAfter}
           </span>
         </div>
-        {field.item.description && (
-          <div class="Field-description">{field.item.description}</div>
-        )}
+        {field?.item?.description && <div class="Field-description">{field.item.description}</div>}
       </div>
       {openBaseForm && <i class="i i-edit" />}
     </EditLayer>
   );
 };
-
+// eslint-disable-next-line babel/new-cap
 export default CreatorManager(displayField);

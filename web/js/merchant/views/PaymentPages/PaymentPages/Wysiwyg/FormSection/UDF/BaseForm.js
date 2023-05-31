@@ -7,6 +7,11 @@ import FieldOptionsDropdownWrapper, {
 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/FieldOptionsDropdown';
 import { classList } from 'common/utils/rzp-utils';
 import { mapFieldToIndex } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers';
+import ShowWhen from 'merchant/components/ShowWhen';
+import {
+  BATCH_UPLOAD_MSG,
+  FILLED_BY_CUSTOMER,
+} from 'merchant/views/PaymentPages/PaymentPages/constants';
 
 export default class BaseForm extends React.PureComponent {
   constructor(props) {
@@ -21,6 +26,7 @@ export default class BaseForm extends React.PureComponent {
       isRequired: typeof fieldSchema.required !== 'undefined' ? !!fieldSchema.required : true, // NOTE: By default all fields are to be set as required
       isFieldEnum: !!fieldSchema.enum,
       enum: fieldSchema.hasOwnProperty('enum') ? fieldSchema.enum : undefined,
+      isSecondaryRefId: fieldSchema?.name?.indexOf('sec__ref__id') > -1 ?? false,
     };
 
     this.fieldIndexInOptions = props.fieldIndexInOptions || mapFieldToIndex(fieldSchema);
@@ -66,6 +72,14 @@ export default class BaseForm extends React.PureComponent {
     setTimeout(this.toggleSubmitBtn);
   };
 
+  toggleSecondaryRefId = (_) => {
+    this.setState((prevState) => {
+      return {
+        isSecondaryRefId: !prevState.isSecondaryRefId,
+      };
+    });
+  };
+
   toggleDescriptionField = (_) => {
     this.setState((prevState) => {
       return {
@@ -100,19 +114,17 @@ export default class BaseForm extends React.PureComponent {
       isFieldForcedRequired,
       isShiprocket,
       isLabelDisabled,
+      isBatchPaymentPages,
+      isPrimaryField,
     } = this.props;
 
-    const { isRequired, hasDescription, disableSubmit, mirrorDisplayTitle } = this.state;
-
-    let _RepresentationEl = (
-      <input class="Field-el" placeholder="To be filled by customer" disabled />
-    );
+    const { isRequired, hasDescription, disableSubmit, mirrorDisplayTitle, isSecondaryRefId } =
+      this.state;
+    const placeHolder = isBatchPaymentPages ? BATCH_UPLOAD_MSG : FILLED_BY_CUSTOMER;
+    let _RepresentationEl = <input class="Field-el" placeholder={placeHolder} disabled />;
     let _RepresentationClass = '';
-
     if (field.options && field.options.cmp === 'textarea') {
-      _RepresentationEl = (
-        <textarea class="Field-el" placeholder="To be filled by customer" disabled />
-      );
+      _RepresentationEl = <textarea class="Field-el" placeholder={FILLED_BY_CUSTOMER} disabled />;
       _RepresentationClass = 'Field--textarea';
     } else if (field.enum) {
       _RepresentationEl = (
@@ -164,6 +176,9 @@ export default class BaseForm extends React.PureComponent {
 
         <input name="field_type" value={this.fieldIndexInOptions} hidden readOnly />
         <input name="required" value={Number(isRequired)} hidden readOnly />
+        <ShowWhen additionalCondition={() => isBatchPaymentPages && !isFieldForcedRequired}>
+          <input name="sec__ref__id" value={Number(isSecondaryRefId)} hidden readOnly />
+        </ShowWhen>
 
         <div class={classList('Field--representation', _RepresentationClass)}>
           <div class="Field-wrapper placeholder-field">{_RepresentationEl}</div>
@@ -200,6 +215,14 @@ export default class BaseForm extends React.PureComponent {
             </Button.Transparent>
           }
         >
+          <ShowWhen additionalCondition={() => isBatchPaymentPages && !isPrimaryField}>
+            <OptionsItem isSelected={isSecondaryRefId}>
+              <div onClick={this.toggleSecondaryRefId}>
+                <i className="i i-optional_mark" />
+                Select as Secondary Reference ID
+              </div>
+            </OptionsItem>
+          </ShowWhen>
           {!isFieldForcedRequired && (
             <OptionsItem isSelected={!isRequired}>
               <div onClick={this.toggleOptional}>

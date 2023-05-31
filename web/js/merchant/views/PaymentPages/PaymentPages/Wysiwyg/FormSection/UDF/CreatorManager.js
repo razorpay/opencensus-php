@@ -5,6 +5,7 @@ import BaseForm from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSecti
 import Alert from 'common/new-ui/Alert';
 import Button from 'common/new-ui/Button';
 import { setSettingsModal } from 'merchant/reducers/wysiwyg';
+import { getAlertMsg } from 'merchant/views/PaymentPages/PaymentPages/helpers';
 
 export default function CreatorManager(WrappedDisplayFieldComponent) {
   class HOC extends React.PureComponent {
@@ -43,6 +44,7 @@ export default function CreatorManager(WrappedDisplayFieldComponent) {
         checkoutOptions,
         isShiprocket,
         showPayerNamePP,
+        isBatchPaymentPages,
         ...restProps
       } = this.props;
 
@@ -50,6 +52,7 @@ export default function CreatorManager(WrappedDisplayFieldComponent) {
       let isFieldForcedRequired = false; // If so, then no option in dropdown to set the field optional.
       let isCheckoutOption = false;
       let isLabelDisabled = false;
+      let isPrimaryField = false;
 
       if (field) {
         if ([checkoutOptions.email, checkoutOptions.phone].indexOf(field.name) > -1) {
@@ -66,6 +69,19 @@ export default function CreatorManager(WrappedDisplayFieldComponent) {
           isFieldDeletable = false;
           isFieldForcedRequired = true;
           isLabelDisabled = true;
+        }
+        if (isBatchPaymentPages) {
+          // primary reference id field
+          if (field?.name === 'pri__ref__id') {
+            isFieldDeletable = false;
+            isFieldForcedRequired = true;
+            isPrimaryField = true;
+            isLabelDisabled = true;
+          }
+          if (field?.name === 'email' || field?.name === 'phone') {
+            isFieldDeletable = false;
+            isFieldForcedRequired = false;
+          }
         }
       }
 
@@ -89,6 +105,8 @@ export default function CreatorManager(WrappedDisplayFieldComponent) {
               isCheckoutOption={isCheckoutOption}
               isShiprocket={isShiprocket}
               isLabelDisabled={isLabelDisabled}
+              isPrimaryField={isPrimaryField}
+              isBatchPaymentPages={isBatchPaymentPages}
             />
           )}
         </div>
@@ -132,6 +150,8 @@ class BaseFormModal extends React.PureComponent {
       isFieldForcedRequired,
       isShiprocket,
       isLabelDisabled,
+      isBatchPaymentPages,
+      isPrimaryField,
     } = this.props;
 
     return (
@@ -146,6 +166,8 @@ class BaseFormModal extends React.PureComponent {
           isFieldForcedRequired={isFieldForcedRequired}
           isShiprocket={isShiprocket}
           isLabelDisabled={isLabelDisabled}
+          isBatchPaymentPages={isBatchPaymentPages}
+          isPrimaryField={isPrimaryField}
         />
         {!isFieldDeletable ? (
           isShiprocket ? (
@@ -158,10 +180,7 @@ class BaseFormModal extends React.PureComponent {
               </Button.Transparent>
             </Alert.Warning>
           ) : (
-            <Alert.Warning>
-              <b>Mandatory</b> {field.name} field to be filled by customers. This field cannot be
-              deleted.
-            </Alert.Warning>
+            <Alert.Warning>{getAlertMsg({ isBatchPaymentPages, field })}</Alert.Warning>
           )
         ) : null}
       </CreatorModal>

@@ -1,8 +1,4 @@
-require('it-each')();
-const expect = require('chai').expect;
 import {
-  FIELD_CONST,
-  getFieldTypes,
   flattenFIELD_TYPES,
   constructFieldSchema,
   validateUISchema,
@@ -13,6 +9,8 @@ import {
   _isSupportedComponent,
   _areBaseKeysPresent,
 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers';
+require('it-each')();
+const expect = require('chai').expect;
 
 // Ensures pattern is supported and combination with keydown_restrictive does not block user from typing in that field
 function _isPatternSupportedAndNonRestrictive(pattern, isKeydownRestrictive) {
@@ -33,7 +31,8 @@ function _isPatternSupportedAndNonRestrictive(pattern, isKeydownRestrictive) {
 
   // Update these pattern if updated in "static/src/hosted/wysiwig/scripts/validators.js"
   const PATTERN_TO_REGEX_MAPPING = {
-    email: /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+    email:
+      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
     number: /^[+-]?([0-9]*[.])?[0-9]+$/,
     phone: /^([0-9]){8,}$/g,
     // amount: /^[0-9]+(.([0-9]){1,2})?$/g, // TODO: Uncomment when multiple amounts supported
@@ -52,7 +51,7 @@ function _isPatternSupportedAndNonRestrictive(pattern, isKeydownRestrictive) {
   const v = valuesInSequenceOfTyping[pattern];
 
   if (!v || !p) {
-    throw 'Pattern or value is missing in the testing data set';
+    throw new Error('Pattern or value is missing in the testing data set');
   }
   for (let i = 0; i < v.length; i++) {
     const reg = new RegExp(p);
@@ -68,14 +67,14 @@ function _isPatternSupportedAndNonRestrictive(pattern, isKeydownRestrictive) {
 
 // -------------------------
 
-describe('containers/PaymentPages/../UDF/helpers Fn: Validity of base keys checker', function () {
+describe('containers/PaymentPages/../UDF/helpers Fn: Validity of base keys checker', function test() {
   const validBaseKeys = {
     name: 'test name',
     title: 'test title',
     type: 'test type',
   };
 
-  it('dummy schema should have all base keys', function () {
+  it('dummy schema should have all base keys', function test() {
     const result = _areBaseKeysPresent(validBaseKeys);
     expect(result).to.eql(true);
   });
@@ -94,7 +93,7 @@ describe('containers/PaymentPages/../UDF/helpers Fn: Validity of base keys check
     false,
   ];
 
-  it.each(invalidBaseKeys, 'all set of base keys must be invalid.', function (fieldSet, next) {
+  it.each(invalidBaseKeys, 'all set of base keys must be invalid.', function test(fieldSet, next) {
     const result = _areBaseKeysPresent(fieldSet);
     expect(result).to.eql(false);
 
@@ -102,7 +101,13 @@ describe('containers/PaymentPages/../UDF/helpers Fn: Validity of base keys check
   });
 });
 
-describe('containers/PaymentPages/../UDF/helpers Fn: Validity of base fields in constructed schema', function () {
+global.window = {
+  location: {
+    pathname: '',
+  },
+};
+
+describe('containers/PaymentPages/../UDF/helpers Fn: Validity of base fields in constructed schema', function test() {
   // Total 11 FIELD_TYPES exist in UDF dropdown
   const validFieldSchemas = [
     constructFieldSchema({ title: 'Test title', field_type: '0' }),
@@ -154,7 +159,7 @@ describe('containers/PaymentPages/../UDF/helpers Fn: Validity of base fields in 
     }),
   ];
 
-  it.each(validFieldSchemas, 'all schemas must have base fields.', function (schema, next) {
+  it.each(validFieldSchemas, 'all schemas must have base fields.', function test(schema, next) {
     const result = _areBaseKeysPresent(schema);
     expect(result).to.eql(true);
 
@@ -190,7 +195,7 @@ describe('containers/PaymentPages/../UDF/helpers Fn: Validity of base fields in 
     }),
   ];
 
-  it.each(invalidFieldSchemas, 'all schemas do not have base fields.', function (schema, next) {
+  it.each(invalidFieldSchemas, 'all schemas do not have base fields.', function test(schema, next) {
     const result = _areBaseKeysPresent(schema);
 
     expect(result).to.eql(false);
@@ -201,10 +206,10 @@ describe('containers/PaymentPages/../UDF/helpers Fn: Validity of base fields in 
 
 // -------------------------
 
-describe('containers/PaymentPages/../UDF/helpers Fn: Supported type in schema', function () {
+describe('containers/PaymentPages/../UDF/helpers Fn: Supported type in schema', function test() {
   const validTypeSet = ['string', 'number'];
 
-  it.each(validTypeSet, 'all schemas must be invalid.', function (type, next) {
+  it.each(validTypeSet, 'all schemas must be invalid.', function test(type, next) {
     const result = _isSupportedType(type);
     expect(result).to.eql(true);
 
@@ -225,7 +230,7 @@ describe('containers/PaymentPages/../UDF/helpers Fn: Supported type in schema', 
     '',
   ];
 
-  it.each(invalidTypeSet, 'all types must be invalid.', function (type, next) {
+  it.each(invalidTypeSet, 'all types must be invalid.', function test(type, next) {
     const result = _isSupportedType(type);
     expect(result).to.eql(false);
 
@@ -235,11 +240,11 @@ describe('containers/PaymentPages/../UDF/helpers Fn: Supported type in schema', 
 
 // -------------------------
 
-describe('containers/PaymentPages/../UDF/helpers Fn: Safe Pattern in schema', function () {
+describe('containers/PaymentPages/../UDF/helpers Fn: Safe Pattern in schema', function test() {
   it.each(
     flattenFIELD_TYPES(),
     'all fields units selectable by user must have safe patterns.',
-    function (field, next) {
+    function test(field, next) {
       const schema = field.schema;
       const result = _isPatternSupportedAndNonRestrictive(
         schema.pattern,
@@ -278,7 +283,7 @@ describe('containers/PaymentPages/../UDF/helpers Fn: Safe Pattern in schema', fu
   it.each(
     BAD_FIELD_TYPES,
     'all fields units must have unsafe pattern and keydown_restrictive combination.',
-    function (schema, next) {
+    function test(schema, next) {
       const result = _isPatternSupportedAndNonRestrictive(
         schema.pattern,
         !!schema.options && schema.options.keydown_restrictive,
@@ -293,17 +298,21 @@ describe('containers/PaymentPages/../UDF/helpers Fn: Safe Pattern in schema', fu
 
 // -------------------------
 
-describe('containers/PaymentPages/../UDF/helpers Fn: Supported cmp in option keys', function () {
-  it.each(flattenFIELD_TYPES(), 'all field units must have supported cmp.', function (field, next) {
-    if (!field.options || typeof field.options.cmp === 'undefined') {
-      next(); // Skip the field unit where cmp is not defined
-    }
+describe('containers/PaymentPages/../UDF/helpers Fn: Supported cmp in option keys', function test() {
+  it.each(
+    flattenFIELD_TYPES(),
+    'all field units must have supported cmp.',
+    function test(field, next) {
+      if (!field.options || typeof field.options.cmp === 'undefined') {
+        next(); // Skip the field unit where cmp is not defined
+      }
 
-    const result = _isSupportedComponent(field.options.cmp);
-    expect(result).to.eql(true);
+      const result = _isSupportedComponent(field.options.cmp);
+      expect(result).to.eql(true);
 
-    next();
-  });
+      next();
+    },
+  );
 
   const invalidCmpSet = [
     'string random',
@@ -318,7 +327,7 @@ describe('containers/PaymentPages/../UDF/helpers Fn: Supported cmp in option key
     '',
   ];
 
-  it.each(invalidCmpSet, 'all cmp must be invalid.', function (cmp, next) {
+  it.each(invalidCmpSet, 'all cmp must be invalid.', function test(cmp, next) {
     const result = _isSupportedComponent(cmp);
     expect(result).to.eql(false);
 
@@ -328,9 +337,9 @@ describe('containers/PaymentPages/../UDF/helpers Fn: Supported cmp in option key
 
 // -------------------------
 
-describe('containers/PaymentPages/../UDF/helpers Fn: Supported keys in Schema', function () {
+describe('containers/PaymentPages/../UDF/helpers Fn: Supported keys in Schema', function test() {
   // All user selectable fields units must have valid supported keys
-  it.each(flattenFIELD_TYPES(), 'all keys are supported.', function (field, next) {
+  it.each(flattenFIELD_TYPES(), 'all keys are supported.', function test(field, next) {
     const keysMap = Object.keys(field.schema);
 
     const result = _areKeysSupported(keysMap);
@@ -340,7 +349,7 @@ describe('containers/PaymentPages/../UDF/helpers Fn: Supported keys in Schema', 
   });
 
   // All user selectable fields units must have valid supported keys in options
-  it.each(flattenFIELD_TYPES(), 'all options keys are supported.', function (field, next) {
+  it.each(flattenFIELD_TYPES(), 'all options keys are supported.', function test(field, next) {
     const optionsKeysMap = !!field.schema.options && Object.keys(field.schema.options);
 
     const result = _areOptionsKeysSupported(optionsKeysMap);
@@ -372,24 +381,28 @@ describe('containers/PaymentPages/../UDF/helpers Fn: Supported keys in Schema', 
     ],
   ];
 
-  it.each(invalidSchemaKeys, 'all keys are unsupported.', function (keySet, next) {
+  it.each(invalidSchemaKeys, 'all keys are unsupported.', function test(keySet, next) {
     const result = _areKeysSupported(keySet);
     expect(result).to.eql(false);
 
     next();
   });
 
-  it.each(invalidSchemaOptionsKeys, 'all options keys are unsupported.', function (keySet, next) {
-    const result = _areOptionsKeysSupported(keySet);
-    expect(result).to.eql(false);
+  it.each(
+    invalidSchemaOptionsKeys,
+    'all options keys are unsupported.',
+    function test(keySet, next) {
+      const result = _areOptionsKeysSupported(keySet);
+      expect(result).to.eql(false);
 
-    next();
-  });
+      next();
+    },
+  );
 });
 
 // -------------------------
 
-describe('containers/PaymentPages/../UDF/helpers Fn: Validity of Schema', function () {
+describe('containers/PaymentPages/../UDF/helpers Fn: Validity of Schema', function test() {
   // This schema contains exhaustive set of fields units
   const validSchemas = [[]]; // Empty schema is also supported
 
@@ -402,7 +415,7 @@ describe('containers/PaymentPages/../UDF/helpers Fn: Validity of Schema', functi
     const fieldSchema = {
       name: 'test_title',
       title: 'Test title',
-      required: rand ? true : false,
+      required: !!rand,
       description: rand ? 'Test description' : undefined,
       ...fieldsTypes[i].schema,
     };
@@ -410,7 +423,7 @@ describe('containers/PaymentPages/../UDF/helpers Fn: Validity of Schema', functi
     validSchemas.push(fieldSchema);
   }
 
-  it.each(validSchemas, 'all schemas must be valid.', function (schema, next) {
+  it.each(validSchemas, 'all schemas must be valid.', function test(schema, next) {
     const result = validateUISchema(schema);
     expect(result).to.eql(true);
 
@@ -440,6 +453,7 @@ describe('containers/PaymentPages/../UDF/helpers Fn: Validity of Schema', functi
         name: 'test name',
         title: 'test title',
         type: 'string',
+        // eslint-disable-next-line no-dupe-keys
         options: { cmp: 'input', cmp: 'duplicate key' },
       },
     ],
@@ -455,7 +469,7 @@ describe('containers/PaymentPages/../UDF/helpers Fn: Validity of Schema', functi
     [{ name: 'test name', title: 'test title', type: 'unsupported type' }],
   ];
 
-  it.each(invalidSchemas, 'all schemas must be invalid.', function (schema, next) {
+  it.each(invalidSchemas, 'all schemas must be invalid.', function test(schema, next) {
     const result = validateUISchema(schema);
     expect(result).to.eql(false);
 

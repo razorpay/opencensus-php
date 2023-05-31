@@ -24,13 +24,28 @@ class AddUDFButton extends React.PureComponent {
     }
   };
 
+  getOptions = () => {
+    const { isBatchPaymentPages } = this.props;
+    let filteredOptions = getFieldTypes();
+    if (isBatchPaymentPages) {
+      filteredOptions = filteredOptions.filter((option) => {
+        return option.label != 'Primary Reference ID';
+      });
+    }
+    return filteredOptions;
+  };
+
   trackInputField = () => {
     track.wysiwyg.addInputField();
   };
 
   render() {
     return (
-      <UDFDropdown onSelect={this.onSelectFieldType} beforeOptionsTxt="Select Input Type">
+      <UDFDropdown
+        onSelect={this.onSelectFieldType}
+        beforeOptionsTxt="Select Input Type"
+        options={this.getOptions()}
+      >
         <Button.Transparent class="btn-dotted" onClick={this.trackInputField}>
           <span class="enclose-circle icon i-alphabet i-fix-alphabet" />{' '}
           <span>
@@ -45,11 +60,11 @@ class AddUDFButton extends React.PureComponent {
 // eslint-disable-next-line babel/new-cap
 export default CreatorManager(AddUDFButton);
 
-export const UDFDropdown = ({ children, onSelect, selectedOption, beforeOptionsTxt }) => (
+export const UDFDropdown = ({ children, onSelect, selectedOption, beforeOptionsTxt, options }) => (
   <FieldsDropdownWrapper
     beforeOptionsTxt={beforeOptionsTxt}
     type="udf"
-    options={getFieldTypes()}
+    options={options}
     trigger={children}
     onSelect={onSelect}
     selectedOption={selectedOption && selectedOption.label}

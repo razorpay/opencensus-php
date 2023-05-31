@@ -1,12 +1,13 @@
-import CreatorModal from '../CreatorModal';
+import React from 'react';
+import CreatorModal from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/CreatorModal';
 import BaseForm from './BaseForm';
 import AdvancedForm from './AdvancedForm';
 import { ImageCropperModal } from './ImageCropper';
-import FIELD_TYPES from '../Amount/helpers/fieldTypes';
+import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 import {
   isMandatoryToBool,
   mapFieldToAmountFieldType,
-} from '../Amount/helpers';
+} from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
 import { getCurrency } from 'common/ui/Amount';
 import { paiseToRupees } from 'common/utils/rzp-utils';
 
@@ -25,17 +26,16 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
       };
     }
 
-    closeBaseForm = _ => {
+    closeBaseForm = (_) => {
       this.setState(this.initState);
     };
 
-    toggleImageCropper = forceStatus => {
-      this.setState({
+    toggleImageCropper = (forceStatus) => {
+      this.setState((prevState) => ({
+        ...prevState,
         isImageCropperOpened:
-          typeof forceStatus !== 'undefined'
-            ? forceStatus
-            : !this.state.isImageCropperOpened,
-      });
+          typeof forceStatus !== 'undefined' ? forceStatus : !prevState.isImageCropperOpened,
+      }));
     };
 
     componentDidUpdate(prevProps) {
@@ -69,16 +69,15 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
       this.setState(newState);
     };
 
-    toggleAdvancedForm = forcedState => {
-      this.setState({
+    toggleAdvancedForm = (forcedState) => {
+      this.setState((prevState) => ({
+        ...prevState,
         isAdvancedFormOpened:
-          typeof forcedState !== 'undefined'
-            ? forcedState
-            : !this.state.isAdvancedFormOpened,
-      });
+          typeof forcedState !== 'undefined' ? forcedState : !prevState.isAdvancedFormOpened,
+      }));
     };
 
-    onSaveImageForm = imgUrl => {
+    onSaveImageForm = (imgUrl) => {
       // Check whether to remove image or upload image
       const { field } = this.state;
 
@@ -90,7 +89,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
       });
     };
 
-    onUpdateCurrency = currency => {
+    onUpdateCurrency = (currency) => {
       // Updating currency only for this amount item. This is to keep Base form and Advanced form consistent
       this.setState({
         currency,
@@ -98,7 +97,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
     };
 
     // To keep BaseForm and AdvancedForm in sync. Helps in adding default value and validators on min_purchase / min_amount.
-    onChangeIsMandatory = mandatory => {
+    onChangeIsMandatory = (mandatory) => {
       const isMandatory = isMandatoryToBool(mandatory);
       const { fieldType, currency, field } = this.state;
 
@@ -108,9 +107,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
       if (isMandatory) {
         switch (fieldType) {
           case FIELD_TYPES.dynamic_price.key: {
-            const minAmountAllowed = paiseToRupees(
-              getCurrency(currency).min_value
-            ); // Dealing with rupees(bigger currency) in UI. Converted to paisa only when sent to API.
+            const minAmountAllowed = paiseToRupees(getCurrency(currency).min_value); // Dealing with rupees(bigger currency) in UI. Converted to paisa only when sent to API.
 
             if (Number(newField.min_amount) < Number(minAmountAllowed)) {
               newField.min_amount = minAmountAllowed; // Must be at least min payable value as per currency
@@ -126,6 +123,9 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
 
             break;
           }
+
+          default:
+            break;
         }
       }
 
@@ -134,7 +134,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
       });
     };
 
-    onSaveBaseForm = formData => {
+    onSaveBaseForm = (formData) => {
       const { currency, ...restFormData } = formData;
 
       // Combine data from advanced form
@@ -144,10 +144,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
       };
 
       // Update amount item
-      this.props.onSubmitAmountField(
-        combinedFormData,
-        this.props.indexInRenderOrder
-      );
+      this.props.onSubmitAmountField(combinedFormData, this.props.indexInRenderOrder);
 
       // Update currency for payment page entity
       this.props.updateData({
@@ -155,7 +152,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
       });
     };
 
-    onSaveAdvancedForm = formData => {
+    onSaveAdvancedForm = (formData) => {
       const { field } = this.state;
 
       // console.log(formData);
@@ -165,24 +162,15 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
         formData.min_purchase = 0; // Cannot be null (inorder to differentiate field definition from fixed price optional field)
       }
 
-      if (
-        formData.hasOwnProperty('max_purchase') &&
-        !Number(formData.max_purchase)
-      ) {
+      if (formData.hasOwnProperty('max_purchase') && !Number(formData.max_purchase)) {
         formData.max_purchase = null;
       }
 
-      if (
-        formData.hasOwnProperty('min_amount') &&
-        !Number(formData.min_amount)
-      ) {
+      if (formData.hasOwnProperty('min_amount') && !Number(formData.min_amount)) {
         formData.min_amount = null; // Has to be null, not 0 for proper validation at BE
       }
 
-      if (
-        formData.hasOwnProperty('max_amount') &&
-        !Number(formData.max_amount)
-      ) {
+      if (formData.hasOwnProperty('max_amount') && !Number(formData.max_amount)) {
         formData.max_amount = null;
       }
 
@@ -203,6 +191,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
         validateSameTitleExists,
         onDeleteFormItem,
         isPaymentPageEditMode,
+        isBatchPaymentPages,
         ...restProps
       } = this.props;
 
@@ -214,13 +203,14 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
         isAdvancedFormOpened,
         isImageCropperOpened,
       } = this.state;
-
       return (
         <div class="CreatorManager">
+          {/* eslint-disable-next-line react/jsx-pascal-case */}
           <_WrappedDisplayFieldComponent
             field={field}
             openBaseForm={this.openBaseForm}
             currency={currency}
+            isBatchPaymentPages={isBatchPaymentPages}
             {...restProps}
           />
           {isBaseFormOpened && (
@@ -233,12 +223,13 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
               onSaveForm={this.onSaveBaseForm}
               onDeleteFormItem={onDeleteFormItem}
               closeFormModal={this.closeBaseForm}
-              openAdvancedForm={_ => this.toggleAdvancedForm(true)}
-              openImageCropper={_ => this.toggleImageCropper(true)}
+              openAdvancedForm={(_) => this.toggleAdvancedForm(true)}
+              openImageCropper={(_) => this.toggleImageCropper(true)}
               onUpdateImage={this.onSaveImageForm}
               onUpdateCurrency={this.onUpdateCurrency}
               isPaymentPageEditMode={isPaymentPageEditMode}
               onChangeIsMandatory={this.onChangeIsMandatory}
+              isBatchPaymentPages={isBatchPaymentPages}
             />
           )}
 
@@ -248,7 +239,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
               fieldType={fieldType}
               currency={currency}
               onSaveForm={this.onSaveAdvancedForm}
-              closeFormModal={_ => this.toggleAdvancedForm(false)}
+              closeFormModal={(_) => this.toggleAdvancedForm(false)}
             />
           )}
 
@@ -256,7 +247,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
             <ImageCropperModal
               imgUrl={field.image_url}
               onSave={this.onSaveImageForm}
-              closeCropperModal={_ => this.toggleImageCropper(false)}
+              closeCropperModal={(_) => this.toggleImageCropper(false)}
             />
           )}
         </div>
@@ -268,7 +259,7 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
 }
 
 class BaseFormModal extends React.PureComponent {
-  onSaveForm = formData => {
+  onSaveForm = (formData) => {
     this.props.onSaveForm(formData);
     this.props.closeFormModal();
   };
@@ -292,6 +283,7 @@ class BaseFormModal extends React.PureComponent {
       onUpdateCurrency,
       onChangeIsMandatory,
       isPaymentPageEditMode,
+      isBatchPaymentPages,
     } = this.props;
 
     return (
@@ -311,6 +303,7 @@ class BaseFormModal extends React.PureComponent {
           currency={currency}
           isPaymentPageEditMode={isPaymentPageEditMode}
           onChangeIsMandatory={onChangeIsMandatory}
+          isBatchPaymentPages={isBatchPaymentPages}
         />
       </CreatorModal>
     );

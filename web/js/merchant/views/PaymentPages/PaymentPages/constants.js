@@ -4,3 +4,5 @@ export const MAX_ROWS = 50000;
 export const MAX_FILE_SIZE = 60457280; // 60MB
 export const BATCH_UPLOAD_DOC_URL = 'https://razorpay.com/docs/payment-links/batch-upload/';
 export const BATCH_TYPE = 'payment_page';
+export const BATCH_UPLOAD_MSG = 'To be filled in the batch upload file';
+export const FILLED_BY_CUSTOMER = 'To be filled by customer';

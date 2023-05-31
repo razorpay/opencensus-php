@@ -9,6 +9,7 @@ import {
   getBaseFieldForAmountFieldType,
 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
 import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
+import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 
 class AddAmountButton extends React.PureComponent {
   onSelectFieldType = (fieldType) => {
@@ -23,11 +24,29 @@ class AddAmountButton extends React.PureComponent {
   };
 
   onClickPriceField = () => {
+    const { isBatchPaymentPages } = this.props;
     track.wysiwyg.addPriceField();
+    // If "Batch Payment Pages flow then don't allow to select input fileds. By defalut dynamic price filed should be selected"
+    if (isBatchPaymentPages) {
+      const option = FIELD_TYPES.dynamic_price;
+      this.onSelectFieldType(option);
+    }
   };
 
   render() {
-    const { hideDynamicPriceField } = this.props;
+    const { hideDynamicPriceField, isBatchPaymentPages } = this.props;
+    if (isBatchPaymentPages) {
+      return (
+        <Button.Transparent className="btn-dotted" onClick={this.onClickPriceField}>
+          <span className="enclose-circle">
+            <b>₹</b>
+          </span>{' '}
+          <span>
+            <b>Price field</b>
+          </span>
+        </Button.Transparent>
+      );
+    }
     return (
       <AmountDropdown
         onSelect={this.onSelectFieldType}
