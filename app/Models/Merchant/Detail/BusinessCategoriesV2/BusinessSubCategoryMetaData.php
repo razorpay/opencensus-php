@@ -62,7 +62,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::ACCOUNTING                    => [
             Merchant::CATEGORY                      => '8931',
@@ -82,7 +82,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::AD_AND_MARKETING              => [
             Merchant::CATEGORY                      => '7311',
@@ -102,7 +102,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::AGRICULTURE                   => [
             Merchant::CATEGORY                      => '5193',
@@ -122,7 +122,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::ALCOHOL                       => [
             Merchant::CATEGORY                      => '5813',
@@ -142,7 +142,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::ARTS_AND_COLLECTIBLES         => [
             Merchant::CATEGORY                      => '5971',
@@ -162,7 +162,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::AVIATION                      => [
             Merchant::CATEGORY                      => '4511',
@@ -182,7 +182,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::BABY_PRODUCTS                 => [
             Merchant::CATEGORY                      => '5945',
@@ -222,7 +222,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::BILL_AND_RECHARGE_AGGREGATORS => [
             Merchant::CATEGORY                      => '4814',
@@ -242,7 +242,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::BOOKS                         => [
             Merchant::CATEGORY                      => '5942',
@@ -262,7 +262,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::BROADBAND                     => [
             Merchant::CATEGORY                      => '4899',
@@ -282,7 +282,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+             self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::BUS                           => [
             Merchant::CATEGORY                      => '4131',
@@ -302,7 +302,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::CABLE                         => [
             Merchant::CATEGORY                      => '4899',
@@ -322,7 +322,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::CAB_HAILING                   => [
             Merchant::CATEGORY                      => '4121',
@@ -342,7 +342,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::CATERING                      => [
             Merchant::CATEGORY                      => '5811',
@@ -362,7 +362,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::CENTRAL                       => [
             Merchant::CATEGORY                      => '9399',
@@ -382,7 +382,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::CHARITY                       => [
             Merchant::CATEGORY                      => '8398',
@@ -402,7 +402,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::CLINIC                        => [
             Merchant::CATEGORY                      => '8062',
@@ -422,7 +422,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::COACHING                      => [
             Merchant::CATEGORY                      => '8299',
@@ -442,7 +442,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::COLLEGE                       => [
             Merchant::CATEGORY                      => '8220',
@@ -462,7 +462,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::COMMODITIES                   => [
             Merchant::CATEGORY                      => '6211',
@@ -482,7 +482,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::CONSULTING                    => [
             Merchant::CATEGORY                      => '7392',
@@ -502,7 +502,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::CONSULTING_AND_OUTSOURCING    => [
             Merchant::CATEGORY                      => '7392',
@@ -522,7 +522,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::CONTENT_AND_PUBLISHING        => [
             Merchant::CATEGORY                      => '2741',
@@ -542,7 +542,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::COOPERATIVES                  => [
             Merchant::CATEGORY                      => '6012',
@@ -562,7 +562,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::COUPONS                       => [
             Merchant::CATEGORY                      => '7311',
@@ -582,7 +582,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::COURIER                       => [
             Merchant::CATEGORY                      => '4215',
@@ -602,7 +602,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::COWORKING                     => [
             Merchant::CATEGORY                      => '6513',
@@ -622,7 +622,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::CROWDFUNDING                  => [
             Merchant::CATEGORY                      => '6050',
@@ -642,7 +642,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::CRYPTOCURRENCY                => [
             Merchant::CATEGORY                      => '6051',
@@ -662,7 +662,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::CRYPTO_MACHINERY              => [
             Merchant::CATEGORY                      => '5999',
@@ -682,7 +682,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::DAY_CARE                      => [
             Merchant::CATEGORY                      => '8351',
@@ -702,7 +702,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::DEVELOPER                     => [
             Merchant::CATEGORY                      => '6513',
@@ -722,7 +722,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::DIETICIAN                     => [
             Merchant::CATEGORY                      => '7298',
@@ -742,7 +742,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::DISTANCE_LEARNING             => [
             Merchant::CATEGORY                      => '8299',
@@ -762,7 +762,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::DISTRIBUTION                  => [
             Merchant::CATEGORY                      => '4214',
@@ -782,7 +782,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::DROP_SHIPPING                 => [
             Merchant::CATEGORY                      => '5399',
@@ -802,7 +802,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::DTH                           => [
             Merchant::CATEGORY                      => '4899',
@@ -822,7 +822,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::ECOMMERCE_MARKETPLACE         => [
             Merchant::CATEGORY                      => '5399',
@@ -842,7 +842,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::EDUCATIONAL                   => [
             Merchant::CATEGORY                      => '8398',
@@ -862,7 +862,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::ELEARNING                     => [
             Merchant::CATEGORY                      => '8299',
@@ -882,7 +882,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::ELECTRICITY                   => [
             Merchant::CATEGORY                      => '4900',
@@ -902,7 +902,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::ELECTRONICS_AND_FURNITURE     => [
             Merchant::CATEGORY                      => '5732',
@@ -942,7 +942,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::ESPORTS                       => [
             Merchant::CATEGORY                      => '5816',
@@ -962,7 +962,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::EVENT_PLANNING                => [
             Merchant::CATEGORY                      => '8999',
@@ -982,7 +982,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::FACILITY_MANAGEMENT           => [
             Merchant::CATEGORY                      => '7349',
@@ -1002,7 +1002,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::FANTASY_SPORTS                => [
             Merchant::CATEGORY                      => '5816',
@@ -1022,7 +1022,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::FASHION_AND_LIFESTYLE         => [
             Merchant::CATEGORY                      => '5691',
@@ -1062,7 +1062,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::FITNESS                       => [
             Merchant::CATEGORY                      => '7298',
@@ -1082,7 +1082,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::FOOD_COURT                    => [
             Merchant::CATEGORY                      => '5814',
@@ -1102,7 +1102,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::FOREX                         => [
             Merchant::CATEGORY                      => '6010',
@@ -1122,7 +1122,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::FREIGHT                       => [
             Merchant::CATEGORY                      => '4214',
@@ -1142,7 +1142,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::GAME_DEVELOPER                => [
             Merchant::CATEGORY                      => '5816',
@@ -1162,7 +1162,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::GAMING_MARKETPLACE            => [
             Merchant::CATEGORY                      => '5816',
@@ -1182,7 +1182,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::GAS                           => [
             Merchant::CATEGORY                      => '4900',
@@ -1202,7 +1202,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::GET_RICH_SCHEMES              => [
             Merchant::CATEGORY                      => '7361',
@@ -1222,7 +1222,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::GIFTING                       => [
             Merchant::CATEGORY                      => '5193',
@@ -1242,7 +1242,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::GROCERY                       => [
             Merchant::CATEGORY                      => '5411',
@@ -1262,7 +1262,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::HEALTH_COACHING               => [
             Merchant::CATEGORY                      => '7298',
@@ -1282,7 +1282,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::HEALTH_PRODUCTS               => [
             Merchant::CATEGORY                      => '5499',
@@ -1302,7 +1302,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::HEALTHCARE_MARKETPLACE        => [
             Merchant::CATEGORY                      => '5399',
@@ -1322,7 +1322,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::HOSPITAL                      => [
             Merchant::CATEGORY                      => '8062',
@@ -1342,7 +1342,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::IAAS                          => [
             Merchant::CATEGORY                      => '5817',
@@ -1362,7 +1362,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::INSURANCE                     => [
             Merchant::CATEGORY                      => '6300',
@@ -1382,7 +1382,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::INTERIOR_DESIGN_AND_ARCHITECT => [
             Merchant::CATEGORY                      => '8911',
@@ -1402,7 +1402,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::INTERNET_PROVIDER             => [
             Merchant::CATEGORY                      => '4816',
@@ -1422,7 +1422,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::LAB                           => [
             Merchant::CATEGORY                      => '8071',
@@ -1442,7 +1442,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::LEGAL                         => [
             Merchant::CATEGORY                      => '8111',
@@ -1462,7 +1462,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::LENDING                       => [
             Merchant::CATEGORY                      => '6012',
@@ -1482,7 +1482,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::MATCHMAKING                   => [
             Merchant::CATEGORY                      => '7273',
@@ -1502,7 +1502,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::MESSAGING                     => [
             Merchant::CATEGORY                      => '4821',
@@ -1522,7 +1522,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::MOVERS_AND_PACKERS            => [
             Merchant::CATEGORY                      => '4214',
@@ -1542,7 +1542,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::MULTI_LEVEL_MARKETING         => [
             Merchant::CATEGORY                      => '5964',
@@ -1562,7 +1562,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::MULTIPLEX                     => [
             Merchant::CATEGORY                      => '7832',
@@ -1582,7 +1582,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::MUSIC_STREAMING               => [
             Merchant::CATEGORY                      => '5815',
@@ -1602,7 +1602,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::MUTUAL_FUND                   => [
             Merchant::CATEGORY                      => '6211',
@@ -1622,7 +1622,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::NBFC                          => [
             Merchant::CATEGORY                      => '6012',
@@ -1642,7 +1642,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::NEIGHBOURHOOD_NETWORK         => [
             Merchant::CATEGORY                      => '8699',
@@ -1662,7 +1662,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::NEWS                          => [
             Merchant::CATEGORY                      => '5994',
@@ -1682,7 +1682,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::OFFICE_SUPPLIES               => [
             Merchant::CATEGORY                      => '5111',
@@ -1702,7 +1702,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::ONLINE_CASINO                 => [
             Merchant::CATEGORY                      => '7801',
@@ -1722,7 +1722,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::ONLINE_FOOD_ORDERING          => [
             Merchant::CATEGORY                      => '5811',
@@ -1742,7 +1742,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::OTA                           => [
             Merchant::CATEGORY                      => '4722',
@@ -1762,7 +1762,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::PAAS                          => [
             Merchant::CATEGORY                      => '5817',
@@ -1782,7 +1782,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::PENSION_FUND                  => [
             Merchant::CATEGORY                      => '6012',
@@ -1802,7 +1802,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::PERSONAL                      => [
             Merchant::CATEGORY                      => '8398',
@@ -1822,7 +1822,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::PROFESSIONAL_COURSES          => [
             Merchant::CATEGORY                      => '8299',
@@ -1842,7 +1842,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::PET_PRODUCTS                  => [
             Merchant::CATEGORY                      => '5995',
@@ -1862,7 +1862,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::PHARMACY                      => [
             Merchant::CATEGORY                      => '5912',
@@ -1882,7 +1882,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::PROFESSIONAL_NETWORK          => [
             Merchant::CATEGORY                      => '8699',
@@ -1902,7 +1902,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::REALESTATE_CLASSIFIEDS        => [
             Merchant::CATEGORY                      => '6513',
@@ -1922,7 +1922,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::RELIGIOUS                     => [
             Merchant::CATEGORY                      => '8661',
@@ -1942,7 +1942,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::RELIGIOUS_PRODUCTS            => [
             Merchant::CATEGORY                      => '5973',
@@ -1962,7 +1962,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::RENTAL                        => [
             Merchant::CATEGORY                      => '7394',
@@ -1982,7 +1982,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::REPAIR_AND_CLEANING           => [
             Merchant::CATEGORY                      => '7531',
@@ -2002,7 +2002,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::RESTAURANT                    => [
             Merchant::CATEGORY                      => '5812',
@@ -2022,7 +2022,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::RESTAURANT_SEARCH_AND_BOOKING => [
             Merchant::CATEGORY                      => '7299',
@@ -2042,7 +2042,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::RWA                           => [
             Merchant::CATEGORY                      => '7349',
@@ -2062,7 +2062,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::SAAS                          => [
             Merchant::CATEGORY                      => '5817',
@@ -2082,7 +2082,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::SCHOOLS                       => [
             Merchant::CATEGORY                      => '8211',
@@ -2102,7 +2102,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::SECURITIES                    => [
             Merchant::CATEGORY                      => '6211',
@@ -2122,7 +2122,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::SERVICE_CENTRE                => [
             Merchant::CATEGORY                      => '5511',
@@ -2142,7 +2142,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::SERVICES_CLASSIFIEDS          => [
             Merchant::CATEGORY                      => '7311',
@@ -2162,7 +2162,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::SEXUAL_WELLNESS_PRODUCTS      => [
             Merchant::CATEGORY                      => '5999',
@@ -2182,7 +2182,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::SOCIAL_NETWORK                => [
             Merchant::CATEGORY                      => '8641',
@@ -2202,7 +2202,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::SPACE_RENTAL                  => [
             Merchant::CATEGORY                      => '6513',
@@ -2222,7 +2222,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::SPORTS_PRODUCTS               => [
             Merchant::CATEGORY                      => '5941',
@@ -2262,7 +2262,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::TECHNICAL_SUPPORT             => [
             Merchant::CATEGORY                      => '7379',
@@ -2282,7 +2282,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::TELECOM                       => [
             Merchant::CATEGORY                      => '4814',
@@ -2302,7 +2302,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::TICKETING                     => [
             Merchant::CATEGORY                      => '7832',
@@ -2322,7 +2322,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::TOBACCO                       => [
             Merchant::CATEGORY                      => '5993',
@@ -2342,7 +2342,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::TRADING                       => [
             Merchant::CATEGORY                      => '6211',
@@ -2362,7 +2362,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::TRAIN_AND_METRO               => [
             Merchant::CATEGORY                      => '4112',
@@ -2382,7 +2382,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::TRAVEL_AGENCY                 => [
             Merchant::CATEGORY                      => '4722',
@@ -2402,7 +2402,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::UNIVERSITY                    => [
             Merchant::CATEGORY                      => '8220',
@@ -2422,7 +2422,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::VIDEO_ON_DEMAND               => [
             Merchant::CATEGORY                      => '5815',
@@ -2442,7 +2442,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::WATER                         => [
             Merchant::CATEGORY                      => '4900',
@@ -2462,7 +2462,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::WAREHOUSING                   => [
             Merchant::CATEGORY                      => '4225',
@@ -2482,7 +2482,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::WEAPONS_AND_AMMUNITIONS       => [
             Merchant::CATEGORY                      => '5999',
@@ -2502,7 +2502,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::WEB_DEVELOPMENT                      => [
             Merchant::CATEGORY                      => '7372',
@@ -2522,7 +2522,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::COMPUTER_PROGRAMMING_DATA_PROCESSING => [
             Merchant::CATEGORY                      => '7372',
@@ -2542,7 +2542,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::WHOLESALE                     => [
             Merchant::CATEGORY                      => '5300',
@@ -2562,7 +2562,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
 
         // new business subcategory and mcc mapping
@@ -2584,7 +2584,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::STAMPS_AND_COINS_STORES                            => [
             Merchant::CATEGORY                      => '5972',
@@ -2604,7 +2604,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::AUTOMOBILE_PARTS_AND_EQUIPEMENTS                   => [
             Merchant::CATEGORY                      => '5013',
@@ -2624,7 +2624,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::VOCATIONAL_AND_TRADE_SCHOOLS                       => [
             Merchant::CATEGORY                      => '8249',
@@ -2644,7 +2644,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::SPORTING_CLUBS                                     => [
             Merchant::CATEGORY                      => '7941',
@@ -2664,7 +2664,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::ARCHITECTURAL_SERVICES                             => [
             Merchant::CATEGORY                      => '0780',
@@ -2684,7 +2684,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::CAR_WASHES                                         => [
             Merchant::CATEGORY                      => '7542',
@@ -2704,7 +2704,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::OFFICE_EQUIPMENT                                   => [
             Merchant::CATEGORY                      => '5044',
@@ -2724,7 +2724,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::MOTOR_HOME_RENTALS                                 => [
             Merchant::CATEGORY                      => '7519',
@@ -2744,7 +2744,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::GARDEN_SUPPLY_STORES                               => [
             Merchant::CATEGORY                      => '5261',
@@ -2764,7 +2764,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::HOUSEHOLD_APPLIANCE_STORES                         => [
             Merchant::CATEGORY                      => '5722',
@@ -2784,7 +2784,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::DAIRY_PRODUCTS                                     => [
             Merchant::CATEGORY                      => '5451',
@@ -2804,7 +2804,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::NON_DURABLE_GOODS                                  => [
             Merchant::CATEGORY                      => '5199',
@@ -2824,7 +2824,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::ELECTRICAL_PARTS_AND_EQUIPMENT                     => [
             Merchant::CATEGORY                      => '5065',
@@ -2844,7 +2844,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::BAKERIES                                           => [
             Merchant::CATEGORY                      => '5462',
@@ -2864,7 +2864,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::STENOGRAPHIC_AND_SECRETARIAL_SUPPORT_SERVICES      => [
             Merchant::CATEGORY                      => '7339',
@@ -2884,7 +2884,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::CHIROPRACTORS                                      => [
             Merchant::CATEGORY                      => '8041',
@@ -2904,7 +2904,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::WIG_AND_TOUPEE_SHOPS                               => [
             Merchant::CATEGORY                      => '5698',
@@ -2924,7 +2924,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::GIFT_NOVELTY_AND_SOUVENIR_SHOPS                    => [
             Merchant::CATEGORY                      => '5947',
@@ -2944,7 +2944,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::AUTOMOTIVE_SERVICE_SHOPS                           => [
             Merchant::CATEGORY                      => '7538',
@@ -2964,7 +2964,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::SHOE_REPAIR_SHOPS                                  => [
             Merchant::CATEGORY                      => '7251',
@@ -2984,7 +2984,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::TELECOMMUNICATION_SERVICE                          => [
             Merchant::CATEGORY                      => '4813',
@@ -3004,7 +3004,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::DUTY_FREE_STORES                                   => [
             Merchant::CATEGORY                      => '5309',
@@ -3024,7 +3024,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::FINES                                              => [
             Merchant::CATEGORY                      => '9222',
@@ -3044,7 +3044,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::CRUISE_LINES                                       => [
             Merchant::CATEGORY                      => '4411',
@@ -3064,7 +3064,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::OFFICE_AND_COMMERCIAL_FURNITURE                    => [
             Merchant::CATEGORY                      => '5021',
@@ -3084,7 +3084,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::DANCE_HALLS_STUDIOS_AND_SCHOOLS                    => [
             Merchant::CATEGORY                      => '7911',
@@ -3104,7 +3104,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::SECURITY_AGENCIES                                  => [
             Merchant::CATEGORY                      => '7393',
@@ -3124,7 +3124,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::TYPE_SETTING_AND_ENGRAVING_SERVICES                => [
             Merchant::CATEGORY                      => '2791',
@@ -3144,7 +3144,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::DRY_GOODS                                          => [
             Merchant::CATEGORY                      => '5131',
@@ -3164,7 +3164,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::BOOKS_AND_PUBLICATIONS                             => [
             Merchant::CATEGORY                      => '5942',
@@ -3184,7 +3184,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::SMALL_APPLIANCE_REPAIR_SHOPS                       => [
             Merchant::CATEGORY                      => '7629',
@@ -3204,7 +3204,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::PHOTOGRAPHY_LABS                                   => [
             Merchant::CATEGORY                      => '7395',
@@ -3224,7 +3224,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::CAMERA_AND_PHOTOGRAPHIC_STORES                     => [
             Merchant::CATEGORY                      => '5946',
@@ -3244,7 +3244,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::DRY_CLEANERS                                       => [
             Merchant::CATEGORY                      => '7216',
@@ -3264,7 +3264,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::ELECTRONIC_REPAIR_SHOPS                            => [
             Merchant::CATEGORY                      => '7622',
@@ -3284,7 +3284,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::VIDEO_GAME_ARCADES                                 => [
             Merchant::CATEGORY                      => '7994',
@@ -3304,7 +3304,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::MEAT_SUPPLY_STORES                                 => [
             Merchant::CATEGORY                      => '5422',
@@ -3324,7 +3324,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::LEATHER_GOODS_AND_LUGGAGE                          => [
             Merchant::CATEGORY                      => '5948',
@@ -3344,7 +3344,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::CLEANING_AND_SANITATION_SERVICES                   => [
             Merchant::CATEGORY                      => '2842',
@@ -3364,7 +3364,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::SNOWMOBILE_DEALERS                                 => [
             Merchant::CATEGORY                      => '5598',
@@ -3384,7 +3384,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::VIDEO_TAPE_PRODUCTION_AND_DISTRIBUTION             => [
             Merchant::CATEGORY                      => '7829',
@@ -3404,7 +3404,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::OSTEOPATHS                                         => [
             Merchant::CATEGORY                      => '8031',
@@ -3424,7 +3424,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::MEN_AND_BOYS_CLOTHING_STORES                       => [
             Merchant::CATEGORY                      => '5611',
@@ -3444,7 +3444,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::NURSING_CARE_FACILITIES                            => [
             Merchant::CATEGORY                      => '8050',
@@ -3464,7 +3464,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::DIRECT_MARKETING                                   => [
             Merchant::CATEGORY                      => '5969',
@@ -3484,7 +3484,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::AUTOMOBILE_ASSOCIATIONS_AND_CLUBS                  => [
             Merchant::CATEGORY                      => '8675',
@@ -3504,7 +3504,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::VETERINARY_SERVICES                                => [
             Merchant::CATEGORY                      => '0742',
@@ -3524,7 +3524,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::PAINT_SUPPLY_STORES                                => [
             Merchant::CATEGORY                      => '5198',
@@ -3544,7 +3544,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::AFFLIATED_AUTO_RENTAL                              => [
             Merchant::CATEGORY                      => '3351',
@@ -3564,7 +3564,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::ALIMONY_AND_CHILD_SUPPORT                          => [
             Merchant::CATEGORY                      => '9211',
@@ -3584,7 +3584,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::AIRPORT_FLYING_FIELDS                              => [
             Merchant::CATEGORY                      => '4582',
@@ -3604,7 +3604,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::TIRE_RETREADING_AND_REPAIR_SHOPS                   => [
             Merchant::CATEGORY                      => '7534',
@@ -3624,7 +3624,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::TELEVISION_CABLE_SERVICES                          => [
             Merchant::CATEGORY                      => '4899',
@@ -3644,7 +3644,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::RECREATIONAL_AND_SPORTING_CAMPS                    => [
             Merchant::CATEGORY                      => '7032',
@@ -3664,7 +3664,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::AUTOMOTIVE_PARTS                                   => [
             Merchant::CATEGORY                      => '5533',
@@ -3684,7 +3684,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::JEWELLERY_AND_WATCH_STORES                         => [
             Merchant::CATEGORY                      => '5094',
@@ -3704,7 +3704,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::AUTO_STORE_HOME_SUPPLY_STORES                      => [
             Merchant::CATEGORY                      => '5531',
@@ -3724,7 +3724,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::TENT_STORES                                        => [
             Merchant::CATEGORY                      => '5998',
@@ -3744,7 +3744,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::MEDICAL_EQUIPMENT_AND_SUPPLY_STORES                => [
             Merchant::CATEGORY                      => '5047',
@@ -3764,7 +3764,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::AGRICULTURAL_COOPERATIVES                          => [
             Merchant::CATEGORY                      => '0763',
@@ -3784,7 +3784,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::PETROLEUM_AND_PETROLEUM_PRODUCTS                   => [
             Merchant::CATEGORY                      => '5172',
@@ -3804,7 +3804,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::DEPARTMENT_STORES                                  => [
             Merchant::CATEGORY                      => '5311',
@@ -3824,7 +3824,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::SHOE_STORES_RETAIL                                 => [
             Merchant::CATEGORY                      => '5661',
@@ -3844,7 +3844,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::CARPENTRY_CONTRACTORS                              => [
             Merchant::CATEGORY                      => '1750',
@@ -3864,7 +3864,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::MONEYSEND_FUNDING                                  => [
             Merchant::CATEGORY                      => '6538',
@@ -3884,7 +3884,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::WRECKING_AND_SALVAGING_SERVICES                    => [
             Merchant::CATEGORY                      => '5935',
@@ -3904,7 +3904,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::AUTOMOBILE_TOWING_SERVICES                         => [
             Merchant::CATEGORY                      => '7549',
@@ -3924,7 +3924,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::POLITICAL_ORGANIZATIONS                            => [
             Merchant::CATEGORY                      => '8651',
@@ -3944,7 +3944,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::AUTOMOTIVE_TIRE_STORES                             => [
             Merchant::CATEGORY                      => '5532',
@@ -3964,7 +3964,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::BARBER_AND_BEAUTY_SHOPS                            => [
             Merchant::CATEGORY                      => '7230',
@@ -3984,7 +3984,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::SPORT_APPAREL_STORES                               => [
             Merchant::CATEGORY                      => '5655',
@@ -4004,7 +4004,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::VIDEO_TAPE_RENTAL_STORES                           => [
             Merchant::CATEGORY                      => '7841',
@@ -4024,7 +4024,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::DRUG_STORES                                        => [
             Merchant::CATEGORY                      => '5122',
@@ -4044,7 +4044,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::GOLF_COURSES                                       => [
             Merchant::CATEGORY                      => '7992',
@@ -4064,7 +4064,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::MISCELLANEOUS_REPAIR_SHOPS                         => [
             Merchant::CATEGORY                      => '7699',
@@ -4084,7 +4084,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::MOTOR_HOMES_AND_PARTS                              => [
             Merchant::CATEGORY                      => '5592',
@@ -4104,7 +4104,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::DEBT_MARRIAGE_PERSONAL_COUNSELING_SERVICE          => [
             Merchant::CATEGORY                      => '7277',
@@ -4124,7 +4124,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::CHEMICALS_AND_ALLIED_PRODUCTS                      => [
             Merchant::CATEGORY                      => '5169',
@@ -4144,7 +4144,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::FIREPLACE_PARTS_AND_ACCESSORIES                    => [
             Merchant::CATEGORY                      => '5718',
@@ -4164,7 +4164,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::COMMERCIAL_EQUIPMENTS                              => [
             Merchant::CATEGORY                      => '5046',
@@ -4184,7 +4184,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::AIR_CONDITIONING_AND_REFRIGERATION_REPAIR_SHOPS    => [
             Merchant::CATEGORY                      => '7623',
@@ -4204,7 +4204,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::FAMILY_CLOTHING_STORES                             => [
             Merchant::CATEGORY                      => '5651',
@@ -4224,7 +4224,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::TAILORS                                            => [
             Merchant::CATEGORY                      => '5697',
@@ -4244,7 +4244,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::FABRIC_AND_SEWING_STORES                           => [
             Merchant::CATEGORY                      => '5949',
@@ -4264,7 +4264,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::CAMPER_RECREATIONAL_AND_UTILITY_TRAILER_DEALERS    => [
             Merchant::CATEGORY                      => '5561',
@@ -4284,7 +4284,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::TOURIST_ATTRACTIONS_AND_EXHIBITS                   => [
             Merchant::CATEGORY                      => '7991',
@@ -4304,7 +4304,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::RECORD_SHOPS                                       => [
             Merchant::CATEGORY                      => '5735',
@@ -4324,7 +4324,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::HOME_SUPPLY_WAREHOUSE                              => [
             Merchant::CATEGORY                      => '5200',
@@ -4344,7 +4344,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::CLOCKS_AND_SILVERWARE_STORES                       => [
             Merchant::CATEGORY                      => '5944',
@@ -4364,7 +4364,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::ART_SUPPLY_STORES                                  => [
             Merchant::CATEGORY                      => '5970',
@@ -4384,7 +4384,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::MASSAGE_PARLORS                                    => [
             Merchant::CATEGORY                      => '7297',
@@ -4404,7 +4404,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::HORSE_OR_DOG_RACING                                => [
             Merchant::CATEGORY                      => '7802',
@@ -4424,7 +4424,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::CREDIT_REPORTING_AGENCIES                          => [
             Merchant::CATEGORY                      => '7321',
@@ -4444,7 +4444,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::PAWN_SHOPS                                         => [
             Merchant::CATEGORY                      => '5933',
@@ -4464,7 +4464,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::PARKING_LOTS_AND_GARAGES                           => [
             Merchant::CATEGORY                      => '7523',
@@ -4484,7 +4484,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::SCHOOL_SUPPLIES_AND_STATIONERY                     => [
             Merchant::CATEGORY                      => '5943',
@@ -4504,7 +4504,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::HEATING_AND_PLUMBING_CONTRACTORS                   => [
             Merchant::CATEGORY                      => '1711',
@@ -4524,7 +4524,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::AQUARIUMS_DOLPHINARIUMS_AND_SEAQUARIUMS            => [
             Merchant::CATEGORY                      => '7998',
@@ -4544,7 +4544,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::ELECTRICAL_CONTRACTORS                             => [
             Merchant::CATEGORY                      => '1731',
@@ -4564,7 +4564,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::WIRE_TRANSFERS_AND_MONEY_ORDERS                    => [
             Merchant::CATEGORY                      => '4829',
@@ -4584,7 +4584,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::CARPET_AND_UPHOLSTERY_CLEANING_SERVICES            => [
             Merchant::CATEGORY                      => '7217',
@@ -4604,7 +4604,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::OPTICIANS_OPTICAL_GOODS_AND_EYEGLASSE_STORES       => [
             Merchant::CATEGORY                      => '8043',
@@ -4624,7 +4624,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::WATCH_AND_JEWELLERY_REPAIR_STORES                  => [
             Merchant::CATEGORY                      => '7631',
@@ -4644,7 +4644,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::WHOLESALE_FOOTWEAR_STORES                          => [
             Merchant::CATEGORY                      => '5139',
@@ -4684,7 +4684,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::ROOFING_AND_METAL_WORK_CONTRACTORS                 => [
             Merchant::CATEGORY                      => '1761',
@@ -4704,7 +4704,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::INTERNET_SERVICE_PROVIDERS                         => [
             Merchant::CATEGORY                      => '4816',
@@ -4724,7 +4724,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::PLUMBING_AND_HEATING_EQUIPMENT                     => [
             Merchant::CATEGORY                      => '5074',
@@ -4744,7 +4744,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::VARIETY_STORES                                     => [
             Merchant::CATEGORY                      => '5331',
@@ -4764,7 +4764,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::LIQUOR_STORES                                      => [
             Merchant::CATEGORY                      => '5921',
@@ -4784,7 +4784,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::BOAT_DEALERS                                       => [
             Merchant::CATEGORY                      => '5551',
@@ -4804,7 +4804,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::LAUNDRY_SERVICES                                   => [
             Merchant::CATEGORY                      => '7210',
@@ -4824,7 +4824,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::RECREATIONAL_CAMPS                                 => [
             Merchant::CATEGORY                      => '7033',
@@ -4844,7 +4844,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::PODIATRISTS_AND_CHIROPODISTS                       => [
             Merchant::CATEGORY                      => '8049',
@@ -4864,7 +4864,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::TAX_PREPARATION_SERVICES                           => [
             Merchant::CATEGORY                      => '7276',
@@ -4884,7 +4884,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::COSMETIC_STORES                                    => [
             Merchant::CATEGORY                      => '5977',
@@ -4924,7 +4924,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::BRIDGE_AND_ROAD_TOLLS                              => [
             Merchant::CATEGORY                      => '4784',
@@ -4944,7 +4944,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::TELECOMMUNICATION_EQUIPMENT_STORES                 => [
             Merchant::CATEGORY                      => '4812',
@@ -4964,7 +4964,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::WOMEN_CLOTHING                                     => [
             Merchant::CATEGORY                      => '5621',
@@ -4984,7 +4984,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::FLORISTS                                           => [
             Merchant::CATEGORY                      => '5992',
@@ -5004,7 +5004,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::COMMERCIAL_PHOTOGRAPHY_AND_GRAPHIC_DESIGN_SERVICES => [
             Merchant::CATEGORY                      => '7333',
@@ -5024,7 +5024,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::BUILDING_MATRIAL_STORES                            => [
             Merchant::CATEGORY                      => '5211',
@@ -5044,7 +5044,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::CANDY_NUT_CONFECTIONERY_SHOPS                      => [
             Merchant::CATEGORY                      => '5441',
@@ -5064,7 +5064,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::TIMESHARES                                         => [
             Merchant::CATEGORY                      => '7012',
@@ -5084,7 +5084,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::MASONRY_CONTRACTORS                                => [
             Merchant::CATEGORY                      => '1740',
@@ -5104,7 +5104,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::EXTERMINATING_AND_DISINFECTING_SERVICES            => [
             Merchant::CATEGORY                      => '7342',
@@ -5124,7 +5124,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::GLASS_AND_WALLPAPER_STORES                         => [
             Merchant::CATEGORY                      => '5231',
@@ -5144,7 +5144,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::VIDEO_GAME_SUPPLY_STORES                           => [
             Merchant::CATEGORY                      => '7993',
@@ -5164,7 +5164,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::AMBULANCE_SERVICES                                 => [
             Merchant::CATEGORY                      => '4119',
@@ -5184,7 +5184,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::FUNERAL_SERVICES_AND_CREMATORIES                   => [
             Merchant::CATEGORY                      => '7261',
@@ -5204,7 +5204,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::BOWLING_ALLEYS                                     => [
             Merchant::CATEGORY                      => '7933',
@@ -5224,7 +5224,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::METAL_SERVICE_CENTRES                              => [
             Merchant::CATEGORY                      => '5051',
@@ -5244,7 +5244,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::COPYING_AND_BLUEPRINTING_SERVICES                  => [
             Merchant::CATEGORY                      => '7338',
@@ -5264,7 +5264,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::DRAPERY_AND_WINDOW_COVERINGS_STORES                => [
             Merchant::CATEGORY                      => '5714',
@@ -5284,7 +5284,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::UNIFORMS_AND_COMMERCIAL_CLOTHING_STORES            => [
             Merchant::CATEGORY                      => '5137',
@@ -5304,7 +5304,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::AUTOMOTIVE_PAINT_SHOPS                             => [
             Merchant::CATEGORY                      => '7535',
@@ -5324,7 +5324,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::DURABLE_GOODS_STORES                               => [
             Merchant::CATEGORY                      => '5099',
@@ -5344,7 +5344,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::FUR_SHOPS                                          => [
             Merchant::CATEGORY                      => '5681',
@@ -5364,7 +5364,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::INDUSTRIAL_SUPPLIES                                => [
             Merchant::CATEGORY                      => '5085',
@@ -5384,7 +5384,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::MOTORCYCLE_SHOPS_AND_DEALERS                       => [
             Merchant::CATEGORY                      => '5571',
@@ -5404,7 +5404,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::CHILDREN_AND_INFANTS_WEAR_STORES                   => [
             Merchant::CATEGORY                      => '5641',
@@ -5424,7 +5424,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::CORRESPONDENCE_SCHOOLS                             => [
             Merchant::CATEGORY                      => '8241',
@@ -5444,7 +5444,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::AUTOMOBILE_RENTALS                                  => [
             Merchant::CATEGORY                      => '7512',
@@ -5464,7 +5464,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::FREIGHT_TRANSPORT                                  => [
             Merchant::CATEGORY                      => '4011',
@@ -5484,7 +5484,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::FUEL_DISPENSERS                                    => [
             Merchant::CATEGORY                      => '5542',
@@ -5504,7 +5504,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::TRUCK_AND_UTILITY_TRAILER_RENTALS                  => [
             Merchant::CATEGORY                      => '7513',
@@ -5524,7 +5524,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::BILLIARD_AND_POOL_ESTABLISHMENTS                   => [
             Merchant::CATEGORY                      => '7932',
@@ -5544,7 +5544,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::LOTTERY                                            => [
             Merchant::CATEGORY                      => '7800',
@@ -5564,7 +5564,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::WELDING_REPAIR                                     => [
             Merchant::CATEGORY                      => '7692',
@@ -5584,7 +5584,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::COMPUTER_SOFTWARE_STORES                           => [
             Merchant::CATEGORY                      => '5734',
@@ -5604,7 +5604,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::AMUSEMENT_PARKS_AND_CIRCUSES                       => [
             Merchant::CATEGORY                      => '7996',
@@ -5624,7 +5624,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::MOBILE_HOME_DEALERS                                => [
             Merchant::CATEGORY                      => '5271',
@@ -5644,7 +5644,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::WOMEN_ACCESSORY_STORES                             => [
             Merchant::CATEGORY                      => '5631',
@@ -5664,7 +5664,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::BOOKS_PERIODICALS_AND_NEWSPAPER                    => [
             Merchant::CATEGORY                      => '5192',
@@ -5684,7 +5684,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::FLOOR_COVERING_STORES                              => [
             Merchant::CATEGORY                      => '5713',
@@ -5704,7 +5704,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::TAX_PAYMENTS                                       => [
             Merchant::CATEGORY                      => '9311',
@@ -5724,7 +5724,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::CRYSTAL_AND_GLASSWARE_STORES                       => [
             Merchant::CATEGORY                      => '5950',
@@ -5744,7 +5744,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::DENTISTS_AND_ORTHODONTISTS                         => [
             Merchant::CATEGORY                      => '8021',
@@ -5764,7 +5764,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::HARDWARE_STORES                                    => [
             Merchant::CATEGORY                      => '5251',
@@ -5784,7 +5784,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::HARDWARE_EQUIPMENT_AND_SUPPLY_STORES               => [
             Merchant::CATEGORY                      => '5072',
@@ -5804,7 +5804,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::CONCRETE_WORK_CONTRACTORS                          => [
             Merchant::CATEGORY                      => '1771',
@@ -5824,7 +5824,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::DISCOUNT_STORES                                    => [
             Merchant::CATEGORY                      => '5310',
@@ -5844,7 +5844,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::OPHTHALMOLOGISTS                                   => [
             Merchant::CATEGORY                      => '8042',
@@ -5864,7 +5864,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::BOAT_RENTALS                                       => [
             Merchant::CATEGORY                      => '4457',
@@ -5884,7 +5884,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::PERSONAL_SHOPPERS_AND_SHOPPING_CLUBS               => [
             Merchant::CATEGORY                      => '7278',
@@ -5904,7 +5904,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::COMPUTERS_PERIPHERAL_EQUIPMENT_SOFTWARE            => [
             Merchant::CATEGORY                      => '5045',
@@ -5924,7 +5924,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::DOOR_TO_DOOR_SALES                                 => [
             Merchant::CATEGORY                      => '5963',
@@ -5944,7 +5944,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::AUTOMOBILE_AND_TRUCK_DEALERS                       => [
             Merchant::CATEGORY                      => '5521',
@@ -5964,7 +5964,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::TRAVEL_RELATED_DIRECT_MARKETING                    => [
             Merchant::CATEGORY                      => '5962',
@@ -5984,7 +5984,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::LOTTERY_AND_BETTING                                => [
             Merchant::CATEGORY                      => '7995',
@@ -6004,7 +6004,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::DIGITAL_GOODS                                      => [
             Merchant::CATEGORY                      => '5818',
@@ -6024,7 +6024,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::INTRA_GOVERNMENT_PURCHASES                         => [
             Merchant::CATEGORY                      => '9405',
@@ -6044,7 +6044,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::COUNTRY_AND_ATHLETIC_CLUBS                         => [
             Merchant::CATEGORY                      => '7997',
@@ -6064,7 +6064,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::BANDS_ORCHESTRAS_AND_MISCELLANEOUS_ENTERTAINERS    => [
             Merchant::CATEGORY                      => '7929',
@@ -6084,7 +6084,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::FURNITURE_REPAIR_AND_REFINISHING                   => [
             Merchant::CATEGORY                      => '7641',
@@ -6104,7 +6104,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::ORTHOPEDIC_GOODS_STORES                            => [
             Merchant::CATEGORY                      => '5976',
@@ -6124,7 +6124,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::DIRECT_MARKETING_AND_SUBSCRIPTION_MERCHANTS        => [
             Merchant::CATEGORY                      => '5968',
@@ -6144,7 +6144,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::TYPEWRITER_STORES_SALES_SERVICE_AND_RENTALS        => [
             Merchant::CATEGORY                      => '5978',
@@ -6164,7 +6164,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::DIRECT_MARKETING_INSURANCE_SERVICES                => [
             Merchant::CATEGORY                      => '5960',
@@ -6184,7 +6184,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::BUSINESS_SERVICES                                  => [
             Merchant::CATEGORY                      => '7399',
@@ -6204,7 +6204,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::TICKET_AGENCIES                                    => [
             Merchant::CATEGORY                      => '7922',
@@ -6224,7 +6224,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::AIRCRAFT_AND_FARM_EQUIPMENT_DEALERS                => [
             Merchant::CATEGORY                      => '5599',
@@ -6244,7 +6244,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::ANTIQUE_SHOPS_SALES_AND_REPAIRS                    => [
             Merchant::CATEGORY                      => '5932',
@@ -6264,7 +6264,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::COURIER_SERVICES                                   => [
             Merchant::CATEGORY                      => '4215',
@@ -6284,7 +6284,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::BICYCLE_STORES                                     => [
             Merchant::CATEGORY                      => '5940',
@@ -6304,7 +6304,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::INBOUND_TELEMARKETING_MERCHANTS                    => [
             Merchant::CATEGORY                      => '5967',
@@ -6324,7 +6324,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::HEARING_AIDS_STORES                                => [
             Merchant::CATEGORY                      => '5975',
@@ -6344,7 +6344,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::RECREATION_SERVICES                                => [
             Merchant::CATEGORY                      => '7999',
@@ -6364,7 +6364,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::MUSIC_STORES                                       => [
             Merchant::CATEGORY                      => '5733',
@@ -6384,7 +6384,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::SWIMMING_POOLS                                     => [
             Merchant::CATEGORY                      => '5996',
@@ -6404,7 +6404,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::OUTBOUND_TELEMARKETING_MERCHANTS                   => [
             Merchant::CATEGORY                      => '5966',
@@ -6424,7 +6424,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::PUBLIC_WAREHOUSING                                 => [
             Merchant::CATEGORY                      => '4225',
@@ -6444,7 +6444,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::CLOTHING_RENTAL_STORES                             => [
             Merchant::CATEGORY                      => '7296',
@@ -6464,7 +6464,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::TRANSPORTATION                                     => [
             Merchant::CATEGORY                      => '4111',
@@ -6484,7 +6484,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::GOVERMENT_POSTAL_SERVICES                          => [
             Merchant::CATEGORY                      => '9402',
@@ -6504,7 +6504,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::HEALTH_PRACTITIONERS_MEDICAL_SERVICES              => [
             Merchant::CATEGORY                      => '8099',
@@ -6524,7 +6524,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::CONSTRUCTION_MATERIALS                             => [
             Merchant::CATEGORY                      => '5039',
@@ -6544,7 +6544,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::ACCESSORY_AND_APPAREL_STORES                       => [
             Merchant::CATEGORY                      => '5699',
@@ -6584,7 +6584,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::DOCTORS                                            => [
             Merchant::CATEGORY                      => '8011',
@@ -6604,7 +6604,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::CONTRACTORS                                        => [
             Merchant::CATEGORY                      => '1799',
@@ -6624,7 +6624,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::TRANSPORTATION_SERVICES                            => [
             Merchant::CATEGORY                      => '4789',
@@ -6644,7 +6644,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::ATMS                                               => [
             Merchant::CATEGORY                      => '6011',
@@ -6664,7 +6664,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::SECOND_HAND_STORES                                 => [
             Merchant::CATEGORY                      => '5931',
@@ -6684,7 +6684,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::ELECTRIC_RAZOR_STORES                              => [
             Merchant::CATEGORY                      => '5997',
@@ -6704,7 +6704,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::FUEL_DEALERS                                       => [
             Merchant::CATEGORY                      => '5983',
@@ -6724,7 +6724,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::SERVICE_STATIONS                                   => [
             Merchant::CATEGORY                      => '5541',
@@ -6744,7 +6744,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => true,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::FURNITURE_AND_HOME_FURNISHING_STORE                => [
             Merchant::CATEGORY                      => '5712',
@@ -6784,7 +6784,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::DATA_PROCESSING                                        => [
             Merchant::CATEGORY                      => '7372',
@@ -6804,7 +6804,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::PROFESSIONAL_SERVICES                                   => [
             Merchant::CATEGORY                      => '8999',
@@ -6824,7 +6824,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::ASSOCIATIONS_AND_MEMBERSHIP      => [
             Merchant::CATEGORY                      => '8699',
@@ -6844,7 +6844,7 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::UTILITIES_ELECTRIC_GAS_OIL_WATER => [
             Merchant::CATEGORY                      => '4900',
@@ -6864,13 +6864,14 @@ class BusinessSubCategoryMetaData
                 self::CONTACT_US            => true,
                 self::SHIPPING              => false,
             ],
-            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => false
         ],
         Sub::OTHERS => [
-            self::DESCRIPTION                       => Sub::DESCRIPTIONS[Sub::OTHERS],
-            self::DISPLAY_ORDER                     => 1000,
-            Entity::ACTIVATION_FLOW                 => ActivationFlow::GREYLIST,
-            self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
+            self::DESCRIPTION                                 => Sub::DESCRIPTIONS[Sub::OTHERS],
+            self::DISPLAY_ORDER                               => 1000,
+                Entity::ACTIVATION_FLOW                       => ActivationFlow::GREYLIST,
+            self::NON_REGISTERED_ACTIVATION_FLOW              => ActivationFlow::WHITELIST,
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ],
     ];
 
