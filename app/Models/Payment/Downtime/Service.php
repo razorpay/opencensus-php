@@ -479,7 +479,7 @@ class Service extends Base\Service
 
             if(in_array($downtime->getMerchantId(), $ids))
             {
-                $recipientEmail = 'ameya@ixigo.com';
+                $recipientEmail = array('ameya@ixigo.com','noc@travenues.com');
             }
         }
 
