@@ -8,8 +8,10 @@ use RZP\Exception;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
+use RZP\Http\RequestHeader;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Environment;
 use RZP\Http\Request\Requests;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Detail\Entity;
@@ -398,6 +400,13 @@ class BankingAccountService
             $headers['X-Admin-Name'] = $this->ba->getAdmin()->getName() ?? '';
         }
 
+        $devstackLabel = $this->app['request']->header(RequestHeader::DEV_SERVE_USER);
+
+        if ($this->app['env'] !== Environment::PRODUCTION && empty($devstackLabel) === false)
+        {
+            $headers[RequestHeader::DEV_SERVE_USER] = $devstackLabel;
+        }
+
         $adminIdHeader = $this->app['request']->header('X-Admin-Id');
 
         if (empty($adminIdHeader) === false)
@@ -514,9 +523,9 @@ class BankingAccountService
         try {
 
             $response = $this->sendRequestAndProcessResponse($path, self::GET, [], []);
-    
+
             return $response[self::DATA];
-        } 
+        }
         catch(\Throwable $e)
         {
             $this->trace->traceException($e,
@@ -538,9 +547,9 @@ class BankingAccountService
         try {
 
             $response = $this->sendRequestAndProcessResponse($path, Requests::POST, $content, []);
-    
+
             return $response[self::DATA];
-        } 
+        }
         catch(\Throwable $e)
         {
             $this->trace->traceException($e,
@@ -559,7 +568,7 @@ class BankingAccountService
     {
         /**
          * Example: 'rbl/banking_account/LJrZXYtN4REuNo/credentials/download?business_category=private_public_limited_company&merchant_name=Testing%20user';
-         */ 
+         */
         $path = sprintf(self::DOWNLOAD_DOCKET_PDF_PATH, $bankingAccountId, $businessCategory, $merchantName);
 
         try
@@ -583,7 +592,7 @@ class BankingAccountService
             }
 
             return $url;
-        } 
+        }
         catch(\Throwable $ex)
         {
             $this->trace->traceException($ex,
