@@ -118,10 +118,8 @@
             <directory>./tests/Functional/Device/</directory>
             <directory>./tests/Functional/EMI/</directory>
             <directory>./tests/Functional/FileStore/</directory>
-            <directory>./tests/Functional/Invoice/</directory>
             <directory>./tests/Functional/FundTransfer/</directory>
             <directory>./tests/Functional/Invitation/</directory>
-            <directory>./tests/Functional/Item/</directory>
             <directory>./tests/Functional/Key/</directory>
             <directory>./tests/Functional/PayoutDowntime/</directory>
             <directory>./tests/Functional/BankingAccountTpv/</directory>
@@ -253,7 +251,6 @@
             <directory>./tests/Functional/Refund/</directory>
         </testsuite>
         <testsuite name="Features-4-2 Test Suite">
-            <directory>./tests/Functional/PaymentLink/</directory>
             <directory>./tests/Unit/</directory>
             <directory>./tests/Unit/Models/Merchant/Activation/</directory>
             <directory>./tests/Unit/Models/Merchant/AutoKyc/</directory>
@@ -442,10 +439,6 @@
             <file>./tests/Functional/Order/Transfer/OrderTransferTest.php</file>
             <file>./tests/Functional/Merchant/AccountTest.php</file>
         </testsuite>
-        <testsuite name="Payment Page Test Suite">
-            <directory>./tests/Functional/PaymentLink</directory>
-            <directory>./tests/Unit/Models/PaymentLink</directory>
-        </testsuite>
         <testsuite name="Rx Test Suite Payouts">
             <directory>./tests/Functional/Payout/</directory>
         </testsuite>
@@ -488,6 +481,12 @@
         </testsuite>
         <testsuite name="Affordibility Test Suite">
         <directory>./tests/Functional/Offer/</directory>
+        </testsuite>
+        <testsuite name="NoCode Test Suite">
+            <directory>./tests/Functional/Invoice/</directory>
+            <directory>./tests/Functional/Item/</directory>
+            <directory>./tests/Functional/PaymentLink/</directory>
+            <directory>./tests/Unit/Models/PaymentLink</directory>
         </testsuite>
     </testsuites>
     <listeners>
