@@ -274,14 +274,6 @@ class Gateway extends Base\Gateway
 
         $this->action = Action::VALIDATE_PUSH;
 
-        $result = ($content[Fields::DATA][0][Fields::RESULT] ?? ($content[Fields::RESULT] ?? null));
-
-        $amount = ($content[Fields::DATA][0][Fields::AMOUNT] ?? ($content[Fields::AMOUNT] ?? null));
-
-        $this->assertAmount(
-            $this->formatAmount($callbackData[ConstantsEntity::PAYMENT][Payment\Entity::AMOUNT]),
-            number_format($amount, 2, '.', ''));
-
         //Skips verify condition when we recieve ML01 which is for multiple order ids found.
         //This is when we have multiple RRN case.
         //This can be removed once we send rrn also in verify request.
@@ -295,6 +287,14 @@ class Gateway extends Base\Gateway
 
             return;
         }
+
+        $result = ($content[Fields::DATA][0][Fields::RESULT] ?? ($content[Fields::RESULT] ?? null));
+
+        $amount = ($content[Fields::DATA][0][Fields::AMOUNT] ?? ($content[Fields::AMOUNT] ?? null));
+
+        $this->assertAmount(
+            $this->formatAmount($callbackData[ConstantsEntity::PAYMENT][Payment\Entity::AMOUNT]),
+            number_format($amount, 2, '.', ''));
 
         $this->checkResponseStatus(
             $result,
