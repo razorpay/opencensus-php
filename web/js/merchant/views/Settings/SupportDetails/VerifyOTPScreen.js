@@ -11,6 +11,7 @@ import {
 import { merchantFetch } from 'merchant/utils/ajax';
 import { OtpInput } from 'common/new-ui/Input/OtpInput';
 import { AsyncBtn } from 'common/new-ui/Button';
+import { getSupportDetailsPayload } from './utils';
 
 const VerifyOTP = ({
   email,
@@ -24,6 +25,7 @@ const VerifyOTP = ({
   showNotification,
   supportDetail,
   tracking,
+  isIndividual,
 }) => {
   const [phoneToken, setPhoneToken] = useState('');
   const [emailToken, setEmailToken] = useState('');
@@ -40,7 +42,15 @@ const VerifyOTP = ({
   const shouldRenderPhoneSection = phone !== supportDetail.data.phone;
 
   const onSubmit = () => {
-    return createSupportDetail({ email, url, phone })
+    const supportDetailsPayload = getSupportDetailsPayload(
+      { email, url, phone },
+      supportDetail,
+      isIndividual,
+    );
+    if (!Object.keys(supportDetailsPayload).length) {
+      return null;
+    }
+    return createSupportDetail(supportDetailsPayload)
       .then((res) => {
         if (res.success) {
           showNotification({

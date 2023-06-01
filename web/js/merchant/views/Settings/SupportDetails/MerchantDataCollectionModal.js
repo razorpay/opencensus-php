@@ -15,6 +15,7 @@ import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 import { compose } from 'redux';
 import { Field, reduxForm } from 'redux-form';
+import { getSupportDetailsPayload } from './utils';
 import VerifyOTP from './VerifyOTPScreen';
 
 const PhoneField = () => (
@@ -54,15 +55,6 @@ const Fields = {
   website: SupportUrlField,
 };
 
-const getSupportDetailsPayload = (data) => {
-  return Object.keys(data).reduce((acc, key) => {
-    if (data[key]) {
-      acc[key] = data[key];
-    }
-    return acc;
-  }, {});
-};
-
 class MerchantDataCollectionModal extends Component {
   state = { isVerifying: false, newEmail: '', newUrl: '' };
 
@@ -98,6 +90,7 @@ class MerchantDataCollectionModal extends Component {
       createSupportDetail,
       supportDetail,
       user,
+      isIndividual,
     } = this.props;
 
     const { email, url, phone } = props;
@@ -141,7 +134,18 @@ class MerchantDataCollectionModal extends Component {
       });
       return;
     }
-    const supportDetailsPayload = getSupportDetailsPayload({ email, url: newurl, phone });
+    const supportDetailsPayload = getSupportDetailsPayload(
+      { email, url: newurl, phone },
+      supportDetail,
+      isIndividual,
+    );
+    if (!Object.keys(supportDetailsPayload).length) {
+      showNotification({
+        type: 'error',
+        message: 'Details must be provided and should not be same as existing',
+      });
+      return;
+    }
 
     createSupportDetail(supportDetailsPayload)
       .then((res) => {
@@ -210,6 +214,7 @@ class MerchantDataCollectionModal extends Component {
         url={newUrl}
         supportDetail={supportDetail}
         reset={this.resetState}
+        isIndividual={isIndividual}
       />
     ) : (
       <div className="support-modal-content">
