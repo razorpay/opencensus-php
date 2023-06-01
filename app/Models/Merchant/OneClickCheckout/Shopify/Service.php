@@ -697,7 +697,7 @@ class Service extends Base\Service
 
         $countryCode = $orderArray['customer_details']['shipping_address']['country'];
 
-        $shopifyOrderAmount = $shopifyOrder['order']['total_price']*100;
+        $shopifyOrderAmount = round($shopifyOrder['order']['total_price']*100);
 
         // NOTE: promotions is not set if the 1ccResetAPI call fails, until CX team fixes it
         // keep the null check here
@@ -730,7 +730,7 @@ class Service extends Base\Service
             }
         }
 
-        if ($payment['amount'] != $shopifyOrderAmount)
+        if ((int)$payment['amount'] != (int)$shopifyOrderAmount)
         {
             $this->trace->error(
                  TraceCode::SHOPIFY_1CC_PARTIALLY_PAID_ORDER,
