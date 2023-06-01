@@ -71,6 +71,7 @@ class CheckoutExperiment
             'enable_auto_submit'                                 => 'control',
             'dcc_vas_merchants'                                  => false,
             'emi_via_cards_revamp'                               => false,
+            'enable_otp_auto_read_and_auto_submit'               => 'control',
         ];
 
         $this->input = $input;
@@ -355,6 +356,14 @@ class CheckoutExperiment
             'app.emi_via_card_screen_splitz_experiment_id',
             'EmiViaCardRevamp',
             'emi_via_cards_revamp',
+            ['merchant_id' => $this->merchantId]
+        );
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.checkout_enable_otp_auto_read_and_auto_submit_splitz_experiment_id',
+            'EnableOtpAutoReadAndAutoSubmit',
+            'enable_otp_auto_read_and_auto_submit',
             ['merchant_id' => $this->merchantId]
         );
     }
@@ -721,5 +730,10 @@ class CheckoutExperiment
         $variant = $response['variant']['name'] ?? '';
 
         return $variant === 'variant_on';
+    }
+
+    private function handleEnableOtpAutoReadAndAutoSubmitResponse($response): string
+    {
+        return $response['variant']['name'] ?? 'control';
     }
 }
