@@ -56,7 +56,7 @@ class NotifyPartnerAboutPartnerTypeSwitch extends Core
         $smsPayload = [
             'language'          => 'english',
             'ownerType'         => 'merchant',
-            'templateNamespace' => 'partnerships',
+            'templateNamespace' => 'partnerships-experience',
             'destination'       => $this->partner->merchantDetail->getContactMobile(),
             'orgId'             => $this->partner->getOrgId(),
             'ownerId'           => $this->partner->getId(),

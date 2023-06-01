@@ -12,9 +12,11 @@ use RZP\Constants\Country;
 use RZP\Constants\Mode;
 use App\User\Constants;
 use RZP\Constants\Timezone;
+use RZP\Services\Elfin\Impl\Gimli;
 use RZP\Exception\BadRequestException;
 use RZP\Tests\Traits\MocksPartnershipsService;
 use Neves\Events\TransactionalClosureEvent;
+use RZP\Services\Elfin\Service as ElfinService;
 use RZP\Jobs\MigrateResellerToPurePlatformPartnerJob;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Batch;
@@ -5003,6 +5005,7 @@ class PartnerTest extends OAuthTestCase
     {
         Mail::fake();
         $this->mockAllSplitzTreatment();
+        $this->mockGimliURLShortener();
         $defaultPartnerId = 'DefaultPartner';
 
         $this->testMigrateResellerToPurePlatform();
@@ -5012,11 +5015,11 @@ class PartnerTest extends OAuthTestCase
 
         $this->merchantTestUtil->expectStorkSmsRequest(
             $this->storkMock,
-            'Sms.Partnerships.Partner_type_reseller_to_pure_platform_v2',
+            'Sms.Partnerships.Partner_type_reseller_to_pure_platform_v3',
             $partner->merchantDetail->getContactMobile(),
             [
                 'partnerName'         => $partner->getName() ,
-                'platformDocsLink'    => 'https://razorpay.com/docs/partners/platform/',
+                'platformDocsLink'    => "https://rzp.io/i/partner",
                 'partnerSupportEmail' => 'partners@razorpay.com'
             ]
         );
@@ -5047,6 +5050,20 @@ class PartnerTest extends OAuthTestCase
             return true;
 
         });
+    }
+
+    protected function mockGimliURLShortener()
+    {
+        $gimli = $this->createMock(Gimli::class);
+        $gimli->method('expandAndGetMetadata')->willReturn(null);
+
+        $elfin = $this->createMock(ElfinService::class);
+        $elfin->method('driver')->willReturn($gimli);
+        $elfin->method('shorten')->willReturn(
+            "https://rzp.io/i/partner"
+        );
+
+        $this->app->instance('elfin', $elfin);
     }
 
     public function testPartnerFeatureCheckBySubmerchantWithFeatureEnabled()
