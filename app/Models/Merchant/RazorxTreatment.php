@@ -777,7 +777,7 @@ final class RazorxTreatment
     // FeatureFlag to toggle Pricing Rule Fee Model override for BPCL
     const FEE_MODEL_OVERRIDE = 'FEE_MODEL_OVERRIDE';
 
-    const FCM_MIGRATION = 'fcm_migration';
+    const CLEVERTAP_MIGRATION = 'clevertap_migration';
 
     /**
      * Razorx flag to enable Standard Checkout merchants to be onboarded for Push Token Provisioning

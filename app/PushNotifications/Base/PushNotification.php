@@ -175,17 +175,15 @@ class PushNotification {
 
                 $request['target_user_campaign_request'] = $clervertapRequest;
 
-                $requestKey = 'clevertap_request';
+                $requestKey = 'push_notification_request';
+                $request['push_notification_type'] = 0;
+                $request['account_name'] = $this->accountName;
                 // In the existing implementation, owner_id is merchant however we are overriding it to type user
-                $isExperimentEnabled = $this->checkFcmMigrationExperimentEnabled($this->ownerId);
+                $isExperimentEnabled = $this->checkClevertapMigrationExperimentEnabled($this->ownerId);
                 if($isExperimentEnabled)
                 {
-                    $request['push_notification_type'] = 0;
-                    $request['account_name'] = $this->accountName;
-                    //  These changes are required when we change gateway to fcm
-//                    $payload['owner_id'] = $this->tags['userId'];
-//                    $payload['owner_type'] = 'user';
-                    $requestKey = 'push_notification_request';
+                    $payload['owner_id'] = $this->tags['userId'];
+                    $payload['owner_type'] = 'user';
                 }
 
 
@@ -456,15 +454,15 @@ class PushNotification {
         $this->tags = $tags;
     }
 
-    protected function checkFcmMigrationExperimentEnabled(string $merchantId) : bool
+    protected function checkClevertapMigrationExperimentEnabled(string $merchantId) : bool
     {
         $isExperimentEnabled = (new Core())->isSplitzExperimentEnable([
             'id'            => $merchantId,
-            'experiment_id' => $this->app['config']->get('app.fcm_migration_splitz_experiment_id','LtnXHw16gsI88P')
+            'experiment_id' => $this->app['config']->get('app.clevertap_migration_splitz_experiment_id')
         ], \RZP\Models\User\Constants::ACTIVE,
-            TraceCode::FCM_MIGRATION_EXPERIMENT_FAILED);
+            TraceCode::CLEVERTAP_MIGRATION_EXPERIMENT_FAILED);
 
-        app()->trace->info(TraceCode::FCM_MIGRATION_EXPERIMENT_STATUS, [
+        app()->trace->info(TraceCode::CLEVERTAP_MIGRATION_EXPERIMENT_STATUS, [
             'experiment_status' => $isExperimentEnabled,
             'merchant_id'       => $merchantId,
         ]);

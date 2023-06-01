@@ -4482,8 +4482,8 @@ class PayoutTest extends OAuthTestCase
                 }),
                 Mockery::on(function ($params)
                 {
-                    $title = $params['message']['push_notification_channels'][0]['clevertap_request']['target_user_campaign_request']['content_title'];
-                    $body = $params['message']['push_notification_channels'][0]['clevertap_request']['target_user_campaign_request']['content_body'];
+                    $title = $params['message']['push_notification_channels'][0]['push_notification_request']['target_user_campaign_request']['content_title'];
+                    $body = $params['message']['push_notification_channels'][0]['push_notification_request']['target_user_campaign_request']['content_body'];
                     $this->assertEquals('merchant', $params['message']['owner_type']);
                     $this->assertEquals('Approve Pending Payouts', $title);
                     $this->assertEquals('5 payouts worth ₹1,623.44 pending your approval', $body);
@@ -4500,7 +4500,7 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
-    public function testReminderNotificationForPayoutPendingOnApprovalWithFcmMigrationExpEnabled()
+    public function testReminderNotificationForPayoutPendingOnApprovalWithClevertapMigrationExpEnabled()
     {
         $this->liveSetUp();
 
@@ -4531,7 +4531,7 @@ class PayoutTest extends OAuthTestCase
             ]
         ];
         $splitzMock = $this->getSplitzMock();
-        $expId = $this->app['config']->get('app.fcm_migration_splitz_experiment_id','LtnXHw16gsI88P');
+        $expId = $this->app['config']->get('app.clevertap_migration_splitz_experiment_id');
         $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
             ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
 
@@ -4547,7 +4547,7 @@ class PayoutTest extends OAuthTestCase
                 {
                     $title = $params['message']['push_notification_channels'][0]['push_notification_request']['target_user_campaign_request']['content_title'];
                     $body = $params['message']['push_notification_channels'][0]['push_notification_request']['target_user_campaign_request']['content_body'];
-                    $this->assertEquals('merchant', $params['message']['owner_type']);
+                    $this->assertEquals('user', $params['message']['owner_type']);
                     $this->assertEquals('Approve Pending Payouts', $title);
                     $this->assertEquals('5 payouts worth ₹1,623.44 pending your approval', $body);
 

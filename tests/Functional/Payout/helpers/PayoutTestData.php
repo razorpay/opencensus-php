@@ -7249,7 +7249,7 @@ return [
         ],
     ],
 
-    'testReminderNotificationForPayoutPendingOnApprovalWithFcmMigrationExpEnabled' => [
+    'testReminderNotificationForPayoutPendingOnApprovalWithClevertapMigrationExpEnabled' => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/pending-payouts-approval-reminder',
