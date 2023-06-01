@@ -650,7 +650,7 @@ class TransactionTest extends TestCase
 
         $oldBalance = $this->getEntityById('balance', '10000000000000', true);
 
-        $this->fixtures->base->editEntity('payment', $payment['id'], ['status' => 'authorized']);
+        $this->fixtures->base->editEntity('payment', $payment['id'], ['status' => 'authorized', 'captured_at' => null]);
 
         $authPayment = $this->getLastEntity('payment', true);
 

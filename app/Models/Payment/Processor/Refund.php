@@ -856,11 +856,11 @@ trait Refund
 
         $this->setPayment($payment);
 
-        if ($this->payment->isAuthorized() === false)
+        if ($this->payment->isAuthorized() === false || $this->payment->hasBeenCaptured())
         {
             throw new Exception\InvalidArgumentException(
                 'Can only refund authorized payments here but ' .
-                'the status is ' . $payment->getStatus());
+                'the status is ' . $payment->getStatus() . ' and captured_at is ' . $payment->getCapturedAt());
         }
 
         // For now allow refunding authorized payments immediately.
