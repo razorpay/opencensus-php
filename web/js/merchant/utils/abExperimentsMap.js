@@ -226,6 +226,15 @@ export default {
     // prod experiment ids
     'KPe5dzVS6UCAiG',
   ],
+
+  pure_platform_switch: [
+    // beta experiment ids
+    'LpfLoOMMA13K5O',
+
+    // prod experiment ids
+    'LpfIybGTZQHvWm',
+  ],
+
   pp_zapier_announcement: [
     // beta
     'I2TybjEbDlkjqM',

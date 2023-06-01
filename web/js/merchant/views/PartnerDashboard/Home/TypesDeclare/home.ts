@@ -5,6 +5,7 @@ export interface FUXStatusT {
   first_earning_generated: boolean;
   first_submerchant_added: boolean;
   first_submerchant_accept_payments: boolean;
+  partner_migration_enabled: boolean;
 }
 
 export interface FUXStatusStateT {

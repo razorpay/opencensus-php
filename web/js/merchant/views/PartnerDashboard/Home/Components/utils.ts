@@ -25,3 +25,10 @@ export const showActivationConfetti = (
     setItem(`fux-${stepName}`, true);
   }
 };
+
+export const getExperimentsForTracking = (user: any) => {
+  return {
+    shorterKYC: user?.isIndependentPartnerKYCEnabled ? 'yes' : 'no',
+    onboardAllAsReseller: user?.isOnboardAsResellers ? 'yes' : 'no',
+  };
+};

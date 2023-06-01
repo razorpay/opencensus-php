@@ -17,7 +17,10 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import AddMerchant from 'merchant/views/PartnerDashboard/SubMerchant/AddMerchant';
 import ActivationGuide from 'merchant/views/PartnerDashboard/Home/Components/ActivationGuide';
 import ReferralGuide from 'merchant/views/PartnerDashboard/Home/Components/ReferralGuide/index';
-import { showActivationConfetti } from 'merchant/views/PartnerDashboard/Home/Components/utils';
+import {
+  showActivationConfetti,
+  getExperimentsForTracking,
+} from 'merchant/views/PartnerDashboard/Home/Components/utils';
 import 'merchant/views/PartnerDashboard/Home/home.styl';
 import { isMobileAndTablet } from 'common/utils/rzp-utils';
 import Loader from 'common/ui/Loader';
@@ -25,6 +28,8 @@ import DashboardBanner from 'common/ui/DashboardBanner';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import { CapitalReferralCard } from 'merchant/views/PartnerDashboard/Home/Components/ReferralGuide/CapitalReferralCard';
 import PageHeading from './Components/PageHeading';
+import { getItem } from 'common/utils/localStorage';
+import { PARTNER_SWITCH_KEY } from 'merchant/views/PartnerDashboard/Home/Components/PurePlatformSwitch/Constants';
 
 // eslint-disable-next-line prettier/prettier
 const AggregatorFormLazy = React.lazy(
@@ -33,6 +38,10 @@ const AggregatorFormLazy = React.lazy(
 // eslint-disable-next-line prettier/prettier
 const AggregatorSuccessLazy = React.lazy(
   () => import('merchant/views/PartnerDashboard/Home/Components/ReferralGuide/AggregatorSuccess'),
+);
+
+const PurePlatformSwitchGuideLazy = React.lazy(
+  () => import('merchant/views/PartnerDashboard/Home/Components/PurePlatformSwitch'),
 );
 
 const Home = ({
@@ -200,8 +209,21 @@ const Home = ({
     });
   };
 
+  /**
+   *
+   * @returns false to hide the banner and true to show it
+   */
+  const isShowPartnerSwitch = () => {
+    if (getItem(PARTNER_SWITCH_KEY)) {
+      return false;
+    }
+    return FUXStatus.value?.partner_migration_enabled;
+  };
+
   const isFirstReferralDone = FUXStatus.value?.first_submerchant_added === true;
   const isUserOwner = user?.role === 'owner';
+  const trackingExperiments = getExperimentsForTracking(user);
+
   return (
     <div className="partner-dashboard-home">
       <DashboardBanner />
@@ -238,6 +260,21 @@ const Home = ({
         <ShowWhen additionalCondition={() => isPartnershipForCapitalEnabled}>
           <CapitalReferralCard handleReferClient={handleCapitalRefer} mid={partnerId} />
         </ShowWhen>
+      </ShowWhen>
+      <ShowWhen
+        additionalCondition={(currentUser) =>
+          currentUser.isPartner('reseller') &&
+          currentUser?.isEnablePurePlatformSwitch &&
+          isShowPartnerSwitch()
+        }
+      >
+        <Suspense fallback={<Loader />}>
+          <PurePlatformSwitchGuideLazy
+            openModal={openModal}
+            closeModal={closeModal}
+            trackingExperiments={trackingExperiments}
+          />
+        </Suspense>
       </ShowWhen>
     </div>
   );
