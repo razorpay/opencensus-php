@@ -334,6 +334,11 @@ class ApiRouteCircuitBreaker
         }
     }
 
+    public function getApiPathName()
+    {
+       return $this->matchedRouteName;
+    }
+
     protected function matchPathPatternWithRoutes($routes)
     {
         foreach ($routes as $routeName => $pathPattern)
