@@ -122,6 +122,10 @@ class Entity extends Base\PublicEntity
     const CLIENT_ID  = 'clientId';
     const VISITOR_ID = 'visitorId';
 
+    // Constant for skipping sms verification on stage
+
+    const SKIP_SMS_REQUEST    = 'skip_sms_request';
+
     protected $fillable = [
         self::ID,
         self::NAME,

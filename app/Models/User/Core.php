@@ -1511,6 +1511,15 @@ class Core extends Base\Core
 
         $otp = $this->generateOtpForLoginSignup($user->getId(), $input);
 
+        if (Environment::isLowerEnvironment($this->app['env']) === true)
+        {
+            if (isset($input[Entity::SKIP_SMS_REQUEST]) === true and
+                $input[Entity::SKIP_SMS_REQUEST] === true)
+            {
+                return array_only($otp, 'token');
+            }
+        }
+
         // Raven payload
         $payload = $this->getSmsPayload($input, $otp);
 
@@ -1733,6 +1742,12 @@ class Core extends Base\Core
         $this->getUserEntity()->getValidator()->validateInput('loginOtp', $input);
 
         $token = $this->mobileOtpLogin($input);
+
+        // unsetting the skip_sms_request to not disturb the verification rules
+        // after the send otp sms
+
+        unset($input[Entity::SKIP_SMS_REQUEST]);
+
        // $this->trace->count(Merchant\Metric::Login_total);
         if ($token !== null)
         {

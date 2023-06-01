@@ -1055,6 +1055,18 @@ return [
         ],
     ],
 
+    'testMobileOtpLoginSkipVerificationLimitOnStage' => [
+        'request' => [
+            'url'     => '/users/login/otp',
+            'method'  => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
     'testMobileOtpLoginStorkFailed' => [
         'request' => [
             'url'     => '/users/login/otp',
