@@ -4037,12 +4037,18 @@ class Base extends BaseCore
                                                                            CreditType::REWARD_FEE,
                                                                            Product::BANKING);
 
+                [$fetchFundAccountInfoSuccess, $fundAccountInfo] = (new FundAccount\Core)->fetchFundAccountForPayoutServiceProcessing($this->merchant->getId(), $input);
+
                 $response = $this->payoutCreateServiceClient->createPayoutViaMicroservice($input,
                                                                                           $this->merchant->getId(),
                                                                                           $this->isInternal,
                                                                                           [
                                                                                               Payout\Entity::FETCH_UNUSED_CREDITS_SUCCESS => $fetchUnusedCreditsSuccess,
                                                                                               Payout\Entity::UNUSED_CREDITS => $unusedCredits
+                                                                                          ],
+                                                                                          [
+                                                                                              Payout\Entity::FETCH_FUND_ACCOUNT_INFO_SUCCESS => $fetchFundAccountInfoSuccess,
+                                                                                              Payout\Entity::FUND_ACCOUNT => $fundAccountInfo
                                                                                           ]);
 
                 $this->trace->info(

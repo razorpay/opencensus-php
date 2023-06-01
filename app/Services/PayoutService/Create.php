@@ -6,9 +6,14 @@ use RZP\Http\RequestHeader;
 use RZP\Http\Request\Requests;
 use Razorpay\Edge\Passport\Passport;
 
+use RZP\Models\Vpa;
+use RZP\Models\Card;
 use RZP\Models\Payout;
+use RZP\Models\Contact;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
+use RZP\Models\FundAccount;
+use RZP\Models\BankAccount;
 use RZP\Models\IdempotencyKey;
 use RZP\Models\PayoutsDetails;
 use RZP\Http\BasicAuth\BasicAuth;
@@ -38,7 +43,8 @@ class Create extends Base
     public function createPayoutViaMicroservice(array $input,
                                                 string $merchantId,
                                                 bool $isInternal = false,
-                                                array $creditsInfo = [])
+                                                array $creditsInfo = [],
+                                                array $fundAccountInfo = [])
     {
         $data = $input;
 
@@ -61,7 +67,7 @@ class Create extends Base
             $uri = self::CREATE_PAYOUT_INTERNAL_SERVICE_URI;
         }
 
-        $request = $this->createRequestBody($input, $merchantId, $creditsInfo);
+        $request = $this->createRequestBody($input, $merchantId, $creditsInfo, $fundAccountInfo);
 
         $headers = $this->getHeadersWithJwt();
 
@@ -147,7 +153,8 @@ class Create extends Base
      */
     public function createRequestBody(array $input,
                                       string $merchantId,
-                                      array $creditsInfo = []): array
+                                      array $creditsInfo = [],
+                                      array $fundAccountInfo = []): array
     {
         $fundAccountId = PublicEntity::stripDefaultSign($input[Payout\Entity::FUND_ACCOUNT_ID]);
 
@@ -200,6 +207,8 @@ class Create extends Base
             ];
         }
 
+        $this->addFundAccountExtraInfoInRequestBody($requestBody, $fundAccountInfo);
+
         if (empty($input[PayoutsDetails\Entity::ATTACHMENTS]) === false)
         {
             $requestBody[PayoutsDetails\Entity::ATTACHMENTS] = $input[PayoutsDetails\Entity::ATTACHMENTS];
@@ -216,5 +225,100 @@ class Create extends Base
         }
 
         return $requestBody;
+    }
+
+    /**
+     * @param array $request
+     * @param array $fundAccountInfo
+     * @return void
+     */
+    public function addFundAccountExtraInfoInRequestBody(array & $request, array $fundAccountInfo = [])
+    {
+        if ((empty($fundAccountInfo[Payout\Entity::FETCH_FUND_ACCOUNT_INFO_SUCCESS]) === true) or
+            (empty($fundAccountInfo[Payout\Entity::FUND_ACCOUNT]) === true))
+        {
+            return;
+        }
+
+        $fundAccountObject = $fundAccountInfo[Payout\Entity::FUND_ACCOUNT];
+
+        $fundAccountExtraInfoRequestBody = [
+            FundAccount\Entity::ID            => $fundAccountObject[FundAccount\Entity::ID],
+            FundAccount\Entity::ENTITY        => $fundAccountObject[FundAccount\Entity::ENTITY ],
+            FundAccount\Entity::CONTACT_ID    => $fundAccountObject[FundAccount\Entity::CONTACT_ID],
+            FundAccount\Entity::ACCOUNT_TYPE  => $fundAccountObject[FundAccount\Entity::ACCOUNT_TYPE],
+            FundAccount\Entity::ACTIVE        => $fundAccountObject[FundAccount\Entity::ACTIVE],
+            FundAccount\Entity::BATCH_ID      => $fundAccountObject[FundAccount\Entity::BATCH_ID],
+            FundAccount\Entity::CREATED_AT    => $fundAccountObject[FundAccount\Entity::CREATED_AT],
+        ];
+
+        if (empty($fundAccountObject[FundAccount\Entity::BANK_ACCOUNT]) === false)
+        {
+            $bankAccountExtraInfo = $fundAccountObject[FundAccount\Entity::BANK_ACCOUNT];
+
+            $fundAccountExtraInfoRequestBody[FundAccount\Entity::BANK_ACCOUNT] = [
+                BankAccount\Entity::ID              => $bankAccountExtraInfo[BankAccount\Entity::ID],
+                BankAccount\Entity::NAME            => $bankAccountExtraInfo[BankAccount\Entity::NAME],
+                BankAccount\Entity::IFSC            => $bankAccountExtraInfo[BankAccount\Entity::IFSC],
+                BankAccount\Entity::ACCOUNT_NUMBER  => $bankAccountExtraInfo[BankAccount\Entity::ACCOUNT_NUMBER],
+                BankAccount\Entity::BANK_NAME       => $bankAccountExtraInfo[BankAccount\Entity::BANK_NAME],
+            ];
+        }
+
+        if (empty($fundAccountObject[FundAccount\Entity::CARD]) === false)
+        {
+            $cardExtraInfo = $fundAccountObject[FundAccount\Entity::CARD];
+
+            $fundAccountExtraInfoRequestBody[FundAccount\Entity::CARD] = [
+                Card\Entity::ID            => $cardExtraInfo[Card\Entity::ID],
+                Card\Entity::TYPE          => $cardExtraInfo[Card\Entity::TYPE],
+                Card\Entity::LAST4         => $cardExtraInfo[Card\Entity::LAST4],
+                Card\Entity::ISSUER        => $cardExtraInfo[Card\Entity::ISSUER],
+                Card\Entity::SUBTYPE       => $cardExtraInfo[Card\Entity::SUBTYPE],
+                Card\Entity::NETWORK       => $cardExtraInfo[Card\Entity::NETWORK],
+                Card\Entity::TOKEN_IIN     => $cardExtraInfo[Card\Entity::TOKEN_IIN],
+                Card\Entity::TOKEN_LAST_4  => $cardExtraInfo[Card\Entity::TOKEN_LAST_4],
+                Card\Entity::VAULT_TOKEN   => $cardExtraInfo[Card\Entity::VAULT_TOKEN],
+                Card\Entity::VAULT         => $cardExtraInfo[Card\Entity::VAULT],
+                Card\Entity::TRIVIA        => $cardExtraInfo[Card\Entity::TRIVIA],
+                Card\Entity::INPUT_TYPE    => $cardExtraInfo[Card\Entity::INPUT_TYPE],
+            ];
+        }
+
+        if (empty($fundAccountObject[FundAccount\Entity::VPA]) === false)
+        {
+            $vpaExtraInfo = $fundAccountObject[FundAccount\Entity::VPA];
+
+            $fundAccountExtraInfoRequestBody[FundAccount\Entity::VPA] = [
+                Vpa\Entity::ID        => $vpaExtraInfo[Vpa\Entity::ID],
+                Vpa\Entity::USERNAME  => $vpaExtraInfo[Vpa\Entity::USERNAME],
+                Vpa\Entity::HANDLE    => $vpaExtraInfo[Vpa\Entity::HANDLE],
+                Vpa\Entity::ADDRESS   => $vpaExtraInfo[Vpa\Entity::ADDRESS],
+            ];
+        }
+
+        if (empty($fundAccountObject[FundAccount\Entity::CONTACT]) === false)
+        {
+            $contactExtraInfo = $fundAccountObject[FundAccount\Entity::CONTACT];
+
+            $fundAccountExtraInfoRequestBody[FundAccount\Entity::CONTACT] = [
+                Contact\Entity::ID            => $contactExtraInfo[Contact\Entity::ID],
+                Contact\Entity::ENTITY        => $contactExtraInfo[Contact\Entity::ENTITY],
+                Contact\Entity::NAME          => $contactExtraInfo[Contact\Entity::NAME],
+                Contact\Entity::CONTACT       => $contactExtraInfo[Contact\Entity::CONTACT],
+                Contact\Entity::EMAIL         => $contactExtraInfo[Contact\Entity::EMAIL],
+                Contact\Entity::TYPE          => $contactExtraInfo[Contact\Entity::TYPE],
+                Contact\Entity::REFERENCE_ID  => $contactExtraInfo[Contact\Entity::REFERENCE_ID],
+                Contact\Entity::BATCH_ID      => $contactExtraInfo[Contact\Entity::BATCH_ID],
+                Contact\Entity::ACTIVE        => $contactExtraInfo[Contact\Entity::ACTIVE],
+                Contact\Entity::CREATED_AT    => $contactExtraInfo[Contact\Entity::CREATED_AT],
+            ];
+        }
+
+        $request[Payout\Entity::EXTRA_INFO] += [
+            Payout\Entity::FUND_ACCOUNT_INFO => [
+                Payout\Entity::FUND_ACCOUNT => $fundAccountExtraInfoRequestBody
+            ]
+        ];
     }
 }

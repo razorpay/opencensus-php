@@ -764,6 +764,9 @@ final class RazorxTreatment
     // Experiment for sending user details to getsimpl
     const SEND_USER_DETAILS_TO_GETSIMPL         = 'send_user_details_to_getsimpl';
 
+    // Experiment to handle PS fund account optimisation
+    const PS_FUND_ACCOUNT_CONSUME_FROM_PAYLOAD = 'ps_fund_account_consume_from_payload';
+
     /**
      * Razorx flag to enable timeout of upi collect payment with input expiry time
      */

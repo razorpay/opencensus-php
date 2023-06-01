@@ -120,7 +120,8 @@ class PayoutServiceTest extends TestCase
                                             $request = [],
                                             $status = 'processing',
                                             $insufficient_balance = false,
-                                            $newBankingError = false)
+                                            $newBankingError = false,
+                                            &$assertionBody = [])
     {
         // Not mocking this method like mockPayoutServiceStatus because we need to assert for the request headers that
         // are going to be sent to payout service.
@@ -133,9 +134,12 @@ class PayoutServiceTest extends TestCase
 
         $payoutServiceCreateMock->shouldReceive('sendRequest')
                                 ->withArgs(
-                                    function($arg) use ($request, $status) {
+                                    function($arg) use ($request, $status, &$assertionBody) {
                                         try
                                         {
+                                            // json decoding the content so that we can assert the keys of content.
+                                            $arg['content'] = json_decode($arg['content'], true);
+
                                             // Using this method only here as we want to check if the keys in the
                                             // request are coming properly or not.
                                             $this->assertArrayKeySelectiveEquals($request, $arg);
@@ -149,6 +153,13 @@ class PayoutServiceTest extends TestCase
                                                         return false;
                                                     }
                                                 }
+                                            }
+
+                                            if (empty($arg['content']['extra_info']['fund_account_info']) === false)
+                                            {
+                                                $assertionBody = [
+                                                    "fund_account_extra_info" => $arg['content']['extra_info']['fund_account_info'],
+                                                ];
                                             }
 
                                             return true;
@@ -2401,7 +2412,9 @@ class PayoutServiceTest extends TestCase
 
     public function testCreatePayoutViaDashboard()
     {
-        $this->mockPayoutServiceCreate();
+        $assertionBody = [];
+
+        $this->mockPayoutServiceCreate(false, [],  [],Status::PROCESSING, false, true, $assertionBody);
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
@@ -2417,6 +2430,8 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals("test Merchant Fund Transfer", $response[Entity::NARRATION]);
         $this->assertEquals(1614325830, $response[Entity::INITIATED_AT]);
         $this->assertEquals("10000000000000", $response[Entity::MERCHANT_ID]);
+
+        $this->assertNull($assertionBody['fund_account_extra_info']);
     }
 
     public function testCreatePayoutWithAttachmentsViaDashboard()
@@ -2725,7 +2740,9 @@ class PayoutServiceTest extends TestCase
             'entity_type' => 'merchant',
         ]);
 
-        $this->mockPayoutServiceCreate(false, [],  [],Status::PROCESSING, false, true);
+        $assertionBody = [];
+
+        $this->mockPayoutServiceCreate(false, [],  [],Status::PROCESSING, false, true, $assertionBody);
 
         $payout = $this->testCreatePayoutServiceFtaCreation();
 
@@ -2761,7 +2778,686 @@ class PayoutServiceTest extends TestCase
         $this->assertNotNull($txn['balance_id']);
         $this->assertNotNull($txn['posted_at']);
 
+        $this->assertNull($assertionBody['fund_account_extra_info']);
+
         return $payout;
+    }
+
+    public function testCreatePayoutViaMicroserviceAndPassFundAccountInfo()
+    {
+        $this->fixtures->on('live')->create('feature', [
+            'name'        => Feature\Constants::NEW_BANKING_ERROR,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $assertionBody = [];
+
+        $this->mockPayoutServiceCreate(false, [],  [],Status::PROCESSING, false, true, $assertionBody);
+
+        $this->mockRazorxDefault();
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+
+        $fundAccountObject = $this->getDbEntityById('fund_account', 'fa_100000000000fa');
+
+        $contactObject = $this->getDbEntityById('contact', 'cont_' . $fundAccountObject->toArray()['source_id']);
+
+        $bankAccountObject = $this->getDbEntityById('bank_account', 'ba_' . $fundAccountObject->toArray()['account_id']);
+
+        $expectedFundAccountExtraInfo = [
+            'id'            => 'fa_' . $fundAccountObject['id'],
+            'entity'        => 'fund_account',
+            'contact_id'    => 'cont_' . $fundAccountObject['source_id'],
+            'account_type'  => $fundAccountObject['account_type'],
+            'active'        => $fundAccountObject['active'],
+            'batch_id'      => $fundAccountObject['batch_id'],
+            'created_at'    => $fundAccountObject['created_at'],
+            'bank_account' => [
+                'id'              => 'ba_' . $bankAccountObject['id'],
+                'name'            => $bankAccountObject['name'],
+                'ifsc'            => $bankAccountObject['ifsc'],
+                'account_number'  => $bankAccountObject['account_number'],
+                'bank_name'       => $bankAccountObject['bank_name'],
+            ],
+            'contact' => [
+                'id'            => 'cont_' . $contactObject['id'],
+                'entity'        => 'contact',
+                'name'          => $contactObject['name'],
+                'contact'       => $contactObject['contact'],
+                'email'         => $contactObject['email'],
+                'type'          => $contactObject['type'],
+                'reference_id'  => $contactObject['reference_id'],
+                'batch_id'      => $contactObject['batch_id'],
+                'active'        => $contactObject['active'],
+                'created_at'    => $contactObject['created_at'],
+            ],
+        ];
+
+        $this->assertEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
+
+        $this->assertArrayKeySelectiveEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
+    }
+
+    public function testCreatePayoutForCardViaMicroserviceAndPassFundAccountInfo()
+    {
+        $this->fixtures->on('live')->create('feature', [
+            'name'        => Feature\Constants::NEW_BANKING_ERROR,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $card = $this->fixtures->on('live')->create('card', [
+            'merchant_id'  => '10000000000000',
+            'name'         => 'chirag',
+            'expiry_month' => 4,
+            'expiry_year'  => 2024,
+            'vault_token'  => 'MzQwMTY5NTcwOTkwMTM3==',
+        ]);
+
+        $this->fixtures->on('live')->edit('fund_account',
+            '100000000000fa',
+            [
+                'account_type' => 'card',
+                'account_id'   => $card->getId()
+            ]
+        );
+
+        $testData = $this->testData['testCreatePayoutViaMicroserviceAndPassFundAccountInfo'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $assertionBody = [];
+
+        $this->mockPayoutServiceCreate(false, [],  [],Status::PROCESSING, false, true, $assertionBody);
+
+        $this->mockRazorxDefault();
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+
+        $fundAccountObject = $this->getDbEntityById('fund_account', 'fa_100000000000fa');
+
+        $contactObject = $this->getDbEntityById('contact', 'cont_' . $fundAccountObject->toArray()['source_id']);
+
+        $cardObject = $this->getDbEntityById('card', 'card_' . $fundAccountObject->toArray()['account_id']);
+
+        $expectedFundAccountExtraInfo = [
+            'id'            => 'fa_' . $fundAccountObject['id'],
+            'entity'        => 'fund_account',
+            'contact_id'    => 'cont_' . $fundAccountObject['source_id'],
+            'account_type'  => $fundAccountObject['account_type'],
+            'active'        => $fundAccountObject['active'],
+            'batch_id'      => $fundAccountObject['batch_id'],
+            'created_at'    => $fundAccountObject['created_at'],
+            'card' => [
+                'id'          => 'card_' . $cardObject['id'],
+                'type'        => $cardObject['type'],
+                'last4'       => $cardObject['last4'],
+                'issuer'      => $cardObject['issuer'],
+                'sub_type'    => $cardObject['sub_type'],
+                'network'     => $cardObject['network'],
+                'token_iin'   => $cardObject['token_iin'],
+                'token_last4' => $cardObject['token_last4'],
+                'vault_token' => $cardObject['vault_token'],
+                'vault'       => $cardObject['vault'],
+                'trivia'      => $cardObject['trivia'],
+                'input_type'  => 'card',
+            ],
+            'contact' => [
+                'id'            => 'cont_' . $contactObject['id'],
+                'entity'        => 'contact',
+                'name'          => $contactObject['name'],
+                'contact'       => $contactObject['contact'],
+                'email'         => $contactObject['email'],
+                'type'          => $contactObject['type'],
+                'reference_id'  => $contactObject['reference_id'],
+                'batch_id'      => $contactObject['batch_id'],
+                'active'        => $contactObject['active'],
+                'created_at'    => $contactObject['created_at'],
+            ],
+        ];
+
+        $this->assertEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
+
+        $this->assertArrayKeySelectiveEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
+    }
+
+    public function testCreatePayoutForVpaViaMicroserviceAndPassFundAccountInfo()
+    {
+        $this->fixtures->on('live')->create('feature', [
+            'name'        => Feature\Constants::NEW_BANKING_ERROR,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $this->fixtures->on('live')->create('contact', [
+            'id' => 'cont1000000000',
+            'name' => 'Test Testing',
+            'email' => 'test@razorpay.com',
+            'contact' => '987654321',
+            'type' => 'self',
+            'active' => 1,
+        ]);
+
+        $this->fixtures->on('live')->create('vpa', [
+            'id' => 'vpa10000000000',
+            'entity_id' => 'cont1000000000',
+            'entity_type' => 'contact',
+            'username' => 'test',
+            'handle' => 'upi',
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $this->fixtures->on('live')->edit('fund_account',
+            '100000000000fa',
+            [
+                'account_type' => 'vpa',
+                'account_id'   => 'vpa10000000000'
+            ]
+        );
+
+        $testData = $this->testData['testCreatePayoutViaMicroserviceAndPassFundAccountInfo'];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $assertionBody = [];
+
+        $this->mockPayoutServiceCreate(false, [],  [],Status::PROCESSING, false, true, $assertionBody);
+
+        $this->mockRazorxDefault();
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+
+        $fundAccountObject = $this->getDbEntityById('fund_account', 'fa_100000000000fa');
+
+        $contactObject = $this->getDbEntityById('contact', 'cont_' . $fundAccountObject->toArray()['source_id']);
+
+        $vpaObject = $this->getDbEntityById('vpa', 'vpa_' . $fundAccountObject->toArray()['account_id']);
+
+        $expectedFundAccountExtraInfo = [
+            'id'            => 'fa_' . $fundAccountObject['id'],
+            'entity'        => 'fund_account',
+            'contact_id'    => 'cont_' . $fundAccountObject['source_id'],
+            'account_type'  => $fundAccountObject['account_type'],
+            'active'        => $fundAccountObject['active'],
+            'batch_id'      => $fundAccountObject['batch_id'],
+            'created_at'    => $fundAccountObject['created_at'],
+            'vpa' => [
+                'id'              => 'vpa_' . $vpaObject['id'],
+                'username'        => $vpaObject['username'],
+                'handle'          => $vpaObject['handle'],
+                'address'         => $vpaObject['address'],
+            ],
+            'contact' => [
+                'id'            => 'cont_' . $contactObject['id'],
+                'entity'        => 'contact',
+                'name'          => $contactObject['name'],
+                'contact'       => $contactObject['contact'],
+                'email'         => $contactObject['email'],
+                'type'          => $contactObject['type'],
+                'reference_id'  => $contactObject['reference_id'],
+                'batch_id'      => $contactObject['batch_id'],
+                'active'        => $contactObject['active'],
+                'created_at'    => $contactObject['created_at'],
+            ],
+        ];
+
+        $this->assertEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
+
+        $this->assertArrayKeySelectiveEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
+    }
+
+    public function testCreatePayoutViaDashboardViaMicroserviceAndPassFundAccountInfo()
+    {
+        $assertionBody = [];
+
+        $this->mockPayoutServiceCreate(false, [],  [],Status::PROCESSING, false, false, $assertionBody);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::PS_FUND_ACCOUNT_CONSUME_FROM_PAYLOAD => 'on']);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $testData = $this->testData['testCreatePayout'];
+        $testData['request']['url']              = '/payouts_with_otp';
+        $testData['request']['content']['otp']   = '0007';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuthLive();
+        $response = $this->startTest();
+
+        $fundAccountObject = $this->getDbEntityById('fund_account', 'fa_100000000000fa');
+
+        $contactObject = $this->getDbEntityById('contact', 'cont_' . $fundAccountObject->toArray()['source_id']);
+
+        $bankAccountObject = $this->getDbEntityById('bank_account', 'ba_' . $fundAccountObject->toArray()['account_id']);
+
+        $expectedFundAccountExtraInfo = [
+            'id'            => 'fa_' . $fundAccountObject['id'],
+            'entity'        => 'fund_account',
+            'contact_id'    => 'cont_' . $fundAccountObject['source_id'],
+            'account_type'  => $fundAccountObject['account_type'],
+            'active'        => $fundAccountObject['active'],
+            'batch_id'      => $fundAccountObject['batch_id'],
+            'created_at'    => $fundAccountObject['created_at'],
+            'bank_account' => [
+                'id'              => 'ba_' . $bankAccountObject['id'],
+                'name'            => $bankAccountObject['name'],
+                'ifsc'            => $bankAccountObject['ifsc'],
+                'account_number'  => $bankAccountObject['account_number'],
+                'bank_name'       => $bankAccountObject['bank_name'],
+            ],
+            'contact' => [
+                'id'            => 'cont_' . $contactObject['id'],
+                'entity'        => 'contact',
+                'name'          => $contactObject['name'],
+                'contact'       => $contactObject['contact'],
+                'email'         => $contactObject['email'],
+                'type'          => $contactObject['type'],
+                'reference_id'  => $contactObject['reference_id'],
+                'batch_id'      => $contactObject['batch_id'],
+                'active'        => $contactObject['active'],
+                'created_at'    => $contactObject['created_at'],
+            ],
+        ];
+
+        $this->assertEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
+
+        $this->assertArrayKeySelectiveEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
+    }
+
+    public function testCreatePayoutForCardViaDashboardViaMicroserviceAndPassFundAccountInfo()
+    {
+        $card = $this->fixtures->on('live')->create('card', [
+            'merchant_id'  => '10000000000000',
+            'name'         => 'chirag',
+            'expiry_month' => 4,
+            'expiry_year'  => 2024,
+            'vault_token'  => 'MzQwMTY5NTcwOTkwMTM3==',
+        ]);
+
+        $this->fixtures->on('live')->edit('fund_account',
+            '100000000000fa',
+            [
+                'account_type' => 'card',
+                'account_id'   => $card->getId()
+            ]
+        );
+
+        $assertionBody = [];
+
+        $this->mockPayoutServiceCreate(false, [],  [],Status::PROCESSING, false, false, $assertionBody);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::PS_FUND_ACCOUNT_CONSUME_FROM_PAYLOAD => 'on']);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $testData = $this->testData['testCreatePayout'];
+        $testData['request']['url']              = '/payouts_with_otp';
+        $testData['request']['content']['otp']   = '0007';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuthLive();
+        $response = $this->startTest();
+
+        $fundAccountObject = $this->getDbEntityById('fund_account', 'fa_100000000000fa');
+
+        $contactObject = $this->getDbEntityById('contact', 'cont_' . $fundAccountObject->toArray()['source_id']);
+
+        $cardObject = $this->getDbEntityById('card', 'card_' . $fundAccountObject->toArray()['account_id']);
+
+        $expectedFundAccountExtraInfo = [
+            'id'            => 'fa_' . $fundAccountObject['id'],
+            'entity'        => 'fund_account',
+            'contact_id'    => 'cont_' . $fundAccountObject['source_id'],
+            'account_type'  => $fundAccountObject['account_type'],
+            'active'        => $fundAccountObject['active'],
+            'batch_id'      => $fundAccountObject['batch_id'],
+            'created_at'    => $fundAccountObject['created_at'],
+            'card' => [
+                'id'          => 'card_' . $cardObject['id'],
+                'type'        => $cardObject['type'],
+                'last4'       => $cardObject['last4'],
+                'issuer'      => $cardObject['issuer'],
+                'sub_type'    => $cardObject['sub_type'],
+                'network'     => $cardObject['network'],
+                'token_iin'   => $cardObject['token_iin'],
+                'token_last4' => $cardObject['token_last4'],
+                'vault_token' => $cardObject['vault_token'],
+                'vault'       => $cardObject['vault'],
+                'trivia'      => $cardObject['trivia'],
+                'input_type'  => 'card',
+            ],
+            'contact' => [
+                'id'            => 'cont_' . $contactObject['id'],
+                'entity'        => 'contact',
+                'name'          => $contactObject['name'],
+                'contact'       => $contactObject['contact'],
+                'email'         => $contactObject['email'],
+                'type'          => $contactObject['type'],
+                'reference_id'  => $contactObject['reference_id'],
+                'batch_id'      => $contactObject['batch_id'],
+                'active'        => $contactObject['active'],
+                'created_at'    => $contactObject['created_at'],
+            ],
+        ];
+
+        $this->assertEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
+
+        $this->assertArrayKeySelectiveEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
+    }
+
+    public function testCreatePayoutForVpaViaDashboardViaMicroserviceAndPassFundAccountInfo()
+    {
+        $this->fixtures->on('live')->create('contact', [
+            'id' => 'cont1000000000',
+            'name' => 'Test Testing',
+            'email' => 'test@razorpay.com',
+            'contact' => '987654321',
+            'type' => 'self',
+            'active' => 1,
+        ]);
+
+        $this->fixtures->on('live')->create('vpa', [
+            'id' => 'vpa10000000000',
+            'entity_id' => 'cont1000000000',
+            'entity_type' => 'contact',
+            'username' => 'test',
+            'handle' => 'upi',
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $this->fixtures->on('live')->edit('fund_account',
+            '100000000000fa',
+            [
+                'account_type' => 'vpa',
+                'account_id'   => 'vpa10000000000'
+            ]
+        );
+
+        $assertionBody = [];
+
+        $this->mockPayoutServiceCreate(false, [],  [],Status::PROCESSING, false, false, $assertionBody);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::PS_FUND_ACCOUNT_CONSUME_FROM_PAYLOAD => 'on']);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $testData = $this->testData['testCreatePayout'];
+        $testData['request']['url']              = '/payouts_with_otp';
+        $testData['request']['content']['otp']   = '0007';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuthLive();
+        $response = $this->startTest();
+
+        $fundAccountObject = $this->getDbEntityById('fund_account', 'fa_100000000000fa');
+
+        $contactObject = $this->getDbEntityById('contact', 'cont_' . $fundAccountObject->toArray()['source_id']);
+
+        $vpaObject = $this->getDbEntityById('vpa', 'vpa_' . $fundAccountObject->toArray()['account_id']);
+
+        $expectedFundAccountExtraInfo = [
+            'id'            => 'fa_' . $fundAccountObject['id'],
+            'entity'        => 'fund_account',
+            'contact_id'    => 'cont_' . $fundAccountObject['source_id'],
+            'account_type'  => $fundAccountObject['account_type'],
+            'active'        => $fundAccountObject['active'],
+            'batch_id'      => $fundAccountObject['batch_id'],
+            'created_at'    => $fundAccountObject['created_at'],
+            'vpa' => [
+                'id'              => 'vpa_' . $vpaObject['id'],
+                'username'        => $vpaObject['username'],
+                'handle'          => $vpaObject['handle'],
+                'address'         => $vpaObject['address'],
+            ],
+            'contact' => [
+                'id'            => 'cont_' . $contactObject['id'],
+                'entity'        => 'contact',
+                'name'          => $contactObject['name'],
+                'contact'       => $contactObject['contact'],
+                'email'         => $contactObject['email'],
+                'type'          => $contactObject['type'],
+                'reference_id'  => $contactObject['reference_id'],
+                'batch_id'      => $contactObject['batch_id'],
+                'active'        => $contactObject['active'],
+                'created_at'    => $contactObject['created_at'],
+            ],
+        ];
+
+        $this->assertEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
+
+        $this->assertArrayKeySelectiveEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
+    }
+
+    public function testCreateInternalPayoutViaMicroServiceAndPassFundAccountInfo()
+    {
+        $assertionBody = [];
+
+        $this->mockPayoutServiceCreate(false, [],  [],Status::PROCESSING, false, false, $assertionBody);
+
+        $testData = $this->testData['testCreateInternalPayoutViaMicroService'];
+
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = '10000000000000';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->appAuthLive($this->config['applications.vendor_payments.secret']);
+
+        $this->mockRazorxDefault();
+
+        $this->startTest();
+
+        $fundAccountObject = $this->getDbEntityById('fund_account', 'fa_100000000000fa');
+
+        $contactObject = $this->getDbEntityById('contact', 'cont_' . $fundAccountObject->toArray()['source_id']);
+
+        $bankAccountObject = $this->getDbEntityById('bank_account', 'ba_' . $fundAccountObject->toArray()['account_id']);
+
+        $expectedFundAccountExtraInfo = [
+            'id'            => 'fa_' . $fundAccountObject['id'],
+            'entity'        => 'fund_account',
+            'contact_id'    => 'cont_' . $fundAccountObject['source_id'],
+            'account_type'  => $fundAccountObject['account_type'],
+            'active'        => $fundAccountObject['active'],
+            'batch_id'      => $fundAccountObject['batch_id'],
+            'created_at'    => $fundAccountObject['created_at'],
+            'bank_account' => [
+                'id'              => 'ba_' . $bankAccountObject['id'],
+                'name'            => $bankAccountObject['name'],
+                'ifsc'            => $bankAccountObject['ifsc'],
+                'account_number'  => $bankAccountObject['account_number'],
+                'bank_name'       => $bankAccountObject['bank_name'],
+            ],
+            'contact' => [
+                'id'            => 'cont_' . $contactObject['id'],
+                'entity'        => 'contact',
+                'name'          => $contactObject['name'],
+                'contact'       => $contactObject['contact'],
+                'email'         => $contactObject['email'],
+                'type'          => $contactObject['type'],
+                'reference_id'  => $contactObject['reference_id'],
+                'batch_id'      => $contactObject['batch_id'],
+                'active'        => $contactObject['active'],
+                'created_at'    => $contactObject['created_at'],
+            ],
+        ];
+
+        $this->assertEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
+
+        $this->assertArrayKeySelectiveEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
+    }
+
+    public function testCreateInternalPayoutForCardViaMicroServiceAndPassFundAccountInfo()
+    {
+        $card = $this->fixtures->on('live')->create('card', [
+            'merchant_id'  => '10000000000000',
+            'name'         => 'chirag',
+            'expiry_month' => 4,
+            'expiry_year'  => 2024,
+            'vault_token'  => 'MzQwMTY5NTcwOTkwMTM3==',
+        ]);
+
+        $this->fixtures->on('live')->edit('fund_account',
+            '100000000000fa',
+            [
+                'account_type' => 'card',
+                'account_id'   => $card->getId()
+            ]
+        );
+
+        $assertionBody = [];
+
+        $this->mockPayoutServiceCreate(false, [],  [],Status::PROCESSING, false, false, $assertionBody);
+
+        $this->mockRazorxDefault();
+
+        $testData = $this->testData['testCreateInternalPayoutViaMicroService'];
+
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = '10000000000000';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->appAuthLive($this->config['applications.vendor_payments.secret']);
+
+        $this->startTest();
+
+        $fundAccountObject = $this->getDbEntityById('fund_account', 'fa_100000000000fa');
+
+        $contactObject = $this->getDbEntityById('contact', 'cont_' . $fundAccountObject->toArray()['source_id']);
+
+        $cardObject = $this->getDbEntityById('card', 'card_' . $fundAccountObject->toArray()['account_id']);
+
+        $expectedFundAccountExtraInfo = [
+            'id'            => 'fa_' . $fundAccountObject['id'],
+            'entity'        => 'fund_account',
+            'contact_id'    => 'cont_' . $fundAccountObject['source_id'],
+            'account_type'  => $fundAccountObject['account_type'],
+            'active'        => $fundAccountObject['active'],
+            'batch_id'      => $fundAccountObject['batch_id'],
+            'created_at'    => $fundAccountObject['created_at'],
+            'card' => [
+                'id'          => 'card_' . $cardObject['id'],
+                'type'        => $cardObject['type'],
+                'last4'       => $cardObject['last4'],
+                'issuer'      => $cardObject['issuer'],
+                'sub_type'    => $cardObject['sub_type'],
+                'network'     => $cardObject['network'],
+                'token_iin'   => $cardObject['token_iin'],
+                'token_last4' => $cardObject['token_last4'],
+                'vault_token' => $cardObject['vault_token'],
+                'vault'       => $cardObject['vault'],
+                'trivia'      => $cardObject['trivia'],
+                'input_type'  => 'card',
+            ],
+            'contact' => [
+                'id'            => 'cont_' . $contactObject['id'],
+                'entity'        => 'contact',
+                'name'          => $contactObject['name'],
+                'contact'       => $contactObject['contact'],
+                'email'         => $contactObject['email'],
+                'type'          => $contactObject['type'],
+                'reference_id'  => $contactObject['reference_id'],
+                'batch_id'      => $contactObject['batch_id'],
+                'active'        => $contactObject['active'],
+                'created_at'    => $contactObject['created_at'],
+            ],
+        ];
+
+        $this->assertEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
+
+        $this->assertArrayKeySelectiveEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
+    }
+
+    public function testCreateInternalPayoutForVpaViaMicroServiceAndPassFundAccountInfo()
+    {
+        $this->fixtures->on('live')->create('contact', [
+            'id' => 'cont1000000000',
+            'name' => 'Test Testing',
+            'email' => 'test@razorpay.com',
+            'contact' => '987654321',
+            'type' => 'self',
+            'active' => 1,
+        ]);
+
+        $this->fixtures->on('live')->create('vpa', [
+            'id' => 'vpa10000000000',
+            'entity_id' => 'cont1000000000',
+            'entity_type' => 'contact',
+            'username' => 'test',
+            'handle' => 'upi',
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $this->fixtures->on('live')->edit('fund_account',
+            '100000000000fa',
+            [
+                'account_type' => 'vpa',
+                'account_id'   => 'vpa10000000000'
+            ]
+        );
+
+        $assertionBody = [];
+
+        $this->mockPayoutServiceCreate(false, [],  [],Status::PROCESSING, false, false, $assertionBody);
+
+        $this->mockRazorxDefault();
+
+        $testData = $this->testData['testCreateInternalPayoutViaMicroService'];
+
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = '10000000000000';
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->appAuthLive($this->config['applications.vendor_payments.secret']);
+
+        $this->startTest();
+
+        $fundAccountObject = $this->getDbEntityById('fund_account', 'fa_100000000000fa');
+
+        $contactObject = $this->getDbEntityById('contact', 'cont_' . $fundAccountObject->toArray()['source_id']);
+
+        $vpaObject = $this->getDbEntityById('vpa', 'vpa_' . $fundAccountObject->toArray()['account_id']);
+
+        $expectedFundAccountExtraInfo = [
+            'id'            => 'fa_' . $fundAccountObject['id'],
+            'entity'        => 'fund_account',
+            'contact_id'    => 'cont_' . $fundAccountObject['source_id'],
+            'account_type'  => $fundAccountObject['account_type'],
+            'active'        => $fundAccountObject['active'],
+            'batch_id'      => $fundAccountObject['batch_id'],
+            'created_at'    => $fundAccountObject['created_at'],
+            'vpa' => [
+                'id'              => 'vpa_' . $vpaObject['id'],
+                'username'        => $vpaObject['username'],
+                'handle'          => $vpaObject['handle'],
+                'address'         => $vpaObject['address'],
+            ],
+            'contact' => [
+                'id'            => 'cont_' . $contactObject['id'],
+                'entity'        => 'contact',
+                'name'          => $contactObject['name'],
+                'contact'       => $contactObject['contact'],
+                'email'         => $contactObject['email'],
+                'type'          => $contactObject['type'],
+                'reference_id'  => $contactObject['reference_id'],
+                'batch_id'      => $contactObject['batch_id'],
+                'active'        => $contactObject['active'],
+                'created_at'    => $contactObject['created_at'],
+            ],
+        ];
+
+        $this->assertEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
+
+        $this->assertArrayKeySelectiveEquals($expectedFundAccountExtraInfo, $assertionBody['fund_account_extra_info']['fund_account']);
     }
 
     public function testCreatePayoutInsufficientBalance()
@@ -2776,11 +3472,15 @@ class PayoutServiceTest extends TestCase
 
     public function testCreateInternalPayoutViaMicroService()
     {
-        $this->mockPayoutServiceCreate();
+        $assertionBody = [];
+
+        $this->mockPayoutServiceCreate(false, [],  [],Status::PROCESSING, false, true, $assertionBody);
 
         $payout = $this->testCreatePayoutServiceFtaCreation();
 
         $this->mockRazorxDefault();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::PS_FUND_ACCOUNT_CONSUME_FROM_PAYLOAD => 'off']);
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -2791,6 +3491,8 @@ class PayoutServiceTest extends TestCase
         $this->ba->appAuthLive($this->config['applications.vendor_payments.secret']);
 
         $this->startTest();
+
+        $this->assertNull($assertionBody['fund_account_extra_info']);
     }
 
     public function testCreateInternalPayoutViaMicroServiceWithUserIdInHeaders()

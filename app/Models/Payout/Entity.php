@@ -168,7 +168,9 @@ class Entity extends Base\PublicEntity
     const CREDITS_INFO                 = 'credits_info';
     const FETCH_UNUSED_CREDITS_SUCCESS = 'fetch_unused_credits_success';
     const UNUSED_CREDITS               = 'unused_credits';
-    const FUND_ACCOUNT_INFO            = 'fund_account_info';
+
+    const FETCH_FUND_ACCOUNT_INFO_SUCCESS = 'fetch_fund_account_info_success';
+    const FUND_ACCOUNT_INFO               = 'fund_account_info';
 
     // These are used while creating merchant payouts.
     // Min amount refers to the minimum amount payout has to be

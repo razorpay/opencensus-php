@@ -66,6 +66,8 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
+    protected $isPSPayout = false;
+
     protected $fillable = [
         self::NAME,
         self::CONTACT,
@@ -240,6 +242,11 @@ class Entity extends Base\PublicEntity
         $this->gstIn = $gstIn;
     }
 
+    public function setIsPSPayout(bool $isPSPayout)
+    {
+        $this->isPSPayout = $isPSPayout;
+    }
+
     // ------------- End Setters -------------
 
     // ----------- Public Setters ------------
@@ -295,7 +302,8 @@ class Entity extends Base\PublicEntity
         {
             $attributes[self::GST_IN] = $this->gstIn === null ? $this->getAttribute(self::GST_IN):$this->gstIn;
         }
-        else if ($basicAuth->isPrivateAuth() === true)
+        else if (($basicAuth->isPrivateAuth() === true) and
+                 ($this->isPSPayout() === false))
         {
             unset($attributes[self::GST_IN]);
         }
@@ -333,6 +341,11 @@ class Entity extends Base\PublicEntity
     // --------- End Public Setters ----------
 
     // --------------- Helpers ---------------
+
+    public function isPSPayout() : bool
+    {
+        return ($this->isPSPayout === true);
+    }
 
     public function isActive(): bool
     {

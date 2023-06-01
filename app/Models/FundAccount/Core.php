@@ -10,6 +10,7 @@ use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Trace\Tracer;
+use RZP\Models\Payout;
 use RZP\Models\Contact;
 use RZP\Models\Feature;
 use RZP\Models\FundAccount;
@@ -25,6 +26,7 @@ use RZP\Constants\HyperTrace;
 use RZP\Constants\Entity as E;
 use RZP\Services\FTS\Constants;
 use RZP\Exception\LogicException;
+use RZP\Constants as RZPConstants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Services\FTS\CreateAccount;
 use RZP\Exception\BadRequestException;
@@ -1442,6 +1444,48 @@ class Core extends Base\Core
             return $fundAccounts;
         }
         return $this->getBulkAppSpecificInformation($fundAccounts);
+    }
+
+    public function fetchFundAccountForPayoutServiceProcessing(string $merchantId, array $input): array
+    {
+        try {
+            // Check if razorx enabled
+            $razorxResponse = $this->app['razorx']->getTreatment($merchantId,
+                                                                 Merchant\RazorxTreatment::PS_FUND_ACCOUNT_CONSUME_FROM_PAYLOAD,
+                                                                 RZPConstants\Mode::LIVE);
+
+            if ($razorxResponse !== 'on')
+            {
+                return [false, null];
+            }
+
+            if (isset($input[Payout\Entity::FUND_ACCOUNT_ID]) === false)
+            {
+                return [false, null];
+            }
+
+            $fundAccountId = $input[Payout\Entity::FUND_ACCOUNT_ID];
+
+            $entity = (new FundAccount\Repository)->findByPublicIdAndMerchant($fundAccountId, $this->merchant);
+
+            $entity->load('contact');
+
+            $entity->setIsPSPayout(true);
+            $entity->contact->setIsPSPayout(true);
+
+            return [true, $entity->toArrayPublic()];
+
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->error(
+                TraceCode::FUND_ACCOUNT_FETCH_FOR_PAYOUT_SERVICE_EXCEPTION,
+                [
+                    'error' => $ex->getMessage()
+                ]);
+        }
+
+        return [false, null];
     }
 
     public function getBulkAppSpecificInformation(Base\PublicCollection $fundAccounts) : Base\PublicCollection
