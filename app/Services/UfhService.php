@@ -314,7 +314,9 @@ class UfhService
             TraceCode::UFH_FILE_UPLOAD,
             array_except($requestData, [self::FILE]));
 
-        if($type == 'firs_file' || $type === 'firs_icici_file')
+        // RBL + ICICI + FirstData Detail + FirstData Summary Files
+        if($type === 'firs_file' or $type === 'firs_icici_file' or
+            $type === 'firs_firstdata_file' or $type === 'firs_firstdata_sum_file')
         {
             $this->merchantId = $requestData[self::ENTITY_ID];
         }

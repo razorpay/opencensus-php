@@ -375,13 +375,20 @@ class Service extends Base\Service
 
         $from = strtotime($input['month'].'/01/'.$input['year']);
         $to = strtotime("+1 Month",$from)-1;
-
-        $documents = $this->repo->merchant_document->findDocumentsForMerchantIdAndDocumentTypeAndDate($merchantId,'firs_file',$from,$to);
+        
+        // Query for RBL + ICICI Firstdata + ICICI Zip Files
+        $documents = $this->repo->merchant_document->findDocumentsForMerchantIdAndDocumentTypesAndDate($merchantId, ['firs_file', 'firs_firstdata_file', 'firs_icici_zip'], $from, $to);
 
         $documentMetaData=[];
 
         foreach ($documents as $document)
         {
+            // For Zip Files Check Status Before Sending Documents to FE
+            if($document['document_type'] === 'firs_icici_zip' and $this->isZippedFIRSDocumentProcessed($document) === false) 
+            {
+                continue;
+            }
+
             $documentResponse = [
                 Entity::ID              => $document->getId(),
                 Entity::DOCUMENT_TYPE   => $document->getDocumentType(),
@@ -390,24 +397,6 @@ class Service extends Base\Service
                 Entity::CREATED_AT      => $document->getCreatedAt(),
             ];
             array_push($documentMetaData,$documentResponse);
-        }
-
-        $zippedICICIFIRSdocuments = $this->repo->merchant_document->findDocumentsForMerchantIdAndDocumentTypeAndDate($merchantId,'firs_icici_zip',$from,$to);
-
-        foreach ($zippedICICIFIRSdocuments as $zipDocument)
-        {
-            if($this->checkZippedFirsDocumentStatus($zipDocument) === true)
-            {
-                $documentResponse = [
-                    Entity::ID              => $zipDocument->getId(),
-                    Entity::DOCUMENT_TYPE   => $zipDocument->getDocumentType(),
-                    Entity::MERCHANT_ID     => $zipDocument->getMerchantId(),
-                    Entity::FILE_STORE_ID   => $zipDocument->getFileStoreId(),
-                    Entity::CREATED_AT      => $zipDocument->getCreatedAt(),
-                ];
-
-                array_push($documentMetaData,$documentResponse);
-            }
         }
 
         return $documentMetaData;
@@ -607,7 +596,7 @@ class Service extends Base\Service
         return ['success' => true];
     }
 
-    protected function checkZippedFirsDocumentStatus($document)
+    protected function isZippedFIRSDocumentProcessed($document) : bool
     {
         $ufhFileStoreEntity = (new GenericDocument\Service)->getDocumentDownloadLinkFromUFH([], $document->getPublicFileStoreId(), $document->getMerchantId());
 

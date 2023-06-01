@@ -598,6 +598,83 @@ class MerchantDocumentTest Extends TestCase
 
     }
 
+    public function testFetchRBLAndFirstdataFIRSDocuments()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->create('merchant_document', [
+            'document_type' => 'firs_file',
+            'merchant_id'   => $merchantDetail['merchant_id'],
+            'document_date' =>  time(),
+            'file_store_id' => 'DM6dXJfU4WzeAF',
+        ]);
+
+        $this->fixtures->create('merchant_document', [
+            'document_type' => 'firs_firstdata_file',
+            'merchant_id'   => $merchantDetail['merchant_id'],
+            'document_date' =>  time(),
+            'file_store_id' => 'DO6dXJfU4WzeAK',
+        ]);
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = sprintf($request['url'], date('m'),date('Y'));
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $response = $this->sendRequest($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertCount(2,$content);
+        $this->assertEquals('firs_file',$content[0]['document_type']);
+        $this->assertEquals('firs_firstdata_file',$content[1]['document_type']);
+
+    }
+
+    public function testFetchRBLAndFirstdataFIRSDocumentsWithSummaryFile()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->create('merchant_document', [
+            'document_type' => 'firs_file',
+            'merchant_id'   => $merchantDetail['merchant_id'],
+            'document_date' =>  time(),
+            'file_store_id' => 'DM6dXJfU4WzeAF',
+        ]);
+
+        $this->fixtures->create('merchant_document', [
+            'document_type' => 'firs_firstdata_file',
+            'merchant_id'   => $merchantDetail['merchant_id'],
+            'document_date' =>  time(),
+            'file_store_id' => 'DO6dXJfU4WzeAK',
+        ]);
+
+        $this->fixtures->create('merchant_document', [
+            'document_type' => 'firs_firstdata_sum_file',
+            'merchant_id'   => $merchantDetail['merchant_id'],
+            'document_date' =>  time(),
+            'file_store_id' => 'DO6dXJfU4WzeAK',
+        ]);
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = sprintf($request['url'], date('m'),date('Y'));
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $response = $this->sendRequest($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertCount(2,$content);
+        $this->assertEquals('firs_file',$content[0]['document_type']);
+        $this->assertEquals('firs_firstdata_file',$content[1]['document_type']);
+
+    }
+
     public function testFetchFIRSDocumentsUploadedOnFirstDayOfMonth()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');

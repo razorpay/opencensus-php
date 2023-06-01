@@ -85,6 +85,9 @@ class Type
     const FIRS_ICICI_FILE = 'firs_icici_file';
     const FIRS_ICICI_ZIP  = 'firs_icici_zip';
 
+    const FIRS_FIRSTDATA_FILE = 'firs_firstdata_file';
+    const FIRS_FIRSTDATA_SUM_FILE = 'firs_firstdata_sum_file';
+
     // EmerchantPay Onboarding Documents
 
     const EMERCHANTPAY_GST_CERTIFICATE    = 'emerchantpay_gst_certificate';
@@ -345,6 +348,9 @@ class Type
         self::FIRS_ICICI_FILE,
         self::FIRS_ICICI_ZIP,
 
+        self::FIRS_FIRSTDATA_FILE,
+        self::FIRS_FIRSTDATA_SUM_FILE,
+
         self::EMERCHANTPAY_GST_CERTIFICATE,
         self::EMERCHANTPAY_PROOF_OF_OWNERSHIP,
         self::EMERCHANTPAY_AADHAAR,
@@ -518,6 +524,9 @@ class Type
 
         self::FIRS_ICICI_FILE => self::ADDITIONAL_DOCUMENTS,
         self::FIRS_ICICI_ZIP  => self::ADDITIONAL_DOCUMENTS,
+
+        self::FIRS_FIRSTDATA_FILE => self::ADDITIONAL_DOCUMENTS,
+        self::FIRS_FIRSTDATA_SUM_FILE => self::ADDITIONAL_DOCUMENTS,
 
         self::EMERCHANTPAY_GST_CERTIFICATE    => self::ADDITIONAL_DOCUMENTS,
         self::EMERCHANTPAY_PROOF_OF_OWNERSHIP => self::ADDITIONAL_DOCUMENTS,

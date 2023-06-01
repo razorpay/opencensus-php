@@ -484,5 +484,30 @@ return [
 
             ]
         ],
+    ],
+
+
+    'testFetchRBLAndFirstdataFIRSDocuments' => [
+        'request'  => [
+            'url'       => '/merchant/firs?month=%s&year=%s',
+            'method'    => 'GET',
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ],
+    ],
+
+    'testFetchRBLAndFirstdataFIRSDocumentsWithSummaryFile' => [
+        'request'  => [
+            'url'       => '/merchant/firs?month=%s&year=%s',
+            'method'    => 'GET',
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ],
     ]
 ];

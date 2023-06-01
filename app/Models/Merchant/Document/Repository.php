@@ -153,6 +153,16 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function findDocumentsForMerchantIdAndDocumentTypesAndDate(string $merchantId, array $documentTypes, int $from, int $to)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->whereIn(Entity::DOCUMENT_TYPE,$documentTypes)
+                    ->whereBetween(Entity::DOCUMENT_DATE, [$from, $to])
+                    ->whereNull(Entity::DELETED_AT)
+                    ->get();
+    }
+
     public function filterMerchantIdsWithUploadedDocuments(array $merchantIdList, string $documentType)
     {
         return $this->newQuery()

@@ -127,6 +127,7 @@ class MerchantFirsDocuments extends Job
         /* Sample Key For Different Gateway
             rbl     - rbl/FIRS/filename.pdf
             icici   - icici/FIRS/filename.pdf
+            firstdata - firstdata/FIRS/filename.pdf
         */
 
         $gateway = explode('/',$key)[0];

@@ -73,6 +73,12 @@ class Service extends Base\Service
     const OPGSP_TRAN_REF_NO = 'opgsptranrefno';
     const REMITTANCE_CURRENCY = 'currency';
 
+    const FIRSTDATA                     = "firstdata";
+    const FIRSTDATA_DETAIL_FIRS_TYPE    = 'Det';
+    const FIRSTDATA_SUMMARY_FIRS_TYPE   = 'Sum';
+    const FIRS_FIRSTDATA_FILE           = 'firs_firstdata_file';
+    const FIRS_FIRSTDATA_SUMMARY_FILE   = 'firs_firstdata_sum_file';
+
     protected static $headers = [
         'MID',
         'Merchant name',
@@ -349,39 +355,9 @@ class Service extends Base\Service
              * $this->deleteExistingZipFile($merchantId,$part);
             */
 
-            $document = (new Document\Core)->saveInMerchantDocument($response,$merchantId,$type,$documentDate);
+            $document = (new Document\Core)->saveInMerchantDocument($response, $merchantId, $type, $documentDate);
 
-            try
-            {
-                // set the mode
-                if (isset($this->app['rzp.mode']) === false)
-                {
-                    $this->app['rzp.mode'] = $mode;
-                }
-                $data = [
-                   'document_id' => $document->getId(),
-                   'action'      => MerchantCrossborderEmail::FIRS_AVAILABLE_NOTIFICATION,
-                   'mode'        => $this->app['rzp.mode'],
-                ];
-                $this->trace->info(TraceCode::FIRS_SEND_EMAIL_MESSAGE_DISPATCHED,
-                    [
-                        'data' => $data,
-                    ]
-                );
-                // adding delay of 1 to 10 minutes to distribute load
-                MerchantCrossborderEmail::dispatch($data)->delay(rand(60,1000) % 601);
-
-            }
-            catch (\Exception $ex)
-            {
-                $this->trace->traceException(
-                    $ex,
-                    null,
-                    TraceCode::FIRS_SEND_EMAIL_MESSAGE_DISPATCH_FAILED,
-                    [
-                        'document_id' => $document->getId()
-                    ]);
-            }
+            $this->triggerFIRSAvailableNotification($document, $mode);
        }
 
        if($input['gateway'] === self::ICICI)
@@ -411,7 +387,73 @@ class Service extends Base\Service
                     'success'           => isset($response[GatewayConstants::ID]),
                 ]);
 
-            $document = (new Document\Core)->saveInMerchantDocument($response,$merchantId,$type,$documentDate);
+            $document = (new Document\Core)->saveInMerchantDocument($response, $merchantId, $type, $documentDate);
+       }
+
+       if ($input['gateway'] === self::FIRSTDATA)
+       {
+            // 15 Digit MID_FIRS_From_DDMMYY_ To_DDMMYY_POS_Det.pdf
+            $tokens = explode('_',$filename);
+
+            $gatewayMerchantId = trim($tokens[0]);
+            $fromDate = trim($tokens[3]);
+            $toDate = trim($tokens[5]);
+            $filetypeAndFileExtension = trim($tokens[7]);
+
+            $fromMonth = substr($fromDate,2,2);
+            $fromYear = substr($fromDate,4,2);
+
+            $toMonth = substr($toDate,2,2);
+            $toYear = substr($toDate,4,2);
+
+            $filetypeAndFileExtension = trim($filetypeAndFileExtension);
+            list($fileType, $fileExtension) = explode('.',$filetypeAndFileExtension);
+
+            if($fromMonth !== $toMonth || $fromYear !== $toYear || $fileExtension !== 'pdf' || 
+                !($fileType === self::FIRSTDATA_SUMMARY_FIRS_TYPE || $fileType === self::FIRSTDATA_DETAIL_FIRS_TYPE))
+            { 
+                $this->trace->info(TraceCode::INVALID_FIRSTDATA_FIRS_FILE,[
+                    'filename' => $filename
+                ]);
+
+                throw new Exception\BadRequestValidationFailureException(
+                    'Invalid or Unsupported File Type');
+            }
+
+            $gatewayMerchantId = trim($gatewayMerchantId);
+            
+            // 33 is added as prefix before storing for all TIDs.
+            $gatewayMerchantId = "33" . substr($gatewayMerchantId,7,8);
+            $terminal = $this->repo->terminal->findMerchantIdByGatewayMerchantIDAll($gatewayMerchantId);
+            $merchantId = $terminal->getMerchantId();
+            $merchant = $this->repo->merchant->find($merchantId);
+            $storageFileName = 'FIRS/'.$merchantId.'/'.$fromYear.'/'.$fromMonth.'/'.$filename;
+            $documentDate = strtotime($fromMonth.'/'.date('d').'/'.$fromYear);
+
+            if ($fileType == self::FIRSTDATA_DETAIL_FIRS_TYPE)
+            {
+                $type = self::FIRS_FIRSTDATA_FILE;
+            }
+            
+            if ($fileType == self::FIRSTDATA_SUMMARY_FIRS_TYPE)
+            {
+                $type = self::FIRS_FIRSTDATA_SUMMARY_FILE;
+            }
+
+            $response = $ufhService->uploadFileAndGetResponse($file, $storageFileName, $type, $merchant);
+
+            $this->trace->info(TraceCode::UPLOAD_FILE_DETAILS, [
+                'success'           => (isset($response[UfhService::STATUS]) && $response[UfhService::STATUS] === FileProcessor::UPLOADED)
+            ]);
+
+            if(isset($response[UfhService::STATUS]) && $response[UfhService::STATUS] !== FileProcessor::UPLOADED)
+            {
+                throw new Exception\ServerErrorException('Unable to Upload FIRS File', ErrorCode::SERVER_ERROR);
+            }
+
+            $document = (new Document\Core)->saveInMerchantDocument($response, $merchantId, $type, $documentDate);
+
+            $this->triggerFIRSAvailableNotification($document, $mode);
        }
 
         return $document;
@@ -904,5 +946,43 @@ class Service extends Base\Service
         }
 
         return $response;
+    }
+
+    protected function triggerFIRSAvailableNotification($document, $mode) 
+    {
+        try
+        {
+            // set the mode
+            if (isset($this->app['rzp.mode']) === false)
+            {
+                $this->app['rzp.mode'] = $mode;
+            }
+
+            $data = [
+                'document_id' => $document->getId(),
+                'action'      => MerchantCrossborderEmail::FIRS_AVAILABLE_NOTIFICATION,
+                'mode'        => $this->app['rzp.mode'],
+            ];
+            
+            $this->trace->info(TraceCode::FIRS_SEND_EMAIL_MESSAGE_DISPATCHED,
+                [
+                    'data' => $data,
+                ]
+            );
+
+            // adding delay of 1 to 10 minutes to distribute load
+            MerchantCrossborderEmail::dispatch($data)->delay(rand(60,1000) % 601);
+
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                null,
+                TraceCode::FIRS_SEND_EMAIL_MESSAGE_DISPATCH_FAILED,
+                [
+                    'document_id' => $document->getId()
+                ]);
+        }
     }
 }
