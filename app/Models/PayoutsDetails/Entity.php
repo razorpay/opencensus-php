@@ -158,9 +158,12 @@ class Entity extends PublicEntity
 
         $infoJson = $this->getAdditionalInfo();
 
-        if (array_key_exists(self::ATTACHMENTS_KEY, $infoJson))
+        if (empty($infoJson) === false)
         {
-            return $infoJson[self::ATTACHMENTS];
+            if (array_key_exists(self::ATTACHMENTS_KEY, $infoJson))
+            {
+                return $infoJson[self::ATTACHMENTS];
+            }
         }
 
         return [];
@@ -175,9 +178,12 @@ class Entity extends PublicEntity
 
         $infoJson = $this->getAdditionalInfo();
 
-        if (array_key_exists(self::SUBTOTAL_AMOUNT_KEY, $infoJson))
+        if (empty($infoJson) === false)
         {
-            return $infoJson[self::SUBTOTAL_AMOUNT_KEY];
+            if (array_key_exists(self::SUBTOTAL_AMOUNT_KEY, $infoJson))
+            {
+                return $infoJson[self::SUBTOTAL_AMOUNT_KEY];
+            }
         }
 
         return null;
@@ -192,9 +198,12 @@ class Entity extends PublicEntity
 
         $infoJson = $this->getAdditionalInfo();
 
-        if (array_key_exists(self::TDS_AMOUNT_KEY, $infoJson))
+        if (empty($infoJson) === false)
         {
-            return $infoJson[self::TDS_AMOUNT_KEY];
+            if (array_key_exists(self::TDS_AMOUNT_KEY, $infoJson))
+            {
+                return $infoJson[self::TDS_AMOUNT_KEY];
+            }
         }
 
         return null;

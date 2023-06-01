@@ -100,6 +100,7 @@ use RZP\Jobs\PayoutPostCreateProcessLowPriority;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
 use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransferJob;
+use RZP\Tests\Functional\Helpers\PrivateMethodTrait;
 use RZP\Tests\Functional\Helpers\PayoutAttachmentTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
@@ -133,6 +134,7 @@ class PayoutTest extends OAuthTestCase
     use TestsWebhookEvents;
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
+    use PrivateMethodTrait;
 
     private   $checkerRoleUser;
 
@@ -370,6 +372,8 @@ class PayoutTest extends OAuthTestCase
         /** @var PayoutsDetails\Entity $payoutDetails */
         $payoutDetails = $payout->payoutsDetails;
 
+        $this->assertEmpty($payoutDetails->getAdditionalInfo());
+
         $migratedPayoutDetails = \DB::connection('live')->select("select * from ps_payout_details where payout_id = '$id'");
 
         $this->assertNotNull($migratedPayoutDetails[0]->id);
@@ -378,6 +382,9 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($payoutDetails->getCreatedAt(), $migratedPayoutDetails[0]->created_at);
         $this->assertEquals($payoutDetails->getUpdatedAt(), $migratedPayoutDetails[0]->updated_at);
 
+        //  Verifying that migrated payout has null ony in additional_info instead of json_encode(null)
+        $this->assertNotEquals(json_encode(null), $migratedPayoutDetails[0]->additional_info);
+        $this->assertEmpty($migratedPayoutDetails[0]->additional_info);
 
         /** @var PayoutsStatusDetailsEntity $payoutStatusDetails */
         $payoutStatusDetails = $this->getDbEntities(Constants\Table::PAYOUTS_STATUS_DETAILS, [
@@ -5058,6 +5065,49 @@ class PayoutTest extends OAuthTestCase
         $fta = $this->getDbEntity('fund_transfer_attempt', ['source_id' => substr($response['id'], 5)]);
 
         $this->assertNotNull($fta);
+    }
+
+    public function testProxyAuthPublicResponseOfPayoutWithPayoutDetailsButEmptyAdditionalInfo()
+    {
+        $this->testCreateQueuedPayout();
+
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
+
+        $this->assertNotNull($payoutDetails);
+        $this->assertEquals(true, $payoutDetails->getQueueIfLowBalanceFlag());
+        $this->assertEmpty($payoutDetails->getAdditionalInfo());
+
+        $this->fixtures->edit('payouts_details', $payoutDetails->getPayoutId(), [
+            PayoutsDetails\Entity::ADDITIONAL_INFO => json_encode(null),
+        ]);
+
+        $payoutDetails->reload();
+
+        // Verifying that doing json_decode on json_encode(null) gives null only and it is considered as empty.
+        $this->assertEquals(null, $payoutDetails->getAdditionalInfo());
+        $this->assertTrue(empty($payoutDetails->getAdditionalInfo()));
+
+        // Verifying that json_encode(null) is not considered as empty.
+        $this->assertFalse(empty($payoutDetails->getAttribute(PayoutsDetails\Entity::ADDITIONAL_INFO)));
+
+        $payout = $this->getDbEntityById(Constants\Entity::PAYOUT, $payoutDetails->getPayoutId());
+
+        $this->app['basicauth']->setBasicType(BasicAuth\Type::PROXY_AUTH);
+
+        $this->invokePrivateMethod($this->app['basicauth'], BasicAuth\BasicAuth::class, 'setProxyTrue');
+
+        $payoutPublicResponse = $payout->toArrayPublic();
+
+        $payoutPublicExpectedMeta = [
+            'meta' => [
+                PayoutsDetails\Entity::TDS                 => null,
+                PayoutsDetails\Entity::ATTACHMENTS_KEY     => [],
+                PayoutsDetails\Entity::SUBTOTAL_AMOUNT_KEY => null,
+                PayoutsDetails\Entity::TAX_PAYMENT_ID      => null,
+            ],
+        ];
+
+        $this->assertArraySelectiveEquals($payoutPublicExpectedMeta, $payoutPublicResponse);
     }
 
     public function testProcessQueuedPayoutWhereMerchantBlacklisted()
