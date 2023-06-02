@@ -170,5 +170,5 @@ export const SWITCH_TEXTS = {
 
 export const COD_SETTINGS_INFO = `Use this setting to enable COD on your store and configure the rules for selectively
 showing COD to customers based on location, products, etc. as well as for setting the
-COD fees. <br /> Please note that this will override any COD settings on your
+COD fees. Please note that this will override any COD settings on your
 Shopify/WooC store.`;
