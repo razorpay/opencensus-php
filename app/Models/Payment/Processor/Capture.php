@@ -1156,7 +1156,12 @@ trait Capture
         }
         catch (\Throwable $e)
         {
-            $this->trace->count(PartnerMetric::PAYMENT_COMMISSION_FAILED_TOTAL);
+            $dimensions = [
+                'message'       => $e->getMessage(),
+                'code'          => $e->getCode(),
+            ];
+
+            $this->trace->count(PartnerMetric::PAYMENT_COMMISSION_CREATE_FAILED, $dimensions);
             $this->trace->critical(
                 TraceCode::COMMISSION_CREATE_FAILED,
                 [
