@@ -9,6 +9,7 @@ use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
+use Illuminate\Support\Str;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Bank\BankCodes;
 use RZP\Models\Currency\Currency;
@@ -18,6 +19,7 @@ use RZP\Gateway\Upi\Icici\Fields;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\QrCode\Repository as QrRepo;
+use RZP\Base\Database\DetectsLostConnections;
 use RZP\Models\BharatQr\GatewayResponseParams;
 use RZP\Models\QrCode\NonVirtualAccountQrCode;
 use RZP\Models\QrCodeConfig\Keys as QrCodeConfigKeys;
@@ -28,6 +30,7 @@ use RZP\Models\Checkout\Order as CheckoutOrder;
 
 class Processor extends Base\Core
 {
+    use DetectsLostConnections;
     use UpiUnexpectedPaymentRefundHandler;
 
     const RANDOM_CARD_PADDING = '00000';
@@ -114,7 +117,7 @@ class Processor extends Base\Core
                 return $this->createUnexpectedPayment($qrPayment);
             }
 
-            throw $ex;
+            $qrPayment = $this->retryProcessPayment($ex, $qrPayment);
         }
 
         $this->trace->info(TraceCode::QR_CODE_V2_PAYMENT_SUCCESSFUL, $qrPayment->toArrayTrace());
@@ -776,5 +779,48 @@ class Processor extends Base\Core
         $checkoutOrderId = $this->qrCode->getEntityId();
 
         $this->checkoutOrder = (new CheckoutOrder\Repository())->find($checkoutOrderId);
+    }
+
+    /**
+     * This function will retry creating payments which failed due to DB connection issues.
+     *
+     * @param \Exception $ex
+     * @param Entity     $qrPayment
+     *
+     * @return Entity
+     * @throws \Exception
+     */
+    protected function retryProcessPayment(\Exception $ex, Entity $qrPayment)
+    {
+        $variant = $this->app->razorx->getTreatment($this->qrCode->merchant->getId(),
+                                                    RazorxTreatment::QR_PAYMENT_PROCESS_RETRY,
+                                                    $this->mode);
+
+        if (strtolower($variant) !== RazorxTreatment::RAZORX_VARIANT_ON)
+        {
+            throw $ex;
+        }
+
+        if ($this->causedByLostConnection($ex) === false)
+        {
+            throw $ex;
+        }
+
+        $payment = null;
+
+        // This check is added for the case where payment entity is created and authorised
+        // but the process after it failed due to any reason.
+        // For these cases, we should not create another payment as this will lead to duplicate payment creation
+        if ($qrPayment->getPaymentId() !== null)
+        {
+            $payment = $this->repo->payment->find($qrPayment->getPaymentId());
+        }
+
+        if ($payment !== null)
+        {
+            throw $ex;
+        }
+
+        return $this->processPayment($qrPayment);
     }
 }
