@@ -213,9 +213,9 @@ class Terminal extends Base
 
     }
 
-    public function createBharatQrTerminalUpi()
+    public function createBharatQrTerminalUpi(array $attributes = [])
     {
-        $attributes = [
+        $defaultValues = [
             'merchant_id'               => '10000000000000',
             'gateway'                   => 'upi_icici',
             'gateway_merchant_id'       => 'abcd_bharat_qr',
@@ -229,6 +229,8 @@ class Terminal extends Base
                 Type::BHARAT_QR => '1'
             ],
         ];
+
+        $attributes = array_merge($defaultValues, $attributes);
 
         return $this->create($attributes);
     }

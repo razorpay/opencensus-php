@@ -3,6 +3,7 @@
 namespace Functional\QrCode;
 
 use Carbon\Carbon;
+use RZP\Exception\LogicException;
 use RZP\Mail\Payment\Authorized as AuthorizedMail;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Order;
@@ -2452,5 +2453,27 @@ class NonVirtualAccountQrCodeTest extends TestCase
         );
 
         $this->runEntityAssertionsForDedicatedTerminalQr($qrCode, $terminal, 'live');
+    }
+
+    public function testCreateStaticQrWithoutTerminal(): void
+    {
+        $this->fixtures->on('live')->create('terminal:bharat_qr_terminal_upi', [
+            'merchant_id'         => Account::SHARED_ACCOUNT,
+            'gateway_merchant_id' => 'shared_bharat_qr',
+        ]);
+
+        $this->enableRazorXTreatmentForQrDedicatedTerminal();
+
+        $this->expectException(LogicException::class);
+
+        $this->expectExceptionMessage('No dedicated terminal found for merchant');
+
+        $this->createQrCode(
+            [
+                'usage' => 'multiple_use',
+                'type'  => 'upi_qr',
+            ],
+            'live',
+            'LiveAccountMer');
     }
 }

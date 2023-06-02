@@ -20,6 +20,7 @@ use RZP\Models\QrCode\Entity;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Payment\Gateway;
 use RZP\Gateway\Upi\Icici\Fields;
+use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\InvalidArgumentException;
@@ -94,6 +95,16 @@ class Generator extends QrCode\Generator
                     'terminal_id' => $terminal->getId(),
                     'id'          => $qrCode->getId()
                 ]);
+
+                if ($terminal->isShared() === true)
+                {
+                    throw new LogicException('No dedicated terminal found for merchant',
+                                             ErrorCode::SERVER_ERROR_NO_TERMINAL_FOUND,
+                                             [
+                                                 'terminal_id' => $terminal->getId(),
+                                             ]
+                    );
+                }
 
                 $this->gateway = $terminal->getGateway();
 
