@@ -812,7 +812,7 @@ class Service extends Base\Service
 
             $urls = $this->getAllMerchantWebsites($merchantDetails);
 
-            $hasKeyAccess = $merchantDetails->merchant->hasKeyaccess();
+            $hasKeyAccess = $merchantDetails->merchant->getHasKeyAccess();
 
             $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO, [
                 'URLS'           => $urls,

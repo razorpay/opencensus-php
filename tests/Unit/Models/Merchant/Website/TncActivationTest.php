@@ -1179,4 +1179,44 @@ class TncActivationTest extends TestCase
                                  ], $websiteDetail);
     }
 
+    public function testvalidateMerchantActivation()
+    {
+        $merchant = $this->fixtures->create('merchant', ['has_key_access' => false]);
+
+        $merchantId = $merchant['id'];
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'merchant_id'               => $merchantId,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_form_milestone' => 'L2',
+            'activation_status'         => 'activated',
+        ]);
+
+        $websiteDetails = $this->createWebsiteDetails(['merchant_id'              =>$merchantId,
+                                                        "shipping_period"          => "3-5 days",
+                                                        "refund_request_period"    => "3-5 days",
+                                                        "refund_process_period"    => "3-5 days",
+                                                        "additional_data"          => [
+                                                            "support_contact_number" => "9980004017",
+                                                            "support_email"          => "kakarla.vasanthi@razorpay.com"
+                                                        ],
+                                                        "merchant_website_details" => [
+                                                            "contact_us" => [
+                                                                "section_status" => 2,
+                                                                "website"        => [
+                                                                    "https://hello.com" => [
+                                                                        "url" => "https://hello.co.in/contact_us"
+                                                                    ]
+                                                                ]
+                                                            ]
+                                                        ]]);
+
+
+        $result = (new Merchant\Website\Service())->validateMerchantActivation($merchantDetails, $websiteDetails);
+
+        $this->assertFalse($result);
+    }
+
+
 }
