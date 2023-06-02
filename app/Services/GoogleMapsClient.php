@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\App;
 use RZP\Http\Request\Requests;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
+use RZP\Trace\TraceCode;
 
 class GoogleMapsClient
 {
