@@ -1360,80 +1360,17 @@ class Processor
                 return false;
             }
 
-            if (($this->isUpiRearchRoute($currentRouteName) == false) or
-                ($this->app['basicauth']->isPrivateAuth() === false) or // only s2s is allowed
-                (empty($input[Payment\Entity::METHOD]) === true) or
-                ($input[Payment\Entity::METHOD] !== Payment\METHOD::UPI) or
-                (empty($input[Payment\Entity::RECURRING]) === false) or
-                (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === false) or
-                (empty($input[Payment\Entity::INVOICE_ID]) === false) or
-                (empty($input[Payment\Entity::PAYMENT_LINK_ID]) === false) or
-                (empty($input[Payment\Entity::TOKEN_ID]) === false) or
-                (empty($input[Payment\Entity::TOKEN]) === false) or
-                (empty($input[Payment\Entity::SAVE]) === false) or
-                (empty($input[Payment\Entity::OFFER_ID]) === false) or
-                (empty($input[Payment\Entity::CHARGE_ACCOUNT]) === false) or
-                (empty($input['reward_ids']) === false) or
-                ($merchant->isFeeBearerPlatform() === false) or
-                ($merchant->isRazorpayOrgId() === false) or
-                ($this->isOtmPayment($input) === true) or
-                (isset($input[Payment\Method::UPI][Payment\UpiMetadata\Entity::MODE]) === true) or
-                (isset($input[Payment\Method::UPI][Payment\UpiMetadata\Entity::PROVIDER]) === true) or
-                ((isset($input[Payment\Method::UPI][Payment\UpiMetadata\Entity::TYPE]) === true) and
-                ($input[Payment\Method::UPI][Payment\UpiMetadata\Entity::TYPE] !== Payment\UpiMetadata\Type::DEFAULT)) or
-                (isset($input[Payment\Entity::RECEIVER]) === true) or
-                (isset($input[Payment\Entity::UPI_PROVIDER]) === true) or
-                (isset($input[Payment\Entity::CHARGE_ACCOUNT]) === true) or
-                (isset($input['application']) === true) or
-                (isset($input[Payment\Entity::BILLING_ADDRESS]) === true))
+            $customCheckResults = $this->performCustomChecksToRouteViaUpsRearchFlow($input, $merchant, $currentRouteName);
+
+            if ($customCheckResults['route_via_ups'] === false)
             {
-                return false;
-            }
+                $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_ROUTING_CRITERIA_FAILED_REASON,
+                    [
+                        'merchant_id'   => $merchant->getId(),
+                        'reason'        => $customCheckResults['reason'],
+                    ]
+                );
 
-            if ((isset($input['_']) === true) and
-                (isset($input['_']['library']) === true))
-            {
-                $library = $input['_']['library'];
-
-                // only s2s payments supported
-                if ($library !== Payment\Analytics\Metadata::S2S)
-                {
-                    return false;
-                }
-            }
-
-            if (empty($input[Payment\Entity::ORDER_ID]) === false)
-            {
-                $order = $this->fetchOrderFromInput($input);
-
-                $orderMeta =  (new Order\Core)->getFormattedOrderMeta($order);
-
-                // offers are not supported in initial ramp
-                if ((empty($order) === false) and
-                    (($order->hasOffers() === true) or
-                     ($order->isDiscountApplicable() === true) or
-                     ($order->getProductId() !== null) or
-                     ($order->getFeeConfigId() !== null) or
-                     ($order->invoice !== null) or
-                     (isset($orderMeta[Order\OrderMeta\Type::TAX_INVOICE]) === true))
-                    )
-                {
-                    return false;
-                }
-
-                $orderTransfers = $this->repo->transfer->fetchBySourceTypeAndIdAndMerchant(E::ORDER,
-                $order->getId(), $this->merchant);
-
-                if ((empty($orderTransfers) === false) and
-                    (count($orderTransfers) > 0))
-                {
-                    return false;
-                }
-            }
-
-            if ((empty($input['currency']) === false) and
-                ($input['currency'] !== Currency\Currency::INR))
-            {
                 return false;
             }
 
@@ -1488,6 +1425,261 @@ class Processor
         }
 
         return false;
+    }
+
+    /**
+     * Performs Custom checks to avoid routing traffic to UPS Rearch Flow
+     *
+     * @param array $input
+     * @param Entity $merchant
+     * @param string $currentRouteName
+     * @return array
+     */
+    private function performCustomChecksToRouteViaUpsRearchFlow(array $input, Merchant\Entity $merchant, string $currentRouteName): array
+    {
+        $response = [
+            'route_via_ups' => false,
+            'reason' => ''
+        ];
+
+        if ($this->isUpiRearchRoute($currentRouteName) == false)
+        {
+            $response['reason'] = 'Condition: isUpiRearchRoute() is false';
+            return $response;
+        }
+
+        if ($this->app['basicauth']->isPrivateAuth() === false)
+        {
+            $response['reason'] = 'Condition: isPrivateAuth() is false';
+            return $response;
+        }
+
+        if (empty($input[Payment\Entity::METHOD]) === true)
+        {
+            $response['reason'] = 'Condition: input[METHOD] is empty';
+            return $response;
+        }
+
+        if ($input[Payment\Entity::METHOD] !== Payment\METHOD::UPI)
+        {
+            $response['reason'] = 'Condition: input[METHOD] is not UPI';
+            return $response;
+        }
+
+        if (empty($input[Payment\Entity::RECURRING]) === false)
+        {
+            $response['reason'] = 'Condition: input[RECURRING] is not empty';
+            return $response;
+        }
+
+        if (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === false)
+        {
+            $response['reason'] = 'Condition: input[SUBSCRIPTION_ID] is not empty';
+            return $response;
+        }
+
+        if (empty($input[Payment\Entity::INVOICE_ID]) === false)
+        {
+            $response['reason'] = 'Condition: input[INVOICE_ID] is not empty';
+            return $response;
+        }
+
+        if (empty($input[Payment\Entity::PAYMENT_LINK_ID]) === false)
+        {
+            $response['reason'] = 'Condition: input[PAYMENT_LINK_ID] is not empty';
+            return $response;
+        }
+
+        if (empty($input[Payment\Entity::TOKEN_ID]) === false)
+        {
+            $response['reason'] = 'Condition: input[TOKEN_ID] is not empty';
+            return $response;
+        }
+
+        if (empty($input[Payment\Entity::TOKEN]) === false)
+        {
+            $response['reason'] = 'Condition: input[TOKEN] is not empty';
+            return $response;
+        }
+
+        if (empty($input[Payment\Entity::SAVE]) === false)
+        {
+            $response['reason'] = 'Condition: input[SAVE] is not empty';
+            return $response;
+        }
+
+        if (empty($input[Payment\Entity::OFFER_ID]) === false)
+        {
+            $response['reason'] = 'Condition: input[OFFER_ID] is not empty';
+            return $response;
+        }
+
+        if (empty($input[Payment\Entity::CHARGE_ACCOUNT]) === false)
+        {
+            $response['reason'] = 'Condition: input[CHARGE_ACCOUNT] is not empty';
+            return $response;
+        }
+
+        if (empty($input['reward_ids']) === false)
+        {
+            $response['reason'] = 'Condition: input[reward_ids] is not empty';
+            return $response;
+        }
+
+        if ($merchant->isFeeBearerPlatform() === false)
+        {
+            $response['reason'] = 'Condition: isFeeBearerPlatform() is false';
+            return $response;
+        }
+
+        if ($merchant->isRazorpayOrgId() === false)
+        {
+            $response['reason'] = 'Condition: isRazorpayOrgId() is false';
+            return $response;
+        }
+
+        if ($this->isOtmPayment($input) === true)
+        {
+            $response['reason'] = 'Condition: isOtmPayment() is true';
+            return $response;
+        }
+
+        if (isset($input[Payment\Method::UPI][Payment\UpiMetadata\Entity::MODE]) === true)
+        {
+            $response['reason'] = 'Condition: input[UPI][MODE] is set';
+            return $response;
+        }
+
+        if (isset($input[Payment\Method::UPI][Payment\UpiMetadata\Entity::PROVIDER]) === true)
+        {
+            $response['reason'] = 'Condition: input[UPI][PROVIDER] is set';
+            return $response;
+        }
+
+        if ((isset($input[Payment\Method::UPI][Payment\UpiMetadata\Entity::TYPE]) === true) and
+            ($input[Payment\Method::UPI][Payment\UpiMetadata\Entity::TYPE] !== Payment\UpiMetadata\Type::DEFAULT))
+        {
+            $response['reason'] = 'Condition: input[UPI][TYPE] is set and not DEFAULT';
+            return $response;
+        }
+
+        if (isset($input[Payment\Entity::RECEIVER]) === true)
+        {
+            $response['reason'] = 'Condition: input[RECEIVER] is set';
+            return $response;
+        }
+
+        if (isset($input[Payment\Entity::UPI_PROVIDER]) === true)
+        {
+            $response['reason'] = 'Condition: input[UPI_PROVIDER] is set';
+            return $response;
+        }
+
+        if (isset($input[Payment\Entity::CHARGE_ACCOUNT]) === true)
+        {
+            $response['reason'] = 'Condition: input[CHARGE_ACCOUNT] is set';
+            return $response;
+        }
+
+        if (isset($input['application']) === true)
+        {
+            $response['reason'] = 'Condition: input[application] is set';
+            return $response;
+        }
+
+        if (isset($input[Payment\Entity::BILLING_ADDRESS]) === true)
+        {
+            $response['reason'] = 'Condition: input[BILLING_ADDRESS] is set';
+            return $response;
+        }
+
+        if ((isset($input['_']) === true) and
+            (isset($input['_']['library']) === true))
+        {
+            $library = $input['_']['library'];
+
+            // Only s2s payments supported
+            if ($library !== Payment\Analytics\Metadata::S2S)
+            {
+                $response['reason'] = 'Condition: _ library is not S2S';
+                return $response;
+            }
+        }
+
+        if (empty($input[Payment\Entity::ORDER_ID]) === false)
+        {
+            $order = $this->fetchOrderFromInput($input);
+
+            $orderMeta = (new Order\Core)->getFormattedOrderMeta($order);
+
+            if (empty($order) === false)
+            {
+                // Check if offers exist in the order
+                if ($order->hasOffers() === true)
+                {
+                    $response['reason'] = 'Condition: Offers exist in the order';
+                    return $response;
+                }
+
+                // Check if discounts are applicable to the order
+                if ($order->isDiscountApplicable() === true)
+                {
+                    $response['reason'] = 'Condition: Discounts are applicable to the order';
+                    return $response;
+                }
+
+                // Check if product ID exists in the order
+                if ($order->getProductId() !== null)
+                {
+                    $response['reason'] = 'Condition: Product ID exists in the order';
+                    return $response;
+                }
+
+                // Check if fee config ID exists in the order
+                if ($order->getFeeConfigId() !== null)
+                {
+                    $response['reason'] = 'Condition: Fee config ID exists in the order';
+                    return $response;
+                }
+
+                // Check if invoice exists in the order
+                if ($order->invoice !== null)
+                {
+                    $response['reason'] = 'Condition: Invoice exists in the order';
+                    return $response;
+                }
+
+                // Check if tax invoice meta exists in the order meta
+                if (isset($orderMeta[Order\OrderMeta\Type::TAX_INVOICE]) === true)
+                {
+                    $response['reason'] = 'Condition: Tax invoice meta exists in the order meta';
+                    return $response;
+                }
+            }
+
+            $orderTransfers = $this->repo->transfer->fetchBySourceTypeAndIdAndMerchant(E::ORDER, $order->getId(), $this->merchant);
+
+            // Check if there are any order transfers
+            if ((empty($orderTransfers) === false) and
+                (count($orderTransfers) > 0))
+            {
+                $response['reason'] = 'Condition: Order transfers exist';
+                return $response;
+            }
+        }
+
+        // Check if currency is INR
+        if ((empty($input['currency']) === false) and
+            ($input['currency'] !== Currency\Currency::INR))
+        {
+            $response['reason'] = 'Condition: Currency is not INR';
+            return $response;
+        }
+
+        // if none of the condition evaluated as true, the request can be routed via UPS
+        // after checking the razorx variant
+        $response['route_via_ups'] = true;
+        return $response;
     }
 
     private function canRouteFpxThroughRearchFlow($input): bool
