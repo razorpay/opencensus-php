@@ -38,6 +38,9 @@ class Factory
             case Constant::PARTNERSHIP_DEED.ValidationConstants::PROOF:
                 return new PartnershipDeedRuleResultVerifier($validation);
 
+            case Constant::SHOP_ESTABLISHMENT.ValidationConstants::IDENTIFIER:
+                return new ShopEstablishmentAuthRuleResultVerifier($validation);
+
             default :
                 return new DefaultRuleResultVerifier($validation);
         }

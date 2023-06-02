@@ -37,6 +37,7 @@ class Constants
         Constant::GSTIN . '-' . ValidationConstants::IDENTIFIER,
         Constant::LLP_DEED . '-' . ValidationConstants::IDENTIFIER,
         Constant::PARTNERSHIP_DEED . '-' . ValidationConstants::PROOF,
+        Constant::SHOP_ESTABLISHMENT . '-' . ValidationConstants::IDENTIFIER,
     ];
 
 }
