@@ -10,8 +10,10 @@ use RZP\Models\Batch;
 use RZP\Models\Contact;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Models\WalletAccount;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\BankingAccount\AccountType;
 
@@ -104,6 +106,13 @@ class Entity extends Base\PublicEntity
         '5656'    => AccountType::NODAL,
         '456456'  => AccountType::CURRENT,
         '787878'  => AccountType::NODAL,
+    ];
+
+    // Ledger routes for which fund account source account is coming empty
+    const TRANSACTION_STATEMENT_FETCH_MULTIPLE_ROUTES = [
+        'transaction_statement_fetch_multiple',
+        'transaction_statement_fetch_multiple_for_banking',
+        'transaction_statement_fetch_multiple_for_banking_internal',
     ];
 
     protected $generateIdOnCreate = true;
@@ -531,6 +540,23 @@ class Entity extends Base\PublicEntity
 
     public function getAccountDetails(string $accountType)
     {
+        if (empty($this->account) === true)
+        {
+            $route = app('api.route');
+
+            $routeName = $route->getCurrentRouteName();
+
+            if (in_array($routeName, self::TRANSACTION_STATEMENT_FETCH_MULTIPLE_ROUTES, true) === true)
+            {
+                app('trace')->info(
+                    TraceCode::FUND_ACCOUNT_SOURCE_ACCOUNT_EMPTY_FOR_TRANSACTION_STATEMENT_FETCH,
+                    [
+                        self::ACCOUNT_TYPE => $accountType,
+                        self::ENTITY       => $this->toArray(),
+                    ]);
+            }
+        }
+
         $accountAttributes = $this->account->toArrayPublic();
 
         if ($accountType === Type::CARD)

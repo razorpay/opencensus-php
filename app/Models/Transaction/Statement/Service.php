@@ -64,6 +64,17 @@ class Service extends Transaction\Service
 
             $ledger = $this->repo->ledger_statement->fetch($input, $this->merchant->getId(), ConnectionType::RX_DATA_WAREHOUSE_MERCHANT);
 
+            $ledgerDuplicate = $ledger;
+
+            $ledgerIds = $ledgerDuplicate->pluck(Entity::ID)->toArray();
+
+            $this->trace->info(
+                TraceCode::LEDGER_STATEMENT_FETCH_MULTIPLE_RESPONSE,
+                [
+                    'transaction_ids' => $ledgerIds,
+                ]
+            );
+
             $this->trace->histogram(
                 TxnMetric::TRANSACTION_VA_REQUEST_LATENCY_MILLISECONDS,
                 millitime() - $startTime,
