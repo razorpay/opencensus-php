@@ -3,15 +3,15 @@
 namespace Functional\OneClickCheckout\Config;
 
 use Carbon\Carbon;
+use Mockery;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Method;
-use RZP\Models\Merchant\Account;
 use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Fixtures\Entity\Offer;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\Merchant\OneClickCheckout;
 
 class ConfigTest extends TestCase
 {
@@ -38,6 +38,39 @@ class ConfigTest extends TestCase
         $this->ba->publicAuth();
         $this->setupMerchant('10000000000000');
         $this->startTest();
+    }
+
+    public function testAdminCouponWhitelistWithConfigFlag()
+    {
+        $this->setupMerchant('10000000000000');
+        $this->ba->adminAuth();
+
+        // Setup mock for integration service
+
+        $integrationService = $this->getMockBuilder('RZP\Models\Merchant\OneClickCheckout\IntegrationService\Client')
+            ->onlyMethods(['makeMultipartRequest'])
+            ->getMock();
+        $res = $this->getMockBuilder('\Psr\Http\Message\ResponseInterface')
+        ->onlyMethods(['getStatusCode', 'getBody'])
+        ->getMockForAbstractClass();
+        $res->expects($this->exactly(1))->method('getStatusCode')->willReturn(200);
+        $res->expects($this->exactly(1))->method('getBody')->willReturn(json_encode(['errors' => null]));
+        $integrationService->expects($this->exactly(1))->method('makeMultipartRequest')->willReturn($res);
+
+        $this->app->instance('integration_service_client', $integrationService);
+
+        $service = new OneClickCheckout\Config\Service();
+        $service->adminWhitelistCoupons('10000000000000', ['data' => 'test_coupon']);
+
+        $entity = $this->getDbLastEntity('merchant_1cc_configs');
+        $this->assertEquals("one_cc_whitelist_coupons", $entity->getConfig());
+    }
+
+    protected function mockIntegrationsService()
+    {
+        $integrationService = \Mockery::mock('RZP\Models\Merchant\OneClickCheckout\IntegrationService\Client[makeMultipartRequest]');
+        $this->app->instance('integration_service_client', $integrationService);
+        return $integrationService;
     }
 
     protected function setupMerchant(string $merchantId)

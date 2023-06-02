@@ -1089,6 +1089,8 @@ class Service extends Base\Service
             ];
         }
 
+        $this->app['basicauth']->setMerchant($this->merchant);
+
         $isWhitelistingEnabled = (new Merchant\Merchant1ccConfig\Core())->get1ccConfigByMerchantIdAndType($merchantId, "one_cc_whitelist_coupons");
         if ($isWhitelistingEnabled === null or $isWhitelistingEnabled->getValue() != 1)
         {
