@@ -5,7 +5,7 @@ import RTracking from 'react-tracking';
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
 import Button from 'common/new-ui/Button';
-import { classList, paiseToRupees } from 'common/utils/rzp-utils';
+import { classList, i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
 import { isMandatoryToBool } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
 import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 import FieldOptionsDropdownWrapper, {
@@ -148,12 +148,16 @@ export default class BaseForm extends React.PureComponent {
   getREP_Amount(isDisabled) {
     const { field, currency, isPaymentPageEditMode, isBatchPaymentPages } = this.props;
     const amount = field.item.amount || ''; // Note: If amount is there, then isDisabled = false;
+
     const placeholder = isDisabled
       ? isBatchPaymentPages
         ? BATCH_UPLOAD_MSG
         : FILLED_BY_CUSTOMER
       : '0.00';
-    const minAmountAllowed = isDisabled ? '' : paiseToRupees(getCurrency(currency).min_value);
+
+    const minAmountAllowed = isDisabled
+      ? ''
+      : i18CurrencyConversionFromMinorUnitToCommonUnit(getCurrency(currency).min_value, currency);
 
     let inputField = (
       <Input

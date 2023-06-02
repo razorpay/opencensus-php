@@ -121,10 +121,11 @@ export const updateMagicData = (data) => ({
   data,
 });
 
-export const updateData = (formItem, isPageDirty) => ({
+export const updateData = (formItem, isPageDirty, currency) => ({
   type: UPDATE_DATA,
   formItems: formItem,
   isPageDirty,
+  currency,
 });
 
 export const refreshPageData = () => ({
@@ -419,7 +420,7 @@ export default (state = initialState, action) => {
       };
 
     case UPDATE_DATA:
-      if (action.formItems.hasOwnProperty('id')) {
+      if (action.formItems?.hasOwnProperty('id')) {
         // re-Initialise FE if ID is changed to other ID/null
         return {
           ...initialState,
@@ -430,15 +431,25 @@ export default (state = initialState, action) => {
           isPageDirty: false,
         };
       } else {
-        return {
+        const newState = {
           ...state,
           isPageDirty: action.isPageDirty !== undefined ? action.isPageDirty : true,
-          paymentPageEntity: deepMerge(
-            // Needed for settings
-            state.paymentPageEntity,
-            action.formItems,
-          ),
+          paymentPageEntity: {
+            ...state.paymentPageEntity,
+            // UPDATE_DATA action getting called in multiple scenarios, currency is not always available.
+            currency: action.currency || state.paymentPageEntity.currency,
+          },
         };
+
+        if (action.formItems) {
+          newState.paymentPageEntity = deepMerge(
+            // Needed for settings
+            newState.paymentPageEntity,
+            action.formItems,
+          );
+        }
+
+        return newState;
       }
 
     case UPDATE_SETTINGS: {

@@ -28,6 +28,7 @@ const state = {
       isActivated: true,
       isSubmitted: true,
     },
+    org: {},
     mode: 'live',
   },
   home: {

@@ -25,6 +25,7 @@ const stateWithInvite = {
         invitations: [mockInvite],
       },
     },
+    org: {},
   },
 };
 

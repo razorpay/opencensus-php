@@ -8,6 +8,7 @@ import Input from 'common/new-ui/Input';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import Alert from 'common/new-ui/Alert';
 import { lenientUrl } from 'common/utils/validators';
+import ShowWhen from 'merchant/components/ShowWhen';
 import { DocLink } from 'merchant/components/DocsLink';
 import { trackPageSettingsData } from 'merchant/views/PaymentPages/PaymentPages/ga';
 import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
@@ -96,9 +97,9 @@ export default class PaymentPageSettings extends React.Component {
 
   onSubmit = (formData) => {
     /*
-      - showing a confirmation modal when payment page is using 
+      - showing a confirmation modal when payment page is using
         1. custom domain now
-        2. with an empty slug 
+        2. with an empty slug
         3. and earlier it was set to pages.razorpay.com
       - else regular saving flow
     */
@@ -369,63 +370,65 @@ export default class PaymentPageSettings extends React.Component {
                     <span class="action">{PluginsBtn}</span>
                   </div>
                 </div>
-                <div class="settings-section shiprocket-section">
-                  <div class="Input-label">
-                    <img src={ShiprocketImage} alt="shiprocket-logo" />
-                    Create orders on Shiprocket{' '}
-                    <span class="badge bg-success hidden-xs m-r">New</span>
-                  </div>
-                  <div class="cta-section">
-                    <div class="body">
-                      After your customers pay on this page, automatically create orders on
-                      Shiprocket{' '}
-                      <span>
-                        <i class="i i-info-outline" style={{ marginLeft: 4 }} />
-                        <Popover
-                          align="top"
-                          theme="dark"
-                          parentQuerySelector=".Modal-mask--paymentpages-settings .Modal-body"
+                <ShowWhen additionalCondition={(user) => user.isShipRocketEnabled}>
+                  <div class="settings-section shiprocket-section">
+                    <div class="Input-label">
+                      <img src={ShiprocketImage} alt="shiprocket-logo" />
+                      Create orders on Shiprocket{' '}
+                      <span class="badge bg-success hidden-xs m-r">New</span>
+                    </div>
+                    <div class="cta-section">
+                      <div class="body">
+                        After your customers pay on this page, automatically create orders on
+                        Shiprocket{' '}
+                        <span>
+                          <i class="i i-info-outline" style={{ marginLeft: 4 }} />
+                          <Popover
+                            align="top"
+                            theme="dark"
+                            parentQuerySelector=".Modal-mask--paymentpages-settings .Modal-body"
+                          >
+                            <PopoverBody>
+                              Shiprocket is an eCommerce shipping solution, known for low shipping
+                              rates and wide reach
+                            </PopoverBody>
+                          </Popover>
+                        </span>
+                      </div>
+                      <span class="action">
+                        <Button.Transparent
+                          type="button"
+                          class="Button--Link"
+                          onClick={this.props.handleShiprocket}
                         >
-                          <PopoverBody>
-                            Shiprocket is an eCommerce shipping solution, known for low shipping
-                            rates and wide reach
-                          </PopoverBody>
-                        </Popover>
+                          <b>{!isShiprocket ? 'Enable' : 'Disable'}</b>
+                        </Button.Transparent>
                       </span>
                     </div>
-                    <span class="action">
-                      <Button.Transparent
-                        type="button"
-                        class="Button--Link"
-                        onClick={this.props.handleShiprocket}
+                    <Alert.Warning>
+                      Note - you also need to add <b>Razorpay Payment pages</b> channel on your{' '}
+                      <a
+                        href={SHIPROCKET_DASHBOARD_LINK}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        onClick={track.settings.clickShiprocketDashboard}
                       >
-                        <b>{!isShiprocket ? 'Enable' : 'Disable'}</b>
-                      </Button.Transparent>
-                    </span>
+                        Shiprocket dashboard <i className="i i-external-link" />
+                      </a>
+                    </Alert.Warning>
+                    <div>
+                      Need help? Refer to our{' '}
+                      <DocLink
+                        href="https://razorpay.com/docs/payments/payment-pages/plugins-add-ons/shiprocket"
+                        target="_blank"
+                        onClick={track.wysiwyg.clickShiprocketDocsLink.bind(null, 'settings')}
+                        rel="noreferrer noopener"
+                      >
+                        Shiprocket integration docs <i class="i i-external-link" />
+                      </DocLink>
+                    </div>
                   </div>
-                  <Alert.Warning>
-                    Note - you also need to add <b>Razorpay Payment pages</b> channel on your{' '}
-                    <a
-                      href={SHIPROCKET_DASHBOARD_LINK}
-                      target="_blank"
-                      rel="noreferrer noopener"
-                      onClick={track.settings.clickShiprocketDashboard}
-                    >
-                      Shiprocket dashboard <i className="i i-external-link" />
-                    </a>
-                  </Alert.Warning>
-                  <div>
-                    Need help? Refer to our{' '}
-                    <DocLink
-                      href="https://razorpay.com/docs/payments/payment-pages/plugins-add-ons/shiprocket"
-                      target="_blank"
-                      onClick={track.wysiwyg.clickShiprocketDocsLink.bind(null, 'settings')}
-                      rel="noreferrer noopener"
-                    >
-                      Shiprocket integration docs <i class="i i-external-link" />
-                    </DocLink>
-                  </div>
-                </div>
+                </ShowWhen>
               </div>
               <footer>
                 <Button.Transparent

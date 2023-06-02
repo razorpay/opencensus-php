@@ -29,6 +29,7 @@ import {
 } from 'merchant/views/PaymentPages/PaymentPages/model';
 import { dispatchWebViewEvent } from 'common/utils/reactNativeWebView';
 import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
+import { getI18nTaxExemptionName } from 'merchant/views/PaymentPages/PaymentPages/helpers';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { isBatchPaymentPages as fnIsBatchPaymentPages } from 'merchant/views/PaymentPages/PaymentPages/utils';
 
@@ -36,6 +37,7 @@ import { isBatchPaymentPages as fnIsBatchPaymentPages } from 'merchant/views/Pay
   (state) => ({
     user: state.session.user,
     mode: state.session.mode,
+    org: state.session.org,
     isMobileResolution: state.app.isMobileResolution,
     isWebView: state.app.isWebView,
     ...state.wysiwyg,
@@ -202,10 +204,10 @@ class Success extends React.Component {
 
     reqPayload.expire_by = formData.expire_by || null;
 
-    /* 
-      - While creation, if a slug has not been entered, the slug key is not sent in the payload in the normal flow 
-        (pages.razorpay.com). Backend automatically generates a slug in that case. 
-      - In the custom domain flow, the user can have an empty string as slug to use the root domain, hence 
+    /*
+      - While creation, if a slug has not been entered, the slug key is not sent in the payload in the normal flow
+        (pages.razorpay.com). Backend automatically generates a slug in that case.
+      - In the custom domain flow, the user can have an empty string as slug to use the root domain, hence
         explicitly sending an empty string in the slug in that case.
     */
     if (formData.slug || formData.domainType === 'custom') {
@@ -265,6 +267,8 @@ class Success extends React.Component {
 
   render() {
     const { isLoaded, pageLoadError } = this.state;
+    const { org } = this.props;
+
     const isBatchPaymentPages = fnIsBatchPaymentPages();
     let content;
 
@@ -441,14 +445,14 @@ class Success extends React.Component {
                     <div className="box--line box--space">
                       You can customise your receipt by adding{' '}
                       <b>
-                        customer’s information & 80G details
+                        customer’s information & {getI18nTaxExemptionName(org.custom_code)} details
                         <span className="rzp-tooltip-80g">
                           <i className="i i-info-outline" />
                           <Popover align="top" theme="dark">
                             <PopoverBody>
                               <div className="rzp-tooltip-title">For Donations</div>
-                              80G-registered organisations can add their details on receipts to help
-                              donors avail tax benefits
+                              {getI18nTaxExemptionName(org.custom_code)}-registered organisations
+                              can add their details on receipts to help donors avail tax benefits
                             </PopoverBody>
                           </Popover>
                         </span>

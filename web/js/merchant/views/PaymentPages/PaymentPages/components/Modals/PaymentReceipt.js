@@ -2,8 +2,8 @@ import React from 'react';
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
-import track from '../../Wysiwyg/track';
-import trackPB from '../../../../PaymentButton/PaymentButton/Details/track';
+import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
+import trackPB from 'merchant/views/PaymentButton/PaymentButton/Details/track';
 
 import Form from 'common/new-ui/Form';
 import Button from 'common/new-ui/Button';
@@ -17,8 +17,9 @@ import Merchant80gDetails from './Merchant80gDetails';
 import { get80gMerchantDetails, set80gMerchantDetails } from 'merchant/reducers/profile';
 import Spinner from 'common/ui/Spinner';
 import Popover, { PopoverBody } from 'common/ui/Popover';
+import { getI18nTaxExemptionName } from 'merchant/views/PaymentPages/PaymentPages/helpers';
 
-@connect(null, { openModal, showNotification })
+@connect((state) => ({ org: state.session.org }), { openModal, showNotification })
 @RTracking(() => window.rzpQ.component('PaymentReceipt'))
 export default class PaymentReceipt extends React.Component {
   constructor(props) {
@@ -237,7 +238,7 @@ export default class PaymentReceipt extends React.Component {
         if (res && res.success) {
           this.props.showNotification({
             type: 'success',
-            message: '80G details are removed ',
+            message: `${getI18nTaxExemptionName(this.props.org.custom_code)} details are removed `,
             closeTimeout: 2500,
           });
         }
@@ -252,6 +253,7 @@ export default class PaymentReceipt extends React.Component {
 
   render() {
     const props = this.props;
+    const { org } = props;
     const { text_80g_12a, image_url_80g } = this.state['80_details'];
     return (
       <ModalMask maskClosable={false} class="PaymentpagesReceipt">
@@ -358,7 +360,9 @@ export default class PaymentReceipt extends React.Component {
                         name="enable_80g_details"
                         fieldLabel={() => (
                           <div>
-                            <b class="m-r">Show 80G Details on Receipt</b>
+                            <b class="m-r">
+                              Show {getI18nTaxExemptionName(org.custom_code)} Details on Receipt
+                            </b>
                           </div>
                         )}
                         autoRender
@@ -385,7 +389,7 @@ export default class PaymentReceipt extends React.Component {
                           class="Button--transparent Button--add-80g"
                           onClick={this.open80gDetailsModal}
                         >
-                          + Add your 80G details
+                          + Add your {getI18nTaxExemptionName(org.custom_code)} details
                         </Button>
                       ) : (
                         <div className="preview_80g">

@@ -473,8 +473,11 @@ export default class User {
     return this.isFeatureEnabled('one_click_checkout');
   }
 
-  get isShiprocketEnabled() {
-    return [rolesList.OWNER, rolesList.ADMIN].indexOf(this.userRole) > -1;
+  get isShipRocketEnabled() {
+    // Disable this feature for curlec
+    if (this.isOrgCurlec) return false;
+
+    return true;
   }
 
   get isMagicSettingsEnabled() {

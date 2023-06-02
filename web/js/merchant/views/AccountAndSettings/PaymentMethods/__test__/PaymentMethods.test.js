@@ -85,6 +85,7 @@ const renderApp = (userObj = {}, props = {}) => {
           isIERevampEnabled,
           isSodexoInstrumentEnabled,
         },
+        org: {},
       },
     },
   });

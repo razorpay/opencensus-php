@@ -9,6 +9,7 @@ import {
   getBaseFieldForAmountFieldType,
 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
 import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
+import { getCurrencySymbol } from 'common/ui/Amount';
 import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 
 class AddAmountButton extends React.PureComponent {
@@ -34,7 +35,7 @@ class AddAmountButton extends React.PureComponent {
   };
 
   render() {
-    const { hideDynamicPriceField, isBatchPaymentPages } = this.props;
+    const { hideDynamicPriceField, currency, isBatchPaymentPages } = this.props;
     if (isBatchPaymentPages) {
       return (
         <Button.Transparent className="btn-dotted" onClick={this.onClickPriceField}>
@@ -55,7 +56,7 @@ class AddAmountButton extends React.PureComponent {
       >
         <Button.Transparent className="btn-dotted" onClick={this.onClickPriceField}>
           <span className="enclose-circle">
-            <b>₹</b>
+            <b>{getCurrencySymbol(currency)}</b>
           </span>{' '}
           <span>
             <b>Price field</b>

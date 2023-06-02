@@ -43,6 +43,7 @@ const renderApp = ({ pathname, user } = {}) => {
             isAccountAndSettingsRevampEnabled: true,
             ...user,
           },
+          org: {},
         },
       },
     },

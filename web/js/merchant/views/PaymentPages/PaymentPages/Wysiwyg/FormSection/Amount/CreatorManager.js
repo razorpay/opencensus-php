@@ -9,7 +9,7 @@ import {
   mapFieldToAmountFieldType,
 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
 import { getCurrency } from 'common/ui/Amount';
-import { paiseToRupees } from 'common/utils/rzp-utils';
+import { i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
 
 export default function CreatorManager(_WrappedDisplayFieldComponent) {
   class HOC extends React.PureComponent {
@@ -105,9 +105,13 @@ export default function CreatorManager(_WrappedDisplayFieldComponent) {
       newField.mandatory = isMandatory;
 
       if (isMandatory) {
+        // eslint-disable-next-line default-case
         switch (fieldType) {
           case FIELD_TYPES.dynamic_price.key: {
-            const minAmountAllowed = paiseToRupees(getCurrency(currency).min_value); // Dealing with rupees(bigger currency) in UI. Converted to paisa only when sent to API.
+            const minAmountAllowed = i18CurrencyConversionFromMinorUnitToCommonUnit(
+              getCurrency(currency).min_value,
+              currency,
+            );
 
             if (Number(newField.min_amount) < Number(minAmountAllowed)) {
               newField.min_amount = minAmountAllowed; // Must be at least min payable value as per currency

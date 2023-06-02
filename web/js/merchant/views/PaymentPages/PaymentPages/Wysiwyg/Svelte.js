@@ -24,7 +24,7 @@ export default class Svelte extends React.Component {
       org: {
         branding: {
           branding_logo: user.isOrgRZP ? null : org.payment_apps_logo_url,
-          show_rzp_logo: user.isOrgRZP,
+          show_rzp_logo: !user.isWhiteLabelledOrg,
         },
         custom_code: org.custom_code,
       },

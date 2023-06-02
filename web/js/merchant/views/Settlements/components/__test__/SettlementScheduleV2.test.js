@@ -12,6 +12,7 @@ const state = {
     user: {
       isMarketplaceEnabled: true,
     },
+    org: {},
   },
   settlement: {
     config: {

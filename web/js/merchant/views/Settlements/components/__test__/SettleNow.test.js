@@ -20,6 +20,7 @@ const state = {
       isFeatureEnabled: () => false,
     },
     mode: 'live',
+    org: {},
   },
   home: {
     current_balance: {

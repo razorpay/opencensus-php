@@ -1,4 +1,5 @@
 import { RULE_TYPES } from 'merchant/views/MagicCheckout/constants';
+import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 
 /*
   Function: transfeeRuleToApiFormat used to convert rupee to paise and change the structure to API required format
@@ -31,6 +32,13 @@ export function transfeeRuleToNormalFormat({ rule_type, flat, slabs }) {
   }
   return { rule_type, flat, slabs };
 }
+const TAX_EXEMPTION_NAME_MAP = {
+  [ORG_CUSTOM_CODE_MAP.RAZORPAY]: '80g',
+  [ORG_CUSTOM_CODE_MAP.CURLEC]: 'Tax Exemption',
+};
+
+export const getI18nTaxExemptionName = (orgCode) =>
+  TAX_EXEMPTION_NAME_MAP[orgCode] || TAX_EXEMPTION_NAME_MAP[ORG_CUSTOM_CODE_MAP.RAZORPAY];
 
 export const getAlertMsg = ({ isBatchPaymentPages, field }) => {
   const config = [

@@ -100,7 +100,7 @@ class SortableFormItemsList extends React.Component {
   }
 }
 
-@connect((state) => ({ ...state.wysiwyg, user: state.session.user }), {
+@connect((state) => ({ ...state.wysiwyg, user: state.session.user, org: state.session.org }), {
   updateData,
   deleteInFormItems,
   updateInFormItems,
@@ -302,6 +302,7 @@ export default class View extends React.PureComponent {
       magicCheckout,
       updateMagicData,
       user,
+      org,
       isBatchPaymentPages,
     } = this.props;
     let _hideDynamicPriceField = user?.hideDynamicPriceFieldPP;
@@ -410,6 +411,7 @@ export default class View extends React.PureComponent {
           paymentButtonLabel={paymentPageEntity.settings.payment_button_label}
           updateData={this.props.updateData}
           isListSorting={this.state.isListSorting}
+          securityBrandingLogo={org.security_branding_logo}
         />
 
         <div id="draggableElementsContainer" />

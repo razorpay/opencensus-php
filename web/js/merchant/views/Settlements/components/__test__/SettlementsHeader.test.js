@@ -39,6 +39,7 @@ const state = {
       findTag: jest.fn(),
     },
     mode: 'live',
+    org: {},
   },
   home: {
     current_balance: {

@@ -13,6 +13,7 @@ const state = {
       },
     },
     mode: 'test',
+    org: {},
   },
   home: {
     current_balance: { data: { balance: -100 } },

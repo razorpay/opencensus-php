@@ -98,7 +98,7 @@ describe('HeaderButton', () => {
     test('should disable international on clicking switch field toggle', async () => {
       renderApp({
         props: { isAnyProductApproved: true },
-        initialState: { session: { user: { international: true } } },
+        initialState: { session: { user: { international: true }, org: {} } },
       });
       await clickToggleAndValidate('Disabled');
     });

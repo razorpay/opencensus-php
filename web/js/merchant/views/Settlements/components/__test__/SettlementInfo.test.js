@@ -16,6 +16,7 @@ const state = {
         currency: 'INR',
       },
     },
+    org: {},
   },
   home: {
     settlement_amount: { data: {} },

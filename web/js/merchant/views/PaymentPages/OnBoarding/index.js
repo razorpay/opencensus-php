@@ -25,10 +25,20 @@ import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGu
 
 import { FEATURES_DATA, FEATURES_LINKS } from './data';
 import HeroMain from 'assets/payment_pages/hero_main.svg';
+import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
+
+export const LANDING_PAGE_DESC = {
+  [ORG_CUSTOM_CODE_MAP.RAZORPAY]:
+    'Build a custom, branded payment page for your business in under 10 minutes and start accepting international and domestic payments with zero integration and tech efforts.',
+  [ORG_CUSTOM_CODE_MAP.CURLEC]:
+    'Build a custom, branded payment page for your business in under 10 minutes and start accepting payments with zero integration and tech efforts.',
+};
+
 @withRouter
 @connect(
   (state) => ({
     user: state.session.user,
+    org: state.session.org,
     paymentPageProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PP),
   }),
   {
@@ -44,11 +54,13 @@ export default class PaymentPagesOnBoarding extends React.Component {
       <FeatureEnableSliderButton
         isLocalEnabler
         feature={RZPFeatures.PP}
+        // eslint-disable-next-line react/no-this-in-sfc
         onClick={this.closeOnboarding}
         page={sliderProps.active}
         additionalTrackData={{
-          is_creation_redirection_enabled: this.props.user
-            .isPaymentPageOnboardingRedirectionEnabled,
+          is_creation_redirection_enabled:
+            // eslint-disable-next-line react/no-this-in-sfc
+            this.props.user.isPaymentPageOnboardingRedirectionEnabled,
         }}
       />
     );
@@ -73,8 +85,10 @@ export default class PaymentPagesOnBoarding extends React.Component {
   };
 
   render() {
-    const { active, paymentPageProductOnBoarding, user } = this.props;
+    const { active, paymentPageProductOnBoarding, user, org } = this.props;
 
+    const description =
+      LANDING_PAGE_DESC[org.custom_code] || LANDING_PAGE_DESC[ORG_CUSTOM_CODE_MAP.RAZORPAY];
     return (
       <OnBoardingWrapper class="PaymentPages">
         <Slider
@@ -91,7 +105,8 @@ export default class PaymentPagesOnBoarding extends React.Component {
               title="Payment Pages"
               feature={RZPFeatures.PP}
               imageUrl={HeroMain}
-              desc="Build a custom, branded payment page for your business in under 10 minutes and start accepting international and domestic payments with zero integration and tech efforts."
+              businessName={org.business_name}
+              desc={description}
             />
           )}
 

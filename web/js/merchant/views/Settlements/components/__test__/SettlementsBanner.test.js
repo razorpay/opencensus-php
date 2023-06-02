@@ -25,6 +25,7 @@ const state = {
   session: {
     user: {},
     mode: 'live',
+    org: {},
   },
   home: {
     current_balance: { data: {} },

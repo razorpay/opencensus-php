@@ -33,7 +33,7 @@ import { dispatchWebViewEvent } from 'common/utils/reactNativeWebView';
 import {
   autoPrefixUrls,
   getURLQueryParams,
-  rupeesToPaise,
+  i18CurrencyConversionFromCommonUnitToMinorUnit,
   classList,
 } from 'common/utils/rzp-utils';
 
@@ -313,6 +313,9 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       updateTemplateType(null, 'custom');
     }
 
+    // i18n: This will update the merchant currency in redux store.
+    this.props.updateData(null, false, this.props.user.merchant.currency);
+    this.props.initDefaultFormItems();
     initDefaultFormItems(isBatchPaymentPages);
 
     track.init(tracking.trackEvent, {
@@ -541,15 +544,19 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           item: {
             name,
             description,
-            amount: amount ? rupeesToPaise(amount) : null, // Convert in paisa (smaller unit)
+            amount: amount ? i18CurrencyConversionFromCommonUnitToMinorUnit(amount) : null, // Convert in paisa (smaller unit)
           },
           settings, // Contains position
           image_url,
           mandatory,
           min_purchase,
           max_purchase,
-          min_amount: min_amount ? rupeesToPaise(min_amount) : null,
-          max_amount: max_amount ? rupeesToPaise(max_amount) : null,
+          min_amount: min_amount
+            ? i18CurrencyConversionFromCommonUnitToMinorUnit(min_amount)
+            : null,
+          max_amount: max_amount
+            ? i18CurrencyConversionFromCommonUnitToMinorUnit(max_amount)
+            : null,
           stock: stock ? stock : null, // stock cannot be 0 or ""
         };
 

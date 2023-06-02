@@ -1,14 +1,15 @@
+import React from 'react';
 import { connect } from 'react-redux';
 
 import Form from 'common/new-ui/Form';
 import Button from 'common/new-ui/Button';
 import Input from 'common/new-ui/Input';
 
-import { paiseToRupees } from 'common/utils/rzp-utils';
+import { i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
 
-import FIELD_TYPES from '../Amount/helpers/fieldTypes';
+import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 
-@connect(state => ({
+@connect((state) => ({
   user: state.session.user,
 }))
 export default class AdvancedForm extends React.PureComponent {
@@ -23,26 +24,26 @@ export default class AdvancedForm extends React.PureComponent {
     };
   }
 
-  onChange = ({ target }) => {
+  onChange = () => {
     setTimeout(this.toggleSubmitBtn); // Validate form for input errors via class change in DOM, hence delayed.
   };
 
   toggleSubmitBtn = () => {
     const form = this.formEl;
-    let disableSubmit = !!form.querySelectorAll('.is-invalid').length;
+    const disableSubmit = !!form.querySelectorAll('.is-invalid').length;
 
     this.setState({ disableSubmit });
   };
 
-  onSaveForm = formData => {
+  onSaveForm = (formData) => {
     // console.log('formData...', formData);
     this.props.onSaveForm(formData, this.props.fieldType);
   };
 
-  toggleAddStock = data => {
-    this.setState({
-      isStockSet: !this.state.isStockSet,
-    });
+  toggleAddStock = () => {
+    this.setState((prevState) => ({
+      isStockSet: !prevState.isStockSet,
+    }));
   };
 
   get FIELD_availableStock() {
@@ -89,8 +90,9 @@ export default class AdvancedForm extends React.PureComponent {
     const { currency, field } = this.props;
     const isFieldMandatory = field.mandatory;
 
-    const minAmountInCurrency = paiseToRupees(
-      this.props.user.getCurrencyList[currency].min_value
+    const minAmountInCurrency = i18CurrencyConversionFromMinorUnitToCommonUnit(
+      this.props.user.getCurrencyList[currency].min_value,
+      currency,
     ); // In Paisa(lower unit of currency)
 
     const minAmountAllowed = isFieldMandatory ? minAmountInCurrency : 0;
@@ -98,13 +100,13 @@ export default class AdvancedForm extends React.PureComponent {
     return minAmountAllowed;
   }
 
-  validateMinAmountLimit = minVal => {
+  validateMinAmountLimit = (minVal) => {
     const maxVal = this.maxAmountLimit && this.maxAmountLimit.value;
     const isFieldMandatory = this.props.field.mandatory;
 
     // min_amount is allowed to be '' or 0 only when item is not mandatory
     if (minVal === '' && !isFieldMandatory) {
-      return;
+      return null;
     }
 
     if (Number(minVal) < Number(this.minAmountAllowed)) {
@@ -114,15 +116,16 @@ export default class AdvancedForm extends React.PureComponent {
     if (maxVal && Number(minVal) > Number(maxVal)) {
       return 'Min amount must be less than Max amount';
     }
+
+    return null;
   };
 
-  validateMaxAmountLimit = maxVal => {
+  validateMaxAmountLimit = (maxVal) => {
     const minVal = this.minAmountLimit && this.minAmountLimit.value;
-    const isFieldMandatory = this.props.field.mandatory;
 
     // max_amount is allowed to be ''
     if (maxVal === '') {
-      return;
+      return '';
     }
 
     if (Number(maxVal) < Number(this.minAmountAllowed)) {
@@ -132,9 +135,12 @@ export default class AdvancedForm extends React.PureComponent {
     if (minVal && Number(maxVal) < Number(minVal)) {
       return 'Max amount must be more than Min amount';
     }
+
+    return '';
   };
 
-  validateStockLimit = stockVal => {
+  // eslint-disable-next-line consistent-return
+  validateStockLimit = (stockVal) => {
     if (stockVal === '' || Number(stockVal) <= 0) {
       return 'Stock must be at least 1';
     }
@@ -160,10 +166,7 @@ export default class AdvancedForm extends React.PureComponent {
     const maxAmount = field.max_amount || '';
 
     return (
-      <Input.Group
-        class="InputGroup--inline Input--vTop Input--limits"
-        label="Input Price Limits"
-      >
+      <Input.Group class="InputGroup--inline Input--vTop Input--limits" label="Input Price Limits">
         <div class="Input-content Input-content--limits">
           <Input.CurrencySelect
             defaultValue={currency}
@@ -212,14 +215,14 @@ export default class AdvancedForm extends React.PureComponent {
     return minPurchaseAllowed;
   }
 
-  validateMinPurchaseLimit = minVal => {
+  validateMinPurchaseLimit = (minVal) => {
     const maxVal = this.maxPurchaseLimit && this.maxPurchaseLimit.value;
     const stockLimit = this.stockLimit && this.stockLimit.value;
     const isFieldMandatory = this.props.field.mandatory;
 
     // min_purchase is allowed to be '' or 0 only when item is not mandatory
     if (minVal === '' && !isFieldMandatory) {
-      return;
+      return null;
     }
 
     if (minVal < this.minPurchaseAllowed) {
@@ -233,14 +236,16 @@ export default class AdvancedForm extends React.PureComponent {
     if (stockLimit && Number(stockLimit) < Number(minVal)) {
       return 'Min purchase must be less than Units Available';
     }
+
+    return null;
   };
 
-  validateMaxPurchaseLimit = maxVal => {
+  validateMaxPurchaseLimit = (maxVal) => {
     const minVal = this.minPurchaseLimit && this.minPurchaseLimit.value;
     const stockLimit = this.stockLimit && this.stockLimit.value;
 
     if (maxVal === '') {
-      return;
+      return null;
     }
 
     if (Number(maxVal) < this.minPurchaseAllowed) {
@@ -254,6 +259,8 @@ export default class AdvancedForm extends React.PureComponent {
     if (stockLimit && Number(stockLimit) < Number(maxVal)) {
       return 'Max purchase must be less than Units Available';
     }
+
+    return null;
   };
 
   get FIELD_purchaseLimits() {
@@ -298,9 +305,11 @@ export default class AdvancedForm extends React.PureComponent {
     );
   }
 
+  // eslint-disable-next-line getter-return, consistent-return
   get fieldsForFieldType() {
     const fieldType = this.props.fieldType;
 
+    // eslint-disable-next-line default-case
     switch (fieldType) {
       // Same Advanced Form for both fixed_price
       case FIELD_TYPES.fixed_price.key:
@@ -323,18 +332,18 @@ export default class AdvancedForm extends React.PureComponent {
     }
   }
 
-  setRefForm = el => (this.formEl = el);
+  setRefForm = (el) => (this.formEl = el);
 
-  setRefStockLimit = el => (this.stockLimit = el);
+  setRefStockLimit = (el) => (this.stockLimit = el);
 
-  setRefMinAmountLimit = el => (this.minAmountLimit = el);
-  setRefMaxAmountLimit = el => (this.maxAmountLimit = el);
+  setRefMinAmountLimit = (el) => (this.minAmountLimit = el);
+  setRefMaxAmountLimit = (el) => (this.maxAmountLimit = el);
 
-  setRefMinPurchaseLimit = el => (this.minPurchaseLimit = el);
-  setRefMaxPurchaseLimit = el => (this.maxPurchaseLimit = el);
+  setRefMinPurchaseLimit = (el) => (this.minPurchaseLimit = el);
+  setRefMaxPurchaseLimit = (el) => (this.maxPurchaseLimit = el);
 
   render() {
-    const { field, onCloseForm } = this.props;
+    const { onCloseForm } = this.props;
     const { disableSubmit } = this.state;
 
     return (
@@ -346,11 +355,7 @@ export default class AdvancedForm extends React.PureComponent {
 
         <hr />
 
-        <Form
-          setRef={this.setRefForm}
-          onChange={this.onChange}
-          onSubmit={this.onSaveForm}
-        >
+        <Form setRef={this.setRefForm} onChange={this.onChange} onSubmit={this.onSaveForm}>
           {this.fieldsForFieldType}
 
           <footer>

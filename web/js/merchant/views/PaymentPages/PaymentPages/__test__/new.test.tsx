@@ -7,7 +7,12 @@ const renderApp = (isRazorx = true) =>
   render(<PaymentPagesNew />, {
     initialState: {
       session: {
-        user: { isPaymentPageStorefrontEnabled: isRazorx },
+        user: {
+          isPaymentPageStorefrontEnabled: isRazorx,
+          merchant: {
+            currency: 'INR',
+          },
+        },
         org: {
           merchant_styles: {
             checkout_theme_color: '#999999',

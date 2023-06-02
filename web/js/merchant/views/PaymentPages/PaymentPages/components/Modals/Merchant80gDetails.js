@@ -9,16 +9,25 @@ import Input, { Label, Description } from 'common/new-ui/Input';
 import FileUpload from 'merchant/components/File/Upload';
 import Form from 'common/new-ui/Form';
 import Button from 'common/new-ui/Button';
-import track from '../../Wysiwyg/track';
+import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
 
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { upload80gSignatoryImage, set80gMerchantDetails } from 'merchant/reducers/profile';
 import UploadImage from '../../../../../../../css/assets/payment_pages/upload.svg';
+import { getI18nTaxExemptionName } from 'merchant/views/PaymentPages/PaymentPages/helpers';
+import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 
 const THUMBNAIL_SIZE_LIMIT = 500 * 1024; // 500 KB limit
 
-@connect(null, { closeModal, openModal, showNotification })
+const TAX_EXEMPTION_PLACEHOLDER_MAP = {
+  [ORG_CUSTOM_CODE_MAP.RAZORPAY]:
+    'All donations made to us are eligible for tax exemption under 80G of IT act ITBA/EXM/S80G/2019-20/1XXXXXXX Dated DD/MM/YYYY..',
+  [ORG_CUSTOM_CODE_MAP.CURLEC]:
+    'All donations made to us are eligible for tax exemption under subsection 44(6) of the Income Tax Act 1967',
+};
+
+@connect((state) => ({ org: state.session.org }), { closeModal, openModal, showNotification })
 @RTracking(() => window.rzpQ.component('Merchant80gDetails'))
 export default class Merchant80gDetails extends React.Component {
   constructor(props) {
@@ -64,7 +73,7 @@ export default class Merchant80gDetails extends React.Component {
         if (res && res.success) {
           this.props.showNotification({
             type: 'success',
-            message: '80G details are updated ',
+            message: `${getI18nTaxExemptionName(this.props.org.custom_code)} details are updated `,
             closeTimeout: 2500,
           });
 
@@ -147,9 +156,13 @@ export default class Merchant80gDetails extends React.Component {
   };
 
   render() {
+    const { org } = this.props;
+    const taxExemptionPlaceholder =
+      TAX_EXEMPTION_PLACEHOLDER_MAP[org.custom_code] ||
+      TAX_EXEMPTION_PLACEHOLDER_MAP[ORG_CUSTOM_CODE_MAP.rzp];
     return (
       <div className="details-modal-80g">
-        <ModalHeader title="80G Details" />
+        <ModalHeader title={`${getI18nTaxExemptionName(org.custom_code)} Details`} />
 
         <div class="modal-body">
           <Form onSubmit={this.onSubmit} onChange={this.onChange}>
@@ -157,19 +170,20 @@ export default class Merchant80gDetails extends React.Component {
               name="text_80g_12a"
               label={
                 <div className="details-modal-80g--label">
-                  80G Description
+                  {getI18nTaxExemptionName(org.custom_code)} Description <br />
                   <a
                     href="https://razorpay.com/docs/payment-pages/receipt-80g/#pdf-receipt-to-customers"
                     target="_blank"
                     rel="noreferrer noopener"
+                    class="m-l"
                   >
-                    Sample 80G Receipt
+                    Sample {getI18nTaxExemptionName(org.custom_code)} Receipt
                     <i class="i i-external-link" />
                   </a>
                 </div>
               }
               class="Input-description Input--vTop"
-              placeholder="All donations made to us are eligible for tax exemption under 80G of IT act ITBA/EXM/S80G/2019-20/1XXXXXXX Dated DD/MM/YYYY.."
+              placeholder={taxExemptionPlaceholder}
               defaultValue={this.state.text_80g_12a}
               value={this.state.text_80g_12a}
               onChange={this.handle80gTextChange}
@@ -227,7 +241,7 @@ export default class Merchant80gDetails extends React.Component {
                 type="submit"
                 disabled={this.state.text_80g_12a.length === 0 || this.state.isSaving}
               >
-                {this.state.isSaving ? 'Saving 80G details' : 'Save 80G details'}
+                {this.state.isSaving ? `Saving details` : `Save details`}
               </Button.Primary>
             </div>
           </Form>

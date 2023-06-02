@@ -28,6 +28,7 @@ const state = {
         currency: 'inr',
       },
     },
+    org: {},
   },
 };
 

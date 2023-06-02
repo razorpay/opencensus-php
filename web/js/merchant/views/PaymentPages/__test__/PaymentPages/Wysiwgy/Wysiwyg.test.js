@@ -10,7 +10,16 @@ describe('Payment Page Creation', () => {
   test('"Create your Own" template should not be there while template selection.', () => {
     const initialState = {
       session: {
-        user: { isPaymentPageFileUploadEnabled: false, showCustomTemplatePP: false },
+        user: {
+          merchant: {
+            currency: 'INR',
+          },
+          isPaymentPageFileUploadEnabled: false,
+          showCustomTemplatePP: false,
+        },
+        org: {
+          features: ['hide_create_new_tmpl_pp'],
+        },
       },
     };
     renderApp(initialState);
@@ -30,7 +39,13 @@ describe('Batch Payment Page Creation', () => {
   test('"Create your Own" template should be there while template selection.', () => {
     const initialState = {
       session: {
-        user: { isPaymentPageFileUploadEnabled: false, showCustomTemplatePP: true },
+        user: {
+          isPaymentPageFileUploadEnabled: false,
+          showCustomTemplatePP: true,
+          merchant: {
+            currency: 'INR',
+          },
+        },
       },
     };
     renderApp(initialState);
@@ -40,7 +55,13 @@ describe('Batch Payment Page Creation', () => {
   test('"Create your Own" template should not be there while template selection.', () => {
     const initialState = {
       session: {
-        user: { isPaymentPageFileUploadEnabled: true, showCustomTemplatePP: true },
+        user: {
+          isPaymentPageFileUploadEnabled: true,
+          showCustomTemplatePP: true,
+          merchant: {
+            currency: 'INR',
+          },
+        },
       },
       wysiwyg: { isBatchPaymentPages: true },
     };

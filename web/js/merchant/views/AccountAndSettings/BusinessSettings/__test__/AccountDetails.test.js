@@ -61,11 +61,13 @@ const renderApp = ({ user, isFlowRevamped } = {}) => {
           test: {
             role: user?.isAdminOrOwner ? rolesList.OWNER : rolesList.MANAGER,
           },
+          org: {},
         },
         current: 'test',
         ...defaultUserInfo,
         display_name: user?.displayName,
       }),
+      org: {},
     },
   });
   return render(<AccountDetails isFlowRevamped={isFlowRevamped} />, {

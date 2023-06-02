@@ -16,6 +16,7 @@ const renderApp = ({ isFlowRevamped } = {}) => {
     initialState: {
       session: {
         user,
+        org: {},
       },
     },
   });

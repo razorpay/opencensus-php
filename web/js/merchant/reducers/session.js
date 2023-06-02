@@ -143,7 +143,9 @@ export const updateUserSegmentData = (segmentData) => {
 
 export const initialState = {
   user: new User(),
-  org: {},
+  org: {
+    security_branding_logo: 'https://cdn.razorpay.com/static/assets/pay_methods_branding.png',
+  },
   mode: 'test',
   partnerMode: 'test',
   modeFormatted: 'Test',
@@ -155,6 +157,17 @@ export const initialState = {
   isTagsLoaded: false,
 };
 
+const updateOrg = (data) => {
+  return {
+    ...data,
+    /*
+      security_branding_logo is not available for all of the orgs, so we added the fall back.
+      All of the orgs, expect the curlec org is belongs to india, so default security branding logo is applicable for everyone.
+    */
+    security_branding_logo: data.security_branding_logo || initialState.org.security_branding_logo,
+  };
+};
+
 export default function sessionReducer(state = initialState, action) {
   switch (action.type) {
     case UPDATE_SESSION:
@@ -162,6 +175,7 @@ export default function sessionReducer(state = initialState, action) {
         ...action.payload,
         modeFormatted: titleCase(action.payload.mode || state.mode),
         partnerModeFormatted: titleCase(action.payload.partnerMode || state.partnerMode),
+        org: updateOrg(action.payload.org || state.org),
       });
 
     // when action involves async API call
@@ -212,7 +226,7 @@ export default function sessionReducer(state = initialState, action) {
       return set(state, 'user', new User());
 
     case `${ORG_FETCH}::SUCCESS`:
-      return set(state, 'org', action.payload.data);
+      return set(state, 'org', updateOrg(action.payload.data));
 
     case UPDATE_USER_SEGMENT_DATA:
       return merge(state, {

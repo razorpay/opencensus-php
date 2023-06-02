@@ -1,3 +1,4 @@
+import React from 'react';
 import CreatorModal from './CreatorModal';
 import EditLayer from 'merchant/views/PaymentPages/PaymentPages/components/EditLayer';
 import Input from 'common/new-ui/Input';
@@ -24,27 +25,27 @@ export default class FormFooter extends React.PureComponent {
     }
   }
 
-  toggleModal = force => {
-    this.setState({
-      isEditModalOpened:
-        typeof force !== 'undefined' ? force : !this.state.paymentButtonLabel,
-    });
+  toggleModal = (force) => {
+    this.setState((prevState) => ({
+      isEditModalOpened: typeof force !== 'undefined' ? force : !prevState.paymentButtonLabel,
+    }));
   };
 
-  onChangePaymentButtonLabel = e => {
+  onChangePaymentButtonLabel = (e) => {
     this.setState(
       {
         paymentButtonLabel: e.target.value,
       },
-      _ => {
-        let disableSubmit =
+      (_) => {
+        const disableSubmit =
           !!this.formFooter.querySelectorAll('.is-invalid').length ||
+          // eslint-disable-next-line react/no-access-state-in-setstate
           !this.state.paymentButtonLabel;
 
         this.setState({
           disableSubmit,
         });
-      }
+      },
     );
   };
 
@@ -58,24 +59,18 @@ export default class FormFooter extends React.PureComponent {
     this.toggleModal(false);
   };
 
-  setRef = el => (this.formFooter = el);
+  setRef = (el) => (this.formFooter = el);
 
   render() {
-    const { currency, isListSorting } = this.props;
+    const { currency, isListSorting, securityBrandingLogo } = this.props;
     const { isEditModalOpened, paymentButtonLabel, disableSubmit } = this.state;
 
     const content = (
       <div class="form-footer-payment">
-        <img
-          id="fin-logo"
-          alt="pay-methods"
-          src="https://cdn.razorpay.com/static/assets/pay_methods_branding.png"
-        />
+        <img id="fin-logo" alt="pay-methods" src={securityBrandingLogo} />
 
         <button class="btn btn-gradient">
-          {isEditModalOpened
-            ? paymentButtonLabel
-            : this.props.paymentButtonLabel}{' '}
+          {isEditModalOpened ? paymentButtonLabel : this.props.paymentButtonLabel}{' '}
           <span style={{ marginLeft: 4 }}>
             <b class="currency-symbol">{getCurrency(currency).symbol}</b> 000.00
           </span>
@@ -104,7 +99,7 @@ export default class FormFooter extends React.PureComponent {
             <Button.Transparent
               class="base-form-side-btn base-form-cancel"
               type="button"
-              onClick={_ => this.toggleModal(false)}
+              onClick={(_) => this.toggleModal(false)}
             >
               <span>&times;</span>
               Cancel
@@ -123,11 +118,8 @@ export default class FormFooter extends React.PureComponent {
         )}
 
         <EditLayer
-          class={classList(
-            'edit-layer--formFooter',
-            isListSorting && 'disable-hover'
-          )}
-          onClick={_ => this.toggleModal(true)}
+          class={classList('edit-layer--formFooter', isListSorting && 'disable-hover')}
+          onClick={(_) => this.toggleModal(true)}
         >
           {content}
           <i class="i i-edit" />
