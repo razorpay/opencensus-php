@@ -788,4 +788,10 @@ final class RazorxTreatment
     const ENABLE_STANDARD_CHECKOUT_MERCHANTS_ON_PUSH_TOKEN_PROVISIONING = 'enable_standard_checkout_merchants_on_push_token_provisioning';
 
     const QR_PAYMENT_PROCESS_RETRY = 'qr_payment_process_retry';
+
+    /**
+     * Razorx flag to skip callback for upi_icici BT(Beneficiary Timeout) cases
+     *
+     */
+    const SKIP_UPI_ICICI_CALLBACK_FOR_BT = 'skip_upi_icici_callback_for_bt';
 }

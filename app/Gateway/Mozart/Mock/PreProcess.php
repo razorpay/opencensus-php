@@ -268,17 +268,37 @@ class PreProcess extends Base\Mock\Server
         {
             $response->setSuccess(false);
 
-            $response->setError([
-                'description'               => 'Debit has been failed',
-                'gateway_error_code'        => 'U30',
-                'gateway_error_description' => 'Debit has been failed',
-                'gateway_status_code'       =>  200,
-                'internal_error_code'       => 'GATEWAY_ERROR_DEBIT_FAILED',
-            ]);
+            if($data["PayerVA"] === "BT@icici")
+            {
+                $response->setError([
+                    'description' => 'Transaction is pending (BT)',
+                    'gateway_error_code' => 'BT',
+                    'gateway_error_description' => 'Transaction is pending (BT)',
+                    'gateway_status_code' => 200,
+                    'internal_error_code' => 'GATEWAY_ERROR_TRANSACTION_PENDING',
+                ]);
 
-            $response->mergeUpi([
-                UpiEntity::STATUS_CODE => 'U30',
-            ]);
+                $response->mergeUpi([
+                    UpiEntity::STATUS_CODE => 'BT',
+                ]);
+
+            }
+            else
+            {
+                $response->setError([
+                    'description' => 'Debit has been failed',
+                    'gateway_error_code' => 'U30',
+                    'gateway_error_description' => 'Debit has been failed',
+                    'gateway_status_code' => 200,
+                    'internal_error_code' => 'GATEWAY_ERROR_DEBIT_FAILED',
+                ]);
+
+                $response->mergeUpi([
+                    UpiEntity::STATUS_CODE => 'U30',
+                ]);
+
+            }
+
         }
 
         $response = $response->toArray();

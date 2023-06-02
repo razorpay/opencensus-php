@@ -1377,4 +1377,218 @@ class UpiIciciPaymentServiceTest extends UpiPaymentServiceTest
     {
         $this->upiPaymentService->shouldReceive('content')->andReturnUsing($closure);
     }
+
+    public function testPaymentCreatedForBTUpiICICI()
+    {
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
+        $this->doAjaxPaymentWithUps('terminal:shared_upi_icici_terminal', 'upi_icici');
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $this->gateway = 'upi_icici';
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertEquals(4, $payment->getCpsRoute());
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            if ($feature === 'skip_upi_icici_callback_for_bt')
+            {
+                return $this->getRazoxVariant($feature, 'skip_upi_icici_callback_for_bt', 'on');
+            }
+            else
+            {
+                return $this->getRazoxVariant($feature, 'api_upi_icici_pre_process_v1', 'upi_icici');
+            }
+        });
+
+        $payment = $this->getDbLastPayment()->toArray();
+
+        $payment['payment_id'] = $payment['id'];
+
+        $upiEntity = [];
+        $upiEntity['created_at'] = $payment['created_at'];
+        $upiEntity['gateway_payment_id'] = '882087011';
+        $upiEntity['gateway_merchant_id'] = '123456';
+        $upiEntity['vpa'] =  'BT@icici';
+        $upiEntity['payment_id'] = $payment['id'];
+
+        $content = $this->mockServer('upi_icici')->getFailedAsyncCallbackContent($upiEntity, $payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content, 'upi_icici');
+
+        $payment = $this->getDbLastPayment()->toArray();
+
+        $this->assertArraySubset([
+            Entity::STATUS              => Status::CREATED,
+            Entity::TERMINAL_ID         => $this->terminal->getId(),
+            Entity::GATEWAY             => $this->gateway,
+            Entity::CPS_ROUTE           => Entity::UPI_PAYMENT_SERVICE,
+            Entity::ERROR_CODE          => null,
+            Entity::INTERNAL_ERROR_CODE => null,
+        ], $payment);
+    }
+
+    public function testPaymentFailedForBTUpiICICI()
+    {
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
+        $this->doAjaxPaymentWithUps('terminal:shared_upi_icici_terminal', 'upi_icici');
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $this->gateway = 'upi_icici';
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertEquals(4, $payment->getCpsRoute());
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+
+        {
+            if ($feature === 'skip_upi_icici_callback_for_bt')
+            {
+                // Returns variant 'off' for 'skip_upi_icici_callback_for_bt'
+                return $this->getRazoxVariant($feature, 'skip_upi_icici_callback_for_bt', 'off');
+            }
+            else
+            {
+                return $this->getRazoxVariant($feature, 'api_upi_icici_pre_process_v1', 'upi_icici');
+            }
+        });
+
+        $payment = $this->getDbLastPayment()->toArray();
+
+        $payment['payment_id'] = $payment['id'];
+
+        $upiEntity = [];
+        $upiEntity['created_at'] = $payment['created_at'];
+        $upiEntity['gateway_payment_id'] = '882087011';
+        $upiEntity['gateway_merchant_id'] = '123456';
+        $upiEntity['vpa'] =  'BT@icici';
+        $upiEntity['payment_id'] = $payment['id'];
+
+        $this->mockServerContentFunction(
+            function (&$error, $action)
+            {
+                if ($action != 'callback')
+                {
+                    return;
+                }
+
+                $responseError = [
+                    'internal' => [
+                        'code'          => 'GATEWAY_ERROR_TRANSACTION_PENDING',
+                        'description'   => 'Transaction is pending (BT)',
+                        'metadata'      => [
+                            'description'               => 'Transaction is pending (BT)',
+                            'gateway_error_code'        => 'BT',
+                            'gateway_error_description' => 'Transaction is pending (BT)',
+                            'internal_error_code'       => 'GATEWAY_ERROR_TRANSACTION_PENDING'
+                        ]
+                    ]
+                ];
+
+                return $responseError;
+            }
+        );
+
+        $content = $this->mockServer('upi_icici')->getFailedAsyncCallbackContent($upiEntity, $payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content, 'upi_icici');
+
+        $payment = $this->getDbLastPayment()->toArray();
+
+        $this->assertArraySubset([
+            Entity::STATUS              => Status::FAILED,
+            Entity::TERMINAL_ID         => $this->terminal->getId(),
+            Entity::GATEWAY             => $this->gateway,
+            Entity::CPS_ROUTE           => Entity::UPI_PAYMENT_SERVICE,
+            Entity::ERROR_CODE          => 'GATEWAY_ERROR',
+            Entity::INTERNAL_ERROR_CODE => 'GATEWAY_ERROR_TRANSACTION_PENDING',
+        ], $payment);
+    }
+
+    public function testVerifyPaymentCreatedForBTUpiICICI()
+    {
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
+        $this->doAjaxPaymentWithUps('terminal:shared_upi_icici_terminal', 'upi_icici');
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $this->gateway = 'upi_icici';
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertEquals(4, $payment->getCpsRoute());
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            if ($feature === 'skip_upi_icici_callback_for_bt')
+            {
+                return $this->getRazoxVariant($feature, 'skip_upi_icici_callback_for_bt', 'on');
+            }
+            else
+            {
+                return $this->getRazoxVariant($feature, 'api_upi_icici_pre_process_v1', 'upi_icici');
+            }
+        });
+
+        $payment = $this->getDbLastPayment()->toArray();
+
+        $payment['payment_id'] = $payment['id'];
+
+        $upiEntity = [];
+        $upiEntity['created_at'] = $payment['created_at'];
+        $upiEntity['gateway_payment_id'] = '882087011';
+        $upiEntity['gateway_merchant_id'] = '123456';
+        $upiEntity['vpa'] =  'BT@icici';
+        $upiEntity['payment_id'] = $payment['id'];
+
+        $content = $this->mockServer('upi_icici')->getFailedAsyncCallbackContent($upiEntity, $payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content, 'upi_icici');
+
+        $payment = $this->getDbLastPayment();
+
+        $paymentArr = $payment->toArray();
+
+        $this->assertArraySubset([
+            Entity::STATUS              => Status::CREATED,
+            Entity::TERMINAL_ID         => $this->terminal->getId(),
+            Entity::GATEWAY             => $this->gateway,
+            Entity::CPS_ROUTE           => Entity::UPI_PAYMENT_SERVICE,
+            Entity::ERROR_CODE          => null,
+            Entity::INTERNAL_ERROR_CODE => null,
+        ], $paymentArr);
+
+        $this->verifyAllPayments();
+
+        $paymentArr = $this->getDbLastPayment()->toArray();
+
+        $this->assertArraySubset([
+            Entity::STATUS              => Status::CREATED,
+            Entity::TERMINAL_ID         => $this->terminal->getId(),
+            Entity::GATEWAY             => $this->gateway,
+            Entity::CPS_ROUTE           => Entity::UPI_PAYMENT_SERVICE,
+            Entity::ERROR_CODE          => null,
+            Entity::INTERNAL_ERROR_CODE => null,
+        ], $paymentArr);
+
+    }
 }

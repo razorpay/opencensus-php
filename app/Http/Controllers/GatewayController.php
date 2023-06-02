@@ -135,6 +135,23 @@ class GatewayController extends Controller
 
             $paymentId = Payment\Entity::getSignedId($paymentId);
 
+            $payment = $this->repo->payment->findByPublicId($paymentId);
+
+            if ($this->shouldSkipUpiICICICallback($payment, $mode, $input) === true)
+            {
+
+                $this->trace->info(TraceCode::SKIP_UPI_ICICI_CALLBACK_PROCESSING,
+                    [
+                        'payment_id' => $payment->getId(),
+                        'merchant_id' => $payment->getMerchantId(),
+                    ]);
+
+                return [
+                    'success' => true,
+                ];
+
+            }
+
             return (new Payment\Service)->s2sCallback($paymentId, $input);
         }
     }
@@ -307,6 +324,23 @@ class GatewayController extends Controller
                 }
                 else
                 {
+                    $payment = $this->repo->payment->findByPublicId($paymentId);
+
+                    if ($this->shouldSkipUpiICICICallback($payment, $mode, $input) === true)
+                    {
+
+                        $this->trace->info(TraceCode::SKIP_UPI_ICICI_CALLBACK_PROCESSING,
+                            [
+                                'payment_id' => $payment->getId(),
+                                'merchant_id' => $payment->getMerchantId(),
+                            ]);
+
+                        return [
+                            'success' => true,
+                        ];
+
+                    }
+
                     $data = (new Payment\Service)->s2sCallback($paymentId, $input);
                 }
             }
@@ -1856,5 +1890,69 @@ class GatewayController extends Controller
         $data = $service->createFpxDowntimes($input);
 
         return ApiResponse::json($data);
+    }
+
+
+    /**
+     * @param $payment Payment\Entity
+     * @param $mode string
+     * @param $input array
+     * @return bool
+     */
+    private function shouldSkipUpiICICICallback(Payment\Entity $payment, string $mode, array $input)
+    {
+        /*
+         * Temporary Solution to Handle UPI BT cases to maintain payment in created state and reduce force authorized cases.
+         * Long term fix is to have PENDING state which is being worked upon
+         * */
+
+        if ((isset($payment) === false) or
+            (isset($mode) === false) or
+            (isset($input) === false))
+        {
+            return false;
+        }
+
+        // only in case of UPI, proceed
+        if (($payment->isBharatQr() === true) or
+            ($payment->isUpiQr() === true) or
+            ($payment->isRecurring() === true) or
+            ($payment->isUpiTransfer() === true) or
+            ($payment->isUpiOtm() === true))
+        {
+            return false;
+        }
+
+        // if gateway is not upi_icici, return
+        if ($payment['gateway'] !== Gateway::UPI_ICICI)
+        {
+            return false;
+        }
+
+        // if success is false, only then the error block is populated
+        if ((isset($input['success']) === true) and
+            ($input['success'] === true))
+        {
+            return false;
+        }
+
+        // only in case of upi_icici and BT call RazorX
+        if ((isset($input["error"]) === true) and
+            (isset($input["error"]["gateway_error_code"]) === true) and
+            ($input["error"]["gateway_error_code"] === "BT"))
+        {
+            $merchantID = $payment['merchant_id'];
+
+            $variant = $this->app['razorx']->getTreatment($merchantID,
+                RazorxTreatment::SKIP_UPI_ICICI_CALLBACK_FOR_BT,
+                $mode);
+
+            if (strtolower($variant) === 'on')
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -9805,6 +9805,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MAGIC_COD_ENGINE_EVALUATE_CALL_SUCCESS            =  'MAGIC_COD_ENGINE_EVALUATE_CALL_SUCCESS';
     const MAGIC_COD_ENGINE_EVALUATE_CALL_ERROR              = 'MAGIC_COD_ENGINE_EVALUATE_CALL_ERROR';
 
+    const SKIP_UPI_ICICI_CALLBACK_PROCESSING                = 'SKIP_UPI_ICICI_CALLBACK_PROCESSING';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
