@@ -60,7 +60,7 @@ const Payroll = () => {
         />
         <PromotionWrapper>
           <PromotionText>
-            First <PromotionTextHighlight>3 months of free*</PromotionTextHighlight> Pro plan when
+            First <PromotionTextHighlight>1 month of free*</PromotionTextHighlight> Pro plan when
             you sign up
           </PromotionText>
         </PromotionWrapper>
