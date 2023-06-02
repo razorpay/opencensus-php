@@ -2349,7 +2349,11 @@ return [
             'content'   => [
                 'website_url'    =>  'random.com',
                 'other_info'     =>  'random description',
-                'phone_no'       =>  '9999999999'
+                'phone_no'       =>  '9999999999',
+                'terms'          =>  [
+                    'consent'    =>  true,
+                    'url'        =>  'https://razorpay.com/s/terms/partners'
+                ]
             ],
         ],
         'response'  => [

@@ -206,6 +206,7 @@ final class Constants
     const TRANSACTION_TYPE_DOMESTIC                     = 'domestic';
     const OAUTH                                         = 'Oauth';
     const PARTNERSHIP                                   = 'Partnership';
+    const PARTNER_TYPE_SWITCH                           = 'Partner_Type_Switch';
 
     const RAZORPAY_PRIVACY_POLICY_URL                   = 'https://razorpay.com/privacy/';
     const RAZORPAY_CA_TERMS_OF_USE                      = 'https://razorpay.com/x/terms/razorpayx/';

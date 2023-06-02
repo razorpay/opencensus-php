@@ -4911,6 +4911,11 @@ class PartnerTest extends OAuthTestCase
     {
         $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID);
 
+        $this->fixtures->create('merchant_detail:sane',
+            [
+                'merchant_id'       => self::DEFAULT_MERCHANT_ID,
+            ]);
+
         $expectedResponse = ['status_code'=> 200, 'response'=> []];
 
         $requestInput = $this->testData[__FUNCTION__]['request']['content'];
@@ -4921,7 +4926,23 @@ class PartnerTest extends OAuthTestCase
 
         $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_MERCHANT_ID);
 
+        $this->mockBvsService();
+
         $this->startTest();
+
+        // assert that consents in stored
+        $merchantConsents = $this->getDbLastEntity('merchant_consents');
+
+        $merchantConsentDetails = (new MerchantConsentDetailsRepo())->getById($merchantConsents->getDetailsId());
+
+        $expectedTerms        =  $requestInput['terms']['consent'];
+        $expectedConsentFor   =  'Partner_Type_Switch_Terms & Conditions';
+
+        $this->assertEquals($merchant->getId(), $merchantConsents->getMerchantId());
+        $this->assertEquals($expectedConsentFor, $merchantConsents->getConsentFor());
+        $this->assertEquals($expectedTerms, $merchantConsentDetails->getURL());
+
+        $this->assertEquals('initiated', $merchantConsents->getStatus());
     }
 
     public function testRequestPartnerMigrationError() : void

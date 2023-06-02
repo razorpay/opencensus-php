@@ -30,9 +30,12 @@ class Validator extends Base\Validator
     ];
 
     protected static $raisePartnerMigrationRequestRules = [
-        'phone_no'    => 'required|string',
-        'website_url' => 'required|string',
-        'other_info'  => 'sometimes|string',
+        'phone_no'      => 'required|string',
+        'website_url'   => 'required|string',
+        'other_info'    => 'sometimes|string',
+        'terms'         => 'required|array',
+        'terms.consent' => 'required|boolean',
+        'terms.url'     => 'required|string',
     ];
 
     /**

@@ -9,11 +9,14 @@ use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
+use RZP\Constants\Environment;
 use RZP\Http\RequestHeader;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Metric;
 use RZP\Models\Merchant\Referral;
+use RZP\Models\Merchant\Constants;
 use RZP\Models\Partner\Activation;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
@@ -395,6 +398,9 @@ class Service extends Base\Service
         if($partnershipsResponse['status_code'] == 200)
         {
             $this->trace->count(Metric::PARTNER_MIGRATION_REQUEST_CREATED);
+
+            $this->captureConsents($input['terms'], $partner->getId());
+
             return ['success' => true];
         }
         else
@@ -406,6 +412,29 @@ class Service extends Base\Service
         }
     }
 
+    /**
+     * @param array  $terms consent sent from frontend
+     * @param string $merchantId
+     *
+     * @return void
+     */
+    private function captureConsents(array $terms, string $merchantId)
+    {
+        if ($terms['consent'] === true)
+        {
+            $mode = ($this->app['env'] === Environment::TESTING) ? Mode::TEST : Mode::LIVE;
+            $input[DEConstants::IP_ADDRESS ] = $this->app['request']->ip();
+            $input[DEConstants::USER_ID]     = $this->auth->getUser()->getId();
+            $input[DEConstants::DOCUMENTS_DETAIL] = [
+                [
+                    DEConstants::TYPE => Constants::TERMS,
+                    DEConstants::URL  => $terms['url'],
+                ]
+            ];
+
+            CapturePartnershipConsents::dispatch($mode, $input, $merchantId, Constants::PARTNER_TYPE_SWITCH);
+        }
+    }
     public function getPartnerSalesPOC()
     {
         $merchantId = $this->merchant->getId();

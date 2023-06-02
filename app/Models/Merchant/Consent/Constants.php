@@ -76,6 +76,7 @@ class Constants
                                  'L2_agreement' . ',' .
                                  'DIGILOCKER_TERMS_AND_CONDITIONS' . ',' .
                                  'Partnership' . '_' . MeConstants::TERMS . ',' .
+                                 'Partner_Type_Switch' . '_' . MeConstants::TERMS . ',' .
                                  'PartnerActivation' . '_' . MeConstants::TERMS . ',' .
                                  'PartnerActivation_Service Agreement' . ',' .
                                  'PartnerActivation_Privacy Policy' . ',' .
@@ -114,6 +115,10 @@ class Constants
             self::PLATFORM  => "pg"
         ],
         'Partnership' . '_' . MeConstants::TERMS       => [
+            self::MANDATORY => true,
+            self::PLATFORM  => self::PG
+        ],
+        'Partner_Type_Switch' . '_' . MeConstants::TERMS       => [
             self::MANDATORY => true,
             self::PLATFORM  => self::PG
         ],
