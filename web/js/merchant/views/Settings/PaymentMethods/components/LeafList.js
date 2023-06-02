@@ -217,9 +217,8 @@ const LeafList = ({
     >
       {instrument.leafList.map((leafList) => {
         if (
-          (leafList?.slug === 'localcurrencytransfer' || leafList?.slug === 'swiftbanktransfer') &&
-          !isB2BEnabled &&
-          !user?.international
+          (leafList.slug === 'localcurrencytransfer' || leafList.slug === 'swiftbanktransfer') &&
+          (!isB2BEnabled || !user?.international)
         )
           return null;
         if (leafList?.slug === 'instantbanktransfer' && !user?.international) return null;
