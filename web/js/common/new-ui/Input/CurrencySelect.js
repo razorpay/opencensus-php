@@ -5,6 +5,7 @@ import { Label } from 'common/new-ui/Input';
 import { AmountTooltip } from 'common/ui/Amount';
 import ErrorBoundary, { Ranks } from 'common/new-ui/ErrorBoundary';
 import { classList, setNativeValue } from 'common/utils/rzp-utils';
+import defaultCurrencies from 'merchant/constants/currency';
 
 const frequentlyUsedCurrencies = ['INR', 'USD', 'SGD', 'EUR'];
 
@@ -53,6 +54,7 @@ class CurrencySelect extends Component {
       },
     ];
     let currency;
+    const currencies = window.currencyList || defaultCurrencies;
     const isDisabled = this.props.disabled;
 
     const defaultValue = this.props.defaultValue || 'INR'; // If no value passed, then INR is the displayed option.
@@ -61,10 +63,10 @@ class CurrencySelect extends Component {
      * And some payments in international currency might exist, hence regardless international enable, currency requested via this component must reflect correct currency, and not INR.
      * */
 
-    Object.keys(window.currencyList || {}).forEach((c) => {
-      const fullName = window.currencyList[c]?.name;
-      const ISO = c;
-      const symbol = window.currencyList[c]?.symbol;
+    Object.keys(currencies).forEach((isoCurrencyCode) => {
+      const fullName = currencies[isoCurrencyCode].name;
+      const ISO = isoCurrencyCode;
+      const symbol = currencies[isoCurrencyCode].symbol;
 
       const currencyObj = {
         label: fullName,
@@ -78,7 +80,7 @@ class CurrencySelect extends Component {
 
       // If international then populate dropdown options
       if (this.isInternationalEnabled) {
-        if (frequentlyUsedCurrencies.indexOf(c) > -1) {
+        if (frequentlyUsedCurrencies.indexOf(isoCurrencyCode) > -1) {
           currencyList[0].options.push(currencyObj);
         } else {
           currencyList[1].options.push(currencyObj);
