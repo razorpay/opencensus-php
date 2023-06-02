@@ -17,7 +17,7 @@ import { TODAY } from 'merchant_common/views/Reports/constants';
 defineMatchMedia(true);
 
 const App = (props) => {
-  const [state, setState] = useState({});
+  const [state, setState] = useState(initialState);
   return (
     <div>
       <button aria-label="btn-outside">Test Outside Click</button>
@@ -32,19 +32,16 @@ const App = (props) => {
         disablePast={false}
         selectedRangeFormat={pickerInputFormat}
         allowSingleDateSelection
-        validate={() => [
-          {
-            condition: false,
-            error: 'Test for error',
-          },
-        ]}
+        validateRange={() => ({
+          error: 'Range is invalid',
+        })}
         {...props}
       />
     </div>
   );
 };
-// @todo: Joel needs to check these test cases
-describe.skip('Date time calendar component in case of small screen devices', () => {
+
+describe('Date time calendar component in case of small screen devices', () => {
   beforeEach(async () => {
     render(<App allowSingleDateSelection={false} />);
     const rangeInput = screen.getByLabelText(pickerInputFieldAL);
