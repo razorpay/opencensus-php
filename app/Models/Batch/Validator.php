@@ -2949,7 +2949,7 @@ class Validator extends Base\Validator
             $email      = $entry[Header::EMAIL] ?? '';
             $contactNo  = $entry[Header::CONTACT_MOBILE] ?? '';
 
-            $key = strtolower($email+$contactNo);
+            $key = strtolower($email.$contactNo);
 
             // Batch File should not contain multiple entries for the same key
             if (in_array($key, $existingKeys))
