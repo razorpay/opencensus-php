@@ -910,9 +910,9 @@ class Core extends Base\Core
             // Merchants should add customer billing address from merchant dashboard
             // https://razorpay.slack.com/archives/C024U3B04LD/p1682496775025409?thread_ts=1681996740.555379&cid=C024U3B04LD
             // Commenting for now
-            // 
+            //
             // $this->createAddressEntityForB2B($input,$payment);
-            // 
+            //
             // $this->saveSenderDetailsForIntlBankTransfer($input,$payment);
 
             $this->authorizePaymentForIntlBankTransfer($payment);
@@ -1004,7 +1004,7 @@ class Core extends Base\Core
         if ($payment->getConvertCurrency() === false ||
             ($currency !== Currency\Currency::INR && $payment->getConvertCurrency() === null))
         {
-            $input['mcc_mark_down_percent'] = $this->merchant->getMccMarkdownMarkdownPercentage(Payment\Method::INTL_BANK_TRANSFER);
+            $input['mcc_mark_down_percent'] = $this->merchant->getMccMarkdownMarkdownPercentage($payment);
             $mccMarkdownPercentage = 1 - $input['mcc_mark_down_percent'] / 100;
             $baseAmount = (int) ceil($baseAmount * $mccMarkdownPercentage);
 

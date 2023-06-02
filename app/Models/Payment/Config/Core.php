@@ -249,9 +249,24 @@ class Core extends Base\Core
         return $config;
     }
 
-    private function updateMccMarkdownConfig($config, $input)
+    private function updateMccMarkdownConfig($merchant,$config, $input)
     {
-        $config->setConfig(json_encode($input['config']));
+        //fetch the old config, merge with the new config and save it
+        $existingConfig = [];
+        $configEntity = $this->repo->config->fetchConfigByMerchantIdAndType($merchant->getId(), $input['type'])->first();
+        if(empty($configEntity) === false and isset($configEntity['config']) === true) {
+            $existingConfig = json_decode($configEntity['config'],true);
+        }
+
+        $updatedConfig = [];
+
+        $updatedConfig = array_merge($updatedConfig,$existingConfig);
+
+        foreach ($input['config'] as $key => $value) {
+            $updatedConfig[$key] = $value;
+        }
+
+        $config->setConfig(json_encode($updatedConfig));
 
         $this->repo->saveOrFail($config);
 
@@ -308,7 +323,7 @@ class Core extends Base\Core
 
                         if ($type === Type::MCC_MARKDOWN)
                         {
-                            $this->updateMccMarkdownConfig($config, $input);
+                            $this->updateMccMarkdownConfig($merchant,$config, $input);
                         }
 
                         return $config;

@@ -304,22 +304,22 @@ class USDPaymentTest extends TestCase
                 [
                     ConfigKey::MCC_DEFAULT_MARKDOWN_PERCENTAGE => "2.5"
                 ]);
-    
+
             $this->fixtures->create('order', [ 'amount' => 5000, 'currency' => 'USD']);
-    
+
             $order = $this->getLastEntity('order', true);
-    
+
             $payment = $this->getDefaultPaymentArray();
             $payment['order_id'] = $order['id'];
             $payment['amount'] = $order['amount'];
             $payment['currency'] = $order['currency'];
             //International card
             $payment['card']['number'] = '4012 0111 1111 1113';
-    
+
             $this->doAuthAndCapturePayment($payment, $payment['amount'], $payment['currency']);
-    
+
             $payment = $this->getLastEntity('payment', true);
-    
+
             $this->assertEquals($payment['convert_currency'], null);
             $this->assertEquals($payment['base_amount'], 48750);
         }

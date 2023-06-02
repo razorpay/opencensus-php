@@ -50,6 +50,8 @@ class Validator extends Base\Validator
     const DCC_RECURRING_MARKUP_PERCENTAGE = 'dcc_recurring_markup_percentage';
 
     const MCC_MARKDOWN_PERCENTAGE = 'mcc_markdown_percentage';
+    const INTL_BANK_TRANSFER_ACH_MCC_MARKDOWN_PERCENTAGE = 'intl_bank_transfer_ach_mcc_markdown_percentage';
+    const INTL_BANK_TRANSFER_SWIFT_MCC_MARKDOWN_PERCENTAGE = 'intl_bank_transfer_swift_mcc_markdown_percentage';
 
     const SUPPORTED_LANGUAGE_CODE = [
         'hi',
@@ -113,7 +115,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $mccMarkdownConfigRules = [
-        self::MCC_MARKDOWN_PERCENTAGE   => 'required|numeric|between:0,99.99|regex:/^\d+(\.\d{1,2})?$/',
+        self::MCC_MARKDOWN_PERCENTAGE                           => 'required|numeric|between:0,99.99|regex:/^\d+(\.\d{1,2})?$/',
+        self::INTL_BANK_TRANSFER_ACH_MCC_MARKDOWN_PERCENTAGE    => 'sometimes|numeric|between:0,99.99|regex:/^\d+(\.\d{1,2})?$/',
+        self::INTL_BANK_TRANSFER_SWIFT_MCC_MARKDOWN_PERCENTAGE  => 'sometimes|numeric|between:0,99.99|regex:/^\d+(\.\d{1,2})?$/',
     ];
 
     protected static $editValidators = [

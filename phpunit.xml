@@ -126,6 +126,7 @@
             <directory>./tests/Functional/BankingAccountService/</directory>
             <directory>./tests/Functional/FundLoadingDowntime/</directory>
             <directory>./tests/Functional/InternationalBankTransfer/</directory>
+            <directory>./tests/Functional/International/</directory>
             <!--<directory>./tests/Functional/AutoGenerateApiDocsTest/</directory>-->
         </testsuite>
         <testsuite name="Features-2 Test Suite">

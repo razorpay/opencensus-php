@@ -55,6 +55,7 @@ use RZP\Models\Payment\Config as PaymentConfig;
 use RZP\Models\Partner\Activation as PartnerActivation;
 use RZP\Models\Merchant\Account\Constants as AccountConstants;
 use MVanDuijker\TransactionalModelEvents as TransactionalModelEvents;
+use RZP\Models\Payment\Processor as PaymentProcessor;
 /**
  * @property Org\Entity               $org
  * @property Detail\Entity            $merchantDetail
@@ -316,7 +317,15 @@ class Entity extends Base\PublicEntity
 
     const MCC_MARKDOWN                      = 'mcc_markdown';
     const MCC_MARKDOWN_PERCENTAGE           = 'mcc_markdown_percentage';
+    const INTL_BANK_TRANSFER_ACH_MCC_MARKDOWN_PERCENTAGE    = 'intl_bank_transfer_ach_mcc_markdown_percentage';
+    const INTL_BANK_TRANSFER_SWIFT_MCC_MARKDOWN_PERCENTAGE  = 'intl_bank_transfer_swift_mcc_markdown_percentage';
 
+
+    const DEFAULT_MCC_MARKDOWNS = [
+        self::MCC_MARKDOWN_PERCENTAGE                           =>  self::DEFAULT_MCC_MARKDOWN_PERCENTAGE,
+        self::INTL_BANK_TRANSFER_ACH_MCC_MARKDOWN_PERCENTAGE    =>  self::DEFAULT_INTL_BANK_TRANSFER_ACH_MCC_MARKDOWN_PERCENTAGE,
+        self::INTL_BANK_TRANSFER_SWIFT_MCC_MARKDOWN_PERCENTAGE  =>  self::DEFAULT_INTL_BANK_TRANSFER_SWIFT_MCC_MARKDOWN_PERCENTAGE,
+    ];
 
     const ALLOW_USER_CREATION       = 'allow_user_creation';
 
@@ -672,6 +681,8 @@ class Entity extends Base\PublicEntity
     const DCC_RECURRING_MARKUP_PERCENTAGE_DEFAULT     = 4;
     const DEFAULT_DCC_MARKUP_PERCENTAGE_FOR_PAYPAL    = 5;
     const DEFAULT_MCC_MARKDOWN_PERCENTAGE             = 2;
+    const DEFAULT_INTL_BANK_TRANSFER_ACH_MCC_MARKDOWN_PERCENTAGE    = 2;
+    const DEFAULT_INTL_BANK_TRANSFER_SWIFT_MCC_MARKDOWN_PERCENTAGE  = 2;
     const DEFAULT_INTL_BANK_TRANSFER_MCC_MARKDOWN_PERCENTAGE = 2;
 
     const COUNTRY_MAXIMUM_AMOUNT = [
@@ -2819,31 +2830,130 @@ class Entity extends Base\PublicEntity
         return self::DEFAULT_DCC_MARKUP_PERCENTAGE_FOR_APPS;
     }
 
-    public function getMccMarkdownMarkdownPercentage($method = 'default')
+    public function getMccMarkdownMarkdownPercentage($payment = null)
     {
-        if($method === Method::INTL_BANK_TRANSFER)
+        $key = $this->getMccMarkdownConfigKey($payment);
+        return $this->getMccMarkdownPercentageValue($key);
+    }
+
+    private function getMccMarkdownConfigKey($payment):array
+    {
+        $methods = [
+            Method::INTL_BANK_TRANSFER => [
+                PaymentProcessor\IntlBankTransfer::ACH   => self::INTL_BANK_TRANSFER_ACH_MCC_MARKDOWN_PERCENTAGE,
+                PaymentProcessor\IntlBankTransfer::SWIFT => self::INTL_BANK_TRANSFER_SWIFT_MCC_MARKDOWN_PERCENTAGE,
+            ],
+            "default" => self::MCC_MARKDOWN_PERCENTAGE
+        ];
+
+        $configKeys = [
+            "config_key"            =>  $methods["default"],
+            "fallback_config_key"   =>  $methods["default"],
+        ];
+
+        // return default mark down which is common for all method
+        if(empty($payment))
         {
-            // hard coding mcc mdr to 2 for intl bank transfer
-            return self::DEFAULT_INTL_BANK_TRANSFER_MCC_MARKDOWN_PERCENTAGE;
+            return $configKeys;
         }
 
-        $mccMarkdownPaymentConfigEntity = $this->latestMccMarkdownPaymentConfig();
-
-        if($mccMarkdownPaymentConfigEntity === null)
+        $response = null;
+        if(array_key_exists($payment->getMethod(),$methods))
         {
-            $mccMarkdownFromConfig = ConfigKey::get(ConfigKey::MCC_DEFAULT_MARKDOWN_PERCENTAGE);
+            $response = $methods[$payment->getMethod()];
+        }
 
-            if($mccMarkdownFromConfig === null)
+        // if method is not present return the default key
+        if (empty($response) === true )
+        {
+            return $configKeys;
+        }
+        if ((is_array($response) === true))
+        {
+            if ($payment->getMethod() === Method::INTL_BANK_TRANSFER )
             {
-                return self::DEFAULT_MCC_MARKDOWN_PERCENTAGE;
+                $mode = $payment->getWallet();
+                $configKeys["config_key"] = $response[$mode];
+                return $configKeys;
             }
+        }
+        else
+        {
+            $configKeys["config_key"] = $response;
+        }
+        return $configKeys;
+    }
 
-            return $mccMarkdownFromConfig;
+    private function getMccMarkDownConfig() : array
+    {
+        $mccMarkdownPaymentConfigEntity = $this->latestMccMarkdownPaymentConfig();
+        if(empty($mccMarkdownPaymentConfigEntity)=== true)
+        {
+            return [];
+        }
+        return $mccMarkdownPaymentConfigEntity->getFormattedConfig();
+    }
+
+    private function getMccMarkdownFromRedis() : array
+    {
+        $result = [];
+        $result = ConfigKey::get(ConfigKey::MCC_DEFAULT_MARKDOWN_PERCENTAGE_CONFIG);
+        if(empty($result) === true)
+        {
+           // for backward compatibility in case MCC_DEFAULT_MARKDOWN_PERCENTAGE_CONFIG is not present
+           // fetch the value from old redis key MCC_DEFAULT_MARKDOWN_PERCENTAGE
+           $defaultMccMarkdown = ConfigKey::get(ConfigKey::MCC_DEFAULT_MARKDOWN_PERCENTAGE);
+           if($defaultMccMarkdown === null)
+           {
+               return [];
+           }
+           return [self::MCC_MARKDOWN_PERCENTAGE => $defaultMccMarkdown ];
+       }
+       return $result;
+    }
+
+    private function getMccMarkdownPercentageValue(array $keys): string {
+        $fallback = null;
+        $mccMarkdownSources = [
+            1 =>    function() { return $this->getMccMarkDownConfig(); },
+            2 =>    function() { return $this->getMccMarkdownFromRedis();},
+            3 =>    function() { return self::DEFAULT_MCC_MARKDOWNS;},
+        ];
+
+        foreach ($mccMarkdownSources as $index => $source)
+        {
+            $response = [];
+            $mccMarkdownConfig = $source();
+            if(empty($mccMarkdownConfig) === false)
+            {
+                $response = $this->getConfigValues($keys,$mccMarkdownConfig);
+            }
+            if(isset($response['config_key']) === true)
+            {
+                return $response['config_key'];
+            }
+            if((isset($fallback) === false) and (isset($response['fallback_config_key']) === true))
+            {
+                $fallback = $response['fallback_config_key'];
+            }
+        }
+        return $fallback;
+    }
+
+    // [ArrayShape(['config_key' => "mixed|null", 'fallback_config_key' => "mixed|null"])]
+    private function getConfigValues(array $keys, array $config): array
+    {
+        $response = ['config_key' => null,'fallback_config_key' => null];
+        if( empty($config[$keys['config_key']]) === false)
+        {
+            $response['config_key'] = $config[$keys['config_key']];
         }
 
-        $data = $mccMarkdownPaymentConfigEntity->getFormattedConfig();
-
-        return $data[self::MCC_MARKDOWN_PERCENTAGE];
+        if( empty($config[$keys['fallback_config_key']]) === false)
+        {
+            $response['fallback_config_key'] = $config[$keys['fallback_config_key']];
+        }
+        return $response;
     }
 
     public function getDccMarkupPercentageForIntlBankTransfer()

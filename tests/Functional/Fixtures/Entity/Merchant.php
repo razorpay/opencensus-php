@@ -1017,7 +1017,7 @@ class Merchant extends Base
         $this->fixtures->create('config', $attributes);
     }
 
-    public function addMccMarkdownPaymentConfig($mccMarkdownPercent, string $id = '10000000000000')
+    public function addMccMarkdownPaymentConfig($mccMarkdownPercent, string $id = '10000000000000',$config=[])
     {
         $attributes = [
             'merchant_id'   => $id,
@@ -1028,6 +1028,11 @@ class Merchant extends Base
                 "mcc_markdown_percentage": '.$mccMarkdownPercent.'
             }'
         ];
+        if(empty($config) === false) {
+            $existingConfig = json_decode($attributes['config'],true);
+            $config = array_merge($existingConfig,$config);
+            $attributes['config'] = json_encode($config);
+        }
         $this->fixtures->create('config', $attributes);
     }
 
