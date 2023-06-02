@@ -9455,6 +9455,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BARRICADE_SQS_PUSH_SUCCESS                                  = 'BARRICADE_SQS_PUSH_SUCCESS';
     const BARRICADE_SQS_PUSH_START                                    = 'BARRICADE_SQS_PUSH_START';
     const BARRICADE_SQS_PUSH_FAILURE                                  = 'BARRICADE_SQS_PUSH_FAILURE';
+    const BARRICADE_SQS_DATA_CREATE_FAILURE                           = 'BARRICADE_SQS_DATA_CREATE_FAILURE';
 
     const PAN_RETRY_STATUS                                            = 'PAN_RETRY_STATUS';
 

@@ -367,8 +367,10 @@ class Processor
     const BARRICADE_SQS_PUSH       = 'barricade_sqs_push';
     const BARRICADE_PAYMENT_GATEWAY = 'barricade_supported_gateway';
     const BARRICADE_AUTHORIZE_VERIFY_CARD_GATEWAY = 'barricade_authorize_verify_card_gateway';
-    const DEMO_MERCHANT            = 'demo_merchants';
-    const BARRICADE_UPI_RAMP = 'barricade_upi_ramp';
+    const BARRICADE_QR_PAYMENT_VERIFY = 'barricade_qr_payment_verify';
+    const BARRICADE_UPI_PAYMENT_VERIFY ='barricade_upi_transfer_payment_verify';
+    const BARRICADE_BANK_PAYMENT_VERIFY = 'barricade_bank_transfer_payment_verify';
+    const PUSH_PAYMENT_VERIFY = "push_payment_verify";
 
     /**
      * User consent flag indicates whether the user has given consent to tokenise
@@ -4866,9 +4868,9 @@ class Processor
     {
         try
         {
+            //Add delay of 10 minutes
+            $waitTime = 600;
             $methodResult = $this->app->razorx->getTreatment($payment->getMethod(), self::BARRICADE_PAYMENT_METHOD, $this->mode);
-
-
             if  ($methodResult !== 'on')
             {
                 return;
@@ -4878,18 +4880,25 @@ class Processor
                 return;
             }
 
+            // To Verify Push Payment Flow
+            $action = $payment->isBankTransfer() ? self::BARRICADE_BANK_PAYMENT_VERIFY :
+                ($payment->isUpiTransfer() ? self::BARRICADE_UPI_PAYMENT_VERIFY :
+                    ($payment->isBharatQr() ? self::BARRICADE_QR_PAYMENT_VERIFY : ''));
 
-            // Skip verify cll for BharatQr and UpiTransfer
-            if (($payment->isBharatQr() === true)
-                or ($payment->isUpiTransfer() === true))
-            {
+            if ($action !== '') {
+                $data['action'] = [
+                    'verify_action' => $action,
+                    'action' => self::PUSH_PAYMENT_VERIFY,
+                    'source' => 'api'
+                ];
+                $data['payment'] = $payment;
+
+                $this->callPushForBarricade($data, $waitTime);
                 return;
             }
 
-
             $authorizeVerifyCardGateways = $this->app->razorx->getTreatment($payment->terminal->getGateway(),self::BARRICADE_AUTHORIZE_VERIFY_CARD_GATEWAY, $this->mode);
             $gatewayResult = $this->app->razorx->getTreatment($payment->terminal->getGateway(), self::BARRICADE_PAYMENT_GATEWAY, $this->mode);
-            $demoMerchant  = $this->app->razorx->getTreatment($payment->getMerchantId(),self::DEMO_MERCHANT, $this->mode);
             // Skip push on capture for AuthorizeVerify Gateways
             // Change it to avoide duplicate payment from card gateway
             if ($payment->isCard() === true && $authorizeVerifyCardGateways === 'on' && $payment->getStatus() !== "authorized" ){
@@ -4902,7 +4911,7 @@ class Processor
             }
 
             //Unexpected Payment
-            if ( $gatewayResult !== 'on' || $demoMerchant !== 'control')
+            if ( $gatewayResult !== 'on')
             {
                 return;
             }
@@ -4926,15 +4935,25 @@ class Processor
                 $data = $this->getCaptureVerifyData($payment);
             }
 
-
-            //Add delay of 10 minutes
-            $waitTime = 600;
-
             //if card gateway is authorizeVerify then waitTime is 0
             if ($authorizeVerifyCardGateways === 'on'){
                 $waitTime = 60;
             }
+            $this->callPushForBarricade($data, $waitTime);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::BARRICADE_SQS_DATA_CREATE_FAILURE,
+                []);
+        }
 
+    }
+
+    protected function callPushForBarricade($data, $waitTime){
+        try {
             $queueName = $this->app['config']->get('queue.barricade_verify.' . $this->mode);
 
             $this->app['queue']->connection('sqs')->later($waitTime, "Barricade Queue Push", json_encode($data), $queueName);
@@ -4942,9 +4961,8 @@ class Processor
             $this->trace->info(TraceCode::BARRICADE_SQS_PUSH_SUCCESS,
                 [
                     'queueName' => $queueName,
-                    'data'      => $data,
+                    'data' => $data,
                 ]);
-
         }
         catch (\Throwable $e)
         {
@@ -4954,8 +4972,8 @@ class Processor
                 TraceCode::BARRICADE_SQS_PUSH_FAILURE,
                 []);
         }
-
     }
+
     protected function getAutorizeVerifyData($payment)
     {
         $data = [];
