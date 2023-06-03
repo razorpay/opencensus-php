@@ -98,7 +98,7 @@ class Metric extends Base\Core
 
             $dimensions[self::LABEL_ASYNC] = true;
 
-            $dimensions[self::LABEL_PUSH_PROVISIONING] = null;
+            $dimensions[self::LABEL_PUSH_PROVISIONING] = $token[Token\Entity::SOURCE] === Token\Entity::ISSUER;
 
             if ($exe !== null)
             {
@@ -170,6 +170,28 @@ class Metric extends Base\Core
                 $e,
                 Trace::ERROR,
                 TraceCode::PUSH_PROVISIONING_RESPONSE_TIME_DIMENSION_PUSH_FAILED
+            );
+        }
+    }
+
+    public function pushTokenProvisioningSRMetrics($status, $action = null)
+    {
+        try
+        {
+            $dimensions[self::LABEL_STATUS] = $status;
+
+            $dimensions[self::LABEL_ACTION] = $action;
+
+            $dimensions[self::LABEL_PUSH_PROVISIONING] = true;
+
+            $this->trace->count(self::TOKEN_HQ, $dimensions);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PUSH_PROVISIONING_SR_DIMENSION_PUSH_FAILED
             );
         }
     }

@@ -533,6 +533,7 @@ class Service extends Base\Service
                 }
 
                 (new Metric())->pushTokenProvisioningResponseTimeMetrics($startTime, BaseMetric::SUCCESS, Token\Action::TOKEN_PUSH);
+                (new Metric())->pushTokenProvisioningSRMetrics(BaseMetric::SUCCESS, Token\Action::TOKEN_PUSH_SR);
 
             }
             $response['tokens'] = $tokensResponse;
@@ -545,6 +546,7 @@ class Service extends Base\Service
                 TraceCode::TOKEN_PUSH_EXCEPTION);
 
             (new Metric())->pushTokenProvisioningResponseTimeMetrics($startTime, BaseMetric::FAILED, Token\Action::TOKEN_PUSH);
+            (new Metric())->pushTokenProvisioningSRMetrics(BaseMetric::FAILED, Token\Action::TOKEN_PUSH_SR);
 
             throw $e;
 
@@ -1219,6 +1221,8 @@ class Service extends Base\Service
                 ];
 
                 (new Metric())->pushTokenProvisioningResponseTimeMetrics($startTime, BaseMetric::SUCCESS, Token\Action::FETCH_MERCHANTS);
+                (new Metric())->pushTokenProvisioningSRMetrics(BaseMetric::SUCCESS, Token\Action::FETCH_MERCHANTS_SR);
+
 
                 return $response;
             }
@@ -1233,6 +1237,8 @@ class Service extends Base\Service
                 TraceCode::FETCH_MERCHANTS_WITH_TOKEN_EXEPTION);
 
             (new Metric())->pushTokenProvisioningResponseTimeMetrics($startTime, BaseMetric::FAILED, Token\Action::FETCH_MERCHANTS);
+            (new Metric())->pushTokenProvisioningSRMetrics(BaseMetric::FAILED, Token\Action::FETCH_MERCHANTS_SR);
+
 
             throw $e;
         }
