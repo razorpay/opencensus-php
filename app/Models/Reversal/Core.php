@@ -994,7 +994,7 @@ class Core extends Base\Core
 
         $merchant = $payment->merchant;
 
-        $refund = (new Payment\Processor\Processor($merchant))->refund($payment, $input);
+        $refund = (new Payment\Processor\Processor($merchant))->refundPaymentViaMerchant($payment->getPublicId(), $input);
 
         $reversal->customerRefund()->associate($refund);
 

@@ -1086,6 +1086,56 @@ class TransferTest extends TestCase
         $this->assertEquals($marketplaceOldCredits - $amountReversed, $marketplaceNewCredits);
     }
 
+    public function testLinkedAccountReversalAndCustomerRefundOnPaymentForWhichPartialRefundNotSupported()
+    {
+        $testData = $this->setUpForReversalsTests('testLinkedAccountReversalAndCustomerRefund', RefundSource::BALANCE, RefundSource::BALANCE);
+
+        foreach (['hdfc_debit_emi', 'kotak_debit_emi', 'indusind_debit_emi'] as $gateway)
+        {
+            $data = $testData;
+            
+            $payment = $this->getTransferPayment($data['response']['content']['transfer_id']);
+
+            $this->fixtures->edit('payment', $payment['id'], ['gateway' => $gateway]);
+
+            $marketplaceOldBalance = $this->getBalance('10000000000000');
+
+            $marketplaceOldCredits = $this->getBalanceForType('10000000000000', 'refund_credits');
+
+            $accOldBalance = $this->getBalance($this->linkedAccountId);
+
+            $accOldCredits = $this->getBalanceForType($this->linkedAccountId, 'refund_credits');
+
+            $this->setAuthForLinkedAccount();
+
+            $data['response'] = $this->testData[__FUNCTION__]['response'];
+
+            $data['exception'] = $this->testData[__FUNCTION__]['exception'];
+
+            $this->startTest($data);
+
+            $marketplaceNewCredits = $this->getBalanceForType('10000000000000', 'refund_credits');
+
+            $accNewCredits = $this->getBalanceForType($this->linkedAccountId, 'refund_credits');
+
+            $reversal = $this->getLastEntity('reversal', true);
+
+            $refund = $this->getLastEntity('refund', true);
+
+            $this->assertNull($reversal);
+
+            $this->assertNull($refund);
+
+            $this->assertEquals($accOldBalance, $this->getBalance($this->linkedAccountId));
+
+            $this->assertEquals($marketplaceOldBalance, $this->getBalance('10000000000000'));
+
+            $this->assertEquals($marketplaceOldCredits, $marketplaceNewCredits);
+
+            $this->assertEquals($accOldCredits, $accNewCredits);
+        }
+    }
+
     // Reveral + Customer Refund initiated by Route Merchant
     public function testRouteMerchantReversalAndCustomerRefund()
     {

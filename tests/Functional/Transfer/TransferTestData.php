@@ -512,6 +512,30 @@ return [
         ],
     ],
 
+    'testLinkedAccountReversalAndCustomerRefundOnPaymentForWhichPartialRefundNotSupported' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/la-transfers/%s/reversal',
+            'content' => [
+                'amount'          => 100,
+                'customer_refund' => 1
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_PARTIAL_REFUND_NOT_SUPPORTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_PARTIAL_REFUND_NOT_SUPPORTED,
+        ],
+    ],
+
     'testLinkedAccountReversalWithoutPermission' => [
         'request' => [
             'method'  => 'POST',
