@@ -165,7 +165,7 @@ class Base extends BaseProcessor
         $processor = new Processor($merchant);
 
         $errorCode = $this->getApiErrorCode($content);
-    
+
         if($payment->isFailed() !== true)
         {
             try
@@ -174,20 +174,20 @@ class Base extends BaseProcessor
                     $payment->getMerchantId(),
                     RazorxTreatment::EMANDATE_NET_REVENUE_IMPROVEMENT,
                     $this->mode);
-            
+
             } catch (\Throwable $ex)
             {
                 $variant = "off";
             }
-        
+
             if($variant === "on")
             {
                 $nrErrorCode = $this->getNRErrorCode($content);
-            
+
                 $processor->updatePaymentTokenDetails($payment, $nrErrorCode);
             }
         }
-    
+
         $e = new Exception\GatewayErrorException(
             $errorCode,
             $content[self::GATEWAY_ERROR_CODE] ?? null,
@@ -196,9 +196,9 @@ class Base extends BaseProcessor
                 'payment_id' => $payment->getId(),
                 'gateway'    => $this->gateway,
             ]);
-    
+
         $processor = $processor->setPayment($payment);
-    
+
         $processor->updatePaymentAuthFailed($e);
     }
 
@@ -206,7 +206,7 @@ class Base extends BaseProcessor
     {
         return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
     }
-    
+
     protected function getNRErrorCode(array $content)
     {
         return [];
@@ -288,6 +288,12 @@ class Base extends BaseProcessor
                         'content' => $entryTracePayload,
                     ]
                 );
+                /*
+                 Remove payment entry from redis which was added to ignore duplicate payments with same status received
+                 in partial and final files of banks. This will give chance to process the payment again if received in
+                 another file as it failed to process in current instance.
+                */
+                $this->deletePaymentFromRedis($entries);
 
                 $error = $e->getError();
 
@@ -296,9 +302,6 @@ class Base extends BaseProcessor
                 $entry[Batch\Header::ERROR_DESCRIPTION] = $error->getDescription();
 
                 $this->removeCriticalDataFromTracePayload($entry);
-
-                $this->deletePaymentFromRedis($entries);
-
             }
             catch (\Throwable $e)
             {
@@ -312,13 +315,17 @@ class Base extends BaseProcessor
                         'content' => $entryTracePayload,
                     ]
                 );
+                /*
+                 Remove payment entry from redis which was added to ignore duplicate payments with same status received
+                 in partial and final files of banks. This will give chance to process the payment again if received in
+                 another file as it failed to process in current instance.
+                */
+                $this->deletePaymentFromRedis($entries);
 
                 $entry[Batch\Header::STATUS]     = Batch\Status::FAILURE;
                 $entry[Batch\Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;
 
                 $this->removeCriticalDataFromTracePayload($entry);
-
-                $this->deletePaymentFromRedis($entries);
             }
         }
 

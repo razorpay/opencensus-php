@@ -148,16 +148,17 @@ class Service extends Base\Service
         catch (\Throwable $ex)
         {
             $this->trace->traceException($ex, Logger::ERROR, TraceCode::NACH_BATCH_ERROR_SQS_PUSH_FAILED);
-            $data['Status'] = 'Failure';
-            $data['Error Code'] = ErrorCode::SERVER_ERROR;;
-            $data['Error Description'] = "queue push failed";
-
+            
             /*
              Remove payment entry from redis which was added to ignore duplicate payments with same status received
              in partial and final files of banks. This will give chance to process the payment again if received in
              another file as it failed to process in current instance.
              */
             $this->deletePaymentFromRedis($input);
+
+            $data['Status'] = 'Failure';
+            $data['Error Code'] = ErrorCode::SERVER_ERROR;;
+            $data['Error Description'] = "queue push failed";
         }
 
         try
@@ -373,24 +374,24 @@ class Service extends Base\Service
         $processor = new $processor;
         return $processor;
     }
-    
+
     public function getBulkEmandateConfigs(array $input)
     {
         $this->trace->info(TraceCode::EMANDATE_CONFIG_FETCH_REQUEST,
             [
                 "input_data" => $input
             ]);
-        
+
         $merchantIds = explode(",", $input["merchant_ids"]);
-    
+
         (new Validator)->validateGetEmandateConfigs($merchantIds);
-    
+
         $dcsConfigService = new DcsConfigService();
-        
+
         $key = Constants::EMANDATE_MERCHANT_CONFIGURATIONS;
-        
+
         $fields = Constants::EMANDATE_CONFIG_FIELDS;
-        
+
         try
         {
             return $dcsConfigService->fetchConfigurationBulk($key, $merchantIds, $fields, $this->mode);
@@ -398,14 +399,14 @@ class Service extends Base\Service
         catch (\Exception $ex)
         {
             // Need to throw error incase of any request failure
-        
+
             $this->trace->traceException($ex, null, TraceCode::EMANDATE_CONFIG_FETCH_ERROR, $merchantIds);
-    
+
             throw new Exception\BadRequestValidationFailureException(
                 "error while fetching data from dcs");
         }
     }
-    
+
     public function postBulkEmandateConfigs(array $input)
     {
         $this->trace->info(
@@ -413,13 +414,13 @@ class Service extends Base\Service
             [
                 "input_data" => $input
             ]);
-    
+
         (new Validator)->validateCreateEmandateConfigs($input);
-        
+
         $merchantIds = $input[Constants::MERCHANT_IDS];
-        
+
         $merchantConfigs = [];
-        
+
         foreach (Constants::EMANDATE_CONFIG_FIELDS as $config)
         {
             if(isset($input[$config]) === true and $input[$config] !== null)
@@ -427,50 +428,50 @@ class Service extends Base\Service
                 $merchantConfigs[$config] = $input[$config];
             }
         }
-        
+
         if(count($merchantConfigs) < 0)
         {
             return [];
         }
-        
+
         $dcsConfigService = new DcsConfigService();
-        
+
         $key = Constants::EMANDATE_MERCHANT_CONFIGURATIONS;
-        
+
         $response = [];
-        
+
         foreach ($merchantIds as $merchantId)
         {
             try
             {
                 $dcsConfigService->createConfiguration($key, $merchantId, $merchantConfigs, $this->mode);
-                
+
                 $response["success_merchant_ids"][] = $merchantId;
             }
             catch (\Exception $ex)
             {
                 $this->trace->traceException($ex, null, TraceCode::EMANDATE_CONFIG_CREATE_ERROR, [$merchantId]);
-                
+
                 $response["failed_merchant_ids"][] = $merchantId;
             }
         }
-        
+
         return $response;
     }
-    
+
     public function editBulkEmandateConfigs(array $input)
     {
         $this->trace->info(TraceCode::EMANDATE_CONFIG_EDIT_REQUEST,
             [
                 "input_data" => $input
             ]);
-    
+
         (new Validator)->validateEditEmandateConfigs($input);
-    
+
         $merchantIds = $input["merchant_ids"];
-    
+
         $merchantConfigs = [];
-        
+
         foreach (Constants::EMANDATE_CONFIG_FIELDS as $config)
         {
             if(isset($input[$config]) === true and $input[$config] !== null)
@@ -478,34 +479,34 @@ class Service extends Base\Service
                 $merchantConfigs[$config] = $input[$config];
             }
         }
-        
+
         if(count($merchantConfigs) < 0)
         {
             return [];
         }
-    
+
         $dcsConfigService = new DcsConfigService();
-    
+
         $key = Constants::EMANDATE_MERCHANT_CONFIGURATIONS;
-        
+
         $response = [];
-    
+
         foreach ($merchantIds as $merchantId)
         {
             try
             {
                 $dcsConfigService->editConfiguration($key, $merchantId, $merchantConfigs, $this->mode);
-    
+
                 $response["success_merchant_ids"][] = $merchantId;
             }
             catch (\Exception $ex)
             {
                 $this->trace->traceException($ex, null, TraceCode::EMANDATE_CONFIG_CREATE_ERROR, [$merchantId]);
-    
+
                 $response["failed_merchant_ids"][] = $merchantId;
             }
         }
-    
+
         return $response;
     }
 }

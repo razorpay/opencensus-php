@@ -188,8 +188,8 @@ class Base extends BaseProcessor
         $processor = new Processor($merchant);
 
         $errorCode = $this->getApiErrorCode($content);
-        
-        
+
+
         if($payment->isFailed() !== true)
         {
             try
@@ -198,20 +198,20 @@ class Base extends BaseProcessor
                     $payment->getMerchantId(),
                     RazorxTreatment::EMANDATE_NET_REVENUE_IMPROVEMENT,
                     $this->mode);
-            
+
             } catch (\Throwable $ex)
             {
                 $variant = "off";
             }
-            
+
             if($variant === "on")
             {
                 $nrErrorCode = $this->getNRErrorCode($content);
-    
+
                 $processor->updatePaymentTokenDetails($payment, $nrErrorCode);
             }
         }
-        
+
         $e = new Exception\GatewayErrorException(
             $errorCode,
             $content[self::GATEWAY_ERROR_CODE] ?? null,
@@ -219,18 +219,18 @@ class Base extends BaseProcessor
             [
                 'payment_id' => $payment->getId(),
             ]);
-    
+
         $processor = $processor->setPayment($payment);
-    
+
         $processor->updatePaymentAuthFailed($e);
-    
+
     }
 
     protected function getApiErrorCode(array $content): string
     {
         return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
     }
-    
+
     protected function getNRErrorCode(array $content)
     {
         return [];
@@ -315,6 +315,13 @@ class Base extends BaseProcessor
                 // RZP Exceptions have public error code & description which can be exposed in the output file
                 $this->trace->traceException($e, null, TraceCode::BATCH_PROCESSING_ERROR, $entryTracePayload);
 
+                /*
+                 Remove payment entry from redis which was added to ignore duplicate payments with same status received
+                 in partial and final files of banks. This will give chance to process the payment again if received in
+                 another file as it failed to process in current instance.
+                */
+                $this->deletePaymentFromRedis($entries);
+
                 $error = $e->getError();
 
                 $entry[Batch\Header::STATUS]            = Batch\Status::FAILURE;
@@ -329,6 +336,11 @@ class Base extends BaseProcessor
                  as per different formats of account number field
                 */
                 $this->removeCriticalDataFromTracePayload($entry);
+            }
+            catch (\Throwable $e)
+            {
+                // All non RZP exception/errors case: 1) Log critical error & 2) expose just SERVER_ERROR code in output
+                $this->trace->traceException($e, Trace::CRITICAL, TraceCode::BATCH_PROCESSING_ERROR, $entryTracePayload);
 
                 /*
                  Remove payment entry from redis which was added to ignore duplicate payments with same status received
@@ -336,11 +348,6 @@ class Base extends BaseProcessor
                  another file as it failed to process in current instance.
                 */
                 $this->deletePaymentFromRedis($entries);
-            }
-            catch (\Throwable $e)
-            {
-                // All non RZP exception/errors case: 1) Log critical error & 2) expose just SERVER_ERROR code in output
-                $this->trace->traceException($e, Trace::CRITICAL, TraceCode::BATCH_PROCESSING_ERROR, $entryTracePayload);
 
                 $entry[Batch\Header::STATUS]     = Batch\Status::FAILURE;
                 $entry[Batch\Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;
@@ -353,13 +360,6 @@ class Base extends BaseProcessor
                  as per different formats of account number field
                 */
                 $this->removeCriticalDataFromTracePayload($entry);
-
-                /*
-                 Remove payment entry from redis which was added to ignore duplicate payments with same status received
-                 in partial and final files of banks. This will give chance to process the payment again if received in
-                 another file as it failed to process in current instance.
-                */
-                $this->deletePaymentFromRedis($entries);
             }
         }
 
