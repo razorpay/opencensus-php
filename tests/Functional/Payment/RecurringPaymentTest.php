@@ -1534,7 +1534,8 @@ class RecurringPaymentTest extends TestCase
     public function testRecurringPaymentWithCardMandate()
     {
         $this->ba->publicAuth();
-
+        
+        $this->mockRazorx(RazorxTreatment::RECURRING_CARD_MANDATE_SUMMARY_OLD_FLOW, 'on');
         $this->mandateHQ = Mockery::mock('RZP\Services\MandateHQ', [$this->app]);
 
         $this->app->instance('mandateHQ', $this->mandateHQ);
