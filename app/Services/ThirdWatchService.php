@@ -32,9 +32,6 @@ class ThirdWatchService
     const CACHE_RESULT_TAG_VALUE_HIT = 'hit';
     const CACHE_RESULT_TAG_VALUE_MISS = 'miss';
 
-    const COD_ELIGIBILITY_CACHE_KEY_PREFIX = 'TW_ADDRESS_COD_ELIGIBILITY';
-    const COD_ELIGIBILITY_CACHE_VALIDITY   = 1800; // 30 minutes
-
     private $app;
 
     private $cache;
@@ -178,13 +175,6 @@ class ThirdWatchService
 
             try
             {
-                $cacheResponse = $this->getCodEligibilityFromCache($orderId, $address);
-
-                if (empty($cacheResponse) === false)
-                {
-                    return $cacheResponse;
-                }
-
                 $response = $this->app['rto_prediction_provider_service']->evaluate($input);
 
                 if (strcmp($response['result']['action'], "allow") == 0)
@@ -267,11 +257,7 @@ class ThirdWatchService
 
             $this->updateCODIntelligenceDataFor1ccOrder($orderId, $codIntelligenceData);
 
-            $response = ['cod' => $codEligible];
-
-            $this->cacheCodEligibility($orderId, $address, $response);
-
-            return $response;
+            return ['cod' => $codEligible ];
         }
         finally
         {
@@ -460,39 +446,4 @@ class ThirdWatchService
         return $maskedRequest;
     }
 
-    protected function cacheCodEligibility($orderId, $address, $response)
-    {
-        $this->app['cache']->put(
-            $this->getCodEligibilityCacheKey($orderId, $address),
-            $response,
-            self::COD_ELIGIBILITY_CACHE_VALIDITY);
-    }
-
-    public function getCodEligibilityFromCache($orderId, $address)
-    {
-        return $this->app['cache']->get(
-            $this->getCodEligibilityCacheKey($orderId, $address));
-    }
-
-    private function getCodEligibilityCacheKey($orderId, $address): string
-    {
-        $zipcode = $address['zipcode'] ?? "";
-        $state   = $address['state'] ?? "";
-        $line2   = $address['line2'] ?? "";
-        $line1   = $address['line1'];
-        $country = $address['country'];
-
-        return self::COD_ELIGIBILITY_CACHE_KEY_PREFIX
-            . $orderId
-            . "_"
-            . $zipcode
-            . "_"
-            . $line1
-            . "_"
-            . $line2
-            . "_"
-            . $state
-            . "_"
-            . $country;
-    }
 }

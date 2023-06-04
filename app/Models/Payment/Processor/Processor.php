@@ -104,7 +104,6 @@ use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
 use RZP\Models\Payment\Method;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Customer\Token\Core as TokenCore;
-use RZP\Services\ThirdWatchService;
 
 class Processor
 {
@@ -8961,26 +8960,6 @@ class Processor
                     throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_METHOD_DISABLED_FOR_COUPON);
                 }
             }
-
-            if ($input['method'] === Payment\Method::COD)
-            {
-                $thirdWatchPayload = [
-                    'order_id' => $this->order->getId(),
-                    'address' => $customerDetails[Order\OrderMeta\Order1cc\Fields::CUSTOMER_DETAILS_SHIPPING_ADDRESS],
-                ];
-
-                $thirdWatchPayload['device']['id'] = $input['_']['device_id'];
-
-                $thirdWatchResponse = (new ThirdWatchService)->checkCodEligibility($thirdWatchPayload);
-
-                if ($thirdWatchResponse['cod'] === false) {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_ERROR,
-                        null,
-                        null);
-                }
-            }
-
         }
     }
 
