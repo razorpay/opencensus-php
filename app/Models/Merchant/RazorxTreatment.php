@@ -725,6 +725,8 @@ final class RazorxTreatment
     // Experiment to use old Pricing plan for upi autopay
     const UPI_AUTOPAY_PRICING_BLACKLIST = 'upi_autopay_pricing_blacklist';
 
+    const ALLOW_CC_ON_UPI_PRICING = 'allow_cc_on_upi_pricing';
+
     // Experiment to enable async bulk approval or not
     const PAYOUT_BULK_APPROVE_ASYNC = 'payout_bulk_approve_async';
 

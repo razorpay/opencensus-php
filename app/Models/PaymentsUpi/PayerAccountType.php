@@ -10,6 +10,8 @@ class PayerAccountType
 
     const PAYER_ACCOUNT_TYPE_PPIWALLET = 'ppiwallet';
 
+    const PRICING_PLAN_RECEIVER_TYPE_CREDIT = 'credit';
+
     const SUPPORTED_PAYER_ACCOUNT_TYPES = [
         self::PAYER_ACCOUNT_TYPE_BANK_ACCOUNT,
         self::PAYER_ACCOUNT_TYPE_CREDIT,

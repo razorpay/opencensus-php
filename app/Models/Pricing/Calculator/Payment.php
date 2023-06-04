@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Card;
 use RZP\Models\Currency\Core;
+use RZP\Models\PaymentsUpi;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Pricing;
@@ -30,6 +31,7 @@ class Payment extends Base
     const KRBE_IFSC      = 'KRBE';
     const CSHE_IFSC      = 'CSHE';
     const TVSC_IFSC      = 'TVSC';
+
 
     protected static $flexMoneyIssuers = [
           IFSC::BARB,
@@ -527,6 +529,21 @@ class Payment extends Base
             // default pricing for UPI (no qr_code fallback pricing).
             if ($qrCode !== null && $qrCode->isCheckoutQrCode()) {
                 $receiverType = null;
+            }
+        }
+
+        if ($payment->isCreditCardOnUpi()=== true)
+        {
+            $mode = $this->mode ?? Mode::LIVE;
+            $variant = $this->app->razorx->getTreatment(
+                $payment->getMerchantId(),
+                RazorxTreatment::ALLOW_CC_ON_UPI_PRICING,
+                $mode
+            );
+
+            if (strtolower($variant) === "on")
+            {
+                $receiverType = PaymentsUpi\PayerAccountType::PRICING_PLAN_RECEIVER_TYPE_CREDIT;
             }
         }
 

@@ -11,6 +11,7 @@ use RZP\Models\Payment\Processor;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\BankingAccount\Channel;
 use RZP\Models\VirtualAccount\Receiver;
+use RZP\Models\PaymentsUpi;
 
 class Plan extends PublicCollection
 {
@@ -290,6 +291,18 @@ class Plan extends PublicCollection
         foreach ($this->items as $rule)
         {
             if ($rule->getReceiverType() === Receiver::QR_CODE)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    public function hasCreditReceiver()
+    {
+        foreach ($this->items as $rule)
+        {
+            if ($rule->getReceiverType() === PaymentsUpi\PayerAccountType::PRICING_PLAN_RECEIVER_TYPE_CREDIT)
             {
                 return true;
             }

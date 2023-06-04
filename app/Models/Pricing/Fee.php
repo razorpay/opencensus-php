@@ -6,6 +6,7 @@ use RZP\Constants\Environment;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Trace\TraceCode;
@@ -40,6 +41,7 @@ class Fee extends Base\Core
     const DEFAULT_INSTANT_REFUNDS_PLAN_ID    = 'EIccfYpbLnrp6E';
     const DEFAULT_INSTANT_REFUNDS_PLAN_V2_ID = 'F3HF3mQrxjvSnm';
     const DEFAULT_AFFORDABILITY_WIDGET_PLAN_ID = 'L4teuQy3rngjPm';
+    const DEFAULT_CC_ON_UPI_PLAN_ID            = 'Lwxtwg54MYaNTw';
 
     public function __construct()
     {
@@ -295,6 +297,13 @@ class Fee extends Base\Core
             $qrCodePricing = $this->repo->getPricingPlanByIdWithoutOrgId(self::DEFAULT_QR_CODE_PLAN_ID);
 
             $pricingPlan = $pricingPlan->merge($qrCodePricing);
+        }
+
+        if ($pricingPlan->hasCreditReceiver() === false)
+        {
+                $ccOnUPIPricing = $this->repo->getPricingPlanByIdWithoutOrgId(self::DEFAULT_CC_ON_UPI_PLAN_ID);
+
+                $pricingPlan = $pricingPlan->merge($ccOnUPIPricing);
         }
 
         if ($pricingPlan->hasMethod(Payment\Method::EMI) === false)

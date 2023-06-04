@@ -65,6 +65,7 @@ use RZP\Models\CardMandate\CardMandateNotification;
 use RZP\Models\QrCode\NonVirtualAccountQrCode as QrV2;
 use RZP\Models\Payment\Refund\TransactionTrackerMessages;
 use RZP\Models\Partner\Commission\CommissionSourceInterface;
+use RZP\Models\PaymentsUpi;
 
 /**
  * @property Subscription\Entity    $subscription
@@ -2881,6 +2882,20 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 ($this->getAttribute(self::RECEIVER_TYPE) === Receiver::VPA));
     }
 
+    public function isCreditCardOnUpi(): bool
+    {
+        if ($this->isUpi() === false)
+        {
+            return false;
+        }
+
+        $PayerAccountType=$this->getPayerAccountTypeAttribute();
+        if ($PayerAccountType === PaymentsUpi\PayerAccountType::PAYER_ACCOUNT_TYPE_CREDIT) {
+            return true;
+        }
+
+        return false;
+    }
     public function isQrV2UpiPayment(): bool
     {
         if ($this->isUpi() === false)
