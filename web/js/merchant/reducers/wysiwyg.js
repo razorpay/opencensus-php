@@ -360,6 +360,7 @@ export default (state = initialState, action) => {
         },
         paymentPageEntity: entityData,
         FORM_ITEMS: formItems, // Sorted items having udf_schema and amount items mixed
+        isBatchPaymentPages: state.isBatchPaymentPages, // set value in edit flow
       };
 
       // 4. If intention while fetching is not to duplicate, then only add payment_page_id

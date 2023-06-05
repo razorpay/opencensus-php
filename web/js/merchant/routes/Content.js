@@ -529,6 +529,11 @@ export default class Content extends Component {
             }
           />
           <ShowWhenRoute
+            path="/paymentpages/batchpaymentpages/:id(pl_.+)/:entity_name(payments)"
+            component={PaymentPagesDetails}
+            additionalCondition={(user) => user.isPaymentPageFileUploadEnabled}
+          />
+          <ShowWhenRoute
             path="/paymentpages/storefront/:id(st_.+)/:entity_name(payments)"
             component={PaymentPagesDetails}
             additionalCondition={(user) =>

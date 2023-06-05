@@ -49,6 +49,7 @@ import {
   replaceInFormItems,
   setShiprocketModal,
   updateMagicData,
+  setIsBatchPaymentPages,
 } from 'merchant/reducers/wysiwyg';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -68,6 +69,7 @@ import {
   isFormItemOfTypeAmount,
 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
 import { transfeeRuleToApiFormat } from 'merchant/views/PaymentPages/PaymentPages/helpers';
+import { isBatchPaymentPages as fnIsBatchPaymentPages } from 'merchant/views/PaymentPages/PaymentPages/utils';
 
 import { DEFAULT_RULE } from 'merchant/views/MagicCheckout/constants';
 import { FIXED_FIELDS } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers/preAddedFields';
@@ -126,6 +128,7 @@ const ERROR = {
     setSettingsModal,
     setShiprocketModal,
     updateMagicData,
+    setIsBatchPaymentPages,
   },
 )
 @RTracking(() => window.rzpQ.component('PaymentPagesWysiwyg'))
@@ -152,13 +155,17 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   };
 
   UNSAFE_componentWillMount() {
-    this.fetchEntity(this.props.id, true);
+    const { id, setIsBatchPaymentPages } = this.props;
+    this.fetchEntity(id, true);
 
     // Preload Social media image
     const socialMediaIcons = new Image();
     socialMediaIcons.src = 'https://cdn.razorpay.com/static/assets/social-share/icons.png';
 
     this.fetchIfIntentDuplicate();
+    const isBatchPaymentPages = fnIsBatchPaymentPages();
+    // set the batch pp identifier
+    isBatchPaymentPages && setIsBatchPaymentPages(true);
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -828,7 +835,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
     const entityId = resp.data.id;
     const url = isBatchPaymentPages
-      ? `/paymentpages/fileuploadonpages/${entityId}/batchuploadsubpage`
+      ? `/paymentpages/batchpaymentpages/${entityId}/batchuploadsubpage`
       : `/paymentpages/${entityId}/success`;
     history.push(url);
   };

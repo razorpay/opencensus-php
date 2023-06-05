@@ -4,7 +4,7 @@ import { withRouter } from 'react-router-dom';
 const Header = ({ isBatchPaymentPages, history, id }) => {
   const handlePuplishPage = () => {
     const url = isBatchPaymentPages
-      ? `/paymentpages/fileuploadonpages/${id}/success`
+      ? `/paymentpages/batchpaymentpages/${id}/success`
       : `/paymentpages/${id}/success`;
     history.push(url);
   };

@@ -6,7 +6,10 @@ import TableBody from 'common/ui/TableBody';
 import Time from 'common/ui/Time';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import { getUnitsDescription } from 'merchant/views/PaymentPages/PaymentPages/utils';
+import {
+  getUnitsDescription,
+  isBatchPaymentPages as fnIsBatchPaymentPages,
+} from 'merchant/views/PaymentPages/PaymentPages/utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 import { trackListActions } from 'merchant/views/PaymentPages/PaymentPages/ga';
@@ -14,7 +17,7 @@ import track from './track';
 
 // import mockPaymentPagesList from './data-mock';
 
-export default ({ paymentPages, loading, isStorefrontPage, isBatchPaymentPages }) => {
+export default ({ paymentPages, loading, isStorefrontPage }) => {
   // paymentPages = mockPaymentPagesList;
 
   const trackCopyClick = () => {
@@ -25,6 +28,8 @@ export default ({ paymentPages, loading, isStorefrontPage, isBatchPaymentPages }
   const trackTitleClick = () => {
     trackListActions('Title Click');
   };
+
+  const isBatchPaymentPages = fnIsBatchPaymentPages();
 
   return (
     <div class="table-responsive Table--PaymentpagesV3">
@@ -56,14 +61,24 @@ export default ({ paymentPages, loading, isStorefrontPage, isBatchPaymentPages }
             return (
               <EntityItemRow id={item.id} key={item.id}>
                 <td>
-                  <NavLink
-                    to={`/paymentpages/${isStorefrontPage ? 'storefront/' : ''}${item.id}/payments${
-                      isStorefrontPage ? '#storefront' : '#paymentpages'
-                    }`}
-                    onClick={trackTitleClick}
-                  >
-                    {item.title}
-                  </NavLink>
+                  <ShowWhen additionalCondition={() => !isBatchPaymentPages}>
+                    <NavLink
+                      to={`/paymentpages/${isStorefrontPage ? 'storefront/' : ''}${
+                        item.id
+                      }/payments${isStorefrontPage ? '#storefront' : '#paymentpages'}`}
+                      onClick={trackTitleClick}
+                    >
+                      {item.title}
+                    </NavLink>
+                  </ShowWhen>
+                  <ShowWhen additionalCondition={() => isBatchPaymentPages}>
+                    <NavLink
+                      to={`/paymentpages/batchpaymentpages/${item.id}/payments#batchpaymentpages`}
+                      onClick={trackTitleClick}
+                    >
+                      {item.title}
+                    </NavLink>
+                  </ShowWhen>
                 </td>
 
                 {/* TODO: Check if needed to be manually calculated from items or we've direct value */}

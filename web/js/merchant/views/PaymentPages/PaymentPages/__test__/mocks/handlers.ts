@@ -1,5 +1,11 @@
 import { rest } from 'msw';
-import { merchantTnCError, product, productError, paymentPageDetails } from './fixtures';
+import {
+  merchantTnCError,
+  product,
+  productError,
+  paymentPageDetails,
+  batchPaymentPageList,
+} from './fixtures';
 import { allProducts, store, transformedStore, payments } from './fixtures/storefront';
 
 export const paymentPagesHandlers = [
@@ -169,6 +175,18 @@ export const paymentPagesHandlers = [
         success: false,
         errors: merchantTnCError,
       }),
+      ctx.delay(50),
+    );
+  }),
+  rest.get('*/merchant/api/*/payment_pages', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 200,
+        success: true,
+        data: batchPaymentPageList,
+      }),
+      ctx.delay(50),
       ctx.delay(50),
     );
   }),

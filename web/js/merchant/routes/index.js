@@ -599,16 +599,20 @@ const fullPageViewsMap = {
       user.isAllowedEdit('payment_pages') &&
       !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentPages),
   },
-  '/paymentpages/fileuploadonpages/new': {
+  '/paymentpages/batchpaymentpages/new': {
     component: PaymentPagesWysiwyg,
     additionalCondition: (user) => user?.isPaymentPageFileUploadEnabled,
   },
-  '/paymentpages/fileuploadonpages/:id(pl_.+)/batchuploadsubpage': {
+  '/paymentpages/batchpaymentpages/:id(pl_.+)/batchuploadsubpage': {
     component: BatchUploadSubPage,
     additionalCondition: (user) => user?.isPaymentPageFileUploadEnabled,
   },
-  '/paymentpages/fileuploadonpages/:id(pl_.+)/success': {
+  '/paymentpages/batchpaymentpages/:id(pl_.+)/success': {
     component: PaymentPagesSuccess,
+    additionalCondition: (user) => user?.isPaymentPageFileUploadEnabled,
+  },
+  '/paymentpages/batchpaymentpages/:id(pl_.+)/edit': {
+    component: PaymentPagesWysiwyg,
     additionalCondition: (user) => user?.isPaymentPageFileUploadEnabled,
   },
   '/paymentpages/:id(pl_.+)/edit': {
