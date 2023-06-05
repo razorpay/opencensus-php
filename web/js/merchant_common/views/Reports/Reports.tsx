@@ -1,5 +1,5 @@
 import DashboardBanner from 'common/ui/DashboardBanner';
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ZapierLaunchBanner from 'merchant/components/Announcements/ZapierBanner/ZapierBanner';
 import { Downloads } from './features/Downloads';
@@ -20,26 +20,42 @@ import { getReportsDashboardConfig } from './configs/refDashboard.config';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { fetchAccounts } from 'merchant/reducers/marketplace/accounts';
 import { trackReportsSection } from './configs/analytics.config';
+import { Schedules } from './features/Schedules';
 
 // Features Of Reports
-const NAV_LINKS = [
-  {
-    to: `/reports`,
-    label: 'Overview',
-    exact: true,
-    component: withRouter(OverView),
-  },
-  {
-    to: `/reports/downloads`,
-    label: 'Downloads',
-    exact: true,
-    component: withRouter(Downloads),
-  },
-];
+const getReportsFeatures = (isSchedulesEnabled: boolean) => {
+  const features = [
+    {
+      to: '/reports',
+      label: 'Overview',
+      exact: true,
+      component: withRouter(OverView),
+    },
+    {
+      to: '/reports/downloads',
+      label: 'Downloads',
+      exact: true,
+      component: withRouter(Downloads),
+    },
+  ];
+
+  if (isSchedulesEnabled) {
+    features.push({
+      to: '/reports/schedules',
+      label: 'Schedules',
+      exact: true,
+      component: withRouter(Schedules),
+    });
+  }
+
+  return features;
+};
 
 const mapStateToProps = ({ reportsCore, session }, { dashboardType }) => {
   const { allConfigs } = reportsCore[dashboardType].overview.reportConfigs;
+  const isSchedulesEnabled = Boolean(session.user.isRevampedReportsEnabled?.schedules);
   return {
+    isSchedulesEnabled,
     allReportConfigs: allConfigs.data,
     user: pickProps(session.user, ['current', 'international']),
     refDashboardConfig: getReportsDashboardConfig(dashboardType, session),
@@ -71,7 +87,10 @@ export const ReportsSection = connect(
     showNotification,
     fetchAccounts,
     dashboardType,
+    isSchedulesEnabled,
   }: ReportSectionProps): JSX.Element => {
+    const features = useMemo(() => getReportsFeatures(isSchedulesEnabled), []);
+
     const handleAllConfigsFetch = async (validationCheck = true) => {
       try {
         if (validationCheck) {
@@ -119,7 +138,7 @@ export const ReportsSection = connect(
           />
         </ShowWhen>
         <DashboardBanner />
-        <Tabs tabs={NAV_LINKS} basePath={basePath} />
+        <Tabs tabs={features} basePath={basePath} />
       </div>
     );
   },

@@ -1,39 +1,15 @@
 import React from 'react';
-import { AdditionalInformationType } from 'merchant_common/views/Reports/features/Downloads/types';
+import { AdditionalInformationType } from 'merchant_common/views/Reports/features/Schedules/types';
 import { FlexCentered, Skeleton } from 'merchant_common/views/Reports/components/styled';
-import { BaseLogType } from 'merchant_common/views/Reports/types/log';
 import { TableTemplateType } from 'merchant_common/views/Reports/components/Table/types';
+import { ScheduleType } from 'merchant_common/views/Reports/types/schedule';
 
-export const emptyDownloadsTableTemplate: TableTemplateType<
-  BaseLogType,
+export const emptySchedulesTableTemplate: TableTemplateType<
+  ScheduleType,
   AdditionalInformationType
 > = {
-  headers: ['Duration Covered', 'Name', 'Format', 'Email', 'Status', 'Download'],
+  headers: ['Report Name & Type', 'Format', 'Email', 'Status', 'Repeat On', 'Pause/Delete'],
   cells: [
-    {
-      render: () => (
-        <div>
-          <span>
-            <Skeleton
-              style={{
-                height: 12,
-                width: 100,
-              }}
-            />
-          </span>{' '}
-          <br />
-          <span>
-            <Skeleton
-              style={{
-                height: 12,
-                width: 80,
-              }}
-            />
-          </span>
-        </div>
-      ),
-    },
-
     {
       render: () => (
         <Skeleton
@@ -92,6 +68,20 @@ export const emptyDownloadsTableTemplate: TableTemplateType<
                 height: 20,
                 width: 20,
                 borderRadius: 20,
+              }}
+            />
+          </FlexCentered>
+        );
+      },
+    },
+    {
+      render: () => {
+        return (
+          <FlexCentered>
+            <Skeleton
+              style={{
+                height: 20,
+                width: 100,
               }}
             />
           </FlexCentered>

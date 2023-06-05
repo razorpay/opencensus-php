@@ -43,7 +43,7 @@ enum DownloadModalActionType {
   'Report Download Validation Error' = 'Report Download Validation Error',
 }
 
-enum SchedulesActionType {
+export enum SchedulesActionType {
   'Loaded' = 'Loaded',
   'Schedules Filter Interaction' = 'Schedules Filter Interaction',
   'Pagination Click' = 'Pagination Click',

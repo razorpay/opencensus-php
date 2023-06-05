@@ -1,5 +1,4 @@
-import { Location } from 'history';
-import { InternalLogType } from 'merchant_common/views/Reports/types/log';
+import { BaseLogType } from 'merchant_common/views/Reports/types/log';
 import { DashboardType } from 'merchant_common/views/Reports/types';
 import { OpenModalType, ShowNotificationType } from 'common/typings';
 
@@ -8,7 +7,6 @@ export interface AdditionalInformationType {
 }
 
 export interface DownloadsPropsType {
-  location: Location;
   openModal: OpenModalType;
   logTableFilterType?: string;
   handleLogsTableFilterChange: (x: string) => void;
@@ -17,9 +15,9 @@ export interface DownloadsPropsType {
 }
 export interface DownloadsTablePropsType {
   isLogsLoaded: boolean;
-  logs: InternalLogType[];
+  logs: BaseLogType[];
   fixedHeaders?: boolean;
-  fetchLogsSuccess: (x: { totalCount: number; logs: InternalLogType[] }) => void;
+  fetchLogsSuccess: (x: { totalCount: number; logs: BaseLogType[] }) => void;
   handlePageChange: (x: number) => void;
   pageTrack: number;
   filter: string;

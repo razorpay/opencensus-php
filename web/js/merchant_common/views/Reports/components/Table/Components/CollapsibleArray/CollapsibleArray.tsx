@@ -9,7 +9,11 @@ import { trackDownloadsSection } from 'merchant_common/views/Reports/configs/ana
 import { useDashboardType } from 'merchant_common/views/Reports/contexts/ReportsContext';
 import { DashboardType } from 'merchant_common/views/Reports/types';
 
-export const CollapsibleArray = ({ arr = [], logId }: CollapsibleArrayPropsType): JSX.Element => {
+export const CollapsibleArray = ({
+  arr = [],
+  logId,
+  scheduleId,
+}: CollapsibleArrayPropsType): JSX.Element => {
   const { theme } = useTheme();
   const ref = useRef<HTMLDivElement | null>(null);
   const [shouldExpand, setExpand] = useState(false);
@@ -22,9 +26,13 @@ export const CollapsibleArray = ({ arr = [], logId }: CollapsibleArrayPropsType)
   const handleExpand = () => {
     trackDownloadsSection({
       actionName: 'Expand Recipient Emails Click',
-      properties: {
-        log_id: logId,
-      },
+      properties: logId
+        ? {
+            log_id: logId,
+          }
+        : {
+            schedule_id: scheduleId,
+          },
       dashboardType,
     });
     setExpand(true);

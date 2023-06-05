@@ -33,6 +33,11 @@ export {
   InfoIcon,
   ChevronUpIcon,
   ClockIcon,
+  EditIcon,
+  MaximizeIcon,
+  PauseIcon,
+  TrashIcon,
+  PlayIcon,
 } from '@razorpay/blade/components';
 
 // custom components

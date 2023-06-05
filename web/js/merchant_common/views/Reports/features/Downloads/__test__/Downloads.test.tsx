@@ -54,31 +54,6 @@ describe('Downloads', () => {
     });
   });
 
-  test('should open modal when url has modal and config params', () => {
-    renderDownload({}, '?modal=download_custom_report&config=invoice');
-    expect(modalUtils.openModal).toHaveBeenCalled();
-  });
-
-  test('should render app when url has modal param only, without error', () => {
-    renderDownload(
-      {},
-      '?modal=download_report',
-      getDownloadsStateWith(
-        {
-          filter: downloadsFilterDropdown[0].value,
-        },
-        {
-          allConfigs: {
-            data: mockConfigs,
-            loading: false,
-            error: false,
-          },
-        },
-      ),
-    );
-    expect(modalUtils.openModal).toHaveBeenCalled();
-  });
-
   test('should not throw error when clicked on download button', async () => {
     renderDownload(
       {},

@@ -14,7 +14,6 @@ import { DownloadsPropsType } from './types';
 import { DownloadsTable } from './components/DownloadsTable';
 import { connect } from 'react-redux';
 import { downloadsFilterDropdown } from 'merchant_common/views/Reports/features/Downloads/constants/dropdownOptions';
-import { getURLQueryParams } from 'common/utils/rzp-utils';
 import { handleLogsFilter } from 'merchant_common/views/Reports/redux/reducer';
 import { openModal } from 'merchant_common/reducers/modals';
 import { useDashboardType } from 'merchant_common/views/Reports/contexts/ReportsContext';
@@ -45,13 +44,11 @@ const DownloadsSection = connect(
   ({
     isAllConfigLoaded,
     dashboardType,
-    location: { search },
     logTableFilterType,
     openModal,
     handleLogsTableFilterChange,
   }: DownloadsPropsType): JSX.Element => {
     const { theme } = useTheme();
-    const { modal, config } = getURLQueryParams(search);
 
     const handleDownloadReportClick = () => {
       trackDownloadsSection({ actionName: 'Download Report Button Click', dashboardType });
@@ -61,48 +58,13 @@ const DownloadsSection = connect(
             params={{
               startPollOnSubmit: false,
             }}
-            type="download_report"
+            type={'download_report'}
             dashboardType={dashboardType}
           />
         ),
         size: 'custom',
       });
     };
-
-    useEffect(() => {
-      if (modal) {
-        const modalComponent = (
-          <ReportModal
-            dashboardType={dashboardType}
-            type={modal}
-            params={
-              config
-                ? {
-                    selectedConfig: config,
-                  }
-                : {}
-            }
-          />
-        );
-
-        switch (true) {
-          case modal === 'download_custom_report':
-            openModal({
-              component: modalComponent,
-              size: 'custom',
-            });
-            break;
-          case modal === 'download_report' && isAllConfigLoaded:
-            openModal({
-              component: modalComponent,
-              size: 'custom',
-            });
-            break;
-          default:
-            break;
-        }
-      }
-    }, []);
 
     useEffect(() => {
       if (isAllConfigLoaded) {

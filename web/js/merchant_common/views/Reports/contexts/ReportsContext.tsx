@@ -1,4 +1,5 @@
 import React, { createContext, useContext } from 'react';
+import { DashboardType } from 'merchant_common/views/Reports/types';
 
 export const ReportContext = createContext({
   /**
@@ -9,10 +10,10 @@ export const ReportContext = createContext({
 
 /**
  *
- * @returns {string} - Dashboard type on which core reports ui is being used.
+ * @returns {DashboardType} - Dashboard type on which core reports ui is being used.
  *
  */
-export const useDashboardType = () => useContext(ReportContext).dashboardType;
+export const useDashboardType = () => useContext(ReportContext).dashboardType as DashboardType;
 
 // will nvr cause a rerender
 export const ReportContextProvider = ({ children, dashboardType }) => {

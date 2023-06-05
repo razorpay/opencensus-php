@@ -48,7 +48,7 @@ describe('DownloadsTable', () => {
         total_count: mockLogs.length,
         items: mockLogs,
       });
-      return { abort: () => {} };
+      return { abort: () => {}, promise: new Promise(() => {}) };
     });
     render(<App />, { initialState });
     expect(initialLogPollMock).toHaveBeenCalledTimes(1);
@@ -63,7 +63,7 @@ describe('DownloadsTable', () => {
     });
     initialLogPollMock.mockImplementationOnce(({ pollResFailedCallback }: any) => {
       pollResFailedCallback();
-      return { abort: () => {} };
+      return { abort: () => {}, promise: new Promise(() => {}) };
     });
     render(<App />, { initialState });
     expect(initialLogPollMock).toHaveBeenCalledTimes(1);
@@ -77,7 +77,7 @@ describe('DownloadsTable', () => {
     });
     initialLogPollMock.mockImplementationOnce(({ onPollStopCallback }: any) => {
       onPollStopCallback();
-      return { abort: () => {} };
+      return { abort: () => {}, promise: new Promise(() => {}) };
     });
     render(<App />, { initialState });
     expect(initialLogPollMock).toHaveBeenCalledTimes(1);

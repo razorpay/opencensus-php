@@ -3,7 +3,8 @@ import { Theme } from '@razorpay/blade/components';
 
 export interface CollapsibleArrayPropsType {
   arr: string[];
-  logId: string;
+  logId?: string;
+  scheduleId?: string;
 }
 export interface TableTemplateType<RowType, AdditionalInfoType = void> {
   /**

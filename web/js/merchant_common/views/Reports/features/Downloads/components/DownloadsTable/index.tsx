@@ -94,10 +94,11 @@ const DownloadsTableComponent = connect(
           pollResSuccessCallback: (data) => {
             if (data) {
               const { total_count, items } = data;
-              fetchLogsSuccess({
-                totalCount: total_count,
-                logs: items,
-              });
+              if (total_count)
+                fetchLogsSuccess({
+                  totalCount: total_count,
+                  logs: items,
+                });
             }
           },
           pollResFailedCallback: () => {

@@ -1,15 +1,24 @@
+import { DashboardType } from 'merchant_common/views/Reports/types';
+import { ConfirmModalParams } from './components/ConfirmModal/types';
+
+export enum ReportModalTypes {
+  'download_report' = 'download_report',
+  'download_custom_report' = 'download_custom_report',
+  'confirm_modal' = 'confirm_modal',
+}
+
+export type ReportModalType = keyof typeof ReportModalTypes;
+
 export interface BaseReportModalPropsType {
-  type: string;
+  type: ReportModalType;
   onCloseCallback?: () => void;
-  params?:
-    | {
-        /**
-         * `id` of the selected config.
-         */
-        selectedConfig?: string;
-      }
-    | Record<string, unknown>;
-  dashboardType: string;
+  params?: {
+    selectedConfig?: string;
+    selectedLog?: string;
+    selectedSchedule?: string;
+    startPollOnSubmit?: boolean;
+  } & ConfirmModalParams;
+  dashboardType: DashboardType;
   ariaLabelBy?: string;
 }
 

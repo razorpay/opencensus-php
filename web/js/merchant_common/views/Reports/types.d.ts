@@ -63,6 +63,7 @@ export interface ReportSectionProps {
   fetchReportsConfigsFailed: () => void;
   showNotification: (x: unknown) => void;
   fetchAccounts: () => Promise<void>;
+  isSchedulesEnabled: boolean;
 }
 
 export interface ReportsPropType {

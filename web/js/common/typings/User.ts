@@ -41,6 +41,8 @@ type Getters = {
     merchant: boolean;
     partner: boolean;
     la: boolean;
+    schedules: boolean;
+    overviewRecents: boolean;
   };
   isMarketplaceEnabled: boolean;
   isSupportRole: boolean;
