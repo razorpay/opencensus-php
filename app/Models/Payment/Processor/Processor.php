@@ -4877,6 +4877,16 @@ class Processor
      */
     public function getAsyncResponse($id)
     {
+        $response = $this->getCpsRoute($id);
+
+        if (($response !== null) and
+            ($response[Payment\Entity::CPS_ROUTE] === Payment\Entity::REARCH_UPI_PAYMENT_SERVICE))
+        {
+            $payment = $this->retrieveExternalPayment($id);
+
+            return $this->getAsyncResponseUpiRearch($payment);
+        }
+
         $response = $this->getUpiStatus($id);
 
         if ($response !== null)
@@ -4885,6 +4895,17 @@ class Processor
         }
 
         $payment = $this->retrieve($id);
+
+        if ($payment->isRoutedThroughPaymentsUpiPaymentService() === true)
+        {
+            $value = [
+                Payment\Entity::CPS_ROUTE => Payment\Entity::REARCH_UPI_PAYMENT_SERVICE
+            ];
+
+            $this->setCpsRoute($payment->getPublicId(), $value);
+
+            return $this->getAsyncResponseUpiRearch($payment);
+        }
 
         $gateway = $payment->getGateway();
 
@@ -5018,6 +5039,92 @@ class Processor
             2000);
 
         return $response;
+    }
+
+    /**
+     * Returns the async response for the status check
+     * for upi rearch payments
+     *
+     * @param  string $id payment id
+     * @return array
+     * @throws Exception\BadRequestException
+    /  */
+    public function getAsyncResponseUpiRearch(Payment\Entity $payment)
+    {
+        $gateway = $payment->getGateway();
+
+        if ((Payment\Gateway::supportsAsync($gateway) === false) and
+            ($payment->getAuthenticationGateway() !== Payment\Gateway::GOOGLE_PAY))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
+
+        if ($payment->isRoutedThroughPaymentsUpiPaymentService() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ID);
+        }
+
+        // If it failed recently, then throw relevant exception
+        // directly for the failure.
+        $this->checkForRecentFailedPayment($payment);
+
+        if ($payment->isCreated() === true)
+        {
+            $now = Carbon::now();
+
+            $shouldHaveTimedout = $payment->shouldTimeout($now->getTimestamp());
+
+            // Payment should have timeout, but still in created state. Meaning something is not
+            // right with our timeout cron, and that we need to look in to that asap
+            if ($shouldHaveTimedout === true)
+            {
+                $delay = round(($now->getTimestamp() - $payment->getCreatedAt()) / 60);
+
+                $this->trace->error(TraceCode::PAYMENT_SHOULD_HAVE_TIMED_OUT, [
+                    'payment_id'    => $payment->getId(),
+                    'merchant_id'   => $payment->getMerchantId(),
+                    'created_at'    => $payment->getCreatedAt(),
+                    'delay'         => $delay,
+                    'method'        => $payment->getMethod(),
+                    'gateway'       => $payment->getGateway(),
+                ]);
+            }
+
+            // We will also take a 3 minute buffer, so that payment is actually picked
+            // and marked failed from the cron, now if payment is not marked failed even after
+            // 3 minutes buffer, we need to ask checkout/merchant to stop polling.
+            $now->subMinutes(3);
+
+            if ($payment->shouldTimeout($now->getTimestamp()) === true)
+            {
+                // We are not marking payment failed from, but only stopping the polling
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT);
+            }
+
+            $response = [
+                Payment\Entity::STATUS => Payment\Status::CREATED
+            ];
+
+            return $response;
+        }
+
+        $diff = time() - $payment->getCreatedAt();
+
+        if (($payment->hasBeenAuthorized() === true) and
+            ($diff < self::CALLBACK_PROCESS_AGAIN_DURATION * 60))
+        {
+            $response = $this->processAuthorizeResponse($payment);
+
+            return $response;
+        }
+
+        $this->app['segment']->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
+
+        throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
     }
 
     public function callGatewayFunctionCaptureViaQueue($data, $payment)
@@ -7017,6 +7124,21 @@ class Processor
         return $this->payment;
     }
 
+    /**
+     * Fetches external repo payment entity directly
+     * without searching in api database
+     *
+     * @param  string $id payment id
+     * @return Payment\Entity
+     * @throws Exception\BadRequestException
+     */
+    protected function retrieveExternalPayment(string $id): Payment\Entity
+    {
+        $this->payment = $this->repo->payment->fetchExternalPaymentEntity($id, $this->merchant->getId());
+
+        return $this->payment;
+    }
+
     protected function getOrderForPayment(Payment\Entity $payment)
     {
         if ($payment->hasOrder())
@@ -8420,6 +8542,30 @@ class Processor
     }
 
     /**
+     * Returns cps route of payment
+     *
+     * @param  string $id payment id
+     * @return array value of cps Route Key
+     */
+    protected function getCpsRoute(string $id)
+    {
+        $key = Payment\Entity::getCacheCpsRouteKey($id);
+
+        try
+        {
+            return $this->cache->get($key);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::UPI_CACHE_READ_ERROR,
+                ['key' => $key]);
+        }
+    }
+
+    /**
      * Key will be deleted from the cache when the upi
      * payment entity gets updated. Deletion is in the
      * observer class(Models/Payment/Observer.php).
@@ -8444,6 +8590,31 @@ class Processor
                 TraceCode::UPI_CACHE_STORE_ERROR,
                 ['key' => $key,
                  '$value' => $value]);
+        }
+    }
+
+    /**
+     * Sets value of cps route key in cache
+     *
+     * @param string $id payment id
+     * @param array $value value to store in cache
+     */
+    protected function setCpsRoute(string $id, array $value, float $ttl = 45)
+    {
+        $key = Payment\Entity::getCacheCpsRouteKey($id);
+
+        try
+        {
+            $this->cache->put($key, $value, $ttl);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::UPI_CACHE_STORE_ERROR,
+                ['key' => $key,
+                    '$value' => $value]);
         }
     }
 

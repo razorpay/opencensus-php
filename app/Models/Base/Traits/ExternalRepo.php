@@ -5,6 +5,7 @@ namespace RZP\Models\Base\Traits;
 use App;
 use RZP\Exception;
 use RZP\Models\Order;
+use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity;
 use RZP\Models\Admin\ConfigKey;
@@ -192,6 +193,21 @@ trait ExternalRepo
         }
 
         return $this->fetchExternalEntity($id, "");
+    }
+
+    /**
+     * Returns external repo payment entity
+     *
+     * @param  string $paymentID payment id
+     * @param  string $merchantID merchant_id
+     * @return Payment\Entity
+     * @throws Exception\BadRequestException
+     */
+    public function fetchExternalPaymentEntity(string $paymentID, string $merchantID): Payment\Entity
+    {
+        $this->entityName = $this->entity;
+
+        return $this->fetchExternalEntity($paymentID, $merchantID);
     }
 
     private function validateExternalFetchEnabled()

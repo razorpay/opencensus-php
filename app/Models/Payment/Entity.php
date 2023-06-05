@@ -5482,6 +5482,19 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return 'payment:upi.polling.' . $id . '.status';
     }
 
+    /**
+     * Returns cps route key
+     *
+     * @param  string $id payment id
+     * @return string
+     */
+    public static function getCacheCpsRouteKey(string $id): string
+    {
+        parent::verifyIdAndStripSign($id);
+
+        return 'payment:entity.' . $id . '.cps_route';
+    }
+
     public static function getCardlessEmiOnetimeTokenCacheKey(string $token): string
     {
         return 'payment:cardlessemi.' . $token . '.token';
