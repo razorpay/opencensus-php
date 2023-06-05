@@ -4648,7 +4648,12 @@ class Core extends Base\Core
                 else
                 {
                     // failed event for ledger using $clonedPayout
-                    $clonedPayout->setStatus(Status::FAILED);
+                    //incase of subAccount Payout we want to send the actual payout status to ledger and not clone it to failed.
+                    //For subaccount, failed does not need any ledger entry.
+                    if ($payout->isSubAccountPayout() === false)
+                    {
+                        $clonedPayout->setStatus(Status::FAILED);
+                    }
                     try
                     {
                         $response = (new PayoutsLedgerProcessor($clonedPayout))->processPayoutAndCreateJournalEntry(
