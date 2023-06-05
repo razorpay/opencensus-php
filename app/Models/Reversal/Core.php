@@ -942,17 +942,17 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($reversal);
 
-        $this->updateLedgerEntryToCollectionsForReversal($settlementOndemand, true);
+        $this->updateLedgerEntryToCollectionsForReversal( true,$settlementOndemandPayout,$reversal->getId(),$txn->getId());
 
         return $reversal;
     }
 
-    public function updateLedgerEntryToCollectionsForReversal($settlementOndemand,bool $reverse)
+    public function updateLedgerEntryToCollectionsForReversal(bool $reverse,$settlementOndemandPayout,$reversalId,$transactionId)
     {
         try
         {
             $collectionsService = $this->app['capital_collections'];
-            $collectionsService->pushInstantSettlementLedgerUpdate($settlementOndemand,$reverse);
+            $collectionsService->pushInstantSettlementLedgerUpdateForReversalScenario($reverse,$settlementOndemandPayout,$reversalId,$transactionId);
         }
         catch (\Exception $e)
         {

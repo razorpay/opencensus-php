@@ -10,8 +10,10 @@ use Psr\Http\Message\RequestInterface;
 use RZP\Exception\BadRequestException;
 use Http\Discovery\Psr18ClientDiscovery;
 use Http\Discovery\Psr17FactoryDiscovery;
+use RZP\Models\Settlement\OndemandPayout\Entity as OndemandPayoutEntity;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Settlement\Ondemand\Entity as OndemandEntity;
+
 
 class CapitalCollectionsClient implements ExternalService
 {
@@ -83,9 +85,16 @@ class CapitalCollectionsClient implements ExternalService
 
     public function pushInstantSettlementLedgerUpdate(OndemandEntity $OndemandSettlement, bool $reverse)
     {
-
         return $this->sendRequestAndParseResponse(self::LEDGER_IS_ENDPOINT,
             $this->getCollectionsToLedgerUpdateData($OndemandSettlement,$reverse),
+            ['X-Auth-Type' => 'direct'], 'POST'
+        );
+    }
+
+    public function pushInstantSettlementLedgerUpdateForReversalScenario(bool $reverse,OndemandPayoutEntity $settlementOndemandPayout,$reversalId,$transactionId)
+    {
+        return $this->sendRequestAndParseResponse(self::LEDGER_IS_ENDPOINT,
+            $this->getCollectionsToLedgerUpdateDataForReversal($reverse,$settlementOndemandPayout,$reversalId,$transactionId),
             ['X-Auth-Type' => 'direct'], 'POST'
         );
     }
@@ -103,6 +112,29 @@ class CapitalCollectionsClient implements ExternalService
             'settled_at'                => round(millitime()/1000),
             'is_reversal'               => $reverse,
             'transaction_id'            => $settlementOndemand->getTransactionId(),
+        ];
+    }
+
+    protected function getCollectionsToLedgerUpdateDataForReversal(bool $reverse,OndemandPayoutEntity $settlementOndemandPayout,$reversalId,$transactionId) : array
+    {
+        $fee = $settlementOndemandPayout->getFees();
+        $tax = $settlementOndemandPayout->getTax();
+        if ($fee === null){
+            $fee = 0;
+        }
+        if($tax === null){
+            $tax = 0;
+        }
+        return [
+            'merchant_id'               => $settlementOndemandPayout->getMerchantId(),
+            'ondemand_settlement_id'    => $reversalId,
+            'merchant_amount'           => $settlementOndemandPayout->getAmount(),
+            'ondemand_settlement_fee'   => $fee-$tax,
+            'ondemand_settlement_tax'   => $tax,
+            'currency'                  => "INR",
+            'settled_at'                => round(millitime()/1000),
+            'is_reversal'               => $reverse,
+            'transaction_id'            => $transactionId,
         ];
     }
 
@@ -157,7 +189,6 @@ class CapitalCollectionsClient implements ExternalService
             $defaultHeaders['X-Admin-Id']        = $this->ba->getAdmin()->getId() ?? '';
             $defaultHeaders['X-Admin-Email']     = $this->ba->getAdmin()->getEmail() ?? '';
         }
-
 
         return $this->sendRequest($defaultHeaders, $baseUrl . $url, $method, empty($body) ? '' : json_encode($body));
     }
