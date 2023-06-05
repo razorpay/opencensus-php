@@ -2179,11 +2179,17 @@ export default class InvoicesNewContainer extends Component {
                         <div class="inv__Footer__merchantName">
                           {this.state.merchantAltBillingLabel}
                         </div>
-                        {isAddressValid(merchantAddress) && (
+                        <ShowWhen
+                          additionalCondition={(_user) =>
+                            !_user.findTag(
+                              HIDDEN_INTERNATIONAL_FEATURES_TAGS.InvoiceFooterAddress,
+                            ) && isAddressValid(merchantAddress)
+                          }
+                        >
                           <div class="inv__Footer__merchantAddress">
                             <AddressDisplay address={merchantAddress} />
                           </div>
-                        )}
+                        </ShowWhen>
                       </div>
                     </div>
                   </div>

@@ -71,4 +71,5 @@ export const HIDDEN_INTERNATIONAL_FEATURES_TAGS = {
   RazorpayMe: 'i18_hide_razorpay_me',
   SupportedBankLinks: 'i18_hide_supported_bank_links',
   SubscriptionSettings: 'i18_hide_subscription_settings',
+  InvoiceFooterAddress: 'i18_hide_invoice_footer_address',
 };

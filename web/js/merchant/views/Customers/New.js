@@ -77,6 +77,13 @@ export default class AddCustomer extends Component {
     } else {
       this.state = {
         screenIndex: 0, // Start on screen 1.
+        states: Countries[this.DEFAULT_COUNTRY],
+        editedBillingAddress: {
+          country: this.DEFAULT_COUNTRY,
+        },
+        editedShippingAddress: {
+          country: this.DEFAULT_COUNTRY,
+        },
       };
     }
   }
@@ -86,7 +93,7 @@ export default class AddCustomer extends Component {
       this.props.initialize(this.props.customer);
     }
 
-    if (!this.props.user.isInttCurrenciesEnabled) {
+    if (!this.props.user.isInttCurrenciesEnabled && !this.props.user.isOrgCurlec) {
       const promises = [this.props.fetchStates()];
       this.setState({
         // eslint-disable-next-line react/no-unused-state
