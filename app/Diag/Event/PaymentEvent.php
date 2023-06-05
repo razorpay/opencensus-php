@@ -13,6 +13,8 @@ class PaymentEvent extends Event
 
         $this->addPaymentDetails($properties);
 
+        $this->addPaymentAnalyticsDetails($properties);
+
         $this->addMerchantDetails($properties);
 
         return $properties;
@@ -90,6 +92,26 @@ class PaymentEvent extends Event
         ];
     }
 
+    private function addPaymentAnalyticsDetails(array &$properties)
+    {
+        $payment = $this->entity;
+        $paymentAnalytics = $payment->getMetadata('payment_analytics');
+
+        if (is_null($paymentAnalytics) === true)
+        {
+            $paymentAnalytics = $payment->analytics;
+
+            if (is_null($paymentAnalytics) === true)
+            {
+                return;
+            }
+        }
+
+        $properties['payment_analytics'] = [
+            'ip' => $paymentAnalytics->getIp(),
+        ];
+    }
+
     private function addPaymentDetails(array &$properties)
     {
         $payment = $this->entity;
@@ -105,8 +127,8 @@ class PaymentEvent extends Event
                 'gateway'        => $payment->getGateway(),
                 'recurring'      => $payment->isRecurring(),
                 'recurring_type' => $payment->getRecurringType(),
-                'contact'      => $payment->getContact(),
-                'email'        => $payment->getEmail(),
+                'contact'        => $payment->getContact(),
+                'email'          => $payment->getEmail(),
         ];
 
         // upi properties

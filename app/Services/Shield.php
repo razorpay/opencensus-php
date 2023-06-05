@@ -5,6 +5,7 @@ namespace RZP\Services;
 use Carbon\Carbon;
 use RZP\Models\Address;
 use RZP\Constants\Mode;
+use RZP\Constants\Environment;
 use RZP\Models\Feature\Constants;
 use RZP\Exception\BadRequestException;
 use RZP\Trace\TraceCode;
@@ -16,6 +17,7 @@ use RZP\Constants\Shield as ShieldConstants;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Payment\Config\Type as PaymentConfigType;
+use RZP\Services\Mock\Shield as MockShield;
 
 class Shield
 {
@@ -39,6 +41,8 @@ class Shield
 
     protected $mode;
 
+    protected $app;
+
     public function __construct($app)
     {
         $this->request = $app['request'];
@@ -60,6 +64,13 @@ class Shield
         $this->mode = $app['rzp.mode'] ?? ($app->runningUnitTests() ? Mode::TEST : Mode::LIVE);
 
         $this->runningUnitTests = $app->runningUnitTests();
+
+        $this->app = $app;
+
+        if ($this->runningUnitTests == true)
+        {
+            $this->app['shield.mock_service'] = new Mock\Shield($app);
+        }
     }
 
 
@@ -69,6 +80,7 @@ class Shield
         {
             if ($this->runningUnitTests === true)
             {
+                $this->app['shield.mock_service']->enqueueShieldEvent($event);
                 return;
             }
 
@@ -85,6 +97,11 @@ class Shield
                 Trace::CRITICAL,
                 TraceCode::SHIELD_SQS_ENQUEUE_FAILED
             );
+
+            if ($this->runningUnitTests === true)
+            {
+                throw $e;
+            }
         }
     }
 

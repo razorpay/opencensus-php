@@ -18,6 +18,7 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Freshdesk\FreshdeskTrait;
 use RZP\Mail\Payment\Fraud\DomainMismatch as DomainMismatchMail;
 use RZP\Tests\P2p\Service\Base\Traits\EventsTrait;
+use function League\Uri\newInstance;
 
 class FraudDetectionTest extends TestCase
 {
@@ -36,6 +37,8 @@ class FraudDetectionTest extends TestCase
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_sharp_terminal');
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
         $this->mandateHqTerminal = $this->fixtures->create('terminal:shared_mandate_hq_terminal');
+
+        $this->mockShieldEnqueueSQS([]);
     }
 
     public function testBlockedBin()
@@ -904,7 +907,55 @@ class FraudDetectionTest extends TestCase
             ];
         };
 
+        $this->mockShieldEnqueueSQS([
+                                        "amount"      => 50000,
+                                        "base_amount" => 50000,
+                                        "method"      => "upi",
+                                        "vpa"         => "success@razorpay",
+                                        "contact"     => "+919918899029",
+                                        "email"       => "a@b.com"
+                                    ]);
+
         $this->runPayloadTest($payment, $comparatorFunc);
+    }
+
+    protected function mockShieldEnqueueSQS($paymentData)
+    {
+        $expectedPayload = $this->getShieldSQSExpectedPayload($paymentData);
+        $expectedResponse = [];
+
+        $shieldServiceMock = Mockery::mock('RZP\Services\Shield', $this->app)->makePartial();
+
+        $this->app['shield.mock_service'] = $shieldServiceMock;
+
+        $shieldServiceMock->shouldReceive('enqueueShieldEvent')->andReturnUsing(function($payload) use ($expectedPayload, $expectedResponse) {
+            $this->assertArraySelectiveEquals($expectedPayload, $payload);
+
+            return $expectedResponse;
+        });
+    }
+
+
+    protected function getShieldSQSExpectedPayload($payment = [])
+    {
+        return [
+            "event_type"=> "payment-events",
+            "event_version" => "v2",
+            "event_group"   => "authorization",
+            "event"         => "payment.authorization.processed",
+            "properties"    => [
+                "payment_analytics" => [
+                    "ip"=> "10.0.123.123",
+                ],
+                "merchant" => [
+                    "id" => "10000000000000",
+                    "name" => "Test Merchant",
+                    "mcc" => "5399",
+                    "category" =>null
+                ],
+                "payment" => $payment,
+            ],
+        ];
     }
 
     public function testFraudDetectionForUpiFlowCollect()
@@ -923,6 +974,15 @@ class FraudDetectionTest extends TestCase
                 "triggered_rule_weight" => 0,
             ];
         };
+
+        $this->mockShieldEnqueueSQS([
+                                        "amount"      => 50000,
+                                        "base_amount" => 50000,
+                                        "method"      => "upi",
+                                        "vpa"         => "vishnu@icici",
+                                        "contact"     => "+919918899029",
+                                        "email"       => "a@b.com"
+                                    ]);
 
         $this->runPayloadTest($payment, $comparatorFunc);
     }

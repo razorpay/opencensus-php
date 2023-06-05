@@ -4,6 +4,7 @@ namespace RZP\Services\Mock;
 
 use RZP\Services\Shield as BaseShield;
 use RZP\Models\Payment\Entity as Payment;
+use RZP\Tests\Functional\Payment\FraudDetectionTest;
 
 class Shield extends BaseShield
 {
@@ -14,5 +15,9 @@ class Shield extends BaseShield
     public function getRiskAssessment(Payment $payment, $input = [])
     {
         return null;
+    }
+
+    public function enqueueShieldEvent($event)
+    {
     }
 }

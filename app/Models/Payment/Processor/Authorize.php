@@ -1083,7 +1083,7 @@ trait Authorize
 
         $event = $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $this->payment, $e);
 
-        (new Shield($this->app))->enqueueShieldEvent($event);
+        $this->app['shield.service']->enqueueShieldEvent($event);
     }
 
     protected function verifyFeesLessThanAmount(Payment\Entity $payment)
@@ -10199,9 +10199,7 @@ trait Authorize
 
             $event = $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHORIZATION_PROCESSED, $payment);
 
-
-
-            (new Shield($this->app))->enqueueShieldEvent($event);
+            $this->app['shield.service']->enqueueShieldEvent($event);
 
             return true;
         });
