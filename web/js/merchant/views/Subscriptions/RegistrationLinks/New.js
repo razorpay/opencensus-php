@@ -36,8 +36,8 @@ import { isAmountLiesInRange } from 'merchant/views/Subscriptions/utils';
 import {
   MAX_TOKEN_AMOUNT,
   GATEWAY_MAX_LIMIT,
-  CARD_AFA_MAX_LIMIT,
-  CARD_TOKEN_MAX_AMOUNT,
+  CARD_AFA_MAX_AMOUNT,
+  CARD_MAX_AMOUNT_ALLOWED,
   topEmandateBankCodes,
   MAX_TOKEN_AMOUNT_NACH,
   DEFAULT_NACH_LIMIT,
@@ -134,7 +134,7 @@ const getTokenDetailFields = (maxAmount, isNach = false) => [
 ];
 
 @withRouter
-@connect((state) => ({ user: state.session.user }), {
+@connect((state) => ({ user: state.session.user, org: state.session.org }), {
   openModal,
   closeModal,
   saveInvoice,
@@ -179,6 +179,7 @@ export default class NewRegistrationLink extends React.Component {
       validTabs: [false, false, false],
     };
     this.isMobileDevice = isMobileDevice();
+    this.countryCode = props.user.merchant.country_code;
   }
 
   get isEmandatePayment() {
@@ -390,6 +391,7 @@ export default class NewRegistrationLink extends React.Component {
       (otherNotes, { key, value }) => ({ ...otherNotes, [key]: value }),
       {},
     );
+    const cardAfaMaxLimit = CARD_AFA_MAX_AMOUNT[this.countryCode];
 
     const payload = {
       type: 'link',
@@ -479,7 +481,7 @@ export default class NewRegistrationLink extends React.Component {
 
     if (this.isCardPayment) {
       payload.subscription_registration.frequency = 'as_presented';
-      const cardMaxAmount = rupeesToPaise(data.mandateMaxAmount || CARD_AFA_MAX_LIMIT);
+      const cardMaxAmount = rupeesToPaise(data.mandateMaxAmount || cardAfaMaxLimit);
       payload.subscription_registration.max_amount = cardMaxAmount;
     }
 
@@ -556,6 +558,8 @@ export default class NewRegistrationLink extends React.Component {
   };
 
   isFormValid = (currentTab = this.state.currentTab) => {
+    const maxCardAmountAllowed = CARD_MAX_AMOUNT_ALLOWED[this.countryCode];
+
     switch (currentTab) {
       case 0: {
         return CustomerDetailsMandatoryFields.every((type) => {
@@ -607,7 +611,7 @@ export default class NewRegistrationLink extends React.Component {
           }
         }
         if (this.isCardPayment) {
-          if (maxAmount > CARD_TOKEN_MAX_AMOUNT) {
+          if (maxAmount > maxCardAmountAllowed) {
             return false;
           }
         }
@@ -629,7 +633,7 @@ export default class NewRegistrationLink extends React.Component {
 
   renderForm() {
     const { formFields } = this.state;
-    const { user } = this.props;
+    const { user, org } = this.props;
     const currency = user.merchant.currency;
 
     switch (this.state.currentTab) {
@@ -707,7 +711,8 @@ export default class NewRegistrationLink extends React.Component {
             firstPaymentAmount={formFields.firstPaymentAmount}
             handleDateChange={this.handleDateChange}
             onBlurElement={this.onBlurElement}
-            currency={currency}
+            user={user}
+            org={org}
           />
         );
       }

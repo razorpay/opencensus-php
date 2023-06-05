@@ -8,10 +8,11 @@ import { AmountTooltip } from 'common/ui/Amount';
 import { checkIfAmount, checkIfAmountForFirstCharge } from './PaymentDetails/utils';
 import {
   MAX_TOKEN_AMOUNT,
-  CARD_AFA_MAX_LIMIT,
-  CARD_TOKEN_MAX_AMOUNT,
+  CARD_AFA_MAX_AMOUNT,
+  CARD_MAX_AMOUNT_ALLOWED,
   MAX_TOKEN_AMOUNT_NACH,
 } from 'merchant/views/Subscriptions/constants';
+import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 
 const OptionLabel = ({ title, desc }) => (
   <div className="label-container">
@@ -19,6 +20,16 @@ const OptionLabel = ({ title, desc }) => (
     <div className="text-fade">{desc}</div>
   </div>
 );
+
+const CARD_PAYMENT_LABEL = {
+  [ORG_CUSTOM_CODE_MAP.RAZORPAY]: (
+    <>
+      Maximum Auto-debit Amount
+      <div className="Input-desc sub-text">(For domestic cards only)</div>
+    </>
+  ),
+  [ORG_CUSTOM_CODE_MAP.CURLEC]: <>Maximum Auto-debit Amount</>,
+};
 
 const BILLING_FREQUENCY_OPTIONS = [
   {
@@ -71,13 +82,21 @@ export default function TokenDetailsForm({
   firstPaymentAmount,
   mandateExpireAt,
   onBlurElement,
-  currency,
+  user,
+  org,
 }) {
   const maxAmountProps = {
     validator: maxAmountValidator(amount, MAX_TOKEN_AMOUNT),
     description: `Max Amount for Mandate (Up to ${getFormattedAmount(MAX_TOKEN_AMOUNT)})`,
   };
+  const currency = user.merchant.currency;
+  const countryCode = user.merchant.country_code;
+  const customCode = org.custom_code;
   const currencySym = currencySymbols[currency];
+  const cardPaymentLabelText =
+    CARD_PAYMENT_LABEL[customCode] || CARD_PAYMENT_LABEL[ORG_CUSTOM_CODE_MAP.RAZORPAY];
+  const cardAfaMaxLimit = CARD_AFA_MAX_AMOUNT[countryCode];
+  const cardTokenMaxAmount = CARD_MAX_AMOUNT_ALLOWED[countryCode];
 
   if (isUPIPayment) {
     maxAmountProps.placeholder = `Max ${getFormattedAmount(UPI_AVL_LIMIT)}`;
@@ -93,18 +112,23 @@ export default function TokenDetailsForm({
     )})`;
   }
   if (isCardPayment) {
-    maxAmountProps.validator = cardMaxAmountValidator(CARD_TOKEN_MAX_AMOUNT, currencySym);
-    let maxAmount = CARD_AFA_MAX_LIMIT;
-    if (mandateMaxAmount <= CARD_AFA_MAX_LIMIT) {
+    maxAmountProps.validator = cardMaxAmountValidator(cardTokenMaxAmount, currencySym);
+    let maxAmount = cardAfaMaxLimit;
+    if (mandateMaxAmount <= cardAfaMaxLimit) {
       maxAmount = mandateMaxAmount;
     }
-    maxAmountProps.description = () => (
-      <>
-        You can <strong>automatically</strong> charge the customer upto {currencySym}
-        {maxAmount} for each recurring payment. Payments above {currencySym}
-        {maxAmount} will ask for OTP verification from the customer.
-      </>
-    );
+
+    if (user.isOrgCurlec) {
+      maxAmountProps.description = () => <></>;
+    } else {
+      maxAmountProps.description = () => (
+        <>
+          You can <strong>automatically</strong> charge the customer upto {currencySym}
+          {maxAmount} for each recurring payment. Payments above {currencySym}
+          {maxAmount} will ask for OTP verification from the customer.
+        </>
+      );
+    }
   }
 
   return (
@@ -223,13 +247,8 @@ export default function TokenDetailsForm({
           class="Input--Amount"
           name="mandateMaxAmount"
           data-name="token_max_amount"
-          label={() => (
-            <>
-              Maximum Auto-debit Amount
-              <div className="Input-desc sub-text">(For domestic cards only)</div>
-            </>
-          )}
-          placeholder={`Max ${CARD_AFA_MAX_LIMIT}`}
+          label={() => cardPaymentLabelText}
+          placeholder={`Max ${cardAfaMaxLimit}`}
           onBlur={onBlurElement}
           required={isUPIPayment}
           value={mandateMaxAmount}

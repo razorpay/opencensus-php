@@ -16,7 +16,7 @@ import { AmountTooltip } from 'common/ui/Amount';
 import { CARD_AFA_MAX_LIMIT } from 'merchant/views/Subscriptions/constants';
 
 @withRouter
-@connect(null, { chargeToken, showNotification })
+@connect((state) => ({ user: state.session.user }), { chargeToken, showNotification })
 export default class ChargeToken extends Component {
   state = {};
 
@@ -75,6 +75,11 @@ export default class ChargeToken extends Component {
     // RBI's default AFA limit (15k) AFA is required
     if (amount >= maxAmount || amount >= defaultCardAFALimit) {
       isTwoFactorNeeded = true;
+    }
+
+    // i18n doesn't support two factor auth
+    if (this.props.user.isOrgCurlec) {
+      isTwoFactorNeeded = false;
     }
     const currency = token.subscription_registration
       ? token.subscription_registration.currency

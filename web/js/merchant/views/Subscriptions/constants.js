@@ -8,6 +8,7 @@ export const topEmandateBankCodes = ['SBIN', 'HDFC', 'ICIC', 'UTIB', 'KKBK'];
 
 export const CARD_AFA_MAX_LIMIT = 15000; // Rs
 export const CARD_TOKEN_MAX_AMOUNT = 1000000; // Rs
+export const MY_CARD_MAX_AMOUNT = 30000; // RM
 export const MAX_TOKEN_AMOUNT = 100000000; // in Paisa
 export const MAX_TOKEN_AMOUNT_NACH = 1000000000; // in Paisa
 
@@ -28,4 +29,16 @@ export const ONBOARDING_SUBSCRIPTIONS_DESCRIPTION = {
     'Collect recurring payments from customers with Razorpay Subscriptions APIs',
   [ORG_CUSTOM_CODE_MAP.CURLEC]:
     'Collect recurring payments from customers with Curlec Subscriptions APIs',
+};
+
+// max amount allowed without AFA authentication
+export const CARD_AFA_MAX_AMOUNT = {
+  IN: CARD_AFA_MAX_LIMIT,
+  MY: MY_CARD_MAX_AMOUNT,
+};
+
+// max amount allowed for card payments
+export const CARD_MAX_AMOUNT_ALLOWED = {
+  IN: CARD_TOKEN_MAX_AMOUNT,
+  MY: MY_CARD_MAX_AMOUNT,
 };

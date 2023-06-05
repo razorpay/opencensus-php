@@ -205,7 +205,7 @@ export default class TokenDetailsContainer extends Component {
   };
 
   render() {
-    const { loading: isLoading, entity = {}, error } = this.props;
+    const { loading: isLoading, entity = {}, error, user } = this.props;
 
     const isCancelled = !isLoading && getTokenStatus(entity) === 'cancelled';
 
@@ -261,7 +261,7 @@ export default class TokenDetailsContainer extends Component {
                       trackTokenDetailsView={this.trackTokenDetailsView}
                     />
                     <EntityDetailRow label="Payment Method">
-                      <MandatePaymentMethod mandate={entity} />
+                      <MandatePaymentMethod mandate={entity} user={user} />
                     </EntityDetailRow>
 
                     {(this.isEmandateMethod || this.isNACHMethod) && (

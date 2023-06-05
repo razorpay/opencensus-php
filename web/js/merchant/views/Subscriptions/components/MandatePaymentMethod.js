@@ -1,11 +1,10 @@
 import { titleCase, rupeesToPaise } from 'common/utils/rzp-utils';
-import { CARD_AFA_MAX_LIMIT } from 'merchant/views/Subscriptions/constants';
+import { CARD_AFA_MAX_AMOUNT } from 'merchant/views/Subscriptions/constants';
 
 import Definition from 'common/ui/Definition';
 import Amount from 'common/ui/Amount';
 import Time from 'common/ui/Time';
 import moment from 'moment';
-
 const CARD_EXPIRY_DATE_FORMAT = 'MMM YYYY';
 const CARD_EXPIRY_INPUTE_DATE_FORMAT = 'MM YYYY';
 
@@ -20,8 +19,10 @@ const BILLING_FREQUENCY = {
   as_presented: 'As and When Presented',
 };
 
-export default function MandatePaymentMethod({ mandate }) {
+export default function MandatePaymentMethod({ mandate, user }) {
   const { method, bank_account, card, bank: issuer } = mandate;
+  const countryCode = user.country_code;
+  const cardAfaMaxLimit = CARD_AFA_MAX_AMOUNT[countryCode];
   if (method === 'emandate') {
     return (
       <Definition>
@@ -73,7 +74,10 @@ export default function MandatePaymentMethod({ mandate }) {
         </>
         <>
           Max Auto-debit Amount:{' '}
-          <Amount value={mandate.max_amount || rupeesToPaise(CARD_AFA_MAX_LIMIT)} currency="INR" />{' '}
+          <Amount
+            value={mandate.max_amount || rupeesToPaise(cardAfaMaxLimit)}
+            currency={mandate.currency}
+          />{' '}
         </>
       </Definition>
     );

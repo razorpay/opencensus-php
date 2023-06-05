@@ -37,12 +37,13 @@ import {
   trackClickDownloadNACHForm,
   trackClickViewNACHForm,
 } from './gaAuth';
-import analytics from '../analytics';
+import analytics from 'merchant/views/Subscriptions/analytics';
 
 @withRouter
 @connect(
   (state) => ({
     ...state.registrationLink,
+    user: state.session.user,
   }),
   {
     fetchRegistrationLink,
@@ -213,7 +214,7 @@ export default class RegistrationLinkDetailsContainer extends React.Component {
   };
 
   render() {
-    const { loading: isLoading, entity, error } = this.props;
+    const { loading: isLoading, entity, error, user } = this.props;
     const { subscription_registration = {} } = entity;
 
     const isSmsOrEmailSent = entity.sms_status === 'sent' || entity.email_status === 'sent';
@@ -283,7 +284,10 @@ export default class RegistrationLinkDetailsContainer extends React.Component {
 
                     {/* method */}
                     <EntityDetailRow label="Method">
-                      <MandatePaymentMethod mandate={entity.subscription_registration} />
+                      <MandatePaymentMethod
+                        mandate={entity.subscription_registration}
+                        user={user}
+                      />
                     </EntityDetailRow>
 
                     {/* Customer Details */}
