@@ -155,6 +155,7 @@ class Base extends Core
     const CARDLESS_EMI_EARLYSALARY = 'CardlessEmiEarlySalary';
     const EMERCHANTPAY             = 'emerchantpay';
     const NETBANKING_DBS           = 'NetbankingDbs';
+    const WALLET_BAJAJ             = 'WalletBajaj';
 
 
     /**
@@ -267,6 +268,7 @@ class Base extends Core
         self::EMERCHANTPAY             => ['aithal@emerchantpay.com'],
         self::NETBANKING_HDFC_CORP     => [],
         self::NETBANKING_DBS           => [],
+        self::WALLET_BAJAJ             => ['art-recon@razorpay.com', 'kishor.kangune@bajajfinserv.in'],
 
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
@@ -405,6 +407,7 @@ class Base extends Core
         Gateway::TWID                   => self::TWID,
         Gateway::CHECKOUT_DOT_COM       => self::CHECKOUT_DOT_COM,
         Gateway::EMERCHANTPAY           => self::EMERCHANTPAY,
+        Gateway::WALLET_BAJAJ           => self::WALLET_BAJAJ,
     ];
 
     // Gateways for which halt gateway mismatch recon flow is ready

@@ -113,6 +113,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_SARASWAT    => ["/Saraswat Bank Recon File"],
         RequestProcessor\Base::NETBANKING_UCO     => [""],
         RequestProcessor\Base::EMERCHANTPAY       => ["/Settlement Razorpay Software Private Ltd (Trustly|Poli|Sofort|Giropay) (EUR|GBP|AUD) [0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/"],
+        RequestProcessor\Base::WALLET_BAJAJ       => ["/(?i)^RZP MID BFL0000001675590 Settlement Data(.+)?/"]
     ];
 
     const GATEWAY_BODY_REGEX = [
@@ -168,6 +169,7 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_IOB          => ["/This is a End Of Day Report email/"],
         RequestProcessor\Base::NETBANKING_KOTAK_V2     => ["/GBM CORPPG RECON REPORT FOR ENTITYCODE/"],
         RequestProcessor\Base::NETBANKING_RBL          => ["/Dear All,\nPlease find attachment for the Razorpay Payment Gateway Reconciliation File.\nThank You From RBL Bank/"],
+        RequestProcessor\Base::WALLET_BAJAJ            => ["/Please find attached transection summary dated on/"],
     ];
 
     const GATEWAY_ATTACHMENT_COUNT = [
@@ -203,9 +205,9 @@ class Validator extends Base\Core
         RequestProcessor\Base::NETBANKING_UCO           => 1,
     ];
 
-    const AUTOMATIC_FETCHING_ENABLED_GATEWAYS = [RequestProcessor\Base::NETBANKING_SBI];
+    const AUTOMATIC_FETCHING_ENABLED_GATEWAYS = [RequestProcessor\Base::NETBANKING_SBI, RequestProcessor\Base::WALLET_BAJAJ];
 
-    const WHITELISTED_EMAIL_FOR_ART = ["finances.recon@mg.razorpay.com"];
+    const WHITELISTED_EMAIL_FOR_ART = ["finances.recon@mg.razorpay.com", "art-recon@mg.razorpay.com"];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
     const SUPPORTED_ZIP_EXTENSIONS = ['zip', '7z'];

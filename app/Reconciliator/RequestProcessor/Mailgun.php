@@ -10,6 +10,7 @@ use RZP\Models\FileStore\Storage\AwsS3\Handler;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
+use RZP\Reconciliator\Service;
 
 class Mailgun extends Base
 {
@@ -101,8 +102,17 @@ class Mailgun extends Base
                 "destination" => "recon/input/netbanking/SBI/bank_payment_report/",
                 "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
             ]
+        ],
+        self::WALLET_BAJAJ => [
+            [
+                "from" => "kishor.kangune@bajajfinserv.in",
+                "subject_pattern" => "/(?i)^RZP MID BFL0000001675590 Settlement Data(.+)?/",
+                "filename_pattern" => "/(?i)^RZP MID BFL0000001675590 Settlement Data(.+)?/",
+                "destination" => "recon/input/WALLET_BAJAJ/rzp_internal_report/",
+                "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
+            ]
         ]
-    ];
+    ]; 
 
     protected $inputDetails;
 
@@ -209,6 +219,7 @@ class Mailgun extends Base
                     ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$extension][0])
                     ->name($destinationPath) 
                     ->type($bucketConfigType)
+                    ->extension($extension)
                     ->additionalParameters(['ACL' => 'bucket-owner-full-control']);
 
             $fileStoreEntity = $creator->save()->get();
@@ -274,7 +285,7 @@ class Mailgun extends Base
 
         $strippedHtml = $input[self::STRIPPED_HTML] ?? '';
 
-        if(in_array($input[self::RECIPIENT], $this->validator::WHITELISTED_EMAIL_FOR_ART))
+        if($input[self::RECIPIENT] == "finances.recon@mg.razorpay.com")
         {
             $from = $input['X-Original-Sender'] ?? $input['From'];
         }
@@ -332,6 +343,10 @@ class Mailgun extends Base
                         'valid_gateways' => array_keys(self::GATEWAY_SENDER_MAPPING),
                     ]);
             }
+        }
+
+        if(in_array($this->inputDetails[self::FROM], Service::BLACKLISTED_EMAIL_FOR_API_AUTO_RECON_VIA_MAILGUN)){
+            return;
         }
 
         $this->setGatewayReconciliatorObject();
