@@ -57,11 +57,12 @@ class DateRangePicker extends Component {
     );
   }
 
-  onPresetChange({ option: selectedPreset }) {
+  onPresetChange({ option: selectedPreset, updatedEndDate }) {
     this.setState({ selectedPreset });
 
     if (selectedPreset !== this.customPreset) {
-      const endDate = moment().local();
+      const endDate =
+        this.props.hasCustomEndDate && updatedEndDate ? updatedEndDate : moment().local();
       const startDate = getStartDateFromDiff(selectedPreset.value, endDate);
 
       this.setDates(startDate, endDate, selectedPreset);
@@ -155,7 +156,10 @@ class DateRangePicker extends Component {
       nextProps.selectedPresetFromParent !== selectedPresetFromParent
     ) {
       /*this is required if the preset needs to be set from the parent component */
-      this.onPresetChange({ option: nextProps.selectedPresetFromParent });
+      this.onPresetChange({
+        option: nextProps.selectedPresetFromParent,
+        updatedEndDate: nextProps.endDate,
+      });
     }
   }
 

@@ -29,12 +29,12 @@ describe('Magic - Header', () => {
     expect(
       screen.getByText('This data is only for razorpay magic processed orders'),
     ).toBeInTheDocument();
-    const dropBtn = screen.getByText('Past 48 hours');
+    const dropBtn = screen.getByText('Past 2 days');
     expect(dropBtn).toBeInTheDocument();
     await userEvent.click(dropBtn);
-    const rangeBtn = screen.queryByText('Past 24 hours');
+    const rangeBtn = screen.queryByText('Past 7 days');
     expect(rangeBtn).toBeInTheDocument();
     await userEvent.click(rangeBtn);
-    expect(setTimeRange).toBeCalledTimes(1);
+    expect(setTimeRange).toBeCalledTimes(2); // gets called twice since end date also changes
   });
 });
