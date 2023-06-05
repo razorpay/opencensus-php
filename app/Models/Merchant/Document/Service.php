@@ -181,11 +181,12 @@ class Service extends Base\Service
         $merchantId =  $this->merchant->getMerchantId();
 
         // route request to PGOS for deletion
-        try {
+        try
+        {
 
             $payload = [
-                "merchant_id" =>  $merchantId,
-                "id" => $id,
+                "merchant_id" => $merchantId,
+                "id"          => $id,
             ];
 
             $this->trace->info(TraceCode::PGOS_DOCUMENT_DELETE_REQUEST, [
@@ -194,11 +195,11 @@ class Service extends Base\Service
 
             $pgosProxyController = new MerchantOnboardingProxyController();
 
-            $response = $pgosProxyController->handlePGOSProxyRequests('merchant_document_delete', $payload, $this->merchant);
+            $pgosResponse = $pgosProxyController->handlePGOSProxyRequests('merchant_document_delete', $payload, $this->merchant);
 
             $this->trace->info(TraceCode::PGOS_DOCUMENT_DELETE_RESPONSE, [
                 'merchant_id' => $merchantId,
-                'response' => $response,
+                'response'    => $pgosResponse,
             ]);
         }
         catch (RequestsException $e) {
@@ -375,7 +376,7 @@ class Service extends Base\Service
 
         $from = strtotime($input['month'].'/01/'.$input['year']);
         $to = strtotime("+1 Month",$from)-1;
-        
+
         // Query for RBL + ICICI Firstdata + ICICI Zip Files
         $documents = $this->repo->merchant_document->findDocumentsForMerchantIdAndDocumentTypesAndDate($merchantId, ['firs_file', 'firs_firstdata_file', 'firs_icici_zip'], $from, $to);
 
@@ -384,7 +385,7 @@ class Service extends Base\Service
         foreach ($documents as $document)
         {
             // For Zip Files Check Status Before Sending Documents to FE
-            if($document['document_type'] === 'firs_icici_zip' and $this->isZippedFIRSDocumentProcessed($document) === false) 
+            if($document['document_type'] === 'firs_icici_zip' and $this->isZippedFIRSDocumentProcessed($document) === false)
             {
                 continue;
             }
