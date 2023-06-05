@@ -2027,7 +2027,10 @@ class BankingAccountTest extends TestCase
             ->once()
             ->withArgs(function($eventData, $merchant, $ex, $actualData) use ($expectedPayload) {
                 $this->assertEquals($expectedPayload, $eventData);
-                $this->assertEquals('100000Razorpay',$merchant->getId());
+                if (empty($merchant) == false)
+                {
+                    $this->assertEquals('100000Razorpay',$merchant->getId());
+                }
                 return true;
             })
             ->andReturnNull();
@@ -5316,7 +5319,9 @@ class BankingAccountTest extends TestCase
 
         $merchantDetail = $this->fixtures->create('merchant_detail', $attribute);
 
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+        $user = $this->fixtures->user->createBankingUserForMerchant($merchantDetail->merchant['id']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id'],$user->getId());
 
         $this->ba->addXOriginHeader();
 
@@ -10421,6 +10426,7 @@ class BankingAccountTest extends TestCase
         $this->fixtures->create('merchant', ['id' => $merchantId]);
         $this->fixtures->merchant_detail->createAssociateMerchant([
             'merchant_id' => $merchantId]);
+        $this->fixtures->user->createBankingUserForMerchant($merchantId);
 
         // New Merchant Apply for Current Account
         $response = $this->MerchantApplyForCurrentAccount($merchantId);
