@@ -36,9 +36,9 @@ export const invite = (...args) => ({
   payload: new Submerchant().invite(...args),
 });
 
-export const resendInvite = (submerchantId) => ({
+export const resendInvite = (submerchantId, product) => ({
   type: SUB_MERCHANT_RESEND_INVITE,
-  payload: new Submerchant().resendInvite(submerchantId),
+  payload: new Submerchant().resendInvite(submerchantId, product),
 });
 
 const TIMEOUT = 20 * 60 * 1000; // 20 minutes;

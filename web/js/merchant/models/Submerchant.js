@@ -34,10 +34,13 @@ export default class Submerchant extends GenericEntity {
     ).then((response) => response.data);
   }
 
-  resendInvite(submerchantId) {
+  resendInvite(submerchantId, product) {
     return merchantFetch({
       url: `submerchants/${submerchantId.replace('acc_', '')}/reset_password`,
       method: 'post',
+      data: {
+        product,
+      },
     }).then((response) => response.data);
   }
 

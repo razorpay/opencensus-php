@@ -130,7 +130,7 @@ export default class SubmerchantDetailsContainer extends Component {
 
   handleResendInvite = () => {
     return this.props
-      .resendInvite(this.props.id)
+      .resendInvite(this.props.id, this.state.product)
       .then((response) => {
         if (response.success) {
           this.trackUserEvent('partnerships.dashboard.affiliate_account.account_selected', {
