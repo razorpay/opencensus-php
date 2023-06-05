@@ -33,6 +33,7 @@ class Constants
     const FOH_REMOVAL_CRON_JOB_NAME                                  = 'foh_removal_cron';
     const INTL_MERCHANTS_WA_NOTIFICATION_CRON_JOB                    = 'intl-merchants-wa-notification';
     const MTU_TRANSACTED_MERCHANTS_CRON_JON_NAME                     = 'mtu-transacted';
+    const PRE_ACTIVATION_MERCHANT_RELEASE_FUNDS                      = 'pre-activation-merchant-release-funds';
 
     # map keys
     const AUTO_KYC_FAILURE_DATA = "auto_kyc_failure_data";
@@ -46,6 +47,8 @@ class Constants
     const  AUTO_KYC_LAST_CRON_DEFAULT_VALUE = 1;
 
     const FOH_REMOVAL_LAST_CRON_DEFAULT_VLAUE = 24 ;
+
+    const PRE_ACTIVATION_MERCHANT_RELEASE_FUNDS_LAST_CRON_DEFAULT_VALUE = 24;
 
     // Whatsapp event and templates
     const CB_SIGNUP_JOURNEY         = "CB_SIGNUP_JOURNEY";
@@ -61,7 +64,7 @@ class Constants
                                       "- Accept payments from 100+currencies.\n" .
                                       "- Easy and timely settlements in INR.\n" .
                                       "- Super quick set up process.\n" .
-                                      "- Industry best pricing.\n" . 
+                                      "- Industry best pricing.\n" .
                                       "\n" .
                                       "Here's a helpful video that will guide you through the activation process",
     ];

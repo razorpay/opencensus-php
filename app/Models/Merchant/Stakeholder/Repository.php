@@ -33,7 +33,6 @@ class Repository extends Base\Repository
             ->pluck(Entity::MERCHANT_ID)
             ->toArray();
     }
-
     /**
      * Important: This function is for migration reads to account service.
      * Can be used to fetch stakeholder from Account Service given the merchantId

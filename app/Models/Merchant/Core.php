@@ -2904,9 +2904,22 @@ class Core extends Base\Core
         {
             $this->triggerCommunicationIfApplicable($merchant,$action,$riskAttributes[RiskActionConstants::TRIGGER_COMMUNICATION]);
         }
+        // updating merchant details here because merchant entity is getting updated above
+
+        $merchantDetails = $merchant->merchantDetail;
 
         if ($action === Merchant\Action::RELEASE_FUNDS)
         {
+            /* If settlements are to be released for the merchant we need to make sure that bank
+            account is created in the bank account table */
+
+            if (empty($merchantDetails) === false)
+            {
+                if ($merchantDetails->getBankDetailsVerificationStatus() === Detail\Constants::VERIFIED)
+                {
+                    (new Activate())->createBankAccountEntry($merchant);
+                }
+            }
             $this->addMerchantToSettlementBucketOnFundsRelease($merchant);
         }
         else if ($action === Constants::SUSPEND)

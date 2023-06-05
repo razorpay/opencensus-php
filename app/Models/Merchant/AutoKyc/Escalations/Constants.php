@@ -11,6 +11,9 @@ class Constants
 
     const FOH_REMOVAL = 'FOH_REMOVAL';
 
+    // adding constant as a tag for workflow creation for settlement clearance
+    const ONBOARDING_REJECTED_SETTLEMENT_CLEARANCE = 'ONBOARDING_REJECTED_SETTLEMENT_CLEARANCE';
+
     // available escalation types
     const ESCALATION_TYPES = [
         self::SOFT_LIMIT,

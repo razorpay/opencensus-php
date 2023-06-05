@@ -151,4 +151,14 @@ class Repository extends Base\Repository
                     ->limit(1)
                     ->get();
     }
+
+    public function fetchByEntityIdAndState($entityId, $name)
+    {
+        return $this->newQueryWithConnection($this->getMasterReplicaConnection())
+                    ->select('*')
+                    ->where(Entity::ENTITY_ID, $entityId)
+                    ->where(Entity::ENTITY_TYPE, '=', 'merchant_detail')
+                    ->where(Entity::NAME, '=', $name)
+                    ->get();
+    }
 }

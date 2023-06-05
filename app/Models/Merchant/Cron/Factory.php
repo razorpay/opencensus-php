@@ -12,6 +12,7 @@ use RZP\Models\Merchant\Cron\Jobs\MtuTransactedCronJob;
 use RZP\Models\Merchant\Cron\Jobs\SignupStartedCronJob;
 use RZP\Models\Merchant\Cron\Jobs\WebAttributionCronJob;
 use RZP\Models\Merchant\Cron\Jobs\EmailNotVerfiedCronJob;
+use RZP\Models\Merchant\Cron\Jobs\NcRevampReminderCronJob;
 use RZP\Models\Merchant\Cron\Jobs\SignupAttributedCronJob;
 use RZP\Models\Merchant\Cron\Jobs\FirstTouchProductCronJob;
 use RZP\Models\Merchant\Cron\Jobs\EnableM2MReferralCronJob;
@@ -32,13 +33,13 @@ use RZP\Models\Merchant\Cron\Jobs\MerchantAutoKycEscalationsCronJob;
 use RZP\Models\Merchant\Cron\Jobs\FriendBuySendPurchaseEventsCronJob;
 use RZP\Models\Merchant\Cron\Jobs\BVSPartlyExecutedValidationCronJob;
 use RZP\Models\Merchant\Cron\Jobs\SubmerchantFirstTransactionCronJob;
+use RZP\Models\Merchant\Cron\Jobs\PreActivationMerchantReleaseFundsJob;
 use RZP\Models\Merchant\Cron\Jobs\WebsiteCompliancePaymentsEnabledCronJob;
 use RZP\Models\Merchant\Cron\Jobs\MerchantPostFirstTransactionEventCronJob;
 use RZP\Models\Merchant\Cron\Jobs\InstantlyActivatedButNotTransactedCronJob;
 use RZP\Models\Merchant\Cron\Jobs\SaveMerchantTransactionCountForSegmentType;
 use RZP\Models\Merchant\Cron\Jobs\WebsiteComplianceGracePeriodReminderCronJob;
 use RZP\Models\Merchant\Cron\Jobs\TriggerWANotificationToIntlMerchantsCronJob;
-use RZP\Models\Merchant\Cron\Jobs\NcRevampReminderCronJob;
 
 class Factory
 {
@@ -107,6 +108,9 @@ class Factory
                 return (new MerchantPostFirstTransactionEventCronJob($input));
             case "autokyc-soft-limit":
                 return (new MerchantAutoKycSoftLimitCronJob($input));
+            case Constants::PRE_ACTIVATION_MERCHANT_RELEASE_FUNDS:
+                RuntimeManager::setMaxExecTime(7200);
+                return (new PreActivationMerchantReleaseFundsJob($input));
             case "autokyc-hard-limit":
                 return (new MerchantAutoKycHardLimitCronJob($input));
             case "autokyc-escalations":

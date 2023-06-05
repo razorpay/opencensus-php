@@ -128,29 +128,12 @@ class FOHRemovalDataCollector extends DbDataCollector
             'last_authorized_payment_merchants'     => $lastAuthorizedPaymentMerchants
         ]);
 
-        $nonDaoMerchants = $this->getNonDaoLostAndWonDisputeMerchants($lastAuthorizedPaymentMerchants);
+        // This function filters out the merchants who are non dao, lea tag merchants
+        // capital product merchants
 
-        $this->app["trace"]->info(TraceCode::FOH_REMOVAL_NON_DAO_MERCHANTS, [
-            'non_dao_dispute_merchants'    => $nonDaoMerchants
-        ]);
+        $merchantIdsNotApplicableForFOH = $this->getMerchantsNotApplicableForFOH($lastAuthorizedPaymentMerchants);
 
-        $leaTagMerchants = $this->getMerchantTagsForDispute($nonDaoMerchants);
-
-        $this->app["trace"]->info(TraceCode::FOH_REMOVAL_LEA_TAG_MERCHANTS, [
-            'lea_document_tag_merchants'    => $leaTagMerchants
-        ]);
-
-        $capitalProductsMerchants = $this->checkFeatureFlagsForCapitalProducts($leaTagMerchants,self::CAPITAL_PRODUCTS_FEATURE_FLAGS);
-
-        $this->app["trace"]->info(TraceCode::FOH_REMOVAL_CAPITAL_PRODUCTS_MERCHANTS, [
-            'capital_products_merchants'    => $capitalProductsMerchants
-        ]);
-
-        $negativeBalanceMerchants = $this->filterNegativePrimaryBalanceMerchants($capitalProductsMerchants);
-
-        $this->app["trace"]->info(TraceCode::FOH_REMOVAL_NEGATIVE_BALANCE_MERCHANTS, [
-            'negative_balance_merchants'    => $negativeBalanceMerchants
-        ]);
+        $negativeBalanceMerchants = $this->filterNegativePrimaryBalanceMerchants($merchantIdsNotApplicableForFOH);
 
         $finalMerchantIdList = $negativeBalanceMerchants;
 
@@ -172,6 +155,31 @@ class FOHRemovalDataCollector extends DbDataCollector
 
         return CollectorDto::create($data);
 
+    }
+
+    public function getMerchantsNotApplicableForFOH(array $lastAuthorizedPaymentMerchants)
+    {
+        $nonDaoMerchants = $this->getNonDaoLostAndWonDisputeMerchants($lastAuthorizedPaymentMerchants);
+
+        $this->app["trace"]->info(TraceCode::FOH_REMOVAL_NON_DAO_MERCHANTS, [
+            'non_dao_dispute_merchants'    => $nonDaoMerchants
+        ]);
+
+        $leaTagMerchants = $this->getMerchantTagsForDispute($nonDaoMerchants);
+
+        $this->app["trace"]->info(TraceCode::FOH_REMOVAL_LEA_TAG_MERCHANTS, [
+            'lea_document_tag_merchants'    => $leaTagMerchants
+        ]);
+
+        $capitalProductsMerchants = $this->checkFeatureFlagsForCapitalProducts($leaTagMerchants,self::CAPITAL_PRODUCTS_FEATURE_FLAGS);
+
+        $this->app["trace"]->info(TraceCode::FOH_REMOVAL_CAPITAL_PRODUCTS_MERCHANTS, [
+            'capital_products_merchants'    => $capitalProductsMerchants
+        ]);
+
+        $merchantIdList = $capitalProductsMerchants;
+
+        return $merchantIdList;
     }
 
     protected function getRiskFohTeamEmailIds(): array
@@ -341,10 +349,12 @@ class FOHRemovalDataCollector extends DbDataCollector
 
         foreach ($merchantIdList as $merchantId)
         {
-            $balance = $this->repo->balance->getMerchantBalanceByType($merchantId, Merchant\Balance\Type::PRIMARY)->toArrayPublic();
+            $balance = $this->repo->balance->getMerchantBalanceByType($merchantId, Merchant\Balance\Type::PRIMARY) ?? null;
 
-            if ($balance !== null)
+            if (empty($balance) === false)
             {
+                $balance = $balance->toArrayPublic();
+
                 $balanceAmount = $balance[Merchant\Balance\Entity::BALANCE];
 
                 if ($balanceAmount < 0)

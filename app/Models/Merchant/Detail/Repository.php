@@ -649,4 +649,57 @@ class Repository extends Base\Repository
                     ->pluck(Entity::MERCHANT_ID)
                     ->toArray();
     }
+
+    public function fetchRzpOrgMerchantIdsWithPoiAndBankVerified($merchantIds): array
+    {
+        // Merchant Details Table Column
+        $detailMerchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+
+        $poiVerificationColumn = $this->dbColumn(Entity::POI_VERIFICATION_STATUS);
+
+        $bankDetailsVerificationColumn = $this->dbColumn(Entity::BANK_DETAILS_VERIFICATION_STATUS);
+
+        // Merchant Table Column
+
+        $merchantIdColumn = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
+
+        $merchantOrgIdColumn = $this->repo->merchant->dbColumn(Merchant\Entity::ORG_ID);
+
+
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+                    ->join(Table::MERCHANT, $merchantIdColumn, '=', $detailMerchantIdColumn)
+                    ->select($detailMerchantIdColumn)
+                    ->whereIn($detailMerchantIdColumn, $merchantIds)
+                    ->where($merchantOrgIdColumn, '=', Org\Entity::RAZORPAY_ORG_ID)
+                    ->where($poiVerificationColumn, '=', 'verified')
+                    ->where($bankDetailsVerificationColumn, '=', 'verified')
+                    ->get()
+                    ->pluck($detailMerchantIdColumn)
+                    ->toArray();
+    }
+
+    public function  filterMerchantIdsWithPoaStatusVerified(array $merchantIds) : array
+    {
+        // Merchant Detail Table column
+        $detailMerchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+
+        $poaVerificationColumn = $this->dbColumn(Entity::POA_VERIFICATION_STATUS);
+
+        // Stakeholder Repo Column
+        $stakeholderMerchantIdCol = $this->repo->stakeholder->dbColumn(Stakeholder\Entity::MERCHANT_ID);
+
+        $aadhaarEsignStatusColumn = $this->repo->stakeholder->dbColumn(Stakeholder\Entity::AADHAAR_ESIGN_STATUS);
+
+        $aadhaarEsignStatusWithPanColumn = $this->repo->stakeholder->dbColumn(Stakeholder\Entity::AADHAAR_VERIFICATION_WITH_PAN_STATUS);
+
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+                    ->whereIn($detailMerchantIdColumn, $merchantIds)
+                    ->join(Table::STAKEHOLDER, $stakeholderMerchantIdCol, '=', $detailMerchantIdColumn)
+                    ->where($aadhaarEsignStatusColumn, '=', 'verified')
+                    ->where($aadhaarEsignStatusWithPanColumn, '=', 'verified')
+                    ->orWhere($poaVerificationColumn, '=', 'verified')
+                    ->get()
+                    ->pluck($detailMerchantIdColumn)
+                    ->toArray();
+    }
 }

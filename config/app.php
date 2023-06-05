@@ -632,6 +632,8 @@ return array(
 
     'emi_via_card_screen_splitz_experiment_id' => env('EMI_VIA_CARD_SCREEN_SPLITZ_EXPERIMENT_ID'),
 
+    'settlement_clearance_experiment_id'      => env('SETTLEMENT_CLEARANCE_EXPERIMENT_ID'),
+
     'eligibility_on_std_checkout_splitz_experiment_id' =>env('ELIGIBILITY_ON_STD_CHECKOUT_SPLITZ_EXPERIMENT_ID'),
 
     'clevertap_migration_splitz_experiment_id' => env('CLEVERTAP_MIGRATION_SPLITZ_EXPERIMENT_ID')

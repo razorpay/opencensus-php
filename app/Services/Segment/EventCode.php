@@ -128,4 +128,10 @@ class EventCode
 
     //UPI Terminal creation
     const UPI_WRAPPER_REQUESTED = "UPI Wrapper Requested";
+
+    // Settlement Clearance
+
+    const ACQ_SETTLEMENT_CLEARANCE_WORKFLOW_CREATED = 'Acq Settlement Clearance Workflow Created';
+
+    CONST ACQ_SETTLEMENT_CLEARANCE_FAILED           = 'Acq Settlement Clearance Failed' ;
 }

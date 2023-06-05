@@ -5,6 +5,7 @@ namespace Functional\Merchant\AutoKyc;
 
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Services\MerchantRiskClient;
@@ -12,6 +13,7 @@ use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Cron\Constants;
 use RZP\Models\Merchant\Detail\POIStatus;
+use RZP\Models\State\Entity as StateEntity;
 use RZP\Models\Merchant\Detail\BusinessType;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
@@ -20,7 +22,9 @@ use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Merchant\Cron\Core as CronJobHandler;
 use RZP\Models\Merchant\Cron\Constants as CronConstants;
 use RZP\Models\Merchant\Cron\Collectors\FOHRemovalDataCollector;
+use RZP\Models\Merchant\Cron\Jobs\PreActivationMerchantReleaseFundsJob;
 use RZP\Models\Merchant\Cron\Collectors\MerchantAutoKycPassDataCollector;
+use RZP\Models\Merchant\Cron\Collectors\PreActivationMerchantReleaseFundsDataCollector;
 
 class AutoKycTest extends TestCase
 {
@@ -592,5 +596,257 @@ class AutoKycTest extends TestCase
         $merchantIds = $data[Constants::MERCHANT_IDS] ?? null;
 
         $this->assertEquals(1, count($merchantIds));
+    }
+
+    public function testPreActivationMerchantReleaseFundsCronSkipped()
+    {
+
+        $this->fixtures->merchant_detail->create([
+                                                     Entity::POI_VERIFICATION_STATUS          => POIStatus::VERIFIED,
+                                                     Entity::POA_VERIFICATION_STATUS          => POIStatus::VERIFIED,
+                                                     Entity::BANK_DETAILS_VERIFICATION_STATUS => POIStatus::VERIFIED,
+                                                     Entity::BUSINESS_TYPE                    => (new BusinessType())->getIndexFromKey(BusinessType::INDIVIDUAL),
+                                                     Entity::BUSINESS_CATEGORY                => 'tours_and_travel',
+                                                     Entity::BUSINESS_SUBCATEGORY             => 'accommodation',
+                                                 ]);
+
+        $result = (new PreActivationMerchantReleaseFundsJob(['cron_name' => Constants::PRE_ACTIVATION_MERCHANT_RELEASE_FUNDS]))->process();
+
+        $this->assertTrue($result);
+
+    }
+
+    public function testPreActivationMerchantReleaseFundsMerchantApplicable()
+    {
+
+        $lastCronRunTimestamp = Carbon::now()->subHours(2)->getTimestamp();
+
+        $createdAt = Carbon::today(Timezone::IST)->subDays(120)->getTimestamp();
+
+        $merchantDetails = $this->fixtures->merchant_detail->create([
+                                                                        Entity::POI_VERIFICATION_STATUS          => POIStatus::VERIFIED,
+                                                                        Entity::POA_VERIFICATION_STATUS          => POIStatus::VERIFIED,
+                                                                        Entity::BANK_DETAILS_VERIFICATION_STATUS => POIStatus::VERIFIED,
+                                                                        Entity::BUSINESS_TYPE                    => (new BusinessType())->getIndexFromKey(BusinessType::INDIVIDUAL),
+                                                                        Entity::BUSINESS_CATEGORY                => 'tours_and_travel',
+                                                                        Entity::BUSINESS_SUBCATEGORY             => 'accommodation',
+                                                                        Entity::ACTIVATION_STATUS                => Entity::REJECTED
+                                                                    ]);
+
+        $merchantId = $merchantDetails->getId();
+
+        $this->fixtures->create('state', [
+            StateEntity::ENTITY_ID   => $merchantId,
+            StateEntity::ENTITY_TYPE => 'merchant_detail',
+            StateEntity::CREATED_AT  => $createdAt,
+            StateEntity::NAME        => 'rejected'
+        ]);
+
+        $this->fixtures->edit('merchant', $merchantId, [
+            'org_id'     => Org::RZP_ORG,
+            'hold_funds' => true
+        ]);
+
+        $this->fixtures->create('payment', [
+            'merchant_id' => $merchantId,
+            'created_at'  => $lastCronRunTimestamp
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'merchant_id'     => $merchantId,
+            'status'          => 'won',
+            'deduct_at_onset' => true
+        ]);
+
+        $auth = $this->app['basicauth'];
+
+        $this->app->instance('basicauth', $auth);
+
+        $auth->setMerchant($merchantDetails->merchant);
+
+        $collectorData = (new PreActivationMerchantReleaseFundsDataCollector(0, 0, []))->collectDataFromSource();
+
+        $data = $collectorData->getData();
+
+        $merchantIds = $data[Constants::MERCHANT_IDS] ?? null;
+
+        $this->assertEquals(1, count($merchantIds));
+
+    }
+
+    public function testPreActivationMerchantReleaseFundsBankVerificationFails()
+    {
+
+        $lastCronRunTimestamp = Carbon::now()->subHours(2)->getTimestamp();
+
+        $createdAt = Carbon::today(Timezone::IST)->subDays(120)->getTimestamp();
+
+        $merchantDetails = $this->fixtures->merchant_detail->create([
+                                                                        Entity::POI_VERIFICATION_STATUS          => POIStatus::VERIFIED,
+                                                                        Entity::POA_VERIFICATION_STATUS          => POIStatus::VERIFIED,
+                                                                        Entity::BANK_DETAILS_VERIFICATION_STATUS => POIStatus::NOT_MATCHED,
+                                                                        Entity::BUSINESS_TYPE                    => (new BusinessType())->getIndexFromKey(BusinessType::INDIVIDUAL),
+                                                                        Entity::BUSINESS_CATEGORY                => 'tours_and_travel',
+                                                                        Entity::BUSINESS_SUBCATEGORY             => 'accommodation',
+                                                                        Entity::ACTIVATION_STATUS                => Entity::REJECTED
+                                                                    ]);
+
+        $merchantId = $merchantDetails->getId();
+
+        $this->fixtures->create('state', [
+            StateEntity::ENTITY_ID   => $merchantId,
+            StateEntity::ENTITY_TYPE => 'merchant_detail',
+            StateEntity::CREATED_AT  => $createdAt,
+            StateEntity::NAME        => 'rejected'
+        ]);
+
+        $this->fixtures->edit('merchant', $merchantId, [
+            'org_id'     => Org::RZP_ORG,
+            'hold_funds' => true
+        ]);
+
+        $this->fixtures->create('payment', [
+            'merchant_id' => $merchantId,
+            'created_at'  => $lastCronRunTimestamp
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'merchant_id'     => $merchantId,
+            'status'          => 'won',
+            'deduct_at_onset' => true
+        ]);
+
+        $auth = $this->app['basicauth'];
+
+        $this->app->instance('basicauth', $auth);
+
+        $auth->setMerchant($merchantDetails->merchant);
+
+        $collectorData = (new PreActivationMerchantReleaseFundsDataCollector(0, 0, []))->collectDataFromSource();
+
+        $data = $collectorData->getData();
+
+        $merchantIds = $data[Constants::MERCHANT_IDS] ?? null;
+
+        $this->assertNull($merchantIds);
+
+    }
+
+    public function testPreActivationMerchantReleaseFundsPOAVerificationFails()
+    {
+
+        $lastCronRunTimestamp = Carbon::now()->subHours(2)->getTimestamp();
+
+        $createdAt = Carbon::today(Timezone::IST)->subDays(120)->getTimestamp();
+
+        $merchantDetails = $this->fixtures->merchant_detail->create([
+                                                                        Entity::POI_VERIFICATION_STATUS          => POIStatus::VERIFIED,
+                                                                        Entity::POA_VERIFICATION_STATUS          => POIStatus::NOT_MATCHED,
+                                                                        Entity::BANK_DETAILS_VERIFICATION_STATUS => POIStatus::VERIFIED,
+                                                                        Entity::BUSINESS_TYPE                    => (new BusinessType())->getIndexFromKey(BusinessType::INDIVIDUAL),
+                                                                        Entity::BUSINESS_CATEGORY                => 'tours_and_travel',
+                                                                        Entity::BUSINESS_SUBCATEGORY             => 'accommodation',
+                                                                        Entity::ACTIVATION_STATUS                => Entity::REJECTED
+                                                                    ]);
+
+        $merchantId = $merchantDetails->getId();
+
+        $this->fixtures->create('state', [
+            StateEntity::ENTITY_ID   => $merchantId,
+            StateEntity::ENTITY_TYPE => 'merchant_detail',
+            StateEntity::CREATED_AT  => $createdAt,
+            StateEntity::NAME        => 'rejected'
+        ]);
+
+        $this->fixtures->edit('merchant', $merchantId, [
+            'org_id'     => Org::RZP_ORG,
+            'hold_funds' => true
+        ]);
+
+        $this->fixtures->create('payment', [
+            'merchant_id' => $merchantId,
+            'created_at'  => $lastCronRunTimestamp
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'merchant_id'     => $merchantId,
+            'status'          => 'won',
+            'deduct_at_onset' => true
+        ]);
+
+        $auth = $this->app['basicauth'];
+
+        $this->app->instance('basicauth', $auth);
+
+        $auth->setMerchant($merchantDetails->merchant);
+
+        $collectorData = (new PreActivationMerchantReleaseFundsDataCollector(0, 0, []))->collectDataFromSource();
+
+        $data = $collectorData->getData();
+
+        $merchantIds = $data[Constants::MERCHANT_IDS] ?? null;
+
+        $this->assertNull($merchantIds);
+
+    }
+
+    public function testPreActivationMerchantReleaseFundsCronFailsCapitalProductCheck()
+    {
+
+        $lastCronRunTimestamp = Carbon::now()->subHours(2)->getTimestamp();
+
+        $createdAt = Carbon::today(Timezone::IST)->subDays(120)->getTimestamp();
+
+        $merchantDetails = $this->fixtures->merchant_detail->create([
+                                                                        Entity::POI_VERIFICATION_STATUS          => POIStatus::VERIFIED,
+                                                                        Entity::POA_VERIFICATION_STATUS          => POIStatus::VERIFIED,
+                                                                        Entity::BANK_DETAILS_VERIFICATION_STATUS => POIStatus::VERIFIED,
+                                                                        Entity::BUSINESS_TYPE                    => (new BusinessType())->getIndexFromKey(BusinessType::INDIVIDUAL),
+                                                                        Entity::BUSINESS_CATEGORY                => 'tours_and_travel',
+                                                                        Entity::BUSINESS_SUBCATEGORY             => 'accommodation',
+                                                                        Entity::ACTIVATION_STATUS                => Entity::REJECTED
+                                                                    ]);
+
+        $merchantId = $merchantDetails->getId();
+
+        $this->fixtures->create('state', [
+            StateEntity::ENTITY_ID   => $merchantId,
+            StateEntity::ENTITY_TYPE => 'merchant_detail',
+            StateEntity::CREATED_AT  => $createdAt,
+            StateEntity::NAME        => 'rejected'
+        ]);
+
+        $this->fixtures->edit('merchant', $merchantId, [
+            'org_id'     => Org::RZP_ORG,
+            'hold_funds' => true
+        ]);
+
+        $this->fixtures->create('payment', [
+            'merchant_id' => $merchantId,
+            'created_at'  => $lastCronRunTimestamp
+        ]);
+
+        $this->fixtures->create('dispute', [
+            'merchant_id'     => $merchantId,
+            'status'          => 'won',
+            'deduct_at_onset' => true
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'        => 'withdraw_loc',
+            'entity_id'   => $merchantId,
+            'entity_type' => 'merchant',
+
+        ]);
+
+        $auth = $this->app['basicauth'];
+
+        $this->app->instance('basicauth', $auth);
+
+        $auth->setMerchant($merchantDetails->merchant);
+
+        $result = (new PreActivationMerchantReleaseFundsJob(['cron_name' => Constants::PRE_ACTIVATION_MERCHANT_RELEASE_FUNDS]))->process();
+
+        $this->assertTrue($result);
     }
 }

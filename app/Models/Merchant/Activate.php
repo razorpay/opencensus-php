@@ -1253,4 +1253,16 @@ class Activate extends Base\Core
             $this->app['segment-analytics']->pushTrackEvent($merchant, $eventAttributes, SegmentEvent::UPI_WRAPPER_REQUESTED);
         }
     }
+
+    public function createBankAccountEntry($merchant)
+    {
+        $merchantDetails = $merchant->merchantDetail;
+
+        if ($this->shouldCreateBankAccount($merchantDetails) === true)
+        {
+            (new Detail\Core)->setBankAccountForMerchant($merchant);
+
+            $merchant->getValidator()->validateHasBankAccount();
+        }
+    }
 }

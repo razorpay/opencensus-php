@@ -8,11 +8,16 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use Razorpay\Trace\Logger;
 use RZP\Models\Merchant\Action;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Workflow\Action\Differ;
 use RZP\Models\Workflow\Action\MakerType;
 use RZP\Models\Merchant\Action as MerchantAction;
+use RZP\Services\Segment\EventCode as SegmentEvent;
+use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Validator as MerchantValidator;
+use RZP\Models\Merchant\Detail\Constants as DetailConstant;
+use RZP\Models\Merchant\Stakeholder\Core  as StakeholderCore;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
 
 class Core extends Base\Core
@@ -137,7 +142,7 @@ class Core extends Base\Core
         }
     }
 
-    public function createRiskWorkflowAction($input, $maker = null, $routeName = null)
+    public function createRiskWorkflowAction($input, $maker = null, $routeName = null, bool $settlementClearance = false)
     {
         try {
             $riskAction = $input[Constants::ACTION];
@@ -145,6 +150,8 @@ class Core extends Base\Core
             $merchantId= $input[Constants::MERCHANT_ID];
 
             $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+            $merchantDetails = $merchant->merchantDetail;
 
             $this->validateMerchantForAction($riskAction, $merchant);
 
@@ -162,7 +169,7 @@ class Core extends Base\Core
 
             $bulkActionId = $input[Constants::BULK_WORKFLOW_ACTION_ID] ?? null;
 
-            $tags = $this->getTagsFromRiskAttributes($riskAttributes, $workflowTags);
+            $tags = $this->getTags($riskAttributes, $workflowTags, $settlementClearance);
 
             $riskAttributesParams = $this->getParamsForMerchantAction($riskAction, $riskAttributes);
 
@@ -190,11 +197,8 @@ class Core extends Base\Core
                 $input[Constants::BULK_WORKFLOW_ACTION_ID] = $bulkActionId;
             }
 
-            $diffData = [
-                'id'                       => $merchantId,
-                Constants::ACTION          => $riskAction,
-                Constants::RISK_ATTRIBUTES => $riskAttributes,
-            ];
+            $diffData = $this->getDiffData($merchantDetails, $riskAction, $riskAttributes, $settlementClearance);
+
             // NOTE: given the use case can generate the diff payload directly,
             // but for consistency reasons calling createDiff
             // No need for redacting fields as no sensitive field is being used
@@ -233,6 +237,8 @@ class Core extends Base\Core
                    'wf_action_id'   => $workflowAction['id'],
                ]);
 
+            $this->trackEvents($workflowAction, $merchantDetails, $diffData, $settlementClearance);
+
             return $workflowAction;
         }
         catch (\Throwable $e)
@@ -249,7 +255,67 @@ class Core extends Base\Core
         }
     }
 
-    public function getTagsFromRiskAttributes($riskAttributes, $workflowTags): array
+    protected function trackEvents($workflowAction, $merchant, $diffData, bool $settlementClearance = false)
+    {
+        if ($settlementClearance === true)
+        {
+            $this->trackSettlementClearanceSegmentEvent($workflowAction, $diffData, $merchant);
+        }
+    }
+
+    protected function trackSettlementClearanceSegmentEvent($workflowAction, $diffData, $merchant)
+    {
+        $merchantId = $merchant->getId();
+
+        $diffData['wf_action_id'] = $workflowAction['id'];
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent($merchant, $diffData, SegmentEvent::ACQ_SETTLEMENT_CLEARANCE_WORKFLOW_CREATED);
+
+        $this->trace->info(TraceCode::PRE_ACTIVATION_MERCHANT_RELEASE_FUNDS_SUCCESS, [
+            'MerchantId' => $merchantId,
+            'WorkflowId' => $workflowAction['id']
+        ]);
+    }
+
+
+    protected function getDiffData($merchantDetails, $riskAction, $riskAttributes, bool $settlementClearance = false)
+    {
+        $merchantId = $merchantDetails->getId();
+
+        if ($settlementClearance === true)
+        {
+            return $this->getDiffDataForSettlementClearanceWorkflow($merchantDetails);
+        }
+
+        $diffData = [
+            'id'                       => $merchantId,
+            Constants::ACTION          => $riskAction,
+            Constants::RISK_ATTRIBUTES => $riskAttributes,
+        ];
+
+        return $diffData;
+    }
+
+
+    protected function getTags($riskAttributes, $workflowTags, bool $settlementClearance = false)
+    {
+        if ($settlementClearance === true)
+        {
+            return $this->getTagsForSettlementClearance();
+        }
+
+        return $this->getTagsFromRiskAttributes($riskAttributes, $workflowTags);
+    }
+
+
+    protected function getTagsForSettlementClearance()
+    {
+        $tag[] = Merchant\AutoKyc\Escalations\Constants::ONBOARDING_REJECTED_SETTLEMENT_CLEARANCE;
+
+        return $tag;
+    }
+
+    protected function getTagsFromRiskAttributes($riskAttributes, $workflowTags): array
     {
         $tag = [];
 
@@ -278,5 +344,83 @@ class Core extends Base\Core
         }
 
         return $tag;
+    }
+    protected function getDiffDataForSettlementClearanceWorkflow($merchantDetails)
+    {
+        $balanceAmount = 0;
+
+        $dateOfRejection = null;
+
+        $poaStatusAadhaarEkyc = DetailConstant::NOT_VERIFIED;
+
+        $rejectionsReason = [];
+
+        $merchantId = $merchantDetails->getId();
+
+        /* At this state merchant will always have positive primary balance as negative primary balance merchants are
+         already filtered still keeping a null check if in case this gets called from other places */
+
+        // Fetching merchant balance
+        $balance = $this->repo->balance->getMerchantBalanceByType($merchantId, Balance\Type::PRIMARY) ?? null;
+
+        if (empty($balance) === false)
+        {
+            $balance = $balance->toArrayPublic();
+
+            $balanceAmount = $balance[Balance\Entity::BALANCE] ?? 0;
+
+            // Balance amount is in paisa and hence will convert it to INR later in use
+        }
+
+        // Fetch rejection category and reason for rejection
+        $actionStateReasons = $this->repo->state_reason->getRejectionReasonAndRejectionCode($merchantId);
+
+        if (empty($actionStateReasons) === false)
+        {
+            foreach ($actionStateReasons as $reason)
+            {
+                $rejectionsReason[$reason['reason_category'] ?? ' '] = $reason['reason_code'] ?? ' ';
+            }
+        }
+
+        // Fetch date of rejection
+        $merchantState = $this->repo->state->fetchByEntityIdAndState($merchantId, DetailEntity::REJECTED);
+
+        if (empty($merchantState) === false)
+        {
+            $dateOfRejection = $merchantState[0][Merchant\Detail\Entity::CREATED_AT] ?? null;
+        }
+
+        // poa status from stakeholder entity
+
+        $isStakeholderPresent = (new StakeholderCore())->checkIfStakeholderExists($merchantDetails);
+
+        if ($isStakeholderPresent === true)
+        {
+            $isAadhaarEsignStatus = ($merchantDetails->stakeholder->getAadhaarEsignStatus() === DetailConstant::VERIFIED);
+
+            $isAadhaarVerificationStatusWithPan = ($merchantDetails->stakeholder->getAadhaarVerificationWithPanStatus() === DetailConstant::VERIFIED);
+
+            if (($isAadhaarEsignStatus === true) and ($isAadhaarVerificationStatusWithPan === true))
+            {
+                $poaStatusAadhaarEkyc = DetailConstant::VERIFIED;
+            }
+        }
+
+        $diffData = [
+            'merchant_id'                      => $merchantId,
+            'merchant_name'                    => $merchantDetails->getContactName(),
+            'poi_status'                       => $merchantDetails->getPoiVerificationStatus(),
+            'poa_status'                       => $merchantDetails->getPoaVerificationStatus(),
+            'poa_status_aadhaar_ekyc'          => $poaStatusAadhaarEkyc,
+            'bank_account_verification_status' => $merchantDetails->getBankDetailsVerificationStatus(),
+            'date_of_rejection'                => $dateOfRejection,
+            'reason_category : reason_code'    => $rejectionsReason,
+            'total_unsettled_amount'           => $balanceAmount / 100 . 'INR',
+            'action'                           => Action::RELEASE_FUNDS,
+            'risk_attributes'                  => array(Constants::CLEAR_RISK_TAGS => '0'),
+        ];
+
+        return $diffData;
     }
 }
