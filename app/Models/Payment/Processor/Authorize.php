@@ -1519,6 +1519,13 @@ trait Authorize
                 'iin'        => $card->getIin(),
             ];
 
+           $library = (new Payment\Service)->getLibraryFromPayment($payment);
+
+           if ($library !== Payment\Analytics\Metadata::S2S)
+           {
+               unset($metaData['iin']);
+           }
+
             $token = $payment->getGlobalOrLocalTokenEntity();
 
             if ((empty($token) === false) &&
