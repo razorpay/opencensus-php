@@ -81,6 +81,7 @@ const SignupForm = ({
               openModal={openModal}
               setStep={setStep}
               showNotification={showNotification}
+              onboardAllAsResellerFlag={onboardAllAsResellerFlag}
             />
           )}
           {step === PARTNER_TYPE_SELECTION && (

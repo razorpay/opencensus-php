@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Formik } from 'formik';
 import StepFooter from './StepFooter';
-import { userPreSignup } from 'newAuth/signup/components/PartnerSignup/components/api';
+import {
+  userPreSignup,
+  updatePartnerTypeAndConsent,
+} from 'newAuth/signup/components/PartnerSignup/components/api';
 import { SCREEN_NAME, STEPS, businessTypeSelectionSchema } from 'newAuth/signup/Constants';
 import imageInfoIcon from 'assets/partner-dashboard/info-icon.png';
 import { merchantFetch } from 'merchant/utils/ajax';
@@ -23,7 +26,13 @@ import {
 } from './styled';
 import { isMobileAndTablet } from 'common/utils/rzp-utils';
 
-const BusinessTypeSelection = ({ setStep, closeModal, showNotification, contactName }) => {
+const BusinessTypeSelection = ({
+  setStep,
+  closeModal,
+  showNotification,
+  contactName,
+  onboardAllAsResellerFlag,
+}) => {
   const [registered, setRegistered] = useState(null);
   const [unregistered, setUnregistered] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -74,9 +83,25 @@ const BusinessTypeSelection = ({ setStep, closeModal, showNotification, contactN
     })
       .then(({ success }) => {
         if (success) {
-          setStep((step) => step + 1);
+          if (onboardAllAsResellerFlag) {
+            updatePartnerTypeAndConsent('reseller')
+              .then(() => {
+                setIsLoading(false);
+                // partner type selection step will be skipped in onboarding all as resellers
+                setStep((step) => step + 2);
+              })
+              .catch((err) => {
+                setIsLoading(false);
+                showNotification({
+                  type: 'error',
+                  message: err.errors?.[0] || 'Please try again',
+                });
+              });
+          } else {
+            setIsLoading(false);
+            setStep((step) => step + 1);
+          }
         }
-        setIsLoading(false);
       })
       .catch((err) => {
         setIsLoading(false);
