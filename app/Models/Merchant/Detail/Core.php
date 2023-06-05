@@ -5500,7 +5500,7 @@ class Core extends Base\Core
     {
         $merchantId = $merchantDetails->getMerchantId();
 
-        if ($this->isAdditionalDocRequired($merchantDetails->getBusinessSubcategory()) === true)
+        if ($this->isAdditionalDocRequired($merchantDetails->getBusinessCategory(), $merchantDetails->getBusinessSubcategory()) === true)
         {
             return Status::ACTIVATED_MCC_PENDING;
         }
@@ -5536,6 +5536,27 @@ class Core extends Base\Core
                     MVD\Constants::NUMBER
                 );
 
+                if (empty($mccCategorisation) === false)
+                {
+                    // metadata is the name of the column in merchant verification details table: it is a json column that can have different values based on the artefact_type.
+                    // In this case, mcc_categorisation is the artefact, hence this variable is called $mccResult
+                    $mccResult = $mccCategorisation->getMetadata();
+
+                    if (empty($mccResult[MVD\Constants::CATEGORY]) === true)
+                    {
+                        return Status::ACTIVATED_MCC_PENDING;
+                    }
+
+                    $subcategoryMetaData = SubcategoryV2::getSubCategoryMetaData($mccResult[MVD\Constants::CATEGORY], $mccResult[MVD\Constants::SUBCATEGORY]);
+
+                    $activationFlow = $subcategoryMetaData[Entity::ACTIVATION_FLOW];
+
+                    if ($activationFlow !== ActivationFlow::WHITELIST)
+                    {
+                        return Status::ACTIVATED_MCC_PENDING;
+                    }
+                }
+
                 if (optional($mccCategorisation)->getStatus() === BvsValidation\Constants::VERIFIED and
                     optional($websitePolicy)->getStatus() === BvsValidation\Constants::VERIFIED and
                     optional($negativeKeyword)->getStatus() === BvsValidation\Constants::VERIFIED)
@@ -5550,7 +5571,7 @@ class Core extends Base\Core
         }
         else
         {
-            return Status::ACTIVATED;
+            return Status::ACTIVATED_MCC_PENDING;
         }
     }
 
@@ -5567,9 +5588,11 @@ class Core extends Base\Core
         return empty($merchantDetails->getWebsite()) === false;
     }
 
-    private function isAdditionalDocRequired($subCategory): bool
+    private function isAdditionalDocRequired($category, $subCategory): bool
     {
-        return SubcategoryV2::SUB_CATEGORY_METADATA[$subCategory][SubcategoryV2::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION] === true;
+        $subcategoryMetaData = SubcategoryV2::getSubCategoryMetaData($category, $subCategory);
+
+        return $subcategoryMetaData[SubcategoryV2::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION] === true;
     }
 
     private function getApplicableActivationStatusForNoDoc(Entity $merchantDetails): string

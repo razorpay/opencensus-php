@@ -189,7 +189,10 @@ class UpdateMerchantContext extends Job
 
                 foreach ($websitePolicyResult as $policy => $value)
                 {
-                    $websitePolicyLinks[$policy]['url'] = $value['analysis_result']['links_found'][0];
+                    if (empty($value['analysis_result']['links_found'][0]) === false)
+                    {
+                        $websitePolicyLinks[$policy]['url'] = $value['analysis_result']['links_found'][0];
+                    }
                 }
 
                 $websiteDetail = $app['repo']->merchant_website->getWebsiteDetailsForMerchantId($this->merchantId);

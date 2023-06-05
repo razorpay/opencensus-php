@@ -2874,6 +2874,8 @@ class CoreTest extends TestCase
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 2,
+            'business_category'         => 'ecommerce',
+            'business_subcategory'      => 'baby_products',
             'activation_flow'           => 'whitelist',
             'activation_form_milestone' => 'L2',
             'poi_verification_status'   => 'verified',
@@ -3074,8 +3076,7 @@ class CoreTest extends TestCase
 
         $merchantDetails = $this->fixtures->create('merchant_detail', [
             'business_type'             => 3,
-            'business_category'         => 'financial_services',
-            'business_subcategory'      => 'accounting',
+            'business_category'         => 'others',
             'activation_flow'           => 'whitelist',
             'activation_form_milestone' => 'L2',
             'poi_verification_status'   => 'verified',
@@ -3099,7 +3100,7 @@ class CoreTest extends TestCase
 
         $this->mockSplitzTreatment($input, $output);
 
-        $this->assertEquals(Status::ACTIVATED, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+        $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
     public function testGetApplicableActivationStatusPartnershipWebsiteAbsent()
@@ -3145,7 +3146,7 @@ class CoreTest extends TestCase
 
         $this->mockSplitzTreatment($input, $output);
 
-        $this->assertEquals(Status::ACTIVATED, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+        $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
     public function testGetApplicableActivationStatusPartnershipWebsitePresentAppURLsAbsent()
@@ -3472,7 +3473,14 @@ class CoreTest extends TestCase
             'merchant_id'          => $merchantDetails->getMerchantId(),
             'artefact_type'        => Constant::MCC_CATEGORISATION_WEBSITE,
             'artefact_identifier'  => 'number',
-            'status'               => 'verified'
+            'status'               => 'verified',
+            'metadata'             => [
+                'status'            => 'completed',
+                'category'          => 'education',
+                'subcategory'       => 'college',
+                'predicted_mcc'     => 8220,
+                'confidence_score'  => 0.83
+            ]
         ]);
 
         $input = [
@@ -3491,6 +3499,286 @@ class CoreTest extends TestCase
         $this->mockSplitzTreatment($input, $output);
 
         $this->assertEquals(Status::ACTIVATED, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+    }
+
+    public function testGetApplicableActivationStatusPartnershipWebsitePresentWebsitePolicyFail()
+    {
+        Mail::fake();
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone', 'canSubmit', 'updateActivationStatus'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $detailCoreMock->expects($this->exactly(2))
+            ->method('canSubmit')
+            ->willReturn(true);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 3,
+            'business_category'         => 'others',
+            'business_subcategory'      => null,
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L1',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_website'          => 'https://google.com',
+        ]);
+
+        $detailCoreMock->expects($this->once())
+            ->method('updateActivationStatus')
+            ->willReturn($merchantDetails);
+
+        $merchantId = $merchantDetails->getId();
+
+        $merchant = $this->fixtures->edit('merchant', $merchantId, [
+            'category'             => '5945',
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantId,
+            'artefact_type'        => Constant::NEGATIVE_KEYWORDS,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
+
+        $this->fixtures->on('live')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02aT',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::WEBSITE_POLICY,
+            'artefact_identifier'  => 'number',
+            'status'               => 'initiated',
+            'metadata'             =>  [
+                'contact_us' => [
+                    'analysis_result' => [
+                        'links_found' => [
+                            'https://www.overseasindianmatrimony.com/contact-us'
+                        ],
+                        'relevant_details' => [
+                        ],
+                        'validation_result' => true
+                    ]
+                ],
+                'policy_details_file' => 'file_Lkkrv1tgDkZgd9'
+            ]
+        ]);
+
+        $this->fixtures->on('test')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02aT',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::WEBSITE_POLICY,
+            'artefact_identifier'  => 'number',
+            'status'               => 'initiated',
+            'metadata'             =>  [
+                'contact_us' => [
+                    'analysis_result' => [
+                        'links_found' => [
+                            'https://www.overseasindianmatrimony.com/contact-us'
+                        ],
+                        'relevant_details' => [
+                        ],
+                        'validation_result' => true
+                    ]
+                ],
+                'policy_details_file' => 'file_Lkkrv1tgDkZgd9'
+            ]
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02aZ',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::MCC_CATEGORISATION_WEBSITE,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified',
+            'metadata'             => [
+                'status'            => 'completed',
+                'category'          => 'social',
+                'subcategory'       => 'matchmaking',
+                'predicted_mcc'     => 7273,
+                'confidence_score'  => 0.99
+            ]
+        ]);
+
+        $this->fixtures->create('bvs_validation', [
+            'validation_id'     => 'L61kGPVWKT05Qx',
+            'artefact_type'     => 'website_policy',
+            'validation_unit'   => 'identifier',
+            'owner_id'          => $merchantDetails->getMerchantId(),
+            'validation_status' => 'success'
+        ]);
+
+        $input = [
+            "experiment_id" => "LQzMXMbNCUramd",
+            "id"            => $merchant->getId(),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'live',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $input = [
+            'activation_form_milestone' => 'L2'
+        ];
+
+        $detailCoreMock->saveMerchantDetails($input, $merchant);
+
+        $verificationData = $this->getDbEntity('merchant_verification_detail', [
+            'merchant_id'          => $merchantDetails->getId(),
+            'artefact_identifier'  => 'number',
+            'artefact_type'        => 'website_policy'
+        ]);
+
+        $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
+
+        $this->ba->proxyAuth($merchantDetails->getId());
+
+        // here we expect website policy to fail because the result stored in metadata does not contain all links i.e. privacy, terms, contact_us, refund, shipping.
+        $this->assertEquals('failed', $verificationData['status']);
+
+        $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+    }
+
+    public function testGetApplicableActivationStatusPartnershipWebsitePresentMccFail()
+    {
+        Mail::fake();
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+            ->setMethods(['isAutoKycDone', 'canSubmit', 'updateActivationStatus'])
+            ->getMock();
+
+        $detailCoreMock->expects($this->any())
+            ->method('isAutoKycDone')
+            ->willReturn(true);
+
+        $detailCoreMock->expects($this->exactly(2))
+            ->method('canSubmit')
+            ->willReturn(true);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 3,
+            'business_category'         => 'ecommerce',
+            'business_subcategory'      => 'baby_products',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L1',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_website'          => 'https://google.com',
+        ]);
+
+        $detailCoreMock->expects($this->once())
+            ->method('updateActivationStatus')
+            ->willReturn($merchantDetails);
+
+        $merchantId = $merchantDetails->getId();
+
+        $merchant = $this->fixtures->edit('merchant', $merchantId, [
+            'category'             => '5945',
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantId,
+            'artefact_type'        => Constant::NEGATIVE_KEYWORDS,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
+
+        $this->fixtures->on('live')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02aT',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::WEBSITE_POLICY,
+            'artefact_identifier'  => 'number',
+            'status'               => 'initiated',
+            'metadata'             =>  [
+                'contact_us' => [
+                    'analysis_result' => [
+                        'links_found' => [
+                            'https://www.overseasindianmatrimony.com/contact-us'
+                        ],
+                        'relevant_details' => [
+                        ],
+                        'validation_result' => true
+                    ]
+                ],
+                'policy_details_file' => 'file_Lkkrv1tgDkZgd9'
+            ]
+        ]);
+
+        $this->fixtures->on('test')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02aT',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::WEBSITE_POLICY,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02aZ',
+            'merchant_id'          => $merchantDetails->getMerchantId(),
+            'artefact_type'        => Constant::MCC_CATEGORISATION_WEBSITE,
+            'artefact_identifier'  => 'number',
+            'status'               => 'failed',
+            'metadata'             => [
+                'error_code'    => 'EXTERNAL_VENDOR_ERROR',
+                'error_reason'  => "Google NLP Couldn't classify",
+                'status'        => 'failed'
+            ]
+        ]);
+
+        $this->fixtures->create('bvs_validation', [
+            'validation_id'     => 'L61kGPVWKT05Qx',
+            'artefact_type'     => 'website_policy',
+            'validation_unit'   => 'identifier',
+            'owner_id'          => $merchantDetails->getMerchantId(),
+            'validation_status' => 'success'
+        ]);
+
+        $input = [
+            "experiment_id" => "LQzMXMbNCUramd",
+            "id"            => $merchant->getId(),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'live',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $input = [
+            'activation_form_milestone' => 'L2'
+        ];
+
+        $detailCoreMock->saveMerchantDetails($input, $merchant);
+
+        $verificationData = $this->getDbEntity('merchant_verification_detail', [
+            'merchant_id'          => $merchantDetails->getId(),
+            'artefact_identifier'  => 'number',
+            'artefact_type'        => 'website_policy'
+        ]);
+
+        $this->app['basicauth']->setModeAndDbConnection(Mode::LIVE);
+
+        $this->ba->proxyAuth($merchantDetails->getId());
+
+        $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
     public function testGetApplicableActivationStatusPartnershipWebsitePresentMccCategorisationFailed()
@@ -3543,7 +3831,14 @@ class CoreTest extends TestCase
             'merchant_id'          => $merchantDetails->getMerchantId(),
             'artefact_type'        => Constant::MCC_CATEGORISATION_WEBSITE,
             'artefact_identifier'  => 'number',
-            'status'               => 'failed'
+            'status'               => 'failed',
+            'metadata'             => [
+                'status'            => 'completed',
+                'category'          => 'education',
+                'subcategory'       => 'college',
+                'predicted_mcc'     => 8220,
+                'confidence_score'  => 0.83
+            ]
         ]);
 
         $input = [
@@ -3614,7 +3909,14 @@ class CoreTest extends TestCase
             'merchant_id'          => $merchantDetails->getMerchantId(),
             'artefact_type'        => Constant::MCC_CATEGORISATION_WEBSITE,
             'artefact_identifier'  => 'number',
-            'status'               => 'verified'
+            'status'               => 'verified',
+            'metadata'             => [
+                'status'            => 'completed',
+                'category'          => 'education',
+                'subcategory'       => 'college',
+                'predicted_mcc'     => 8220,
+                'confidence_score'  => 0.83
+            ]
         ]);
 
         $input = [
@@ -3686,7 +3988,7 @@ class CoreTest extends TestCase
 
         $businessDetail = $this->getDbLastEntity('merchant_business_detail');
 
-        $this->assertEquals(Status::ACTIVATED, $businessDetail['metadata']['activation_status']);
+        $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $businessDetail['metadata']['activation_status']);
     }
 
     public function testActivatedMccPendingActivationStatusCOI()
@@ -4347,6 +4649,67 @@ class CoreTest extends TestCase
             'merchant_id'          => $merchantDetails->getMerchantId(),
             'artefact_type'        => 'website_policy',
             'artefact_identifier'  => 'number',
+            'metadata'             => [
+                'policy_details_file' => 'file_LSAa41ZugJ1BPj',
+                'terms' => [
+                    'analysis_result' => [
+                        'links_found' => [
+                            'https://www.sukhdev.org/termsofuse'
+                        ],
+                        'confidence_score' => 0.5775,
+                        'relevant_details' => [
+                        ],
+                        'validation_result' => true
+                    ]
+                ],
+                'refund' => [
+                    'analysis_result' => [
+                        'links_found' => [
+                            'https://www.sukhdev.org/refundpolicy'
+                        ],
+                        'confidence_score' => 0.6185,
+                        'relevant_details' => [
+                        ],
+                        'validation_result' => true
+                    ]
+                ],
+                'privacy' => [
+                    'analysis_result' => [
+                        'links_found' => [
+                            'https://www.sukhdev.org/privacypolicy'
+                        ],
+                        'confidence_score' => 0.70671977996826,
+                        'relevant_details' => [
+                            'note' => 'Privacy Policy is majorly about Third Party Sharing/Collection, International and Specific Audiences, User Choice/Control, Practice not covered, Privacy contact information, Privacy Policy includes the following attributes Named third party, Unnamed third party, Does, Receive/Shared with, Aggregated or anonymized, Identifiable, User with account, Opt-out via contacting company, First party use,'
+                        ],
+                        'validation_result' => true
+                    ]
+                ],
+                'contact_us' => [
+                    'analysis_result' => [
+                        'links_found' => [
+                            'https://www.sukhdev.org/contactus'
+                        ],
+                        'relevant_details' => [
+                            '9987394065',
+                            'sukhdevonline@gmail.com'
+                        ],
+                        'validation_result' => true
+                    ]
+                ],
+                'shipping' => [
+                    'analysis_result' => [
+                        'links_found' => [
+                            'https://www.sukhdev.org/shipping'
+                        ],
+                        'relevant_details' => [
+                            '9987394065',
+                            'sukhdevonline@gmail.com'
+                        ],
+                        'validation_result' => true
+                    ]
+                ]
+            ]
         ]);
 
         $this->fixtures->on('test')->create('merchant_verification_detail', [
@@ -4354,6 +4717,67 @@ class CoreTest extends TestCase
             'merchant_id'          => $merchantDetails->getMerchantId(),
             'artefact_type'        => 'website_policy',
             'artefact_identifier'  => 'number',
+            'metadata'             => [
+                'policy_details_file' => 'file_LSAa41ZugJ1BPj',
+                'terms' => [
+                    'analysis_result' => [
+                        'links_found' => [
+                            'https://www.sukhdev.org/termsofuse'
+                        ],
+                        'confidence_score' => 0.5775,
+                        'relevant_details' => [
+                        ],
+                        'validation_result' => true
+                    ]
+                ],
+                'refund' => [
+                    'analysis_result' => [
+                        'links_found' => [
+                            'https://www.sukhdev.org/refundpolicy'
+                        ],
+                        'confidence_score' => 0.6185,
+                        'relevant_details' => [
+                        ],
+                        'validation_result' => true
+                    ]
+                ],
+                'privacy' => [
+                    'analysis_result' => [
+                        'links_found' => [
+                            'https://www.sukhdev.org/privacypolicy'
+                        ],
+                        'confidence_score' => 0.70671977996826,
+                        'relevant_details' => [
+                            'note' => 'Privacy Policy is majorly about Third Party Sharing/Collection, International and Specific Audiences, User Choice/Control, Practice not covered, Privacy contact information, Privacy Policy includes the following attributes Named third party, Unnamed third party, Does, Receive/Shared with, Aggregated or anonymized, Identifiable, User with account, Opt-out via contacting company, First party use,'
+                        ],
+                        'validation_result' => true
+                    ]
+                ],
+                'contact_us' => [
+                    'analysis_result' => [
+                        'links_found' => [
+                            'https://www.sukhdev.org/contactus'
+                        ],
+                        'relevant_details' => [
+                            '9987394065',
+                            'sukhdevonline@gmail.com'
+                        ],
+                        'validation_result' => true
+                    ]
+                ],
+                'shipping' => [
+                    'analysis_result' => [
+                        'links_found' => [
+                            'https://www.sukhdev.org/shipping'
+                        ],
+                        'relevant_details' => [
+                            '9987394065',
+                            'sukhdevonline@gmail.com'
+                        ],
+                        'validation_result' => true
+                    ]
+                ]
+            ]
         ]);
 
         $kafkaEventPayload = [
@@ -4362,9 +4786,9 @@ class CoreTest extends TestCase
                 'status'          => 'completed',
                 'category_result' => [
                     'website_categorisation' => [
-                        'category'         => 'financial_services',
-                        'subcategory'      => 'trading',
-                        'predicted_mcc'    => 6211,
+                        'category'         => 'ecommerce',
+                        'subcategory'      => 'arts_and_collectibles',
+                        'predicted_mcc'    => 5971,
                         'confidence_score' => 0.91,
                         'status'           => 'completed'
                     ]
@@ -4556,13 +4980,13 @@ class CoreTest extends TestCase
 
         $this->assertEquals('verified', $verificationData['status']);
 
-        $this->assertEquals('6211', $merchantData['category']);
+        $this->assertEquals('5971', $merchantData['category']);
 
-        $this->assertEquals('financial_services', $merchantData['category2']);
+        $this->assertEquals('ecommerce', $merchantData['category2']);
 
-        $this->assertEquals('financial_services', $merchantDetailsData['business_category']);
+        $this->assertEquals('ecommerce', $merchantDetailsData['business_category']);
 
-        $this->assertEquals('trading', $merchantDetailsData['business_subcategory']);
+        $this->assertEquals('arts_and_collectibles', $merchantDetailsData['business_subcategory']);
 
         $merchantWebsiteDetail = $this->getDbLastEntity('merchant_website');
 
@@ -4670,9 +5094,9 @@ class CoreTest extends TestCase
                 'status'          => 'completed',
                 'category_result' => [
                     'website_categorisation' => [
-                        'category'         => 'financial_services',
-                        'subcategory'      => 'trading',
-                        'predicted_mcc'    => 6211,
+                        'category'         => 'ecommerce',
+                        'subcategory'      => 'arts_and_collectibles',
+                        'predicted_mcc'    => 5971,
                         'confidence_score' => 0.91,
                         'status'           => 'completed'
                     ]

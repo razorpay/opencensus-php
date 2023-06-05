@@ -6890,6 +6890,14 @@ class BusinessSubCategoryMetaData
             self::INTERNATIONAL_ACTIVATION          => ActivationFlow::GREYLIST,
             self::NON_REGISTERED_MAX_PAYABLE_AMOUNT => 2500000,
             self::NON_REGISTERED_ACTIVATION_FLOW    => ActivationFlow::WHITELIST,
+            self::REQUIRED_WEBSITE_POLICIES         => [
+                self::TERMS_AND_CONDITIONS  => true,
+                self::REFUND_POLICY         => true,
+                self::PRIVACY_POLICY        => true,
+                self::CONTACT_US            => true,
+                self::SHIPPING              => true,
+            ],
+            self::REQUIRE_ADDITIONAL_DOCUMENTS_FOR_ACTIVATION => true
         ];
     }
 

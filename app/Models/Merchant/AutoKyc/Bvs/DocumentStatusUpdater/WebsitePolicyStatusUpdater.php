@@ -66,12 +66,16 @@ class WebsitePolicyStatusUpdater extends VerificationDetailStatusUpdater
         {
             $subCategory = $this->merchantDetails->getBusinessSubcategory();
 
+            $category = $this->merchantDetails->getBusinessCategory();
+
             if ($this->merchantDetails->getActivationFormMilestone() !== Detail\Constants::L2_SUBMISSION)
             {
                 return Constants::INITIATED;
             }
 
-            $requiredPolicies = BusinessSubCategoryMetaData::SUB_CATEGORY_METADATA[$subCategory][BusinessSubCategoryMetaData::REQUIRED_WEBSITE_POLICIES];
+            $subcategoryMetaData = BusinessSubCategoryMetaData::getSubCategoryMetaData($category, $subCategory);
+
+            $requiredPolicies = $subcategoryMetaData[BusinessSubCategoryMetaData::REQUIRED_WEBSITE_POLICIES];
 
             foreach ($requiredPolicies as $policy => $required)
             {
