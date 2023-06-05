@@ -63,7 +63,7 @@ export const initiateLogsPoll = ({
     fetchFunc: () => fetchDownloadLogs(queryParams, headers),
     // when sent true from validator polling will stop
     // continue polling if status is in progress
-    validator: (data) => data?.items.findIndex((log) => isLogInProgress(log.status)) === -1,
+    validator: (data) => !data?.items.some((log) => isLogInProgress(log.status)),
     pollResSuccessCallback,
     pollResFailedCallback,
     onPollStopCallback,

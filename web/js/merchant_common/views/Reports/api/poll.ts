@@ -20,16 +20,23 @@ export const reportsLongPoll = <T>({
         .then((res) => {
           pollIntervalMultiplier = 10;
           if (validator(res.data)) {
-            pollResSuccessCallback({
-              ...res.data,
-            });
-          } else {
-            pollResFailedCallback({
-              err: {
-                name: 'Invalid Response!',
-                message: 'Failed to validate.',
+            pollResSuccessCallback(
+              {
+                ...res.data,
               },
-            });
+              {
+                polling: false,
+              },
+            );
+          } else {
+            pollResSuccessCallback(
+              {
+                ...res.data,
+              },
+              {
+                polling: true,
+              },
+            );
           }
           return res.data;
         })

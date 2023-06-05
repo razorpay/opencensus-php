@@ -111,8 +111,7 @@ export const initiateSchedulesPoll = ({
 }: LongPollInitiatorArgs<ScheduleType>): LongPollReturnType<ScheduleType> => {
   return reportsLongPoll({
     fetchFunc: () => getSchedules(queryParams, headers),
-    validator: (data) =>
-      data?.items.findIndex((schedule) => isScheduleInProgress(schedule.status)) === -1,
+    validator: (data) => !data?.items.some((schedule) => isScheduleInProgress(schedule.status)),
     pollResSuccessCallback,
     pollResFailedCallback,
     onPollStopCallback,

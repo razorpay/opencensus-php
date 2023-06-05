@@ -23,7 +23,12 @@ export interface PollResFailedCallbackArgs {
 export interface LongPollParamType<T> {
   fetchFunc: () => Promise<ResType<T>>;
   validator: (x: ResPayload<T>) => boolean;
-  pollResSuccessCallback: (x: ResPayload<T>) => void;
+  pollResSuccessCallback: (
+    x: ResPayload<T>,
+    y: {
+      polling: boolean;
+    },
+  ) => void;
   pollResFailedCallback: (x: PollResFailedCallbackArgs) => void;
   onPollStopCallback: () => void;
 }
