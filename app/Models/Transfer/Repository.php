@@ -125,35 +125,46 @@ class Repository extends Base\Repository
      *
      * @return mixed
      */
-    public function fetchPendingTransfers(string $sourceType, array $excludeMerchantIds, int $count = 100, int $hours = -3)
+    public function fetchPendingTransfers(string $sourceType, array $includeMerchantIds, array $excludeMerchantIds, int $count, int $minutes)
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
-                    ->select(Entity::SOURCE_ID)
-                    ->whereNotIn(Entity::MERCHANT_ID, $excludeMerchantIds)
-                    ->where(Entity::SOURCE_TYPE, $sourceType)
-                    ->where(Entity::STATUS, Status::PENDING)
-                    ->where(Entity::UPDATED_AT, '<', Carbon::now()->addHours($hours)->getTimestamp())
-                    ->limit($count)
-                    ->distinct()
-                    ->pluck(Entity::SOURCE_ID)
-                    ->toArray();
+        $query = $this->newQueryWithConnection($this->getSlaveConnection());
+
+        // If a list of merchantIds is given, we will fetch transfers only for those merchantIds. Else
+        // fetch transfers for all merchants excluding key merchants.
+        if (empty($includeMerchantIds) === false)
+        {
+            $query->whereIn(Entity::MERCHANT_ID, $includeMerchantIds);
+        }
+        else
+        {
+            $query->whereNotIn(Entity::MERCHANT_ID, $excludeMerchantIds);
+        }
+
+        return $query->select(Entity::SOURCE_ID)
+                     ->where(Entity::SOURCE_TYPE, $sourceType)
+                     ->where(Entity::STATUS, Status::PENDING)
+                     ->where(Entity::UPDATED_AT, '<', Carbon::now()->subMinutes($minutes)->getTimestamp())
+                     ->limit($count)
+                     ->distinct()
+                     ->pluck(Entity::SOURCE_ID)
+                     ->toArray();
     }
 
-    public function fetchPendingTransfersForKeyMerchants(string $sourceType, array $merchantIds, int $count = 100, int $hours = -3)
+    public function fetchPendingTransfersForKeyMerchants(string $sourceType, array $merchantIds, int $count, int $minutes)
     {
         return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->select(Entity::SOURCE_ID)
                     ->whereIn(Entity::MERCHANT_ID, $merchantIds)
                     ->where(Entity::SOURCE_TYPE, $sourceType)
                     ->where(Entity::STATUS, Status::PENDING)
-                    ->where(Entity::UPDATED_AT, '<', Carbon::now()->addHours($hours)->getTimestamp())
+                    ->where(Entity::UPDATED_AT, '<', Carbon::now()->subMinutes($minutes)->getTimestamp())
                     ->limit($count)
                     ->distinct()
                     ->pluck(Entity::SOURCE_ID)
                     ->toArray();
     }
 
-    public function fetchPendingOrderTransfers(array $excludeMerchantIds, int $count = 100, int $hours = -3)
+    public function fetchPendingOrderTransfers(array $includeMerchantIds, array $excludeMerchantIds, int $count, int $minutes)
     {
         $orderId        = $this->repo->payment->dbColumn(Payment\Entity::ORDER_ID);
         $paymentStatus  = $this->repo->payment->dbColumn(Payment\Entity::STATUS);
@@ -171,21 +182,31 @@ class Repository extends Base\Repository
             $query = $this->newQueryWithConnection($connectionType);
         }
 
+        // If a list of merchantIds is given, we will fetch transfers only for those merchantIds. Else
+        // fetch transfers for all merchants excluding key merchants.
+        if (empty($includeMerchantIds) === false)
+        {
+            $query = $query->whereIn($merchantId, $includeMerchantIds);
+        }
+        else
+        {
+            $query = $query->whereNotIn($merchantId, $excludeMerchantIds);
+        }
+
         return $query
                     ->join(Table::PAYMENT, $sourceId, '=', $orderId)
                     ->select(Entity::SOURCE_ID)
-                    ->whereNotIn($merchantId, $excludeMerchantIds)
                     ->where(Entity::SOURCE_TYPE, Constant::ORDER)
                     ->where($transferStatus, Status::PENDING)
                     ->where($paymentStatus, Payment\Status::CAPTURED)
-                    ->where($updatedAt, '<', Carbon::now()->addHours($hours)->getTimestamp())
+                    ->where($updatedAt, '<', Carbon::now()->subMinutes($minutes)->getTimestamp())
                     ->limit($count)
                     ->distinct()
                     ->pluck(Entity::SOURCE_ID)
                     ->toArray();
     }
 
-    public function fetchPendingOrderTransfersForKeyMerchants(array $merchantIds, int $count = 100, int $hours = -3)
+    public function fetchPendingOrderTransfersForKeyMerchants(array $merchantIds, int $count, int $minutes)
     {
         $orderId        = $this->repo->payment->dbColumn(Payment\Entity::ORDER_ID);
         $paymentStatus  = $this->repo->payment->dbColumn(Payment\Entity::STATUS);
@@ -210,7 +231,7 @@ class Repository extends Base\Repository
                     ->where(Entity::SOURCE_TYPE, Constant::ORDER)
                     ->where($transferStatus, Status::PENDING)
                     ->where($paymentStatus, Payment\Status::CAPTURED)
-                    ->where($updatedAt, '<', Carbon::now()->addHours($hours)->getTimestamp())
+                    ->where($updatedAt, '<', Carbon::now()->subMinutes($minutes)->getTimestamp())
                     ->limit($count)
                     ->distinct()
                     ->pluck(Entity::SOURCE_ID)

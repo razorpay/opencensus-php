@@ -374,6 +374,17 @@ return [
         ],
     ],
 
+    'testCronProcessPendingPaymentTransfersSync' => [
+        'request'   => [
+            'method'    => 'POST',
+            'url'       => '/payment_transfers/process_pending?sync=true',
+            'content'   => [],
+        ],
+        'response'  => [
+            'content' => [],
+        ],
+    ],
+
     'testCreatePaymentTransferWithPartnerAuthForMarketplace' => [
         'request' => [
             'content' => [

@@ -65,7 +65,7 @@ class TransferProcess extends Job
             $this->trace->info(
                 TraceCode::TRANSFER_PROCESS_QUEUE,
                 [
-                    'payment_id'   => $this->payment,
+                    'payment_id'   => $this->payment->getId(),
                     'transfermode' => $this->transferMode
                 ]
             );
@@ -86,6 +86,8 @@ class TransferProcess extends Job
             if(empty($failedTransfersToRetry) === false)
             {
                 $this->checkRetry(Utility::INSUFFICIENT_BALANCE_RETRY_INTERVAL);
+
+                return null;
             }
 
             $this->delete();

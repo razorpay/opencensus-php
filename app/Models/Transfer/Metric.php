@@ -57,9 +57,9 @@ class Metric extends Base\Core
         $this->pushExceptionMetrics($e, self::TRANSFER_REVERSAL_FAILED, $dimensions);
     }
 
-    public function pushTransferProcessSuccessMetrics(array $input = [])
+    public function pushTransferProcessSuccessMetrics()
     {
-        $this->trace->count(self::TRANSFER_PROCESS_SUCCESS, $input);
+        $this->trace->count(self::TRANSFER_PROCESS_SUCCESS, $this->getCreateDefaultDimensions());
     }
 
     public function pushTransferProcessFailedMetrics(\Throwable $e)
@@ -70,6 +70,7 @@ class Metric extends Base\Core
     public function pushTransferProcessingTimeMetrics($sourceType, $processingTime)
     {
         $dimensions = [
+            self::TRANSFER_ROUTE  => $this->getRouteName(),
             self::TRANSFER_SOURCE => $sourceType,
         ];
 
@@ -88,6 +89,7 @@ class Metric extends Base\Core
     public function pushTransferProcessingTimeMetricsForCfAndSl($sourceType, $processingTime)
     {
         $dimensions = [
+            self::TRANSFER_ROUTE  => $this->getRouteName(),
             self::TRANSFER_SOURCE => $sourceType,
         ];
 
@@ -97,6 +99,7 @@ class Metric extends Base\Core
     public function pushTransferProcessingTimeInWorkerMetrics($sourceType, $processingTime)
     {
         $dimensions = [
+            self::TRANSFER_ROUTE  => $this->getRouteName(),
             self::TRANSFER_SOURCE => $sourceType,
         ];
 
@@ -106,7 +109,8 @@ class Metric extends Base\Core
     public function pushSourceIdProcessingTimeInWorkerMetrics($sourceType, $processingTime)
     {
         $dimensions = [
-            self::TRANSFER_SOURCE => $sourceType,
+            self::TRANSFER_ROUTE   => $this->getRouteName(),
+            self::TRANSFER_SOURCE  => $sourceType,
         ];
 
         $this->trace->histogram(self::SOURCE_ID_PROCESSING_TIME_IN_WORKER, $processingTime, $dimensions);
@@ -139,6 +143,15 @@ class Metric extends Base\Core
 
     private function getRouteName()
     {
-        return $this->app['api.route']->getCurrentRouteName();
+        if ($this->app->runningInQueue() === true)
+        {
+            $workerName = $this->app['worker.ctx']?->getJobName();
+
+            return $workerName;
+        }
+
+        $routeName = $this->app['api.route']?->getCurrentRouteName();
+
+        return $routeName;
     }
 }

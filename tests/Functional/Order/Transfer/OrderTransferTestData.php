@@ -752,4 +752,26 @@ return [
             'status_code' => 400,
         ],
     ],
+
+    'testCronProcessPendingOrderTransfersAsync' => [
+        'request'   => [
+            'method'    => 'POST',
+            'url'       => '/order_transfers/process_pending',
+            'content'   => [],
+        ],
+        'response'  => [
+            'content' => [],
+        ],
+    ],
+
+    'testCronProcessPendingOrderTransfersSync' => [
+        'request'   => [
+            'method'    => 'POST',
+            'url'       => '/order_transfers/process_pending?sync=true',
+            'content'   => [],
+        ],
+        'response'  => [
+            'content' => [],
+        ],
+    ],
 ];

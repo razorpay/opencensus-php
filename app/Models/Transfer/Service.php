@@ -463,11 +463,19 @@ class Service extends Base\Service
 
     public function processPendingOrderTransfers(array $input)
     {
+        $syncProcessing = (bool) ($input['sync'] ?? false);
+
+        $limit = (int) ($input['limit'] ?? 300);
+
+        $olderThanMinutes = (int) ($input['minutes'] ?? 3 * 60);
+
+        $merchantIds = $this->getMerchantIdsFromCronApiInputIfPresent($input);
+
         $keyMerchantIds = $this->repo->feature->findMerchantIdsHavingFeatures(Constant::$keyMerchantFeatureIdentifiers);
 
         $startTime = microtime();
 
-        $orderIds = $this->repo->transfer->fetchPendingOrderTransfers($keyMerchantIds, $input['limit'] ?? 300);
+        $orderIds = $this->repo->transfer->fetchPendingOrderTransfers($merchantIds, $keyMerchantIds, $limit, $olderThanMinutes);
 
         $endTime = microtime();
 
@@ -479,16 +487,22 @@ class Service extends Base\Service
             ]
         );
 
-        return $this->processOrderTransfers($orderIds);
+        return $this->processOrderTransfers($orderIds, $syncProcessing);
     }
 
     public function processPendingOrderTransfersForKeyMerchants(array $input)
     {
+        $syncProcessing = (bool) ($input['sync'] ?? false);
+
+        $limit = (int) ($input['limit'] ?? 300);
+
+        $olderThanMinutes = (int) ($input['minutes'] ?? 3 * 60);
+
         $keyMerchantIds = $this->repo->feature->findMerchantIdsHavingFeatures(Constant::$keyMerchantFeatureIdentifiers);
 
         $startTime = microtime();
 
-        $orderIds = $this->repo->transfer->fetchPendingOrderTransfersForKeyMerchants($keyMerchantIds, $input['limit'] ?? 300);
+        $orderIds = $this->repo->transfer->fetchPendingOrderTransfersForKeyMerchants($keyMerchantIds, $limit, $olderThanMinutes);
 
         $endTime = microtime();
 
@@ -500,7 +514,7 @@ class Service extends Base\Service
             ]
         );
 
-        return $this->processOrderTransfers($orderIds);
+        return $this->processOrderTransfers($orderIds, $syncProcessing);
     }
 
     /**
@@ -536,11 +550,19 @@ class Service extends Base\Service
 
     public function processPendingPaymentTransfers(array $input)
     {
+        $syncProcessing = (bool) ($input['sync'] ?? false);
+
+        $limit = (int) ($input['limit'] ?? 300);
+
+        $olderThanMinutes = (int) ($input['minutes'] ?? 3 * 60);
+
+        $merchantIds = $this->getMerchantIdsFromCronApiInputIfPresent($input);
+
         $keyMerchantIds = $this->repo->feature->findMerchantIdsHavingFeatures(Constant::$keyMerchantFeatureIdentifiers);
 
         $startTime = microtime();
 
-        $paymentIds = $this->repo->transfer->fetchPendingTransfers(EntityConstant::PAYMENT, $keyMerchantIds, $input['limit'] ?? 300);
+        $paymentIds = $this->repo->transfer->fetchPendingTransfers(EntityConstant::PAYMENT, $merchantIds, $keyMerchantIds, $limit, $olderThanMinutes);
 
         $endTime = microtime();
 
@@ -552,16 +574,27 @@ class Service extends Base\Service
             ]
         );
 
-        return $this->processPaymentTransfers($paymentIds);
+        if ($syncProcessing === true)
+        {
+            return $this->processPaymentTransfersSync($paymentIds);
+        }
+
+        return $this->processPaymentTransfersAsync($paymentIds);
     }
 
     public function processPendingPaymentTransfersForKeyMerchants(array $input)
     {
+        $syncProcessing = (bool) ($input['sync'] ?? false);
+
+        $limit = (int) ($input['limit'] ?? 300);
+
+        $olderThanMinutes = (int) ($input['minutes'] ?? 3 * 60);
+
         $keyMerchantIds = $this->repo->feature->findMerchantIdsHavingFeatures(Constant::$keyMerchantFeatureIdentifiers);
 
         $startTime = microtime();
 
-        $paymentIds = $this->repo->transfer->fetchPendingTransfersForKeyMerchants(EntityConstant::PAYMENT, $keyMerchantIds, $input['limit'] ?? 300);
+        $paymentIds = $this->repo->transfer->fetchPendingTransfersForKeyMerchants(EntityConstant::PAYMENT, $keyMerchantIds, $limit, $olderThanMinutes);
 
         $endTime = microtime();
 
@@ -573,10 +606,15 @@ class Service extends Base\Service
             ]
         );
 
-        return $this->processPaymentTransfers($paymentIds);
+        if ($syncProcessing === true)
+        {
+            return $this->processPaymentTransfersSync($paymentIds);
+        }
+
+        return $this->processPaymentTransfersAsync($paymentIds);
     }
 
-    protected function processPaymentTransfers(array $paymentIds)
+    protected function processPaymentTransfersAsync(array $paymentIds)
     {
         $payments = [];
 
@@ -613,9 +651,52 @@ class Service extends Base\Service
         return $payments;
     }
 
+    protected function processPaymentTransfersSync(array $paymentIds)
+    {
+        $payments = [];
+
+        foreach ($paymentIds as $paymentId)
+        {
+            try
+            {
+                $this->trace->info(
+                    TraceCode::PAYMENT_TRANSFER_PROCESS_SYNC_INIT,
+                    [
+                        'payment_id' => $paymentId,
+                        'mode'       => $this->mode,
+                    ]
+                );
+
+                $payment = $this->repo->payment->findOrFail($paymentId);
+
+                $transfer = new Transfer\PaymentTransfer($payment);
+
+                $transfer->process();
+
+                array_push($payments, $paymentId);
+
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->critical(
+                    TraceCode::PAYMENT_TRANSFER_PROCESS_SYNC_FAILED,
+                    [
+                        'payment_id' => $paymentId,
+                        'message'    => $e->getMessage(),
+                    ]
+                );
+            }
+        }
+        return $payments;
+    }
+
     public function processFailedOrderTransfers(array $input)
     {
-        $orderIds = $this->repo->transfer->fetchFailedTransfersToRetry(EntityConstant::ORDER, $input['limit'] ?? 300);
+        $syncProcessing = (bool) ($input['sync'] ?? false);
+
+        $limit = (int) ($input['limit'] ?? 300);
+
+        $orderIds = $this->repo->transfer->fetchFailedTransfersToRetry(EntityConstant::ORDER, $limit);
 
         $this->trace->info(
             TraceCode::FAILED_ORDER_TRANSFER_PROCESS,
@@ -624,10 +705,10 @@ class Service extends Base\Service
             ]
         );
 
-        return $this->processOrderTransfers($orderIds);
+        return $this->processOrderTransfers($orderIds, $syncProcessing);
     }
 
-    protected function processOrderTransfers(array $orderIds)
+    protected function processOrderTransfers(array $orderIds, bool $syncProcessing = false)
     {
         $transferOrderIds = [];
 
@@ -673,42 +754,86 @@ class Service extends Base\Service
                 continue;
             }
 
-            try
+            if ($syncProcessing === true)
             {
-                $this->trace->info(
-                    TraceCode::ORDER_TRANSFER_PROCESS_SQS_PUSH_INIT,
-                    [
-                        'order_id'   => $payment->getApiOrderId(),
-                        'payment_id' => $payment->getId(),
-                        'mode'       => $this->mode,
-                    ]
-                );
+                try
+                {
+                    $this->processOrderTransferSync($payment);
 
-                $this->core->dispatchForTransferProcessing(Constant::ORDER, $payment);
-
-                array_push($transferOrderIds, $orderId);
+                    array_push($transferOrderIds, $orderId);
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->critical(
+                        TraceCode::ORDER_TRANSFER_PROCESS_SYNC_FAILED,
+                        [
+                            'order_id'   => $payment->getApiOrderId(),
+                            'payment_id' => $payment->getId(),
+                            'message'    => $e->getMessage(),
+                        ]
+                    );
+                }
             }
-            catch (\Throwable $e)
+            else
             {
-                $this->trace->critical(
-                    TraceCode::ORDER_TRANSFER_PROCESS_SQS_PUSH_FAILED,
-                    [
-                        'order_id'   => $payment->getApiOrderId(),
-                        'payment_id' => $payment->getId(),
-                        'message'    => $e->getMessage(),
-                    ]
-                );
+                try
+                {
+                    $this->processOrderTransferAsync($payment);
+
+                    array_push($transferOrderIds, $orderId);
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->critical(
+                        TraceCode::ORDER_TRANSFER_PROCESS_SQS_PUSH_FAILED,
+                        [
+                            'order_id'   => $payment->getApiOrderId(),
+                            'payment_id' => $payment->getId(),
+                            'message'    => $e->getMessage(),
+                        ]
+                    );
+                }
             }
         }
 
         $this->trace->info(
             TraceCode::ORDER_TRANSFER_PROCESS_RETRY_DONE,
             [
-                               'processed_order_ids' => $transferOrderIds
+                'processed_order_ids' => $transferOrderIds
             ]
         );
 
         return $transferOrderIds;
+    }
+
+    protected function processOrderTransferSync(Payment\Entity $payment)
+    {
+        $this->trace->info(
+            TraceCode::PAYMENT_TRANSFER_PROCESS_SYNC_INIT,
+            [
+                'order_id'   => $payment->getApiOrderId(),
+                'payment_id' => $payment->getId(),
+                'mode'       => $this->mode,
+            ]
+        );
+
+        $transfer = new Transfer\OrderTransfer($payment);
+
+        $transfer->process();
+    }
+
+    protected function processOrderTransferAsync(Payment\Entity $payment)
+    {
+        $this->trace->info(
+            TraceCode::ORDER_TRANSFER_PROCESS_SQS_PUSH_INIT,
+            [
+                'order_id'   => $payment->getApiOrderId(),
+                'payment_id' => $payment->getId(),
+                'mode'       => $this->mode,
+            ]
+        );
+
+        $this->core->dispatchForTransferProcessing(Constant::ORDER, $payment);
     }
 
     /**
@@ -1265,5 +1390,25 @@ class Service extends Base\Service
 
 
         return $transfers;
+    }
+
+    protected function getMerchantIdsFromCronApiInputIfPresent(array $input)
+    {
+        $merchantIds = array();
+
+        if (isset($input['merchant_ids']) == true)
+        {
+            $merchantIdsList = $input['merchant_ids']['list'] ?? array();
+
+            $merchantIds[] = $merchantIdsList;
+
+            $featureFlags = $input['merchant_ids']['feature_flags'] ?? array();
+
+            $merchantIdsFromFeatureFlags = $this->repo->feature->findMerchantIdsHavingFeatures($featureFlags);
+
+            $merchantIds[] = $merchantIdsFromFeatureFlags;
+        }
+
+        return array_unique($merchantIds);
     }
 }

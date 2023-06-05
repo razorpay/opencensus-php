@@ -845,6 +845,71 @@ class PaymentMarketplaceTransferTest extends TestCase
         $this->assertNotNULL($transfer['processed_at']);
     }
 
+    public function testCronProcessPendingPaymentTransfersSync()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $paymentId = $this->payment['id'];
+
+        $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
+
+        $dummyTransferData1 = [
+            'id'                 => "AnyRandomID123",
+            'source_id'          => $paymentId,
+            'source_type'        => "payment",
+            'status'             => "pending",
+            'settlement_status'  => NULL,
+            'to_id'              => 10000000000001,
+            'to_type'            => "merchant",
+            'amount'             => 50000,
+            'currency'           => "INR",
+            'amount_reversed'    => 0,
+            'created_at'         => Carbon::now()->addHours(-5)->getTimestamp(),
+            'updated_at'         => Carbon::now()->addHours(-4)->getTimestamp()
+        ];
+
+        $dummyTransferData2 = [
+            'id'                 => "AnyRandomID456",
+            'source_id'          => $paymentId,
+            'source_type'        => "payment",
+            'status'             => "pending",
+            'settlement_status'  => NULL,
+            'to_id'              => 10000000000001,
+            'to_type'            => "merchant",
+            'amount'             => 100000,
+            'currency'           => "INR",
+            'amount_reversed'    => 0,
+            'created_at'         => Carbon::now()->addHours(-7)->getTimestamp(),
+            'updated_at'         => Carbon::now()->addHours(-8)->getTimestamp()
+        ];
+
+        $this->fixtures->transfer->create($dummyTransferData1);
+        $this->fixtures->transfer->create($dummyTransferData2);
+
+        $transfer1 = $this->getLastEntity('transfer', true);
+        $transfer2 = $this->getLastEntity('transfer', true);
+
+        $this->assertEquals('pending', $transfer1['status']);
+        $this->assertEquals('pending', $transfer2['status']);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->ba->cronAuth();
+
+        $paymentIds = $this->runRequestResponseFlow($data);
+
+        $transfer1 = $this->getLastEntity('transfer', true);
+        $transfer2 = $this->getLastEntity('transfer', true);
+
+        $this->assertEquals('processed', $transfer1['status']);
+        $this->assertEquals('processed', $transfer2['status']);
+
+        $this->assertEquals($paymentId, $paymentIds[0]);
+
+        $this->assertNotNULL($transfer1['processed_at']);
+        $this->assertNotNULL($transfer2['processed_at']);
+    }
+
     public function testCreatePaymentTransferWithPartnerAuthForMarketplace()
     {
         $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();

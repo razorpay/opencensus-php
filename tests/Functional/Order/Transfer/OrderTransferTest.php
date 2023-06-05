@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Order\Transfers;
 
+use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Models\EntityOrigin\Core;
 use RZP\Tests\Traits\MocksSplitz;
@@ -180,7 +181,7 @@ class OrderTransferTest extends TestCase
         $this->assertEquals($subMerchantId, $merchantId);
 
         // Assert that the entity origin for the transfer is set to marketplace_app
-        $this->verifyEntityOrigin($transfer['id'], 'marketplace_app',  $client->getApplicationId());
+        $this->verifyEntityOrigin($transfer['id'], 'marketplace_app', $client->getApplicationId());
     }
 
     private function verifyEntityOrigin($entityId, $originType, $originId)
@@ -286,5 +287,89 @@ class OrderTransferTest extends TestCase
         $payment = $this->doAuthAndCapturePayment($payment);
 
         return $payment;
+    }
+
+    public function testCronProcessPendingOrderTransfersAsync()
+    {
+        $order = $this->fixtures->create('order', ['status' => 'paid']);
+
+        $payment = $this->fixtures->create('payment:captured', ['order_id' => $order['id']]);
+
+        $dummyTransferData = [
+            'id'                 => 'AnyRandomID123',
+            'source_id'          => $order['id'],
+            'source_type'        => 'order',
+            'status'             => 'pending',
+            'settlement_status'  => NULL,
+            'to_id'              => 10000000000001,
+            'to_type'            => 'merchant',
+            'amount'             => 50000,
+            'currency'           => 'INR',
+            'amount_reversed'    => 0,
+            'created_at'         => Carbon::now()->addHours(-5)->getTimestamp(),
+            'updated_at'         => Carbon::now()->addHours(-4)->getTimestamp()
+        ];
+
+        $this->fixtures->transfer->create($dummyTransferData);
+
+        $transfer = $this->getLastEntity('transfer', true);
+
+        $this->assertEquals('pending', $transfer['status']);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->ba->cronAuth();
+
+        $orderIds = $this->runRequestResponseFlow($data);
+
+        $transfer = $this->getLastEntity('transfer', true);
+
+        $this->assertEquals('processed', $transfer['status']);
+
+        $this->assertEquals($order['id'], $orderIds[0]);
+
+        $this->assertNotNull($transfer['processed_at']);
+    }
+
+    public function testCronProcessPendingOrderTransfersSync()
+    {
+        $order = $this->fixtures->create('order', ['status' => 'paid']);
+
+        $payment = $this->fixtures->create('payment:captured', ['order_id' => $order['id']]);
+
+        $dummyTransferData = [
+            'id'                 => 'AnyRandomID123',
+            'source_id'          => $order['id'],
+            'source_type'        => 'order',
+            'status'             => 'pending',
+            'settlement_status'  => NULL,
+            'to_id'              => 10000000000001,
+            'to_type'            => 'merchant',
+            'amount'             => 50000,
+            'currency'           => 'INR',
+            'amount_reversed'    => 0,
+            'created_at'         => Carbon::now()->addHours(-5)->getTimestamp(),
+            'updated_at'         => Carbon::now()->addHours(-4)->getTimestamp()
+        ];
+
+        $this->fixtures->transfer->create($dummyTransferData);
+
+        $transfer = $this->getLastEntity('transfer', true);
+
+        $this->assertEquals('pending', $transfer['status']);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->ba->cronAuth();
+
+        $orderIds = $this->runRequestResponseFlow($data);
+
+        $transfer = $this->getLastEntity('transfer', true);
+
+        $this->assertEquals('processed', $transfer['status']);
+
+        $this->assertEquals($order['id'], $orderIds[0]);
+
+        $this->assertNotNull($transfer['processed_at']);
     }
 }

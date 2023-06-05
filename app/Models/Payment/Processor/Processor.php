@@ -30,6 +30,7 @@ use RZP\Jobs\Order\OrderUpdate;
 use RZP\Models\Merchant\Merchant1ccConfig\Type;
 use RZP\Models\Order\ProductType;
 use RZP\Models\Pricing\Fee;
+use RZP\Models\RateLimiter\FixedWindowLimiter;
 use RZP\Models\Risk;
 use RZP\Models\Admin;
 use RZP\Models\Order;
@@ -228,7 +229,13 @@ class Processor
      * The number of payment transfers to process per merchant in parallel using
      * a semaphore. This limit is applied to the counting semaphore
      */
-    const PAYMENT_TRANSFERS_SYNC_PROCESSING_DEFAULT_LIMIT = 2;
+    const PAYMENT_TRANSFERS_SYNC_PROCESSING_SEMAPHORE_DEFAULT_LIMIT = 2;
+
+    /**
+     * The number of payment transfers to process per merchant in sync via API per
+     * hour
+     */
+    const PAYMENT_TRANSFERS_SYNC_PROCESSING_HOURLY_RATE_LIMIT = 7000;
 
     /**
      * Core payment service feature flag
@@ -4535,16 +4542,9 @@ class Processor
 
         $deadLockRetryAttempts = 1;
 
-        $asyncTransfer = true;
-
-        if ($this->checkIfPaymentTransferSyncProcessingAllowed($input) === true)
-        {
-            $asyncTransfer = false;
-        }
-
         $transfers = $this->mutex->acquireAndRelease(
             $payment->getId(),
-            function() use ($payment, $input, $deadLockRetryAttempts, $asyncTransfer)
+            function() use ($payment, $input, $deadLockRetryAttempts)
             {
                 $this->repo->reload($payment);
 
@@ -4571,6 +4571,13 @@ class Processor
                     }
                 }
 
+                $asyncTransfer = true;
+
+                if ($this->checkIfPaymentTransferSyncProcessingAllowed($input) === true)
+                {
+                    $asyncTransfer = false;
+                }
+
                 if ($asyncTransfer === false)
                 {
                     try
@@ -4588,8 +4595,12 @@ class Processor
                             ]
                         );
 
-                        // If sync processing has failed, dispatch to queue to process it async
-                        $asyncTransfer = true;
+                        // If sync processing has failed, set asyncTransfer flag based on the transfer_sync_via_cron
+                        // experiment to decide whether the transfer should be dispatched to queue
+                        if ($this->checkIfTransferSyncProcessingViaCronIsEnabled() === false)
+                        {
+                            $asyncTransfer = true;
+                        }
                     }
                 }
 
@@ -4649,18 +4660,18 @@ class Processor
 
         $semaphore = null;
 
-        $limit = (int) (new Admin\Service)->getConfigKey(['key' => ConfigKey::ROUTE_TRANSFER_SYNC_PROCESSING_LIMIT_PER_MID]);
+        $semaphoreLimit = (int) (new Admin\Service)->getConfigKey(['key' => ConfigKey::TRANSFER_SYNC_PROCESSING_VIA_API_SEMAPHORE_LIMIT_PER_MID]);
 
-        if (empty($limit) === true)
+        if (empty($semaphoreLimit) === true)
         {
-            $limit = self::PAYMENT_TRANSFERS_SYNC_PROCESSING_DEFAULT_LIMIT;
+            $semaphoreLimit = self::PAYMENT_TRANSFERS_SYNC_PROCESSING_SEMAPHORE_DEFAULT_LIMIT;
         }
 
         try
         {
             $semaphoreAcquireStartTime = microtime(true);
 
-            $semaphore = new Semaphore($redis->client(), $this->merchant->getId(), $limit);
+            $semaphore = new Semaphore($redis->client(), $this->merchant->getId(), $semaphoreLimit);
 
             $isSemaphoreAcquired = $semaphore->acquire();
 
@@ -4669,6 +4680,11 @@ class Processor
                 $timeTakenToAcquireMs = (microtime(true) - $semaphoreAcquireStartTime) * 1000;
 
                 (new TransferMetric())->pushSemaphoreAcquireSuccessMetrics($timeTakenToAcquireMs);
+
+                if ($this->checkIfTransferSyncProcessingViaApiIsWithinLimit() === false)
+                {
+                    throw new Exception\RuntimeException('Transfer sync processing limit via API exceeded');
+                }
 
                 $this->trace->info(TraceCode::PAYMENT_TRANSFER_PROCESS_IN_SYNC,
                     [
@@ -9087,5 +9103,39 @@ class Processor
     public static function isUpiRearchRoute(string $route): bool
     {
         return (in_array($route, self::$upiRearchRoutes, true) === true);
+    }
+
+    private function checkIfTransferSyncProcessingViaApiIsWithinLimit()
+    {
+        $maxLimit = (int) (new Admin\Service)->getConfigKey(['key' => ConfigKey::TRANSFER_SYNC_PROCESSING_VIA_API_HOURLY_RATE_LIMIT_PER_MID]);
+
+        if (empty($limit) === true)
+        {
+            $maxLimit = self::PAYMENT_TRANSFERS_SYNC_PROCESSING_HOURLY_RATE_LIMIT;
+        }
+
+        $rateLimiter = new FixedWindowLimiter($maxLimit, 60 * 60, 'route_sync_via_api_' . $this->merchant->getId());
+
+        $isWithinLimit = $rateLimiter->checkLimit();
+
+        $this->trace->info(TraceCode::PAYMENT_TRANSFER_SYNC_REQUEST_RATE_CHECK, [
+            'is_within_limit' => $isWithinLimit,
+            'merchant_id'     => $this->merchant->getId(),
+            'current_num'     => $rateLimiter->getCurrentRequestNumber(),
+            'max_limit'       => $maxLimit,
+        ]);
+
+        return $isWithinLimit;
+    }
+
+    private function checkIfTransferSyncProcessingViaCronIsEnabled()
+    {
+        $variant = App::getFacadeRoot()->razorx->getTreatment(
+            $this->merchant->getId(),
+            Merchant\RazorxTreatment::ENABLE_TRANSFER_SYNC_PROCESSING_VIA_CRON,
+            $this->mode
+        );
+
+        return $variant === 'on';
     }
 }
