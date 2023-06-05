@@ -1866,6 +1866,11 @@ class BasicAuth
         return $this->internalApp === 'scrooge';
     }
 
+    public function isEzetapApiApp()
+    {
+        return $this->internalApp === 'ezetap-api';
+    }
+
     public function isPayoutLinkApp()
     {
         return $this->internalApp === 'payout_links';
@@ -1936,6 +1941,7 @@ class BasicAuth
                 ($this->isCapitalEarlySettlementApp() === true) or
                 ($this->isSettlementsApp() === true) or
                 ($this->isScroogeApp() === true) or
+                ($this->isEzetapApiApp() === true) or
                 ($this->isReminderServiceAuth() === true) or
                 (($this->isBatchApp() === true) and
                  $this->request->headers->get(RequestHeader::X_Creator_Type) == 'user') or
@@ -3037,6 +3043,12 @@ class BasicAuth
             {
                 $userId = $this->getUserIdForRoute();
             }
+            else if($this->isEzetapApiApp() === true)
+            {
+                $mid = $this->authCreds->getKey();
+
+                $userId = $this->getUserIdForRouteFromMerchantUsers($mid);
+            }
             else
             {
                 $userId = $this->request->headers->get(RequestHeader::X_Creator_Id, null);
@@ -3429,5 +3441,31 @@ class BasicAuth
         }
 
         return $id;
+    }
+
+    /**
+     * Returns user id to be set for ezetap proxy auth routes.
+     */
+    public function getUserIdForRouteFromMerchantUsers(string $id):string
+    {
+        try
+        {
+            $userId = $this->repo->merchant_user->fetchPrimaryUserIdForMerchantIdAndRole($id)[0];
+
+            if($userId === null)
+            {
+                return '';
+            }
+
+            return $userId;
+        }
+        catch (\Exception $exception)
+        {
+            $this->trace->error(TraceCode::ERROR_EXCEPTION, [
+                'exception' => $exception
+                ]);
+
+            return '';
+        }
     }
 }

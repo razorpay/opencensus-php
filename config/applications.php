@@ -497,8 +497,10 @@ return [
     'pgos' => [
         'secret'       => env('PGOS_SERVICE_API_SECRET'),
     ],
-
-
+    'ezetap-api' => [
+        'key'       => 'ezetap-api',
+        'secret'    =>  env('EZETAP_API_SECRET'),
+    ],
     'friend_buy' => [
         // Api url for merchant risks service.
         'url'                => env('FRIEND_BUY_URL'),
