@@ -326,6 +326,122 @@ class PostAuthenticateTest extends TestCase
     }
 
     /**
+     * @dataProvider getKeyAuthOnInvalidRequestsCases
+     *
+     * @param Passport\Passport $passport
+     * @param string|null $expectedMode
+     * @param bool $mockAuthCreds
+     * @param bool $mockGetKeyEntity
+     * @param bool $mockPassportConsumer
+     * @param bool $mockPassportImpersonation
+     * @param bool $mockPassportCredential
+     * @param bool $expectedMismatch
+     */
+    public function testKeyAuthOnInvalidRequests(Passport\Passport $passport,
+                                                 $expectedMode,
+                                                 bool $mockAuthCreds,
+                                                 bool $mockGetKeyEntity,
+                                                 bool $mockPassportConsumer,
+                                                 bool $mockPassportImpersonation,
+                                                 bool $mockPassportCredential,
+                                                 bool $expectedMismatch)
+    {
+
+        $request = $this->mockPrivateRouteWithLiveMode();
+        app('request.ctx')->init();
+        app('request.ctx')->resolveKeyIdIfApplicable();
+        $reqCtx = app('request.ctx.v2');
+
+        $trace = Mockery::mock('Razorpay\Trace\Logger');
+        $this->app->instance("trace", $trace);
+        $trace->shouldReceive('histogram')->times(1);
+        //there shouldn't be any exceptions
+        $trace->shouldReceive('error')->times(0);
+
+        $ba = $this->mockBasicAuth();
+        $authCredsMock = Mockery::mock(KeyAuthCreds::class);
+        $ba->authCreds = $mockAuthCreds ? $authCredsMock : null;
+        if ($mockGetKeyEntity === true) {
+            $authCredsMock->shouldReceive('getKeyEntity')->andReturn('rzp_test_10000000000000');
+        }
+        $ba->expects($this->once())->method('getMode')->willReturn('live');
+        $ba->expects($this->once())->method('getMerchantId')->willReturn('10000000000000');
+        $ba->expects($this->once())->method('getAccountId')->willReturn("");
+        $ba->expects($this->atLeast(1))->method('getPublicKey')->willReturn('');
+        $ba->expects($this->once())->method('getAuthType')->willReturn('private');
+        $ba->expects($this->once())->method('isProxyAuth')->willReturn(false);
+
+        // overwrite passport attributes
+        $passport->mode = $expectedMode;
+        $passport->consumer = null;
+        $passport->impersonation = null;
+        $passport->credential = null;
+
+        if ($mockPassportConsumer) {
+            $passport->consumer = new Passport\ConsumerClaims;
+            $passport->consumer->id = '123';
+            $passport->consumer->type = 'merchant';
+        }
+        if ($mockPassportImpersonation) {
+            $passport->impersonation = new Passport\ImpersonationClaims;
+            $passport->impersonation->type = 'partner';
+            $passport->impersonation->consumer = new Passport\ConsumerClaims;
+            $passport->impersonation->consumer->id = "20000000000000";
+            $passport->impersonation->consumer->type = "merchant";
+        }
+        if ($mockPassportCredential) {
+            $passport->credential = new Passport\CredentialClaims;
+            $passport->credential->username = "rzp_live_10000000000000";
+            $passport->credential->publicKey = "rzp_live_10000000000000";
+        }
+        $reqCtx->passport = $passport;
+
+        if ($expectedMismatch === true)
+        {
+            $trace->shouldReceive('count')->times(1);
+            $trace->shouldReceive('warning')->with(TraceCode::PASSPORT_ATTRS_MISMATCH, Mockery::type('array'));
+        }
+
+        (new PostAuthenticate)->handle(true, $request);
+        $this->assertSame($reqCtx->passportAttrsMismatch, $expectedMismatch);
+        // ensure values are not set by post-authenticate methods on mismatch if not exists
+        if (!$mockPassportConsumer) {
+            $this->assertSame($passport->consumer, null);
+        }
+        if (!$mockPassportImpersonation) {
+            $this->assertSame($passport->impersonation, null);
+        }
+        if (!$mockPassportCredential) {
+            $this->assertSame($passport->credential, null);
+        }
+    }
+
+    public function getKeyAuthOnInvalidRequestsCases()
+    {
+        // unauthenticated and unidentified
+        $passport = new Passport\Passport;
+        $passport->identified = false;
+        $passport->authenticated = false;
+        $passport->mode = null;
+        $passport->consumer = null;
+        $passport->impersonation = null;
+        $passport->credential = null;
+
+        return [
+            // case 1 - not identified not authenticated authCreds not set due to key and secret not passed
+            [$passport, $passport->mode, false, false, false, false, false, true],
+            // case 2 - not identified not authenticated keyEntity not set due to invalid apikey
+            [$passport, $passport->mode, true, true, false, false, false, true],
+            // case 3 - passport consumer not present
+            [$passport, $passport->mode, true, true, false, true, true, true],
+            // case 4 - passport credential not present
+            [$passport, $passport->mode, true, true, true, true, false, true],
+            // case 5 - passport impersonation not present
+            [$passport, $passport->mode, true, true, true, false, true, true],
+        ];
+    }
+
+    /**
      * @dataProvider getPartnerAuthCases
      *
      * @param Passport\Passport $passport

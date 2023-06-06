@@ -240,7 +240,15 @@ final class PostAuthenticate
         //}
 
         // consumer id will be same for merchant auth with and without impersonation
-        $consumerId = empty($this->ba->getKeyEntity()) ? '' : $this->ba->getKeyEntity()->getMerchantId();
+        $consumerId = '';
+        // authCreds will be null when key and secret are not passed and request fails with basic auth expected error.
+        // verify authCreds is set before calling getKeyEntity()
+        $keyEntity = isset($this->ba->authCreds) ? $this->ba->getKeyEntity() : null;
+        // keyEntity returns string due to intialization, and will not be set to object if request fails with invalid apikey.
+        // make sure keyEntity is an object before calling getMerchantId()
+        if (empty($keyEntity) === false && is_object($keyEntity)) {
+            $consumerId = $this->ba->getKeyEntity()->getMerchantId();
+        }
 
         $this->checkPassportMismatches($passport, $errors, $consumerId, self::TYPE_MERCHANT, self::TYPE_MERCHANT);
     }
@@ -336,20 +344,24 @@ final class PostAuthenticate
 
         // check if consumer exists in passport
         ensureSameExistenceOrOverride($passport->consumer, $consumerExists, 'consumer', $errors, new Passport\ConsumerClaims);
-        if ($consumerExists === true) {
+        if ($consumerExists === true && isset($passport->consumer)) {
             ensureSameOrOverride($passport->consumer->id, $consumerId, 'consumer.id', $errors);
             ensureSameOrOverride($passport->consumer->type, $consumerType, 'consumer.type', $errors);
             // check if credential exists in passport
             ensureSameExistenceOrOverride($passport->credential, $credentialExists, 'credential', $errors, new Passport\CredentialClaims);
-            ensureSameOrOverride($passport->credential->username, $credentialUsername, 'credential.username', $errors);
-            ensureSameOrOverride($passport->credential->publicKey, $credentialPublicKey, 'credential.publickey', $errors);
+            if (isset($passport->credential)) {
+                ensureSameOrOverride($passport->credential->username, $credentialUsername, 'credential.username', $errors);
+                ensureSameOrOverride($passport->credential->publicKey, $credentialPublicKey, 'credential.publickey', $errors);
+            }
             // impersonation block will exist in passport if $impersonationConsumerExists
             // empty impersonation block without impersonation consumer wont exist
             ensureSameExistenceOrOverride($passport->impersonation, $impersonationConsumerExists, 'impersonation', $errors, new Passport\ImpersonationClaims);
-            if ($impersonationConsumerExists === true) {
-                ensureSameOrOverride($passport->impersonation->consumer->id, $impersonationConsumerId, 'impersonation.consumer.id', $errors);
-                ensureSameOrOverride($passport->impersonation->consumer->type, self::TYPE_MERCHANT, 'impersonation.consumer.type', $errors);
+            if ($impersonationConsumerExists === true && isset($passport->impersonation)) {
                 ensureSameOrOverride($passport->impersonation->type, $impersonationType, 'impersonation.type', $errors);
+                if (isset($passport->impersonation->consumer)) {
+                    ensureSameOrOverride($passport->impersonation->consumer->id, $impersonationConsumerId, 'impersonation.consumer.id', $errors);
+                    ensureSameOrOverride($passport->impersonation->consumer->type, self::TYPE_MERCHANT, 'impersonation.consumer.type', $errors);
+                }
             }
         }
     }
