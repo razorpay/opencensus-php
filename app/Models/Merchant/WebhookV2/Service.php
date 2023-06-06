@@ -54,6 +54,7 @@ class Service extends Base\Service
     const APPLICATION_ID    = 'application_id';
     const CREATED_BY_EMAIL  = 'created_by_email';
     const UPDATED_BY_EMAIL  = 'updated_by_email';
+    const EZETAP_MERCHANT   = 'ezetap';
 
     /**
      * minor optimization to avoid an extra call to db. Good to have under assumption
@@ -258,6 +259,12 @@ class Service extends Base\Service
         }
 
         $res['items'] = array_map(function ($v) { return $this->storkToApiFormat($v); }, $res['items']);
+
+        $res['items'] = array_filter($res['items'], function ($webhook)
+            {
+                return ($webhook[self::OWNER_TYPE] !== self::EZETAP_MERCHANT);
+            });
+        $res['count'] = count($res['items']);
 
         $this->traceOperationExit('list', [AccountEntity::MERCHANT_ID => $ownerId]);
 
