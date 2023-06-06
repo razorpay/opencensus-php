@@ -35,7 +35,7 @@ const NavLinkProduct = ({
     analyticsTrack({
       objectName: 'sidebar',
       actionName: 'clicked',
-      screen: titleCase(getActiveTab(location)),
+      screen: titleCase(getActiveTab(location)) || 'home page',
       toCleverTap: true,
       properties: {
         clickedElement: isOpen ? 'show less' : 'show all',
