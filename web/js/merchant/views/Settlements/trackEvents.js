@@ -361,11 +361,11 @@ export const trackOnDemandPayoutSearch = (values) =>
   });
 
 /* IS++ tracking events */
-export const trackISCheckbox = (fromWhere, checked) =>
+export const trackISCheckbox = (fromWhere) =>
   trackSettleNowEvent({
     fromWhere,
     objectName: 'Get extra cash advance (IS)',
-    actionName: checked ? 'Checked' : 'Unchecked',
+    actionName: 'Clicked',
   });
 
 export const trackISSettleNowFirstConfirm = (fromWhere, amount, advanceAmount) =>
@@ -402,6 +402,14 @@ export const trackISFailure = (fromWhere, reason) =>
       reason,
     },
   });
+
+export const trackISGoBack = (fromWhere) =>
+  trackSettleNowEvent({
+    fromWhere,
+    objectName: 'Settle Now - Go back (IS)',
+    actionName: 'Clicked',
+  });
+
 export const onDemandModalTrackEvents = {
   trackSettleAmountUpdated,
   trackSettleNowInfoHover,
@@ -415,4 +423,5 @@ export const onDemandModalTrackEvents = {
   trackISSettleNowSecondConfirm,
   trackISSuccess,
   trackISFailure,
+  trackISGoBack,
 };

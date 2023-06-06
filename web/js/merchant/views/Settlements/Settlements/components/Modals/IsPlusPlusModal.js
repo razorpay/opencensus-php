@@ -43,13 +43,15 @@ export const ISPlusPlusReasons = ({ fromWhere, onFinish }) => {
 export default function IsPlusPlusModal({
   onFinish,
   onGoBack,
-  amount,
+  settlementAmount,
+  advanceAmount,
   instantFee,
   tax,
   fromWhere,
 }) {
   const [state, setState] = useState('breakup');
 
+  console.log({ settlementAmount, advanceAmount });
   if (state === 'success') {
     return (
       <Box display="flex" flexDirection="column" marginY="spacing.4">
@@ -77,13 +79,17 @@ export default function IsPlusPlusModal({
     <Box marginY="spacing.8">
       <Box>
         <Text size="small">Amount to be provided</Text>
-        <Amount size="heading-large-bold" value={amount} />
+        <Amount size="heading-large-bold" value={settlementAmount + advanceAmount} />
       </Box>
       <hr />
       <Box display="flex" flexDirection="row" flexWrap="wrap" marginY="spacing.5">
         <Box display="flex" justifyContent="space-between" width="100%">
-          <Text size="small">Total amount</Text>
-          <Amount size="body-small-bold" value={amount} />
+          <Text size="small">Settlement amount</Text>
+          <Amount size="body-small-bold" value={settlementAmount} />
+        </Box>
+        <Box display="flex" justifyContent="space-between" width="100%">
+          <Text size="small">Advance amount</Text>
+          <Amount size="body-small-bold" value={advanceAmount} />
         </Box>
         <Box display="flex" justifyContent="space-between" width="100%">
           <Text size="small">Instant fees</Text>
@@ -95,11 +101,20 @@ export default function IsPlusPlusModal({
         </Box>
         <Box display="flex" justifyContent="space-between" width="100%" marginY="spacing.4">
           <Text size="small">Amount after deduction</Text>
-          <Amount size="body-small-bold" value={amount - instantFee - tax} />
+          <Amount
+            size="body-small-bold"
+            value={settlementAmount + advanceAmount - instantFee - tax}
+          />
         </Box>
-        <Text size="small">
-          + Interest on advance amount <Text weight="bold">@0.05% /day</Text>
-        </Text>
+        <Box display="flex" justifyContent="space-between" width="100%" marginY="spacing.2">
+          <Text size="small">
+            + Interest on Advance amount <br /> at 0.05% / day
+          </Text>
+          <Box display="flex" alignItems="center">
+            <Amount size="body-small-bold" value={0.0005 * advanceAmount} />
+            <Text size="small">/ day</Text>
+          </Box>
+        </Box>
       </Box>
       <Box display="flex" justifyContent="space-between" width="100%">
         <Button variant="tertiary" onClick={onGoBack}>

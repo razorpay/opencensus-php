@@ -6,8 +6,8 @@ import {
   PlusSquareIcon,
   Text,
   Amount as BladeAmount,
-  Checkbox,
   Spinner,
+  Link,
 } from '@razorpay/blade/components';
 import ModalHeader from 'common/ui/ModalHeader';
 import {
@@ -51,6 +51,7 @@ import EnableScheduledBanner from 'merchant/views/Settlements/Settlements/compon
 import SettlementSuccessView from 'merchant/views/Settlements/Settlements/components/SettleToLinkedAccounts/SettlementSuccessView';
 import IsPlusPlusModal from './IsPlusPlusModal';
 import axios from 'axios';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 
 class OndemandModal extends Component {
   constructor(props) {
@@ -612,7 +613,8 @@ class OndemandModal extends Component {
             <IsPlusPlusModal
               instantFee={instantFee}
               tax={tax}
-              amount={amount + advanceAmount}
+              settlementAmount={Number(amount)}
+              advanceAmount={Number(advanceAmount)}
               fromWhere={fromWhere}
               onFinish={() => {
                 setItem('rzp-capital-is-plus-plus', true);
@@ -623,6 +625,7 @@ class OndemandModal extends Component {
                 });
               }}
               onGoBack={() => {
+                onDemandModalTrackEvents.trackISGoBack(fromWhere);
                 this.setState({ showIsPlusPlusBreakup: false });
               }}
             />
@@ -672,17 +675,25 @@ class OndemandModal extends Component {
               </Box>
             ) : (
               <Box marginY="spacing.5" display="flex" justifyContent="space-between">
-                <Checkbox
-                  value={wantsISPlusPlus}
-                  onChange={(e) => {
-                    this.setState({ wantsISPlusPlus: e.isChecked });
-                    onDemandModalTrackEvents.trackISCheckbox(fromWhere, e.isChecked);
+                <Link
+                  icon={PlusSquareIcon}
+                  iconPosition="left"
+                  variant="button"
+                  onClick={() => {
+                    this.setState({ wantsISPlusPlus: true });
+                    onDemandModalTrackEvents.trackISCheckbox(fromWhere);
                   }}
-                  size="small"
                 >
                   Get additional advance
-                </Checkbox>
-                <BladeAmount size="body-small" value={MAX_IS_LIMIT} />
+                </Link>
+
+                <Popover theme="dark" align="top" parentQuerySelector=".onmdemand-modal">
+                  <PopoverBody>
+                    Activate additional credit above desired settlement amount
+                  </PopoverBody>
+                </Popover>
+
+                <BladeAmount size="body-medium" value={MAX_IS_LIMIT} />
               </Box>
             )
           ) : null}
