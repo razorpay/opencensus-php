@@ -170,7 +170,14 @@ class DateRangePicker extends Component {
       numberOfMonths = 2,
       horizontalMargin = 0,
       isOutsideRange,
+      allowSingleDaySelect = false,
     } = this.props;
+
+    const otherProps = {};
+
+    if (allowSingleDaySelect) {
+      otherProps.minimumNights = 0; // ref - https://github.com/react-dates/react-dates/issues/914
+    }
 
     const { presets, selectedPreset, startDate, endDate } = this.state;
 
@@ -201,6 +208,7 @@ class DateRangePicker extends Component {
               horizontalMargin={horizontalMargin}
               isOutsideRange={isOutsideRange ? isOutsideRange : (day) => moment().isBefore(day)}
               renderCalendarInfo={renderCalendarInfo}
+              {...otherProps}
             />
           </SuspenseWithLoader>
         </div>

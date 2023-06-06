@@ -55,6 +55,7 @@ const Header = ({ setTimeRange, updated_at }) => {
           isOutsideRange={isOutsideRange}
           hasCustomEndDate
           hideCustomPreset
+          allowSingleDaySelect
         />
         <div className="last-updated">
           <small>
