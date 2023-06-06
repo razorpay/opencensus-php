@@ -60,4 +60,9 @@ class Constants
 
     public const PAYOUT_ID                  = 'payout_id';
 
+    public const MERCHANT_EXCLUSION_FOR_ON_HOLD_PAYOUT_CA =  [
+        "KQmiOStxMbJRKD", "KQmqfUjixRdKwd", "KQWFyOWq9SwLPz", "KQmiOStxMbJRKD", "CFATEjs18VKdtr", "KQWFyOWq9SwLPz", "KQmqfUjixRdKwd",
+        "LBX3zrXRQD20QS", "LBWwHD7BTMIToy", "LBYQxFVIPdk1A3", "KQtWekXcgwDObj", "CEguwEip3eDPfV", "KQtR99FZetQe87"
+    ];
+
 }

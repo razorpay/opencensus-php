@@ -21,6 +21,7 @@ use RZP\Models\Payout\Core as PayoutCore;
 use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Feature\Constants as Features;
+use \RZP\Models\Payout\Constants as PayoutConstants;
 use \RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\Payout\Processor\DownstreamProcessor\Base as DSBase;
 use RZP\Models\PayoutsStatusDetails\Core as PayoutsStatusDetailsCore;
@@ -219,9 +220,9 @@ class Base extends DSBase
         try
         {
             if (($payout->merchant->isFeatureEnabled(Features::PAYOUTS_ON_HOLD) === true) or
-                ($payout->balance->getAccountType() === AccountType::DIRECT))
+                (($payout->balance->getAccountType() === AccountType::DIRECT) and
+                 (in_array($payout->merchant->getId(), PayoutConstants::MERCHANT_EXCLUSION_FOR_ON_HOLD_PAYOUT_CA, true) === false)))
             {
-
                 $isBeneBankDown = (new PayoutCore)->checkIfBeneBankIsDown($payout);
 
                 if ($isBeneBankDown === true)
