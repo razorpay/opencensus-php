@@ -843,6 +843,7 @@ class Gateway
         IFSC::SHIX,
         IFSC::SIBL,
         IFSC::SPCB,
+        IFSC::SURY,
         IFSC::TMBL,
         IFSC::UBIN,
         IFSC::USFB,
@@ -864,7 +865,7 @@ class Gateway
         IFSC::JIOP,
         IFSC::PSIB,
         IFSC::SYNB,
-        IFSC::UJVN
+        IFSC::UJVN,
     ];
 
     const EMANDATE_NB_DIRECT_BANKS = [
@@ -1279,6 +1280,7 @@ class Gateway
         IFSC::STRX,
         IFSC::SULX,
         IFSC::SUMX,
+        IFSC::SURY,
         IFSC::SUTB,
         IFSC::SVCB,
         IFSC::SVNX,
@@ -2842,6 +2844,7 @@ class Gateway
         IFSC::SSLX,
         IFSC::SULX,
         IFSC::SUMX,
+        IFSC::SURY,
         IFSC::SUTB,
         IFSC::SVCB,
         IFSC::SVSX,
