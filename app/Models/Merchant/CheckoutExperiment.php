@@ -71,6 +71,7 @@ class CheckoutExperiment
             'enable_auto_submit'                                 => 'control',
             'dcc_vas_merchants'                                  => false,
             'emi_via_cards_revamp'                               => false,
+            'upi_turbo'                                          => false,
             'enable_otp_auto_read_and_auto_submit'               => 'control',
         ];
 
@@ -359,6 +360,14 @@ class CheckoutExperiment
             ['merchant_id' => $this->merchantId]
         );
 
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.checkout_upi_turbo_splitz_experiment_id',
+            'UpiTurbo',
+            'upi_turbo',
+            ['merchant_id' => $this->merchantId]
+        );
+      
         $this->fillExperimentData(
             UniqueIdEntity::generateUniqueId(),
             'app.checkout_enable_otp_auto_read_and_auto_submit_splitz_experiment_id',
@@ -732,6 +741,11 @@ class CheckoutExperiment
         return $variant === 'variant_on';
     }
 
+    private function handleUpiTurboResponse($response): bool
+    {
+        return $response['variant']['name'] === 'variant_on';
+    }
+  
     private function handleEnableOtpAutoReadAndAutoSubmitResponse($response): string
     {
         return $response['variant']['name'] ?? 'control';

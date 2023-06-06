@@ -542,6 +542,8 @@ return array(
 
     'checkout_upi_number_splitz_experiment_id' => env('CHECKOUT_UPI_NUMBER_SPLITZ_EXPERIMENT_ID'),
 
+    'checkout_upi_turbo_splitz_experiment_id' => env('CHECKOUT_UPI_TURBO_SPLITZ_EXPERIMENT_ID'),
+
     'checkout_upi_number_contact_blacklist_splitz_experiment_id' => env('CHECKOUT_UPI_NUMBER_CONTACT_BLACKLIST_SPLITZ_EXPERIMENT_ID'),
 
     'checkout_service_preferences_splitz_experiment_id' => env('CHECKOUT_SERVICE_PREFERENCES_SPLITZ_EXPERIMENT_ID'),
