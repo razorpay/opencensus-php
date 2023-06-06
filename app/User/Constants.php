@@ -214,6 +214,19 @@ class Constants
         'dashboard.dev.razorpay.in',
     ];
 
+    const BLOCKED_EMAILS_FOR_LOGIN = [
+        'tusharvijayworld@gmail.com',
+    ];
+
+    const BLOCKED_NUMBERS_FOR_LOGIN = [
+        '9460507015',
+    ];
+
+    const PHONE_NUMBER_EXTENSIONS = [
+        '', '+91', '91', '0'
+    ];
+
+
     const PARTNER_ACTIVATION_APPLICABLE_TYPES = ['reseller'];
     // Fields to be added if API calls are to be skipped for them.
     // Since we want to adopt the changes in a phase-wise manner, commenting out the fields.

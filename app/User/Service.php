@@ -595,6 +595,7 @@ class Service extends Base\Service
      */
     public function login(array $input)
     {
+
         list($error, $genericUser, $httpCode) = $this->loginOnApi($input);
 
         if(isset($input["email"]) === true)
@@ -1953,6 +1954,20 @@ class Service extends Base\Service
      */
     public function oauthLoginOnApiOnRoute(array $input, string $route, string $httpVerb): array
     {
+        /**
+         * This is a temporary fix
+         * for more info look 👉🏻 https://razorpay.atlassian.net/browse/MCOB-3309
+         *  */
+        if(isset($input['email']) === true
+            and (in_array($input['email'], Constants::BLOCKED_EMAILS_FOR_LOGIN, true) === true))
+        {
+            return [
+                [
+                    "No db records found."
+                ], null, 400
+            ];
+        }
+
         $input[Constants::OAUTH_SOURCE] = Request::header(Headers::OAUTH_SOURCE) ?? Constants::DASHBOARD;
         $input[Constants::OAUTH_PROVIDER] = json_encode(array($input[Constants::OAUTH_PROVIDER]));
 
@@ -1989,6 +2004,20 @@ class Service extends Base\Service
 
     public function loginOnApi(array $input)
     {
+        /**
+         * This is a temporary fix
+         * for more info look 👉🏻 https://razorpay.atlassian.net/browse/MCOB-3309
+         *  */
+        if(isset($input['email']) === true
+            and (in_array($input['email'], Constants::BLOCKED_EMAILS_FOR_LOGIN, true) === true))
+        {
+             return [
+                 [
+                     "No db records found."
+                 ], null, 400
+             ];
+        }
+
         $headers = [
             self::CAPTCHA_MODE_HEADER   => Request::header(self::CAPTCHA_MODE_HEADER),
         ];
@@ -2021,6 +2050,29 @@ class Service extends Base\Service
         );
 
         unset($input[Constants::REQUEST_SOURCE]);
+
+        /**
+         * This is a temporary fix
+         * for more info look 👉🏻 https://razorpay.atlassian.net/browse/MCOB-3309
+         *  */
+
+        if(isset($input['contact_mobile']) === true)
+        {
+            foreach (Constants::PHONE_NUMBER_EXTENSIONS as $ext)
+            {
+                foreach (Constants::BLOCKED_NUMBERS_FOR_LOGIN as $number)
+                {
+                    $phoneNumber = $ext.$number;
+                    if($input['contact_mobile'] === $phoneNumber)
+                    {
+                        return [null, [
+                                "token" => "LybyQbDV9CjBFb"
+                            ], 200
+                        ];
+                    }
+                }
+            }
+        }
 
         return $this->loginOtpRoute($input,'users/login/otp', 'POST');
     }

@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App;
 use App\Trace\TraceCode;
+use App\User\Constants;
 use Auth;
 use Route;
 use Input;
@@ -131,7 +132,7 @@ class GenericController extends Controller
             (preg_match('/' . $eposBlockedRoutesRegex . '/', $path, $pathMatches) == true))
         {
             $app = App::getFacadeRoot();
-            
+
             $app['trace']->info(TraceCode::ROUTE_BLOCKED_EPOS_APP, [
                 'path' => $path,
             ]);
@@ -172,6 +173,21 @@ class GenericController extends Controller
         if ($checkUsersRoute === true)
         {
             return AppResponse::unauthorizedResponse('Unauthorized user', Request::route()->getName(), $path);
+        }
+
+        /**
+         * This is a temporary fix
+         * for more info look 👉🏻 https://razorpay.atlassian.net/browse/MCOB-3309
+         *  */
+        if (str_contains($path, 'users/reset-password') and $method === 'POST')
+        {
+            if ((isset($input['email']) === true and
+                (in_array($input['email'], Constants::BLOCKED_EMAILS_FOR_LOGIN, true) === true)))
+            {
+                return AppResponse::jsonResponse(null, [
+                    "success" => true
+                ], 200);
+            }
         }
 
         /**
