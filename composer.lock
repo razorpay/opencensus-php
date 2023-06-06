@@ -10861,12 +10861,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/config-proto.git",
-                "reference": "ed5b0d33a38e0055c6dcafa171c2e3aea444eb13"
+                "reference": "d01fd3986552633cf9648467e715b06fe9318280"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/config-proto/zipball/ed5b0d33a38e0055c6dcafa171c2e3aea444eb13",
-                "reference": "ed5b0d33a38e0055c6dcafa171c2e3aea444eb13",
+                "url": "https://api.github.com/repos/razorpay/config-proto/zipball/d01fd3986552633cf9648467e715b06fe9318280",
+                "reference": "d01fd3986552633cf9648467e715b06fe9318280",
                 "shasum": ""
             },
             "require": {
@@ -10892,7 +10892,7 @@
                 "dcs-config",
                 "razorpay"
             ],
-            "time": "2023-05-26T13:06:12+00:00"
+            "time": "2023-05-31T06:08:53+00:00"
         },
         {
             "name": "razorpay/dcs-php-sdk",
@@ -14362,7 +14362,7 @@
         },
         {
             "name": "symfony/deprecation-contracts",
-            "version": "3.4.x-dev",
+            "version": "dev-main",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/deprecation-contracts.git",
@@ -14377,6 +14377,7 @@
             "require": {
                 "php": ">=8.1"
             },
+            "default-branch": true,
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -14409,7 +14410,7 @@
             "description": "A generic function and convention to trigger deprecation notices",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/deprecation-contracts/tree/3.4"
+                "source": "https://github.com/symfony/deprecation-contracts/tree/v3.3.0"
             },
             "funding": [
                 {

@@ -60,6 +60,7 @@ class Constants
     const SubMerchantOnboardingCommunicationDisabled = 'submerchant_onboarding_communication_disabled';
     const RazorpayCommunicationToSubMerchantDisabled = 'razorpay_communication_to_submerchant_disabled';
     const AggregatorOAuthClientDisabled = 'aggregator_oauth_client_enabled';
+    Const AllowS2SApps = 'allow_s2s_apps';
     const OAuthCommunicationDisabled = 'oauth_communication_disabled';
     const SubMerchantQRImageContentEnabled = 'submerchant_qr_image_content_enabled';
     const SubMerchantOnBoardingV2Enabled  = 'submerchant_onboarding_v2_enabled';
@@ -182,6 +183,7 @@ class Constants
         self::SubMerchantOnboardingCommunicationDisabled => "rzp/platform/partner/communication/Features",
         self::RazorpayCommunicationToSubMerchantDisabled => "rzp/platform/partner/communication/Features",
         self::AggregatorOAuthClientDisabled => "rzp/platform/partner/auth/Features",
+        self::AllowS2SApps =>"rzp/platform/partner/auth/Features",
         self::OAuthCommunicationDisabled => "rzp/platform/partner/communication/Features",
         self::SubMerchantQRImageContentEnabled => "rzp/platform/partner/onboarding/Features",
         self::SubMerchantOnBoardingV2Enabled  => "rzp/platform/partner/onboarding/Features",
@@ -317,6 +319,7 @@ class Constants
         APIFeaturesConstants::SKIP_SUBM_ONBOARDING_COMM                     => self::SubMerchantOnboardingCommunicationDisabled,
         APIFeaturesConstants::NO_COMM_WITH_SUBMERCHANTS                     => self::RazorpayCommunicationToSubMerchantDisabled,
         APIFeaturesConstants::AGGREGATOR_OAUTH_CLIENT                       => self::AggregatorOAuthClientDisabled,
+        APIFeaturesConstants::ALLOW_S2S_APPS                                => self::AllowS2SApps,
         APIFeaturesConstants::SKIP_OAUTH_NOTIFICATION                       => self::OAuthCommunicationDisabled,
         APIFeaturesConstants::SUBM_QR_IMAGE_CONTENT                         => self::SubMerchantQRImageContentEnabled,
         APIFeaturesConstants::SUBMERCHANT_ONBOARDING_V2                     => self::SubMerchantOnBoardingV2Enabled,
