@@ -656,12 +656,16 @@ const fullPageViewsMap = {
   '/subscription_buttons/new': {
     component: SubscriptionButtonCreate,
     additionalCondition: (user) =>
-      user.isAllowedEdit('subscription_buttons') && user.isSubscriptionButtonEnabled,
+      user.isAllowedEdit('subscription_buttons') &&
+      user.isSubscriptionButtonEnabled &&
+      !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SubscriptionPaymentButton),
   },
   '/subscription_buttons/:id(pl_.+)/edit': {
     component: SubscriptionButtonCreate,
     additionalCondition: (user) =>
-      user.isAllowedEdit('subscription_buttons') && user.isSubscriptionButtonEnabled,
+      user.isAllowedEdit('subscription_buttons') &&
+      user.isSubscriptionButtonEnabled &&
+      !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SubscriptionPaymentButton),
   },
   '/onboarding/steps': {
     component: (props) => (

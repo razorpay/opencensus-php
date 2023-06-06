@@ -8,7 +8,7 @@ import Button from 'common/new-ui/Button';
 import InputCurrencyAmount from './components/InputCurrencyAmount';
 import InputDropdown from './components/InputDropdown';
 
-import { buttonThemesList } from 'merchant/views/PaymentButton/PaymentButton/Create/constants/buttonThemes';
+import { getButtonThemes } from 'merchant/views/PaymentButton/PaymentButton/Create/constants/buttonThemes';
 import { getBaseFieldForAmountFieldType } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
 import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 import META, {
@@ -19,7 +19,7 @@ import {
   updateAmountField,
   updateStepReviewProgress,
 } from 'merchant/reducers/paymentbuttons/create';
-import track from '../../track';
+import track from 'merchant/views/PaymentButton/PaymentButton/Create/track';
 
 export const maxLengthForButtonLabel = 16;
 
@@ -207,10 +207,18 @@ export default class ButtonDetails extends React.Component {
   setRefFormEl = (el) => (this.formEl = el);
 
   render() {
-    const { user, paymentButtonId, paymentButtonEntity, isEditExistingId } = this.props;
+    const { user, paymentButtonId, paymentButtonEntity, isEditExistingId, org } = this.props;
 
     const templateType = paymentButtonEntity.settings.payment_button_template_type;
     const currency = paymentButtonEntity.currency;
+    const businessName = org.business_name;
+    const buttonThemes = getButtonThemes(businessName);
+    const buttonThemesList = [
+      buttonThemes.BTN_DARK_STANDARD,
+      buttonThemes.BTN_LIGHT_STANDARD,
+      buttonThemes.BTN_OUTLINE_STANDARD,
+      buttonThemes.BRAND_COLOR,
+    ];
 
     return (
       <Form
@@ -293,7 +301,7 @@ export default class ButtonDetails extends React.Component {
             onBlur={track.buttonLabel}
           />
 
-          {user.isOrgRZP && (
+          {(user.isOrgRZP || user.isOrgCurlec) && (
             <InputDropdown
               label="Button Theme"
               name="button_theme"

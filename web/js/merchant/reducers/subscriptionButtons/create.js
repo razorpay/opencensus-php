@@ -1,19 +1,9 @@
-import {
-  set,
-  merge,
-  removeItem,
-  unshift,
-  updateItem,
-  push,
-  deepMerge,
-} from 'common/utils/immutable';
+import { set, merge, removeItem, updateItem, push, deepMerge } from 'common/utils/immutable';
 
-import { getCurrency } from 'common/ui/Amount';
 import { paiseToRupees } from 'common/utils/rzp-utils';
 import { fetchPaymentPageEntity as getSubscriptionButtonDetails } from 'merchant/views/PaymentPages/PaymentPages/model';
 import { FIXED_FIELDS } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers/preAddedFields';
-import { buttonThemes } from 'merchant/views/PaymentButton/PaymentButton/Create/constants/buttonThemes';
-import { templateTypes } from 'merchant/views/PaymentButton/PaymentButton/Create/components/Templates/meta';
+import { getButtonThemes } from 'merchant/views/PaymentButton/PaymentButton/Create/constants/buttonThemes';
 
 const FETCH_SUBSCRIPTION_BUTTON_ENTITY = 'FETCH_SUBSCRIPTION_BUTTON_ENTITY';
 const RESET_SUBSCRIPTION_BUTTON_DATA = 'RESET_SUBSCRIPTION_BUTTON_DATA';
@@ -34,11 +24,13 @@ const UPDATE_STEP_REVIEW_PROGRESS_SUBSCRIPTION = 'UPDATE_STEP_REVIEW_PROGRESS_SU
 const UPDATE_BUTTON_SETTINGS_HIGHLIGHTER_SUBSCRIPTION =
   'UPDATE_BUTTON_SETTINGS_HIGHLIGHTER_SUBSCRIPTION';
 
+const buttonThemes = getButtonThemes();
+
 export const fetchSubscriptionButtonDetails = (id, isIntentDuplicate) => {
   return {
     type: FETCH_SUBSCRIPTION_BUTTON_ENTITY,
     payload: getSubscriptionButtonDetails(id),
-    isIntentDuplicate: isIntentDuplicate, // This indicates whether the payment items needs to clear off the ids in the fetched entity
+    isIntentDuplicate, // This indicates whether the payment items needs to clear off the ids in the fetched entity
     id,
   };
 };
@@ -67,7 +59,7 @@ export const deletePaymentField = (index) => ({
   index,
 });
 
-export const removeAllOneTimePaymentFields = (index) => ({
+export const removeAllOneTimePaymentFields = () => ({
   type: DELETE_ALL_ONE_TIME_PAYMENTS_FIELD_SUBSCRIPTION,
 });
 
@@ -104,7 +96,7 @@ export const updateHighlightButtonSettings = (id) => {
 };
 
 export function filterSubscriptionPaymentItems(paymentFields, isOneTimePayments) {
-  let items = [];
+  const items = [];
 
   paymentFields.forEach((field, index) => {
     const isItemAllowed = isOneTimePayments ? !field.plan_id : !!field.plan_id;
@@ -119,7 +111,7 @@ export function filterSubscriptionPaymentItems(paymentFields, isOneTimePayments)
   return items;
 }
 
-let initialState = {
+const initialState = {
   subscriptionButtonId: null,
   subscriptionButtonEntity: {
     currency: '', // Initialising with INR currency. TODO: Not initialising right now, would do only when there is dropdown to select currency
@@ -150,7 +142,7 @@ let initialState = {
   },
 };
 
-export default function (state = initialState, action) {
+export default function subscriptionBtnReducer(state = initialState, action) {
   switch (action.type) {
     case `${FETCH_SUBSCRIPTION_BUTTON_ENTITY}::PENDING`: {
       return {
@@ -172,7 +164,7 @@ export default function (state = initialState, action) {
       entityData.settings.allow_social_share = entityData.settings.allow_social_share === '1';
 
       // 3.
-      entityData.payment_page_items.forEach((pi, index) => {
+      entityData.payment_page_items.forEach((pi) => {
         // While creation/editing, all amounts are converted to Paisa (or smaller unit)
 
         // Convert only for one-time payment items. It's bcoz while creation, plans are fetched in common reducer, hence they cannot be converted to rupees,
@@ -202,7 +194,7 @@ export default function (state = initialState, action) {
 
       // 6.
       const udfSchema = JSON.parse(entityData.settings.udf_schema);
-      const udfFields = udfSchema.sort(function (a, b) {
+      const udfFields = udfSchema.sort((a, b) => {
         const positionA = a.settings.position;
         const positionB = b.settings.position;
 
@@ -211,7 +203,7 @@ export default function (state = initialState, action) {
 
       // 7.
       const paymentItems = entityData.payment_page_items;
-      const paymentFields = paymentItems.sort(function (a, b) {
+      const paymentFields = paymentItems.sort((a, b) => {
         const positionA = a.settings.position;
         const positionB = b.settings.position;
 
@@ -230,8 +222,8 @@ export default function (state = initialState, action) {
 
       const storeState = {
         subscriptionButtonEntity: entityData,
-        udfFields: udfFields, // Sorted fields udf schema
-        paymentFields: paymentFields, // Sorted fields from payment items
+        udfFields, // Sorted fields udf schema
+        paymentFields, // Sorted fields from payment items
 
         stepsProgress: {
           isButtonDetailsReviewed: true,

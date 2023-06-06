@@ -23,6 +23,7 @@ import QuickGuide, { getPaymentButtonsQuickGuideIsClosed } from './QuickGuide';
 import CardPaymentsBlockedBanner from 'merchant/views/Subscriptions/components/CardPaymentsBlocked/Banner';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import DashboardBanner from 'common/ui/DashboardBanner';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 @connect(
   (state) => {
@@ -128,7 +129,9 @@ export default class PaymentButtonsContainer extends React.Component {
         <ErrorBoundary resetOnProps>
           <Switch>
             <Route path="/paymentbuttons" component={PaymentButtonList} />
-            <Route path="/subscription_buttons" component={SubscriptionButtonList} />
+            {!user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SubscriptionPaymentButton) && (
+              <Route path="/subscription_buttons" component={SubscriptionButtonList} />
+            )}
           </Switch>
         </ErrorBoundary>
       </>

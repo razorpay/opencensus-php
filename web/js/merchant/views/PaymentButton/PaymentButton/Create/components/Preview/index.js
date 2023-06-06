@@ -1,5 +1,5 @@
 import { connect } from 'react-redux';
-
+import React from 'react';
 import CustomerDetailsPreview from './Types/CustomerDetailsPreview';
 import AmountDetailsPreview from './Types/AmountDetailsPreview';
 import ButtonDetailsPreview from './Types/ButtonDetailsPreview';
@@ -12,6 +12,7 @@ import { updateBrandColorContrast } from 'merchant/reducers/config';
 
 @connect(
   (state) => ({
+    user: state.session.user,
     config: state.config,
   }),
   {
@@ -46,7 +47,7 @@ export default class Preview extends React.Component {
   }
 
   render() {
-    const { activeTabIndex, paymentButtonEntity, udfFields, amountFields } = this.props;
+    const { activeTabIndex } = this.props;
     let content;
 
     if (activeTabIndex === 0) {
@@ -89,7 +90,11 @@ export default class Preview extends React.Component {
             </div>
           */}
 
-          <DocLink class="doc-link" target="_blank" href="https://razorpay.com/docs/payment-button/">
+          <DocLink
+            class="doc-link"
+            target="_blank"
+            href="https://razorpay.com/docs/payment-button/"
+          >
             Visit our Documentation <i class="i i-external-link" />
           </DocLink>
         </div>

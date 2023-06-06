@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 
 import Button from 'common/new-ui/Button';
 import EditableDisplayField from './EditableDisplayField';
+// eslint-disable-next-line import/no-named-as-default
 import FieldsDropdown from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/FieldsDropdown';
 
 import { templateTypes } from 'merchant/views/PaymentButton/PaymentButton/Create/components/Templates/meta';
@@ -10,11 +11,9 @@ import { getBaseFieldForAmountFieldType } from 'merchant/views/PaymentPages/Paym
 import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 import { updateStepReviewProgress } from 'merchant/reducers/paymentbuttons/create';
 
-import track from '../../../track';
+import track from 'merchant/views/PaymentButton/PaymentButton/Create/track';
 
-@connect(null, {
-  updateStepReviewProgress,
-})
+@connect(null, { updateStepReviewProgress })
 export default class AmountDetails extends React.Component {
   constructor(props) {
     super(props);

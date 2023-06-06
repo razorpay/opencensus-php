@@ -18,7 +18,7 @@ import {
   updateStepReviewProgress,
 } from 'merchant/reducers/paymentbuttons/create';
 
-import track from '../../../track';
+import track from 'merchant/views/PaymentButton/PaymentButton/Create/track';
 
 @connect(null, {
   updateAmountField,

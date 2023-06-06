@@ -72,4 +72,6 @@ export const HIDDEN_INTERNATIONAL_FEATURES_TAGS = {
   SupportedBankLinks: 'i18_hide_supported_bank_links',
   SubscriptionSettings: 'i18_hide_subscription_settings',
   InvoiceFooterAddress: 'i18_hide_invoice_footer_address',
+  OtherIntegrationMethods: 'i18_hide_other_integation_methods',
+  SubscriptionPaymentButton: 'i18_hide_subscription_payment_button',
 };

@@ -23,7 +23,7 @@ import OnBoarding, {
   getOnBoardingDataFromLocalState,
 } from 'merchant/components/OnBoarding';
 
-import { FEATURES_DATA, FEATURES_LINKS } from './data';
+import { FEATURES_DATA_ORG, FEATURES_LINKS } from './data';
 import { setIsPaymentButtonCodeUsed } from 'merchant/views/PaymentButton/utils';
 import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 
@@ -48,11 +48,14 @@ export default class PaymentButtonOnBoarding extends React.Component {
   getNextBtnProp = (sliderProps) => () => {
     return (
       <FeatureEnableSliderButton
+        // eslint-disable-next-line react/no-this-in-sfc
         isLocalEnabler={!!this.props.user.isSubscriptionsEnabled}
         feature={
+          // eslint-disable-next-line react/no-this-in-sfc
           this.props.user.isSubscriptionsEnabled ? RZPFeatures.PB : RZPFeatures.SUBSCRIPTIONS
         }
         page={sliderProps.active}
+        // eslint-disable-next-line react/no-this-in-sfc
         onClick={this.closeOnboarding}
       />
     );
@@ -75,6 +78,9 @@ export default class PaymentButtonOnBoarding extends React.Component {
     const customCode = org.custom_code;
     const onboardingIMGUrl =
       ORG_ONBOARDING_IMG[customCode] || ORG_ONBOARDING_IMG[ORG_CUSTOM_CODE_MAP.RAZORPAY];
+    const businessName = org.business_name;
+    const featureData =
+      FEATURES_DATA_ORG[customCode] || FEATURES_DATA_ORG[ORG_CUSTOM_CODE_MAP.RAZORPAY];
 
     return (
       <OnBoardingWrapper class="PaymentButtons">
@@ -92,6 +98,7 @@ export default class PaymentButtonOnBoarding extends React.Component {
               feature={RZPFeatures.PB}
               imageUrl={onboardingIMGUrl}
               desc="Collect payments and donations on your websites and blogs, copy-paste a single line of code to collect payments online. Zero integrations required!"
+              businessName={businessName}
             />
           )}
 
@@ -102,7 +109,7 @@ export default class PaymentButtonOnBoarding extends React.Component {
               nextBtn={this.getNextBtnProp(sliderProps)}
               featureLinks={FEATURES_LINKS}
               feature={RZPFeatures.PB}
-              features={FEATURES_DATA}
+              features={featureData}
             />
           )}
         </Slider>

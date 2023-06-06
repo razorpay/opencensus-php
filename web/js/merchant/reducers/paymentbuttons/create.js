@@ -4,7 +4,7 @@ import { getCurrency } from 'common/ui/Amount';
 import { paiseToRupees } from 'common/utils/rzp-utils';
 import { fetchPaymentPageEntity as getPaymentButtonDetails } from 'merchant/views/PaymentPages/PaymentPages/model';
 import { FIXED_FIELDS } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers/preAddedFields';
-import { buttonThemes } from 'merchant/views/PaymentButton/PaymentButton/Create/constants/buttonThemes';
+import { getButtonThemes } from 'merchant/views/PaymentButton/PaymentButton/Create/constants/buttonThemes';
 import { templateTypes } from 'merchant/views/PaymentButton/PaymentButton/Create/components/Templates/meta';
 import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 import { getBaseFieldForAmountFieldType } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
@@ -28,6 +28,7 @@ const UPDATE_BUTTON_SETTINGS_HIGHLIGHTER = 'UPDATE_BUTTON_SETTINGS_HIGHLIGHTER';
 
 const DEFAULT_CURRENCY = 'INR';
 
+const buttonThemes = getButtonThemes();
 /*
  * Save all the default configs related to template.
  * 'data' can be used to pass presets like pre-defined amountFields / udfFields
@@ -151,7 +152,7 @@ const initialState = {
         email: FIXED_FIELDS.email.name, // email key in form to be used in prefill checkout
         phone: FIXED_FIELDS.phone.name, // phone key in form to be used in prefill checkout
       },
-      payment_button_theme: buttonThemes.RZP_DARK_STANDARD.value,
+      payment_button_theme: buttonThemes.BTN_DARK_STANDARD.value,
       payment_button_text: null,
     },
     receipt: {

@@ -32,10 +32,13 @@ const PAYMENT_BTN_EMPTYLIST_IMG = {
   [ORG_CUSTOM_CODE_MAP.CURLEC]: EmptyListImage,
 };
 
-const tabsData = [
-  { title: 'Payment Buttons', url: '/paymentbuttons' },
-  { title: 'Subscription Buttons', url: '/subscription_buttons' },
-];
+const TABS_DATA = {
+  [ORG_CUSTOM_CODE_MAP.RAZORPAY]: [
+    { title: 'Payment Buttons', url: '/paymentbuttons' },
+    { title: 'Subscription Buttons', url: '/subscription_buttons' },
+  ],
+  [ORG_CUSTOM_CODE_MAP.CURLEC]: [{ title: 'Payment Buttons', url: '/paymentbuttons' }],
+};
 
 const getActions = (openGetCodeModal) => ({
   title: 'Actions',
@@ -157,6 +160,8 @@ export default class PaymentButtonsList extends ListContainer {
   render() {
     const { user, org } = this.props;
     const isRoleAllowedEdit = user.isAllowedEdit('payment_buttons');
+    const customCode = org.custom_code;
+    const tabsData = TABS_DATA[customCode] || TABS_DATA[ORG_CUSTOM_CODE_MAP.RAZORPAY];
 
     const columns = [
       buttonTitle,

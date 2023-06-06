@@ -7,8 +7,8 @@ import Button from 'common/new-ui/Button';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 import { DocLink } from 'merchant/components/DocsLink';
 
-import { setIsPaymentButtonCodeUsed } from '../../utils';
-import track from '../Details/track';
+import { setIsPaymentButtonCodeUsed } from 'merchant/views/PaymentButton/utils';
+import track from 'merchant/views/PaymentButton/PaymentButton/Details/track/index';
 
 import WordpressImage from 'assets/payment_button/success-screen/plugins/wordpress.svg';
 import ElementorImage from 'assets/payment_button/success-screen/plugins/elementor.svg';
@@ -20,6 +20,8 @@ import WeeblyImage from 'assets/payment_button/success-screen/integrations/weebl
 import WixImage from 'assets/payment_button/success-screen/integrations/wix.svg';
 import GoogleSitesImage from 'assets/payment_button/success-screen/integrations/googleSites.svg';
 import BloggerImage from 'assets/payment_button/success-screen/integrations/blogger.svg';
+import ShowWhen from 'merchant/components/ShowWhen';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 const pluginsList = [
   {
@@ -207,50 +209,56 @@ export default class SuccessModal extends React.Component {
                 </div>
 
                 {/* Other integration methods */}
-                <div class="integration-section">
-                  <b>No-Code Plugins to add this button on your website directly:</b>
-                  <div class="plugins">
-                    {pluginsList.map((plugin, i) => (
-                      <div key={`plugin-${i}`}>
-                        <img
-                          src={plugin.icon}
-                          alt={`${plugin.title} Logo`}
-                          height="19"
-                          width="19"
-                        />
-                        <DocLink
-                          href={plugin[isPBDirectPluginLinks ? 'docLink2' : 'docLink']}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={plugin.handleClick.bind(null, isPBDirectPluginLinks)}
-                        >
-                          {plugin.title}
-                        </DocLink>
-                      </div>
-                    ))}
+                <ShowWhen
+                  additionalCondition={(user) =>
+                    !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.OtherIntegrationMethods)
+                  }
+                >
+                  <div class="integration-section">
+                    <b>No-Code Plugins to add this button on your website directly:</b>
+                    <div class="plugins">
+                      {pluginsList.map((plugin, i) => (
+                        <div key={`plugin-${i}`}>
+                          <img
+                            src={plugin.icon}
+                            alt={`${plugin.title} Logo`}
+                            height="19"
+                            width="19"
+                          />
+                          <DocLink
+                            href={plugin[isPBDirectPluginLinks ? 'docLink2' : 'docLink']}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={plugin.handleClick.bind(null, isPBDirectPluginLinks)}
+                          >
+                            {plugin.title}
+                          </DocLink>
+                        </div>
+                      ))}
+                    </div>
+                    <b>Integration guide for this code on other platforms:</b>
+                    <div class="integrations">
+                      {integrationsList.map((integration, i) => (
+                        <div key={`integration-${i}`}>
+                          <img
+                            src={integration.icon}
+                            alt={`${integration.title} Logo`}
+                            height="19"
+                            width="19"
+                          />
+                          <DocLink
+                            href={`https://razorpay.com/docs/payment-button/supported-platforms/${integration.docLink}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={integration.handleClick}
+                          >
+                            {integration.title}
+                          </DocLink>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <b>Integration guide for this code on other platforms:</b>
-                  <div class="integrations">
-                    {integrationsList.map((integration, i) => (
-                      <div key={`integration-${i}`}>
-                        <img
-                          src={integration.icon}
-                          alt={`${integration.title} Logo`}
-                          height="19"
-                          width="19"
-                        />
-                        <DocLink
-                          href={`https://razorpay.com/docs/payment-button/supported-platforms/${integration.docLink}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={integration.handleClick}
-                        >
-                          {integration.title}
-                        </DocLink>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                </ShowWhen>
               </div>
             </div>
 

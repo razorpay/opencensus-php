@@ -16,22 +16,25 @@ import TestModeBanner from 'merchant/components/TestModeBanner';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import ListFilter from './ListFilter';
-import GetCodeModal from '../components/GetCodeModal'; // SuccessModal
+import GetCodeModal from 'merchant/views/PaymentButton/SubscriptionButton/components/GetCodeModal'; // SuccessModal
 
 import { classList } from 'common/utils/rzp-utils';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { handleProductQuickGuide } from 'merchant/reducers/onboarding';
 import { fetchSubscriptionButtonsList as fetchAll } from 'merchant/reducers/subscriptionButtons/list';
-import { setIsPaymentButtonCodeUsed } from '../../utils';
+import { setIsPaymentButtonCodeUsed } from 'merchant/views/PaymentButton/utils';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import track from './track';
-
+import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 import EmptyListImage from 'assets/payment_button/empty-list.svg';
 
-const tabsData = [
-  { title: 'Payment Buttons', url: '/paymentbuttons' },
-  { title: 'Subscription Buttons', url: '/subscription_buttons' },
-];
+const TABS_DATA = {
+  [ORG_CUSTOM_CODE_MAP.RAZORPAY]: [
+    { title: 'Payment Buttons', url: '/paymentbuttons' },
+    { title: 'Subscription Buttons', url: '/subscription_buttons' },
+  ],
+  [ORG_CUSTOM_CODE_MAP.CURLEC]: [{ title: 'Payment Buttons', url: '/paymentbuttons' }],
+};
 
 const getActions = (openGetCodeModal) => ({
   title: 'Actions',
@@ -227,8 +230,10 @@ export default class SubscriptionButtonsList extends ListContainer {
   };
 
   render() {
-    const { user } = this.props;
+    const { user, org } = this.props;
     const isRoleAllowedEdit = user.isAllowedEdit('subscription_buttons');
+    const customCode = org.custom_code;
+    const tabsData = TABS_DATA[customCode] || TABS_DATA[ORG_CUSTOM_CODE_MAP.RAZORPAY];
 
     const columns = [
       subscriptionButtonTitle,

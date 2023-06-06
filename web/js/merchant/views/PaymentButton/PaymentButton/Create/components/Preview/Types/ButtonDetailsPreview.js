@@ -1,8 +1,11 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { classList } from 'common/utils/rzp-utils';
-import { maxLengthForButtonLabel } from '../../Form/ButtonDetails';
-import { buttonThemes, buttonThemesList } from '../../../constants/buttonThemes';
+import { maxLengthForButtonLabel } from 'merchant/views/PaymentButton/PaymentButton/Create/components/Form/ButtonDetails';
+import {
+  getButtonThemes,
+  buttonThemesList,
+} from 'merchant/views/PaymentButton/PaymentButton/Create/constants/buttonThemes';
 
 const rzpLogoWhite = (
   <svg width="18" height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -26,6 +29,7 @@ export default class ButtonDetailsPreview extends React.Component {
     super();
 
     this.loadFontForButton();
+    this.buttonThemes = getButtonThemes();
   }
 
   loadFontForButton() {
@@ -92,9 +96,9 @@ export default class ButtonDetailsPreview extends React.Component {
     const buttonTheme = paymentButtonEntity.settings.payment_button_theme;
 
     const razorpayButtonThemes = [
-      buttonThemes.RZP_DARK_STANDARD,
-      buttonThemes.RZP_OUTLINE_STANDARD,
-      buttonThemes.RZP_LIGHT_STANDARD,
+      this.buttonThemes.BTN_DARK_STANDARD,
+      this.buttonThemes.BTN_OUTLINE_STANDARD,
+      this.buttonThemes.BTN_LIGHT_STANDARD,
     ];
 
     if (razorpayButtonThemes.find((theme) => theme.value === buttonTheme)) {
@@ -104,14 +108,29 @@ export default class ButtonDetailsPreview extends React.Component {
     return false;
   }
 
+  get brandingText() {
+    const { user, org } = this.props;
+    const businessName = org.business_name;
+    if (user.isOrgRZP || user.isOrgCurlec) {
+      return `Secured by ${businessName}`;
+    }
+    const customBrand = (
+      <>
+        Secured by{' '}
+        <img class="secured-by-logo" src={org.payment_btn_logo_url} alt="brand" height="10px" />
+      </>
+    );
+    return customBrand;
+  }
+
   render() {
-    const { paymentButtonEntity, user, org } = this.props;
+    const { paymentButtonEntity, user } = this.props;
     const buttonText = paymentButtonEntity.settings.payment_button_text;
     const buttonTheme = paymentButtonEntity.settings.payment_button_theme;
 
     let isLightTheme = true; // Default false bcoz meanwhile the colorJS script is loading, light theme enables dark color text which works well with all contrasts.
 
-    if (buttonThemes.RZP_DARK_STANDARD.value === buttonTheme) {
+    if (this.buttonThemes.BTN_DARK_STANDARD.value === buttonTheme) {
       isLightTheme = false;
     } else if (!this.isRazorpayTheme) {
       isLightTheme = !this.isColorDark;
@@ -131,27 +150,13 @@ export default class ButtonDetailsPreview extends React.Component {
             background: !this.isRazorpayTheme ? this.brandColor : '',
           }}
         >
-          {user.isOrgRZP && rzpLogoWhite}
+          {(user.isOrgRZP || user.isOrgCurlec) && rzpLogoWhite}
 
           <div class="PaymentButton-Button-contents">
             <span class="PaymentButton-Button-text">
               {buttonText ? buttonText.substring(0, maxLengthForButtonLabel) : ''}
             </span>
-            <div class="PaymentButton-Button-rzpBranding">
-              {user.isOrgRZP ? (
-                'Secured by Razorpay'
-              ) : (
-                <React.Fragment>
-                  Secured by{' '}
-                  <img
-                    class="secured-by-logo"
-                    src={org.payment_btn_logo_url}
-                    alt="brand"
-                    height="10px"
-                  />
-                </React.Fragment>
-              )}
-            </div>
+            <div class="PaymentButton-Button-rzpBranding">{this.brandingText}</div>
           </div>
         </div>
       </div>

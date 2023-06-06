@@ -92,6 +92,12 @@ export default class PaymentButtonCreate extends React.Component {
       this.setState({
         isTemplatesSelectionOpened: true, // It'll automatically become false if it's fetchIfIntentDuplicate is true
       });
+
+      // Update hardcoded 'INR' in the reducer to merchant currency
+      const currency = this.props.user.merchant.currency;
+      this.props.updatePaymentButtonData({
+        currency,
+      });
     }
 
     if (this.props.id) {
