@@ -16,6 +16,7 @@ describe('Tests for the Pricing Subscription', () => {
     ...reduxState,
     fetchPricingSubscription: jest.fn(),
     openModal: jest.fn(),
+    isMobileResolution: Boolean,
   };
   const maxImpressions = 10;
   const pricingApp = () => <PricingSubscriptionWrapper />;

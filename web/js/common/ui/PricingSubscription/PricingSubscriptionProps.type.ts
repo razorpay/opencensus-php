@@ -86,9 +86,47 @@ interface GetPlanPriceType {
   isReadOnly: boolean;
   isLoading: boolean;
   handleCheckoutPayment: (
-    plans: PlansType,
+    props: PaymentCheckoutFlowType,
   ) => (plans?: PlansType | React.MouseEvent<HTMLButtonElement, MouseEvent>) => Promise<void>;
+  checkoutPayment: PaymentCheckoutFlowType;
 }
+
+interface TrackingObjectType {
+  toggle_switch?: string;
+  cta_value?: string;
+  section?: string;
+  type?: string;
+  value?: string;
+  event_name?: string;
+  plan_Activated?: string;
+  response_code?: string;
+  payment_id?: string;
+  plan_id?: string;
+  time_spent?: any;
+  checkout_id?: string;
+}
+interface PaymentCheckoutFlowType {
+  plans: PlansType;
+  trackInstrumentation: (type: string, trackingObject: TrackingObjectType) => void;
+  togglePlan: TogglePlan;
+  setLoading: (value: React.SetStateAction<boolean>) => void;
+  setSelectedPlanId: (value: React.SetStateAction<string>) => void;
+  handlePaymentSuccess: (response: { razorpay_payment_id?: string }, plans: PlansType) => void;
+  handlePaymentFailure: (
+    response: { error?: { code: string; metadata?: { payment_id: string } } },
+    plans: PlansType,
+  ) => void;
+  showNotificationToast: ({
+    type,
+    message,
+    closeTimeout,
+  }: {
+    type: string;
+    message: any;
+    closeTimeout?: number | undefined;
+  }) => void;
+}
+
 export type {
   PricingSubscriptionProps,
   FooterButtonType,
@@ -97,4 +135,7 @@ export type {
   PlansType,
   ViewMoreParams,
   TogglePlan,
+  TrackingObjectType,
+  PaymentCheckoutFlowType,
+  pricingBundleAsset,
 };

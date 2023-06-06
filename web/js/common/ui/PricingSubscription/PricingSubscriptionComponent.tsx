@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import { compose, bindActionCreators } from 'redux';
 import rTracking, { useTracking } from 'react-tracking';
 import { withRouter } from 'react-router';
-import { merchantFetch } from 'merchant/utils/ajax';
 import { getAssetTrackingProperties } from 'merchant/models/GrowthService/commonUtils';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
@@ -17,19 +16,17 @@ import {
   StyledTd,
   StyleHeroImage,
 } from './PricingStyled';
-import { loadCheckoutScript } from 'merchant/views/Capital/utils';
 import { closeModal as fnCloseModal } from 'merchant_common/reducers/modals';
 import { LS_LABELS, IMPRESSION_TIME_INTERVAL } from 'common/ui/PricingSubscription/constants';
 import { setCookie } from 'common/utils/cookies';
 import { fetchGSModal as fetchGSModalAction } from 'merchant/reducers/growthService';
 import type {
-  PlansType,
   PricingSubscriptionProps,
   TogglePlan,
+  TrackingObjectType,
 } from 'common/ui/PricingSubscription/PricingSubscriptionProps.type';
 
 import { PRICING_BUNDLE_VARIANT } from 'merchant/models/GrowthService/growthServiceCTAHandler';
-import rzpLogo from 'assets/rzp_logo.jpg';
 import pricingTag from 'assets/pricing-bundle/pricingTag.svg';
 import {
   FooterButton,
@@ -40,6 +37,7 @@ import {
   TogglePlanValue,
   ModalLoader,
   PricingTncInfo,
+  handleCheckoutPayment,
 } from './PricingBundleCommon';
 
 let outsidePlanSectionTimer;
@@ -84,23 +82,7 @@ const PricingSubscriptionComponent = ({
     ...getAssetTrackingProperties(trackingId, tracking_data, {}),
   };
 
-  const trackInstrumentation = (
-    type: string,
-    trackingObject: {
-      toggle_switch?: string;
-      cta_value?: string;
-      section?: string;
-      type?: string;
-      value?: string;
-      event_name?: string;
-      plan_Activated?: string;
-      response_code?: string;
-      payment_id?: string;
-      plan_id?: string;
-      time_spent?: any;
-      checkout_id?: string;
-    },
-  ) => {
+  const trackInstrumentation = (type: string, trackingObject: TrackingObjectType) => {
     const { toggle_switch, cta_value, section, event_name } = trackingObject || {};
 
     const handleEventBasedOnType = () => {
@@ -295,78 +277,16 @@ const PricingSubscriptionComponent = ({
       checkout_id: checkoutId.current,
     });
   };
-  const handleCheckoutInitiation = (plans) => {
-    trackInstrumentation('', {
-      value: 'success',
-      toggle_switch: togglePlan,
-      plan_id: plans.id,
-      event_name: 'merchant_dashboard.checkout_modal.initiated',
-      checkout_id: checkoutId.current,
-    });
-  };
-  const handleCheckoutError = (plans) => {
-    trackInstrumentation('', {
-      value: 'failure',
-      toggle_switch: togglePlan,
-      plan_id: plans.id,
-      event_name: 'merchant_dashboard.checkout_modal.initiated',
-    });
-    throw new Error('Something went wrong . Please try again');
-  };
-  const handleCheckoutPayment =
-    (
-      plans: PlansType,
-    ): ((plans?: PlansType | React.MouseEvent<HTMLButtonElement, MouseEvent>) => Promise<void>) =>
-    async () => {
-      trackInstrumentation('choosePlanCTA', {
-        toggle_switch: togglePlan,
-        cta_value: plans.button?.label,
-        section: plans?.title,
-        plan_id: plans?.id,
-      });
-      setSelectedPlanId(plans.id);
-      setLoading(true);
-      await loadCheckoutScript();
 
-      try {
-        const subscriptionData = await merchantFetch({
-          method: 'post',
-          url: `pricing/merchant/subscriptions?plan_id=${plans.id}&frequency=${togglePlan}`,
-          mode: 'live',
-        });
-        const { data: { response = {}, status_code = '' } = {} } = subscriptionData || {};
-
-        if (status_code === 200) {
-          const { subscription = {} } = response;
-          const options = {
-            key: subscription?.account_key,
-            subscription_id: subscription?.payment_subscription_id,
-            name: `Razorpay Pricing Package`,
-            description: '18% GST included',
-            image: rzpLogo,
-            handler: (response) => {
-              handlePaymentSuccess(response, plans);
-            },
-          };
-          const razorpayCheckout = new window.Razorpay(options);
-          checkoutId.current = razorpayCheckout?.id;
-          razorpayCheckout.open();
-          razorpayCheckout.on('payment.failed', (response) => {
-            handlePaymentFailure(response, plans);
-          });
-          handleCheckoutInitiation(plans);
-        } else {
-          handleCheckoutError(plans);
-        }
-      } catch (e) {
-        showNotificationToast({
-          type: 'error',
-          message: (e as Error)?.message || 'Something went wrong . Please try again',
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
+  const checkoutPayment = {
+    trackInstrumentation,
+    togglePlan,
+    setLoading,
+    setSelectedPlanId,
+    handlePaymentSuccess,
+    handlePaymentFailure,
+    showNotificationToast,
+  };
 
   const handleClose =
     (buttonType: string | undefined): (() => void) =>
@@ -484,6 +404,7 @@ const PricingSubscriptionComponent = ({
                   isLoading,
                   selectedPlanId,
                   handleCheckoutPayment,
+                  checkoutPayment: { ...checkoutPayment, plans },
                 })}
               </StyledTh>
             );
@@ -503,7 +424,7 @@ const PricingSubscriptionComponent = ({
                       isLoading={isLoading && selectedPlanId === plans?.id}
                       isDisabled={isLoading && selectedPlanId !== plans?.id}
                       variant={plans.button?.variant}
-                      onClick={handleCheckoutPayment(plans)}
+                      onClick={handleCheckoutPayment({ ...checkoutPayment, plans })}
                       size="small"
                       type="button"
                     >

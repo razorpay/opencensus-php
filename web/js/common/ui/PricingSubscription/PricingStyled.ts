@@ -213,11 +213,11 @@ const StyleFireImage = styled.div`
   width: 32px;
 `;
 const StyleStrikePrice = styled.div(
-  ({ theme }: { theme }) => `
+  ({ theme, isMobile }: { theme: Theme; isMobile?: boolean }) => `
   margin-top: 10px;
   margin-bottom: 10px;
   display:flex;
-  justify-content: center;
+  justify-content: ${isMobile ? 'flex-start' : 'center'};
   align-items: center;
   > p:first-of-type {
     text-decoration: line-through;

@@ -43,7 +43,12 @@ import {
   PricingHeaderType,
   GetPlanPriceType,
   ViewMoreParams,
+  PlansType,
+  PaymentCheckoutFlowType,
 } from './PricingSubscriptionProps.type';
+import rzpLogo from 'assets/rzp_logo.jpg';
+import { loadCheckoutScript } from 'merchant/views/Capital/utils';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 const TogglePlanValue = {
   monthly: 'monthly',
@@ -170,6 +175,7 @@ const getPlanPrice = ({
   isLoading,
   selectedPlanId,
   handleCheckoutPayment,
+  checkoutPayment,
 }: GetPlanPriceType): JSX.Element => {
   return (
     <StylePlanName data-testid={`plan-column-${plans.id}`}>
@@ -218,7 +224,7 @@ const getPlanPrice = ({
             isLoading={isLoading && selectedPlanId === plans?.id}
             isDisabled={isLoading && selectedPlanId !== plans?.id}
             iconPosition="left"
-            onClick={handleCheckoutPayment(plans)}
+            onClick={handleCheckoutPayment({ ...checkoutPayment, plans })}
             size="small"
             type="button"
             variant={plans.button?.variant}
@@ -256,6 +262,73 @@ const PricingTncInfo = (): JSX.Element => {
     </StyleInfo>
   );
 };
+
+const handleCheckoutInitiation = (trackInstrumentation) => {
+  trackInstrumentation('', {
+    value: 'success',
+    event_name: 'merchant_dashboard.checkout_modal.initiated',
+  });
+};
+const handleCheckoutError = (trackInstrumentation) => {
+  trackInstrumentation('', {
+    value: 'failure',
+    event_name: 'merchant_dashboard.checkout_modal.initiated',
+  });
+  throw new Error('Something went wrong . Please try again');
+};
+
+const handleCheckoutPayment =
+  (
+    props: PaymentCheckoutFlowType,
+  ): ((plans?: PlansType | React.MouseEvent<HTMLButtonElement, MouseEvent>) => Promise<void>) =>
+  async () => {
+    props.trackInstrumentation('choosePlanCTA', {
+      toggle_switch: props.togglePlan,
+      cta_value: props.plans.button?.label,
+      section: props.plans?.title,
+      plan_id: props.plans?.id,
+    });
+    props.setSelectedPlanId(props.plans.id);
+    props.setLoading(true);
+    await loadCheckoutScript();
+    try {
+      const subscriptionData = await merchantFetch({
+        method: 'post',
+        url: `pricing/merchant/subscriptions?plan_id=${props.plans.id}&frequency=${props.togglePlan}`,
+        mode: 'live',
+      });
+      const { data: { response = {}, status_code = '' } = {} } = subscriptionData || {};
+      if (status_code === 200) {
+        const { subscription = {} } = response;
+        const options = {
+          key: subscription?.account_key,
+          subscription_id: subscription?.payment_subscription_id,
+          name: `Razorpay Pricing Package`,
+          description: '18% GST included',
+          image: rzpLogo,
+          handler: (response) => {
+            props.handlePaymentSuccess(response, props.plans);
+          },
+        };
+        const razorpayCheckout = new window.Razorpay(options);
+        razorpayCheckout.open();
+        razorpayCheckout.on('payment.failed', (response) => {
+          props.handlePaymentFailure(response, props.plans);
+        });
+        handleCheckoutInitiation(props.trackInstrumentation);
+      } else {
+        handleCheckoutError(props.trackInstrumentation);
+      }
+    } catch (e) {
+      props.showNotificationToast({
+        type: 'error',
+        message: (e as Error)?.message || 'Something went wrong . Please try again',
+      });
+    } finally {
+      props.setLoading(false);
+    }
+  };
+
 export {
   FooterButton,
   plansDetailsForViewMore,
@@ -265,4 +338,6 @@ export {
   getPlanPrice,
   ModalLoader,
   PricingTncInfo,
+  handleCheckoutPayment,
+  getMonthlyDiscount,
 };

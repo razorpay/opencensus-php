@@ -1,13 +1,19 @@
 import React, { Suspense, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
-import lazy, { lazyRetry } from 'merchant/routes/LazyLoader';
+import lazy from 'merchant/routes/LazyLoader';
 import { fetchPricingSubscription as fetchPricingSubscriptionProps } from 'merchant/reducers/growthService';
 import { getCookie } from 'common/utils/cookies';
 import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
 import GrowthAssetEB from 'common/ui/GrowthAssetEB';
 import { withRouter } from 'react-router';
 import { LS_LABELS } from 'common/ui/PricingSubscription/constants';
+const LazyPricingBundleMweb = lazy(
+  () =>
+    import(
+      /* webpackChunkName: 'PricingSubscriptionMWebComponent Mweb' */ 'common/ui/PricingSubscription/Mobile/BottomSheetPricingContainer'
+    ),
+);
 
 export const PricingBundle = ({
   user,
@@ -16,6 +22,7 @@ export const PricingBundle = ({
   fetchPricingSubscription,
   location,
   mode,
+  isMobileResolution,
 }): React.ReactElement | null => {
   const maxImpressions = 10;
   const { pricing_bundles, loading } = pricing_bundles_obj || {};
@@ -39,20 +46,21 @@ export const PricingBundle = ({
     if (isAllowedToFetch) fetchPricingSubscription({ fromWhere: location?.pathname });
   }, []);
 
+  const showPricingBundleWeb =
+    isAllowedToFetch && pricing_bundles && Object.keys(pricing_bundles).length;
+
   const openPricingSubcriptionModal = async (loading) => {
-    if (isAllowedToFetch && !loading && pricing_bundles && Object.keys(pricing_bundles).length) {
-      const lazyPricingSubscriptionImport = await lazyRetry(
+    if (showPricingBundleWeb && !loading) {
+      const lazyPricingSubscriptionImport = await lazy(
         () =>
           import(
-            /* webpackChunkName: 'PricingSubscriptionComponent' */ 'common/ui/PricingSubscription/PricingSubscriptionComponent'
+            /* webpackChunkName: 'PricingSubscriptionComponent Dweb ' */ 'common/ui/PricingSubscription/PricingSubscriptionComponent'
           ),
       );
-
       const LazyPricingSubscriptionComponent = lazy(
         () => new Promise((resolve) => resolve(lazyPricingSubscriptionImport)),
       );
-
-      openModal({
+      return openModal({
         closeOnOverLay: true,
         component: (
           <Suspense fallback={null}>
@@ -61,13 +69,18 @@ export const PricingBundle = ({
         ),
       });
     }
+    return null;
   };
 
   useEffect(() => {
-    openPricingSubcriptionModal(loading);
-  }, [loading]);
+    if (!isMobileResolution) openPricingSubcriptionModal(loading);
+  }, [loading, isMobileResolution]);
 
-  return null;
+  return showPricingBundleWeb && isMobileResolution ? (
+    <Suspense fallback={null}>
+      <LazyPricingBundleMweb pricingSubscription={pricing_bundles} />;
+    </Suspense>
+  ) : null;
 };
 
 const PricingSubscriptionCompose = compose<any>(
@@ -77,6 +90,7 @@ const PricingSubscriptionCompose = compose<any>(
       user: state.session.user,
       mode: state.session.mode,
       pricing_bundles_obj: state?.growthService?.pricing_bundles || {},
+      isMobileResolution: state.app.isMobileResolution,
     }),
     {
       fetchPricingSubscription: fetchPricingSubscriptionProps,

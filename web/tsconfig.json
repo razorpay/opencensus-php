@@ -43,7 +43,7 @@
     "js/common/components",
     "js/common/new-ui",
     "js/common/ui/DashboardBanner",
-    "js/common/ui/PricingSubscription",
+    "js/common/ui/PricingSubscription/**/*",
     "js/common/ui/NotificationsDropdown/Neostone",
     "js/common/ui/GrowthCustomizeModal",
     "js/common/ui/GrowthAssetEB.tsx",

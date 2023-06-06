@@ -14,11 +14,17 @@ import { stringToLiteral } from 'merchant/models/GrowthService/commonUtils';
 import lazy from 'merchant/routes/LazyLoader';
 import Loader from 'common/ui/Loader';
 
-const PricingSubscriptionComponent = lazy(() =>
-  import(
-    /* webpackChunkName: 'PricingSubscriptionComponent' */ 'common/ui/PricingSubscription/PricingSubscriptionComponent'
-  ),
-);
+const PricingSubscriptionComponent = isMobileAndTablet()
+  ? lazy(() =>
+      import(
+        /* webpackChunkName: 'PricingSubscriptionMWebComponent Mweb' */ 'common/ui/PricingSubscription/Mobile/BottomSheetPricingContainer'
+      ),
+    )
+  : lazy(() =>
+      import(
+        /* webpackChunkName: 'PricingSubscriptionComponent Dweb ' */ 'common/ui/PricingSubscription/PricingSubscriptionComponent'
+      ),
+    );
 
 export const SUB_ASSET_TYPE = {
   MODAL: 'MODAL',
@@ -90,16 +96,22 @@ const showGSCenterCTAModal = (id) => {
 };
 
 const showPricingBundleModal = (id, variant) => {
-  // Open Pricing Bundle Modal
-  const openModal = (payload) => store.dispatch(openModalProp(payload));
-  openModal({
-    component: (
-      <Suspense fallback={<Loader />}>
-        <PricingSubscriptionComponent templateId={id} variant={variant} />,
-      </Suspense>
-    ),
-    className: 'pricing-bundle-loader',
-  });
+  const RenderPricingUi = () => (
+    <Suspense fallback={<Loader />}>
+      <PricingSubscriptionComponent templateId={id} variant={variant} />,
+    </Suspense>
+  );
+  if (isMobileAndTablet()) {
+    // Open Pricing Bundle BottomSheet mobile
+    return <RenderPricingUi />;
+  } else {
+    // Open Pricing Bundle Modal desktop
+    const openModal = (payload) => store.dispatch(openModalProp(payload));
+    return openModal({
+      component: <RenderPricingUi />,
+      className: 'pricing-bundle-loader',
+    });
+  }
 };
 
 /**

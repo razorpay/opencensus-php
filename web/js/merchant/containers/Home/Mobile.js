@@ -46,8 +46,9 @@ import PaymentMethods from 'merchant/containers/Home/PaymentMethods';
 import Traffic from 'merchant/containers/Home/Traffic';
 import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import PricingSubscriptionWrapper from 'common/ui/PricingSubscription';
+import DashboardBanner from 'common/ui/DashboardBanner';
 import lazy from 'merchant/routes/LazyLoader';
-
 const TerminalStatus = lazy(() =>
   import(
     /* webpackChunkName: 'terminal-status-banner' */ 'merchant/components/Announcements/TerminalStatus'
@@ -255,6 +256,7 @@ class AnalyticsMobile extends Component {
     if (banner_carousel_items.length) carouselItem = [...banner_carousel_items];
     return (
       <div className="home-analytics-mobile">
+        <PricingSubscriptionWrapper />
         <Space padding={[2.5, 1, 0, 2]}>
           <Text size="large" weight="bold" color="shade.950">
             Welcome to your dashboard, {user.contact_name}!
@@ -266,6 +268,7 @@ class AnalyticsMobile extends Component {
             Google Chrome, Edge, Safari, Firefox.
           </AnnouncementBanner>
         )}
+        <DashboardBanner />
         <div
           ref={(node) => onExtraContentMount(node)}
           className={`extra-content${showOnboardingBanner ? ' has-ob-banner' : ''}${
