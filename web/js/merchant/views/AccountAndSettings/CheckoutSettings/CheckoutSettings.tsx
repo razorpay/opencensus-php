@@ -27,8 +27,8 @@ import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import Loader from 'common/components/Loader';
 import lazy from 'merchant/routes/LazyLoader';
 
-const TrustedBadge = lazy(() =>
-  import(/* webpackChunkName: "BankAccountDetails" */ 'merchant/views/Account/TrustedBadge'),
+const TrustedBadge = lazy(
+  () => import(/* webpackChunkName: "BankAccountDetails" */ 'merchant/views/Account/TrustedBadge'),
 );
 
 const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null => {
@@ -67,9 +67,7 @@ const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null 
               <NavLink to={ROUTES_INFO.FLASH_CHECKOUT}>Flash Checkout</NavLink>
             </ShowWhen>
             <ShowWhen additionalCondition={isSkipMandatorySummaryPageAllowed}>
-              <NavLink to={ROUTES_INFO.SKIP_MANDATORY_SUMMARY_PAGE}>
-                Skip Mandatory Summary Page
-              </NavLink>
+              <NavLink to={ROUTES_INFO.SKIP_MANDATORY_SUMMARY_PAGE}>Mandate Summary Page</NavLink>
             </ShowWhen>
           </ShowWhen>
           <ShowWhen additionalCondition={isTrustedBadgeAllowed}>

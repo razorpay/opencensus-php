@@ -4,7 +4,7 @@ import { PaymentMethodsTitles } from 'merchant/views/AccountAndSettings/AccountA
 export const ROUTE_MAP = {
   [ROUTES_INFO.BRANDING]: 'Branding',
   [ROUTES_INFO.FLASH_CHECKOUT]: 'Flash checkout',
-  [ROUTES_INFO.SKIP_MANDATORY_SUMMARY_PAGE]: 'Skip mandatory summary page',
+  [ROUTES_INFO.SKIP_MANDATORY_SUMMARY_PAGE]: 'Mandate summary page',
   [ROUTES_INFO.TRUSTED_BADGE]: 'Trusted badge',
   [ROUTES_INFO.EMAIL_NOTIFICATIONS]: 'Email',
   [ROUTES_INFO.SMS_NOTIFICATIONS]: 'SMS',

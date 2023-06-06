@@ -5,8 +5,8 @@ const flashCheckoutDesc = `Securely save the card details of your customers, wit
   hideRazorpayTextLink ? '' : "Razorpay's"
 } Flash Checkout.`;
 export const skipCardMandateSummaryProps = {
-  title: 'Skip Mandate Summary Page for Cards',
-  desc: 'Skip showing mandate summary page for credit and debit card payments to your users.',
+  title: 'Show Mandate Summary Page for Cards',
+  desc: 'Show mandate summary page for credit and debit card payments to your users.',
   hashedWith: SKIP_CARD_MANDATE_SUMMARY,
   featureAPIKey: 'card_mandate_skip_page',
   featureName: 'Skip Card Mandate Summary',

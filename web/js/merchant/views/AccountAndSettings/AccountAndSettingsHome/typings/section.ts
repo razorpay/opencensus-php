@@ -127,7 +127,7 @@ export const NotificationSettingsTitles: Record<NotificationSettingsFields, stri
 export const CheckoutSettingsTitles: Record<CheckoutSettingsFields, string> = {
   [CheckoutSettingsFields.BRANDING]: 'Branding',
   [CheckoutSettingsFields.FLASH_CHECKOUT]: 'Flash checkout',
-  [CheckoutSettingsFields.SKIP_MANDATE_SUMMARY_PAGE]: 'Skip mandate summary page',
+  [CheckoutSettingsFields.SKIP_MANDATE_SUMMARY_PAGE]: 'Mandate summary page',
   [CheckoutSettingsFields.TRUSTED_BADGE]: 'Trusted badge',
 };
 

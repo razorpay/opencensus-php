@@ -28,7 +28,7 @@ jest.mock('merchant/views/AccountAndSettings/styled', () => ({
       <div data-testid={`styled-${path}`}>
         {showBranding && <>Branding</>}
         {showFlashCheckout && <>Flash Checkout</>}
-        {showSkipMandatorySummaryPage && <>Skip Mandatory Summary Page</>}
+        {showSkipMandatorySummaryPage && <>Mandate Summary Page</>}
       </div>
     );
   },
@@ -60,11 +60,9 @@ describe('Checkout Settings', () => {
     renderApp();
     expect(screen.getByText('Dashboard Banner')).toBeInTheDocument();
     expect(screen.getByText('Test Mode Banner')).toBeInTheDocument();
-    ['Branding', 'Flash Checkout', 'Skip Mandatory Summary Page', 'Trusted Badge'].forEach(
-      (linkLabel) => {
-        expect(screen.queryByRole('link', { name: linkLabel })).not.toBeInTheDocument();
-      },
-    );
+    ['Branding', 'Flash Checkout', 'Mandate Summary Page', 'Trusted Badge'].forEach((linkLabel) => {
+      expect(screen.queryByRole('link', { name: linkLabel })).not.toBeInTheDocument();
+    });
   });
 
   testBreadCrumb(renderApp, 'Branding', ROUTES_INFO.BRANDING);
@@ -82,7 +80,7 @@ describe('Checkout Settings', () => {
       ['Branding', 'isConfigurationViewAllowed', ROUTES_INFO.BRANDING],
       ['Flash Checkout', 'isFlashCheckoutAllowed', ROUTES_INFO.FLASH_CHECKOUT],
       [
-        'Skip Mandatory Summary Page',
+        'Mandate Summary Page',
         'isSkipMandatorySummaryPageAllowed',
         ROUTES_INFO.SKIP_MANDATORY_SUMMARY_PAGE,
       ],
@@ -92,7 +90,7 @@ describe('Checkout Settings', () => {
     test.each([
       ['Branding', ROUTES_INFO.BRANDING],
       ['Flash Checkout', ROUTES_INFO.FLASH_CHECKOUT],
-      ['Skip Mandatory Summary Page', ROUTES_INFO.SKIP_MANDATORY_SUMMARY_PAGE],
+      ['Mandate Summary Page', ROUTES_INFO.SKIP_MANDATORY_SUMMARY_PAGE],
     ])('should render %s component for %s route', (componentText, route) => {
       renderApp();
       const routeComponent = screen.getByTestId(`styled-${route}`);
