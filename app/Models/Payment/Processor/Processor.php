@@ -870,6 +870,7 @@ class Processor
             }
 
             //transaction from cryptogram value
+            $input[Payment\Entity::CARD][Card\Entity::NUMBER] = str_replace(' ', '', $input[Payment\Entity::CARD][Card\Entity::NUMBER]);
             $iinId = substr($input[Payment\Entity::CARD][Card\Entity::NUMBER], 0, 6);
             if ($this->isPaymentViaTokenisedCard($input))
             {
