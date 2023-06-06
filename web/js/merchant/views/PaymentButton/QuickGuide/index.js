@@ -12,7 +12,7 @@ import QuickStepGuide, {
 } from 'merchant/components/QuickGuide/QuickStepGuide';
 
 import { getQuickGuideData } from './data';
-import { getIsPaymentButtonCodeUsed } from '../utils';
+import { getIsPaymentButtonCodeUsed } from 'merchant/views/PaymentButton/utils';
 
 const { done, locked, active, loading } = PossibleStatuses;
 

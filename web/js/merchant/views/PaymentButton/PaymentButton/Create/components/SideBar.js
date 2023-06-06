@@ -2,7 +2,7 @@ import React from 'react';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { classList } from 'common/utils/rzp-utils';
 import { templateTypes } from 'merchant/views/PaymentButton/PaymentButton/Create/components/Templates/meta';
-import track from '../track';
+import track from 'merchant/views/PaymentButton/PaymentButton/Create/track';
 
 import SidebarImage from 'assets/payment_button/sidebar-display.svg';
 

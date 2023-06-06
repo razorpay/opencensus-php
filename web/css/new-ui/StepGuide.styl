@@ -1,3 +1,4 @@
+/* stylelint-disable */
 $stepIndicatorSize = 36px
 
 .StepGuide
@@ -161,6 +162,12 @@ $stepIndicatorSize = 36px
     bottom: 0
     width: 100%
     height: 100%
+
+    @media (min-width: 768px) and (max-width: 1024px)
+      opacity: 0.2
+
+  &.i18N-Org:before
+    background-image: url('assets/product_onboarding/quick_guide_i18n.svg')
 
     @media (min-width: 768px) and (max-width: 1024px)
       opacity: 0.2

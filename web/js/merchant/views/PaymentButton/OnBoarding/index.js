@@ -1,6 +1,7 @@
+/* eslint-disable react/no-this-in-sfc */
 import React from 'react';
 import { connect } from 'react-redux';
-import imgPaymentButton from 'assets/product_onboarding/payment_button.svg';
+import imgPaymentButtonRzp from 'assets/product_onboarding/payment_button.svg';
 
 import { RZPFeatures } from 'merchant/helpers/data';
 
@@ -23,12 +24,19 @@ import OnBoarding, {
 } from 'merchant/components/OnBoarding';
 
 import { FEATURES_DATA, FEATURES_LINKS } from './data';
-import { setIsPaymentButtonCodeUsed } from '../utils';
+import { setIsPaymentButtonCodeUsed } from 'merchant/views/PaymentButton/utils';
+import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
+
+const ORG_ONBOARDING_IMG = {
+  [ORG_CUSTOM_CODE_MAP.RAZORPAY]: imgPaymentButtonRzp,
+  [ORG_CUSTOM_CODE_MAP.CURLEC]: imgPaymentButtonRzp,
+};
 
 @connect(
   (state) => ({
     user: state.session.user,
     mode: state.session.mode,
+    org: state.session.org,
     paymentButtonsProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PB),
   }),
   { handleProductQuickGuide },
@@ -63,7 +71,10 @@ export default class PaymentButtonOnBoarding extends React.Component {
   };
 
   render() {
-    const { active, paymentButtonsProductOnBoarding } = this.props;
+    const { active, paymentButtonsProductOnBoarding, org } = this.props;
+    const customCode = org.custom_code;
+    const onboardingIMGUrl =
+      ORG_ONBOARDING_IMG[customCode] || ORG_ONBOARDING_IMG[ORG_CUSTOM_CODE_MAP.RAZORPAY];
 
     return (
       <OnBoardingWrapper class="PaymentButtons">
@@ -79,7 +90,7 @@ export default class PaymentButtonOnBoarding extends React.Component {
               {...sliderProps}
               title="Payment Buttons"
               feature={RZPFeatures.PB}
-              imageUrl={imgPaymentButton}
+              imageUrl={onboardingIMGUrl}
               desc="Collect payments and donations on your websites and blogs, copy-paste a single line of code to collect payments online. Zero integrations required!"
             />
           )}

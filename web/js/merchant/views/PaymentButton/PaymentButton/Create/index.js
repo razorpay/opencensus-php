@@ -52,6 +52,7 @@ const docTitles = {
   (state) => ({
     user: state.session.user,
     mode: state.session.mode,
+    org: state.session.org,
     payment_button: state.payment_button_create,
   }),
   {
@@ -679,13 +680,14 @@ export default class PaymentButtonCreate extends React.Component {
   }
 
   get ContentView() {
-    const { payment_button } = this.props;
+    const { payment_button, org } = this.props;
     const {
       activeTabIndex,
       isSuccessViewOpened,
       isSuccessViewOpenedForExistingId,
       isEntityLoaded,
     } = this.state;
+    const orgCustomCode = org.custom_code;
 
     const isEditExistingId = !!this.paymentButtonId;
 
@@ -707,6 +709,7 @@ export default class PaymentButtonCreate extends React.Component {
                 activeTabIndex={activeTabIndex}
                 isSuccessViewOpened={isSuccessViewOpened}
                 isSuccessViewOpenedForExistingId={isSuccessViewOpenedForExistingId}
+                orgCustomCode={orgCustomCode}
               />
               {isSuccessViewOpened ? (
                 <SuccessView

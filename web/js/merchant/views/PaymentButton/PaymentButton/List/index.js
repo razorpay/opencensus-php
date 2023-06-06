@@ -16,15 +16,21 @@ import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 
 import ListFilter from './ListFilter';
-import GetCodeModal from '../components/GetCodeModal'; // SuccessModal
+import GetCodeModal from 'merchant/views/PaymentButton/PaymentButton/components/GetCodeModal'; // SuccessModal
 
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { handleProductQuickGuide } from 'merchant/reducers/onboarding';
 import { fetchPaymentButtonsList as fetchAll } from 'merchant/reducers/paymentbuttons/list';
-import { setIsPaymentButtonCodeUsed } from '../../utils';
+import { setIsPaymentButtonCodeUsed } from 'merchant/views/PaymentButton/utils';
 import track from './track';
 
 import EmptyListImage from 'assets/payment_button/empty-list.svg';
+import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
+
+const PAYMENT_BTN_EMPTYLIST_IMG = {
+  [ORG_CUSTOM_CODE_MAP.RAZORPAY]: EmptyListImage,
+  [ORG_CUSTOM_CODE_MAP.CURLEC]: EmptyListImage,
+};
 
 const tabsData = [
   { title: 'Payment Buttons', url: '/paymentbuttons' },
@@ -52,21 +58,27 @@ export const status = {
   value: (item) => <PaymentPagesStatusLabel status={item.status} />,
 };
 
-const EmptyComponent = () => (
-  <div class="PaymentButton-empty-list">
-    <img src={EmptyListImage} width="280px" />
+const emptyComponent = (org) => {
+  const customCode = org.custom_code;
+  const emptyListImage =
+    PAYMENT_BTN_EMPTYLIST_IMG[customCode] ||
+    PAYMENT_BTN_EMPTYLIST_IMG[ORG_CUSTOM_CODE_MAP.RAZORPAY];
+  return () => (
+    <div class="PaymentButton-empty-list">
+      <img src={emptyListImage} width="280px" />
 
-    <div class="description">
-      <h4>It’s Lonely Here!</h4>
-      <div>Create a Payment Button to get Started</div>
-      <br />
-      Not sure where to start? See our getting{' '}
-      <DocLink target="_blank" href="https://razorpay.com/docs/payment-button/">
-        started guide <i class="i i-external-link" />
-      </DocLink>
+      <div class="description">
+        <h4>It’s Lonely Here!</h4>
+        <div>Create a Payment Button to get Started</div>
+        <br />
+        Not sure where to start? See our getting{' '}
+        <DocLink target="_blank" href="https://razorpay.com/docs/payment-button/">
+          started guide <i class="i i-external-link" />
+        </DocLink>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 @withRouter
 @connect(
@@ -143,7 +155,7 @@ export default class PaymentButtonsList extends ListContainer {
   };
 
   render() {
-    const { user } = this.props;
+    const { user, org } = this.props;
     const isRoleAllowedEdit = user.isAllowedEdit('payment_buttons');
 
     const columns = [
@@ -200,7 +212,7 @@ export default class PaymentButtonsList extends ListContainer {
               {...this.props}
               count={this.state.count}
               skip={this.state.skip}
-              EmptyComponent={EmptyComponent}
+              EmptyComponent={emptyComponent(org)}
               onErrorCloseClick={() => {
                 track.errorCloseClick(this.state.status.message);
               }}

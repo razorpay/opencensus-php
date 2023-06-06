@@ -3,9 +3,12 @@ import Button from 'common/new-ui/Button';
 
 import StepGuide from 'merchant/components/StepGuide';
 import Step from 'merchant/components/StepGuide/Step';
+import { connect } from 'react-redux';
 
-export default function QuickStepGuide(props) {
-  return <StepGuide {...props} class={`${props.className} QuickGuide`} />;
+function QuickStepGuide(props) {
+  const { user, isMobileResolution, className } = props;
+  const i18NOrgClassName = user.isOrgCurlec && !isMobileResolution ? ' i18N-Org' : '';
+  return <StepGuide {...props} class={`${className} QuickGuide${i18NOrgClassName}`} />;
 }
 
 export const QuickGuideTitle = ({ title = 'GET STARTED' }) => (
@@ -43,3 +46,8 @@ class QuickGuideStep extends React.Component {
 }
 
 export { QuickGuideStep };
+
+export default connect(
+  (state) => ({ user: state.session.user, isMobileResolution: state.app.isMobileResolution }),
+  null,
+)(QuickStepGuide);

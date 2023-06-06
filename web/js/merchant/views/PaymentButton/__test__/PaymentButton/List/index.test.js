@@ -22,6 +22,7 @@ describe('Payment Button List View', () => {
             isOrgAxis: () => false,
             isPaymentButtonEnabledByRazorX: true,
           },
+          org: { custom_code: 'rzp' },
         },
         paymentbuttons: Paymentbuttons,
       },
