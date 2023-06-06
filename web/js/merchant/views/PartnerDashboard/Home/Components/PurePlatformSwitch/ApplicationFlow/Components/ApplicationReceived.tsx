@@ -19,12 +19,11 @@ import { MobileHeader } from 'merchant/views/PartnerDashboard/Home/Components/Pu
 import {
   ApplicationReceivedProps,
   STEPS,
-  PARTNER_SWITCH_KEY,
 } from 'merchant/views/PartnerDashboard/Home/Components/PurePlatformSwitch/Constants';
 import { isMobileAndTablet, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getExperimentsForTracking } from 'merchant/views/PartnerDashboard/Home/Components/utils';
-import { setItem } from 'common/utils/localStorage';
+import { setPartnerSwitchFlag } from 'merchant/reducers/partner';
 
 const ApplicationReceived = ({
   setStep,
@@ -32,6 +31,7 @@ const ApplicationReceived = ({
   trackingExperiments,
   closeModal,
   user,
+  setPartnerSwitchFlag,
 }: ApplicationReceivedProps): JSX.Element => {
   useEffect(() => {
     analyticsTrack({
@@ -63,7 +63,7 @@ const ApplicationReceived = ({
       },
     });
     setStep('');
-    setItem(PARTNER_SWITCH_KEY, 'true');
+    setPartnerSwitchFlag();
     if (isMobileView) setIsOpen(false);
     else closeModal();
   };
@@ -150,6 +150,6 @@ const ApplicationReceived = ({
   );
 };
 
-export default connect(null, (dispatch) => bindActionCreators({ closeModal }, dispatch))(
-  ApplicationReceived,
-);
+export default connect(null, (dispatch) =>
+  bindActionCreators({ closeModal, setPartnerSwitchFlag }, dispatch),
+)(ApplicationReceived);

@@ -31,16 +31,16 @@ export const STEP_COMPONENTS = {
 export const SERVICES_PROVIDED_OPTIONS = [
   'Freelancers',
   'Entrepreneur',
+  'Designer',
   'Digital Service Provider',
   'Accounting Software',
-  'Designer',
   'Web Developers',
   'Manage Platform',
-  'Early Stage Investor',
   'CRM',
+  'Early Stage Investor',
   'Booking Platforms',
-  'Plugins for E-commerce platform',
   'ERP',
+  'Plugins for E-commerce platform',
   'Other',
 ];
 
@@ -85,6 +85,7 @@ export interface ApplicationReceivedProps {
   trackingExperiments: trackingExperimentsProps;
   closeModal: () => void;
   user: any;
+  setPartnerSwitchFlag: any;
 }
 
 export interface ApplicationFormProps {

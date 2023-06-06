@@ -93,7 +93,7 @@ export const ApplicationFlowWrapper = styled.div(
   padding: 55px 55px 90px;
 
   @media (max-width: ${mobileTabMax}) {
-    padding: 0px ${theme.spacing[7]}px 0px 0px;
+    padding: 0px ${theme.spacing[3]}px 0px 0px;
     width: 100%;
   }
 `,
@@ -213,7 +213,7 @@ export const ServiceProvidedPillsOption = styled.div(
   ({ theme, $isActive }: { theme: Theme; $isActive: boolean }) => `
     padding: 7px 10px;
     border: 1.42829px solid #8895A8;
-    border-radius: 11.4263px;
+    border-radius: ${theme.border.radius.large}px;
     cursor: pointer;
     font-weight: ${theme.typography.fonts.weight.bold};
     font-size: ${theme.typography.fonts.size[100]}px;
@@ -510,7 +510,8 @@ export const HaveAllCapabilitiesImg = styled.div`
   top: 30%;
 
   @media (max-width: ${mobileTabMax}) {
-    display: none;
+    left: 10%;
+    top: 35%;
   }
 `;
 

@@ -13,13 +13,11 @@ import { Button, ArrowRightIcon } from '@razorpay/blade/components';
 import {
   StepComponentProps,
   STEPS,
-  PARTNER_SWITCH_KEY,
 } from 'merchant/views/PartnerDashboard/Home/Components/PurePlatformSwitch/Constants';
 import { MobileHeader } from 'merchant/views/PartnerDashboard/Home/Components/PurePlatformSwitch/ApplicationFlow/Components/Header';
 import { isMobileAndTablet, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getExperimentsForTracking } from 'merchant/views/PartnerDashboard/Home/Components/utils';
-import { setItem } from 'common/utils/localStorage';
 
 const HaveAllCapabilities = ({
   setStep,
@@ -57,7 +55,6 @@ const HaveAllCapabilities = ({
       },
     });
     setStep('');
-    setItem(PARTNER_SWITCH_KEY, 'true');
     if (isMobileView) setIsOpen(false);
     else closeModal();
   };

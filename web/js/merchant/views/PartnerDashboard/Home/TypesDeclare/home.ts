@@ -78,6 +78,7 @@ export interface PartnerHomeT {
   tracking: RTrackingT;
   history: RouteComponentProps['history'];
   org: Org;
+  partnerSwitchFlag: boolean | null;
 }
 
 export interface RTrackingT<P = Record<string, unknown>> {

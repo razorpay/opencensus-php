@@ -28,8 +28,6 @@ import DashboardBanner from 'common/ui/DashboardBanner';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import { CapitalReferralCard } from 'merchant/views/PartnerDashboard/Home/Components/ReferralGuide/CapitalReferralCard';
 import PageHeading from './Components/PageHeading';
-import { getItem } from 'common/utils/localStorage';
-import { PARTNER_SWITCH_KEY } from 'merchant/views/PartnerDashboard/Home/Components/PurePlatformSwitch/Constants';
 
 // eslint-disable-next-line prettier/prettier
 const AggregatorFormLazy = React.lazy(
@@ -52,6 +50,7 @@ const Home = ({
   tracking,
   history,
   org,
+  partnerSwitchFlag,
 }: PartnerHomeT): JSX.Element => {
   const [FUXStatus, setFUXStatus] = useState<FUXStatusStateT>({
     value: null,
@@ -214,7 +213,7 @@ const Home = ({
    * @returns false to hide the banner and true to show it
    */
   const isShowPartnerSwitch = () => {
-    if (getItem(PARTNER_SWITCH_KEY)) {
+    if (partnerSwitchFlag === true) {
       return false;
     }
     return FUXStatus.value?.partner_migration_enabled;
@@ -283,6 +282,7 @@ const Home = ({
 const mapStateToProps = (state) => ({
   user: state.session.user,
   org: state.session.org,
+  partnerSwitchFlag: state.partnerDashboard.partnerSwitchFlag,
 });
 
 const getDispatchToProps = () => ({

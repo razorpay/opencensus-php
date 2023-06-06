@@ -186,7 +186,7 @@ const ApplicationForm = ({
         )}
       </ServiceProvidedHeading>
       <ServiceProvidedDescription>
-        By clicking next I agree to submit my partner type switch request and accept our&nbsp;
+        By clicking next I agree to submit my partner type switch request and accept the new&nbsp;
         <a href={PARTNER_SWITCH_PRIVACY_POLICY} target="__blank" onClick={trackPrivacyPolicy}>
           privacy policy
         </a>
@@ -247,7 +247,7 @@ const ApplicationForm = ({
               helpText="This could be social media link or anything else you want us to know"
               labelPosition="left"
               necessityIndicator="optional"
-              numberOfLines={5}
+              numberOfLines={2}
               value={formik.values.otherInfo}
               onChange={({ name, value }) => {
                 onFormChange(name, value);

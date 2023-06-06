@@ -77,6 +77,7 @@ import {
 } from 'merchant/reducers/magicCheckout/codOrders/reducer';
 import paymentHandleReducer from 'merchant/reducers/paymentHandle';
 import newAuthReducer from 'merchant/reducers/newAuth';
+import partnerReducer from 'merchant/reducers/partner';
 
 import {
   paymentsReducer,
@@ -285,4 +286,5 @@ export default combineReducers({
   leftNav: leftNavReducer,
   paymentHandle: paymentHandleReducer,
   newAuth: newAuthReducer,
+  partnerDashboard: partnerReducer,
 });

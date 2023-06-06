@@ -2,8 +2,12 @@ import React from 'react';
 import { render, screen, userEvent, waitFor } from 'common/services/test/test-utils';
 import ApplicationReceived from 'merchant/views/PartnerDashboard/Home/Components/PurePlatformSwitch/ApplicationFlow/Components/ApplicationReceived';
 import { stepTestProps } from 'merchant/views/PartnerDashboard/Home/Components/PurePlatformSwitch/__tests__/mocks/fixtures';
+import * as flagAction from 'merchant/reducers/partner';
+
+let setPartnerSwitchSpy;
 
 describe('<ApplicationReceived /> ', () => {
+  setPartnerSwitchSpy = jest.spyOn(flagAction, 'setPartnerSwitchFlag');
   test('Render Application Received', async () => {
     render(<ApplicationReceived {...stepTestProps} />);
     expect(
@@ -25,5 +29,12 @@ describe('<ApplicationReceived /> ', () => {
     await waitFor(() => {
       expect(stepTestProps.setStep).toHaveBeenCalled();
     });
+    expect(setPartnerSwitchSpy).toHaveBeenCalled();
+  });
+
+  test('Render Application Received', () => {
+    jest.mock('common/utils/rzp-utils', () => () => true);
+    render(<ApplicationReceived {...stepTestProps} />);
+    expect(screen.getByText('Application Received')).toBeInTheDocument();
   });
 });
