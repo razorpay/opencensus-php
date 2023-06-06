@@ -73,9 +73,9 @@ describe('COD Engine', () => {
     closeModalSpy.mockClear();
   });
 
-  test('should render zone modal', () => {
+  test('should render zone modal', async () => {
     render(<App />);
-    const ZoneModal = screen.getByTestId('zone-modal');
+    const ZoneModal = await screen.findByTestId('zone-modal');
     expect(ZoneModal).toBeInTheDocument();
     expect(screen.queryAllByTestId('zone-item')).toHaveLength(5);
   });
