@@ -21,6 +21,7 @@ class Constants
     const UpiNumberDisabled = 'upi_number_disabled';
     const UpiNumberInUpiSectionDisabled = 'upi_number_in_upi_section_disabled';
     const UpiNumberInPreferredSectionDisabled = 'upi_number_in_preferred_section_disabled';
+    const UpiTurboDisabled = 'upi_turbo_disabled';
     const AutoCommissionInvoiceDisabled = 'auto_invoice_generation_disabled';
     const AffordabilityWidgetSet = 'affordability_widget_set';
     const EnableMerchantExpiryForPP = 'payment_page_no_expiry_enabled';
@@ -143,6 +144,7 @@ class Constants
         self::UpiNumberDisabled => "rzp/pg/merchant/checkout/Upi",
         self::UpiNumberInUpiSectionDisabled => "rzp/pg/merchant/checkout/Upi",
         self::UpiNumberInPreferredSectionDisabled => "rzp/pg/merchant/checkout/Upi",
+        self::UpiTurboDisabled => "rzp/pg/merchant/checkout/Upi",
         self::AutoCommissionInvoiceDisabled => "rzp/platform/partner/commission/Features",
         self::AffordabilityWidgetSet => "rzp/pg/merchant/affordability/Widget",
         self::EnableMerchantExpiryForPP => "rzp/nocode/merchant/paymentpage/Features",
@@ -279,6 +281,7 @@ class Constants
         APIFeaturesConstants::DISABLE_UPI_NUM_CHECKOUT                      => self::UpiNumberDisabled,
         APIFeaturesConstants::DISABLE_UPI_NUM_ON_L0                         => self::UpiNumberInPreferredSectionDisabled,
         APIFeaturesConstants::DISABLE_UPI_NUM_ON_L1                         => self::UpiNumberInUpiSectionDisabled,
+        self::UpiTurboDisabled                                              => self::UpiTurboDisabled,
         APIFeaturesConstants::AUTO_COMM_INV_DISABLED                        => self::AutoCommissionInvoiceDisabled,
         self::AffordabilityWidgetSet                                        => self::AffordabilityWidgetSet,
         APIFeaturesConstants::ENABLE_MERCHANT_EXPIRY_PL                     => self::EnableMerchantExpiryForPL,
@@ -413,6 +416,7 @@ class Constants
         self::PostpaidMerchantsDontSettleCustomerFees => 'direct',
         self::CloseQrOnDemand => 'direct',
         self::DynamicCurrencyConversionCybs => "direct",
+        self::UpiTurboDisabled => 'direct',
     ];
 
     /**
