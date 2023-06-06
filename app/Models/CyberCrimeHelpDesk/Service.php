@@ -272,7 +272,7 @@ class Service extends Base\Service
 
         foreach ($ticketDetails['ticket_data']['ticket'] as $request)
         {
-            if ($request['hold_settlement'] === '1')
+            if ($request['hold_settlement'] === 1)
             {
                 $txnIdsToPutOnHold[] = $request['data']['transaction']['id'];
             }
