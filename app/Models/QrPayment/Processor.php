@@ -2,6 +2,7 @@
 
 namespace RZP\Models\QrPayment;
 
+use App;
 use Carbon\Carbon;
 use RZP\Base\Luhn;
 use RZP\Models\Card;
@@ -250,7 +251,18 @@ class Processor extends Base\Core
             if ((! $this->qrCode->isCheckoutQrCode()) &&
                 ($entity->payment->hasBeenCaptured() === false))
             {
-                $paymentProcessor->autoCapturePayment($payment);
+
+                // Adding the order id mutex for solving multiple captured payment on same order
+                // If payment has order id then resource will contain order id else payment id
+                $orderMutex = $paymentProcessor->getCallbackOrderMutexResource($payment);
+
+                $mutex = App::getFacadeRoot()['api.mutex'];
+
+                $mutex->acquireAndRelease($orderMutex,
+                    function() use ($paymentProcessor, $payment)
+                    {
+                        $paymentProcessor->autoCapturePayment($payment);
+                    });
             }
         }
         else
