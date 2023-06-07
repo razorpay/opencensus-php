@@ -19,12 +19,14 @@ const allRoles = {
   ...RegistrationLinkRoles,
 };
 
-export const withClick = (onClick) => ({ value, ...rest }) => {
-  return {
-    value: <span onClick={onClick}>{value}</span>,
-    ...rest,
+export const withClick =
+  (onClick) =>
+  ({ value, ...rest }) => {
+    return {
+      value: <span onClick={onClick}>{value}</span>,
+      ...rest,
+    };
   };
-};
 
 const textRightClass = 'text-right';
 
@@ -302,4 +304,12 @@ export const storeProductId = {
 export const paymentReceiverType = {
   title: 'Receiver Type',
   value: (item) => (item?.receiver_type === 'pos' ? 'Offline' : 'Online'),
+};
+
+export const arn = {
+  title: 'RRN/ARN',
+  value: (item) => {
+    const { arn, rrn } = item?.acquirer_data ?? {};
+    return arn || rrn || '-';
+  },
 };

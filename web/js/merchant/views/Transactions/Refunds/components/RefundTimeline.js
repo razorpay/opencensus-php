@@ -114,7 +114,7 @@ export default class RefundStatusTimeline extends React.Component {
       }
     }
 
-    return mileStones.reverse();
+    return mileStones;
   };
 
   render() {

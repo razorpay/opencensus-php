@@ -65,11 +65,11 @@ describe('Refunds - RefundDetails Component', () => {
       'Status',
       'Amount',
       'Total Fee',
+      'RRN/ARN',
       'Refund Speed',
       refundSpeed,
       'Currency',
       refund.currency,
-      'Acquirer Data',
       'Notes',
     ].forEach((fieldLabel) => {
       expect(screen.getAllByText(new RegExp(fieldLabel, 'i'))[0]).toBeInTheDocument();
@@ -142,7 +142,7 @@ describe('Refunds - RefundDetails Component', () => {
           }}
         />,
       );
-      expect(screen.getByText(/Settlement Details/i)).toBeInTheDocument();
+      expect(screen.queryByText(/Settlement Details/i)).not.toBeInTheDocument();
     });
   });
 });

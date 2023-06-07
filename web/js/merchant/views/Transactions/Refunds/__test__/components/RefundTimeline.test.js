@@ -64,8 +64,8 @@ describe('Refunds - RefundTimeline Component', () => {
           />,
         );
         expectRefundTimeLine([
-          RefundMilestones.Processed.Normal,
           RefundMilestones.Processing.Normal,
+          RefundMilestones.Processed.Normal,
         ]);
       });
 
@@ -100,10 +100,10 @@ describe('Refunds - RefundTimeline Component', () => {
           />,
         );
         expectRefundTimeLine([
-          RefundMilestones.Processed.Normal,
-          RefundMilestones.Processing.Normal,
-          RefundMilestones.Text.SpeedUpdatedToNormal,
           RefundMilestones.Processing.Instant,
+          RefundMilestones.Text.SpeedUpdatedToNormal,
+          RefundMilestones.Processing.Normal,
+          RefundMilestones.Processed.Normal,
         ]);
       });
       test('should render refund timeline when status is failed', () => {
@@ -117,10 +117,10 @@ describe('Refunds - RefundTimeline Component', () => {
           />,
         );
         expectRefundTimeLine([
-          RefundMilestones.Failed.Normal,
-          RefundMilestones.Processing.Normal,
-          RefundMilestones.Text.SpeedUpdatedToNormal,
           RefundMilestones.Processing.Instant,
+          RefundMilestones.Text.SpeedUpdatedToNormal,
+          RefundMilestones.Processing.Normal,
+          RefundMilestones.Failed.Normal,
         ]);
       });
     });
@@ -141,8 +141,8 @@ describe('Refunds - RefundTimeline Component', () => {
         />,
       );
       expectRefundTimeLine([
-        RefundMilestones.Processed.Instant,
         RefundMilestones.Processing.Instant,
+        RefundMilestones.Processed.Instant,
       ]);
     });
 
@@ -158,8 +158,8 @@ describe('Refunds - RefundTimeline Component', () => {
           />,
         );
         expectRefundTimeLine([
-          RefundMilestones.Failed.Instant,
           RefundMilestones.Processing.Instant,
+          RefundMilestones.Failed.Instant,
         ]);
       });
       test('should render refund timeline when instant refund failed', () => {
@@ -173,9 +173,9 @@ describe('Refunds - RefundTimeline Component', () => {
           />,
         );
         expectRefundTimeLine([
-          RefundMilestones.Failed.Instant,
-          RefundMilestones.Text.InstantRefundFailed,
           RefundMilestones.Processing.Instant,
+          RefundMilestones.Text.InstantRefundFailed,
+          RefundMilestones.Failed.Instant,
         ]);
       });
     });

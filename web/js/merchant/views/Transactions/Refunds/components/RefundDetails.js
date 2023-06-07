@@ -13,7 +13,6 @@ import { connect } from 'react-redux';
 import * as PaymentActions from 'merchant/reducers/payments/details';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
-import SettlementInfo from 'merchant/views/Settlements/components/SettlementInfo';
 import Definition from 'common/ui/Definition';
 import { bindActionCreators } from 'redux';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -21,6 +20,7 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { OptimizerDetails } from 'merchant/views/Transactions/Payments/components/OptimizerDetails';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import { SelfServeActionPages } from 'common/constant/enums';
+import { RefundStatusLabel } from 'merchant/components/StatusLabel';
 
 class PaymentDetailsContainer extends Component {
   componentDidUpdate() {
@@ -112,10 +112,13 @@ class PaymentDetailsContainer extends Component {
                   <EntityDetailRow
                     label="Status"
                     value={() => (
-                      <ContentToggler onToggleClick={viewRefundHistory}>
-                        <span>View History</span>
-                        <RefundStatusTimeline refund={refund} />
-                      </ContentToggler>
+                      <>
+                        <RefundStatusLabel status={refund.status} />
+                        <ContentToggler onToggleClick={viewRefundHistory}>
+                          <span>View History</span>
+                          <RefundStatusTimeline refund={refund} />
+                        </ContentToggler>
+                      </>
                     )}
                   />
                   <EntityDetailRow
@@ -137,6 +140,11 @@ class PaymentDetailsContainer extends Component {
                       </Definition>
                     </EntityDetailRow>
                   )}
+
+                  <EntityDetailRow
+                    label="RRN/ARN"
+                    value={refund.acquirer_data?.arn || refund.acquirer_data?.rrn}
+                  />
 
                   <EntityDetailRow
                     label="Refund Speed"
@@ -174,22 +182,6 @@ class PaymentDetailsContainer extends Component {
                     </EntityDetailRow>
                   </ShowWhen>
 
-                  {refund.transaction &&
-                    user?.isUxRevampPhase2Enabled &&
-                    (!user?.isSingleReconEnabled ||
-                      !user?.isOptimizerEnabled ||
-                      refund?.optimizer_provider === 'Razorpay') && (
-                      <EntityDetailRow label="Settlement Details">
-                        <SettlementInfo
-                          data={refund}
-                          entityType="refund"
-                          showTimeline
-                          page="Refund Detail"
-                        />
-                      </EntityDetailRow>
-                    )}
-
-                  <NestedEntityDetailRow label="Acquirer Data" value={refund.acquirer_data} />
                   <NestedEntityDetailRow label="Notes" value={refund.notes} />
                 </div>
                 {user?.isSingleReconEnabled &&

@@ -4,15 +4,15 @@ import { set, merge } from 'common/utils/immutable';
 const REFUND_FETCH = 'REFUND_FETCH';
 
 export const fetchItem = (id) => {
-  let refund = new Refund();
+  const refund = new Refund();
 
   return {
     type: REFUND_FETCH,
-    payload: refund.fetch(id, {}, { expand: ['transaction.settlement'] }),
+    payload: refund.fetch(id, {}, {}),
   };
 };
 
-let initialState = {
+const initialState = {
   loading: true,
   refund: {
     notes: {},
@@ -20,7 +20,7 @@ let initialState = {
   error: null,
 };
 
-export default function (state = initialState, action) {
+export default (state = initialState, action) => {
   switch (action.type) {
     case `${REFUND_FETCH}::PENDING`:
       return set(state, 'loading', true);
@@ -42,4 +42,4 @@ export default function (state = initialState, action) {
     default:
       return state;
   }
-}
+};
