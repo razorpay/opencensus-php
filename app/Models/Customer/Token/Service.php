@@ -2024,6 +2024,11 @@ class Service extends Base\Service
 
         $customer = $payment->customer;
 
+        if ($payment->globalCustomer !== null)
+        {
+            $customer = $payment->globalCustomer;
+        }
+
         if ($customer->isGlobal() === true)
         {
             $customer->merchant()->associate($payment->merchant);
