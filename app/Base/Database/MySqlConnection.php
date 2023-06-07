@@ -132,7 +132,8 @@ class MySqlConnection extends BaseMySqlConnection
 
     protected function tryAgainIfCausedByLostConnection(QueryException $e, $query, $bindings, Closure $callback)
     {
-        if ($this->causedByLostConnection($e->getPrevious())) {
+        if ($this->causedByLostConnection($e->getPrevious()))
+        {
             $dbConfig = $this->getConfig();
 
             $proxysqlActive = App::getFacadeRoot()['proxysql.config']->isProxySqlActive();
@@ -146,6 +147,7 @@ class MySqlConnection extends BaseMySqlConnection
                     [
                         'query' => true,
                         'name'  => $dbConfig['name'] ?? '',
+                        'func' => 'MySqlConnection::tryAgainIfCausedByLostConnection',
                     ]
                 );
 
@@ -153,10 +155,42 @@ class MySqlConnection extends BaseMySqlConnection
                 App::getFacadeRoot()['proxysql.config']->resetDatabaseConnectionHostAndPort($this->getName());
             }
 
-            $this->reconnect();
+            try
+            {
+                $this->reconnect();
 
-            return $this->runQueryCallback($query, $bindings, $callback);
+                $result = $this->runQueryCallback($query, $bindings, $callback);
+
+                $this->trace->info(
+                    TraceCode::RECONNECT_SUCCESS_AFTER_PROXY_SQL_FAILURE,
+                    [
+                        'func' => 'MySqlConnection::tryAgainIfCausedByLostConnection',
+                    ]
+                );
+
+                return $result;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex,
+                    Trace::ERROR,
+                    TraceCode::RECONNECT_FAILED_AFTER_PROXY_SQL_FAILURE,
+                    [
+                        'func' => 'MySqlConnection::tryAgainIfCausedByLostConnection',
+                    ]
+                );
+
+                throw $ex;
+            }
         }
+
+        $this->trace->traceException($e,
+            Trace::ERROR,
+            TraceCode::DB_CONNECTION_ERROR_WITH_NO_RETRY,
+            [
+                'func' => 'MySqlConnection::tryAgainIfCausedByLostConnection',
+            ]
+        );
 
         throw $e;
     }

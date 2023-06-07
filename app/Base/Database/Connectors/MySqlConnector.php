@@ -84,16 +84,50 @@ class MySqlConnector extends BaseMySqlConnector
                         TraceCode::PROXY_SQL_CONNECTION_FAILED_TRYING_NORMAL_CONNECTION,
                         [
                             'name'  => $config['name'] ?? '',
+                            'func' => 'MySqlConnector::connect',
                         ]
                     );
 
-                    $connection = parent::connect($config);
+                    // connection retry
+                    try
+                    {
+                        $connection = parent::connect($config);
+
+                        $this->app['trace']->info(
+                            TraceCode::RECONNECT_SUCCESS_AFTER_PROXY_SQL_FAILURE,
+                            [
+                                'func' => 'MySqlConnector::connect',
+                            ]
+                        );
+                    }
+                    catch (\Exception $ex)
+                    {
+                        $this->app['trace']->traceException($ex,
+                            Trace::ERROR,
+                            TraceCode::RECONNECT_FAILED_AFTER_PROXY_SQL_FAILURE,
+                            [
+                                'func' => 'MySqlConnector::connect',
+                            ]
+                        );
+
+                        throw $ex;
+                    }
                 }
             }
+            else
+            {
+                $this->markCircuitBreakerFailure();
 
-            $this->markCircuitBreakerFailure();
+                $this->app['trace']->traceException($e,
+                    Trace::ERROR,
+                    TraceCode::DB_CONNECTION_ERROR_WITH_NO_RETRY,
+                    [
+                        'func' => 'MySqlConnector::connect',
+                    ]
+                );
 
-            throw $e;
+                throw $e;
+            }
         }
 
         // Load PDO tracer here for automatically trace all db calls
