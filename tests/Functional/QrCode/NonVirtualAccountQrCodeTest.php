@@ -27,12 +27,15 @@ use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\UsageType;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\CloseReason;
 use RZP\Tests\Functional\Helpers\QrCode\NonVirtualAccountQrCodeTrait;
+use RZP\Tests\Traits\TestsWebhookEvents;
+
 
 class NonVirtualAccountQrCodeTest extends TestCase
 {
     use PaymentTrait;
     use DbEntityFetchTrait;
     use NonVirtualAccountQrCodeTrait;
+    use TestsWebhookEvents;
 
     private $vpaTerminal;
 
@@ -1260,6 +1263,61 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
         $this->assertEquals($rrn, $payment['reference16']);
     }
+
+    public function testCreateUseQrCodeWithEzetapRequestSource()
+    {
+        $qrCode = $this->createQrCode(['usage'=>'single_use', 'type'=>'upi_qr'], 'live', 'LiveAccountMer', headers: ['X-Razorpay-Request-Source' => 'ezetap']);
+
+        $qrCode = $this->getDbLastEntity('qr_code', 'live');
+
+        $this->assertEquals($qrCode['request_source'], 'ezetap');
+    }
+
+    public function testQRCreatedWebhookWithEzetapRequestSource()
+    {
+        $this->expectWebhookEvent(
+            'qr_code.created',
+            function (array $event)
+            {
+                $this->assertSame('ezetap', $event['payload']['qr_code']['entity']['request_source'] );
+            }
+        );
+
+        $qrCode = $this->createQrCode(['usage'=>'single_use', 'type'=>'upi_qr'], 'live', 'LiveAccountMer', headers: ['X-Razorpay-Request-Source' => 'ezetap']);
+
+        $qrCode = $this->getDbLastEntity('qr_code', 'live');
+
+        $this->assertEquals($qrCode['request_source'], 'ezetap');
+    }
+
+    public function testPaymentEntityInQrCodeWithEzetapRequestSource()
+    {
+        $qrCode = $this->createQrCode(['usage'=>'single_use', 'type'=>'upi_qr'], 'live', 'LiveAccountMer', headers: ['X-Razorpay-Request-Source' => 'ezetap']);
+
+        $qrCodeId = $qrCode['id'];
+        $this->fixtures->stripSign($qrCodeId);
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+
+        $rrn = '000011100102';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeId . 'qrv2';
+
+        $this->makeUpiIciciPayment($request);
+
+        $payment   = $this->getLastEntity('payment', true, 'live');
+        $qrCode = $this->getDbLastEntity('qr_code', 'live');
+
+        $this->assertEquals('closed', $qrCode['status']);
+        $this->assertEquals('paid', $qrCode['close_reason']);
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($qrCode['request_source'], 'ezetap');
+        $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
+        $this->assertEquals($rrn, $payment['reference16']);
+        $this->assertEquals('offline', $payment['notes']['receiver_type']);
+    }
+
 
     public function testCardQrPaymentProcess()
     {

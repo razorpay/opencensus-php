@@ -23,6 +23,7 @@ use RZP\Models\QrCode\Repository as QrRepo;
 use RZP\Base\Database\DetectsLostConnections;
 use RZP\Models\BharatQr\GatewayResponseParams;
 use RZP\Models\QrCode\NonVirtualAccountQrCode;
+use RZP\Models\QrPayment\Constants as QrConstants;
 use RZP\Models\QrCodeConfig\Keys as QrCodeConfigKeys;
 use RZP\Models\QrCodeConfig\Repository as QrConfigRepo;
 use RZP\Models\Payment\Processor\UpiUnexpectedPaymentRefundHandler;
@@ -346,6 +347,12 @@ class Processor extends Base\Core
             Payment\Entity::DESCRIPTION => 'QRv2 Payment',
             Payment\Entity::NOTES       => $this->qrCode->getNotes()->toArray(),
         ];
+
+        if ($this->qrCode->getRequestSource() === NonVirtualAccountQrCode\RequestSource::EZETAP)
+        {
+            $paymentArray[Payment\Entity::NOTES] = array_merge($paymentArray[Payment\Entity::NOTES],
+                [QrConstants::PAYMENT_TYPE_KEY => QrConstants::PAYMENT_TYPE_OFFLINE]);
+        }
 
         $paymentArray = array_merge($paymentArray, $parentPaymentArray);
 

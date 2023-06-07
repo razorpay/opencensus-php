@@ -11,6 +11,7 @@ class RequestSource
     const API                 = 'api';
     const PAYMOBAPP           = 'payMobApp';
     const FALLBACK            = 'fallback';
+    const EZETAP              = 'ezetap';
 
     public static function isRequestSourceValid(string $requestSource): bool
     {

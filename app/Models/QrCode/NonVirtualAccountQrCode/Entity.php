@@ -105,6 +105,7 @@ class Entity extends QrCode\Entity
         self::CLOSE_REASON,
         self::RESP_IMAGE_CONTENT,
         self::TAX_INVOICE,
+        self::REQUEST_SOURCE,
     ];
 
     protected $casts = [
@@ -124,6 +125,7 @@ class Entity extends QrCode\Entity
         self::REQ_AMOUNT,
         self::RESP_PAYMENTS_COUNT_RECEIVED,
         self::RESP_IMAGE_CONTENT,
+        self::REQUEST_SOURCE,
     ];
 
     protected $defaults = [
@@ -265,6 +267,14 @@ class Entity extends QrCode\Entity
         })->first();
 
         return (empty($partner) === false);
+    }
+
+    protected function setPublicRequestSourceAttribute(array &$array)
+    {
+        if ($this->getRequestSource() === RequestSource::EZETAP)
+        {
+            $array[self::REQUEST_SOURCE] = $this->getAttribute(self::REQUEST_SOURCE);
+        }
     }
 
     public function isCheckoutQrCode(): bool
