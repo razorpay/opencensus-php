@@ -250,6 +250,7 @@ class Gateway extends Base\Gateway
                             'status'        => 'authorized',
                             'rrn'           => '001000100002',
                             'npci_txn_id'   => 'npci_txn_id_for_' . $payment['id'],
+                            'vpa'           => 'testuser@razorpay',
                         ]);
                     }
                     catch (Exception\GatewayErrorException $exception)
@@ -502,7 +503,7 @@ class Gateway extends Base\Gateway
 
             $acquirerData = [
                 'acquirer' => [
-                    'vpa'               => $input['payment']['vpa'],
+                    'vpa'               => $input['payment']['vpa'] ?? 'testuser@razorpay',
                     'reference16'       => $input['gateway']['rrn'],
                     'reference1'        => $input['gateway']['npci_txn_id']
                 ],
@@ -519,6 +520,7 @@ class Gateway extends Base\Gateway
                     'rrn'               => $input['gateway']['rrn'],
                     'npci_txn_id'       => $input['gateway']['npci_txn_id'],
                     'internal_status'   => 'authorized',
+                    'vpa'               => 'testuser@razorpay',
                 ],
             ];
         }
