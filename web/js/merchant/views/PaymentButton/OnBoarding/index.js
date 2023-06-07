@@ -2,7 +2,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import imgPaymentButtonRzp from 'assets/product_onboarding/payment_button.svg';
-
+import imgPaymentButtonCurlec from 'assets/product_onboarding/payment_button_curlec.svg';
 import { RZPFeatures } from 'merchant/helpers/data';
 
 import Slider, { SliderDots } from 'common/new-ui/Slider';
@@ -29,7 +29,7 @@ import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 
 const ORG_ONBOARDING_IMG = {
   [ORG_CUSTOM_CODE_MAP.RAZORPAY]: imgPaymentButtonRzp,
-  [ORG_CUSTOM_CODE_MAP.CURLEC]: imgPaymentButtonRzp,
+  [ORG_CUSTOM_CODE_MAP.CURLEC]: imgPaymentButtonCurlec,
 };
 
 @connect(
