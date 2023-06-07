@@ -519,7 +519,13 @@ class Processor
 
 
     protected static $upiRearchRoutes = [
-        'payment_create_upi'
+        'payment_create_upi',
+        'payment_create_ajax'
+    ];
+
+    protected static $upiRearchLibrary = [
+        Payment\Analytics\Metadata::S2S,
+        Payment\Analytics\Metadata::CHECKOUTJS
     ];
 
     public function __construct(Merchant\Entity $merchant)
@@ -1396,8 +1402,10 @@ class Processor
             }
             */
 
+            $featureFlag = self::ALLOW_MERCHANTS_ON_REARCH_UPS_V2 . '_' . $input['_']['library'];
+
             // Allow re-arch traffic, merchants added in this flag will be routes via UPS re-arch
-            $result = $this->app->razorx->getTreatment($merchant->getId(), self::ALLOW_MERCHANTS_ON_REARCH_UPS_V2,
+            $result = $this->app->razorx->getTreatment($merchant->getId(), $featureFlag,
             $this->mode);
 
             $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_PAYMENTS_RAZORX_VARIANT,
@@ -1452,12 +1460,6 @@ class Processor
         if ($this->isUpiRearchRoute($currentRouteName) == false)
         {
             $response['reason'] = 'Condition: isUpiRearchRoute() is false';
-            return $response;
-        }
-
-        if ($this->app['basicauth']->isPrivateAuth() === false)
-        {
-            $response['reason'] = 'Condition: isPrivateAuth() is false';
             return $response;
         }
 
@@ -1605,10 +1607,9 @@ class Processor
         {
             $library = $input['_']['library'];
 
-            // Only s2s payments supported
-            if ($library !== Payment\Analytics\Metadata::S2S)
+            if ($this->isUpiRearchLibrary($library) == false)
             {
-                $response['reason'] = 'Condition: _ library is not S2S';
+                $response['reason'] = 'Condition: isUpiRearchLibrary() is false (Library : ' . $library . ')';
                 return $response;
             }
         }
@@ -9275,6 +9276,17 @@ class Processor
     public static function isUpiRearchRoute(string $route): bool
     {
         return (in_array($route, self::$upiRearchRoutes, true) === true);
+    }
+
+    /**
+     * returns if library is valid for  upi rearch
+     *
+     * @param string $library
+     * @return boolean
+     */
+    public static function isUpiRearchLibrary(string $library): bool
+    {
+        return (in_array($library, self::$upiRearchLibrary, true) === true);
     }
 
     private function checkIfTransferSyncProcessingViaApiIsWithinLimit()
