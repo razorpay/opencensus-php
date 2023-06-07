@@ -24,12 +24,13 @@ import { fetchPaymentButtonsList as fetchAll } from 'merchant/reducers/paymentbu
 import { setIsPaymentButtonCodeUsed } from 'merchant/views/PaymentButton/utils';
 import track from './track';
 
-import EmptyListImage from 'assets/payment_button/empty-list.svg';
+import EmptyListImageRzp from 'assets/payment_button/empty-list.svg';
 import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
+import EmptyListImageCurlec from 'assets/payment_button/sidebar-display-curlec.svg';
 
 const PAYMENT_BTN_EMPTYLIST_IMG = {
-  [ORG_CUSTOM_CODE_MAP.RAZORPAY]: EmptyListImage,
-  [ORG_CUSTOM_CODE_MAP.CURLEC]: EmptyListImage,
+  [ORG_CUSTOM_CODE_MAP.RAZORPAY]: EmptyListImageRzp,
+  [ORG_CUSTOM_CODE_MAP.CURLEC]: EmptyListImageCurlec,
 };
 
 const TABS_DATA = {

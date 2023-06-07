@@ -4,7 +4,15 @@ import { classList } from 'common/utils/rzp-utils';
 import { templateTypes } from 'merchant/views/PaymentButton/PaymentButton/Create/components/Templates/meta';
 import track from 'merchant/views/PaymentButton/PaymentButton/Create/track';
 
-import SidebarImage from 'assets/payment_button/sidebar-display.svg';
+import SidebarImageRzp from 'assets/payment_button/sidebar-display.svg';
+import SidebarImageCurlec from 'assets/payment_button/sidebar-display-curlec.svg';
+
+import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
+
+const PAYMENT_BTN_SIDEBAR_IMG = {
+  [ORG_CUSTOM_CODE_MAP.RAZORPAY]: SidebarImageRzp,
+  [ORG_CUSTOM_CODE_MAP.CURLEC]: SidebarImageCurlec,
+};
 
 export default class SideBar extends React.Component {
   get isQuickPayTemplate() {
@@ -73,13 +81,16 @@ export default class SideBar extends React.Component {
   }
 
   render() {
-    const { isSuccessViewOpened, isSuccessViewOpenedForExistingId } = this.props;
+    const { isSuccessViewOpened, isSuccessViewOpenedForExistingId, orgCustomCode } = this.props;
     const progressPercentage = (this.totalTabsDone * 100) / this.totalTabs;
+    const sidebarImage =
+      PAYMENT_BTN_SIDEBAR_IMG[orgCustomCode] ||
+      PAYMENT_BTN_SIDEBAR_IMG[ORG_CUSTOM_CODE_MAP.RAZORPAY];
 
     return (
       <div class="PaymentButton-Create-SideBar">
         <ShowWhen additionalCondition={(user) => !user.isOrgAxis}>
-          <img src={SidebarImage} />
+          <img src={sidebarImage} />
         </ShowWhen>
 
         <div class="SideBar-title">
