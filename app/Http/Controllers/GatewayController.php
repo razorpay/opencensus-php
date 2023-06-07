@@ -1947,6 +1947,14 @@ class GatewayController extends Controller
                 RazorxTreatment::SKIP_UPI_ICICI_CALLBACK_FOR_BT,
                 $mode);
 
+            $this->trace->info(
+                TraceCode::RAZORX_SKIP_UPI_ICICI_CALLBACK_FOR_BT,
+                [
+                    'variant' => $variant,
+                    'mode' => $mode,
+                    'merchant_id' => $merchantID
+                ]);
+
             if (strtolower($variant) === 'on')
             {
                 return true;
