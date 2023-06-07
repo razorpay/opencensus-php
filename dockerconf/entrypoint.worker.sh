@@ -68,8 +68,8 @@ change_db_user_for_workers() {
   # Please note, that the password for web & queue app users needs to be the same,
   # as we are NOT changing the password in the below code.
   if [[ "${APP_MODE}" == "prod" ]]; then
-    sed -i "s/SLAVE_DB_LIVE_USERNAME .*/SLAVE_DB_LIVE_USERNAME=api_worker/g" $vault_file
-    sed -i "s/SLAVE_DB_TEST_USERNAME .*/SLAVE_DB_TEST_USERNAME=api_test_worker/g" $vault_file
+    sed -i "s/SLAVE_DB_LIVE_USERNAME .*/SLAVE_DB_LIVE_USERNAME=api_worker_replica/g" $vault_file
+    sed -i "s/SLAVE_DB_TEST_USERNAME .*/SLAVE_DB_TEST_USERNAME=api_worker_test_replica/g" $vault_file
     sed -i "s/DB_LIVE_USERNAME .*/DB_LIVE_USERNAME=api_worker/g" $vault_file
     sed -i "s/DB_TEST_USERNAME .*/DB_TEST_USERNAME=api_test_worker/g" $vault_file
   elif [[ "${APP_MODE}" == "automation" ]] || [[ "${APP_MODE}" == "func" ]] || [[ "${APP_MODE}" == "bvt" ]] || [[ "${APP_MODE}" == "availability" ]] || [[ "${APP_MODE}" == "perf" ]] || [[ "${APP_MODE}" == "perf1" ]] || [[ "${APP_MODE}" == "perf2" ]]; then
