@@ -36,6 +36,7 @@ export default (params) => {
         ...newState,
         user: state.session.user,
         mode: state.session.mode,
+        org: state.session.org,
         currentOnboarding: getCurrentProductOnBoardingDetails(state, FEATURE),
       };
     },

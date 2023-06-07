@@ -1,24 +1,30 @@
 import { PossibleStatuses } from 'merchant/helpers/data';
-
+import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 const { done } = PossibleStatuses;
 
+const INVOICE_CREATED_TEXT_MAPPING = {
+  [ORG_CUSTOM_CODE_MAP.CURLEC]:
+    'Create invoices instantly and notify your customer via sms or email.',
+  [ORG_CUSTOM_CODE_MAP.RAZORPAY]:
+    'Create GST based invoices instantly and notify your customer via sms or email.',
+};
+
 export const getQuickGuideData = {
-  Invoice: status => {
+  invoice: (status, orgCustomCode = 'rzp') => {
+    const textLabel = INVOICE_CREATED_TEXT_MAPPING[orgCustomCode];
     if (status === done) {
       return {
         title: '1. Invoice Created',
-        content:
-          'Create GST based invoices instantly and notify your customer via sms or email.',
+        content: textLabel,
       };
     }
 
     return {
       title: '1. Create Invoice',
-      content:
-        'Create GST based invoices instantly and notify your customer via sms or email.',
+      content: textLabel,
     };
   },
-  ReceivePayments: status => {
+  receivePayments: (status) => {
     if (status === done) {
       return {
         title: '2. Payments Received',
@@ -28,8 +34,7 @@ export const getQuickGuideData = {
 
     return {
       title: '2. Receive Payments',
-      content:
-        'Your customers can make payments directly via the invoice link.',
+      content: 'Your customers can make payments directly via the invoice link.',
     };
   },
 };
