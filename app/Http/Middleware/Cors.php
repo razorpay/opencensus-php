@@ -2,9 +2,11 @@
 
 namespace App\Http\Middleware;
 
+use Trace;
 use Closure;
 use App\Http\ApiUrl;
 use App\Http\Headers;
+use App\Trace\TraceCode;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class Cors
@@ -162,6 +164,10 @@ class Cors
                 
                 $response->headers->set('X-Accel-Buffering', 'no');
                 
+                Trace::info(TraceCode::CHUNKED_DETAILS, [
+                    'location' => 'cors_should_allow_cors',
+                ]);
+                
                 return $response;
             }
             
@@ -169,7 +175,18 @@ class Cors
 
             return $response;
         }
+        
+        $response = $next($request);
+        
+        if($response instanceof StreamedResponse)
+        {
+            $response->headers->set('X-Accel-Buffering', 'no');
 
-        return $next($request);
+            Trace::info(TraceCode::CHUNKED_DETAILS, [
+                'location' => 'cors_should_not_allow_cors',
+            ]);
+        }
+        
+        return $response;
     }
 }
