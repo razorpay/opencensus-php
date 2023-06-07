@@ -47,6 +47,24 @@ export const PAYTM_PROVIDER = {
   },
 };
 
+export const NETBANKING_AXIS_PROVIDER = {
+  isEdit: true,
+  selectedProvider: 'netbanking_axis',
+  providers: SUPPORTED_GATEWAYS,
+  provider: {
+    Provider_name: 'netbanking axis test 1',
+    Description: 'test',
+    Gateway: 'netbanking_axis',
+    Gateway_details: {
+      'Payment Methods': [],
+      TPV: 0,
+    },
+  },
+  validationErrors: {},
+  changeGatewayDetails: jest.fn(),
+  changeGatewayWallets: jest.fn(),
+};
+
 export const App = (props) => {
   return <Step3 {...props} />;
 };

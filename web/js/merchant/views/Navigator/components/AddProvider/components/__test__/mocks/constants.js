@@ -101,4 +101,29 @@ export const SUPPORTED_GATEWAYS = {
       terminals_key: '',
     },
   },
+  netbanking_axis: {
+    'Gateway Name': {
+      data_type: 'string',
+      data_value: 'Axis Netbanking',
+      terminals_key: '',
+    },
+    'Merchant Id': {
+      data_type: 'string',
+      data_value: 'payee id',
+      min_length: 1,
+      terminals_key: '',
+    },
+    'Payment Methods': {
+      data_type: 'array',
+      data_value: ['netbanking'],
+      terminals_key: '',
+    },
+    TPV: {
+      data_type: 'array',
+      data_value: [0, 1, 2],
+      terminals_key: '',
+    },
+  },
 };
+
+export const TPV_OPTIONS = ['Non TPV', 'TPV Only', 'Both (TPV and Non TPV)'];

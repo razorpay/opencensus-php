@@ -22,6 +22,17 @@ import {
 import APIDetails from './components/APIDetails';
 import NoProviderFound from './components/NoProviderFound';
 
+const TPVDetails = ({ tpv }) => {
+  if (!isBlank(tpv)) {
+    return (
+      <div className="list-group details-row-container">
+        <EntityDetailRow label="TPV" value={() => TPV_OPTIONS[tpv] || ''} />
+      </div>
+    );
+  }
+  return null;
+};
+
 @withRouter
 @connect(
   (state) => {
@@ -61,6 +72,7 @@ export default class ProviderDetails extends Component {
         provider?.Gateway_details?.hasOwnProperty('optimizer_seamless_disabled');
       const {
         'UPI Features': upiFeatures,
+        'Netbanking Features': netbankingFeatures,
         'Payment Methods': paymentMethods,
         optimizer_seamless_disabled,
         [WALLET_AUTO_DEBIT_KEY]: walletAutoDebit,
@@ -143,14 +155,9 @@ export default class ProviderDetails extends Component {
                     </div>
                   )}
 
-                  {!isBlank(upiFeatures?.tpv) && (
-                    <div className="list-group details-row-container">
-                      <EntityDetailRow
-                        label="TPV"
-                        value={() => TPV_OPTIONS[upiFeatures?.tpv] || ''}
-                      />
-                    </div>
-                  )}
+                  <TPVDetails tpv={upiFeatures?.tpv} />
+
+                  <TPVDetails tpv={netbankingFeatures?.tpv} />
 
                   {seamlessOptionExist && (
                     <div className="list-group details-row-container">

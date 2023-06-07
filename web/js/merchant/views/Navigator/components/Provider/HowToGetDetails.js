@@ -1,5 +1,5 @@
 import ModalHeader from 'common/ui/ModalHeader';
-import { gatewayDetailsMapping } from '../util';
+import { gatewayDetailsMapping } from 'merchant/views/Navigator/components/util';
 
 const PROVIDERS_WITH_DETAILS_ON_EMAIL = [
   'atom',
@@ -12,6 +12,7 @@ const PROVIDERS_WITH_DETAILS_ON_EMAIL = [
   'cybersource_hdfc',
   'cybersource_axis',
   'upi_icici',
+  'netbanking_axis',
 ];
 
 export const HowToGetDetails = ({ providers, selectedProvider, closeModal }) => {

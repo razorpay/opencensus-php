@@ -1231,6 +1231,8 @@ export const rule = {
 
 const LOGO_PATH = 'static/assets/merchant-dash/providers';
 
+const AXIS_LOGO_PATH = `${window.cdnBaseUrl}/${LOGO_PATH}/axis.png`;
+
 export const gatewayLogos = {
   razorpay: `${window.cdnBaseUrl}/${LOGO_PATH}/razorpay.png`,
   smart_router: `${window.cdnBaseUrl}/${LOGO_PATH}/razorpay.png`,
@@ -1247,10 +1249,11 @@ export const gatewayLogos = {
   upi_mindgate: `${window.cdnBaseUrl}/${LOGO_PATH}/hdfc.png`,
   pinelabs: `${window.cdnBaseUrl}/${LOGO_PATH}/pinelabs.png`,
   ingenico: `${window.cdnBaseUrl}/${LOGO_PATH}/ingenico.png`,
-  axis_migs: `${window.cdnBaseUrl}/${LOGO_PATH}/axis.png`,
-  upi_axis: `${window.cdnBaseUrl}/${LOGO_PATH}/axis.png`,
+  axis_migs: AXIS_LOGO_PATH,
+  upi_axis: AXIS_LOGO_PATH,
   hdfc: `${window.cdnBaseUrl}/${LOGO_PATH}/hdfc.png`,
   upi_icici: `${window.cdnBaseUrl}/${LOGO_PATH}/icici.png`,
+  netbanking_axis: AXIS_LOGO_PATH,
 };
 
 export const popularGateways = ['payu'];
@@ -1429,6 +1432,12 @@ export const gatewayDetailsMapping = {
     dashboardImg: null,
     dashboardUrl: 'https://merchants.fiserv.com/india/',
     dashboardUrlLabel: 'merchants.fiserv.com',
+  },
+  netbanking_axis: {
+    dashboardImg: null,
+    dashboardUrl:
+      'https://www.axisbank.com/business-banking/collection-solutions/internet-payment-gateway-solutions/overview',
+    dashboardUrlLabel: 'axisbank.com',
   },
 };
 

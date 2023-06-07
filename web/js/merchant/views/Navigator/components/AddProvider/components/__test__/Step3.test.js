@@ -1,8 +1,9 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import { render, screen } from 'test-utils';
-import { App, PAYU_PROVIDER, PAYTM_PROVIDER } from './mocks/Step3';
+import { App, PAYU_PROVIDER, PAYTM_PROVIDER, NETBANKING_AXIS_PROVIDER } from './mocks/Step3';
 import { deepClone } from 'common/utils/rzp-utils';
+import { TPV_OPTIONS } from './mocks/constants';
 
 describe('Add Provider Step 3 Screen', () => {
   const renderApp = (props = {}) => {
@@ -64,5 +65,23 @@ describe('Add Provider Step 3 Screen', () => {
         expect(screen.getByText(field)).toBeInTheDocument();
       },
     );
+  });
+
+  describe('For netbanking axis gateway', () => {
+    const FIELDS = ['Merchant Id', 'Payment Methods', 'TPV'];
+
+    test('should render without any errors', () => {
+      expect(() => renderApp(NETBANKING_AXIS_PROVIDER)).not.toThrowError();
+    });
+
+    test.each(FIELDS)('should rendered the requried fields: %s', (field) => {
+      renderApp(NETBANKING_AXIS_PROVIDER);
+      expect(screen.getByText(field)).toBeInTheDocument();
+    });
+
+    test.each(TPV_OPTIONS)('should render tpv option: %s', (option) => {
+      renderApp(NETBANKING_AXIS_PROVIDER);
+      expect(screen.getByText(option)).toBeInTheDocument();
+    });
   });
 });

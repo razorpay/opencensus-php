@@ -22,8 +22,8 @@ import { getSelectedProviderWithAcquirer as getSelectedProvider } from './util';
 import {
   INIT_PROVIDER_STATE,
   INIT_FORM_STATE,
-  HAVE_NETBANKING_FEATURES,
-  HAVE_UPI_FEATURES,
+  HAS_NETBANKING_FEATURES,
+  HAS_UPI_FEATURES,
   NETBANKING_FEATURES,
   UPI_FEATURES,
   SKIP_VALIDATION_KEYS,
@@ -107,9 +107,9 @@ export default class AddProvider extends React.Component {
       if (provider) {
         const { Gateway, Gateway_details } = provider;
 
-        if (HAVE_UPI_FEATURES.includes(Gateway)) {
+        if (HAS_UPI_FEATURES.includes(Gateway)) {
           provider.Gateway_details.TPV = Gateway_details[UPI_FEATURES]?.tpv ?? 0;
-        } else if (HAVE_NETBANKING_FEATURES.includes(Gateway)) {
+        } else if (HAS_NETBANKING_FEATURES.includes(Gateway)) {
           provider.Gateway_details.TPV = Gateway_details[NETBANKING_FEATURES]?.tpv ?? 0;
         }
 
@@ -117,6 +117,7 @@ export default class AddProvider extends React.Component {
           ...deepClone(INIT_FORM_STATE),
           selectedProvider: provider?.Gateway || '',
           provider,
+          allDetailsValid: true,
         });
       }
     }
@@ -175,7 +176,7 @@ export default class AddProvider extends React.Component {
         }
       }
 
-      if ([...HAVE_NETBANKING_FEATURES, ...HAVE_UPI_FEATURES].includes(provider)) {
+      if ([...HAS_NETBANKING_FEATURES, ...HAS_UPI_FEATURES].includes(provider)) {
         provider_st.Gateway_details.TPV = 0;
       }
 
@@ -507,11 +508,11 @@ export default class AddProvider extends React.Component {
     if (Gateway_details.hasOwnProperty('TPV')) {
       const tpv = Number(Gateway_details?.TPV) ?? 0;
 
-      if (HAVE_UPI_FEATURES.includes(selectedProvider)) {
+      if (HAS_UPI_FEATURES.includes(selectedProvider)) {
         const upiFeatures = Gateway_details?.[UPI_FEATURES] || {};
 
         Gateway_details[UPI_FEATURES] = { ...upiFeatures, tpv };
-      } else if (HAVE_NETBANKING_FEATURES.includes(selectedProvider)) {
+      } else if (HAS_NETBANKING_FEATURES.includes(selectedProvider)) {
         const netBanking = Gateway_details?.[NETBANKING_FEATURES] || {};
 
         Gateway_details[NETBANKING_FEATURES] = { ...netBanking, tpv };

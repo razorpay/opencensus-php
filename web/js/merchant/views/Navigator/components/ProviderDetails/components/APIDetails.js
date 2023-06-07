@@ -7,6 +7,7 @@ import { WALLET_AUTO_DEBIT_KEY } from 'merchant/views/Navigator/constants';
 const IGNORE_FIELDS = [
   'Payment Methods',
   'UPI Features',
+  'Netbanking Features',
   'optimizer_seamless_disabled',
   WALLET_AUTO_DEBIT_KEY,
 ];
