@@ -390,7 +390,8 @@ class Service extends Base\Service
                 'phone_no'     => $input['phone_no'],
                 'website_url'  => $input['website_url'],
                 'description'  => $input['other_info'],
-                'name'         => $partner->getName()
+                'name'         => $partner->getName(),
+                'email'        => $partner->getEmail()
             ]
         ];
         $partnershipsResponse = $this->app->partnerships->createPartnerMigrationAudit($params);

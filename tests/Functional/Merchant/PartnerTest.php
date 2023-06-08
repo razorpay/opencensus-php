@@ -5357,7 +5357,8 @@ class PartnerTest extends OAuthTestCase
                 'phone_no'     => $input['phone_no'],
                 'website_url'  => $input['website_url'],
                 'description'  => $input['other_info'],
-                'name'         => $merchant->getName()
+                'name'         => $merchant->getName(),
+                'email'        => $merchant->getEmail()
             ]
         ];
     }
