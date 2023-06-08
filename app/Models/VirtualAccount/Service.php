@@ -246,7 +246,7 @@ class Service extends Base\Service
 
             if($expirySettingInMinutes === -1)
             {
-                $expirySettingInMinutes = $setVADefaultExpiryFeatureForORG == true ? Constant::ECMS_CHALLAN_DEFAULT_EXPIRY_IN_HOURS : Constant::HDFC_LIVE_VA_OFFSET_DEFAULT_CLOSE_BY_HOURS;
+                $expirySettingInMinutes = $setVADefaultExpiryFeatureForORG == true ? Constant::ECMS_CHALLAN_DEFAULT_EXPIRY_IN_MINUTES : Constant::HDFC_LIVE_VA_OFFSET_DEFAULT_CLOSE_BY_MINUTES;
             }
 
             $createArray[Entity::CLOSE_BY] = Carbon::now(Timezone::IST)

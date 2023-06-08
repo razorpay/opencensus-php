@@ -8,12 +8,12 @@ class Constant
     /*
      * Special org level default expiry for ECMS org
      */
-    const ECMS_CHALLAN_DEFAULT_EXPIRY_IN_HOURS = 3 * 24 * 60;
+    const ECMS_CHALLAN_DEFAULT_EXPIRY_IN_MINUTES = 3 * 24 * 60;
 
     /*
      * Special merchant level default expiry for HDFC LIFE
      */
-    const HDFC_LIVE_VA_OFFSET_DEFAULT_CLOSE_BY_HOURS = 5 * 24 * 60;
+    const HDFC_LIVE_VA_OFFSET_DEFAULT_CLOSE_BY_MINUTES = 5 * 24 * 60;
 
     const VA_EXPIRY_OFFSET = 'va_expiry_offset';
 

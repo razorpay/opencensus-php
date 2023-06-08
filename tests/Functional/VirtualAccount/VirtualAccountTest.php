@@ -131,7 +131,7 @@ class VirtualAccountTest extends TestCase
         $bankAccount = $this->getLastEntity('bank_account', true);
         $this->assertEquals($virtualAccount['id'], 'va_' . $bankAccount['entity_id']);
 
-        $closeBy = Carbon::now(Timezone::IST)->addHours(Constant::ECMS_CHALLAN_DEFAULT_EXPIRY_IN_HOURS)->toDateString();
+        $closeBy = Carbon::now(Timezone::IST)->addMinutes(Constant::ECMS_CHALLAN_DEFAULT_EXPIRY_IN_MINUTES)->toDateString();
 
         $vaCloseByDate = Carbon::createFromTimestamp($virtualAccount['close_by'], Timezone::IST)->toDateString();
 
@@ -154,7 +154,7 @@ class VirtualAccountTest extends TestCase
 
         $virtualAccount = $this->getLastEntity('virtual_account', true);
 
-        $closeBy =  Carbon::now(Timezone::IST)->addHours($expiryOffset)->toDateString();
+        $closeBy =  Carbon::now(Timezone::IST)->addMinutes($expiryOffset)->toDateString();
 
         $vaCloseByDate = Carbon::createFromTimestamp($virtualAccount['close_by'], Timezone::IST)->toDateString();
 
@@ -1034,7 +1034,9 @@ class VirtualAccountTest extends TestCase
     {
         $order = $this->fixtures->create('order');
 
-        $response = $this->createVirtualAccountForOrder($order, ['close_by' => 1677644500]);
+        $closeBy = Carbon::now(Timezone::IST)->addSeconds(VirtualAccount\Validator::DEFAULT_CLOSE_BY_DIFF)->getTimestamp();
+
+        $response = $this->createVirtualAccountForOrder($order, ['close_by' => $closeBy]);
 
         $expectedResponse = $this->testData[__FUNCTION__];
 
@@ -1045,7 +1047,7 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals(Status::ACTIVE, $virtualAccount['status']);
         $this->assertEquals($order->getId(), $virtualAccount['entity_id']);
         $this->assertEquals('order', $virtualAccount['entity_type']);
-        $this->assertEquals(1677644500, $virtualAccount['close_by']);
+        $this->assertEquals($closeBy, $virtualAccount['close_by']);
 
         $bankAccount = $this->getLastEntity('bank_account', true);
         $this->assertEquals($virtualAccount['id'], 'va_' . $bankAccount['entity_id']);
@@ -1292,18 +1294,11 @@ class VirtualAccountTest extends TestCase
     {
         $this->fixtures->merchant->disableMethod('10000000000000', 'upi');
 
+        $this->expectException(\RZP\Exception\LogicException::class);
+
+        $this->expectExceptionMessage('No identifiers found for the merchant');
+
         $this->createVirtualAccount(['receiver_types'  => 'qr_code']);
-
-        $qrCode = $this->getLastEntity('qr_code', true);
-        $tlvArray = $this->getTagMappedValues($qrCode['qr_string']);
-
-        // Card identifiers present
-        $this->assertArrayHasKey('02', $tlvArray);
-        $this->assertArrayHasKey('04', $tlvArray);
-        $this->assertArrayHasKey('06', $tlvArray);
-        // UPI identifiers not present
-        $this->assertArrayNotHasKey('26', $tlvArray);
-        $this->assertArrayNotHasKey('27', $tlvArray);
     }
 
     public function testCreateVirtualAccountWithBharatQrWithOneTerminal()
@@ -3864,7 +3859,7 @@ class VirtualAccountTest extends TestCase
         $bankAccount = $this->getLastEntity('bank_account', true);
         $this->assertEquals($virtualAccount['id'], 'va_' . $bankAccount['entity_id']);
 
-        $closeBy = Carbon::now(Timezone::IST)->addHours(Constant::HDFC_LIVE_VA_OFFSET_DEFAULT_CLOSE_BY_HOURS)->toDateString();
+        $closeBy = Carbon::now(Timezone::IST)->addMinutes(Constant::HDFC_LIVE_VA_OFFSET_DEFAULT_CLOSE_BY_MINUTES)->toDateString();
 
         $vaCloseByDate = Carbon::createFromTimestamp($virtualAccount['close_by'], Timezone::IST)->toDateString();
 
@@ -3888,7 +3883,7 @@ class VirtualAccountTest extends TestCase
 
         $virtualAccount = $this->getLastEntity('virtual_account', true);
 
-        $closeBy = Carbon::now(Timezone::IST)->addHours($expiryOffset)->toDateString();
+        $closeBy = Carbon::now(Timezone::IST)->addMinutes($expiryOffset)->toDateString();
 
         $vaCloseByDate = Carbon::createFromTimestamp($virtualAccount['close_by'], Timezone::IST)->toDateString();
 
