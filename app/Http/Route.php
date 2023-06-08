@@ -15742,7 +15742,9 @@ class Route
         'payment_fetch_multiple',
         'customer_get_saved_status',
         'customer_fetch_tokens_internal',
-        'reconciliate_via_batch_service'
+        'reconciliate_via_batch_service',
+        'customer_truecaller_verify',
+        '1cc_customer_truecaller_verify',
     ];
 
     protected static $rearchRoutes = [
