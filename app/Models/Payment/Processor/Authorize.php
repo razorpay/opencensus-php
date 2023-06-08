@@ -6106,11 +6106,13 @@ trait Authorize
                                                            ?Token\Entity $token,
                                                            & $gatewayInput)
     {
-        if(($payment->isUpiAutoRecurring() === true) and
-            ($token !== null))
+        if((($payment->isUpiAutoRecurring() === true) or
+                (($payment->isCardAutoRecurring() === true) and
+                    ($payment->card->isRuPay() === true))) and
+                ($token !== null))
         {
             $this->trace->info(
-                TraceCode::UPI_RECURRING_SET_TERMINAL_FROM_TOKEN,
+                TraceCode::RECURRING_SET_TERMINAL_FROM_TOKEN,
                 [
                     'token_id'      => $token->getId(),
                     'terminal_id'   => $token->getTerminalId(),

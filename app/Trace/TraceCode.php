@@ -1534,7 +1534,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_RECURRING_REJECTED_WITHOUT_REASON             = 'GATEWAY_RECURRING_REJECTED_WITHOUT_REASON';
     const UPDATED_IIN_AND_TOKEN_DETAILS                         = 'UPDATED_IIN_AND_TOKEN_DETAILS';
     const UPDATED_IIN_AND_CARD_ENTITY                           = 'UPDATED_IIN_AND_CARD_ENTITY';
-    const UPI_RECURRING_SET_TERMINAL_FROM_TOKEN                 = 'UPI_RECURRING_SET_TERMINAL_FROM_TOKEN';
+    const RECURRING_SET_TERMINAL_FROM_TOKEN                     = 'RECURRING_SET_TERMINAL_FROM_TOKEN';
     const CARD_META_DATA_EVENT                                  = 'CARD_META_DATA_EVENT';
 
     //Pricing
