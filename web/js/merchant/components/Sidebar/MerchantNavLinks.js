@@ -358,7 +358,9 @@ function MerchantNavLinks(props) {
         type="wallet"
         to="/wallet"
         additionalCondition={(currentUser) =>
-          currentUser.isIssuingDashboardEnabled || currentUser.isIssuingBulkUploadEnabled
+          currentUser.isIssuingDashboardEnabled ||
+          currentUser.isIssuingBulkUploadEnabled ||
+          user.isIssuingFundsTabEnabled
         }
       />
 

@@ -570,7 +570,9 @@ export default class Content extends Component {
             exact={false}
             component={Wallet}
             additionalCondition={(user) =>
-              user.isIssuingDashboardEnabled || user.isIssuingBulkUploadEnabled
+              user.isIssuingDashboardEnabled ||
+              user.isIssuingBulkUploadEnabled ||
+              user.isIssuingFundsTabEnabled
             }
           />
 

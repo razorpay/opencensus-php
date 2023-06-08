@@ -923,6 +923,10 @@ export default class User {
     return this.getExpStatus('issuinghq_wallet_dashboard_enabled');
   }
 
+  get isIssuingFundsTabEnabled() {
+    return this.getExpStatus('issuinghq_wallet_fundstab_enabled');
+  }
+
   get isIssuingBulkUploadEnabled() {
     const allowedRoles = [rolesList.MANAGER, rolesList.OWNER, rolesList.FINANCE];
     return (

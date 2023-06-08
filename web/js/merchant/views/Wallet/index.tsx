@@ -41,7 +41,11 @@ const WalletContainer = (session: WalletSession): JSX.Element => (
               Transactions
             </NavLink>
           </ShowWhen>
-          <ShowWhen additionalCondition={(user) => user.isIssuingDashboardEnabled}>
+          <ShowWhen
+            additionalCondition={(user) =>
+              user.isIssuingDashboardEnabled || user.isIssuingFundsTabEnabled
+            }
+          >
             <NavLink to={walletPaths.funds}>Funds</NavLink>
           </ShowWhen>
           <ShowWhen additionalCondition={(user) => user.isIssuingDashboardEnabled}>
@@ -81,7 +85,7 @@ const WalletContainer = (session: WalletSession): JSX.Element => (
             <Route path={walletPaths.payments} component={Payments} />
             <Route path={walletPaths.loads} component={Loads} />
 
-            <Redirect exact from={walletPaths.wallet} to={walletPaths.batchActions} />
+            <Redirect exact from={walletPaths.wallet} to={walletPaths.funds} />
           </Switch>
         </div>
       </div>

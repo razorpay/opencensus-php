@@ -220,7 +220,8 @@ class Service extends Base\Service
             'issuinghq_wallet_dashboard_enabled',
             'sync_call_for_fresh_balance',
             'dedicated_terminal_qr_code',
-            'issuinghq_wallet_bulk_actions_enabled'
+            'issuinghq_wallet_bulk_actions_enabled',
+            'issuinghq_wallet_fundstab_enabled'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);

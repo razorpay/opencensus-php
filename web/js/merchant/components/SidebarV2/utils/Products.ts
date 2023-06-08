@@ -183,7 +183,9 @@ export const PRODUCTS_DATA = {
   wallet: {
     icon: 'i-wallet',
     additionalCondition: (user: any) =>
-      (user.isIssuingDashboardEnabled || user.isIssuingBulkUploadEnabled) &&
+      (user.isIssuingDashboardEnabled ||
+        user.isIssuingBulkUploadEnabled ||
+        user.isIssuingFundsTabEnabled) &&
       user.isAccountAndSettingsRevampEnabled,
   },
   internationalPaymentsBtn: {
