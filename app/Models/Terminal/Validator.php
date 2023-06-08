@@ -1773,15 +1773,30 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,1,2',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+        // The below fields are used only for optimizer
+        Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::NETBANKING                 => 'sometimes|boolean|in:0,1',
+        Entity::NOTES                      => 'sometimes|string',
+        Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
+
     ];
 
     protected static $netbankingAxisEditTerminalRules = [
+        // The below fields are used only for Emandate terminals, hence "sometimes"
         Entity::TYPE                       => 'sometimes|array',
         Entity::TPV                        => 'sometimes|in:0,1,2',
         Entity::CORPORATE                  => 'sometimes|int|in:0,1,2',
         Entity::GATEWAY_ACQUIRER           => 'sometimes|string',
+        // The below fields are used only for optimizer
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::NOTES                      => 'sometimes|string',
+        Entity::NETBANKING                 => 'sometimes|boolean|in:0,1',
+        Entity::GATEWAY                    => 'sometimes|in:netbanking_axis',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
     ];
 
     protected static $nachCitiTerminalRules = [
