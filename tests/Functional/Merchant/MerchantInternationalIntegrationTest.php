@@ -23,12 +23,13 @@ class MerchantInternationalIntegrationTest Extends TestCase
     protected function addIntlBankTransferMethodForMerchant($intlbankTransferModes, $merchantId)
     {
         $methods = [
-            'merchant_id'   => $merchantId,
             'addon_methods' => [
                 'intl_bank_transfer' => $intlbankTransferModes,
-            ]
+            ],
+            'disabled_banks' => [],
+            'banks' => '[]',
         ];
-        return $this->fixtures->create('methods', $methods);
+        return $this->fixtures->edit('methods',$merchantId, $methods);
     }
 
     public function testFetchInternationalVirtualAccounts()
@@ -59,11 +60,11 @@ class MerchantInternationalIntegrationTest Extends TestCase
         $content = $this->getJsonContentFromResponse($response);
 
         //Four Currencies are Sent as 4 Objects in Response
-        $this->assertCount(count(Gateway::INTERNATIONAL_BANK_TRANSFER_SUPPORTED_CURRENCIES),$content);
+        $this->assertCount(1,$content);
 
         // Assert Keys
         foreach($content as $account){
-            $this->assertArrayKeysExist($account,["va_currency","routing_code","routing_type","account_number","beneficiary_name","bank_name","bank_address"]);
+            $this->assertArrayKeysExist($account,["va_currency","routing_code","routing_type","account_number","beneficiary_name","bank_name","bank_address","status"]);
         }
     }
 
@@ -106,7 +107,7 @@ class MerchantInternationalIntegrationTest Extends TestCase
 
         $virtual_account = $content['account'];
 
-        $this->assertArrayKeysExist($virtual_account,["va_currency","routing_code","routing_type","account_number","beneficiary_name","bank_name","bank_address"]);
+        $this->assertArrayKeysExist($virtual_account,["va_currency","routing_code","routing_type","account_number","beneficiary_name","bank_name","bank_address","status"]);
 
         $this->assertEquals($va_currency, $virtual_account['va_currency']);
 
@@ -147,7 +148,7 @@ class MerchantInternationalIntegrationTest Extends TestCase
                 $this->sendRequest($request);
             },
             \RZP\Exception\BadRequestException::class,
-            "Currency Not Supported for International Bank Transfer");
+            "Currency/Method Not Supported for International Bank Transfer");
     }
 
     public function testFetchIntlVAWithPreferredRoutingCodeConfigPresent()
@@ -179,7 +180,7 @@ class MerchantInternationalIntegrationTest Extends TestCase
 
         // Assert Keys
         foreach($content as $account){
-            $this->assertArrayKeysExist($account,["va_currency","routing_code","routing_type","account_number","beneficiary_name","bank_name","bank_address"]);
+            $this->assertArrayKeysExist($account,["va_currency","routing_code","routing_type","account_number","beneficiary_name","bank_name","bank_address","status"]);
         }
 
         $virtual_account = $content[0];
@@ -218,7 +219,7 @@ class MerchantInternationalIntegrationTest Extends TestCase
 
         // Assert Keys
         foreach($content as $account){
-            $this->assertArrayKeysExist($account,["va_currency","routing_code","routing_type","account_number","beneficiary_name","bank_name","bank_address"]);
+            $this->assertArrayKeysExist($account,["va_currency","routing_code","routing_type","account_number","beneficiary_name","bank_name","bank_address","status"]);
         }
 
         $virtual_account = $content[0];

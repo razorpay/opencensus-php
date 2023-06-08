@@ -118,6 +118,8 @@
             <directory>./tests/Functional/Device/</directory>
             <directory>./tests/Functional/EMI/</directory>
             <directory>./tests/Functional/FileStore/</directory>
+            <directory>./tests/Functional/Invoice/</directory>
+            <exclude>/tests/Functional/Invoice/PaymentEInvoiceTest.php</exclude>
             <directory>./tests/Functional/FundTransfer/</directory>
             <directory>./tests/Functional/Invitation/</directory>
             <directory>./tests/Functional/Key/</directory>
@@ -125,8 +127,6 @@
             <directory>./tests/Functional/BankingAccountTpv/</directory>
             <directory>./tests/Functional/BankingAccountService/</directory>
             <directory>./tests/Functional/FundLoadingDowntime/</directory>
-            <directory>./tests/Functional/InternationalBankTransfer/</directory>
-            <directory>./tests/Functional/International/</directory>
             <!--<directory>./tests/Functional/AutoGenerateApiDocsTest/</directory>-->
         </testsuite>
         <testsuite name="Features-2 Test Suite">
@@ -151,7 +151,6 @@
             <file>./tests/Functional/Merchant/EntityInstrumentationTest.php</file>
             <file>./tests/Functional/Merchant/EntityReportTest.php</file>
             <file>./tests/Functional/Merchant/HolidayNotificationTest.php</file>
-            <file>./tests/Functional/Merchant/InternationalEnablementTest.php</file>
             <file>./tests/Functional/Merchant/MerchantDetailTest.php</file>
         </testsuite>
         <testsuite name="Features-2-2 Test Suite">
@@ -159,7 +158,6 @@
             <file>./tests/Functional/Merchant/MailmodoTest.php</file>
             <file>./tests/Functional/Merchant/MerchantAnalyticsTest.php</file>
             <file>./tests/Functional/Merchant/MerchantAttributeTest.php</file>
-            <file>./tests/Functional/Merchant/MerchantAutomatedAPMOnboardingTest.php</file>
             <file>./tests/Functional/Merchant/MerchantBankingInvoiceTest.php</file>
             <file>./tests/Functional/Merchant/MerchantCoreTest.php</file>
             <file>./tests/Functional/Merchant/MerchantCreateTest.php</file>
@@ -167,7 +165,6 @@
             <file>./tests/Functional/Merchant/MerchantEmailTest.php</file>
             <file>./tests/Functional/Merchant/MerchantEsCreateTest.php</file>
             <file>./tests/Functional/Merchant/MerchantEsFetchTest.php</file>
-            <file>./tests/Functional/Merchant/MerchantInternationalIntegrationTest.php</file>
             <file>./tests/Functional/Merchant/MerchantPromotionsTest.php</file>
         </testsuite>
         <testsuite name="Features-2-3 Test Suite">
@@ -408,6 +405,7 @@
             <directory>./tests/Functional/Gateway/File/</directory>
             <directory>./tests/Functional/Gateway/Paytm/</directory>
             <directory>./tests/Functional/Gateway/Reconciliation/</directory>
+            <exclude>./tests/Functional/Gateway/Reconciliation/NbplusAppMethodEmerchantpayReconciliationTest.php</exclude>
             <directory>./tests/Functional/Gateway/Sharp/</directory>
             <directory>./tests/Functional/Gateway/Upi/</directory>
         </testsuite>
@@ -479,6 +477,20 @@
         </testsuite>
         <testsuite name="Cross Border Test Suite">
             <directory>./tests/Functional/Currency/</directory>
+            <directory>./tests/Functional/InternationalBankTransfer/</directory>
+            <directory>./tests/Functional/International</directory>
+            <file>./tests/Functional/Merchant/MerchantInternationalIntegrationTest.php</file>
+            <file>./tests/Functional/Payment/PaymentCreateDCCTest.php</file>
+            <file>./tests/Functional/Payment/PaymentCreateAVSTest.php</file>
+            <file>./tests/Functional/Invoice/PaymentEInvoiceTest.php</file>
+            <file>./tests/Functional/Merchant/MerchantAutomatedAPMOnboardingTest.php</file>
+            <file>./tests/Functional/Payment/CustomerFeeBearerInternationalPaymentTest.php</file>
+            <file>./tests/Functional/Merchant/InternationalEnablementTest.php</file>
+            <file>./tests/Functional/Payment/NbPlusService/NbPlusPaymentServicePayPalTest.php</file>
+            <file>./tests/Functional/Gateway/Reconciliation/NbplusAppMethodEmerchantpayReconciliationTest.php</file>
+            <file>./tests/Functional/Merchant/MerchantDocumentFIRSTest.php</file>
+            <file>./tests/Functional/Merchant/CheckoutInternationalPreferencesTest.php</file>
+            <file>./tests/Functional/Payment/NbPlusService/NbplusPaymentServiceAppsTest.php</file>
         </testsuite>
         <testsuite name="Affordibility Test Suite">
         <directory>./tests/Functional/Offer/</directory>
