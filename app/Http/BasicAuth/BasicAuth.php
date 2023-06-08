@@ -880,7 +880,7 @@ class BasicAuth
                 $this->trace->info(TraceCode::ACCOUNT_ID_PASSED_IN_BODY_FOR_MERCHANT_AUTH,
                     [
                         self::HTTP_CONTENT_TYPE => $this->request->header(self::CONTENT_TYPE), // will return null if doesnt exist and does not throw any error
-                        self::PARTNER_ID => $this->getMerchantId(),
+                        self::PARTNER_ID => $this->getKeyEntity()->getMerchantId(),
                         self::KEY_ID => $this->getPublicKey(),
                         self::ACCOUNT_ID => $this->accountIdFromBody,
                         self::ROUTE => $this->route->getCurrentRouteName(),
