@@ -36,6 +36,7 @@ class Metric extends Base\Core
     const LABEL_TRACE_SOURCE                    = 'source';
     const LABEL_TRACE_EXCEPTION_CLASS           = 'exception_class';
     const LABEL_PUSH_PROVISIONING               = 'via_push_provisioning';
+    const LABEL_ERROR_TYPE                      = 'error_type';
     const TOKEN_MIGRATE                         = 'token_migrate';
     const LABEL_CARD_TOKENISED                  = 'label_card_tokenised';
     const LABEL_CARD_VAULT                      = 'card_vault';
@@ -45,7 +46,7 @@ class Metric extends Base\Core
     const FAILED                                = 'failed';
 
 
-    public function pushTokenHQDimensions($input, $status, $statusCode = null, $action = null, $exe = null)
+    public function pushTokenHQDimensions($input, $status, $statusCode = null, $action = null, $exe = null, $class = null)
     {
         try
         {
@@ -62,6 +63,8 @@ class Metric extends Base\Core
             $dimensions[self::LABEL_ASYNC] = isset($input[self::LABEL_ASYNC]) ? $input[self::LABEL_ASYNC] : null;
 
             $dimensions[self::LABEL_PUSH_PROVISIONING] = $input[self::LABEL_PUSH_PROVISIONING] ?? null;
+            $dimensions[self::LABEL_ERROR_TYPE] = $class;
+
 
             if ($exe !== null)
             {

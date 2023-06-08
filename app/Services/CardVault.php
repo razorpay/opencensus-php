@@ -819,10 +819,10 @@ class CardVault
         }
 
         $statusCode = $response->status_code;
-
+        $errorClass  = "" ;
         try {
 
-            $this->checkForErrors($response);
+            $this->checkForErrors($response, $errorClass);
 
             $this->pushDimensions($request, Metric::SUCCESS, $statusCode, $action);
 
@@ -831,10 +831,7 @@ class CardVault
 
         catch(Exception\BaseException $e) {
             $error = $e->getError();
-
-            $this->trace->info(TraceCode::ERROR_EXCEPTION, [$e->getError()]);
-
-            $this->pushDimensions($request, Metric::FAILED, $statusCode, $action, $e);
+            $this->pushDimensions($request, Metric::FAILED, $statusCode, $action, $e, $errorClass);
 
             (new Token\Event())->pushEvents($request['content'], $event, "_RESPONSE_RECEIVED", $response, $e);
 
@@ -848,7 +845,7 @@ class CardVault
         }
     }
 
-    protected function checkForErrors($response)
+    protected function checkForErrors($response,& $errorClass)
     {
         $responsebody = json_decode($response->body, true);
 
@@ -874,6 +871,7 @@ class CardVault
         }
 
         $class = $this->getErrorClassFromErrorCode($error_code);
+        $errorClass = $class;
 
         switch ($class)
         {
@@ -993,7 +991,7 @@ class CardVault
     }
 
 
-    protected function pushDimensions($request, $status, $statusCode = null, $action = null, $exe = null)
+    protected function pushDimensions($request, $status, $statusCode = null, $action = null, $exe = null, $class = null)
     {
         if (($this->mode === Mode::TEST) and
             ($this->app->runningUnitTests() === false))
@@ -1001,7 +999,7 @@ class CardVault
             return;
         }
 
-        (new Token\Metric)->pushTokenHQDimensions($request['content'], $status, $statusCode, $action, $exe);
+        (new Token\Metric)->pushTokenHQDimensions($request['content'], $status, $statusCode, $action, $exe, $class);
     }
 
     /**
