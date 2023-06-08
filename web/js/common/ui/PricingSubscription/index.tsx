@@ -1,7 +1,7 @@
 import React, { Suspense, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
-import lazy from 'merchant/routes/LazyLoader';
+import lazy, { lazyRetry } from 'merchant/routes/LazyLoader';
 import { fetchPricingSubscription as fetchPricingSubscriptionProps } from 'merchant/reducers/growthService';
 import { getCookie } from 'common/utils/cookies';
 import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
@@ -51,7 +51,7 @@ export const PricingBundle = ({
 
   const openPricingSubcriptionModal = async (loading) => {
     if (showPricingBundleWeb && !loading) {
-      const lazyPricingSubscriptionImport = await lazy(
+      const lazyPricingSubscriptionImport = await lazyRetry(
         () =>
           import(
             /* webpackChunkName: 'PricingSubscriptionComponent Dweb ' */ 'common/ui/PricingSubscription/PricingSubscriptionComponent'
