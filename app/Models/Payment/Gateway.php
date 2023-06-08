@@ -1933,6 +1933,7 @@ class Gateway
         self::KOTAK_DEBIT_EMI,
         self::INDUSIND_DEBIT_EMI,
         self::BAJAJ,
+        self::BILLDESK_OPTIMIZER,
     ];
 
     // in case of any changes in gateway config, please contact smart routing team
