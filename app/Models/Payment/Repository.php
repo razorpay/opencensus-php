@@ -2378,6 +2378,22 @@ EOT;
 
     public function getTopMerchantVolumeWiseBetweenTimestamp(int $from, int $to, int $limit)
     {
+        try
+        {
+            if($this->app['api.route']->isWDAServiceRoute() and
+                ($this->isExperimentEnabled($this->app['api.route']->getWdaRouteExperimentName()) === true))
+            {
+                return $this->getTopMerchantVolumeWiseBetweenTimestampFromWDA($from, $to, $limit);
+            }
+        }
+        catch(\Throwable $ex)
+        {
+            $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
+                'wda_migration_error' => $ex->getMessage(),
+                'route_name'          => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+        }
+
         $pid = $this->dbColumn(Payment\Entity::MERCHANT_ID);
         $mid = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
 
@@ -2398,6 +2414,77 @@ EOT;
                     ->orderBy('volume', 'desc')
                     ->limit($limit)
                     ->get();
+    }
+
+    public function getTopMerchantVolumeWiseBetweenTimestampFromWDA(int $from, int $to, int $limit)
+    {
+        $this->trace->info(TraceCode::WDA_SERVICE_REQUEST, [
+            'function'     => __FUNCTION__,
+            'input_params' => ['from' => $from, 'to' => $to, 'limit' => $limit],
+            'route_name'   => $this->app['api.route']->getCurrentRouteName(),
+        ]);
+
+        $startTimeMs = round(microtime(true) * 1000);
+
+        $wdaClient = $this->app['wda-client']->wdaClient;
+
+        $wdaQueryBuilder = new WDAQueryBuilder();
+
+        $merchantTableName = Table::getTableNameForEntity(Constants\Entity::MERCHANT);
+
+        $pid = $this->dbColumn(Payment\Entity::MERCHANT_ID);
+
+        $mid = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
+
+        $wdaQueryBuilder->addQuery($this->getTableName(), Payment\Entity::MERCHANT_ID)
+                        ->addQuery($merchantTableName, Merchant\Entity::NAME)
+                        ->addQuery($merchantTableName, Merchant\Entity::WEBSITE)
+                        ->addQuery($this->getTableName(), Payment\Entity::AMOUNT, 'SUM', 'volume', '/', '100')
+                        ->addQuery($this->getTableName(), '*', 'COUNT', 'count');
+
+        $wdaQueryBuilder->resources($this->getTableName(), $merchantTableName, "inner", $pid.' = '.$mid);
+
+        $wdaQueryBuilder->filters($this->getTableName(), Entity::CREATED_AT, [$from], Symbol::GTE)
+                        ->filters($this->getTableName(), Entity::CREATED_AT, [$to], Symbol::LTE)
+                        ->filters($this->getTableName(), Entity::STATUS, [Status::FAILED, Status::CREATED], Symbol::NOT_IN);
+
+        $wdaQueryBuilder->group($this->getTableName(), Payment\Entity::MERCHANT_ID, SortOrder::DESC)
+                        ->group($merchantTableName, Merchant\Entity::NAME, SortOrder::DESC)
+                        ->group($merchantTableName, Merchant\Entity::WEBSITE, SortOrder::DESC);
+
+        $wdaQueryBuilder->sort($this->getTableName(), 'volume', SortOrder::DESC);
+
+        $wdaQueryBuilder->size($limit);
+
+        $wdaQueryBuilder->namespace($this->getEntityObject()->getConnection()->getDatabaseName());
+
+        $wdaQueryBuilder->cluster(WDAService::ADMIN_CLUSTER);
+
+        $this->trace->info(TraceCode::WDA_SERVICE_QUERY, [
+            'wda_query_builder' => $wdaQueryBuilder->build()->serializeToJsonString(),
+            'route_name'    => $this->app['api.route']->getCurrentRouteName(),
+        ]);
+
+        $responseArray = $wdaClient->fetchEntities($wdaQueryBuilder->build(), $this->newQuery()->getModel());
+
+        $collection = new PublicCollection();
+
+        foreach ($responseArray as $arr)
+        {
+            $collection->push($arr);
+        }
+
+        $endTimeMs = round(microtime(true) * 1000);
+
+        $queryDuration = $endTimeMs - $startTimeMs;
+
+        $this->trace->info(TraceCode::WDA_SERVICE_RESPONSE, [
+            'method_name'   => __FUNCTION__,
+            'duration_ms'    => $queryDuration,
+            'route_name'    => $this->app['api.route']->getCurrentRouteName(),
+        ]);
+
+        return $collection;
     }
 
     public function fetchAuthorizedPaymentCountForMerchants(array $merchantIds)
@@ -2744,6 +2831,23 @@ EOT;
 
     public function getPaymentVolumeBetweenTimestamp($from, $to)
     {
+        try
+        {
+            if($this->app['api.route']->isWDAServiceRoute() and
+                ($this->isExperimentEnabled($this->app['api.route']->getWdaRouteExperimentName()) ===  true))
+            {
+                return  $this->getPaymentVolumeBetweenTimestampFromWda($from, $to);
+            }
+        }
+        catch(\Throwable $ex)
+        {
+            $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
+                'wda_migration_error' => $ex->getMessage(),
+                'function'            => __FUNCTION__ ,
+                'route_name'          => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+        }
+
         $vol = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
                     ->betweenTime($from, $to)
                     ->statusSuccess()
@@ -2753,6 +2857,54 @@ EOT;
                     ->first();
 
         return $vol;
+    }
+
+    public function getPaymentVolumeBetweenTimestampFromWda($from, $to)
+    {
+        $this->trace->info(TraceCode::WDA_SERVICE_REQUEST, [
+            'function'     => __FUNCTION__,
+            'input_params' => ['from' => $from, 'to' => $to],
+            'route_name'   => $this->app['api.route']->getCurrentRouteName(),
+        ]);
+
+        $startTimeMs = round(microtime(true) * 1000);
+
+        $wdaClient = $this->app['wda-client']->wdaClient;
+
+        $wdaQueryBuilder = new WDAQueryBuilder();
+
+        $wdaQueryBuilder->addQuery($this->getTableName(), Entity::AMOUNT, "SUM", "amount")
+                        ->addQuery($this->getTableName(), '*', "COUNT", "count");
+
+        $wdaQueryBuilder->resources($this->getTableName());
+
+        $wdaQueryBuilder->filters($this->getTableName(), Entity::CREATED_AT, [$from], Symbol::GTE)
+                        ->filters($this->getTableName(), Entity::CREATED_AT, [$to], Symbol::LTE)
+                        ->filters($this->getTableName(), Entity::STATUS, [Status::FAILED, Status::CREATED], Symbol::NOT_IN)
+                        ->filters($this->getTableName(),Entity::METHOD, [Method::TRANSFER], Symbol::NEQ);
+
+        $wdaQueryBuilder->namespace($this->getEntityObject()->getConnection()->getDatabaseName());
+
+        $wdaQueryBuilder->cluster(WDAService::ADMIN_CLUSTER);
+
+        $this->trace->info(TraceCode::WDA_SERVICE_QUERY, [
+            'wda_query_builder' => $wdaQueryBuilder->build()->serializeToJsonString(),
+            'route_name'    => $this->app['api.route']->getCurrentRouteName(),
+        ]);
+
+        $result = $wdaClient->fetch($wdaQueryBuilder->build(), $this->newQuery()->getModel());
+
+        $endTimeMs = round(microtime(true) * 1000);
+
+        $queryDuration = $endTimeMs - $startTimeMs;
+
+        $this->trace->info(TraceCode::WDA_SERVICE_RESPONSE, [
+            'method_name'   => __FUNCTION__,
+            'duration_ms'    => $queryDuration,
+            'route_name'    => $this->app['api.route']->getCurrentRouteName(),
+        ]);
+
+        return $result;
     }
 
     public function getCapturedAmountByGateway(string $gateway, int $from, int $to)
@@ -4232,12 +4384,12 @@ EOT;
             ->get();
     }
 
-    public function getPaymentsWithoutReferenceId($gateway, 
-                                                  $status, 
-                                                  $method = '', 
-                                                  $paymentIds = [], 
-                                                  $includeMerchantList = [], 
-                                                  $excludeMerchantList = [], 
+    public function getPaymentsWithoutReferenceId($gateway,
+                                                  $status,
+                                                  $method = '',
+                                                  $paymentIds = [],
+                                                  $includeMerchantList = [],
+                                                  $excludeMerchantList = [],
                                                   $limit = 0,
                                                   $offset = 0)
     {
