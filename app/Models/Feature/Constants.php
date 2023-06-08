@@ -1784,6 +1784,13 @@ class Constants
      * Main use case is to enable NBFCs integrate with FinTech's on X post RBI's lending guidelines.
      */
     const SUB_VA_FOR_DIRECT_BANKING = 'sub_va_for_direct_banking';
+
+    /**
+     Feature Flag to enable auto debit (link and pay) wallet flow for merchants. The customers paying to the merchant can
+     * save their paytm wallets during the fisrt time payment later on they can make a payment with single click.
+     **/
+
+    const WALLET_PAYTM_AUTO_DEBIT = 'wallet_paytm_auto_debit';
     /**
      * Truecaller Login Feature Flags. purpose of having these at different levels is due to compliance reasons.
      * We may have to disable this feature on specific screen for specific merchant on specific platform.
@@ -2530,6 +2537,7 @@ class Constants
         self::SHOW_CUSTOM_DCC_DISCLOSURES      => true,
         self::DYNAMIC_CURRENCY_CONVERSION_CYBS => true,
         self::ORG_ADMIN_PASSWORD_RESET        => true,
+        self::WALLET_PAYTM_AUTO_DEBIT         => true,
     ];
 
     // Entity type constants
@@ -3544,6 +3552,11 @@ class Constants
             'feature'       => self::CLOSE_QR_ON_DEMAND,
             'display_name'  => 'Close QR On Demand',
             'documentation' => 'Feature to allow the merchant to consume the QR Code close API,',
+        ],
+        self::WALLET_PAYTM_AUTO_DEBIT => [
+            'feature'       => self::WALLET_PAYTM_AUTO_DEBIT,
+            'display_name'  => 'Paytm Wallet Link and Pay',
+            'documentation' => '',
         ],
     ];
 
