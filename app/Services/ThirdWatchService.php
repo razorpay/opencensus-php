@@ -219,6 +219,7 @@ class ThirdWatchService
             }
             catch (Exception\BadRequestException $e)
             {
+                $rtoPredictionServiceResponse = true;
                 $this->trace->count(TraceCode::RTO_PREDICTION_SERVICE_ERROR, $dimensions);
                 $ex = $e;
             }
