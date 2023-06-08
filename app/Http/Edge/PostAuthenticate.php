@@ -279,7 +279,7 @@ final class PostAuthenticate
         }
 
         // set consumer id based on impersonation
-        $consumerId = $this->ba->getPartnerMerchantId() ?? $this->ba->getMerchantId();
+        $consumerId = $this->ba->getPartnerMerchantId() ?? $this->ba->getMerchantId() ?? '';
 
         $this->checkPassportMismatches($passport, $errors, $consumerId, self::TYPE_PARTNER, self::TYPE_PARTNER);
     }
