@@ -943,7 +943,7 @@ class Processor
 
             if (empty($input[Payment\Entity::SAVE]) === false)
             {
-                if ($iin->getNetworkCode() === Card\Network::RUPAY || $iin->getNetworkCode() === Card\Network::DICL)
+                if ($iin->getNetworkCode() === Card\Network::DICL)
                 {
                     return false;
                 }

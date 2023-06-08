@@ -2038,6 +2038,11 @@ class Service extends Base\Service
 
         $tokenCard->generateID();
 
+        if (isset($tokenCard->message_type))
+        {
+            unset($tokenCard->message_type);
+        }
+
         $this->repo->saveOrFail($tokenCard);
 
         $saveMethodInput = [
