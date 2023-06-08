@@ -69,10 +69,12 @@ class Repository extends Base\Repository
      */
     public function getEmailByType(string $type, string $merchantId)
     {
-        return $this->newQuery()
-            ->where(Entity::TYPE, $type)
-            ->merchantId($merchantId)
-            ->first();
+        return $this->getEntityDetails(
+            ASVV2Constant::GET_EMAIL_BY_TYPE_AND_MERCHANT_ID,
+            $this->asvRouter->shouldRouteToAccountService($merchantId, get_class($this), FunctionConstant::GET_BY_TYPE_AND_MERCHANT_ID),
+            (new MerchantEmailSDKWrapper())->getByTypeAndMerchantIdCallBack($type, $merchantId),
+            $this->getEmailByTypeFromDatabaseCallBack($type, $merchantId)
+        );
     }
 
     private function getEmailByTypeFromDatabaseCallBack(string $type, string $merchantId): \Closure

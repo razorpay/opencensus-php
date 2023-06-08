@@ -22,6 +22,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use Carbon\Carbon;
 use RZP\Models\Payment;
+use RZP\Services\SplitzService;
 
 /**
  * Covers Base/Fetch implementation. Currently it's not enabled for Payment
@@ -35,6 +36,39 @@ class PaymentFetchTest extends TestCase
     use PaymentTrait;
     use DbEntityFetchTrait;
     use CustomBrandingTrait;
+
+    private $sampleSpltizOutput = [
+        'status_code' => 200,
+        'response' => [
+            'id' => '10000000000000',
+            'project_id' => 'K1ZCHBSn7hbCMN',
+            'experiment' => [
+                'id' => 'K1ZaAGS9JfAUHj',
+                'name' => 'CallSyncDviationAPI',
+                'exclusion_group_id' => '',
+            ],
+            'variant' => [
+                'id' => 'K1ZaAHZ7Lnumc6',
+                'name' => 'Dummy Enabled',
+                'variables' => [
+                    [
+                        'key' => 'enabled',
+                        'value' => 'false',
+                    ]
+                ],
+                'experiment_id' => 'K1ZaAGS9JfAUHj',
+                'weight' => 100,
+                'is_default' => false
+            ],
+            'Reason' => 'bucketer',
+            'steps' => [
+                'sampler',
+                'exclusion',
+                'audience',
+                'assign_bucket'
+            ]
+        ]
+    ];
 
     protected function setUp(): void
     {
@@ -731,6 +765,10 @@ class PaymentFetchTest extends TestCase
 
     public function testFetchStatusCountForPrivateAuth()
     {
+        // Since we are migrating MerchantEmail to Account service based on splitz hence splitz need to be mocked and email fetch should be sent to DB
+        $splitzMock = $this->createSplitzMock();
+        $splitzMock->expects($this->any())->method('evaluateRequest')->willReturn($this->sampleSpltizOutput);
+        $this->app['splitzService'] = $splitzMock;
         $paymentArray = $this->getDefaultPaymentArray();
 
         //create 3 dummy payments
@@ -2169,5 +2207,16 @@ class PaymentFetchTest extends TestCase
                     return $feature === $featureUnderTest ? $value : 'control';
                 }
             ));
+    }
+
+    protected function createSplitzMock(array $methods = ['evaluateRequest'])
+    {
+
+        $splitzMock = $this->getMockBuilder(SplitzService::class)
+            ->onlyMethods($methods)
+            ->getMock();
+        $this->app->instance('splitzService', $splitzMock);
+
+        return $splitzMock;
     }
 }

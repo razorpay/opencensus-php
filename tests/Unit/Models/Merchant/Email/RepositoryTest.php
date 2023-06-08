@@ -253,151 +253,150 @@ class RepositoryTest extends TestCase
             self::convertEntitiesToAssociativeArrayBasedOnId($gotMerchantEmails->toArray()));
     }
 
-// TODO: Remove comment after fixing testcase which is failing due to migration of getEmailByType
-//    public function testGetEmailByTypeAndMerchantId()
-//    {
-//        // Set splitz experiment
-//        Config::set('applications.asv_v2.splitz_experiment_merchant_email_read_by_merchant_id', 'K1ZaAHZ7Lnumc6');
-//
-//        $this->createMerchantEmailInDatabase($this->merchantEmailEntityJson1);
-//        $this->createMerchantEmailInDatabase($this->merchantEmailEntityJson2);
-//        $this->createMerchantEmailInDatabase($this->merchantEmailEntityJson3);
-//
-//        $merchantEmail = new MerchantEmail();
-//
-//        $merchantEmailEntity1 = $this->getMerchantEmailEntityFromJson($this->merchantEmailEntityJson1);
-//
-//        $merchantEmailProto1 = $this->getMerchantEmailProtoFromJson($this->merchantEmailEntityJson1);
-//        $merchantEmailProto2 = $this->getMerchantEmailProtoFromJson($this->merchantEmailEntityJson2);
-//        $merchantEmailProto3 = $this->getMerchantEmailProtoFromJson($this->merchantEmailEntityJson3);
-//
-//        $merchantEmailResponse = new MerchantEmailResponseByMerchantId();
-//        $merchantEmailResponse->setEmails([$merchantEmailProto1, $merchantEmailProto2, $merchantEmailProto3]);
-//
-//        // Test Case 1: SaveRoute false - Splitz is on - Request should go to account service - Merchant Email is Found
-//
-//        $splitzMock = $this->createSplitzMock();
-//        $splitzMock->expects($this->any())->method('evaluateRequest')->willReturn($this->sampleSpltizOutput);
-//        $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
-//        $merchantEmailMockClient = $this->getMockClient();
-//        $merchantEmailMockClient->expects($this->exactly(1))->method("getByMerchantId")->with("CzmiBzNQPErfdT", $merchantEmail->getDefaultRequestMetaData())->willReturn([$merchantEmailResponse, null]);
-//        $merchantEmail->getAsvSdkClient()->setEmail($merchantEmailMockClient);
-//
-//        $asvRouterMock = $this->getAsvRouteMock(['isSaveFlowOrFailure']);
-//        $asvRouterMock->expects($this->exactly(1))->method('isSaveFlowOrFailure')->willReturn(false);
-//
-//        $repo = new Repository();
-//        $repo->asvRouter = $asvRouterMock;
-//        $gotMerchantEmail = $repo->getEmailByType("support", "CzmiBzNQPErfdT");
-//        self::assertEquals($merchantEmailEntity1->toArray(), $gotMerchantEmail->toArray());
-//
-//        // Test Case 2: SaveRoute true - Splitz is on - Request should not go to account service - Merchant Email is Found
-//
-//        $splitzMock = $this->createSplitzMock();
-//        $splitzMock->expects($this->any())->method('evaluateRequest')->willReturn($this->sampleSpltizOutput);
-//        $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
-//        $merchantEmailMockClient = $this->getMockClient();
-//        $merchantEmailMockClient->expects($this->exactly(0))->method("getByMerchantId")->with("CzmiBzNQPErfdT", $merchantEmail->getDefaultRequestMetaData())->willReturn([$merchantEmailResponse, null]);
-//        $merchantEmail->getAsvSdkClient()->setEmail($merchantEmailMockClient);
-//
-//        $asvRouterMock = $this->getAsvRouteMock(['isSaveFlowOrFailure']);
-//        $asvRouterMock->expects($this->exactly(1))->method('isSaveFlowOrFailure')->willReturn(true);
-//
-//        $repo = new Repository();
-//        $repo->asvRouter = $asvRouterMock;
-//        $gotMerchantEmail = $repo->getEmailByType("support", "CzmiBzNQPErfdT");
-//        self::assertEquals($merchantEmailEntity1->toArray(), $gotMerchantEmail->toArray());
-//
-//
-//        // Test Case 3:  SaveRoute true - Splitz is on - Request should go to account service - Merchant Email is Not Found
-//        $splitzMock = $this->createSplitzMock();
-//        $splitzMock->expects($this->any())->method('evaluateRequest')->willReturn($this->sampleSpltizOutput);
-//        $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
-//        $merchantEmailMockClient = $this->getMockClient();
-//        $merchantEmailMockClient->expects($this->exactly(1))->method("getByMerchantId")->with("CzmiBzNQPErfdK", $merchantEmail->getDefaultRequestMetaData())->willReturn([new MerchantEmailResponseByMerchantId(), null]);
-//        $merchantEmail->getAsvSdkClient()->setEmail($merchantEmailMockClient);
-//
-//        $asvRouterMock = $this->getAsvRouteMock(['isSaveFlowOrFailure']);
-//        $asvRouterMock->expects($this->exactly(1))->method('isSaveFlowOrFailure')->willReturn(false);
-//
-//        $repo = new Repository();
-//        $repo->asvRouter = $asvRouterMock;
-//        $gotMerchantEmail = $repo->getEmailByType("support", "CzmiBzNQPErfdK");
-//        self::assertEquals(null, $gotMerchantEmail);
-//
-//        // Test Case 4: SaveRoute false - Splitz is off - Request should not go to account service
-//
-//        $splitzOutput = $this->sampleSpltizOutput;
-//        $splitzOutput["response"]["variant"]["variables"][0]["value"] = "false";
-//        $splitzMock = $this->createSplitzMock();
-//        $splitzMock->expects($this->any())->method('evaluateRequest')->willReturn($splitzOutput);
-//        $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
-//        $merchantEmailMockClient = $this->getMockClient();
-//        $merchantEmailMockClient->expects($this->exactly(0))->method("getByMerchantId")->with($this->any())->willReturn([$merchantEmailResponse, null]);
-//        $merchantEmail->getAsvSdkClient()->setEmail($merchantEmailMockClient);
-//
-//        $asvRouterMock = $this->getAsvRouteMock(['isSaveFlowOrFailure']);
-//        $asvRouterMock->expects($this->exactly(1))->method('isSaveFlowOrFailure')->willReturn(false);
-//
-//        $repo = new Repository();
-//        $repo->asvRouter = $asvRouterMock;
-//        $gotMerchantEmail = $repo->getEmailByType("support", "CzmiBzNQPErfdT");
-//        self::assertEquals($merchantEmailEntity1->toArray(), $gotMerchantEmail->toArray());
-//
-//        // Test Case 5: SaveRoute false - Splitz is off - Request  should not  go to account service - Merchant Email not Found
-//
-//        $splitzOutput = $this->sampleSpltizOutput;
-//        $splitzOutput["response"]["variant"]["variables"][0]["value"] = "false";
-//        $splitzMock = $this->createSplitzMock();
-//        $splitzMock->expects($this->any())->method('evaluateRequest')->willReturn($splitzOutput);
-//        $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
-//        $merchantEmailMockClient = $this->getMockClient();
-//        $merchantEmailMockClient->expects($this->exactly(0))->method("getByMerchantId")->with($this->any())->willReturn([$merchantEmailResponse, null]);
-//        $merchantEmail->getAsvSdkClient()->setEmail($merchantEmailMockClient);
-//
-//        $asvRouterMock = $this->getAsvRouteMock(['isSaveFlowOrFailure']);
-//        $asvRouterMock->expects($this->exactly(1))->method('isSaveFlowOrFailure')->willReturn(false);
-//
-//        $repo = new Repository();
-//        $repo->asvRouter = $asvRouterMock;
-//        $gotMerchantEmail = $repo->getEmailByType("support", "CzmiBzNQPErfdK");
-//        self::assertEquals(null, $gotMerchantEmail);
-//
-//        // Test Case 6: SaveRoute false - Splitz call fails - Request should not go to account service.
-//
-//        $splitzMock = $this->createSplitzMock();
-//        $splitzMock->expects($this->any())->method('evaluateRequest')->willThrowException(new \Exception("some error occurred while calling splitz"));
-//        $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
-//        $merchantEmailMockClient = $this->getMockClient();
-//        $merchantEmailMockClient->expects($this->exactly(0))->method("getByMerchantId")->with($this->any())->willReturn([$merchantEmailResponse, null]);
-//        $merchantEmail->getAsvSdkClient()->setEmail($merchantEmailMockClient);
-//
-//        $asvRouterMock = $this->getAsvRouteMock(['isSaveFlowOrFailure']);
-//        $asvRouterMock->expects($this->exactly(1))->method('isSaveFlowOrFailure')->willReturn(false);
-//
-//        $repo = new Repository();
-//        $repo->asvRouter = $asvRouterMock;
-//        $gotMerchantEmail = $repo->getEmailByType("support", "CzmiBzNQPErfdT");
-//        self::assertEquals($merchantEmailEntity1->toArray(), $gotMerchantEmail->toArray());
-//
-//
-//        // Test Case 7: SaveRoute false - Splitz is on - Request Failed From account service - Should Be Routed to DB
-//
-//        $splitzMock = $this->createSplitzMock();
-//        $splitzMock->expects($this->any())->method('evaluateRequest')->willReturn($this->sampleSpltizOutput);
-//        $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
-//        $merchantEmailMockClient = $this->getMockClient();
-//        $merchantEmailMockClient->expects($this->exactly(1))->method("getByMerchantId")->with("CzmiBzNQPErfdT", $merchantEmail->getDefaultRequestMetaData())->willReturn([null, new GrpcError(\Grpc\STATUS_ABORTED, "new")]);
-//        $merchantEmail->getAsvSdkClient()->setEmail($merchantEmailMockClient);
-//
-//        $asvRouterMock = $this->getAsvRouteMock(['isSaveFlowOrFailure']);
-//        $asvRouterMock->expects($this->exactly(1))->method('isSaveFlowOrFailure')->willReturn(false);
-//
-//        $repo = new Repository();
-//        $repo->asvRouter = $asvRouterMock;
-//        $gotMerchantEmail = $repo->getEmailByType("support", "CzmiBzNQPErfdT");
-//        self::assertEquals($merchantEmailEntity1->toArray(), $gotMerchantEmail->toArray());
-//    }
+    public function testGetEmailByTypeAndMerchantId()
+    {
+        // Set splitz experiment
+        Config::set('applications.asv_v2.splitz_experiment_merchant_email_read_by_type_and_merchant_id', 'K1ZaAHZ7Lnumc6');
+
+        $this->createMerchantEmailInDatabase($this->merchantEmailEntityJson1);
+        $this->createMerchantEmailInDatabase($this->merchantEmailEntityJson2);
+        $this->createMerchantEmailInDatabase($this->merchantEmailEntityJson3);
+
+        $merchantEmail = new MerchantEmail();
+
+        $merchantEmailEntity1 = $this->getMerchantEmailEntityFromJson($this->merchantEmailEntityJson1);
+
+        $merchantEmailProto1 = $this->getMerchantEmailProtoFromJson($this->merchantEmailEntityJson1);
+        $merchantEmailProto2 = $this->getMerchantEmailProtoFromJson($this->merchantEmailEntityJson2);
+        $merchantEmailProto3 = $this->getMerchantEmailProtoFromJson($this->merchantEmailEntityJson3);
+
+        $merchantEmailResponse = new MerchantEmailResponseByMerchantId();
+        $merchantEmailResponse->setEmails([$merchantEmailProto1, $merchantEmailProto2, $merchantEmailProto3]);
+
+        // Test Case 1: SaveRoute false - Splitz is on - Request should go to account service - Merchant Email is Found
+
+        $splitzMock = $this->createSplitzMock();
+        $splitzMock->expects($this->any())->method('evaluateRequest')->willReturn($this->sampleSpltizOutput);
+        $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
+        $merchantEmailMockClient = $this->getMockClient();
+        $merchantEmailMockClient->expects($this->exactly(1))->method("getByMerchantId")->with("CzmiBzNQPErfdT", $merchantEmail->getDefaultRequestMetaData())->willReturn([$merchantEmailResponse, null]);
+        $merchantEmail->getAsvSdkClient()->setEmail($merchantEmailMockClient);
+
+        $asvRouterMock = $this->getAsvRouteMock(['isSaveFlowOrFailure']);
+        $asvRouterMock->expects($this->exactly(1))->method('isSaveFlowOrFailure')->willReturn(false);
+
+        $repo = new Repository();
+        $repo->asvRouter = $asvRouterMock;
+        $gotMerchantEmail = $repo->getEmailByType("support", "CzmiBzNQPErfdT");
+        self::assertEquals($merchantEmailEntity1->toArray(), $gotMerchantEmail->toArray());
+
+        // Test Case 2: SaveRoute true - Splitz is on - Request should not go to account service - Merchant Email is Found
+
+        $splitzMock = $this->createSplitzMock();
+        $splitzMock->expects($this->any())->method('evaluateRequest')->willReturn($this->sampleSpltizOutput);
+        $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
+        $merchantEmailMockClient = $this->getMockClient();
+        $merchantEmailMockClient->expects($this->exactly(0))->method("getByMerchantId")->with("CzmiBzNQPErfdT", $merchantEmail->getDefaultRequestMetaData())->willReturn([$merchantEmailResponse, null]);
+        $merchantEmail->getAsvSdkClient()->setEmail($merchantEmailMockClient);
+
+        $asvRouterMock = $this->getAsvRouteMock(['isSaveFlowOrFailure']);
+        $asvRouterMock->expects($this->exactly(1))->method('isSaveFlowOrFailure')->willReturn(true);
+
+        $repo = new Repository();
+        $repo->asvRouter = $asvRouterMock;
+        $gotMerchantEmail = $repo->getEmailByType("support", "CzmiBzNQPErfdT");
+        self::assertEquals($merchantEmailEntity1->toArray(), $gotMerchantEmail->toArray());
+
+
+        // Test Case 3:  SaveRoute true - Splitz is on - Request should go to account service - Merchant Email is Not Found
+        $splitzMock = $this->createSplitzMock();
+        $splitzMock->expects($this->any())->method('evaluateRequest')->willReturn($this->sampleSpltizOutput);
+        $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
+        $merchantEmailMockClient = $this->getMockClient();
+        $merchantEmailMockClient->expects($this->exactly(1))->method("getByMerchantId")->with("CzmiBzNQPErfdK", $merchantEmail->getDefaultRequestMetaData())->willReturn([new MerchantEmailResponseByMerchantId(), null]);
+        $merchantEmail->getAsvSdkClient()->setEmail($merchantEmailMockClient);
+
+        $asvRouterMock = $this->getAsvRouteMock(['isSaveFlowOrFailure']);
+        $asvRouterMock->expects($this->exactly(1))->method('isSaveFlowOrFailure')->willReturn(false);
+
+        $repo = new Repository();
+        $repo->asvRouter = $asvRouterMock;
+        $gotMerchantEmail = $repo->getEmailByType("support", "CzmiBzNQPErfdK");
+        self::assertEquals(null, $gotMerchantEmail);
+
+        // Test Case 4: SaveRoute false - Splitz is off - Request should not go to account service
+
+        $splitzOutput = $this->sampleSpltizOutput;
+        $splitzOutput["response"]["variant"]["variables"][0]["value"] = "false";
+        $splitzMock = $this->createSplitzMock();
+        $splitzMock->expects($this->any())->method('evaluateRequest')->willReturn($splitzOutput);
+        $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
+        $merchantEmailMockClient = $this->getMockClient();
+        $merchantEmailMockClient->expects($this->exactly(0))->method("getByMerchantId")->with($this->any())->willReturn([$merchantEmailResponse, null]);
+        $merchantEmail->getAsvSdkClient()->setEmail($merchantEmailMockClient);
+
+        $asvRouterMock = $this->getAsvRouteMock(['isSaveFlowOrFailure']);
+        $asvRouterMock->expects($this->exactly(1))->method('isSaveFlowOrFailure')->willReturn(false);
+
+        $repo = new Repository();
+        $repo->asvRouter = $asvRouterMock;
+        $gotMerchantEmail = $repo->getEmailByType("support", "CzmiBzNQPErfdT");
+        self::assertEquals($merchantEmailEntity1->toArray(), $gotMerchantEmail->toArray());
+
+        // Test Case 5: SaveRoute false - Splitz is off - Request  should not  go to account service - Merchant Email not Found
+
+        $splitzOutput = $this->sampleSpltizOutput;
+        $splitzOutput["response"]["variant"]["variables"][0]["value"] = "false";
+        $splitzMock = $this->createSplitzMock();
+        $splitzMock->expects($this->any())->method('evaluateRequest')->willReturn($splitzOutput);
+        $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
+        $merchantEmailMockClient = $this->getMockClient();
+        $merchantEmailMockClient->expects($this->exactly(0))->method("getByMerchantId")->with($this->any())->willReturn([$merchantEmailResponse, null]);
+        $merchantEmail->getAsvSdkClient()->setEmail($merchantEmailMockClient);
+
+        $asvRouterMock = $this->getAsvRouteMock(['isSaveFlowOrFailure']);
+        $asvRouterMock->expects($this->exactly(1))->method('isSaveFlowOrFailure')->willReturn(false);
+
+        $repo = new Repository();
+        $repo->asvRouter = $asvRouterMock;
+        $gotMerchantEmail = $repo->getEmailByType("support", "CzmiBzNQPErfdK");
+        self::assertEquals(null, $gotMerchantEmail);
+
+        // Test Case 6: SaveRoute false - Splitz call fails - Request should not go to account service.
+
+        $splitzMock = $this->createSplitzMock();
+        $splitzMock->expects($this->any())->method('evaluateRequest')->willThrowException(new \Exception("some error occurred while calling splitz"));
+        $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
+        $merchantEmailMockClient = $this->getMockClient();
+        $merchantEmailMockClient->expects($this->exactly(0))->method("getByMerchantId")->with($this->any())->willReturn([$merchantEmailResponse, null]);
+        $merchantEmail->getAsvSdkClient()->setEmail($merchantEmailMockClient);
+
+        $asvRouterMock = $this->getAsvRouteMock(['isSaveFlowOrFailure']);
+        $asvRouterMock->expects($this->exactly(1))->method('isSaveFlowOrFailure')->willReturn(false);
+
+        $repo = new Repository();
+        $repo->asvRouter = $asvRouterMock;
+        $gotMerchantEmail = $repo->getEmailByType("support", "CzmiBzNQPErfdT");
+        self::assertEquals($merchantEmailEntity1->toArray(), $gotMerchantEmail->toArray());
+
+
+        // Test Case 7: SaveRoute false - Splitz is on - Request Failed From account service - Should Be Routed to DB
+
+        $splitzMock = $this->createSplitzMock();
+        $splitzMock->expects($this->any())->method('evaluateRequest')->willReturn($this->sampleSpltizOutput);
+        $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
+        $merchantEmailMockClient = $this->getMockClient();
+        $merchantEmailMockClient->expects($this->exactly(1))->method("getByMerchantId")->with("CzmiBzNQPErfdT", $merchantEmail->getDefaultRequestMetaData())->willReturn([null, new GrpcError(\Grpc\STATUS_ABORTED, "new")]);
+        $merchantEmail->getAsvSdkClient()->setEmail($merchantEmailMockClient);
+
+        $asvRouterMock = $this->getAsvRouteMock(['isSaveFlowOrFailure']);
+        $asvRouterMock->expects($this->exactly(1))->method('isSaveFlowOrFailure')->willReturn(false);
+
+        $repo = new Repository();
+        $repo->asvRouter = $asvRouterMock;
+        $gotMerchantEmail = $repo->getEmailByType("support", "CzmiBzNQPErfdT");
+        self::assertEquals($merchantEmailEntity1->toArray(), $gotMerchantEmail->toArray());
+    }
 
     public function testEmailRepositoryFindById()
     {

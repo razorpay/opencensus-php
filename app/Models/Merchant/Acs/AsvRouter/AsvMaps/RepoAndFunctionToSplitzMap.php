@@ -17,6 +17,7 @@ final class RepoAndFunctionToSplitzMap {
         ),
         MerchantEmailRepository::class => array(
             FunctionConstant::GET_BY_MERCHANT_ID => SplitzConstant::SPLITZ_EMAIL_GET_BY_MERCHANT_ID,
+            FunctionConstant::GET_BY_TYPE_AND_MERCHANT_ID => SplitzConstant::SPLITZ_EMAIL_GET_BY_TYPE_AND_MERCHANT_ID,
             FunctionConstant::FIND_AND_FAIL => SplitzConstant::SPLITZ_EMAIL_GET_BY_ID,
             FunctionConstant::FIND_AND_FAIL_PUBLIC => SplitzConstant::SPLITZ_EMAIL_GET_BY_ID,
         )
