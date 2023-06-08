@@ -46,15 +46,6 @@ export const fetchFundsSummary = async ({
     // in runtime, backend will return integers as string. this is due to protobuf conversion log for int64 values.
     // the following is temporary code to eventually convert both integers and strings to numbers.
     res.available_balance = parseInt(String(res.available_balance), 10);
-    res.limits = res.limits.map((items) => ({
-      ...items,
-      monthly_load_limit: parseInt(String(items.monthly_load_limit), 10),
-      monthly_load_limit_used: parseInt(String(items.monthly_load_limit_used), 10),
-      monthly_load_limit_balance: parseInt(String(items.monthly_load_limit_balance), 10),
-      yearly_load_limit: parseInt(String(items.yearly_load_limit), 10),
-      yearly_load_limit_used: parseInt(String(items.yearly_load_limit_used), 10),
-      yearly_load_limit_balance: parseInt(String(items.yearly_load_limit_balance), 10),
-    }));
     return res;
   } catch (e) {
     throw new Error(e?.response?.errors?.[0]);
