@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Comment;
 
+use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Workflow\Action;
@@ -26,7 +27,21 @@ class Core extends Base\Core
 
         $comment->entity()->associate($action);
 
-        $this->repo->saveOrFail($comment);
+        try
+        {
+            $this->repo->saveOrFail($comment);
+        }
+        catch (\Exception $ex)
+        {
+            if ($ex->getCode() === ErrorCode::SERVER_ERROR_DB_QUERY_FAILED)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
+            }
+            else
+            {
+                throw $ex;
+            }
+        }
 
         return $comment;
     }
