@@ -270,11 +270,21 @@ class Service extends Base\Service
     {
         $txnIdsToPutOnHold = [];
 
+        $this->app['trace']->info(TraceCode::CYBER_CRIME_MODIFIED_TICKET_DETAILS,
+                                  [
+                                      'ticket_detail' => $ticketDetails,
+                                  ]);
+
         foreach ($ticketDetails['ticket_data']['ticket'] as $request)
         {
             if ($request['hold_settlement'] === 1)
             {
-                $txnIdsToPutOnHold[] = $request['data']['transaction']['id'];
+                if (array_key_exists(Constants::DETAILS,$request) &&
+                    array_key_exists(Constants::TRANSACTION,$request[Constants::DETAILS]) &&
+                    array_key_exists(Constants::ID, $request[Constants::DETAILS][Constants::TRANSACTION])
+                ) {
+                    $txnIdsToPutOnHold[] = $request[Constants::DETAILS][Constants::TRANSACTION][Constants::ID];
+                }
             }
         }
 
@@ -313,10 +323,19 @@ class Service extends Base\Service
                 'freshdesk_id'     => $freshdeskTicket
             ]);
 
+        $this->app['trace']->info(TraceCode::CYBER_CRIME_TICKET_DETAILS,
+                                  [
+                                      'ticket_detail' => $ticketDetails,
+                                  ]);
         foreach ($approvedDetails as $approvedDetail)
         {
             $this->updateRequestDetailsAccordingToApprovedDetails($ticketDetails, $approvedDetail);
         }
+
+        $this->app['trace']->info(TraceCode::CYBER_CRIME_MODIFIED_TICKET_DETAILS,
+                                  [
+                                      'ticket_detail' => $ticketDetails,
+                                  ]);
     }
 
     /**
