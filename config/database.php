@@ -85,6 +85,9 @@ return array(
             ],
             'wait_timeout'              => env('DB_WAIT_TIMEOUT'),
             'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
+            'options' => [
+                PDO::ATTR_TIMEOUT => 2,
+            ],
         ],
 
         'live_migration' => [
