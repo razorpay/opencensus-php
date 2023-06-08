@@ -1521,12 +1521,11 @@ class Core extends Base\Core
 
             if ($attempts < 0)
             {
-                $this->trace->error(
-                    'Id generation failure for ' . $entityName,
-                    [
-                        'generated_ids' => $generatedIds,
-                        'max_attempts'  => $maxAttempts
-                    ]);
+                $this->trace->error(TraceCode::ID_GENERATION_FAILURE_FOR_RECON, [
+                    'generated_ids' => $generatedIds,
+                    'max_attempts'  => $maxAttempts,
+                    'entity_name'   => $entityName,
+                ]);
 
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_ERROR,
@@ -4533,10 +4532,8 @@ class Core extends Base\Core
                 Entity::CHANNEL    => $channel,
                 'recon_limit'      => $reconlimit,
                 'msg'              => 'filter by gateway balance',
-                'priority_acc_nos' => count($accountNumbers),
+                'account_numbers'  => count($accountNumbers),
             ]);
-
-            $this->filterAccountNumbersWithPaginationKeyPresent($accountNumbers, $channel);
 
             $accountNumbers = array_unique(array_merge($accountNumbers, $priorityAccountNumbers));
 
@@ -4544,8 +4541,10 @@ class Core extends Base\Core
                 Entity::CHANNEL    => $channel,
                 'recon_limit'      => $reconlimit,
                 'msg'              => 'filter by array unique',
-                'priority_acc_nos' => count($accountNumbers),
+                'account_numbers'  => count($accountNumbers),
             ]);
+
+            $this->filterAccountNumbersWithPaginationKeyPresent($accountNumbers, $channel);
         }
 
         return array_values($accountNumbers);
@@ -4578,7 +4577,7 @@ class Core extends Base\Core
                 $this->trace->info(TraceCode::AUTOMATED_ACCOUNT_STATEMENTS_RECON_FILTER, [
                     Entity::CHANNEL    => $channel,
                     'msg'              => 'filter by pagination_key',
-                    'priority_acc_nos' => count($accountNumbers),
+                    'account_numbers'  => count($accountNumbers),
                 ]);
             }
         }

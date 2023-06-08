@@ -12,6 +12,7 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Environment;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\BankingAccountStatement\Type;
 use RZP\Models\Admin\Service as AdminService;
@@ -127,14 +128,21 @@ class Core extends Base\Core
 
         if ($basDetails->getchannel() === Channel::RBL)
         {
-            // razorx experiment to decide the statement fetch flow to be old or new.
-            $accStmtVariant = $this->app->razorx->getTreatment(
-                $basDetails->merchant->getId(),
-                Merchant\RazorxTreatment::RBL_V2_BAS_API_INTEGRATION,
-                $this->mode
-            );
+            if ($this->app['env'] === Environment::TESTING)
+            {
+                // razorx experiment to decide the statement fetch flow to be old or new.
+                $accStmtVariant = $this->app->razorx->getTreatment(
+                    $basDetails->merchant->getId(),
+                    Merchant\RazorxTreatment::RBL_V2_BAS_API_INTEGRATION,
+                    $this->mode
+                );
 
-            if (strtolower($accStmtVariant) === "on")
+                if (strtolower($accStmtVariant) === "on")
+                {
+                    $accountStatementApiVersion = self::ACCOUNT_STATEMENT_FETCH_API_VERSION_2;
+                }
+            }
+            else
             {
                 $accountStatementApiVersion = self::ACCOUNT_STATEMENT_FETCH_API_VERSION_2;
             }
