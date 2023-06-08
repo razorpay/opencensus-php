@@ -30,6 +30,8 @@ class UpiYesBankQRCodeTest extends TestCase
 
         parent::setUp();
 
+        $this->config['gateway.mock_upi_mozart'] = true;
+
         $this->fixtures->merchant->addFeatures(['qr_codes']);
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
@@ -54,32 +56,6 @@ class UpiYesBankQRCodeTest extends TestCase
 
     }
 
-    private function runEntityAssertions($response): void
-    {
-        $qrCodeEntity = $this->getLastEntity('qr_code', true);
-        $this->assertStringContainsString('@yesb', $qrCodeEntity['qr_string']);
-        $trValue = $this->getTRFieldFromString($qrCodeEntity['qr_string']);
-        $this->assertEquals(18, strlen($trValue));
-        $this->assertTrue(str_ends_with($trValue, 'qrv2'));
-
-        if($qrCodeEntity['usage'] === 'single_use'){
-            $amount = $qrCodeEntity['amount'] / 100;
-            $this->assertStringContainsString('am=' . $amount, $qrCodeEntity['qr_string']);
-        }
-        else
-        {
-            if ($qrCodeEntity['fixed_amount'] === true)
-            {
-                $amount = $qrCodeEntity['amount'] / 100;
-                $this->assertStringContainsString('am=' . $amount, $qrCodeEntity['qr_string']);
-            }
-        }
-    }
-
-    protected function enableRazorXTreatmentForQrDedicatedTerminal() :void
-    {
-        $this->setMockRazorxTreatment([RazorxTreatment::DEDICATED_TERMINAL_QR_CODE => RazorxTreatment::RAZORX_VARIANT_ON]);
-    }
 
     public function testCreateStaticQrWithoutTerminal() :void
     {
@@ -107,7 +83,7 @@ class UpiYesBankQRCodeTest extends TestCase
             ],
         );
 
-        $this->runEntityAssertions($response);
+        $this->runEntityAssertions();
     }
 
 
@@ -126,7 +102,7 @@ class UpiYesBankQRCodeTest extends TestCase
 
         $this->assertEquals(true, $response['fixed_amount']);
         $this->assertEquals(300, $response['payment_amount']);
-        $this->runEntityAssertions($response);
+        $this->runEntityAssertions();
     }
 
     public function testPaymentForStaticQrCode()
@@ -332,7 +308,7 @@ class UpiYesBankQRCodeTest extends TestCase
             ],
         );
 
-        $this->runEntityAssertions($response);
+        $this->runEntityAssertions();
     }
 
     public function testCreateDynamicQrWithoutTerminal() :void
@@ -461,6 +437,33 @@ class UpiYesBankQRCodeTest extends TestCase
         $this->assertEquals('qr_code', $payment['receiver_type']);
         $this->assertEquals($response['payment']['id'], 'pay_' . $payment['id']);
         $this->assertEquals('captured', $response['payment']['status']);
+    }
+
+    private function runEntityAssertions(): void
+    {
+        $qrCodeEntity = $this->getLastEntity('qr_code', true);
+        $this->assertStringContainsString('@yesb', $qrCodeEntity['qr_string']);
+        $trValue = $this->getTRFieldFromString($qrCodeEntity['qr_string']);
+        $this->assertEquals(18, strlen($trValue));
+        $this->assertTrue(str_ends_with($trValue, 'qrv2'));
+
+        if($qrCodeEntity['usage'] === 'single_use'){
+            $amount = $qrCodeEntity['amount'] / 100;
+            $this->assertStringContainsString('am=' . $amount, $qrCodeEntity['qr_string']);
+        }
+        else
+        {
+            if ($qrCodeEntity['fixed_amount'] === true)
+            {
+                $amount = $qrCodeEntity['amount'] / 100;
+                $this->assertStringContainsString('am=' . $amount, $qrCodeEntity['qr_string']);
+            }
+        }
+    }
+
+    protected function enableRazorXTreatmentForQrDedicatedTerminal() :void
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::DEDICATED_TERMINAL_QR_CODE => RazorxTreatment::RAZORX_VARIANT_ON]);
     }
 
 }

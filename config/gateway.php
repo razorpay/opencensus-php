@@ -246,7 +246,6 @@ return [
     'mock_upi_rbl'                => env('UPI_RBL_MOCK'),
     'mock_upi_axisolive'          => env('UPI_AXISOLIVE_MOCK'),
     'mock_upi_yesbank'            => env('UPI_YESBANK_MOCK'),
-    'mock_upi_mozart'             => env('UPI_MOZART_MOCK'),
     'mock_aeps_icici'             => env('AEPS_ICICI_MOCK'),
     'mock_wallet_freecharge'      => env('FREECHARGE_MOCK'),
     'mock_wallet_mpesa'           => env('MPESA_MOCK'),
