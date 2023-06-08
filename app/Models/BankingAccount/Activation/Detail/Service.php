@@ -197,6 +197,9 @@ class Service extends Base\Service
         /** @var BankingAccount\Entity $bankingAccount */
         $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
 
+        // banking_account_activation_details should not be updated if banking_account is in terminated status
+        (new BankingAccount\Validator())->validateAccountNotTerminated($bankingAccount, ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_DETAILS_UPDATE_NOT_ALLOWED);
+
         $admin = $this->app['basicauth']->getAdmin() ?? (($this->app->bound('batchAdmin') === true)? $this->app['batchAdmin'] : null);
 
         $bankingAccountCore = new BankingAccount\Core();
@@ -493,9 +496,9 @@ class Service extends Base\Service
             $additionalDetailsInput = $input[Entity::ADDITIONAL_DETAILS];
 
             $additionalDetailsInput = json_decode($additionalDetailsInput, true);
-            
+
             // If any of these dates is not present, no need to continue
-            if (!(array_key_exists(Entity::DOCKET_ESTIMATED_DELIVERY_DATE, $additionalDetailsInput) || 
+            if (!(array_key_exists(Entity::DOCKET_ESTIMATED_DELIVERY_DATE, $additionalDetailsInput) ||
                 array_key_exists(Entity::DOCKET_DELIVERED_DATE, $additionalDetailsInput)))
             {
                 return;

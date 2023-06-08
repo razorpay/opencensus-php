@@ -22,6 +22,7 @@ class Status
     const UNSERVICEABLE         = 'unserviceable';      // Temp Unserviceable
     const REJECTED              = 'rejected';           // Bank Rejected
     const ARCHIVED              = 'archived';
+    const TERMINATED            = 'terminated';       // Application Terminated
 
 
     // External Statuses as interpreted by Product
@@ -41,6 +42,7 @@ class Status
     const TEMP_UNSERVICEABLE             = 'TempUnserviceable';
     const BANK_REJECTED                  = 'BankRejected';
     const ARCHIVED_EXTERNAL              = 'Archived';
+    const TERMINATED_EXTERNAL            = 'Terminated';
 
     // Substatuses
     const DOCS_WALK_THROUGH_PENDING      = 'docs_walkthrough_pending';
@@ -297,7 +299,11 @@ class Status
         self::ARCHIVED,
         // API banking has been tested. CA is activated
         // and ready to use.
-        self::ACTIVATED
+        self::ACTIVATED,
+        // When application needs to be deleted to make room
+        // for another application. An application in this state
+        // is not expected to be revived without tech intervention
+        self::TERMINATED,
     ];
 
     /**
@@ -330,6 +336,7 @@ class Status
             // This is for cases in Neostone where users submit the details in the form
             // but don’t respond when called.
             self::ARCHIVED,
+            self::TERMINATED
         ],
         self::PICKED => [
             self::INITIATED,
@@ -339,6 +346,7 @@ class Status
             self::PROCESSED,
             self::API_ONBOARDING,
             self::ARCHIVED,
+            self::TERMINATED
         ],
         self::INITIATED => [
             self::PROCESSING,
@@ -348,6 +356,7 @@ class Status
             self::CANCELLED,
             self::REJECTED,
             self::ARCHIVED,
+            self::TERMINATED
         ],
         self::PROCESSING => [
             self::PROCESSED,
@@ -360,6 +369,7 @@ class Status
             self::CANCELLED,
             self::REJECTED,
             self::ARCHIVED,
+            self::TERMINATED
         ],
         self::VERIFICATION_CALL => [
             self::PROCESSED,
@@ -368,6 +378,7 @@ class Status
             self::API_ONBOARDING,
             self::ACCOUNT_ACTIVATION,
             self::ARCHIVED,
+            self::TERMINATED
         ],
         self::DOC_COLLECTION => [
             self::PROCESSED,
@@ -376,6 +387,7 @@ class Status
             self::API_ONBOARDING,
             self::ACCOUNT_ACTIVATION,
             self::ARCHIVED,
+            self::TERMINATED
         ],
         self::ACCOUNT_OPENING => [
             self::PROCESSED,
@@ -384,6 +396,7 @@ class Status
             self::API_ONBOARDING,
             self::ACCOUNT_ACTIVATION,
             self::ARCHIVED,
+            self::TERMINATED
         ],
         self::API_ONBOARDING => [
             self::PROCESSED,
@@ -393,6 +406,7 @@ class Status
             self::ACCOUNT_ACTIVATION,
             self::ACTIVATED,
             self::ARCHIVED,
+            self::TERMINATED
         ],
         self::ACCOUNT_ACTIVATION => [
             self::PROCESSED,
@@ -402,18 +416,22 @@ class Status
             self::API_ONBOARDING,
             self::ACTIVATED,
             self::ARCHIVED,
+            self::TERMINATED
         ],
         self::PROCESSED => [
             self::ACTIVATED,
             // Sometimes leads drop off after CA is opened.
             self::ARCHIVED,
+            self::TERMINATED
         ],
         self::UNSERVICEABLE => [
             self::PICKED,
             self::ARCHIVED,
+            self::TERMINATED
         ],
         self::ACTIVATED => [
-            self::ARCHIVED
+            self::ARCHIVED,
+            self::TERMINATED
         ],
         self::CANCELLED => [
             // Sometimes Sales team is able to revive leads who
@@ -421,12 +439,14 @@ class Status
             // restart the process.
             self::PICKED,
             self::ARCHIVED,
+            self::TERMINATED
         ],
         self::REJECTED  => [
             // Temporarily allowing this transition because of
             // https://razorpay.slack.com/archives/CRA6TGU8H/p1603954629097600?thread_ts=1603779164.072600&cid=CRA6TGU8H
             self::PROCESSED,
             self::ARCHIVED,
+            self::TERMINATED
         ],
         self::ARCHIVED  => [
             self::PICKED,
@@ -435,6 +455,7 @@ class Status
             self::PROCESSED,
             self::ACCOUNT_OPENING,
             self::API_ONBOARDING,
+            self::TERMINATED
         ]
     ];
 
@@ -779,7 +800,8 @@ class Status
             self::RM_DELAYS_IN_ACCOUNT_OPENING,
             self::TEST_ACCOUNT,
             self::OTHER,
-        ]
+        ],
+        self::TERMINATED => []
     ];
 
 
@@ -885,6 +907,7 @@ class Status
         self::CANCELLED,
         self::ARCHIVED,
         self::ACTIVATED,
+        self::TERMINATED
     ];
 
     /**
@@ -910,6 +933,7 @@ class Status
         self::TEMP_UNSERVICEABLE            => self::UNSERVICEABLE,
         self::BANK_REJECTED                 => self::REJECTED,
         self::ARCHIVED_EXTERNAL             => self::ARCHIVED,
+        self::TERMINATED_EXTERNAL         => self::TERMINATED,
         self::VERIFICATION_CALL_EXTERNAL    => self::VERIFICATION_CALL,
         self::DOC_COLLECTION_EXTERNAL       => self::DOC_COLLECTION,
         self::ACCOUNT_OPENING_EXTERNAL      => self::ACCOUNT_OPENING,
@@ -932,7 +956,8 @@ class Status
         self::MERCHANT_CANCELLED,
         self::TEMP_UNSERVICEABLE,
         self::BANK_REJECTED,
-        self::ARCHIVED_EXTERNAL
+        self::ARCHIVED_EXTERNAL,
+        self::TERMINATED_EXTERNAL
     ];
 
     public static $externalToInternalSubStatusMap = [

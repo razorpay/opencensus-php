@@ -4941,17 +4941,6 @@ return [
         ]
     ],
 
-     'testArchiveAccountForActivatedAccount' => [
-         'request'  => [
-             'url'    => '/banking_account/{id}',
-             'method' => 'POST',
-         ],
-         'response' => [
-             'content'     => [],
-             'status_code' => 200,
-         ]
-     ],
-
     'testArchiveICICIAndActivateRBL' => [
         'request'  => [
             'url'     => '/bas/merchant/10000000000000/banking_accounts',
@@ -5295,5 +5284,31 @@ return [
             ],
         ],
     ],
+
+    'testExcludeTerminatedAccountsBankingAccountList' => [
+        'request' => [
+            'url'       => '/banking_accounts',
+            'method'    => 'GET'
+        ],
+        'response'  => [
+            'status_code'   => 200,
+            'content'       => [
+                'count' => 0
+            ]
+        ]
+    ],
+
+    'testExcludeTerminatedAccountsQueryParamAdminFetch' => [
+        'request' => [
+            'url'       => '/admin/banking_account?exclude_status[]=created',
+            'method'    => 'GET'
+        ],
+        'response'  => [
+            'status_code'   => 200,
+            'content'       => [
+                'count' => 0
+            ]
+        ]
+    ]
 
 ];

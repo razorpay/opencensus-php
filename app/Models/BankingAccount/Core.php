@@ -810,6 +810,9 @@ class Core extends Base\Core
                 'input'   => $traceRequest,
             ]);
 
+        // banking_account update is not permitted for terminated status
+        (new Validator())->validateAccountNotTerminated($bankingAccount, ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_UPDATE_NOT_PERMITTED);
+
         $isRevivedLead = $this->checkIfRevivedLead($input,$bankingAccount);
 
         if ($isRevivedLead === true)

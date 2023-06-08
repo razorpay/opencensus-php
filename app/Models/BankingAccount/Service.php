@@ -344,7 +344,9 @@ class Service extends Base\Service
             }
         }
 
-        if ($this->checkIfAccountIsArchived($previousStatus, $input)) {
+        if ($this->checkIfAccountIsArchived($previousStatus, $input) or
+            $this->checkIfAccountIsTerminated($previousStatus, $input))
+        {
             $this->archiveBankingAccount($bankingAccount->getId(), array(Entity::CHANNEL => Channel::RBL, Base\PublicEntity::MERCHANT_ID => $account->getMerchantId()));
         }
 
@@ -1868,6 +1870,13 @@ class Service extends Base\Service
         return (isset($input[Entity::STATUS])) and
                ($input[Entity::STATUS] == Status::ARCHIVED) and
                ($previousStatus != $input[Entity::STATUS]);
+    }
+
+    private function checkIfAccountIsTerminated(string $previousStatus, array $input) : bool
+    {
+        return (isset($input[Entity::STATUS])) and
+            ($input[Entity::STATUS] == Status::TERMINATED) and
+            ($previousStatus != $input[Entity::STATUS]);
     }
 
     /**

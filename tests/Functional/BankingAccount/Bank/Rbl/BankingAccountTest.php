@@ -246,6 +246,20 @@ class BankingAccountTest extends TestCase
         $bankingAccountTwo = $this->startTest($testData);
 
         $this->assertEquals($bankingAccount['id'], $bankingAccountTwo['id']);
+
+        /*
+         * after existing application is updated to `terminated` status, new application
+         * can be created for same merchant
+         */
+        /* @var Entity $bankingAccountEntity*/
+        $bankingAccountEntity = (new BankingAccount\Repository())->findByPublicId($bankingAccount['id']);
+        $this->updateBankingAccount($bankingAccountEntity,[
+            'status' => Status::TERMINATED
+        ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest($testData);
     }
 
     public function testCreateBankingAccountForNonRzpOrgMerchant()
@@ -3572,6 +3586,14 @@ class BankingAccountTest extends TestCase
             Status::ARCHIVED);
     }
 
+    public function testUpdateBankingAccountStatusCreatedToTerminated()
+    {
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::CREATED,
+            Status::TERMINATED
+        );
+    }
+
     public function testUpdateBankingAccountStatusCreatedToArchivedWithClevertapMigrationExpEnabled()
     {
         $this->assertUpdateBankingAccountStatusFromTo(
@@ -3627,6 +3649,14 @@ class BankingAccountTest extends TestCase
         $this->assertUpdateBankingAccountStatusFromTo(
             Status::ARCHIVED,
             Status::PROCESSED);
+    }
+
+    public function testUpdateBankingAccountStatusArchivedToTerminated()
+    {
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::ARCHIVED,
+            Status::TERMINATED
+        );
     }
 
     public function testUpdateBankingAccountStatusRejectedToProcessed()
@@ -5034,6 +5064,7 @@ class BankingAccountTest extends TestCase
             'account_type'   => 'current',
             'merchant_id'    => '10000000000000',
             'channel'        => 'rbl',
+            'status'         => 'created'
         ]);
 
         $this->startTest();
@@ -5052,6 +5083,7 @@ class BankingAccountTest extends TestCase
             'account_type'   => 'nodal',
             'merchant_id'    => '10000000000000',
             'channel'        => 'rbl',
+            'status'         => 'created'
         ]);
 
         $this->fixtures->create('banking_account', [
@@ -5060,6 +5092,7 @@ class BankingAccountTest extends TestCase
             'account_type'   => 'current',
             'merchant_id'    => '10000000000000',
             'channel'        => 'icici',
+            'status'         => 'created'
         ]);
 
         $this->fixtures->create('banking_account', [
@@ -5068,6 +5101,7 @@ class BankingAccountTest extends TestCase
             'account_type'   => 'corp_card',
             'merchant_id'    => '10000000000000',
             'channel'        => 'm2p',
+            'status'         => 'created'
         ]);
 
         $this->startTest();
@@ -5097,6 +5131,7 @@ class BankingAccountTest extends TestCase
             'merchant_id'    => '10000000000000',
             'channel'        => 'rbl',
             'balance_id'     => $balanceId,
+            'status'         => 'created'
         ]);
 
         $this->startTest();
@@ -9633,7 +9668,7 @@ class BankingAccountTest extends TestCase
         $this->assertEquals(Status::ARCHIVED, $response[Entity::STATUS]);
     }
 
-    public function testArchiveAccountForActivatedAccount()
+    public function verifyArchiveAndTerminateForActivatedAccount(string $status)
     {
         $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_current_accounts', 'ca_allocated_bank', 'RBL');
 
@@ -9648,9 +9683,13 @@ class BankingAccountTest extends TestCase
                 'url'     => '/banking_accounts/' . $bankingAccount->getPublicId(),
                 'method'  => 'PATCH',
                 'content' => [
-                    Entity::STATUS => Status::ARCHIVED,
+                    Entity::STATUS => $status,
                 ],
             ],
+            'response' => [
+                'content'     => [],
+                'status_code' => 200,
+            ]
         ];
 
         $this->ba->adminAuth();
@@ -9658,20 +9697,30 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
 
         $balance = $this->getDbEntity('balance',
-                                      [
-                                          'merchant_id'    => '10000000000000',
-                                          'channel'        => 'rbl',
-                                          'account_type'   => 'direct',
-                                      ]);
+            [
+                'merchant_id'    => '10000000000000',
+                'channel'        => 'rbl',
+                'account_type'   => 'direct',
+            ]);
 
         $basd = $this->getDbEntity('banking_account_statement_details',
-                                   [
-                                       'merchant_id'    => '10000000000000',
-                                       'channel'        => 'rbl',
-                                       'balance_id'     => $balance->getId(),
-                                   ]);
+            [
+                'merchant_id'    => '10000000000000',
+                'channel'        => 'rbl',
+                'balance_id'     => $balance->getId(),
+            ]);
 
         $this->assertEquals('archived', $basd->getStatus());
+    }
+
+    public function testArchiveAccountForActivatedAccount()
+    {
+        $this->verifyArchiveAndTerminateForActivatedAccount(Status::ARCHIVED);
+    }
+
+    public function testTerminateAccountForActivatedAccount()
+    {
+        $this->verifyArchiveAndTerminateForActivatedAccount(Status::TERMINATED);
     }
 
     protected function enableRazorXTreatmentForXOnboarding($ledgerOnboardingValue = 'control',
@@ -13147,7 +13196,8 @@ class BankingAccountTest extends TestCase
             'id'           => 'subBacc0000000',
             'balance_id'   => $balance->getId(),
             'merchant_id'  => '10000000000000',
-            'account_type' => 'nodal'
+            'account_type' => 'nodal',
+            'status'       => 'created'
         ]);
 
         $masterMerchant = $this->fixtures->create('merchant', [
@@ -13182,6 +13232,88 @@ class BankingAccountTest extends TestCase
         ]);
 
         return [$balance, $bankingAccount, $masterDirectBankingAccount];
+    }
+
+    public function testExcludeTerminatedAccountsBankingAccountList()
+    {
+        $this->ba->proxyAuth();
+
+        $this->createBankingAccountFromDashboard();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->updateBankingAccount($bankingAccount, [
+            'status' => Status::TERMINATED,
+        ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testExcludeTerminatedAccountsQueryParamAdminFetch()
+    {
+        $this->ba->proxyAuth();
+
+        $this->createBankingAccountFromDashboard();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdateTerminatedBankingAccount()
+    {
+        $this->ba->proxyAuth();
+
+        $this->createBankingAccountFromDashboard();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->updateBankingAccount($bankingAccount, [
+            'status' => Status::TERMINATED,
+        ]);
+
+        $request = [
+            'url'       => '/banking_accounts/' . $bankingAccount->getPublicId(),
+            'method'    => 'PATCH',
+            'content'   => [
+                'status' => 'picked',
+            ],
+        ];
+
+        $this->expectException(\RZP\Exception\BadRequestException::class);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('BAD_REQUEST_BANKING_ACCOUNT_UPDATE_NOT_PERMITTED', $response['error']['internal_error_code']);
+    }
+
+    public function testUpdateTerminatedBankingAccountActivationDetails()
+    {
+        $this->ba->proxyAuth();
+
+        $this->createBankingAccountFromDashboard();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->updateBankingAccount($bankingAccount, [
+            'status' => Status::TERMINATED,
+        ]);
+
+        $request = [
+            'url'       => '/banking_accounts/activation/' . $bankingAccount->getPublicId() . '/details',
+            'method'    => 'PATCH',
+            'content'   => [
+                'status' => 'picked',
+            ],
+        ];
+
+        $this->expectException(\RZP\Exception\BadRequestException::class);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_DETAILS_UPDATE_NOT_ALLOWED', $response['error']['internal_error_code']);
     }
 
     private function getXSegmentMock()

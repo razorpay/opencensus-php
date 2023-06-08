@@ -467,4 +467,15 @@ class Validator extends Base\Validator
 
         }
     }
+
+    /**
+     * @throws BadRequestException
+     */
+    public function validateAccountNotTerminated(Entity $bankingAccount, string $errorCode)
+    {
+        if ($bankingAccount->getStatus() === Status::TERMINATED)
+        {
+            throw new BadRequestException($errorCode);
+        }
+    }
 }

@@ -22,6 +22,7 @@ class Fetch extends BaseFetch
             Entity::ACCOUNT_TYPE          => 'sometimes|string',
             Entity::REVIEWER_ID           => 'sometimes|string',
             Entity::FILTER_MERCHANTS      => 'sometimes|array',
+            Entity::EXCLUDE_STATUS        => 'sometimes|custom',
             self::COUNT                   => 'filled|integer|min:1|max:1000',
             self::EXPAND_EACH             => 'filled|string|in:merchant,merchant.merchantDetail,reviewers,spocs,banking_account_activation_details',
         ],
@@ -61,6 +62,7 @@ class Fetch extends BaseFetch
         self::DEFAULTS => [
             self::EXPAND_EACH,
             Entity::FILTER_MERCHANTS,
+            Entity::EXCLUDE_STATUS,
             Entity::STATUS,
             Entity::CHANNEL,
             Entity::ACCOUNT_TYPE,
@@ -108,11 +110,13 @@ class Fetch extends BaseFetch
             Entity::OPS_MX_POC_ID,
             Entity::FROM_DOCKET_ESTIMATED_DELIVERY_DATE,
             Entity::TO_DOCKET_ESTIMATED_DELIVERY_DATE,
+            Entity::EXCLUDE_STATUS,
             self::EXPAND_EACH,
         ],
         AuthType::PROXY_AUTH => [
             self::EXPAND_EACH,
             Entity::FILTER_MERCHANTS,
+            Entity::EXCLUDE_STATUS,
             Entity::STATUS,
             Entity::CHANNEL,
             Entity::ACCOUNT_TYPE,
@@ -152,5 +156,10 @@ class Fetch extends BaseFetch
     public function validateChannel(string $attribute, string $channel)
     {
         Channel::validateChannel($channel);
+    }
+
+    public function validateExcludeStatus(string $attribute, $excludeStatus)
+    {
+        $this->validateStatus($attribute, $excludeStatus);
     }
 }

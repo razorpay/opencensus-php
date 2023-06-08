@@ -1964,7 +1964,8 @@ class Entity extends Base\PublicEntity
 
     public function bankingAccounts()
     {
-        return $this->hasMany(BankingAccount\Entity::class);
+        return $this->hasMany(BankingAccount\Entity::class)
+            ->whereNot(BankingAccount\Entity::STATUS, BankingAccount\Status::TERMINATED);
     }
 
     public function hasBankingAccounts()
