@@ -3,17 +3,23 @@ import { withRouter } from 'react-router-dom';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
 import rTracking from 'react-tracking';
-import { getActivationState } from 'merchant/components/Activation/ActivationUtils';
+import {
+  getActivationState,
+  redirectToEasyAfter1sec,
+} from 'merchant/components/Activation/ActivationUtils';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { formatNumberWithCommas } from 'common/utils/numerals';
 import { i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
+import { analyticsTrack } from 'common/utils/analytics';
 import Time from 'common/ui/Time';
+import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 
 const PaymentProgressBar = ({ user, mode, history, limitBreach, isNcEligibile }) => {
   const [paymentProgress, setPaymentProgress] = useState(0);
   const [lastUpdatedTime, setLastUpdateTime] = useState(0);
   const [content, setContent] = useState(null);
   const [button, setButton] = useState();
+  const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
 
   useEffect(() => {
     if (user.activation_form_milestone === 'L1') {
@@ -70,7 +76,21 @@ const PaymentProgressBar = ({ user, mode, history, limitBreach, isNcEligibile })
         activationFlowButton = (
           <button
             className="btn btn-primary"
-            onClick={() => history.push(user.isActivationFormFullView ? '/kyc' : '/activation')}
+            onClick={() => {
+              if (isSignupWithEasyOnboarding) {
+                analyticsTrack({
+                  objectName: 'redirect to easy-dashboard CTA',
+                  actionName: 'Redirect',
+                  screen: 'onboarding card',
+                  properties: {
+                    'CTA Label': 'Complete KYC',
+                  },
+                });
+                redirectToEasyAfter1sec();
+              } else {
+                history.push(user.isActivationFormFullView ? '/kyc' : '/activation');
+              }
+            }}
           >
             Complete KYC
           </button>

@@ -13,10 +13,12 @@ import { trackProductsModal } from 'merchant/containers/Home/OnboardingCard/Inst
 import {
   getActivationState,
   isNewNcActivationStatus,
+  redirectToEasyAfter1sec,
 } from 'merchant/components/Activation/ActivationUtils';
 import InstantActivationModal from './InstantActivationModal';
 import * as EventsActions from 'merchant/reducers/trackEvents';
 import { isMobileDevice } from './data';
+import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 
 const MODAL_CONTENT = {
   KYC_CLARIFICATION_SUBMIT_MODAL: {
@@ -56,6 +58,8 @@ const KYCStatusModal = ({
   isNcEligibile,
 }) => {
   const activationState = getActivationState(user, user.isUnregisteredBusiness, isNcEligibile);
+  const activationUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
+  const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
 
   const isNewNc = isNewNcActivationStatus(activationState);
 
@@ -88,9 +92,19 @@ const KYCStatusModal = ({
   };
 
   const goToActivationForm = () => {
-    const activationUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
-    onClose();
-    history.push(activationUrl);
+    if (isSignupWithEasyOnboarding) {
+      trackEvents({
+        objectName: 'redirect to easy-dashboard CTA',
+        actionName: 'Redirect',
+        screen: 'home page',
+        properties: {
+          'CTA Label': 'Complete KYC',
+        },
+      });
+      redirectToEasyAfter1sec();
+    } else {
+      history.push(activationUrl);
+    }
   };
 
   const openPaymentAcceptModal = () => {

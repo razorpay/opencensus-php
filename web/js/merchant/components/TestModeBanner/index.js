@@ -7,6 +7,8 @@ import Banner from 'common/ui/Banner';
 import { trackLinkClick } from './ga';
 import RTracking from 'react-tracking';
 import { analyticsTrack } from 'common/utils/analytics';
+import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
+import { redirectToEasyAfter1sec } from 'merchant/components/Activation/ActivationUtils';
 
 @RTracking(() => window.rzpQ.component('TestModeBanner'))
 class TestModeBanner extends Component {
@@ -47,6 +49,7 @@ class TestModeBanner extends Component {
 
     const activationFormUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
     const isNewNC = isNcEligibile && user.activation_status === 'needs_clarification';
+    const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
 
     return (
       /* For not as we have a seperarte Test Mode banner for m-web which is prominent so hiding this from m-web */
@@ -69,8 +72,21 @@ class TestModeBanner extends Component {
                     if (isNewNC) {
                       this.redirectToNewNC();
                     }
+
                     trackLinkClick('Go To - Activation Form');
                     tracking.trackEvent(window.rzpQ.onbr().initiated('kyc.form_fill'));
+
+                    if (isSignupWithEasyOnboarding) {
+                      analyticsTrack({
+                        objectName: 'redirect to easy-dashboard CTA',
+                        actionName: 'Redirect',
+                        screen: 'home page',
+                        properties: {
+                          'CTA Label': 'Activate your account',
+                        },
+                      });
+                      redirectToEasyAfter1sec();
+                    }
                   }}
                 >
                   Activate your account

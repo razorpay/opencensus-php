@@ -8,6 +8,9 @@ import {
   StepContentT,
 } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
 import ActivationStep from 'merchant/views/PartnerDashboard/Home/Components/ActivationGuide/ActivationStep';
+import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
+import { redirectToEasyAfter1sec } from 'merchant/components/Activation/ActivationUtils';
+import { useApp } from 'common/context/App';
 
 interface StartStepT {
   fuxStatus: FUXStatusStateT;
@@ -76,6 +79,9 @@ export const ActivateAccountStep = ({
   let isFailedStep = false;
   const isCompletedStep = activation_status === 'activated';
 
+  const { user } = useApp();
+  const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
+
   const stepContent: StepContentT = {
     title: 'Activate Account',
     subTitle: 'Give us a few details and become eligible for commissions',
@@ -101,7 +107,18 @@ export const ActivateAccountStep = ({
     stepContent.subTitle = `Our team requires additional information, please check your registered mail id`;
     stepContent.ctaText = 'Submit KYC';
     stepContent.onClickCTA = () => {
-      history.push('/activation');
+      if (isSignupWithEasyOnboarding) {
+        trackUserEvent('redirect to easy-dashboard CTA', {
+          actionName: 'Redirect',
+          screen: 'onboarding',
+          properties: {
+            'CTA Label': 'Fill KYC Form',
+          },
+        });
+        redirectToEasyAfter1sec();
+      } else {
+        history.push('/activation');
+      }
       trackUserEvent('fux.activation-guide.open.kyc', {
         activation_status,
       });

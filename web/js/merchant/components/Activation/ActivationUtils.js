@@ -785,6 +785,13 @@ const isNewNcActivationStatus = (activationStatus) => {
   return newNcActivationStatus.includes(activationStatus);
 };
 
+const redirectToEasyAfter1sec = () => {
+  /*TODO: [may need to improve] Added this timepout so that the trackevents gets fired first and then only user is redirected to EO */
+  setTimeout(() => {
+    window.open(window.EASY_ONBOARDING_URL, '_self', 'noopener');
+  }, 1000);
+};
+
 export {
   differentAddress,
   isUnregisteredBusiness,
@@ -840,4 +847,5 @@ export {
   isPgMerchant,
   getNcExpiryDate,
   isNewNcActivationStatus,
+  redirectToEasyAfter1sec,
 };

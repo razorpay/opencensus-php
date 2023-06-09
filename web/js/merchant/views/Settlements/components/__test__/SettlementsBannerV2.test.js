@@ -10,6 +10,7 @@ import { createMemoryHistory } from 'history';
 import * as modals from 'merchant_common/reducers/modals';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import moment from 'moment/moment';
+import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 
 jest.mock('merchant/views/TicketSupport/utils', () => ({
   CreateTicketEmitter: {
@@ -58,6 +59,7 @@ describe('SettlementsBannerV2', () => {
 
   const history = createMemoryHistory();
   history.push = jest.fn();
+  window.open = jest.fn();
 
   const App = ({ initialState = state, ...rest }) => {
     return (
@@ -122,6 +124,40 @@ describe('SettlementsBannerV2', () => {
     await waitFor(() => {
       expect(history.push).toHaveBeenCalledTimes(1);
       expect(history.push).toHaveBeenCalledWith('/activation');
+    });
+  });
+
+  test('should render banner when in live mode and user KYC needs clarification and user signupcampaign is easy', async () => {
+    const initialState = {
+      ...state,
+      session: {
+        ...state.session,
+        user: {
+          activation_status: 'needs_clarification',
+          isActivated: true,
+          isSubmitted: false,
+          user: {
+            ...state.session.user.user,
+            signup_campaign: EASY_ONBOARDING,
+          },
+        },
+      },
+    };
+    render(<App initialState={initialState} />);
+    expect(screen.getByLabelText('settlement-banner')).toBeInTheDocument();
+    expect(
+      screen.getByText('We need a few more details to complete KYC verification'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Follow the link to update the required details soon. We’ll verify your details in 3-4 working days, and reach out to you for any questions',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Submit details now/i)).toBeInTheDocument();
+    userEvent.click(screen.getByText(/Submit details now/i));
+    await new Promise((r) => setTimeout(r, 1000));
+    await waitFor(() => {
+      expect(window.open).toHaveBeenCalledWith(window.EASY_ONBOARDING_URL, '_self', 'noopener');
     });
   });
 
