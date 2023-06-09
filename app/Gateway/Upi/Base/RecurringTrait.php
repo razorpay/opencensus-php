@@ -590,6 +590,18 @@ trait RecurringTrait
             $payerResponseCodeDes = $this->upiRecurringUpdateGatewayStatus($response['status_desc'], $response['status_code']);
             $attributes[Entity::GATEWAY_ERROR] = array_replace($attributes[Entity::GATEWAY_ERROR],$payerResponseCodeDes);
 
+            if ((isset($attributes[Entity::GATEWAY_ERROR][Constants::PSP_STATUS_CODE]) === true) and
+                (isset($payerResponseCodeDes[Constants::PSP_STATUS_CODE]) === false))
+            {
+                unset($attributes[Entity::GATEWAY_ERROR][Constants::PSP_STATUS_CODE]);
+            }
+
+            if ((isset($attributes[Entity::GATEWAY_ERROR][Constants::PSP_STATUS_DESC]) === true) and
+                (isset($payerResponseCodeDes[Constants::PSP_STATUS_DESC]) === false))
+            {
+                unset($attributes[Entity::GATEWAY_ERROR][Constants::PSP_STATUS_DESC]);
+            }
+
             $this->trace->info(TraceCode::UPI_RECURRING_PAYER_RESPONSE_CODE, [
                 'attributes'                => $attributes,
                 'payer_response_code'       => $payerResponseCodeDes,

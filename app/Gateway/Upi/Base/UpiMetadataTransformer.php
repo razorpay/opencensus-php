@@ -2,7 +2,9 @@
 
 namespace RZP\Gateway\Upi\Base;
 
+use App;
 use Carbon\Carbon;
+use RZP\Models\Merchant;
 use RZP\Constants\Entity;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Customer\Token;
@@ -232,13 +234,31 @@ class UpiMetadataTransformer extends UpiTransformer
         // no next reminder needed when success
         if ($action === Action::AUTHORIZE and $mode === Mode::AUTO)
         {
-            if ($attempt >= 3)
+            $app = App::getFacadeRoot();
+
+            $variant = $app['razorx']->getTreatment($this->input[Entity::PAYMENT]['merchant_id'],
+                Merchant\RazorxTreatment::UPI_AUTOPAY_INCREASE_DEBIT_RETRIES,
+                $app['rzp.mode'],
+                3
+            );
+
+            $variant = strtolower($variant);
+
+            if (($variant === 'on' and $attempt >= 10) or ($variant !== 'on' and $attempt >= 3))
             {
                 return null;
             }
 
-            // Starting with retries at 30 and 60 minutes
-            $remindAfter =  (pow(2, $attempt) * 15);
+            // Remind after 5 hours if experiment is on.
+            if ($variant === 'on')
+            {
+                $remindAfter = 300;
+            }
+            else
+            {
+                // Starting with retries at 30 and 60 minutes
+                $remindAfter =  (pow(2, $attempt) * 15);
+            }
         }
 
         if (is_null($remindAfter) === true)

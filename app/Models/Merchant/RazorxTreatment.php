@@ -754,6 +754,9 @@ final class RazorxTreatment
 
     const UPI_AUTOPAY_REVOKE_PAUSE_TOKEN = 'upi_autopay_revoke_pause_token';
 
+    // Experiment to increase debit retries for merchants
+    const UPI_AUTOPAY_INCREASE_DEBIT_RETRIES = 'upi_autopay_increase_debit_retries';
+
     const DISABLE_QR_CODE_ON_DEMAND_CLOSE = 'disable_qr_code_on_demand_close';
 
     // If true, it will select Optimizer mandate hub for card recurring payments.

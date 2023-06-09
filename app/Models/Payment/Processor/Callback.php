@@ -39,6 +39,20 @@ use RZP\Models\Locale\Core as LocaleCore;
 
 trait Callback
 {
+    protected static $validErrorCodesForUpiAutopayCallbackRetry = [
+        'U30',
+        'BT',
+        'UM9',
+        'U91',
+        'U67',
+        'UM2',
+        'UM8',
+        'U29',
+        'U90',
+        'U28',
+        'UM8'
+    ];
+
     protected $shouldAuthorizePaymentOnCallback = true;
 
     /**
@@ -513,6 +527,36 @@ trait Callback
         }
         catch (Exception\BaseException $e)
         {
+            if ($this->payment->isUpiAutoRecurring() and
+                in_array($e->getError()->getGatewayErrorCode(), self::$validErrorCodesForUpiAutopayCallbackRetry, true))
+            {
+                $variant = $this->app['razorx']->getTreatment($this->payment->getMerchantId(),
+                    Merchant\RazorxTreatment::UPI_AUTOPAY_INCREASE_DEBIT_RETRIES,
+                    $this->app['rzp.mode'],
+                    3
+                );
+
+                if (strtolower($variant) === 'on')
+                {
+                    $this->trace->info(
+                        TraceCode::UPI_AUTOPAY_CALLBACK_FAILURE,
+                        [
+                            'payment_id' => $this->payment->getPublicId(),
+                            'error_code' => $e->getError()->getGatewayErrorCode()
+                        ]);
+
+                    $exception = new Exception\GatewayErrorException($e->getError()->getInternalErrorCode(),
+                        $e->getError()->getGatewayErrorCode(),
+                        $e->getError()->getGatewayErrorDesc(),
+                        $e->getData()
+                    );
+
+                    $this->processDebitGatewayFailure($this->payment, $exception);
+
+                    return;
+                }
+            }
+
             $this->processPaymentCallbackException($e);
         }
 
