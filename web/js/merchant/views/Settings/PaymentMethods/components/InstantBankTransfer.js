@@ -53,7 +53,7 @@ const InstantBankTransfer = ({
   setFormError,
   showNotification,
 }) => {
-  const isSubmitted = formData?.submitted === '1';
+  const isSubmitted = formData?.submitted === '1' || formData?.submitted === true;
 
   const trackActivateClicked = (formSubmitted, containerButtonClicked, listButtonClicked) => {
     track({
