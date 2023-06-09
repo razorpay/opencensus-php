@@ -5,6 +5,7 @@ namespace RZP\Models\Payment\Processor;
 use App;
 use Request;
 
+use RZP\Services\Shield;
 use Neves\Events\TransactionalClosureEvent;
 use Route;
 use Config;
@@ -5884,7 +5885,9 @@ class Processor
 
         $this->app['events']->dispatch('api.payment.failed', $eventPayload);
 
-        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHORIZATION_FAILED, $this->payment, $exception);
+        $event = $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTHORIZATION_FAILED, $this->payment, $exception);
+
+        $this->app['shield.service']->enqueueShieldEvent($event);
     }
 
     protected function setPaymentError(Exception\BaseException $e, $traceCode)
