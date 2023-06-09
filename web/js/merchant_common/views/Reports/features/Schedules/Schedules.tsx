@@ -5,6 +5,9 @@ import {
   DropdownOverlay,
   ActionList,
   ActionListItem,
+  ReportModal,
+  Button,
+  PlusIcon,
 } from 'merchant_common/views/Reports/components';
 import { ControlPanel, SchedulesWrapper, DropdownWrapper } from './styled';
 import { SchedulesPropsType } from './types';
@@ -42,6 +45,7 @@ const SchedulesSection = connect(
     scheduleFilter,
     dashboardType,
     isAllConfigLoaded,
+    openModal,
   }: SchedulesPropsType): JSX.Element => {
     useEffect(() => {
       if (isAllConfigLoaded) {
@@ -62,9 +66,26 @@ const SchedulesSection = connect(
       handleScheduleFilter(refFilter?.value);
     };
 
+    const handleScheduleClick = () => {
+      openModal({
+        component: <ReportModal type={'create_edit_schedule'} dashboardType={dashboardType} />,
+        size: '',
+      });
+    };
+
     return (
       <SchedulesWrapper>
         <ControlPanel>
+          <Button
+            onClick={handleScheduleClick}
+            variant="primary"
+            icon={PlusIcon}
+            iconPosition="left"
+            accessibilityLabel="Create Schedule Button"
+            isLoading={!isAllConfigLoaded}
+          >
+            Create Schedule
+          </Button>
           <DropdownWrapper>
             <Dropdown selectionType="single">
               <SelectInput

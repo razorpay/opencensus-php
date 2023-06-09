@@ -5,4 +5,6 @@ export interface ControlActionsArgs {
   openModal: OpenModalType;
   scheduleData: ScheduleType;
   showNotification: ShowNotificationType;
+  stopSchedulePoll: () => void;
+  startSchedulePoll: () => void;
 }

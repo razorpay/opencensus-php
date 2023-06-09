@@ -1,4 +1,4 @@
-export const checkScheduleStatus = (status: string) => {
+export const checkScheduleStatus = (status?: string) => {
   switch (status) {
     case 'paused':
       return 'Paused';

@@ -7,6 +7,7 @@ import { ReportCloseButton, ReportModalWrapper } from './styled';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
 import { ConfirmModal } from './components/ConfirmModal';
+import { ScheduleReport } from './components/ScheduleReport';
 
 const mapDispatchToProps = (dispatch) => ({
   closeModal: () => dispatch(closeModal()),
@@ -59,6 +60,8 @@ const Modal = connect(
         return renderReportModal(<DownloadReport {...commonProps} />);
       case 'download_custom_report':
         return renderReportModal(<DownloadCustomReport {...commonProps} />, { scrollable: false });
+      case 'create_edit_schedule':
+        return renderReportModal(<ScheduleReport {...commonProps} />);
       case 'confirm_modal':
         return (
           <>

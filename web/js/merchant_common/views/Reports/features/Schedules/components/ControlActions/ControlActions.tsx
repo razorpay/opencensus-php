@@ -10,6 +10,7 @@ import {
   PlayIcon,
   IconButton,
   ReportModal,
+  EditIcon,
 } from 'merchant_common/views/Reports/components';
 import {
   deleteSchedule,
@@ -23,144 +24,191 @@ import {
 } from 'merchant_common/views/Reports/configs/analytics.config';
 import { ControlActionsArgs } from './types';
 import { ScheduleAPIFnParams } from 'merchant_common/views/Reports/api/types';
+import { startSchedulePoll, stopSchedulePoll } from 'merchant_common/views/Reports/redux/reducer';
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch, { dashboardType }) => ({
   openModal: (modal) => dispatch(openModal(modal)),
+  startSchedulePoll: (payload) => dispatch(startSchedulePoll({ ...payload, dashboardType })),
+  stopSchedulePoll: (payload) => dispatch(stopSchedulePoll({ ...payload, dashboardType })),
   showNotification: (payload) => dispatch(showNotification(payload)),
 });
 
 export const ControlActions = connect(
   null,
   mapDispatchToProps,
-)(({ openModal, scheduleData: { status, id }, showNotification }: ControlActionsArgs) => {
-  const dashboardType = useDashboardType();
+)(
+  ({
+    openModal,
+    scheduleData,
+    showNotification,
+    startSchedulePoll,
+    stopSchedulePoll,
+  }: ControlActionsArgs) => {
+    const dashboardType = useDashboardType();
+    const { status, id } = scheduleData;
+    const handleControlAction = ({
+      action,
+      icon,
+      promise,
+    }: {
+      action: 'pause' | 'delete' | 'resume';
+      icon: ((x: IconProps) => React.ReactElement) | IconComponent;
+      promise: (x: ScheduleAPIFnParams) => Promise<void>;
+    }) => {
+      const eventType = action === 'delete' ? 'Delete' : action === 'pause' ? 'Pause' : 'Resume';
 
-  const handleControlAction = <T,>({
-    action,
-    icon,
-    promise,
-  }: {
-    action: 'pause' | 'delete' | 'resume';
-    icon: ((x: IconProps) => React.ReactElement) | IconComponent;
-    promise: (x: ScheduleAPIFnParams) => Promise<void>;
-  }) => {
-    const eventType = action === 'delete' ? 'Delete' : action === 'pause' ? 'Pause' : 'Resume';
+      openModal({
+        component: (
+          <ReportModal
+            type="confirm_modal"
+            dashboardType={dashboardType}
+            params={{
+              modalConfig: {
+                title: 'Please Confirm!',
+                desc: `Are you sure you want to ${action} this schedule?`,
+                confirmBtn: {
+                  onClick: ({ setLoading, closeModal }) => {
+                    setLoading(true);
+                    if (!id) return;
 
-    openModal({
-      component: (
-        <ReportModal
-          type="confirm_modal"
-          dashboardType={dashboardType}
-          params={{
-            modalConfig: {
-              title: 'Please Confirm!',
-              desc: `Are you sure you want to ${action} this schedule?`,
-              confirmBtn: {
-                onClick: ({ setLoading, closeModal }) => {
-                  setLoading(true);
-                  promise({
-                    headers: {},
-                    scheduleId: id,
-                  })
-                    .then(() => {
-                      trackScheduleSection({
-                        actionName: `${eventType} Successful` as keyof typeof SchedulesActionType,
-                        dashboardType,
-                      });
-                      showNotification({
-                        type: 'success',
-                        message: `Schedule ${action[0].toUpperCase() + action.slice(1)}d!`,
-                      });
-                      closeModal();
+                    stopSchedulePoll();
+
+                    promise({
+                      headers: {},
+                      scheduleId: id,
                     })
-                    .catch(() => {
-                      trackScheduleSection({
-                        actionName: `${eventType} Failed` as keyof typeof SchedulesActionType,
-                        dashboardType,
+                      .then(() => {
+                        trackScheduleSection({
+                          actionName: `${eventType} Successful` as keyof typeof SchedulesActionType,
+                          dashboardType,
+                        });
+                        showNotification({
+                          type: 'success',
+                          message: `Schedule ${action[0].toUpperCase() + action.slice(1)}d!`,
+                        });
+                        closeModal();
+                      })
+                      .catch(() => {
+                        trackScheduleSection({
+                          actionName: `${eventType} Failed` as keyof typeof SchedulesActionType,
+                          dashboardType,
+                        });
+                        showNotification({
+                          type: 'error',
+                          message: `Unable to ${action} this schedule. Please try again later.`,
+                        });
+                      })
+                      .finally(() => {
+                        startSchedulePoll();
                       });
-                      showNotification({
-                        type: 'error',
-                        message: `Unable to ${action} this schedule. Please try again later.`,
-                      });
-                    })
-                    .finally(() => {});
+                  },
+                  icon,
+                  label: `${action[0].toUpperCase() + action.slice(1)} Schedule`,
                 },
-                icon,
-                label: `${action[0].toUpperCase() + action.slice(1)} Schedule`,
+                alert: {
+                  intent:
+                    action === 'delete'
+                      ? 'negative'
+                      : action === 'pause'
+                      ? 'information'
+                      : 'notice',
+                  description: `You are about to ${action} a schedule with id as ${id}.`,
+                },
               },
-              alert: {
-                intent:
-                  action === 'delete' ? 'negative' : action === 'pause' ? 'information' : 'notice',
-                description: `You are about to ${action} a schedule with id as ${id}.`,
-              },
-            },
-          }}
-        />
-      ),
-      size: 'custom',
-    });
-  };
+            }}
+          />
+        ),
+        size: 'custom',
+      });
+    };
 
-  const handleDeleteSchedule = () => {
-    trackScheduleSection({
-      actionName: 'Delete Triggered',
-      dashboardType,
-    });
-    handleControlAction({
-      action: 'delete',
-      icon: TrashIcon,
-      promise: deleteSchedule,
-    });
-  };
+    const handleDeleteSchedule = () => {
+      trackScheduleSection({
+        actionName: 'Delete Triggered',
+        dashboardType,
+      });
+      handleControlAction({
+        action: 'delete',
+        icon: TrashIcon,
+        promise: deleteSchedule,
+      });
+    };
 
-  const handlePauseSchedule = () => {
-    trackScheduleSection({
-      actionName: 'Pause Triggered',
-      dashboardType,
-    });
-    handleControlAction({
-      action: 'pause',
-      icon: PauseIcon,
-      promise: pauseSchedule,
-    });
-  };
+    const handlePauseSchedule = () => {
+      trackScheduleSection({
+        actionName: 'Pause Triggered',
+        dashboardType,
+      });
+      handleControlAction({
+        action: 'pause',
+        icon: PauseIcon,
+        promise: pauseSchedule,
+      });
+    };
 
-  const handleResumeSchedule = () => {
-    trackScheduleSection({
-      actionName: 'Resume Triggered',
-      dashboardType,
-    });
-    handleControlAction({
-      action: 'resume',
-      icon: PlayIcon,
-      promise: resumeSchedule,
-    });
-  };
+    const handleResumeSchedule = () => {
+      trackScheduleSection({
+        actionName: 'Resume Triggered',
+        dashboardType,
+      });
+      handleControlAction({
+        action: 'resume',
+        icon: PlayIcon,
+        promise: resumeSchedule,
+      });
+    };
 
-  return (
-    <SchedulesTableIconControlContainer>
-      {status === 'active' ? (
+    const handleEditSchedule = () => {
+      trackScheduleSection({
+        actionName: 'Edit Modal Open Triggered',
+        dashboardType,
+      });
+      openModal({
+        component: (
+          <ReportModal
+            type={'create_edit_schedule'}
+            dashboardType={dashboardType}
+            params={{
+              scheduleData,
+            }}
+          />
+        ),
+        size: 'custom',
+      });
+    };
+
+    return (
+      <SchedulesTableIconControlContainer>
         <IconButton
-          icon={PauseIcon}
+          icon={EditIcon}
           size="medium"
-          onClick={handlePauseSchedule}
-          accessibilityLabel="Pause Schedule"
+          onClick={handleEditSchedule}
+          accessibilityLabel="Edit Schedule"
         />
-      ) : (
-        <IconButton
-          icon={PlayIcon}
-          size="medium"
-          onClick={handleResumeSchedule}
-          accessibilityLabel="Resume Schedule"
-        />
-      )}
 
-      <IconButton
-        icon={TrashIcon}
-        size="medium"
-        onClick={handleDeleteSchedule}
-        accessibilityLabel="Delete Schedule"
-      />
-    </SchedulesTableIconControlContainer>
-  );
-});
+        {status === 'active' ? (
+          <IconButton
+            icon={PauseIcon}
+            size="medium"
+            onClick={handlePauseSchedule}
+            accessibilityLabel="Pause Schedule"
+          />
+        ) : (
+          <IconButton
+            icon={PlayIcon}
+            size="medium"
+            onClick={handleResumeSchedule}
+            accessibilityLabel="Resume Schedule"
+          />
+        )}
+
+        <IconButton
+          icon={TrashIcon}
+          size="medium"
+          onClick={handleDeleteSchedule}
+          accessibilityLabel="Delete Schedule"
+        />
+      </SchedulesTableIconControlContainer>
+    );
+  },
+);

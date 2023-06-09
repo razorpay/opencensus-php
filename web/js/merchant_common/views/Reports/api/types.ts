@@ -8,7 +8,7 @@ export interface ResPayload<T> {
 export interface ResType<PayloadType> {
   status_code?: number;
   success?: boolean;
-  data: ResPayload<PayloadType>;
+  data: PayloadType;
 }
 
 export interface ErrorType {
@@ -21,7 +21,7 @@ export interface PollResFailedCallbackArgs {
 }
 
 export interface LongPollParamType<T> {
-  fetchFunc: () => Promise<ResType<T>>;
+  fetchFunc: () => Promise<ResType<ResPayload<T>>>;
   validator: (x: ResPayload<T>) => boolean;
   pollResSuccessCallback: (
     x: ResPayload<T>,
@@ -58,9 +58,16 @@ export interface ScheduleAPIFnParams {
   scheduleId: string;
 }
 
+export enum CreateScheduleMethod {
+  'post' = 'post',
+  'patch' = 'patch',
+}
+
 export interface CreateScheduleAPIFnParams<T> {
-  headers: ReportsFetchAPIParams;
+  headers: ReportsFetchHeaders;
   payload: T;
+  method: keyof typeof CreateScheduleMethod;
+  scheduleId: string;
 }
 export interface ScheduleAPIEditParams<T> extends ScheduleAPIFnParams {
   payload: T;

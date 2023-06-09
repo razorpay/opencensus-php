@@ -1,32 +1,24 @@
-enum ScheduleStatus {
+export enum ScheduleStatus {
   paused = 'paused',
   active = 'active',
 }
 
-export interface ScheduleType {
-  id: string;
+export interface BaseScheduleType {
+  created_by: string;
+  id?: string;
   name: string;
   period: string;
-  hour: number;
-  minute: number;
-  delay: number;
-  month: number;
-  created_by: string;
-  created_at?: number;
-  updated_at?: number;
   consumer?: string;
   config_id: string;
-  config_name: string;
-  scheduleStartTime: number;
-  scheduleEndTime: number;
-  template_overrides: {
-    file_meta: {
-      extension: string;
-      filename: string;
+  config_name?: string;
+  emails: string[];
+  template_overrides?: {
+    file_meta?: {
+      extension?: string;
+      filename?: string;
     };
   };
-  emails: string[];
-  task: {
+  task?: {
     minute: {
       start: number;
     };
@@ -39,8 +31,37 @@ export interface ScheduleType {
     month: {
       start: number;
     };
+    week: {
+      start: number;
+    };
     type: string;
   };
-  status: keyof typeof ScheduleStatus;
+  status?: keyof typeof ScheduleStatus;
   schedule_entity_id?: string;
+}
+export interface ScheduleType extends BaseScheduleType {
+  hour?: number;
+  minute?: number;
+  delay?: number;
+  month?: number;
+  day?: number;
+  created_at?: number;
+  updated_at?: number;
+  schedule_start_time: number;
+  schedule_end_time: number;
+  interval?: number;
+}
+
+// limitation from BE
+export interface ScheduleServerPayload extends BaseScheduleType {
+  hour?: string;
+  minute?: string;
+  delay?: string;
+  month?: string;
+  day?: string;
+  created_at?: string;
+  updated_at?: string;
+  schedule_start_time: string;
+  schedule_end_time: string;
+  interval?: string;
 }

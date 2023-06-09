@@ -18,9 +18,10 @@ import { openModal } from 'merchant_common/reducers/modals';
 import { initiateSchedulesPoll } from 'merchant_common/views/Reports/api/schedules';
 import { trackScheduleSection } from 'merchant_common/views/Reports/configs/analytics.config';
 
-const mapStateToProps = ({ reportsCore }, { dashboardType }) => {
+const mapStateToProps = ({ reportsCore, session }, { dashboardType }) => {
   const { loading, allSchedules, pageTrack, filter, genericPoll, totalCount } =
     reportsCore[dashboardType].schedules;
+  const { parseSchedules } = getReportsDashboardConfig(dashboardType, session);
 
   return {
     isSchedulesLoaded: !loading,
@@ -29,6 +30,7 @@ const mapStateToProps = ({ reportsCore }, { dashboardType }) => {
     filter,
     genericPoll,
     totalCount,
+    parseSchedules,
   };
 };
 
@@ -64,6 +66,7 @@ const SchedulesTableComponent = connect(
     showNotification,
     startSchedulePoll,
     openModal,
+    parseSchedules,
   }: SchedulesTablePropsType): JSX.Element => {
     // will hold abort fn of presently ongoing poll
     const abortPresentlyActivePoll = useRef<any>();
@@ -86,11 +89,12 @@ const SchedulesTableComponent = connect(
           pollResSuccessCallback: (data) => {
             if (data) {
               const { total_count, items } = data;
-              if (total_count)
+              if (total_count) {
                 fetchSchedulesSuccess({
                   totalCount: total_count,
-                  allSchedules: items,
+                  allSchedules: parseSchedules(items),
                 });
+              }
             }
           },
           pollResFailedCallback: () => {

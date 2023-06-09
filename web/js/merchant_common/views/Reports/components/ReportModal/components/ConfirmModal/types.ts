@@ -1,6 +1,14 @@
-import { ReactElement } from 'react';
-import { IconComponent, IconProps, Feedback } from '@razorpay/blade/components';
+import { Dispatch, ReactElement, SetStateAction } from 'react';
+import { IconComponent, IconProps } from '@razorpay/blade/components';
 import { DashboardType } from 'merchant_common/views/Reports/types';
+
+export enum Feedback {
+  negative = 'negative',
+  information = 'information',
+  neutral = 'neutral',
+  positive = 'positive',
+  notice = 'notice',
+}
 
 export interface ConfirmModalConfigType {
   title: string;
@@ -17,7 +25,7 @@ export interface ConfirmModalConfigType {
     label: string;
   };
   alert: {
-    intent: Feedback;
+    intent: keyof typeof Feedback;
     description: string;
   };
 }

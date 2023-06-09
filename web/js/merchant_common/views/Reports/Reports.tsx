@@ -89,7 +89,7 @@ export const ReportsSection = connect(
     dashboardType,
     isSchedulesEnabled,
   }: ReportSectionProps): JSX.Element => {
-    const features = useMemo(() => getReportsFeatures(isSchedulesEnabled), []);
+    const features = useMemo(() => getReportsFeatures(isSchedulesEnabled), [isSchedulesEnabled]);
 
     const handleAllConfigsFetch = async (validationCheck = true) => {
       try {

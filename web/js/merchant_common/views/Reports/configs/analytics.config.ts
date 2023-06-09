@@ -51,6 +51,7 @@ export enum SchedulesActionType {
   'Pause Triggered' = 'Pause Triggered',
   'Pause Failed' = 'Pause Failed',
   'Pause Successful' = 'Pause Successful',
+  'Edit Modal Open Triggered' = 'Edit Modal Open Triggered',
   'Resume Triggered' = 'Resume Triggered',
   'Resume Failed' = 'Resume Failed',
   'Resume Successful' = 'Resume Successful',
@@ -64,16 +65,20 @@ export enum SchedulesActionType {
 }
 
 enum ScheduleCreateEditModalActionType {
-  'Opened' = 'Opened',
+  'Edit Schedule Modal Opened' = 'Edit Schedule Modal Opened',
+  'Create Schedule Modal Opened' = 'Create Schedule Modal Opened',
   'Modal Section Clicked' = 'Modal Section Clicked',
   'Enable Emails Switch Toggled' = 'Enable Emails Switch Toggled',
   'Custom Repetition Toggled' = 'Custom Repetition Toggled',
   'Close Modal Clicked' = 'Close Modal Clicked',
-  'Save And Close Button Clicked' = 'Save And Close Button Clicked',
+  'Create Schedule Button Clicked' = 'Create Schedule Button Clicked',
+  'Edit Schedule Button Clicked' = 'Edit Schedule Button Clicked',
   'Schedule Create Validation Error' = 'Schedule Create Validation Error',
   'Schedule Edit Validation Error' = 'Schedule Edit Validation Error',
-  'Successful Schedule Creation' = 'Successful Schedule Creation',
-  'Schedule Creation Failed' = 'Schedule Creation Failed',
+  'Schedule Creation Req Success' = 'Schedule Creation Req Success',
+  'Schedule Edit Req Success' = 'Schedule Edit Req Success',
+  'Schedule Creation Req Failed' = 'Schedule Creation Req Failed',
+  'Schedule Edit Req Failed' = 'Schedule Edit Req Failed',
 }
 
 enum ScheduleRunHistoryActionType {

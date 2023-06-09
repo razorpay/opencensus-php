@@ -1,4 +1,4 @@
-import { ScheduleType } from 'merchant_common/views/Reports/types/schedule';
+import { ScheduleServerPayload } from 'merchant_common/views/Reports/types/schedule';
 import { reportsLongPoll } from './poll';
 import { merchantFetch } from 'merchant/utils/ajax';
 import {
@@ -7,6 +7,7 @@ import {
   LongPollReturnType,
   ReportsFetchAPIParams,
   ReportsFetchHeaders,
+  ResPayload,
   ResType,
   ScheduleAPIEditParams,
   ScheduleAPIFnParams,
@@ -15,7 +16,7 @@ import {
 export const getSchedules = (
   { page = 1, filter = '' }: ReportsFetchAPIParams,
   headers: ReportsFetchHeaders,
-): Promise<ResType<ScheduleType>> => {
+): Promise<ResType<ResPayload<ScheduleServerPayload>>> => {
   const [type, ...value] = filter.split('.');
   const SCHEDULE_COUNT = 20;
 
@@ -40,12 +41,16 @@ export const getSchedules = (
 export const createSchedule = <T>({
   headers,
   payload,
-}: CreateScheduleAPIFnParams<T>): Promise<ResType<ScheduleType>> => {
+  method,
+  scheduleId,
+}: CreateScheduleAPIFnParams<T>): Promise<ResType<ScheduleServerPayload>> => {
   return merchantFetch({
-    url: `reporting/schedules`,
+    url: `reporting/schedules${scheduleId ? `/${scheduleId}` : ''}`,
     headers,
-    method: 'post',
-    data: payload,
+    method,
+    data: {
+      payload,
+    },
   });
 };
 
@@ -87,7 +92,7 @@ export const editSchedule = <T>({
   headers,
   scheduleId,
   payload,
-}: ScheduleAPIEditParams<T>): Promise<ResType<ScheduleType>> => {
+}: ScheduleAPIEditParams<T>): Promise<ResType<ScheduleServerPayload>> => {
   return merchantFetch({
     url: `reporting/schedules/${scheduleId}`,
     headers,
@@ -99,8 +104,8 @@ export const editSchedule = <T>({
 };
 
 const scheduleStatuses = ['active'];
-export const isScheduleInProgress = (scheduleStatus: string): boolean =>
-  scheduleStatuses.includes(scheduleStatus);
+export const isScheduleInProgress = (scheduleStatus?: string): boolean =>
+  Boolean(scheduleStatus && scheduleStatuses.includes(scheduleStatus));
 
 export const initiateSchedulesPoll = ({
   queryParams,
@@ -108,7 +113,7 @@ export const initiateSchedulesPoll = ({
   pollResSuccessCallback = () => {},
   pollResFailedCallback = () => {},
   onPollStopCallback = () => {},
-}: LongPollInitiatorArgs<ScheduleType>): LongPollReturnType<ScheduleType> => {
+}: LongPollInitiatorArgs<ScheduleServerPayload>): LongPollReturnType<ScheduleServerPayload> => {
   return reportsLongPoll({
     fetchFunc: () => getSchedules(queryParams, headers),
     validator: (data) => !data?.items.some((schedule) => isScheduleInProgress(schedule.status)),

@@ -6,6 +6,7 @@ import {
   LongPollReturnType,
   ReportsFetchAPIParams,
   ReportsFetchHeaders,
+  ResPayload,
   ResType,
 } from './types';
 
@@ -17,7 +18,7 @@ export const isLogInProgress = (logStatus: string): boolean =>
 export const fetchDownloadLogs = (
   { page = 1, filter = '' }: ReportsFetchAPIParams,
   headers: ReportsFetchHeaders,
-): Promise<ResType<BaseLogType>> => {
+): Promise<ResType<ResPayload<BaseLogType>>> => {
   const [type, ...value] = filter.split('.');
 
   const LOGS_COUNT = 20;

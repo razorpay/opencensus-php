@@ -1,78 +1,51 @@
+import { mockConfigs } from './configs.fixtures';
+
 export const mockSchedules = [
   {
-    config_id: 'config_hDhZQT8sxWz4nB',
-    config_name: 'Custom transfers with Notes',
-    name: 'Schedule At 5pm daily',
+    id: 'sched_Lv8DGvlaMJWo31',
+    config_id: mockConfigs[0].id,
+    config_name: mockConfigs[0].name,
     period: 'daily',
-    interval: 0,
-    day: 0,
-    hour: 12,
-    minute: 7,
-    delay: 10,
-    month: 4,
-    scheduleStartTime: 1656529533,
-    scheduleEndTime: 1656529533,
+    interval: '1',
+    day: '0',
+    hour: '12',
+    minute: '30',
+    delay: '0',
+    month: '0',
     created_by: '100000Razorpay',
-    template_overrides: {
-      file_meta: {
-        extension: 'csv',
-        filename: 'Testing',
+    next_run_at: '1685343600',
+    last_run_at: '0',
+    created_at: '1685287530',
+    updated_at: '1685287530',
+    schedule_start_time: '1685440481',
+    schedule_end_time: '1697900331',
+    consumer: 'Fx8KHLQClpbeKN',
+    task: {
+      day: {
+        start: -1,
+      },
+      hour: {
+        start: 0,
+      },
+      type: 'daily',
+      month: {
+        start: 0,
+      },
+      minute: {
+        start: 0,
+      },
+      week: {
+        start: 0,
       },
     },
-    status: 'active',
+    scheduler_entity_id: 'Lv8DAAREryZ77l',
     emails: ['unactivated@gmail.com'],
-    task: {
-      minute: {
-        start: 0,
-      },
-      hour: {
-        start: 13,
-      },
-      day: {
-        start: 0,
-      },
-      month: {
-        start: 0,
-      },
-      type: 'monthly',
-    },
-  },
-  {
-    config_id: 'config_hDhZQT8sxWasdz4nB',
-    config_name: 'Custom Q',
-    name: 'Schedule At 12pm daily',
-    period: 'daily',
-    interval: 0,
-    day: 0,
-    hour: 12,
-    minute: 7,
-    delay: 10,
-    month: 4,
-    scheduleStartTime: 1656529533,
-    scheduleEndTime: 1656529533,
-    created_by: '100000Razorpay',
+    name: 'Schedule At 5pm daily',
     template_overrides: {
       file_meta: {
         extension: 'csv',
         filename: 'Testing',
       },
-    },
-    status: 'active',
-    emails: ['joel@gmail.com'],
-    task: {
-      minute: {
-        start: 0,
-      },
-      hour: {
-        start: 13,
-      },
-      day: {
-        start: 0,
-      },
-      month: {
-        start: 0,
-      },
-      type: 'monthly',
     },
   },
 ];

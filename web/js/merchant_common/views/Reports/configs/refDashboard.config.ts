@@ -14,6 +14,11 @@ import { BaseConfigType } from 'merchant_common/views/Reports/types/config';
 import { BaseLogPayloadType } from 'merchant_common/views/Reports/types/log';
 
 import { parseConfigsViaCommonExceptions } from './downloadModal.config';
+import { ScheduleServerPayload, ScheduleType } from 'merchant_common/views/Reports/types/schedule';
+import {
+  changeScheduleNumericsToString,
+  changeScheduleStringsToNumerics,
+} from 'merchant_common/views/Reports/features/Schedules/utils';
 
 /**
  * @param {DashboardType} dashboardType Dashboard type where the core report component will be used.
@@ -57,9 +62,21 @@ export const getReportsDashboardConfig = (
           return configs;
         }
       },
+      parseSchedules: (schedules: ScheduleServerPayload[]) => {
+        return schedules.map((schedule) => ({
+          ...schedule,
+          ...changeScheduleStringsToNumerics(schedule),
+        }));
+      },
       parsePayloadBeforeSubmit: (payload: BaseLogPayloadType, additionalDetails) => {
         const parsedPayload = parseConfigsViaCommonExceptions(payload, additionalDetails, mode);
         return parsedPayload;
+      },
+      parseSchedulePayloadBeforeSubmit: (payload: ScheduleType) => {
+        return {
+          ...payload,
+          ...changeScheduleNumericsToString(payload),
+        };
       },
     },
     partner: {
@@ -69,9 +86,21 @@ export const getReportsDashboardConfig = (
       availableAccounts: undefined,
       availableFormats: getAvailableFormats(session?.user),
       parseConfigs: (configs: BaseConfigType[]) => configs,
+      parseSchedules: (schedules: ScheduleServerPayload[]) => {
+        return schedules.map((schedule) => ({
+          ...schedule,
+          ...changeScheduleStringsToNumerics(schedule),
+        }));
+      },
       parsePayloadBeforeSubmit: (payload: BaseLogPayloadType, additionalDetails?) => {
         const parsedPayload = parseConfigsViaCommonExceptions(payload, additionalDetails, mode);
         return parsedPayload;
+      },
+      parseSchedulePayloadBeforeSubmit: (payload: ScheduleType) => {
+        return {
+          ...payload,
+          ...changeScheduleNumericsToString(payload),
+        };
       },
     },
     linkedAccount: {
@@ -81,9 +110,21 @@ export const getReportsDashboardConfig = (
       availableAccounts: undefined,
       availableFormats: getAvailableFormats(session?.user),
       parseConfigs: (configs: BaseConfigType[]) => configs,
+      parseSchedules: (schedules: ScheduleServerPayload[]) => {
+        return schedules.map((schedule) => ({
+          ...schedule,
+          ...changeScheduleStringsToNumerics(schedule),
+        }));
+      },
       parsePayloadBeforeSubmit: (payload: BaseLogPayloadType, additionalDetails?) => {
         const parsedPayload = parseConfigsViaCommonExceptions(payload, additionalDetails, mode);
         return parsedPayload;
+      },
+      parseSchedulePayloadBeforeSubmit: (payload: ScheduleType) => {
+        return {
+          ...payload,
+          ...changeScheduleNumericsToString(payload),
+        };
       },
     },
   }[dashboardType];

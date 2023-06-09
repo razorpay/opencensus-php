@@ -2,6 +2,7 @@ import { User } from 'common/typings';
 
 import { AccountStateType } from './types/account';
 import { BaseConfigType } from './types/config';
+import { ScheduleType } from './types/schedule';
 
 export enum Dashboard {
   partner = 'partner',
@@ -47,10 +48,12 @@ export interface RefDashboardConfigType {
    * A parse fn to transform the report configs payload as defined in the config wrt the dashboard type.
    */
   parseConfigs: (x: BaseConfigType[]) => BaseConfigType[];
+  parseSchedules: (x: ScheduleServerPayload[]) => ScheduleType[];
   /**
    * A parse fn to transform final payload of download report modal before submit wrt the specified dashboard.
    */
   parsePayloadBeforeSubmit: (x?, y?) => unknown;
+  parseSchedulePayloadBeforeSubmit: (payload: ScheduleType) => ScheduleServerPayload;
 }
 
 export interface ReportSectionProps {

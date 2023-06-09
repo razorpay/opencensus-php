@@ -1,6 +1,6 @@
 import { Location } from 'history';
 import { DashboardType } from 'merchant_common/views/Reports/types';
-import { ScheduleType } from 'merchant_common/views/Reports/types/schedule';
+import { ScheduleServerPayload, ScheduleType } from 'merchant_common/views/Reports/types/schedule';
 
 export interface AdditionalInformationType {
   currentMerchantId?: string;
@@ -32,4 +32,5 @@ export interface SchedulesTablePropsType {
   dashboardType: DashboardType;
   showNotification: (x: any) => void;
   openModal: (x: { component: JSX.Element; size: string }) => void;
+  parseSchedules: (x: ScheduleServerPayload[]) => ScheduleType[];
 }

@@ -12,3 +12,11 @@ export const GENERATED_REPORT_FILE_DOWNLOAD_SUCCESS = 'File download started.';
 
 export const GENERATED_REPORT_FILE_DOWNLOAD_FAILED =
   'File download failed, please try again later.';
+
+export const CREATE_SCHEDULE_FAILED = 'Schedule creation failed, please try again later.';
+
+export const CREATE_SCHEDULE_SUCCESS = 'Schedule created successfully.';
+
+export const EDIT_SCHEDULE_FAILED = 'Schedule update failed, please try again later.';
+
+export const EDIT_SCHEDULE_SUCCESS = 'Schedule updated successfully.';
