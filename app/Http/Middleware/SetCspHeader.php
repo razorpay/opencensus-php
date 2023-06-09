@@ -32,7 +32,7 @@ class SetCspHeader
         $env = \App::environment();
 
         if ($env === 'production') {
-            return 'frame-ancestors self https://razorpay.com https://*.razorpay.com https://razorpay.lightning.force.com';
+            return 'frame-ancestors self https://razorpay.com https://*.razorpay.com https://razorpay.lightning.force.com https://razorpay--c.vf.force.com https://razorpay.my.salesforce.com';
         }
 
         return 'frame-ancestors self https://*.razorpay.in';
