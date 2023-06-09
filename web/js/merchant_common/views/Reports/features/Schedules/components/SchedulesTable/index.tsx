@@ -89,12 +89,10 @@ const SchedulesTableComponent = connect(
           pollResSuccessCallback: (data) => {
             if (data) {
               const { total_count, items } = data;
-              if (total_count) {
-                fetchSchedulesSuccess({
-                  totalCount: total_count,
-                  allSchedules: parseSchedules(items),
-                });
-              }
+              fetchSchedulesSuccess({
+                totalCount: total_count!,
+                allSchedules: parseSchedules(items),
+              });
             }
           },
           pollResFailedCallback: () => {
