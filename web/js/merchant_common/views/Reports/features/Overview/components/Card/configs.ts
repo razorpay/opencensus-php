@@ -10,6 +10,7 @@ import transactionIcon from 'assets/reports/transactions.svg';
 import settlementOnDemandIcon from 'assets/reports/ondemandsettlement.svg';
 
 export const availableLinks = () => {
+  // TODO: Schedules link
   return [
     {
       type: 'download',

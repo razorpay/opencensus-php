@@ -1,38 +1,38 @@
 import React from 'react';
 import moment from 'moment';
 import { AdditionalInformationType } from 'merchant_common/views/Reports/features/Downloads/types';
-import { CollapsibleArray } from 'merchant_common/views/Reports/components/Table/Components/CollapsibleArray/CollapsibleArray';
 import { DownloadIndicator } from 'merchant_common/views/Reports/features/Downloads/components/DownloadIndicator';
 import { FlexCentered } from 'merchant_common/views/Reports/components/styled';
 import { BaseLogType } from 'merchant_common/views/Reports/types/log';
 import { LogStatus } from 'merchant_common/views/Reports/features/Downloads/components/LogStatus';
 import { TableTemplateType } from 'merchant_common/views/Reports/components/Table/types';
 import { TableText } from 'merchant_common/views/Reports/components/Table/Components/TableText';
-import { DownloadsActionType } from 'merchant_common/views/Reports/configs/analytics.config';
-import {
-  DataDurationWrapper,
-  LogStatusWrapper,
-} from 'merchant_common/views/Reports/features/Downloads/style';
+import { ScheduleRunHistoryActionType } from 'merchant_common/views/Reports/configs/analytics.config';
+import { LogStatusWrapper } from 'merchant_common/views/Reports/components/ReportModal/components/ScheduleRunHistory/styled';
 
-const parseDate = (date) => {
-  return moment.unix(date).format('MMM DD, YYYY (hh:mm A)').toString();
-};
-
-export const baseDownloadsTableTemplate: TableTemplateType<
+export const baseRunHistoryTableTemplate: TableTemplateType<
   BaseLogType,
-  AdditionalInformationType<keyof typeof DownloadsActionType>
+  AdditionalInformationType<keyof typeof ScheduleRunHistoryActionType>
 > = {
-  headers: ['Duration Covered', 'Name', 'Format', 'Email', 'Status', 'Download'],
+  headers: ['Delivered Date', 'Time', 'Name', 'Format', 'Status', 'Download'],
   cells: [
     {
-      render: ({ start_time, end_time }) => (
-        <TableText>
-          <DataDurationWrapper>
-            <span>{parseDate(start_time)}</span> - <br />
-            <span>{parseDate(end_time)}</span>
-          </DataDurationWrapper>
-        </TableText>
-      ),
+      render: ({ generated_at, status }) =>
+        generated_at ? (
+          <TableText>{moment.unix(generated_at).format('MMM DD, YYYY')}</TableText>
+        ) : status === 'failed' ? (
+          <TableText>Delivery Failed</TableText>
+        ) : (
+          <TableText>Yet to be delivered</TableText>
+        ),
+    },
+    {
+      render: ({ generated_at }) =>
+        generated_at ? (
+          <TableText>{`Delivered at ${moment.unix(generated_at).format('h:m A')}`}</TableText>
+        ) : (
+          <TableText>--</TableText>
+        ),
     },
 
     {
@@ -43,11 +43,6 @@ export const baseDownloadsTableTemplate: TableTemplateType<
       render: ({ template_overrides, extension }) => (
         <TableText>{extension ?? template_overrides?.file_meta?.extension}</TableText>
       ),
-    },
-    {
-      render: ({ all_emails = [], id }) => {
-        return <CollapsibleArray logId={id} arr={Array.isArray(all_emails) ? all_emails : []} />;
-      },
     },
     {
       render: (props) => (

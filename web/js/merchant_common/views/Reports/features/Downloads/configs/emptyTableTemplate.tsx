@@ -3,10 +3,11 @@ import { AdditionalInformationType } from 'merchant_common/views/Reports/feature
 import { FlexCentered, Skeleton } from 'merchant_common/views/Reports/components/styled';
 import { BaseLogType } from 'merchant_common/views/Reports/types/log';
 import { TableTemplateType } from 'merchant_common/views/Reports/components/Table/types';
+import { DownloadsActionType } from 'merchant_common/views/Reports/configs/analytics.config';
 
 export const emptyDownloadsTableTemplate: TableTemplateType<
   BaseLogType,
-  AdditionalInformationType
+  AdditionalInformationType<keyof typeof DownloadsActionType>
 > = {
   headers: ['Duration Covered', 'Name', 'Format', 'Email', 'Status', 'Download'],
   cells: [

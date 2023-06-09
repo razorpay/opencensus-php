@@ -54,7 +54,7 @@ const mapDispatchToProps = (dispatch) => ({
   showNotification: (payload) => dispatch(showNotification(payload)),
 });
 
-export const DownloadCustomReport = connect(
+const DownloadCustomReport = connect(
   mapStateToProps,
   mapDispatchToProps,
 )(
@@ -216,3 +216,5 @@ export const DownloadCustomReport = connect(
     );
   },
 );
+
+export default DownloadCustomReport;

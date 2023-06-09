@@ -51,6 +51,7 @@ export interface LongPollInitiatorArgs<T> {
 export interface ReportsFetchAPIParams {
   page: number;
   filter: string;
+  scheduleId?: string;
 }
 
 export interface ScheduleAPIFnParams {

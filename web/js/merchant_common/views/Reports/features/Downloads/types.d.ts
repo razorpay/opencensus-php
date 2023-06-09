@@ -2,8 +2,17 @@ import { BaseLogType } from 'merchant_common/views/Reports/types/log';
 import { DashboardType } from 'merchant_common/views/Reports/types';
 import { OpenModalType, ShowNotificationType } from 'common/typings';
 
-export interface AdditionalInformationType {
-  currentMerchantId: string;
+export interface AdditionalInformationType<ActionType> {
+  currentMerchantId?: string;
+  trackDownloadFile: ({
+    actionName,
+    properties,
+    dashboardType,
+  }: {
+    actionName: ActionType;
+    properties?: Record<string, unknown> | undefined;
+    dashboardType: DashboardType;
+  }) => void;
 }
 
 export interface DownloadsPropsType {

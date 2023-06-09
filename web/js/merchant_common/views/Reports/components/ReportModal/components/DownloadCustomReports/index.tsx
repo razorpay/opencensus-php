@@ -1,1 +1,1 @@
-export { DownloadCustomReport } from './DownloadCustomReport';
+export { default } from './DownloadCustomReport';

@@ -1,13 +1,26 @@
-import React from 'react';
+import React, { lazy } from 'react';
 import { BaseReportModalPropsType, ModalProps, RenderModalFnType } from './types';
-import { CloseIcon, IconButton } from 'merchant_common/views/Reports/components';
-import { DownloadReport } from './components/DownloadReport';
-import { DownloadCustomReport } from './components/DownloadCustomReports';
+import { CloseIcon, IconButton, Suspense } from 'merchant_common/views/Reports/components';
 import { ReportCloseButton, ReportModalWrapper } from './styled';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
 import { ConfirmModal } from './components/ConfirmModal';
-import { ScheduleReport } from './components/ScheduleReport';
+
+const DownloadReport = lazy(
+  () => import(/* webpackChunkName: "DownloadReport" */ './components/DownloadReport'),
+);
+
+const ScheduleReport = lazy(
+  () => import(/* webpackChunkName: "ScheduleReport" */ './components/ScheduleReport'),
+);
+
+const ScheduleRunHistory = lazy(
+  () => import(/* webpackChunkName: "ScheduleRunHistory" */ './components/ScheduleRunHistory'),
+);
+
+const DownloadCustomReport = lazy(
+  () => import(/* webpackChunkName: "DownloadCustomReport" */ './components/DownloadCustomReports'),
+);
 
 const mapDispatchToProps = (dispatch) => ({
   closeModal: () => dispatch(closeModal()),
@@ -46,12 +59,11 @@ const Modal = connect(
             icon={CloseIcon}
           />
         </ReportCloseButton>
-        <ReportModalWrapper
-          initialWidth={otherConfig?.initialWidth}
-          scrollable={otherConfig?.scrollable}
-        >
-          {children}
-        </ReportModalWrapper>
+        <Suspense minWidth={otherConfig?.width ?? 750}>
+          <ReportModalWrapper width={otherConfig?.width} scrollable={otherConfig?.scrollable}>
+            {children}
+          </ReportModalWrapper>
+        </Suspense>
       </div>
     );
 
@@ -62,6 +74,10 @@ const Modal = connect(
         return renderReportModal(<DownloadCustomReport {...commonProps} />, { scrollable: false });
       case 'create_edit_schedule':
         return renderReportModal(<ScheduleReport {...commonProps} />);
+      case 'schedule_run_history':
+        return renderReportModal(<ScheduleRunHistory {...commonProps} />, {
+          width: 1000,
+        });
       case 'confirm_modal':
         return (
           <>
@@ -83,4 +99,6 @@ const Modal = connect(
   },
 );
 
-export const ReportModal = (props: BaseReportModalPropsType): JSX.Element => <Modal {...props} />;
+const ReportModal = (props: BaseReportModalPropsType): JSX.Element => <Modal {...props} />;
+
+export default ReportModal;

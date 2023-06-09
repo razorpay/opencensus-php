@@ -4,7 +4,7 @@ import { ScheduleServerPayload, ScheduleType } from 'merchant_common/views/Repor
 
 export interface AdditionalInformationType {
   currentMerchantId?: string;
-  onViewActivityOpen: () => void;
+  onViewActivityOpen: (x: ScheduleType) => void;
   openModal: (x: { component: JSX.Element; size: string }) => void;
 }
 

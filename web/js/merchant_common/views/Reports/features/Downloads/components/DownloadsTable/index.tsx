@@ -146,6 +146,9 @@ const DownloadsTableComponent = connect(
         loading={!isLogsLoaded}
         onLoadingSkeletonTemplate={emptyDownloadsTableTemplate}
         totalRows={totalCount}
+        additionalInfo={{
+          trackDownloadFile: trackDownloadsSection,
+        }}
         renderOnEmpty={() => (
           <EmptyTable
             title="No Reports Found :("

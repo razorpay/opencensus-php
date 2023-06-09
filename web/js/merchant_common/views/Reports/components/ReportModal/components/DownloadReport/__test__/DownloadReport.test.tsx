@@ -1,6 +1,5 @@
 import React from 'react';
 import { render, screen, userEvent } from 'test-utils';
-import { ReportModal } from 'merchant_common/views/Reports/components';
 import * as modalFn from 'merchant_common/reducers/modals';
 import { REPORT_TEST_DASHBOARD, TODAY } from 'merchant_common/views/Reports/constants';
 import { getOverViewStateWith } from 'merchant_common/views/Reports/features/Overview/__test__/fixtures';
@@ -22,6 +21,7 @@ import {
 } from 'merchant_common/views/Reports/components/ReportModal/components/DownloadReport/components/Formats/constants';
 import { getFormattedDate } from 'merchant_common/views/Reports/components/DateTimeRangePicker/utils';
 import { DATE_HELP_TEXT } from 'merchant_common/views/Reports/components/ReportModal/components/DownloadReport/constants';
+import DownloadReport from 'merchant_common/views/Reports/components/ReportModal/components/DownloadReport';
 
 const initialState = getOverViewStateWith({
   allConfigs: {
@@ -120,9 +120,8 @@ describe('Download Reports', () => {
 
   const App = ({ configId }: { configId?: string }): JSX.Element => {
     return (
-      <ReportModal
+      <DownloadReport
         dashboardType={REPORT_TEST_DASHBOARD}
-        type="download_report"
         params={{
           selectedConfig: configId,
         }}
@@ -152,7 +151,6 @@ describe('Download Reports', () => {
     expect(screen.queryByText('What report is this?')).toBeInTheDocument();
     expect(screen.queryByText('What will you receive in this report?')).toBeInTheDocument();
     expect(screen.queryByText('Do you want this report in an email?')).toBeInTheDocument();
-    expect(screen.queryByLabelText('Close Modal')).toBeInTheDocument();
     expect(screen.getByLabelText('Start Download')).toBeInTheDocument();
   });
 

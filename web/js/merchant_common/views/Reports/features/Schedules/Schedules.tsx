@@ -68,7 +68,7 @@ const SchedulesSection = connect(
 
     const handleScheduleClick = () => {
       openModal({
-        component: <ReportModal type={'create_edit_schedule'} dashboardType={dashboardType} />,
+        component: <ReportModal type="create_edit_schedule" dashboardType={dashboardType} />,
         size: '',
       });
     };

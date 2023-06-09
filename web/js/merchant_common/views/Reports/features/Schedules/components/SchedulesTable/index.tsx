@@ -8,7 +8,7 @@ import {
 } from 'merchant_common/views/Reports/redux/reducer';
 import EmptyDashboardIllustration from 'assets/reports/empty-dashboard.svg';
 import { SchedulesTablePropsType } from 'merchant_common/views/Reports/features/Schedules/types';
-import { Table, EmptyTable, Box } from 'merchant_common/views/Reports/components';
+import { Table, EmptyTable, Box, ReportModal } from 'merchant_common/views/Reports/components';
 import { baseSchedulesTableTemplate } from 'merchant_common/views/Reports/features/Schedules/data/baseTableTemplate';
 import { emptySchedulesTableTemplate } from 'merchant_common/views/Reports/features/Schedules/data/emptyTableTemplate';
 import { useDashboardType } from 'merchant_common/views/Reports/contexts/ReportsContext';
@@ -17,6 +17,7 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { openModal } from 'merchant_common/reducers/modals';
 import { initiateSchedulesPoll } from 'merchant_common/views/Reports/api/schedules';
 import { trackScheduleSection } from 'merchant_common/views/Reports/configs/analytics.config';
+import { ScheduleType } from 'merchant_common/views/Reports/types/schedule';
 
 const mapStateToProps = ({ reportsCore, session }, { dashboardType }) => {
   const { loading, allSchedules, pageTrack, filter, genericPoll, totalCount } =
@@ -117,7 +118,20 @@ const SchedulesTableComponent = connect(
       }
     }, [pageTrack, filter, genericPoll]);
 
-    const onViewActivityOpen = () => {};
+    const onViewActivityOpen = (scheduleData: ScheduleType) => {
+      openModal({
+        component: (
+          <ReportModal
+            type={'schedule_run_history'}
+            dashboardType={dashboardType}
+            params={{
+              scheduleData,
+            }}
+          />
+        ),
+        size: '',
+      });
+    };
 
     useEffect(() => {
       startSchedulePoll();

@@ -1,6 +1,5 @@
 import React from 'react';
 import { render, screen, server, userEvent } from 'test-utils';
-import { ReportModal } from 'merchant_common/views/Reports/components';
 import * as modalFn from 'merchant_common/reducers/modals';
 import { REPORT_TEST_DASHBOARD } from 'merchant_common/views/Reports/constants';
 import { getOverViewStateWith } from 'merchant_common/views/Reports/features/Overview/__test__/fixtures';
@@ -14,6 +13,7 @@ import moment from 'moment';
 import { defineMatchMedia } from 'merchant_common/views/Reports/components/DateTimeRangePicker/__test__/fixtures';
 import { changeScheduleStringsToNumerics } from 'merchant_common/views/Reports/features/Schedules/utils';
 import { rest } from 'msw';
+import ScheduleReport from 'merchant_common/views/Reports/components/ReportModal/components/ScheduleReport';
 
 const initialState = getOverViewStateWith({
   allConfigs: {
@@ -60,9 +60,8 @@ jest.spyOn(modalFn, 'closeModal');
 describe('Create Schedule Modal', () => {
   const App = ({ configId }: { configId?: string }): JSX.Element => {
     return (
-      <ReportModal
+      <ScheduleReport
         dashboardType={REPORT_TEST_DASHBOARD}
-        type="create_edit_schedule"
         params={{
           selectedConfig: configId,
         }}
@@ -91,7 +90,6 @@ describe('Create Schedule Modal', () => {
     expect(screen.queryByText('What report is this?')).toBeInTheDocument();
     expect(screen.queryByText('What will you receive in this report?')).toBeInTheDocument();
     expect(screen.queryByText('Do you want this report in an email?')).toBeInTheDocument();
-    expect(screen.queryByLabelText('Close Modal')).toBeInTheDocument();
     expect(screen.getByLabelText('Create Schedule')).toBeInTheDocument();
   });
 
@@ -175,9 +173,8 @@ describe('Create Schedule Modal', () => {
       }),
     );
     render(
-      <ReportModal
+      <ScheduleReport
         dashboardType={REPORT_TEST_DASHBOARD}
-        type="create_edit_schedule"
         params={{
           scheduleData: {
             ...mockSchedules[0],

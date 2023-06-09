@@ -28,7 +28,7 @@ export const getSchedules = (
         }
       : headers;
 
-  const filterParams = type === 'param' ? value : '';
+  const filterParams = type === 'param' ? value[0] : '';
 
   const paginationParams = `limit=${SCHEDULE_COUNT}&offset=${SCHEDULE_COUNT * (page - 1)}`;
 

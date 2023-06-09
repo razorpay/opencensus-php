@@ -1,12 +1,13 @@
 import React from 'react';
 import { Spinner } from 'merchant_common/views/Reports/components';
 import { SpinnerContainer } from './styled';
+import { SuspenseType } from './types';
 
-export const Suspense = ({ children }): JSX.Element => {
+export const Suspense = ({ children, minWidth }: SuspenseType): JSX.Element => {
   return (
     <React.Suspense
       fallback={
-        <SpinnerContainer>
+        <SpinnerContainer minWidth={minWidth}>
           <Spinner
             size="large"
             contrast="low"

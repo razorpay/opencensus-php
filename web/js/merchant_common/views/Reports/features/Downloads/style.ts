@@ -38,3 +38,11 @@ export const DropdownWrapper = styled.span(
     }
   `,
 );
+
+export const DataDurationWrapper = styled.p`
+  width: 175px;
+`;
+
+export const LogStatusWrapper = styled.div`
+  min-width: 68px;
+`;

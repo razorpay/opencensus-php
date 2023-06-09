@@ -1,6 +1,5 @@
 import { BaseLogType } from 'merchant_common/views/Reports/types/log';
 import { reportsLongPoll } from './poll';
-import { merchantFetch } from 'merchant/utils/ajax';
 import {
   LongPollInitiatorArgs,
   LongPollReturnType,
@@ -9,19 +8,19 @@ import {
   ResPayload,
   ResType,
 } from './types';
+import { merchantFetch } from 'merchant/utils/ajax';
 
-const logProcessingStatuses = ['created', 'processing'];
-
-export const isLogInProgress = (logStatus: string): boolean =>
-  logProcessingStatuses.includes(logStatus);
-
-export const fetchDownloadLogs = (
-  { page = 1, filter = '' }: ReportsFetchAPIParams,
-  headers: ReportsFetchHeaders,
+export const fetchSchedulesRunLogs = (
+  { page = 1, filter = '', scheduleId = '' }: ReportsFetchAPIParams,
+  headers?: ReportsFetchHeaders,
 ): Promise<ResType<ResPayload<BaseLogType>>> => {
+  // For better understanding:
+  // filter can be of type:
+  // 1. param.&sort_by=created_at&sort_order=desc
+  // 2. header.status.processing
   const [type, ...value] = filter.split('.');
 
-  const LOGS_COUNT = 20;
+  const LOGS_COUNT = 10;
 
   const paramHeader =
     type === 'header'
@@ -36,32 +35,23 @@ export const fetchDownloadLogs = (
   const paginationParams = `limit=${LOGS_COUNT}&offset=${LOGS_COUNT * (page - 1)}`;
 
   return merchantFetch({
-    url: `reporting/logs?${paginationParams}${filterParams}`,
+    url: `reporting/logs?${paginationParams}${filterParams}&schedule_id=${scheduleId}`,
     headers: paramHeader,
   });
 };
 
-export const fetchLogDetail = (
-  logId: string,
-  accountId: string,
-  headers: Record<string, string>,
-): Promise<ResType<BaseLogType>> => {
-  return merchantFetch({
-    url: `reporting/logs/${logId}`,
-    ...(!!accountId && { accountId }),
-    headers,
-  });
-};
+const logProcessingStatuses = ['created', 'processing'];
+const isLogInProgress = (logStatus) => logProcessingStatuses.includes(logStatus);
 
-export const initiateLogsPoll = ({
+export const initiateScheduleRunHistoryPoll = ({
   queryParams,
   headers,
   pollResSuccessCallback,
-  pollResFailedCallback,
-  onPollStopCallback,
+  pollResFailedCallback = () => {},
+  onPollStopCallback = () => {},
 }: LongPollInitiatorArgs<BaseLogType>): LongPollReturnType<BaseLogType> => {
   return reportsLongPoll({
-    fetchFunc: () => fetchDownloadLogs(queryParams, headers),
+    fetchFunc: () => fetchSchedulesRunLogs(queryParams, headers),
     // when sent true from validator polling will stop
     // continue polling if status is in progress
     validator: (data) => !data?.items.some((log) => isLogInProgress(log.status)),

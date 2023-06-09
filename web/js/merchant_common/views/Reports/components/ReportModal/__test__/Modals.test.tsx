@@ -17,7 +17,6 @@ describe('ReportModal', () => {
 
   test('should render modal when valid type is passed', () => {
     render(<App type="download_custom_report" />);
-    expect(screen.getByText('Download report for your business')).toBeInTheDocument();
     expect(screen.getByLabelText('Close Modal')).toBeInTheDocument();
   });
 

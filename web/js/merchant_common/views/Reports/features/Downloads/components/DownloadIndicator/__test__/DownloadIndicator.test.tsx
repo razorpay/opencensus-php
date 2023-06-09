@@ -7,6 +7,7 @@ import {
   GENERATED_REPORT_FILE_DOWNLOAD_FAILED,
   GENERATED_REPORT_FILE_DOWNLOAD_SUCCESS,
 } from 'merchant_common/views/Reports/constants/notifications';
+import { trackDownloadsSection } from 'merchant_common/views/Reports/configs/analytics.config';
 
 const showNotificationSpy = jest.spyOn(notifications, 'showNotification');
 const downloadFileSpy = jest.spyOn(downloadFile, 'downloadFromUFH');
@@ -16,7 +17,7 @@ downloadFileSpy.mockImplementation(() => {
 
 describe('DownloadIndicator', () => {
   const App = (props) => {
-    return <DownloadIndicator {...props} />;
+    return <DownloadIndicator {...props} trackDownloadFile={trackDownloadsSection} />;
   };
 
   test('should render card component without any error', () => {

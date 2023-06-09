@@ -2,26 +2,23 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { DashboardType } from 'merchant_common/views/Reports/types';
 
-enum ReportsActionType {
+export enum ReportsActionType {
   'Overview Tab Click' = 'Overview Tab Click',
   'Downloads Tab Click' = 'Downloads Tab Click',
   'Schedules Tab Click' = 'Schedules Tab Click',
   'Configs Fetch Failed' = 'Configs Fetch Failed',
 }
 
-enum OverviewActionType {
+export enum OverviewActionType {
   'Loaded' = 'Loaded',
   'Overview Filter Interaction' = 'Overview Filter Interaction',
   'Cards Download Link Click' = 'Cards Download Link Click',
   'Download Report Button Click' = 'Download Report Button Click',
 }
 
-enum DownloadsActionType {
+export enum DownloadsActionType {
   'Download Filter Interaction' = 'Download Filter Interaction',
   'Download Report Button Click' = 'Download Report Button Click',
-  'Download File Click' = 'Download File Click',
-  'Report File Download Success' = 'Report File Download Success',
-  'Report File Download Failed' = 'Report File Download Failed',
   'Expand Recipient Emails Click' = 'Expand Recipient Emails Click',
   'Pagination Click' = 'Pagination Click',
   'Downloads Section Loaded' = 'Downloads Section Loaded',
@@ -30,7 +27,7 @@ enum DownloadsActionType {
   'Downloads Logs Poll Failed' = 'Downloads Logs Poll Failed',
 }
 
-enum DownloadModalActionType {
+export enum DownloadModalActionType {
   'Download Report Modal Opened' = 'Download Report Modal Opened',
   'Modal Section Clicked' = 'Modal Section Clicked',
   'Enable Emails Switch Toggled' = 'Enable Emails Switch Toggled',
@@ -41,6 +38,12 @@ enum DownloadModalActionType {
   'Generate Report Req Failed' = 'Generate Report Req Failed',
   'Generate Report Req Success' = 'Generate Report Req Success',
   'Report Download Validation Error' = 'Report Download Validation Error',
+}
+
+export enum FileDownloadActionType {
+  'Download File Click' = 'Download File Click',
+  'Report File Download Success' = 'Report File Download Success',
+  'Report File Download Failed' = 'Report File Download Failed',
 }
 
 export enum SchedulesActionType {
@@ -64,7 +67,7 @@ export enum SchedulesActionType {
   'Schedules Poll Failed' = 'Schedules Poll Failed',
 }
 
-enum ScheduleCreateEditModalActionType {
+export enum ScheduleCreateEditModalActionType {
   'Edit Schedule Modal Opened' = 'Edit Schedule Modal Opened',
   'Create Schedule Modal Opened' = 'Create Schedule Modal Opened',
   'Modal Section Clicked' = 'Modal Section Clicked',
@@ -81,14 +84,12 @@ enum ScheduleCreateEditModalActionType {
   'Schedule Edit Req Failed' = 'Schedule Edit Req Failed',
 }
 
-enum ScheduleRunHistoryActionType {
+export enum ScheduleRunHistoryActionType {
   'Loaded' = 'Loaded',
   'Pagination Click' = 'Pagination Click',
-  'Download Report File Click' = 'Download Report File Click',
   'Filter Interaction' = 'Filter Interaction',
   'Modal Closed' = 'Modal Closed',
   'Logs Poll Failed' = 'Logs Poll Failed',
-  'Report File Download Failed' = 'Report File Download Failed',
 }
 
 const track = ({ properties, dashboardType, ...args }) => {
@@ -128,7 +129,7 @@ export const trackDownloadsSection = ({
   properties,
   dashboardType,
 }: {
-  actionName: keyof typeof DownloadsActionType;
+  actionName: keyof typeof DownloadsActionType | keyof typeof FileDownloadActionType;
   properties?: Record<string, unknown>;
   dashboardType: DashboardType;
 }) => {
@@ -212,7 +213,7 @@ export const trackSchedulesRunHistoryModal = ({
   properties,
   dashboardType,
 }: {
-  actionName: keyof typeof ScheduleRunHistoryActionType;
+  actionName: keyof typeof ScheduleRunHistoryActionType | keyof typeof FileDownloadActionType;
   properties?: Record<string, unknown>;
   dashboardType: DashboardType;
 }) => {

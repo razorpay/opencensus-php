@@ -69,4 +69,6 @@ const mapDispatchToProps = (dispatch, { dashboardType }) => ({
     dispatch(handleDownloadsPageTrack({ pageNo: payload, dashboardType })),
 });
 
-export const DownloadReport = connect(mapStateToProps, mapDispatchToProps)(DownloadReportModal);
+const DownloadReport = connect(mapStateToProps, mapDispatchToProps)(DownloadReportModal);
+
+export default DownloadReport;

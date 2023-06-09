@@ -7,6 +7,7 @@ export enum ReportModalTypes {
   'download_custom_report' = 'download_custom_report',
   'confirm_modal' = 'confirm_modal',
   'create_edit_schedule' = 'create_edit_schedule',
+  'schedule_run_history' = 'schedule_run_history',
 }
 
 export type ReportModalType = keyof typeof ReportModalTypes;
@@ -32,6 +33,7 @@ export interface ModalProps extends BaseReportModalPropsType {
 interface OtherModalConfig {
   scrollable?: boolean;
   initialWidth?: number;
+  width?: number;
 }
 
 export type RenderModalFnType = (

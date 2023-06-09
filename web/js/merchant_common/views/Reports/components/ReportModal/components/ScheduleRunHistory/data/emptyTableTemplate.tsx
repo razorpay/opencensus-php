@@ -1,25 +1,29 @@
 import React from 'react';
-import { AdditionalInformationType } from 'merchant_common/views/Reports/features/Schedules/types';
+import { AdditionalInformationType } from 'merchant_common/views/Reports/features/Downloads/types';
 import { FlexCentered, Skeleton } from 'merchant_common/views/Reports/components/styled';
+import { BaseLogType } from 'merchant_common/views/Reports/types/log';
 import { TableTemplateType } from 'merchant_common/views/Reports/components/Table/types';
-import { ScheduleType } from 'merchant_common/views/Reports/types/schedule';
+import { ScheduleRunHistoryActionType } from 'merchant_common/views/Reports/configs/analytics.config';
 
-export const emptySchedulesTableTemplate: TableTemplateType<
-  ScheduleType,
-  AdditionalInformationType
+export const emptyRunHistoryTableTemplate: TableTemplateType<
+  BaseLogType,
+  AdditionalInformationType<keyof typeof ScheduleRunHistoryActionType>
 > = {
-  headers: [
-    'Report Name & Type',
-    'Format',
-    'Email',
-    'Status',
-    'Repeat On',
-    'Pause/Delete',
-    'View Activity',
-  ],
+  headers: ['Delivered Date', 'Time', 'Name', 'Format', 'Status', 'Download'],
   cells: [
     {
-      render: () => (
+      render: (): JSX.Element => (
+        <Skeleton
+          style={{
+            height: 12,
+            width: 100,
+          }}
+        />
+      ),
+    },
+
+    {
+      render: (): JSX.Element => (
         <Skeleton
           style={{
             height: 12,
@@ -30,7 +34,7 @@ export const emptySchedulesTableTemplate: TableTemplateType<
     },
 
     {
-      render: () => (
+      render: (): JSX.Element => (
         <FlexCentered>
           <Skeleton
             style={{
@@ -42,7 +46,7 @@ export const emptySchedulesTableTemplate: TableTemplateType<
       ),
     },
     {
-      render: () => {
+      render: (): JSX.Element => {
         return (
           <Skeleton
             style={{
@@ -54,7 +58,7 @@ export const emptySchedulesTableTemplate: TableTemplateType<
       },
     },
     {
-      render: () => {
+      render: (): JSX.Element => {
         return (
           <FlexCentered>
             <Skeleton
@@ -68,7 +72,7 @@ export const emptySchedulesTableTemplate: TableTemplateType<
       },
     },
     {
-      render: () => {
+      render: (): JSX.Element => {
         return (
           <FlexCentered>
             <Skeleton
@@ -76,34 +80,6 @@ export const emptySchedulesTableTemplate: TableTemplateType<
                 height: 20,
                 width: 20,
                 borderRadius: 20,
-              }}
-            />
-          </FlexCentered>
-        );
-      },
-    },
-    {
-      render: () => {
-        return (
-          <FlexCentered>
-            <Skeleton
-              style={{
-                height: 20,
-                width: 100,
-              }}
-            />
-          </FlexCentered>
-        );
-      },
-    },
-    {
-      render: () => {
-        return (
-          <FlexCentered>
-            <Skeleton
-              style={{
-                height: 25,
-                width: 70,
               }}
             />
           </FlexCentered>

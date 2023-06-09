@@ -11,7 +11,6 @@ import {
   GENERATED_REPORT_FILE_DOWNLOAD_SUCCESS,
 } from 'merchant_common/views/Reports/constants/notifications';
 import { SessionReducerState } from 'common/typings';
-import { trackDownloadsSection } from 'merchant_common/views/Reports/configs/analytics.config';
 
 const mapStateToProps = ({ session }) => {
   const { user } = session as SessionReducerState;
@@ -40,12 +39,13 @@ const DownloadIndicatorComponent = connect(
     showNotification,
     id,
     dashboardType,
+    trackDownloadFile,
   }): JSX.Element => {
     const internalLogStatus = checkDownloadsLogStatus(status, file_id);
     const [isFileDownloading, setFileDownloading] = useState(false);
 
     const onDownloadClick = (accountId) => {
-      trackDownloadsSection({
+      trackDownloadFile({
         actionName: 'Download File Click',
         properties: {
           log_id: id,
@@ -57,7 +57,7 @@ const DownloadIndicatorComponent = connect(
       setFileDownloading(true);
       return downloadFromUFH(file_id, accountId)
         .then((response) => {
-          trackDownloadsSection({
+          trackDownloadFile({
             actionName: 'Report File Download Success',
             properties: {
               log_id: id,
@@ -72,7 +72,7 @@ const DownloadIndicatorComponent = connect(
           return response;
         })
         .catch(() => {
-          trackDownloadsSection({
+          trackDownloadFile({
             actionName: 'Report File Download Failed',
             properties: {
               log_id: id,

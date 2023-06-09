@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { openModal } from 'merchant_common/reducers/modals';
 import { IconProps, IconComponent } from '@razorpay/blade/components';
@@ -11,6 +11,7 @@ import {
   IconButton,
   ReportModal,
   EditIcon,
+  Spinner,
 } from 'merchant_common/views/Reports/components';
 import {
   deleteSchedule,
@@ -33,7 +34,7 @@ const mapDispatchToProps = (dispatch, { dashboardType }) => ({
   showNotification: (payload) => dispatch(showNotification(payload)),
 });
 
-export const ControlActions = connect(
+const ControlActionsComponent = connect(
   null,
   mapDispatchToProps,
 )(
@@ -43,9 +44,11 @@ export const ControlActions = connect(
     showNotification,
     startSchedulePoll,
     stopSchedulePoll,
+    dashboardType,
   }: ControlActionsArgs) => {
-    const dashboardType = useDashboardType();
     const { status, id } = scheduleData;
+    const [isActionLoading, setIsActionLoading] = useState(false);
+
     const handleControlAction = ({
       action,
       icon,
@@ -56,7 +59,6 @@ export const ControlActions = connect(
       promise: (x: ScheduleAPIFnParams) => Promise<void>;
     }) => {
       const eventType = action === 'delete' ? 'Delete' : action === 'pause' ? 'Pause' : 'Resume';
-
       openModal({
         component: (
           <ReportModal
@@ -86,6 +88,7 @@ export const ControlActions = connect(
                           type: 'success',
                           message: `Schedule ${action[0].toUpperCase() + action.slice(1)}d!`,
                         });
+                        setIsActionLoading(true);
                         closeModal();
                       })
                       .catch(() => {
@@ -177,6 +180,10 @@ export const ControlActions = connect(
       });
     };
 
+    useEffect(() => {
+      if (isActionLoading) setIsActionLoading(false);
+    }, [status]);
+
     return (
       <SchedulesTableIconControlContainer>
         <IconButton
@@ -186,7 +193,9 @@ export const ControlActions = connect(
           accessibilityLabel="Edit Schedule"
         />
 
-        {status === 'active' ? (
+        {isActionLoading ? (
+          <Spinner size="medium" accessibilityLabel="Status Change In Process" />
+        ) : status === 'active' ? (
           <IconButton
             icon={PauseIcon}
             size="medium"
@@ -212,3 +221,8 @@ export const ControlActions = connect(
     );
   },
 );
+
+export const ControlActions = (props) => {
+  const dashboardType = useDashboardType();
+  return <ControlActionsComponent {...props} dashboardType={dashboardType} />;
+};

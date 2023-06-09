@@ -36,14 +36,6 @@ export const reportsInitialState = {
     allSchedules: [],
     totalCount: null,
     genericPoll: true,
-    runHistory: {
-      logs: [],
-      loading: true,
-      filter: downloadsFilterDropdown[0].value,
-      pageTrack: 1,
-      totalCount: null,
-      genericPoll: true,
-    },
   },
 };
 
@@ -163,39 +155,6 @@ const reportsSlice = createSlice({
       state[action.payload.dashboardType].schedules.allSchedules = allSchedules;
       state[action.payload.dashboardType].schedules.loading = false;
     },
-
-    // schedule run history log
-    handleScheduleRunHistoryFilter: (state, action) => {
-      // enable poll on filter change
-      state[action.payload.dashboardType].schedules.runHistory.logs = [];
-      state[action.payload.dashboardType].schedules.runHistory.loading = true;
-      state[action.payload.dashboardType].schedules.runHistory.genericPoll = true;
-      state[action.payload.dashboardType].schedules.runHistory.filter = action.payload.filter;
-      state[action.payload.dashboardType].schedules.runHistory.pageTrack = 1;
-      state[action.payload.dashboardType].schedules.runHistory.totalCount = null;
-    },
-
-    startScheduleRunHistoryPoll: (state, action) => {
-      state[action.payload.dashboardType].schedules.runHistory.genericPoll = true;
-    },
-
-    stopScheduleRunHistoryPoll: (state, action) => {
-      state[action.payload.dashboardType].schedules.runHistory.genericPoll = false;
-    },
-
-    handleSchedulesRunHistoryPageTrack: (state, action) => {
-      state[action.payload.dashboardType].schedules.runHistory.logs = [];
-      state[action.payload.dashboardType].schedules.runHistory.loading = true;
-      state[action.payload.dashboardType].schedules.runHistory.genericPoll = true;
-      state[action.payload.dashboardType].schedules.runHistory.pageTrack = action.payload.pageNo;
-    },
-
-    fetchSchedulesRunHistorySuccess: (state, action) => {
-      const { totalCount, logs } = action.payload;
-      state[action.payload.dashboardType].schedules.runHistory.totalCount = totalCount;
-      state[action.payload.dashboardType].schedules.runHistory.logs = logs;
-      state[action.payload.dashboardType].schedules.runHistory.loading = false;
-    },
   },
 });
 
@@ -215,11 +174,6 @@ export const {
   stopSchedulePoll,
   handleSchedulesPageTrack,
   fetchSchedulesSuccess,
-  fetchSchedulesRunHistorySuccess,
-  handleScheduleRunHistoryFilter,
-  handleSchedulesRunHistoryPageTrack,
-  startScheduleRunHistoryPoll,
-  stopScheduleRunHistoryPoll,
 } = reportsSlice.actions;
 
 export const reportsReducer = reportsSlice.reducer;

@@ -2,7 +2,7 @@ import React from 'react';
 import moment from 'moment';
 import { AdditionalInformationType } from 'merchant_common/views/Reports/features/Schedules/types';
 import { CollapsibleArray } from 'merchant_common/views/Reports/components/Table/Components/CollapsibleArray/CollapsibleArray';
-import { Text } from 'merchant_common/views/Reports/components';
+import { Button, MaximizeIcon, Text } from 'merchant_common/views/Reports/components';
 import { FlexCentered } from 'merchant_common/views/Reports/components/styled';
 import { ScheduleStatus } from 'merchant_common/views/Reports/features/Schedules/components/ScheduleStatus';
 import { TableTemplateType } from 'merchant_common/views/Reports/components/Table/types';
@@ -18,7 +18,15 @@ export const baseSchedulesTableTemplate: TableTemplateType<
   ScheduleType,
   AdditionalInformationType
 > = {
-  headers: ['Report Name & Type', 'Format', 'Email', 'Status', 'Repeat On', 'Pause/Delete'],
+  headers: [
+    'Report Name & Type',
+    'Format',
+    'Email',
+    'Status',
+    'Repeat On',
+    'Pause/Delete',
+    'View Activity',
+  ],
   cells: [
     {
       render: ({ name, config_name }) => (
@@ -86,6 +94,27 @@ export const baseSchedulesTableTemplate: TableTemplateType<
     {
       render: (data) => {
         return <ControlActions scheduleData={data} />;
+      },
+    },
+    {
+      render: (scheduleData, __, ___, additionalInfo) => {
+        return (
+          <FlexCentered
+            style={{
+              width: '100%',
+            }}
+          >
+            <Button
+              onClick={() => additionalInfo?.onViewActivityOpen(scheduleData)}
+              variant="secondary"
+              iconPosition="right"
+              size="small"
+              icon={MaximizeIcon}
+            >
+              Open
+            </Button>
+          </FlexCentered>
+        );
       },
     },
   ],

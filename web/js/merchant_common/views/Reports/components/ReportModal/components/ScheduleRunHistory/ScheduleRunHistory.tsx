@@ -1,0 +1,157 @@
+import React from 'react';
+import {
+  Button,
+  PlusIcon,
+  ReportModal,
+  Dropdown,
+  Heading,
+  Text,
+  SelectInput,
+  DropdownOverlay,
+  ActionList,
+  ActionListItem,
+} from 'merchant_common/views/Reports/components';
+import {
+  ControlPanel,
+  DropdownWrapper,
+  ControlPanelRight,
+  ModalScrollableTable,
+  RepeatOnWrapper,
+  ActionButtonWrapper,
+} from './styled';
+import { SchedulesPropsType } from './types';
+import { connect } from 'react-redux';
+import { openModal } from 'merchant_common/reducers/modals';
+import { useTheme } from 'merchant_common/views/Reports/hooks';
+import { ReportModalHeader } from 'merchant_common/views/Reports/components/ReportModal/styled';
+import { FlexCentered } from 'merchant_common/views/Reports/components/styled';
+import { RunHistoryTable } from './components/RunHistoryTable';
+import { patchedSelectOnChange } from 'merchant_common/views/Reports/components/blade.patch';
+import { useRunHistoryReducer } from './hooks/useRunHistoryReducer';
+import { downloadsFilterDropdown } from 'merchant_common/views/Reports/features/Downloads/constants/dropdownOptions';
+
+const mapStateToProps = ({ reportsCore }, { dashboardType }) => {
+  const { allConfigs } = reportsCore[dashboardType].overview.reportConfigs;
+  return {
+    isAllConfigLoaded: !allConfigs.loading && !allConfigs.error,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => ({
+  openModal: (modal) => dispatch(openModal(modal)),
+});
+
+const ScheduleRunHistory = connect(
+  mapStateToProps,
+  mapDispatchToProps,
+)(
+  ({
+    isAllConfigLoaded,
+    dashboardType,
+    openModal,
+    params: { scheduleData },
+  }: SchedulesPropsType): JSX.Element => {
+    const { theme } = useTheme();
+    const { filter, handleLogsFilter } = useRunHistoryReducer(dashboardType);
+
+    const handleEditSchedule = () => {
+      openModal({
+        component: (
+          <ReportModal
+            type="create_edit_schedule"
+            dashboardType={dashboardType}
+            params={{
+              scheduleData,
+            }}
+          />
+        ),
+        size: '',
+      });
+    };
+
+    return (
+      <>
+        <ReportModalHeader>
+          <Heading variant="regular">History of Report Run</Heading>
+          <Text
+            variant="body"
+            size="medium"
+            weight="regular"
+            color="surface.text.subdued.lowContrast"
+          >
+            Revisit the reports you have received in this schedule
+          </Text>
+        </ReportModalHeader>
+        <ControlPanel>
+          <RepeatOnWrapper>
+            <FlexCentered>
+              <Text
+                variant="body"
+                size="medium"
+                weight="regular"
+                color="surface.text.subdued.lowContrast"
+              >
+                Repeat on:
+              </Text>
+              &nbsp; &nbsp;
+              <Text
+                variant="body"
+                size="medium"
+                weight="bold"
+                color="surface.text.subdued.lowContrast"
+              >
+                {scheduleData.period[0].toUpperCase() + scheduleData.period.slice(1)}
+              </Text>
+            </FlexCentered>
+          </RepeatOnWrapper>
+
+          <ControlPanelRight>
+            <ActionButtonWrapper>
+              <Button
+                onClick={handleEditSchedule}
+                variant="primary"
+                icon={PlusIcon}
+                iconPosition="left"
+                isFullWidth
+                accessibilityLabel="Edit Schedule Button"
+                isLoading={!isAllConfigLoaded}
+              >
+                Edit Schedule
+              </Button>
+            </ActionButtonWrapper>
+            <DropdownWrapper>
+              <Dropdown selectionType="single">
+                <SelectInput
+                  label=""
+                  onChange={patchedSelectOnChange(({ values }) =>
+                    handleLogsFilter(downloadsFilterDropdown[+values[0]]),
+                  )}
+                  placeholder="Choose Logs Filter"
+                  validationState="none"
+                />
+                <DropdownOverlay key={filter.value}>
+                  <ActionList surfaceLevel={2}>
+                    {downloadsFilterDropdown.map(({ label, value }, index) => (
+                      <ActionListItem
+                        key={index}
+                        isDefaultSelected={value === filter?.value}
+                        title={label}
+                        value={index.toString()}
+                        testID={label}
+                      />
+                    ))}
+                  </ActionList>
+                </DropdownOverlay>
+              </Dropdown>
+            </DropdownWrapper>
+          </ControlPanelRight>
+        </ControlPanel>
+        <ModalScrollableTable theme={theme} heightOffset={92.5} initialWidth={1100}>
+          <RunHistoryTable dashboardType={dashboardType} scheduleId={scheduleData.id} />
+        </ModalScrollableTable>
+      </>
+    );
+  },
+);
+
+export default ScheduleRunHistory;

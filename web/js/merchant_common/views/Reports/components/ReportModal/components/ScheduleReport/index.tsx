@@ -37,4 +37,6 @@ const mapDispatchToProps = (dispatch, { dashboardType }) => ({
   stopSchedulesPoll: () => dispatch(stopSchedulePoll({ dashboardType })),
 });
 
-export const ScheduleReport = connect(mapStateToProps, mapDispatchToProps)(ScheduleReportModal);
+const ScheduleReport = connect(mapStateToProps, mapDispatchToProps)(ScheduleReportModal);
+
+export default ScheduleReport;

@@ -2,18 +2,27 @@ import styled from 'styled-components';
 import { ScrollableContainer } from 'merchant_common/views/Reports/components/styled';
 import { reportsTheme } from 'merchant_common/views/Reports/configs';
 
-export const ReportModalWrapper = styled.div<{ scrollable?: boolean; initialWidth?: number }>`
-  max-width: ${({ initialWidth = 750 }) => initialWidth}px;
+export const ReportModalWrapper = styled.div<{
+  scrollable?: boolean;
+  width?: number;
+}>`
+  ${({ width }) => (width ? `min-width: ${width}px;` : 'max-width: 750px;')}
   background: white;
-  padding: ${({ initialWidth = 750 }) => (initialWidth > 750 ? 30 : 60)}px;
+  padding: ${({ width }) => (width && width > 750 ? 30 : 60)}px;
   ${({ scrollable = true }) => !scrollable && 'overflow-y: unset !important;'}
   ${({ theme }) => `
   height: 84vh;
   max-height: 860px;
+
+  @media (max-width: ${theme.breakpoints.xl}px) {
+    min-width: 100%;
+  }
+
   @media (max-width: ${theme.breakpoints.m}px), (max-height: ${theme.breakpoints.m}px) {
     overflow-y: auto !important;
     padding: 30px;
   }
+
   @media (max-width: ${theme.breakpoints.m}px){
     height: 100vh;
     max-height: 100vh;
