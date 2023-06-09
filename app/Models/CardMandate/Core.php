@@ -66,18 +66,7 @@ class Core extends Base\Core
             $payment
         );
 
-        if($this->app['razorx']->getTreatment($payment->getMerchantId(), Merchant\RazorxTreatment::RECURRING_CARD_MANDATE_SUMMARY_OLD_FLOW, $this->mode) === 'on')
-        {
-            if ($payment->merchant->isFeatureEnabled(Feature\Constants::CARD_MANDATE_SKIP_PAGE) === true)
-            {
-                $input[Entity::SKIP_SUMMARY_PAGE] = true;
-            }
-        }
-        else if ($this->app['razorx']->getTreatment($payment->getMerchantId(), Merchant\RazorxTreatment::RECURRING_CARD_MANDATE_SUMMARY_SKIP_ALL, $this->mode) === 'on')
-        {
-            $input[Entity::SKIP_SUMMARY_PAGE] = true;
-        }
-        else if ($payment->merchant->isFeatureEnabled(Feature\Constants::CARD_MANDATE_SKIP_PAGE) === false)
+        if ($payment->merchant->isFeatureEnabled(Feature\Constants::CARD_MANDATE_SKIP_PAGE) === false)
         {
             $input[Entity::SKIP_SUMMARY_PAGE] = true;
         }

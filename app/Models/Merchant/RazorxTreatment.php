@@ -573,10 +573,6 @@ final class RazorxTreatment
     /** Experiment to enable recurring transaction for Rupay Cards IIN Level Control*/
     const RECURRING_THROUGH_RUPAY_CARD_IIN = 'recurring_through_rupay_card_iin';
 
-    const RECURRING_CARD_MANDATE_SUMMARY_OLD_FLOW = 'recurring_card_mandate_summary_old_flow';
-
-    const RECURRING_CARD_MANDATE_SUMMARY_SKIP_ALL = 'recurring_card_mandate_summary_skip_all';
-
     /** @var string Experiment to deprecate tos_acceptance field from /accounts api */
     const IGNORE_TOS_ACCEPTANCE = 'ignore_tos_acceptance';
 

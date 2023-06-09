@@ -355,7 +355,9 @@ class Constants
     const CAW_RECURRING_CHARGE_AXIS = 'caw_recurring_charge_axis';
 
     /**
-     * skip summary page for card mandate recurring initial payment
+     * show summary page for card mandate recurring initial payment
+     * Note: we flipped the use case of this feature flag. Earlier it used to skip the summary page if enabled.
+     * Now when it is enabled, it will show the mandate summary page.
      */
     const CARD_MANDATE_SKIP_PAGE = 'card_mandate_skip_page';
 
