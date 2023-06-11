@@ -187,6 +187,9 @@ class PartnerTest extends OAuthTestCase
         $this->fixtures->on('test')->edit('merchant_detail', self::DEFAULT_SUBMERCHANT_ID, ['contact_mobile' => '+919123456789']);
         $this->fixtures->on('live')->edit('merchant_detail', self::DEFAULT_SUBMERCHANT_ID, ['contact_mobile' => '+919123456789']);
 
+        $this->fixtures->user->createUserForMerchant(
+            self::DEFAULT_SUBMERCHANT_ID, ['contact_mobile' => '+919123456789', 'contact_mobile_verified' => true ], 'owner');
+
         $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
         $this->app->instance('stork_service', $storkMock);

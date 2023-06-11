@@ -159,7 +159,9 @@ class Core extends Base\Core
 
         try
         {
-            if(empty($merchant->merchantDetail->getContactMobile()) === false)
+            $user = $merchant->primaryOwner();
+
+            if($user->isContactMobileVerified())
             {
                 $smsPayload = [
                     'ownerId'           => $merchant->getId(),

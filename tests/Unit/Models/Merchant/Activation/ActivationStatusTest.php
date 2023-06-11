@@ -15,6 +15,7 @@ use RZP\Models\Workflow\Action\MakerType;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Merchant\MerchantTest;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
@@ -216,6 +217,65 @@ class ActivationStatusTest extends OAuthTestCase
 
         // check email sent to partner
         Mail::assertQueued(SubMerchantNCStatusChangedEmail::class);
+    }
+
+    public function testSmsOnNeedsClarification()
+    {
+        $fixtures       = $this->createAndFetchFixtures(Detail\Status::UNDER_REVIEW);
+        $merchantDetail = $fixtures['merchantDetail'];
+        $merchant       = $merchantDetail->merchant;
+        $admin          = $fixtures['admin'];
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'aggregator']);
+
+        $managedApp = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'aggregator'], true);
+
+        $this->fixtures->user->createUserForMerchant(
+            $merchant->getId(), ['contact_mobile' => '+919123456789', 'contact_mobile_verified' => true ], 'owner');
+
+        $this->fixtures->create('merchant_access_map', [
+            'entity_owner_id' => self::DEFAULT_MERCHANT_ID,
+            'merchant_id'     => $merchant->getId(),
+            'entity_type'     => 'application',
+            'entity_id'       => $managedApp->getId()
+        ]);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        $splitzInput = [
+            "experiment_id" => "JbkwT9fC4Jn7it",
+            "id"            => "10000000000000",
+        ];
+
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzInput, $splitzOutput);
+
+        // Change to NC
+        $input = [
+            'activation_status' => Detail\Status::NEEDS_CLARIFICATION
+        ];
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $merchantTestUtil = new MerchantTest();
+        $merchantTestUtil->expectStorkSmsRequest($storkMock, 'Sms.Partner.Submerchant.Needs_clarification', '+919123456789', []);
+
+        (new Detail\Core)->updateActivationStatus($merchant, $input, $admin);
+
+        // check status changed successfully
+        $merchantDetail = $this->getDbLastEntity('merchant_detail');
+        $this->assertEquals($merchantDetail->getActivationStatus(), Detail\Status::NEEDS_CLARIFICATION);
     }
 
     public function testMailsOnNeedsClarificationForReseller()

@@ -3625,7 +3625,7 @@ class Core extends Base\Core
                         $this->sendNeedsClarificationEmail($merchant);
                     }
 
-                    $this->sendSubMerchantNCStatusChangedEmail($merchant);
+                    $this->sendSubMerchantNCStatusChangedCommunication($merchant);
 
                     // pushing event to kafka to migration out of metro
                     if ($this->isMetroMigrateOutExperimentEnabledForCmmaEvents($merchant->getId()) === true)
@@ -4180,7 +4180,7 @@ class Core extends Base\Core
         }
     }
 
-    public function sendSubMerchantNCStatusChangedEmail(Merchant\Entity $merchant)
+    public function sendSubMerchantNCStatusChangedCommunication(Merchant\Entity $merchant)
     {
         $partnerMerchant = (new AccessMapCore)->getAggregatorPartnerFromSubmerchant($merchant);
         // $partnerMerchant can be null in case of linked accounts
@@ -4198,6 +4198,8 @@ class Core extends Base\Core
             if ($isExpEnabled === true)
             {
                 $this->sendSubMerchantNCStatusChangedEmailToPartner($merchant, $partnerMerchant);
+
+                $this->sendSubMerchantNCStatusChangedSmsToPartner($merchant, $partnerMerchant);
             }
         }
     }
@@ -4227,6 +4229,45 @@ class Core extends Base\Core
         $email = new SubMerchantNCStatusChangedEmail($data, $org->toArray());
 
         Mail::queue($email);
+    }
+
+    /**
+     * @param $merchant
+     * @param $partner
+     */
+    public function sendSubMerchantNCStatusChangedSmsToPartner(Merchant\Entity $merchant, Merchant\Entity $partner)
+    {
+        try
+        {
+            $user = $partner->primaryOwner();
+
+            if($user->isContactMobileVerified())
+            {
+                $smsPayload = [
+                    'ownerId'           => $partner->getId(),
+                    'ownerType'         => 'merchant',
+                    'orgId'             => $partner->getOrgId(),
+                    'sender'            => 'RZRPAY',
+                    'destination'       => $partner->merchantDetail->getContactMobile(),
+                    'templateName'      => 'Sms.Partner.Submerchant.Needs_clarification',
+                    'templateNamespace' => 'partnerships-experience',
+                    'language'          => 'english',
+                    'contentParams'     => [
+                        'subMerchantName'        => $merchant->getName(),
+                        'accountId'              => $merchant->getId(),
+                    ]
+                ];
+
+                $this->app->stork_service->sendSms($this->mode, $smsPayload);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::CRITICAL, TraceCode::SUB_MERCHANT_NEEDS_CLARIFICATION_TO_PARTNER_SMS_FAILED, [
+                'merchant_id'      => $merchant->getId(),
+                'partner_id'       => $partner->getId()
+            ]);
+        }
     }
 
     public function getPayloadForSubMerchantNCStatusChangedEmail(Merchant\Entity $merchant, Merchant\Entity $partnerMerchant, $clarificationReasons)
