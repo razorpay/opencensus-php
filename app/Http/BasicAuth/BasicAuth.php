@@ -146,6 +146,8 @@ class BasicAuth
 
     const X_DASHBOARD_APPS                           = ['merchant_dashboard', 'dashboard'];
 
+    const WHITE_LISTED_MIDS_FOR_ACCOUNT_ID_IN_BODY   = ['hoah6c9snynis5','EVPKynANo94brO','HL0XeiZ1v1kyUZ','Jd6fYXxU7jjAWt','G8X2PlQPEqR9jg','FIMutKDXBwL9fN','6N5ssOOKSLBIES','DT2WnV8uxRDwjO','KHt6aG32DgGLTd','EgzuLu9uMZEgP4','D8yeOZdLluPZyA','Jq5FbjcohIEPoe','FIMutKDXBwL9fN','HJH6H4wTaaVe5x'];
+
     /**
      * The application instance.
      *
@@ -886,6 +888,20 @@ class BasicAuth
                         self::ROUTE => $this->route->getCurrentRouteName(),
                         self::HTTP_METHOD => $this->request->getRealMethod(),
                     ]);
+
+                // do not allow merchant except the whitelisted one to pass account id on body.
+                // as it is a non standard approach and we want to avoid any other merchants adopting the same.
+                // for whitelisted merchant also only allow account id in body for order_create route only.
+                // as it is existing integration and we will not allow same integration for any other route.
+                $keyEntity = $this->getKeyEntity();
+
+                if ( $this->route->getCurrentRouteName() != 'order_create' || !(isset($keyEntity) && in_array($keyEntity->getMerchantId(),self::WHITE_LISTED_MIDS_FOR_ACCOUNT_ID_IN_BODY)) ) {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_ERROR, null, null,
+                        PublicErrorDescription::BAD_REQUEST_ACCOUNT_ID_IN_BODY
+                    );
+                }
+
             }
 
             $checkAndSetPartnerMerchantScope = Tracer::inspan(['name' => HyperTrace::BASIC_AUTH_CHECK_AND_SET_PARTNER_MERCHANT_SCOPE], function () {

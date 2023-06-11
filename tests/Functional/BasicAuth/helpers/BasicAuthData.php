@@ -1415,6 +1415,51 @@ return [
         ],
     ],
 
+    'testMerchantAuthWithImpersonationForWhitelisted' => [
+        'request' => [
+            'content' => [
+                'amount'        => 50000,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+                'account_id'    => 'acc_100000Razorpay',
+                'notes'         => ['key' => 'value']
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'        => 50000,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testMerchantAuthWithImpersonationForNonWhitelisted' => [
+        'request' => [
+            'content' => [
+                'amount'        => 50000,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+                'account_id'    => 'acc_100000Razorpay',
+                'notes'         => ['key' => 'value']
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_ACCOUNT_ID_IN_BODY,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testOrderEditWithAccId' => [
         'request'  => [
             'content' => [

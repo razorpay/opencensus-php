@@ -12,6 +12,7 @@ use Razorpay\Edge\Passport\Kid;
 use Razorpay\Edge\Passport\Passport;
 use Illuminate\Database\Eloquent\Factory;
 
+use RZP\Error\PublicErrorDescription;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Http\Route;
@@ -1127,23 +1128,97 @@ class BasicAuthTest extends TestCase
 
         $this->assertPassport();
     }
-
+    //testMerchantAuthWithImpersonationOnPost checks request rejection in case of non whitelisted MID
     public function testMerchantAuthWithImpersonationOnPost()
     {
         $this->ba->privateAuth();
 
+        $testData = $this->testData['testCreateOrderWithAccId'];
+
+        $this->makeRequestAndCatchException(
+            function() use ($testData)
+            {
+                $this->runRequestResponseFlow($testData);
+            },
+            \RZP\Exception\BadRequestException::class,
+            PublicErrorDescription::BAD_REQUEST_ACCOUNT_ID_IN_BODY);
+
+    }
+
+    //testMerchantAuthWithImpersonationWhitelistedMidRouteBodyParsing accepts request in case of whitelisted MID for body parsing.
+    public function testMerchantAuthWithImpersonationWhitelistedMidRouteBodyParsing()
+    {
+        $merchant = $this->fixtures->create('merchant',['id'=>'hoah6c9snynis5']);
+        $key = $this->fixtures->create('key', ['merchant_id' => $merchant->getId()]);
+
+        $this->ba->privateAuth('rzp_test_'.$key->getKey(),$key->getDecryptedSecret());
+
         $this->runRequestResponseFlow($this->testData['testCreateOrderWithAccId']);
     }
 
+    //testMerchantAuthWithImpersonationNonWhitelistedMIDBodyParsing checks request rejection in case of non whitelisted MID
+    public function testMerchantAuthWithImpersonationNonWhitelistedMIDBodyParsing()
+    {
+        $merchant = $this->fixtures->create('merchant',['id'=>'hoah6c9snynis8']);
+        $key = $this->fixtures->create('key', ['merchant_id' => $merchant->getId()]);
+
+        $this->ba->privateAuth('rzp_test_'.$key->getKey(),$key->getDecryptedSecret());
+
+        $testData = $this->testData['testMerchantAuthWithImpersonationForNonWhitelisted'];
+
+        $this->makeRequestAndCatchException(
+            function() use ($testData)
+            {
+                $this->runRequestResponseFlow($testData);
+            },
+            \RZP\Exception\BadRequestException::class,
+            PublicErrorDescription::BAD_REQUEST_ACCOUNT_ID_IN_BODY);
+    }
+
+    //testMerchantAuthWithImpersonationNonWhitelistedRouteBodyParsing checks request rejection in case of non whitelisted route with whitelisted MID
+    public function testMerchantAuthWithImpersonationNonWhitelistedRouteBodyParsing()
+    {
+        $merchant = $this->fixtures->create('merchant',['id'=>'hoah6c9snynis5']);
+        $key = $this->fixtures->create('key', ['merchant_id' => $merchant->getId()]);
+
+        $this->ba->privateAuth('rzp_test_'.$key->getKey(),$key->getDecryptedSecret());
+
+        $this->testData['testMerchantAuthWithImpersonationForNonWhitelisted']['request']['method'] = 'POST';
+        $this->testData['testMerchantAuthWithImpersonationForNonWhitelisted']['request']['url'] = '/refunds';
+
+        $testData=$this->testData['testMerchantAuthWithImpersonationForNonWhitelisted'];
+
+        $this->makeRequestAndCatchException(
+            function() use ($testData)
+            {
+                $this->runRequestResponseFlow($testData);
+            },
+            \RZP\Exception\BadRequestException::class,
+            PublicErrorDescription::BAD_REQUEST_ACCOUNT_ID_IN_BODY);
+    }
+
+    //testMerchantAuthWithImpersonationOnPatch checks request rejection in case of non whitelisted route with whitelisted MID
     public function testMerchantAuthWithImpersonationOnPatch()
     {
-        $this->ba->privateAuth();
+        $merchant = $this->fixtures->create('merchant',['id'=>'hoah6c9snynis5']);
+        $key = $this->fixtures->create('key', ['merchant_id' => $merchant->getId()]);
+
+        $this->ba->privateAuth('rzp_test_'.$key->getKey(),$key->getDecryptedSecret());
 
         $order = $this->runRequestResponseFlow($this->testData['testCreateOrderWithAccId']);
 
         $this->testData['testOrderEditWithAccId']['request']['url'] = '/orders/' . $order['id'];
 
-        $this->runRequestResponseFlow($this->testData['testOrderEditWithAccId']);
+        $testData = $this->testData['testOrderEditWithAccId'];
+
+        $this->makeRequestAndCatchException(
+            function() use ($testData)
+            {
+                $this->runRequestResponseFlow($testData);
+            },
+            \RZP\Exception\BadRequestException::class,
+            PublicErrorDescription::BAD_REQUEST_ACCOUNT_ID_IN_BODY);
+
     }
 
     public function testMerchantAuthWithImpersonationOnGet()
