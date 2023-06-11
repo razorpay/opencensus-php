@@ -19,8 +19,10 @@ class Utility
 
     public function isRetryableError($ex)
     {
-        return (in_array($ex->getMessage(), $this->errorMessageToRetryDelayInSecsMap, true) or
-                in_array($ex->getCode(), $this->errorCodeToRetryDelayInSecsMap, true));
+        return false;
+        // TODO: Disabling retries, re-enable after verifying
+//        return (in_array($ex->getMessage(), $this->errorMessageToRetryDelayInSecsMap, true) or
+//                in_array($ex->getCode(), $this->errorCodeToRetryDelayInSecsMap, true));
     }
 
     public function getDelay($ex)
