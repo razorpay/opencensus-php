@@ -10915,8 +10915,9 @@ We look forward to transacting with you!
 
         $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $merchantUser['id']);
 
-        $this->startTest();
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => null, ]]]);
 
+        $this->startTest();
     }
 
     public function testFetchIdentityVerificationUrlForBVSFailure()
