@@ -1,0 +1,21 @@
+name: Commenting during the dismissal of a stale review
+on:
+  pull_request_review:
+    types:
+      - dismissed
+jobs:
+  processDismissal:
+    runs-on: [ self-hosted, api ]
+    steps:
+      - name: Add comment if review dimissal on new commit
+        uses: mshick/add-pr-comment@v2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          message: |
+            **<img src="https://emojis.slackmojis.com/emojis/images/1643515192/12068/mild-panic-intensifies.gif?1643515192" width="40" height="40"> _New commit  added post-approval revokes previous approval, requiring a new approval for running BVT suite._**
+
+            _Commit Required Approval_: `${{ github.event.pull_request.head.sha }}`
+
+            _For more understanding, please consult this_ [documentation](https://write.razorpay.com/doc/execute-bvt-test-in-devstack-api-repo-haK6b8Q0Bs)
+          allow-repeats: true
