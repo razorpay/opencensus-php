@@ -2,6 +2,8 @@
 
 namespace RZP\Models\QrCode\NonVirtualAccountQrCode;
 
+use RZP\Error;
+use RZP\Exception;
 use RZP\Models\Vpa;
 use RZP\Models\QrCode;
 use RZP\Models\Settings;
@@ -79,11 +81,7 @@ class Generator extends QrCode\Generator
 
     private function getVpaForQr($qrCode)
     {
-        $variant = $this->app->razorx->getTreatment($qrCode->merchant->getId(),
-                                                    Merchant\RazorxTreatment::DEDICATED_TERMINAL_QR_CODE,
-                                                    $this->mode);
-
-        if (strtolower($variant) === Merchant\RazorxTreatment::RAZORX_VARIANT_ON)
+        if ($this->checkIfDedicatedTerminalSplitzExperimentEnabled($qrCode->merchant->getId()) === true)
         {
             //@todo:: Check for static and dynamic QR. For static QR, terminal type offline should be passed
             $terminal = (new VirtualAccount\Provider())->getTerminalForMethod(Payment\Method::UPI, $qrCode);
@@ -537,5 +535,88 @@ class Generator extends QrCode\Generator
         {
             return QrCode\Constants::QR_V2_MODE_DYNAMIC;
         }
+    }
+
+    public function checkIfDedicatedTerminalSplitzExperimentEnabled($merchantId)
+    {
+        try
+        {
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.dedicated_terminal_qr_code_splitz_experiment_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantId]),
+            ];
+            $response   = $this->app['splitzService']->evaluateRequest($properties);
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+                'experiment_id' => $properties['experiment_id'],
+                'merchant_id'   => $merchantId,
+                '$response'     => $response
+            ]);
+
+            if ($response['response']['variant'] !== null)
+            {
+                $variables = $response['response']['variant']['variables'] ?? [];
+
+                foreach ($variables as $variable)
+                {
+                    $key   = $variable['key'] ?? '';
+                    $value = $variable['value'] ?? '';
+                    if ($key == "result" && $value == "on")
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::DEDICATED_TERMINAL_QR_CODE_SPLITZ_ERROR
+            );
+        }
+
+        return false;
+    }
+
+    public function closeQrCodeOnGateway($qrCode)
+    {
+        if ($qrCode->isIciciQr() === false)
+        {
+            return;
+        }
+
+        if ($qrCode->isGatewayGeneratedRefid() === false)
+        {
+            return;
+        }
+
+        $qrVpa = $qrCode->getQrVpa();
+        if ($qrVpa === null)
+        {
+            throw new InvalidArgumentException('VPA cannot be null');
+        }
+
+        $gateway = GATEWAY::UPI_ICICI;
+        $params  = array(Terminal\Entity::GATEWAY_MERCHANT_ID2 => $qrVpa);
+        $this->trace->info(TraceCode::QR_CODE_CLOSE_ON_GATEWAY, [
+            'gateway' => $gateway,
+            '$params' => $params,
+            'id'      => $qrCode->getId()
+        ]);
+
+        $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $params);
+
+        if (($terminal instanceof Terminal\Entity) === false)
+        {
+            throw new BadRequestException(Error\ErrorCode::SERVER_ERROR_NO_TERMINAL_FOUND,
+                                          [
+                                              'merchant_id' => $qrCode->merchant->getId(),
+                                          ]);
+        }
+
+        $this->generateRefId($qrCode, $terminal);
     }
 }

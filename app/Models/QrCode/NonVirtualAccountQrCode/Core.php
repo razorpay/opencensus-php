@@ -6,14 +6,17 @@ use Carbon\Carbon;
 use RZP\Trace\Tracer;
 use RZP\Models\QrCode;
 use RZP\Models\Feature;
+use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\HyperTrace;
 use RZP\Models\EntityOrigin;
 use RZP\Models\Merchant\Account;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\QrPaymentRequest\Type;
 use RZP\Models\Order\Entity as Order;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Reconciliator\Base\Reconciliate;
 use RZP\Models\QrPayment\Service as QrPaymentService;
 use RZP\Models\Checkout\Order\Entity as CheckoutOrder;
 
@@ -25,6 +28,13 @@ class Core extends QrCode\Core
 
         $this->generator = new Generator;
     }
+
+    const GATEWAY_PAYMENT_CALLBACK_POST = 'gateway_payment_callback_post';
+    const PAYMENT_CALLBACK_BHARATQR_INTERNAL = 'payment_callback_bharatqr_internal';
+    const GATEWAY_PAYMENT_CALLBACK_BHARATQR = 'gateway_payment_callback_bharatqr';
+    const QR_PAYMENT_ROUTES                  = [self::GATEWAY_PAYMENT_CALLBACK_BHARATQR,
+                                                self::PAYMENT_CALLBACK_BHARATQR_INTERNAL,
+                                                self::GATEWAY_PAYMENT_CALLBACK_POST];
 
     /**
      * @param array                    $input
@@ -132,10 +142,7 @@ class Core extends QrCode\Core
 
     public function close($qrCode, $closeReason)
     {
-        $variant = $this->app->razorx->getTreatment($qrCode->merchant->getId(),
-                                                    RazorxTreatment::DEDICATED_TERMINAL_QR_CODE,
-                                                    $this->mode);
-        if ((strtolower($variant) === RazorxTreatment::RAZORX_VARIANT_ON) and
+        if (($this->generator->checkIfDedicatedTerminalSplitzExperimentEnabled($qrCode->merchant->getId()) === true) and
             ($qrCode->getUsageType() === UsageType::MULTIPLE_USE))
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_CLOSE_STATIC_QR_CODE_FAILURE);
@@ -148,6 +155,26 @@ class Core extends QrCode\Core
         $qrCode->setClosedAt($currentTime);
 
         $qrCode->setCloseReason($closeReason);
+
+        try
+        {
+            $this->generator->closeQrCodeOnGateway($qrCode);
+        }
+        catch (\Exception $e)
+        {
+            $routeName = $this->app['api.route']->getCurrentRouteName();
+
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::FAILED_TO_CLOSE_QR_ON_GATEWAY,
+                                         [
+                                             'qrcode' => $qrCode->getId()
+                                         ]);
+
+            if ((in_array($routeName, self::QR_PAYMENT_ROUTES) !== true) and
+                (Reconciliate::$isReconRunning !== true))
+            {
+                throw $e;
+            }
+        }
 
         $vpaId = $this->repo->vpa->findVpaByEntityIdAndEntityType($qrCode->getId(), $qrCode->getEntityName());
 

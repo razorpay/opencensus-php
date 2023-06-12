@@ -2,6 +2,10 @@
 
 namespace RZP\Tests\Functional\Helpers\QrCode;
 
+use DB;
+use Mail;
+use Queue;
+use Mockery;
 use RZP\Services\RazorXClient;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity;
 
@@ -282,5 +286,16 @@ trait NonVirtualAccountQrCodeTrait
 
                                   return strtolower($defaultBehaviour);
                               }));
+    }
+
+    protected function mockSplitzTreatment($output)
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturn($output);
     }
 }

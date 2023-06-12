@@ -728,7 +728,21 @@ class UpiIciciGatewayReconTest extends TestCase
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
         $this->fixtures->merchant->addFeatures(['qr_codes']);
         $this->t2 = $this->fixtures->create('terminal:dedicated_upi_icici_terminal', ['merchant_id' => '10000000000000']);
-        $this->enableRazorXTreatmentForQrDedicatedTerminal();
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                            "key" => "result",
+                            "value" => "on"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
 
         $this->createQrCode(['usage'          => 'single_use',
                              'type'           => 'upi_qr',

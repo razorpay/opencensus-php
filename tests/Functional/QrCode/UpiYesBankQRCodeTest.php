@@ -74,7 +74,20 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testCreateStaticQrWithTerminal() :void
     {
-        $this->enableRazorXTreatmentForQrDedicatedTerminal();
+        $output = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                        "key" => "result",
+                        "value" => "on"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
 
         $response = $this->createQrCode(
             [
@@ -89,7 +102,20 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testCreateStaticQrWithAmount() :void
     {
-        $this->enableRazorXTreatmentForQrDedicatedTerminal();
+        $output = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                        "key" => "result",
+                        "value" => "on"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
 
         $response = $this->createQrCode(
             [
@@ -107,7 +133,20 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testPaymentForStaticQrCode()
     {
-        $this->enableRazorXTreatmentForQrDedicatedTerminal();
+        $output = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                        "key" => "result",
+                        "value" => "on"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
 
         $this->createQrCode(
             [
@@ -133,7 +172,20 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testPaymentOnDynamicQrCode() :void
     {
-        $this->enableRazorXTreatmentForQrDedicatedTerminal();
+        $output = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                        "key" => "result",
+                        "value" => "on"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
 
         $this->createQrCode(
             [
@@ -163,7 +215,20 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testPaymentForClosedQrCode()
     {
-        $this->enableRazorXTreatmentForQrDedicatedTerminal();
+        $output = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                        "key" => "result",
+                        "value" => "on"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
 
         $this->createQrCode(
             [
@@ -202,7 +267,20 @@ class UpiYesBankQRCodeTest extends TestCase
     {
         self::markTestSkipped();
 
-        $this->enableRazorXTreatmentForQrDedicatedTerminal();
+        $output = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                        "key" => "result",
+                        "value" => "on"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
         $this->createQrCode(
             [
                 'usage' => 'multiple_use',
@@ -229,7 +307,20 @@ class UpiYesBankQRCodeTest extends TestCase
 
         $this->fixtures->merchant->disableMethod('10000000000000', 'upi');
 
-        $this->enableRazorXTreatmentForQrDedicatedTerminal();
+        $output = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                        "key" => "result",
+                        "value" => "on"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
 
         $this->createQrCode(
             [
@@ -242,7 +333,20 @@ class UpiYesBankQRCodeTest extends TestCase
     public function testPaymentForUnsuccessfulStatusCallback()
     {
         //Note: Callbacks with failed status are not processed and not stored in DB
-        $this->enableRazorXTreatmentForQrDedicatedTerminal();
+        $output = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                        "key" => "result",
+                        "value" => "on"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
 
         $this->createQrCode(
             [
@@ -270,7 +374,20 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testMultiplePaymentsForStaticQR()
     {
-        $this->enableRazorXTreatmentForQrDedicatedTerminal();
+        $output = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                        "key" => "result",
+                        "value" => "on"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
 
         $this->createQrCode(
             [
@@ -297,7 +414,20 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testCreateDynamicQrCode() :void
     {
-        $this->enableRazorXTreatmentForQrDedicatedTerminal();
+        $output = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                        "key" => "result",
+                        "value" => "on"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
 
         $response = $this->createQrCode(
             [
@@ -336,7 +466,20 @@ class UpiYesBankQRCodeTest extends TestCase
 
         $this->expectExceptionMessage('QR expiry time cannot be more than 64800 minutes from the current time');
 
-        $this->enableRazorXTreatmentForQrDedicatedTerminal();
+        $output = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                        "key" => "result",
+                        "value" => "on"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
 
         $days = 46;
 
@@ -357,7 +500,20 @@ class UpiYesBankQRCodeTest extends TestCase
 
         $this->expectExceptionMessage('ErrorCode: QrCode creation failed due to error at bank or wallet gateway is not defined');
 
-        $this->enableRazorXTreatmentForQrDedicatedTerminal();
+        $output = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                        "key" => "result",
+                        "value" => "on"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
 
         $this->fixtures->create('terminal:live_dedicated_upi_yesbank_terminal');
 
@@ -375,7 +531,20 @@ class UpiYesBankQRCodeTest extends TestCase
     //It tests Qr payment fetch flow done via internal flow for Yes bank qr codes whose payment is not received by razorpay
     public function testProcessYesBankQrReconInternalWithoutPayment()
     {
-        $this->enableRazorXTreatmentForQrDedicatedTerminal();
+        $output = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                        "key" => "result",
+                        "value" => "on"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
 
         $this->createQrCode(
             [
@@ -407,7 +576,20 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testProcessYesBankQrReconInternal()
     {
-        $this->enableRazorXTreatmentForQrDedicatedTerminal();
+        $output = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                        "key" => "result",
+                        "value" => "on"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
 
         $this->createQrCode(
             [

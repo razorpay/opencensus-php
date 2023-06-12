@@ -546,6 +546,8 @@ return array(
 
     'checkout_upi_number_contact_blacklist_splitz_experiment_id' => env('CHECKOUT_UPI_NUMBER_CONTACT_BLACKLIST_SPLITZ_EXPERIMENT_ID'),
 
+    'dedicated_terminal_qr_code_splitz_experiment_id' => env('DEDICATED_TERMINAL_QR_CODE_SPLITZ_EXPERIMENT_ID'),
+
     'checkout_service_preferences_splitz_experiment_id' => env('CHECKOUT_SERVICE_PREFERENCES_SPLITZ_EXPERIMENT_ID'),
 
     'checkout_enable_otp_auto_read_and_auto_submit_splitz_experiment_id' => env('CHECKOUT_ENABLE_OTP_AUTO_READ_AND_AUTO_SUBMIT_SPLITZ_EXPERIMENT_ID'),

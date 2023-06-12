@@ -44,10 +44,7 @@ class Service extends QrCode\Service
         {
             $input[Entity::REQUEST_SOURCE] = $input[Entity::REQUEST_SOURCE] ?? $this->getRequestSourceViaAuth();
 
-            $variant = $this->app->razorx->getTreatment($this->merchant->getId(),
-                                                        RazorxTreatment::DEDICATED_TERMINAL_QR_CODE,
-                                                        $this->mode);
-            if (strtolower($variant) === RazorxTreatment::RAZORX_VARIANT_ON)
+            if ((new Generator())->checkIfDedicatedTerminalSplitzExperimentEnabled($this->merchant->getId()) === true)
             {
                 (new Validator)->validateQrOnDedicatedTerminal($input);
             }
