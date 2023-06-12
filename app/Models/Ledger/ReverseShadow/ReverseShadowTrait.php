@@ -498,4 +498,29 @@ trait ReverseShadowTrait
         return true;
     }
 
+    protected function getAPITransactionId($transactorId)
+    {
+        $payloadName = $this->getPayloadName($transactorId, Constants::GATEWAY_CAPTURED);
+
+        $gatewayCaptureOutboxEntries = $this->repo->ledger_outbox->fetchOutboxEntriesByPayloadNameWithTrashed($payloadName);
+
+        if (count($gatewayCaptureOutboxEntries) > 0)
+        {
+            $gatewayCaptureOutboxEntry = $gatewayCaptureOutboxEntries[0];
+
+            //decode base_64 payload
+            $gatewayCapturePayload = base64_decode($gatewayCaptureOutboxEntry->getPayloadSerialized());
+
+            $payload = json_decode($gatewayCapturePayload, true);
+
+            return $payload[Constants::API_TXN_ID];
+        }
+        return null;
+    }
+
+    protected function getTransactionMutexresource($payment)
+    {
+        return $payment->getId()."_transaction";
+    }
+
 }

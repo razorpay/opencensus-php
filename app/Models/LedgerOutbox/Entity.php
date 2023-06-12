@@ -98,4 +98,9 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::RETRY_COUNT);
     }
+
+    public function getPayloadSerialized()
+    {
+        return $this->getAttribute(self::PAYLOAD_SERIALIZED);
+    }
 }

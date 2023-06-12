@@ -18,6 +18,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Reversal;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
+use RZP\Models\Transaction;
 use RZP\Models\Payment\Processor\Capture as CaptureTrait;
 use RZP\Models\Ledger\Constants as LedgerConstants;
 
@@ -25,6 +26,15 @@ class Core extends Base\Core
 {
     use ReverseShadowTrait;
     use CaptureTrait;
+
+    protected $mutex;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
 
     public function processLedgerAcknowledgement(array $outboxPayload)
     {
@@ -488,6 +498,40 @@ class Core extends Base\Core
         }
         else if($transactionType === Constants::PAYMENT)
         {
+            if($transactorEvent === LedgerConstants::GATEWAY_CAPTURED)
+            {
+                $payment = $this->repo
+                    ->payment
+                    ->findByPublicIdAndMerchant($transactorPublicId, $this->merchant, []);
+
+                $txn = $this->repo->transaction(function() use ($payment, $transactorPublicId)
+                {
+                    $txn = $this->repo->transaction->fetchBySourceAndAssociateMerchant($payment);
+
+                    if (isset($txn) === true)
+                    {
+                        return $txn;
+                    }
+
+                    $apiTransactionId = $this->getAPITransactionId($transactorPublicId);
+
+                    $resource = $this->getTransactionMutexresource($payment);
+
+                    list($txn, $feeSplit) = $this->mutex->acquireAndRelease(
+                        $resource,
+                        function () use ($payment, $apiTransactionId)
+                        {
+                            list($txn, $feeSplit) = (new Transaction\Core())->createFromPaymentAuthorized($payment, $apiTransactionId);
+
+                            $this->repo->saveOrFail($txn);
+                            // This is required to save the association of the transaction with the payment.
+                            $this->repo->saveOrFail($payment);
+                        });
+
+                    return $txn;
+                });
+            }
+
             if($transactorEvent === LedgerConstants::MERCHANT_CAPTURED)
             {
                 $payment = $this->repo
@@ -496,22 +540,35 @@ class Core extends Base\Core
 
                 $txn = $this->repo->transaction(function() use ($payment, $journalId)
                 {
-                    $paymentProcessor = new Payment\Processor\Processor($this->merchant);
-
                     $txn = $this->repo->transaction->fetchBySourceAndAssociateMerchant($payment);
 
-                    if (isset($txn) === true)
+                    if ((isset($txn) === true) and
+                        ($txn->isBalanceUpdated() === true))
                     {
                         return $txn;
                     }
 
-                    list($txn, $merchantBalance) = $paymentProcessor->createTransactionFromCapturedPayment($payment, $journalId);
+                    if ((isset($txn) === true) and
+                        ($txn->getId() !== $journalId))
+                    {
+                        throw new BadRequestException(ErrorCode::BAD_REQUEST_API_TRANSACTION_JOURNAL_ID_MISMATCH);
+                    }
+
+                    $paymentProcessor = new Payment\Processor\Processor($this->merchant);
+
+                    $resource = $this->getTransactionMutexresource($payment);
+
+                    list($txn, $merchantBalance) = $this->mutex->acquireAndRelease(
+                        $resource,
+                        function () use ($payment, $journalId, $paymentProcessor)
+                        {
+                            return $paymentProcessor->createTransactionFromCapturedPayment($payment, $journalId);
+                        });
 
                     $paymentProcessor->processTransferIfApplicable($payment);
 
                     return $txn;
-                }
-                );
+                });
             }
         }
 

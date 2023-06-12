@@ -1868,7 +1868,6 @@ class PaymentLedgerTest extends TestCase
 
         $paymentArray['order_id'] = $order->getPublicId();
 
-        d($paymentArray['order_id']);
         $payment = $this->doAuthAndCapturePayment($paymentArray);
 
         return $payment;
@@ -2068,9 +2067,15 @@ class PaymentLedgerTest extends TestCase
 
         $txn = $this->getDbLastEntity('transaction');
 
-        $this->assertNull($txn);
+        $this->assertNotNull($txn);
 
         $ledgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => $paymentId.'-'.'payment_gateway_captured']);
+
+        $payload = base64_decode($ledgerOutboxEntity['payload_serialized']);
+
+        $actualLedgerOutboxEntry = json_decode($payload, true);
+
+        $this->assertEquals($actualLedgerOutboxEntry['api_txn_id'], $txn->getId(), 'transaction id does not match with api_txn_id');
 
         $this->assertEquals($ledgerOutboxEntity['is_deleted'], 1, 'outbox entry not soft deleted');
 
@@ -2651,6 +2656,9 @@ class PaymentLedgerTest extends TestCase
 
         $gatewayCaptureJournalResponse = $this->getPaymentGatewayCapturedJournalResponsePayload($paymentId);
         $merchantCaptureJournalResponse = $this->getPaymentMerchantCapturedJournalResponsePayload($paymentId);
+        $payload = base64_decode($ledgerOutboxEntities[0]['payload_serialized']);
+        $actualGatewayCaptureLedgerOutboxEntry = json_decode($payload, true);
+        $merchantCaptureJournalResponse['id'] = $actualGatewayCaptureLedgerOutboxEntry['api_txn_id'];
 
         $mockLedger->shouldReceive('createJournal')
             ->times(2)

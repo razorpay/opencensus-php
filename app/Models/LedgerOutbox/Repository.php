@@ -48,4 +48,13 @@ class Repository extends Base\Repository
             ->where(Entity::PAYLOAD_NAME,'=', $payloadName)
             ->get();
     }
+
+    public function fetchOutboxEntriesByPayloadNameWithTrashed($payloadName) : PublicCollection
+    {
+        return $this->newQuery()
+            ->from(\DB::raw('`ledger_outbox`'))
+            ->where(Entity::PAYLOAD_NAME,'=', $payloadName)
+            ->withTrashed()
+            ->get();
+    }
 }

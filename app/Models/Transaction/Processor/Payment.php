@@ -146,7 +146,7 @@ class Payment extends Base
                 ]);
 
             // Creates new or fetches existing transaction entity for the source entity
-            $this->setTransactionForSource();
+            $this->setTransactionForSource($txnId);
 
             // set transaction attributes from the source entity
             $this->setSourceDefaults();

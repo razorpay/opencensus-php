@@ -99,9 +99,9 @@ class Core extends Base\Core
      * @param  Payment\Entity $payment
      * @return array [Transaction\Entity $txn, PublicCollection $feesSplit]
      */
-    public function createFromPaymentAuthorized(Payment\Entity $payment)
+    public function createFromPaymentAuthorized(Payment\Entity $payment, $txnId = null)
     {
-        return $this->createTransactionForSource($payment);
+        return $this->createTransactionForSource($payment, $txnId);
 
         // old code, will delete port refactoring all entites
         $this->trace->info(

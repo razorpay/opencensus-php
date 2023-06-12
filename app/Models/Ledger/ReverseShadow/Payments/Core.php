@@ -2,15 +2,15 @@
 
 namespace RZP\Models\Ledger\ReverseShadow\Payments;
 
-use Carbon\Carbon;
 use Ramsey\Uuid\Uuid;
 use RZP\Models\Base;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Feature;
-use RZP\Models\Ledger\Constants;
-use RZP\Models\Ledger\ReverseShadow\ReverseShadowTrait;
 use RZP\Models\Payment;
 use RZP\Models\Pricing\Fee;
-use RZP\Trace\TraceCode;
+use RZP\Models\Ledger\Constants;
+use RZP\Models\Transaction\Entity;
+use RZP\Models\Ledger\ReverseShadow\ReverseShadowTrait;
 
 class Core extends Base\Core
 {
@@ -59,6 +59,13 @@ class Core extends Base\Core
             Constants::IDEMPOTENCY_KEY               => Uuid::uuid1(),
             Constants::TENANT                        => Constants::TENANT_PG,
         );
+
+        $apiTransactionId = $this->getAPITransactionId($transactorId);
+
+        if ($apiTransactionId !== null)
+        {
+            $merchantCaptureData[Constants::API_TRANSACTION_ID] = $apiTransactionId;
+        }
 
         $transactionMessage = $this->generateBaseForJournalEntry($payment, $payment->getCapturedAt());
 
@@ -298,6 +305,8 @@ class Core extends Base\Core
             return [];
         }
 
+        $apiTransactionId =  UniqueIdEntity::generateUniqueId();;
+
         $transactorId = $payment->getPublicId();
 
         $transactorEvent =  Constants::GATEWAY_CAPTURED;
@@ -310,6 +319,7 @@ class Core extends Base\Core
             Constants::CURRENCY                     => Constants::INR_CURRENCY,
             Constants::TRANSACTOR_EVENT             => $transactorEvent,
             Constants::TRANSACTION_DATE             => $payment->getUpdatedAt(),
+            Constants::API_TXN_ID                   => $apiTransactionId,
             Constants::IDENTIFIERS                  => [
                 Constants::GATEWAY          => $gateway,
             ],

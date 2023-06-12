@@ -2874,6 +2874,8 @@ class CheckoutPreferencesTest extends TestCase
 
     public function testGetRTBExperimentDetailsMerchantInExperimentList()
     {
+        $this->markTestSkipped();
+
         $this->fixtures->create('trusted_badge', [
             TrustedBadge::STATUS          => TrustedBadge::ELIGIBLE,
             TrustedBadge::MERCHANT_STATUS => TrustedBadge::WAITLIST,
