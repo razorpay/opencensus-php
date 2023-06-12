@@ -4126,6 +4126,7 @@ class Header
                 self::PRICING_RULE_AMOUNT_RANGE_ACTIVE,
                 self::PRICING_RULE_AMOUNT_RANGE_MIN,
                 self::PRICING_RULE_AMOUNT_RANGE_MAX,
+                self::PRICING_RULE_RECEIVER_TYPE,
             ],
             self::OUTPUT => [
                 self::PRICING_RULE_MERCHANT_ID,
@@ -4141,6 +4142,7 @@ class Header
                 self::PRICING_RULE_AMOUNT_RANGE_ACTIVE,
                 self::PRICING_RULE_AMOUNT_RANGE_MIN,
                 self::PRICING_RULE_AMOUNT_RANGE_MAX,
+                self::PRICING_RULE_RECEIVER_TYPE,
             ]
         ],
         Type::BUY_PRICING_RULE => [

@@ -679,7 +679,9 @@ class Repository extends Base\Repository
         $international,
         $amountRangeActive = 0,
         $orgId = null,
-        $appName = null)
+        $appName = null,
+        $receiverType = null
+    )
     {
         $rule = $this->newQueryWithOrgIdParam($orgId)
                      ->where(Entity::PLAN_ID, '=',$planId)
@@ -691,10 +693,14 @@ class Repository extends Base\Repository
                      ->where(Entity::PAYMENT_NETWORK, '=', $network)
                      ->where(Entity::INTERNATIONAL, '=', $international)
                      ->where(Entity::AMOUNT_RANGE_ACTIVE, '=', $amountRangeActive)
-                     ->where(Entity::APP_NAME,'=',$appName)
-                     ->first();
+                     ->where(Entity::APP_NAME,'=',$appName);
 
-        return $rule;
+        //Added for backward compatibility. If receiver_type is not empty only then filter
+        if (!empty($receiverType)) {
+            $rule = $rule->where(Entity::RECEIVER_TYPE,'=',$receiverType);
+        }
+
+        return $rule->first();
     }
 
     public function getPricingRulesByPlanIdProductFeaturePaymentMethodOrgId($planId, $product, $feature, $method, $orgId = null)

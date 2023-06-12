@@ -228,6 +228,9 @@ class Service extends Base\Service
                         $appName = $item[Pricing\Entity::APP_NAME];
                     }
 
+                    $receiverType = empty($item[Pricing\Entity::RECEIVER_TYPE]) ? null : $item[Pricing\Entity::RECEIVER_TYPE];
+                    $amountRangeActive = 0; //empty($item[Pricing\Entity::AMOUNT_RANGE_ACTIVE]) ? 0 : $item[Pricing\Entity::AMOUNT_RANGE_ACTIVE];
+
                     // the route is being used by terminalsService also for paypal onboarding pricing update, we don't send subtype from there
                     $methodSubtype = isset($item[Pricing\Entity::PAYMENT_METHOD_SUBTYPE]) ? $item[Pricing\Entity::PAYMENT_METHOD_SUBTYPE] : null;
                     /** @var Pricing\Entity $existingRule */
@@ -240,9 +243,11 @@ class Service extends Base\Service
                         $methodSubtype,
                         $item[Pricing\Entity::PAYMENT_NETWORK],
                         $item[Pricing\Entity::INTERNATIONAL],
-                        0,
+                        $amountRangeActive,
                         $orgId,
-                        $appName);
+                        $appName,
+                        $receiverType
+                    );
 
                     if ($existingRule === null)
                     {
@@ -263,7 +268,8 @@ class Service extends Base\Service
                                             Entity::FIXED_RATE,
                                             Entity::MIN_FEE,
                                             Entity::MAX_FEE,
-                                            Entity::FEE_BEARER
+                                            Entity::FEE_BEARER,
+                                            Entity::RECEIVER_TYPE
                         ];
 
                         $rule = array_filter($item, function ($k) use ($editRulekeys)
@@ -296,9 +302,11 @@ class Service extends Base\Service
                                 $methodSubtype,
                                 $item[Pricing\Entity::PAYMENT_NETWORK],
                                 $item[Pricing\Entity::INTERNATIONAL],
-                                0,
+                                $amountRangeActive,
                                 $orgId,
-                                $appName);
+                                $appName,
+                                $receiverType
+                            );
 
                             (new Pricing\Core)->editPlanRule($planId, $existingRule->getId(), $rule, $orgId);
                         }
