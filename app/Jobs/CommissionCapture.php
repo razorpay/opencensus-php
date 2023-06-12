@@ -23,11 +23,15 @@ class CommissionCapture extends Job
 
     protected $commissionIds;
 
-    public function __construct(string $mode, $commissionId)
+    protected $retry;
+
+    public function __construct(string $mode, $commissionId, int $retry = 0 )
     {
         parent::__construct($mode);
 
         $this->commissionIds = array_wrap($commissionId);
+
+        $this->retry = $retry;
     }
 
     public function handle()
@@ -43,6 +47,8 @@ class CommissionCapture extends Job
                 'id' => $this->commissionIds,
             ]
         );
+
+        $failedCommissionIds = [];
 
         try
         {
@@ -75,6 +81,32 @@ class CommissionCapture extends Job
                             'id'   => $commission->getId(),
                         ]
                     );
+                    $failedCommissionIds[] = $commission->getId();
+                }
+            }
+
+            if (count($failedCommissionIds) > 0 )
+            {
+                $this->countJobException($e);
+                if($this->retry < self::MAX_RETRY_ATTEMPT)
+                {
+                    $this->trace->traceException(
+                        $e,
+                        Trace::ERROR,
+                        TraceCode::COMMISSION_TRANSACTION_JOB_ERROR,
+                        [
+                            'mode'       => $this->mode,
+                            'failed_ids' => $failedCommissionIds
+                        ]
+                    );
+                    CommissionCapture::dispatch($this->mode, $failedCommissionIds, $this->retry + 1);
+                }
+                else
+                {
+                    $this->trace->error(TraceCode::COMMISSION_TRANSACTION_QUEUE_DELETE, [
+                        'id'           => $failedCommissionIds,
+                        'message'      => 'Deleting the job after configured number of tries. Still unsuccessful.'
+                    ]);
                 }
             }
 
