@@ -24,6 +24,8 @@ class CapturePartnershipConsents extends Job
 
     const MUTEX_KEY_PREFIX = 'capture_consent';
 
+    const unicodeRegex  = '/[\x00-\x08\x0B\x0C\x0E-\x1F]|\xED[\xA0-\xBF].|\xEF\xBF[\xBE\xBF]/';
+
     /**
      * @var string
      */
@@ -128,7 +130,8 @@ class CapturePartnershipConsents extends Job
             foreach ($data as $document_detail)
             {
                 $content = $document_detail['content'];
-                $document_detail['content'] = str_replace('</path>', '', $content);
+                $strippedContent = str_replace('</path>', '', $content);
+                $document_detail['content'] = preg_replace(self::unicodeRegex, "\xEF\xBF\xBD", $strippedContent);
                 array_push($documents_detail, $document_detail);
             }
 
