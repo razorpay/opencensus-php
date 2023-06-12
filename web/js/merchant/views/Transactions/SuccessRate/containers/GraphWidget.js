@@ -22,6 +22,7 @@ import {
   setSelectedDropdownFilterOptions,
   setDefaultInterval,
   setCardTypeFilter,
+  setFailureReasonType,
 } from 'merchant/reducers/successRate';
 import {
   queryFilters,
@@ -50,6 +51,7 @@ const GraphWidget = (props) => {
     setDefaultInterval,
     setCardTypeFilter,
     user,
+    setFailureReasonType,
   } = props;
   const { isLoading, tabLoading, activeTab, metrics, tabs, isDropdownFilterLoading, filters } =
     successRate;
@@ -94,7 +96,9 @@ const GraphWidget = (props) => {
   const handleGroupingChange = ({ option }) => {
     const user = getUser();
     const updateDropdownOptions = activeTab !== 'Overall';
+    setFailureReasonType('default');
     setSelectedDropdownFilterOptions(option);
+
     !user?.isOptimizerEnabled && setGroupTypeFilter(option?.value);
     fetchSuccessRate({
       payload: queryFilters(updateDropdownOptions),
@@ -159,6 +163,8 @@ const GraphWidget = (props) => {
                   filtersList={dropdownFilterOptions}
                   handleGroupingChange={handleGroupingChange}
                   selectedGrouping={selectedDropdownFilterOptions}
+                  isOptimizerEnabled={user.isOptimizerEnabled}
+                  isInternationalEnabled={user.international}
                 />
               )}
               <GraphPanel />
@@ -182,6 +188,7 @@ const mapDispatchToProps = (dispatch) => {
       setSelectedDropdownFilterOptions,
       setDefaultInterval,
       setCardTypeFilter,
+      setFailureReasonType,
     },
     dispatch,
   );

@@ -14,7 +14,7 @@ const TabPane = (props) => {
   const onChange = useCallback((e) => onTabChange(Number(e?.currentTarget?.id)), [onTabChange]);
 
   return (
-    <div role="tablist" aria-label={ariaLabel} className="vtab__tablist">
+    <div role="tablist" aria-label={ariaLabel} className="vtab__tablist" data-testid="tablist">
       {Object.values(ERROR_CATEGORIES).map((tabKey, idx) => {
         const isActive = idx === selectedTab;
         const title = ERROR_CATEGORIES_VS_DISPLAY_TEXT[tabKey];
@@ -32,6 +32,7 @@ const TabPane = (props) => {
             role="tab"
             aria-pressed={isActive}
             aria-controls={`vtab__tabContent-${idx}`}
+            aria-label={`${tabKey}-tab-button`}
           >
             <div className="tab-card">
               <div className="tab-card__info">

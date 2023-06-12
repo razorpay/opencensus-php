@@ -23,7 +23,7 @@ const MetricsCard = ({ isLoading, metric, isActive }) => {
       );
     }
     return (
-      <div>
+      <div aria-label="metric-card">
         <div className="metrics-card__title">
           <p className="display-text">{title}</p>
           {isActive && (

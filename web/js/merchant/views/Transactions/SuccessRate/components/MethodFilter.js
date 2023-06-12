@@ -2,28 +2,38 @@ import React from 'react';
 
 import GroupingDropdown from 'merchant/containers/Home/GroupingDropdown';
 import CardTypes from './CardTypes';
-import { connect } from 'react-redux';
+import { checkIfFilterValid } from 'merchant/views/Transactions/SuccessRate/helper';
 
 const MethodFilter = (props) => {
-  const { filtersList, handleGroupingChange, disabled, selectedGrouping, user = {} } = props;
-  const { isOptimizerEnabled = false } = user;
-
+  const {
+    filtersList,
+    handleGroupingChange,
+    disabled,
+    selectedGrouping,
+    isInternationalEnabled,
+    isOptimizerEnabled,
+    activeTab,
+  } = props;
   const renderGroupingDropdown = (groupingData = [], index) => {
-    if (groupingData?.length > 0) {
+    const filteredGroupingData = groupingData.filter(({ value }) =>
+      checkIfFilterValid({ activeTab, filter: value, flags: { isInternationalEnabled } }),
+    );
+
+    if (filteredGroupingData?.length) {
       return (
         <GroupingDropdown
           key={index}
           className={`sr-tab__filter ${disabled ? ' PowerSelect--disabled' : ''}`}
           onGroupChange={handleGroupingChange}
-          grouping={groupingData}
-          selectedGrouping={selectedGrouping?.[index] || groupingData?.[0]}
+          grouping={filteredGroupingData}
+          selectedGrouping={selectedGrouping?.[index] || filteredGroupingData?.[0]}
         />
       );
     }
     return null;
   };
 
-  if (filtersList?.length > 0) {
+  if (filtersList?.length) {
     return (
       <div className="sr-filter sr-method-filters flex">
         {!isOptimizerEnabled && (
@@ -44,10 +54,4 @@ const MethodFilter = (props) => {
   return null;
 };
 
-const mapStateToProps = (state) => {
-  return {
-    user: state.session.user,
-  };
-};
-
-export default connect(mapStateToProps)(MethodFilter);
+export default MethodFilter;

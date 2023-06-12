@@ -30,8 +30,8 @@ import {
   CARD,
   CARD_NETWORKS,
   PAYMENT_METHOD_VS_CALLOUT_DISPLAY_TEXT,
-  ERROR_CATEGORIES_VS_DISPLAY_TEXT,
   DEFAULT_METHOD,
+  CUSTOM_ERROR_TYPES,
 } from './constants';
 
 export const getBreakdownInterval = (from, to) => {
@@ -481,9 +481,10 @@ export const getPieChartData = (groupData = [], tags) => {
 export const getMerchantErrorsPayload = (updateDropdownOptions) => {
   const { session, successRate } = store?.getState();
   const { isOptimizerEnabled } = session?.user;
-  const { tabs, activeTab, filters } = successRate;
+  const { tabs, activeTab, filters, merchantErrors } = successRate;
   const { method, selectedDropdownFilterOptions, selectedCardType } = tabs[activeTab];
   const { startDate, endDate } = filters;
+  const errorType = merchantErrors[activeTab].failureReasonType ?? 'default';
 
   let filterMethods = method.map(({ method }) => method);
 
@@ -510,8 +511,10 @@ export const getMerchantErrorsPayload = (updateDropdownOptions) => {
           })
         : {}),
       ...(!isOptimizerEnabled && activeTab === 'Card' ? { type: [selectedCardType] } : {}),
+      ...(errorType !== 'default' ? CUSTOM_ERROR_TYPES[activeTab]?.fetchOptions?.filters : {}),
     },
     group_by: {
+      ...(errorType !== 'default' ? CUSTOM_ERROR_TYPES[activeTab]?.fetchOptions?.groupBy : {}),
       limit: 6,
     },
   };
@@ -751,18 +754,9 @@ export const reportSR = (datasets = []) => {
   return Object.values(hashMap);
 };
 
-export const srErrorReport = (errors = {}) => {
-  const keys = Object.keys(errors);
-  if (!keys.length) return [];
-
-  return keys.reduce((previous, key) => {
-    errors[key]?.forEach(({ reason, count }) => {
-      previous.push({
-        'Error Type': ERROR_CATEGORIES_VS_DISPLAY_TEXT[key] ?? '--',
-        'Error Description': reason,
-        'Error Count': count,
-      });
-    });
-    return previous;
-  }, []);
+export const checkIfFilterValid = ({ activeTab, filter, flags = {} }) => {
+  if (activeTab === 'Card' && filter === 'international') {
+    return flags.isInternationalEnabled;
+  }
+  return true;
 };

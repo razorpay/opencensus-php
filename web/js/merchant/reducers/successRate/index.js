@@ -46,6 +46,7 @@ const FETCH_INTERVALS = 'FETCH_INTERVALS';
 const SET_SELECTED_DROPDOWN_FILTER_OPTIONS = 'SET_SELECTED_DROPDOWN_FILTER_OPTIONS';
 const SET_CARD_TYPE_FILTER = 'SET_CARD_TYPE_FILTER';
 const RESET_SR_DASHBOARD = 'RESET_SR_DASHBOARD';
+const SET_FAILURE_REASONS_TYPE = 'SET_FAILURE_REASONS_TYPE';
 
 export const fetchSuccessRate =
   ({ payload, updateDropdownOptions, resetSelectedInterval = true, refreshMetricTabs = false }) =>
@@ -168,6 +169,13 @@ export const fetchSuccessRate =
       });
     }
   };
+
+export const setFailureReasonType = (type) => {
+  return {
+    type: SET_FAILURE_REASONS_TYPE,
+    payload: type,
+  };
+};
 
 export const fetchMerchantErrors = (payload) => {
   return {
@@ -327,6 +335,17 @@ const getInitialState = () => {
     };
   });
 
+  state.merchantErrors = tabsOrder.reduce(
+    (acc, item) => ({
+      ...acc,
+      [item.tab]: {
+        failures: {},
+        failureReasonType: 'default',
+      },
+    }),
+    {},
+  );
+
   return state;
 };
 
@@ -362,15 +381,18 @@ export default (state = getInitialState(), action) => {
 
     case `${FETCH_MERCHANT_ERRORS}::SUCCESS`: {
       const stateClone = cloneDeep(state);
+      const type = state.merchantErrors[state.activeTab].failureReasonType;
       lodashset(stateClone, 'isLoadingMerchantErrors', false);
-      lodashset(stateClone, 'merchantErrors', payload?.data);
+      lodashset(stateClone, `merchantErrors.${state.activeTab}.failures.${type}`, payload?.data);
+
       return stateClone;
     }
 
     case `${FETCH_MERCHANT_ERRORS}::ERROR`: {
       const stateClone = cloneDeep(state);
+      const type = state.merchantErrors[state.activeTab].failureReasonType;
       lodashset(stateClone, 'isLoadingMerchantErrors', false);
-      lodashset(stateClone, 'merchantErrors', payload?.data);
+      lodashset(stateClone, `merchantErrors.${state.activeTab}.failures.${type}`, payload?.data);
       return stateClone;
     }
 
@@ -454,6 +476,12 @@ export default (state = getInitialState(), action) => {
     case SET_CARD_TYPE_FILTER: {
       const stateClone = cloneDeep(state);
       lodashset(stateClone, `tabs.${state.activeTab}.selectedCardType`, payload);
+      return stateClone;
+    }
+
+    case SET_FAILURE_REASONS_TYPE: {
+      const stateClone = cloneDeep(state);
+      lodashset(stateClone, `merchantErrors.${state.activeTab}.failureReasonType`, payload);
       return stateClone;
     }
 

@@ -1,4 +1,5 @@
 import moment from 'moment';
+import { CARD_GROUPING_DATA } from 'merchant/views/Transactions/SuccessRate/constants';
 
 type Interval = {
   from: number;
@@ -8,7 +9,7 @@ type Interval = {
   total: number;
 };
 
-type BaseStruct = {
+export type BaseStruct = {
   code: string;
   name: string;
   sr: number;
@@ -16,7 +17,7 @@ type BaseStruct = {
   total: number;
   intervals: Interval[];
   groups: {
-    [key: string]: BaseStruct[];
+    [key: string]: BaseStruct[] | [];
   };
 };
 
@@ -29,8 +30,29 @@ export type SrPayload = {
   };
   group_by: {
     keys?: string[];
+    limit: number;
   };
   interval: number;
+};
+
+export type SuccessSrResponse = {
+  status_code: number;
+  success: boolean;
+  data: BaseStruct;
+};
+
+export type FailedResponse = {
+  status_code: number;
+  success: boolean;
+  data: {
+    Code: string;
+    Description: string;
+  };
+};
+
+export type DowntimeResponse = {
+  status_code: number;
+  success: boolean;
 };
 
 const MAX_TOTAL = {
@@ -42,8 +64,8 @@ const MAX_TOTAL = {
 };
 
 const WEIGHT_MAPPINGS = {
-  0: 1,
-  1: 2,
+  0: 1, // 0 (key) refers to Domestic payments as per DB
+  1: 2, // 1 (key) refers to International payments as per DB
   card: 3,
   upi: 4,
   emandate: 5,
@@ -71,6 +93,8 @@ const NAME_MAPPINGS = {
   emandate: 'emandate',
   others: 'others',
   ICIC: 'ICICI bank',
+  0: 'Domestic', // 0 (key) refers to Domestic payments as per DB
+  1: 'International', // 1 (key) refers to International payments as per DB
 };
 
 const GROUP_BY_MAPPINGS = {
@@ -87,18 +111,21 @@ const GROUP_BY_MAPPINGS = {
       keys: {
         network: ['Visa', 'others'],
         issuer: ['ICIC', 'HDFC', 'UTIB', 'others'],
+        international: ['0', '1', 'others'], // 0 (key) refers to Domestic payments and 1 refers to International payments as per DB
       },
     },
     debit: {
       keys: {
         network: ['Visa', 'others'],
         issuer: ['UTIB', 'SBIN', 'others'],
+        international: ['0', '1', 'others'], // 0 (key) refers to Domestic payments as per DB
       },
     },
     prepaid: {
       keys: {
         network: ['Visa', 'RuPay', 'others'],
         issuer: ['ICIC', 'others'],
+        international: ['0', 'others'], // 0 (key) refers to Domestic payments  as per DB
       },
     },
   },
@@ -231,25 +258,108 @@ export const DOWNTIME_MOCK_RESPONSE = {
   data: [],
 };
 
-export const MERCHANT_ERROR_RESPONSE_OVERALL_SUCCESS = {
-  status_code: 200,
-  success: true,
+type ErrorType = {
+  reason: string;
+  count: number;
+};
+
+export type ErrorResponse = {
+  status_code: number;
+  success: boolean;
   data: {
-    customer: [
-      { reason: 'Payment timed-out', count: 4992 },
-      { reason: 'Payment cancelled', count: 916 },
-    ],
-    bank: [
-      { reason: 'Payment declined by bank', count: 1929 },
-      { reason: 'Bank technical issue', count: 1075 },
-    ],
-    business: [
-      { reason: 'The is invalid', count: 4 },
-      { reason: 'Bank technical issue', count: 2 },
-    ],
-    others: [
-      { reason: 'There was an issue with the payment request.', count: 2 },
-      { reason: 'Bank technical issue', count: 1 },
-    ],
-  },
+    [key: string]: ErrorType[];
+  };
+};
+
+export const getErrorResponse = (payload: SrPayload): ErrorResponse => {
+  const { filters, group_by } = payload;
+  const errorTypes = ['bank', 'customer', 'business', 'others'];
+  const isParticularMethod = filters?.method?.length === 1;
+  const method = isParticularMethod ? filters.method[0] : 'overall';
+  const type = filters?.type || [];
+  const keys = group_by?.keys || [];
+  const string = [method, type, keys].flat().join('-');
+  const mockTypes = [
+    {
+      reason: `${string} payments failed for ${type}`,
+      count: MAX_TOTAL[method],
+    },
+    {
+      reason: `${string} payments not allowed for ${type}`,
+      count: MAX_TOTAL[method],
+    },
+  ];
+
+  const errors = errorTypes.reduce(
+    (acc, type) => ({
+      ...acc,
+      [type]: mockTypes,
+    }),
+    {},
+  );
+
+  return {
+    status_code: 200,
+    success: true,
+    data: errors,
+  };
+};
+
+type Tabs = 'Card' | 'Overall' | 'Upi' | 'Netbanking' | 'Emandate';
+type MerchantErrors = 'default' | 'international';
+
+type SuccessRate = {
+  isLoading: boolean;
+  isLoadingMerchantErrors: boolean;
+  activeTab: string;
+  tabs: {
+    [keys in Tabs]: {
+      selectedDropdownFilterOptions: string[];
+    };
+  };
+  merchantErrors: {
+    [keys in Tabs]: {
+      failures: {
+        [keys in MerchantErrors]: Record<string, ErrorType[]>;
+      };
+    };
+  };
+};
+
+type InitialState = {
+  successRate: SuccessRate;
+};
+export const getInitialState = ({
+  successRate,
+  errorResponse,
+}: {
+  successRate: SuccessRate;
+  errorResponse: ErrorResponse;
+}): InitialState => {
+  const { tabs, merchantErrors } = successRate;
+  return {
+    successRate: {
+      ...successRate,
+      isLoading: false,
+      isLoadingMerchantErrors: false,
+      activeTab: 'Card',
+      tabs: {
+        ...tabs,
+        Card: {
+          ...tabs.Card,
+          selectedDropdownFilterOptions: CARD_GROUPING_DATA,
+        },
+      },
+      merchantErrors: {
+        ...merchantErrors,
+        Card: {
+          ...merchantErrors.Card,
+          failures: {
+            ...merchantErrors.Card.failures,
+            default: errorResponse.data,
+          },
+        },
+      },
+    },
+  };
 };

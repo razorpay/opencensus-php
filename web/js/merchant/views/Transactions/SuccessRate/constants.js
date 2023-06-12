@@ -106,6 +106,7 @@ export const TAG_OVERALL_MAP = {
   issuer: 'All banks',
   type: 'All cards types',
   bank: 'All banks',
+  international: 'Overall',
 };
 
 /**************************************** Graph Widget Variables ****************************************/
@@ -165,6 +166,8 @@ export const tabMeta = {
   selectedDropdownFilterOptions: [],
   selectedTags: [],
   downtimes: { resolved: [], ongoing: [] },
+  failureReasonType: 'default',
+  merchantErrors: {},
 };
 
 export const metricsCard = {
@@ -343,6 +346,22 @@ export const TOOLTIP_TEXT_VS_ERROR_CATEGORIES = {
     'These failures may happen due to provider or security issues such as fraud detections.',
 };
 
+export const CUSTOM_ERROR_TYPES = {
+  Card: {
+    key: 'international',
+    name: 'International payments only',
+    additionalCondition: (filters = []) => filters.some(({ value }) => value === 'international'),
+    fetchOptions: {
+      filters: {
+        international: ['1'],
+      },
+      groupBy: {
+        keys: ['international'],
+      },
+    },
+  },
+};
+
 /******************************************************************************************/
 
 /**************************************** TAB Filters Variables ****************************************/
@@ -356,6 +375,11 @@ export const CARD_GROUPING_DATA = [
   {
     value: 'issuer',
     text: 'Banks',
+    query: 'filter',
+  },
+  {
+    value: 'international',
+    text: 'Source',
     query: 'filter',
   },
 ];

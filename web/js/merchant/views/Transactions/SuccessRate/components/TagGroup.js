@@ -10,7 +10,7 @@ export const Tag = ({ tag, isActive, onSelect }) => {
   const onCheck = useCallback((e) => onSelect(e.target.value), [onSelect]);
 
   return (
-    <label className="tag-list__item">
+    <label className="tag-list__item" data-testid={`${tag.name}-chart-tag`}>
       <input
         type="checkbox"
         checked={isActive}
@@ -46,7 +46,6 @@ const TagGroup = ({ isLoading, tags, selectedTags = [], groupBy = '', onSelect, 
   }
 
   if (!tags?.length) return null;
-
   return (
     <div className="tag-list">
       {tags?.map((tag, idx) => {

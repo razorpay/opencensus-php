@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, server, screen, waitFor } from 'test-utils';
+import { render, server, screen, waitFor, userEvent } from 'test-utils';
 import SuccessRate from 'merchant/views/Transactions/SuccessRate/containers/SuccessRate';
 import {
   errorApiHandler,
@@ -9,6 +9,63 @@ import {
 } from './mocks/handlers';
 import { Provider } from 'react-redux';
 import store from 'merchant/store';
+import * as services from 'merchant/views/Transactions/SuccessRate/service';
+
+jest.mock('react-chartjs-2', () => {
+  const OriginalModule = jest.requireActual('react-chartjs-2');
+  return {
+    ...OriginalModule,
+    Line: ({ data }) => {
+      const dataPoints = (data.datasets || []).filter((item) => item.tagName && !item.type);
+      return (
+        <>
+          {dataPoints.map(({ label, data }) => (
+            <div data-testid={`${label}-line-chart`} key={label}>
+              {(data || []).map((item) => item?.y).join('-')}
+            </div>
+          ))}
+        </>
+      );
+    },
+  };
+});
+
+jest.mock('merchant/containers/Home/GroupingDropdown', () => ({
+  __esModule: true,
+  default: ({ grouping, onGroupChange }) => {
+    return (
+      <div aria-label="filter-options">
+        {grouping.map((item) => (
+          <div
+            key={item.name}
+            onClick={() => onGroupChange({ option: item })}
+            aria-label={`${item.value}-filter`}
+          >
+            {item.name}
+          </div>
+        ))}
+      </div>
+    );
+  },
+}));
+
+jest.mock('common/ui/Forms/SwitchField', () => ({
+  __esModule: true,
+  default: ({ defaultChecked, onChange }) => (
+    <button
+      aria-label="failure-reason-toggle"
+      onClick={() => onChange(defaultChecked ? 0 : 1, jest.fn())}
+      type="button"
+    >
+      Switch field toggle
+    </button>
+  ),
+}));
+
+jest.mock('merchant/views/Transactions/SuccessRate/helper', () => ({
+  ...(jest.requireActual('merchant/views/Transactions/SuccessRate/helper') as typeof Object),
+  checkIfFilterValid: () => true,
+}));
 
 const App = () => {
   return (
@@ -62,5 +119,137 @@ describe('<SuccessRate/>', () => {
 
     //spinner in the success rate chart
     expect(screen.getAllByTestId('spinner')).toHaveLength(2);
+  });
+});
+
+describe('SR Dashboard International', () => {
+  const srFetchAllSpy = jest.spyOn(services, 'getSR');
+
+  const selectInternational = async () => {
+    await userEvent.click(screen.getByTestId('Card-tab').firstChild as HTMLElement);
+    await waitFor(() => {
+      expect(screen.getByLabelText('filter-options')).toBeVisible();
+    });
+    expect(screen.getByLabelText('international-filter')).toBeVisible();
+    await userEvent.click(screen.getByLabelText('international-filter'));
+  };
+
+  beforeEach(() => {
+    server.use(
+      resolvedDowntimesHandler({ isSuccess: true }),
+      ongoingDowntimesHandler({ isSuccess: true }),
+      srApiHandler({ isSuccess: true }),
+      errorApiHandler({ isSuccess: true }),
+    );
+    render(<App />);
+  });
+
+  test('should call fetchSR with correct payload on selecting international', async () => {
+    await selectInternational();
+    await userEvent.click(screen.getByLabelText('international-filter'));
+    expect(srFetchAllSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        filters: { method: ['card'], type: ['credit'] },
+        group_by: { keys: ['international'], limit: 4 },
+      }),
+    );
+  });
+
+  test('should render correct Line chart with pills for international', async () => {
+    await selectInternational();
+    //check if pills exists
+    await waitFor(() => {
+      expect(screen.getByTestId('International-chart-tag')).toBeInTheDocument();
+    });
+    expect(screen.getByTestId('Domestic-chart-tag')).toBeVisible();
+    expect(screen.getByTestId('Overall-chart-tag')).toBeVisible();
+  });
+
+  test('should render correct Line chart with correct data points for international', async () => {
+    await selectInternational();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('International-chart-tag')).toBeVisible();
+    });
+    expect(screen.getByTestId('International-line-chart')).toHaveTextContent(
+      '90-91-92-93-94-95-96',
+    );
+    expect(screen.getByTestId('Domestic-line-chart')).toHaveTextContent('95-96-97-98-99-100');
+  });
+
+  test('should render correct Successfull total for domestic and international', async () => {
+    await selectInternational();
+    await waitFor(() => {
+      expect(screen.getByTestId('Overall-info-card-value')).toBeVisible();
+    });
+
+    expect(screen.getByTestId('Overall-info-card-value')).toHaveTextContent('17/20 (85%)');
+    expect(screen.getByTestId('Domestic-info-card-value')).toHaveTextContent('22/23 (95%)');
+    expect(screen.getByTestId('International-info-card-value')).toHaveTextContent('21/23 (91%)');
+  });
+
+  test('should call fetchError with correct payload on toggle', async () => {
+    const errorFetchSpy = jest.spyOn(services, 'getMerchantError');
+    await selectInternational();
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('failure-reason-toggle')).toBeVisible();
+    });
+
+    userEvent.click(screen.getByLabelText('failure-reason-toggle'));
+
+    await waitFor(() => {
+      expect(errorFetchSpy).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          filters: { international: ['1'], method: ['card'], type: ['credit'] },
+          group_by: { keys: ['international'], limit: 6 },
+        }),
+      );
+    });
+  });
+
+  test('should show correct datapoints on toggle and toggle back', async () => {
+    await selectInternational();
+    // click on a tab
+    await userEvent.click(screen.getByLabelText('bank-tab-button'));
+
+    await userEvent.click(screen.getByLabelText('international-filter'));
+    await waitFor(() => {
+      expect(screen.getByLabelText('failure-reason-toggle')).toBeVisible();
+    });
+    expect(screen.getByLabelText('bank-tab-button')).toHaveClass('selected');
+    expect(screen.getByTestId('failure-reasons-header')).toHaveTextContent(
+      'Top payment failure reasons: Banking-related',
+    );
+
+    const failureReasonItems = screen.getAllByTestId('failure-reason-item');
+    expect(failureReasonItems.length).toBe(2);
+  });
+
+  test('should show correct total failure values on toggle and toggle back', async () => {
+    await selectInternational();
+    // click on a tab
+    await userEvent.click(screen.getByLabelText('bank-tab-button'));
+
+    await userEvent.click(screen.getByLabelText('international-filter'));
+    await waitFor(() => {
+      expect(screen.getByLabelText('failure-reason-toggle')).toBeVisible();
+    });
+
+    await userEvent.click(screen.getByLabelText('failure-reason-toggle'));
+    await waitFor(() => {
+      const content = screen.getAllByTestId('failure-reason-text');
+      expect(content[0]).toHaveTextContent('card-credit-international payments failed for credit');
+      expect(content[1]).toHaveTextContent(
+        'card-credit-international payments not allowed for credit',
+      );
+    });
+
+    await userEvent.click(screen.getByLabelText('failure-reason-toggle'));
+    await waitFor(() => {
+      const content = screen.getAllByTestId('failure-reason-text');
+      expect(content[0]).toHaveTextContent('card-credit payments failed for credit');
+      expect(content[1]).toHaveTextContent('card-credit payments not allowed for credit');
+    });
   });
 });

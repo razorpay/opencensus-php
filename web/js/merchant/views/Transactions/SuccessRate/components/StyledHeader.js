@@ -1,7 +1,11 @@
 import React from 'react';
 
-const StyledHeader = ({ text }) => {
-  return <p className="styled-header">{text}</p>;
+const StyledHeader = ({ text, dataTestId }) => {
+  return (
+    <p className="styled-header" data-testid={dataTestId ?? ''}>
+      {text}
+    </p>
+  );
 };
 
 export default StyledHeader;

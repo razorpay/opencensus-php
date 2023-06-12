@@ -7,6 +7,7 @@ import {
   setCardTypeFilter,
   fetchSuccessRate,
   fetchMerchantErrors,
+  setFailureReasonType,
 } from 'merchant/reducers/successRate';
 
 import { CARD_TYPES } from 'merchant/views/Transactions/SuccessRate/constants';
@@ -21,10 +22,12 @@ const CardTypes = ({
   setCardTypeFilter,
   fetchSuccessRate,
   fetchMerchantErrors,
+  setFailureReasonType,
 }) => {
   const handleCardTypeChange = (selectedValue) => {
     if (selectedCardType === selectedValue) return;
 
+    setFailureReasonType('default');
     setCardTypeFilter(selectedValue);
     const updateDropdownOptions = activeTab !== 'Overall';
     const payload = queryFilters(updateDropdownOptions);
@@ -56,7 +59,10 @@ const mapStateToProps = ({ successRate }) => {
 };
 
 const mapDispatchToProps = (dispatch) => {
-  return bindActionCreators({ setCardTypeFilter, fetchSuccessRate, fetchMerchantErrors }, dispatch);
+  return bindActionCreators(
+    { setCardTypeFilter, fetchSuccessRate, fetchMerchantErrors, setFailureReasonType },
+    dispatch,
+  );
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(CardTypes);

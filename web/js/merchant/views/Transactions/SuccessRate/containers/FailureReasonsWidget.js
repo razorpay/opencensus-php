@@ -1,26 +1,62 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import { fetchMerchantErrors, setFailureReasonType } from 'merchant/reducers/successRate';
 import VTab from 'merchant/views/Transactions/SuccessRate/components/VTab';
+import { CUSTOM_ERROR_TYPES } from 'merchant/views/Transactions/SuccessRate/constants';
+import { getMerchantErrorsPayload } from 'merchant/views/Transactions/SuccessRate/helper';
 
 const DEFAULT_ACTIVE_TAB = 0;
 
 const FailureReasonsWidget = (props) => {
-  const [activeTab, setActiveTab] = React.useState(DEFAULT_ACTIVE_TAB);
-  const { isLoadingMerchantErrors, merchantErrors, tab } = props;
+  const [activeTab, setActiveTab] = useState(DEFAULT_ACTIVE_TAB);
+  const {
+    isLoadingMerchantErrors,
+    tab,
+    currentTab,
+    dropDownFilters,
+    fetchMerchantErrors,
+    failureReasonType,
+    setFailureReasonType,
+    failureReasons,
+  } = props;
 
-  useEffect(() => setActiveTab(DEFAULT_ACTIVE_TAB), [isLoadingMerchantErrors]);
+  const toggleOption = CUSTOM_ERROR_TYPES?.[currentTab] ?? null;
+  const showtoggleOption = toggleOption && toggleOption?.additionalCondition(dropDownFilters);
+
+  useEffect(() => {
+    if (isLoadingMerchantErrors && !failureReasons?.default) {
+      setActiveTab(DEFAULT_ACTIVE_TAB);
+    }
+  }, [isLoadingMerchantErrors, failureReasons]);
+
+  useEffect(() => setActiveTab(DEFAULT_ACTIVE_TAB), [currentTab]);
 
   const handleTabChange = useCallback((tab) => setActiveTab(tab), []);
 
+  const handleToggleChange = () => {
+    if (failureReasonType !== 'default') {
+      setFailureReasonType('default');
+    } else {
+      const { key, merchantErrorFetchOptions } = toggleOption;
+      setFailureReasonType(key);
+      const errorsPaylod = getMerchantErrorsPayload(false, merchantErrorFetchOptions);
+      fetchMerchantErrors(errorsPaylod, key);
+    }
+  };
+
   return (
-    <div className="box-widget reasons-container">
+    <div className="box-widget reasons-container" data-testid="failure-reasons-widget">
       <VTab
         ariaLabel="Vertical Tabs"
         selectedTab={activeTab}
         isLoading={isLoadingMerchantErrors}
         onTabChange={handleTabChange}
-        tabData={merchantErrors}
+        tabData={failureReasons?.[failureReasonType] ?? []}
         tab={tab}
+        enabledToggleOption={failureReasonType}
+        toggleOption={showtoggleOption ? toggleOption : null}
+        toggleErrorType={showtoggleOption ? handleToggleChange : null}
       />
     </div>
   );
@@ -28,7 +64,24 @@ const FailureReasonsWidget = (props) => {
 
 const mapStateToProps = ({ successRate }) => {
   const { isLoadingMerchantErrors, merchantErrors, activeTab, tabs } = successRate;
-  return { isLoadingMerchantErrors, merchantErrors, tab: tabs[activeTab] };
+  return {
+    isLoadingMerchantErrors,
+    tab: tabs[activeTab],
+    currentTab: activeTab,
+    dropDownFilters: tabs[activeTab]?.selectedDropdownFilterOptions,
+    failureReasonType: merchantErrors[activeTab]?.failureReasonType,
+    failureReasons: merchantErrors?.[activeTab]?.failures,
+  };
 };
 
-export default connect(mapStateToProps, null)(FailureReasonsWidget);
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators(
+    {
+      fetchMerchantErrors,
+      setFailureReasonType,
+    },
+    dispatch,
+  );
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(FailureReasonsWidget);

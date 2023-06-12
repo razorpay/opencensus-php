@@ -25,12 +25,16 @@ const renderInfoCard = ({ name, successful, total, sr } = {}, index) => {
   if (!total) return null;
   const label = getTagLabel(name);
   return (
-    <div key={`${name}___${index}`} className="col-xs-12 col-sm-6 info-card">
+    <div
+      key={`${name}___${index}`}
+      className="col-xs-12 col-sm-6 info-card"
+      aria-label={`${label}-info-card`}
+    >
       <StyledHeader text={label} />
       <div className="info-card__label">
         <p className="label-text">Successful / Total attempts</p>
       </div>
-      <div className="info-card__value">
+      <div className="info-card__value" data-testid={`${label}-info-card-value`}>
         <p>
           <span className="highlight">{getFormattedNumber(successful)}</span>/
           {getFormattedNumber(total)} ({sr}%)
@@ -96,7 +100,7 @@ const VolumePieWidget = (props) => {
               {isLoading ? (
                 <PlaceholderLoader />
               ) : (
-                <div className="info-card__value">
+                <div className="info-card__value" data-testid="Overall-info-card-value">
                   <p>
                     <span className="highlight">{getFormattedNumber(data?.successful)}</span>/
                     {getFormattedNumber(data?.total)} ({data?.sr}
