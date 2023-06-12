@@ -345,7 +345,7 @@ class Mailgun extends Base
             }
         }
 
-        if(in_array($this->inputDetails[self::FROM], Service::BLACKLISTED_EMAIL_FOR_API_AUTO_RECON_VIA_MAILGUN)){
+        if(in_array($this->inputDetails[self::TO], Service::BLACKLISTED_EMAIL_FOR_API_AUTO_RECON_VIA_MAILGUN)){
             return;
         }
 
