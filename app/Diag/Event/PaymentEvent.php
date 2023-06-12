@@ -134,8 +134,18 @@ class PaymentEvent extends Event
         // upi properties
         if ($payment->isUpi() === true)
         {
+            $upiType = null;
+
+            $upiMetadata = $payment->fetchUpiMetadata();
+
+            if(is_null($upiMetadata) === false)
+            {
+                $upiType = $upiMetadata['flow'];
+            }
+
             $properties['payment'] += [
-                'vpa'   => $payment->getVpa()
+                'vpa'       => $payment->getVpa(),
+                'upi_type'  => $upiType ?? null
             ];
         }
 

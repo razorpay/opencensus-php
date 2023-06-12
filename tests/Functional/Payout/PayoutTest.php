@@ -4472,6 +4472,18 @@ class PayoutTest extends OAuthTestCase
 
         $this->ba->cronAuth('live');
 
+        $splitzResp = [
+            "response" => [
+                'variant' => [
+                    'name' => null,
+                ]
+            ]
+        ];
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.clevertap_migration_splitz_experiment_id');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+            ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
         $this->storkMock
             ->shouldReceive('requestAndGetParsedBody')
             ->times(2)
