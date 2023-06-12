@@ -194,7 +194,6 @@ abstract class Base extends BaseModel\Core
                     ['merchantId' => $this->entity->getMerchantId(),
                         'step'    => 'Fee greater than amount'
                     ]);
-
                 $this->trace->info(
                     TraceCode::UPI_RECURRING_PRICING_RULE_ERROR,
                     ['merchantId' => $this->entity->getMerchantId(),
@@ -443,6 +442,28 @@ abstract class Base extends BaseModel\Core
 
         if (empty($matchRules))
         {
+            $planId = '';
+            if (empty($defaultMatchRules) === false) {
+                $planId = $defaultMatchRules[0]->getAttribute('plan_id');;
+            }
+            $this->trace->count(Metrics::EMPTY_MATCHED_RULES,
+                [
+                    'fieldName' => $fieldName
+                ]);
+
+            $this->trace->info(TraceCode::PRICING_EMPTY_MATCHED_RULES,
+                [
+                    'fieldName' => $fieldName,
+                    'fieldValue' => $fieldValue,
+                    'chooseDefault' => $chooseDefault,
+                    'defaultValue' => $defaultValue,
+                    'defaultMatchedIds' => array_map(function ($item) {
+                        return $item['id'];
+                    }, $defaultMatchRules),
+                    'defaultMatchedPlanId' => $planId,
+                ]
+            );
+
             return $defaultMatchRules;
         }
 
