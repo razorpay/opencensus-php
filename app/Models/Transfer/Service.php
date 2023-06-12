@@ -1400,13 +1400,13 @@ class Service extends Base\Service
         {
             $merchantIdsList = $input['merchant_ids']['list'] ?? array();
 
-            $merchantIds[] = $merchantIdsList;
+            $merchantIds = array_merge($merchantIds, $merchantIdsList);
 
             $featureFlags = $input['merchant_ids']['feature_flags'] ?? array();
 
             $merchantIdsFromFeatureFlags = $this->repo->feature->findMerchantIdsHavingFeatures($featureFlags);
 
-            $merchantIds[] = $merchantIdsFromFeatureFlags;
+            $merchantIds = array_merge($merchantIds, $merchantIdsFromFeatureFlags);
         }
 
         return array_unique($merchantIds);
