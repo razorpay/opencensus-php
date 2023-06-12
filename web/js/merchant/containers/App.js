@@ -1074,7 +1074,13 @@ class App extends Component {
 
   showSidebarV2 = () => {
     const { user } = this.props;
-    return user.isOrgRZP && !isMobileDevice() && user.isLeftNavRevampEnabled && !user.isPartner();
+    return (
+      user.isOrgRZP &&
+      !isMobileDevice() &&
+      user.isLeftNavRevampEnabled &&
+      !user.isPartner() &&
+      !user.isSourceRX
+    );
   };
 
   render() {
