@@ -388,5 +388,42 @@ class AuthenticationTerminals
             self::AUTH_TYPE                 => AuthType::OTP,
             self::GATEWAY_AUTH_TYPE         => AuthType::OTP,
         ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::MPGS,
+            self::AUTHENTICATION_GATEWAY    => Gateway::MPGS,
+            self::AUTH_TYPE                 => AuthType::_3DS,
+            self::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
+        ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::MPGS,
+            self::AUTHENTICATION_GATEWAY    => Gateway::MPGS,
+            self::AUTH_TYPE                 => AuthType::HEADLESS_OTP,
+            self::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
+        ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::MPGS,
+            self::AUTHENTICATION_GATEWAY    => null,
+            self::AUTH_TYPE                 => AuthType::SKIP,
+            self::GATEWAY_AUTH_TYPE         => null,
+        ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::MPGS,
+            self::AUTHENTICATION_GATEWAY    => Gateway::MPGS,
+            self::AUTH_TYPE                 => AuthType::_3DS,
+            self::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
+            self::GATEWAY_AUTH_VERSION      => "v2",
+        ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::MPGS,
+            self::AUTHENTICATION_GATEWAY    => Gateway::MPGS,
+            self::AUTH_TYPE                 => AuthType::HEADLESS_OTP,
+            self::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
+            self::GATEWAY_AUTH_VERSION      => "v2",
+        ],
     ];
 }
