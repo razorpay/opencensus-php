@@ -141,7 +141,7 @@ const SchedulesTableComponent = connect(
           abortPresentlyActivePoll.current();
         }
         // updates redux state when poll stops
-        startSchedulePoll();
+        stopSchedulePoll();
       };
     }, []);
 

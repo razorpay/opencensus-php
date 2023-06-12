@@ -57,6 +57,11 @@ export const OverViewContent = styled.div(
   `,
 );
 
-export const DownloadReportButton = styled.div`
-  margin-top: 60px;
-`;
+export const ReportFeatureBtnWrapper = styled.div(
+  ({ theme }) => `
+  width: 200px;
+  @media (max-width: ${theme.breakpoints.m}px) {
+    margin-top: ${theme.spacing[4]}px;
+  }
+`,
+);

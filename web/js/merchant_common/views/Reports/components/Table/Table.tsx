@@ -9,7 +9,7 @@ import {
   TableRow,
   TableWrapper,
 } from './style';
-import { Pagination, Text } from 'merchant_common/views/Reports/components';
+import { Box, Pagination, Text } from 'merchant_common/views/Reports/components';
 import { useTheme } from 'merchant_common/views/Reports/hooks';
 import { ReportTablePropsType } from './types';
 
@@ -33,11 +33,7 @@ export const Table = <RowType, AdditionalInfoType = void>({
     loading && onLoadingSkeletonTemplate ? ([1, 2, 3] as unknown as RowType[]) : rows;
   const { theme } = useTheme();
   return (
-    <div
-      style={{
-        padding: `0 ${theme.spacing[4]}px`,
-      }}
-    >
+    <Box>
       <TableWrapper className="table-responsive" fixedHeaders={fixedHeaders} loading={loading}>
         <T className="table table-hover">
           <TableHead theme={theme} fixedHeaders={fixedHeaders}>
@@ -94,6 +90,6 @@ export const Table = <RowType, AdditionalInfoType = void>({
           />
         </div>
       )}
-    </div>
+    </Box>
   );
 };

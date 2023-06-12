@@ -45,6 +45,7 @@ export const ModalMask = styled.div`
 export const ClickableButton = styled.button`
   background: transparent;
   border: none;
+  padding: 0;
 `;
 
 export const DefaultButton = styled.button<{ transparent: boolean }>(

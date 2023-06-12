@@ -9,7 +9,7 @@ import {
 } from 'merchant_common/views/Reports/redux/reducer';
 import EmptyDashboardIllustration from 'assets/reports/empty-dashboard.svg';
 import { DownloadsTablePropsType } from 'merchant_common/views/Reports/features/Downloads/types';
-import { Table, EmptyTable } from 'merchant_common/views/Reports/components';
+import { Table, EmptyTable, Box } from 'merchant_common/views/Reports/components';
 import { baseDownloadsTableTemplate } from 'merchant_common/views/Reports/features/Downloads/configs/baseTableTemplate';
 import { emptyDownloadsTableTemplate } from 'merchant_common/views/Reports/features/Downloads/configs/emptyTableTemplate';
 import { useDashboardType } from 'merchant_common/views/Reports/contexts/ReportsContext';
@@ -136,27 +136,29 @@ const DownloadsTableComponent = connect(
     }, []);
 
     return (
-      <Table
-        fixedHeaders={fixedHeaders}
-        template={baseDownloadsTableTemplate}
-        rows={Object.values(logs)}
-        currentPage={pageTrack}
-        onPageChange={handlePageChange}
-        centeredHeaders={[2, 4, 5]}
-        loading={!isLogsLoaded}
-        onLoadingSkeletonTemplate={emptyDownloadsTableTemplate}
-        totalRows={totalCount}
-        additionalInfo={{
-          trackDownloadFile: trackDownloadsSection,
-        }}
-        renderOnEmpty={() => (
-          <EmptyTable
-            title="No Reports Found :("
-            desc="Download reports for your business just in one click."
-            src={EmptyDashboardIllustration}
-          />
-        )}
-      />
+      <Box padding={['spacing.0', 'spacing.4', 'spacing.0', 'spacing.4']}>
+        <Table
+          fixedHeaders={fixedHeaders}
+          template={baseDownloadsTableTemplate}
+          rows={Object.values(logs)}
+          currentPage={pageTrack}
+          onPageChange={handlePageChange}
+          centeredHeaders={[2, 4, 5]}
+          loading={!isLogsLoaded}
+          onLoadingSkeletonTemplate={emptyDownloadsTableTemplate}
+          totalRows={totalCount}
+          additionalInfo={{
+            trackDownloadFile: trackDownloadsSection,
+          }}
+          renderOnEmpty={() => (
+            <EmptyTable
+              title="No Reports Found :("
+              desc="Download reports for your business just in one click."
+              src={EmptyDashboardIllustration}
+            />
+          )}
+        />
+      </Box>
     );
   },
 );

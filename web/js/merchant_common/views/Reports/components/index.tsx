@@ -38,6 +38,7 @@ export {
   PauseIcon,
   TrashIcon,
   PlayIcon,
+  FileTextIcon,
 } from '@razorpay/blade/components';
 
 // custom components

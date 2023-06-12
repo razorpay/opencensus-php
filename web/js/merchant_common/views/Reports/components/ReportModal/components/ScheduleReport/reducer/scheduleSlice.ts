@@ -1,14 +1,18 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { InitialStateType } from './types';
 import moment from 'moment';
-import { availableFormat } from 'merchant_common/views/Reports/components/ReportModal/components/ScheduleReport/data';
+import {
+  availableFormat,
+  getDataDurations,
+  getRepetitions,
+} from 'merchant_common/views/Reports/components/ReportModal/components/ScheduleReport/data';
 import { reverseScheduleData } from 'merchant_common/views/Reports/components/ReportModal/components/ScheduleReport/utils';
 
 export const initialCreateScheduleModalState: InitialStateType = {
   isCustomEnabled: false,
   isRunForeverEnabled: false,
   showErrorInSection: undefined,
-
+  isResetComplete: false,
   // section 1
   selectedConfig: undefined,
   saveReportAs: '',
@@ -36,6 +40,10 @@ const scheduleSlice = createSlice({
   reducers: {
     setCustomEnabled: (state, action) => {
       state.isCustomEnabled = action.payload;
+      if (state?.selectedDataDuration?.value) {
+        state.selectedDataDuration = getDataDurations(action.payload)[0];
+        state.selectedRepetition = getRepetitions(action.payload.value, action.payload)[0];
+      }
     },
     setRunForeverEnabled: (state, action) => {
       state.isRunForeverEnabled = action.payload;
@@ -57,6 +65,9 @@ const scheduleSlice = createSlice({
     },
     setSelectedDataDuration: (state, action) => {
       state.selectedDataDuration = action.payload;
+      if (action.payload.value) {
+        state.selectedRepetition = getRepetitions(action.payload.value, state.isCustomEnabled)[0];
+      }
     },
     setSelectedRepetition: (state, action) => {
       state.selectedRepetition = action.payload;
@@ -66,6 +77,12 @@ const scheduleSlice = createSlice({
     },
     setIsRecipientsEnabled: (state, action) => {
       state.isRecipientsEnabled = action.payload;
+      if (!action.payload) {
+        state.recipients = [];
+        if (state.showErrorInSection === 2) {
+          state.showErrorInSection = undefined;
+        }
+      }
     },
     setRecipients: (state, action) => {
       state.recipients = action.payload;
@@ -130,6 +147,8 @@ const scheduleSlice = createSlice({
         state.isRecipientsEnabled = true;
         state.recipients = preExistingScheduleData.emails;
       }
+
+      state.isResetComplete = true;
     },
   },
 });

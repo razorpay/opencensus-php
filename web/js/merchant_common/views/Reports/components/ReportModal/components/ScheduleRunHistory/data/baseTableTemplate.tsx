@@ -14,7 +14,7 @@ export const baseRunHistoryTableTemplate: TableTemplateType<
   BaseLogType,
   AdditionalInformationType<keyof typeof ScheduleRunHistoryActionType>
 > = {
-  headers: ['Delivered Date', 'Time', 'Name', 'Format', 'Status', 'Download'],
+  headers: ['Delivered Date', 'Time', 'Format', 'Status', 'Download'],
   cells: [
     {
       render: ({ generated_at, status }) =>
@@ -34,11 +34,6 @@ export const baseRunHistoryTableTemplate: TableTemplateType<
           <TableText>--</TableText>
         ),
     },
-
-    {
-      render: ({ name, id }) => <TableText>{name ?? id}</TableText>,
-    },
-
     {
       render: ({ template_overrides, extension }) => (
         <TableText>{extension ?? template_overrides?.file_meta?.extension}</TableText>

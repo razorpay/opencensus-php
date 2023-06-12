@@ -5,6 +5,7 @@ import { OpenModalPayload, ShowNotificationType } from 'common/typings';
 
 export interface CardPropsType {
   data: BaseConfigType;
+  isSchedulesEnabled: boolean;
   openModal: (x: OpenModalPayload) => void;
 }
 

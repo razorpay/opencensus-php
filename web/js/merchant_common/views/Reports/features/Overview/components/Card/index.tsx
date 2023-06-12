@@ -11,23 +11,32 @@ import { DashboardType } from 'merchant_common/views/Reports/types';
 import { openModal } from 'merchant_common/reducers/modals';
 import { connect } from 'react-redux';
 import { ClickableButton } from 'merchant_common/views/Reports/components/styled';
+import { NON_OWNED_CONFIG_TYPE } from 'merchant_common/views/Reports/constants';
+
+const mapStateToProps = ({ session }) => {
+  const isSchedulesEnabled = Boolean(session.user.isRevampedReportsEnabled?.schedules);
+  return { isSchedulesEnabled };
+};
 
 const mapDispatchToProps = (dispatch) => ({
   openModal: (modal) => dispatch(openModal(modal)),
 });
 
 export const Card = connect(
-  null,
+  mapStateToProps,
   mapDispatchToProps,
-)(({ data, openModal }: CardPropsType): JSX.Element => {
+)(({ data, openModal, isSchedulesEnabled }: CardPropsType): JSX.Element => {
   const { name, description, id, type } = data;
   const { theme } = useTheme();
-  const availableLinksArr = availableLinks();
+  const availableLinksArr = availableLinks({
+    isSchedulesEnabled: type === NON_OWNED_CONFIG_TYPE ? false : isSchedulesEnabled,
+  });
   const dashboardType = useDashboardType() as DashboardType;
 
-  const onLinkClick = () => {
+  const onLinkClick = (linkType: string) => {
     trackOverviewSection({
-      actionName: 'Cards Download Link Click',
+      actionName:
+        linkType === 'schedule' ? 'Cards Schedule Link Click' : 'Cards Download Link Click',
       properties: {
         report_type: type,
         config_id: id,
@@ -42,7 +51,13 @@ export const Card = connect(
             startPollOnSubmit: false,
             selectedConfig: id,
           }}
-          type={type === 'custom_non_owned' ? 'download_custom_report' : 'download_report'}
+          type={
+            linkType === 'schedule'
+              ? 'create_edit_schedule'
+              : type === NON_OWNED_CONFIG_TYPE
+              ? 'download_custom_report'
+              : 'download_report'
+          }
           dashboardType={dashboardType}
         />
       ),
@@ -78,7 +93,7 @@ export const Card = connect(
           <ClickableButton
             key={link.label}
             aria-label={`${link.label} Button`}
-            onClick={onLinkClick}
+            onClick={() => onLinkClick(link.type)}
           >
             <Text variant="body" type="normal" weight="bold">
               <CardLink theme={theme}>{link.label}</CardLink>

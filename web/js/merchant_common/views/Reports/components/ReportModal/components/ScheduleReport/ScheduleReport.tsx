@@ -141,7 +141,9 @@ export const ScheduleReportModal = ({
         config_id: actionViaModal === 'Edit' ? undefined : selectedConfig!.id,
         name: scheduleName,
         period: selectedRepetition!.value,
-        schedule_start_time: customDataDuration!.startDate.clone().unix(),
+        schedule_start_time: customDataDuration!.startDate.isBefore(moment(), 'day')
+          ? undefined
+          : customDataDuration!.startDate.clone().unix(),
         schedule_end_time: customDataDuration!.endDate.clone().unix(),
         created_by: actionViaModal === 'Edit' ? undefined : generatedBy,
         template_overrides:
@@ -526,7 +528,9 @@ export const ScheduleReportModal = ({
                 />
                 <DropdownOverlay>
                   <ActionList
-                    key={`${selectedDataDuration?.value} ${selectedRepetition?.value}`}
+                    key={`${selectedDataDuration?.value}${selectedRepetition?.value}${
+                      isCustomEnabled ? '1' : '0'
+                    }`}
                     surfaceLevel={2}
                   >
                     {(selectedDataDuration

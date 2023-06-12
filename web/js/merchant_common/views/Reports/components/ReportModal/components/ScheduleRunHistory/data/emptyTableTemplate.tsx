@@ -9,7 +9,7 @@ export const emptyRunHistoryTableTemplate: TableTemplateType<
   BaseLogType,
   AdditionalInformationType<keyof typeof ScheduleRunHistoryActionType>
 > = {
-  headers: ['Delivered Date', 'Time', 'Name', 'Format', 'Status', 'Download'],
+  headers: ['Delivered Date', 'Time', 'Format', 'Status', 'Download'],
   cells: [
     {
       render: (): JSX.Element => (
@@ -30,19 +30,6 @@ export const emptyRunHistoryTableTemplate: TableTemplateType<
             width: 140,
           }}
         />
-      ),
-    },
-
-    {
-      render: (): JSX.Element => (
-        <FlexCentered>
-          <Skeleton
-            style={{
-              height: 12,
-              width: 40,
-            }}
-          />
-        </FlexCentered>
       ),
     },
     {

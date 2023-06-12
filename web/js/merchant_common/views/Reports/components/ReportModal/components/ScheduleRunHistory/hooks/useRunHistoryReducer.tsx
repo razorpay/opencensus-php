@@ -10,8 +10,11 @@ import {
 import { trackSchedulesRunHistoryModal } from 'merchant_common/views/Reports/configs/analytics.config';
 import { DashboardType } from 'merchant_common/views/Reports/types';
 import { useEffect, useReducer } from 'react';
+import { UseRunHistoryReducerHookReturnType } from 'merchant_common/views/Reports/components/ReportModal/components/ScheduleRunHistory/types';
 
-export const useRunHistoryReducer = (dashboardType: DashboardType) => {
+export const useRunHistoryReducer = (
+  dashboardType: DashboardType,
+): UseRunHistoryReducerHookReturnType => {
   const [state, dispatch] = useReducer(runHistoryReducer, initialRunHistoryState);
   const actions = {
     handleLogsFetchSuccess: (payload) => dispatch(handleLogsFetchSuccess(payload)),

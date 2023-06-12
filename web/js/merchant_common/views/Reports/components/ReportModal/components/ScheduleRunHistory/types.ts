@@ -1,6 +1,7 @@
 import { BaseLogType } from 'merchant_common/views/Reports/types/log';
 import { DashboardType } from 'merchant_common/views/Reports/types';
 import { ScheduleType } from 'merchant_common/views/Reports/types/schedule';
+import { ResPayload } from 'merchant_common/views/Reports/api/types';
 
 export interface SchedulesPropsType {
   openModal: (x: { component: JSX.Element; size: string }) => void;
@@ -9,11 +10,6 @@ export interface SchedulesPropsType {
   params: {
     scheduleData: ScheduleType;
   };
-}
-export interface RunHistoryTablePropsType {
-  dashboardType: DashboardType;
-  showNotification: (x: any) => void;
-  scheduleId: string;
 }
 
 export interface FilterType {
@@ -28,4 +24,18 @@ export interface ScheduleRunHistoryContextType {
   isLoading: boolean;
   logs: BaseLogType[];
   totalLogsCount: number;
+}
+
+export interface UseRunHistoryReducerHookReturnType extends ScheduleRunHistoryContextType {
+  handlePageTrack: (x: number) => void;
+  handleLogsFetchSuccess: (x: ResPayload<BaseLogType>) => void;
+  setIsPollActive: (x: boolean) => void;
+  handleLogsFilter: (x: FilterType) => void;
+}
+
+export interface RunHistoryTablePropsType {
+  dashboardType: DashboardType;
+  showNotification: (x: any) => void;
+  scheduleId: string;
+  logsHistoryReducer: UseRunHistoryReducerHookReturnType;
 }

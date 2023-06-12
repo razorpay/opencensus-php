@@ -7,7 +7,7 @@ import {
   ActionListItem,
   ReportModal,
   Button,
-  PlusIcon,
+  FileTextIcon,
 } from 'merchant_common/views/Reports/components';
 import { ControlPanel, SchedulesWrapper, DropdownWrapper } from './styled';
 import { SchedulesPropsType } from './types';
@@ -79,7 +79,7 @@ const SchedulesSection = connect(
           <Button
             onClick={handleScheduleClick}
             variant="primary"
-            icon={PlusIcon}
+            icon={FileTextIcon}
             iconPosition="left"
             accessibilityLabel="Create Schedule Button"
             isLoading={!isAllConfigLoaded}

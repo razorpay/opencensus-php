@@ -21,7 +21,6 @@ import {
   prefillStateWithData,
 } from 'merchant_common/views/Reports/components/ReportModal/components/ScheduleReport/reducer/scheduleSlice';
 import { BaseConfigType } from 'merchant_common/views/Reports/types/config';
-import { getRepetitions } from 'merchant_common/views/Reports/components/ReportModal/components/ScheduleReport/data';
 
 export const useScheduleReportReducer = (
   preExistingScheduleData?: ScheduleType,
@@ -60,24 +59,6 @@ export const useScheduleReportReducer = (
       );
     }
   }, [preExistingScheduleData]);
-
-  // change available repetitions based on data duration
-  useEffect(() => {
-    if (state.selectedDataDuration?.value)
-      actions.setSelectedRepetition(
-        getRepetitions(state.selectedDataDuration.value, state.isCustomEnabled)[0],
-      );
-  }, [state.selectedDataDuration, state.isCustomEnabled]);
-
-  // reset recipients
-  useEffect(() => {
-    if (!state.isRecipientsEnabled) {
-      actions.setRecipients([]);
-      if (state.showErrorInSection === 2) {
-        actions.setShowErrorInSection(undefined);
-      }
-    }
-  }, [state.isRecipientsEnabled]);
 
   return { ...state, ...actions };
 };

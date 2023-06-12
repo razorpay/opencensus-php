@@ -2,6 +2,8 @@ import { Theme } from '@razorpay/blade/components';
 import { SessionReducerState } from 'common/typings';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { CustomConfigType } from 'merchant_common/views/Reports/types';
+import { NON_OWNED_CONFIG_TYPE } from 'merchant_common/views/Reports/constants';
+
 export const reportsTheme = (theme: Theme) => {
   // colors
   const bladeColors = theme
@@ -74,7 +76,7 @@ export const REPORT_CONFIG_TYPE = {
 export const CUSTOM_CONFIG_MAP = {
   monthlyInvoice: {
     name: 'Monthly Invoice',
-    type: 'custom_non_owned',
+    type: NON_OWNED_CONFIG_TYPE,
     id: 'invoice',
     description: 'Download your monthly invoice in one single step.',
     helpInfo: {
@@ -88,21 +90,21 @@ export const CUSTOM_CONFIG_MAP = {
 
   dsp_report: {
     name: 'DSP Transaction Report',
-    type: 'custom_non_owned',
+    type: NON_OWNED_CONFIG_TYPE,
     id: 'dsp_report',
     description: '',
   },
 
   broking: {
     name: 'Broking Report',
-    type: 'custom_non_owned',
+    type: NON_OWNED_CONFIG_TYPE,
     id: 'broking',
     description: '',
   },
 
   rpp_report: {
     name: 'e-Mitra Report',
-    type: 'custom_non_owned',
+    type: NON_OWNED_CONFIG_TYPE,
     id: 'rpp_report',
     description: '',
   },

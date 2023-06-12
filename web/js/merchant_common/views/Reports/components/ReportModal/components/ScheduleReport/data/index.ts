@@ -32,10 +32,12 @@ export const getDataDurations = (custom?: boolean) => [
     label: 'Past Week',
     value: 'past_week',
   },
-  {
-    label: 'Past 15 days',
-    value: 'past_15_days',
-  },
+  // TODO:
+  // Later stage.
+  // {
+  //   label: 'Past 15 days',
+  //   value: 'past_15_days',
+  // },
   {
     label: 'Past Month',
     value: 'past_month',

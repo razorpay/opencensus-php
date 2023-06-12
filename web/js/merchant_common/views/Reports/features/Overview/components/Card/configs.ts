@@ -8,10 +8,23 @@ import defaultIcon from 'assets/reports/default.svg';
 import qrIcon from 'assets/reports/qr.svg';
 import transactionIcon from 'assets/reports/transactions.svg';
 import settlementOnDemandIcon from 'assets/reports/ondemandsettlement.svg';
+import { OverviewLinksFnReturnType, OverviewLinksParams } from './types';
 
-export const availableLinks = () => {
-  // TODO: Schedules link
+// based on exp val
+export const availableLinks = ({
+  isSchedulesEnabled,
+}: OverviewLinksParams): OverviewLinksFnReturnType => {
+  const links: OverviewLinksFnReturnType = [];
+
+  if (isSchedulesEnabled) {
+    links.push({
+      type: 'schedule',
+      label: 'Schedule Report',
+    });
+  }
+
   return [
+    ...links,
     {
       type: 'download',
       label: 'Download Report',

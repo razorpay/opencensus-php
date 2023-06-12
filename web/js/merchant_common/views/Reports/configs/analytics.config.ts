@@ -13,7 +13,9 @@ export enum OverviewActionType {
   'Loaded' = 'Loaded',
   'Overview Filter Interaction' = 'Overview Filter Interaction',
   'Cards Download Link Click' = 'Cards Download Link Click',
+  'Cards Schedule Link Click' = 'Cards Schedule Link Click',
   'Download Report Button Click' = 'Download Report Button Click',
+  'Schedule Report Button Click' = 'Schedule Report Button Click',
 }
 
 export enum DownloadsActionType {

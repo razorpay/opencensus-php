@@ -1,13 +1,13 @@
 import React, { useEffect } from 'react';
 import {
   Button,
-  PlusIcon,
   ReportModal,
   Dropdown,
   SelectInput,
   DropdownOverlay,
   ActionList,
   ActionListItem,
+  DownloadIcon,
 } from 'merchant_common/views/Reports/components';
 import { ControlPanel, DownloadsWrapper, DropdownWrapper } from './style';
 import { DownloadsPropsType } from './types';
@@ -91,7 +91,7 @@ const DownloadsSection = connect(
           <Button
             onClick={handleDownloadReportClick}
             variant="primary"
-            icon={PlusIcon}
+            icon={DownloadIcon}
             iconPosition="left"
             accessibilityLabel="Download Report Button"
             isLoading={!isAllConfigLoaded}

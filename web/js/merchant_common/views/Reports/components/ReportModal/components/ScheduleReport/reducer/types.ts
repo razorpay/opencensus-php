@@ -9,6 +9,7 @@ export interface InitialStateType {
   isCustomEnabled: boolean;
   isRunForeverEnabled: boolean;
   showErrorInSection?: number;
+  isResetComplete: boolean;
 
   // section 1
   selectedConfig?: BaseConfigType;

@@ -52,7 +52,7 @@ const ScheduleRunHistory = connect(
     params: { scheduleData },
   }: SchedulesPropsType): JSX.Element => {
     const { theme } = useTheme();
-    const { filter, handleLogsFilter } = useRunHistoryReducer(dashboardType);
+    const logsHistoryReducer = useRunHistoryReducer(dashboardType);
 
     const handleEditSchedule = () => {
       openModal({
@@ -124,17 +124,17 @@ const ScheduleRunHistory = connect(
                 <SelectInput
                   label=""
                   onChange={patchedSelectOnChange(({ values }) =>
-                    handleLogsFilter(downloadsFilterDropdown[+values[0]]),
+                    logsHistoryReducer.handleLogsFilter(downloadsFilterDropdown[+values[0]]),
                   )}
                   placeholder="Choose Logs Filter"
                   validationState="none"
                 />
-                <DropdownOverlay key={filter.value}>
+                <DropdownOverlay key={logsHistoryReducer?.filter.value}>
                   <ActionList surfaceLevel={2}>
                     {downloadsFilterDropdown.map(({ label, value }, index) => (
                       <ActionListItem
                         key={index}
-                        isDefaultSelected={value === filter?.value}
+                        isDefaultSelected={value === logsHistoryReducer?.filter?.value}
                         title={label}
                         value={index.toString()}
                         testID={label}
@@ -147,7 +147,11 @@ const ScheduleRunHistory = connect(
           </ControlPanelRight>
         </ControlPanel>
         <ModalScrollableTable theme={theme} heightOffset={92.5} initialWidth={1100}>
-          <RunHistoryTable dashboardType={dashboardType} scheduleId={scheduleData.id} />
+          <RunHistoryTable
+            dashboardType={dashboardType}
+            scheduleId={scheduleData.id}
+            logsHistoryReducer={logsHistoryReducer}
+          />
         </ModalScrollableTable>
       </>
     );

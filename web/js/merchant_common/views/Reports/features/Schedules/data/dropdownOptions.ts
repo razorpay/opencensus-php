@@ -4,7 +4,7 @@ export const schedulesFilterDropdown = [
     value: 'param.&sort_by=created_at&sort_order=desc',
   },
   {
-    label: 'Date - Ongoing',
+    label: 'Date - Oldest',
     value: 'param.&sort_by=created_at&sort_order=asc',
   },
   {

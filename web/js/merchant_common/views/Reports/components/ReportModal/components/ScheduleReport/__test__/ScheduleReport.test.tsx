@@ -193,10 +193,6 @@ describe('Create Schedule Modal', () => {
       },
     );
 
-    await userEvent.click(screen.getByText('Do you want this report in an email?'));
-    await userEvent.click(screen.getByLabelText('Add Recipient Field'));
-    await userEvent.click(screen.getByLabelText(TEST_USER.email));
-
     await userEvent.click(screen.getByLabelText('Edit Schedule'));
     await expect(scheduleSpy).toHaveReturned();
   });

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { openModal } from 'merchant_common/reducers/modals';
-import { IconProps, IconComponent } from '@razorpay/blade/components';
 import { useDashboardType } from 'merchant_common/views/Reports/contexts/ReportsContext';
 import { SchedulesTableIconControlContainer } from 'merchant_common/views/Reports/features/Schedules/styled';
 import {
@@ -23,9 +22,9 @@ import {
   SchedulesActionType,
   trackScheduleSection,
 } from 'merchant_common/views/Reports/configs/analytics.config';
-import { ControlActionsArgs } from './types';
-import { ScheduleAPIFnParams } from 'merchant_common/views/Reports/api/types';
+import { ControlActionsArgs, ControlActionsType, HandleControlActionFnParam } from './types';
 import { startSchedulePoll, stopSchedulePoll } from 'merchant_common/views/Reports/redux/reducer';
+import { Button } from 'merchant_common/views/Reports/components/styled';
 
 const mapDispatchToProps = (dispatch, { dashboardType }) => ({
   openModal: (modal) => dispatch(openModal(modal)),
@@ -46,18 +45,10 @@ const ControlActionsComponent = connect(
     stopSchedulePoll,
     dashboardType,
   }: ControlActionsArgs) => {
-    const { status, id } = scheduleData;
-    const [isActionLoading, setIsActionLoading] = useState(false);
+    const { status, id, name } = scheduleData;
+    const [isActionsLoading, setIsActionsLoading] = useState<ControlActionsType[]>([]);
 
-    const handleControlAction = ({
-      action,
-      icon,
-      promise,
-    }: {
-      action: 'pause' | 'delete' | 'resume';
-      icon: ((x: IconProps) => React.ReactElement) | IconComponent;
-      promise: (x: ScheduleAPIFnParams) => Promise<void>;
-    }) => {
+    const handleControlAction = ({ action, icon, promise }: HandleControlActionFnParam) => {
       const eventType = action === 'delete' ? 'Delete' : action === 'pause' ? 'Pause' : 'Resume';
       openModal({
         component: (
@@ -88,7 +79,7 @@ const ControlActionsComponent = connect(
                           type: 'success',
                           message: `Schedule ${action[0].toUpperCase() + action.slice(1)}d!`,
                         });
-                        setIsActionLoading(true);
+                        setIsActionsLoading([...isActionsLoading, action]);
                         closeModal();
                       })
                       .catch(() => {
@@ -115,7 +106,7 @@ const ControlActionsComponent = connect(
                       : action === 'pause'
                       ? 'information'
                       : 'notice',
-                  description: `You are about to ${action} a schedule with id as ${id}.`,
+                  description: `You are about to ${action} this schedule (${name}).`,
                 },
               },
             }}
@@ -169,7 +160,7 @@ const ControlActionsComponent = connect(
       openModal({
         component: (
           <ReportModal
-            type={'create_edit_schedule'}
+            type="create_edit_schedule"
             dashboardType={dashboardType}
             params={{
               scheduleData,
@@ -181,7 +172,7 @@ const ControlActionsComponent = connect(
     };
 
     useEffect(() => {
-      if (isActionLoading) setIsActionLoading(false);
+      if (isActionsLoading.length) setIsActionsLoading([]);
     }, [status]);
 
     return (
@@ -193,7 +184,7 @@ const ControlActionsComponent = connect(
           accessibilityLabel="Edit Schedule"
         />
 
-        {isActionLoading ? (
+        {isActionsLoading.includes('pause') || isActionsLoading.includes('resume') ? (
           <Spinner size="medium" accessibilityLabel="Status Change In Process" />
         ) : status === 'active' ? (
           <IconButton
@@ -211,12 +202,18 @@ const ControlActionsComponent = connect(
           />
         )}
 
-        <IconButton
-          icon={TrashIcon}
-          size="medium"
-          onClick={handleDeleteSchedule}
-          accessibilityLabel="Delete Schedule"
-        />
+        {isActionsLoading.includes('delete') ? (
+          <Button>
+            <Spinner size="medium" accessibilityLabel="Status Change In Process" />
+          </Button>
+        ) : (
+          <IconButton
+            icon={TrashIcon}
+            size="medium"
+            onClick={handleDeleteSchedule}
+            accessibilityLabel="Delete Schedule"
+          />
+        )}
       </SchedulesTableIconControlContainer>
     );
   },
