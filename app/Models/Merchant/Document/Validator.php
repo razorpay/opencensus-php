@@ -2,13 +2,16 @@
 
 namespace RZP\Models\Merchant\Document;
 
+use App;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Detail\NeedsClarification;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
@@ -172,6 +175,46 @@ class Validator extends Base\Validator
             ];
 
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ONLY_NEEDS_CLARIFICATION_DOCUMENTS_ARE_ALLOWED, null, $tracePayload);
+        }
+    }
+
+    /**
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateDocumentTypeAndFileType($rule, $input)
+    {
+        $this->validateInput('uploadDocumentWithoutFileType', $input);
+
+        $app = App::getFacadeRoot();
+
+        $app['trace']->info(
+            TraceCode::MERCHANT_DOCUMENT_REQUIREMENTS,
+            [
+                'DocumentType' => $input[Constants::DOCUMENT_TYPE],
+            ]
+        );
+
+        if (in_array($input[Constants::DOCUMENT_TYPE], array_keys(Type::DOCUMENT_TYPE_VALIDATIONS)) === true)
+        {
+            $ext = ($input[Constants::FILE])->getMimeType();
+
+            $app['trace']->info(
+                TraceCode::MERCHANT_DOCUMENT_REQUIREMENTS,
+                [
+                    'MimeType' => $ext,
+                ]
+            );
+
+            if (in_array($ext, Type::DOCUMENT_TYPE_VALIDATIONS[$input[Constants::DOCUMENT_TYPE]]) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The file must be a file of type: wmv, m4v, mkv, mpg, avi, flv, mov, mp4, mpeg'
+                );
+            }
+        }
+        else
+        {
+            $this->validateInput($rule, $input);
         }
     }
 }

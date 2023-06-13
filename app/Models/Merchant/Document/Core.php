@@ -132,8 +132,7 @@ class Core extends Base\Core
     public function uploadActivationFile(
         Merchant\Entity $merchant, array $input, bool $validateLock = true, $rule = 'uploadDocument', Base\PublicEntity $entity = null)
     {
-
-        $this->validateDocumentTypeandFileType($rule, $input);
+        (new Validator())->validateDocumentTypeAndFileType($rule, $input);
 
         $this->trace->info(TraceCode::DOCUMENT_CREATE_REQUEST, ['input' => $input]);
 
@@ -215,37 +214,6 @@ class Core extends Base\Core
         }
 
         return $merchantDetailCore->createResponse($merchantDetails);
-
-    }
-
-    protected function validateDocumentTypeandFileType($rule, $input)
-    {
-
-        (new Validator)->validateInput('uploadDocumentWithoutFileType', $input);
-
-        $this->trace->info(TraceCode::MERCHANT_DOCUMENT_REQUIREMENTS, [
-            'DocumentType' => $input[Constants::DOCUMENT_TYPE],
-        ]);
-
-        if (in_array($input[Constants::DOCUMENT_TYPE], array_keys(Type::DOCUMENT_TYPE_VALIDATIONS)) === true)
-        {
-            $ext = ($input[Constants::FILE])->getMimeType();
-
-            $this->trace->info(TraceCode::MERCHANT_DOCUMENT_REQUIREMENTS, [
-                'MimeType' => $ext,
-            ]);
-
-            if (in_array($ext, Type::DOCUMENT_TYPE_VALIDATIONS[$input[Constants::DOCUMENT_TYPE]]) === false)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'The file must be a file of type: wmv ,m4v ,mkv ,mpg ,avi ,flv ,mov ,mp4 ,mpeg.'
-                );
-            }
-        }
-        else
-        {
-            (new Validator)->validateInput($rule, $input);
-        }
 
     }
 

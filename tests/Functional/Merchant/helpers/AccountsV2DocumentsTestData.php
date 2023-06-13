@@ -280,4 +280,17 @@ return [
             ],
         ]
     ],
+
+    'testUploadCancelledChequeVideo' => [
+        'request'   => [
+            'url'     => '/v2/accounts/{accountId}/documents',
+            'method'  => 'POST',
+            'content' => [
+                'document_type' => 'cancelled_cheque_video',
+            ]
+        ],
+        'response'  => [
+            'content' => []
+        ],
+    ],
 ];

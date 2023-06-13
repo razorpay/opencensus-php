@@ -173,7 +173,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The file must be a file of type: wmv ,m4v ,mkv ,mpg ,avi ,flv ,mov ,mp4 ,mpeg.',
+                    'description' => 'The file must be a file of type: wmv, m4v, mkv, mpg, avi, flv, mov, mp4, mpeg',
                 ],
             ],
             'status_code' => 400,

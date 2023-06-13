@@ -294,6 +294,39 @@ class AccountV2DocumentsTest extends OAuthTestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testUploadCancelledChequeVideo()
+    {
+        list($subMerchant, $partner) = $this->setupPrivateAuthForPartner();
+
+        $this->updateUploadMp4Video(__FUNCTION__);
+
+        $this->fixtures->merchant_detail->on('live')->edit($subMerchant->getId(), [
+            'business_type'        => 7,
+            'business_category'    => 'education',
+            'business_subcategory' => 'college']);
+
+        $this->fixtures->merchant_detail->on('test')->edit($subMerchant->getId(), [
+            'business_type'        => 7,
+            'business_category'    => 'education',
+            'business_subcategory' => 'college']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/v2/accounts/acc_'. $subMerchant->getId() . '/documents';
+
+        $this->runRequestResponseFlow($testData);
+
+        $insertedDocument = $this->getDbLastEntity('merchant_document');
+
+        $this->assertEquals('merchant', $insertedDocument['entity_type']);
+
+        $this->assertEquals($subMerchant->getId(), $insertedDocument['entity_id']);
+
+        $this->assertEquals($subMerchant->getId(), $insertedDocument['merchant_id']);
+
+        $this->assertEquals($testData['request']['content']['document_type'], $insertedDocument['document_type']);
+    }
+
     protected function setupPrivateAuthForPartner()
     {
         list($partner, $app) = $this->createPartnerAndApplication();
@@ -312,11 +345,24 @@ class AccountV2DocumentsTest extends OAuthTestCase
 
     protected function updateUploadDocumentData(string $callee)
     {
-        $testData                             = &$this->testData[$callee];
+        $testData = &$this->testData[$callee];
+
         $testData['request']['files']['file'] = new UploadedFile(
             __DIR__ . '/../Storage/k.png',
             'a.png',
             'image/png',
+            null,
+            true);
+    }
+
+    protected function updateUploadMp4Video(string $callee)
+    {
+        $testData = &$this->testData[$callee];
+
+        $testData['request']['files']['file'] = new UploadedFile(
+            __DIR__ . '/../Batch/files/input.mp4',
+            'input.mp4',
+            'video/mp4',
             null,
             true);
     }

@@ -243,6 +243,10 @@ class Service extends Base\Service
         return $documentResponse;
     }
 
+    /**
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\BadRequestException
+     */
     public function postDocumentsByPartner(string $accountId, string $entityType, string $entityId, array $input)
     {
         $timeStarted = millitime();
@@ -251,8 +255,8 @@ class Service extends Base\Service
 
         $validator = (new Validator);
 
-        $validator->validateInput('uploadDocument', $input);
-
+        $validator->validateDocumentTypeAndFileType('uploadDocument', $input);
+        
         $validator->validateNeedsClarificationRespondedIfApplicable($merchant, $input);
 
         $validator->validateFileSize($input[Entity::FILE]);
