@@ -35,7 +35,10 @@ export const organiseFiles = (files) => {
   let transformed_files = [];
 
   if (Array.isArray(files)) {
-    const single_files = files.filter((file) => file?.document_type === 'firs_file');
+    const single_files = files.filter(
+      (file) =>
+        file?.document_type === 'firs_file' || file?.document_type === 'firs_firstdata_file',
+    );
     const zip_files = files.filter((file) => file?.document_type === 'firs_icici_zip');
 
     transformed_files = transformed_files.concat(
