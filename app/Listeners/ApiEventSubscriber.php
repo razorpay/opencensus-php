@@ -480,6 +480,8 @@ class ApiEventSubscriber extends Base\Core
 
         $this->notifySubscriptionRegistrationPaymentAuthorized($payment);
 
+        $this->logPayloadIfUPI($payment, $payload);
+
         $this->dispatchEventToStork($payload);
 
         $this->dispatchOrderFor1ccShopify($payment);
@@ -506,6 +508,8 @@ class ApiEventSubscriber extends Base\Core
         }
 
         $this->pushForRevival($payment);
+
+        $this->logPayloadIfUPI($payment, $payload);
 
         $this->dispatchEventToStork($payload);
     }
@@ -645,6 +649,9 @@ class ApiEventSubscriber extends Base\Core
         }
 
         $payload = $this->getPaymentPayload($payment);
+
+        $this->logPayloadIfUPI($payment, $payload);
+
         $this->dispatchEventToStork($payload);
     }
 
@@ -693,6 +700,8 @@ class ApiEventSubscriber extends Base\Core
     protected function onPaymentCreated($payment)
     {
         $payload = $this->getPaymentPayload($payment);
+
+        $this->logPayloadIfUPI($payment, $payload);
 
         $this->dispatchEventToStork($payload);
     }
@@ -2183,6 +2192,19 @@ class ApiEventSubscriber extends Base\Core
         }
 
         return;
+    }
+
+    private function logPayloadIfUPI($payment, $payload)
+    {
+        if ($payment->isUpi() === true)
+        {
+            $this->trace->info(
+                TraceCode::MERCHANT_WEBHOOK_PAYLOAD,
+                [
+                    'payload' => $payload,
+                    'merchant_id' => $payment->getMerchantId()
+                ]);
+        }
     }
 
 }
