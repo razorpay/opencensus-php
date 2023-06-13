@@ -4,6 +4,7 @@ namespace RZP\Models\Feature;
 
 use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -41,11 +42,15 @@ class Service extends Base\Service
         string $routeEndpoint = null,
         string $entityId = null): array
     {
+
         $entityType = null;
         if ($routeEndpoint !== null)
         {
             $entityType = Type::getEntityTypeFromRoute($routeEndpoint);
         }
+
+        $this->validateMCCForBulkPaymentPageFeature($input, $entityType, $entityId);
+
         $validator = new Validator();
 
         $validator->validateForRouteLaPennyTestingFeature($input[Constants::NAMES]);
@@ -73,6 +78,70 @@ class Service extends Base\Service
         });
 
         return $features->toArray();
+    }
+
+    /**
+     * Currently the feature 'file_upload_pp' which enables bulk payment page product, cannot be enabled for merchants with finanace business
+     * In case of multi-assign error will be thrown even if one of the features is 'file_upload_pp'
+    */
+    protected function validateMCCForBulkPaymentPageFeature(array $input, $entityType, $entityId)
+    {
+        $entityType = $entityType ?? $input[Entity::ENTITY_TYPE];
+
+        $entityId = $entityId ?? $input[Entity::ENTITY_ID];
+
+        if($entityType !== Constants::MERCHANT)
+        {
+            return;
+        }
+
+        if (isset($input[Entity::NAMES]) === false)
+        {
+            return;
+        }
+
+        if (is_string($input[Entity::NAMES]) and ($input[Entity::NAMES] !== Constants::FILE_UPLOAD_PP))
+        {
+            return;
+        }
+
+        if (is_array($input[Entity::NAMES]) and
+            (in_array(Constants::FILE_UPLOAD_PP, $input[Entity::NAMES]) === false))
+        {
+            return;
+        }
+
+        $merchant = $this->repo->merchant->find($entityId);
+
+        if(isset($merchant) === false)
+        {
+            return;
+        }
+
+        $disabledMCCs = [
+            "4829",
+            "6010",
+            "6011",
+            "6012",
+            "6050",
+            "6051",
+            "6211",
+            "6300",
+            "6532",
+            "6533",
+            "6536",
+            "6537",
+            "6538",
+            "6539",
+            "6540"
+        ];
+
+        if (in_array($merchant->getCategory(), $disabledMCCs) === true)
+        {
+            throw new BadRequestValidationFailureException(
+                'Financial services are not allowed for bulk payment pages');
+        }
+
     }
 
     protected function validateIfDisabledFeaturesArePresent($input, $entityType, $entityId)
@@ -801,6 +870,8 @@ class Service extends Base\Service
             $validateInput['names'] = $input['name'];
 
             $this->validateIfDisabledFeaturesArePresent($validateInput,$input['entity_type'],$entityId);
+
+            $this->validateMCCForBulkPaymentPageFeature($validateInput,$input['entity_type'],$entityId);
         }
 
         $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);

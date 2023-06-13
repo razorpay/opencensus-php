@@ -2632,6 +2632,107 @@ return [
         ]
     ],
 
+    'testValidateMCCForBulkPaymentPageFeature'=>[
+        'request'  => [
+            'url'     => '/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['file_upload_pp', 'dummy'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000001'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'name' => 'file_upload_pp',
+                    'entity_id' => '10000000000001',
+                    'entity_type' => 'merchant',
+                ]
+            ]
+        ]
+    ],
+
+
+    'testValidateMCCForBulkPaymentPageFeatureNegative'=>[
+        'request'  => [
+            'url'     => '/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['file_upload_pp', 'dummy'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000001'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Financial services are not allowed for bulk payment pages',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+
+    'testValidateMCCForBulkPaymentPageFeatureMultiAssign' => [
+        'request'  => [
+            'content' => [
+                'name'       => ['file_upload_pp', 'dummy'],
+                'entity_ids'  => ['10000000000001', '10000000000002'],
+                'entity_type' => 'merchant'
+            ],
+            'url'     => '/features/assign',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard'                => 'true',
+                'HTTP_X-Dashboard-Admin-Username' => 'admin',
+                'HTTP_X-Dashboard-User-Email'     => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+   
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testValidateMCCForBulkPaymentPageFeatureMultiAssignNegative' => [
+        'request'  => [
+            'content' => [
+                'name'       => ['file_upload_pp', 'dummy'],
+                'entity_ids'  => ['10000000000001', '10000000000002'],
+                'entity_type' => 'merchant'
+            ],
+            'url'     => '/features/assign',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard'                => 'true',
+                'HTTP_X-Dashboard-Admin-Username' => 'admin',
+                'HTTP_X-Dashboard-User-Email'     => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Financial services are not allowed for bulk payment pages',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testOrderReceiptUniqueFeatureFlag' => [
         'request'  => [
             'content' => [

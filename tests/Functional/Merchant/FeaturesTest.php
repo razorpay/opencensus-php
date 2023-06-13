@@ -170,6 +170,36 @@ class FeaturesTest extends OAuthTestCase
         $this->assertFalse(in_array('dummy1', $features, true));
     }
 
+    public function testValidateMCCForBulkPaymentPageFeature()
+    {
+        $merchant = $this->fixtures->create('merchant', ['id' => '10000000000001', 'category' => '3453']);
+
+        $this->startTest();
+    }
+
+    public function testValidateMCCForBulkPaymentPageFeatureNegative()
+    {
+        $merchant = $this->fixtures->create('merchant', ['id' => '10000000000001', 'category' => '6011']);
+
+        $this->startTest();
+    }
+
+    public function testValidateMCCForBulkPaymentPageFeatureMultiAssign()
+    {
+        $this->fixtures->create('merchant', ['id' => '10000000000001', 'category' => '3453']);
+        $this->fixtures->create('merchant', ['id' => '10000000000002', 'category' => '3453']);
+
+        $this->startTest();
+    }
+
+    public function testValidateMCCForBulkPaymentPageFeatureMultiAssignNegative()
+    {
+        $this->fixtures->create('merchant', ['id' => '10000000000001', 'category' => '6011']);
+        $this->fixtures->create('merchant', ['id' => '10000000000002', 'category' => '3453']);
+
+        $this->startTest();
+    }
+
     public function testAccountFeatures()
     {
         $accountId = '10000000000000';
