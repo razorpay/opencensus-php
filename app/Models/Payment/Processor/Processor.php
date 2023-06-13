@@ -3225,6 +3225,11 @@ class Processor
 
                 $selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
 
+                if ($payment->isQrV2UpiPayment() === true)
+                {
+                    return $selectedTerminals;
+                }
+
                 return $selectedTerminals[0] ?? null;
             });
 

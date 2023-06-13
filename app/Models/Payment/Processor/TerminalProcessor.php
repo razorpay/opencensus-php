@@ -459,6 +459,10 @@ class TerminalProcessor extends Base\Core
                 $options->setFailedTerminals($failedTerminalIds);
             }
         }
+        else if ($this->payment->isQrV2UpiPayment() === true)
+        {
+            $options->setMultiple(true);
+        }
         else
         {
             $options->setMultiple(false);

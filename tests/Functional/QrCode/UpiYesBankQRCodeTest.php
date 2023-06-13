@@ -32,7 +32,7 @@ class UpiYesBankQRCodeTest extends TestCase
 
         $this->config['gateway.mock_upi_mozart'] = true;
 
-        $this->fixtures->merchant->addFeatures(['qr_codes']);
+        $this->fixtures->merchant->addFeatures(['qr_codes', 'bharat_qr_v2']);
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
 
@@ -46,7 +46,7 @@ class UpiYesBankQRCodeTest extends TestCase
 
         $this->fixtures->on('live')->merchant->edit('LiveAccountMer', ['activated' => true, 'live' => true]);
 
-        $this->fixtures->on('live')->merchant->addFeatures(['qr_codes'], 'LiveAccountMer');
+        $this->fixtures->on('live')->merchant->addFeatures(['qr_codes', 'bharat_qr_v2'], 'LiveAccountMer');
 
         $this->fixtures->on('live')->merchant->enableMethod('LiveAccountMer', 'upi');
 
@@ -624,12 +624,18 @@ class UpiYesBankQRCodeTest extends TestCase
     private function runEntityAssertions(): void
     {
         $qrCodeEntity = $this->getLastEntity('qr_code', true);
-        $this->assertStringContainsString('@yesb', $qrCodeEntity['qr_string']);
-        $trValue = $this->getTRFieldFromString($qrCodeEntity['qr_string']);
-        $this->assertEquals(18, strlen($trValue));
-        $this->assertTrue(str_ends_with($trValue, 'qrv2'));
 
-        if($qrCodeEntity['usage'] === 'single_use'){
+        $this->assertStringContainsString('@yesb', $qrCodeEntity['qr_string']);
+
+        if ($qrCodeEntity['provider'] === 'upi_qr')
+        {
+            $trValue = $this->getTRFieldFromString($qrCodeEntity['qr_string']);
+            $this->assertEquals(18, strlen($trValue));
+            $this->assertTrue(str_ends_with($trValue, 'qrv2'));
+        }
+
+        if($qrCodeEntity['usage'] === 'single_use')
+        {
             $amount = $qrCodeEntity['amount'] / 100;
             $this->assertStringContainsString('am=' . $amount, $qrCodeEntity['qr_string']);
         }
@@ -646,6 +652,56 @@ class UpiYesBankQRCodeTest extends TestCase
     protected function enableRazorXTreatmentForQrDedicatedTerminal() :void
     {
         $this->setMockRazorxTreatment([RazorxTreatment::DEDICATED_TERMINAL_QR_CODE => RazorxTreatment::RAZORX_VARIANT_ON]);
+    }
+
+    public function testCreateQrWithCloseOnDemandEnabled()
+    {
+        $this->setMockRazorxTreatment(
+            [
+                RazorxTreatment::DEDICATED_TERMINAL_QR_CODE      => RazorxTreatment::RAZORX_VARIANT_ON,
+                RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON
+            ]);
+
+        $this->fixtures->merchant->addFeatures(['close_qr_on_demand']);
+
+        $this->expectException(BadRequestException::class);
+        $this->expectExceptionMessage("Your current configuration does not support QR creation. Contact support for further assistance");
+
+        $this->createQrCode(
+            ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
+             'name'  => 'Mitasha']
+        );
+    }
+
+    public function testCreateBharatQrCodeWithDedicatedTerminal()
+    {
+        $this->enableRazorXTreatmentForQrDedicatedTerminal();
+
+        $response = $this->createQrCode();
+
+        $expectedResponse = $this->testData['testCreateBharatQrCode'];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $this->runEntityAssertions($response);
+    }
+
+    public function testCreateBharatQrCodeWithNoDedicatedTerminal()
+    {
+        $this->enableRazorXTreatmentForQrDedicatedTerminal();
+
+        $this->expectExceptionMessage('No Terminal applicable.');
+
+        $this->createQrCode(
+            [
+                'usage'          => 'single_use',
+                'type'           => 'bharat_qr',
+                'fixed_amount'   => true,
+                'payment_amount' => 100,
+            ],
+            'live',
+            'LiveAccountMer'
+        );
     }
 
 }

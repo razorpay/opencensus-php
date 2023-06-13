@@ -25,11 +25,14 @@ use RZP\Gateway\Upi\Icici\Fields;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
+use RZP\Models\VirtualAccount\Provider;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Models\QrCode\Constants as Constants;
 use RZP\Models\BharatQr\Constants as BQRConstants;
 use RZP\Models\Payment\Processor\TerminalProcessor;
 use RZP\Gateway\Upi\Icici\Gateway as IciciGateway;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as NonVAQrEntity;
 use SimpleSoftwareIO\QrCode\Facades\QrCode as QrCodeWriter;
 
@@ -79,61 +82,62 @@ class Generator extends QrCode\Generator
         return $identifier;
     }
 
-    private function getVpaForQr($qrCode)
+    private function getDedicatedTerminalVpaForQr($qrCode, $terminal = null)
     {
-        if ($this->checkIfDedicatedTerminalSplitzExperimentEnabled($qrCode->merchant->getId()) === true)
+        if ($terminal !== null)
         {
-            //@todo:: Check for static and dynamic QR. For static QR, terminal type offline should be passed
-            $terminal = (new VirtualAccount\Provider())->getTerminalForMethod(Payment\Method::UPI, $qrCode);
+            $this->trace->info(TraceCode::QR_CODE_CREATE_TERMINAL, [
+                'gateway'     => $terminal->getGateway(),
+                'terminal_id' => $terminal->getId(),
+                'id'          => $qrCode->getId()
+            ]);
 
-            if ($terminal !== null)
+            if ($terminal->isShared() === true)
             {
-                $this->trace->info(TraceCode::QR_CODE_CREATE_TERMINAL, [
-                    'gateway'     => $terminal->getGateway(),
-                    'terminal_id' => $terminal->getId(),
-                    'id'          => $qrCode->getId()
-                ]);
+                throw new LogicException('No dedicated terminal found for merchant',
+                                         ErrorCode::SERVER_ERROR_NO_TERMINAL_FOUND,
+                                         [
+                                             'terminal_id' => $terminal->getId(),
+                                         ]
+                );
+            }
 
-                if ($terminal->isShared() === true)
+            $this->gateway = $terminal->getGateway();
+
+            $this->terminalId = $terminal->getId();
+
+            switch ($terminal->getGateway())
+            {
+                case Gateway::UPI_YESBANK:
                 {
-                    throw new LogicException('No dedicated terminal found for merchant',
-                                             ErrorCode::SERVER_ERROR_NO_TERMINAL_FOUND,
-                                             [
-                                                 'terminal_id' => $terminal->getId(),
-                                             ]
-                    );
-                }
+                    $variantForFeature = $this->app->razorx->getTreatment($this->merchant->getId(),
+                                                                          RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE, $this->mode);
 
-                $this->gateway = $terminal->getGateway();
-
-                $this->terminalId = $terminal->getId();
-
-                switch ($terminal->getGateway())
-                {
-                    case Gateway::UPI_YESBANK:
+                    if (strtolower($variantForFeature) === RazorxTreatment::RAZORX_VARIANT_ON and
+                        ($this->merchant->isFeatureEnabled(FeatureConstants::CLOSE_QR_ON_DEMAND) === true))
                     {
-                        $vpa = $terminal->getVpa();
-
-                        if ((empty($vpa) === true) or ($vpa === null))
-                        {
-                            throw new InvalidArgumentException('VPA is required for generating QR');
-                        }
-
-                        return $vpa;
+                        throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_QR_CODE_ON_DEMAND_CLOSE_FOR_YES_BANK);
                     }
 
-                    default:
+                    $vpa = $terminal->getVpa();
+
+                    if ((empty($vpa) === true) or ($vpa === null))
                     {
-                        if(empty($terminal->getGatewayMerchantId2()) === false)
-                        {
-                            return $terminal->getGatewayMerchantId2();
-                        }
+                        throw new InvalidArgumentException('VPA is required for generating QR');
+                    }
+
+                    return $vpa;
+                }
+
+                default:
+                {
+                    if (empty($terminal->getGatewayMerchantId2()) === false)
+                    {
+                        return $terminal->getGatewayMerchantId2();
                     }
                 }
             }
         }
-
-        return $this->generateVpaForQr($qrCode);
     }
 
     private function generateVpaForQr($qrCode)
@@ -161,9 +165,7 @@ class Generator extends QrCode\Generator
             'id' => $qrCode->getId()
         ]);
 
-        $vpa = $this->getVpaForQr($qrCode);
-
-        return $this->generateUpiQrIntentUrl($vpa, $qrCode);
+        return $this->getVpaForQr($qrCode);
     }
 
     private function getRefIdForQrCode($qrCode)
@@ -429,7 +431,7 @@ class Generator extends QrCode\Generator
         $partner = $partners->filter(function(Merchant\Entity $partner)
         {
             return ((($partner->isAggregatorPartner() === true)
-                    or ($partner->isFullyManagedPartner() === true))
+                     or ($partner->isFullyManagedPartner() === true))
                     and ($partner->isFeatureEnabled(Feature\Constants::QR_IMAGE_PARTNER_NAME) === true));
         })->last();
 
@@ -535,6 +537,74 @@ class Generator extends QrCode\Generator
         {
             return QrCode\Constants::QR_V2_MODE_DYNAMIC;
         }
+    }
+
+    /**
+     * @param Entity $qrCode
+     *
+     * @return mixed|string|null
+     * @throws BadRequestException
+     * @throws InvalidArgumentException
+     */
+    protected function getVpaForQr(Entity $qrCode)
+    {
+        $vpa = null;
+
+        if ($this->checkIfDedicatedTerminalSplitzExperimentEnabled($qrCode->merchant->getId()) === true)
+        {
+            //@todo:: Check for static and dynamic QR. For static QR, terminal type offline should be passed
+            $terminals = (new VirtualAccount\Provider())->getTerminalForMethod(Payment\Method::UPI, $qrCode);
+
+            $errorMessage = '';
+            $errorCode    = '';
+            foreach ($terminals as $terminal)
+            {
+                try
+                {
+                    $vpa = $this->getDedicatedTerminalVpaForQr($qrCode, $terminal);
+
+                    if ($vpa !== null)
+                    {
+                        if ($qrCode->getProvider() === Provider::UPI_QR)
+                        {
+                            return $this->generateUpiQrIntentUrl($vpa, $qrCode);
+                        }
+                        else
+                        {
+                            return $vpa;
+                        }
+                    }
+                }
+                catch (\Exception $e)
+                {
+                    $errorMessage = $e->getMessage();
+                    $errorCode    = $e->getCode();
+
+                    $this->trace->traceException($e);
+                }
+            }
+
+            if (($errorMessage) !== '')
+            {
+                throw new BadRequestException($errorCode, $errorMessage);
+            }
+
+            if (empty($vpa) === true)
+            {
+                throw new InvalidArgumentException('VPA is required for generating QR');
+            }
+        }
+        else
+        {
+            $vpa = $this->generateVpaForQr($qrCode);
+
+            if ($qrCode->getProvider() === Provider::UPI_QR)
+            {
+                return $this->generateUpiQrIntentUrl($vpa, $qrCode);
+            }
+        }
+
+        return $vpa;
     }
 
     public function checkIfDedicatedTerminalSplitzExperimentEnabled($merchantId)

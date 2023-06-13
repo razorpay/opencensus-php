@@ -298,4 +298,21 @@ trait NonVirtualAccountQrCodeTrait
             ->shouldReceive('evaluateRequest')
             ->andReturn($output);
     }
+
+    protected function getDedicatedTerminalSplitzResponseForOnVariant()
+    {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                            "key" => "result",
+                            "value" => "on"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        return $output;
+    }
 }

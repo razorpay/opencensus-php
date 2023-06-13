@@ -2031,18 +2031,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
     {
         $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
 
-        $output = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                        "key" => "result",
-                        "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
+        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
 
         $this->mockSplitzTreatment($output);
 
@@ -2062,18 +2051,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
     {
         $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
 
-        $output = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                        "key" => "result",
-                        "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
+        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
 
         $this->mockSplitzTreatment($output);
 
@@ -2389,18 +2367,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
     {
         $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
 
-        $output = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                        "key" => "result",
-                        "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
+        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
 
         $this->mockSplitzTreatment($output);
 
@@ -2538,18 +2505,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testSingleUseQrCodeWithFixedAmount()
     {
-        $output = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                        "key" => "result",
-                        "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
+        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
 
         $this->mockSplitzTreatment($output);
 
@@ -2572,18 +2528,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testSingleUseQrCodeWithoutFixedAmount()
     {
-        $output = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                        "key" => "result",
-                        "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
+        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
 
         $this->mockSplitzTreatment($output);
 
@@ -2597,21 +2542,9 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testMultipleUseQrCodeWithoutCloseBy()
     {
-        $output = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                        "key" => "result",
-                        "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
+        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
 
         $this->mockSplitzTreatment($output);
-
         $terminal = $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
 
         $qrCode = $this->createQrCode(
@@ -2626,18 +2559,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testMultipleUseQrCodeWithCloseBy()
     {
-        $output = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                        "key" => "result",
-                        "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
+        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
 
         $this->mockSplitzTreatment($output);
 
@@ -2652,18 +2574,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testCloseQrCodeForSingleUse()
     {
-        $output = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                        "key" => "result",
-                        "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
+        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
 
         $this->mockSplitzTreatment($output);
 
@@ -2684,18 +2595,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testCloseQrCodeForMultipleUse()
     {
-        $output = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                        "key" => "result",
-                        "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
+        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
 
         $this->mockSplitzTreatment($output);
 
@@ -2901,18 +2801,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testSingleUseQrCodeWithCloseBy()
     {
-        $output = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                        "key" => "result",
-                        "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
+        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
 
         $this->mockSplitzTreatment($output);
 
@@ -2932,18 +2821,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testCloseSingleUseQrCodeWithCloseBy()
     {
-        $output = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                            "key" => "result",
-                            "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
+        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
 
         $this->mockSplitzTreatment($output);
         $this->setMockRazorxTreatment([RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON]);
@@ -2970,18 +2848,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testCreateSingleUseQrCodeWithCloseByErrorFromGateway()
     {
-        $output = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                            "key" => "result",
-                            "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
+        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
 
         $this->mockSplitzTreatment($output);
 
@@ -3000,18 +2867,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testCloseSingleUseQrCodeWithCloseByForTerminalNotFound()
     {
-        $output = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                            "key" => "result",
-                            "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
+        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
 
         $this->mockSplitzTreatment($output);
         $this->setMockRazorxTreatment([RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON]);
@@ -3041,18 +2897,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testCloseSingleUseQrCodeWithCloseByErrorFromGateway()
     {
-        $output = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                            "key" => "result",
-                            "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
+        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
 
         $this->mockSplitzTreatment($output);
         $this->setMockRazorxTreatment([RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON]);
@@ -3078,18 +2923,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testQrPaymentForSingleUseWithExpiryFeatureEnabled()
     {
-        $output = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                            "key" => "result",
-                            "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
+        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
 
         $this->mockSplitzTreatment($output);
         $this->setMockRazorxTreatment([RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON]);
@@ -3138,18 +2972,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testQrPaymentForSingleUseWithExpiryFeatureEnabledErrorFromGateway()
     {
-        $output = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                            "key" => "result",
-                            "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
+        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
 
         $this->mockSplitzTreatment($output);
         $this->setMockRazorxTreatment([RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON]);
@@ -3203,18 +3026,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
             'gateway_merchant_id' => 'shared_bharat_qr',
         ]);
 
-        $output = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                        "key" => "result",
-                        "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
+        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
 
         $this->mockSplitzTreatment($output);
 
@@ -3233,18 +3045,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testDedicatedTerminalSplitzExpWithVariantOn()
     {
-        $output = [
-            "response" => [
-                "variant" => [
-                    "variables" => [
-                        [
-                        "key" => "result",
-                        "value" => "on"
-                        ]
-                    ]
-                ]
-            ]
-        ];
+        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
 
         $this->mockSplitzTreatment($output);
 
@@ -3315,5 +3116,56 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $this->assertStringContainsString($vpa['username'], $qrCodeEntity['qr_string']);
         $this->assertEquals($qrCode['id'], $qrCodeEntity['id']);
+    }
+
+    public function testSelectSecondTerminalForQrCreation()
+    {
+        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
+
+        $this->mockSplitzTreatment($output);
+
+        $this->fixtures->on('live')->create('terminal:dedicated_upi_icici_terminal');
+
+        $this->fixtures->create('terminal:live_dedicated_upi_yesbank_terminal');
+
+        $qrCode = $this->createQrCode(
+            ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
+             'name'  => 'Mitasha'], 'live', 'LiveAccountMer'
+        );
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+
+        $this->assertEquals($qrCodeEntity['id'], $qrCode['id']);
+    }
+
+    public function testCreateQrWithOnDemandFeatureFlagEnabledAndCloseQrOnDemandForYesBank()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON]);
+
+        $this->fixtures->on('live')->merchant->addFeatures(['close_qr_on_demand'],'LiveAccountMer');
+
+        $this->fixtures->create('terminal:dedicated_upi_yesbank_terminal');
+
+        $this->expectException(BadRequestException::class);
+
+        $this->createQrCode(
+            ['usage' => 'single_use', 'type' => 'upi_qr', 'fixed_amount' => true, 'payment_amount' => 100,
+             'name' => 'Mitasha']
+        );
+
+    }
+
+    public function testBharatQRWithNoDedicatedTerminal()
+    {
+        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
+
+        $this->mockSplitzTreatment($output);
+
+        $this->expectExceptionMessage('No identifiers found for the merchant');
+        $this->createQrCode(
+            ['usage' => 'single_use', 'type' => 'bharat_qr', 'fixed_amount' => true, 'payment_amount' => 100,
+             'name' => 'Mitasha']
+        );
+
     }
 }
