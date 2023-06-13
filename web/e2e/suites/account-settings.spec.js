@@ -23,25 +23,6 @@ test.describe.parallel('My account and settings @flow=account-settings', () => {
     await expect(page).toHaveURL(routes.ACCOUNT_SETTINGS);
   });
 
-  test('should render merchant profile section', async ({ page }) => {
-    const profileSection = page.locator('text=Your profile');
-    await expect(profileSection).toBeVisible();
-    const merchantId = page.locator('p:has-text("Merchant ID")');
-    await expect(merchantId).toBeVisible();
-    const copyMerchantId = page.locator('button[role="button"]:has-text("Copy")');
-    await expect(copyMerchantId).toBeVisible();
-    const twoStepVerification = page.locator('text=2-step verification');
-    await expect(twoStepVerification).toBeVisible();
-    const displayName = page.locator('p:has-text("Display Name")');
-    await expect(displayName).toBeVisible();
-    const phoneNumber = page.locator('p:has-text("Phone Number")');
-    await expect(phoneNumber).toBeVisible();
-    const loginEmail = page.locator('text=Login email');
-    await expect(loginEmail).toBeVisible();
-    const password = page.locator('text=Password');
-    await expect(password).toBeVisible();
-  });
-
   test('should render account and product settings section', async ({ page }) => {
     const accountAndProductSettings = page.locator('text=Account and product settings');
     await expect(accountAndProductSettings).toBeVisible();
@@ -74,7 +55,8 @@ test.describe.parallel('My account and settings @flow=account-settings', () => {
       await expect(page).toHaveURL(routes.ACCOUNT_SETTINGS);
     });
 
-    test('should render Balances tab', async ({ page }) => {
+    // roast test myAccountAddFundsTest
+    test('should render Balances tab @suite=payments-canary', async ({ page }) => {
       await page.locator('button[role="button"]:has-text("Balances")').click();
       await expect(page).toHaveURL(routes.BALANCES);
       await expect(page.locator('text=Documentation')).toHaveAttribute(
@@ -113,7 +95,9 @@ test.describe.parallel('My account and settings @flow=account-settings', () => {
       });
 
       // roast test myAccountCreditsTest
-      test('should render Credits tab @suite=payments-automation', async ({ page }) => {
+      test('should render Credits tab @suite=payments-automation @suite=payments-canary', async ({
+        page,
+      }) => {
         await expect(page.locator('text=Amount Credits').first()).toBeVisible();
         await expect(page.locator('text=Fee Credits').first()).toBeVisible();
         await expect(page.locator('text=Refund Credits').first()).toBeVisible();
@@ -133,7 +117,7 @@ test.describe.parallel('My account and settings @flow=account-settings', () => {
       });
 
       // roast test myAccountFeeCreditsHistoryTest
-      test('should show fee credits history modal @priority=normal @suite=payments-automation', async ({
+      test('should show fee credits history modal @priority=normal @suite=payments-automation @suite=payments-canary', async ({
         page,
       }) => {
         const feeCreditsViewHistoryCTA = await page
@@ -147,7 +131,7 @@ test.describe.parallel('My account and settings @flow=account-settings', () => {
       });
 
       // roast test myAccountRefundCreditsHistoryTest
-      test('should show refund credits history modal @priority=normal @suite=payments-automation', async ({
+      test('should show refund credits history modal @priority=normal @suite=payments-automation @suite=payments-canary', async ({
         page,
       }) => {
         const refundCreditsViewHistoryCTA = await page
@@ -165,7 +149,7 @@ test.describe.parallel('My account and settings @flow=account-settings', () => {
   });
 
   // roast test myAccountManageTeamTest
-  test('should show manage team tab and send invite @priority=normal @suite=payments-automation', async ({
+  test('should show manage team tab and send invite @priority=normal @suite=payments-automation @suite=payments-canary', async ({
     page,
   }) => {
     await page.getByRole('button', { name: 'Manage team' }).click();
@@ -192,7 +176,9 @@ test.describe.parallel('My account and settings @flow=account-settings', () => {
   });
 
   // roast test myAccountActivationTest
-  test('should show gst details @priority=normal @suite=payments-automation', async ({ page }) => {
+  test('should show gst details @priority=normal @suite=payments-automation @suite=payments-canary', async ({
+    page,
+  }) => {
     await page.getByRole('button', { name: 'GST details' }).click();
     await expect(page).toHaveURL(routes.GST_DETAILS);
 
@@ -207,7 +193,7 @@ test.describe.parallel('My account and settings @flow=account-settings', () => {
   });
 
   // roast test smsNotificationTest
-  test('should show sms notifications switch @priority=normal @suite=payments-automation', async ({
+  test('should show sms notifications switch @priority=normal @suite=payments-automation @suite=payments-canary', async ({
     page,
   }) => {
     await page.getByRole('button', { name: 'SMS' }).click();
@@ -236,7 +222,7 @@ test.describe.parallel('My account and settings @flow=account-settings', () => {
   });
 
   // roast test settingsTest
-  test('should show webhook and api keys @priority=normal @suite=payments-automation', async ({
+  test('should show webhook and api keys @priority=normal @suite=payments-automation @suite=payments-canary', async ({
     page,
   }) => {
     await page.getByRole('button', { name: 'Webhooks' }).click();
@@ -251,5 +237,17 @@ test.describe.parallel('My account and settings @flow=account-settings', () => {
       strict: false,
     });
     await expect(await page.locator(apiKeyCTASelector).count()).toBeGreaterThan(0);
+  });
+
+  // roast test myAccountProfileTest
+  test('should render business details section @suite=payments-canary', async ({ page }) => {
+    await page.getByRole('button', { name: 'Business Details' }).click();
+    await expect(page).toHaveURL(routes.BUSINESS_DETAILS);
+
+    const businessDetailsSection = await page.getByTestId('business-details-section');
+    await expect(businessDetailsSection).toBeVisible();
+
+    await expect(await businessDetailsSection.getByText('Business Name')).toBeVisible();
+    await expect(await businessDetailsSection.getByText('Playwright Test Account')).toBeVisible();
   });
 });

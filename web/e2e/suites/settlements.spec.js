@@ -1,75 +1,47 @@
 const { test, expect } = require('@playwright/test');
 const { StorageStatePath, routes } = require('../utils/constants');
 
-const mockSettlementId = 'setl_JCVHSjHRi9QHto';
-const SETTLEMENT_API = '**/merchant/api/test/settlements*';
-async function mockSettlementsFetch({ page, populateData }) {
-  const items = [];
-  if (populateData) {
-    items.push({
-      amount: 23886,
-      created_at: 1678077015,
-      entity: 'settlement',
-      fees: 0,
-      id: mockSettlementId,
-      status: 'processed',
-      tax: 0,
-      utr: 'cg2mpl08cfbf3p7nghfg',
-    });
+async function waitAndClickViewSettlements({ page }) {
+  let viewSettlementsBtn;
+  try {
+    viewSettlementsBtn = await page.waitForSelector(
+      'button[data-blade-component="link"] >> text="View settlements"',
+      {
+        timeout: 5000,
+      },
+    );
+  } catch (err) {
+    // supress error thrown if element is not found
   }
-  await page.route(SETTLEMENT_API, (route) => {
-    route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        status_code: 200,
-        success: true,
-        data: {
-          entity: 'collection',
-          count: items.length,
-          has_more: false,
-          items,
-        },
-      }),
-    });
-  });
+  if (viewSettlementsBtn) {
+    await viewSettlementsBtn.click();
+  } else {
+    console.log('view settlments button not found');
+  }
 }
 
 test.setTimeout(1 * 60 * 1000);
 // roast test settlemetsTest
-test.describe.parallel('Test Settlements view @suite=payments-automation', () => {
+test.describe('Test Settlements view when no settlments are present @suite=payments-automation @suite=payments-canary', () => {
   test.use({
     storageState: StorageStatePath.EMAIL_TEST_LOGIN_STATE,
   });
-  test('should show settlements when api response has settlements @priority=normal', async ({
-    page,
-  }) => {
-    await page.goto(routes.DASHBOARD);
-    await mockSettlementsFetch({ page, populateData: true });
-    const settlementRedirectCTA = page.getByRole('link', { name: 'View Settlements' });
-    await expect(settlementRedirectCTA).toBeVisible();
-    await settlementRedirectCTA.click();
-    await expect(page).toHaveURL(routes.SETTLEMENTS);
-
-    await page.waitForResponse(SETTLEMENT_API);
-
-    const settlementRecord = await page.getByRole('button', { name: mockSettlementId });
-    await expect(settlementRecord).toBeVisible();
+  test('should show no settlements alert @priority=normal', async ({ page }) => {
+    await page.goto(routes.SETTLEMENTS);
+    await waitAndClickViewSettlements({ page });
+    await expect(await page.getByText('No Settlements found!')).toBeVisible();
   });
+});
 
-  test('should show no settlements alert when api response is empty @priority=normal', async ({
-    page,
-  }) => {
-    await page.goto(routes.DASHBOARD);
-    await mockSettlementsFetch({ page, populateData: false });
-    const settlementRedirectCTA = page.getByRole('link', { name: 'View Settlements' });
-    await expect(settlementRedirectCTA).toBeVisible();
-    await settlementRedirectCTA.click();
-    await expect(page).toHaveURL(routes.SETTLEMENTS);
-
-    await page.waitForResponse(SETTLEMENT_API);
-
-    const settlementsTable = await page.getByRole('heading', { name: 'No Settlements found!' });
-    await expect(settlementsTable).toBeVisible();
+test.describe('Test Settlements view when settlements are present @suite=payments-automation @suite=payments-canary', () => {
+  test.use({
+    storageState: StorageStatePath.TRANSACTIONS_LOGIN_STATE,
+  });
+  test('should show settlements @priority=normal', async ({ page }) => {
+    await page.goto(routes.SETTLEMENTS);
+    await waitAndClickViewSettlements({ page });
+    const settlementRecord = await page.locator('.content-wrapper table tbody tr:first-child');
+    await expect(settlementRecord).toBeVisible();
+    await expect(settlementRecord.getByRole('button', { name: 'Details' })).toBeVisible();
   });
 });

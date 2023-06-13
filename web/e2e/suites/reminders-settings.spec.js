@@ -17,10 +17,9 @@ test.describe('My account and settings @flow=account-settings', () => {
     storageState: StorageStatePath.EMAIL_LIVE_LOGIN_STATE,
   });
 
-  test('should render Reminders tab', async ({ page }) => {
-    // some api's are slow therefore need to increase timeout duration
-    await page.goto(routes.DASHBOARD);
-    await page.getByRole('link', { name: 'Account & Settings' }).click();
+  // roast test setReminders
+  test('should render Reminders tab @suite=payments-canary', async ({ page }) => {
+    await page.goto(routes.ACCOUNT_SETTINGS);
     await expect(page).toHaveURL(routes.ACCOUNT_SETTINGS);
 
     await page.locator('button[role="button"]:has-text("Reminders")').click();

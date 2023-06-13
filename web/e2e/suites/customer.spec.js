@@ -10,7 +10,9 @@ test.describe.serial('Test Create and Edit Customer @flow=customer', () => {
   });
   let newlyCreatedCustomer = '';
   // roast test createCustomerTest
-  test('should create customer @priority=critical @suite=payments-automation', async ({ page }) => {
+  test('should create customer @priority=critical @suite=payments-automation @suite=payments-canary', async ({
+    page,
+  }) => {
     // go to the customers tab
     await page.goto(routes.CUSTOMERS);
 
@@ -44,7 +46,9 @@ test.describe.serial('Test Create and Edit Customer @flow=customer', () => {
   });
 
   // roast test editCustomerDetailsTest
-  test('should edit customer @priority=critical @suite=payments-automation', async ({ page }) => {
+  test('should edit customer @priority=critical @suite=payments-automation @suite=payments-canary', async ({
+    page,
+  }) => {
     // go to the customers tab
     await page.goto(routes.CUSTOMERS);
 
