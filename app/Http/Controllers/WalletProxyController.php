@@ -34,12 +34,18 @@ class WalletProxyController extends EdgeProxyController
         $testHost    = $hostCfg['test_host'] ?? $hostCfg['host'];
         $method      = $request->method();
         $path        = $this->getPath($request->path(), $prefixTrim, $prefixAdd);
-        $query       = $request->getQueryString();
         $body        = $request->getContent();
         $contentType = $request->getContentType();
         $auth        = $hostCfg['auth'];
         $devServeHeader = $request->header(RequestHeader::DEV_SERVE_USER);
 
+        $query = '';
+        if (($request->method() === 'GET') and
+            (empty($request->all()) === false) and
+            (empty($query) === true))
+        {
+            $query = http_build_query($request->all());
+        }
         // API consumes account_id in authentication middleware, for partner auth. In wallet, we have account_id for all accounts,
         // which causes a name clash, hence dashboard prefixes account_id with issuing keyword.
         // Ref: https://razorpay.slack.com/archives/C34U44N5Q/p1681714187994329
@@ -59,12 +65,6 @@ class WalletProxyController extends EdgeProxyController
             RequestHeader::DEV_SERVE_USER => $devServeHeader
         ];
 
-        if (($request->method() === 'GET') and
-            (empty($request->all()) === false) and
-            (empty($query) === true))
-        {
-            $query = http_build_query($request->all());
-        }
         // services having different live/test hosts, should set value test_host key,
         // this snippet overrides host if there is a test_host key in test mode
         if ($this->app['rzp.mode'] == "test") {

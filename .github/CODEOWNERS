@@ -65,7 +65,8 @@ app/Models/OAuthToken/                                        @razorpay/spine-ed
 
 app/Services/UpiPayment/                               @razorpay/techupicore
 app/Services/AuthService.php                           @razorpay/spine-edge
-
+app/Services/CheckoutService.php                       @razorpay/checkout-backend-leads
+app/Services/Mock/CheckoutService.php                  @razorpay/checkout-backend-leads
 
 #
 # Gateways
