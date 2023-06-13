@@ -90,7 +90,7 @@ export interface ListApiParams {
   skip: number;
   count: number;
   mode: ModeT;
-  account_id?: string;
+  issuing_account_id?: string;
 }
 
 export interface DetailApiParams {
@@ -109,7 +109,7 @@ export interface AccountFilterParams {
 export type AccountListApiParams = AccountFilterParams & ListApiParams;
 
 export interface Column<T> {
-  title: string;
+  title: string | JSX.Element;
   value: (item: T) => JSX.Element;
 }
 export interface Transaction {
@@ -136,13 +136,19 @@ export interface TransactionFilterParams {
 export type TransactionListApiParams = TransactionFilterParams & ListApiParams;
 
 export interface LoadsFilterParams {
-  accountId: string;
+  issuing_account_id?: string;
+  from: number;
+  to: number;
+  load_id?: string;
 }
 
 export type AccountLoadsListApiParams = LoadsFilterParams & ListApiParams;
 
 export interface PaymentsFilterParams {
-  accountId: string;
+  issuing_account_id?: string;
+  from: number;
+  to: number;
+  payment_id?: string;
 }
 
 export type AccountPaymentsListApiParams = PaymentsFilterParams & ListApiParams;

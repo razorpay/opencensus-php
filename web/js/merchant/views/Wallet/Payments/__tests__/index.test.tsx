@@ -9,10 +9,14 @@ const renderPayments = () => {
 
 describe('Wallet > Payments', () => {
   test('Should show filters for account id', async () => {
-    renderPayments();
+    render(<Filters onSubmit={jest.fn} />);
 
-    const accountIdLabel = await screen.findByText(/Account Id/i);
+    const accountIdLabel = await screen.findByText(/Account Id/);
+    const paymentIdLabel = await screen.findByText(/Payment Id/);
+    const durationLabel = await screen.findByText(/Duration/);
     expect(accountIdLabel).toBeInTheDocument();
+    expect(paymentIdLabel).toBeInTheDocument();
+    expect(durationLabel).toBeInTheDocument();
     expect(screen.getByText('Search')).toBeInTheDocument();
     expect(screen.getByText('Clear')).toBeInTheDocument();
   });
@@ -26,7 +30,19 @@ describe('Wallet > Payments', () => {
     await userEvent.type(screen.getByTestId('accountId'), input);
     await userEvent.click(screen.getByText('Search'));
 
-    expect(mock).toBeCalledWith({ accountId: input });
+    expect(mock).toBeCalledWith({ issuing_account_id: input, from: '', to: '' });
+  });
+
+  test('Should receive account id in callback when id is entered', async () => {
+    const input = 'ipay_abcdef12345678';
+    const mock = jest.fn(() => {});
+
+    render(<Filters onSubmit={mock} />);
+
+    await userEvent.type(screen.getByTestId('paymentId'), input);
+    await userEvent.click(screen.getByText('Search'));
+
+    expect(mock).toBeCalledWith({ payment_id: input, from: '', to: '' });
   });
 
   test('Should display Payments table with expected rows', () => {
@@ -40,14 +56,9 @@ describe('Wallet > Payments', () => {
 
     await waitForLoadingToFinish();
 
-    expect(screen.getByText('Payment Id')).toBeInTheDocument();
     expect(screen.getByText('ipayment_qwerty87654321')).toBeInTheDocument();
-    expect(screen.getByText('Amount')).toBeInTheDocument();
     expect(screen.getByText('50')).toBeInTheDocument();
-    expect(screen.getByText('Created At')).toBeInTheDocument();
-    expect(screen.getByText('Status')).toBeInTheDocument();
     expect(screen.getByText('Success')).toBeInTheDocument();
-    expect(screen.getByText('Description')).toBeInTheDocument();
     expect(screen.getByText('Description for this payment')).toBeInTheDocument();
   });
 });

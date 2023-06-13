@@ -10,7 +10,7 @@ describe('Wallet > Accounts > Filters', () => {
     render(<Filters onSubmit={jest.fn()} />);
     await waitFor(() => {
       // Ensure all the filters fields exist
-      expect(screen.getByText('Id')).toBeInTheDocument();
+      expect(screen.getByText('Transaction Id')).toBeInTheDocument();
       expect(screen.getByText('Duration')).toBeInTheDocument();
 
       // Ensure all the search/clear buttons exist

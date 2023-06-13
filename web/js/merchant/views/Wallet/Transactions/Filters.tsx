@@ -26,7 +26,7 @@ const Filters = ({ onSubmit }: FilterProps): JSX.Element => {
   return (
     <ListFilter date={date} onSubmit={onSubmit} form="walletAccountsFilter">
       <div className="form-group list-filter-item">
-        <label>Id</label>
+        <label>Transaction Id</label>
         <Field name="id" component="input" class="form-control input-sm" data-testid="id" />
       </div>
 

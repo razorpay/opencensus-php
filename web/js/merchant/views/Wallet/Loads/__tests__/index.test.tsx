@@ -8,10 +8,15 @@ const renderLoads = () => {
 };
 
 describe('Wallet > Loads', () => {
-  test('Should show filters for account id', async () => {
-    renderLoads();
+  test('Should show all filters', async () => {
+    render(<Filters onSubmit={jest.fn} />);
 
-    const accountIdLabel = await screen.findByText(/Account Id/i);
+    const accountIdLabel = await screen.queryByText(/Account Id/i);
+    const loadIdLabel = await screen.queryByText(/Load Id/i);
+    const durationLabel = await screen.getByText(/Duration/i);
+
+    expect(loadIdLabel).toBeInTheDocument();
+    expect(durationLabel).toBeInTheDocument();
     expect(accountIdLabel).toBeInTheDocument();
     expect(screen.getByText('Search')).toBeInTheDocument();
     expect(screen.getByText('Clear')).toBeInTheDocument();
@@ -26,7 +31,19 @@ describe('Wallet > Loads', () => {
     await userEvent.type(screen.getByTestId('accountId'), input);
     await userEvent.click(screen.getByText('Search'));
 
-    expect(mock).toBeCalledWith({ accountId: input });
+    expect(mock).toBeCalledWith({ issuing_account_id: input, from: '', to: '' });
+  });
+
+  test('Should receive load id in callback when id is entered', async () => {
+    const input = 'iload_abcdef12345678';
+    const mock = jest.fn(() => {});
+
+    render(<Filters onSubmit={mock} />);
+
+    await userEvent.type(screen.getByTestId('loadId'), input);
+    await userEvent.click(screen.getByText('Search'));
+
+    expect(mock).toBeCalledWith({ load_id: input, from: '', to: '' });
   });
 
   test('Should display loads table with expected rows', () => {
@@ -40,16 +57,10 @@ describe('Wallet > Loads', () => {
 
     await waitForLoadingToFinish();
 
-    expect(screen.getByText('Load Id')).toBeInTheDocument();
     expect(screen.getByText('iload_qwerty87654321')).toBeInTheDocument();
-    expect(screen.getByText('Amount')).toBeInTheDocument();
     expect(screen.getByText('50')).toBeInTheDocument();
-    expect(screen.getByText('Type')).toBeInTheDocument();
     expect(screen.getByText('User')).toBeInTheDocument();
-    expect(screen.getByText('Created At')).toBeInTheDocument();
-    expect(screen.getByText('Status')).toBeInTheDocument();
     expect(screen.getByText('Success')).toBeInTheDocument();
-    expect(screen.getByText('Description')).toBeInTheDocument();
     expect(screen.getByText('Description for this load')).toBeInTheDocument();
   });
 });

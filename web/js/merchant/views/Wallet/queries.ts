@@ -35,11 +35,17 @@ export const fetchAccounts = async ({
 
 export const fetchTransactions = async ({
   mode = 'test',
-  ...params
+  skip = 0,
+  count = 25,
+  ...filters
 }: types.TransactionListApiParams): Promise<types.ListApiResponse<types.Transaction>> => {
   try {
     const res = await fetch<types.ListApiResponse<types.Transaction>>({
-      url: `${WALLET_BASE_PATH}/transactions${stringifyQueryParams(params)}`,
+      url: `${WALLET_BASE_PATH}/transactions${stringifyQueryParams({
+        ...filters,
+        count,
+        skip,
+      })}`,
       mode,
     });
     res.items = res.items.map((item) => ({
@@ -56,15 +62,17 @@ export const fetchTransactions = async ({
 };
 
 export const fetchPayments = async ({
-  skip,
-  count,
-  account_id,
   mode = 'test',
+  skip = 0,
+  count = 25,
+  ...filters
 }: types.ListApiParams): Promise<types.ListApiResponse<types.WalletPayment>> => {
   try {
-    const url = `${WALLET_BASE_PATH}/payments?skip=${skip}&count=${count}${
-      account_id ? `&issuing_account_id=${account_id}` : ''
-    }`;
+    const url = `${WALLET_BASE_PATH}/payments${stringifyQueryParams({
+      ...filters,
+      count,
+      skip,
+    })}`;
 
     const res = await fetch<types.ListApiResponse<types.WalletPayment>>({
       url,
@@ -82,15 +90,17 @@ export const fetchPayments = async ({
 };
 
 export const fetchLoads = async ({
-  skip,
-  count,
-  account_id,
   mode = 'test',
+  skip = 0,
+  count = 25,
+  ...filters
 }: types.ListApiParams): Promise<types.ListApiResponse<types.WalletLoad>> => {
   try {
-    const url = `${WALLET_BASE_PATH}/loads?skip=${skip}&count=${count}${
-      account_id ? `&issuing_account_id=${account_id}` : ''
-    }`;
+    const url = `${WALLET_BASE_PATH}/loads${stringifyQueryParams({
+      ...filters,
+      skip,
+      count,
+    })}`;
     const res = await fetch<types.ListApiResponse<types.WalletLoad>>({
       url,
       mode,

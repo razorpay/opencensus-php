@@ -1,5 +1,6 @@
-import React, { useContext, useEffect, useState } from 'react';
+import moment from 'moment';
 import { useQuery } from 'react-query';
+import React, { useContext, useEffect, useState } from 'react';
 
 import DataTable from 'common/ui/Table/DataTable';
 import Filters from 'merchant/views/Wallet/Transactions/Filters';
@@ -7,7 +8,7 @@ import Filters from 'merchant/views/Wallet/Transactions/Filters';
 import { SessionContext, WalletSession } from 'merchant/views/Wallet/context';
 import { fetchTransactions } from 'merchant/views/Wallet/queries';
 
-import { ListApiResponse, Transaction } from 'merchant/views/Wallet/types';
+import { ListApiResponse, Transaction, TransactionFilterParams } from 'merchant/views/Wallet/types';
 import { ID, ACCOUNT_ID, AMOUNT, CREATED_AT, TYPE, SOURCE, REFERENCE_ID } from './constants';
 
 export const Transactions = (): JSX.Element => {
@@ -16,7 +17,10 @@ export const Transactions = (): JSX.Element => {
     skip: 0,
     count: 25,
   });
-  const [filters, setFilters] = useState({});
+  const [filters, setFilters] = useState<TransactionFilterParams>({
+    from: moment().subtract(7, 'days').unix(),
+    to: moment().unix(),
+  });
 
   useEffect(() => {
     setPagination({
