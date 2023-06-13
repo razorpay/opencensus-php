@@ -170,6 +170,52 @@ class ScroogeRefundCreationTest extends TestCase
         $this->assertEquals('10000000000000', $transaction['balance_id']);
     }
 
+    public function testScroogeNormalFullRefundTransactionCreateForMY()
+    {
+        $payment = $this->defaultAuthPaymentForMY();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $dummyRefundId = 'dummyRefundId0';
+        $internalPaymentId = substr($payment['id'], 4);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->ba->scroogeAuth();
+
+        // full refund
+        $this->testData['callScroogeRefundTransactionCreate']['request']['content'] = [
+            'id'               => $dummyRefundId,
+            'payment_id'       => $internalPaymentId,
+            'amount'           => '50000',
+            'base_amount'      => '50000',
+            'gateway'          => $payment['gateway'],
+            'speed_decisioned' => 'normal',
+        ];
+
+        $response = $this->runRequestResponseFlow($this->testData['callScroogeRefundTransactionCreate']);
+
+        $this->assertNull($response['error']);
+
+        $this->assertNotNull($response['data']['transaction_id']);
+        $this->assertFalse($response['data']['compensate_payment']);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertEquals(50000, $payment['amount_refunded']);
+        $this->assertEquals(50000, $payment['base_amount_refunded']);
+        $this->assertEquals('refunded', $payment['status']);
+        $this->assertEquals('full', $payment['refund_status']);
+
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->assertEquals(50000, $transaction['debit']);
+        $this->assertEquals(0, $transaction['credit']);
+        $this->assertEquals(0, $transaction['fee_credits']);
+        $this->assertEquals(0, $transaction['fee']);
+        $this->assertEquals(0, $transaction['tax']);
+        $this->assertEquals('10000000000000', $transaction['balance_id']);
+    }
+
     public function testScroogeNormalPartialRefundTransactionCreate()
     {
         $payment = $this->defaultAuthPayment();

@@ -309,6 +309,42 @@ class RefundTest extends TestCase
         $refund = $this->startTest($payment['id'], (string) $payment['amount']);
     }
 
+    public function testSuccessfulVoidRefundForMYR()
+    {
+        $this->fixtures->create('terminal:shared_eghl_terminal', [
+            'type' =>
+                [
+                    'non_recurring' => '1',
+                    'recurring_3ds' => '1',
+                    'recurring_non_3ds' => '1'
+                ]
+        ]);
+
+
+        $this->gateway = 'eghl';
+
+        $this->mockCardVault();
+
+        $this->fixtures->merchant->addFeatures('void_refunds');
+
+        $this->fixtures->merchant->edit('10000000000000',[
+            'country_code' => 'MY'
+        ]);
+        $payment = $this->defaultAuthPaymentForMY([
+            'card' => [
+                'number'       => CardNumber::VALID_ENROLL_NUMBER,
+                'expiry_month' => '02',
+                'expiry_year'  => '35',
+                'cvv'          => 123,
+                'name'         => 'Test Card'
+            ]
+        ]);
+
+        $payment = $this->getLastEntity('payment');
+
+        $refund = $this->startTest($payment['id'], (string) $payment['amount']);
+    }
+
     public function testFailVoidPartialRefund()
     {
         $this->fixtures->create('terminal:shared_hitachi_terminal', [
@@ -905,6 +941,15 @@ class RefundTest extends TestCase
     public function testRefundByMerchantOnAuthorizedPayment()
     {
         $payment = $this->defaultAuthPayment();
+
+        $this->ba->privateAuth();
+
+        $this->startTest($payment['id']);
+    }
+
+    public function testRefundByMYMerchantOnAuthorizedPayment()
+    {
+        $payment = $this->defaultAuthPaymentForMY();
 
         $this->ba->privateAuth();
 

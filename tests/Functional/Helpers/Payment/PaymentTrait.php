@@ -388,6 +388,19 @@ trait PaymentTrait
         return $data;
     }
 
+    protected function defaultAuthPaymentForMY(array $payment = [])
+    {
+        $defaultPayment = $this->getDefaultPaymentArrayForMYMerchant();
+
+        $payment = array_merge($defaultPayment, $payment);
+
+        $content = $this->doAuthPayment($payment);
+
+        $id = $content['razorpay_payment_id'];
+
+        return array_merge($payment, ['id' => $id]);
+    }
+
     protected function defaultAuthPayment(array $payment = [])
     {
         $defaultPayment = $this->getDefaultPaymentArray();

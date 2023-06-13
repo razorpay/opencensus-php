@@ -125,6 +125,18 @@ return [
         ],
     ],
 
+    'testSuccessfulVoidRefundForMYR' => [
+        'request' => [
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'refund',
+                'amount' => 50000,
+                'currency' => 'MYR',
+            ],
+        ],
+    ],
+
   'testFailVoidPartialRefund' => [
         'request' => [
         ],
@@ -400,6 +412,22 @@ return [
     ],
 
     'testRefundByMerchantOnAuthorizedPayment' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED
+        ],
+    ],
+
+    'testRefundByMYMerchantOnAuthorizedPayment' => [
         'response' => [
             'content' => [
                 'error' => [

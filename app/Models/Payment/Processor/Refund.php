@@ -4316,7 +4316,7 @@ trait Refund
             return false;
         }
 
-        if ($v2Variant !== 'on' and (($payment->getCurrency() !== Currency\Currency::INR) or ($payment->isDCC() === true)))
+        if ($v2Variant !== 'on' and (($payment->getCurrency() !== $payment->merchant->getCurrency()) or ($payment->isDCC() === true)))
         {
             return false;
         }
@@ -4341,7 +4341,7 @@ trait Refund
             'paymentId' => $payment->getId(),
         ]);
 
-        if ($v2Variant !== 'on' and (($payment->getCurrency() !== Currency\Currency::INR) or ($payment->isDCC() === true)))
+        if ($v2Variant !== 'on' and (($payment->getCurrency() !== $payment->merchant->getCurrency()) or ($payment->isDCC() === true)))
         {
             return false;
         }
@@ -4371,7 +4371,7 @@ trait Refund
             'paymentId' => $payment->getId(),
         ]);
 
-        if ($v2Variant !== 'on' and (($payment->getCurrency() !== Currency\Currency::INR) or ($payment->isDCC() === true)))
+        if ($v2Variant !== 'on' and (($payment->getCurrency() !== $payment->merchant->getCurrency()) or ($payment->isDCC() === true)))
         {
             return false;
         }
