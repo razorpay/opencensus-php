@@ -55,7 +55,7 @@
             style="height: 40px"
             src="https://cdn.razorpay.com/static/assets/email/notification.png"
           />
-          <p style="margin: 0; margin-top: 15px">Razorpay Response to LEA</p>
+          <p style="margin: 0; margin-top: 15px">Razorpay Acknowledgement to LEA</p>
         </div>
       </div>
       <div
@@ -104,14 +104,14 @@
               <th style="padding: 5px; border: 1px solid #cccccc">
                 Payment Method
               </th>
+                <th style="padding: 5px; border: 1px solid #cccccc">Card Last 4 digits/VPA</th>
               <th style="padding: 5px; border: 1px solid #cccccc">
-                Reference Number
+                Reference Number/Auth Code
               </th>
               <th style="padding: 5px; border: 1px solid #cccccc">
-                Amount (in Rs.)
+                Amount (INR)
               </th>
-              <th style="padding: 5px; border: 1px solid #cccccc">Date</th>
-              <th style="padding: 5px; border: 1px solid #cccccc">VPA</th>
+              <th style="padding: 5px; border: 1px solid #cccccc">Date Range</th>
             </tr>
             @foreach($payment_requests as $paymentRequest)
               <tr style="padding: 5px; border: 1px solid #cccccc">
@@ -123,6 +123,18 @@
                   <td style="padding: 5px; border: 1px solid #cccccc"></td>
                 @endif
 
+                @if(empty($paymentRequest['vpa']) === false)
+                    <td style="padding: 5px; border: 1px solid #cccccc">
+                        {{$paymentRequest['vpa']}}
+                    </td>
+                @elseif(empty($paymentRequest['last4']) === false)
+                    <td style="padding: 5px; border: 1px solid #cccccc">
+                        {{$paymentRequest['last4']}}
+                    </td>
+                @else
+                    <td style="padding: 5px; border: 1px solid #cccccc"></td>
+                @endif
+
                 @if(empty($paymentRequest['reference16']) === false)
                   <td style="padding: 5px; border: 1px solid #cccccc">
                     {{$paymentRequest['reference16']}}
@@ -131,6 +143,10 @@
                   <td style="padding: 5px; border: 1px solid #cccccc">
                     {{$paymentRequest['reference1']}}
                   </td>
+                @elseif(empty($paymentRequest['reference2']) === false)
+                    <td style="padding: 5px; border: 1px solid #cccccc">
+                        {{$paymentRequest['reference2']}}
+                    </td>
                 @else
                   <td style="padding: 5px; border: 1px solid #cccccc"></td>
                 @endif
@@ -145,16 +161,8 @@
 
                 @if(empty($paymentRequest['from']) === false and empty($paymentRequest['to']) === false)
                   <td style="padding: 5px; border: 1px solid #cccccc">
-                    {{date("Y-m-d H:i:s", $paymentRequest['from']) }} -
-                    {{date("Y-m-d H:i:s", $paymentRequest['to']) }}
-                  </td>
-                @else
-                  <td style="padding: 5px; border: 1px solid #cccccc"></td>
-                @endif
-
-                @if(empty($paymentRequest['vpa']) === false)
-                  <td style="padding: 5px; border: 1px solid #cccccc">
-                    {{$paymentRequest['vpa']}}
+                    {{date("Y-m-d", $paymentRequest['from']) }} to
+                    {{date("Y-m-d", $paymentRequest['to']) }}
                   </td>
                 @else
                   <td style="padding: 5px; border: 1px solid #cccccc"></td>

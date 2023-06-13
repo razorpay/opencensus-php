@@ -61,6 +61,7 @@ class Constants
 
     const UPI        = 'upi';
     const NETBANKING = 'netbanking';
+    const CARD       = 'card';
 
     const SHARE_BENEFICARY_ACCOUNT_DETAILS = 'share_beneficary_account_details'; //typo at frontend needs to be fixed
 

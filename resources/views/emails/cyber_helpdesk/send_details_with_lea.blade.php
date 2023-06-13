@@ -120,7 +120,7 @@
                 Payment ID
               </th>
               <th style="padding: 5px; border: 1px solid #cccccc">Status</th>
-              <th style="padding: 5px; border: 1px solid #cccccc">Amount</th>
+              <th style="padding: 5px; border: 1px solid #cccccc">Amount (INR)</th>
               <th style="padding: 5px; border: 1px solid #cccccc">
                 Buyer's Email address
               </th>
