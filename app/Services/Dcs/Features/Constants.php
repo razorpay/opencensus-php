@@ -76,6 +76,7 @@ class Constants
     const OverridingSubmerchantConfigEnabled = 'overriding_submerchant_config_enabled';
     const AdditionalFieldsHdfcOnboarding = 'additional_fields_hdfc_onboarding';
     const HideInstrumentRequest = 'hide_instrument_request';
+    const CustomReportExtensions = 'custom_report_extensions';
     const QualityCheckIntimationEmail = 'quality_check_intimation_email';
     const PgLedgerReverseShadowEnabled = 'pg_ledger_reverse_shadow_enabled';
     const ShopifyPaymentsReport = 'shopify_payments_report';
@@ -201,6 +202,7 @@ class Constants
         self::OverridingSubmerchantConfigEnabled => "rzp/platform/partner/configuration/Features",
         self::AdditionalFieldsHdfcOnboarding => "rzp/pg/org/dashboard/admin/Features",
         self::HideInstrumentRequest => "rzp/pg/org/dashboard/banking_program/UIControls",
+        self::CustomReportExtensions => "rzp/pg/org/dashboard/banking_program/Reporting",
         self::QualityCheckIntimationEmail => "rzp/pg/org/communication/banking_program/MerchantCommunication",
         self::ShopifyPaymentsReport => "rzp/pg/merchant/report/Features",
         self::NoDocOnboardingEnabled => 'rzp/pg/merchant/onboarding/PartnershipFeatures',
@@ -351,6 +353,7 @@ class Constants
         APIFeaturesConstants::DYNAMIC_CURRENCY_CONVERSION_CYBS              => self::DynamicCurrencyConversionCybs,
         APIFeaturesConstants::ONE_CC_SHOPIFY_ACC_CREATE                     => self::OneCCAutomaticAccountCreation,
         APIFeaturesConstants::HIDE_INSTRUMENT_REQUEST                       => self::HideInstrumentRequest,
+        APIFeaturesConstants::CUSTOM_REPORT_EXTENSIONS                      => self::CustomReportExtensions,
         APIFeaturesConstants::QC_INTIMATION_EMAIL                           => self::QualityCheckIntimationEmail,
         APIFeaturesConstants::ENABLE_VPA_VALIDATE                           => self::ValidateVpa,
         APIFeaturesConstants::SAVE_VPA                                      => self::UseSavedVpa,

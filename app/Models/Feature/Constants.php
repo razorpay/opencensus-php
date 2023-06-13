@@ -273,6 +273,8 @@ class Constants
 
     const HIDE_INSTRUMENT_REQUEST = 'hide_instrument_request';
 
+    const CUSTOM_REPORT_EXTENSIONS = 'custom_report_extensions';
+
     const QC_INTIMATION_EMAIL = 'qc_intimation_email';
 
     /**
@@ -2500,6 +2502,7 @@ class Constants
         self::DISABLE_UPI_NUM_ON_L1 => true,
         self::ADDITIONAL_ONBOARDING => true,
         self::HIDE_INSTRUMENT_REQUEST => true,
+        self::CUSTOM_REPORT_EXTENSIONS => true,
         self::QC_INTIMATION_EMAIL   => true,
         self::AUTO_COMM_INV_DISABLED          => true,
         self::ADMIN_LEAD_PARTNER      => true,
