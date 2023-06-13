@@ -300,6 +300,8 @@ class Service extends UpiPaymentService
     {
         $data = $content['data'];
 
+        $responseError = null;
+
         $responseData['data'] = [
             'upi' => [
                 'vpa' => $data['payment']['vpa'] ?? 'forceauth@upi',
@@ -323,10 +325,39 @@ class Service extends UpiPaymentService
 
         $responseData['success'] = true;
 
+        switch ($data['payment']['description']) {
+            case 'verify_amount_mismatch':
+                $responseData['data']['payment']['amount_authorized'] = $data['payment']['amount'] + 100;
+                break;
+            case 'mozart_failure':
+                $responseError = [
+                    'internal' => [
+                        'code' => 'GATEWAY_ERROR_REQUEST_ERROR',
+                        'description' => 'GATEWAY_ERROR: received false response with status
+                                                        200 from mozart',
+                        'metadata' => [
+                            'description' => 'Debit has been failed',
+                            'gateway_error_code' => 'U30',
+                            'gateway_error_description' => 'Debit has been failed',
+                            'internal_error_code' => 'GATEWAY_ERROR_DEBIT_FAILED'
+                        ]
+                    ]
+                ];
+                $responseData['error'] = [
+                    'description' => 'Debit has been failed',
+                    'gateway_error_code' => 'U30',
+                    'gateway_error_description' => 'Debit has been failed',
+                    'gateway_status_code' => 200,
+                    'internal_error_code' => 'GATEWAY_ERROR_DEBIT_FAILED',
+                ];
+                $responseData['success'] = false;
+                break;
+        }
+
         $response = [
             'data'      => $responseData,
             'gateway'   => $content['gateway'],
-            'error'     => null,
+            'error'     => $responseError,
         ];
 
         $this->content($response, $this->action);

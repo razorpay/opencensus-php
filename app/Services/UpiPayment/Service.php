@@ -753,6 +753,8 @@ class Service
 
         $verify->setVerifyResponseBody($response);
 
+        $verify->setVerifyResponseContent($response[Response::DATA]);
+
         $verify->setStatus(VerifyResult::STATUS_MATCH);
 
         $this->setGatewaySuccess($verify);
@@ -783,6 +785,8 @@ class Service
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
 
+        $this->setVerifyError($response, $verify);
+
         if ($this->action === Payment\Action::AUTHORIZE_FAILED)
         {
             return $this->processAuthorizeFailedPayment($verify, $response);
@@ -791,6 +795,35 @@ class Service
         $this->verifyPayment($verify);
 
         return $verify->getDataToTrace();
+    }
+
+    /**
+     * set verify error
+     *
+     * @param array $response
+     * @param Verify $verify
+     * @return void
+     */
+    protected function setVerifyError($response, Verify $verify)
+    {
+        // return if gateway success is true
+        if ($verify->gatewaySuccess === true)
+        {
+            return;
+        }
+
+        try
+        {
+            $this->checkGatewayFailure($response);
+        }
+        catch (\Exception $e)
+        {
+            // we set error only if it is error received from gateway
+            if ($e instanceof Exception\GatewayErrorException)
+            {
+                $verify->error = $e->getError()->getAttributes();
+            }
+        }
     }
 
     /**

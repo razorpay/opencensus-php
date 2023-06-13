@@ -433,6 +433,10 @@ class UpiAirtelPaymentServiceTest extends UpiPaymentServiceTest
 
         Carbon::setTestNow($time);
 
+        $payment->setDescription('');
+
+        $payment->saveOrFail();
+
         $this->verifyAllPayments();
 
         $payment->reload();

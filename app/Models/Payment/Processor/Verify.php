@@ -608,6 +608,13 @@ trait Verify
             return;
         }
 
+        // If payment method is upi and not failed return early, in other words
+        // update error code only in case of failed payments
+        if ( ($payment->getMethod() === 'upi') and  ($payment->isFailed() === false))
+        {
+            return;
+        }
+
         $error = $data['error'];
 
         $internalErrorCode = $error['internal_error_code'];

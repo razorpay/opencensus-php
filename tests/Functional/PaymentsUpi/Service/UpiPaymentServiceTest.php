@@ -7,11 +7,13 @@ use Illuminate\Http\UploadedFile;
 
 use RZP\Exception;
 use RZP\Constants\Mode;
+use RZP\Models\Payment\Status;
 use RZP\Services\RazorXClient;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Payment\Method;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
+use RZP\Exception\PaymentVerificationException;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
@@ -358,6 +360,267 @@ class UpiPaymentServiceTest extends TestCase
 
         $this->assertNull($upiEntity);
 
+    }
+    /**
+     * Test verify failed payments
+     * @return void
+     */
+    public function testVerifyFailedPayment()
+    {
+        $this->testMozartFailure();
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertArraySubset(
+            [
+                Entity::STATUS              => Status::FAILED,
+                Entity::GATEWAY             => 'upi_airtel',
+                Entity::TERMINAL_ID         => $this->terminal->getId(),
+                Entity::CPS_ROUTE           => Entity::UPI_PAYMENT_SERVICE,
+                Entity::ERROR_CODE          => 'GATEWAY_ERROR',
+                Entity::INTERNAL_ERROR_CODE => 'GATEWAY_ERROR_ENCRYPTION_ERROR',
+            ], $payment->toArray()
+        );
+
+        $payment = $this->verifyPayment($payment->getPublicId());
+
+        $this->assertSame($payment['payment']['verified'], 1);
+
+        $this->assertArraySubset(
+            [
+                Entity::STATUS              => Status::FAILED,
+                Entity::GATEWAY             => 'upi_airtel',
+                Entity::TERMINAL_ID         => $this->terminal->getId(),
+                Entity::CPS_ROUTE           => Entity::UPI_PAYMENT_SERVICE,
+                Entity::ERROR_CODE          => 'GATEWAY_ERROR',
+                Entity::INTERNAL_ERROR_CODE => 'GATEWAY_ERROR_DEBIT_FAILED',
+            ], $payment['payment']
+        );
+    }
+
+    /**
+     * Test verify created payments
+     * @return void
+     */
+    public function testVerifyCreatedPayment()
+    {
+        $payment = $this->payment;
+
+        $payment['description'] =  'create_collect_success';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $this->assertEquals('async', $response['type']);
+
+        $this->assertArrayHasKey('vpa', $response['data']);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertArraySubset(
+            [
+                Entity::STATUS          => Status::CREATED,
+                Entity::GATEWAY         => 'upi_airtel',
+                Entity::TERMINAL_ID     => $this->terminal->getId(),
+                Entity::REFUND_AT       => null,
+                Entity::CPS_ROUTE       => Entity::UPI_PAYMENT_SERVICE,
+            ], $payment->toArray()
+        );
+
+        $payment->setDescription('mozart_failure');
+
+        $payment->saveOrFail();
+
+        $payment = $this->verifyPayment($payment->getPublicId());
+
+        $this->assertSame($payment['payment']['verified'], 1);
+
+        $this->assertArraySubset(
+            [
+                Entity::STATUS              => Status::CREATED,
+                Entity::GATEWAY             => 'upi_airtel',
+                Entity::TERMINAL_ID         => $this->terminal->getId(),
+                Entity::CPS_ROUTE           => Entity::UPI_PAYMENT_SERVICE,
+                Entity::ERROR_CODE          => null,
+                Entity::INTERNAL_ERROR_CODE => null,
+            ], $payment['payment']
+        );
+    }
+
+    /**
+     * Test verify authorzied payments
+     * @return void
+     */
+    public function testVerifyAuthorizedPayment()
+    {
+        $payment = $this->payment;
+
+        $payment['description'] =  'create_collect_success';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $this->assertEquals('async', $response['type']);
+
+        $this->assertArrayHasKey('vpa', $response['data']);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertArraySubset(
+            [
+                Entity::STATUS          => Status::CREATED,
+                Entity::GATEWAY         => 'upi_airtel',
+                Entity::TERMINAL_ID     => $this->terminal->getId(),
+                Entity::REFUND_AT       => null,
+                Entity::CPS_ROUTE       => Entity::UPI_PAYMENT_SERVICE,
+            ], $payment->toArray()
+        );
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            return $this->getRazoxVariant($feature, 'ups_upi_airtel_pre_process_v1', 'upi_airtel');
+        });
+
+        $payment = $this->getDbLastpayment();
+
+        $content = $this->mockServer('upi_airtel')->getAsyncCallbackContent($payment->toArray(),
+            $this->terminal->toArray());
+
+        $response = $this->makeS2SCallbackAndGetContent($content, 'upi_airtel');
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertEquals(['success' => true], $response);
+
+        $content = json_decode($content, true);
+
+        $this->assertArraySubset(
+            [
+                Entity::STATUS          => Status::AUTHORIZED,
+                Entity::GATEWAY         => 'upi_airtel',
+                Entity::TERMINAL_ID     => $this->terminal->getId(),
+                Entity::CPS_ROUTE       => Entity::UPI_PAYMENT_SERVICE,
+                Entity::REFERENCE16     => $content['rrn'],
+            ], $payment->toArray()
+        );
+
+        $payment->setDescription('mozart_failure');
+
+        $payment->saveOrFail();
+
+        $request = array(
+            'url'    => '/payments/'.$payment->getPublicId().'/verify',
+            'method' => 'GET');
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndCatchException(function() use ($request) {
+            $this->makeRequestAndGetContent($request);
+        }, PaymentVerificationException::class);
+
+        $payment->reload();
+
+        $this->assertArraySubset(
+            [
+                Entity::STATUS              => Status::AUTHORIZED,
+                Entity::GATEWAY             => 'upi_airtel',
+                Entity::TERMINAL_ID         => $this->terminal->getId(),
+                Entity::CPS_ROUTE           => Entity::UPI_PAYMENT_SERVICE,
+                Entity::VERIFIED            => 0,
+                Entity::ERROR_CODE          => null,
+                Entity::INTERNAL_ERROR_CODE => null
+            ], $payment->toArray()
+        );
+    }
+
+    /**
+     * Test verify captured payments
+     * @return void
+     */
+    public function testVerifyCapturedPayment()
+    {
+
+        $payment = $this->payment;
+
+        $payment['description'] =  'create_collect_success';
+
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $this->assertEquals('async', $response['type']);
+
+        $this->assertArrayHasKey('vpa', $response['data']);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertArraySubset(
+            [
+                Entity::STATUS          => Status::CREATED,
+                Entity::GATEWAY         => 'upi_airtel',
+                Entity::TERMINAL_ID     => $this->terminal->getId(),
+                Entity::REFUND_AT       => null,
+                Entity::CPS_ROUTE       => Entity::UPI_PAYMENT_SERVICE,
+            ], $payment->toArray()
+        );
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            return $this->getRazoxVariant($feature, 'ups_upi_airtel_pre_process_v1', 'upi_airtel');
+        });
+
+        $payment = $this->getDbLastpayment();
+
+        $content = $this->mockServer('upi_airtel')->getAsyncCallbackContent($payment->toArray(),
+            $this->terminal->toArray());
+
+        $response = $this->makeS2SCallbackAndGetContent($content, 'upi_airtel');
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertEquals(['success' => true], $response);
+
+        $content = json_decode($content, true);
+
+        $this->assertArraySubset(
+            [
+                Entity::STATUS          => Status::AUTHORIZED,
+                Entity::GATEWAY         => 'upi_airtel',
+                Entity::TERMINAL_ID     => $this->terminal->getId(),
+                Entity::CPS_ROUTE       => Entity::UPI_PAYMENT_SERVICE,
+                Entity::REFERENCE16     => $content['rrn'],
+            ], $payment->toArray()
+        );
+
+        $payment = $this->capturePayment($payment->getPublicId(), $payment[Entity::AMOUNT]);
+
+        $this->assertEquals(Status::CAPTURED, $payment[Entity::STATUS]);
+
+        $payment = $this->getDbLastPayment();
+
+        $payment->setDescription('mozart_failure');
+
+        $payment->saveOrFail();
+
+        $request = array(
+            'url'    => '/payments/'.$payment->getPublicId().'/verify',
+            'method' => 'GET');
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndCatchException(function() use ($request) {
+            $this->makeRequestAndGetContent($request);
+        }, PaymentVerificationException::class);
+
+        $payment->reload();
+
+        $this->assertArraySubset(
+            [
+                Entity::STATUS              => Status::CAPTURED,
+                Entity::GATEWAY             => 'upi_airtel',
+                Entity::TERMINAL_ID         => $this->terminal->getId(),
+                Entity::CPS_ROUTE           => Entity::UPI_PAYMENT_SERVICE,
+                Entity::VERIFIED            => 0,
+                Entity::ERROR_CODE          => null,
+                Entity::INTERNAL_ERROR_CODE => null
+            ], $payment->toArray()
+        );
     }
 
     protected function createDependentEntitiesForRefund($payment, $status = 'authorized')
