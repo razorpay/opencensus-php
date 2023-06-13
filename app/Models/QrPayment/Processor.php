@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Base\Luhn;
 use RZP\Models\Card;
 use RZP\Models\Base;
+use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
@@ -161,54 +162,69 @@ class Processor extends Base\Core
             }
         }
 
-        $this->repo->transaction(
-            function() use ($qrPayment, $paymentProcessor, $paymentInput, $payment, $shouldCreateQrPayment) {
+        // Adding the order id mutex for solving multiple captured payment on same order
+        // If qr payment has order id then resource will contain order id else ProviderReferenceIdProviderReferenceId
+        $orderMutex = 'callback_order_id_' . $qrPayment->getProviderReferenceId();
 
-                if ($shouldCreateQrPayment === true)
-                {
-                    $this->createPayment($paymentInput, $this->callbackData);
+        if (isset($paymentInput[Payment\Entity::ORDER_ID]) === true)
+        {
+            $orderId = Order\Entity::silentlyStripSign($paymentInput[Payment\Entity::ORDER_ID]);
 
-                    $payment = $paymentProcessor->getPayment();
+            $orderMutex =  'callback_order_id_' . $orderId;
+        }
 
-                    $this->trace->info(TraceCode::QR_CODE_PAYMENT_PROCESSED,
-                                       [
-                                           'payment' => $payment->getId(),
-                                           'rrn'     => $qrPayment->getProviderReferenceId()
-                                       ]);
-                }
+        $mutex = App::getFacadeRoot()['api.mutex'];
 
-                $qrPayment->payment()->associate($payment);
+        $mutex->acquireAndRelease($orderMutex,
+            function() use ($qrPayment, $paymentProcessor, $paymentInput, $payment, $shouldCreateQrPayment)
+            {
+                $this->repo->transaction(
+                    function () use ($qrPayment, $paymentProcessor, $paymentInput, $payment, $shouldCreateQrPayment) {
 
-                $qrPayment->qrCode()->associate($this->qrCode);
+                        if ($shouldCreateQrPayment === true) {
+                            $this->createPayment($paymentInput, $this->callbackData);
 
-                if ($qrPayment->isBankTransfer())
-                {
-                    $this->createAndAssociatePayerBankAccount($this->callbackData, $qrPayment);
-                }
+                            $payment = $paymentProcessor->getPayment();
 
-                $this->repo->saveOrFail($qrPayment);
+                            $this->trace->info(TraceCode::QR_CODE_PAYMENT_PROCESSED,
+                                [
+                                    'payment' => $payment->getId(),
+                                    'rrn' => $qrPayment->getProviderReferenceId()
+                                ]);
+                        }
 
-                $this->trace->info(TraceCode::QR_PAYMENT_SAVED,
-                                   [
-                                       'qr_id'   => $this->qrCode->getId(),
-                                       'payment' => $payment->getId(),
-                                       'rrn'     => $qrPayment->getProviderReferenceId()
-                                   ]);
+                        $qrPayment->payment()->associate($payment);
+
+                        $qrPayment->qrCode()->associate($this->qrCode);
+
+                        if ($qrPayment->isBankTransfer()) {
+                            $this->createAndAssociatePayerBankAccount($this->callbackData, $qrPayment);
+                        }
+
+                        $this->repo->saveOrFail($qrPayment);
+
+                        $this->trace->info(TraceCode::QR_PAYMENT_SAVED,
+                            [
+                                'qr_id' => $this->qrCode->getId(),
+                                'payment' => $payment->getId(),
+                                'rrn' => $qrPayment->getProviderReferenceId()
+                            ]);
 
 
-                $this->repo->saveOrFail($payment);
+                        $this->repo->saveOrFail($payment);
 
-                $this->trace->info(TraceCode::PAYMENT_ENTITY_UPDATE,
-                                   [
-                                       'qr_id'   => $this->qrCode->getId(),
-                                       'payment' => $payment->getId(),
-                                       'rrn'     => $qrPayment->getProviderReferenceId()
-                                   ]);
+                        $this->trace->info(TraceCode::PAYMENT_ENTITY_UPDATE,
+                            [
+                                'qr_id' => $this->qrCode->getId(),
+                                'payment' => $payment->getId(),
+                                'rrn' => $qrPayment->getProviderReferenceId()
+                            ]);
 
-                $this->updateQrCode($qrPayment);
+                        $this->updateQrCode($qrPayment);
 
-                return $payment;
-            }, 3);
+                        return $payment;
+                    }, 3);
+            });
 
         if (
             $qrPayment->qrCode->isCheckoutQrCode() &&
