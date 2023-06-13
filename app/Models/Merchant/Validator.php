@@ -465,6 +465,7 @@ class Validator extends Base\Validator
         Entity::NAME                      => 'sometimes|string',
         Entity::ID                        => 'sometimes|alpha_num|size:14',
         Entity::EMAIL                     => 'sometimes|email',
+        Detail\Entity::CONTACT_MOBILE     => 'sometimes|max:15|contact_syntax',
         Constants::APPLICATION_ID         => 'sometimes|string|size:14',
         Detail\Entity::ACTIVATION_STATUS  => 'sometimes|string|max:30',
         Constants::FROM                   => 'integer',

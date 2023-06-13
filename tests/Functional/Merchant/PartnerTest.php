@@ -1813,6 +1813,21 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testFetchPartnerSubmerchantsOptimisedWithContactNoFilter()
+    {
+        $this->mockSubmerchantFetchMultipleOptimisedExperiment();
+
+        $this->allowAdminToAccessPartnerMerchant();
+
+        $this->allowAdminToAccessMerchant(self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->createResellerPartnerSubmerchant();
+
+        $this->ba->adminProxyAuth();
+
+        $this->startTest();
+    }
+
     public function testFetchPartnerSubmerchantsFilters()
     {
         $this->createPartnerAndAddMultipleSubmerchants();
@@ -4559,11 +4574,12 @@ class PartnerTest extends OAuthTestCase
             'business_type' => 2
         ]);
 
-        $this->fixtures->on('test')->edit('merchant_detail', self::DEFAULT_SUBMERCHANT_ID, ['business_type' => 2]);
-        $this->fixtures->on('live')->edit('merchant_detail', self::DEFAULT_SUBMERCHANT_ID, ['business_type' => 2]);
+        $this->fixtures->on('live')->merchant_detail->edit(self::DEFAULT_SUBMERCHANT_ID, ['business_type' => 2, 'activation_status' => 'activated', 'contact_mobile'=> '9123456788']);
+        $this->fixtures->on('test')->merchant_detail->edit(self::DEFAULT_SUBMERCHANT_ID, ['business_type' => 2, 'activation_status' => 'activated', 'contact_mobile'=> '9123456788']);
 
         $this->fixtures->on('test')->edit('merchant', self::DEFAULT_SUBMERCHANT_ID, ['name' => 'submerchant']);
         $this->fixtures->on('live')->edit('merchant', self::DEFAULT_SUBMERCHANT_ID, ['name' => 'submerchant']);
+        $this->fixtures->on('test')->user->createUserForMerchant(self::DEFAULT_SUBMERCHANT_ID, ['email' => 'testing@example.com','contact_mobile'=> '9123456788']);
 
         $this->createMerchantAccessMap($app->getId(), self::DEFAULT_SUBMERCHANT_ID);
     }

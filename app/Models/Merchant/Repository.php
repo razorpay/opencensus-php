@@ -965,6 +965,7 @@ class Repository extends Base\Repository
         array $applicationIds, array $params = [], array $relations = ['owners']
     ): Base\PublicCollection
     {
+        $merchantDetailsRepo = $this->repo->merchant_detail;
         if (empty($applicationIds) === true)
         {
             return new Base\PublicCollection;
@@ -974,6 +975,12 @@ class Repository extends Base\Repository
         unset($params[Entity::MERCHANT_ID]);
 
         $query = $this->buildQueryToFetchSubmerchantDetailsByAppIds($applicationIds, $submerchantIds);
+
+        // add contact no filter
+        if (empty($params[Detail\Entity::CONTACT_MOBILE]) === false ) {
+            $query->where($merchantDetailsRepo->dbColumn(Detail\Entity::CONTACT_MOBILE),$params[Detail\Entity::CONTACT_MOBILE]);
+            unset($params[Detail\Entity::CONTACT_MOBILE]);
+        }
 
         $this->buildQueryWithParams($query, $params);
 
@@ -1049,6 +1056,8 @@ class Repository extends Base\Repository
      */
     public function fetchSubmerchantsByAppIds(array $applicationIds, array $params = [], array $relations = []): Base\PublicCollection
     {
+        $merchantDetailsRepo = $this->repo->merchant_detail;
+
         if (empty($applicationIds) === true)
         {
             return new Base\PublicCollection;
@@ -1059,6 +1068,12 @@ class Repository extends Base\Repository
         unset($params[Entity::MERCHANT_ID]);
 
         $query = $this->buildQueryToFetchSubmerchantsByAppIds($applicationIds, $submerchantIds, $relations);
+
+        // add contact no filter
+        if (empty($params[Detail\Entity::CONTACT_MOBILE]) === false ) {
+            $query->where($merchantDetailsRepo->dbColumn(Detail\Entity::CONTACT_MOBILE),$params[Detail\Entity::CONTACT_MOBILE]);
+            unset($params[Detail\Entity::CONTACT_MOBILE]);
+        }
 
         $this->buildQueryWithParams($query, $params);
 
