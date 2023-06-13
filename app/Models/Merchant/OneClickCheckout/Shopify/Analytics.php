@@ -14,7 +14,7 @@ class Analytics extends Base\Core
     const SHOPIFY_ANALYTICS_CACHE_KEY = 'shopify_1cc_analytics';
     const SHOPIFY_ANALYTICS_CACHE_KEY_TTL = 14 * 1440; // 14 days
     const MAGIC_ANALYTICS_CUSTOMER_INFO_CACHE_KEY = 'magic_analytics:customer_info:';
-    const MAGIC_ANALYTICS_CUSTOMER_INFO_CACHE_KEY_TTL = 1440; // 1 day
+    const MAGIC_ANALYTICS_CUSTOMER_INFO_CACHE_KEY_TTL = 3 * 1440; // 3 days
 
     protected $cache;
     protected $monitoring;
