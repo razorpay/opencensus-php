@@ -59,6 +59,7 @@ class Metric extends Base\Core
     const PAYMENT_CAPTURED_VERIFY               = 'payment_captured_verify';
     const PAYMENT_CREATE_REQUEST_TIME           = 'payment_create_request_time';
     const PAYMENT_CALLBACK_REQUEST_TIME         = 'payment_callback_request_time';
+    const PAYMENT_UPI_CALLBACK_REQUEST_TIME     = 'payment_upi_callback_request_time';
     const PAYMENT_CREATE_REQUEST_TIME_PG_ROUTER = 'payment_create_request_time_pg_router';
     const PAYMENT_FAILED                        = 'payment_failed';
     const PAYMENT_FAILED_PG_ROUTER              = 'payment_failed_pg_router';

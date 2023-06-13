@@ -87,6 +87,8 @@ class GatewayController extends Controller
 
     protected function processServerCallback($input, $gatewayDriver)
     {
+        $startTime = microtime(true);
+
         $gateway = $this->app['gateway']->gateway($gatewayDriver);
 
         // Some gateways may need some pre-processing on the input
@@ -124,10 +126,18 @@ class GatewayController extends Controller
         {
             if ($this->shouldRoutePreProcessedCallbackThroughReArch($paymentRepo, $paymentId, $input) === true)
             {
-                return $this->app['pg_router']->sendStaticCallbackRequestToPgRouter($paymentId, $input);
+                $data = $this->app['pg_router']->sendStaticCallbackRequestToPgRouter($paymentId, $input);
+
+                $this->logCallbackResponseTime($startTime, $gatewayDriver, true);
+
+                return $data;
             }
 
-            return $this->processNonExistingPaymentCallback($input, $paymentId, $gatewayDriver, true);
+            $data =  $this->processNonExistingPaymentCallback($input, $paymentId, $gatewayDriver, true);
+
+            $this->logCallbackResponseTime($startTime, $gatewayDriver, false, true);
+
+            return $data;
         }
         else
         {
@@ -152,7 +162,45 @@ class GatewayController extends Controller
 
             }
 
-            return (new Payment\Service)->s2sCallback($paymentId, $input);
+            $data = (new Payment\Service)->s2sCallback($paymentId, $input);
+
+            $this->logCallbackResponseTime($startTime, $gatewayDriver);
+
+            return $data;
+        }
+    }
+
+    /**
+     * pushes the time taken for callback processing
+     *
+     * @param float $startTime
+     * @param string $gateway
+     * @return void
+     */
+    private function logCallbackResponseTime(float $startTime, string $gateway, bool $rearch = false, bool $unexpected = false)
+    {
+        try
+        {
+            $responseTime = get_diff_in_millisecond($startTime);
+
+            $route  = $this->app['api.route']->getCurrentRouteName();
+
+            $dimensions = [
+                "payment_gateway"                       => $gateway,
+                Payment\Metric::PAYMENT_REQUEST_ROUTE   => $route,
+                "payment_rearch"                        => $rearch,
+                "unexpected"                            => $unexpected,
+            ];
+
+            $this->trace->histogram(Payment\Metric::PAYMENT_UPI_CALLBACK_REQUEST_TIME, $responseTime, $dimensions);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::UPI_CALLBACK_ERROR_LOGGING_RESPONSE_TIME_METRIC
+            );
         }
     }
 
@@ -219,6 +267,8 @@ class GatewayController extends Controller
 
     protected function processServerCallbackWithGatewayResponse($input, $gatewayDriver)
     {
+        $startTime = microtime(true);
+
         $gateway = $this->app['gateway']->gateway($gatewayDriver);
 
         if ($this->shouldSkipUpiAirtelRefundCallback($gatewayDriver, $input) === true)
@@ -305,10 +355,14 @@ class GatewayController extends Controller
                 if ($this->shouldRoutePreProcessedCallbackThroughReArch($paymentRepo, $paymentId, $input) === true)
                 {
                     $data = $this->app['pg_router']->sendStaticCallbackRequestToPgRouter($paymentId, $input);
+
+                    $this->logCallbackResponseTime($startTime, $gatewayDriver, true);
                 }
                 else
                 {
                     $data = $this->processNonExistingPaymentCallback($input, $paymentId, $gatewayDriver, true);
+
+                    $this->logCallbackResponseTime($startTime, $gatewayDriver, false, true);
                 }
             }
             else
@@ -342,6 +396,8 @@ class GatewayController extends Controller
                     }
 
                     $data = (new Payment\Service)->s2sCallback($paymentId, $input);
+
+                    $this->logCallbackResponseTime($startTime, $gatewayDriver);
                 }
             }
 
