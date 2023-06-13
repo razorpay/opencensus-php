@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
-import { Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import rTracking from 'react-tracking';
 import { getFormattedAmountNew } from 'common/utils/rzp-utils';
 import { isMobileDevice } from 'merchant/components/Home/data';
@@ -286,6 +286,7 @@ const WelcomeModal = ({
 };
 
 export default compose(
+  withRouter,
   connect(null, ...EventsActions),
   rTracking(() => {
     window.rzpQ.component('WelcomeModal');
