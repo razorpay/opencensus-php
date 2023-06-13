@@ -335,20 +335,20 @@ class TerminalsService
     {
         $additionalHeaders = [];
 
-        $orgId = $this->app['basicauth']->getOrgId();
+        if (!is_null($this->app['basicauth']) && $this->app['basicauth']->isAdminAuth() === true ) {
 
-        if(empty($orgId) === false)
-        {
-            $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+            $orgId = $this->app['basicauth']->getOrgId();
 
-            $validateOrgHasFeature = (new Org\Service)->validateOrgIdWithFeatureFlag($orgId, 'axis_org');
+            if (empty($orgId) === false) {
+                $orgId = Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 
-            if($validateOrgHasFeature === true)
-            {
-                $additionalHeaders = $this->getTruncateResponseHeaders();
+                $validateOrgHasFeature = (new Org\Service)->validateOrgIdWithFeatureFlag($orgId, 'axis_org');
+
+                if ($validateOrgHasFeature === true) {
+                    $additionalHeaders = $this->getTruncateResponseHeaders();
+                }
             }
         }
-
         return $additionalHeaders;
     }
 
