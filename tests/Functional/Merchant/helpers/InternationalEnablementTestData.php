@@ -414,12 +414,6 @@ return [
                             'display_name' => 'display_name_1',
                         ],
                     ],
-                    'invoices' => [
-                        [
-                            'id'           => 'doc_10000011111111',
-                            'display_name' => 'display_name_1',
-                        ],
-                    ],
                 ],
             ],
         ],
@@ -471,8 +465,6 @@ return [
                 ],
                 'monthly_sales_intl_cards_min'        => 2000,
                 'monthly_sales_intl_cards_max'        => 4000,
-                'business_txn_size_min'               => 10000,
-                'business_txn_size_max'               => 20000,
                 'logistic_partners'                   => null,
                 'about_us_link'                       => 'https://www.test.com',
                 'contact_us_link'                     => 'https://www.test.com',
@@ -496,12 +488,6 @@ return [
                             'display_name' => 'display_name_1',
                         ],
                     ],
-                    'invoices' => [
-                        [
-                            'id'           => 'doc_10000011111111',
-                            'display_name' => 'display_name_1',
-                        ],
-                    ],
                 ],
             ],
         ],
@@ -515,8 +501,6 @@ return [
                 ],
                 'monthly_sales_intl_cards_min'        => 2000,
                 'monthly_sales_intl_cards_max'        => 4000,
-                'business_txn_size_min'               => 10000,
-                'business_txn_size_max'               => 20000,
                 'logistic_partners'                   => null,
                 'about_us_link'                       => 'https://www.test.com',
                 'contact_us_link'                     => 'https://www.test.com',
@@ -535,12 +519,6 @@ return [
                 ],
                 'documents' => [
                     'bank_statement_inward_remittance' => [
-                        [
-                            'id'           => 'doc_10000011111111',
-                            'display_name' => 'display_name_1',
-                        ],
-                    ],
-                    'invoices' => [
                         [
                             'id'           => 'doc_10000011111111',
                             'display_name' => 'display_name_1',
@@ -725,28 +703,35 @@ return [
                     ]
                 ],
                 'response'  => [
-                    'status_code' => 400,
+                    'status_code' => 200,
                     'content'     => [
-                        'error' => [
-                            'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                            'description' => PublicErrorDescription::BAD_REQUEST_INTERNATIONAL_ENABLEMENT_VALIDATION_FAILURE,
-                            '_internal' => [
-                                'documents' => [
-                                    'bank_statement_inward_remittance' => [
-                                        'The bank statement inward remittance field is required.'
-                                    ],
-                                    'current_payment_partner_settlement_record' => [
-                                        'The current payment partner settlement record field is required when accepts intl txns is true.'
-                                    ]
-                                ],
-                                'internal_error_code' => ErrorCode::BAD_REQUEST_INTERNATIONAL_ENABLEMENT_VALIDATION_FAILURE,
-                            ]
-                        ]
+                        'goods_type'         => 'physical_goods',
+                        'business_use_case'  => 'test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test',
+                        'allowed_currencies' => [
+                            'INR'
+                        ],
+                        'monthly_sales_intl_cards_min'        => 2000,
+                        'monthly_sales_intl_cards_max'        => 4000,
+                        'business_txn_size_min'               => 10000,
+                        'business_txn_size_max'               => 20000,
+                        'logistic_partners'                   => 'dhl',
+                        'shipping_policy_link'                => 'https://www.test.com',
+                        'about_us_link'                       => 'https://www.test.com',
+                        'contact_us_link'                     => 'https://www.test.com',
+                        'terms_and_conditions_link'           => 'https://www.test.com',
+                        'privacy_policy_link'                 => 'https://www.test.com',
+                        'refund_and_cancellation_policy_link' => 'https://www.test.com',
+                        'social_media_page_link'              => null,
+                        'existing_risk_checks'                => ['test_1'],
+                        'customer_info_collected'             => ['test_1'],
+                        'partner_details_plugins'             => ['test_1'],
+                        'accepts_intl_txns'                   => true,
+                        'import_export_code'                  => '1234567891',
+                        'products' => [
+                            'payment_gateway',
+                        ],
+                        'documents' => null,
                     ],
-                ],
-                'exception' => [
-                    'class'               => 'Rzp\Exception\BadRequestException',
-                    'internal_error_code' => ErrorCode::BAD_REQUEST_INTERNATIONAL_ENABLEMENT_VALIDATION_FAILURE,
                 ],
             ],
             'without_business_category_subcategory_documents' => [

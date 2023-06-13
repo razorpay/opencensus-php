@@ -431,8 +431,6 @@ class InternationalEnablementTest extends TestCase
 
         $testData['response'] = $withoutIntlTxnDocuments['response'];
 
-        $testData['exception'] = $withoutIntlTxnDocuments['exception'];
-
         $this->startTest($testData);
 
         $testData = $this->testData['testSubmitValidUseCase1'];
@@ -522,8 +520,6 @@ class InternationalEnablementTest extends TestCase
         $testData['request']['content'] = array_merge($testData['request']['content'], ['version' => 'v2']);
 
         $testData['response'] = $withoutIntlTxnDocuments['response'];
-
-        $testData['exception'] = $withoutIntlTxnDocuments['exception'];
 
         $this->startTest($testData);
 

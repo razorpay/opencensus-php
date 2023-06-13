@@ -38,7 +38,7 @@ class Validator extends Base\Validator
         Constants::IE_CODE                              => 'nullable|sometimes|array|max:3',
         Constants::IE_CODE . '.*.id'                    => 'required|string|starts_with:doc_|size:18',
         Constants::IE_CODE . '.*.display_name'          => 'nullable|sometimes|string|max:100',
-        Constants::INVOICES                             => 'required|array|filled|between:1,3',
+        Constants::INVOICES                             => 'nullable|sometimes|array|max:3',
         Constants::INVOICES . '.*.id'                   => 'required|string|starts_with:doc_|size:18',
         Constants::INVOICES . '.*.display_name'         => 'nullable|sometimes|string|max:100',
 
@@ -99,8 +99,8 @@ class Validator extends Base\Validator
         Constants::GAMING_ADDENDUM_CERTIFICATE . '.*.id'            => 'required|string|starts_with:doc_|size:18',
         Constants::GAMING_ADDENDUM_CERTIFICATE . '.*.display_name'  => 'nullable|sometimes|string|max:100',
 
-        Constants::BANK_STATEMENT_INWARD_REMITTANCE          => 'required|array|filled|between:1,3',
-        Constants::CURRENT_PAYMENT_PARTNER_SETTLEMENT_RECORD => 'required_if:accepts_intl_txns,true|array|filled|between:1,3',
+        Constants::BANK_STATEMENT_INWARD_REMITTANCE          => 'nullable|sometimes|array|max:3',
+        Constants::CURRENT_PAYMENT_PARTNER_SETTLEMENT_RECORD => 'nullable|sometimes|array|max:3',
 
         Constants::BANK_STATEMENT_INWARD_REMITTANCE . '.*.id'           => 'required|string|starts_with:doc_|size:18',
         Constants::BANK_STATEMENT_INWARD_REMITTANCE . '.*.display_name' => 'nullable|sometimes|string|max:100',

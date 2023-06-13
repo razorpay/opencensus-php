@@ -53,8 +53,8 @@ class Validator extends Base\Validator
         Entity::ALLOWED_CURRENCIES . '.*'           => 'nullable|string|size:3',
         Entity::MONTHLY_SALES_INTL_CARDS_MIN        => 'nullable|sometimes|integer|min:0',
         Entity::MONTHLY_SALES_INTL_CARDS_MAX        => 'nullable|required_with:monthly_sales_intl_cards_min|integer',
-        Entity::BUSINESS_TXN_SIZE_MIN               => 'required|integer|min:0',
-        Entity::BUSINESS_TXN_SIZE_MAX               => 'required_with:business_txn_size_min|integer',
+        Entity::BUSINESS_TXN_SIZE_MIN               => 'nullable|sometimes|integer|min:0',
+        Entity::BUSINESS_TXN_SIZE_MAX               => 'nullable|required_with:business_txn_size_min|integer',
         Entity::LOGISTIC_PARTNERS                   => 'nullable|string|min:1|max:500',
 
         Entity::ABOUT_US_LINK                       => 'nullable|active_url',
