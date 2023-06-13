@@ -3732,6 +3732,12 @@ class Gateway
         IntlBankTransfer::ACH => Currency::USD
     ];
 
+    const OPGSP_SETTLEMENT_GATEWAYS = [
+        self::EMERCHANTPAY,
+        self::CURRENCY_CLOUD,
+        self::CHECKOUT_DOT_COM,
+    ];
+
     public static function isNonTerminalGateway(string $gateway)
     {
         return in_array($gateway, self::$nonTerminalGateways, true);
@@ -5117,6 +5123,16 @@ class Gateway
         }
 
         return false;
+    }
+
+       /*
+    * Used at Settlement/Bucket/core.php
+    * @param $gateway
+    * @return bool
+    */
+    public static function isOPGSPSettlementGateway($gateway) : bool
+    {
+        return (in_array($gateway, self::OPGSP_SETTLEMENT_GATEWAYS, true));
     }
 
 }

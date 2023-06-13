@@ -304,6 +304,20 @@ class Core extends Base\Core
                         "settlement_currency" => $this->getSettlementCurrencyOfPayment($payment)
                     ],
                 ];
+
+                if (Payment\Gateway::isOPGSPSettlementGateway($payment->getGateway()) === true &&
+                    (empty($meta['remitter_info']['remitter_name']) or empty($meta['remitter_info']['remitter_address'])))
+                {
+                    $this->trace->info(
+                        TraceCode::REMITTER_DETAILS_MISSING_FOR_INTL_PAYMENT_SETTLEMENT,
+                        [
+                            'payment_id'    => $payment->getId(),
+                            'merchant_id'   => $payment->getMerchantId(),
+                            'gateway'       => $payment->getGateway()
+                        ]);
+
+                    throw new Exception\LogicException('Remitter Name or Address not found for OPGSP Settlement Gateway');
+                }
             }
         }
 
@@ -369,11 +383,17 @@ class Core extends Base\Core
         {
             $remitterName = $payment->card->getName();
         }
+       
         // If Payment is not a card Payment and If gateway is under ADDRESS_NAME_REQUIRED_GATEWAYS array
         // we will fetch remitter name from addresses table.
         else if (Payment\Gateway::isAddressAndNameRequiredGateway($payment->getGateway()) === true)
         {
-            $remitterName = $payment->fetchBillingAddress()->getName();
+            $billingAddress = $payment->fetchBillingAddress();
+            
+            if(empty($billingAddress) === false)
+            {
+                $remitterName = $billingAddress->getName();
+            }
         }
 
         //if empty, try fetching from customer
