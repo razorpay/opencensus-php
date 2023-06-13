@@ -1148,7 +1148,7 @@ class BasicAuthTest extends TestCase
     //testMerchantAuthWithImpersonationWhitelistedMidRouteBodyParsing accepts request in case of whitelisted MID for body parsing.
     public function testMerchantAuthWithImpersonationWhitelistedMidRouteBodyParsing()
     {
-        $merchant = $this->fixtures->create('merchant',['id'=>'hoah6c9snynis5']);
+        $merchant = $this->fixtures->create('merchant',['id'=>'Hoah6C9SnyNIs5']);
         $key = $this->fixtures->create('key', ['merchant_id' => $merchant->getId()]);
 
         $this->ba->privateAuth('rzp_test_'.$key->getKey(),$key->getDecryptedSecret());
@@ -1178,7 +1178,7 @@ class BasicAuthTest extends TestCase
     //testMerchantAuthWithImpersonationNonWhitelistedRouteBodyParsing checks request rejection in case of non whitelisted route with whitelisted MID
     public function testMerchantAuthWithImpersonationNonWhitelistedRouteBodyParsing()
     {
-        $merchant = $this->fixtures->create('merchant',['id'=>'hoah6c9snynis5']);
+        $merchant = $this->fixtures->create('merchant',['id'=>'Hoah6C9SnyNIs5']);
         $key = $this->fixtures->create('key', ['merchant_id' => $merchant->getId()]);
 
         $this->ba->privateAuth('rzp_test_'.$key->getKey(),$key->getDecryptedSecret());
@@ -1200,7 +1200,7 @@ class BasicAuthTest extends TestCase
     //testMerchantAuthWithImpersonationOnPatch checks request rejection in case of non whitelisted route with whitelisted MID
     public function testMerchantAuthWithImpersonationOnPatch()
     {
-        $merchant = $this->fixtures->create('merchant',['id'=>'hoah6c9snynis5']);
+        $merchant = $this->fixtures->create('merchant',['id'=>'Hoah6C9SnyNIs5']);
         $key = $this->fixtures->create('key', ['merchant_id' => $merchant->getId()]);
 
         $this->ba->privateAuth('rzp_test_'.$key->getKey(),$key->getDecryptedSecret());

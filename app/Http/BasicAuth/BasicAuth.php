@@ -146,7 +146,7 @@ class BasicAuth
 
     const X_DASHBOARD_APPS                           = ['merchant_dashboard', 'dashboard'];
 
-    const WHITE_LISTED_MIDS_FOR_ACCOUNT_ID_IN_BODY   = ['hoah6c9snynis5','EVPKynANo94brO','HL0XeiZ1v1kyUZ','Jd6fYXxU7jjAWt','G8X2PlQPEqR9jg','FIMutKDXBwL9fN','6N5ssOOKSLBIES','DT2WnV8uxRDwjO','KHt6aG32DgGLTd','EgzuLu9uMZEgP4','D8yeOZdLluPZyA','Jq5FbjcohIEPoe','FIMutKDXBwL9fN','HJH6H4wTaaVe5x'];
+    const WHITE_LISTED_MIDS_FOR_ACCOUNT_ID_IN_BODY   = ['Hoah6C9SnyNIs5','EVPKynANo94brO','HL0XeiZ1v1kyUZ','Jd6fYXxU7jjAWt','G8X2PlQPEqR9jg','FIMutKDXBwL9fN','6N5ssOOKSLBIES','DT2WnV8uxRDwjO','KHt6aG32DgGLTd','EgzuLu9uMZEgP4','D8yeOZdLluPZyA','Jq5FbjcohIEPoe','FIMutKDXBwL9fN','HJH6H4wTaaVe5x'];
 
     /**
      * The application instance.
