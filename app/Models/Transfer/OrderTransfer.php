@@ -65,6 +65,8 @@ class OrderTransfer extends  AbstractTransfer
                     'payment_id' => $this->payment->getPublicId()
                 ]
             );
+
+            (new Metric())->pushTransferProcessFailedMetrics($e);
         }
     }
 }

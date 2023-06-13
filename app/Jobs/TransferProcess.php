@@ -9,6 +9,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
 use RZP\Models\Transfer;
 use RZP\Trace\TraceCode;
+use RZP\Models\Transfer\Metric;
 use RZP\Models\Transfer\Utility;
 use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestException;
@@ -105,6 +106,8 @@ class TransferProcess extends Job
                     'transfermode' => $this->transferMode,
                 ]
             );
+
+            (new Metric())->pushTransferProcessFailedMetrics($ex);
 
             if ((new Utility)->isRetryableError($ex) === true)
             {
