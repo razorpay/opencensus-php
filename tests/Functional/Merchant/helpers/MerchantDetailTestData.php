@@ -3584,7 +3584,45 @@ return [
         ],
     ],
 
+    'testWebsiteNotLiveSplitzKqu' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'business_website' => 'http://razorpays.com/',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => "Enter a live/operational URL. You can enter it later if you don't have a live URL now"
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testPopularWebsite' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'business_website' => 'http://google.com/',
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testPopularWebsiteSplitzKqu' => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/merchant/activation',

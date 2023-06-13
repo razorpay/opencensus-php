@@ -4889,6 +4889,70 @@ Team Razorpay', '+911234567890');
         $this->assertNull($merchantDetails['business_website']);
     }
 
+    public function testWebsiteNotLiveSplitzKqu()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $input = [
+            "experiment_id" => "LQzMXMbNCUramd",
+            "id" => $merchantId
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'kqu',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        Http::fake(['http://razorpays.com/' => Http::response([], 400, []),]);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $this->startTest();
+    }
+
+    public function testPopularWebsiteSplitzKqu()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $input = [
+            "experiment_id" => "LQzMXMbNCUramd",
+            "id" => $merchantId
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'kqu',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        Http::fake(['http://google.com/' => Http::response([], 200, []),]);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $this->startTest();
+
+        $merchantDetails = $this->getLastEntity('merchant_detail',true);
+
+        $this->assertNull($merchantDetails['business_website']);
+    }
+
     public function testWebsiteNotLiveSplitzOff()
     {
         $merchantId = '1cXSLlUU8V9sXl';

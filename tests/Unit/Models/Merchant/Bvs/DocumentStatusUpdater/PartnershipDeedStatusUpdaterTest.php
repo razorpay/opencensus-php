@@ -10,11 +10,13 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
 
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+
 class PartnershipDeedStatusUpdaterTest extends TestCase
 {
     use DbEntityFetchTrait;
 
-    private function createFixtures(){
+    private function createFixtures()
+    {
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [ 'business_type' => '3',]);
 
         $mid = $merchantDetail->getId();
@@ -29,6 +31,7 @@ class PartnershipDeedStatusUpdaterTest extends TestCase
 
         return $mid;
     }
+
     private function processKafkaEvent($validationStatus, $expectedVerificationStatus, $ruleExecutionList, $variant, $errorCode = '')
     {
         $mid=$this->createFixtures();
@@ -73,7 +76,6 @@ class PartnershipDeedStatusUpdaterTest extends TestCase
     {
         $this->processKafkaEvent('failed', 'failed', [], '');
     }
-
 
     // Test scenario where Signatory and Business name is verified with rule_execution_list present in BVS response
     public function testPartnershipDeedVerificationSignatorySuccessAndExperimentOn()

@@ -360,7 +360,7 @@ class Core extends Base\Core
         {
             $merchantDetails->edit([Entity::BUSINESS_WEBSITE => $oldMerchantDetails->getWebsite()]);
 
-            unset ($input[Entity::BUSINESS_WEBSITE]);
+            unset($input[Entity::BUSINESS_WEBSITE]);
         }
 
         $mutexTransactionData =  $this->mutex->acquireAndRelease(
@@ -535,61 +535,71 @@ class Core extends Base\Core
 
     public function handleWebsiteInput(Entity $oldMerchantDetail, $merchantDetails, $input): bool
     {
+        if (empty($input[Detail\Entity::BUSINESS_WEBSITE]) === true)
+        {
+            return true;
+        }
+
+        if ($oldMerchantDetail->getWebsite() === $input[Entity::BUSINESS_WEBSITE])
+        {
+            return true;
+        }
+
         $splitzResult = $this->getSplitzResponse($merchantDetails->getMerchantId(), 'merchant_automation_activation_exp_id');
 
-        if ((empty($input[Detail\Entity::BUSINESS_WEBSITE]) === false) and
-            ($oldMerchantDetail->getWebsite() !== $input[Entity::BUSINESS_WEBSITE]) and
-            ($splitzResult === Constants::SPLITZ_PILOT or $splitzResult === Constants::SPLITZ_LIVE))
+        if (in_array($splitzResult, [Constants::SPLITZ_PILOT, Constants::SPLITZ_LIVE, Constants::SPLITZ_KQU]) === false)
         {
-            $response = $this->getUrlDetails($input[Entity::BUSINESS_WEBSITE]);
+            return true;
+        }
 
-            if ((isset($response['isLive']) === true) and ($response['isLive'] === Detail\Constants::UNDETERMINED))
-            {
-                $this->trace->count(Detail\Constants::INPUT_WEBSITE_STATUS_UNDETERMINED_COUNT, $response);
-            }
+        $response = $this->getUrlDetails($input[Entity::BUSINESS_WEBSITE]);
 
-            if ((isset($response['isLive']) === true) and ($response['isLive'] === Detail\Constants::NO))
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    "Enter a live/operational URL. You can enter it later if you don't have a live URL now"
-                );
-            }
+        if ((isset($response['isLive']) === true) and ($response['isLive'] === Detail\Constants::UNDETERMINED))
+        {
+            $this->trace->count(Detail\Constants::INPUT_WEBSITE_STATUS_UNDETERMINED_COUNT, $response);
+        }
 
-            if ((isset($response['isRedirected']) === true) and ($response['isRedirected'] === true))
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'The shared URL is redirecting to a different URL. Share a valid URL of your website/app');
-            }
+        if ((isset($response['isLive']) === true) and ($response['isLive'] === Detail\Constants::NO))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "Enter a live/operational URL. You can enter it later if you don't have a live URL now"
+            );
+        }
 
-            if ($this->isPopularSocialMedia($input[Entity::BUSINESS_WEBSITE]) === true)
-            {
-                $websiteDetailsInput = [
-                    Website\Entity::ADDITIONAL_DATA          => [
-                        Entity::BUSINESS_WEBSITE => $input[Entity::BUSINESS_WEBSITE]
-                    ]
-                ];
+        if ((isset($response['isRedirected']) === true) and ($response['isRedirected'] === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The shared URL is redirecting to a different URL. Share a valid URL of your website/app');
+        }
 
-                (new Website\Core)->createOrEditWebsiteDetails($merchantDetails, $websiteDetailsInput);
-
-                return false;
-            }
-
-            // send requests to OCR if all sanity checks pass
-            $ocrInput = [
-                'website_url' => $input[Entity::BUSINESS_WEBSITE]
+        if ($this->isPopularSocialMedia($input[Entity::BUSINESS_WEBSITE]) === true)
+        {
+            $websiteDetailsInput = [
+                Website\Entity::ADDITIONAL_DATA          => [
+                    Entity::BUSINESS_WEBSITE => $input[Entity::BUSINESS_WEBSITE]
+                ]
             ];
 
-            $this->triggerOCRService($ocrInput, Constant::WEBSITE_POLICY);
+            (new Website\Core)->createOrEditWebsiteDetails($merchantDetails, $websiteDetailsInput);
 
-            $this->triggerOCRService($ocrInput, Constant::MCC_CATEGORISATION);
-
-            $this->triggerOCRService([
-                BvsValidation\Entity::OWNER_ID              => $this->merchant->getMerchantId(),
-                BvsValidation\Entity::PLATFORM              => Constant::PG,
-                Constant::DOCUMENT_TYPE                     => Constant::SITE_CHECK,
-                Constant::DETAILS                           => $ocrInput
-            ], Constant::NEGATIVE_KEYWORDS);
+            return false;
         }
+
+        // send requests to OCR if all sanity checks pass
+        $ocrInput = [
+            'website_url' => $input[Entity::BUSINESS_WEBSITE]
+        ];
+
+        $this->triggerOCRService($ocrInput, Constant::WEBSITE_POLICY);
+
+        $this->triggerOCRService($ocrInput, Constant::MCC_CATEGORISATION);
+
+        $this->triggerOCRService([
+            BvsValidation\Entity::OWNER_ID              => $this->merchant->getMerchantId(),
+            BvsValidation\Entity::PLATFORM              => Constant::PG,
+            Constant::DOCUMENT_TYPE                     => Constant::SITE_CHECK,
+            Constant::DETAILS                           => $ocrInput
+        ], Constant::NEGATIVE_KEYWORDS);
 
         return true;
     }
@@ -5511,8 +5521,14 @@ class Core extends Base\Core
 
             $activationStatusAutomation = $this->getAutomationActivationStatus($merchantDetails);
 
-            if ($splitzVariant === Merchant\Constants::SPLITZ_LIVE)
+            if (in_array($splitzVariant, [Constants::SPLITZ_LIVE, Constants::SPLITZ_KQU]) === true)
             {
+                if (($activationStatusAutomation === Status::ACTIVATED) and
+                    ($splitzVariant === Constants::SPLITZ_KQU))
+                {
+                    return Status::KYC_QUALIFIED_UNACTIVATED;
+                }
+
                 return $activationStatusAutomation;
             }
             else if ($splitzVariant === Merchant\Constants::SPLITZ_PILOT)
@@ -5598,9 +5614,16 @@ class Core extends Base\Core
                     }
                 }
 
+                $signatory = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifierFromReplica(
+                    $merchantId,
+                    Constant::SIGNATORY_VALIDATION,
+                    MVD\Constants::NUMBER
+                );
+
                 if (optional($mccCategorisation)->getStatus() === BvsValidation\Constants::VERIFIED and
                     optional($websitePolicy)->getStatus() === BvsValidation\Constants::VERIFIED and
-                    optional($negativeKeyword)->getStatus() === BvsValidation\Constants::VERIFIED)
+                    optional($negativeKeyword)->getStatus() === BvsValidation\Constants::VERIFIED and
+                    optional($signatory)->getStatus() === BvsValidationConstants::VERIFIED)
                 {
                     return Status::ACTIVATED;
                 }

@@ -155,9 +155,8 @@ class UpdateMerchantContext extends Job
 
             $businessDetailMetadata = optional($app['repo']->merchant_business_detail->getBusinessDetailsForMerchantId($this->merchantId))->getMetadata();
 
-            if (empty($businessDetailMetadata['activation_status']) === true and
-                ($splitzResult === Merchant\Constants::SPLITZ_PILOT or
-                 $splitzResult === Merchant\Constants::SPLITZ_LIVE))
+            if ((empty($businessDetailMetadata['activation_status']) === true) and
+                (in_array($splitzResult, [Constants::SPLITZ_PILOT, Constants::SPLITZ_LIVE, Constants::SPLITZ_KQU]) === true))
             {
                 try
                 {
@@ -173,8 +172,8 @@ class UpdateMerchantContext extends Job
                 }
             }
 
-            if (($newActivationStatus === Status::ACTIVATED) and
-                ($splitzResult === Merchant\Constants::SPLITZ_LIVE))
+            if (($newActivationStatus === Status::ACTIVATED and $splitzResult === Merchant\Constants::SPLITZ_LIVE) or
+                ($newActivationStatus === Status::KYC_QUALIFIED_UNACTIVATED and $splitzResult === Merchant\Constants::SPLITZ_KQU))
             {
                 // save website policy links
                 $websitePolicy = $app['repo']->merchant_verification_detail->getDetailsForTypeAndIdentifierFromReplica(
@@ -237,7 +236,7 @@ class UpdateMerchantContext extends Job
                     Constant::MCC_CATEGORISATION_WEBSITE,
                     MVD\Constants::NUMBER
                 );
-// check by throwing an exception if the error is helpful: i.e. it should be logged with enough information
+
                 $mccResult = $mccCategorisation->getMetadata();
 
                 $merchantInput = [

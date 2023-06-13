@@ -493,7 +493,7 @@
             <file>./tests/Functional/Payment/NbPlusService/NbplusPaymentServiceAppsTest.php</file>
         </testsuite>
         <testsuite name="Affordibility Test Suite">
-        <directory>./tests/Functional/Offer/</directory>
+            <directory>./tests/Functional/Offer/</directory>
         </testsuite>
         <testsuite name="NoCode Test Suite">
             <directory>./tests/Functional/Invoice/</directory>
