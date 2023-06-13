@@ -17,6 +17,9 @@
             <directory>./Tests/CircuitBreaker/</directory>
             <file>./Tests/CircuitBreaker/TestCase.php</file>
         </testsuite>
+        <testsuite name="User Session Tests">
+            <file>./Tests/Functional/UserSessionTest.php</file>
+        </testsuite>
     </testsuites>
     <php>
         <env name="APP_ENV" value="testing"/>

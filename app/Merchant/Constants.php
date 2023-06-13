@@ -271,4 +271,16 @@ class Constants
         'Hrw2ujXW6LGEk7', // Demo banking user merchant account - Beta
         'Hy5Vxj9TTVm4Oi'  // Demo banking user merchant account - Prod
     ];
+
+    const OAUTH_ACTION_REDIRECT = 'REDIRECT';
+    const OAUTH_ACTION_RENDER   = 'RENDER';
+
+    const ACTIVATION_STATUS_ALLOWED_FOR_OAUTH_ACTION = [
+        'activated',
+        'under_review',
+        'needs_clarification'
+    ];
+
+    const OAUTH_SOURCE = 'oauth';
+    const SOURCE       = 'source';
 }

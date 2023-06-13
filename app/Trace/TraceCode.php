@@ -244,6 +244,9 @@ class TraceCode
     const CHUNKED_DETAILS                           = 'CHUNKED_DETAILS';
     const GET_CONFIG_STORE_KEYS_FAILED              = 'GET_CONFIG_STORE_KEYS_FAILED';
 
+    const FETCH_OAUTH_ACTION_FOR_MERCHANT           = 'FETCH_OAUTH_ACTION_FOR_MERCHANT';
+    const OAUTH_MERCHANT_ACTIVATION_DETAILS         = 'OAUTH_MERCHANT_ACTIVATION_DETAILS';
+
     protected static $messages = array(
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',
         self::MISC_TRACE_CODE                       => 'Miscellaneous trace code',

@@ -72,6 +72,10 @@ class Service extends Base\Service
     // are not exposed to the pre signup flow
     const PRE_SIGNUP_TIMESTAMP = 1488306600;
 
+    const SOURCE              = 'source';
+
+    const OAUTH_ACTION        = 'oauth_action';
+
     /**
      * @var Application
      */
@@ -1118,6 +1122,13 @@ class Service extends Base\Service
             'logo'          => $merchantLogo,
             'user_id'       => $user->id
         ];
+
+        $oauthAction = $this->getUserOauthAction($merchantId, $queryParams);
+
+        if (!empty($oauthAction))
+        {
+            $response[self::OAUTH_ACTION] = $oauthAction;
+        }
 
         return [$error, $response];
     }
@@ -2877,5 +2888,33 @@ class Service extends Base\Service
 
             return false;
         }
+    }
+
+    private function getUserOauthAction(?string $merchantId, $queryParams) : ?string
+    {
+        if (empty($queryParams[self::SOURCE]) || $queryParams[self::SOURCE] != MerchantConstants::OAUTH_SOURCE || empty($merchantId))
+        {
+            return null;
+        }
+
+        $this->trace->info(TraceCode::FETCH_OAUTH_ACTION_FOR_MERCHANT, ['merchant_id' => $merchantId]);
+
+        $merchantDetails = (new MerchantDetails\Service())->fetchDetails($merchantId);
+
+        $activationStatus = $merchantDetails['activation_status'];
+        $suspended_at = $merchantDetails['merchant']['suspended_at'];
+
+        $this->trace->info(TraceCode::OAUTH_MERCHANT_ACTIVATION_DETAILS, [
+            'merchant_id'       => $merchantId,
+            'suspended_at'      => $suspended_at,
+            'activation_status' => $activationStatus
+        ]);
+
+        if ($suspended_at == null && in_array($activationStatus, MerchantConstants::ACTIVATION_STATUS_ALLOWED_FOR_OAUTH_ACTION))
+        {
+            return MerchantConstants::OAUTH_ACTION_RENDER;
+        }
+
+        return MerchantConstants::OAUTH_ACTION_REDIRECT;
     }
 }
