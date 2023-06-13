@@ -1,49 +1,10 @@
-import { screen, waitForLoadingToFinish, render, userEvent } from 'test-utils';
-import store from 'merchant/store';
-import BatchListContainer from 'merchant/views/PaymentPages/BatchUpload/List/index';
+import { screen, waitForLoadingToFinish, userEvent, waitFor } from 'test-utils';
+import {
+  renderApp,
+  defaultProps,
+} from 'merchant/views/PaymentPages/__test__/mocks/fixtures/BatchUpload/List/index';
 import FileSaver from 'file-saver';
 const saveAsSpy = jest.spyOn(FileSaver, 'saveAs');
-const globalState = store.getState();
-const id = 'pl_LpoFCooJAk0a2j';
-const title = 'PP Title';
-
-// component is not mapped with withRouter, hence match props is passed directly
-const defaultProps = {
-  match: {
-    params: {
-      id,
-      title,
-    },
-  },
-  location: {
-    search: '',
-  },
-};
-
-const renderApp = (initialState = {}, props = {}, showModal = false) => {
-  render(<BatchListContainer {...defaultProps} {...props} />, {
-    showModal,
-    initialState: {
-      ...globalState,
-      session: {
-        ...globalState.session,
-        user: initialState?.session?.user ?? globalState?.session?.user,
-        org: initialState?.session?.org ?? globalState?.session?.org,
-      },
-      wysiwyg: {
-        ...globalState.wysiwyg,
-        isBatchPaymentPages:
-          initialState?.wysiwyg?.isBatchPaymentPages ?? globalState?.wysiwyg?.isBatchPaymentPages,
-      },
-    },
-    renderOptions: {
-      historyOptions: {
-        initialEntries: ['/paymentpages/batchuploads/pl_LpoFCooJAk0a2j/batch%20pp%20t%201501'],
-      },
-      path: '/paymentpages/batchuploads/pl_LpoFCooJAk0a2j/batch%20pp%20t%201501',
-    },
-  });
-};
 
 describe('Batch Payment Page - Batch Details', () => {
   beforeAll(() => {
@@ -200,5 +161,169 @@ describe('Batch Payment Page - Batch Details', () => {
     await userEvent.click(startUploadingCTA);
     expect(screen.getByText('UPLOAD FILE')).toBeInTheDocument();
     expect(screen.getByText('Getting Started with Batch Uploads?')).toBeInTheDocument();
+  });
+
+  test('should able to render list of batches & able to notify batch  when "file_upload_pp" flag is enabled', async () => {
+    const initialState = {
+      session: {
+        user: { isPaymentPageFileUploadEnabled: true, isAllowedView: jest.fn(() => false) },
+      },
+      wysiwyg: { isBatchPaymentPages: true },
+    };
+    const props = {
+      ...defaultProps,
+      id: 'pl_valid_id',
+    };
+    renderApp(initialState, props, true);
+    await waitForLoadingToFinish();
+    const notifyBatch = screen.getAllByText('Send all links')[0];
+    expect(notifyBatch).toBeInTheDocument();
+    await userEvent.click(notifyBatch);
+    expect(screen.getByText('Send Reminder?')).toBeInTheDocument();
+    expect(
+      screen.getByText('Are you sure that you want to send the unpaid links again?'),
+    ).toBeInTheDocument();
+    const sendSms = screen.getByText('Send SMS');
+    const sendEmail = screen.getByText('Send Email');
+    expect(sendSms).toBeInTheDocument();
+    expect(sendEmail).toBeInTheDocument();
+    await userEvent.click(sendSms);
+    await userEvent.click(sendEmail);
+    const sendAllButton = screen.getByRole('button', { name: 'Yes, Send All' });
+    expect(sendAllButton).toBeInTheDocument();
+    await userEvent.click(sendAllButton);
+    await waitFor(() =>
+      expect(
+        screen.getByText(/All payment links of this batch will be sent shortly/i),
+      ).toBeInTheDocument(),
+    );
+  });
+
+  test('should able to render list of batches & able to notify batch  when batch type is other than "payment_page" & PL V2 is disabled', async () => {
+    const initialState = {
+      session: {
+        user: {
+          isPaymentlinksV2Enabled: false,
+          isPaymentPageFileUploadEnabled: true,
+          isAllowedView: jest.fn(() => false),
+        },
+      },
+      wysiwyg: { isBatchPaymentPages: true },
+    };
+    const props = {
+      ...defaultProps,
+      id: 'pl_valid_id',
+    };
+    renderApp(initialState, props, true);
+    await waitForLoadingToFinish();
+    const notifyBatch = screen.getAllByText('Send all links')[1];
+    expect(notifyBatch).toBeInTheDocument();
+    await userEvent.click(notifyBatch);
+    expect(screen.getByText('Send Reminder?')).toBeInTheDocument();
+    expect(
+      screen.getByText('Are you sure that you want to send the unpaid links again?'),
+    ).toBeInTheDocument();
+    const sendSms = screen.getByText('Send SMS');
+    const sendEmail = screen.getByText('Send Email');
+    expect(sendSms).toBeInTheDocument();
+    expect(sendEmail).toBeInTheDocument();
+    await userEvent.click(sendSms);
+    await userEvent.click(sendEmail);
+    const sendAllButton = screen.getByRole('button', { name: 'Yes, Send All' });
+    expect(sendAllButton).toBeInTheDocument();
+    await userEvent.click(sendAllButton);
+    await waitFor(() =>
+      expect(
+        screen.getByText(/All payment links of this batch will be sent shortly/i),
+      ).toBeInTheDocument(),
+    );
+  });
+
+  test('should able to render list of batches & able to notify batch  when batch type is other than "payment_page" & PL V2 is enabled', async () => {
+    const initialState = {
+      session: {
+        user: {
+          isPaymentlinksV2Enabled: true,
+          isPaymentPageFileUploadEnabled: true,
+          isAllowedView: jest.fn(() => false),
+        },
+      },
+      wysiwyg: { isBatchPaymentPages: true },
+    };
+    const props = {
+      ...defaultProps,
+      id: 'pl_valid_id',
+    };
+    renderApp(initialState, props, true);
+    await waitForLoadingToFinish();
+    const notifyBatch = screen.getAllByText('Send all links')[1];
+    expect(notifyBatch).toBeInTheDocument();
+    await userEvent.click(notifyBatch);
+    expect(screen.getByText('Send Reminder?')).toBeInTheDocument();
+    expect(
+      screen.getByText('Are you sure that you want to send the unpaid links again?'),
+    ).toBeInTheDocument();
+    const sendSms = screen.getByText('Send SMS');
+    expect(sendSms).toBeInTheDocument();
+    expect(screen.getByText('Send Email')).toBeInTheDocument();
+    await userEvent.click(sendSms);
+    const sendAllButton = screen.getByRole('button', { name: 'Yes, Send All' });
+    expect(sendAllButton).toBeInTheDocument();
+    await userEvent.click(sendAllButton);
+    await waitFor(() =>
+      expect(
+        screen.getByText(/All payment links of this batch will be sent shortly/i),
+      ).toBeInTheDocument(),
+    );
+  });
+
+  test('should able to render list of batches & show error message on notify batch', async () => {
+    const initialState = {
+      session: {
+        user: { isPaymentPageFileUploadEnabled: true, isAllowedView: jest.fn(() => false) },
+      },
+      wysiwyg: { isBatchPaymentPages: true },
+    };
+    const props = {
+      ...defaultProps,
+      id: 'pl_notify_error_test',
+    };
+    renderApp(initialState, props, true);
+    await waitForLoadingToFinish();
+    const notifyBatch = screen.getAllByText('Send all links')[0];
+    expect(notifyBatch).toBeInTheDocument();
+    await userEvent.click(notifyBatch);
+    expect(screen.getByText('Send Reminder?')).toBeInTheDocument();
+    expect(
+      screen.getByText('Are you sure that you want to send the unpaid links again?'),
+    ).toBeInTheDocument();
+    const sendSms = screen.getByText('Send SMS');
+    expect(sendSms).toBeInTheDocument();
+    expect(screen.getByText('Send Email')).toBeInTheDocument();
+    await userEvent.click(sendSms);
+    const sendAllButton = screen.getByRole('button', { name: 'Yes, Send All' });
+    expect(sendAllButton).toBeInTheDocument();
+    await userEvent.click(sendAllButton);
+    await waitFor(() =>
+      expect(
+        screen.getByText(/The requested URL was not found on the server/i),
+      ).toBeInTheDocument(),
+    );
+  });
+
+  test('should able to show message "No Batch Files Found" when there is no any batch found', async () => {
+    const initialState = {
+      session: {
+        user: { isPaymentPageFileUploadEnabled: true, isAllowedView: jest.fn(() => false) },
+      },
+      wysiwyg: { isBatchPaymentPages: true },
+    };
+    const props = {
+      ...defaultProps,
+      id: 'pl_invalid_id',
+    };
+    renderApp(initialState, props, true);
+    await waitForLoadingToFinish();
+    expect(screen.getByText(/No Batch Files Found/i)).toBeInTheDocument();
   });
 });

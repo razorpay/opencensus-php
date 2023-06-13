@@ -387,6 +387,10 @@ const entityDetailsMap = {
       user.isPLBatchUploadEnabled &&
       (!user.isSellerAppRole || user.isPaymentLinkBatchEnabledForSellerAppRole),
   },
+  '/paymentpages/batchuploads/:id(batch_.+)': {
+    component: PaymentLinkBatchUploadDetails,
+    additionalCondition: (user) => user?.isPaymentPageFileUploadEnabled,
+  },
   '/invoices/:id/details': {
     component: PaymentLinkDetails,
     additionalCondition: (user) =>

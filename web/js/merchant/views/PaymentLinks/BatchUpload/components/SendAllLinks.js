@@ -6,12 +6,15 @@ import ModalHeader from 'common/ui/ModalHeader';
 import CheckboxField from 'common/ui/Forms/CheckboxField';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { notifyBatch } from 'merchant/reducers/batches';
+import { notifyBatch, notifyPaymentPageBatch } from 'merchant/reducers/batches';
 
-@connect(state => state.session, {
+const PAYMENT_PAGE = `payment_page`;
+
+@connect((state) => state.session, {
   showNotification,
   closeModal,
   notifyBatch,
+  notifyPaymentPageBatch,
 })
 @reduxForm({
   form: 'SendAllLinks',
@@ -21,31 +24,50 @@ import { notifyBatch } from 'merchant/reducers/batches';
   },
 })
 export default class SendAllLinksModal extends Component {
-  sendLinks = props => {
-    this.props.trackSendAllLinks({
+  sendLinks = (props) => {
+    const {
+      type,
+      notifyBatch,
+      notifyPaymentPageBatch,
+      paymentLinkId,
+      batchId,
+      user,
+      trackSendAllLinks,
+      showNotification,
+      closeModal,
+      fetchAll,
+    } = this.props;
+    console.log('sendLinks:', type);
+    let fetchAllType = '';
+    const notifyFn =
+      type === PAYMENT_PAGE
+        ? notifyPaymentPageBatch({ id: paymentLinkId, batchId, data: props })
+        : notifyBatch(batchId, props);
+    if (type !== PAYMENT_PAGE) {
+      fetchAllType = user.isPaymentlinksV2Enabled ? 'payment_link_v2' : 'payment_link';
+    }
+    trackSendAllLinks({
       ...props,
-      batch_id: this.props.batchId,
+      batch_id: batchId,
     });
-    return this.props
-      .notifyBatch(this.props.batchId, props)
+
+    return notifyFn
       .then(() => {
-        this.props.showNotification({
+        showNotification({
           type: 'success',
           message: 'All payment links of this batch will be sent shortly',
         });
-        this.props.closeModal();
+        closeModal();
 
         //re-render the list
-        this.props.fetchAll({
+        fetchAll({
           skip: 0,
           count: 25,
-          type: this.props.user.isPaymentlinksV2Enabled
-            ? 'payment_link_v2'
-            : 'payment_link',
+          type: fetchAllType,
         });
       })
       .catch(({ errors }) => {
-        this.props.showNotification({
+        showNotification({
           type: 'error',
           message: errors,
         });
@@ -57,21 +79,13 @@ export default class SendAllLinksModal extends Component {
 
     return (
       <div class="issue-invoice-modal">
-        <ModalHeader
-          title="Send Reminder?"
-          onCloseClick={this.props.closeModal}
-        />
+        <ModalHeader title="Send Reminder?" onCloseClick={this.props.closeModal} />
 
         <form class="form-horizontal">
           <div class="modal-body">
             <p>Are you sure that you want to send the unpaid links again? </p>
             <div class="rzpCheckbox next">
-              <Field
-                name="sms_notify"
-                id="sms_notify"
-                component={CheckboxField}
-                type="checkbox"
-              />
+              <Field name="sms_notify" id="sms_notify" component={CheckboxField} type="checkbox" />
               <label for="sms_notify" class="icon i-check">
                 Send SMS
               </label>
@@ -91,15 +105,12 @@ export default class SendAllLinksModal extends Component {
             <div>
               <small class="help-block">
                 <i class="i i-info-circle" />
-                <span>
-                  Unpaid Links include the links that are issued but not paid.
-                </span>
+                <span>Unpaid Links include the links that are issued but not paid.</span>
               </small>
             </div>
             {mode === 'test' && (
               <div class="alert alert-sm alert-warning">
-                Payment links were created in <b>Test Mode</b>
-                . So, only test payments can be made.
+                Payment links were created in <b>Test Mode</b>. So, only test payments can be made.
                 {/* Also, SMS will not be sent in test mode. */}
               </div>
             )}

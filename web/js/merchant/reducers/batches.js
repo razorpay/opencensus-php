@@ -345,23 +345,31 @@ export const fetchPaymentLinkBatches = (params) => {
 };
 
 /* action for payment page batch */
-export const fetchPaymentPageBatches = (params) => {
-  //for new batches
-  params.with_config = '1';
+export const fetchPaymentPageBatches = ({ id, params }) => {
+  return {
+    type: BATCH_LIST,
+    payload: merchantFetch({
+      url: `payment_pages/${id}/batches`,
+      params,
+    }),
+  };
+};
 
-  return (dispatch) => {
-    return dispatch({
-      type: BATCH_LIST,
-      payload: fetchBatchesAjax(params, 'payment_page').then((res) => {
-        const listOfBatchIds = res.data?.items.map((item) => {
-          return item.id;
-        });
-
-        dispatch(fetchIssuableBatchList(listOfBatchIds));
-
-        return res;
-      }),
-    });
+export const notifyPaymentPageBatch = ({ id, batchId, data }) => {
+  const { sms_notify, email_notify } = data;
+  const payload = {
+    notify_on: [],
+    Batch_id: batchId,
+  };
+  sms_notify && payload.notify_on.push('sms');
+  email_notify && payload.notify_on.push('email');
+  return {
+    type: NOTIFY_BATCH,
+    payload: merchantFetch({
+      url: `payment_pages/${id}/fetch_notify_details`,
+      method: 'post',
+      data: payload,
+    }),
   };
 };
 

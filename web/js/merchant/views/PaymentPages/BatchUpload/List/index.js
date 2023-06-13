@@ -13,9 +13,11 @@ import track from 'merchant/views/PaymentPages/BatchUpload/track';
 import PaymentLinksForm from 'merchant/views/PaymentLinks/BatchUpload/components/PaymentLinksForm';
 import { fetchPaymentPageEntity } from 'merchant/views/PaymentPages/PaymentPages/model';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import { openModal } from 'merchant_common/reducers/modals';
 import {
   getHeaderList,
   getFormattedExcelData,
+  allowSendAllLinks,
 } from 'merchant/views/PaymentPages/BatchUpload/helper';
 import {
   MAX_ROWS,
@@ -23,6 +25,7 @@ import {
   BATCH_UPLOAD_DOC_URL,
   BATCH_TYPE,
 } from 'merchant/views/PaymentPages/PaymentPages/constants';
+import SendAllLinks from 'merchant/views/PaymentLinks/BatchUpload/components/SendAllLinks';
 import { getErrorMessageFromResponse, exportFileAsExcel } from 'common/utils/rzp-utils';
 const gaEvents = setGaTrack('Dashboard - Payment Page - BU');
 
@@ -33,6 +36,7 @@ const BatchListContainer = ({
   validateBatch,
   createBatch,
   location,
+  openModal,
 }) => {
   const [isPaymentPageDetailsLoading, setPaymentPageDetailsLoading] = useState(true);
   const [finalDataSend, setFinalDataSend] = useState([]);
@@ -92,6 +96,44 @@ const BatchListContainer = ({
         message: 'Error while generating sample file.',
       });
     }
+  };
+
+  const fetchAllBatches = (params) => {
+    params && fetchAll({ id, params });
+  };
+
+  const sendAll = (item) => {
+    openModal({
+      size: 'small',
+      component: (
+        <SendAllLinks
+          trackSendAllLinks={gaEvents.trackSendAllLinks}
+          batchId={item.id}
+          fetchAll={fetchAllBatches}
+          type={item.type}
+          paymentLinkId={id}
+        />
+      ),
+    });
+  };
+
+  const sendAllLinks = (item) => {
+    const { status, id } = item;
+    if (!['created', 'failure'].includes(status)) {
+      const allowSendAll = allowSendAllLinks(item);
+      return (
+        <button
+          type="button"
+          key={id}
+          className="btn btn-xs btn-default"
+          onClick={() => sendAll(item)}
+          disabled={!allowSendAll}
+        >
+          {allowSendAll ? 'Send all links' : 'All links sent'}
+        </button>
+      );
+    }
+    return null;
   };
 
   const onValidateBatch = (file, progressTracker) => {
@@ -167,7 +209,8 @@ const BatchListContainer = ({
       onSampleFileDownload={onSampleFileDownload}
       location={location}
       isPaymentPageDetailsLoading={isPaymentPageDetailsLoading}
-      fetchAll={fetchAll}
+      fetchAll={fetchAllBatches}
+      batchActions={[sendAllLinks]}
     />
   );
 };
@@ -182,6 +225,7 @@ const mapDispatchToProps = {
   fetchAll,
   createBatch,
   validateBatch,
+  openModal,
   ...NotificationsActions,
 };
 export default connect(mapStateToProps, mapDispatchToProps)(BatchListContainer);

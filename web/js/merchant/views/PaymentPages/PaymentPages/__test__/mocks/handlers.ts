@@ -6,6 +6,7 @@ import {
   paymentPageDetails,
   batchPaymentPageList,
   pendingPaymentDetails,
+  batchPaymentPageDetails,
 } from './fixtures';
 import { allProducts, store, transformedStore, payments } from './fixtures/storefront';
 
@@ -213,6 +214,75 @@ export const paymentPagesHandlers = [
       ctx.delay(50),
     );
   }),
+  rest.get('*/merchant/api/*/payment_pages/pl_valid_id/batches', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 200,
+        success: true,
+        data: batchPaymentPageDetails,
+      }),
+      ctx.delay(50),
+    );
+  }),
+  rest.get('*/merchant/api/*/payment_pages/pl_notify_error_test/batches', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 200,
+        success: true,
+        data: batchPaymentPageDetails,
+      }),
+      ctx.delay(50),
+    );
+  }),
+  rest.put('*/merchant/api/*/invoices/batch/batch_LiRjPP0YF5eZi0/notify', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 200,
+        success: true,
+        data: {},
+      }),
+      ctx.delay(50),
+    );
+  }),
+  rest.get('*/merchant/api/*/payment_pages/pl_invalid_id/batches', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 400,
+        success: false,
+        errors: merchantTnCError,
+      }),
+      ctx.delay(50),
+    );
+  }),
+  rest.post('*/merchant/api/*/payment_pages/pl_valid_id/fetch_notify_details', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 200,
+        success: true,
+        data: {},
+      }),
+      ctx.delay(50),
+    );
+  }),
+  rest.post(
+    '*/merchant/api/*/payment_pages/pl_notify_error_test/fetch_notify_details',
+    (req, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          status_code: 400,
+          success: false,
+          errors: merchantTnCError,
+        }),
+        ctx.delay(50),
+      );
+    },
+  ),
 ];
 
 export const paymentPagesErrorHandlers = {
