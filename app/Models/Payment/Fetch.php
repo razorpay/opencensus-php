@@ -56,6 +56,7 @@ class Fetch extends BaseFetch
             Entity::VA_TRANSACTION_ID            => 'sometimes|string',
             Entity::SETTLED_BY                   => 'sometimes',
             Entity::INTL_BANK_TRANSFER           => 'sometimes|in:0,1',
+            EsRepository::QUERY                  => 'sometimes|string|min:1|max:100',
         ],
         AuthType::PROXY_AUTH => [
             // @codingStandardsIgnoreLine
@@ -97,6 +98,7 @@ class Fetch extends BaseFetch
             Entity::TERMINAL_ID,
             Entity::SETTLED_BY,
             Merchant\Entity::COUNTRY_CODE,
+            EsRepository::QUERY,
         ],
         AuthType::ADMIN_AUTH => [
             Entity::VERIFIED,
@@ -134,6 +136,7 @@ class Fetch extends BaseFetch
         Entity::NOTES,
         Entity::RECURRING,
         Entity::VA_TRANSACTION_ID,
+        EsRepository::QUERY,
     ];
 
     const SIGNED_IDS = [

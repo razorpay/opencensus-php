@@ -7,6 +7,16 @@ use RZP\Constants\Es;
 
 class EsRepository extends Base\EsRepository
 {
+    /**
+     * @inheritdoc
+     */
+    protected $queryFields = [
+        Entity::NOTES. ".value",
+        Entity::VA_TRANSACTION_ID,
+        Entity::REFERENCE1,
+        Entity::REFERENCE16,
+    ];
+
     protected $indexedFields = [
         Entity::ID,
         Entity::MERCHANT_ID,
@@ -16,6 +26,8 @@ class EsRepository extends Base\EsRepository
         Entity::AMOUNT_TRANSFERRED,
         Entity::VA_TRANSACTION_ID,
         Entity::STATUS,
+        Entity::REFERENCE1,
+        Entity::REFERENCE16,
     ];
 
     public function buildQueryForRecurring(array & $query, string $value)
