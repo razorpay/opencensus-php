@@ -36,7 +36,7 @@ import TestModeBanner from 'merchant/components/TestModeBanner';
 import PaymentsAndStorefrontTab from './PaymentsAndStorefrontTab';
 import { setIsStorefrontPage } from 'merchant/reducers/paymentPages/storefront';
 import { setIsBatchPaymentPages } from 'merchant/reducers/wysiwyg';
-import { isBatchPaymentPages as fnIsBatchPaymentPages } from 'merchant/views/PaymentPages/PaymentPages/utils';
+import { checkBatchPaymentPages } from 'merchant/views/PaymentPages/PaymentPages/utils';
 @withRouter
 @connect(
   (state) => ({
@@ -93,7 +93,7 @@ export default class PaymentPagesContainer extends ListContainer {
 
   UNSAFE_componentWillReceiveProps(nextProps) {
     const { isStorefrontPage, loading, isBatchPaymentPages, setIsBatchPaymentPages } = this.props;
-    const _isBatchPaymentPages = fnIsBatchPaymentPages();
+    const _isBatchPaymentPages = checkBatchPaymentPages();
     if (_isBatchPaymentPages !== isBatchPaymentPages) {
       setIsBatchPaymentPages(_isBatchPaymentPages);
     }

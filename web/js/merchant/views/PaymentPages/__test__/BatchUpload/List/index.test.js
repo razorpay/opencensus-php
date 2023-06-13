@@ -137,7 +137,7 @@ describe('Batch Payment Page - Batch Details', () => {
     };
     const props = {
       ...defaultProps,
-      id: 'pl_LpoFCooJAk0a2j',
+      id: 'pl_validid',
     };
     renderApp(initialState, props);
     await waitForLoadingToFinish();
@@ -145,7 +145,7 @@ describe('Batch Payment Page - Batch Details', () => {
     expect(downloadSampleFileBtn).toBeInTheDocument();
     expect(screen.getByText('Batch Id')).toBeInTheDocument();
     await userEvent.click(downloadSampleFileBtn);
-    expect(FileSaver.saveAs).toHaveBeenCalledWith(new Blob(), 'sample_pl_LpoFCooJAk0a2j.xlsx');
+    expect(FileSaver.saveAs).toHaveBeenCalledWith(new Blob(), 'sample_pl_validid.xlsx');
   });
 
   test('should able to clear filter', async () => {

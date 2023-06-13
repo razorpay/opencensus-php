@@ -112,6 +112,13 @@ export function fetchPaymentPageEntity(id) {
     },
   });
 }
+
+export function fetchPendingPayments(id) {
+  return merchantFetch({
+    url: `payment_pages/${id}/pending_payments`,
+  });
+}
+
 export function fetchStorefrontEntity(id, isTransform) {
   return merchantFetch({
     url: `stores/${id}`,

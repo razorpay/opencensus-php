@@ -25,6 +25,10 @@ const globalState = store.getState();
 jest.mock('common/utils/analytics');
 jest.setTimeout(15000);
 
+const getURL = (id = 'pl_LpoFCooJAk0a2j') => {
+  return `/paymentpages/batchpaymentpages/${id}/payments#batchpaymentpages`;
+};
+
 const renderApp = (isStorefrontPage = true, isRazorx = true) =>
   render(<PaymentPagesDetails isStorefrontPage={isStorefrontPage} />, {
     initialState: {
@@ -299,5 +303,76 @@ describe.skip('update stock flow', () => {
     });
     if (firstProductUnits)
       expect(within(firstProductUnits).getByText(`${product1.quantity_sold}`)).toBeInTheDocument();
+  });
+});
+
+describe('Batch Payment Pages -> Details page', () => {
+  const id = 'pl_LpoFCooJAk0a2j';
+  const defaultProps = {
+    match: {
+      params: {
+        id,
+      },
+    },
+  };
+  const renderApp = (props = {}, plId = id) =>
+    render(<PaymentPagesDetails {...defaultProps} {...props} />, {
+      initialState: {
+        ...globalState,
+        session: {
+          ...globalState.session,
+          user: {
+            ...globalState,
+            isNoExpiryMandatoryPP: true,
+            isAllowedEdit: jest.fn(() => true),
+          },
+        },
+      },
+      renderOptions: {
+        historyOptions: {
+          initialEntries: [getURL(plId)],
+        },
+        path: getURL(plId),
+      },
+    });
+
+  beforeAll(() => {
+    window.rzp_user = {};
+    window.rzpQ = {
+      component: jest.fn(),
+      paymentPages: () => ({
+        success: jest.fn(),
+        interaction: jest.fn(),
+      }),
+    };
+  });
+
+  test('should render payment page details page', async () => {
+    window.location.assign(getURL('pl_validid'));
+    const defaultProps = {
+      id: 'pl_validid',
+    };
+    renderApp(defaultProps, 'pl_validid');
+    await waitForLoadingToFinish();
+    await waitFor(() => {
+      expect(screen.getByText('View Batch Details')).toBeInTheDocument();
+    });
+    expect(screen.getByText('Page URL')).toBeInTheDocument();
+    expect(screen.getByText('Page Status')).toBeInTheDocument();
+    expect(screen.getByText('Created by')).toBeInTheDocument();
+  });
+  test('should show error while getting pending payments', async () => {
+    window.location.assign(getURL('pl_invalidid'));
+    const defaultProps = {
+      id: 'pl_invalidid',
+    };
+    renderApp(defaultProps, 'pl_invalidid');
+    await waitForLoadingToFinish();
+    expect(screen.getByText(/No results found for id/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.getByText(/The requested URL was not found on the server/i),
+      ).toBeInTheDocument();
+    });
   });
 });

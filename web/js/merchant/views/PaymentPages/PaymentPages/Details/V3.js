@@ -44,7 +44,11 @@ import DonationGoalTrackerPreview from 'merchant/views/PaymentPages/PaymentPages
 import { parseGoalTrackerAmountValues } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/DetailsSection/helpers';
 import MagicCheckoutLabel from 'merchant/components/MagicCheckout/MagicCheckoutLabel';
 import { PAYMENT_PAGES_TYPES } from 'merchant/views/PaymentPages/PaymentPages/CreateEdit';
-import { getProductBaseLink } from 'merchant/views/PaymentPages/PaymentPages/utils';
+import {
+  getProductBaseLink,
+  checkBatchPaymentPages,
+} from 'merchant/views/PaymentPages/PaymentPages/utils';
+import Spinner from 'common/ui/Spinner';
 
 // import mockPaymentPage from '../../Wysiwyg/data-mock';
 
@@ -86,6 +90,7 @@ const trackShare = (eventName, data) => {
 @RTracking(() => window.rzpQ.component('PaymentPagesContainer'))
 export default class PaymentPagesV3Entity extends React.Component {
   state = { detailsCollapse: true, isExportInProgress: false };
+  isBatchPaymentPages = checkBatchPaymentPages();
 
   componentDidMount() {
     if (!this.props.reportConfigs) {
@@ -96,21 +101,33 @@ export default class PaymentPagesV3Entity extends React.Component {
   }
 
   getStatsTable(paymentPageEntity) {
-    return [
+    const { captured_payments_count, total_amount_paid, currency } = paymentPageEntity;
+    const { pendingPayments } = this.props;
+    const { total_pending_payments, total_pending_revenue } = pendingPayments;
+    let paymentContent = [
       {
         title: 'Total Payments',
-        value: paymentPageEntity.captured_payments_count,
+        value: captured_payments_count,
       },
       {
         title: 'Total revenue',
-        value: (
-          <Amount
-            value={paymentPageEntity.total_amount_paid}
-            currency={paymentPageEntity.currency}
-          />
-        ),
+        value: <Amount value={total_amount_paid} currency={currency} />,
       },
     ];
+    if (this.isBatchPaymentPages) {
+      const pendingPaymentContent = [
+        {
+          title: 'Total Pending Payments',
+          value: total_pending_payments,
+        },
+        {
+          title: 'Total Pending Revenue',
+          value: <Amount value={total_pending_revenue} currency={currency} />,
+        },
+      ];
+      paymentContent = [].concat(paymentContent).concat(pendingPaymentContent);
+    }
+    return paymentContent;
   }
 
   saveLongPollInstances = (reportId, pollInstance) => {
@@ -287,10 +304,11 @@ export default class PaymentPagesV3Entity extends React.Component {
       reActivateLink,
       isStorefrontPage,
       isNoExpiryMandatory,
+      hasPendingPayments,
     } = this.props;
 
     // paymentPageEntity = mockPaymentPage;
-
+    const { id, title } = paymentPageEntity;
     const isRoleAllowedEdit = this.props.user.isAllowedEdit('payment_pages');
 
     const status = paymentPageEntity.status;
@@ -302,6 +320,7 @@ export default class PaymentPagesV3Entity extends React.Component {
     const productBaseUrl = getProductBaseLink(isStorefrontPage, paymentPageEntity.id);
     const isShareButtonShown = isRoleAllowedEdit && isActive && !isStorefrontPage;
     const { isExportInProgress } = this.state;
+    const isDownloadReport = !isStorefrontPage && !this.isBatchPaymentPages;
 
     return (
       <React.Fragment>
@@ -315,13 +334,20 @@ export default class PaymentPagesV3Entity extends React.Component {
             <Link to="/paymentpages">
               <i className="i i-arrow-back" /> All Payment Pages
             </Link>
-            <i className="i i-chevron-right" /> {paymentPageEntity.title}
+            <i className="i i-chevron-right" /> {title}
           </div>
 
           <div className="panel panel-default">
             <div className="panel-heading">
-              <div className="text">{paymentPageEntity.title}</div>
+              <div className="text">{title}</div>
               <div className="btn-toolbar">
+                {this.isBatchPaymentPages && (
+                  <Link to={`/paymentpages/batchuploads/${id}/${title}`}>
+                    <Button.Primary>
+                      <i className="i icon-border-bottom" /> View Batch Details
+                    </Button.Primary>
+                  </Link>
+                )}
                 {isShareButtonShown && (
                   <Button className="Button--primary--invert" onClick={this.openShareView}>
                     <i className="i i-share-outline" />
@@ -549,15 +575,17 @@ export default class PaymentPagesV3Entity extends React.Component {
           <div className="stats">
             <div className="info">
               <b className="bold">Transactions</b>
-              {this.getStatsTable(paymentPageEntity).map((st, ix) => (
-                <div key={ix}>
-                  {st.title}
-                  <b className="bold">{st.value}</b>
-                </div>
-              ))}
+              {hasPendingPayments && <Spinner />}
+              {!hasPendingPayments &&
+                this.getStatsTable(paymentPageEntity).map((st, ix) => (
+                  <div key={ix}>
+                    {st.title}
+                    <b className="bold">{st.value}</b>
+                  </div>
+                ))}
             </div>
 
-            {!isStorefrontPage && (
+            {isDownloadReport && (
               <div className="report-download btn-toolbar">
                 <div
                   className="btn btn-default Button--invert report-download-trigger"

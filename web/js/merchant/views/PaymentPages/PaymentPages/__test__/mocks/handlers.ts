@@ -5,6 +5,7 @@ import {
   productError,
   paymentPageDetails,
   batchPaymentPageList,
+  pendingPaymentDetails,
 } from './fixtures';
 import { allProducts, store, transformedStore, payments } from './fixtures/storefront';
 
@@ -144,7 +145,7 @@ export const paymentPagesHandlers = [
       ctx.delay(50),
     );
   }),
-  rest.get('*/merchant/api/*/payment_pages/pl_LpoFCooJAk0a2j/details', (req, res, ctx) => {
+  rest.get('*/merchant/api/*/payment_pages/pl_validid/details', (req, res, ctx) => {
     return res(
       ctx.status(200),
       ctx.json({
@@ -168,6 +169,28 @@ export const paymentPagesHandlers = [
   }),
 
   rest.get('*/merchant/api/*/payment_pages/pl_apierrortest/details', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 400,
+        success: false,
+        errors: merchantTnCError,
+      }),
+      ctx.delay(50),
+    );
+  }),
+  rest.get('*/merchant/api/*/payment_pages/pl_validid/pending_payments', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 200,
+        success: true,
+        data: pendingPaymentDetails,
+      }),
+      ctx.delay(50),
+    );
+  }),
+  rest.get('*/merchant/api/*/payment_pages/pl_invalidid/pending_payments', (req, res, ctx) => {
     return res(
       ctx.status(200),
       ctx.json({

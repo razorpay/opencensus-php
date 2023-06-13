@@ -8,7 +8,7 @@ import CustomClipboard from 'common/ui/Clipboard/Custom';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import {
   getUnitsDescription,
-  isBatchPaymentPages as fnIsBatchPaymentPages,
+  checkBatchPaymentPages,
 } from 'merchant/views/PaymentPages/PaymentPages/utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 
@@ -28,9 +28,13 @@ export default ({ paymentPages, loading, isStorefrontPage }) => {
   const trackTitleClick = () => {
     trackListActions('Title Click');
   };
-
-  const isBatchPaymentPages = fnIsBatchPaymentPages();
-
+  const isBatchPaymentPages = checkBatchPaymentPages();
+  const ShowItem = ({ children }) => (
+    <ShowWhen additionalCondition={() => isBatchPaymentPages}>{children}</ShowWhen>
+  );
+  const HideItem = ({ children }) => (
+    <ShowWhen additionalCondition={() => !isBatchPaymentPages}>{children}</ShowWhen>
+  );
   return (
     <div class="table-responsive Table--PaymentpagesV3">
       <table class="table table-hover table-striped">
@@ -38,16 +42,16 @@ export default ({ paymentPages, loading, isStorefrontPage }) => {
           <tr>
             <th>Title</th>
             <th>Total Sales</th>
-            <ShowWhen additionalCondition={() => !isBatchPaymentPages}>
+            <HideItem>
               <th>Item Name</th>
               <th>Units Sold</th>
-            </ShowWhen>
+            </HideItem>
             <th>Page Url</th>
             <th>Created On</th>
             <th>Status</th>
-            <ShowWhen additionalCondition={() => isBatchPaymentPages}>
+            <ShowItem>
               <th>Actions</th>
-            </ShowWhen>
+            </ShowItem>
           </tr>
         </thead>
         <TableBody
@@ -57,28 +61,29 @@ export default ({ paymentPages, loading, isStorefrontPage }) => {
           emptyTableMsg="No data found!"
         >
           {paymentPages.map((item) => {
+            const { id, title } = item;
             item.payment_page_items = item?.payment_page_items || [];
             return (
-              <EntityItemRow id={item.id} key={item.id}>
+              <EntityItemRow id={id} key={id}>
                 <td>
-                  <ShowWhen additionalCondition={() => !isBatchPaymentPages}>
+                  <HideItem>
                     <NavLink
-                      to={`/paymentpages/${isStorefrontPage ? 'storefront/' : ''}${
-                        item.id
-                      }/payments${isStorefrontPage ? '#storefront' : '#paymentpages'}`}
+                      to={`/paymentpages/${isStorefrontPage ? 'storefront/' : ''}${id}/payments${
+                        isStorefrontPage ? '#storefront' : '#paymentpages'
+                      }`}
                       onClick={trackTitleClick}
                     >
-                      {item.title}
+                      {title}
                     </NavLink>
-                  </ShowWhen>
-                  <ShowWhen additionalCondition={() => isBatchPaymentPages}>
+                  </HideItem>
+                  <ShowItem>
                     <NavLink
-                      to={`/paymentpages/batchpaymentpages/${item.id}/payments#batchpaymentpages`}
+                      to={`/paymentpages/batchpaymentpages/${id}/payments#batchpaymentpages`}
                       onClick={trackTitleClick}
                     >
-                      {item.title}
+                      {title}
                     </NavLink>
-                  </ShowWhen>
+                  </ShowItem>
                 </td>
 
                 {/* TODO: Check if needed to be manually calculated from items or we've direct value */}
@@ -86,7 +91,7 @@ export default ({ paymentPages, loading, isStorefrontPage }) => {
                   <Amount value={item.total_amount_paid} currency={item.currency} />
                 </td>
 
-                <ShowWhen additionalCondition={() => !isBatchPaymentPages}>
+                <HideItem>
                   <td>
                     <table>
                       <tbody>
@@ -181,7 +186,7 @@ export default ({ paymentPages, loading, isStorefrontPage }) => {
                       </tbody>
                     </table>
                   </td>
-                </ShowWhen>
+                </HideItem>
 
                 <td>
                   {item.short_url && (
@@ -199,13 +204,13 @@ export default ({ paymentPages, loading, isStorefrontPage }) => {
                 <td>
                   <PaymentPagesStatusLabel status={item.status} />
                 </td>
-                <ShowWhen additionalCondition={() => isBatchPaymentPages}>
+                <ShowItem>
                   <td>
                     <NavLink to={`/paymentpages/batchuploads/${item.id}/${item.title}`}>
                       <button>Batch Details</button>
                     </NavLink>
                   </td>
-                </ShowWhen>
+                </ShowItem>
               </EntityItemRow>
             );
           })}

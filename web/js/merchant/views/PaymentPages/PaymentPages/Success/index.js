@@ -31,7 +31,7 @@ import { dispatchWebViewEvent } from 'common/utils/reactNativeWebView';
 import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
 import { getI18nTaxExemptionName } from 'merchant/views/PaymentPages/PaymentPages/helpers';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { isBatchPaymentPages as fnIsBatchPaymentPages } from 'merchant/views/PaymentPages/PaymentPages/utils';
+import { checkBatchPaymentPages } from 'merchant/views/PaymentPages/PaymentPages/utils';
 
 @connect(
   (state) => ({
@@ -269,7 +269,7 @@ class Success extends React.Component {
     const { isLoaded, pageLoadError } = this.state;
     const { org } = this.props;
 
-    const isBatchPaymentPages = fnIsBatchPaymentPages();
+    const isBatchPaymentPages = checkBatchPaymentPages();
     let content;
 
     if (!isLoaded) {

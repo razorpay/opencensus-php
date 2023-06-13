@@ -234,3 +234,8 @@ export const batchPaymentPageList = {
     },
   ],
 };
+
+export const pendingPaymentDetails = {
+  total_pending_payments: 2,
+  total_pending_revenue: 100,
+};

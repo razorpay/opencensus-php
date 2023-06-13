@@ -24,6 +24,6 @@ export const getProductBaseLink = (isStorefront, id) => {
   return `/paymentpages/${isStorefront ? 'storefront/' : ''}${id}`;
 };
 
-export const isBatchPaymentPages = () => {
+export const checkBatchPaymentPages = () => {
   return window.location.pathname.includes('/batchpaymentpages');
 };

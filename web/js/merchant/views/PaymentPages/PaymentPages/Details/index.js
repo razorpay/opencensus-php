@@ -21,6 +21,7 @@ import {
   deactivatePaymentPage,
   deactivateStorefront,
   activateStorefront,
+  fetchPendingPayments,
 } from 'merchant/views/PaymentPages/PaymentPages/model';
 import Spinner from 'common/ui/Spinner';
 import { updateItem } from 'common/utils/immutable';
@@ -35,6 +36,7 @@ import NoEntityResultsFound from 'common/ui/NoEntityResultsFound';
 import PaymentPagesV3Entity from 'merchant/views/PaymentPages/PaymentPages/Details/V3';
 
 import ActivateAgain from 'merchant/views/PaymentPages/PaymentPages/components/Modals/ActivateAgain';
+import { checkBatchPaymentPages } from 'merchant/views/PaymentPages/PaymentPages/utils';
 
 @withRouter
 @connect((state) => ({ user: state.session.user }), {
@@ -54,13 +56,42 @@ export default class extends React.Component {
     paymentPagePayments: [],
     paymentsListLoading: true,
     createdByUser: null,
+    hasPendingPayments: false,
+    pendingPayments: {},
   };
+
+  isBatchPaymentPages = checkBatchPaymentPages();
 
   UNSAFE_componentWillMount() {
     this.fetchEntity(this.entityId);
     !this.props.isStorefrontPage && this.fetchEntityPayments(this.entityId);
 
     track.init(this.props.tracking.trackEvent);
+    this.isBatchPaymentPages && this.getPendingPayments();
+  }
+
+  async getPendingPayments() {
+    const { showNotification } = this.props;
+    try {
+      this.setState({
+        hasPendingPayments: true,
+      });
+      const resp = await fetchPendingPayments(this.entityId);
+      this.setState({
+        hasPendingPayments: false,
+        pendingPayments: resp?.data || {},
+      });
+    } catch (error) {
+      this.setState({
+        hasPendingPayments: false,
+        pendingPayments: {},
+      });
+      const msg = error.errors?.join(' ');
+      showNotification({
+        type: 'error',
+        message: msg,
+      });
+    }
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {

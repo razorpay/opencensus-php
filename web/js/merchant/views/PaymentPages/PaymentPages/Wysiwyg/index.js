@@ -69,7 +69,7 @@ import {
   isFormItemOfTypeAmount,
 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
 import { transfeeRuleToApiFormat } from 'merchant/views/PaymentPages/PaymentPages/helpers';
-import { isBatchPaymentPages as fnIsBatchPaymentPages } from 'merchant/views/PaymentPages/PaymentPages/utils';
+import { checkBatchPaymentPages } from 'merchant/views/PaymentPages/PaymentPages/utils';
 
 import { DEFAULT_RULE } from 'merchant/views/MagicCheckout/constants';
 import { FIXED_FIELDS } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers/preAddedFields';
@@ -163,7 +163,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     socialMediaIcons.src = 'https://cdn.razorpay.com/static/assets/social-share/icons.png';
 
     this.fetchIfIntentDuplicate();
-    const isBatchPaymentPages = fnIsBatchPaymentPages();
+    const isBatchPaymentPages = checkBatchPaymentPages();
     // set the batch pp identifier
     isBatchPaymentPages && setIsBatchPaymentPages(true);
   }
