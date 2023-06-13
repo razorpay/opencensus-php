@@ -121,6 +121,12 @@ class ReportingController extends Controller
 
         return ApiResponse::json($data);
     }
+    public function updateSchedule(string $id)
+    {
+        $data = $this->reportingService()->updateSchedule($id, $this->input);
+
+        return ApiResponse::json($data);
+    }
 
     public function getConsumerRestrictions()
     {

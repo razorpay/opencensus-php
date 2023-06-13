@@ -41,12 +41,13 @@ class Reporting implements ExternalService
     /**
      * Path for various endpoints
      */
-    const CONFIG_PATH           = '/v1/configs';
-    const LOG_PATH              = '/v1/logs';
-    const ADMIN_LOG_PATH        = '/v1/admin-logs';
-    const SCHEDULE_PATH         = '/v1/schedules';
-    const LOG_PATH_FOR_MERCHANT = '/v1/merchant/logs';
-    const RESTRICTIONS_PATH     = '/v1/consumer_restrictions';
+    const CONFIG_PATH              = '/v1/configs';
+    const LOG_PATH                 = '/v1/logs';
+    const ADMIN_LOG_PATH           = '/v1/admin-logs';
+    const SCHEDULE_PATH            = '/v1/schedules';
+    const SCHEDULE_PATH_V2         = '/v2/schedules';
+    const LOG_PATH_FOR_MERCHANT    = '/v1/merchant/logs';
+    const RESTRICTIONS_PATH        = '/v1/consumer_restrictions';
 
     const SCHEDULE_PREFIX = 'sched_';
 
@@ -487,39 +488,60 @@ class Reporting implements ExternalService
         $reportingServiceRequest = $input['payload'];
 
         $scheduleRequest = $input['schedule'];
-
-        $response = $this->createScheduleOnReportingService($reportingServiceRequest);
-
-        $apiResponse = null;
-
-        // In case reporting service returns error, then we dont create schedule/schedule task
-        if (isset($response['error']) === false)
+        $adminToken = $this->ba->getAdminToken();
+        if (empty($adminToken) === false)
         {
-            $this->trace->info(TraceCode::REPORTING_SERVICE_CREATE_SCHEDULE, $input);
+            $path = self::SCHEDULE_PATH;
+            $this->trace->info(TraceCode::REPORTING_SERVICE_CREATE_SCHEDULE, $reportingServiceRequest);
+            $response = $this->createScheduleOnReportingService($reportingServiceRequest,$path);
 
-            // Need to store entity_id without sign.
-            $scheduleRequest[ScheduleTask\Entity::ENTITY_ID] = $this->generateEntityId($response['id']);
+            $apiResponse = null;
 
-            $apiResponse = $this->createScheduleOnApi($scheduleRequest);
+            // In case reporting service returns error, then we dont create schedule/schedule task
+            if (isset($response['error']) === false)
+            {
+                $this->trace->info(TraceCode::REPORTING_SERVICE_CREATE_SCHEDULE, $input);
 
-            // Link Api schedule with reporting schedule
-            $response = $this->linkSingleScheduledTasks($response);
+                // Need to store entity_id without sign.
+                $scheduleRequest[ScheduleTask\Entity::ENTITY_ID] = $this->generateEntityId($response['id']);
+
+                $apiResponse = $this->createScheduleOnApi($scheduleRequest);
+
+                // Link Api schedule with reporting schedule
+                $response = $this->linkSingleScheduledTasks($response);
+            }
+
+            if (empty($apiResponse) === true)
+            {
+                throw new Exception\DbQueryException(
+                    'Failed to create schedule');
+            }
+
         }
-
-        if (empty($apiResponse) === true)
-        {
-            throw new Exception\DbQueryException(
-                'Failed to create schedule');
+        else{
+            $path = self::SCHEDULE_PATH_V2;
+            $response = $this->createScheduleOnReportingService($reportingServiceRequest,$path);
         }
-
         return $response;
     }
 
     public function fetchScheduleMultiple(array $input): array
     {
-        $scheduleDataList = $this->createAndSendRequest(Requests::GET, self::SCHEDULE_PATH, $input);
 
-        $scheduleTaskData = $this->linkAllScheduledTasks($scheduleDataList);
+        $adminToken = $this->ba->getAdminToken();
+        if (empty($adminToken) === false)
+        {
+            $path = self::SCHEDULE_PATH;
+            $scheduleDataList = $this->createAndSendRequest(Requests::GET, $path, $input);
+
+            $scheduleTaskData = $this->linkAllScheduledTasks($scheduleDataList);
+        }
+        else{
+            $path = self::SCHEDULE_PATH_V2;
+
+            $scheduleTaskData = $this->createAndSendRequest(Requests::GET, $path, $input);
+        }
+
 
         return $scheduleTaskData;
 
@@ -527,22 +549,50 @@ class Reporting implements ExternalService
 
     public function fetchScheduleById(string $id): array
     {
-        $path = self::SCHEDULE_PATH . '/' . $id;
+        $adminToken = $this->ba->getAdminToken();
+        if (empty($adminToken) === false)
+        {
+            $path = self::SCHEDULE_PATH . '/' . $id;
+        }
+        else{
+            $path = self::SCHEDULE_PATH_V2 . '/' . $id;
+        }
 
         return $this->createAndSendRequest(Requests::GET, $path);
     }
 
     public function deleteSchedule(string $id): array
     {
-        $path = self::SCHEDULE_PATH . '/' . $id;
-
-        $response = $this->createAndSendRequest(Requests::DELETE, $path);
-
-        // Deleting the corresponding schedule task as well.
-        if (isset($response['error']) === false)
+        $adminToken = $this->ba->getAdminToken();
+        if (empty($adminToken) === false)
         {
-            $this->deleteScheduleTask($id);
+            $path = self::SCHEDULE_PATH . '/' . $id;
+            $response = $this->createAndSendRequest(Requests::DELETE, $path);
+
+            // Deleting the corresponding schedule task as well.
+            if (isset($response['error']) === false)
+            {
+                $this->deleteScheduleTask($id);
+            }
         }
+        else{
+            $path = self::SCHEDULE_PATH_V2 . '/' . $id;
+            $response = $this->createAndSendRequest(Requests::DELETE, $path);
+        }
+
+        return $response;
+    }
+    public function updateSchedule(string $id, array $input): array
+    {
+
+       $path = self::SCHEDULE_PATH_V2 . '/' . $id;
+
+        $reportingServiceRequest = $input['payload'];
+
+        $this->traceReportingServiceRequest($reportingServiceRequest);
+
+        $response = $this->createAndSendRequest(Requests::PATCH, $path, $reportingServiceRequest);
+
 
         return $response;
     }
@@ -682,9 +732,10 @@ class Reporting implements ExternalService
         return $scheduleTask->toArrayPublic();
     }
 
-    protected function createScheduleOnReportingService(array $input): array
+    protected function createScheduleOnReportingService(array $input,string $path): array
     {
-        $response = $this->createAndSendRequest(Requests::POST, self::SCHEDULE_PATH, $input);
+
+        $response = $this->createAndSendRequest(Requests::POST, $path, $input);
 
         return $response;
     }

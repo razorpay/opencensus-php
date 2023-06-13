@@ -205,6 +205,7 @@ class UserAccess
         $routeRoles = $this->userRoleScope->getRouteUserRoles($route);
         $userRole = $this->ba->getUserRole();
 
+
         if ($routeRoles === null)
         {
             $this->trace->warning(TraceCode::USER_ACCESS_MISSING_ROUTE_ROLE_MAPPING,
