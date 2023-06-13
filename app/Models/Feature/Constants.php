@@ -1753,11 +1753,6 @@ class Constants
     const ICICI_BAAS = 'icici_baas';
 
     /**
-     * Feature flag for new currency support
-     */
-    const SHAADI_COM_NEW_CURRENCY = 'shaadi_com_new_currency';
-
-    /**
      * Feature flag to download consolidated org reports from respective org admin dashboard
      */
     const CONSOLIDATED_ORG_REPORTS = 'consolidated_org_reports';
@@ -2476,7 +2471,6 @@ class Constants
         self::ICICI_2FA                       => true,
         self::ICICI_BAAS                      => true,
         self::BSE_MERCHANT_REPORT             => true,
-        self::SHAADI_COM_NEW_CURRENCY         => true,
         self::CONSOLIDATED_ORG_REPORTS        => true,
         self::ONE_CC_CONSENT_DEFAULT          => true,
         self::ONE_CC_CONSENT_NOTDEFAULT       => true,

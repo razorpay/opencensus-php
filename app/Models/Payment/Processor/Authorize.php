@@ -12143,7 +12143,7 @@ trait Authorize
         if(((isset($input['dcc_currency']) === true and
                     in_array($input['dcc_currency'], Currency\Currency::THREE_DECIMAL_CURRENCIES)) or
                 in_array($currency, Currency\Currency::THREE_DECIMAL_CURRENCIES)) and
-            $this->merchant->isFeatureEnabled(Features::SHAADI_COM_NEW_CURRENCY) === false){
+            $this->merchant->isShaadiComNewCurrencyEnabled() === false){
             $this->trace->info(
                 TraceCode::THREE_DIGIT_CURRENCY_PRECISION_NOT_SUPPORTED,
                 [

@@ -252,7 +252,15 @@ class PaymentCreateDCCTest extends TestCase
         $features = array('s2s','s2s_json');
         if ($featureEnabled === true)
         {
-            array_push($features, 'shaadi_com_new_currency');
+            $output = [
+                "response" => [
+                    "variant" => [
+                        "name" => 'variant_on',
+                    ]
+                ]
+            ];
+
+            $this->mockSplitzTreatment($output);
         }
         $this->fixtures->merchant->addFeatures($features);
 
@@ -305,11 +313,21 @@ class PaymentCreateDCCTest extends TestCase
     public function testPaymentValidateMCCS2SForShaadiCom()
     {
         $payment = $this->payment;
-        $features = array('s2s','s2s_json','shaadi_com_new_currency');
+        $features = array('s2s','s2s_json');
 
         $this->fixtures->merchant->addFeatures($features);
         $payment['amount'] = 5000;
         $payment['currency'] = 'KWD';
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variant_on',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
 
         $responseContent = $this->doS2SPrivateAuthJsonPayment($payment);
 
@@ -413,7 +431,17 @@ class PaymentCreateDCCTest extends TestCase
     public function testKWDInStandardCheckoutForShaadi_com()
     {
         $iin = $this->createIIN('542859','KW');
-        $this->enableFeatureOnMerchant('shaadi_com_new_currency');
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variant_on',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
         $responseContent = json_decode($this->getFlowsData($iin)->getContent(), true);
         $cardCurrency = $responseContent['card_currency'];
         $currencyRequestId = $responseContent['currency_request_id'];

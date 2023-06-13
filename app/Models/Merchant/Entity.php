@@ -1234,6 +1234,16 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::DISABLE_TOKENISED_PAYMENT) === false);
     }
 
+    public function isShaadiComNewCurrencyEnabled(): bool
+    {
+        $properties = [
+            'id'            => $this->getId(),
+            'experiment_id' => app('config')->get('app.new_currency_support_exp_id'),
+        ];
+
+        return (new Core())->isSplitzExperimentEnable($properties, 'variant_on');
+    }
+
     public function isShowMorTncEnabled(): bool
     {
         return ($this->isFeatureEnabled(Feature\Constants::SHOW_MOR_TNC) === true);

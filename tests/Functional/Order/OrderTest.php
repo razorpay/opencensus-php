@@ -457,9 +457,29 @@ class OrderTest extends TestCase
         $this->startTest();
     }
 
+    protected function mockSplitzTreatment($output)
+    {
+        $this->splitzMock = \Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturn($output);
+    }
+
     public function testCurrencyForShaadiComWithFeatureEnabled()
     {
-        $this->fixtures->merchant->addFeatures(['shaadi_com_new_currency']);
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variant_on',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
         $this->fixtures->merchant->edit('10000000000000', ['convert_currency' => true]);
         $this->startTest();
     }

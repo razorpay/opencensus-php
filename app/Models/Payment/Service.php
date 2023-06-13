@@ -2700,7 +2700,7 @@ class Service extends Base\Service
         // If request is not s2s or not from shaadi.com, don't show new currencies in list
         $library = $this->getLibraryFromPayment($payment);
 
-        if(in_array($library, Analytics\Metadata::SUPPORTED_LIBRARIES_FOR_THREE_DECIMAL_CURRENCIES) === false or $merchant->isFeatureEnabled(Features::SHAADI_COM_NEW_CURRENCY) === false)
+        if(in_array($library, Analytics\Metadata::SUPPORTED_LIBRARIES_FOR_THREE_DECIMAL_CURRENCIES) === false or $merchant->isShaadiComNewCurrencyEnabled() === false)
         {
             return false;
         }

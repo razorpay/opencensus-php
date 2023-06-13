@@ -386,6 +386,8 @@ return array(
 
     'partners_excluded_from_instant_act_v2_api_exp_id'  => env('PARTNERS_EXCLUDED_FROM_INSTANT_ACT_V2_API_EXP_ID'),
 
+    'new_currency_support_exp_id' => env('NEW_CURRENCY_SUPPORT_EXP_ID'),
+
     'send_sms_on_commission_invoice_issued_exp_id' => env('SEND_SMS_ON_COMMISSION_INVOICE_ISSUED_EXP_ID'),
 
     'redirect_malaysia_card_payments_via_api' => env('REDIRECT_MALAYSIA_CARD_PAYMENTS_VIA_API'),
