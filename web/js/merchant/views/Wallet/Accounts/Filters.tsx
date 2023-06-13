@@ -1,30 +1,37 @@
 import { Field } from 'redux-form';
-import React, { useState } from 'react';
+import React from 'react';
 
-import DateRangePicker from 'common/ui/DateRangePicker';
 import ListFilter from 'merchant/components/ListFilter';
-import 'react-dates/initialize';
 
 import type { AccountListApiParams } from 'merchant/views/Wallet/types';
-
-const dateRangePresets = [
-  ['Past 7 Days', -7, 'days'],
-  ['Past 30 Days', -30, 'days'],
-  ['Past 90 Days', -90, 'days'],
-];
 
 interface FilterProps {
   onSubmit: (filters: AccountListApiParams) => void;
 }
 
 const Filters = ({ onSubmit }: FilterProps): JSX.Element => {
-  const [date, setDate] = useState({
-    from: '',
-    to: '',
-  });
-
   return (
-    <ListFilter date={date} onSubmit={onSubmit} form="walletAccountsFilter">
+    <ListFilter onSubmit={onSubmit} form="walletAccountsFilter">
+      <div className="form-group list-filter-item">
+        <label>Account Id</label>
+        <Field
+          name="issuing_account_id"
+          component="input"
+          class="form-control input-sm"
+          data-testid="account_id"
+        />
+      </div>
+
+      <div className="form-group list-filter-item">
+        <label>User Id</label>
+        <Field
+          name="user_id"
+          component="input"
+          class="form-control input-sm"
+          data-testid="user_id"
+        />
+      </div>
+
       <div className="form-group list-filter-item">
         <label>Contact</label>
         <Field
@@ -35,13 +42,14 @@ const Filters = ({ onSubmit }: FilterProps): JSX.Element => {
         />
       </div>
 
-      <div className="form-group datepicker-group">
-        <label>Duration</label>
-        <DateRangePicker
-          presets={dateRangePresets}
-          onDatesChange={(start, end) => setDate({ from: start.unix(), to: end.unix() })}
-          data-test-id="date"
-        />
+      <div className="form-group list-filter-item">
+        <label>Type</label>
+        <Field name="type" component="select" class="form-control input-sm" data-testid="type">
+          <option value="">All</option>
+          <option value="container">Container</option>
+          <option value="giftcard">Gift Card</option>
+          <option value="wallet">Account</option>
+        </Field>
       </div>
 
       <div className="form-group list-filter-item">

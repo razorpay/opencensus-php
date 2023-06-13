@@ -8,7 +8,8 @@ describe('Wallet > Accounts > Filters', () => {
     await waitFor(() => {
       // Ensure all the filters fields exist
       expect(screen.getByText('Contact')).toBeInTheDocument();
-      expect(screen.getByText('Duration')).toBeInTheDocument();
+      expect(screen.getByText('Account Id')).toBeInTheDocument();
+      expect(screen.getByText('User Id')).toBeInTheDocument();
       expect(screen.getByText('Status')).toBeInTheDocument();
 
       // Ensure all the search/clear buttons exist
@@ -39,5 +40,29 @@ describe('Wallet > Accounts > Filters', () => {
     await userEvent.click(screen.getByText('Search'));
 
     expect(mock.mock.calls[0][0]).toMatchObject({ status });
+  });
+
+  test('Should receive id in callback when input entered', async () => {
+    const input = 'iacc_Ly9Ey7bZEttXUL';
+    const mock = jest.fn(() => {});
+
+    render(<Filters onSubmit={mock} />);
+
+    await userEvent.type(screen.getByTestId('account_id'), input);
+    await userEvent.click(screen.getByText('Search'));
+
+    expect(mock.mock.calls[0][0]).toMatchObject({ issuing_account_id: input });
+  });
+
+  test('Should receive user_id in callback when input entered', async () => {
+    const input = 'iuser_Ly9Ey7bZEttXUL';
+    const mock = jest.fn(() => {});
+
+    render(<Filters onSubmit={mock} />);
+
+    await userEvent.type(screen.getByTestId('user_id'), input);
+    await userEvent.click(screen.getByText('Search'));
+
+    expect(mock.mock.calls[0][0]).toMatchObject({ user_id: input });
   });
 });

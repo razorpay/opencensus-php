@@ -27,6 +27,9 @@ export interface Account {
   created_at: number;
   email?: string;
   full_kyc?: boolean;
+  user_id: string;
+  type: string;
+  partner_customer_id: string;
 }
 
 export interface WalletPayment {
@@ -96,8 +99,9 @@ export interface DetailApiParams {
 }
 
 export interface AccountFilterParams {
-  from?: number;
-  to?: number;
+  user_id?: string;
+  id?: string;
+  type?: string;
   contact?: string;
   status?: AccountStatus;
 }

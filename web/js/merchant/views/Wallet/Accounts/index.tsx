@@ -9,10 +9,10 @@ import { idLink } from 'common/ui/item/id';
 import DataTable from 'common/ui/Table/DataTable';
 import Filters from 'merchant/views/Wallet/Accounts/Filters';
 import { Badge } from '@razorpay/blade/components';
-import { toTitleCase } from '@razorpay/blade/utils';
-
 import AccountDetail from 'merchant/views/Wallet/AccountDetail';
+import { withNoWrap } from 'merchant/views/Wallet/styled';
 
+import { toTitleCase } from '@razorpay/blade/utils';
 import { fetchAccounts } from 'merchant/views/Wallet/queries';
 import { SessionContext, WalletSession } from 'merchant/views/Wallet/context';
 import { STATUS_BADGE_PROPS } from 'merchant/views/Wallet/Accounts/constants';
@@ -35,7 +35,7 @@ const Modal = styled(BaseModal)`
 `;
 
 const id = {
-  title: 'Account Id',
+  title: withNoWrap('Account Id'),
   value: (item) =>
     idLink(item.account_id, item.account_id, undefined, undefined, {
       type: 'account',
@@ -43,33 +43,48 @@ const id = {
 };
 
 const created_at = {
-  title: 'Created At',
+  title: withNoWrap('Created At'),
   value: items.createdAtShort,
 };
 
 const balance = {
-  title: 'Available Balance',
+  title: withNoWrap('Available Balance'),
   value: items.getAmount('balance'),
 };
 
 const account_holder_name = {
-  title: 'Account Holder Name',
+  title: withNoWrap('Account Holder Name'),
   value: (item) => <div>{item.account_holder_name}</div>,
 };
 
 const mobile_number = {
-  title: 'Mobile Number',
+  title: withNoWrap('Mobile Number'),
   value: (item) => <div>{item.contact}</div>,
 };
 
 const statusCol = {
-  title: 'Status',
+  title: withNoWrap('Status'),
   value: (item) => <Badge {...STATUS_BADGE_PROPS[item.status]}>{toTitleCase(item.status)}</Badge>,
 };
 
 const program_name = {
-  title: 'Program Name',
+  title: withNoWrap('Program Name'),
   value: (item) => <div>{item.program}</div>,
+};
+
+const type = {
+  title: withNoWrap('Account Type'),
+  value: (item) => <div>{item.type}</div>,
+};
+
+const userId = {
+  title: withNoWrap('User ID'),
+  value: (item) => <div>{item.user_id}</div>,
+};
+
+const partnerCustomerId = {
+  title: withNoWrap('Partner Customer ID'),
+  value: (item) => <div>{item.partner_customer_id}</div>,
 };
 
 export const Accounts = ({ location, history }: RouteComponentProps): JSX.Element => {
@@ -111,12 +126,15 @@ export const Accounts = ({ location, history }: RouteComponentProps): JSX.Elemen
         title="Accounts"
         columns={[
           id,
-          created_at,
+          userId,
+          partnerCustomerId,
+          type,
           account_holder_name,
           mobile_number,
-          program_name,
           statusCol,
           balance,
+          program_name,
+          created_at,
         ]}
         count={paginationState.count}
         skip={paginationState.skip}

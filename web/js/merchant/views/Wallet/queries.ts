@@ -7,13 +7,19 @@ import type * as types from 'merchant/views/Wallet/types';
 
 export const fetchAccounts = async ({
   mode = 'test',
-  ...params
+  skip = 0,
+  count = 25,
+  ...filters
 }: types.AccountListApiParams): Promise<types.ListApiResponse<types.Account>> => {
-  params = decodeSensitiveFields(params);
+  filters = decodeSensitiveFields(filters);
 
   try {
     const res = await fetch<types.ListApiResponse<types.Account>>({
-      url: `${WALLET_BASE_PATH}/accounts${stringifyQueryParams(params)}`,
+      url: `${WALLET_BASE_PATH}/accounts${stringifyQueryParams({
+        ...filters,
+        skip,
+        count,
+      })}`,
       mode,
     });
     res.items = res.items.map((item) => ({

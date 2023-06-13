@@ -1,6 +1,10 @@
 import { WALLET_BASE_PATH } from 'merchant/views/Wallet/constants';
 import { rest } from 'msw';
-import { accountBalanceResponse, accountDetailResponse } from './fixtures';
+import {
+  accountBalanceResponse,
+  accountDetailResponse,
+  walletAccountDetailResponse,
+} from './fixtures';
 
 export default [
   rest.get(`*/${WALLET_BASE_PATH}/accounts`, (req, res, ctx) => {
@@ -8,7 +12,10 @@ export default [
     if (accountId === 'iacc_I9eCvXfHx7nzZz') {
       return res(ctx.status(404), ctx.json({}), ctx.delay(100));
     }
-    return res(ctx.status(200), ctx.json(accountDetailResponse), ctx.delay(100));
+    if (accountId === 'iacc_I9eCvXfHx7nzZt') {
+      return res(ctx.status(200), ctx.json(accountDetailResponse), ctx.delay(100));
+    }
+    return res(ctx.status(200), ctx.json(walletAccountDetailResponse), ctx.delay(100));
   }),
   rest.get(`*/${WALLET_BASE_PATH}/*/balance`, (req, res, ctx) => {
     return res(ctx.status(200), ctx.json(accountBalanceResponse), ctx.delay(100));
