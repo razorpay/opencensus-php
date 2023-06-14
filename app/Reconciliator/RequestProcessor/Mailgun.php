@@ -108,7 +108,7 @@ class Mailgun extends Base
                 "from" => "kishor.kangune@bajajfinserv.in",
                 "subject_pattern" => "/(?i)^RZP MID BFL0000001675590 Settlement Data(.+)?/",
                 "filename_pattern" => "/(?i)^RZP MID BFL0000001675590 Settlement Data(.+)?/",
-                "destination" => "recon/input/WALLET_BAJAJ/rzp_internal_report/",
+                "destination" => "recon/input/WALLET_BAJAJ/transaction_report/",
                 "bucket_config_type" => FileStore\Type::RECON_AUTOMATIC_FILE_FETCH
             ]
         ]
