@@ -31,7 +31,6 @@ const WelcomeModal = ({
   referee,
   trackEvents,
   isActivationFormFullView,
-  history,
 }) => {
   const activationFormUrl = isActivationFormFullView ? '/kyc' : '/activation';
 
@@ -244,7 +243,13 @@ const WelcomeModal = ({
         <div className="welcome-modal-actions">
           <ShowWhen additionalCondition={(user) => !user.isOrgAxis}>
             <Link
-              to=""
+              to={
+                isSignupWithEasyOnboarding
+                  ? ''
+                  : isOnboardingV2Enabled && isMobileDevice()
+                  ? '/onboarding/steps'
+                  : activationFormUrl
+              }
               onClick={() => {
                 handleActivationClick();
 
@@ -258,12 +263,6 @@ const WelcomeModal = ({
                     },
                   });
                   redirectToEasyAfter1sec();
-                } else {
-                  history.push(
-                    isOnboardingV2Enabled && isMobileDevice()
-                      ? '/onboarding/steps'
-                      : activationFormUrl,
-                  );
                 }
               }}
               className={`btn btn-primary${isMobileDevice() ? ' btn-block' : ''}`}
