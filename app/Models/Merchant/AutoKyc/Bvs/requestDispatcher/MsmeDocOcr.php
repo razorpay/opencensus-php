@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Merchant\BvsValidation;
+use RZP\Models\Merchant\VerificationDetail as MVD;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Document\Entity as DocumentEntity;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
@@ -54,5 +55,17 @@ class MsmeDocOcr extends Base
     public function performPostProcessOperation(BvsValidation\Entity $entity): void
     {
         $this->merchantDetails->setMsmeDocVerificationStatus(BvsValidationConstants::INITIATED);
+
+        $input = [
+            MVD\Entity::MERCHANT_ID         => $this->merchant->getId(),
+            MVD\Entity::ARTEFACT_TYPE       => Constant::MSME,
+            MVD\Entity::ARTEFACT_IDENTIFIER => MVD\Constants::DOC,
+            MVD\Entity::STATUS              => BvsValidationConstants::INITIATED,
+            MVD\Entity::METADATA            => [
+                'signatory_validation_status' => BvsValidationConstants::INITIATED,
+                'bvs_validation_id'           => $entity->getValidationId()]
+        ];
+
+        (new MVD\Core)->createOrEditVerificationDetail($this->merchantDetails, $input);
     }
 }

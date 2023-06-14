@@ -41,6 +41,9 @@ class Factory
             case Constant::SHOP_ESTABLISHMENT.ValidationConstants::IDENTIFIER:
                 return new ShopEstablishmentAuthRuleResultVerifier($validation);
 
+            case Constant::MSME.ValidationConstants::PROOF:
+                return new MSMERulesResultVerifier($validation);
+
             default :
                 return new DefaultRuleResultVerifier($validation);
         }
