@@ -170,7 +170,7 @@ class Event
     const ISSUING_BENEFICIARY_ACTIVE                    = 'beneficiary.active';
     const ISSUING_BENEFICIARY_MANUAL_REVIEW             = 'beneficiary.manual_review';
     const ISSUING_BENEFICIARY_FAILED                    = 'beneficiary.failed';
-    const ISSUING_TRANSACTION_CREATED                   = 'transaction.created';
+    const ISSUING_TRANSACTION_CREATED                   = 'issuing.transaction.created';
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
