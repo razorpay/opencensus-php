@@ -263,26 +263,67 @@ class Core extends Base\Core
                         Entity::MERCHANT_ID => $this->merchant->getPublicId()
                     ]);
 
-                $settings = $input['settings'];
+            $settings = $input['settings'];
 
-                if (!isset($settings[Entity::UDF_SCHEMA])) {
+            if (!isset($settings[Entity::UDF_SCHEMA])) {
 
-                    throw new BadRequestValidationFailureException(
-                        'Mandatory field Primary reference ID missing.');
-                }
-
-                $udf_schema = json_decode($settings[Entity::UDF_SCHEMA], true);
-
-                $setVal = in_array(Entity::PRI_REF_ID, array_column($udf_schema, 'name'));
-
-                if ($setVal === false)
-                {
-                    throw new BadRequestValidationFailureException(
-                        'Mandatory field Primary reference ID missing.');
-                }
+                throw new BadRequestValidationFailureException(
+                    'Mandatory field Primary reference ID missing.');
             }
 
+            $udfSchema  = json_decode($settings[Entity::UDF_SCHEMA], true);
+
+            $this->checkForMandatoryPrimaryAndSecondaryRefIds($udfSchema);
+
         }
+
+    }
+
+    public function checkForMandatoryPrimaryAndSecondaryRefIds(array $udfSchema)
+    {
+        // check 1: both primary_ref_id and sec_ref_id_1 should be present
+        $primaryRefJson = array_first($udfSchema, function($json) {
+            return $json['name'] === Entity::PRI_REF_ID;
+        });
+
+        if ($primaryRefJson === null)
+        {
+            throw new BadRequestValidationFailureException(
+                'Mandatory field Primary reference ID missing.');
+        }
+
+        $secRefJson = array_first($udfSchema, function($json) {
+            return $json['name'] === PaymentPageRecord\Entity::SECONDARY_1;
+        });
+
+        if ($secRefJson === null)
+        {
+            throw new BadRequestValidationFailureException(
+                'Mandatory field Secondary reference ID 1 missing.');
+        }
+
+        // check 2: required: true should be true for primary_ref_id and sec_ref_id_1
+
+        if ($primaryRefJson['required'] === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Primary reference ID cannot be optional field.');
+        }
+
+        if ($secRefJson['required'] === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Secondary reference ID 1 cannot be optional field.');
+        }
+
+        // check 3: primary_ref_id and secondary_ref_id 1 cannot have same title
+
+        if (strcasecmp($primaryRefJson['title'], $secRefJson['title']) === 0)
+        {
+            throw new BadRequestValidationFailureException(
+                'Primary reference ID and Secondary reference ID 1 cannot be have same title.');
+        }
+    }
 
     public function createPaymentHandle(array $input, Merchant\Entity $merchant): Entity
     {

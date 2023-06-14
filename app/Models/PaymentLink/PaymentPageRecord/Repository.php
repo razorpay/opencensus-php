@@ -3,6 +3,7 @@
 namespace RZP\Models\PaymentLink\PaymentPageRecord;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Models\PaymentLink\Entity as PaymentLink;
 use RZP\Models\PaymentLink\PaymentPageRecord\Status as STATUS;
 
@@ -37,6 +38,23 @@ class Repository extends Base\Repository
             ->toArray();
     }
 
+    // query is executed on replica as it could get expensive
+    public function getMatchingRecordsCount(
+        string $payment_page_id,
+        string $secondaryRefId): int
+    {
+        $startTime = millitime();
+
+        $res =  $this->newQueryWithConnection($this->getSlaveConnection())
+            ->where(Entity::PAYMENT_LINK_ID, $payment_page_id)
+            ->whereRaw('JSON_EXTRACT(other_details,  \'$."sec__ref__id_1"\') = ?', [$secondaryRefId])
+            ->count();
+
+        $this->trace->histogram(Merchant\Metric::FETCH_PAYMENT_PAGE_RECORDS_WITH_SEC_REF_ID, millitime()-$startTime);
+
+        return $res;
+    }
+
     public function findByPaymentPageIdorFail(
         string $payment_page_id
     )
@@ -61,6 +79,19 @@ class Repository extends Base\Repository
             ->where(Entity::PAYMENT_LINK_ID, $payment_page_id)
             ->skip($skip)
             ->limit($count)
+            ->get()
+            ->toArray();
+    }
+
+    public function getAllBatchesByPaymentPageId(
+        string $payment_page_id
+    )
+    {
+        return $this->newQuery()
+            ->select(Entity::BATCH_ID)
+            ->where(Entity::PAYMENT_LINK_ID, $payment_page_id)
+            ->distinct()
+            ->limit(1000)
             ->get()
             ->toArray();
     }

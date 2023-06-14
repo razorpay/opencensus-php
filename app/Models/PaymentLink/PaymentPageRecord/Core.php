@@ -38,7 +38,6 @@ class Core extends Base\Core
             unset($input[Entity::EMAIL_NOTIFY]);
         }
 
-
         try
         {
             $modifiedInput = $this->modifyInputForPaymentPageRecord($paymentPage, $batchId, $input);
@@ -92,6 +91,31 @@ class Core extends Base\Core
         return $paymentPageRecord;
     }
 
+    public function uniqueRefIdValidations(array $input): array
+    {
+        $secondaryRefId1 = $input[Entity::SECONDARY_1];
+
+        unset($input[Entity::SECONDARY_1]);
+
+        $primaryRefId = $input[Entity::PRIMARY_REFERENCE_ID];
+
+        if ($primaryRefId === $secondaryRefId1)
+        {
+            throw new BadRequestValidationFailureException(
+                'Secondary reference id cannot be same as primary reference id');
+        }
+
+        $rowCount =  $this->repo->payment_page_record->getMatchingRecordsCount($input[Entity::PAYMENT_LINK_ID], $secondaryRefId1);
+
+        if ($rowCount !== 0)
+        {
+            throw new BadRequestValidationFailureException(
+                'Secondary reference id should be unique, duplicate value for '. $secondaryRefId1);
+        }
+
+        return $input;
+    }
+
     public function modifyInputForPaymentPageRecord(Base\Entity $paymentPage, string $batch_id, array $input)
     {
         $id = PaymentLink::stripDefaultSign($paymentPage->getId());
@@ -105,6 +129,8 @@ class Core extends Base\Core
         $response[Entity::MERCHANT_ID] = $paymentPage->getMerchantId();
 
         $response = $this->populateCustomFieldSchema($id, $response);
+
+        $response = $this->uniqueRefIdValidations($response);
 
         $batch_id = Batch::silentlyStripSign($batch_id);
         $response[Entity::BATCH_ID] = $batch_id;
@@ -137,6 +163,12 @@ class Core extends Base\Core
                     'Mandatory field entry missing for '.$udf[PaymentLink::TITLE]);
             }
 
+            // storing sec__ref__id_1 to perform uniqueness check
+            if ($udf[PaymentLink::NAME] === Entity::SECONDARY_1)
+            {
+                $other_details[Entity::SECONDARY_1] = $input[$udf[PaymentLink::TITLE]];
+            }
+
             if ($udf[PaymentLink::NAME] === Entity::PRIMARY_REF_ID)
             {
                 try
@@ -150,7 +182,7 @@ class Core extends Base\Core
 
                 if($isUnique === false)
                 {
-                    throw new BadRequestException(
+                    throw new BadRequestValidationFailureException(
                         'Primary Reference ID should be unique');
                 }
 
@@ -182,6 +214,12 @@ class Core extends Base\Core
 
                 }
                 $other_details[$udf[PaymentLink::TITLE]] = $input[$udf[PaymentLink::TITLE]];
+            }
+
+            // store secondary_reference_id_1 temporarily in input for security validation, this will be unsetted later
+            if ($udf[PaymentLink::NAME] === Entity::SECONDARY_1)
+            {
+                $response[Entity::SECONDARY_1] = $input[$udf[PaymentLink::TITLE]];
             }
         }
 

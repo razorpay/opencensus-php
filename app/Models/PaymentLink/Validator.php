@@ -313,7 +313,7 @@ class Validator extends Base\Validator
 
     protected static $fetchRecordsForPLRules = [
         PPI::PRIMARY_REF_ID => 'required|string|max:50',
-        PPI::SECONDARY_1    => 'sometimes|string',
+        PPI::SECONDARY_1    => 'required|string',
         PPI::SECONDARY_2    => 'sometimes|string',
         PPI::SECONDARY_3    => 'sometimes|string',
         PPI::SECONDARY_4    => 'sometimes|string',

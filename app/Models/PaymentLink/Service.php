@@ -660,6 +660,13 @@ class Service extends Base\Service
         {
             $id = Entity::stripDefaultSign($paymentPageId);
 
+            if (isset($input["all_batches"]) === true)
+            {
+                $batches = $this->repo->payment_page_record->getAllBatchesByPaymentPageId($id);
+
+                return array_column($batches, PaymentPageRecord\Entity::BATCH_ID);
+            }
+
             //Since batch service only supports max 25 batches at a time for this route
             if ($input['count'] > 25)
             {

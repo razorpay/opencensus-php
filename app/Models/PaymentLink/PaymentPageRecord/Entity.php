@@ -46,6 +46,8 @@ class Entity extends Base\PublicEntity
     const TOTAL_PENDING_PAYMENTS= 'total_pending_payments';
     const TOTAL_PENDING_REVENUE = 'total_pending_revenue';
 
+
+
     protected $generateIdOnCreate = true;
 
     protected $visible = [
@@ -115,6 +117,11 @@ class Entity extends Base\PublicEntity
     public function paymentLink()
     {
         return $this->belongsTo(PaymentLink\Entity::class);
+    }
+
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
     }
 
     public function setStatus(string $status)

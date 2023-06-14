@@ -384,6 +384,21 @@ class PaymentLinkTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testUpdatePaymentLinkFileUploadWithoutSecondaryReferenceId1()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+
+        $request = $this->testData['testPaymentPageCreateForFileUpload'];
+
+        $response = $this->runRequestResponseFlow($request);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payment_pages/'.$response['id'].'/';
+
+        $this->startTest($testData);
+    }
+
     public function testUpdatePaymentLinkFileUploadWithoutFeature()
     {
         $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
@@ -515,7 +530,7 @@ class PaymentLinkTest extends TestCase
 
         self::assertEquals($settings['key'], 'all_fields');
 
-        self::assertEquals($settings['value'], "{\"Email\":\"field_1\",\"Phone\":\"field_2\",\"contact\":\"field_3\",\"Address\":\"field_4\"}");
+        self::assertEquals($settings['value'], "{\"Email\":\"field_1\",\"Phone\":\"field_2\",\"contact\":\"field_3\",\"Address\":\"field_4\",\"DOB\":\"field_5\"}");
 
         return $res['id'];
     }
@@ -532,7 +547,7 @@ class PaymentLinkTest extends TestCase
 
         self::assertEquals($settings['key'], 'all_fields');
 
-        self::assertEquals($settings['value'], "{\"Email\":\"field_1\",\"Phone\":\"field_2\",\"contact\":\"field_3\",\"Address\":\"field_4\",\"Father Name\":\"field_5\"}");
+        self::assertEquals($settings['value'], "{\"Email\":\"field_1\",\"Phone\":\"field_2\",\"contact\":\"field_3\",\"Address\":\"field_4\",\"DOB\":\"field_5\",\"Father Name\":\"field_6\"}");
     }
 
     public function testCreatePaymentPageRecordWithCustomFieldsSchema()
@@ -547,13 +562,81 @@ class PaymentLinkTest extends TestCase
 
         $resp = $this->startTest();
 
-        s($resp);
-
         $entity = $this->getDbLastEntity("payment_page_record");
 
         $entityArray = $entity->toArray();
 
-        $this->assertEquals($entityArray['custom_field_schema'], '{"field_4": {"key": "Address", "value": "test", "dataType": "string"}}');
+        $this->assertEquals($entityArray['custom_field_schema'], '{"field_4": {"key": "Address", "value": "test", "dataType": "string"}, "field_5": {"key": "DOB", "value": "test123", "dataType": "string"}}');
+    }
+
+
+    public function testCreatePaymentPageRecordSecurityValidations()
+    {
+        $id = $this->testPaymentPageCreateForFileUploadAllFieldsInSettings();
+
+        $batch_id = 'batch_KoGILWQCoVkOz5';
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/'. $id. '/create_record/'. $batch_id;
+
+        $this->ba->batchAppAuth();
+
+        $resp = $this->startTest();
+
+        $entity = $this->getDbLastEntity("payment_page_record");
+
+        $entityArray = $entity->toArray();
+    }
+
+    public function testCreatePaymentPageRecordSecurityValidationsNegative()
+    {
+        $id = $this->testPaymentPageCreateForFileUploadAllFieldsInSettings();
+
+        $batch_id = 'batch_KoGILWQCoVkOz5';
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/'. $id. '/create_record/'. $batch_id;
+
+        $this->ba->batchAppAuth();
+
+        $resp = $this->startTest();
+    }
+
+    public function testCreatePaymentPageRecordSecurityValidationsNegative2()
+    {
+        $id = $this->testPaymentPageCreateForFileUploadAllFieldsInSettings();
+
+        $batch_id = 'batch_KoGILWQCoVkOz5';
+
+        $testData = $this->testData['testCreatePaymentPageRecordSecurityValidations'];
+
+        $testData['request']['url'] = '/payment_pages/'. $id. '/create_record/'. $batch_id;
+
+        $this->ba->batchAppAuth();
+
+        $content = $this->makeRequestAndGetContent($testData["request"]);
+
+        $testData['request']['content']['Phone'] = 'new_primary_Ref';
+        $content = $this->makeRequestAndGetContent($testData["request"]);
+
+        $this->assertEquals($content["error_description"], "Secondary reference id should be unique, duplicate value for test123");
+    }
+
+    public function testCreatePaymentPageRecordSecurityValidationsNegative3()
+    {
+        $id = $this->testPaymentPageCreateForFileUploadAllFieldsInSettings();
+
+        $batch_id = 'batch_KoGILWQCoVkOz5';
+
+        $testData = $this->testData['testCreatePaymentPageRecordSecurityValidations'];
+
+        $testData['request']['url'] = '/payment_pages/'. $id. '/create_record/'. $batch_id;
+
+        $this->ba->batchAppAuth();
+
+        $content = $this->makeRequestAndGetContent($testData["request"]);
+
+        $content = $this->makeRequestAndGetContent($testData["request"]);
+
+        $this->assertEquals($content["error_description"], 'Primary Reference ID should be unique');
     }
 
     public function testPaymentPageCreateForFileUpload()
@@ -566,6 +649,30 @@ class PaymentLinkTest extends TestCase
         $entityArray = $entity->toArray();
 
         self::assertEquals($entityArray['view_type'], 'file_upload_page');
+    }
+
+    public function testPaymentPageCreateForFileUploadWithoutSecondaryReferenceId1()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+        $this->startTest();
+    }
+
+    public function testPaymentPageCreateForFileUploadWithPrimaryRefIdNotRequired()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+        $this->startTest();
+    }
+
+    public function testPaymentPageCreateForFileUploadWithSecRefId1NotRequired()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+        $this->startTest();
+    }
+
+    public function testPaymentPageCreateWithSameTitleForPrimaryAndSecRefIds()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+        $this->startTest();
     }
 
     public function testPaymentPageCreateForFileUploadWithoutPhone()
@@ -681,6 +788,7 @@ class PaymentLinkTest extends TestCase
 
         $this->makePaymentForPaymentLinkWithOrderAndAssert($paymentLink, $order, Payment\Status::CAPTURED,[
             'pri__ref__id'  => '1234567890',
+            'sec__ref__id_1' => '123456789',
             'email' => 'abc@abc.com',
             'phone' => '1234567890',
         ]);
@@ -774,6 +882,8 @@ class PaymentLinkTest extends TestCase
 
         $testData['request']['content']['amount'] = '200';
 
+        $testData['request']['content']['DOB'] = 'test123';
+
         $batch_id = 'batch_KoGILWQCoVkOz6';
 
         $testData['request']['url'] = '/payment_pages/'. $id . '/create_record/'. $batch_id;
@@ -856,6 +966,49 @@ class PaymentLinkTest extends TestCase
         $this->ba->proxyAuth();
         $this->startTest();
 
+    }
+
+    public function testGetAllBatchesForPaymentPage()
+    {
+        $id = $this->testPaymentPageCreateForFileUploadAllFieldsInSettings();
+
+        $testData = $this->testData['testCreatePaymentPageRecordSecurityValidations'];
+
+        $batch_id1 = 'batch_KoGILWQCoVkOz5';
+        $batch_id2 = 'batch_KoGILWQCoVkOw7';
+        $batch_id3 = 'batch_KoGILWQCoVkO0s';
+        $batch_id4 = 'batch_KoGILWQCoVkO2k';
+
+        $this->ba->batchAppAuth();
+
+        $testData['request']['content']['Phone'] = 'pr1';
+        $testData['request']['content']['DOB'] = 'sr1';
+        $testData['request']['url'] = '/payment_pages/'. $id. '/create_record/'. $batch_id1;
+        $this->makeRequestAndGetContent($testData["request"]);
+
+        $testData['request']['content']['Phone'] = 'pr2';
+        $testData['request']['content']['DOB'] = 'sr2';
+        $testData['request']['url'] = '/payment_pages/'. $id. '/create_record/'. $batch_id2;
+        $this->makeRequestAndGetContent($testData["request"]);
+
+
+        $testData['request']['content']['Phone'] = 'pr3';
+        $testData['request']['content']['DOB'] = 'sr3';
+        $testData['request']['url'] = '/payment_pages/'. $id. '/create_record/'. $batch_id3;
+        $this->makeRequestAndGetContent($testData["request"]);
+
+
+        $testData['request']['content']['Phone'] = 'pr4';
+        $testData['request']['content']['DOB'] = 'sr4';
+        $testData['request']['url'] = '/payment_pages/'. $id. '/create_record/'. $batch_id4;
+        $this->makeRequestAndGetContent($testData["request"]);
+
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/'. $id . '/batches?count=20&skip=0';
+        $this->testData[__FUNCTION__]['request']['method'] = 'GET';
+
+        $this->ba->proxyAuth();
+        $this->startTest();
     }
 
     public function setUpPaymentPageWithSecRefIdForFileUpload()

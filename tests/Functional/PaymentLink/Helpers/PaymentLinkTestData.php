@@ -1051,7 +1051,7 @@ return [
             'content' => [
                 "support_email"=> "nikhilesh.tripathi@razorpay.com",
                 "settings" => [
-                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"contact\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}}]",
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"contact\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}},{\"name\":\"sec__ref__id_1\",\"required\":true,\"title\":\"contact2\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":4}}]",
                 ],
             ],
         ],
@@ -1076,6 +1076,32 @@ return [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Mandatory field Primary reference ID missing.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+
+    'testUpdatePaymentLinkFileUploadWithoutSecondaryReferenceId1' => [
+        'request' => [
+            'method'  => 'patch',
+            'content' => [
+                "support_email"=> "nikhilesh.tripathi@razorpay.com",
+                "settings" => [
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"contact\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}}]",
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Mandatory field Secondary reference ID 1 missing.',
                 ],
             ],
             'status_code' => 400,
@@ -1290,13 +1316,17 @@ return [
                 'Phone' => '1234567890'
             ],
         ],
-        'response'=> [
-            'status_code' => 200,
+        'response' => [
             'content' => [
-                'Email' => 'paridhi.jain@rzp.com',
-                'Phone'   => '1234567890',
-                'amount' => '101'
-            ]
+                'error' => [
+                    'description' => 'The sec  ref  id 1 field is required.'
+                    ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
@@ -1336,7 +1366,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Secondary Reference Id\'s missing.',
+                    'description' => 'The sec  ref  id 1 field is required.'
                 ],
             ],
             'status_code' => 400,
@@ -5860,7 +5890,7 @@ return [
             'content' => [
                 'title'         => 'Sample title',
                 "settings" => [
-                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"contact\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}},{\"name\":\"address\",\"required\":true,\"title\":\"Address\",\"type\":\"string\",\"pattern\":\"phone\",\"settings\":{\"position\":4}}]",
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"contact\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}},{\"name\":\"address\",\"required\":true,\"title\":\"Address\",\"type\":\"string\",\"pattern\":\"phone\",\"settings\":{\"position\":4}},{\"name\":\"sec__ref__id_1\",\"required\":true,\"title\":\"DOB\",\"type\":\"string\",\"pattern\":\"phone\",\"settings\":{\"position\":4}}]",
                 ],
                 'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
                 'view_type' => 'file_upload_page',
@@ -5897,7 +5927,7 @@ return [
             'content' => [
                 'title'         => 'Sample title 2',
                 "settings" => [
-                    "udf_schema"    => "[{\"name\":\"father_name\",\"required\":true,\"title\":\"Father Name\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"contact\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}},{\"name\":\"address\",\"required\":true,\"title\":\"Address\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":4}}]",
+                    "udf_schema"    => "[{\"name\":\"father_name\",\"required\":true,\"title\":\"Father Name\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"contact\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}},{\"name\":\"sec__ref__id_1\",\"required\":true,\"title\":\"Address\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":4}}]",
                 ],
                 'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
                 'payment_page_items' => [
@@ -5937,12 +5967,58 @@ return [
                 'Address'         => 'test',
                 'sms_notify'     => TRUE,
                 'email_notify'   => TRUE,
+                'DOB' => 'test123'
             ],
         ],
         'response' => [
             'content' => [],
             'status_code' => 200,
         ],
+    ],
+
+    "testCreatePaymentPageRecordSecurityValidations" => [
+        'request'  => [
+            'url'     => '/create_record',
+            'method'  => 'post',
+            'content' => [
+                "Email"          => 'paridhi.jain@rzp.com',
+                'Phone'          => '1234567890',
+                'contact'        => '0987654321',
+                'amount'         => '101',
+                'Address'        => 'test',
+                'sms_notify'     => TRUE,
+                'email_notify'   => TRUE,
+                'DOB'            => 'test123'
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+
+    "testCreatePaymentPageRecordSecurityValidationsNegative" => [
+        'request'  => [
+            'url'     => '/create_record',
+            'method'  => 'post',
+            'content' => [
+                "Email"          => 'paridhi.jain@rzp.com',
+                'Phone'          => '1234567890',
+                'contact'        => '0987654321',
+                'amount'         => '101',
+                'Address'        => 'test',
+                'sms_notify'     => TRUE,
+                'email_notify'   => TRUE,
+                'DOB'            => '1234567890'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error_description' => 'Secondary reference id cannot be same as primary reference id'
+                ]
+            ],
+            'status_code' => 200,
     ],
 
     'testPaymentPageCreateForFileUpload' => [
@@ -5952,7 +6028,7 @@ return [
             'content' => [
                 'title'         => 'Sample title',
                 "settings" => [
-                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"contact\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}}]",
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"contact\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}}, {\"name\":\"sec__ref__id_1\",\"title\":\"Phone2\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":4}}]",
                 ],
                 'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
                 'view_type' => 'file_upload_page',
@@ -5988,7 +6064,7 @@ return [
             'content' => [
                 'title'         => 'Sample title',
                 "settings" => [
-                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}}]",
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"sec__ref__id_1\",\"title\":\"Phone2\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":3}}]",
                 ],
                 'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
                 'view_type' => 'file_upload_page',
@@ -6138,6 +6214,186 @@ return [
         ],
     ],
 
+
+    'testPaymentPageCreateForFileUploadWithoutSecondaryReferenceId1'     => [
+        'request'  => [
+            'url'     => '/payment_pages',
+            'method'  => 'post',
+            'content' => [
+                'title'         => 'Sample title',
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                "settings" => [
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"contact\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}}]",
+                ],
+                'view_type' => 'file_upload_page',
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'description' => NULL,
+                            'amount'      => 100000,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'Mandatory field Secondary reference ID 1 missing.'
+                    ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+
+    'testPaymentPageCreateForFileUploadWithPrimaryRefIdNotRequired'     => [
+        'request'  => [
+            'url'     => '/payment_pages',
+            'method'  => 'post',
+            'content' => [
+                'title'         => 'Sample title',
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                "settings" => [
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Phone\",\"required\":false,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"contact\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}}, {\"name\":\"sec__ref__id_1\",\"required\":true,\"title\":\"DOB\",\"type\":\"string\",\"pattern\":\"phone\",\"settings\":{\"position\":4}}]",
+                ],
+                'view_type' => 'file_upload_page',
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'description' => NULL,
+                            'amount'      => 100000,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'Primary reference ID cannot be optional field.'
+                    ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+
+    'testPaymentPageCreateForFileUploadWithSecRefId1NotRequired'     => [
+        'request'  => [
+            'url'     => '/payment_pages',
+            'method'  => 'post',
+            'content' => [
+                'title'         => 'Sample title',
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                "settings" => [
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"contact\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}}, {\"name\":\"sec__ref__id_1\",\"required\":false,\"title\":\"DOB\",\"type\":\"string\",\"pattern\":\"phone\",\"settings\":{\"position\":4}}]",
+                ],
+                'view_type' => 'file_upload_page',
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'description' => NULL,
+                            'amount'      => 100000,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'Secondary reference ID 1 cannot be optional field.'
+                    ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+
+    'testPaymentPageCreateWithSameTitleForPrimaryAndSecRefIds'     => [
+        'request'  => [
+            'url'     => '/payment_pages',
+            'method'  => 'post',
+            'content' => [
+                'title'         => 'Sample title',
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                "settings" => [
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"contact\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}}, {\"name\":\"sec__ref__id_1\",\"required\":true,\"title\":\"phone\",\"type\":\"string\",\"pattern\":\"phone\",\"settings\":{\"position\":4}}]",
+                ],
+                'view_type' => 'file_upload_page',
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'description' => NULL,
+                            'amount'      => 100000,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => 'Primary reference ID and Secondary reference ID 1 cannot be have same title.'
+                    ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'setUpPaymentPageForFileUpload' => [
         'request'  => [
             'url'     => '/payment_pages',
@@ -6145,7 +6401,7 @@ return [
             'content' => [
                 'title'         => 'Sample title',
                 "settings" => [
-                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"contact\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}}]",
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"contact\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}},{\"name\":\"sec__ref__id_1\",\"required\":true,\"title\":\"DOB\",\"type\":\"string\",\"pattern\":\"phone\",\"settings\":{\"position\":4}}]",
                 ],
                 'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
                 'view_type' => 'file_upload_page',
@@ -6184,6 +6440,8 @@ return [
                 'amount'         => '101',
                 'sms_notify'     => TRUE,
                 'email_notify'   => TRUE,
+                'DOB'            => '0987654321'
+
             ],
         ],
         'response' => [
@@ -6200,6 +6458,7 @@ return [
                 'contact'        => '0987654321',
                 'sms_notify'     => TRUE,
                 'email_notify'   => TRUE,
+                'DOB'            => '0987654321'
             ],
         ],
         'response' => [
@@ -6219,6 +6478,8 @@ return [
                 'contact'        => '0987654321',
                 'sms_notify'     => TRUE,
                 'email_notify'   => TRUE,
+                'DOB'            => '0987654321'
+
             ],
         ],
         'response' => [
@@ -6239,6 +6500,7 @@ return [
                 'contact'        => '0987654321',
                 'sms_notify'     => TRUE,
                 'email_notify'   => TRUE,
+                'DOB'            => '0987654321'
             ],
         ],
         'response' => [
@@ -6285,6 +6547,24 @@ return [
             'content' => [
                         'id'     => '00000000000001',
                         'type'   => 'payment_page',
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
+    "testGetAllBatchesForPaymentPage" => [
+        'request'  => [
+            'method'  => 'get',
+            'content' => [
+                "all_batches" => true
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'KoGILWQCoVkOz5',
+                'KoGILWQCoVkOw7',
+                'KoGILWQCoVkO0s',
+                'KoGILWQCoVkO2k'
             ],
         ],
         'status_code' => 200,
