@@ -33,6 +33,7 @@ class ProviderPsp
     const FAM_PAY           = 'fam_pay';
     const FAVE              = 'fave';
     const ZOMATO            = 'zomato';
+    const BAJAJ_FINSERVE    = 'bajaj_finserve';
 
     // used only for testing.
     const RAZORPAY      = 'razorpay';

@@ -461,6 +461,7 @@ class ProviderCode
         ProviderPsp::FAM_PAY,
         ProviderPsp::FAVE,
         ProviderPsp::ZOMATO,
+        ProviderPsp::BAJAJ_FINSERVE,
     ];
 
     /**
@@ -505,6 +506,7 @@ class ProviderCode
         self::PINELABS      => ProviderPsp::FAVE,
         self::OKSBI         => ProviderPsp::GOOGLE_PAY,
         self::ZOICICI       => ProviderPsp::ZOMATO,
+        self::ABFSPAY       => ProviderPsp::BAJAJ_FINSERVE,
 
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,
