@@ -52,6 +52,17 @@ export const tabsData = [
   },
 ];
 
+export const revampTabs = [
+  {
+    name: 'Business Details',
+    component: <BusinessDetails />,
+  },
+  {
+    name: 'Supporting Details',
+    component: <SupportingDocuments />,
+  },
+];
+
 export const getWebsiteDetailsInfo = ({ business_website, additional_websites = [] }) => {
   return {
     isWebsiteDetails: !!business_website,
@@ -146,7 +157,7 @@ export const modelFormData = (data, user) => {
   return data;
 };
 
-export const modelFormDataBeforeSave = (formData) => {
+export const modelFormDataBeforeSave = (formData, isRevampEnabled = false) => {
   formData.allowed_currencies = null;
   formData.monthly_sales_intl_cards_min = null;
   formData.monthly_sales_intl_cards_max = null;
@@ -184,6 +195,11 @@ export const modelFormDataBeforeSave = (formData) => {
 
   delete formData.submit;
   delete formData.risk_checks;
+
+  if (isRevampEnabled) {
+    delete formData.business_txn_size_min;
+    delete formData.business_txn_size_max;
+  }
 
   return formData;
 };
@@ -377,7 +393,9 @@ export const getFormSchema = (isIERevamp) => {
       .trim()
       .min(50, 'Business use case must be at least 50 characters')
       .required('Business use case is a required field'),
-    business_txn_size: Yup.string().nullable().required('This is a required field'),
+    business_txn_size: isIERevamp
+      ? Yup.string().nullable()
+      : Yup.string().nullable().required('Business txn size is a required field'),
 
     existing_risk_checks: Yup.string().nullable().required('This is a required field'),
     accepts_intl_txns: Yup.string().nullable().required('This is a required field'),
@@ -390,8 +408,8 @@ export const getFormSchema = (isIERevamp) => {
       Yup.object().shape({
         about_us_link: Yup.string().nullable(),
         documents: Yup.object().shape({
-          bank_statement_inward_remittance: Yup.array().required().nullable(false),
-          invoices: Yup.array().required().nullable(false),
+          bank_statement_inward_remittance: Yup.array().nullable(),
+          invoices: Yup.array().nullable(),
           current_payment_partner_settlement_record: Yup.array().nullable(),
           firc: Yup.array().nullable(),
         }),

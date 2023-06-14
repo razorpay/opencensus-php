@@ -95,7 +95,7 @@ describe('Test <BusinessDetails /> component', () => {
     expect(
       screen.getByText('Choose product(s) to collect international payments on'),
     ).toBeInTheDocument();
-    const checkbox = screen.getAllByRole('combobox');
+    const checkbox = screen.getAllByRole('checkbox');
     expect(checkbox.length).toBe(2);
   });
 });

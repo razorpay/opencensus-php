@@ -100,13 +100,13 @@ const BusinessDetails = ({
                   content={
                     each.label === 'Payment Gateway' ? (
                       <Text type="subtle" contrast="high">
-                        Collect payments on your website
+                        Collect payments from your customers on your website
                       </Text>
                     ) : (
                       <div>
                         <Text type="subtle" contrast="high">
-                          These are no code apps where you can collect payments without using a
-                          website
+                          Ready-to-use templates to collect payments from your customers without
+                          using a website
                         </Text>
                         <a
                           href="https://razorpay.com/payment-links"
@@ -177,26 +177,28 @@ const BusinessDetails = ({
         autoRender
       />
 
-      <Input.Select
-        required
-        name="business_txn_size"
-        disabled={disabled}
-        value={formikProps.values.business_txn_size}
-        label="Average Transaction Size for your Business"
-        options={[
-          { label: '--Select in INR--', name: '' },
-          { label: '<5000', name: '0=5000' },
-          { label: '5000 - 10,000', name: '5000=10000' },
-          { label: '10,000 - 25,000', name: '10000=250000' },
-          { label: '25,000 - 50,000', name: '25000=500000' },
-          { label: '50,000 - 1,00,000', name: '50000=100000' },
-          { label: '>1,00,000 ', name: '100000=-1' },
-        ]}
-        onBlur={handleChange}
-        mature={formikProps.touched.business_txn_size}
-        info="This will put a upper cap on your transaction size. You can later change it by contacting support"
-        propagatedError={getError('business_txn_size')}
-      />
+      {!isRevampFlow ? (
+        <Input.Select
+          required
+          name="business_txn_size"
+          disabled={disabled}
+          value={formikProps.values.business_txn_size}
+          label="Average Transaction Size for your Business"
+          options={[
+            { label: '--Select in INR--', name: '' },
+            { label: '<5000', name: '0=5000' },
+            { label: '5000 - 10,000', name: '5000=10000' },
+            { label: '10,000 - 25,000', name: '10000=250000' },
+            { label: '25,000 - 50,000', name: '25000=500000' },
+            { label: '50,000 - 1,00,000', name: '50000=100000' },
+            { label: '>1,00,000 ', name: '100000=-1' },
+          ]}
+          onBlur={handleChange}
+          mature={formikProps.touched.business_txn_size}
+          info="This will put a upper cap on your transaction size. You can later change it by contacting support"
+          propagatedError={getError('business_txn_size')}
+        />
+      ) : null}
 
       {isRevampFlow ? (
         websiteInfo.isWebsiteDetails ? (

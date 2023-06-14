@@ -9,6 +9,14 @@ export const initialState = {
   tabsValidity: [false, false, false, false],
 };
 
+export const initialStateForRevamp = {
+  activeTab: 0,
+  isLoading: true,
+  isSavingForm: LOADING.INITIAL,
+  initialValues: formInitialValues,
+  tabsValidity: [false, false],
+};
+
 export const reducer = (state, action) => {
   switch (action.type) {
     case 'ACTIVE_TAB':

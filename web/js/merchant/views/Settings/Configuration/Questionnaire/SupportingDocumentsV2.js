@@ -2,47 +2,58 @@ import Input from 'common/new-ui/Input';
 import { useFormikContext } from 'formik';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { showNotification as showNotificationFn } from 'merchant_common/reducers/notifications';
-import React, { useMemo } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 import MultiFileUpload from './MultiFileUpload';
-import {
-  getAdditionalDocumentsBasedOnSubCategory,
-  defaultFileTypesIERevamp,
-  getIsOtherDocumentInRevampFlow,
-} from './utils';
+import { getAdditionalDocumentsBasedOnSubCategory, getIsOtherDocumentInRevampFlow } from './utils';
 import { LabelWithTooltip } from 'merchant/views/Settings/Configuration/Questionnaire/Tooltip';
 import { stringToObj } from 'common/utils/rzp-utils';
+import styled from 'styled-components';
+
+const StyledFieldContainer = styled.div`
+  .container {
+    display: flex;
+    justify-content: flex-start;
+    width: 100%;
+    margin-top: 15px;
+  }
+
+  .document-label {
+    color: #58666e;
+    font-size: 14px;
+    padding: 10px;
+    margin-left: 20px;
+    font-weight: bold;
+  }
+
+  .document-label-info {
+    color: #8895a8;
+    font-size: 12px;
+    padding: 10px;
+    width: 250px;
+  }
+
+  .Input {
+    margin-top: 0;
+  }
+
+  @media (max-width: 820px) {
+    .container {
+      flex-direction: column;
+      align-items: flex-start;
+      margin-left: -25px;
+    }
+
+    .document-label {
+      margin-left: 0;
+    }
+  }
+`;
 
 const SupportingDocumentsV2 = ({ disabled, saveFormData, showNotification, user }) => {
+  const [transactionProofDocs, setTransactionProofDocs] = React.useState([]);
+  const [additionalDocs, setAdditionalDocs] = React.useState([]);
   const formikProps = useFormikContext();
-  const getError = (name) =>
-    (formikProps.touched[name] ? formikProps.errors[name] : '') ||
-    (!!formikProps.status ? formikProps.status[name] : '');
-
-  const fileDocsToShow = useMemo(() => {
-    const docsToShow = [...defaultFileTypesIERevamp];
-    const { business_category, business_subcategory } = user;
-    if (business_category && business_subcategory) {
-      const mandatoryFile = getAdditionalDocumentsBasedOnSubCategory(user);
-      if (mandatoryFile) {
-        // Add before FIRS
-        docsToShow.splice(2, 0, {
-          ...mandatoryFile,
-          tooltipContent: 'This is a mandatory document required for your business type',
-        });
-      }
-    }
-    if (formikProps.values.accepts_intl_txns === 'true') {
-      docsToShow.unshift({
-        label: 'Settlement record from current payment partner',
-        name: 'current_payment_partner_settlement_record',
-        isRequired: true,
-        tooltipContent:
-          'This is a record of processed settlements from your current payment partner',
-      });
-    }
-    return docsToShow;
-  }, [formikProps.values.accepts_intl_txns, user.business_category, user.business_subcategory]);
 
   const handleFileUpload = (docType, file, progressTracker) => {
     const formData = new FormData();
@@ -106,39 +117,124 @@ const SupportingDocumentsV2 = ({ disabled, saveFormData, showNotification, user 
     }
   };
 
-  const handleChange = () => {
-    saveFormData(formikProps);
+  const handleDocumentOptionsChange = (value, type) => {
+    const document = [];
+    switch (value) {
+      case 'bank_statement':
+        document.push({
+          label: 'Bank Statement (Last 60 days)',
+          name: 'bank_statement_inward_remittance',
+          isRequired: false,
+          tooltipContent:
+            'Document to ensure that your bank statement is matching with the invoices shared with us',
+        });
+        break;
+      case 'invoices':
+        document.push({
+          label: 'Invoices',
+          name: 'invoices',
+          isRequired: false,
+          tooltipContent: 'Invoice for purchases made by customers on your website',
+        });
+        break;
+      case 'settlement_record':
+        document.push({
+          label: 'Settlement record from current payment partner',
+          name: 'current_payment_partner_settlement_record',
+          isRequired: false,
+          tooltipContent: 'Record of processed settlements from your current payment partner',
+        });
+        break;
+      case 'firc':
+        document.push({
+          label: 'Forward inward remittance statement',
+          name: 'firc',
+          isRequired: false,
+          tooltipContent:
+            'Document to validate if you are already receiving international payments from another payment partner',
+        });
+        break;
+      default:
+        break;
+    }
+
+    if (type === 'transaction_proofs') {
+      setTransactionProofDocs(document);
+    } else {
+      setAdditionalDocs(document);
+    }
   };
 
   const formikDocuments = formikProps.values.documents;
 
+  const getMCCBasedDocumentation = () => {
+    const document = [];
+    const { business_category, business_subcategory } = user;
+    if (business_category && business_subcategory) {
+      const mandatoryFile = getAdditionalDocumentsBasedOnSubCategory(user);
+      if (mandatoryFile) {
+        document.push({
+          ...mandatoryFile,
+          tooltipContent: 'Mandatory document required for your business type',
+        });
+        return document;
+      } else {
+        return document;
+      }
+    }
+
+    return document;
+  };
+
+  const getAdditionalDocumentsOptions = () => {
+    const documents = [
+      { label: '', name: '' },
+      { label: 'Forward inward remittance statement', name: 'firc' },
+    ];
+
+    if (formikProps.values.accepts_intl_txns === 'true')
+      documents.push({
+        label: 'Settlement record from current payment partner',
+        name: 'settlement_record',
+      });
+
+    return documents;
+  };
+
+  const handleChange = (e) => {
+    const radioValue = e?.target?.value;
+    formikProps.setFieldValue('accepts_intl_txns', radioValue);
+    if (radioValue === 'false') {
+      setTransactionProofDocs([]);
+      setAdditionalDocs([]);
+    }
+  };
+
+  const getError = (name) =>
+    (formikProps.touched[name] ? formikProps.errors[name] : '') ||
+    (!!formikProps.status ? formikProps.status[name] : '');
+
   return (
     <div className="supporting-documents ie-revamp">
-      <div className="main-title pb-20">SUPPORTING DOCUMENTS</div>
+      <div className="main-title pb-20">SUPPORTING DETAILS</div>
       <Input.Radio
         required
         name="accepts_intl_txns"
         label="Currently Accept International Transactions"
-        onBlur={handleChange}
+        onChange={handleChange}
         options={[
           { value: 'true', label: 'Yes' },
           { value: 'false', label: 'No' },
         ]}
         className="Input--vTop"
         disabled={disabled}
-        defaultValue={formikProps.values.accepts_intl_txns}
+        defaultValue={formikProps.values.accepts_intl_txns || 'false'}
         propagatedError={getError('accepts_intl_txns')}
       />
-      <div className="spacer" />
+      <div class="spacer" />
       <Input
         name="import_export_code"
-        label={() => (
-          <LabelWithTooltip
-            label="Import Export Code"
-            tooltip="Required to validate import/export business in India"
-            required={false}
-          />
-        )}
+        label="Import Export Code"
         placeholder="Enter I/E code here (Optional)"
         info="Example: U67190TN20"
         disabled={disabled}
@@ -148,30 +244,147 @@ const SupportingDocumentsV2 = ({ disabled, saveFormData, showNotification, user 
         propagatedError={getError('import_export_code')}
       />
 
-      {fileDocsToShow.map((doc) => (
-        <MultiFileUpload
-          key={doc.name}
-          name={doc.name}
-          label={() => (
-            <LabelWithTooltip
-              label={doc.label}
-              tooltip={doc.tooltipContent}
-              required={doc.isRequired}
-            />
-          )}
-          onFileChange={(file, progressTracker) =>
-            handleFileUpload(doc.name, file, progressTracker)
-          }
-          // required is set to true to hide the remove file button at 0th index
-          required
-          disabled={disabled}
-          onFileRemove={handleFileRemoval}
-          defaultFiles={
-            formikDocuments[doc.name] ||
-            (formikDocuments.others && formikDocuments.others[doc.name])
-          }
-        />
-      ))}
+      {getMCCBasedDocumentation().map((doc) => {
+        return (
+          <MultiFileUpload
+            key={doc.name}
+            name={doc.name}
+            label={() => (
+              <LabelWithTooltip
+                label={doc.label}
+                tooltip={doc.tooltipContent}
+                required={doc.isRequired}
+              />
+            )}
+            onFileChange={(file, progressTracker) =>
+              handleFileUpload(doc.name, file, progressTracker)
+            }
+            required={false}
+            disabled={disabled}
+            onFileRemove={handleFileRemoval}
+            defaultFiles={
+              formikDocuments[doc.name] ||
+              (formikDocuments.others && formikDocuments.others[doc.name])
+            }
+          />
+        );
+      })}
+
+      {formikProps.values.accepts_intl_txns === 'true' ? (
+        <StyledFieldContainer>
+          <div className="container">
+            <p className="document-label">Proof of Transaction</p>
+            <p className="document-label-info">
+              Without uploading this your maximum limit per transaction will only be upto 1 lakh
+            </p>
+          </div>
+          <Input.Select
+            options={[
+              { label: '', name: '' },
+              { label: 'Bank Statement', name: 'bank_statement' },
+              { label: 'Invoices', name: 'invoices' },
+            ]}
+            onChange={({ target }) => {
+              handleDocumentOptionsChange(target.value, 'transaction_proofs');
+            }}
+          />
+        </StyledFieldContainer>
+      ) : null}
+
+      {transactionProofDocs.map((doc) => {
+        return (
+          <MultiFileUpload
+            key={doc.name}
+            name={doc.name}
+            label={() => (
+              <LabelWithTooltip
+                label={doc.label}
+                tooltip={doc.tooltipContent}
+                required={doc.isRequired}
+              />
+            )}
+            onFileChange={(file, progressTracker) =>
+              handleFileUpload(doc.name, file, progressTracker)
+            }
+            required={false}
+            disabled={disabled}
+            onFileRemove={handleFileRemoval}
+            defaultFiles={
+              formikDocuments[doc.name] ||
+              (formikDocuments.others && formikDocuments.others[doc.name])
+            }
+          />
+        );
+      })}
+
+      {formikProps.values.accepts_intl_txns === 'true' ? (
+        <StyledFieldContainer>
+          <div className="container">
+            <p className="document-label">Additional document</p>
+            <p className="document-label-info">
+              Uploading an optional document will help us offer you an even higher transaction limit
+            </p>
+          </div>
+          <Input.Select
+            options={getAdditionalDocumentsOptions()}
+            onChange={({ target }) => {
+              handleDocumentOptionsChange(target.value, 'additional_docs');
+            }}
+          />
+        </StyledFieldContainer>
+      ) : null}
+
+      {additionalDocs.map((doc) => {
+        return (
+          <MultiFileUpload
+            key={doc.name}
+            name={doc.name}
+            label={() => (
+              <LabelWithTooltip
+                label={doc.label}
+                tooltip={doc.tooltipContent}
+                required={doc.isRequired}
+              />
+            )}
+            onFileChange={(file, progressTracker) =>
+              handleFileUpload(doc.name, file, progressTracker)
+            }
+            disabled={disabled}
+            onFileRemove={handleFileRemoval}
+            defaultFiles={
+              formikDocuments[doc.name] ||
+              (formikDocuments.others && formikDocuments.others[doc.name])
+            }
+          />
+        );
+      })}
+
+      <div class="Input Input--required Input--checkbox">
+        <div class="Input-content">
+          <div class="Input-elWrapper">
+            <label>
+              <input required name="submit" class="Input-el" type="checkbox" />
+              <div class="Input-checkbox" />
+              <div class="Input-inlineLabel">
+                I have read and understood the{' '}
+                <a href="https://razorpay.com/terms" target="_blank" rel="noopener noreferrer">
+                  Terms &amp; Conditions
+                </a>
+                ,{' '}
+                <a href="https://razorpay.com/agreement" target="_blank" rel="noopener noreferrer">
+                  Merchant Agreement
+                </a>{' '}
+                and the{' '}
+                <a href="https://razorpay.com/privacy" target="_blank" rel="noopener noreferrer">
+                  Privacy Policy
+                </a>
+                {'. '}
+                By submitting the form, I agree to abide by the rules at all times.
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

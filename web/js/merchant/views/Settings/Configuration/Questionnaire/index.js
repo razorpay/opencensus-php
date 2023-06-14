@@ -13,13 +13,14 @@ import { LOADING } from 'merchant/components/Activation/Constants';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import SuccessModal from './SuccessModal';
 import ExitConfirmation from './ExitConfirmation';
-import { initialState, reducer } from './stateHelpers';
+import { initialState, initialStateForRevamp, reducer } from './stateHelpers';
 import {
   openModal as openModalFn,
   closeModal as closeModalFn,
 } from 'merchant_common/reducers/modals';
 import {
-  tabsData,
+  tabsData as tabs,
+  revampTabs,
   getFormSchema,
   fieldToTabMap,
   modelFormData,
@@ -50,10 +51,12 @@ const Questionnaire = ({
   onQuestionnaireSubmitSuccess,
   user,
 }) => {
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const initState = isRevampFlow ? initialStateForRevamp : initialState;
+  const [state, dispatch] = useReducer(reducer, initState);
   const { activeTab, isLoading, isSavingForm, initialValues, tabsValidity } = state;
   let loaderTimeout;
   const isDisabled = false;
+  const tabsData = isRevampFlow ? revampTabs : tabs;
 
   useEffect(() => {
     dispatch({ type: 'LOADING', payload: true });
@@ -249,7 +252,6 @@ const Questionnaire = ({
     });
 
     formData = modelFormDataBeforeSave(formData);
-    console.log('🚀 ~ file: index.js:243 ~ saveFormData ~ formData:', formData);
 
     if (isRevampFlow) {
       formData.version = 'v2';
@@ -260,7 +262,7 @@ const Questionnaire = ({
   };
 
   const submitForm = (formData, bag) => {
-    formData = modelFormDataBeforeSave(formData);
+    formData = modelFormDataBeforeSave(formData, isRevampFlow);
     bag.setStatus(null); // reset status
     trackDataSaving(true, tabsData?.[activeTab]?.name, true);
     if (isRevampFlow) {
