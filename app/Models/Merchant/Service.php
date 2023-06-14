@@ -7398,6 +7398,11 @@ class Service extends Base\Service
         $input['skip'] = $input['skip'] ?? 0;
         $input['count'] = $input['count'] ?? self::DEFAULT_SUBMERCHANT_FETCH_LIMIT;
 
+        if (empty($input[Detail\Entity::ACTIVATION_STATUS]) === false and $input[Detail\Entity::ACTIVATION_STATUS] === 'not_submitted')
+        {
+            $input[Detail\Entity::ACTIVATION_STATUS] = null;
+        }
+
         $startTime = millitime();
         $isExpEnabled = $this->isSubmerchantFetchMultipleOptimisationExpEnabled($partner->getId());
 

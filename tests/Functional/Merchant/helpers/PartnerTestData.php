@@ -1800,6 +1800,42 @@ return [
         ],
     ],
 
+    'testFetchPartnerSubmerchantsFilterByActivationStatus' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [
+                'activation_status' => 'not_submitted'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'               => 'acc_10000000000009',
+                        'name'             => 'random_name_1',
+                        'email'            => 'subm1@xyz.com',
+                        'hold_funds'       => false,
+                        'details'          => [
+                            'activation_status' => null,
+                        ],
+                        'user'              => [
+                            'email'             => 'subm1@xyz.com',
+                            'contact_mobile'    => null,
+                        ],
+                        'dashboard_access'  => false,
+                        'application'       => [
+                            'id'=> '8ckeirnw84ifkf'
+                        ],
+                        'kyc_access'        => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testFetchPartnerSubmerchantsPurePlatformFilters' => [
         'request'  => [
             'url'     => '/submerchants',
