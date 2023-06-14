@@ -1078,6 +1078,12 @@ class UserTest extends TestCase
 
         $merchantEntityMock = Mockery::mock('RZP\Models\User\Entity')->makePartial();
 
+        $this->merchantEntityMock->shouldReceive('users')->andReturn($this->userEntityMock);
+
+        $this->userEntityMock->shouldReceive('where')->withAnyArgs()->andReturn($this->userEntityMock);
+
+        $this->userEntityMock->shouldReceive('first')->andReturn($userData);
+
         $queryBuilderMock = Mockery::mock('\Illuminate\Database\Query\Builder');
 
         $queryBuilderMock->shouldReceive('where')->andReturn($merchantEntityMock);

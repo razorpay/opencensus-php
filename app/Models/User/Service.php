@@ -1431,11 +1431,33 @@ class Service extends Base\Service
             }
         }
 
+        // Current merchant will be null in case of new signup and get function gets called through verify_user_otp_register
+
         $deviceDetail = $this->repo->user_device_detail->fetchByUserId($id);
 
         if (empty($deviceDetail) === false)
         {
             $response[DeviceDetail\Entity::SIGNUP_CAMPAIGN] = $deviceDetail->getSignupCampaign();
+        }
+        // In other instances when get function gets called we will always fetch user's owner signup's campaign
+        $merchant = $this->merchant;
+
+        if (empty($merchant) === false)
+        {
+            $user = $merchant->users()->where(Merchant\Detail\Entity::ROLE, '=', User\Role::OWNER)
+                             ->first();
+
+            $ownerUserId = $user[Merchant\OwnerDetail\Entity::ID] ?? null;
+
+            if (empty($ownerUserId) === false)
+            {
+                $deviceDetail = $this->repo->user_device_detail->fetchByUserId($ownerUserId);
+
+                if (empty($deviceDetail) === false)
+                {
+                    $response[DeviceDetail\Entity::SIGNUP_CAMPAIGN] = $deviceDetail->getSignupCampaign();
+                }
+            }
         }
 
         return $response;
