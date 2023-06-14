@@ -24,11 +24,9 @@ class SimilarWebRequest
 
     public $mtd;
 
-    public function __construct(MerchantEntity $merchant)
+    public function __construct(string $website)
     {
-        $businessWebsite = $merchant->merchantDetail->getWebsite() ?? $merchant->getWebsite();
-        $businessWebsite = trim($businessWebsite);
-        $this->domain = parse_url(strtolower($businessWebsite), PHP_URL_HOST);
+        $this->domain = $this->extractDomain($website);
 
         $this->start_date = date('Y-m',strtotime('-2 month'));
 
@@ -46,6 +44,19 @@ class SimilarWebRequest
 
         $this->mtd = false;
 
+    }
+
+    protected function extractDomain($url) {
+        // Remove "http://" or "https://" from the beginning of the URL
+        $url = preg_replace('#^https?://#', '', $url);
+
+        // Remove "www." from the beginning of the URL
+        $url = preg_replace('#^www\.#', '', $url);
+
+        // Remove any path or query string after the domain
+        $url = strtok($url, '/?');
+
+        return $url;
     }
 
     public function getPath()

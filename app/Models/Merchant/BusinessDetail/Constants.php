@@ -35,6 +35,12 @@ class Constants
     const REGISTERED_YEAR            = 'registered_year';
     const AGGREGATED_TURNOVER_SLAB   = 'aggregated_turnover_slab';
     const WEBSITE_VISITS             = 'website_visits';
+    const ECOMMERCE_PLUGIN           = 'ecommerce_plugin';
+    const ESTIMATED_ANNUAL_REVENUE   = 'estimated_annual_revenue';
+    const TRAFFIC_RANK               = 'traffic_rank';
+    const CRUNCHBASE                 = 'crunchbase';
+    const TWITTER_FOLLOWERS          = 'twitter_followers';
+    const LINKEDIN                   = 'linkedin';
 
     //Legal documents
     const CONSENT                    = 'consent';

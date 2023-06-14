@@ -13,8 +13,9 @@ class MerchantOnboardingProxyController extends BaseProxyController
     // route key
     const MERCHANT_ACTIVATION_SAVE       = 'merchant_activation_save';
     const MERCHANT_SIGN_UP               = 'merchant_sign_up';
-    const MERCHANT_DOCUMENT_UPLOAD = 'merchant_document_upload';
-    const MERCHANT_DOCUMENT_DELETE = 'merchant_document_delete';
+    const MERCHANT_DOCUMENT_UPLOAD       = 'merchant_document_upload';
+    const MERCHANT_DOCUMENT_DELETE       = 'merchant_document_delete';
+    const GET_CLEARBIT_DOMAIN_INFO       = 'get_clearbit_domain_info';
 
     const PGOS_SHADOW_MODE_EXPERIMENT_ID = 'app.pgos_shadow_mode_experiment_id';
     const ENABLE                         = 'enable';
@@ -26,10 +27,11 @@ class MerchantOnboardingProxyController extends BaseProxyController
     ];
 
     const ROUTES_URL_MAP = [
-        self:: MERCHANT_ACTIVATION_SAVE => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantActivationSave',
-        self:: MERCHANT_SIGN_UP         => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/CreateWorkflow',
+        self::MERCHANT_ACTIVATION_SAVE => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantActivationSave',
+        self::MERCHANT_SIGN_UP         => '/twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/CreateWorkflow',
         self::MERCHANT_DOCUMENT_UPLOAD => 'twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantDocumentUpload',
-        self::MERCHANT_DOCUMENT_DELETE => 'twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantDocumentDelete'
+        self::MERCHANT_DOCUMENT_DELETE => 'twirp/rzp.pg_onboarding.onboarding.v1.OnboardingService/MerchantDocumentDelete',
+        self::GET_CLEARBIT_DOMAIN_INFO => 'twirp/rzp.pg_onboarding.leads.v1.LeadsService/GetClearbitDomainInfo'
     ];
 
     // timeout in seconds
@@ -37,7 +39,8 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::MERCHANT_ACTIVATION_SAVE => .2,
         self::MERCHANT_SIGN_UP         => .2,
         self::MERCHANT_DOCUMENT_UPLOAD => .2,
-        self::MERCHANT_DOCUMENT_DELETE => .2
+        self::MERCHANT_DOCUMENT_DELETE => .2,
+        self::GET_CLEARBIT_DOMAIN_INFO => 10
     ];
 
     public function __construct()

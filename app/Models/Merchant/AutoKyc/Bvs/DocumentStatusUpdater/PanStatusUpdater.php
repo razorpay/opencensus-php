@@ -49,7 +49,7 @@ class PanStatusUpdater extends DefaultStatusUpdater
        {
            $merchantDetailCore = (new MerchantDetailCore());
 
-           $merchantDetailCore->generateLeadScoreForMerchant($this->merchant, $this->merchantDetails);
+           $merchantDetailCore->generateLeadScoreForMerchant($this->merchant->getId(), true, false);
        }
 
        // If merchant is enabled with NoDocOnboarding feature then we fetch gst from verified pan and trigger BVS request.

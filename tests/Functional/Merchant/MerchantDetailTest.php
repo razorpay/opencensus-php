@@ -7717,7 +7717,7 @@ Team Razorpay',
 
         $this->app->instance('segment-analytics', $segmentMock);
 
-        $segmentMock->expects($this->exactly(2))
+        $segmentMock->expects($this->exactly(3))
             ->method('pushIdentifyAndTrackEvent')
             ->will($this->returnCallback(function($merchant, $properties, $eventName) {
                 $this->assertNotNull($properties);
@@ -10718,18 +10718,20 @@ We look forward to transacting with you!
     {
         Config::set('services.whatCMS.mock', true);
 
-        $merchantId = '10000000000000';
+        $merchantId = '10000000000001';
 
         $website = 'www.liotec.ch';
 
-        $this->fixtures->edit('merchant', $merchantId, ['website' => $website, 'whitelisted_domains' => ['www.liotec.ch']]);
+        $this->fixtures->create('merchant', ['id' => $merchantId,
+                                              'website' => $website,
+                                              'whitelisted_domains' => ['www.liotec.ch']]);
 
         $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId, 'business_website' => $website, 'issue_fields' => 'business_website']);
 
         $this->fixtures->create('merchant_business_detail', ['merchant_id' => $merchantId]);
 
         $kafkaEventPayload = [
-            'merchant_id'=>'10000000000000',
+            'merchant_id'=>$merchantId,
             'website_url'=>'www.liotec.ch'
         ];
 
@@ -10739,8 +10741,9 @@ We look forward to transacting with you!
 
         $expectedData = [
             [
-             'website' => 'www.liotec.ch',
-             'suggested_plugin' => 'DummyTestPluginType'
+                'website' => 'www.liotec.ch',
+                'suggested_plugin' => 'DummyTestPluginType',
+                'ecommerce_plugin' => true
             ]
         ];
 

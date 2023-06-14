@@ -147,11 +147,12 @@ class Service extends Base\Service
             return;
         }
 
-        $pluginType = (new WhatCmsService())->checkForPluginType($merchantId, $businessWebsite);
+        list($pluginType, $ecommercePlugin) = (new WhatCmsService())->checkForPluginType($merchantId, $businessWebsite);
 
         $businessDetailsInput[BusinessDetailEntity::PLUGIN_DETAILS] = [
             'website'          => $businessWebsite,
-            'suggested_plugin' => $pluginType
+            'suggested_plugin' => $pluginType,
+            'ecommerce_plugin' => $ecommercePlugin
         ];
 
         $this->saveBusinessDetailsForMerchant($merchantId, $businessDetailsInput);

@@ -551,7 +551,8 @@ class SegmentAnalyticsClient extends AbstractEventClient
         $facebookPlatformEvents = [
             EventCode::L1_SUBMISSION,
             EventCode::L2_SUBMISSION,
-            EventCode::MTU_TRANSACTED
+            EventCode::MTU_TRANSACTED,
+            EventCode::LEAD_SCORE_CALCULATED
         ];
 
         if(in_array($eventName, $facebookPlatformEvents) === true)

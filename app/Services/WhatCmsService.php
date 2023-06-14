@@ -21,6 +21,7 @@ class WhatCmsService extends Base\Service
     const WIX                       = 'Wix';
     const WOOCOMMERCE               = 'WooCommerce';
     const WORDPRESS                 = 'WordPress';
+    const BIGCOMMERCE               = 'BigCommerce';
 
     const PLUGIN_TYPES = [
         self::ARASTTA,
@@ -35,6 +36,13 @@ class WhatCmsService extends Base\Service
         self::WIX,
         self::WOOCOMMERCE,
         self::WORDPRESS,
+    ];
+
+    const PLUGIN_TYPES_FOR_LEAD_SCORE = [
+        self::MAGENTO,
+        self::SHOPIFY,
+        self::WOOCOMMERCE,
+        self::BIGCOMMERCE,
     ];
 
     const merchantPluginTypesMap  = [
@@ -157,7 +165,7 @@ class WhatCmsService extends Base\Service
 
         if($mock === true)
         {
-            return 'DummyTestPluginType';
+            return array('DummyTestPluginType', true);
         }
 
         $whatCMSResponse = (new WhatCmsClient())->getWebsiteInfo($websiteUrl);
@@ -168,13 +176,15 @@ class WhatCmsService extends Base\Service
         ]);
 
         $pluginType = null;
+        $ecommercePlugin = null;
 
         if ($whatCMSResponse !== null)
         {
             $pluginType = $this->getPluginType($whatCMSResponse);
+            $ecommercePlugin = $this->getIfEcommercePlatformApplicable($whatCMSResponse);
         }
 
-        return $pluginType;
+        return array($pluginType, $ecommercePlugin);
     }
 
     public function getPluginType($response)
@@ -195,5 +205,23 @@ class WhatCmsService extends Base\Service
         }
 
         return $cms;
+    }
+
+    public function getIfEcommercePlatformApplicable($response) : bool
+    {
+        $results = $response['results'];
+
+        $ecommercePlatform = false;
+
+        foreach($results as $result) {
+            $pluginType = $result['name'];
+
+            if(in_array($pluginType, self::PLUGIN_TYPES_FOR_LEAD_SCORE)) {
+                $ecommercePlatform = true;
+                break;
+            }
+        }
+
+        return $ecommercePlatform;
     }
 }

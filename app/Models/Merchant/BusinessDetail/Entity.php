@@ -263,7 +263,8 @@ class Entity extends Base\PublicEntity
 
     public function getTotalLeadScore()
     {
-        return ($this->getValueFromLeadScoreComponents(Constants::GSTIN_SCORE) ?? 0 ) + ($this->getValueFromLeadScoreComponents(Constants::DOMAIN_SCORE) ?? 0);
+        return (($this->getValueFromLeadScoreComponents(Constants::GSTIN_SCORE) ?? 0) * 0.4) +
+               (($this->getValueFromLeadScoreComponents(Constants::DOMAIN_SCORE) ?? 0) * 0.6);
     }
 
     public function setOnboardingSource(string $onboardingSource)

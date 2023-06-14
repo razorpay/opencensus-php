@@ -6578,6 +6578,63 @@ class CoreTest extends TestCase
         $this->assertEquals('rejected', $data[StoreConfigKey::UPI_TERMINAL_PROCUREMENT_STATUS_BANNER]);
     }
 
+    public function testGenerateLeadScoreForMerchant()
+    {
+
+        $core = new DetailCore();
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'               => $merchant->getId(),
+            //'company_pan'               => 'AAAPA1234J',
+            'gstin'                     => '29ABCDE1234L1Z1',
+            'business_website'          => 'www.test.com'
+        ]);
+
+        $this->fixtures->create('merchant_business_detail', [
+            'merchant_id'               => $merchant->getId(),
+            'plugin_details'            => [
+                [
+                    'website'                   => "www.test.com",
+                    'merchant_selected_plugin'  => "shopify",
+                    'suggested_plugin'          => "whmcs",
+                    'ecommerce_plugin'          => true
+                ]
+            ],
+        ]);
+
+        //BVS Mocking
+        $bvsResponse = 'success';
+
+        $this->mockBvsService($bvsResponse);
+
+        Config::set('services.bvs.sync.flow', true);
+
+        //SimilarWeb Mocking
+        Config::set('applications.similarweb.mock', true);
+
+        //WhatCMS mocking not required. We have directly set plugin_details in merchant_business_details.
+
+        //Mocking PGOS for Clearbit
+        $pgosProxyController = Mockery::mock('RZP\Http\Controllers\MerchantOnboardingProxyController');
+
+        $expectedClearbitResponse = [
+            "score"                     => 40,
+            "estimated_annual_revenue"  => "$500M-$1B",
+            "traffic_rank"              => "very_high",
+            "crunchbase"                => true,
+            "twitter_followers"         => 24847,
+            "linkedin"                  => true
+        ];
+
+        $pgosProxyController->shouldReceive('handlePGOSProxyRequests')->andReturn($expectedClearbitResponse);
+
+        $leadScore = $core->generateLeadScoreForMerchant($merchant->getId(), true, true);
+
+        $this->assertTrue($leadScore > 0);
+    }
+
     public function testGetApplicableActivationStatusPartnershipMccRequiresAdditionalDocSplitzKqu()
     {
         Mail::fake();

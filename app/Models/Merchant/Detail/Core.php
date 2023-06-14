@@ -9253,31 +9253,82 @@ class Core extends Base\Core
         return $data[ConfigKey::NO_DOC_ONBOARDING_INFO] ?? [];
     }
 
-    public function generateLeadScoreForMerchant(Merchant\Entity $merchant, Entity $merchantDetails)
+    public function generateLeadScoreForMerchant(string $merchantId, bool $calculateGSTINScore, bool $calculateDomainScore)
     {
         $gstinLeadScore = 0;
+        $updateAndPushToSegmentGSTINScore = false;
 
         $domainLeadScore = 0;
+        $updateAndPushToSegmentDomainScore = false;
 
         try
         {
-            [$gstinLeadScoreComponents, $updateAndPushToSegmentGSTINScore] = $this->generateGSTINLeadScoreForMerchant($merchant, $merchantDetails);
+            $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-            $gstinLeadScore = $gstinLeadScoreComponents[BusinessDetailConstants::GSTIN_SCORE];
+            $merchantDetails = optional($merchant)->merchantDetail;
 
-            [$domainLeadScoreComponents, $updateAndPushToSegmentDomainScore] = $this->generateDomainLeadScoreForMerchant($merchant, $merchantDetails);
+            if ($calculateGSTINScore == true)
+            {
+                [$gstinLeadScoreComponents, $updateAndPushToSegmentGSTINScore] =
+                    $this->generateGSTINLeadScoreForMerchant($merchant, $merchantDetails);
 
-            $domainLeadScore = $domainLeadScoreComponents[BusinessDetailConstants::DOMAIN_SCORE];
+                $gstinLeadScore = $gstinLeadScoreComponents[BusinessDetailConstants::GSTIN_SCORE];
+            }
+            else
+            {
+                //Filling in existing GSTIN Lead Score Components for default values
+                $gstinLeadScoreComponents = [
+                    BusinessDetailConstants::GSTIN_SCORE => optional($merchantDetails->businessDetail)->
+                        getValueFromLeadScoreComponents(BusinessDetailConstants::GSTIN_SCORE) ?? 0,
+
+                    BusinessDetailConstants::REGISTERED_YEAR => optional($merchantDetails->businessDetail)->
+                        getValueFromLeadScoreComponents(BusinessDetailConstants::REGISTERED_YEAR) ?? null,
+
+                    BusinessDetailConstants::AGGREGATED_TURNOVER_SLAB => optional($merchantDetails->businessDetail)->
+                        getValueFromLeadScoreComponents(BusinessDetailConstants::REGISTERED_YEAR) ?? ''
+                ];
+            }
+
+            if ($calculateDomainScore == true)
+            {
+                [$domainLeadScoreComponents, $updateAndPushToSegmentDomainScore] =
+                    $this->generateDomainLeadScoreForMerchant($merchant, $merchantDetails);
+
+                $domainLeadScore = $domainLeadScoreComponents[BusinessDetailConstants::DOMAIN_SCORE];
+            }
+            else
+            {
+                //Filling in existing Domain Lead Score Component for default values
+                $domainLeadScoreComponents = [
+                    BusinessDetailConstants::DOMAIN_SCORE => optional($merchantDetails->businessDetail)->
+                        getValueFromLeadScoreComponents(BusinessDetailConstants::DOMAIN_SCORE) ?? 0,
+
+                    BusinessDetailConstants::WEBSITE_VISITS => optional($merchantDetails->businessDetail)->
+                        getValueFromLeadScoreComponents(BusinessDetailConstants::WEBSITE_VISITS) ?? 0,
+
+                    BusinessDetailConstants::ECOMMERCE_PLUGIN => optional($merchantDetails->businessDetail)->
+                        getValueFromLeadScoreComponents(BusinessDetailConstants::ECOMMERCE_PLUGIN) ?? false,
+
+                    BusinessDetailConstants::ESTIMATED_ANNUAL_REVENUE => optional($merchantDetails->businessDetail)->
+                        getValueFromLeadScoreComponents(BusinessDetailConstants::ESTIMATED_ANNUAL_REVENUE) ?? '',
+
+                    BusinessDetailConstants::TRAFFIC_RANK => optional($merchantDetails->businessDetail)->
+                        getValueFromLeadScoreComponents(BusinessDetailConstants::TRAFFIC_RANK) ?? '',
+
+                    BusinessDetailConstants::CRUNCHBASE => optional($merchantDetails->businessDetail)->
+                        getValueFromLeadScoreComponents(BusinessDetailConstants::CRUNCHBASE) ?? false,
+
+                    BusinessDetailConstants::TWITTER_FOLLOWERS => optional($merchantDetails->businessDetail)->
+                        getValueFromLeadScoreComponents(BusinessDetailConstants::TWITTER_FOLLOWERS) ?? 0,
+
+                    BusinessDetailConstants::LINKEDIN => optional($merchantDetails->businessDetail)->
+                        getValueFromLeadScoreComponents(BusinessDetailConstants::LINKEDIN) ?? false
+                ];
+            }
 
             if ($updateAndPushToSegmentGSTINScore === true or $updateAndPushToSegmentDomainScore === true)
             {
-                $leadScoreComponents = [
-                    BusinessDetailConstants::GSTIN_SCORE                => $gstinLeadScore,
-                    BusinessDetailConstants::REGISTERED_YEAR            => $gstinLeadScoreComponents[BusinessDetailConstants::REGISTERED_YEAR],
-                    BusinessDetailConstants::AGGREGATED_TURNOVER_SLAB   => $gstinLeadScoreComponents[BusinessDetailConstants::AGGREGATED_TURNOVER_SLAB],
-                    BusinessDetailConstants::DOMAIN_SCORE               => $domainLeadScore,
-                    BusinessDetailConstants::WEBSITE_VISITS             => $domainLeadScoreComponents[BusinessDetailConstants::WEBSITE_VISITS]
-                ];
+                $leadScoreComponents = array_merge($gstinLeadScoreComponents, $domainLeadScoreComponents);
 
                 (new BusinessDetailCore())->updateLeadScoreComponents($merchantDetails, $leadScoreComponents);
 
@@ -9289,12 +9340,18 @@ class Core extends Base\Core
                 $properties = [];
                 $properties['gstin_lead_score']                                     = $gstinLeadScore;
                 $properties['domain_lead_score']                                    = $domainLeadScore;
-                $properties['total_lead_score']                                     = $gstinLeadScore + $domainLeadScore;
+                $properties['total_lead_score']                                     = ($gstinLeadScore * 0.4) + ($domainLeadScore * 0.6);
                 $properties[BusinessDetailConstants::REGISTERED_YEAR]               = $gstinLeadScoreComponents[BusinessDetailConstants::REGISTERED_YEAR];
                 $properties[BusinessDetailConstants::AGGREGATED_TURNOVER_SLAB]      = $gstinLeadScoreComponents[BusinessDetailConstants::AGGREGATED_TURNOVER_SLAB];
                 $properties[BusinessDetailConstants::WEBSITE_VISITS]                = $domainLeadScoreComponents[BusinessDetailConstants::WEBSITE_VISITS];
+                $properties[BusinessDetailConstants::ECOMMERCE_PLUGIN]              = $domainLeadScoreComponents[BusinessDetailConstants::ECOMMERCE_PLUGIN];
+                $properties[BusinessDetailConstants::ESTIMATED_ANNUAL_REVENUE]      = $domainLeadScoreComponents[BusinessDetailConstants::ESTIMATED_ANNUAL_REVENUE];
+                $properties[BusinessDetailConstants::TRAFFIC_RANK]                  = $domainLeadScoreComponents[BusinessDetailConstants::TRAFFIC_RANK];
+                $properties[BusinessDetailConstants::CRUNCHBASE]                    = $domainLeadScoreComponents[BusinessDetailConstants::CRUNCHBASE];
+                $properties[BusinessDetailConstants::TWITTER_FOLLOWERS]             = $domainLeadScoreComponents[BusinessDetailConstants::TWITTER_FOLLOWERS];
+                $properties[BusinessDetailConstants::LINKEDIN]                      = $domainLeadScoreComponents[BusinessDetailConstants::LINKEDIN];
 
-                $this->app['segment-analytics']->pushIdentifyEvent($merchant, $properties);
+                $this->app['segment-analytics']->pushIdentifyAndTrackEvent($merchant, $properties, SegmentEvent::LEAD_SCORE_CALCULATED);
 
                 (new SalesforceConvergeService())->pushUpdatesToSalesforce(new SalesforceMerchantUpdatesRequest($merchant, 'LeadScore'));
             }
@@ -9307,7 +9364,7 @@ class Core extends Base\Core
             ]);
         }
 
-        return $gstinLeadScore + $domainLeadScore;
+        return ($gstinLeadScore * 0.4) + ($domainLeadScore * 0.6);
     }
 
     protected function generateGSTINLeadScoreForMerchant(Merchant\Entity $merchant, Entity $merchantDetails): ?array
@@ -9328,9 +9385,13 @@ class Core extends Base\Core
         ]);
 
         $bvsCore = new AutoKyc\Bvs\Core($merchant, $merchantDetails);
+
         $requestCreator =  new GstinAuth($merchant, $merchantDetails);
+
         $gstin = $merchantDetails->getGstin();
+
         $oldestRegisteredYear = null;
+
         $aggregatedTurnoverSlab = null;
 
         if (empty($gstin) === true)
@@ -9346,12 +9407,15 @@ class Core extends Base\Core
             }
 
             $payload = $requestCreator->getRequestPayload();
+
             $ownerId = $merchantDetails->getEntityId();
+
             $payload[Constant::OWNER_TYPE] = Constant::MERCHANT;
 
             foreach ($gstDetails as $gst)
             {
                 $payload[Constant::DETAILS][Constant::GSTIN] = $gst;
+
                 $response = $bvsCore->fetchEnrichmentDetails($ownerId, $payload);
 
                 if (empty($response) === false)
@@ -9365,6 +9429,7 @@ class Core extends Base\Core
                         if (empty($oldestRegisteredYear) === true or $oldestRegisteredYear > $registeredYear)
                         {
                             $oldestRegisteredYear = $registeredYear;
+
                             $aggregatedTurnoverSlab = trim($validation['enrichments']['online_provider']['details']['aggregate_turnover']);
                         }
                     }
@@ -9441,27 +9506,126 @@ class Core extends Base\Core
 
         $domainLeadScore = optional($merchantDetails->businessDetail)->getValueFromLeadScoreComponents(BusinessDetailConstants::DOMAIN_SCORE);
 
-        if (empty($domainLeadScore) === false)
+        $response = [
+            [
+                BusinessDetailConstants::DOMAIN_SCORE   => 0,
+                BusinessDetailConstants::WEBSITE_VISITS => 0,
+                BusinessDetailConstants::ECOMMERCE_PLUGIN => false,
+                BusinessDetailConstants::ESTIMATED_ANNUAL_REVENUE => '',
+                BusinessDetailConstants::TRAFFIC_RANK => '',
+                BusinessDetailConstants::CRUNCHBASE => false,
+                BusinessDetailConstants::TWITTER_FOLLOWERS => 0,
+                BusinessDetailConstants::LINKEDIN => false
+            ],
+            false];
+
+        $businessWebsite = $merchant->merchantDetail->getWebsite() ?? $merchant->getWebsite();
+        $businessWebsite = trim($businessWebsite);
+        $domain = parse_url(strtolower($businessWebsite), PHP_URL_HOST) ?? '';
+
+        if ($domainLeadScore>0 and $domain == '')
         {
-            //Not fetching visits separately as it doesn't need to be updated in this case.
-            return [[BusinessDetailConstants::DOMAIN_SCORE   => $domainLeadScore,
-                     BusinessDetailConstants::WEBSITE_VISITS => 0], false];
+            //If domainLeadScore was already calculated once but now the website has been removed
+            //We're returning the same lead score and not updating anything
+            $response[0][BusinessDetailConstants::DOMAIN_SCORE] = $domainLeadScore;
         }
 
-        $domainLeadScore = 0;
-        $visits = (new SimilarWebService())->fetchVisitsForDomain(new SimilarWebRequest($merchant));
+        if ($domain != '')
+        {
+            list($similarWebScore, $websiteVisits) = $this->domainLeadScoreUsingSimilarWeb($domain);
+
+            list($whatCMSScore, $ecommercePlugin) = $this->domainLeadScoreUsingWhatCMS($merchant, $domain);
+
+            list($clearbitScore, $estimatedAnnualRevenue, $trafficRank,
+                $crunchbase, $twitterFollowers, $linkedin) = $this->domainLeadScoreUsingClearbit($merchant, $domain);
+
+            $domainLeadScore = $similarWebScore + $whatCMSScore + $clearbitScore;
+
+            if ($domainLeadScore > 0)
+            {
+                $response[0][BusinessDetailConstants::DOMAIN_SCORE]             = $domainLeadScore;
+                $response[0][BusinessDetailConstants::WEBSITE_VISITS]           = $websiteVisits;
+                $response[0][BusinessDetailConstants::ECOMMERCE_PLUGIN]         = $ecommercePlugin;
+                $response[0][BusinessDetailConstants::ESTIMATED_ANNUAL_REVENUE] = $estimatedAnnualRevenue;
+                $response[0][BusinessDetailConstants::TRAFFIC_RANK]             = $trafficRank;
+                $response[0][BusinessDetailConstants::CRUNCHBASE]               = $crunchbase;
+                $response[0][BusinessDetailConstants::TWITTER_FOLLOWERS]        = $twitterFollowers;
+                $response[0][BusinessDetailConstants::LINKEDIN]                 = $linkedin;
+                $response[1]                                                    = true;
+            }
+        }
+
+        return $response;
+    }
+
+    protected function domainLeadScoreUsingSimilarWeb(string $website)
+    {
+        $similarWebScore = 0;
+
+        $visits = (new SimilarWebService())->fetchVisitsForDomain(new SimilarWebRequest($website));
 
         if ($visits > 0 and $visits < 5000)
         {
-            $domainLeadScore = 10;
+            $similarWebScore = 10;
         }
         elseif ($visits >= 5000)
         {
-            $domainLeadScore = 40;
+            $similarWebScore = 25;
         }
 
-        return [[BusinessDetailConstants::DOMAIN_SCORE   => $domainLeadScore,
-                BusinessDetailConstants::WEBSITE_VISITS => $visits], ($visits > 0)];
+        return array($similarWebScore, $visits);
+    }
+
+    protected function domainLeadScoreUsingWhatCMS(Merchant\Entity $merchant, string $website)
+    {
+        $whatCMSScore = 0;
+
+        $pluginDetails = optional($merchant->merchantBusinessDetail)->getPluginDetails() ?? [];
+
+        foreach ($pluginDetails as $pluginDetail)
+        {
+            if ($pluginDetail[BusinessDetailConstants::WEBSITE] == $website)
+            {
+                if (isset($pluginDetail['ecommerce_plugin']) == true and $pluginDetail['ecommerce_plugin'] == true)
+                {
+                    $whatCMSScore = 25;
+                }
+                break;
+            }
+        }
+
+        return array($whatCMSScore, $whatCMSScore > 0);
+    }
+
+    protected function domainLeadScoreUsingClearbit(Merchant\Entity $merchant, string $website)
+    {
+        $payload = array();
+
+        $payload['domain'] = $website;
+
+        $pgosProxyController = new MerchantOnboardingProxyController();
+
+        $clearbitResponse = $pgosProxyController->handlePGOSProxyRequests
+                            ('get_clearbit_domain_info', $payload, $merchant);
+
+        /*
+         * Sample Response from PGOS Clearbit API
+         {
+            "score": 40,
+            "estimated_annual_revenue": "$500M-$1B",
+            "traffic_rank": "very_high",
+            "crunchbase": true,
+            "twitter_followers": 24847,
+            "linkedin": true
+        }
+        */
+
+        return array($clearbitResponse['score'] ?? 0,
+                     $clearbitResponse[BusinessDetailConstants::ESTIMATED_ANNUAL_REVENUE] ?? '',
+                     $clearbitResponse[BusinessDetailConstants::TRAFFIC_RANK] ?? '',
+                     $clearbitResponse[BusinessDetailConstants::CRUNCHBASE] ?? false,
+                     $clearbitResponse[BusinessDetailConstants::TWITTER_FOLLOWERS] ?? 0,
+                     $clearbitResponse[BusinessDetailConstants::LINKEDIN] ?? false);
     }
 
     private function sendSelfServeSuccessAnalyticsEventToSegmentForAddBusinessWebsite()

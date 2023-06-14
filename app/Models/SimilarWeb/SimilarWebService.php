@@ -22,6 +22,15 @@ class SimilarWebService
 
     public function fetchVisitsForDomain(SimilarWebRequest $request): ?int
     {
+        $app = App::getFacadeRoot();
+
+        $mock = $app['config']['applications.similarweb.mock'];
+
+        if($mock === true)
+        {
+            return 2500;
+        }
+
         if (empty($request->domain) == false) {
             $response = $this->similarWebClient->getDetails($request);
         } else {

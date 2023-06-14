@@ -50,7 +50,7 @@ class GstInStatusUpdater extends DefaultStatusUpdater
         {
             $merchantDetailCore = (new MerchantDetailCore());
 
-            $merchantDetailCore->generateLeadScoreForMerchant($this->merchant, $this->merchantDetails);
+            $merchantDetailCore->generateLeadScoreForMerchant($this->merchant->getId(), true, false);
         }
 
         $this->handleArtefactSignatoryValidation();

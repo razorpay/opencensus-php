@@ -74,6 +74,24 @@ class DefaultProcessorMock extends DefaultProcessor
 
                     $validationResponse->setRuleExecutionList($this->getRuleExecutionList('success'));
 
+                    if ($sendEnrichmentDetails === true)
+                    {
+                        $validationResponse->setEnrichmentDetails(
+                            get_Protobuf_Struct([
+                                                  'online_provider' => [
+                                                      'details' => [
+                                                          'registration_date'   => [
+                                                              [
+                                                                  'value' => "16/02/2020",
+                                                              ]
+                                                          ],
+                                                          'aggregate_turnover'  => "Slab: Rs. 5 Cr. to 25 Cr."
+                                                      ]
+                                                  ]
+                                              ])
+                        );
+                    }
+
                     return new ValidationBaseResponseV2($validationResponse);
                 }
                 else

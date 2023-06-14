@@ -136,7 +136,7 @@ class KafkaMessageProcessor
                 return new RawAddressContactsConsumer($payload, $mode);
 
             case self::MERCHANT_WEBSITE_INFO:
-                return new WhatCMSProcessor($payload, $mode);
+                return new WebsiteUpdateProcessor($payload, $mode);
 
             case self::LEGAL_DOCUMENTS_EVENTS:
                 return new KafkaJobs\BvsLegalDocumentsJob($payload['data'], $mode);
