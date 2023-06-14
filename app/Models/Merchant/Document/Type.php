@@ -7,6 +7,7 @@ use RZP\Models\FileStore\Format;
 class Type
 {
     const SEBI_REGISTRATION_CERTIFICATE  = 'sebi_registration_certificate';
+    const CPV_REPORT                     = 'cpv_report';
     const IRDAI_REGISTRATION_CERTIFICATE = 'irdai_registration_certificate';
     const FFMC_LICENSE                   = 'ffmc_license';
     const NBFC_REGISTRATION_CERTIFICATE  = 'nbfc_registration_certificate';
@@ -205,7 +206,8 @@ class Type
         self::IATO_LICENSE,
         self::BBPS_DOCUMENT,
         self::MSO_DOCUMENT,
-        self::GOVT_AUTHORISATION_LETTER
+        self::GOVT_AUTHORISATION_LETTER,
+        self::CPV_REPORT
     ];
 
     const DOCUMENT_DESCRIPTION_MAP = [
@@ -265,7 +267,8 @@ class Type
         self::IATO_LICENSE                      => "IATO license",
         self::BBPS_DOCUMENT                     => "BBPS document",
         self::MSO_DOCUMENT                      => "MSO/ Local cable opertor",
-        self::GOVT_AUTHORISATION_LETTER         => "Govt authorisation Letter"
+        self::GOVT_AUTHORISATION_LETTER         => "Govt authorisation Letter",
+        self::CPV_REPORT                        => "CPV report"
     ];
 
     const PROOF_TYPES = [
@@ -408,7 +411,8 @@ class Type
         self::IATO_LICENSE,
         self::BBPS_DOCUMENT,
         self::MSO_DOCUMENT,
-        self::GOVT_AUTHORISATION_LETTER
+        self::GOVT_AUTHORISATION_LETTER,
+        self::CPV_REPORT
     ];
 
     const DOCUMENT_TYPE_VALIDATIONS = [
@@ -533,6 +537,7 @@ class Type
         self::EMERCHANTPAY_AADHAAR            => self::ADDITIONAL_DOCUMENTS,
         self::EMERCHANTPAY_PAN                => self::ADDITIONAL_DOCUMENTS,
         self::EMERCHANTPAY_PASSPORT           => self::ADDITIONAL_DOCUMENTS,
+        self::CPV_REPORT                      => self::ADDITIONAL_DOCUMENTS,
     ];
 
     /**

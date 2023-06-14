@@ -1578,6 +1578,7 @@ return [
             "bbps_document"                     => "BBPS document",
             "mso_document"                      => "MSO/ Local cable opertor",
             "govt_authorisation_letter"         => "Govt authorisation Letter",
+            "cpv_report"                        => "CPV report"
         ]
     ],
 ],
