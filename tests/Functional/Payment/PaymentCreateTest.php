@@ -11529,6 +11529,43 @@ class PaymentCreateTest extends TestCase
         $this->assertTrue($transaction['on_hold']);
     }
 
+    public function testPaymentOnOAuthWithSubmManualSettlementEnabledOnAppIdAndExpDisabled()
+    {
+        $accessToken = $this->setPurePlatformContext(Mode::TEST);
+
+        $featureParams = [
+            Feature\Entity::ENTITY_ID   => Constants::DEFAULT_PLATFORM_APP_ID,
+            Feature\Entity::ENTITY_TYPE => EntityConstants::APPLICATION,
+            Feature\Entity::NAME        => 'subm_manual_settlement',
+        ];
+
+        $this->fixtures->create('feature', $featureParams);
+
+        $splitzResponse = [
+            "response" => [
+                "variant" => null
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($splitzResponse);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthPaymentOAuth($payment);
+
+        $this->capturePaymentByOAuth($response['razorpay_payment_id'], $payment['amount'], $accessToken);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $this->assertEquals($payment['public_id'], $response['razorpay_payment_id']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertFalse($transaction['on_hold']);
+    }
+
     public function testPaymentOnOAuthWithSubmManualSettlementDisabled()
     {
         $accessToken = $this->setPurePlatformContext(Mode::TEST);

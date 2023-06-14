@@ -497,16 +497,21 @@ class Service extends Base\Service
             return false;
         }
 
+        // experiment coupled with the feature flag
+        $expEnabled = true;
+
         switch ($featureKey)
         {
             case FeatureConstants::ROUTE_PARTNERSHIPS:
                 // this feature is coupled with marketplace transfer exp. TODO: remove this exp after 100% ramp-up
-                $isFeatureEnabled = $this->isMarketplaceTransferExpEnabled($partner) && $partner->isRoutePartnershipsEnabled();
+                $expEnabled = $this->isMarketplaceTransferExpEnabled($partner);
+                $isFeatureEnabled = $expEnabled && $partner->isRoutePartnershipsEnabled();
                 break;
 
             case FeatureConstants::SUBM_MANUAL_SETTLEMENT:
                 // this feature is coupled with sub-merchant manual settlement exp. TODO: remove this exp after 100% ramp-up
-                $isFeatureEnabled = $this->isSubmerchantPaymentManualSettlementExpEnabled($partner) && $partner->isSubmerchantManualSettlementEnabled();
+                $expEnabled = $this->isSubmerchantPaymentManualSettlementExpEnabled($partner);
+                $isFeatureEnabled = $expEnabled && $partner->isSubmerchantManualSettlementEnabled();
                 break;
 
             // add more cases for other features if needed
@@ -517,6 +522,7 @@ class Service extends Base\Service
 
         // if feature is not enabled for pure platform partner then check if it is enabled for the OAuth app (if passed)
         if ($isFeatureEnabled === false &&
+            $expEnabled === true &&
             empty($oauthAppId) === false &&
             $partner->isPurePlatformPartner() === true &&
             in_array($featureKey, FeatureConstants::PARTNER_AND_APP_LEVEL_FEATURES) === true)
@@ -530,8 +536,10 @@ class Service extends Base\Service
     /**
      * @throws BadRequestException
      */
-    public function isFeatureEnabledForOAuthApp(string $featureKey, string $oauthAppId)
+    public function isFeatureEnabledForOAuthApp(string $featureKey, string $oauthAppId): bool
     {
-        return (new FeatureService())->checkFeatureEnabled(FeatureConstants::APPLICATION, $oauthAppId, $featureKey)[FeatureConstants::STATUS];
+        $isFeatureEnabled = (new FeatureService())->checkFeatureEnabled(FeatureConstants::APPLICATION, $oauthAppId, $featureKey)[FeatureConstants::STATUS];
+
+        return is_bool($isFeatureEnabled) ? $isFeatureEnabled : false;
     }
 }
