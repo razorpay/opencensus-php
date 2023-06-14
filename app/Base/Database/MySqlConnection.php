@@ -159,16 +159,7 @@ class MySqlConnection extends BaseMySqlConnection
             {
                 $this->reconnect();
 
-                $result = $this->runQueryCallback($query, $bindings, $callback);
-
-                $this->trace->info(
-                    TraceCode::RECONNECT_SUCCESS_AFTER_PROXY_SQL_FAILURE,
-                    [
-                        'func' => 'MySqlConnection::tryAgainIfCausedByLostConnection',
-                    ]
-                );
-
-                return $result;
+                return $this->runQueryCallback($query, $bindings, $callback);
             }
             catch (\Exception $ex)
             {

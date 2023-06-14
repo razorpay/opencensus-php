@@ -92,13 +92,6 @@ class MySqlConnector extends BaseMySqlConnector
                     try
                     {
                         $connection = parent::connect($config);
-
-                        $this->app['trace']->info(
-                            TraceCode::RECONNECT_SUCCESS_AFTER_PROXY_SQL_FAILURE,
-                            [
-                                'func' => 'MySqlConnector::connect',
-                            ]
-                        );
                     }
                     catch (\Exception $ex)
                     {
