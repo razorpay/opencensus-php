@@ -401,6 +401,15 @@ trait PartnerTrait
         ]);
     }
 
+    public function createImplicitPricingPlanWithOrgId($planId = Constants::DEFAULT_IMPLICIT_PRICING_PLAN, $orgId = Org::RZP_ORG)
+    {
+        $this->fixtures->create('pricing:implicit_partner_pricing_plan', [
+            'plan_id' => $planId,
+            'type'    => 'pricing',
+            'org_id'  => $orgId
+        ]);
+    }
+
     public function createDefaultSubmerchantPricingPlan($planId = Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN)
     {
         $this->fixtures->create('pricing:two_percent_pricing_plan', [

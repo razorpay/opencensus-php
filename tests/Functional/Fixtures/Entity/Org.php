@@ -35,6 +35,8 @@ class Org extends Base
     const CHECKER_ROLE_SIGNED       = 'role_RzpChekrRoleId';
     const CHECKER_ADMIN             = 'RzpChekrAdmnId';
     const CHECKER_ADMIN_SIGNED      = 'admin_RzpChekrAdmnId';
+    const CURLEC_ORG                = 'KjWRtYXwpK6VfK';
+
 
     // Payout Workflow related roles
     const OWNER_ROLE                = 'RzpOwnerRoleId';

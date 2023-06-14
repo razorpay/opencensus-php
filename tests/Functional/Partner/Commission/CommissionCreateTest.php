@@ -8,6 +8,7 @@ use App;
 use Mail;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Models\Pricing\Repository as PricingRepo;
 use RZP\Services\Mock\DataLakePresto;
 use Illuminate\Database\Eloquent\Factory;
 
@@ -16,6 +17,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Partner;
 use RZP\Constants\Timezone;
 use RZP\Models\Partner\Config;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Traits\MocksSplitz;
 use RZP\Models\FileStore\Service;
 use RZP\Models\Merchant\FeeBearer;
@@ -306,6 +308,10 @@ class CommissionCreateTest extends TestCase
             ]);
 
         $this->startTest($testData);
+
+        $pricing = (new PricingRepo)->getPlanByIdOrFailPublic(Pricing::DEFAULT_PRICING_PLAN_ID, Org::CURLEC_ORG);
+
+        $this->assertEquals(Constants::DEFAULT_IMPLICIT_PRICING_PLAN, $pricing->getId());
 
         $this->assertCommisionAndTransactionData(CommissionType::IMPLICIT);
     }
@@ -2477,7 +2483,7 @@ class CommissionCreateTest extends TestCase
     {
         $this->createAggregatorMalaysianMerchantAndSubMerchant();
 
-        $this->createImplicitPricingPlan();
+        $this->createImplicitPricingPlanWithOrgId(Constants::DEFAULT_CURLEC_IMPLICIT_PRICING_PLAN, Org::CURLEC_ORG);
 
         $defaultPaymentAttributes = [
             'merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,

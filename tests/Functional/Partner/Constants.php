@@ -21,5 +21,7 @@ class Constants
     const DEFAULT_IMPLICIT_PRICING_PLAN       = '10ImplicitPlan';
     const DEFAULT_SUBMERCHANT_PRICING_PLAN    = 'SubmerchantPln';
 
+    const DEFAULT_CURLEC_IMPLICIT_PRICING_PLAN = '101ImplicitPlan';
+
     const GST_RATE                            = 18;
 }
