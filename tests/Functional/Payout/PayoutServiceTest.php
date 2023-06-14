@@ -121,7 +121,8 @@ class PayoutServiceTest extends TestCase
                                             $status = 'processing',
                                             $insufficient_balance = false,
                                             $newBankingError = false,
-                                            &$assertionBody = [])
+                                            &$assertionBody = [],
+                                            &$actualPayload = [])
     {
         // Not mocking this method like mockPayoutServiceStatus because we need to assert for the request headers that
         // are going to be sent to payout service.
@@ -134,11 +135,13 @@ class PayoutServiceTest extends TestCase
 
         $payoutServiceCreateMock->shouldReceive('sendRequest')
                                 ->withArgs(
-                                    function($arg) use ($request, $status, &$assertionBody) {
+                                    function($arg) use ($request, $status, &$assertionBody, &$actualPayload) {
                                         try
                                         {
                                             // json decoding the content so that we can assert the keys of content.
                                             $arg['content'] = json_decode($arg['content'], true);
+
+                                            $actualPayload = $arg['content'];
 
                                             // Using this method only here as we want to check if the keys in the
                                             // request are coming properly or not.
@@ -1007,7 +1010,7 @@ class PayoutServiceTest extends TestCase
         return $response;
     }
 
-    public function mockPayoutServiceCreateBulkPayout($numberOfPayouts = 1, $fail = false, $emptyErrorBody = false, $request = [])
+    public function mockPayoutServiceCreateBulkPayout($numberOfPayouts = 1, $fail = false, $emptyErrorBody = false, $request = [], $emptyNotes = false)
     {
         $createBulkPayoutMock = Mockery::mock('RZP\Services\PayoutService\BulkPayout',
                                            [$this->app])->makePartial();
@@ -1026,9 +1029,19 @@ class PayoutServiceTest extends TestCase
 
         $createBulkPayoutMock->shouldReceive('sendRequest')
                           ->withArgs(
-                              function($arg) use ($request) {
+                              function($arg) use ($request, $emptyNotes) {
                                   try
                                   {
+
+                                      if ($emptyNotes === true)
+                                      {
+                                          // json decoding the content so that we can assert the keys of content.
+                                          $arg['content'] = json_decode($arg['content'], true);
+
+                                          $this->assertArrayNotHasKey('notes', $arg['content'][0]);
+                                          $this->assertArrayHasKey('notes', $arg['content'][1]);
+                                      }
+
                                       // Using this method only here as we want to check if the keys in the
                                       // request are coming properly or not.
                                       $this->assertArrayKeySelectiveEquals($request, $arg);
@@ -3615,7 +3628,15 @@ class PayoutServiceTest extends TestCase
             'origin'          => 'api',
         ];
 
-        $this->mockPayoutServiceCreate(false, $metadata);
+        $this->mockPayoutServiceCreate(false,
+            $metadata,
+            [],
+            Status::PROCESSING,
+            false,
+            true,
+            $assertionBody,
+            $actualPayload,
+        );
 
         $this->testCreatePayoutEntry('IMPS');
 
@@ -3644,6 +3665,8 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals($payout['is_payout_service'], 1);
         $this->assertEquals(WorkflowFeature::getWorkflowFeatureFromInt($payout['workflow_feature']),
             WorkflowFeature::SKIP_FOR_INTERNAL_PAYOUT);
+
+        $this->assertFalse($actualPayload['enable_workflow_for_internal_contact']);
     }
 
     public function testCreatePayoutInternalContactWithWorkflows()
@@ -3654,7 +3677,15 @@ class PayoutServiceTest extends TestCase
             'origin'          => 'api',
         ];
 
-        $this->mockPayoutServiceCreate(false, $metadata);
+        $this->mockPayoutServiceCreate(false,
+            $metadata,
+            [],
+            Status::PROCESSING,
+            false,
+            true,
+            $assertionBody,
+            $actualPayload,
+        );
 
         $this->testCreatePayoutEntry('IMPS');
 
@@ -3684,6 +3715,7 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals(WorkflowFeature::getWorkflowFeatureFromInt($payout['workflow_feature']),
             Constants::PAYOUT_WORKFLOWS);
 
+        $this->assertTrue($actualPayload['enable_workflow_for_internal_contact']);
     }
 
     public function testCreatePayoutServiceFailure()
@@ -5903,6 +5935,24 @@ class PayoutServiceTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testBulkPayout_NotesAsEmptyArray()
+    {
+        $this->mockPayoutServiceCreateBulkPayout(2, false, false, [], true);
+
+        $this->ba->batchAuth('rzp_live_10000000000000');
+
+        $headers = [
+            'HTTP_X_Batch_Id'     => 'C0zv9I46W4wiOq',
+            'HTTP_X-Entity-Id'    => '10000000000000',
+            'HTTP_X_Creator_Type' => 'user',
+            'HTTP_X_Creator_Id'   => 'MerchantUser01'
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        $this->startTest();
+    }
     public function testBulkPayout_SharedAccount_SinglePayout_SpacesInAccountNumber()
     {
         $this->mockPayoutServiceCreateBulkPayout(1);

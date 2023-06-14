@@ -6,6 +6,7 @@ use Razorpay\Edge\Passport\Passport;
 
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
+use RZP\Models\Payout\Entity;
 use RZP\Http\Request\Requests;
 
 class BulkPayout extends Base
@@ -48,6 +49,9 @@ class BulkPayout extends Base
      */
     public function createBulkPayoutViaMicroservice(array $input)
     {
+
+        $this->modifyNotesIfRequired($input);
+
         $this->trace->info(TraceCode::CREATE_BULK_PAYOUT_VIA_MICROSERVICE_REQUEST,
                            [
                                'input' => $input,
@@ -77,6 +81,22 @@ class BulkPayout extends Base
             ]);
 
         return $response;
+    }
+
+    private function modifyNotesIfRequired(array &$input)
+    {
+        foreach($input as $key => $item)
+        {
+            if (empty($item[Entity::NOTES]) === true)
+            {
+                $this->trace->info(TraceCode::BULK_REQUEST_NOTES_INPUT,
+                    [
+                        Entity::NOTES => $item[Entity::NOTES],
+                    ]);
+
+                unset($input[$key][Entity::NOTES]);
+            }
+        }
     }
 
     public function initiateBatchSubmittedCronViaMicroservice()

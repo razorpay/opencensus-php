@@ -195,6 +195,10 @@ class Create extends Base
         {
             $requestBody[Payout\Entity::ORIGIN] = $input[Payout\Entity::ORIGIN];
         }
+        if (array_key_exists(Payout\Entity::ENABLE_WORKFLOW_FOR_INTERNAL_CONTACT, $input))
+        {
+            $requestBody[Payout\Entity::ENABLE_WORKFLOW_FOR_INTERNAL_CONTACT] = filter_var($input[Payout\Entity::ENABLE_WORKFLOW_FOR_INTERNAL_CONTACT], FILTER_VALIDATE_BOOLEAN);
+        }
 
         // Passing info like credits and fund_account for PS payouts to avoid back and forth calls to API.
         if ((isset($creditsInfo[Payout\Entity::FETCH_UNUSED_CREDITS_SUCCESS]) === true) and
