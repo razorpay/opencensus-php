@@ -1198,4 +1198,84 @@ return [
             ],
         ],
     ],
+
+    'testFetchConfigWithApplicationIdByPartner' => [
+        'request'  => [
+            'url'     => '/partner_config',
+            'method'  => 'GET',
+            'content' => [
+                'application_id'     => 'DefaultPartner',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'partner_metadata' => [
+                    'brand_color' => '0000FF',
+                    'text_color'  => '000FFF',
+                    'brand_name'  => 'apple'
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchConfigByPartnerWithDefaultValuesAndApplicationId' => [
+        'request'  => [
+            'url'     => '/partner_config',
+            'method'  => 'GET',
+            'content' => [
+                'application_id'     => 'DefaultPartner',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'partner_metadata' => [
+                    'brand_color' => '528FF0',
+                    'text_color'  => 'FFFFFF',
+                    'brand_name'  => 'Business Partner'
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerConfigWithApplicationIdByInternalAppAuth' => [
+        'request'  => [
+            'url'     => '/partner_config_guest',
+            'method'  => 'GET',
+            'content' => [
+                'application'  => 'DefaultPartner',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'partner_metadata' => [
+                    'brand_color' => '0000FF',
+                    'text_color'  => '000FFF',
+                    'brand_name'  => 'google'
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchConfigWithApplicationIdByInvalidPartner' => [
+        'request'  => [
+            'url'     => '/partner_config',
+            'method'  => 'GET',
+            'content' => [
+                'application_id'    => 'DefaultPartner',
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_PARTNER_ACTION,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+        ],
+    ],
 ];

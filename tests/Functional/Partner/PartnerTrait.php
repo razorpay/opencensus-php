@@ -110,6 +110,10 @@ trait PartnerTrait
 
             $partnerType = 'aggregator';
         }
+        else if ($partnerAttributes['partner_type'] === 'pure_platform')
+        {
+            $partnerType = 'pure_platform';
+        }
         else
         {
             $partnerType = 'reseller';

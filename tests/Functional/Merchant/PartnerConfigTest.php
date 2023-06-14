@@ -2,7 +2,6 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
-use RZP\Http\OAuth;
 use RZP\Models\Merchant;
 use RZP\Models\Feature as Feature;
 use RZP\Models\Partner\Config\Entity;
@@ -1304,5 +1303,173 @@ class PartnerConfigTest extends OAuthTestCase
         $this->assertStringContainsString('/logos/', $response[Entity::PARTNER_METADATA][PartnerConfigConstants::LOGO_URL]);
 
         $this->assertStringStartsWith('https', $response[Entity::PARTNER_METADATA][PartnerConfigConstants::LOGO_URL]);
+    }
+
+    public function testFetchConfigWithApplicationIdByPartner()
+    {
+        list($partner, $app) = $this->createPartnerAndApplication(['partner_type' => 'pure_platform']);
+
+        $partnerMeteData = [
+            'brand_color' => '0000FF',
+            'text_color'  => '000FFF',
+            'brand_name'  => 'apple'
+        ];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($partner->getId());
+
+        $this->createConfigForPartnerApp($app->getId(), null, [Entity::PARTNER_METADATA => $partnerMeteData]);
+
+        $this->ba->proxyAuth('rzp_test_' . $partner->getId(), $merchantUser['id']);
+
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzOutput);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['application_id'] = $app->getId();
+
+        $response = $this->startTest($testData);
+
+        $this->checkResponseFieldsForProxyOrInternalAuth($response);
+    }
+
+    public function testFetchConfigByPartnerWithDefaultValuesAndApplicationId()
+    {
+        list($partner, $app) = $this->createPartnerAndApplication(['partner_type' => 'pure_platform']);
+
+        $this->fixtures->edit('merchant_detail', $partner->id, ['business_name' => 'Business Partner']);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($partner->getId());
+
+        $this->createConfigForPartnerApp($app->getId());
+
+        $this->ba->proxyAuth('rzp_test_' . $partner->getId(), $merchantUser['id']);
+
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzOutput);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['application_id'] = $app->getId();
+
+        $response = $this->startTest($testData);
+
+        $this->checkResponseFieldsForProxyOrInternalAuth($response);
+    }
+
+    public function testFetchPartnerConfigWithApplicationIdByInternalAppAuth()
+    {
+        list($partner, $app) = $this->createPartnerAndApplication(['partner_type' => 'pure_platform']);
+
+        $partnerMeteData = [
+            'brand_color' => '0000FF',
+            'text_color'  => '000FFF',
+            'brand_name'  => 'google'
+        ];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($partner->getId());
+
+        $this->createConfigForPartnerApp($app->getId(), null, [Entity::PARTNER_METADATA => $partnerMeteData]);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzOutput);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['application_id'] = $app->getId();
+
+        $response = $this->startTest($testData);
+
+        $this->checkResponseFieldsForProxyOrInternalAuth($response);
+    }
+
+    // allow partner config fetch for only pure platform partners
+    public function testFetchConfigWithApplicationIdByInvalidPartner()
+    {
+        list($partner, $app) = $this->createPartnerAndApplication();
+
+        $this->fixtures->edit('merchant', $partner->id, ['partner_type' => 'reseller']);
+
+        $this->createConfigForPartnerApp($app->getId());
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($partner->getId());;
+
+        $this->ba->proxyAuth('rzp_test_' . $partner->getId(), $merchantUser['id']);
+
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzOutput);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['application_id'] = $app->getId();
+
+        $this->startTest($testData);
+
+        $this->fixtures->edit('merchant', $partner->id, ['partner_type' => 'fully_managed']);
+
+        $this->startTest($testData);
+
+        $this->fixtures->edit('merchant', $partner->id, ['partner_type' => 'aggregator']);
+
+        $this->startTest($testData);
+    }
+
+    public function testUpdateAllowedConfigWithApplicationIdByPartner()
+    {
+        list($partner, $app) = $this->createPartnerAndApplication(['partner_type' => 'pure_platform']);
+
+        $partnerConfig = $this->createConfigForPartnerApp($app->getId());
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($partner->getId());
+
+        $this->ba->proxyAuth('rzp_test_' . $partner->getId(), $merchantUser['id']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/partner_config/'. $partnerConfig->id;
+
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzOutput);
+
+        $response = $this->startTest($testData);
+
+        $this->checkResponseFieldsForProxyOrInternalAuth($response);
     }
 }

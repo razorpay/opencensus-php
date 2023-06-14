@@ -8,7 +8,9 @@ use RZP\Exception;
 use RZP\Models\Partner;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Methods;
+use Razorpay\OAuth\Application as OAuthApp;
 
 class Validator extends Base\Validator
 {
@@ -189,18 +191,11 @@ class Validator extends Base\Validator
 
         if ($app['basicauth']->isProxyAuth() === true and $app['basicauth']->isAdminAuth() === false)
         {
-            $merchantId = $app['basicauth']->getMerchantId();
+            $merchant = $app['basicauth']->getMerchant();
 
-            $this->validateSubmerchantWhitelabelOnboardingExpEnabled($merchantId);
+            $this->validatePartnerInputForAggregatorPartner($merchant, $input);
 
-            (new Merchant\Validator())->validateIsAggregatorPartner($app['basicauth']->getMerchant());
-
-            if (isset($input[Constants::PARTNER_ID]) === true and $input[Constants::PARTNER_ID] !== $merchantId)
-            {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_MERCHANT_ID);
-            }
-
-            unset($input[Constants::PARTNER_ID]);
+            $this->validatePartnerInputForPurePlatformPartner( $input);
 
             if (empty($input) === false)
             {
@@ -209,18 +204,17 @@ class Validator extends Base\Validator
         }
         else if ($app['request.ctx']->isDashboardGuest() === true)
         {
-            $merchantId = $input[Constants::PARTNER_ID] ?? null;
-
-            if (empty($merchantId) === true)
+            if (isset($input[Constants::PARTNER_ID]))
             {
-                return;
+                $merchant = (new Merchant\Service())->getMerchantFromMid($input[Constants::PARTNER_ID]);
+
+                $this->validatePartnerInputForAggregatorPartner($merchant, $input);
             }
 
-            $this->validateSubmerchantWhitelabelOnboardingExpEnabled($merchantId);
-
-            $merchant = (new Merchant\Service())->getMerchantFromMid($merchantId);
-
-            (new Merchant\Validator())->validateIsAggregatorPartner($merchant);
+            if (isset($input[Constants::APPLICATION_ID]))
+            {
+                $this->validatePartnerInputForPurePlatformPartner( $input);
+            }
         }
     }
 
@@ -237,24 +231,50 @@ class Validator extends Base\Validator
     /**
      * @throws Exception\BadRequestException
      */
-    private function validateSubmerchantWhitelabelOnboardingExpEnabled(string $merchantId)
+    private function validatePartnerInputForAggregatorPartner(Merchant\Entity $merchant, ?array &$input)
     {
-        $app = App::getFacadeRoot();
-
-        $properties = [
-            'id'            => $merchantId,
-            'experiment_id' => $app['config']->get('app.partner_submerchant_whitelabel_onboarding')
-        ];
-
-        $expEnabled = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
-
-        if ($expEnabled !== true)
+        if (!isset($input[Constants::PARTNER_ID]))
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PARTNER_SUBMERCHANT_WHITELABEL_ONBOARDING_EXP_NOT_ENABLED,
-                null,
-                ['partner_id' => $merchantId]
-            );
+            return;
         }
+
+        Merchant\PhantomUtility::validatePhantomOnBoarding($merchant->getId());
+
+        (new Merchant\Validator())->validateIsAggregatorPartner($merchant);
+
+        if ($input[Constants::PARTNER_ID] !== $merchant->getId())
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_MERCHANT_ID);
+        }
+
+        unset($input[Constants::PARTNER_ID]);
+    }
+
+    /**
+     * @throws Exception\BadRequestException
+     */
+    private function validatePartnerInputForPurePlatformPartner(?array &$input)
+    {
+        if (!isset($input[Constants::APPLICATION_ID]))
+        {
+            return;
+        }
+
+        try
+        {
+            $application = (new OAuthApp\Repository)->findOrFailPublic($input[Constants::APPLICATION_ID]);
+        }
+        catch (\Exception $e)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_APPLICATION_ID);
+        }
+
+        $partner = (new Merchant\Core)->getPartnerFromApp($application);
+
+        (new Merchant\Validator())->validateIsPurePlatformPartner($partner);
+
+        Merchant\PhantomUtility::validatePhantomOnboardingForPurePlatformPartners($partner->getId());
+
+        unset($input[Constants::APPLICATION_ID]);
     }
 }

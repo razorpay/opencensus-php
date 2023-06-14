@@ -588,6 +588,8 @@ return array(
 
     'partner_submerchant_whitelabel_onboarding' => env('PARTNER_SUBMERCHANT_WHITELABEL_ONBOARDING'),
 
+    'partner_submerchant_oauth_onboarding' => env('PARTNER_SUBMERCHANT_OAUTH_ONBOARDING'),
+
     'magic_apply_coupon_experiment_id' => env('MAGIC_APPLY_COUPON_EXPERIMENT_ID'),
 
     'capital_partnership_experiment_id' => env('CAPITAL_PARTNERSHIP_EXPERIMENT_ID'),
