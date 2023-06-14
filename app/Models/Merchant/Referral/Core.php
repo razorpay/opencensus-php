@@ -18,6 +18,7 @@ use RZP\Models\Merchant\CapitalSubmerchantUtility;
 class Core extends Base\Core
 {
     const NAME_LENGTH = 9;
+    const EASY_ONBOARDING_TYPE_PARAM = "eo";
 
     /**
      * Elfin: Url shortening service
@@ -192,6 +193,8 @@ class Core extends Base\Core
                 ]
             ];
         }
+
+        $this->addOptionalParams($productConfig, $merchant);
 
         $referrals = Tracer::inspan(['name' => HyperTrace::CREATE_REFERRAL_CORE], function() use ($referrals, $merchant, $productConfig) {
 
@@ -369,5 +372,21 @@ class Core extends Base\Core
 
             }
         });
+    }
+
+    /**
+     * @param array $productConfig
+     * @param Merchant\Entity $merchant
+     * @return void
+     */
+    private function addOptionalParams(array &$productConfig, Merchant\Entity $merchant): void
+    {
+
+        if ($merchant->getPartnerType() === Merchant\Constants::RESELLER)
+        {
+            // setting easy type for easy redirection for on-boarding
+            $productConfig[Product::PRIMARY]["params"][self::EASY_ONBOARDING_TYPE_PARAM] = "1";
+        }
+
     }
 }
