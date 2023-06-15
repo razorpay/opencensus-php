@@ -1750,7 +1750,7 @@ class MerchantCreateTest extends TestCase
 
         (new MerchantTest())->expectStorkSmsRequest(
             $storkMock,
-            'sms.onboarding.partner_submerchant_invite_line_of_credit',
+            'sms.partnership.new_LOC',
             '+91' . $testData['request']['content']['contact_mobile'],
             $expectedParams
         );

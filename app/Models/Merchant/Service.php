@@ -1382,8 +1382,8 @@ class Service extends Base\Service
         }
         elseif ($product === Product::CAPITAL)
         {
-            $smsPayload['templateName']   = 'sms.onboarding.partner_submerchant_invite_line_of_credit';
-            $tracePayload['sms_template'] = 'sms.onboarding.partner_submerchant_invite_line_of_credit';
+            $smsPayload['templateName']   = 'sms.partnership.new_LOC';
+            $tracePayload['sms_template'] = 'sms.partnership.new_LOC';
             $traceCode                    = TraceCode::SEND_SUBMERCHANT_LOC_ONBOARDING_SMS;
             $errorTraceCode               = TraceCode::SUBMERCHANT_LOC_ONBOARDING_SMS_FAILED;
         }
