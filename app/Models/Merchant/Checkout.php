@@ -2262,7 +2262,12 @@ class Checkout
 
             if ($appToken !== null)
             {
-                $customer = (new Customer\Repository())->findByIdAndMerchant($appToken->getCustomerId(), $merchant);
+                // Only global customers are associated to app tokens in checkout.
+                $customer = (new Customer\Repository())->findByIdAndMerchantId(
+                    $appToken->getCustomerId(),
+                    Account::SHARED_ACCOUNT,
+                    ConnectionType::SLAVE
+                );
 
                 return $customer->contact;
             }
@@ -2273,7 +2278,7 @@ class Checkout
             return $input['contact'];
         }
 
-        return;
+        return '';
     }
 
     protected function isCredEligibilityConfigEnabled() : bool
