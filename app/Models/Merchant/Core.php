@@ -5595,10 +5595,10 @@ class Core extends Base\Core
                 $submerchant[Entity::APPLICATION] = [OAuthApp\Entity::ID => $submerchant->getAttribute(Constants::APPLICATION_ID)];
 
                 $submerchant[Entity::KYC_ACCESS] = null;
-                $accessRequests = $accessRequests[$submerchant->getId()];
-                if (empty($accessRequests) === false)
+                $accessRequest = $accessRequests[$submerchant->getId()];
+                if (empty($accessRequest) === false)
                 {
-                    $submerchant[Entity::KYC_ACCESS] = $accessRequests->first()->toArrayPublic();
+                    $submerchant[Entity::KYC_ACCESS] = $accessRequest->first()->toArrayPublic();
                 }
 
                 if ($product === Product::BANKING)
