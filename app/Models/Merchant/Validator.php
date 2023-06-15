@@ -2534,8 +2534,19 @@ class Validator extends Base\Validator
 
         $bankAccount = $merchant->bankAccount;
 
+        $merchantDetails = $merchant->merchantDetail;
+
         if ($bankAccount === null)
         {
+            if (empty($merchantDetails) === false)
+            {
+                $bankAccountStatus = $merchantDetails->getBankDetailsVerificationStatus();
+
+                if ($bankAccountStatus === Detail\Constants::VERIFIED)
+                {
+                    return;
+                }
+            }
             // check partner bank account exists
             $partner = (new Core)->getSettledToPartnersTypeOfMerchantIfExists($merchant);
 

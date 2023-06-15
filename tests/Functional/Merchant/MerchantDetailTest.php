@@ -11153,4 +11153,27 @@ We look forward to transacting with you!
 
         $this->startTest();
     }
+
+    public function testSkipBankVerificationInCaseOfVerifiedMerchantAccount()
+    {
+        $merchant = $this->fixtures->create('merchant',[
+            'hold_funds' => true
+        ]);
+
+        $mid = $merchant->getId();
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'                      => $mid,
+            'bank_details_verification_status' => 'verified',
+        ]);
+
+        $action = 'release_funds';
+
+        $response = (new \RZP\Models\RiskWorkflowAction\Core())->validateMerchantForAction($action, $merchant);
+
+        // We do not want to assert anything , as it is a validation check and in case of bank details verified
+        // we do not want to throw any error and simply return from the function.
+
+        $this->assertNull($response);
+    }
 }
