@@ -66,10 +66,22 @@ class Core extends Base\Core
 
             $request[Entity::ACCEPTED_CHANNEL] = $channel;
 
-            [$clientIp , $device] = $this->fetchIpAndDevice();
+            [$clientIp, $device] = $this->fetchIpAndDevice();
 
             // Overriding value of IP address to what is provided in input payload
             $clientIp = $ip ?: $clientIp;
+
+            // Because of 5xx errors when device is null, "unknown" is assigned as client_device value by default for
+            // the below routes. Jira - https://razorpay.atlassian.net/browse/PRTS-2630
+            if ($device === null)
+            {
+                $route = $this->app['api.route']->getCurrentRouteName();
+
+                if (empty($route) === false and in_array($route, ['product_config_tnc_accept_v2', 'product_config_create_v2']) === true)
+                {
+                    $device = 'unknown';
+                }
+            }
 
             $request[Entity::CLIENT_DEVICE] = $device;
 
