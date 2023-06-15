@@ -76,8 +76,7 @@ class Validator extends Base\Validator
         Entity::FEE_BEARER          => 'sometimes|in:platform,customer',
         Entity::PROCURER            => 'sometimes',
         Entity::CHANNEL             => 'sometimes',
-        Entity::FEE_MODEL           => 'sometimes|nullable|in:prepaid,postpaid',
-        Entity::RECEIVER_TYPE           => 'sometimes_if:payment_method,card,upi|nullable|in:qr_code,vpa,pos,credit',
+        Entity::FEE_MODEL           => 'sometimes|nullable|in:prepaid,postpaid'
     ];
 
     protected static $pricingPlansSummaryRules = [

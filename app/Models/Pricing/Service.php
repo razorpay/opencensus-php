@@ -268,8 +268,7 @@ class Service extends Base\Service
                                             Entity::FIXED_RATE,
                                             Entity::MIN_FEE,
                                             Entity::MAX_FEE,
-                                            Entity::FEE_BEARER,
-                                            Entity::RECEIVER_TYPE
+                                            Entity::FEE_BEARER
                         ];
 
                         $rule = array_filter($item, function ($k) use ($editRulekeys)
