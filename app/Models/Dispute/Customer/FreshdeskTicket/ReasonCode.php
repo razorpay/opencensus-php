@@ -35,6 +35,11 @@ class ReasonCode
                 DisputeReasonEntity::GATEWAY_CODE => 'RZP00',
                 DisputeEntity::PHASE => Phase::CHARGEBACK
             ],
+            // typo exist in FE and DB: adding responding with typo, as it is not shown to merchant directly
+            'merchant_business_not_reponding' => [
+                DisputeReasonEntity::GATEWAY_CODE => 'RZP06',
+                DisputeEntity::PHASE => Phase::CHARGEBACK
+            ]
         ],
         Subcategory::REPORT_FRAUD => [
             'potential_fraud' => [
