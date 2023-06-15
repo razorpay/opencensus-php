@@ -1754,8 +1754,8 @@ class Entity extends Base\PublicEntity
             $tokenData = null;
             $tokenData['token_provider']    = $this->getVault();
             $tokenData['number']            = $tokenNumber;
-            $tokenData['expiry_month']      = $this->getTokenExpiryMonth();
-            $tokenData['expiry_year']       = $this->getTokenExpiryYear();
+            $tokenData['expiry_month']      = is_int($this->getTokenExpiryMonth()) ? $this->getTokenExpiryMonth() : intval($this->getTokenExpiryMonth());
+            $tokenData['expiry_year']       = is_int($this->getTokenExpiryYear()) ? $this->getTokenExpiryYear() : intval($this->getTokenExpiryYear());
 
             $input['token'] = $tokenData;
 
@@ -1769,8 +1769,8 @@ class Entity extends Base\PublicEntity
             $tokenData = null;
             $tokenData['token_provider']    = $this->getVault();
             $tokenData['number']            = $cryptogram['token_number'];
-            $tokenData['expiry_month']      = $this->getTokenExpiryMonth();
-            $tokenData['expiry_year']       = $this->getTokenExpiryYear();
+            $tokenData['expiry_month']      = is_int($this->getTokenExpiryMonth()) ? $this->getTokenExpiryMonth() : intval($this->getTokenExpiryMonth());
+            $tokenData['expiry_year']       = is_int($this->getTokenExpiryYear()) ? $this->getTokenExpiryYear() : intval($this->getTokenExpiryYear());
 
             $input['token'] = $tokenData;
 
