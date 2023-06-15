@@ -199,10 +199,10 @@ const ListItem = ({
     }
   };
 
-  const { id, amount, fee, tax, created_at, optimizer_provider, settled_by } = item;
+  const { id, amount, fee, created_at, optimizer_provider, settled_by } = item;
   const currency = user.merchant.currency;
-  const deductions = fee + tax;
-  const grossAmount = amount + deductions;
+  const deductions = fee;
+  const netAmount = amount - fee;
   let columnKeys: Array<string>;
 
   if (isMobileResolution) {
@@ -236,7 +236,7 @@ const ListItem = ({
             row = (
               <td key={idx}>
                 <Text type="subtle" size="medium">
-                  <Amount value={grossAmount} currency={currency} />
+                  <Amount value={amount} currency={currency} />
                 </Text>
               </td>
             );
@@ -254,7 +254,7 @@ const ListItem = ({
             row = (
               <td key={idx}>
                 <Text weight="regular" color="surface.text.subtle.lowContrast" size="medium">
-                  <Amount value={amount} currency={currency} />
+                  <Amount value={netAmount} currency={currency} />
                 </Text>
               </td>
             );
