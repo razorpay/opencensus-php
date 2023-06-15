@@ -26,7 +26,7 @@ class IfscValidationTest extends TestCase
         }
 
         $this->assertEquals(21633, $result['total']);
-        $this->assertEquals(20814, $result['valid']);
+        $this->assertEquals(20773, $result['valid']);
     }
 
     /**

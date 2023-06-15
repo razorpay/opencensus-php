@@ -164,7 +164,7 @@ return [
                 'account_type' => 'bank_account',
                 'contact_id'   => 'cont_1000000contact',
                 'bank_account'      => [
-                    'ifsc'           => 'LAVB0000966',
+                    'ifsc'           => 'LAVB0000791',
                     'name'           => 'Sagnik Saha',
                     'account_number' => '12345678998',
                 ],
@@ -178,7 +178,7 @@ return [
                 'account_type' => 'bank_account',
                 'contact_id'   => 'cont_1000000contact',
                 'bank_account'      => [
-                    'ifsc'           => 'DBSS0IN0966',
+                    'ifsc'           => 'DBSS0IN0791',
                     'name'           => 'Sagnik Saha',
                     'account_number' => '12345678998'
                 ],

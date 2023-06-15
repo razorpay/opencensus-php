@@ -195,7 +195,7 @@ class FundAccountsTest extends TestCase
         $expectedBankAccount = [
             'type'             => 'contact',
             'entity_id'        => '1000000contact',
-            'ifsc_code'        => 'DBSS0IN0966',
+            'ifsc_code'        => 'DBSS0IN0791',
             'account_number'   => '12345678998',
             'beneficiary_name' => 'Sagnik Saha',
             'merchant_id'      => '10000000000000',
@@ -205,7 +205,7 @@ class FundAccountsTest extends TestCase
 
         $this->assertArrayNotHasKey(FundAccount\Entity::UNIQUE_HASH, $response);
 
-        $expectedHashInput = '10000000000000|contact|1000000contact|bank_account|12345678998|DBSS0IN0966|SagnikSaha';
+        $expectedHashInput = '10000000000000|contact|1000000contact|bank_account|12345678998|DBSS0IN0791|SagnikSaha';
 
         $expectedHash = hash('sha3-256', $expectedHashInput);
 
