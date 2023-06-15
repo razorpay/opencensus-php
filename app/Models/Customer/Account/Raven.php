@@ -102,6 +102,11 @@ class Raven extends Base\Core
             $request['params']['sms_hash'] = $input['sms_hash'];
         }
 
+        if (isset($input['merchant_domain']) === true)
+        {
+            $request['params']['merchant_domain'] = $input['merchant_domain'];
+        }
+
         if (empty($input['template']) === false)
         {
             $request['template'] = $input['template'];
@@ -189,6 +194,12 @@ class Raven extends Base\Core
             CASE 'access_card_v2':
                 return 'sms.checkout.access_card_otp_v4';
 
+            case 'mweb_save_card':
+                return 'sms.checkout.save_card_otp_v6';
+
+            case 'mweb_access_card':
+                return 'sms.checkout.access_saved_card_otp_v6';
+
             default:
                 return 'sms.otp';
         }
@@ -212,6 +223,8 @@ class Raven extends Base\Core
             'access_card_v2',
             'save_card_v2',
             'support_page_login',
+            'mweb_save_card',
+            'mweb_access_card',
         ]);
     }
 }

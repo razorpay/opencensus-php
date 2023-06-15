@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Customer;
 
+use Illuminate\Support\Arr;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
@@ -575,6 +576,12 @@ class Service extends Base\Service
                     $otpInput = array_merge($otpInput, ['otp_reason' => $input['otp_reason']]);
                 }
 
+                if (Arr::has($input, ['otp_reason', 'merchant_domain']) === true &&
+                    $this->isMWebOtpAutoReadOtpReason($input['otp_reason']))
+                {
+                    $otpInput = array_merge($otpInput, ['merchant_domain' => $input['merchant_domain']]);
+                }
+
                 $this->sendOtp($otpInput);
 
                 return ['saved' => true];
@@ -679,6 +686,12 @@ class Service extends Base\Service
                 if (isset($input['otp_reason']) === true)
                 {
                     $otpInput = array_merge($otpInput, ['otp_reason' => $input['otp_reason']]);
+                }
+
+                if (Arr::has($input, ['otp_reason', 'merchant_domain']) === true &&
+                    $this->isMWebOtpAutoReadOtpReason($input['otp_reason']))
+                {
+                    $otpInput = array_merge($otpInput, ['merchant_domain' => $input['merchant_domain']]);
                 }
 
                 $this->sendOtp($otpInput);
@@ -1219,5 +1232,20 @@ class Service extends Base\Service
 
             $session->put($key, '1');
         }
+    }
+
+    private function isMWebOtpAutoReadOtpReason(string $otpReason): bool
+    {
+        if ($otpReason === 'mweb_save_card')
+        {
+            return true;
+        }
+
+        if ($otpReason === 'mweb_access_card')
+        {
+            return true;
+        }
+
+        return false;
     }
 }
