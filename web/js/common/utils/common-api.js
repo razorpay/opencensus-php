@@ -7,10 +7,13 @@ const payload = {
 
 export const sendDataToSalesForce = (data, user = {}, mode = 'live') => {
   const userDetails = {
+    User_Id: user?.id,
     merchant_id: user?.current,
     name: user?.name,
     email: user?.contact_email,
     contact_mobile: user?.contact_mobile,
+    gst_number: user?.gstin || undefined,
+    CA_PAN: user?.promoter_pan || undefined,
   };
 
   const eventPropertiesMap = {
