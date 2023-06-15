@@ -278,6 +278,13 @@ class Authorization
         $this->proxy = false;
     }
 
+    public function accountingIntegrationsAppAuth($mode = 'test')
+    {
+        $this->appAuth('rzp_' . $mode, \Config::get('applications.accounting_integrations')['secret']);
+
+        $this->proxy = false;
+    }
+
     public function payoutLinksCustomerPageAuth($mode = 'test')
     {
         $this->appAuth('rzp_' . $mode, \Config::get('applications.payout_link_customer_page')['secret']);

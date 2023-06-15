@@ -5119,6 +5119,76 @@ return [
         ]
     ],
 
+    'testGetPayoutWithReversalForProxyAuth' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payouts/{id}',
+            'content' => [
+                'expand' => [
+                    'reversal',
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
+    'testGetPayoutWithReversalForPrivateAuth' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payouts/{id}',
+            'content' => [
+                'expand' => [
+                    'reversal',
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
+    'testGetPayoutWithReversalForPrivilegeAuthNonAccountingApp' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payouts_internal/{id}',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'content' => [
+                'expand' => [
+                    'reversal',
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
+    'testGetPayoutWithReversalForPrivilegeAuthAccountingApp' => [
+        'request' => [
+            'method'  => 'get',
+            'url'     => '/payouts_internal/{id}',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'content' => [
+                'expand' => [
+                    'reversal',
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
     'testGetPayoutsWithoutAccountNumber' => [
         'request' => [
             'method'  => 'get',

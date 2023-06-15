@@ -7,9 +7,11 @@ use RZP\Models\Payout;
 use RZP\Models\Merchant;
 use RZP\Models\Transfer;
 use RZP\Models\Customer;
+use RZP\Models\Transaction;
 use RZP\Constants\Entity as E;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Merchant\Account;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Base\Traits\HasBalance;
 use RZP\Models\Transfer\Traits\LinkedAccountNotesTrait;
@@ -114,6 +116,7 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_REFUND_ID,
         self::UTR,
         self::CREATED_AT,
+        self::TRANSACTION_ID,
     ];
 
     protected $expanded = [
@@ -142,6 +145,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::INITIATOR_ID,
         self::CUSTOMER_REFUND_ID,
+        self::TRANSACTION_ID,
     ];
 
     protected $appends = [
@@ -415,6 +419,23 @@ class Entity extends Base\PublicEntity
         {
             unset($array[self::CUSTOMER_REFUND_ID]);
         }
+    }
+
+    public function setPublicTransactionIdAttribute(array & $array)
+    {
+        /** @var BasicAuth $basicAuth */
+        $basicAuth = app('basicauth');
+
+        if ($basicAuth->isAccountingIntegrationsApp() === true)
+        {
+            // similar behaviour as of payout
+            $array[self::TRANSACTION_ID] = Transaction\Entity::getSignedIdOrNull($this->getTransactionId());
+        }
+        else
+        {
+            unset($array[self::TRANSACTION_ID]);
+        }
+
     }
 
     // -------------------- End Public Setters --------------------------

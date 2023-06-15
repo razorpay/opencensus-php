@@ -10639,6 +10639,7 @@ class Route
         'accounting_integrations' => [
             'merchant_fetch_internal_users',
             'payout_fetch_multiple_internal',
+            'payout_fetch_by_id_internal',
             'contact_get_internal',
             'contact_create_internal',
             'contact_list_internal',

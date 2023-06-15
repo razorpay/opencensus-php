@@ -9946,6 +9946,106 @@ class PayoutTest extends OAuthTestCase
         $this->assertNotEquals($payouts['items'], null);
     }
 
+    protected function createReversal(Payout\Entity $payout): ReversalEntity
+    {
+        $this->reversePayout($payout);
+
+        return $this->fixtures->reversal->createPayoutReversal([
+            'merchant_id' => '10000000000000',
+            'entity_id'   => $payout['id'],
+            'entity_type' => 'payout',
+            'amount'      => $payout['amount'],
+            'fee'         => 0,
+            'tax'         => 0,
+            'channel'     => 'rbl',
+            'transaction_id' => '122334444',
+        ]);
+    }
+
+    public function testGetPayoutWithReversalForProxyAuth()
+    {
+        $this->createEsIndex();
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->createReversal($payout);
+
+        $this->ba->proxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . 'pout_' . $payout['id'];
+
+        $payoutResp = $this->startTest();
+
+        $this->assertNotNull($payoutResp['reversal']);
+
+        $this->assertArrayNotHasKey('transaction_id', $payoutResp['reversal']);
+    }
+
+    public function testGetPayoutWithReversalForPrivateAuth()
+    {
+        $this->createEsIndex();
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->createReversal($payout);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payouts/' . 'pout_' . $payout['id'];
+
+        $payoutResp = $this->startTest();
+
+        $this->assertArrayNotHasKey('reversal', $payoutResp);
+    }
+
+    public function testGetPayoutWithReversalForPrivilegeAuthNonAccountingApp()
+    {
+        $this->createEsIndex();
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->createReversal($payout);
+
+        $this->ba->payoutLinksAppAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payouts_internal/' . 'pout_' . $payout['id'];
+
+        $payoutResp = $this->startTest();
+
+        $this->assertNotNull($payoutResp['reversal']);
+
+        $this->assertArrayNotHasKey('transaction_id', $payoutResp['reversal']);
+    }
+
+    public function testGetPayoutWithReversalForPrivilegeAuthAccountingApp()
+    {
+        $this->createEsIndex();
+
+        $this->testCreatePayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $reversal = $this->createReversal($payout);
+
+        $this->ba->accountingIntegrationsAppAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payouts_internal/' . 'pout_' . $payout['id'];
+
+        $payoutResp = $this->startTest();
+
+        $this->assertNotNull($payoutResp['reversal']);
+
+        $this->assertNotNull($payoutResp['reversal']['transaction_id']);
+
+        $this->assertEquals('txn_' . $reversal['transaction_id'], $payoutResp['reversal']['transaction_id']);
+    }
+
     public function testGetPayoutsForPendingOnRoles()
     {
         //Given
