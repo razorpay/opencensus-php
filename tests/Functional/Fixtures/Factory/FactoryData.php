@@ -2369,5 +2369,12 @@ final class FactoryData
             'created_at'      => $faker->timestamp,
             'updated_at'      => $faker->timestamp,
         ]);
+
+        $factory(Models\Payment\UpiMetadata\Entity::class, [
+            'payment_id' => $faker->uniqueId,
+            'mode'       => null,
+            'flow'       => null,
+            'type'       => 'default',
+        ]);
     }
 }

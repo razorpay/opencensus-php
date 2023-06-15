@@ -334,6 +334,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     const PAYER_ACCOUNT_TYPE                 = "payer_account_type";
     const UPI                                = "upi";
+    const UPI_METADATA                       = "upi_metadata";
 
     const feeCurrencyAmount                      = "fee_currency_amount";
 
@@ -482,7 +483,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::AUTHENTICATION_GATEWAY,
         self::FEE_BEARER,
         self::REFERENCE13,
-        self::UPI
+        self::UPI,
+        self::UPI_METADATA,
     ];
 
     protected $public = [
@@ -538,7 +540,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::SETTLED_BY,
         self::OPTIMIZER_PROVIDER,
         self::TOKEN,
-        self::UPI
+        self::UPI,
+        self::UPI_METADATA,
     ];
 
     protected $webhook = [
@@ -701,6 +704,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::INTERNATIONAL,
         self::FEE,
         self::TAX,
+        self::UPI_METADATA,
     ];
 
     protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA, self::GATEWAY_PROVIDER];
@@ -4506,6 +4510,35 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 ]);
             $array[self::OPTIMIZER_PROVIDER] = '';
         }
+    }
+
+    public function setPublicUpiMetadataAttribute(array &$data)
+    {
+        unset($data[self::UPI_METADATA]);
+
+        // If the payment is not an upi in_app payment, we simply return
+        if ($this->isInAppUPI() === false)
+        {
+            return;
+        }
+
+        $admissibleRoutes = [
+            'payment_fetch_by_id',
+            'payment_fetch_multiple',
+        ];
+
+        $app = \App::getFacadeRoot();
+        $route = $app['request.ctx']->getRoute();
+
+        // If the route is not among the admissible routes OR the request is not over proxy auth, we return
+        if ((in_array($route, $admissibleRoutes) === false) or
+            ($app['basicauth']->isProxyAuth() === false))
+        {
+            return;
+        }
+
+        // Otherwise, we populate the upi_metadata object inside the payment object as follows
+        $data[self::UPI_METADATA][UpiMetadata\Entity::FLOW] = UpiMetadata\Mode::IN_APP;
     }
 
     public function associateTerminal($terminal)

@@ -1578,6 +1578,8 @@ class PaymentFetchTest extends TestCase
         $response = $this->startTest();
 
         $this->assertEquals($response['id'], 'pay_GrClIcbRtTUxxb');
+
+        $this->assertArrayNotHasKey('upi_metadata', $response);
     }
 
     public function testFetchPaymentFromPgRouterWithPrivateAuthFailure()
@@ -2189,6 +2191,139 @@ class PaymentFetchTest extends TestCase
 
         $this->assertNotNull($paymentFetchResponse['acquirer_data']['rrn']);
         $this->assertNotNull($paymentFetchResponse['acquirer_data']['arn']);
+
+        // Payment with method = card should not have upi_metadata object in response
+        $this->assertArrayNotHasKey('upi_metadata', $paymentFetchResponse);
+    }
+
+    public function testFetchPaymentWithUpiMetadataBlock()
+    {
+        //First we enable in_app payment method on the merchant
+        $methods = [
+            'upi'           => 1,
+            'addon_methods' => [
+                'upi' => [
+                    'in_app' => 1
+                ]
+            ]
+        ];
+
+        $this->fixtures->edit('methods', '10000000000000', $methods);
+
+        $payment = $this->getDefaultUpiBlockIntentPaymentArray();
+        $payment['upi']['mode'] = 'in_app';
+
+        //Now we create a turbo payment
+        $paymentCreateResponse = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        //upi_metadata should not be present in the response
+        $this->assertArrayNotHasKey('upi_metadata', $paymentCreateResponse);
+
+        //Now we fetch the payment by id using private auth and assert that upi_metadata is NOT present
+        $paymentFetchResponse = $this->fetchPayment($paymentCreateResponse['payment_id']);
+        $this->assertEquals('upi', $paymentFetchResponse['method']);
+        $this->assertArrayNotHasKey('upi_metadata', $paymentFetchResponse);
+
+        //Now we fetch the payment by id using proxy auth and assert that upi_metadata IS present
+        $this->ba->proxyAuth();
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/payments/' . $paymentFetchResponse['id'],
+            'content' => [],
+        ];
+
+        $paymentFetchResponse = $this->makeRequestAndGetContent($request);
+
+        //Assert the upi_metadata block that is expected to be present in the response is indeed present
+        $expectedUpiMetadataBlock = [
+            'flow' => 'in_app',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedUpiMetadataBlock, $paymentFetchResponse['upi_metadata']);
+    }
+
+    /*
+     * Test that upi_metadata object is added in response even if
+     * payment is fetched from pg-router service instead of API
+     */
+    public function testPaymentFetchFromPGWithUpiMetadataBlock()
+    {
+        $this->enablePgRouterConfig();
+
+        $pgService = \Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('pg_router', $pgService);
+
+        $pgService->shouldReceive('sendRequest')
+                  ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'), Mockery::type('int'), Mockery::type('bool'))
+                  ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure, int $timeout, bool $retry)
+                  {
+                      return [
+                          'body' => [
+                              "data" => [
+                                  "payment" => [
+                                      'id' => 'GfnBMH2PXyCDVE',
+                                      'amount' => 50000,
+                                      'currency' => 'INR',
+                                      'status' =>'captured',
+                                      'order_id' => NULL,
+                                      'invoice_id' => NULL,
+                                      'international' => FALSE,
+                                      'method' => 'upi',
+                                      'amount_refunded' => 0,
+                                      'refund_status' => NULL,
+                                      'captured' => TRUE,
+                                      'description' => 'random description',
+                                      'card_id' => NULL,
+                                      'bank' => NULL,
+                                      'wallet' => NULL,
+                                      'vpa' => 'sagnik@okhdfcbank',
+                                      'email' => 'a@b.com',
+                                      'contact' => '+919918899029',
+                                      'notes' => [
+                                          'merchant_order_id' => 'random order id',
+                                      ],
+                                      'fee' => 1000,
+                                      'tax' =>  0,
+                                      'reference_2' => '599962',
+                                      'created_at' => 1614252933,
+                                      'authorized_at' => 1614252933,
+                                      'merchant_id' => '10000000000000'
+                                  ]
+                              ]
+                          ],
+                      ];
+                  });
+
+        $this->fixtures->create('upi_metadata', [
+            'payment_id' => 'GfnBMH2PXyCDVE',
+            'mode' => 'in_app',
+            'flow' => 'intent',
+        ]);
+
+        $paymentFetchResponse = $this->fetchPayment('pay_GfnBMH2PXyCDVE');
+
+        $this->assertEquals('pay_GfnBMH2PXyCDVE', $paymentFetchResponse['id']);
+
+        // Since fetchPayment acts via private auth, upi_metadata should not be present in the response
+        $this->assertArrayNotHasKey('upi_metadata', $paymentFetchResponse);
+
+        $request = [
+            'method'  => 'GET',
+            'url'     => '/payments/' . $paymentFetchResponse['id'],
+            'content' => [],
+        ];
+
+        // Now we fetch payment by id via proxy auth and assert that upi_metadata is present in the response
+        $this->ba->proxyAuth();
+
+        $paymentFetchResponse = $this->makeRequestAndGetContent($request);
+
+        $expectedUpiMetadata = [
+            'flow' => 'in_app',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedUpiMetadata, $paymentFetchResponse['upi_metadata']);
     }
 
     private function mockRazorxWith(string $featureUnderTest, string $value = 'on')

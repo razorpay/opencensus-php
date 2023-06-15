@@ -4794,6 +4794,15 @@ class PaymentCreateTest extends TestCase
         $lastPayment = $this->getLastEntity('payment');
 
         $this->assertSame('authorized', $lastPayment['status']);
+
+        //Since lastEntity() does a fetch multiple via proxy auth, upi_metadata should be set in the response
+        $this->assertArrayHasKey('upi_metadata', $lastPayment);
+
+        $expectedUpiMetadataBlock = [
+            'flow' => 'in_app',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedUpiMetadataBlock, $lastPayment['upi_metadata']);
     }
 
     public function testUpiAmountLimit()
