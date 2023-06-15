@@ -2196,13 +2196,17 @@ class Validator extends Base\Validator
         Entity::TPV                                     => 'sometimes|in:0,1,2',
         Entity::NOTES                                   => 'sometimes|string',
         Entity::ENABLED_WALLETS                         => 'sometimes|array',
+        Entity::GATEWAY_MERCHANT_ID2                    => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET2                  => 'sometimes|string',
     ];
 
     protected static $paytmEditTerminalRules = [
         Entity::GATEWAY_TERMINAL_ID        => 'sometimes',
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes',
         Entity::GATEWAY_MERCHANT_ID        => 'sometimes',
+        Entity::GATEWAY_MERCHANT_ID2       => 'sometimes',
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes',
+        Entity::GATEWAY_SECURE_SECRET2     => 'sometimes',
         Entity::TYPE                       => 'sometimes',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',

@@ -75,6 +75,9 @@ class Type
     // Terminals For Optimiser With Refunds Disabled
     const DISABLE_OPTIMISER_REFUNDS        = 'disable_optimizer_refunds';
 
+    // Terminals For Optimiser with wallet auto debit
+    const ENABLE_AUTO_DEBIT                = 'enable_auto_debit';
+
     const ONLINE                           = 'online';
 
     const OFFLINE                          = 'offline';
@@ -112,6 +115,7 @@ class Type
         self::OFFLINE,
         self::IN_APP,
         self::SODEXO,
+        self::ENABLE_AUTO_DEBIT,
     ];
 
     protected static $bitPosition = [
@@ -143,6 +147,7 @@ class Type
         self::IN_APP                           => 26,
         self::DISABLE_OPTIMISER_REFUNDS        => 27,
         self::SODEXO                           => 28,
+        self::ENABLE_AUTO_DEBIT                => 29,
     ];
 
     /**

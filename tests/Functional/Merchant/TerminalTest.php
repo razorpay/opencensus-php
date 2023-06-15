@@ -2046,6 +2046,77 @@ class TerminalTest extends TestCase
         $this->assertEquals( ["direct_settlement_with_refund", "optimizer"], $content['type']);
     }
 
+    public function testCreatePaytmTerminalEnableAutoDebitOptimiser()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id'                       => 'AqdfGh5460opVv',
+                'merchant_id'              => '10000000000000',
+                'gateway'                  => 'paytm',
+                'gateway_terminal_id'      => '12344',
+                'gateway_access_code'      => '1234ad4',
+                'gateway_merchant_id'      => '12344a',
+                'gateway_merchant_id2'     => '18793a',
+                'gateway_secure_secret'    => '12345',
+                'gateway_secure_secret2'   => '1397435',
+                'procurer'                 => 'merchant',
+                'type'                     => [
+                    'direct_settlement_with_refund' => '1',
+                    'optimizer'                     => '1',
+                    'enable_auto_debit'             => '1',
+                ],
+            ]);
+
+        $this->assertEquals( ["direct_settlement_with_refund", "optimizer", "enable_auto_debit"], $terminal['type']);
+    }
+
+    public function testEditPaytmTerminalEnableAutoDebitOptimiser()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id'                       => 'AqdfGh5460opVt',
+                'merchant_id'              => '10000000000000',
+                'gateway'                  => 'paytm',
+                'gateway_terminal_id'      => '12344',
+                'gateway_access_code'      => '1234ad4',
+                'gateway_merchant_id'      => '12344',
+                'gateway_merchant_id2'     => '18793',
+                'gateway_secure_secret'    => '12345',
+                'gateway_secure_secret2'   => '1397435',
+                'procurer'                 => 'merchant',
+                'type'                     => [
+                    'direct_settlement_with_refund' => '1',
+                    'optimizer'                     => '1',
+                    'enable_auto_debit'             => '1',
+                ],
+            ]);
+
+        $tid = $terminal['id'];
+
+        $data = [
+            'id'                       => 'AqdfGh5460opVt',
+            'merchant_id'              => '10000000000000',
+            'gateway'                  => 'paytm',
+            'gateway_terminal_id'      => '12344',
+            'gateway_access_code'      => '12344',
+            'gateway_merchant_id'      => '12344',
+            'gateway_merchant_id2'     => '18793',
+            'gateway_secure_secret'    => '12345',
+            'gateway_secure_secret2'   => '13974',
+            'procurer'                 => 'merchant',
+            'type'    => [
+                'direct_settlement_with_refund' => '1',
+                'optimizer'                     => '1',
+                'enable_auto_debit'             => '1',
+            ],
+        ];
+
+        $content = $this->editTerminal($tid, $data);
+        $this->assertEquals( ["direct_settlement_with_refund", "optimizer", "enable_auto_debit"], $content['type']);
+    }
+
     public function testEditBilldeskOptimizerUpiTerminal()
     {
         $terminal = $this->fixtures->create(

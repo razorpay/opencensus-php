@@ -1859,6 +1859,11 @@ class Entity extends Base\PublicEntity
         return ($this->isTypeApplicable(TYPE::DISABLE_OPTIMISER_REFUNDS) === true);
     }
 
+    public function isEnableAutoDebit()
+    {
+        return ($this->isTypeApplicable(TYPE::ENABLE_AUTO_DEBIT) === true);
+    }
+
     public function isOnline()
     {
         return ($this->isTypeApplicable(Type::ONLINE) === true);
