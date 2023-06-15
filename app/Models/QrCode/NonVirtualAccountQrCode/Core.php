@@ -29,12 +29,6 @@ class Core extends QrCode\Core
         $this->generator = new Generator;
     }
 
-    const GATEWAY_PAYMENT_CALLBACK_POST = 'gateway_payment_callback_post';
-    const PAYMENT_CALLBACK_BHARATQR_INTERNAL = 'payment_callback_bharatqr_internal';
-    const GATEWAY_PAYMENT_CALLBACK_BHARATQR = 'gateway_payment_callback_bharatqr';
-    const QR_PAYMENT_ROUTES                  = [self::GATEWAY_PAYMENT_CALLBACK_BHARATQR,
-                                                self::PAYMENT_CALLBACK_BHARATQR_INTERNAL,
-                                                self::GATEWAY_PAYMENT_CALLBACK_POST];
 
     /**
      * @param array                    $input
@@ -155,26 +149,6 @@ class Core extends QrCode\Core
         $qrCode->setClosedAt($currentTime);
 
         $qrCode->setCloseReason($closeReason);
-
-        try
-        {
-            $this->generator->closeQrCodeOnGateway($qrCode);
-        }
-        catch (\Exception $e)
-        {
-            $routeName = $this->app['api.route']->getCurrentRouteName();
-
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::FAILED_TO_CLOSE_QR_ON_GATEWAY,
-                                         [
-                                             'qrcode' => $qrCode->getId()
-                                         ]);
-
-            if ((in_array($routeName, self::QR_PAYMENT_ROUTES) !== true) and
-                (Reconciliate::$isReconRunning !== true))
-            {
-                throw $e;
-            }
-        }
 
         $vpaId = $this->repo->vpa->findVpaByEntityIdAndEntityType($qrCode->getId(), $qrCode->getEntityName());
 

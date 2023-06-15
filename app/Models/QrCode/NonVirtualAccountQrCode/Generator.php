@@ -650,43 +650,4 @@ class Generator extends QrCode\Generator
 
         return false;
     }
-
-    public function closeQrCodeOnGateway($qrCode)
-    {
-        if ($qrCode->isIciciQr() === false)
-        {
-            return;
-        }
-
-        if ($qrCode->isGatewayGeneratedRefid() === false)
-        {
-            return;
-        }
-
-        $qrVpa = $qrCode->getQrVpa();
-        if ($qrVpa === null)
-        {
-            throw new InvalidArgumentException('VPA cannot be null');
-        }
-
-        $gateway = GATEWAY::UPI_ICICI;
-        $params  = array(Terminal\Entity::GATEWAY_MERCHANT_ID2 => $qrVpa);
-        $this->trace->info(TraceCode::QR_CODE_CLOSE_ON_GATEWAY, [
-            'gateway' => $gateway,
-            '$params' => $params,
-            'id'      => $qrCode->getId()
-        ]);
-
-        $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, $params);
-
-        if (($terminal instanceof Terminal\Entity) === false)
-        {
-            throw new BadRequestException(Error\ErrorCode::SERVER_ERROR_NO_TERMINAL_FOUND,
-                                          [
-                                              'merchant_id' => $qrCode->merchant->getId(),
-                                          ]);
-        }
-
-        $this->generateRefId($qrCode, $terminal);
-    }
 }

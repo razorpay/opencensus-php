@@ -232,7 +232,7 @@ class UpiYesBankQRCodeTest extends TestCase
 
         $this->createQrCode(
             [
-                'usage' => 'multiple_use',
+                'usage' => 'single_use',
                 'type'  => 'upi_qr',
             ],
         );
@@ -496,9 +496,7 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testCreateDynamicQrCodeFalseGatewayResponse() :void
     {
-        $this->expectException(InvalidArgumentException::class);
-
-        $this->expectExceptionMessage('ErrorCode: QrCode creation failed due to error at bank or wallet gateway is not defined');
+        $this->expectException(BadRequestException::class);
 
         $output = [
             "response" => [
@@ -656,9 +654,11 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testCreateQrWithCloseOnDemandEnabled()
     {
+        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
+
+        $this->mockSplitzTreatment($output);
         $this->setMockRazorxTreatment(
             [
-                RazorxTreatment::DEDICATED_TERMINAL_QR_CODE      => RazorxTreatment::RAZORX_VARIANT_ON,
                 RazorxTreatment::DISABLE_QR_CODE_ON_DEMAND_CLOSE => RazorxTreatment::RAZORX_VARIANT_ON
             ]);
 
@@ -675,7 +675,20 @@ class UpiYesBankQRCodeTest extends TestCase
 
     public function testCreateBharatQrCodeWithDedicatedTerminal()
     {
-        $this->enableRazorXTreatmentForQrDedicatedTerminal();
+        $output = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                            "key" => "result",
+                            "value" => "on"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
 
         $response = $this->createQrCode();
 

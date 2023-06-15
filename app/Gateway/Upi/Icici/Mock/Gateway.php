@@ -36,13 +36,6 @@ class Gateway extends Icici\Gateway
     public function getQrRefId($input): string
     {
 
-        if (($input['qr_code']['name'] === 'testCreateSingleUseQrCodeWithCloseByErrorFromGateway') or
-            (($input['qr_code']['status'] === 'closed') and
-             ($input['qr_code']['name'] === 'testCloseSingleUseQrCodeWithCloseByErrorFromGateway')))
-        {
-            return throw new Exception\RuntimeException('Invalid Response');
-        }
-
         return 'icicirefID';
     }
 }

@@ -51,5 +51,4 @@ class Fields
     const PAYER_ACCOUNT_TYPE        = 'PayerAccountType';
     const VALIDITY_END_DATE_TIME    = 'validityEndDateTime';
     const UPDATE                    = 'update';
-    const REF_ID                    = 'refId';
 }
