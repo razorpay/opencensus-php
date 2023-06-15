@@ -124,6 +124,8 @@ const HelpSection = ({ user, history, org, fetchTicketsRaisedByAgents: _fetchTic
     ? 'https://beta-api.stage.razorpay.in/v1'
     : 'https://api.razorpay.com/v1';
 
+  const isPartnerDashboard = history.location.pathname.includes('/partners');
+
   return (
     <ErrorBoundary
       resetOnProps
@@ -155,6 +157,7 @@ const HelpSection = ({ user, history, org, fetchTicketsRaisedByAgents: _fetchTic
           host={location.origin}
           splitzHost={splitzHost}
           isDev={isDev}
+          isPartnerDashboard={isPartnerDashboard}
         />
       </Suspense>
     </ErrorBoundary>
