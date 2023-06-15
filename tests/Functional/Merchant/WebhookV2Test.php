@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use Illuminate\Http\UploadedFile;
+use RZP\Models\Merchant\Webhook\Event;
 use Illuminate\Database\Eloquent\Factory;
 
 use Mail;
@@ -811,6 +812,59 @@ class WebhookV2Test extends TestCase
 
         //Pure-platform partner specific events should arrive in response.
         $this->assertContains('account.app.authorization_revoked', $response);
+    }
+
+    public function testGetWebhookEventsWithAccountStatusEventsForPurePlatformPartner()
+    {
+        $this->fixtures->merchant->markPartner('pure_platform', '10000000000000');
+
+        $response = $this->startTest();
+
+        $this->assertContains(Event::ACCOUNT_ACTIVATED, $response);
+        $this->assertContains(Event::ACCOUNT_REJECTED, $response);
+        $this->assertContains(Event::ACCOUNT_SUSPENDED, $response);
+        $this->assertContains(Event::ACCOUNT_UNDER_REVIEW, $response);
+        $this->assertContains(Event::ACCOUNT_NEEDS_CLARIFICATION, $response);
+        $this->assertContains(Event::ACCOUNT_ACTIVATED_KYC_PENDING, $response);
+    }
+
+    public function testGetWebhookEventsWithAccountStatusEventsBasedOnFeature()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::SUBMERCHANT_ONBOARDING]);
+
+        $response = $this->startTest($this->testData['testGetWebhookEventsWithAccountStatusEventsForPurePlatformPartner']);
+
+        $this->assertContains(Event::ACCOUNT_ACTIVATED, $response);
+        $this->assertContains(Event::ACCOUNT_REJECTED, $response);
+        $this->assertContains(Event::ACCOUNT_SUSPENDED, $response);
+        $this->assertContains(Event::ACCOUNT_UNDER_REVIEW, $response);
+        $this->assertContains(Event::ACCOUNT_NEEDS_CLARIFICATION, $response);
+        $this->assertContains(Event::ACCOUNT_ACTIVATED_KYC_PENDING, $response);
+    }
+
+    public function testGetWebhookEventsWithAccountStatusEventsForAggregatorPartner()
+    {
+        $this->fixtures->merchant->markPartner('aggregator', '10000000000000');
+
+        $response = $this->startTest($this->testData['testGetWebhookEventsWithAccountStatusEventsForPurePlatformPartner']);
+
+        $this->assertNotContains(Event::ACCOUNT_ACTIVATED, $response);
+        $this->assertNotContains(Event::ACCOUNT_REJECTED, $response);
+        $this->assertNotContains(Event::ACCOUNT_SUSPENDED, $response);
+        $this->assertNotContains(Event::ACCOUNT_UNDER_REVIEW, $response);
+        $this->assertNotContains(Event::ACCOUNT_NEEDS_CLARIFICATION, $response);
+        $this->assertNotContains(Event::ACCOUNT_ACTIVATED_KYC_PENDING, $response);
+    }
+
+    public function testGetWebhookEventsForDuplicateAccountStatusEvents()
+    {
+        $this->fixtures->merchant->markPartner('pure_platform', '10000000000000');
+        $this->fixtures->merchant->addFeatures(['submerchant_onboarding']);
+
+        $response = $this->startTest($this->testData['testGetWebhookEventsWithAccountStatusEventsForPurePlatformPartner']);
+
+        $events = array_intersect($response, Event::$eventsApplicableBasedOnFeatureOrPartnerType);
+        self::assertCount(6, $events);
     }
 
     private function setPurePlatformContext(): void

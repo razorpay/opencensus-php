@@ -1729,5 +1729,24 @@ return [
             ],
         ],
     ],
+
+    'testGetWebhookEventsWithAccountStatusEventsForPurePlatformPartner' => [
+        'request' => [
+            'url'   => '/webhooks/events/all',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'payment.authorized',
+                'payment.failed',
+                'payment.captured',
+                'payment.dispute.created',
+                'order.paid',
+                'invoice.paid',
+                'invoice.partially_paid',
+                'invoice.expired',
+            ]
+        ]
+    ],
 ];
 

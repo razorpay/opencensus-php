@@ -1013,6 +1013,21 @@ class Event
 
     public static $eventsToPartnerTypeMap = [
         self::ACCOUNT_APP_AUTHORIZATION_REVOKED        => [Merchant\Constants::PURE_PLATFORM],
+        self::ACCOUNT_ACTIVATED                        => [Merchant\Constants::PURE_PLATFORM],
+        self::ACCOUNT_ACTIVATED_KYC_PENDING            => [Merchant\Constants::PURE_PLATFORM],
+        self::ACCOUNT_NEEDS_CLARIFICATION              => [Merchant\Constants::PURE_PLATFORM],
+        self::ACCOUNT_REJECTED                         => [Merchant\Constants::PURE_PLATFORM],
+        self::ACCOUNT_SUSPENDED                        => [Merchant\Constants::PURE_PLATFORM],
+        self::ACCOUNT_UNDER_REVIEW                     => [Merchant\Constants::PURE_PLATFORM],
+    ];
+
+    public static array $eventsApplicableBasedOnFeatureOrPartnerType = [
+        self::ACCOUNT_REJECTED,
+        self::ACCOUNT_SUSPENDED,
+        self::ACCOUNT_ACTIVATED,
+        self::ACCOUNT_UNDER_REVIEW,
+        self::ACCOUNT_NEEDS_CLARIFICATION,
+        self::ACCOUNT_ACTIVATED_KYC_PENDING
     ];
 
     /**
@@ -1054,9 +1069,25 @@ class Event
 
         $featureFilteredEvents = static::filterByFeatures($productFilteredEvents, $merchant->getEnabledFeatures());
 
-        $filteredEvents = static::filterByPartnerType($featureFilteredEvents, $merchant->getPartnerType());
+        $partnerTypeFilteredEvents = static::filterByPartnerType($featureFilteredEvents, $merchant->getPartnerType());
 
-        return $filteredEvents;
+        return array_merge($partnerTypeFilteredEvents, static::getFeaturesAvailableByFeatureOrPartnerType($productFilteredEvents, $merchant));
+    }
+
+    public static function getFeaturesAvailableByFeatureOrPartnerType($originalEvents, Merchant\Entity $merchant) : array
+    {
+        $eventsListApplicable = Event::$eventsApplicableBasedOnFeatureOrPartnerType;
+
+        $events = array_filter($originalEvents, function ($key, $value) use ($eventsListApplicable)
+        {
+            return in_array($value, $eventsListApplicable);
+        }, ARRAY_FILTER_USE_BOTH);
+
+        $featureFilteredEvents = static::filterByFeatures($events, $merchant->getEnabledFeatures());
+
+        $productFilteredEvents = static::filterByPartnerType($events, $merchant->getPartnerType());
+
+        return array_merge($featureFilteredEvents, $productFilteredEvents);
     }
 
     public static function filterByProductOrigin(array $events): array
