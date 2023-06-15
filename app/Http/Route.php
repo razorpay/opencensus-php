@@ -14904,6 +14904,9 @@ class Route
             'qr_code_fetch',
             'qr_payment_fetch_for_qr_code',
             'qr_code_fetch_multiple',
+            'payment_refund',
+            'payment_fetch_refunds',
+            'payment_fetch_refund_by_id',
         ],
 
         'no_code_apps' => [
