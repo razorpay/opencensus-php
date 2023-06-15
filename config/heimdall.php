@@ -126,6 +126,14 @@ return [
                 'assignable'  => true,
                 'workflow'    => true,
             ],
+            Permission::VIEW_BANKING_CONFIGS => [
+                'description' => 'view banking DCS configs',
+                'assignable'  => true,
+            ],
+             Permission::UPSERT_BANKING_CONFIGS => [
+                'description' => 'upsert banking DCS configs',
+                'assignable'  => true,
+            ]
         ],
 
         PermissionCategory::MERCHANT_REQUEST => [

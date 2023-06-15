@@ -6,15 +6,16 @@ use Mail;
 use Event;
 use Mockery;
 use Carbon\Carbon;
-
 use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Terminal;
 use RZP\Constants\Timezone;
+use RZP\Models\BankingConfig;
 use RZP\Error\PublicErrorCode;
 use RZP\Models\Feature\Entity;
 use RZP\Services\RazorXClient;
+use RZP\Models\NetbankingConfig;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Traits\MocksRazorx;
 use RZP\Error\PublicErrorDescription;
@@ -30,6 +31,7 @@ use RZP\Mail\Merchant\MerchantDashboardEmail;
 use RZP\Tests\Functional\Helpers\FileUploadTrait;
 use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Merchant\Request as MerchantRequest;
+use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
@@ -39,6 +41,7 @@ use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
 use RZP\Models\Merchant\Store\ConfigKey as StoreConfigKey;
 use RZP\Models\Base\QueryCache\Constants as CacheConstants;
 use RZP\Mail\Merchant\FeatureEnabled as FeatureEnabledEmail;
+use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
 use RZP\Tests\Functional\Helpers\VirtualAccount\VirtualAccountTrait;
 
 use function Clue\StreamFilter\fun;
@@ -53,6 +56,8 @@ class FeaturesTest extends OAuthTestCase
     use PaymentTrait;
     use TestsBusinessBanking;
     use WorkflowTrait;
+    use HeimdallTrait;
+
 
     const DEFAULT_MERCHANT_ID    = '10000000000000';
     const ONBOARDING_MERCHANT_ID = '10000000001017';
@@ -311,6 +316,106 @@ class FeaturesTest extends OAuthTestCase
 
         $this->startTest();
     }
+
+    public function mockDCSService()
+    {
+        $dcsConfigService = $this->getMockBuilder( DcsConfigService::class)
+            ->setConstructorArgs([$this->app])
+            ->getMock();
+
+
+        $this->app->instance('dcs_config_service', $dcsConfigService);
+
+        $this->app->dcs_config_service->method('fetchConfiguration')->willReturn([NetbankingConfig\Constants::AUTO_REFUND_OFFSET => 0]);
+
+        $this->app->dcs_config_service->method('createConfiguration')->willReturn([NetbankingConfig\Constants::AUTO_REFUND_OFFSET => 1200]);
+    }
+
+    public function testFetchBankingConfig()
+    {
+        $this->ba->adminAuth();
+
+        $expectedResult = [
+            'rzp/pg/merchant/netbanking/banking_program/NetBankingConfiguration' => [
+                'auto_refund_offset' => [
+                    'type' => "int",
+                    'short_key' => "netbanking_configurations",
+                    "description" => "auto_refund_offset is used to store the delay after auto-refund should happen for a merchant. The existing feature flag 'nb_corporate_refund_delay is being enhanced to make the auto refund limit for CIB txns configurable"
+                ]
+            ],
+            'rzp/pg/org/onboarding/banking_program/Config' => [
+                'assign_custom_hardlimit' => [
+                    'type' => "bool",
+                    'short_key' => "custom_hard_limit_configurations",
+                    'description' => "enabling this flag on org, allow them to change change the hard transaction limits for its merchants"
+                ],
+                'custom_transaction_limit_for_kyc_pending' => [
+                    'type' => "int",
+                    'short_key' => "custom_hard_limit_configurations",
+                    'description' => "This limit is the total amount for which its merchant can do collections and gets settled for"
+                ]
+            ]
+        ];
+
+        $res = $this->startTest();
+
+        $this->assertEquals($res, $expectedResult);
+    }
+
+    public function testUpsertBankingConfig()
+    {
+        $this->ba->adminAuth();
+
+        $this->mockDCSService();
+
+        $this->startTest();
+    }
+
+
+    public function testUpsertBankingConfigNegative1()
+    {
+        $this->ba->adminAuth();
+
+        $this->mockDCSService();
+
+        $this->startTest();
+    }
+
+    public function testUpsertBankingConfigNegative2()
+    {
+        $this->org = $this->fixtures->create('org', [
+            'email'         => 'random@rzp.com',
+            'email_domains' => 'rzp.com',
+            'auth_type'     => 'password',
+        ]);
+
+        $this->orgId = $this->org->getId();
+
+        $this->hostName = 'testing.testing.com';
+
+        $this->orgHostName = $this->fixtures->create('org_hostname', [
+            'org_id'        => $this->orgId,
+            'hostname'      => $this->hostName,
+        ]);
+
+        $this->authToken = $this->getAuthTokenForOrg($this->org);
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->mockDCSService();
+
+        $this->startTest();
+    }
+
+    public function testGetBankingConfig()
+    {
+        $this->ba->adminAuth();
+
+        $this->mockDCSService();
+
+        $this->startTest();
+    }
+
 
     public function testMultiRemoveFeatureApplicationId()
     {

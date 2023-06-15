@@ -238,7 +238,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DCS_EDIT_SERVICE_CONFIG_REQUEST                       = 'DCS_EDIT_SERVICE_CONFIG_REQUEST';
     const DCS_EDIT_SERVICE_CONFIG_RESPONSE                      = 'DCS_EDIT_SERVICE_CONFIG_RESPONSE';
 
-
+    const DCS_FETCH_BANKING_CONFIGS                             = 'DCS_FETCH_BANKING_CONFIGS';
+    const DCS_UPSERT_BANKING_CONFIG                             = 'DCS_UPSERT_BANKING_CONFIG';
+    const DCS_GET_BANKING_CONFIG                                = 'DCS_GET_BANKING_CONFIG';
 
     // payout links
     const PAYOUT_LINK_GET_MODE_AND_MERCHANT                     = "PAYOUT_LINK_GET_MODE_AND_MERCHANT";

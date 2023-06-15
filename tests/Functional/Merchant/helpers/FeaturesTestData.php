@@ -3,7 +3,9 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Models\Feature\Constants;
+use RZP\Models\NetbankingConfig;
 use RZP\Error\PublicErrorDescription;
+
 
 return [
     'updateFeatureAsMerchant' => [
@@ -2830,6 +2832,114 @@ return [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
+    ],
+
+
+    'testFetchBankingConfig' => [
+        'request'  => [
+            'url'     => '/all_banking_configs',
+            'method'  => 'get',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+
+    'testUpsertBankingConfig' => [
+        'request'  => [
+            'url'     => '/banking_configs_upsert',
+            'method'  => 'post',
+            'content' => [
+                'key' => NetbankingConfig\Constants::KEY,
+                'field_name' => NetbankingConfig\Constants::AUTO_REFUND_OFFSET,
+                'field_value' => 122,
+                "short_key" => "netbanking_configurations",
+                'entity_id' => '10000000000000'
+            ]
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testUpsertBankingConfigNegative1' => [
+        'request'  => [
+            'url'     => '/banking_configs_upsert',
+            'method'  => 'post',
+            'content' => [
+                'key' => "rzp/pg/merchant/emandate/banking_program/NetBankingConfiguration",
+                "short_key" => "netbanking_configurations",
+                'field_name' => NetbankingConfig\Constants::AUTO_REFUND_OFFSET,
+                'field_value' => 122,
+                'entity_id' => '10000000000000'
+            ]
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'description' => "key rzp/pg/merchant/emandate/banking_program/NetBankingConfiguration isn't owned by banking"
+        ],
+    ],
+
+
+    'testUpsertBankingConfigNegative2' => [
+        'request'  => [
+            'url'     => '/banking_configs_upsert',
+            'method'  => 'post',
+            'content' => [
+                'key' => NetbankingConfig\Constants::KEY,
+                "short_key" => "netbanking_configurations",
+                'field_name' => NetbankingConfig\Constants::AUTO_REFUND_OFFSET,
+                'field_value' => 122,
+                'entity_id' => '10000000000000'
+            ]
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_UNAUTHORIZED,
+        ],
+    ],
+
+
+    'testGetBankingConfig' => [
+        'request'  => [
+            'url'     => '/banking_configs',
+            'method'  => 'get',
+            'content' => [
+                'key' => NetbankingConfig\Constants::KEY,
+                "short_key" => "netbanking_configurations",
+                'fields' => [
+                    NetbankingConfig\Constants::AUTO_REFUND_OFFSET
+                ],
+                'entity_id' => '10000000000000'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'auto_refund_offset' => 0,
+            ],
+            'status_code' => 200,
+        ],
     ],
 
     'testLedgerReverseShadowFeatureManualAddition' => [

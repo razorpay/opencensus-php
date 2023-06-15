@@ -1127,10 +1127,14 @@ class Route
         'edit_emandate_merchant_configs'           => ['patch',     'emandate/merchant_configs',                      'EMandateController@editBulkEmandateConfigs'                       ],
 
         // Routes for netbanking configs
-        'fetch_netbanking_configs'                 => ['get',        'netbanking/merchant_configs',                    'NetbankingController@fetchNetbankingConfigs'                          ],
-        'create_netbanking_configs'                => ['post',       'netbanking/merchant_configs',                    'NetbankingController@createNetBankingConfigs'                          ],
-        'edit_netbanking_configs'                  => ['put',        'netbanking/merchant_configs',                    'NetbankingController@editNetbankingConfigs'                          ],
+        'fetch_netbanking_configs'                 => ['get',        'netbanking/merchant_configs',                    'NetbankingController@fetchNetbankingConfigs'                      ],
+        'create_netbanking_configs'                => ['post',       'netbanking/merchant_configs',                    'NetbankingController@createNetBankingConfigs'                     ],
+        'edit_netbanking_configs'                  => ['put',        'netbanking/merchant_configs',                    'NetbankingController@editNetbankingConfigs'                       ],
 
+        // Routes for DCS banking configs
+        'fetch_all_banking_configs'                => ['get',        'all_banking_configs',                          'BankingConfigController@fetchAllBankingConfigs'                    ],
+        'get_banking_config'                       => ['get',        'banking_configs',                              'BankingConfigController@getBankingConfig'                          ],
+        'edit_banking_configs'                     => ['post',       'banking_configs_upsert',                       'BankingConfigController@upsertBankingConfigs'                      ],
 
         'test_mailgun'                             => ['post',     'test_mailgun',                                   'ReconciliatorController@testMailgunFlow'                        ],
 
@@ -8314,6 +8318,9 @@ class Route
         'create_netbanking_configs',
         'edit_netbanking_configs',
 
+        'fetch_all_banking_configs',
+        'get_banking_config',
+        'edit_banking_configs',
         'fetch_merchant_da_payout_mode_config',
         'create_merchant_da_payout_mode_config',
         'edit_merchant_da_payout_mode_config',
@@ -8775,6 +8782,9 @@ class Route
         'fetch_merchant_da_payout_mode_config'     => Permission::MANAGE_PAYOUT_MODE_CONFIG,
         'create_merchant_da_payout_mode_config'    => Permission::MANAGE_PAYOUT_MODE_CONFIG,
         'edit_merchant_da_payout_mode_config'      => Permission::MANAGE_PAYOUT_MODE_CONFIG,
+        'fetch_all_banking_configs'                => Permission::VIEW_BANKING_CONFIGS,
+        'get_banking_config'                       => Permission::VIEW_BANKING_CONFIGS,
+        'edit_banking_configs'                     => Permission::UPSERT_BANKING_CONFIGS,
 
         'sub_virtual_account_create'               => Permission::ADMIN_SUB_VIRTUAL_ACCOUNT,
         'sub_virtual_account_list_admin'           => Permission::ADMIN_SUB_VIRTUAL_ACCOUNT,
@@ -13437,6 +13447,9 @@ class Route
             'create_netbanking_configs',
             'edit_netbanking_configs',
 
+            'fetch_all_banking_configs',
+            'get_banking_config',
+            'edit_banking_configs',
             'fetch_merchant_da_payout_mode_config',
             'create_merchant_da_payout_mode_config',
             'edit_merchant_da_payout_mode_config',

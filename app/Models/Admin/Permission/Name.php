@@ -99,6 +99,8 @@ class Name
     const EDIT_MERCHANT_CONFIRM               = 'edit_merchant_confirm';
     const CREATE_BENEFICIARY_FILE             = 'create_beneficiary_file';
     const CREATE_NETBANKING_REFUND            = 'create_netbanking_refund';
+    const VIEW_BANKING_CONFIGS                = 'view_banking_configs';
+    const UPSERT_BANKING_CONFIGS              = 'upsert_banking_configs';
     const CREATE_EMI_FILES                    = 'create_emi_files';
     const CREATE_SETTLEMENT_INITIATE          = 'create_settlement_initiate';
     const CHECK_TERMINAL_SECRET               = 'check_terminal_secret';
