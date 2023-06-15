@@ -80,4 +80,34 @@ return [
             ],
         ],
     ],
+    'testIciciOtpAuth' => [
+        'request'   => [
+            'method'    => 'POST',
+            'content'   => [
+                'type'  => 'otp',
+                'otp'   => '111111'
+            ]
+        ],
+        'response'  => [
+            'content'     => [],
+            'status_code' => 200,
+        ],
+    ],
+    'testIciciIncorrectOtp' => [
+        'request'   => [
+            'method'    => 'POST',
+            'content'   => [
+                'type'  => 'otp',
+                'otp'   => '111111'
+            ]
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT,
+        ],
+        'response'  => [
+            'content'     => [],
+            'status_code' => 400,
+        ],
+    ],
 ];

@@ -75,7 +75,7 @@ trait OtpResend
         if (($payment->isMethodCardOrEmi() === true) and
             (($payment->getAuthType() === Payment\AuthType::HEADLESS_OTP) or
              ($payment->getAuthType() === Payment\AuthType::IVR)  or
-                ((($payment->getGateway() === Payment\Gateway::PAYSECURE) or ($payment->getGateway() === Payment\Gateway::AXIS_MIGS) or ($payment->getGateway() === Payment\Gateway::HITACHI) or ($payment->getGateway() === Payment\Gateway::KOTAK_DEBIT_EMI) or ($payment->getGateway() === Payment\Gateway::INDUSIND_DEBIT_EMI) or ($payment->getGateway() === Payment\Gateway::AXIS_TOKENHQ)) and
+                ((($payment->getGateway() === Payment\Gateway::PAYSECURE) or ($payment->getGateway() === Payment\Gateway::AXIS_MIGS) or ($payment->getGateway() === Payment\Gateway::HITACHI) or ($payment->getGateway() === Payment\Gateway::KOTAK_DEBIT_EMI) or ($payment->getGateway() === Payment\Gateway::INDUSIND_DEBIT_EMI) or ($payment->getGateway() === Payment\Gateway::AXIS_TOKENHQ) or ($payment->getGateway()=== Payment\Gateway::ICICI)) and
                     ($payment->getAuthType() === Payment\AuthType::OTP))))
         {
             if ($payment->getCpsRoute() === Payment\Entity::CARD_PAYMENT_SERVICE)
@@ -150,7 +150,8 @@ trait OtpResend
         //Otpresend for Ivr, paysecures requires the card details
         if (($payment->getAuthType() === Payment\AuthType::IVR) or
             ($payment->getGateway() === Payment\Gateway::PAYSECURE) or
-            ($payment->getGateway() === Payment\Gateway::KOTAK_DEBIT_EMI)
+            ($payment->getGateway() === Payment\Gateway::KOTAK_DEBIT_EMI) or
+            ($payment->getGateway() === Payment\Gateway::ICICI)
         )
         {
             $this->setCardAndMerchantDetails($payment,$gatewayInput);

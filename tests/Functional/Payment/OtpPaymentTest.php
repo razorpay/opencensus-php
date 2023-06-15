@@ -3201,6 +3201,49 @@ class OtpPaymentTest extends TestCase
         self::assertEquals('mpi_enstage', $payment['gateway']);
     }
 
+    public function testIciciOtpAuth()
+    {
+        $this->fixtures->create('terminal:icici', [
+            'type' => [
+                'non_recurring' => '1'
+            ]
+        ]);
+
+        $this->mockCardVault();
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds' => '1',
+                'otp' => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '5567630000002004';
+        $payment['auth_type'] = 'otp';
+
+        $this->setOtp('213433');
+        $this->doAuthPayment($payment);
+        $payment= $this->getDbLastEntity('payment');
+        $data = $this->testData[__FUNCTION__];
+
+        $url = $this->getOtpSubmitUrl($payment);
+
+        $data['request']['url'] = $url;
+
+        $this->runRequestResponseFlow($data);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        self::assertEquals('authorized', $payment['status']);
+        self::assertEquals('otp', $payment['auth_type']);
+    }
+
     public function testExpressPayPreferredAuth()
     {
         $this->fixtures->create('terminal:shared_hitachi_terminal', [

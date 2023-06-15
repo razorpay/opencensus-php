@@ -23,6 +23,9 @@ class TerminalsService extends BaseTerminalsService
             case 'fulcrum':
                 $response['data']['gateway_acquirer'] = 'ratn';
                 break;
+            case 'icici':
+                $response['data']['gateway_acquirer'] = 'icici';
+                break;
             case 'upi_juspay':
                 $response['terminal'] = $terminals[0];
                 break;

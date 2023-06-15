@@ -280,6 +280,7 @@ class Gateway
         self::HDFC_EZETAP  => [self::ACQUIRER_HDFC],
         self::PAYSECURE    => [self::ACQUIRER_AXIS],
         self::AXIS_TOKENHQ => [self::ACQUIRER_AXIS],
+        self::ICICI        => [self::ACQUIRER_ICIC],
     ];
 
     const GATEWAY_ACQUIRER_COUNTRY_MAP = [
@@ -711,6 +712,7 @@ class Gateway
         Payment\Gateway::WALLET_PAYZAPP,
         Payment\Gateway::WALLET_MPESA,
         Payment\Gateway::CARD_FSS,
+        Payment\Gateway::ICICI,
         Payment\Gateway::WALLET_PAYUMONEY,
         Payment\Gateway::WALLET_FREECHARGE,
         Payment\Gateway::WALLET_AMAZONPAY,
@@ -1593,6 +1595,7 @@ class Gateway
             self::MPI_ENSTAGE,
             self::HITACHI,
             self::CARD_FSS,
+            self::ICICI,
             self::MPGS,
             self::ISG,
             self::PAYU,
@@ -1933,6 +1936,7 @@ class Gateway
         self::KOTAK_DEBIT_EMI,
         self::INDUSIND_DEBIT_EMI,
         self::BAJAJ,
+        self::ICICI,
         self::BILLDESK_OPTIMIZER,
     ];
 
@@ -2092,6 +2096,11 @@ class Gateway
             Network::RUPAY,
         ],
         self::CARD_FSS => [
+            Network::MC,
+            Network::VISA,
+            Network::RUPAY,
+        ],
+        self::ICICI => [
             Network::MC,
             Network::VISA,
             Network::RUPAY,
@@ -3535,6 +3544,7 @@ class Gateway
         Gateway::CHECKOUT_DOT_COM => Gateway::CHECKOUT_DOT_COM,
         Gateway::INGENICO         => Gateway::INGENICO,
         Gateway::BILLDESK_OPTIMIZER => Gateway::BILLDESK_OPTIMIZER,
+        Gateway::ICICI            => Gateway::ICICI,
         Gateway::OPTIMIZER_RAZORPAY => Gateway::OPTIMIZER_RAZORPAY,
     ];
 
@@ -4530,6 +4540,7 @@ class Gateway
             self::KOTAK_DEBIT_EMI,
             self::INDUSIND_DEBIT_EMI,
             self::AXIS_TOKENHQ,
+            self::ICICI,
             self::OPTIMIZER_RAZORPAY,
         ];
 
@@ -4574,6 +4585,7 @@ class Gateway
             self::KOTAK_DEBIT_EMI,
             self::INDUSIND_DEBIT_EMI,
             self::AXIS_TOKENHQ,
+            self::ICICI,
             self::OPTIMIZER_RAZORPAY,
         ];
 

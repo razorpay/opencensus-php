@@ -39,6 +39,9 @@ abstract class Base
         if ($payment->getGateway() === Gateway::AXIS_TOKENHQ) {
             return [Payment\AuthType::OTP];
         }
+        if ($payment->getGateway() === Gateway::ICICI) {
+            return [Payment\AuthType::OTP];
+        }
 
         $validAuths = [];
 

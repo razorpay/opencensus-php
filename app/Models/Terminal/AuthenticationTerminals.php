@@ -425,5 +425,13 @@ class AuthenticationTerminals
             self::GATEWAY_AUTH_TYPE         => AuthType::_3DS,
             self::GATEWAY_AUTH_VERSION      => "v2",
         ],
+        [
+            self::MERCHANT_ID               => Account::SHARED_ACCOUNT,
+            self::GATEWAY                   => Gateway::ICICI,
+            self::AUTHENTICATION_GATEWAY    => Gateway::ICICI,
+            self::AUTH_TYPE                 => AuthType::OTP,
+            self::GATEWAY_AUTH_TYPE         => AuthType::OTP,
+        ],
+
     ];
 }

@@ -5387,4 +5387,22 @@ class Terminal extends Base
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
+
+    public function createIcici(array $attributes = [])
+    {
+        $defaultValues = [
+            'id'                   => '100icicidedtml',
+            'merchant_id'          => '10000000000000',
+            'gateway'              => 'icici',
+            'card'                 => 1,
+            'gateway_merchant_id'       => 'icici_merchant',
+            'gateway_terminal_id'       => 'iciciDebit123',
+            'gateway_terminal_password' => 'password',
+            'gateway_secure_secret'     => '12345678',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
 }

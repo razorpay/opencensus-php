@@ -150,6 +150,7 @@ return [
         'hdfc_ezetap',
         'offline_hdfc',
         'currency_cloud',
+        'icici',
         'upi_kotak',
         "upi_rzprbl",
     ],

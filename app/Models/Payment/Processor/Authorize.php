@@ -8823,7 +8823,7 @@ trait Authorize
                     }
                 }
 
-                if($this->canRunPaysecureOTP($payment) === true or ($this->canRunAxisTokenHQOTP($payment) === true))
+                if($this->canRunPaysecureOTP($payment) === true or ($this->canRunAxisTokenHQOTP($payment) === true) or ($this->canRunICICIOTP($payment) === true))
                 {
                     return true;
                 }
@@ -8930,6 +8930,16 @@ trait Authorize
     {
         if (($payment->getGateway() === Payment\Gateway::PAYSECURE) and
             ($payment->getAuthType() === Payment\AuthType::OTP))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function canRunICICIOTP(Payment\Entity $payment)
+    {
+        if ($payment->getGateway() === Payment\Gateway::ICICI)
         {
             return true;
         }
@@ -10813,6 +10823,10 @@ trait Authorize
         if (($this->canRunHeadlessOtpFlow($payment, $gatewayInput) === true) and
             ($this->headlessError === false))
         {
+            return false;
+        }
+
+        if (($this->isAuthTypeOtp($payment)) and ($payment->getGateway() === Gateway::ICICI)){
             return false;
         }
 

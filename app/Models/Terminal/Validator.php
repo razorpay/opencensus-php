@@ -133,6 +133,7 @@ class Validator extends Base\Validator
         Payment\Gateway::NETBANKING_HDFC,
         Payment\Gateway::ENACH_NPCI_NETBANKING,
         Payment\Gateway::EMI_SBI,
+        Payment\Gateway::ICICI,
         Payment\Gateway::WALLET_OLAMONEY,
         Payment\Gateway::PAYTM,
         Payment\Gateway::BAJAJFINSERV,
@@ -2133,6 +2134,35 @@ class Validator extends Base\Validator
         Entity::STATUS                      => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string',
     ];
+
+    protected static $iciciTerminalRules = [
+             Entity::GATEWAY                    => 'required|in:icici',
+             Entity::GATEWAY_MERCHANT_ID        => 'required|alpha_num|size:12',
+             Entity::GATEWAY_TERMINAL_ID        => 'required|alpha_num|size:8',
+             Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+             Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
+             Entity::INTERNATIONAL              => 'sometimes|boolean',
+             Entity::CURRENCY                   => 'sometimes|array',
+            Entity::CARD                       => 'sometimes|boolean|in:1',
+            Entity::TYPE                       => 'sometimes|array',
+            Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+            Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4',
+            Entity::NETWORK_CATEGORY           => 'sometimes|string',
+        ];
+
+        protected static $iciciEditTerminalRules = [
+            Entity::GATEWAY_MERCHANT_ID        => 'sometimes|alpha_num|size:12',
+            Entity::GATEWAY_TERMINAL_ID        => 'sometimes|alpha_num|size:8',
+            Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+            Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometime|string',
+            Entity::INTERNATIONAL              => 'sometimes|boolean',
+            Entity::TYPE                       => 'sometimes|array',
+            Entity::GATEWAY_ACQUIRER           => 'sometimes|in:icic',
+            Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
+            Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:50',
+            Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+            Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4'
+        ];
 
     protected static $upiHulkEditTerminalRules = [
         Entity::TYPE                       => 'sometimes|array',

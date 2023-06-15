@@ -63,6 +63,7 @@ trait PaymentTrait
     use PaymentWalletAirtelMoneyTrait;
     use PaymentKotakDebitEmiTrait;
     use PaymentIndusindDebitEmiTrait;
+    use PaymentIciciTrait;
     use PaymentBilldeskOptimizerTrait;
 
     use RequestResponseFlowTrait
