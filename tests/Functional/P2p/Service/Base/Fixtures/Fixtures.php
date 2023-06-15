@@ -8,6 +8,7 @@ use Hulk\Constants\Entity;
 use Hulk\Models\Merchant\Account;
 use Hulk\Models\Base\UniqueIdEntity;
 use RZP\Tests\P2p\Service\Base\Traits;
+use RZP\Tests\Functional\Fixtures\Fixtures as BaseFixtures;
 use RZP\Tests\P2p\Service\Base\Constants;
 
 /**
@@ -337,5 +338,18 @@ class Fixtures extends Constants
         }
 
         $this->throwTestingException('Property not found in device set', [$property]);
+    }
+
+    public function enableFeatures($featureName)
+    {
+        $BaseFixtures = new BaseFixtures();
+
+        $attributes = [
+            'name'      => $featureName,
+            'entity_id' => $this->merchant->getId(),
+            'entity_type' => 'merchant'
+        ];
+
+        $BaseFixtures->create('feature',$attributes);
     }
 }

@@ -152,6 +152,7 @@ class Shared
     const UPI_AIRTEL_RAZORPAY_TERMINAL       = '100UPIArtlTmnl';
     const UPI_AIRTEL_INTENT_TERMINAL         = '10UpiIntAirtel';
     const UPI_KOTAK_RAZORPAY_TERMINAL        = '100UPIKotaTmnl';
+    const UPI_AXISOLIVE_TPV_TERMINAL         = '100UPIAOTpvTml';
     const UPI_RZPRBL_TERMINAL                = '100UPIRpRlTmnl';
     const UPI_CITI_RAZORPAY_TERMINAL         = '100UPICitiTmnl';
     const WORLDLINE_TERMINAL                 = '1000WldlineTml';

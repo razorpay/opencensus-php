@@ -251,6 +251,17 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchBankAccountByTypeCustomerAndApplyLimit($entityId, $merchantId, $limit)
+    {
+        return $this->newQuery()
+                    ->where(BankAccount\Entity::TYPE, '=', Type::CUSTOMER)
+                    ->where(BankAccount\Entity::ENTITY_ID, '=', $entityId)
+                    ->where(BankAccount\Entity::MERCHANT_ID, '=', $merchantId)
+                    ->latest()
+                    ->limit($limit)
+                    ->get();
+    }
+
     public function getCountOfBankAccountsCreatedBetween($from, $to)
     {
         return $this->newQuery()

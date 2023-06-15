@@ -16,6 +16,7 @@ class Validator extends Base\Validator
     {
         $rules = $this->makeRules([
                       Entity::CUSTOMER_ID  => 'required',
+                      Entity::ORDER_ID  => 'sometimes',
                   ]);
 
         return $rules;

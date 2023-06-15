@@ -1980,4 +1980,9 @@ class Core extends Base\Core
 
         return [$segmentEventName, $segmentProperties];
     }
+
+    public function fetchCustomerBankAccountByCustomerIdAndMerchantId($entityId, $merchantId , $limit)
+    {
+        return $this->repo->bank_account->fetchBankAccountByTypeCustomerAndApplyLimit($entityId, $merchantId , $limit);
+    }
 }

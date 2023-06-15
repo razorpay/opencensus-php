@@ -707,6 +707,11 @@ class Core extends Base\Core
         UpdateSyncedOrderPgRouter::dispatch($data);
     }
 
+    public function findByPublicIdAndMerchant(string $id ,Merchant\Entity $merchant)
+    {
+        return $this->repo->order->findByPublicIdAndMerchant($id ,$merchant);
+    }
+
     public function fetchOrdersAndSync(array $input)
     {
         $mode = App::getFacadeRoot()['rzp.mode'];

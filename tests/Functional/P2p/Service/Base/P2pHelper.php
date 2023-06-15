@@ -374,9 +374,17 @@ class P2pHelper
      * @param array $parameter
      * @return P2pRequest
      */
-    protected function request(string $uri, array $parameter = []): P2pRequest
+    protected function request(string $uri, array $parameter = [] , bool $directUrl = false): P2pRequest
     {
-        $request = new P2pRequest($this->makeUri($uri, $parameter));
+        $request = null;
+
+        if($directUrl == true)
+        {
+            $request = new P2pRequest($this->makeDirectUri($uri, $parameter));
+        }
+        else{
+            $request = new P2pRequest($this->makeUri($uri, $parameter));
+        }
 
         $request->server($this->makeServer());
 
@@ -434,9 +442,9 @@ class P2pHelper
      * @param P2pRequest $request
      * @return array
      */
-    protected function post(P2pRequest $request): array
+    protected function post(P2pRequest $request , bool $isDirectCall = false): array
     {
-        return $this->send($request->method('post'));
+        return $this->send($request->method('post') , $isDirectCall);
     }
 
     /**
@@ -456,7 +464,7 @@ class P2pHelper
      * @param P2pRequest $request
      * @return array
      */
-    protected function send(P2pRequest $request): array
+    protected function send(P2pRequest $request , bool $isDirectCall): array
     {
         $this->runRequestHandlers($request);
 
@@ -466,10 +474,12 @@ class P2pHelper
 
         if (env('P2P_LOG_REQUESTS')) info('_LOGGER_ RESPONSE', $response->json());
 
-        $this->runResponseCallbacks($response);
+        if($isDirectCall == false)
+        {
+            $this->runResponseCallbacks($response);
 
-        $this->validateResponseJsonSchema(json_decode($response->content()));
-
+            $this->validateResponseJsonSchema(json_decode($response->content()));
+        }
         return $response->json();
     }
 
@@ -569,7 +579,16 @@ class P2pHelper
         {
             $prefix .= 'customer/';
         }
-        
+
+        return $prefix . sprintf($uri, ...$parameters);
+    }
+
+    protected function makeDirectUri(string $uri, array $parameters)
+    {
+        $url = parse_url($uri);
+
+        $prefix = 'v1/';
+
         return $prefix . sprintf($uri, ...$parameters);
     }
 

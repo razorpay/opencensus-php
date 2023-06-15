@@ -800,6 +800,72 @@ class UpiPaymentServiceTest extends TestCase
         return $this->makeRequestAndGetContent($request);
     }
 
+    protected function createBankAcountForCustomer()
+    {
+
+        $this->ba->privateAuth();
+
+        $this->testData['createBankAcountForCustomer'] = [
+            'request' => [
+                'content' => [
+                    "ifsc_code" => "ICIC0001207",
+                    'account_number' => '04030403040304',
+                    'beneficiary_name'=> 'RATN0000001',
+                    "beneficiary_address1"  => "address 1",
+                    "beneficiary_address2"  => "address 2",
+                    "beneficiary_address3"  => "address 3",
+                    "beneficiary_address4"  => "address 4",
+                    "beneficiary_email"     => "random@email.com",
+                    "beneficiary_mobile"    => "9988776655",
+                    "beneficiary_city"      =>"Kolkata",
+                    "beneficiary_state"     => "WB",
+                    "beneficiary_country"   => "IN",
+                    "beneficiary_pin"      =>"123456"
+                ],
+                'method'    => 'POST',
+                'url'       => '/orders',
+            ],
+            'response' => [
+                'content' => [
+                    'amount'         => 50000,
+                    'currency'       => 'INR',
+                    'receipt'        => 'rcptid42',
+                ],
+            ],
+        ];
+
+        return $this->startTest();
+    }
+
+    protected function createTpvOrderWithoutBankAccount()
+    {
+        $this->fixtures->merchant->enableTpv();
+
+        $this->ba->privateAuth();
+
+        $this->testData['createTpvOrderWithoutBankAccount'] = [
+            'request' => [
+                'content' => [
+                    'amount'         => 50000,
+                    'currency'       => 'INR',
+                    'receipt'        => 'rcptid42',
+                    'method'         => 'upi'
+                ],
+                'method'    => 'POST',
+                'url'       => '/orders',
+            ],
+            'response' => [
+                'content' => [
+                    'amount'         => 50000,
+                    'currency'       => 'INR',
+                    'receipt'        => 'rcptid42',
+                ],
+            ],
+        ];
+
+        return $this->startTest();
+    }
+
     protected function createTpvOrder()
     {
         $this->fixtures->merchant->enableTpv();
@@ -831,6 +897,91 @@ class UpiPaymentServiceTest extends TestCase
             ],
         ];
 
+        return $this->startTest();
+    }
+
+    protected function getTurboPreferences(string $order_id , string $customer_id)
+    {
+        $this->ba->publicAuth();
+
+        // if both order id and customer id are passed pass both of them
+        if($order_id !== '' && $customer_id !== '')
+        {
+            $this->testData['getTurboPreferences'] = [
+                'request'  => [
+                    'content' => [
+                        'order_id' => $order_id,
+                        'customer_id' => $customer_id
+                    ],
+                    'headers' => [
+                        'X-RAZORPAY-VPA-HANDLE' => 'razoraxisolive'
+                    ],
+                    'method'  => 'POST',
+                    'url'     => '/upi/turbo/preferences',
+                ],
+                'response' => [
+                    'content' => [
+                    ],
+                ],
+            ];
+        }
+        // if only order id is passed pass order id
+        else if($order_id !== '')
+        {
+            $this->testData['getTurboPreferences'] = [
+                'request'  => [
+                    'content' => [
+                        'order_id' => $order_id
+                    ],
+                    'headers' => [
+                        'X-RAZORPAY-VPA-HANDLE' => 'razoraxisolive'
+                    ],
+                    'method'  => 'POST',
+                    'url'     => '/upi/turbo/preferences',
+                ],
+                'response' => [
+                    'content' => [
+                    ],
+                ],
+            ];
+        }
+        // if customer id is the only thing that is passed pass only customer id
+        else if($customer_id !== '')
+        {
+            $this->testData['getTurboPreferences'] = [
+                'request'  => [
+                    'content' => [
+                        'customer_id' => $customer_id
+                    ],
+                    'headers' => [
+                        'X-RAZORPAY-VPA-HANDLE' => 'razoraxisolive'
+                    ],
+                    'method'  => 'POST',
+                    'url'     => '/upi/turbo/preferences',
+                ],
+                'response' => [
+                    'content' => [
+                    ],
+                ],
+            ];
+        }
+        else{
+            $this->testData['getTurboPreferences'] = [
+                'request'  => [
+                    'content' => [
+                    ],
+                    'headers' => [
+                        'X-RAZORPAY-VPA-HANDLE' => 'razoraxisolive'
+                    ],
+                    'method'  => 'POST',
+                    'url'     => '/upi/turbo/preferences',
+                ],
+                'response' => [
+                    'content' => [
+                    ],
+                ],
+            ];
+        }
         return $this->startTest();
     }
 

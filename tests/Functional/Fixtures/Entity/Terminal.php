@@ -3947,6 +3947,42 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createUpiAxisOliveTerminal(array $attributes)
+    {
+        $termId = Shared::UPI_AXISOLIVE_TPV_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'upi_axisolive',
+            'gateway_merchant_id'       => 'razorpay upi',
+            'gateway_terminal_id'       => 'nodal account upi axis olive',
+            'gateway_merchant_id2'      => 'razorpay@eazypay',
+            'vpa'                       => 'test@vpa',
+            'enabled'                   => true,
+            'upi'                       => true,
+            'type'                      => [
+                'non_recurring' => '1',
+                'collect'       => '0',
+                'in_app'        => '1',
+            ]
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedUpiAxisOlivetpvTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'id'               => Shared::UPI_AXISOLIVE_TPV_TERMINAL,
+            'tpv'              => 1,
+        ];
+
+        return $this->createUpiAxisOliveTerminal($attributes);
+    }
+
     public function createSharedUpiAxisIntentTpvTerminal(array $override = [])
     {
         $attributes = [
