@@ -4728,20 +4728,7 @@ class Core extends Base\Core
 
         if (isset($merchant) === true)
         {
-            $variant = $this->app->razorx->getTreatment(
-                $merchant->getId(),
-                Merchant\RazorxTreatment::SECURE_OTP_CONTEXT,
-                $this->mode
-            );
-
-            if ($variant === 'on')
-            {
-                $context = $this->getContextFromAction($merchant, $user, $input, $token);
-            }
-            else
-            {
-                $context = $this->getDefaultContextFromActionWithMerchant($merchant, $user,  $input[Entity::ACTION], $token);
-            }
+            $context = $this->getContextFromAction($merchant, $user, $input, $token);
         }
         else
         {

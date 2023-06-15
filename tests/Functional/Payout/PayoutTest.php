@@ -5754,8 +5754,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithOtpWithSecureContext()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT      => 'on',
-                                       RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockRazorxTreatment([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
 
         $testData                                = $this->testData['testCreatePayoutWithOtp'];
         $testData['request']['url']              = '/payouts_with_otp';
@@ -5843,8 +5842,7 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutWithOtpWithInvalidParameters()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT      => 'on',
-                                       RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockRazorxTreatment([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
 
         $testData = &$this->testData[__FUNCTION__];
 

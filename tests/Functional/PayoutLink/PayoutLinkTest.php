@@ -4256,9 +4256,6 @@ class PayoutLinkTest extends TestCase
 
     public function testMetricSentInGenerateOtpFailedForCreatePayoutLinkWithSecureOtpContext()
     {
-        // mocking experiment
-        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'on']);
-
         // mocking payout links service
         $plMock = Mockery::mock('RZP\Services\PayoutLinks');
 
@@ -4281,9 +4278,6 @@ class PayoutLinkTest extends TestCase
 
     public function testMetricSentInGenerateOtpFailedForCreatePayoutLinkWithSecureOtpContextNotSet()
     {
-        // mocking experiment
-        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'off']);
-
         // mocking payout links service
         $plMock = Mockery::mock('RZP\Services\PayoutLinks');
 
@@ -4306,9 +4300,6 @@ class PayoutLinkTest extends TestCase
 
     public function testMetricSentInVerifyOtpFailedForCreatePayoutLinkWithSecureOtpContextSet()
     {
-        // mocking experiment
-        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'on']);
-
         // mocking payout links service
         $plMock = Mockery::mock('RZP\Services\PayoutLinks');
 
@@ -4334,9 +4325,6 @@ class PayoutLinkTest extends TestCase
 
     public function testMetricSentInVerifyOtpFailedForCreatePayoutLinkWithSecureOtpContextNotSet()
     {
-        // mocking experiment
-        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'off']);
-
         // mocking payout links service
         $plMock = Mockery::mock('RZP\Services\PayoutLinks');
 
@@ -4362,9 +4350,6 @@ class PayoutLinkTest extends TestCase
 
     public function testGenerateAndVerifyOtpForCreatePayoutLinkWithSecureOtpContext()
     {
-        // mocking experiment
-        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'on']);
-
         // mocking payout links service
         $plMock = Mockery::mock('RZP\Services\PayoutLinks');
 
@@ -4405,9 +4390,6 @@ class PayoutLinkTest extends TestCase
 
     public function testPayoutLinkCreationWithSecureOtpContext()
     {
-        // mocking experiment
-        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'on']);
-
         // mocking payout links service
         $plMock = Mockery::mock('RZP\Services\PayoutLinks');
 
@@ -4640,9 +4622,6 @@ class PayoutLinkTest extends TestCase
 
     public function testPayoutLinkVerifyOtpWithValidAction()
     {
-        // mocking experiment
-        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'on']);
-
         // mocking payout links service
         $plMock = Mockery::mock('RZP\Services\PayoutLinks');
 
@@ -4682,9 +4661,6 @@ class PayoutLinkTest extends TestCase
 
     public function testPayoutLinkGenerateOtpWithValidActionAndWithToken()
     {
-        // mocking experiment
-        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'on']);
-
         $expectedPayload = [
             'context' => 'cd5398fc703ddffbee86526824243063cfb6b3cdcc4fba70cefe5b6c0f2c5df530ef2cc079c85144ae64f5dc89308e0d93fff6aa01e9d6fd0b74640388b42452',
             'receiver' => 'merchantuser01@razorpay.com',
@@ -4710,9 +4686,6 @@ class PayoutLinkTest extends TestCase
 
     public function testPayoutLinkGenerateOtpWithValidActionAndDynamicToken()
     {
-        // mocking experiment
-        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'on']);
-
         // mocking payout links service
         $plMock = Mockery::mock('RZP\Services\PayoutLinks');
 
@@ -4727,9 +4700,6 @@ class PayoutLinkTest extends TestCase
 
     public function testPayoutLinkGenerateOtpWithValidActionRavenSuccess()
     {
-        // mocking experiment
-        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'on']);
-
         $expectedPayload = [
             'context' => 'cd5398fc703ddffbee86526824243063cfb6b3cdcc4fba70cefe5b6c0f2c5df530ef2cc079c85144ae64f5dc89308e0d93fff6aa01e9d6fd0b74640388b42452',
             'receiver' => 'merchantuser01@razorpay.com',
@@ -4752,9 +4722,6 @@ class PayoutLinkTest extends TestCase
 
     public function testPayoutLinkSendOtpValidatePayload()
     {
-        // mocking experiment
-        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'on']);
-
         $expiryTimestamp = Carbon::now()->addMinutes(30)->timestamp;
 
         $expectedGenerateOtpPayload = [

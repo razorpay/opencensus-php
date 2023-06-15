@@ -6882,8 +6882,6 @@ class UserTest extends TestCase
 
     public function testSendOtpForOtherActionsWithSecureOTPExperimentActive()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'on']);
-
         $user = $this->getDbLastEntity('user');
 
         $this->fixtures->edit(
@@ -6963,8 +6961,6 @@ class UserTest extends TestCase
 
     public function testSendOtpForCreatePayoutWithSecureOTP()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'on']);
-
         $user = $this->getDbLastEntity('user');
 
         $this->fixtures->edit(
@@ -7007,8 +7003,6 @@ class UserTest extends TestCase
 
     public function testSendOtpForApprovePayoutWithSecureOTP()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'on']);
-
         $user = $this->getDbLastEntity('user');
 
         $this->fixtures->edit(
@@ -7054,8 +7048,6 @@ class UserTest extends TestCase
 
     public function testSendOtpForIpWhitelistWithSecureOTP()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'on']);
-
         $user = $this->getDbLastEntity('user');
 
         $this->fixtures->edit(

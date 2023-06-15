@@ -184,11 +184,6 @@ trait PayoutTrait
                         return 'on';
                     }
 
-                    if ($feature === Merchant\RazorxTreatment::SECURE_OTP_CONTEXT)
-                    {
-                        return 'on';
-                    }
-
                     if ($feature === Merchant\RazorxTreatment::PAYOUT_BULK_APPROVE_ASYNC && $isBulkApproveAsyncEnabled === true)
                     {
                         return 'on';
@@ -466,11 +461,6 @@ trait PayoutTrait
                 function ($mid, $feature, $mode)
                 {
                     if ($feature === Merchant\RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_DISABLED)
-                    {
-                        return 'on';
-                    }
-
-                    if ($feature === Merchant\RazorxTreatment::SECURE_OTP_CONTEXT)
                     {
                         return 'on';
                     }

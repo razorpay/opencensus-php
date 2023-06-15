@@ -19151,8 +19151,7 @@ The same has been enabled for the account.
 
     public function testCreateIpConfigWithOtpWithSecureContext()
     {
-        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'on',
-            RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+        $this->setMockRazorxTreatment([RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
 
         $user = $this->getDbLastEntity('user');
 
