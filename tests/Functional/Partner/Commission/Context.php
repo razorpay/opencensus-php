@@ -53,6 +53,7 @@ return [
             'attach_submerchant' => [
                 'partner_id'      => 'BptVjGnFv6ITBm',
                 'pricing_plan_id' => '200MerchantPln',
+                'country_code'    => 'MY'
             ],
             'define_config'      => [
                 'type'             => 'partner',
@@ -945,6 +946,7 @@ return [
             'attach_submerchant' => [
                 'partner_id'      => 'BptVjGnFv6ITBm',
                 'pricing_plan_id' => Pricing::DEFAULT_PRICING_PLAN_ID,
+                'country_code'    => 'MY' // commission will get created in sub merchant base currency irrespective of payment currency
             ],
             'define_config'      => [
                 'type'             => 'partner',
@@ -976,11 +978,6 @@ return [
                 'amount'    => 4000 * 100,
                 'auth'      => 'partner',
                 'currency'  => 'USD'
-            ],
-        ],
-        'action' => [
-            'exception' => [
-                'class'               => RZP\Exception\BadRequestValidationFailureException::class,
             ],
         ],
     ],

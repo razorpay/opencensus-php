@@ -51,13 +51,11 @@ class Assertions extends TestCase
 
         $commission = $this->assertCommissionCreatedByType($calculator, Commission\Type::IMPLICIT);
 
-        $this->assertNonZeroCommissionTaxByType($calculator, Commission\Type::IMPLICIT);
 
         $amount          = 400000; // MYR 4000
         $merchantPricing = 2; // 2% pricing
 
-        $this->assertEquals($this->getFee($amount, $merchantPricing), $calculator->getMerchantFee());
-        $this->assertEquals($this->getTax($amount, $merchantPricing), $calculator->getMerchantTax());
+        $this->assertEquals($this->getFeeWithoutTax($amount, $merchantPricing), $calculator->getMerchantFee());
 
         $this->assertEquals(944, $commission->getFee());
         $this->assertEquals(144, $commission->getTax());
@@ -372,6 +370,23 @@ class Assertions extends TestCase
         $this->assertEquals(944, $commission->getFee());
         $this->assertEquals(144, $commission->getTax());
         $this->assertEquals(Currency::MYR, $commission->getAttribute(Commission\Entity::CURRENCY));
+    }
+
+    public function testExplicitWithUSDCurrency(array $data)
+    {
+        $this->assertShouldCreateCommission($data);
+
+        $postAction = $data['post_action'];
+
+        $calculator = $postAction['calculator'];
+
+        $commission = $this->assertCommissionCreatedByType($calculator, Commission\Type::EXPLICIT);
+
+        $this->assertNonZeroCommissionTaxByType($calculator, Commission\Type::EXPLICIT);
+
+        $this->assertEquals(944, $commission->getFee());
+        $this->assertEquals(144, $commission->getTax());
+        $this->assertEquals(Currency::INR, $commission->getAttribute(Commission\Entity::CURRENCY));
     }
 
     public function testExplicitRecordOnly(array $data)
