@@ -272,6 +272,15 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function findByPublicIdFromAPI(string $publicRefundId)
+    {
+        $id = Refund\Entity::verifyIdAndStripSign($publicRefundId);
+
+        return $this->newQuery()
+            ->where(Refund\Entity::ID, '=', $id)
+            ->first();
+    }
+
     public function fetchFirstForPaymentId(string $paymentId)
     {
         $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [

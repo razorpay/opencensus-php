@@ -607,7 +607,7 @@ class Service extends Base\Service
             {
                 try
                 {
-                    $refund = $this->repo->refund->findByPublicId($refundId);
+                    $refund = $this->repo->refund->findByPublicIdFromAPI($refundId);
 
                     if (empty($refundData[Transaction\Entity::RECONCILED_AT]) === false)
                     {

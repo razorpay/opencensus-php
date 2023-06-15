@@ -17276,6 +17276,7 @@ class Route
      * scrooge microservice instead it will use from api Monolith
      */
     public static $forceRefundsLoadFromApiRoutes = [
+        'admin_fetch_entity_by_id',
         'scrooge_public_entities_fetch',
         'payment_fetch_refunds',
         'payment_fetch_refund_by_id',
