@@ -131,10 +131,10 @@ abstract class BaseProxyController extends Controller
             $this->routesVsCacheKeys = $routesVsCacheKeys;
     }
 
-    protected function getHeadersForDashboardRequest(array $body = [])
+    protected function getHeadersForDashboardRequest(array $body = [], string $id = '')
     {
         return [
-            'x-merchant-id'    => optional($this->ba->getMerchant())->getId() ?? '',
+            'x-merchant-id'    => optional($this->ba->getMerchant())->getId() ?? $id,
             'X-Merchant-Email' => optional($this->ba->getMerchant())->getEmail() ?? '',
             'x-user-id'        => optional($this->ba->getUser())->getId() ?? '',
             'X-User-Role'      => $this->ba->getUserRole() ?? '',

@@ -33,8 +33,12 @@ class UserRolesScope
     {
         $this->routeUserRoleMap = [
             'merchant_nc_revamp_eligibility'                       => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
-            'merchant_activation_clarifications_fetch'                   => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
+            'merchant_activation_clarifications_fetch'             => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
             'merchant_activation_clarifications_save'              => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
+
+            'merchant_bmc_response_fetch'                          => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
+            'merchant_bmc_response_fetch_admin'                    => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
+            'merchant_bmc_response_save'                           => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
 
             // batch routes
             'batch_create'         => array_merge(Role::READER_ROLES, [Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER,Role::SELLERAPP, Role::AUTH_LINK_SUPERVISOR], BankingRole::getAllRoles()),

@@ -372,6 +372,9 @@ class RouteTeamMap
         'merchant_document_url_fetch'                     => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_fetch_verification_details'             => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_process_verification_details'           => [self::TEAM_PAYMENTS_GROWTH],
+        'merchant_bmc_response_fetch'                     => [self::TEAM_PAYMENTS_GROWTH],
+        'merchant_bmc_response_fetch_admin'               => [self::TEAM_PAYMENTS_GROWTH],
+        'merchant_bmc_response_save'                      => [self::TEAM_PAYMENTS_GROWTH],
 
         // Risk team
         'shield_rules_get_multiple'                       => [self::TEAM_PAYMENTS_RISK],

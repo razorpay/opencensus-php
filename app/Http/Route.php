@@ -1304,6 +1304,12 @@ class Route
         //OCR
         'ocr_admin_proxy'                          => ['get',      'ocr/admin/{path?}',                              'OcrAdminProxyController@handleAdminRequests'                       ],
 
+        //PGOS Proxy Routes
+        'merchant_bmc_response_fetch'              => ['get',      'pg/onboarding/get_merchant_bmc_response',        'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'merchant_bmc_response_fetch_admin'        => ['get',      'pg/onboarding/{id}/get_merchant_bmc_response',   'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+        'merchant_bmc_response_save'               => ['post',     'pg/onboarding/save_merchant_bmc_response',       'MerchantOnboardingProxyController@handleDashboardProxyRequests'    ],
+
+
         'loc_bulk_withdrawal_update'               => ['post',     'loc/withdrawals/bulk/update',                    'LOCController@postLocBulkWithdrawalUpdate'                         ],
         'leegality_webhook'                        => ['post',     'leegality/webhook',                              'LOSController@handleLeegalityWebhook'                              ],
         'reminder_admin'                           => ['any',      'reminders/admin/{path?}',                        'RemindersController@remindersAdmin'                                ],
@@ -6045,6 +6051,8 @@ class Route
     //
 
     public static $proxy = [
+        'merchant_bmc_response_fetch',
+        'merchant_bmc_response_save',
         'merchant_consents_save',
         'merchant_identity_verification',
         'merchant_process_verification_details',
@@ -7028,6 +7036,7 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'merchant_bmc_response_fetch_admin',
         'admin_1cc_whitelist_coupons',
         //media Service routes
         'media_service_upload_file',
@@ -8342,6 +8351,9 @@ class Route
         'merchant_consents_admin_fetch'                   => Permission::VIEW_MERCHANT,
         'merchant_website_plugin_save'                    => Permission::VIEW_MERCHANT,
         'merchant_consents_save'                          => Permission::EDIT_MERCHANT,
+        'merchant_bmc_response_fetch'                     => Permission::VIEW_MERCHANT,
+        'merchant_bmc_response_fetch_admin'               => Permission::VIEW_MERCHANT,
+        'merchant_bmc_response_save'                      => Permission::EDIT_MERCHANT,
         'merchant_identity_verification'                  => Permission::EDIT_MERCHANT,
         'merchant_process_verification_details'           => Permission::EDIT_MERCHANT,
         //'banking_account_bank_lms_fetch_multiple'      => Permission::RBL_BANK_MID_OFFICE,
@@ -10671,6 +10683,8 @@ class Route
         ],
 
         'merchant_dashboard' => [
+            'merchant_bmc_response_fetch',
+            'merchant_bmc_response_save',
             'merchant_consents_save',
             'merchant_identity_verification',
             'merchant_process_verification_details',
@@ -12072,6 +12086,7 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'merchant_bmc_response_fetch_admin',
             'media_service_upload_file',
             'media_service_get_bucket',
             'media_service_upload_process',
