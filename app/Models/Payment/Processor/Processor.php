@@ -1997,6 +1997,8 @@ class Processor
         {
             $payment = $payment ?? null;
 
+            $this->logUPIPaymentFailure($e, $payment, $input);
+
             $dimensions[Metric::LABEL_PAYMENT_IS_CREATED] = false;
 
             if ($payment instanceof Payment\Entity === true)
@@ -2017,6 +2019,50 @@ class Processor
 
             throw $e;
         }
+    }
+
+    /**
+     * Logs upi payment failure
+     */
+    private function logUPIPaymentFailure(\Throwable $e, $payment, $input)
+    {
+        if (($input['method'] !== Payment\Method::UPI) || ($e === null))
+        {
+            return;
+        }
+
+        $logData = [
+            Payment\Entity::MERCHANT_ID         => $this->merchant->getId(),
+            payment\Entity::METHOD              => Payment\Method::UPI,
+        ];
+
+        if ($payment instanceof Payment\Entity === true)
+        {
+            $logData[Payment\Entity::CPS_ROUTE] = $payment->getCpsRoute();
+            $logData[Payment\Entity::GATEWAY]   = $payment->getGateway();
+        }
+
+        $errorAttributes = [];
+
+        if ($e instanceof Exception\BaseException)
+        {
+            if (($e->getError() !== null) and ($e->getError() instanceof Error))
+            {
+                $errorAttributes = $e->getError()->getAttributes();
+            }
+        }
+        else
+        {
+            $errorAttributes = [
+                Metric::LABEL_TRACE_CODE         => $e->getCode(),
+            ];
+        }
+
+
+        $logData[Metric::LABEL_TRACE_CODE]              = array_get($errorAttributes, Error::INTERNAL_ERROR_CODE);
+        $logData[Metric::LABEL_TRACE_EXCEPTION_CLASS]   = get_class($e);
+
+        $this->trace->info(TraceCode::UPI_PAYMENT_INITIATE_FAILURE_LOG, $logData);
     }
 
     protected function validateAndDecryptEncryptedCardInput(& $input)
