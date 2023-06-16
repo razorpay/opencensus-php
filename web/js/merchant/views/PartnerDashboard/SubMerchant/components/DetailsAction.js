@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { AsyncBtn } from 'common/new-ui/Button';
 import ButtonTrans from '@razorpay/blade-old/src/atoms/Button';
@@ -5,6 +6,7 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import { connect } from 'react-redux';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import { openKYCFormUtil } from 'merchant/views/PartnerDashboard/SubMerchant/utils/navigation';
 import { fetchSubmerchants } from 'merchant/reducers/collection';
 import moment from 'moment';
 import { isMobileAndTablet } from 'common/utils/rzp-utils';
@@ -20,9 +22,11 @@ const DetailsAction = ({
   submerchant,
   isSubMerchantKYCAccess,
   history,
+  user,
   ...props
 }) => {
   const submerchantId = submerchant.id.replace('acc_', '');
+  const [isActionLoading, setIsActionLoading] = useState(false);
 
   let state = kyc_access?.state;
   const token_expiry = moment.unix(kyc_access?.token_expiry);
@@ -41,11 +45,13 @@ const DetailsAction = ({
   );
 
   const openKYCForm = () => {
-    const isMWeb = isMobileAndTablet();
-    if (isMWeb) {
-      history.push(`/partners/submerchants/onboarding/${submerchant.id}/steps`);
-    } else {
-      history.push(`/partners/submerchants/${submerchant.id}/activation`);
+    if (!isActionLoading) {
+      const isMWeb = isMobileAndTablet();
+      setIsActionLoading(true);
+
+      openKYCFormUtil(isMWeb, history, submerchant, props.showNotification).then(() => {
+        setIsActionLoading(false);
+      });
     }
   };
 
@@ -221,7 +227,7 @@ DetailsAction.propTypes = {
   }),
 };
 
-const mapStateToProps = (_state) => ({});
+const mapStateToProps = (state) => ({ user: state.session.user });
 
 const getDispatchToProps = (productType = PRODUCT_TYPE.PG) => {
   return {

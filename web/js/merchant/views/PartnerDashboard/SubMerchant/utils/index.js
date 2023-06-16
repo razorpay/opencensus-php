@@ -1,4 +1,5 @@
 import { PRODUCT_TYPE, ADD_MODE } from 'merchant/views/PartnerDashboard/constants';
+import moment from 'moment';
 
 export const minLength = (length, message = '') => {
   message = message || `Enter min ${length} characters`;
@@ -61,4 +62,10 @@ export const getInitialState = ({ user, addType, referralData }) => {
     }
   }
   return state;
+};
+
+export const isInviteRecentlyAccepted = (created_at) => {
+  const momentInviteAcceptedOn = moment(created_at * 1000);
+  const currentTime = moment(Date.now());
+  return currentTime.diff(momentInviteAcceptedOn, 'days') <= 7;
 };

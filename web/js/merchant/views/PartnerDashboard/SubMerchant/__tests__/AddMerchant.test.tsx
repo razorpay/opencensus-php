@@ -5,6 +5,7 @@ import { rest } from 'msw';
 import store from 'merchant/store';
 import cloneDeep from 'lodash/cloneDeep';
 import AddMerchant from 'merchant/views/PartnerDashboard/SubMerchant/AddMerchant';
+import * as api from 'merchant/views/PartnerDashboard/SubMerchant/api';
 import { referralData, fileUploadResponse, orgDetails } from './mocks/fixtures';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 
@@ -33,6 +34,7 @@ getStateSpy.mockImplementation(() => {
 const state = {
   session: {
     user: {
+      id: 'K0KQSNE7BypZ5VE',
       isOrgRZP: true,
       isPartner,
       isOrgAllowedFunctionality,
@@ -47,7 +49,7 @@ const state = {
 
 jest.mock('merchant/containers/BatchNew/Validate', () => ({
   __esModule: true,
-  default: ({ validateBatch, onValidation, clickToUploadAnalytics }) => {
+  default: ({ validateBatch, onValidation, clickToUploadAnalytics, sampleUrl }) => {
     return (
       <div>
         <input
@@ -59,6 +61,11 @@ jest.mock('merchant/containers/BatchNew/Validate', () => ({
             clickToUploadAnalytics();
           }}
         />
+        <div>
+          <a href={sampleUrl}>
+            <strong>Download sample file</strong>
+          </a>
+        </div>
       </div>
     );
   },
@@ -85,15 +92,24 @@ describe('AddMerchant', () => {
 
     window.rzpQ.component = jest.fn();
   });
-  const renderApp = ({ isPartnershipForCapitalEnabled = true } = {}) => {
+  const renderApp = ({
+    isPartnershipForCapitalEnabled = true,
+    isPartnershipsInviteFlowEnabled = false,
+  } = {}) => {
     return render(
-      <AddMerchant closeModal={mockCloseModal} referralData={referralData} org={orgDetails} />,
+      <AddMerchant
+        closeModal={mockCloseModal}
+        referralData={referralData}
+        addType={PRODUCT_TYPE.PG}
+        org={orgDetails}
+      />,
       {
         initialState: {
           session: {
             user: {
               ...state.session.user,
               isPartnershipForCapitalEnabled,
+              isPartnershipsInviteFlowEnabled,
             },
           },
         },
@@ -127,6 +143,57 @@ describe('AddMerchant', () => {
         'Note: New Business onboarding is temporarily paused! Your clients can submit their details so that their account can be activated at the earliest when we resume onboarding',
       ),
     ).toBeInTheDocument();
+  });
+
+  test('should show different footer text for partnerships invite flow', async () => {
+    renderApp({ isPartnershipsInviteFlowEnabled: true, isPartnershipForCapitalEnabled: false });
+    const merchantBox = screen.getByText('Razorpay Payments');
+    await userEvent.click(merchantBox);
+    const nextButton = screen.getByRole('button', { name: 'Next' });
+    await userEvent.click(nextButton);
+    expect(
+      screen.getByText(
+        'Razorpay account creation invite link will be sent via email and SMS(if contact number provided) to your affiliate',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  test('should send create invite call for partnerships invite flow', async () => {
+    const createSubmerchantInviteSpy = jest.spyOn(api, 'createSubmerchantInvite');
+    renderApp({ isPartnershipsInviteFlowEnabled: true, isPartnershipForCapitalEnabled: false });
+    const merchantBox = screen.getByText('Razorpay Payments');
+    await userEvent.click(merchantBox);
+    const nextButton = screen.getByRole('button', { name: 'Next' });
+    await userEvent.click(nextButton);
+
+    const name = 'Test Name';
+    const email = 'test@email.com';
+    const contact_no = '9123123123';
+    await userEvent.type(screen.getByTestId('input-name'), name);
+    await userEvent.type(screen.getByTestId('input-email'), email);
+    await userEvent.type(screen.getByTestId('input-contact'), contact_no);
+
+    const sendButton = screen.getByRole('button', { name: 'Send Invite' });
+    await userEvent.click(sendButton);
+
+    expect(createSubmerchantInviteSpy).toHaveBeenCalledWith({
+      name,
+      email,
+      contact_no,
+      product: 'primary',
+      partner_id: 'K0KQSNE7BypZ5VE',
+    });
+  });
+
+  test('should return separate sample batch file for partnerships invite flow', async () => {
+    renderApp({ isPartnershipsInviteFlowEnabled: true, isPartnershipForCapitalEnabled: false });
+    const merchantBox = screen.getByText('Razorpay Payments');
+    await userEvent.click(merchantBox);
+    const nextButton = screen.getByRole('button', { name: 'Next' });
+    await userEvent.click(nextButton);
+    await userEvent.click(screen.getByText('Invite Multiple Clients'));
+    const sampleLink = screen.getByRole('link', { name: 'Download sample file' });
+    expect(sampleLink).toHaveAttribute('href', '/files/sample_invite_submerchant_batch.xlsx');
   });
 
   test('should render correctly Corporate Card option with props', () => {

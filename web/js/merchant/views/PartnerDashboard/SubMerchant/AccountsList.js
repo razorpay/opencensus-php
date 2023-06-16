@@ -2,6 +2,7 @@ import { Fragment } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import QueryString from 'query-string';
+import { Badge, Box } from '@razorpay/blade/components';
 
 import ListContainer from 'merchant/containers/ListContainer';
 
@@ -16,6 +17,7 @@ import DataTable from 'common/ui/Table/DataTable';
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
 
 import ShowWhen from 'merchant/components/ShowWhen';
+import Time from 'common/ui/Time';
 import { getTime } from 'common/ui/item';
 import {
   ActivationStatusLabel,
@@ -57,15 +59,44 @@ import {
 } from 'merchant/views/PartnerDashboard/SubMerchant/utils/activationStatusHelper';
 import { fetchProducts } from 'merchant/reducers/capital';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import PGInvitesNavLinks from './components/PGInviteNavLinks';
+import { isInviteRecentlyAccepted } from './utils';
+import { fetchInvites } from './components/AllInvitesTable/api';
 
 const email = {
   title: 'Registered Email',
   value: emailColumn.value,
 };
 
+const mobileAndEmail = {
+  title: 'Contact',
+  value: ({ user, email }) => (
+    <>
+      <div>{user?.contact_mobile || ''}</div>
+      {email}
+    </>
+  ),
+};
+
 const addedOn = {
   title: 'Added On',
   value: getTime('created_at', 'll'),
+};
+
+const inviteAcceptedOn = {
+  title: 'Invite Accepted On',
+  value: (item) => (
+    <>
+      <Time value={item.created_at} format="ll" />
+      {isInviteRecentlyAccepted(item.created_at) && (
+        <Box display="inline-block">
+          <Badge contrast="high" fontWeight="bold" marginLeft="spacing.3" variant="positive">
+            NEW
+          </Badge>
+        </Box>
+      )}
+    </>
+  ),
 };
 
 const activationStatus = {
@@ -203,6 +234,8 @@ class ProductSubMerchantsList extends ListContainer {
     capitalItems: [],
     isDataLoaded: false,
     orgName: this.props?.org?.business_name || 'Razorpay',
+    isPGInvitesEmpty: true,
+    isPGInvitesEmptyCheckLoading: true,
   };
 
   constructor(props) {
@@ -251,10 +284,11 @@ class ProductSubMerchantsList extends ListContainer {
     this.setState({ isDataLoaded: false });
   };
   componentDidMount() {
+    const { fetchProducts } = this.props;
     if (this.isCapitalProduct) {
-      const { fetchProducts } = this.props;
       fetchProducts();
     }
+    this.checkIfPGInvitesEmpty();
   }
   componentDidUpdate(prevProps) {
     const { products, loading, location, items } = this.props;
@@ -267,6 +301,37 @@ class ProductSubMerchantsList extends ListContainer {
       this.capitalSearchHandler();
     }
   }
+
+  checkIfPGInvitesEmpty = () => {
+    const { product, user } = this.props;
+
+    const isPGProductWithInviteFlow =
+      user.isPartnershipsInviteFlowEnabled && product === PRODUCT_TYPE.PG;
+
+    if (isPGProductWithInviteFlow) {
+      // Note: This is a partially nonblocking network call to determine the welcome screen condition
+      fetchInvites(this.props.user.id, {
+        product: PRODUCT_TYPE.PG,
+        skip: 0,
+        count: 25,
+      })
+        .then((data) => {
+          this.setState({
+            isPGInvitesEmpty: (data.data?.items || []).length === 0,
+            isPGInvitesEmptyCheckLoading: false,
+          });
+        })
+        .catch(() => {
+          this.setState({ isPGInvitesEmpty: true, isPGInvitesEmptyCheckLoading: false });
+          showNotification?.({
+            type: 'error',
+            message: 'There was an error',
+          });
+        });
+    } else {
+      this.setState({ isPGInvitesEmptyCheckLoading: false });
+    }
+  };
 
   searchAnalytics = () => {
     const searchQuery = QueryString.parse(this.props.location.search);
@@ -308,6 +373,37 @@ class ProductSubMerchantsList extends ListContainer {
       }),
     );
   };
+
+  clickableId = (isPurePlatform) => ({
+    ...id,
+    value: (item) => (
+      <Link
+        to={`/partners/submerchants/${item.id}`}
+        onClick={() =>
+          this.trackUserEvent('partnerships.dashboard.affiliate_account.account_selected', {
+            submerchantId: item.id,
+          })
+        }
+      >
+        {item.id}
+      </Link>
+    ),
+    ...(isPurePlatform && {
+      value: (item) => (
+        <Link
+          to={`/partners/submerchants/${item.id}/${item.application.id}`}
+          onClick={() =>
+            this.trackUserEvent('partnerships.dashboard.affiliate_account.account_selected', {
+              submerchantId: item.id,
+              applicationId: item.application.id,
+            })
+          }
+        >
+          {item.id}
+        </Link>
+      ),
+    }),
+  });
 
   name = (isPurePlatform) => ({
     ...submerchantColumn,
@@ -370,6 +466,7 @@ class ProductSubMerchantsList extends ListContainer {
         submerchant={submerchant}
         trackUserEvent={this.trackUserEvent}
         isSubMerchantKYCAccess={this.isSubMerchantKYCAccess}
+        showNotification={this.props.showNotification}
       />
     ),
   };
@@ -614,15 +711,27 @@ class ProductSubMerchantsList extends ListContainer {
   render() {
     // prettier-ignore
     const { user, product, referralData, location, isSubMerchantKycResellerEnabled, org } = this.props;
-    const { capitalLoading, capitalItems } = this.state;
+    const { capitalLoading, capitalItems, isPGInvitesEmpty, isPGInvitesEmptyCheckLoading } =
+      this.state;
     let appIdColumn = [];
     let switchMerchantColumn = [];
     const referralUrl = referralData ? referralData[product]?.url : '';
     const isNonEmptyList = Array.isArray(this.props.items) && this.props.items.length > 0;
     const isNonEmptyCapitalList = Array.isArray(capitalItems) && capitalItems?.length > 0;
     const isFilterSearchUsed = location.search !== '';
+
+    const isPGProductWithInviteFlow =
+      user.isPartnershipsInviteFlowEnabled && product === PRODUCT_TYPE.PG;
+
+    const isPGWithOnboardingViaEasy =
+      user.isSubmOnboardingViaEasyEnabled && product === PRODUCT_TYPE.PG;
+
     const shouldShowWelcomeScreen =
-      !isNonEmptyList && !isFilterSearchUsed && !user.isPartner('pure_platform');
+      (!isPGProductWithInviteFlow || isPGInvitesEmpty) &&
+      !isNonEmptyList &&
+      !isFilterSearchUsed &&
+      !user.isPartner('pure_platform');
+
     if (user.isPartner('pure_platform')) {
       appIdColumn = [appId];
     } else if (user.isPartner('aggregator', 'fully_managed')) {
@@ -637,23 +746,36 @@ class ProductSubMerchantsList extends ListContainer {
       });
     }
 
-    if (this.props.loading || capitalLoading) {
+    if (
+      this.props.loading ||
+      capitalLoading ||
+      (!isNonEmptyList && !isFilterSearchUsed && isPGInvitesEmptyCheckLoading)
+    ) {
       return (
         <tabbed-container>
-          <content>
-            <div class="sub-merchants-list">
-              <Loader />
-            </div>
-          </content>
+          <div class="sub-merchants-list">
+            <Loader />
+          </div>
         </tabbed-container>
       );
     }
 
+    const getResellerInviteFlowColumnsForRZP = () => [
+      this.clickableId(user.isPartner('pure_platform')),
+      mobileAndEmail,
+      this.name(user.isPartner('pure_platform')),
+      ...appIdColumn,
+      activationStatus,
+      this.actions,
+      inviteAcceptedOn,
+    ];
+
     const getTableColumns_PG = () => {
+      const emailOrContact = isPGWithOnboardingViaEasy ? mobileAndEmail : email;
       let columns = [
         this.name(user.isPartner('pure_platform')),
         id,
-        email,
+        emailOrContact,
         ...appIdColumn,
         addedOn,
         activationStatus,
@@ -666,7 +788,7 @@ class ProductSubMerchantsList extends ListContainer {
           rzp: [
             this.name(user.isPartner('pure_platform')),
             id,
-            email,
+            emailOrContact,
             ...appIdColumn,
             this.getActivationStatus_NEW(),
             this.actions,
@@ -697,169 +819,194 @@ class ProductSubMerchantsList extends ListContainer {
 
     const currentProduct = product === PRODUCT_TYPE.PG ? 'page-pg' : 'page-x';
 
+    const filtersAndExportSection = (
+      <div
+        className={`submerchant-filter-wrapper ${
+          isPGWithOnboardingViaEasy ? 'invite-filter-wrapper' : ''
+        }`}
+      >
+        <ListFilter
+          form="SubmerchantListFilter"
+          type="link"
+          count={this.state.count}
+          onSearchAnalytics={trackSearchAnalytics}
+          onClearAnalytics={trackClearAnalytics}
+          showAppIdFilter={user.isPartner('pure_platform')}
+          showMobileNumberFilter={isPGWithOnboardingViaEasy}
+        />
+        <button
+          class="btn btn-default export-all-btn"
+          onClick={this.confirmAndDownload}
+          disabled={this.state.affiliatesDownloading}
+        >
+          {!this.state.affiliatesDownloading ? (
+            <>
+              <i className="i i-download" />
+              <span>Export All (CSV)</span>
+            </>
+          ) : (
+            <>Exporting Affiliates...</>
+          )}
+        </button>
+      </div>
+    );
     return (
-      <tabbed-container>
-        <content>
-          <div className={`sub-merchants-list ${currentProduct}`}>
-            <div
-              className={`content-wrapper ${disabledResellerKYCStyle} ${
-                shouldShowWelcomeScreen ? 'partner-welcome' : ''
-              }`}
-            >
-              {!shouldShowWelcomeScreen && (
-                <div className="submerchant-filter-wrapper">
-                  <ListFilter
-                    form="SubmerchantListFilter"
-                    type="link"
+      <tabbed-container class="sub-merchants-tab">
+        <div className={`sub-merchants-list ${currentProduct}`}>
+          <div
+            className={`content-wrapper ${disabledResellerKYCStyle} ${
+              shouldShowWelcomeScreen ? 'partner-welcome' : ''
+            }`}
+          >
+            {isPGProductWithInviteFlow && !shouldShowWelcomeScreen && (
+              <PGInvitesNavLinks prefix="/partners/submerchants" />
+            )}
+            {isPGProductWithInviteFlow && !shouldShowWelcomeScreen && (
+              <>
+                {filtersAndExportSection}
+                <DataTable
+                  title="Sub Merchants"
+                  count={this.state.count}
+                  skip={this.state.skip}
+                  paginate={this.paginate}
+                  empty_placeholder={
+                    <div class="empty-table-message">
+                      <h4>All Accepted Invites</h4>
+                      <p className="m-t">
+                        All accepted invites will be visible here once the client has accepted the
+                        invite sent by you.
+                      </p>
+                    </div>
+                  }
+                  columns={getResellerInviteFlowColumnsForRZP()}
+                  {...this.props}
+                />
+              </>
+            )}
+            {!isPGProductWithInviteFlow && (
+              <>
+                {!shouldShowWelcomeScreen && filtersAndExportSection}
+                {isFilterSearchUsed &&
+                  (!isNonEmptyList || (this.isCapitalProduct && !isNonEmptyCapitalList)) && (
+                    <div style={{ flex: 2, textAlign: 'center' }}>
+                      <div>
+                        <h3 class="sub-title">No Search results found</h3>
+                      </div>
+                    </div>
+                  )}
+                {isNonEmptyList && product === PRODUCT_TYPE.PG && (
+                  <DataTable
+                    title="Sub Merchants"
                     count={this.state.count}
-                    onSearchAnalytics={trackSearchAnalytics}
-                    onClearAnalytics={trackClearAnalytics}
-                    showAppIdFilter={user.isPartner('pure_platform')}
+                    skip={this.state.skip}
+                    paginate={this.paginate}
+                    columns={getTableColumns_PG()}
+                    {...this.props}
                   />
-                  <button
-                    class="btn btn-default export-all-btn"
-                    onClick={this.confirmAndDownload}
-                    disabled={this.state.affiliatesDownloading}
-                  >
-                    {!this.state.affiliatesDownloading ? (
-                      <>
-                        <i className="i i-download" />
-                        <span>Export All (CSV)</span>
-                      </>
-                    ) : (
-                      <>Exporting Affiliates...</>
-                    )}
-                  </button>
-                </div>
-              )}
-              {(!isNonEmptyList || (this.isCapitalProduct && !isNonEmptyCapitalList)) &&
-              isFilterSearchUsed ? (
+                )}
+              </>
+            )}
+
+            {isNonEmptyList && product === PRODUCT_TYPE.X && (
+              <DataTable
+                title="Sub Merchants"
+                count={this.state.count}
+                skip={this.state.skip}
+                paginate={this.paginate}
+                columns={[this.xName(), id, email, ...appIdColumn, xCurrentAccountStatus, addedOn]}
+                {...this.props}
+              />
+            )}
+            {isNonEmptyCapitalList && this.isCapitalProduct ? (
+              <DataTable
+                title="Sub Merchants"
+                count={this.state.count}
+                skip={this.state.skip}
+                paginate={(params) => this.handleCapitalPaginate(params)}
+                columns={[this.capitalName(), id, email, addedOn, capitalStatus]}
+                items={capitalItems}
+              />
+            ) : null}
+            {shouldShowWelcomeScreen && (
+              <>
                 <div style={{ flex: 2, textAlign: 'center' }}>
                   <div>
-                    <h3 class="sub-title">No Search results found</h3>
+                    <h1 class="main-title"> Welcome to Partner Dashboard</h1>
+                    <h3 class="sub-title">
+                      Get started by adding merchants to {this.state.orgName}
+                    </h3>
                   </div>
                 </div>
-              ) : (
-                ''
-              )}
-              {isNonEmptyList && product === PRODUCT_TYPE.PG && (
-                <DataTable
-                  title="Sub Merchants"
-                  count={this.state.count}
-                  skip={this.state.skip}
-                  paginate={this.paginate}
-                  columns={getTableColumns_PG()}
-                  {...this.props}
-                />
-              )}
-              {isNonEmptyList && product === PRODUCT_TYPE.X && (
-                <DataTable
-                  title="Sub Merchants"
-                  count={this.state.count}
-                  skip={this.state.skip}
-                  paginate={this.paginate}
-                  columns={[
-                    this.xName(),
-                    id,
-                    email,
-                    ...appIdColumn,
-                    xCurrentAccountStatus,
-                    addedOn,
-                  ]}
-                  {...this.props}
-                />
-              )}
-              {isNonEmptyCapitalList && this.isCapitalProduct ? (
-                <DataTable
-                  title="Sub Merchants"
-                  count={this.state.count}
-                  skip={this.state.skip}
-                  paginate={(params) => this.handleCapitalPaginate(params)}
-                  columns={[this.capitalName(), id, email, addedOn, capitalStatus]}
-                  items={capitalItems}
-                />
-              ) : null}
-              {shouldShowWelcomeScreen && (
-                <>
-                  <div style={{ flex: 2, textAlign: 'center' }}>
-                    <div>
-                      <h1 class="main-title"> Welcome to Partner Dashboard</h1>
-                      <h3 class="sub-title">
-                        Get started by adding merchants to {this.state.orgName}
-                      </h3>
-                    </div>
-                  </div>
-                  <div style={{ flex: 3 }} class="action-area">
-                    <div>
-                      <ShowWhen
-                        myRole="owner manager admin"
-                        additionalCondition={(currentUser) =>
-                          currentUser.isPartner() && !currentUser.isPartner('pure_platform')
-                        }
-                      >
+                <div style={{ flex: 3 }} class="action-area">
+                  <div>
+                    <ShowWhen
+                      myRole="owner manager admin"
+                      additionalCondition={(currentUser) =>
+                        currentUser.isPartner() && !currentUser.isPartner('pure_platform')
+                      }
+                    >
+                      <div>
                         <div>
-                          <div>
-                            <Image src={AddNewSubMerchants} isWebP />
-                          </div>
-                          <p>
-                            <strong>Invite a merchant</strong> by adding their details
-                          </p>
-                          <div style={{ paddingTop: '20px' }}>
+                          <Image src={AddNewSubMerchants} isWebP />
+                        </div>
+                        <p>
+                          <strong>Invite a merchant</strong> by adding their details
+                        </p>
+                        <div style={{ paddingTop: '20px' }}>
+                          <button
+                            class="btn btn-primary pull-right m-l"
+                            onClick={this.handleAddMerchant}
+                          >
+                            <i class="i i-plus line-height-9" /> Add New Merchant
+                          </button>
+                        </div>
+                      </div>
+                    </ShowWhen>
+                    <ShowWhen
+                      additionalCondition={(currentUser) =>
+                        ((currentUser.isPartner() && currentUser.isPartner('reseller')) ||
+                          this.isCapitalProduct) &&
+                        !currentUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.ReferalLinks)
+                      }
+                    >
+                      <div>
+                        <div>
+                          <Image src={ShareReferralLink} isWebP />
+                        </div>
+                        <p>
+                          Share the <strong>invite link</strong> on social media
+                        </p>
+
+                        <div class="social-share-btn-grp">
+                          <CustomClipboard value={referralUrl}>
                             <button
                               class="btn btn-primary pull-right m-l"
-                              onClick={this.handleAddMerchant}
+                              onClick={this.handleCopyReferralLink}
                             >
-                              <i class="i i-plus line-height-9" /> Add New Merchant
+                              <i class="i i-link line-height-9" /> Copy Link
                             </button>
-                          </div>
+                          </CustomClipboard>
+                          <img
+                            src="/img/social-media/fb.png"
+                            onClick={() => this.shareReferralOn('fb', referralUrl)}
+                          />
+                          <img
+                            src="/img/social-media/twitter.png"
+                            onClick={() => this.shareReferralOn('twitter', referralUrl)}
+                          />
+                          <img
+                            src="/img/social-media/whatsapp.png"
+                            onClick={() => this.shareReferralOn('whatsapp', referralUrl)}
+                          />
                         </div>
-                      </ShowWhen>
-                      <ShowWhen
-                        additionalCondition={(currentUser) =>
-                          ((currentUser.isPartner() && currentUser.isPartner('reseller')) ||
-                            this.isCapitalProduct) &&
-                          !currentUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.ReferalLinks)
-                        }
-                      >
-                        <div>
-                          <div>
-                            <Image src={ShareReferralLink} isWebP />
-                          </div>
-                          <p>
-                            Share the <strong>invite link</strong> on social media
-                          </p>
-
-                          <div class="social-share-btn-grp">
-                            <CustomClipboard value={referralUrl}>
-                              <button
-                                class="btn btn-primary pull-right m-l"
-                                onClick={this.handleCopyReferralLink}
-                              >
-                                <i class="i i-link line-height-9" /> Copy Link
-                              </button>
-                            </CustomClipboard>
-                            <img
-                              src="/img/social-media/fb.png"
-                              onClick={() => this.shareReferralOn('fb', referralUrl)}
-                            />
-                            <img
-                              src="/img/social-media/twitter.png"
-                              onClick={() => this.shareReferralOn('twitter', referralUrl)}
-                            />
-                            <img
-                              src="/img/social-media/whatsapp.png"
-                              onClick={() => this.shareReferralOn('whatsapp', referralUrl)}
-                            />
-                          </div>
-                        </div>
-                      </ShowWhen>
-                    </div>
+                      </div>
+                    </ShowWhen>
                   </div>
-                </>
-              )}
-            </div>
+                </div>
+              </>
+            )}
           </div>
-        </content>
+        </div>
       </tabbed-container>
     );
   }

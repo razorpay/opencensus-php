@@ -156,7 +156,7 @@ class UserController extends Controller
             $data['isAuthPath'] = true;
             if ($currentRouteName === 'signup')
             {
-                if ($this->redirectionApplicableForGuest() === true)
+                if ($this->redirectionApplicableForGuest($org) === true)
                 {
                     $redirectPath = env('EASY_DASHBOARD_URL') . \Request::getRequestUri();
                     $redirectPath = preg_replace('/\?/', '&', $redirectPath); // because we are adding a new query param at the begining
@@ -403,7 +403,7 @@ class UserController extends Controller
         return view('merchant.easy-dashboard-iframe');
     }
 
-    private function redirectionApplicableForGuest(): bool
+    private function redirectionApplicableForGuest(array $org): bool
     {
         if (ApiUrl::isBankingOriginRequest() === true)
         {
@@ -415,12 +415,15 @@ class UserController extends Controller
         Cookie::queue('rzp_ab_uuid', $uuid);
 
         $experimentId = config('splitz.experiments')['EASY_ONBOARDING_REDIRECT'];
-        $referralExpId = config('splitz.experiments')['EASY_ONBOARDING_REFERRAL_LINK_REDIRECT_PARTNERSHIPS'];
+        $referralExpId = config('splitz.experiments')['PARTNERSHIPS_SUBMERCHANT_ONBOARDING_VIA_EASY'];
 
         $queryParams = Request::all();
-        $referralCode = $queryParams['referral_code'] ?? '';
 
-        $requestData = [ 'referral_code' => $referralCode];
+        $requestData = [
+            'referral_code' => $queryParams['referral_code'] ?? '',
+            'easy' => $queryParams['eo'] ?? '',
+            'org'  => $org['custom_code'] ?? ''
+        ];
 
         $data = (new SplitzService())->getVariantBulk($uuid, [$experimentId, $referralExpId], [], "splitz/bulkEvaluate", $requestData);
 

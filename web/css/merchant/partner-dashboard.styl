@@ -227,7 +227,19 @@ $fux-text-color = #162F56DE;
         width: calc(100% - 100px)
 
 .sub-merchants-list
+  .sub-merchants-tab
+    padding: 0;
+
+  .empty-table-message
+    h4
+      font-weight: bold;
+
+    p
+      max-width: 300px;
+      margin: 0 auto;
+
   .submerchant-filter-wrapper
+    margin: 20px 0 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -236,8 +248,18 @@ $fux-text-color = #162F56DE;
       position: relative
       top: -5px;
 
-  .list-filter-container
-    width: calc(100% - 160px);
+    .list-filter-container
+      width: calc(100% - 160px);
+
+  .invite-filter-wrapper
+    .list-filter-item
+      flex-basis: 150px;
+
+      &.count
+        flex-basis: 70px;
+
+    .list-filter-container
+      width: 100%;
 
   &.page-x
     .data-table

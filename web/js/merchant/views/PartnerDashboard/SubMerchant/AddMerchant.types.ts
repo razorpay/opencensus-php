@@ -20,6 +20,8 @@ export interface AddMerchantPropsT {
   createCapitalBatch?: ActionCreator<any>;
   validateBatch?: ActionCreator<any>;
   validateCapitalBatch?: ActionCreator<any>;
+  createReferralInvitesBatch?: ActionCreator<any>;
+  validateReferralInvitesBatch?: ActionCreator<any>;
   tracking?: RTrackingT;
   handleSubmit?: SubmitHandler;
 }

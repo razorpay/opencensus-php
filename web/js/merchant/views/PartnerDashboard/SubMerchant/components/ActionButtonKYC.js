@@ -1,7 +1,10 @@
+import { useState } from 'react';
 import PropTypes from 'prop-types';
-import Button from '@razorpay/blade-old/src/atoms/Button';
+import { Button } from '@razorpay/blade/components';
+
 import { withRouter } from 'react-router-dom';
 import { isMobileAndTablet } from 'common/utils/rzp-utils';
+import { openKYCFormUtil } from 'merchant/views/PartnerDashboard/SubMerchant/utils/navigation';
 import moment from 'moment';
 
 const ActionButtonKYC = ({
@@ -11,9 +14,10 @@ const ActionButtonKYC = ({
   history,
   trackUserEvent,
   isSubMerchantKYCAccess,
+  showNotification,
 }) => {
   const submerchantId = submerchant?.id;
-
+  const [isActionLoading, setIsActionLoading] = useState(false);
   let state = kyc_access?.state;
   const token_expiry = moment.unix(kyc_access?.token_expiry);
   const rejection_count = kyc_access?.rejection_count;
@@ -42,10 +46,11 @@ const ActionButtonKYC = ({
       is_mweb,
       action: 'kyc_form',
     });
-    if (is_mweb) {
-      history.push(`/partners/submerchants/onboarding/${submerchantId}/steps`);
-    } else {
-      history.push(`/partners/submerchants/${submerchantId}/activation`);
+    if (!isActionLoading) {
+      setIsActionLoading(true);
+      openKYCFormUtil(is_mweb, history, submerchant, showNotification).then(() => {
+        setIsActionLoading(false);
+      });
     }
   };
 
@@ -104,7 +109,7 @@ const ActionButtonKYC = ({
 
   return (
     <div className={`action-kyc-request ${disabledClass} ${fullRejectClass}`}>
-      <Button variant="secondary" size="small" onClick={action}>
+      <Button variant="secondary" size="small" onClick={action} isLoading={isActionLoading}>
         {btnText}
       </Button>
     </div>
@@ -120,6 +125,7 @@ ActionButtonKYC.propTypes = {
   }),
   submerchant: PropTypes.object,
   isSubMerchantKYCAccess: PropTypes.bool,
+  showNotification: PropTypes.func,
 };
 
 export default withRouter(ActionButtonKYC);

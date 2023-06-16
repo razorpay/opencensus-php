@@ -11,6 +11,8 @@ import {
   validatePartnerSubmerchantBatch as validateBatch,
   validatePartnerSubmerchantCapitalBatch as validateCapitalBatch,
   createPartnerSubmerchantCapitalBatch as createCapitalBatch,
+  createPartnerSubmerchantReferralInvitesBatch as createReferralInvitesBatch,
+  validatePartnerSubmerchantReferralInvitesBatch as validateReferralInvitesBatch,
 } from 'merchant/reducers/batches';
 import setGaTrack from 'merchant/containers/BatchNew/ga';
 import rTracking from 'react-tracking';
@@ -41,6 +43,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import { createSubmerchantInvite } from './api';
 
 const gaEvents = setGaTrack('Dashboard - Partner Submerchant - BU');
 const ORG_CONTACT_PLACEHOLDER_TEXT = {
@@ -110,9 +113,13 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
   }
 
   isCapitalProduct = (): boolean => this.state.merchantType === PRODUCT_TYPE.CAPITAL;
+  isPGInviteFlow = (): boolean =>
+    this.state.merchantType === PRODUCT_TYPE.PG && this.props.user.isPartnershipsInviteFlowEnabled;
 
   sampleUrl = () => {
     const { merchantType } = this.state;
+    if (this.isPGInviteFlow()) return '/files/sample_invite_submerchant_batch.xlsx';
+
     if (merchantType !== PRODUCT_TYPE.CAPITAL && this.isPartnershipForXEnabled) {
       return '/files/sample_submerchant_batch.xlsx';
     }
@@ -126,14 +133,17 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
     if (this.isCapitalProduct()) {
       return 'partner_submerchant_invite_capital';
     }
+    if (this.isPGInviteFlow()) return 'partner_submerchant_referral_invite';
     return 'partner_submerchant_invite';
   };
 
   validateBatchType = () => {
-    const { validateBatch, validateCapitalBatch } = this.props;
+    const { validateBatch, validateCapitalBatch, validateReferralInvitesBatch } = this.props;
     if (this.isCapitalProduct()) {
       return validateCapitalBatch;
     }
+    if (this.isPGInviteFlow()) return validateReferralInvitesBatch;
+
     return validateBatch;
   };
 
@@ -141,8 +151,9 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
     const { step, merchantType } = this.state;
     switch (step) {
       case 1:
-        return 'Add New Merchants';
+        return this.isPGInviteFlow() ? 'Invite New Merchant' : 'Add New Merchants';
       case 2:
+        if (this.isPGInviteFlow()) return 'Invite New Merchant';
         return merchantType === PRODUCT_TYPE.X
           ? 'Add New Merchants - RazorpayX'
           : this.isCapitalProduct()
@@ -225,6 +236,39 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
     const { merchantType } = this.state;
     this.fetchReferralURL();
     const isInsertTable = this.getIsInsertTable();
+
+    if (this.isPGInviteFlow()) {
+      const { contact_mobile, ...rest } = params;
+      return createSubmerchantInvite({
+        ...rest,
+        contact_no: contact_mobile,
+        product: merchantType,
+        partner_id: user.id,
+      })
+        .then((response) => {
+          if (!response.success) return;
+          if (user && user.isPartner('reseller')) {
+            this.setState((prevState) => ({
+              step: prevState.step + 1,
+              merchantEmail: params.email,
+            }));
+          } else {
+            showNotification?.({
+              type: 'success',
+              message: `Invite is sent successfully to the merchant's email provided`,
+            });
+            closeModal();
+          }
+          trackAddNewMerchantEvents('Submit Form');
+          this.onAddSuccess();
+        })
+        .catch(({ errors }) => {
+          showNotification?.({
+            type: 'error',
+            message: errors?.[0],
+          });
+        });
+    }
     return create?.({
       ...params,
       product: merchantType,
@@ -281,6 +325,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
       closeModal,
       createBatch,
       createCapitalBatch,
+      createReferralInvitesBatch,
       // eslint-disable-next-line prettier/prettier
     } = this.props;
     const { bulkContactsCount, file_id, merchantType } = this.state;
@@ -340,6 +385,30 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
             },
             toLumberjack: true,
           });
+          showNotification?.({
+            type: 'error',
+            message: 'Failed to invite.',
+          });
+        });
+    }
+    if (this.isPGInviteFlow()) {
+      return createReferralInvitesBatch?.({
+        file_id,
+        config: {
+          product: merchantType,
+        },
+      })
+        .then((response) => {
+          if (!response.success) return;
+          showNotification?.({
+            type: 'success',
+            message:
+              'Your file has been successfully processed. Status of invites creation will be sent to you within 2 hours.',
+          });
+          this.onAddSuccess();
+          closeModal();
+        })
+        .catch(() => {
           showNotification?.({
             type: 'error',
             message: 'Failed to invite.',
@@ -682,9 +751,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
     } = this.state;
     const partnerID = user?.id;
     const emailValidators = isEmailMandatory(user) ? [required(), email()] : [];
-    const accountNameValidators = user?.isMerchantValidation
-      ? [required(), name(), minLength(4), maxLength(255)]
-      : [required()];
+    const accountNameValidators = [required(), name(), minLength(4), maxLength(255)];
     const referralUrl = referralData ? referralData[merchantType]?.url : '';
 
     return (
@@ -857,9 +924,14 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
                   <div>
                     {/* Merchant Name */}
                     <div className="form-group">
-                      <label className="label-required">Account Name</label>
+                      {this.isPGInviteFlow() ? (
+                        <label className="label-required">Invitee Name</label>
+                      ) : (
+                        <label className="label-required">Account Name</label>
+                      )}
                       <Field
                         name="name"
+                        data-testid="input-name"
                         component={InputField}
                         className="form-control"
                         autoFocus
@@ -877,6 +949,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
                       </label>
                       <Field
                         name="email"
+                        data-testid="input-email"
                         component={InputField}
                         validate={emailValidators}
                         placeholder={isEmailMandatory(user) ? "Affiliate's email id" : 'Optional'}
@@ -893,25 +966,26 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
                       )}
                     </div>
 
-                    {this.isPartnershipForXEnabled ? (
-                      <div className="form-group">
-                        <label>Contact Number</label>
-                        <Field
-                          maxLength={MOBILE_NUMBER_MAX_LENGTH[this.countryCode]}
-                          name="contact_mobile"
-                          component={InputField}
-                          value={merchantContact}
-                          className="form-control"
-                          placeholder={ORG_CONTACT_PLACEHOLDER_TEXT[this.orgCode]}
-                          validate={this.contactNumberValidation()}
-                          onChange={this.handleFormChange}
-                          onFocus={this.handleFormFocus}
-                        />
-                      </div>
-                    ) : null}
+                    <div className="form-group">
+                      <label>Contact Number</label>
+                      <Field
+                        maxLength={MOBILE_NUMBER_MAX_LENGTH[this.countryCode]}
+                        name="contact_mobile"
+                        data-testid="input-contact"
+                        component={InputField}
+                        value={merchantContact}
+                        className="form-control"
+                        placeholder={ORG_CONTACT_PLACEHOLDER_TEXT[this.orgCode]}
+                        validate={this.contactNumberValidation()}
+                        onChange={this.handleFormChange}
+                        onFocus={this.handleFormFocus}
+                      />
+                    </div>
 
                     <span className="help-block">
-                      {this.orgName} account access link will be sent to your affiliate's email{' '}
+                      {this.isPGInviteFlow()
+                        ? `Razorpay account creation invite link will be sent via email and SMS(if contact number provided) to your affiliate`
+                        : `${this.orgName} account access link will be sent to your affiliate's email `}
                       {/* MobileNumber SMS Text will be added later */}
                       {/* {merchantContact ? 'and phone number' : ''} */}
                     </span>
@@ -1005,6 +1079,8 @@ export default compose<ComponentType<AddMerchantPropsT>>(
     validateBatch,
     validateCapitalBatch,
     createCapitalBatch,
+    createReferralInvitesBatch,
+    validateReferralInvitesBatch,
   }),
   reduxForm({
     form: 'addMerchant',

@@ -19,6 +19,7 @@ import {
 import { AffordabilityFeaturesFlag } from 'merchant/views/Affordability/AffordabilityWidget/Onboarding/data';
 import { filterByArray as filterByAffordabilityFlags } from 'merchant/views/Affordability/AffordabilityWidget/Onboarding/helper';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import { PARTNERSHIPS_INVITES_TAB_AUDIENCE_EPOCH } from 'merchant/constants/dates';
 
 export const ORG_CUSTOM_CODE_MAP = {
   RAZORPAY: 'rzp',
@@ -1229,6 +1230,25 @@ export default class User {
   get isFeEasyDashboardNCEnabled() {
     return getSplitzExperimentVariant('enable_easy_dashboard_nc')?.variables?.result === 'on';
   }
+
+  get isSubmOnboardingViaEasyEnabled() {
+    return (
+      getSplitzExperimentVariant('submerchant_onboarding_via_easy')?.variables?.result === 'on'
+    );
+  }
+
+  get isPartnershipsInviteFlowEnabled() {
+    const variant = getSplitzExperimentVariant('partnerships_invite_flow');
+    if (variant.name === 'whitelist') return true;
+    const isExperimentEnabled = variant?.variables?.result === 'on';
+    return (
+      isExperimentEnabled &&
+      this.created_at >= PARTNERSHIPS_INVITES_TAB_AUDIENCE_EPOCH &&
+      this.partner_type === 'reseller' &&
+      this.isOrgRZP
+    );
+  }
+
   get isAddReplyMigrationActive() {
     return getSplitzExperimentVariant('add_reply_migration')?.variables?.result === 'on';
   }
@@ -1703,11 +1723,6 @@ export default class User {
 
   get isPartnershipNPS() {
     const variant = getSplitzExperimentVariant('partnership_nps');
-    return variant?.name === 'exposed';
-  }
-
-  get isMerchantValidation() {
-    const variant = getSplitzExperimentVariant('merchant_validation');
     return variant?.name === 'exposed';
   }
 

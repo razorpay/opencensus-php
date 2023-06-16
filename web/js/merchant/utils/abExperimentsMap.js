@@ -55,13 +55,6 @@ export default {
     // prod experiment ids
     'H7UYFAJIqhQB0X',
   ],
-  merchant_validation: [
-    //beta experiment ids
-    'JNwT6Atz4PLiVh',
-
-    // prod experiment ids
-    'JOGEzmWNIoUy84',
-  ],
   partnership_nps: [
     // beta experiment ids
     'JLVDXyLyzWlTyI',
@@ -596,6 +589,18 @@ export default {
     'L3AHj3UNHRhUXQ',
     // prod
     'L3DutoiWP8H6Zn',
+  ],
+  submerchant_onboarding_via_easy: [
+    // beta
+    'Ll1axsqawpT8RI',
+    // prod
+    'Ll1Zh4tGjRH0IS',
+  ],
+  partnerships_invite_flow: [
+    // beta
+    'LyzXsFptQEsxOe',
+    // prod
+    'LyzRiHbeLOmhM2',
   ],
   bundle_pricing: [
     // beta

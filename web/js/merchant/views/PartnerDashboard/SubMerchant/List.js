@@ -1,4 +1,4 @@
-import { Fragment, Component } from 'react';
+import { Component, Suspense } from 'react';
 import { connect } from 'react-redux';
 import { Route, Switch, withRouter } from 'react-router-dom';
 
@@ -8,6 +8,7 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import RTracking from 'react-tracking';
 
 import ShowWhen from 'merchant/components/ShowWhen';
+import lazy from 'merchant/routes/LazyLoader';
 
 import PartnerOnbr from 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr';
 import AddMerchant from './AddMerchant';
@@ -20,6 +21,12 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import ProductWrapper from 'common/ui/ProductWrapper';
+import { Box, Spinner } from '@razorpay/blade/components';
+import PGInvitesNavLinks from './components/PGInviteNavLinks';
+
+const AllInvitesTable = lazy(() =>
+  import(/* webpackChunkName: "AllInvitesTable" */ './components/AllInvitesTable'),
+);
 
 @withRouter
 @connect(
@@ -73,9 +80,9 @@ export default class SubMerchantsList extends Component {
   getProductType = () => {
     const basePath = this.props?.match?.path;
     switch (this.props?.location?.pathname) {
-      case `${basePath}`: {
+      case `${basePath}`:
+      case `${basePath}/all`:
         return PRODUCT_TYPE.PG;
-      }
       case `${basePath}/x`: {
         return PRODUCT_TYPE.X;
       }
@@ -313,6 +320,7 @@ export default class SubMerchantsList extends Component {
                 ) : (
                   ''
                 )}
+
                 <Route
                   path={`${this.props.match.path}/`}
                   render={(props) => (
@@ -322,7 +330,34 @@ export default class SubMerchantsList extends Component {
                       referralData={this.state.referralData}
                     />
                   )}
+                  exact
                 />
+
+                {this.props.user.isPartnershipsInviteFlowEnabled && (
+                  <Route
+                    path={`${this.props.match.path}/all`}
+                    render={(props) => (
+                      <div className="content-wrapper">
+                        <PGInvitesNavLinks prefix={this.props.match.path} />
+                        <Suspense
+                          fallback={
+                            <Box
+                              minHeight="300px"
+                              display="flex"
+                              justifyContent="center"
+                              alignItems="center"
+                            >
+                              <Spinner accessibilityLabel="spinner" size="xlarge" />
+                            </Box>
+                          }
+                        >
+                          <AllInvitesTable {...props} />
+                        </Suspense>
+                      </div>
+                    )}
+                    exact
+                  />
+                )}
               </Switch>
             </div>
           </content>

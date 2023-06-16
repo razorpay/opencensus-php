@@ -449,6 +449,14 @@ export const createPartnerSubmerchantCapitalBatch = createBatch(
   'partner_submerchant_invite_capital',
 );
 
+// new invite flow
+export const validatePartnerSubmerchantReferralInvitesBatch = validateBatch(
+  'partner_submerchant_referral_invite',
+);
+export const createPartnerSubmerchantReferralInvitesBatch = createBatch(
+  'partner_submerchant_referral_invite',
+);
+
 /* direct debit batches */
 export const createPaymentsBatch = createBatch('direct_debit');
 export const fetchPaymentBatches = fetchBatches('direct_debit');

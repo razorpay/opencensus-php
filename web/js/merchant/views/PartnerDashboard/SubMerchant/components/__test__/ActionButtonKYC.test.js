@@ -1,20 +1,11 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen } from 'test-utils';
 import '@testing-library/jest-dom/extend-expect';
-import ActionButtonKYC from '../ActionButtonKYC';
-import { BrowserRouter as Router } from 'react-router-dom';
-import { ThemeProvider } from 'styled-components';
-import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme.web';
+import ActionButtonKYC from 'merchant/views/PartnerDashboard/SubMerchant/components/ActionButtonKYC';
 import moment from 'moment';
 
 describe('<ActionButtonKYC /> ', () => {
   test("Partner didn't request SubM", () => {
-    render(
-      <Router>
-        <ThemeProvider theme={theme}>
-          <ActionButtonKYC />
-        </ThemeProvider>
-      </Router>,
-    );
+    render(<ActionButtonKYC />);
     expect(screen.getByText('Request for KYC')).toBeInTheDocument();
   });
 
@@ -29,15 +20,11 @@ describe('<ActionButtonKYC /> ', () => {
         token_expiry: notExpiredTime,
       },
     };
-    const { container } = render(
-      <Router>
-        <ThemeProvider theme={theme}>
-          <ActionButtonKYC {...props} />
-        </ThemeProvider>
-      </Router>,
-    );
+    render(<ActionButtonKYC {...props} />);
     expect(screen.getByText('Perform KYC')).toBeInTheDocument();
-    const isButtonDisabled = container.firstChild.classList.contains('action-kyc-request-disable');
+    const isButtonDisabled = screen
+      .getByTestId('component-wrapper')
+      .firstChild.classList.contains('action-kyc-request-disable');
     expect(isButtonDisabled).toBe(true);
   });
 
@@ -52,15 +39,11 @@ describe('<ActionButtonKYC /> ', () => {
         token_expiry: expiredTime,
       },
     };
-    const { container } = render(
-      <Router>
-        <ThemeProvider theme={theme}>
-          <ActionButtonKYC {...props} />
-        </ThemeProvider>
-      </Router>,
-    );
+    render(<ActionButtonKYC {...props} />);
     expect(screen.getByText('Resend KYC request')).toBeInTheDocument();
-    const isButtonDisabled = container.firstChild.classList.contains('action-kyc-request-disable');
+    const isButtonDisabled = screen
+      .getByTestId('component-wrapper')
+      .firstChild.classList.contains('action-kyc-request-disable');
     expect(isButtonDisabled).toBe(false);
   });
 
@@ -75,15 +58,11 @@ describe('<ActionButtonKYC /> ', () => {
         token_expiry: expiredTime,
       },
     };
-    const { container } = render(
-      <Router>
-        <ThemeProvider theme={theme}>
-          <ActionButtonKYC {...props} />
-        </ThemeProvider>
-      </Router>,
-    );
+    render(<ActionButtonKYC {...props} />);
     expect(screen.getByText('Resend KYC request')).toBeInTheDocument();
-    const isButtonDisabled = container.firstChild.classList.contains('action-kyc-request-disable');
+    const isButtonDisabled = screen
+      .getByTestId('component-wrapper')
+      .firstChild.classList.contains('action-kyc-request-disable');
     expect(isButtonDisabled).toBe(false);
   });
 
@@ -98,15 +77,11 @@ describe('<ActionButtonKYC /> ', () => {
         token_expiry: expiredTime,
       },
     };
-    const { container } = render(
-      <Router>
-        <ThemeProvider theme={theme}>
-          <ActionButtonKYC {...props} />
-        </ThemeProvider>
-      </Router>,
-    );
+    render(<ActionButtonKYC {...props} />);
     expect(screen.getByText('Resend KYC request')).toBeInTheDocument();
-    const isButtonDisabled = container.firstChild.classList.contains('action-kyc-request-disable');
+    const isButtonDisabled = screen
+      .getByTestId('component-wrapper')
+      .firstChild.classList.contains('action-kyc-request-disable');
     expect(isButtonDisabled).toBe(false);
   });
 
@@ -121,15 +96,11 @@ describe('<ActionButtonKYC /> ', () => {
         token_expiry: expiredTime,
       },
     };
-    const { container } = render(
-      <Router>
-        <ThemeProvider theme={theme}>
-          <ActionButtonKYC {...props} />
-        </ThemeProvider>
-      </Router>,
-    );
+    render(<ActionButtonKYC {...props} />);
     expect(screen.getByText('Rejected Multiple times')).toBeInTheDocument();
-    const isButtonDisabled = container.firstChild.classList.contains('action-kyc-request-disable');
+    const isButtonDisabled = screen
+      .getByTestId('component-wrapper')
+      .classList.contains('action-kyc-request-disable');
     expect(isButtonDisabled).toBe(false);
   });
 
@@ -144,15 +115,11 @@ describe('<ActionButtonKYC /> ', () => {
         token_expiry: expiredTime,
       },
     };
-    const { container } = render(
-      <Router>
-        <ThemeProvider theme={theme}>
-          <ActionButtonKYC {...props} />
-        </ThemeProvider>
-      </Router>,
-    );
+    render(<ActionButtonKYC {...props} />);
     expect(screen.getByText('Perform KYC')).toBeInTheDocument();
-    const isButtonDisabled = container.firstChild.classList.contains('action-kyc-request-disable');
+    const isButtonDisabled = screen
+      .getByTestId('component-wrapper')
+      .firstChild.classList.contains('action-kyc-request-disable');
     expect(isButtonDisabled).toBe(false);
   });
 
@@ -167,15 +134,9 @@ describe('<ActionButtonKYC /> ', () => {
         token_expiry: expiredTime,
       },
     };
-    const { container } = render(
-      <Router>
-        <ThemeProvider theme={theme}>
-          <ActionButtonKYC {...props} />
-        </ThemeProvider>
-      </Router>,
-    );
+    render(<ActionButtonKYC {...props} />);
     expect(screen.queryByText('Perform KYC')).toBeNull();
-    expect(container.firstChild).toBe(null);
+    expect(screen.getByTestId('component-wrapper').firstChild).not.toBeInTheDocument();
   });
 
   test('Status is instantly_activated by Razorpay', () => {
@@ -189,15 +150,11 @@ describe('<ActionButtonKYC /> ', () => {
         token_expiry: expiredTime,
       },
     };
-    const { container } = render(
-      <Router>
-        <ThemeProvider theme={theme}>
-          <ActionButtonKYC {...props} />
-        </ThemeProvider>
-      </Router>,
-    );
+    render(<ActionButtonKYC {...props} />);
     expect(screen.queryByText('Resend KYC request')).toBeInTheDocument();
-    const isButtonDisabled = container.firstChild.classList.contains('action-kyc-request-disable');
+    const isButtonDisabled = screen
+      .getByTestId('component-wrapper')
+      .firstChild.classList.contains('action-kyc-request-disable');
     expect(isButtonDisabled).toBe(false);
   });
 });

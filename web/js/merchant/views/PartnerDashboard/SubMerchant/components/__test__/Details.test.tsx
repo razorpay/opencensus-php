@@ -50,9 +50,6 @@ describe('Submerchant Details', () => {
   afterEach(() => {
     cleanup();
   });
-  afterAll(() => {
-    server.close();
-  });
 
   test('should render spinner while data is fetching', () => {
     renderApp({ ...detailsProps, isLoading: true });

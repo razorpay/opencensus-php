@@ -6,7 +6,6 @@ export default function useTrackPartnerExperiments(user: UserT): void {
   const {
     isPartnershipForXEnabled,
     isSubMerchantKycResellerEnabled,
-    isMerchantValidation,
     isPartnershipNPS,
     isPartnershipFUX,
     isOnboardAsResellers,
@@ -30,7 +29,6 @@ export default function useTrackPartnerExperiments(user: UserT): void {
       properties: {
         isPartnershipForXEnabled,
         isSubMerchantKycResellerEnabled,
-        isMerchantValidation,
         isPartnershipNPS,
         isPartnershipFUX,
         isOnboardAsResellers,
@@ -46,7 +44,6 @@ export default function useTrackPartnerExperiments(user: UserT): void {
   }, [
     isPartnershipForXEnabled,
     isSubMerchantKycResellerEnabled,
-    isMerchantValidation,
     isPartnershipNPS,
     isPartnershipFUX,
     user,

@@ -1,7 +1,7 @@
 import ListFilter from 'merchant/components/ListFilter';
 import { Field } from 'redux-form';
 
-export default ({ type, showAppIdFilter, ...otherProps }) => (
+export default ({ type, showAppIdFilter, showMobileNumberFilter = false, ...otherProps }) => (
   <ListFilter {...otherProps}>
     <div class="form-group list-filter-item">
       <label>Account Name</label>
@@ -12,6 +12,13 @@ export default ({ type, showAppIdFilter, ...otherProps }) => (
       <label>Account ID</label>
       <Field name="id" component="input" class="form-control input-sm" />
     </div>
+
+    {showMobileNumberFilter && (
+      <div class="form-group list-filter-item">
+        <label>Phone Number</label>
+        <Field name="contact_mobile" component="input" class="form-control input-sm" />
+      </div>
+    )}
 
     <div class="form-group list-filter-item">
       <label>Email ID</label>

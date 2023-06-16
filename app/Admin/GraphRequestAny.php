@@ -170,6 +170,8 @@ class GraphRequestAny
         $devServeHeader = Request::header('rzpctx-dev-serve-user');
 
         $mobileDebugId = Request::header('x-mobile-debug-id');  // adding a unique key with value = ({userId}:{uniqueDeviceId}) to help in debugging issues for multiple platforms. This header will not be available for web applications.
+        
+        $rzpAccount = Request::header('x-razorpay-account');
 
         $defaultHeaders =  [
             'X-Dashboard'                           => 'true',
@@ -187,6 +189,7 @@ class GraphRequestAny
             'X-App-Mode'                            => $appMode,
             'rzpctx-dev-serve-user'                 => $devServeHeader,
             'X-Mobile-Debug-Id'                     => $mobileDebugId,
+            'X-Razorpay-Account'                    => $rzpAccount,
         ];
 
         if (app('request.ctx')->isOauthRequest() === true)

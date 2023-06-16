@@ -125,6 +125,7 @@ class Cors
                 'x-org-id',
                 'x-dashboard-merchant-id',
                 'x-dashboard-user-id',
+                'x-razorpay-account',
                 'request-start-time',
                 'sentry-trace',
                 'Authorization',

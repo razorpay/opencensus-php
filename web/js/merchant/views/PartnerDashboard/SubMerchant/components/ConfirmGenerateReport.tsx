@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, CloseIcon, Heading, Link, Text } from '@razorpay/blade/components';
-import { StyledConfirmGenerateReport } from './styled';
+import { StyledConfirmGenerateReport } from './styles';
 import imageExportAll from 'assets/partner-dashboard/export-all-csv-icon.svg';
 
 interface IConfirmGenerateReportProps {
