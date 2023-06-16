@@ -867,15 +867,6 @@ class Processor
                 return false;
             }
 
-            if ($merchant->isFeeBearerCustomerOrDynamic() === true )
-            {
-                $this->trace->info(TraceCode::DEBUG_LOGGING, [
-                    'reason' => "check_for_customer_or_dynamic_fee_bearer_rearch",
-                    'merchant_id' => $merchant->getId(),
-                ]);
-                return ($feeBearerResult === 'on');
-            }
-
             //transaction from cryptogram value
             $input[Payment\Entity::CARD][Card\Entity::NUMBER] = str_replace(' ', '', $input[Payment\Entity::CARD][Card\Entity::NUMBER]);
             $iinId = substr($input[Payment\Entity::CARD][Card\Entity::NUMBER], 0, 6);
@@ -933,6 +924,16 @@ class Processor
                 {
                     return false;
                 }
+            }
+
+            if ($merchant->isFeeBearerCustomerOrDynamic() === true )
+            {
+                $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                    'reason' => "check_for_customer_or_dynamic_fee_bearer_rearch",
+                    'merchant_id' => $merchant->getId(),
+                    '$feeBearerResult' => $feeBearerResult,
+                ]);
+                return ($feeBearerResult === 'on');
             }
 
 
