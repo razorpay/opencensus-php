@@ -124,6 +124,7 @@ export const getRepetitions = (dataDuration: string, custom?: boolean) => {
             {
               label: 'Monthly',
               value: 'monthly',
+              dateIndex: 1,
             },
           ];
     case 'past_quater':
