@@ -986,6 +986,12 @@ class Core extends Base\Core
         if ($transfer->getSourceType() === E::ORDER)
         {
             $payment = $transfer->source->payments()->where('status', 'captured')->first();
+
+            if($payment === null)
+            {
+                $payment = $transfer->source->payments()->where('status', 'refunded')->first();
+            }
+
         }
         else
         {
