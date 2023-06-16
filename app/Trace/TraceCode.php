@@ -1962,6 +1962,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SMART_COLLECT_TERMINAL_CACHING_UNAVAILABLE            = 'SMART_COLLECT_TERMINAL_CACHING_UNAVAILABLE';
     const SMART_COLLECT_TERMINAL_CACHING                        = 'SMART_COLLECT_TERMINAL_CACHING';
     const SMART_COLLECT_SET_TERMINAL_CACHE                      = 'SMART_COLLECT_SET_TERMINAL_CACHE';
+    const QR_CODE_PAYMENT_RETRY_STARTED                         = 'QR_CODE_PAYMENT_RETRY_STARTED';
+    const QR_CODE_PAYMENT_RETRY_CHECK                           = 'QR_CODE_PAYMENT_RETRY_CHECK';
     const QR_CODE_PAYMENT_PROCESSED                             = 'QR_CODE_PAYMENT_PROCESSED';
     const QR_PAYMENT_PROCESSING_FAILED                          = 'QR_PAYMENT_PROCESSING_FAILED';
     const PAYMENT_ENTITY_UPDATE                                 = 'PAYMENT_ENTITY_UPDATE';

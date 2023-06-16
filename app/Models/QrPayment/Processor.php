@@ -827,6 +827,11 @@ class Processor extends Base\Core
      */
     protected function retryProcessPayment(\Exception $ex, Entity $qrPayment)
     {
+        $this->trace->info(TraceCode::QR_CODE_PAYMENT_RETRY_CHECK,
+                           [
+                               'qr_payment' => $qrPayment->getId()
+                           ]);
+
         $variant = $this->app->razorx->getTreatment($this->qrCode->merchant->getId(),
                                                     RazorxTreatment::QR_PAYMENT_PROCESS_RETRY,
                                                     $this->mode);
@@ -855,6 +860,11 @@ class Processor extends Base\Core
         {
             throw $ex;
         }
+        
+        $this->trace->info(TraceCode::QR_CODE_PAYMENT_RETRY_STARTED,
+                           [
+                               'qr_payment' => $qrPayment->getId()
+                           ]);
 
         return $this->processPayment($qrPayment);
     }
