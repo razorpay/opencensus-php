@@ -76,7 +76,7 @@ class SubscriptionPaymentTest extends TestCase
 
         $this->mockOffer();
 
-        $this->subscriptionMock = $this->mockSubscription();
+        $this->subscription = $this->createSubscriptionEntity();
 
         $this->cardPayment = array_merge($this->getDefaultRecurringPaymentArray(), [
             'amount' => 99900,
@@ -121,6 +121,8 @@ class SubscriptionPaymentTest extends TestCase
 
     public function testCreateInitialPaymentCard()
     {
+        $this->subscriptionMock = $this->mockSubscription();
+
         $request = [
             'method'  => 'POST',
             'url'     => '/payments/create/ajax',
@@ -154,6 +156,8 @@ class SubscriptionPaymentTest extends TestCase
 
     public function testAutoPaymentCardInternational()
     {
+        $this->subscriptionMock = $this->mockSubscription();
+
         $mandateHQ = Mockery::mock('RZP\Services\MandateHQ', [$this->app]);
 
         $this->app->instance('mandateHQ', $mandateHQ);
@@ -231,6 +235,8 @@ class SubscriptionPaymentTest extends TestCase
 
     public function testAutoPaymentCardWithAVSFeature()
     {
+        $this->subscriptionMock = $this->mockSubscription();
+
         $mandateHQ = Mockery::mock('RZP\Services\MandateHQ', [$this->app]);
 
         $this->app->instance('mandateHQ', $mandateHQ);
@@ -314,6 +320,8 @@ class SubscriptionPaymentTest extends TestCase
 
     public function testFetchPaymentWithSubscriptionEmailAndContactNotNull()
     {
+        $this->subscriptionMock = $this->mockSubscription();
+
         $request = [
             'method'  => 'GET',
             'url'     => '/payments/data_fix/subscriptions/GTSXI0raxv1G2U',
@@ -357,6 +365,8 @@ class SubscriptionPaymentTest extends TestCase
 
     public function testAutoPaymentCardWithDCCAfterCardChange()
     {
+        $this->subscriptionMock = $this->mockSubscription();
+
         $this->subscription->customer_id = null;
 
         $this->mockSession();
@@ -518,6 +528,8 @@ class SubscriptionPaymentTest extends TestCase
 
     public function testAutoPaymentCardWithDCC()
     {
+        $this->subscriptionMock = $this->mockSubscription();
+
         $mandateHQ = Mockery::mock('RZP\Services\MandateHQ', [$this->app]);
 
         $this->app->instance('mandateHQ', $mandateHQ);
@@ -636,6 +648,8 @@ class SubscriptionPaymentTest extends TestCase
 
     public function testAutoPaymentCard()
     {
+        $this->subscriptionMock = $this->mockSubscription();
+
         $request = [
             'method'  => 'POST',
             'url'     => '/payments/create/ajax',
@@ -689,6 +703,8 @@ class SubscriptionPaymentTest extends TestCase
 
     public function testCardChangePaymentCardWithoutOtp()
     {
+        $this->subscriptionMock = $this->mockSubscription();
+
         $request = [
             'method'  => 'POST',
             'url'     => '/payments/create/ajax',
@@ -729,6 +745,8 @@ class SubscriptionPaymentTest extends TestCase
 
     public function testCreateInitialPaymentUpi()
     {
+        $this->subscriptionMock = $this->mockSubscription();
+
         $request = [
             'method'  => 'POST',
             'url'     => '/payments/create/ajax',
@@ -767,6 +785,8 @@ class SubscriptionPaymentTest extends TestCase
 
     public function testAutoPaymentUpi()
     {
+        $this->subscriptionMock = $this->mockSubscription();
+
         $request = [
             'method'  => 'POST',
             'url'     => '/payments/create/ajax',
@@ -814,6 +834,8 @@ class SubscriptionPaymentTest extends TestCase
 
     public function testCreateInitialPaymentWithoutCustomer()
     {
+        $this->subscriptionMock = $this->mockSubscription();
+
         $this->subscription->customer_id = null;
 
         $request = [
@@ -849,6 +871,8 @@ class SubscriptionPaymentTest extends TestCase
 
     public function testAutoPaymentWithoutCustomer()
     {
+        $this->subscriptionMock = $this->mockSubscription();
+
         $this->subscription->customer_id = null;
 
         $request = [
@@ -906,6 +930,8 @@ class SubscriptionPaymentTest extends TestCase
 
     public function testAutoPaymentWithGlobalCustomer()
     {
+        $this->subscriptionMock = $this->mockSubscription();
+
         $this->fixtures->create('customer', [
             'id' => '100002customer',
             'global_customer_id' => '10000gcustomer',
@@ -958,6 +984,8 @@ class SubscriptionPaymentTest extends TestCase
 
     public function testAutoPaymentLocalCustomerWithGlobalCustomerLink()
     {
+        $this->subscriptionMock = $this->mockSubscription();
+
         $mandateHQ = Mockery::mock('RZP\Services\MandateHQ', [$this->app]);
 
         $this->app->instance('mandateHQ', $mandateHQ);
@@ -1025,6 +1053,8 @@ class SubscriptionPaymentTest extends TestCase
 
     public function testAutoPaymentWithGlobalCustomerEmandate()
     {
+        $this->subscriptionMock = $this->mockSubscription();
+
         $this->fixtures->create('customer', [
             'id' => '100002customer',
             'global_customer_id' => '10000gcustomer',
@@ -1075,6 +1105,8 @@ class SubscriptionPaymentTest extends TestCase
 
     public function testCreateInitialPaymentUpiWithoutCustomer()
     {
+        $this->subscriptionMock = $this->mockSubscription();
+
         $this->subscription->customer_id = null;
 
         $request = [
@@ -1110,6 +1142,8 @@ class SubscriptionPaymentTest extends TestCase
 
     public function testAutoPaymentUpiWithoutCustomer()
     {
+        $this->subscriptionMock = $this->mockSubscription();
+
         $this->subscription->customer_id = null;
 
         $request = [
@@ -1159,6 +1193,8 @@ class SubscriptionPaymentTest extends TestCase
 
     public function testCreateInitialPaymentWithOtp()
     {
+        $this->subscriptionMock = $this->mockSubscription();
+
         $this->subscription->customer_id = null;
 
         $this->mockSession();
@@ -1191,6 +1227,8 @@ class SubscriptionPaymentTest extends TestCase
 
     public function testCardChangePaymentWithOtp()
     {
+        $this->subscriptionMock = $this->mockSubscription();
+
         $this->subscription->customer_id = null;
 
         $this->mockSession();
@@ -1248,7 +1286,7 @@ class SubscriptionPaymentTest extends TestCase
 
     public function testCreateInitialPaymentCardWithOffer()
     {
-
+        $this->subscriptionMock = $this->mockSubscription();
 
         $paymentBody = $this->cardPayment;
 
@@ -1277,6 +1315,8 @@ class SubscriptionPaymentTest extends TestCase
 
     public function testCreateInitialPaymentEMandate()
     {
+        $this->subscriptionMock = $this->mockSubscription();
+
         $this->createInitialPaymentEMandate();
 
         $payment = $this->getDbLastEntity(Entity::PAYMENT);
@@ -1300,6 +1340,8 @@ class SubscriptionPaymentTest extends TestCase
 
     public function testCreateDebitPaymentEMandate()
     {
+        $this->subscriptionMock = $this->mockSubscription();
+
         $this->addPricingPlanRule('10000000000000');
 
         $request = [
@@ -1351,6 +1393,8 @@ class SubscriptionPaymentTest extends TestCase
 
     public function testSubscriptionEmandateToken()
     {
+        $this->subscriptionMock = $this->mockSubscription();
+
         $this->createInitialPaymentEMandate();
 
         $token = $this->getDbLastEntity(Entity::TOKEN);
@@ -1368,6 +1412,55 @@ class SubscriptionPaymentTest extends TestCase
         $this->assertEquals('netbanking', $response['auth_type']);
 
         $this->assertEquals('HDFC', $response['bank']);
+    }
+
+    public function testRecurringPaymentSubscriptionFetch()
+    {
+        $merchant = $this->fixtures->create('merchant',[ 'id' => '100000merchant' ]);
+
+        $this->mockSubscriptionFetch();
+
+        $input = [
+            'amount' => 100,
+            'card' => [],
+            'method' => 'card',
+            'token' => 'tokenrandom123'
+        ];
+
+        $response = $this->app['module']->subscription->fetchSubscriptionInfo($input, $merchant);
+
+        $this->assertNotNull($response['id']);
+    }
+
+    protected function mockSubscriptionFetch()
+    {
+        $subscriptionMock = $this->getMockBuilder(Mock\External::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['sendRequest'])
+            ->getMock();
+
+        $subscriptionMock->method('sendRequest')
+            ->will($this->returnCallback(
+                function ()
+                {
+                    return $this->subscription;
+                }));
+
+        $moduleManagerMock = $this->getMockBuilder(Modules\Manager::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['createSubscriptionDriver'])
+            ->getMock();
+
+        $moduleManagerMock->method('createSubscriptionDriver')
+            ->will($this->returnCallback(
+                function () use ($subscriptionMock)
+                {
+                    return $subscriptionMock;
+                }));
+
+        $this->app->instance('module', $moduleManagerMock);
+
+        return $subscriptionMock;
     }
 
     protected function createInitialPaymentEMandate()
@@ -1391,8 +1484,6 @@ class SubscriptionPaymentTest extends TestCase
             ->setConstructorArgs([$this->app])
             ->setMethods(['fetchSubscriptionInfo', 'paymentProcess'])
             ->getMock();
-
-        $this->subscription = $this->createSubscriptionEntity();
 
         $subscriptionMock->method('fetchSubscriptionInfo')
             ->will($this->returnCallback(
