@@ -4767,6 +4767,15 @@ class Service extends Base\Service
 
         $payment->forceFill($input['payment']);
 
+        if ($payment->isRoutedThroughPaymentsUpiPaymentService() === true)
+        {
+            $rearchPayment = $input['payment'];
+
+            (new Payment\Entity)->modifyInput($rearchPayment);
+
+            $payment = (new Payment\Entity)->forceFill($rearchPayment);
+        }
+
         $merchant =  $this->repo->merchant->findByPublicId($payment->getMerchantId());
 
         $payment->merchant()->associate($merchant);
