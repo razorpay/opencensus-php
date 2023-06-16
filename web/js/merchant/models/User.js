@@ -501,6 +501,21 @@ export default class User {
     return this.getExpStatus('magic_rto_analytics_v2_live');
   }
 
+  get isMagicPrepayCODEnabled() {
+    const accessRoles = [
+      rolesList.OWNER,
+      rolesList.ADMIN,
+      rolesList.MANAGER,
+      rolesList.OPERATIONS,
+      rolesList.FINANCE,
+    ];
+
+    return (
+      getSplitzExperimentVariant('magic_prepay_cod')?.variables?.result === 'on' &&
+      accessRoles.indexOf(this.userRole) > -1
+    );
+  }
+
   get isMagicOrderAnalyticsEnabled() {
     return getSplitzExperimentVariant('magic_order_analytics')?.variables?.result === 'on';
   }

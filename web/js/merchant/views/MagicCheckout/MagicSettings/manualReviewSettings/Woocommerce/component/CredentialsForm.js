@@ -7,7 +7,14 @@ import Button from 'common/new-ui/Button';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { WOOCOMMERCE_REST_API_URL } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 
-const CredentialsForm = ({ closeModal, platform, setCodOrderControl, shippingInfo }) => {
+const CredentialsForm = ({
+  closeModal,
+  platform,
+  submitCredentials,
+  shippingInfo,
+  modalDesc,
+  customCloseModal,
+}) => {
   const [consumerSecret, setConsumerSecret] = useState('');
   const [consumerKey, setConsumerKey] = useState('');
   const [isCtaEnabled, setIsCtaEnabled] = useState(false);
@@ -23,20 +30,20 @@ const CredentialsForm = ({ closeModal, platform, setCodOrderControl, shippingInf
 
   const onSubmit = useCallback(() => {
     setIsCtaEnabled(false);
-    setCodOrderControl({
+    submitCredentials({
       api_key: consumerKey,
       api_secret: consumerSecret,
     });
-  }, [platform, consumerSecret, consumerKey, setIsCtaEnabled, setCodOrderControl]);
+  }, [platform, consumerSecret, consumerKey, setIsCtaEnabled, submitCredentials]);
 
   return (
     <div className="woocommerce-credentials-form">
-      <ModalHeader onCloseClick={closeModal} extraClass="form-title" />
+      <ModalHeader
+        onCloseClick={typeof customCloseModal === 'function' ? customCloseModal : closeModal}
+        extraClass="form-title"
+      />
       <div className="form-header font-bold color-black">WooCommerce API credentials</div>
-      <div className="form-desc">
-        Magic Checkout requires WooCommerce API credentials to update status of orders based on
-        actions you take on the orders.
-      </div>
+      <div className="form-desc">{modalDesc}</div>
       <div className="form-content">
         <div className="row">
           <InputField

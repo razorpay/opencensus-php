@@ -15,7 +15,7 @@ import {
   PLATFORMS,
   MANUAL_REVIEW_MODAL,
 } from 'merchant/views/MagicCheckout/MagicSettings/constants';
-import { SWITCH_TEXTS } from 'merchant/views/MagicCheckout/Settings/constants';
+import { SWITCH_TEXTS, CREDENTIALS_MODAL } from 'merchant/views/MagicCheckout/Settings/constants';
 
 const MagicIntelligenceTab = ({
   settings,
@@ -24,6 +24,7 @@ const MagicIntelligenceTab = ({
   closeModal,
   showNotification,
   merchantId,
+  isPrepayCODEnabled,
 }) => {
   const { cod_intelligence, platform, shop_id, manualControlCodOrder } = settings;
   const [codIntelligence, setCodIntelligence] = useState(cod_intelligence || false);
@@ -80,9 +81,8 @@ const MagicIntelligenceTab = ({
 
           setCodIntelligence((prevState) => !prevState);
           setCodOrderControl(false);
-          closeModal();
         })
-        .catch(() => {
+        .finally(() => {
           closeModal();
         });
     },
@@ -142,7 +142,7 @@ const MagicIntelligenceTab = ({
           closeModal();
         })
         .catch(() => {
-          toggleState && closeModal();
+          closeModal();
         });
     },
     [codOrderControl, platform, shop_id, closeModal, showNotification],
@@ -156,7 +156,8 @@ const MagicIntelligenceTab = ({
         component: (
           <ReviewModal
             platform={platform}
-            setCodOrderControl={(payload) => switchReviewMode(modalState, payload)}
+            submitCredentials={(payload) => switchReviewMode(modalState, payload)}
+            modalDesc={CREDENTIALS_MODAL[platform]?.desc}
           />
         ),
       });
@@ -165,7 +166,7 @@ const MagicIntelligenceTab = ({
   );
 
   const getAction = (toggleState) => {
-    return !toggleState && platform !== 'shopify'
+    return !toggleState && !isPrepayCODEnabled && platform !== 'shopify'
       ? () => switchReviewToggle(toggleState)
       : () => switchReviewMode(toggleState);
   };
@@ -181,9 +182,8 @@ const MagicIntelligenceTab = ({
       const modalAction =
         modalSource === 'codIntelligence' ? () => switchMode(toggleState) : getAction(toggleState);
       const modalState = !toggleState ? 'enable' : 'disable';
-      const { header, desc, subText, secondaryCtaLabel, primaryCtaLabel } = SWITCH_TEXTS[
-        modalState
-      ][modalType];
+      const { header, desc, subText, secondaryCtaLabel, primaryCtaLabel } =
+        SWITCH_TEXTS[modalState][modalType];
 
       openModal({
         size: 'small',
@@ -230,6 +230,7 @@ const MagicIntelligenceTab = ({
 const mapStateToProps = (state) => ({
   settings: state.magic_settings,
   merchantId: state.config?.config?.id,
+  isPrepayCODEnabled: state.magicCheckout?.one_cc_prepay_cod_conversion,
 });
 
 const mapDispatchToProps = (dispatch) =>

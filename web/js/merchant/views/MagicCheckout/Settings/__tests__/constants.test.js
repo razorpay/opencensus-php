@@ -4,6 +4,7 @@ describe('testing constants', () => {
   test('condition should return true if feature is enabled', () => {
     const user = {
       isMagicCODOrderAutomationEnabled: true,
+      isMagicPrepayCODEnabled: true,
       isMagicCODEngineEnabled: true,
       role: 'owner',
     };
@@ -19,6 +20,7 @@ describe('testing constants', () => {
   test('condition should return false if feature is not enabled', () => {
     const user = {
       isMagicCODOrderAutomationEnabled: false,
+      isMagicPrepayCODEnabled: false,
       role: 'manager',
     };
     Object.keys(TABS).forEach((platform) => {

@@ -202,6 +202,7 @@ class Service extends Base\Service
             'capital_cards_nach_payment',
             'rx_vendor_balances_rollout',
             '1cc_shopify_magic_enable',
+            '1cc_wooc_magic_enable',
             'enable_workbox',
             'pp_onboarding_redirection_exp',
             'rx_todo_v1',

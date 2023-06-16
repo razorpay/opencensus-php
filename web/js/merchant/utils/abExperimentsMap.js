@@ -92,6 +92,13 @@ export default {
     // prod experiment ids
     'Hf48AFfhZIa1cH',
   ],
+  magic_prepay_cod: [
+    //beta experiment id
+    'LwajlLeGO2uDm7',
+
+    //prod experiment id
+    'LyzIbqJ3ETSBN9',
+  ],
   ultra_p2_cash_advance_banner_experiment: [
     // beta experiment ids
     'HzfUh5Z1nw1toU',

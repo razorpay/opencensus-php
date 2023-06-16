@@ -1,0 +1,126 @@
+.ReactModal__Content.expire-link-confirmation
+  max-width: 400px
+
+  .confirmation-modal
+    padding: 24px
+
+  .confirmation-modal > .modal-header
+    padding: 0
+    color: #262D3A
+    font-size: 16px
+
+  .confirmation-modal > .confirmation-modal-subtext
+    margin-top: 14px
+
+  .confirmation-modal > .confirmation-modal-ctas-container
+    margin-top: 8px
+
+    .confirmation-modal-primary-cta
+      padding: 8px 20px
+      border-radius: 2px
+
+    .confirmation-modal-secondary-cta
+      margin-right: 16px
+
+.cod-to-prepaid-container
+  background: #FFF
+
+.cod-prepaid-status-container
+  padding: 24px
+
+  .Input
+    margin: 0
+    padding: 0
+    border: none
+
+  .Input-el
+    height: 30px
+
+  .btn-toolbar
+    position: relative
+    top: -4px
+
+  .list-filter-container > .datepicker-group
+    .PowerSelect__TriggerLabel
+      top: 5px
+      position: relative
+
+    .PowerSelect__TriggerStatus
+      top: 11px
+
+  .intelligence-filters
+    .btn-toolbar
+      margin-top: 0
+      margin-bottom: 0
+      top: 0
+
+  .expire-action
+    color: #528FF0
+
+  .multi-select-header
+    padding: 16px 18px
+
+    .multi-action-toolbar
+      margin-left: 20px
+
+      .action-btn
+        padding: 4px 6px
+
+      .expire-action:hover
+        background-color: #F9FBFF
+
+  .table.magic-cod-orders-table
+    th
+      &:last-child
+        text-align: center
+
+    td
+      &:last-child
+        text-align: center
+
+    .status-label.paid
+      color: #1F890E
+      background: #1F890E1A
+
+    .status-label.sent
+      color: #0B70E7
+      background: #0B70E71A
+
+    .status-label.expired,
+    .status-label.cancelled
+      color: #162F56
+      background: #162F561A
+
+    .status-label.failed
+      color: #D12D2D
+      background: #D12D2D1A
+
+    .action-toolbar
+      display: flex
+      justify-content: center
+
+      .action-btn
+        padding: 4px 6px
+
+      .magic-action-popover.expire-action-popover > .rzp-tooltip-inner
+        left: -12px
+
+      .expire-action:hover
+        background-color: #ECEEF1
+
+    .action-toolbar.disable
+      .expire-action:hover
+        background: none
+
+  .table.magic-cod-orders-table.intelligence-table
+    .action-toolbar
+      .magic-action-popover.expire-action-popover > .rzp-tooltip-inner
+        left: -7px
+
+.Notifications.magic-cod-prepaid-notification
+  width: fit-content
+
+  .Notification--error > .i-close
+    position: relative
+    top: 2px
+    left: 8px

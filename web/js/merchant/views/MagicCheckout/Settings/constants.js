@@ -10,6 +10,8 @@ import NativeShippingWrapper from 'merchant/views/MagicCheckout/MagicSettings/co
 
 import CODOrderAutomation from 'merchant/views/MagicCheckout/CODOrderAutomation';
 
+import ConfigDashboard from 'merchant/views/MagicCheckout/CODToPrepaid/ConfigsDashboard';
+
 export const PLATFORMS = {
   SHOPIFY: 'shopify',
   WOOCOMMERCE: 'woocommerce',
@@ -48,6 +50,13 @@ export const TABS = {
       Component: CODOrderAutomation,
       condition: (_user) => _user.isMagicCODOrderAutomationEnabled,
     },
+    {
+      className: 'pl-configurations-container',
+      path: '/magic/settings/cod-to-prepaid',
+      label: 'Convert COD to Prepaid',
+      Component: ConfigDashboard,
+      condition: (_user) => _user.isMagicPrepayCODEnabled,
+    },
   ],
   [PLATFORMS.WOOCOMMERCE]: [
     {
@@ -78,6 +87,13 @@ export const TABS = {
       label: 'COD Review Workflow',
       Component: CODOrderAutomation,
       condition: (_user) => _user.isMagicCODOrderAutomationEnabled,
+    },
+    {
+      className: 'pl-configurations-container',
+      path: '/magic/settings/cod-to-prepaid',
+      label: 'Convert COD to Prepaid',
+      Component: ConfigDashboard,
+      condition: (_user) => _user.isMagicPrepayCODEnabled,
     },
   ],
   [PLATFORMS.NATIVE]: [
@@ -168,6 +184,11 @@ export const SWITCH_TEXTS = {
   },
 };
 
+export const CREDENTIALS_MODAL = {
+  woocommerce: {
+    desc: 'Magic Checkout requires WooCommerce API credentials to update status of orders based on actions you take on the orders.',
+  },
+};
 export const COD_SETTINGS_INFO = `Use this setting to enable COD on your store and configure the rules for selectively
 showing COD to customers based on location, products, etc. as well as for setting the
 COD fees. Please note that this will override any COD settings on your

@@ -24,6 +24,7 @@ const MagicCheckout = ({
   magicCheckout,
   fetchIntelligenceConfig,
   resetIntelligenceConfig,
+  platform,
 }) => {
   useEffect(() => {
     fetchStatus();
@@ -69,6 +70,8 @@ const MagicCheckout = ({
         user={user}
         isCODIntelligenceEnabled={magicCheckout?.cod_intelligence}
         isCODOrderControlEnabled={magicCheckout?.cod_order_control}
+        isPrepayCODEnabled={magicCheckout?.one_cc_prepay_cod_conversion}
+        platform={platform}
       />
     );
   }
@@ -100,6 +103,7 @@ function getOnBoardingSliderDots() {
 const mapStateToProps = (state) => ({
   user: state.session.user,
   magicCheckout: state.magicCheckout,
+  platform: state.magic_settings.platform,
 });
 
 const mapDispatchToProps = (dispatch) => ({

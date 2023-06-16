@@ -1,5 +1,6 @@
 import moment from 'moment';
-import CustomerDetails from './CustomerDetails';
+import CustomerDetails from 'merchant/views/MagicCheckout/CODOrdersTab/orderInfoDrawer/components/CustomerDetails';
+
 import {
   RISK_TIER_COLOR_MAPPING,
   RISK_TIER_LABEL,
@@ -37,12 +38,35 @@ export const rtoRisk = {
 
 export const amount = {
   title: 'Order Amount',
-  value: (item) => item.amount / 100 ?? '-',
+  value: (item) => (item?.amount >= 0 ? `₹ ${item.amount / 100}` : '-'),
 };
 
 export const customerDetails = {
   title: 'Customer Details',
   value: (item) => <CustomerDetails item={item} />,
+};
+
+export const discount = {
+  title: 'Discount',
+  value: (item) => {
+    const { discount } = item?.magic_payment_link;
+    return discount ? `₹ ${discount / 100} off` : 'N/A';
+  },
+  columnClass: 'discount',
+};
+
+export const expiredOn = {
+  title: 'Expired On',
+  value: (item) => {
+    const { expired_on } = item?.magic_payment_link;
+    if (!expired_on) return 'N/A';
+
+    const date = new Date(expired_on * 1000);
+    const fullDate = moment(date).format(DATE_FORMAT);
+
+    return fullDate;
+  },
+  columnClass: 'expire-date',
 };
 
 export const riskReason = {

@@ -11,7 +11,7 @@ export const sortDateUtil = (itemsArray, sortType) =>
     ? [...itemsArray].sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
     : [...itemsArray].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-export const sortRiskTierUtil = (itemsArray, sortType) => {
+export const sortRiskTierUtil = (itemsArray = [], sortType) => {
   const high = itemsArray.filter((a) => a.risk_tier === RISK_TIER.high);
   const low = itemsArray.filter((a) => a.risk_tier === RISK_TIER.low);
   const medium = itemsArray.filter((a) => a.risk_tier === RISK_TIER.medium);

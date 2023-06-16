@@ -60,9 +60,9 @@ const OrderFilters = ({
       <CODAutomationBanner />
       <ListFilter form={`${formName}-form`} onSubmit={onSubmitHandler} resetHandler={resetHandler}>
         <div className="form-group list-filter-item">
-          <label for="order-id">Razorpay Order Id</label>
+          <label for="magic-prepay-order-id">Razorpay Order Id</label>
           <input
-            id="order-id"
+            id="magic-prepay-order-id"
             type="text"
             name="id"
             className="form-control input-sm"
@@ -71,9 +71,9 @@ const OrderFilters = ({
           />
         </div>
         <div className="form-group list-filter-item">
-          <label for="receipt">Receipt</label>
+          <label for="magic-prepay-receipt">Receipt</label>
           <input
-            id="receipt"
+            id="magic-prepay-receipt"
             type="text"
             name="receipt"
             className="form-control input-sm"

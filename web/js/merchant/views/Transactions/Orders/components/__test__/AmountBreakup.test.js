@@ -58,4 +58,22 @@ describe('Orders AmountBreakup component', () => {
     });
     expect(screen.getByText(/Taxes/i)).toBeInTheDocument();
   });
+
+  it('should show the magic prepay discount', () => {
+    expandBreakupComponent({
+      promotions: [
+        ...order.promotions,
+        {
+          type: 'prepay_discount',
+          value: 10000,
+        },
+      ],
+    });
+    expect(screen.getByText(/^COD to Prepaid discount?/i)).toBeInTheDocument();
+  });
+
+  it('should show COD charge', () => {
+    expandBreakupComponent({ cod_fee: 50 });
+    expect(screen.getByText(/^COD charges?/i)).toBeInTheDocument();
+  });
 });

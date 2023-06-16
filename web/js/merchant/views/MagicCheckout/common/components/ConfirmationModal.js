@@ -13,7 +13,8 @@ export const DisplayNotificationTxt = ({ notificationTxt }) => (
 );
 
 const ConfirmationModal = (props) => {
-  const { header, subText, desc, affirmativeLabel, abortLabel, onAffirm, closeModal } = props;
+  const { header, subText, desc, affirmativeLabel, abortLabel, onAffirm, closeModal, onAbort } =
+    props;
   const [disableCta, setDisableCta] = useState(false);
 
   const onConfirm = () => {
@@ -21,13 +22,15 @@ const ConfirmationModal = (props) => {
     onAffirm();
   };
 
+  const handleClick = () => (typeof onAbort === 'function' ? onAbort : closeModal);
+
   return (
     <div className="confirmation-modal">
       <ModalHeader title={header} extraClass="no-padding" onCloseClick={closeModal} />
       <div className="font-bold confirmation-modal-subtext">{subText}</div>
       <div className="confirmation-modal-desc">{desc}</div>
       <div className="confirmation-modal-ctas-container">
-        <Button type="button" className="confirmation-modal-secondary-cta" onClick={closeModal}>
+        <Button type="button" className="confirmation-modal-secondary-cta" onClick={handleClick}>
           {abortLabel}
         </Button>
         <Button

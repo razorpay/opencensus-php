@@ -70,6 +70,11 @@ import { addressBatchesReducer } from 'merchant/reducers/magicCheckout/bulk_addr
 import { orderStatusBatchesReducer } from 'merchant/reducers/magicCheckout/bulk_order_statuses';
 import magicRTOAnalyticsReducer from 'merchant/reducers/magicCheckout/rtoAnalytics/reducer';
 import { magicCODOrdersAutomationReducer } from 'merchant/reducers/magicCheckout/codOrderAutomation/reducer';
+import { magicPrepayCODConfigsReducer } from 'merchant/reducers/magicCheckout/prepayCOD/configDashboard/reducers';
+import {
+  magicPrepayCODOrdersReducer,
+  magicPrepayCODOrderInfoReducer,
+} from 'merchant/reducers/magicCheckout/prepayCOD/orderConversionTab/reducers';
 import { rtoHistoryUploadReducer } from 'merchant/reducers/magicCheckout/rtoHistoryUpload/reducer';
 import {
   magicCODOrdersReducer,
@@ -257,9 +262,12 @@ export default combineReducers({
   magicCheckout: magicCheckoutReducer,
   magic_settings: magicSettingsReducer,
   magicRTOAnalytics: magicRTOAnalyticsReducer,
+  magicPrepayCODOrders: magicPrepayCODOrdersReducer,
+  magicPrepayCODOrderInfo: magicPrepayCODOrderInfoReducer,
   magicCODOrders: magicCODOrdersReducer,
   magicCODOrderInfo: magicCODOrderInfoReducer,
   magicCODOrdersAutomation: magicCODOrdersAutomationReducer,
+  magicPrepayCODConfigs: magicPrepayCODConfigsReducer,
   magicCODEngine: magicCODSettingsReducer,
   magicBlocklist: blocklistReducer,
   magicAllowlist: allowlistReducer,

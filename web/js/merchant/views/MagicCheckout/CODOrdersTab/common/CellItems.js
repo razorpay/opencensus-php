@@ -51,8 +51,16 @@ export const date = (sortDate) => ({
     <div className="date-container">
       Date
       <div className="container-actions">
-        <i className="i i-arrow-up" onClick={() => sortDate('descend')} />
-        <i className="i i-arrow-down" onClick={() => sortDate('ascend')} />
+        <i
+          className="i i-arrow-up"
+          data-testid="date-ascend-arrow"
+          onClick={() => sortDate('descend')}
+        />
+        <i
+          className="i i-arrow-down"
+          data-testid="date-descend-arrow"
+          onClick={() => sortDate('ascend')}
+        />
       </div>
     </div>
   ),
@@ -71,8 +79,12 @@ export const rtoRisk = (sort) => ({
     <div className="risk-container">
       RTO Risk
       <div className="container-actions">
-        <i className="i i-arrow-up" onClick={() => sort('descend')} />
-        <i className="i i-arrow-down" onClick={() => sort('ascend')} />
+        <i className="i i-arrow-up" data-testid="riskTier-ascend" onClick={() => sort('descend')} />
+        <i
+          className="i i-arrow-down"
+          data-testid="riskTier-descend"
+          onClick={() => sort('ascend')}
+        />
       </div>
     </div>
   ),

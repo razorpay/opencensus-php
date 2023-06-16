@@ -6,11 +6,19 @@ import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import { ACCESS_ROLES } from 'merchant/views/MagicCheckout/Settings/constants';
 
 let redirectPath;
-const RouteContainer = ({ user, isCODIntelligenceEnabled, isCODOrderControlEnabled }) => {
+const RouteContainer = ({
+  user,
+  isCODIntelligenceEnabled,
+  isCODOrderControlEnabled,
+  isPrepayCODEnabled,
+  platform,
+}) => {
   const renderNav = useCallback(
     (item) => {
       if (item.tabName === 'RTO Analytics' && !isCODIntelligenceEnabled) return null;
       if (item.tabName === 'COD Orders' && !isCODOrderControlEnabled) return null;
+      if (item.tabName === 'COD Order Conversion' && (platform === 'native' || !isPrepayCODEnabled))
+        return null;
       if (item.condition && !item.condition(user)) return null;
       if (
         item.tabName === 'Settings' &&
@@ -27,7 +35,7 @@ const RouteContainer = ({ user, isCODIntelligenceEnabled, isCODOrderControlEnabl
         </NavLink>
       );
     },
-    [redirectPath, user, isCODIntelligenceEnabled, isCODOrderControlEnabled],
+    [redirectPath, user, isCODIntelligenceEnabled, isCODOrderControlEnabled, platform],
   );
   return (
     <tabbed-container>
@@ -58,5 +66,4 @@ const RouteContainer = ({ user, isCODIntelligenceEnabled, isCODOrderControlEnabl
     </tabbed-container>
   );
 };
-
 export default RouteContainer;

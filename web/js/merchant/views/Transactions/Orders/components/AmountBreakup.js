@@ -15,16 +15,21 @@ export default ({ order }) => {
     promotions,
     amount,
     tax_details,
+    cod_fee,
   } = order || {};
   const giftCardType = 'gift_card';
+  const magicPrepayCODDiscountType = 'prepay_discount';
+
   const { id: offerId, name: offerName, discount } = offer || {};
   const giftCardList = [];
-  let coupon;
+  let coupon, magicPrepayDiscount;
 
   if (Array.isArray(promotions)) {
     promotions.forEach((promotion) => {
       if (promotion.type === giftCardType) {
         giftCardList.push(promotion);
+      } else if (promotion.type === magicPrepayCODDiscountType) {
+        magicPrepayDiscount = promotion;
       } else {
         coupon = promotion;
       }
@@ -81,10 +86,24 @@ export default ({ order }) => {
               </div>
             </div>
           ) : null}
+          {magicPrepayDiscount?.value >= 0 ? (
+            <div className="magic-checkout-row">
+              <div className="magic-checkout-green">COD to Prepaid discount</div>
+              <div className="magic-prepay-discount-value">
+                - <Amount value={magicPrepayDiscount.value} currency={currency} />
+              </div>
+            </div>
+          ) : null}
           <div className="magic-checkout-row">
             <div>Shipping Charges</div>
             <div>
               + <Amount value={shipping_fee || 0} currency={currency} />
+            </div>
+          </div>
+          <div className="magic-checkout-row">
+            <div>COD Charges</div>
+            <div>
+              + <Amount value={cod_fee || 0} currency={currency} />
             </div>
           </div>
           {giftCardList.map(({ code, value }) => (
