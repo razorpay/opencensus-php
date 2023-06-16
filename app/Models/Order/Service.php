@@ -88,12 +88,6 @@ class Service extends Base\Service
 
             $this->app['diag']->trackOrderEvent(EventCode::ORDER_CREATION_PROCESSED, null, $ex, $properties);
 
-            $dimensions = [
-                'source'    => 'api',
-                'code'      => $ex->getMessage()
-            ];
-            $this->trace->count(TraceCode::ORDERS_FAILURE_COUNT, $dimensions);
-
             throw $ex;
         }
 
