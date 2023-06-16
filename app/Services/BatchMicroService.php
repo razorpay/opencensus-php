@@ -397,14 +397,20 @@ class BatchMicroService
                                                         ErrorCode::SERVER_ERROR_BATCH_SERVICE_NOT_CALLED);
         }
 
+        $headers = [
+            'mode' => $options['mode']
+        ];
+
+        if(!empty(Request::header(RequestHeader::DEV_SERVE_USER))){
+            $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
+        }
+
         $requestOptions = [
             'auth'    => [
                 $this->username,
                 $this->secret,
             ],
-            'headers' => [
-                'mode' => $options['mode'],
-            ],
+            'headers' => $headers,
         ];
 
         if(isset($options['X-Entity-Id']) == true)
