@@ -90,4 +90,7 @@ class Constants
     const MERCHANT_SELECTED_PLUGIN = 'merchant_selected_plugin';
 
     const WEBSITE = 'website';
+
+    // Fields not present in Entity, but in database. Added for ASV migration.
+    const GST_DETAILS = 'gst_details';
 }

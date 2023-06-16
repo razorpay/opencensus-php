@@ -10,6 +10,7 @@ use Razorpay\Asv\Error\GrpcError;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BaseException;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant;
 use RZP\Exception;
 use Razorpay\Asv\DbSource;
@@ -135,5 +136,33 @@ class Base
 
                 throw $err;
         }
+    }
+
+    /**
+     * @throws BadRequestException
+     * @throws BaseException|\Exception
+     */
+    public function getLatestByMerchantId(string $id, RequestMetadata $requestMetadata = null): ?PublicEntity
+    {
+        try {
+            $entitiesForMerchantId = $this->getByMerchantId($id, $requestMetadata);
+        } catch (\Exception $e) {
+            if($e->getCode() == ErrorCode::BAD_REQUEST_INVALID_ARGUMENT) {
+                return null;
+            }
+
+            throw $e;
+        }
+
+        // Account Service, By default returns the ordering by created at desc. To get the latest element
+        // we need to return the first element from the response.
+        return $entitiesForMerchantId->first();
+    }
+
+    public function getLatestByMerchantIdCallBack(string $id, ?RequestMetadata $requestMetadata = null): \Closure
+    {
+        return function() use ($id, $requestMetadata) {
+            return $this->getLatestByMerchantId($id, $requestMetadata);
+        };
     }
 }

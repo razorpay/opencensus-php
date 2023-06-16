@@ -1,6 +1,6 @@
 <?php
 
-namespace Models\Merchant\Website;
+namespace Unit\Models\Merchant\Website;
 
 use Razorpay\Asv\Error\GrpcError;
 use Rzp\Accounts\Merchant\V1\MerchantWebsiteResponse;

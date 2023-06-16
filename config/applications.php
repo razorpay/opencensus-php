@@ -1473,6 +1473,10 @@ return [
         'splitz_experiment_merchant_email_read_by_merchant_id' => env('ASV_SPLITZ_EXPERIMENT_MERCHANT_EMAIL_READ_BY_MERCHANT_ID', ''),
         'splitz_experiment_merchant_email_read_by_type_and_merchant_id' => env('ASV_SPLITZ_EXPERIMENT_MERCHANT_EMAIL_READ_BY_TYPE_AND_MERCHANT_ID', ''),
         'splitz_experiment_merchant_email_read_by_id' => env('ASV_SPLITZ_EXPERIMENT_MERCHANT_EMAIL_READ_BY_ID', ''),
+        'splitz_experiment_merchant_business_detail_read_by_merchant_id' => env('ASV_SPLITZ_EXPERIMENT_BUSINESS_DETAIL_READ_BY_MERCHANT_ID', ''),
+        'splitz_experiment_merchant_business_detail_read_by_id' => env('ASV_SPLITZ_EXPERIMENT_BUSINESS_DETAIL_READ_BY_ID', ''),
+        'splitz_experiment_merchant_document_read_by_type_and_merchant_id' => env('ASV_SPLITZ_EXPERIMENT_MERCHANT_DOCUMENT_READ_BY_TYPE_AND_MERCHANT_ID', ''),
+        'splitz_experiment_merchant_document_read_by_id' => env('ASV_SPLITZ_EXPERIMENT_MERCHANT_DOCUMENT_READ_BY_ID', ''),
     ],
 
     'recon'         => [

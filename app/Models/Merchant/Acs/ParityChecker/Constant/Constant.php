@@ -46,6 +46,10 @@ class Constant
 
     const MERCHANT_EMAIL  = 'merchant_email';
 
+    const MERCHANT_DOCUMENT = 'merchant_document';
+
+    const MERCHANT_BUSINESS_DETAIL  = 'merchant_business_detail';
+
     const ENTITY = 'entity';
 
     const MERCHANT_ID = 'merchant_id';

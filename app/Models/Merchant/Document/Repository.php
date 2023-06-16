@@ -4,32 +4,51 @@ namespace RZP\Models\Merchant\Document;
 
 use RZP\Base\ConnectionType;
 use RZP\Models\Base;
-use RZP\Modules\Acs\Wrapper\MerchantDocument;
-use RZP\Models\Merchant\Document\Entity as MerchantDocumentEntity;
+use RZP\Models\Merchant\Acs\traits\AsvFetchCommon;
+use RZP\Models\Merchant\Acs\traits\AsvFind;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as ASVV2Constant;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantDocument as MerchantDocumentSDKWrapper;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 
 class Repository extends Base\Repository
 {
     use Base\RepositoryUpdateTestAndLive;
+    use AsvFetchCommon;
+    use AsvFind;
 
     protected $entity             = 'merchant_document';
+
+    public $asvRouter;
 
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID   => 'sometimes|alpha_num',
         Entity::DOCUMENT_TYPE => 'sometimes|string|max:255'
     ];
 
-    /**
-     * __deleteOrFail -  Keeping the method name not same with base repository method, this to be renamed  and used in document core while ramp-up
-     * @param Entity $entity
-     * @throws \Throwable
-     */
-    public function __deleteOrFail(MerchantDocumentEntity $entity)
+    function __construct()
     {
-        $this->repo->transactionOnLiveAndTest(function () use ($entity) {
-            $this->repo->deleteOrFail($entity);
-            $merchantDocumentWrapper = new MerchantDocument();
-            $merchantDocumentWrapper->DeleteOrFail($entity);
-        });
+        parent::__construct();
+
+        $this->asvRouter = new AsvRouter();
+    }
+
+    public function fetchAllMerchantIDsFromSlaveDB($input)
+    {
+        $query = $this->newQueryWithConnection($this->getAccountServiceReplicaConnection())
+            ->select([Entity::MERCHANT_ID])
+            ->distinct()
+            ->orderBy(Entity::MERCHANT_ID);
+
+        if (isset($input['after_merchant_id']) === true) {
+            $query->where(Entity::MERCHANT_ID, '>', $input['after_merchant_id']);
+        }
+
+        if (isset($input['count']) === true) {
+            $query->take($input['count']);
+        }
+
+        return $query->get();
     }
 
     /**
@@ -40,9 +59,26 @@ class Repository extends Base\Repository
      */
     public function findDocumentById(string $id)
     {
+        return $this->getEntityDetails(
+            ASVV2Constant::GET_DOCUMENT_BY_ID,
+            $this->asvRouter->shouldRouteToAccountService($id, get_class($this), FunctionConstant::GET_BY_ID),
+            (new MerchantDocumentSDKWrapper())->getDocumentByIdCallback($id),
+            $this->findDocumentByIdFromDatabaseCallBack($id)
+        );
+    }
+
+    private function findDocumentByIdFromDatabaseCallBack(string $id): \Closure
+    {
+        return function () use ($id) {
+            return $this->findDocumentByIdFromDatabase($id);
+        };
+    }
+
+    public function findDocumentByIdFromDatabase(string $id)
+    {
         return $this->newQuery()
-                    ->where(Entity::ID,'=',$id)
-                    ->first();
+            ->where(Entity::ID,'=',$id)
+            ->first();
     }
 
     /**
@@ -86,34 +122,6 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->whereIn(Entity::MERCHANT_ID, $merchantIds)
                     ->get();
-    }
-
-    /**
-     * Returns all non deleted documents for given merchantId
-     *
-     * @param string $merchantId
-     *
-     * @return mixed
-     */
-    public function __findDocumentsForMerchantId(string $merchantId)
-    {
-        $documentsFromAPI = $this->findDocumentsForMerchantIds([$merchantId]);
-        if (count($documentsFromAPI) === 0) {
-            return $documentsFromAPI;
-        }
-        return (new MerchantDocument())->FindDocumentsForMerchantId($merchantId, $documentsFromAPI);
-    }
-
-    /**
-     * __saveOrFail - Saves MerchantDocument Entity in API DB and ASV
-     * @param DocumentEntity $document
-     * @throws \Throwable
-     */
-    public function __saveOrFail($document) {
-        $this->repo->transactionOnLiveAndTest(function () use ($document) {
-            $this->saveOrFail($document);
-            (new MerchantDocument())->SaveOrFail($document);
-        });
     }
 
     /**
@@ -199,6 +207,23 @@ class Repository extends Base\Repository
      */
     public function findDocumentsForMerchantIdAndDocumentType(string $merchantId, string $documentType)
     {
+        return $this->getEntityDetails(
+            ASVV2Constant::GET_DOCUMENT_BY_TYPE_AND_MERCHANT_ID,
+            $this->asvRouter->shouldRouteToAccountService($merchantId, get_class($this), FunctionConstant::GET_BY_TYPE_AND_MERCHANT_ID),
+            (new MerchantDocumentSDKWrapper())->getByDocumentsByMerchantIdAndTypeCallBack($merchantId, $documentType),
+            $this->findDocumentsForMerchantIdAndDocumentTypeFromDatabaseCallBack($merchantId, $documentType)
+        );
+    }
+
+    private function findDocumentsForMerchantIdAndDocumentTypeFromDatabaseCallBack(string $merchantId, string $documentType): \Closure
+    {
+        return function () use ($merchantId, $documentType) {
+            return $this->findDocumentsForMerchantIdAndDocumentTypeFromDatabase($merchantId, $documentType);
+        };
+    }
+
+    public function findDocumentsForMerchantIdAndDocumentTypeFromDatabase(string $merchantId, string $documentType)
+    {
         return $this->newQuery()
             ->where(Entity::MERCHANT_ID, $merchantId)
             ->where(Entity::DOCUMENT_TYPE, $documentType)
@@ -260,6 +285,16 @@ class Repository extends Base\Repository
                     ->where(Entity::SOURCE, 'UFH')
                     ->where(Entity::ENTITY_TYPE, 'merchant')
                     ->get();
+    }
+
+    /*
+     * Added for parity testing of account service.
+     */
+    public function getAllDocumentsFromReplica(string $merchantId)
+    {
+        return $this->newQueryWithConnection($this->getAccountServiceReplicaConnection())
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->get();
     }
 
 }

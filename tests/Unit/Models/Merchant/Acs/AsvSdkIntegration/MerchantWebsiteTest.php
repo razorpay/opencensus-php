@@ -87,7 +87,6 @@ class MerchantWebsiteTest extends TestCase
         $expectedWebsiteEntity  =  new MerchantWebsiteEntity();
         $expectedWebsiteEntity->setRawAttributes($websiteArray);
 
-
         // prepare mocks //
         $merchantWebsiteResponse = new MerchantWebsiteResponse();
         $merchantWebsiteProto = new \Rzp\Accounts\Merchant\V1\MerchantWebsite();

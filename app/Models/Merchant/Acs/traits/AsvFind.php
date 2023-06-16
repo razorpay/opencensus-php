@@ -72,11 +72,11 @@ trait AsvFind
     public function findOrFail($id, $columns = array('*'), string $connectionType = null)
     {
 
-        $shouldCallAsv = $this->asvRouter->shouldRouteFindToAccountService($id, $columns, $connectionType, get_class($this), FunctionConstant::FIND_AND_FAIL);
+        $shouldCallAsv = $this->asvRouter->shouldRouteFindToAccountService($id, $columns, $connectionType, get_class($this), FunctionConstant::FIND_OR_FAIL);
 
         if ($shouldCallAsv === true) {
 
-            $functionIdentifier = get_class($this) . " " . FunctionConstant::FIND_AND_FAIL;
+            $functionIdentifier = get_class($this) . " " . FunctionConstant::FIND_OR_FAIL;
 
             try {
                 return $this->findOrFailAsv($id);
@@ -106,11 +106,11 @@ trait AsvFind
     public function findOrFailPublic($id, $columns = array('*'), string $connectionType = null)
     {
 
-        $shouldCallAsv = $this->asvRouter->shouldRouteFindToAccountService($id, $columns, $connectionType, get_class($this), FunctionConstant::FIND_AND_FAIL_PUBLIC);
+        $shouldCallAsv = $this->asvRouter->shouldRouteFindToAccountService($id, $columns, $connectionType, get_class($this), FunctionConstant::FIND_OR_FAIL_PUBLIC);
 
         if ($shouldCallAsv === true) {
 
-            $functionIdentifier = get_class($this) . " " . FunctionConstant::FIND_AND_FAIL_PUBLIC;
+            $functionIdentifier = get_class($this) . " " . FunctionConstant::FIND_OR_FAIL_PUBLIC;
 
             try {
                 return $this->findOrFailAsv($id);

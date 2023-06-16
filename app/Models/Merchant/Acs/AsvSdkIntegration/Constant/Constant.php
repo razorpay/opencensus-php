@@ -24,9 +24,15 @@ class Constant
 
     // function identifiers
     CONST GET_WEBSITE_BY_MERCHANT_ID = "ASV_MERCHANT_WEBSITE_getWebsiteDetailsForMerchantId";
+
+    CONST GET_BUSINESS_DETAIL_BY_MERCHANT_ID = "ASV_MERCHANT_WEBSITE_getBusinessDetailsForMerchantId";
     CONST MERCHANT_WEBSITE_FIND = "ASV_MERCHANT_WEBSITE_find";
 
     CONST GET_EMAIL_BY_TYPE_AND_MERCHANT_ID = "getByTypeAndMerchantId";
 
     CONST GET_EMAIL_BY_MERCHANT_ID = 'getEmailByMerchantId';
+
+    const GET_DOCUMENT_BY_ID = 'AsvMerchantDocument_getDocumentById';
+
+    const GET_DOCUMENT_BY_TYPE_AND_MERCHANT_ID = 'AsvMerchantDocument_getDocumentByTypeAndMerchantId';
 }
