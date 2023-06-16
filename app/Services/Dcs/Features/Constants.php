@@ -130,6 +130,7 @@ class Constants
     const RefundArnWebhookVisibility = 'refund_arn_webhook_visibility';
     const RefundAttributesLateAuth = 'refund_attributes_late_auth';
     const CrossOrgLogin = 'cross_org_login';
+    const OtpAutoReadAndSubmitDisabled = 'otp_auto_read_submit_disabled';
     const WalletPaytmAutoDebit = 'auto_debit';
 
     public static $validDcsKeys = [];
@@ -256,6 +257,7 @@ class Constants
         self::RefundArnWebhookVisibility => 'rzp/pg/merchant/refunds/Webhook',
         self::RefundAttributesLateAuth => 'rzp/pg/org/refunds/Display',
         self::CrossOrgLogin => 'rzp/platform/merchant/login/CrossLoginFeatures',
+        self::OtpAutoReadAndSubmitDisabled => 'rzp/pg/merchant/checkout/Otp',
         self::OptimizerRazorpayVas => 'rzp/pg/merchant/optimizer/OnboardingFeatures',
         self::WalletPaytmAutoDebit => 'rzp/pg/merchant/wallet/paytm/AutoDebit',
     ];
@@ -395,6 +397,7 @@ class Constants
         APIFeaturesConstants::REFUND_ARN_WEBHOOK                            => self::RefundArnWebhookVisibility,
         APIFeaturesConstants::SHOW_REFND_LATEAUTH_PARAM                     => self::RefundAttributesLateAuth,
         self::CrossOrgLogin                                                 => self::CrossOrgLogin,
+        APIFeaturesConstants::DISABLE_OTP_AUTO_READ_AND_SUBMIT              => self::OtpAutoReadAndSubmitDisabled,
         APIFeaturesConstants::WALLET_PAYTM_AUTO_DEBIT                       => self::WalletPaytmAutoDebit,
 
     ];
@@ -425,6 +428,7 @@ class Constants
         self::CloseQrOnDemand => 'direct',
         self::DynamicCurrencyConversionCybs => "direct",
         self::UpiTurboDisabled => 'direct',
+        self::OtpAutoReadAndSubmitDisabled => 'direct',
     ];
 
     /**

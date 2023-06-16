@@ -1840,6 +1840,11 @@ class Constants
     const ONE_CC_SHOPIFY_ACC_CREATE = 'one_cc_shopify_acc_create';
     const ONE_CC_SHOPIFY_MULTIPLE_SHIPPING = 'one_cc_multiple_shipping';
 
+    /**
+     * Feature flag is used to disable auto read and auto submit feature on checkout.
+     */
+    const DISABLE_OTP_AUTO_READ_AND_SUBMIT = 'dis_otp_auto_read_submit';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -1894,6 +1899,7 @@ class Constants
         self::DISABLE_UPI_NUM_ON_L0,
         self::DISABLE_UPI_NUM_ON_L1,
         self::SHOW_CUSTOM_DCC_DISCLOSURES,
+        self::DISABLE_OTP_AUTO_READ_AND_SUBMIT,
     ];
 
     const ONE_CC_FEATURES = [
@@ -2536,6 +2542,7 @@ class Constants
         self::SHOW_CUSTOM_DCC_DISCLOSURES      => true,
         self::DYNAMIC_CURRENCY_CONVERSION_CYBS => true,
         self::ORG_ADMIN_PASSWORD_RESET        => true,
+        self::DISABLE_OTP_AUTO_READ_AND_SUBMIT => true,
         self::WALLET_PAYTM_AUTO_DEBIT         => true,
     ];
 
