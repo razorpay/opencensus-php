@@ -3368,6 +3368,7 @@ class MerchantController extends Controller
                     case ErrorCode::GATEWAY_ERROR_REQUEST_ERROR:
                     case ErrorCode::GATEWAY_ERROR_TIMED_OUT:
                     case ErrorCode::SERVER_ERROR_PGROUTER_SERVICE_FAILURE:
+                    case ErrorCode::SERVER_ERROR_SHOPIFY_SERVICE_FAILURE:
                         $data = $ex->getError()->toPublicArray(true);
                         return ApiResponse::json($data, 503);
                 }
