@@ -14,6 +14,9 @@ class Constants
     //M2M referral environment keys
     const M2M_REFERRAL_MAX_REFERRED_COUNT_ALLOWED           = "M2M_REFERRAL_MAX_REFERRED_COUNT_ALLOWED";
 
+    CONST FEE_PAGE_TIMEOUT_CUSTOM         = 'FEE_PAGE_TIMEOUT_CUSTOM';
+    CONST SILENT_REFUND_LATE_AUTH         = 'SILENT_REFUND_LATE_AUTH';
+
     const ENTITY_IDS                      = 'entity_ids';
     const ENTITY_TYPE                     = 'entity_type';
     const NAMES                           = 'names';
@@ -2542,6 +2545,8 @@ class Constants
         self::SHOW_CUSTOM_DCC_DISCLOSURES      => true,
         self::DYNAMIC_CURRENCY_CONVERSION_CYBS => true,
         self::ORG_ADMIN_PASSWORD_RESET        => true,
+        self::FEE_PAGE_TIMEOUT_CUSTOM         => true,
+        self::SILENT_REFUND_LATE_AUTH         => true,
         self::DISABLE_OTP_AUTO_READ_AND_SUBMIT => true,
         self::WALLET_PAYTM_AUTO_DEBIT         => true,
     ];

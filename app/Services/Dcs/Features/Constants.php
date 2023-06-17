@@ -11,6 +11,8 @@ use RZP\Models\Feature\Constants as APIFeaturesConstants;
 
 class Constants
 {
+    const TimeoutFeeBreakupPageCheckout = 'timeout_fee_breakup_page_checkout';
+    const SilentRefundLateAuthEnabled = 'silent_refund_late_auth_enabled';
     const PostpaidMerchantsDontSettleCustomerFees = 'postpaid_merchants_dont_settle_customer_fees';
     const RefundEnabled = 'refund_enabled';
     const DisableAutoRefund = 'disable_auto_refund';
@@ -257,6 +259,8 @@ class Constants
         self::RefundArnWebhookVisibility => 'rzp/pg/merchant/refunds/Webhook',
         self::RefundAttributesLateAuth => 'rzp/pg/org/refunds/Display',
         self::CrossOrgLogin => 'rzp/platform/merchant/login/CrossLoginFeatures',
+        self::TimeoutFeeBreakupPageCheckout => 'rzp/pg/merchant/checkout/custom/Timeout',
+        self::SilentRefundLateAuthEnabled => 'rzp/pg/merchant/payment_lifecycle/LateAuth',
         self::OtpAutoReadAndSubmitDisabled => 'rzp/pg/merchant/checkout/Otp',
         self::OptimizerRazorpayVas => 'rzp/pg/merchant/optimizer/OnboardingFeatures',
         self::WalletPaytmAutoDebit => 'rzp/pg/merchant/wallet/paytm/AutoDebit',
@@ -397,9 +401,10 @@ class Constants
         APIFeaturesConstants::REFUND_ARN_WEBHOOK                            => self::RefundArnWebhookVisibility,
         APIFeaturesConstants::SHOW_REFND_LATEAUTH_PARAM                     => self::RefundAttributesLateAuth,
         self::CrossOrgLogin                                                 => self::CrossOrgLogin,
+        APIFeaturesConstants::FEE_PAGE_TIMEOUT_CUSTOM                       => self::TimeoutFeeBreakupPageCheckout,
+        APIFeaturesConstants::SILENT_REFUND_LATE_AUTH                       => self::SilentRefundLateAuthEnabled,
         APIFeaturesConstants::DISABLE_OTP_AUTO_READ_AND_SUBMIT              => self::OtpAutoReadAndSubmitDisabled,
         APIFeaturesConstants::WALLET_PAYTM_AUTO_DEBIT                       => self::WalletPaytmAutoDebit,
-
     ];
 
     /**
@@ -428,6 +433,8 @@ class Constants
         self::CloseQrOnDemand => 'direct',
         self::DynamicCurrencyConversionCybs => "direct",
         self::UpiTurboDisabled => 'direct',
+        self::TimeoutFeeBreakupPageCheckout => 'direct',
+        self::SilentRefundLateAuthEnabled => 'direct',
         self::OtpAutoReadAndSubmitDisabled => 'direct',
     ];
 
@@ -467,6 +474,8 @@ class Constants
             "dynamic_currency_conversion_cybs" => "direct",
             "irctc_report" => "direct",
             "cross_org_login" => "direct",
+            "timeout_fee_breakup_page_checkout" => "direct",
+            "silent_refund_late_auth_enabled" => "direct",
         ],
         "org" => [
             "disable_free_credit_unreg"=> "client",

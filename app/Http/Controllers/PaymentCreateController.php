@@ -548,6 +548,13 @@ class PaymentCreateController extends Controller
         {
             $url = $this->route->getUrlWithPublicAuth('payment_create_checkout');
 
+            $data['flag'] = false;
+
+            if ($merchant->isFeatureEnabled(Feature::FEE_PAGE_TIMEOUT_CUSTOM) === true)
+            {
+                $data['flag'] = true;
+            }
+
             return $this->returnConvenienceFeesView($input, $data, $url);
         }
 
