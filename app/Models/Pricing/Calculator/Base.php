@@ -392,6 +392,7 @@ abstract class Base extends BaseModel\Core
                     TraceCode::PRICING_RULES_FILTERED_ON_FILTER,
                     [
                         'filter' => $filter[0],
+                        'value' => $filter[1],
                         'before_count' => $beforeCount,
                         'after_count' => $afterCount,
                     ]
