@@ -46,7 +46,7 @@ class Fetch extends Base
     {
         $this->modifyUriAndContentIfApplicable($input, $url);
 
-        $headers = [Passport::PASSPORT_JWT_V1 => $this->app['basicauth']->getPassportJwt($this->baseUrl)];
+        $headers = $this->getHeadersWithJwt();
 
         $response = $this->makeRequestAndGetContent(
             $input,

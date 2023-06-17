@@ -2514,10 +2514,23 @@ class Core extends Base\Core
         /** @var $auth BasicAuth */
         $auth = $this->app['basicauth'];
 
-        // Currently on private and proxy auth requests and response for get payouts is supported on payouts service
-        // hence we are not allowing requests via payouts service if neither of these auth are used.
+        // Currently on private, proxy and privilege auth requests and response for get payouts is supported on payouts
+        // service hence we are not allowing requests via payouts service if neither of these auth are used.
         if (($auth->isPrivateAuth() !== true) and
-            ($auth->isProxyAuth() !== true))
+            ($auth->isProxyAuth() !== true) and
+            ($auth->isPrivilegeAuth() !== true))
+        {
+            return false;
+        }
+
+        $partnerMerchantId = $auth->getPartnerMerchantId();
+
+        $applicationId = $auth->getOAuthApplicationId();
+
+        // Doing this separately because for auth apps, $auth->isPrivateAuth() is also true so requests can still come
+        // to ps.
+        if ((empty($partnerMerchantId) === false) or
+            (empty($applicationId) === false))
         {
             return false;
         }

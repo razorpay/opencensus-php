@@ -1102,10 +1102,10 @@ return [
         ],
     ],
 
-    'testFetchPayoutByIdWithNonProxyOrPrivateAuth' => [
+    'testFetchPayoutByIdWithPrivilegeAuth' => [
         'request'  => [
             'method'  => 'GET',
-            'url'     => '/payouts_internal/pout_Gg7sgBZgvYjlSB',
+            'url'     => '/payouts_internal/pout_Gg7sgBZgvYjlSB?expand[]=user&expand[]=fund_account.contact',
             'server'  => [
                 'HTTP_' . \RZP\Http\RequestHeader::X_RAZORPAY_ACCOUNT => '10000000000000',
             ],
@@ -1114,9 +1114,75 @@ return [
         ],
         'response' => [
             'content' => [
+                "id"              => "pout_Gg7sgBZgvYjlSB",
+                "entity"          => "payout",
+                "fund_account_id" => "fa_100000000000fa",
+                "amount"          => 100,
+                "currency"        => "INR",
+                "merchant_id"     => "10000000000000",
+                "notes"           => "",
+                "fees"            => 0,
+                "tax"             => 0,
+                "status"          => "processing",
+                "purpose"         => "refund",
+                "utr"             => "",
+                "reference_id"    => null,
+                "narration"       => "test Merchant Fund Transfer",
+                "batch_id"        => "",
+                "initiated_at"    => 1614325830,
+                "failure_reason"  => null,
+                "created_at"      => 1614325826,
+                "fee_type"        => null
+            ],
+        ],
+    ],
+
+    'testFetchPayoutByIdWithBearerAuth' => [
+        'request'           => [
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'method'  => 'GET',
+            'url'     => '/payouts',
+            'content' => [
+                'product' => 'banking',
+                'count'   => 10,
+                'expand'  => [
+                    'fund_account.contact',
+                    'user'
+                ]
+            ],
+        ],
+        'response'          => [
+            'content' => [
                 "id"       => "pout_Gg7sgBZgvYjlSB",
                 "entity"   => "payout",
                 "currency" => "INR",
+                "notes" => [],
+            ],
+        ],
+        'expected_passport' => [
+            'mode'          => 'live',
+            'identified'    => true,
+            'authenticated' => true,
+            'domain'        => 'razorpay',
+            'consumer'      => [
+                'type' => 'merchant',
+                'id'   => '10000000000000',
+            ],
+            'oauth'         => [
+                'owner_type' => 'merchant',
+                'owner_id'   => '10000000000000',
+                // 'client_id'  => '<CLIENT_ID>',
+                // 'app_id'     => '<APP_ID>',
+                'env'        => 'prod',
+            ],
+            'credential'    => [
+                'username'   => 'rzp_live_oauth_TheTestAuthKey',
+                'public_key' => 'rzp_live_oauth_TheTestAuthKey',
+            ],
+            'roles'         => [
+                'oauth::scope::rx_read_write',
             ],
         ],
     ],

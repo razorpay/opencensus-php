@@ -13,10 +13,12 @@ use \WpOrg\Requests\Response;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
+use Razorpay\OAuth\Client;
 use RZP\Models\Payout\Core;
 use RZP\Models\Pricing\Fee;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
+use RZP\Services\DiagClient;
 use RZP\Models\Payout\Metric;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
@@ -35,8 +37,10 @@ use RZP\Models\Payout\WorkflowFeature;
 use RZP\Jobs\PayoutServiceDataMigration;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\PayoutService\BulkPayout;
+use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Tests\Functional\Payout\PayoutTest;
 use RZP\Models\Merchant\Balance\Type as Type;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Counter\Entity as CounterEntity;
@@ -80,6 +84,7 @@ class PayoutServiceTest extends TestCase
     use TestsBusinessBanking;
     use RequestResponseFlowTrait;
     use PayoutAttachmentTrait;
+    use OAuthTrait;
 
     public function setUp(): void
     {
@@ -7263,6 +7268,29 @@ class PayoutServiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchPayoutByIdWithExpandParamOnProxyAuth()
+    {
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FETCH_VA_PAYOUTS_VIA_PS]);
+
+        $this->testData[__FUNCTION__] = $this->testData['testFetchPayoutByIdWithExpandParam'];
+
+        $request['url'] = explode('?', $this->testData[__FUNCTION__]['request']['url'])[0];
+
+        $input = [
+            'expand' => ['user', 'fund_account.contact'],
+        ];
+
+        $query = (new PayoutServiceFetch)->buildQueryFromInput($input);
+
+        $request['url'] .= '?' . $query;
+
+        $this->mockPayoutServiceFetch(false, $request);
+
+        $this->ba->proxyAuthLive();
+
+        $this->startTest();
+    }
+
     public function testFetchPayoutByIdWithErrorFromService()
     {
         $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FETCH_VA_PAYOUTS_VIA_PS]);
@@ -7310,25 +7338,160 @@ class PayoutServiceTest extends TestCase
         $this->startTest();
     }
 
-    public function testFetchPayoutByIdWithNonProxyOrPrivateAuth()
+    public function testFetchPayoutByIdWithPrivilegeAuth()
     {
-        $this->testCreatePayout();
-
-        $payout = $this->getDbLastEntity('payout', 'live');
-
         $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FETCH_VA_PAYOUTS_VIA_PS]);
 
-        $request['url'] = '/payouts_internal/' . $payout->getPublicId();
+        $url = explode('?', $this->testData[__FUNCTION__]['request']['url'])[0];
 
-        $this->testData[__FUNCTION__]['request']['url'] = $request['url'];
+        $payoutId = explode('/pout_', $url)[1];
 
-        $this->testData[__FUNCTION__]['response']['content']['id'] = $payout->getPublicId();
+        $input = [
+            'expand' => ['user', 'fund_account.contact'],
+        ];
 
-        $this->mockPayoutServiceFetchShouldNotBeInvoked();
+        $query = (new PayoutServiceFetch)->buildQueryFromInput($input);
+
+        $request['url'] = '/payouts/pout_' . $payoutId . '?' . $query;
+
+        $this->mockPayoutServiceFetch(false, $request);
 
         $this->ba->appAuthLive($this->config['applications.payout_links.secret']);
 
         $this->startTest();
+    }
+
+    public function testFetchPayoutByIdWithBearerAuth()
+    {
+        $this->mockLedgerSns(0);
+
+        $this->setUpExperimentForNWFS();
+
+        $this->fixtures->on('live')->merchant->removeFeatures([Feature\Constants::PAYOUT_SERVICE_ENABLED]);
+
+        // Removing from test mode because when once again adding on live mode before payout fetch, it tries adding on
+        // test mode too and throws integrity constraint violation.
+        $this->fixtures->on('test')->merchant->removeFeatures([Feature\Constants::PAYOUT_SERVICE_ENABLED]);
+
+        $user = $this->fixtures->on('live')->create('user');
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $payoutWithWorkflow = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $request['url'] = $this->testData[__FUNCTION__]['request']['url'];
+
+        $request['url'] = '/payouts/' . $payoutWithWorkflow[Entity::ID];
+
+        $this->testData[__FUNCTION__]['request']['url'] = $request['url'];
+
+        $this->testData[__FUNCTION__]['response']['content']['id'] = $payoutWithWorkflow[Entity::ID];
+
+        $this->fixtures->on('live')->edit('payout',
+                                          $payoutWithWorkflow['id'],
+                                          [
+                                              'user_id' => $user['id']
+                                          ]);
+
+        $client = Client\Entity::factory()->create(['environment' => 'prod']);
+
+        $accessToken = $this->generateOAuthAccessToken([
+                                                           'scopes'    => [
+                                                               'rx_read_write',
+                                                               'read_write'
+                                                           ],
+                                                           'mode'      => 'live',
+                                                           'client_id' => $client->getId()
+                                                       ], 'prod');
+
+        $this->fixtures->on('live')->create('feature', [
+            'entity_id'   => $client->application_id,
+            'entity_type' => 'application',
+            'name'        => Feature\Constants::PUBLIC_SETTERS_VIA_OAUTH]);
+
+        $this->fixtures->on('live')->create('feature', [
+            'entity_id'   => $client->application_id,
+            'entity_type' => 'application',
+            'name'        => Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH]);
+
+        $this->fixtures->user->createUserForMerchant('10000000000000',
+                                                     [
+                                                         'id'             => '20000000000000',
+                                                         'contact_mobile' => 9999999999
+                                                     ]);
+
+        $this->fixtures->user->createUserMerchantMapping([
+                                                             'user_id'     => '20000000000000',
+                                                             'merchant_id' => '10000000000000',
+                                                             'product'     => 'banking',
+                                                             'role'        => 'owner'
+                                                         ], 'live');
+
+        $expectedProperties = [
+            'error_code' => 'SUCCESS',
+            'properties' => [
+                'merchant_id' => '10000000000000',
+                'request'     => 'payout_fetch_multiple',
+                'user_id'     => '20000000000000',
+                'user_role'   => 'owner',
+                'channel'     => 'slack_app',
+                'filters'     => [
+                    'product' => 'banking',
+                    'count'   => '10',
+                    'expand'  => [
+                        0 => 'fund_account.contact',
+                        1 => 'user',
+                    ]
+                ]
+            ]
+        ];
+
+        $this->verifyPayoutsEvent($expectedProperties);
+
+        $this->fixtures->on('live')->merchant->addFeatures([
+                                                               Feature\Constants::PAYOUT_SERVICE_ENABLED,
+                                                               Feature\Constants::FETCH_VA_PAYOUTS_VIA_PS
+                                                           ]);
+
+        $this->mockPayoutServiceFetchShouldNotBeInvoked();
+
+        $this->ba->oauthBearerAuth($accessToken->toString());
+
+        $this->startTest();
+
+        $this->assertPassport();
+        $this->assertPassportKeyExists('oauth.client_id');
+        $this->assertPassportKeyExists('oauth.app_id');
+    }
+
+    private function mockDiag()
+    {
+        $diagMock = $this->getMockBuilder(DiagClient::class)
+                         ->setConstructorArgs([$this->app])
+                         ->setMethods(['trackEvent'])
+                         ->getMock();
+
+        $this->app->instance('diag', $diagMock);
+    }
+
+    public function verifyPayoutsEvent($expectedProperties)
+    {
+        $this->mockDiag();
+
+        $this->app->diag->method('trackEvent')
+                        ->will($this->returnCallback(
+                            function(string $eventType,
+                                     string $eventVersion,
+                                     array $event,
+                                     array $properties) use ($expectedProperties) {
+                                if (($event['group'] === 'payouts') and
+                                    ($event['name'] === 'payouts.fetch.request'))
+                                {
+                                    $this->assertArraySelectiveEquals($expectedProperties, $properties);
+                                }
+
+                                return;
+                            }));
     }
 
     public function testFetchPayoutByIdWithIdNotFoundErrorFromService()

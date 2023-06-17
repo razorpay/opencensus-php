@@ -53,6 +53,13 @@ class Base
 
     const X_REQUEST_ID  = 'X-Request-ID';
 
+    const TYPE     = 'type';
+    const CONSUMER = 'consumer';
+    const PASSPORT = 'passport';
+
+    const NAME               = 'name';
+    const APP_USER_ID_HEADER = 'App-User-Id';
+
     public function __construct($app = null)
     {
         if (empty($app) === true)
@@ -321,5 +328,46 @@ class Base
                 );
             }
         }
+    }
+
+    public function getHeadersWithJwt()
+    {
+        $jwt = $this->app['basicauth']->getPassportJwt($this->baseUrl);
+
+        /** @var BasicAuth $ba */
+        $ba = $this->app['basicauth'];
+
+        $headers = [];
+
+        if ($ba->isPrivilegeAuth() === true)
+        {
+            $passport = $ba->getPassport();
+
+            if (array_key_exists(self::CONSUMER, $passport) === true)
+            {
+                if ($passport[self::CONSUMER][self::TYPE] === BasicAuth::PASSPORT_CONSUMER_TYPE_USER)
+                {
+                    $this->trace->info(TraceCode::PASSPORT_EDIT_FOR_PRIVILEGE_AUTH_WITH_USER_CLAIMS,
+                                       [
+                                           self::PASSPORT => $ba->getPassport(),
+                                       ]);
+
+                    $baTemp = clone $ba;
+
+                    $baTemp->setPassportConsumerClaims(BasicAuth::PASSPORT_CONSUMER_TYPE_APPLICATION,
+                                                       $ba->getInternalApp(),
+                                                       true,
+                                                       [self::NAME => $ba->getInternalApp()]);
+
+                    $jwt = $baTemp->getPassportJwt($this->baseUrl);
+
+                    $headers[self::APP_USER_ID_HEADER] = $ba->getUser()->getId();
+                }
+            }
+        }
+
+        $headers[Passport::PASSPORT_JWT_V1] = $jwt;
+
+        return $headers;
     }
 }
