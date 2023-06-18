@@ -1,13 +1,13 @@
 import { connect } from 'react-redux';
 import Popover from 'common/ui/Popover';
 import Input from 'common/new-ui/Input';
-import track from '../../track';
+import track from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/track';
 
 import {
   PopoverBodyText,
   MIN_AMOUNT_TEXT,
   validateMinAmount,
-} from '../../../components/Edit/EditMinimumAmount';
+} from 'merchant/views/PaymentLinks/PaymentLinks/components/Edit/EditMinimumAmount';
 
 const PartialPayments = (props) => (
   <>
@@ -58,7 +58,7 @@ const PartialPayments = (props) => (
               defaultValue={props.defaultFirstMinAmount}
               onBlur={track.lj.fields.firstPaymentMinAmount}
               validator={(val) => {
-                return validateMinAmount(val, props.amount);
+                return validateMinAmount(val, props.amount, props.currency);
               }}
               disabled={props.disabled}
             />

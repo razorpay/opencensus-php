@@ -1,5 +1,5 @@
 import { sortableHandle } from 'react-sortable-hoc';
-import { classList } from 'common/utils/rzp-utils';
+import { classList, getCurrencyConfig } from 'common/utils/rzp-utils';
 
 import CreatorManager from './CreatorManager';
 import EditLayer from 'merchant/views/PaymentPages/PaymentPages/components/EditLayer';
@@ -33,7 +33,9 @@ const displayField = ({
   const fieldType = mapFieldToAmountFieldType(field);
   let addOnAfter;
 
-  const amountDisplay = field.item.amount && Number(field.item.amount).toFixed(2);
+  const amountDisplay =
+    field.item.amount && Number(field.item.amount).toFixed(getCurrencyConfig(currency).decimals);
+
   let fieldEl = amountDisplay && (
     <div class="Field-el">
       <label>
@@ -106,7 +108,7 @@ const displayField = ({
         field.mandatory && 'Field--required',
         field.image_url && 'Field--has-image',
         isListSorting && 'disable-hover',
-        `Field--currency-${currencySymbol.length > 4 ? 'long' : currencySymbol.length}`,
+        `Field--currency-${currencySymbol?.length > 4 ? 'long' : currencySymbol?.length}`,
       )}
       onClick={openBaseForm}
       setRef={setRef}

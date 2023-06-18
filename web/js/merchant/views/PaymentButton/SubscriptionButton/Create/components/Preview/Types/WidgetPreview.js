@@ -1,35 +1,24 @@
+import React from 'react';
 import { getCurrency } from 'common/ui/Amount';
-import { paiseToRupees } from 'common/utils/rzp-utils';
 import ButtonDetailsPreview from './ButtonDetailsPreview';
 
 import { filterSubscriptionPaymentItems } from 'merchant/reducers/subscriptionButtons/create';
-import { classList } from 'common/utils/rzp-utils';
-import { getPeriodLabel } from '../../../constants/billingCycle';
+import {
+  classList,
+  i18CurrencyConversionFromCommonUnitToMinorUnit,
+  getFormattedAmount,
+} from 'common/utils/rzp-utils';
+import { getPeriodLabel } from 'merchant/views/PaymentButton/SubscriptionButton/Create/constants/billingCycle';
 
 export default class WidgetPreview extends React.Component {
   getPaymentField(field) {
     const { subscriptionButtonEntity, showOneTimePayments } = this.props;
-    const currency = subscriptionButtonEntity.currency,
-      currencySymbol = getCurrency(currency).symbol;
+    const currency = subscriptionButtonEntity.currency;
+    const currencySymbol = getCurrency(currency).symbol;
 
-    const amount = field.item.amount;
-    let amountToDisplay;
-
-    if (amount) {
-      const _amount = field.plan_id
-        ? paiseToRupees(Number(amount)).toFixed(2)
-        : Number(amount).toFixed(2);
-      const _amountToDisplay = _amount.split('.');
-
-      amountToDisplay = (
-        <span class="amount">
-          <b>
-            {currencySymbol} {_amountToDisplay[0]}
-          </b>
-          <span class="amount-decimal">.{_amountToDisplay[1]}</span>
-        </span>
-      );
-    }
+    const amount = field.plan_id
+      ? field.item.amount
+      : i18CurrencyConversionFromCommonUnitToMinorUnit(field.item.amount, currency);
 
     return (
       <label class="item-label">
@@ -38,7 +27,13 @@ export default class WidgetPreview extends React.Component {
           {field.item.description && <div class="item-description">{field.item.description}</div>}
 
           <div class="item-details">
-            {amountToDisplay}
+            {amount ? (
+              <span className="amount">
+                <b>
+                  {currencySymbol} {getFormattedAmount(amount, currency)}
+                </b>
+              </span>
+            ) : null}
 
             {!showOneTimePayments && (
               <div class="item-details-description">

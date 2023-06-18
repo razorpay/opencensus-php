@@ -1,7 +1,7 @@
 import { set, merge, removeItem, updateItem, push, deepMerge } from 'common/utils/immutable';
 
 import { getCurrency } from 'common/ui/Amount';
-import { paiseToRupees } from 'common/utils/rzp-utils';
+import { i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
 import { fetchPaymentPageEntity as getPaymentButtonDetails } from 'merchant/views/PaymentPages/PaymentPages/model';
 import { FIXED_FIELDS } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers/preAddedFields';
 import { getButtonThemes } from 'merchant/views/PaymentButton/PaymentButton/Create/constants/buttonThemes';
@@ -47,7 +47,10 @@ export const updateTemplateType = (data, templateKey) => {
     const donationAmountField = getBaseFieldForAmountFieldType(FIELD_TYPES.dynamic_price.key);
     donationAmountField.item.name = 'Donate an Amount of your Choice';
     donationAmountField.mandatory = true;
-    donationAmountField.min_amount = paiseToRupees(getCurrency(DEFAULT_CURRENCY).min_value);
+    donationAmountField.min_amount = i18CurrencyConversionFromMinorUnitToCommonUnit(
+      getCurrency(DEFAULT_CURRENCY).min_value,
+      DEFAULT_CURRENCY,
+    );
 
     amountFields.push(donationAmountField);
 
@@ -199,15 +202,24 @@ export default function paymentButtonCreateReducer(state = initialState, action)
         pi.uniqueKey = new Date().getTime() * index; // Used as React keys if required, eg: For preset amount fields in Donation template's
 
         if (pi.item.amount) {
-          pi.item.amount = paiseToRupees(pi.item.amount); // Convert in Rupees (or bigger unit)
+          pi.item.amount = i18CurrencyConversionFromMinorUnitToCommonUnit(
+            pi.item.amount,
+            entityData.currency,
+          ); // Convert in Rupees (or bigger unit)
         }
 
         if (pi.min_amount) {
-          pi.min_amount = paiseToRupees(pi.min_amount); // Convert in Rupees (or bigger unit)
+          pi.min_amount = i18CurrencyConversionFromMinorUnitToCommonUnit(
+            pi.min_amount,
+            entityData.currency,
+          ); // Convert in Rupees (or bigger unit)
         }
 
         if (pi.max_amount) {
-          pi.max_amount = paiseToRupees(pi.max_amount); // Convert in Rupees (or bigger unit)
+          pi.max_amount = i18CurrencyConversionFromMinorUnitToCommonUnit(
+            pi.max_amount,
+            entityData.currency,
+          ); // Convert in Rupees (or bigger unit)
         }
       });
 

@@ -165,9 +165,10 @@ export default class BaseForm extends React.PureComponent {
         class="placeholder-field"
         placeholder={placeholder}
         defaultValue={amount}
-        validator={(val) => validateAmount(val, minAmountAllowed)}
+        validator={(val) => validateAmount(val, minAmountAllowed, currency)}
         disabled={isDisabled}
         required={!isDisabled}
+        autoRender
       />
     );
 
@@ -216,7 +217,6 @@ export default class BaseForm extends React.PureComponent {
             onChange={this.onChangeCurrency}
             disabled={isEditDisabledForCurrency}
           />
-
           {inputField}
         </div>
       </Input.Group>

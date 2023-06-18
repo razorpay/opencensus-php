@@ -1,10 +1,11 @@
+import React from 'react';
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
 import Button from 'common/new-ui/Button';
-import EditorModal from '../components/EditorModal';
+import EditorModal from 'merchant/views/PaymentButton/PaymentButton/Create/components/Form/components/EditorModal';
 
 import { getCurrency } from 'common/ui/Amount';
-import { paiseToRupees } from 'common/utils/rzp-utils';
+import { i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
 import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 
 export default class AdvancedForm extends React.PureComponent {
@@ -12,7 +13,7 @@ export default class AdvancedForm extends React.PureComponent {
     disableSubmit: false,
   };
 
-  handleSubmit = formData => {
+  handleSubmit = (formData) => {
     this.props.onSubmit(formData);
 
     this.props.handleClose();
@@ -23,7 +24,7 @@ export default class AdvancedForm extends React.PureComponent {
   };
 
   toggleSubmitBtn = () => {
-    let disableSubmit = !!this.formEl.querySelectorAll('.is-invalid').length;
+    const disableSubmit = !!this.formEl.querySelectorAll('.is-invalid').length;
 
     this.setState({ disableSubmit });
   };
@@ -33,11 +34,7 @@ export default class AdvancedForm extends React.PureComponent {
 
     return (
       <div class="CreatorModal-AdvancedForm-footer">
-        <Button
-          type="button"
-          class="Button--primary--invert"
-          onClick={this.props.handleClose}
-        >
+        <Button type="button" class="Button--primary--invert" onClick={this.props.handleClose}>
           Cancel
         </Button>
 
@@ -70,21 +67,19 @@ export default class AdvancedForm extends React.PureComponent {
             <FieldWithPurchaseLimits field={field} currency={currency} />
           </React.Fragment>
         );
+      default:
+        return <></>;
     }
   }
 
-  setRefForm = el => (this.formEl = el);
+  setRefForm = (el) => (this.formEl = el);
 
   render() {
     return (
       <EditorModal class="CreatorModal-AdvancedForm" overElement>
         <div class="CreatorModal-AdvancedForm-title">ADVANCED OPTIONS</div>
 
-        <Form
-          onSubmit={this.handleSubmit}
-          onChange={this.handleChange}
-          setRef={this.setRefForm}
-        >
+        <Form onSubmit={this.handleSubmit} onChange={this.handleChange} setRef={this.setRefForm}>
           {this.fieldsForFieldType}
 
           {this.formFooter}
@@ -101,9 +96,8 @@ export default class AdvancedForm extends React.PureComponent {
 class FieldWithPurchaseLimits extends React.Component {
   state = {
     hasPurchaseLimits:
-      this.props.field.min_purchase || this.props.field.max_purchase
-        ? true
-        : false, // Assuming that 0 a value is not allowed
+      // eslint-disable-next-line no-unneeded-ternary
+      this.props.field.min_purchase || this.props.field.max_purchase ? true : false, // Assuming that 0 a value is not allowed
   };
 
   get minPurchaseAllowed() {
@@ -114,19 +108,19 @@ class FieldWithPurchaseLimits extends React.Component {
   }
 
   toggleAddPurchaseLimit = () => {
-    this.setState({
-      hasPurchaseLimits: !this.state.hasPurchaseLimits,
-    });
+    this.setState((prevState) => ({
+      hasPurchaseLimits: !prevState.hasPurchaseLimits,
+    }));
   };
 
-  validateMinPurchaseLimit = minVal => {
+  validateMinPurchaseLimit = (minVal) => {
     const maxVal = this.maxPurchaseLimit && this.maxPurchaseLimit.value;
     const stockLimit = this.stockLimit && this.stockLimit.value;
     const isFieldMandatory = this.props.field.mandatory;
 
     // min_purchase is allowed to be '' or 0 only when item is not mandatory
     if (minVal === '' && !isFieldMandatory) {
-      return;
+      return '';
     }
 
     if (minVal < this.minPurchaseAllowed) {
@@ -140,14 +134,15 @@ class FieldWithPurchaseLimits extends React.Component {
     if (stockLimit && Number(stockLimit) < Number(minVal)) {
       return 'Min purchase must be less than Units Available';
     }
+    return '';
   };
 
-  validateMaxPurchaseLimit = maxVal => {
+  validateMaxPurchaseLimit = (maxVal) => {
     const minVal = this.minPurchaseLimit && this.minPurchaseLimit.value;
     const stockLimit = this.stockLimit && this.stockLimit.value;
 
     if (maxVal === '') {
-      return;
+      return '';
     }
 
     if (Number(maxVal) < this.minPurchaseAllowed) {
@@ -161,16 +156,17 @@ class FieldWithPurchaseLimits extends React.Component {
     if (stockLimit && Number(stockLimit) < Number(maxVal)) {
       return 'Max purchase must be less than Units Available';
     }
+    return '';
   };
 
-  setRefMinPurchaseLimit = el => (this.minPurchaseLimit = el);
-  setRefMaxPurchaseLimit = el => (this.maxPurchaseLimit = el);
+  setRefMinPurchaseLimit = (el) => (this.minPurchaseLimit = el);
+  setRefMaxPurchaseLimit = (el) => (this.maxPurchaseLimit = el);
 
   render() {
     const { field } = this.props;
 
-    const minPurchase = field.min_purchase || '',
-      maxPurchase = field.max_purchase || '';
+    const minPurchase = field.min_purchase || '';
+    const maxPurchase = field.max_purchase || '';
 
     const { hasPurchaseLimits } = this.state;
 
@@ -228,22 +224,26 @@ export class FieldWithAmountLimits extends React.Component {
   };
 
   get minAmountAllowed() {
-    return paiseToRupees(getCurrency(this.props.currency).min_value);
+    const { currency } = this.props;
+    return i18CurrencyConversionFromMinorUnitToCommonUnit(
+      getCurrency(currency).min_value,
+      currency,
+    );
   }
 
-  toggleAddAmountLimits = data => {
-    this.setState({
-      hasAmountLimits: !this.state.hasAmountLimits,
-    });
+  toggleAddAmountLimits = () => {
+    this.setState((prevState) => ({
+      hasAmountLimits: !prevState.hasAmountLimits,
+    }));
   };
 
-  validateMinAmountLimit = minVal => {
+  validateMinAmountLimit = (minVal) => {
     const maxVal = this.maxAmountLimit && this.maxAmountLimit.value;
     const isFieldMandatory = this.props.field.mandatory;
 
     // min_amount is allowed to be '' or 0 only when item is not mandatory
     if (minVal === '' && !isFieldMandatory) {
-      return;
+      return '';
     }
 
     if (Number(minVal) < Number(this.minAmountAllowed)) {
@@ -253,15 +253,15 @@ export class FieldWithAmountLimits extends React.Component {
     if (maxVal && Number(minVal) > Number(maxVal)) {
       return 'Min amount must be less than Max amount';
     }
+    return '';
   };
 
-  validateMaxAmountLimit = maxVal => {
+  validateMaxAmountLimit = (maxVal) => {
     const minVal = this.minAmountLimit && this.minAmountLimit.value;
-    const isFieldMandatory = this.props.field.mandatory;
 
     // max_amount is allowed to be ''
     if (maxVal === '') {
-      return;
+      return '';
     }
 
     if (Number(maxVal) < Number(this.minAmountAllowed)) {
@@ -271,16 +271,17 @@ export class FieldWithAmountLimits extends React.Component {
     if (minVal && Number(maxVal) < Number(minVal)) {
       return 'Max amount must be more than Min amount';
     }
+    return '';
   };
 
-  setRefMinAmountLimit = el => (this.minAmountLimit = el);
-  setRefMaxAmountLimit = el => (this.maxAmountLimit = el);
+  setRefMinAmountLimit = (el) => (this.minAmountLimit = el);
+  setRefMaxAmountLimit = (el) => (this.maxAmountLimit = el);
 
   render() {
     const { field, currency, toggleButtonText } = this.props;
 
-    const minAmount = field.min_amount || '',
-      maxAmount = field.max_amount || '';
+    const minAmount = field.min_amount || '';
+    const maxAmount = field.max_amount || '';
 
     const { hasAmountLimits } = this.state;
 
@@ -289,10 +290,7 @@ export class FieldWithAmountLimits extends React.Component {
     if (toggleButtonText) {
       if (!hasAmountLimits) {
         togglerContent = (
-          <Button.Transparent
-            type="button"
-            onClick={this.toggleAddAmountLimits}
-          >
+          <Button.Transparent type="button" onClick={this.toggleAddAmountLimits}>
             <b>{toggleButtonText}</b>
           </Button.Transparent>
         );
@@ -368,13 +366,13 @@ class FieldWithStockLimit extends React.Component {
     hasStockLimit: this.props.field.stock != null,
   };
 
-  toggleAddStock = data => {
-    this.setState({
-      hasStockLimit: !this.state.hasStockLimit,
-    });
+  toggleAddStock = () => {
+    this.setState((prevState) => ({
+      hasStockLimit: !prevState.hasStockLimit,
+    }));
   };
 
-  validateStockLimit = stockVal => {
+  validateStockLimit = (stockVal) => {
     if (stockVal === '' || Number(stockVal) <= 0) {
       return 'Stock must be at least 1';
     }
@@ -392,9 +390,10 @@ class FieldWithStockLimit extends React.Component {
         return 'Stock must be more than Min Limit';
       }
     }
+    return '';
   };
 
-  setRefStockLimit = el => (this.stockLimit = el);
+  setRefStockLimit = (el) => (this.stockLimit = el);
 
   render() {
     const { field } = this.props;

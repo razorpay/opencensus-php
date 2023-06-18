@@ -5,6 +5,8 @@ import {
   stringTemplate,
   getCurrencyConfig,
   getFormattedAmount,
+  i18CurrencyConversionFromCommonUnitToMinorUnit,
+  i18CurrencyConversionFromMinorUnitToCommonUnit,
   mergeCurrencyFormatting,
   exportFileAsExcel,
 } from 'common/utils/rzp-utils';
@@ -165,5 +167,37 @@ describe('Download Sample File', () => {
     fileFormat = 'csv';
     exportFileAsExcel({ finalDataSend, fileName, fileFormat });
     expect(FileSaver.saveAs).toHaveBeenCalledWith(new Blob(), 'test.csv');
+  });
+});
+
+describe('Tests for unit conversion', () => {
+  beforeAll(() => {
+    window.rzp_user = {
+      splitz_experiments: getSplitzExperiments(abExperimentsMap.n_exponent_support),
+    };
+  });
+
+  test('i18CurrencyConversionFromCommonUnitToMinorUnit should return correct conversion when 2 decimal currency is passed', () => {
+    expect(i18CurrencyConversionFromCommonUnitToMinorUnit(100.123, 'INR')).toBe(10012);
+  });
+
+  test('i18CurrencyConversionFromCommonUnitToMinorUnit should return correct conversion when 3 decimal currency is passed', () => {
+    expect(i18CurrencyConversionFromCommonUnitToMinorUnit(100.12, 'KWD')).toBe(100120);
+  });
+
+  test('i18CurrencyConversionFromCommonUnitToMinorUnit should return correct conversion for 2 decimal when currency passed does not exist', () => {
+    expect(i18CurrencyConversionFromCommonUnitToMinorUnit(100.12, 'ABC')).toBe(10012);
+  });
+
+  test('i18CurrencyConversionFromMinorUnitToCommonUnit should return correct conversion when 2 decimal currency is passed', () => {
+    expect(i18CurrencyConversionFromMinorUnitToCommonUnit(100123, 'INR')).toBe(1001.23);
+  });
+
+  test('i18CurrencyConversionFromMinorUnitToCommonUnit should return correct conversion when 3 decimal currency is passed', () => {
+    expect(i18CurrencyConversionFromMinorUnitToCommonUnit(10012, 'KWD')).toBe(10.012);
+  });
+
+  test('i18CurrencyConversionFromMinorUnitToCommonUnit should return correct conversion for 2 decimal when currency passed does not exist', () => {
+    expect(i18CurrencyConversionFromMinorUnitToCommonUnit(10012, 'ABC')).toBe(100.12);
   });
 });

@@ -8,13 +8,13 @@ import Popover from 'common/ui/Popover';
 
 import DocsLink from 'merchant/components/DocsLink';
 
-import { trackSelectCurrency } from '../ga';
+import { trackSelectCurrency } from 'merchant/views/PaymentLinks/PaymentLinks/ga';
 
 import {
   MIN_AMOUNT_TEXT,
   PopoverBodyText,
   validateMinAmount,
-} from '../components/Edit/EditMinimumAmount';
+} from 'merchant/views/PaymentLinks/PaymentLinks/components/Edit/EditMinimumAmount';
 
 const CustomInput = (props) => {
   return (
@@ -100,7 +100,7 @@ export default [
       _autoRenderImpure: true,
       _cmp: CustomInput,
       validator: function validator(val) {
-        return validateMinAmount(val, this.state.dirty.amount);
+        return validateMinAmount(val, this.state.dirty.amount, this.state.dirty.currency);
       },
       _when: function _when(form) {
         return (

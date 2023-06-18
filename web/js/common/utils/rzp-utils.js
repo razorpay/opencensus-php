@@ -324,11 +324,20 @@ export const getSplitzExperimentVariant = (experimentName) => {
 const isNExponentSupported = () =>
   getSplitzExperimentVariant('n_exponent_support').variables?.result === 'on';
 
+/**
+ * This function returns decimals and formatter for the currency passed
+ * 1. We get the currencylist from the window object or local file depending upon availability
+ * 2. We get the denomination value from currency object (default to 100 if denomination key does not exist)
+ * 3. We get the formatter from currency object (default to 3 comma formatter if key does not exist)
+ * 4. return the data object with decimals and formatter.
+ * @param {*} currency
+ * @returns {Object}
+ */
 export const getCurrencyConfig = (currency = 'INR') => {
   if (isNExponentSupported()) {
     const currencyList = window.currencyList || currencies;
-    const denomination = currencyList[currency]?.denomination ?? 100;
-    const formatter = currencyList[currency]?.format || currencyList.default.format;
+    const denomination = currencyList[currency]?.denomination || currencies.default.denomination;
+    const formatter = currencyList[currency]?.format || currencies.default.format;
     return { decimals: denomination.toString().length - 1, formatter };
   } else {
     return { decimals: 2, formatter: CURRENCY_FORMATTERS.inr };
@@ -366,7 +375,6 @@ export const mergeCurrencyFormatting = (data) => {
         mergedData[currency].format = formatting;
       }
     });
-    mergedData.default = currencies.default;
     return mergedData;
   }
   return currencies;
@@ -407,7 +415,6 @@ export const rupeesToPaise = (amount) => {
 
 export const paiseToRupees = (amount) => {
   amount = (Number(amount) / 100).toFixed(2);
-
   return Number(amount);
 };
 
@@ -1593,17 +1600,31 @@ export const convertUnixToDate = (unixTimeStamp) => {
   return date;
 };
 
-// converts minor unit of amount to common unit of amount, ex: paise to rupees
-export const i18CurrencyConversionFromMinorUnitToCommonUnit = (amount, currency) => {
-  // Ideally this should come from BE
-  amount = (Number(amount) / 100).toFixed(CURRENCY_DECIMALS[currency]);
+/**
+ * converts minor unit of amount to common unit of amount, ex: paise to rupees
+ * 1. This function calls the getCurrencyConfig to get the decimals of the passed currency
+ * 2. We divide the passed amount with (10^decimals) to get the amount in common unit or rupees in case if INR
+ * @param {*} amount minor unit
+ * @param {*} currency
+ * @returns {Number} common unit
+ */
+export const i18CurrencyConversionFromMinorUnitToCommonUnit = (amount, currency = 'INR') => {
+  const { decimals } = getCurrencyConfig(currency);
+  amount = (Number(amount) / 10 ** decimals).toFixed(decimals);
   return Number(amount);
 };
 
-// converts common unit of amount to minor unit of amount, ex: rupees to paise
-// INFO: Since all most allof currencies support decimals only to 0.00 values, we don't need to add the support to more minor units like ex: 0.000, 0.0, 0.0000.
-export const i18CurrencyConversionFromCommonUnitToMinorUnit = (amount) => {
-  amount = (Number(amount) * 100).toFixed(0);
+/**
+ * converts common unit of amount to minor unit of amount, ex: rupees to paise
+ * 1. This function calls the getCurrencyConfig to get the decimals of the passed currency
+ * 2. We multiply the passed amount with (10^decimals) to get the amount in minor unit or paise in case if INR
+ * @param {*} amount common unit
+ * @param {*} currency
+ * @returns {Number} minor unit
+ */
+export const i18CurrencyConversionFromCommonUnitToMinorUnit = (amount, currency = 'INR') => {
+  const { decimals } = getCurrencyConfig(currency);
+  amount = (Number(amount) * 10 ** decimals).toFixed(0);
   return Number(amount);
 };
 

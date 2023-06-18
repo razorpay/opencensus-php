@@ -1,6 +1,6 @@
 import GenericEntity from './GenericEntity';
 import Subscription from './Subscription';
-import { rupeesToPaise } from 'common/utils/rzp-utils';
+import { i18CurrencyConversionFromCommonUnitToMinorUnit } from 'common/utils/rzp-utils';
 
 export default class Plan extends GenericEntity {
   resourceUrl = 'plans';
@@ -12,17 +12,11 @@ export default class Plan extends GenericEntity {
   }
 
   fetchSubscriptions() {
-    let data = {
-      plan_id: this.id,
-    };
-
     return this.makeGenericAjaxCall({
       data: { plan_id: this.id },
       url: 'subscriptions',
-    }).then(response => {
-      response.data.items = response.data.items.map(item =>
-        new Subscription(item).deserialize()
-      );
+    }).then((response) => {
+      response.data.items = response.data.items.map((item) => new Subscription(item).deserialize());
 
       return response;
     });
@@ -30,7 +24,7 @@ export default class Plan extends GenericEntity {
 
   serializeProperty(prop) {
     if (prop === 'notes') {
-      let notes = this.notes || [];
+      const notes = this.notes || [];
       return notes.reduce((prev, curr) => {
         prev[curr.key] = curr.value || '';
         return prev;
@@ -38,10 +32,10 @@ export default class Plan extends GenericEntity {
     }
 
     if (prop === 'item') {
-      let item = this.item;
+      const item = this.item;
       return {
         ...item,
-        amount: rupeesToPaise(item.amount),
+        amount: i18CurrencyConversionFromCommonUnitToMinorUnit(item.amount, item.currency),
       };
     }
     return super.serializeProperty(prop);

@@ -13,7 +13,7 @@ import { Modal, ModalContent } from 'common/new-ui/Modal';
 import PaymentLinkFormFields, { getCustomNotesOptions } from './Fields';
 
 import moment from 'moment';
-import { createPaymentLink } from '../model';
+import { createPaymentLink } from 'merchant/views/PaymentLinks/PaymentLinks/model';
 import { dateCalculator } from 'common/new-ui/Input/Calendar';
 import { timeCalculator } from 'common/new-ui/Input/Time';
 
@@ -29,8 +29,17 @@ import { luminateRow } from 'merchant/reducers/app';
 
 import Spinner from 'common/ui/Spinner';
 
-import { getURLQueryParams, paiseToRupees, findBy, classList } from 'common/utils/rzp-utils';
-import { trackOpenCreateForm, closePaymentLinkForm, trackSaveDuplicatePaymentLink } from '../ga';
+import {
+  getURLQueryParams,
+  i18CurrencyConversionFromMinorUnitToCommonUnit,
+  findBy,
+  classList,
+} from 'common/utils/rzp-utils';
+import {
+  trackOpenCreateForm,
+  closePaymentLinkForm,
+  trackSaveDuplicatePaymentLink,
+} from 'merchant/views/PaymentLinks/PaymentLinks/ga';
 import { generateField } from './Utils';
 import track from './track';
 import { transformPLDetails_NewToOld } from 'merchant/views/PaymentLinks/PaymentLinks/js/transformer';
@@ -277,7 +286,7 @@ export default class CreateNewContainer extends React.Component {
           dirty: {
             currency: data.currency,
             description: data.description,
-            amount: paiseToRupees(data.amount),
+            amount: i18CurrencyConversionFromMinorUnitToCommonUnit(data.amount, data.currency),
             partial_payment: Number(data.partial_payment),
             sms_notify: Number(data.sms_notify),
             email_notify: Number(data.email_notify),

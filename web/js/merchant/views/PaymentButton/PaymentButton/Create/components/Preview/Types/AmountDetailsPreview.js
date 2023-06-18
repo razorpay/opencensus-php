@@ -11,18 +11,20 @@ import { getCurrency } from 'common/ui/Amount';
 import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 import { mapFieldToAmountFieldType } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
 import { templateTypes } from 'merchant/views/PaymentButton/PaymentButton/Create/components/Templates/meta';
+import { getCurrencyConfig } from 'common/utils/rzp-utils';
 
 export default class AmountDetailsPreview extends React.Component {
   getDummyAmountInputField(field) {
     const { paymentButtonEntity } = this.props;
     const currency = paymentButtonEntity.currency;
     const currencySymbol = getCurrency(currency).symbol;
+    const { decimals } = getCurrencyConfig(currency);
 
     const amount = field.item.amount;
     let amountToDisplay;
 
     if (amount) {
-      const _amount = Number(amount).toFixed(2);
+      const _amount = Number(amount).toFixed(decimals);
       const _amountToDisplay = _amount.split('.');
 
       amountToDisplay = (

@@ -3,18 +3,18 @@ import { withRouter } from 'react-router-dom';
 
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
-import EditorModal from '../components/EditorModal';
+import EditorModal from 'merchant/views/PaymentButton/SubscriptionButton/Create/components/Form/components/EditorModal';
 import InputDropdown from 'merchant/views/PaymentButton/PaymentButton/Create/components/Form/components/InputDropdown';
 
-import { getCurrency } from 'common/ui/Amount';
-import { paiseToRupees } from 'common/utils/rzp-utils';
-import { getPeriodLabel } from '../../../constants/billingCycle';
+import Amount, { getCurrency } from 'common/ui/Amount';
+import { getFormattedAmount } from 'common/utils/rzp-utils';
+import { getPeriodLabel } from 'merchant/views/PaymentButton/SubscriptionButton/Create/constants/billingCycle';
 import FieldOptionsDropdownWrapper, {
   OptionsItem,
 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/FieldOptionsDropdown';
 import Button from 'common/new-ui/Button';
 
-import track from '../../../track';
+import track from 'merchant/views/PaymentButton/SubscriptionButton/Create/track';
 
 @withRouter
 export default class BaseForm extends React.Component {
@@ -92,7 +92,7 @@ export default class BaseForm extends React.Component {
       <div class="option-title">{option.item.name}</div>
       <div class="option-description">
         <span>
-          {this.getCurrencySymbol(option)} {paiseToRupees(Number(option.item.amount)).toFixed(2)}
+          <Amount value={option.item.amount} currency={option.item.currency} />
         </span>
         <span class="big-dot-separator" />
         <span>Charged {getPeriodLabel(option.period, option.interval)}</span>
@@ -170,12 +170,15 @@ export default class BaseForm extends React.Component {
     if (selectedPlanOption) {
       const currencySymbol = this.getCurrencySymbol(selectedPlanOption);
       const periodLabel = getPeriodLabel(selectedPlanOption.period, selectedPlanOption.interval);
-      const displayAmount = paiseToRupees(Number(selectedPlanOption.item.amount)).toFixed(2);
 
       descriptionOfSelectedPlanFrequency = (
         <span>
           <b>
-            {currencySymbol} {displayAmount}
+            {currencySymbol}{' '}
+            {getFormattedAmount(
+              Number(selectedPlanOption.item.amount),
+              selectedPlanOption.item.currency,
+            )}
           </b>{' '}
           to be charged {periodLabel}
         </span>

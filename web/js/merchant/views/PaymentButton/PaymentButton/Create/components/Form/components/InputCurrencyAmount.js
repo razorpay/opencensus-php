@@ -1,5 +1,6 @@
+import React from 'react';
 import Input from 'common/new-ui/Input';
-import { paiseToRupees } from 'common/utils/rzp-utils';
+import { i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
 import { getCurrency } from 'common/ui/Amount';
 import { validateAmount } from 'common/utils/validators';
 
@@ -8,12 +9,14 @@ export default class InputCurrencyAmount extends React.Component {
     currency: this.props.defaultValueCurrency,
   };
 
-  findDefaultCurrencyOption() {
-    const defaultCurrency = this.props.defaultValueCurrency;
-  }
+  findDefaultCurrencyOption() {}
 
   get minAmountAllowed() {
-    return paiseToRupees(getCurrency(this.state.currency).min_value);
+    const { currency } = this.state;
+    return i18CurrencyConversionFromMinorUnitToCommonUnit(
+      getCurrency(currency).min_value,
+      currency,
+    );
   }
 
   get amountFieldName() {
@@ -75,7 +78,7 @@ export default class InputCurrencyAmount extends React.Component {
             description={description}
             type="number"
             defaultValue={defaultValueAmount}
-            validator={(val) => validateAmount(val, this.minAmountAllowed)}
+            validator={(val) => validateAmount(val, this.minAmountAllowed, this.state.currency)}
             onChange={(e) =>
               this.handleChange({
                 [this.amountFieldName]: e.target.value,

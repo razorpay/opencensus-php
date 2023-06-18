@@ -13,7 +13,7 @@ import PaymentReceipt from 'merchant/views/PaymentPages/PaymentPages/components/
 import SideBar from './components/SideBar';
 import Form from './components/Form';
 import Preview from './components/Preview';
-import SuccessModal from '../components/SuccessModal';
+import SuccessModal from 'merchant/views/PaymentButton/SubscriptionButton/components/SuccessModal';
 
 import {
   fetchSubscriptionButtonDetails,
@@ -31,7 +31,10 @@ import {
 
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import { getURLQueryParams, rupeesToPaise } from 'common/utils/rzp-utils';
+import {
+  getURLQueryParams,
+  i18CurrencyConversionFromCommonUnitToMinorUnit,
+} from 'common/utils/rzp-utils';
 
 import track from './track';
 
@@ -320,7 +323,9 @@ export default class SubscriptionButtonCreate extends React.Component {
           item: {
             name: item.name,
             description: item.description,
-            amount: item.amount ? rupeesToPaise(item.amount) : null, // Convert in paisa (smaller unit)
+            amount: item.amount
+              ? i18CurrencyConversionFromCommonUnitToMinorUnit(item.amount, currency)
+              : null, // Convert in paisa (smaller unit)
           },
         };
 

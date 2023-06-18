@@ -5,21 +5,23 @@ import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
 import Button from 'common/new-ui/Button';
 import ModalHeader from 'common/ui/ModalHeader';
-import EditorModal from '../components/EditorModal';
+import EditorModal from 'merchant/views/PaymentButton/PaymentButton/Create/components/Form/components/EditorModal';
+
+// eslint-disable-next-line import/no-named-as-default
 import FieldOptionsDropdown, {
   OptionsItem,
 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/FieldOptionsDropdown';
 import AdvancedForm from './AdvancedForm';
 import { DynamicAmount, FixedAmount, FixedAmountWithQuantity } from './FieldTypesRepresentations';
 
-import { paiseToRupees } from 'common/utils/rzp-utils';
+import { i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
 import { getCurrency } from 'common/ui/Amount';
 import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
-import { isMandatoryToBool } from '../../../../../../PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
+import { isMandatoryToBool } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { validateAmount } from 'common/utils/validators';
 
-import track from '../../../track';
+import track from 'merchant/views/PaymentButton/PaymentButton/Create/track';
 
 @connect(null, {
   openModal,
@@ -131,7 +133,10 @@ export default class BaseForm extends React.Component {
     if (isMandatory) {
       switch (fieldType) {
         case FIELD_TYPES.dynamic_price.key: {
-          const minAmountAllowed = paiseToRupees(getCurrency(currency).min_value); // Dealing with rupees(bigger currency) in UI. Converted to paisa only when sent to API.
+          const minAmountAllowed = i18CurrencyConversionFromMinorUnitToCommonUnit(
+            getCurrency(currency).min_value,
+            currency,
+          ); // Dealing with rupees(bigger currency) in UI. Converted to paisa only when sent to API.
 
           if (Number(newField.min_amount) < Number(minAmountAllowed)) {
             newField.min_amount = minAmountAllowed; // Must be at least min payable value as per currency
@@ -304,7 +309,7 @@ export default class BaseForm extends React.Component {
     const placeholder = disableAmountInput ? 'To be filled by customer' : '0.00';
     const minAmountAllowed = disableAmountInput
       ? ''
-      : paiseToRupees(getCurrency(currency).min_value);
+      : i18CurrencyConversionFromMinorUnitToCommonUnit(getCurrency(currency).min_value, currency);
 
     let inputField = (
       <Input
@@ -312,9 +317,10 @@ export default class BaseForm extends React.Component {
         class="placeholder-field Input--Amount"
         placeholder={placeholder}
         defaultValue={amount}
-        validator={(val) => validateAmount(val, minAmountAllowed)}
+        validator={(val) => validateAmount(val, minAmountAllowed, currency)}
         disabled={disableAmountInput}
         required={!disableAmountInput}
+        autoRender
       />
     );
 

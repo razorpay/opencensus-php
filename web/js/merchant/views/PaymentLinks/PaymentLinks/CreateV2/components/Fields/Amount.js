@@ -1,23 +1,25 @@
 import Input from 'common/new-ui/Input';
 import { validateAmount } from 'common/utils/validators';
 
-import track from '../../track';
-import { FORM_CLASS_NAME } from '../FormWizard';
+import track from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/track';
+import { FORM_CLASS_NAME } from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/components/FormWizard';
 
 const Amount = (props) => {
+  const { defaultCurrency, defaultAmount, disableCurrencySelect, disabled } = props;
+
   return (
     <Input.Group
       class="InputGroup--inline InputGroup--vTop amount"
       label="Amount"
       required
-      disabled={props.disabled}
+      disabled={disabled}
     >
       <div class="Input-content pt-8">
         <Input.CurrencySelect
           autoRender
           name="currency"
-          defaultValue={props.defaultCurrency}
-          disabled={props.disableCurrencySelect}
+          defaultValue={defaultCurrency}
+          disabled={disableCurrencySelect}
           parentQuerySelector=".Modal-body"
           onChange={track.lj.fields.currency}
         />
@@ -26,17 +28,18 @@ const Amount = (props) => {
           required
           name="amount"
           placeholder="0.00"
-          defaultValue={props.defaultAmount}
-          validator={amountValidator}
+          defaultValue={defaultAmount}
+          validator={(value) => amountValidator(value, defaultCurrency)}
           onBlur={callTrackers(props)}
+          currency={defaultCurrency} //this is a hack to trigger validation on currency change
         />
       </div>
     </Input.Group>
   );
 };
 
-function amountValidator(value) {
-  return validateAmount(value);
+function amountValidator(value, currency) {
+  return validateAmount(value, null, currency);
 }
 
 function callTrackers(props) {

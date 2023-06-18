@@ -36,7 +36,10 @@ import {
 
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
-import { getURLQueryParams, rupeesToPaise } from 'common/utils/rzp-utils';
+import {
+  getURLQueryParams,
+  i18CurrencyConversionFromCommonUnitToMinorUnit,
+} from 'common/utils/rzp-utils';
 
 import track from './track';
 import track_details from 'merchant/views/PaymentButton/PaymentButton/Details/track';
@@ -386,14 +389,20 @@ export default class PaymentButtonCreate extends React.Component {
         item: {
           name: item.name,
           description: item.description,
-          amount: item.amount ? rupeesToPaise(item.amount) : null, // Convert in paisa (smaller unit)
+          amount: item.amount
+            ? i18CurrencyConversionFromCommonUnitToMinorUnit(item.amount, currency)
+            : null,
         },
         settings, // Contains position
         mandatory,
         min_purchase,
         max_purchase,
-        min_amount: min_amount ? rupeesToPaise(min_amount) : null,
-        max_amount: max_amount ? rupeesToPaise(max_amount) : null,
+        min_amount: min_amount
+          ? i18CurrencyConversionFromCommonUnitToMinorUnit(min_amount, currency)
+          : null,
+        max_amount: max_amount
+          ? i18CurrencyConversionFromCommonUnitToMinorUnit(max_amount, currency)
+          : null,
         stock: stock ? stock : null, // stock cannot be 0 or empty string
         image_url: null,
       };

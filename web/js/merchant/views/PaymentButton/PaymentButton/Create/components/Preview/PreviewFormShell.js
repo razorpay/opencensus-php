@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 
 import { templateTypes } from 'merchant/views/PaymentButton/PaymentButton/Create/components/Templates/meta';
 import { getCurrency } from 'common/ui/Amount';
+import { getCurrencyConfig } from 'common/utils/rzp-utils';
 
 const blackColor = '#263a4a';
 const whiteColor = '#fff';
@@ -51,6 +52,7 @@ export default class PreviewFormShell extends React.Component {
 
   get displayAmountToPayByCustomer() {
     let _amountToPayByCustomer = 0;
+    const { decimals } = getCurrencyConfig(this.props.paymentButtonEntity.currency);
 
     if (this.isQuickPayTemplate) {
       const { amountFields } = this.props;
@@ -61,7 +63,7 @@ export default class PreviewFormShell extends React.Component {
       }
     }
 
-    const displayAmount = Number(_amountToPayByCustomer).toFixed(2);
+    const displayAmount = Number(_amountToPayByCustomer).toFixed(decimals);
 
     return displayAmount;
   }

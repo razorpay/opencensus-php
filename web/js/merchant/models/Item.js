@@ -1,6 +1,9 @@
 import GenericEntity from './GenericEntity';
 import ajax from 'merchant/utils/ajax';
-import { getFixedINRAmount, rupeesToPaise } from 'common/utils/rzp-utils';
+import {
+  i18CurrencyConversionFromCommonUnitToMinorUnit,
+  i18CurrencyConversionFromMinorUnitToCommonUnit,
+} from 'common/utils/rzp-utils';
 
 export default class Item extends GenericEntity {
   resourceFields = [
@@ -24,24 +27,22 @@ export default class Item extends GenericEntity {
 
   // This will be replaced with the ES autocomplete api
   fetchForAutocomplete(data = {}) {
-    return ajax('/items/autocomplete', { data }).then(response => {
-      response.data.items = response.data.items.map(item =>
-        new Item(item).deserialize()
-      );
+    return ajax('/items/autocomplete', { data }).then((response) => {
+      response.data.items = response.data.items.map((item) => new Item(item).deserialize());
       return response;
     });
   }
 
   serializeProperty(prop) {
     if (prop === 'amount') {
-      return rupeesToPaise(this.amountInINR);
+      return i18CurrencyConversionFromCommonUnitToMinorUnit(this.amountInINR, this.currency);
     }
     return super.serializeProperty(prop);
   }
 
   deserializeProperty(prop, value) {
     if (prop === 'amount') {
-      this.amountInINR = getFixedINRAmount(value);
+      this.amountInINR = i18CurrencyConversionFromMinorUnitToCommonUnit(value, this.currency);
     }
     return super.deserializeProperty(prop, value);
   }

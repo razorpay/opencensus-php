@@ -1,6 +1,6 @@
 import { set, merge, removeItem, updateItem, push, deepMerge } from 'common/utils/immutable';
 
-import { paiseToRupees } from 'common/utils/rzp-utils';
+import { i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
 import { fetchPaymentPageEntity as getSubscriptionButtonDetails } from 'merchant/views/PaymentPages/PaymentPages/model';
 import { FIXED_FIELDS } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers/preAddedFields';
 import { getButtonThemes } from 'merchant/views/PaymentButton/PaymentButton/Create/constants/buttonThemes';
@@ -142,7 +142,7 @@ const initialState = {
   },
 };
 
-export default function subscriptionBtnReducer(state = initialState, action) {
+export default (state = initialState, action) => {
   switch (action.type) {
     case `${FETCH_SUBSCRIPTION_BUTTON_ENTITY}::PENDING`: {
       return {
@@ -170,7 +170,10 @@ export default function subscriptionBtnReducer(state = initialState, action) {
         // Convert only for one-time payment items. It's bcoz while creation, plans are fetched in common reducer, hence they cannot be converted to rupees,
         // and since their amount is used just for the purpose of display and not manipulation, so for plans, paiseToRupees is done only for display purpose.
         if (!pi.plan_id) {
-          pi.item.amount = paiseToRupees(pi.item.amount); // Convert in Rupees (or bigger unit)
+          pi.item.amount = i18CurrencyConversionFromMinorUnitToCommonUnit(
+            pi.item.amount,
+            entityData.currency,
+          ); // Convert in Rupees (or bigger unit)
         }
       });
 
@@ -345,4 +348,4 @@ export default function subscriptionBtnReducer(state = initialState, action) {
     default:
       return state;
   }
-}
+};

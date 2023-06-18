@@ -1,5 +1,8 @@
 import { merchantFetch } from 'merchant/utils/ajax';
-import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
+import {
+  getKeysSeparatedByPipe,
+  i18CurrencyConversionFromCommonUnitToMinorUnit,
+} from 'common/utils/rzp-utils';
 
 import { transformCreatePLPayload_OldToNew, transformPLDetails_NewToOld } from './js/transformer';
 import { trackFormSubmit } from './ga';
@@ -17,7 +20,9 @@ export function createPaymentLink(payload) {
   let reqPayload = { ...payload };
   reqPayload.type = 'link';
 
-  reqPayload.amount = Math.round(reqPayload.amount * 100);
+  reqPayload.amount = Math.round(
+    i18CurrencyConversionFromCommonUnitToMinorUnit(reqPayload.amount, reqPayload.currency),
+  );
 
   reqPayload.expire_by && (reqPayload.expire_by = Math.floor(reqPayload.expire_by / 1000));
 
@@ -208,7 +213,12 @@ export function createPaymentLinkV2(payload) {
   }
 
   if (reqPayload.hasOwnProperty('first_min_partial_amount')) {
-    reqPayload.first_min_partial_amount = Math.round(reqPayload.first_min_partial_amount * 100);
+    reqPayload.first_min_partial_amount = Math.round(
+      i18CurrencyConversionFromCommonUnitToMinorUnit(
+        reqPayload.first_min_partial_amount,
+        reqPayload.currency,
+      ),
+    );
   }
 
   return merchantFetch({

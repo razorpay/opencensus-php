@@ -8,7 +8,7 @@ import MainAmountField from './Fields/MainAmountField';
 import PresetAmountField from './Fields/PresetAmountField';
 
 import { getCurrency } from 'common/ui/Amount';
-import { paiseToRupees } from 'common/utils/rzp-utils';
+import { i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
 import debounce from 'common/utils/debounce';
 import FIELD_TYPES from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers/fieldTypes';
 import { getBaseFieldForAmountFieldType } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
@@ -118,7 +118,10 @@ export default class AmountDetails extends React.Component {
 
       const currency = this.props.paymentButtonEntity.currency;
       // Dealing with rupees(bigger currency) in UI. Converted to paisa only when sent to API.
-      const minAmountAllowed = paiseToRupees(getCurrency(currency).min_value);
+      const minAmountAllowed = i18CurrencyConversionFromMinorUnitToCommonUnit(
+        getCurrency(currency).min_value,
+        currency,
+      );
 
       mainAmountField.min_amount = minAmountAllowed;
     }

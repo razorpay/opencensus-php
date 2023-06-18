@@ -1,11 +1,12 @@
+import React from 'react';
 import { connect } from 'react-redux';
 
 import Input from 'common/new-ui/Input';
 import BaseForm from './BaseForm';
 
 import { getCurrency } from 'common/ui/Amount';
-import { classList, paiseToRupees } from 'common/utils/rzp-utils';
-import { getPeriodLabel } from '../../../constants/billingCycle';
+import { classList, getFormattedAmount } from 'common/utils/rzp-utils';
+import { getPeriodLabel } from 'merchant/views/PaymentButton/SubscriptionButton/Create/constants/billingCycle';
 
 import {
   updatePaymentField,
@@ -14,7 +15,7 @@ import {
   updateStepReviewProgress,
 } from 'merchant/reducers/subscriptionButtons/create';
 
-import track from '../../../track';
+import track from 'merchant/views/PaymentButton/SubscriptionButton/Create/track';
 
 @connect(null, {
   updatePaymentField,
@@ -35,9 +36,9 @@ export default class EditableDisplayField extends React.Component {
   }
 
   handleToggleEditMode = () => {
-    this.setState({
-      isEditModeOpened: !this.state.isEditModeOpened,
-    });
+    this.setState((prevState) => ({
+      isEditModeOpened: !prevState.isEditModeOpened,
+    }));
   };
 
   onSubmitBaseForm = (fieldData) => {
@@ -50,6 +51,7 @@ export default class EditableDisplayField extends React.Component {
     });
 
     if (!newPlanField) {
+      // eslint-disable-next-line no-throw-literal
       throw 'Invalid field data';
     }
 
@@ -69,8 +71,6 @@ export default class EditableDisplayField extends React.Component {
   };
 
   findSelectedOptionInPlanOptions() {
-    const { field } = this.props;
-
     return null;
   }
 
@@ -91,7 +91,7 @@ export default class EditableDisplayField extends React.Component {
       descriptionOfPlanFrequency = (
         <span>
           <b>
-            {this.currencySymbol} {paiseToRupees(Number(field.item.amount)).toFixed(2)}
+            {this.currencySymbol} {getFormattedAmount(Number(field.item.amount), currency)}
           </b>{' '}
           to be charged {getPeriodLabel(planDetails.period, planDetails.interval)}
         </span>

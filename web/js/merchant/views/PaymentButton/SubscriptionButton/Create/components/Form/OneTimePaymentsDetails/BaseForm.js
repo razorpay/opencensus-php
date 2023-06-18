@@ -1,10 +1,13 @@
+import React from 'react';
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
-import EditorModal from '../components/EditorModal';
+import EditorModal from 'merchant/views/PaymentButton/SubscriptionButton/Create/components/Form/components/EditorModal';
 
 import { getCurrency } from 'common/ui/Amount';
-import { paiseToRupees } from 'common/utils/rzp-utils';
+import { i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
 import { validateAmount } from 'common/utils/validators';
+
+// eslint-disable-next-line import/no-named-as-default
 import FieldOptionsDropdown, {
   OptionsItem,
 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/FieldOptionsDropdown';
@@ -24,7 +27,7 @@ export default class BaseForm extends React.Component {
   }
 
   toggleSubmitBtn = () => {
-    let disableSubmit = !!this.formEl.querySelectorAll('.is-invalid').length;
+    const disableSubmit = !!this.formEl.querySelectorAll('.is-invalid').length;
 
     this.setState({ disableSubmit });
   };
@@ -120,7 +123,10 @@ export default class BaseForm extends React.Component {
   render() {
     const { field, indexInOrder, validateSameTitleExists, currency } = this.props;
 
-    const minAmountAllowed = paiseToRupees(getCurrency(currency).min_value);
+    const minAmountAllowed = i18CurrencyConversionFromMinorUnitToCommonUnit(
+      getCurrency(currency).min_value,
+      currency,
+    );
 
     return (
       <EditorModal class="CreatorModal-BaseForm" overElement allowScroll>
@@ -151,6 +157,7 @@ export default class BaseForm extends React.Component {
               if (validateSameTitleExists(val, indexInOrder)) {
                 return 'Field label cannot be same as other field';
               }
+              return '';
             }}
           />
 
@@ -162,7 +169,7 @@ export default class BaseForm extends React.Component {
               placeholder="Enter Amount"
               defaultValue={field ? field.item.amount : ''}
               required
-              validator={(val) => validateAmount(val, minAmountAllowed)}
+              validator={(val) => validateAmount(val, minAmountAllowed, currency)}
             />
 
             <Input.TextareaAutoResize
@@ -174,6 +181,7 @@ export default class BaseForm extends React.Component {
                 if (val && val.length > 128) {
                   return 'Field description cannot be more than 128 characters';
                 }
+                return '';
               }}
             />
           </Input.Group>

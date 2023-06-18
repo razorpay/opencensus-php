@@ -199,10 +199,7 @@ export default class PaymentLinkCreateV2 extends React.Component {
           formData: {
             currency: data.currency,
             description: data.description,
-            amount: i18CurrencyConversionFromMinorUnitToCommonUnit(
-              data.amount,
-              this.props.user.merchant.currency,
-            ),
+            amount: i18CurrencyConversionFromMinorUnitToCommonUnit(data.amount, data.currency),
             accept_partial: data.accept_partial ? '1' : '0',
             sms_notify: data.notify && data.notify.sms ? '1' : '0',
             email_notify: data.notify && data.notify.email ? '1' : '0',
@@ -266,7 +263,10 @@ export default class PaymentLinkCreateV2 extends React.Component {
       notificationMSG += ` Sending via ${notifyMedium.join(' and ')}`;
     }
 
-    reqPayload.amount = i18CurrencyConversionFromCommonUnitToMinorUnit(reqPayload.amount);
+    reqPayload.amount = i18CurrencyConversionFromCommonUnitToMinorUnit(
+      reqPayload.amount,
+      reqPayload.currency,
+    );
 
     track.lj.form.create();
 

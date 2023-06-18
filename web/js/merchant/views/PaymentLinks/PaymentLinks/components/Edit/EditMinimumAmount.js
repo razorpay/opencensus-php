@@ -1,10 +1,15 @@
+import React from 'react';
 import Amount from 'common/ui/Amount';
 import { isAmount } from 'common/utils/validators';
 import Input from 'common/new-ui/Input';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import { titleCase } from 'common/utils/rzp-utils';
-import { AmountTooltip } from 'common/ui/Amount';
+import {
+  titleCase,
+  i18CurrencyConversionFromMinorUnitToCommonUnit,
+  i18CurrencyConversionFromCommonUnitToMinorUnit,
+  getCurrencyConfig,
+} from 'common/utils/rzp-utils';
 
 export const MIN_AMOUNT_TEXT = 'Minimum due amount';
 
@@ -14,16 +19,17 @@ export const PopoverBodyText = (
   </PopoverBody>
 );
 
-export function validateMinAmount(val, maxAmount) {
+export function validateMinAmount(val, maxAmount, currency = 'INR') {
   if (!val) {
-    return;
+    return '';
   }
 
   if (!isAmount(val)) {
+    const { decimals } = getCurrencyConfig(currency);
     const decimal = val && val.split('.');
 
-    if (decimal.length == 2 && decimal[1].length > 2) {
-      return 'Enter upto 2 decimals';
+    if (decimal.length == decimals && decimal[1].length > decimals) {
+      return `Enter upto ${decimals} decimals`;
     } else {
       return 'Invalid Amount';
     }
@@ -35,6 +41,7 @@ export function validateMinAmount(val, maxAmount) {
   if (Number(val) >= maxAmount) {
     return `${MIN_AMOUNT_TEXT} must be less than Amount`;
   }
+  return '';
 }
 
 export default class EditMinimumAmount extends React.Component {
@@ -43,7 +50,9 @@ export default class EditMinimumAmount extends React.Component {
   resetState() {
     return {
       isEditableMode: false,
-      first_payment_min_amount: this.props.value ? this.props.value / 100 : '',
+      first_payment_min_amount: this.props.value
+        ? i18CurrencyConversionFromMinorUnitToCommonUnit(this.props.value, this.props.currency)
+        : '',
     };
   }
 
@@ -58,7 +67,10 @@ export default class EditMinimumAmount extends React.Component {
   handleSubmit = () => {
     let first_payment_min_amount = null;
     if (this.state.first_payment_min_amount !== '0' && this.state.first_payment_min_amount) {
-      first_payment_min_amount = this.state.first_payment_min_amount * 100;
+      first_payment_min_amount = i18CurrencyConversionFromCommonUnitToMinorUnit(
+        this.state.first_payment_min_amount,
+        this.props.currency,
+      );
     }
 
     return this.props
@@ -80,7 +92,13 @@ export default class EditMinimumAmount extends React.Component {
     let content = (
       <div style={{ marginTop: 4 }}>
         <span style={{ marginRight: 12 }}>
-          <Amount value={this.state.first_payment_min_amount * 100} currency={currency} />{' '}
+          <Amount
+            value={i18CurrencyConversionFromCommonUnitToMinorUnit(
+              this.state.first_payment_min_amount,
+              currency,
+            )}
+            currency={currency}
+          />{' '}
           {titleCase(MIN_AMOUNT_TEXT)}
           <small className="help-content">
             <i class="i i-info-outline" style={{ verticalAlign: 'middle', marginLeft: 4 }} />
@@ -108,7 +126,13 @@ export default class EditMinimumAmount extends React.Component {
                 placeholder={titleCase(MIN_AMOUNT_TEXT)}
                 class="Input--small"
                 value={this.state.first_payment_min_amount}
-                validator={(val) => validateMinAmount(val, this.props.maximum / 100)}
+                validator={(val) =>
+                  validateMinAmount(
+                    val,
+                    i18CurrencyConversionFromMinorUnitToCommonUnit(this.props.maximum, currency),
+                    currency,
+                  )
+                }
                 onChange={(e) => {
                   this.setState({
                     first_payment_min_amount: e.target.value,
@@ -133,7 +157,11 @@ export default class EditMinimumAmount extends React.Component {
               class="Button--small"
               style={{ marginRight: 0, marginLeft: 16 }}
               disabled={
-                !!validateMinAmount(this.state.first_payment_min_amount, this.props.maximum / 100)
+                !!validateMinAmount(
+                  this.state.first_payment_min_amount,
+                  i18CurrencyConversionFromMinorUnitToCommonUnit(this.props.maximum, currency),
+                  currency,
+                )
               }
               onClick={this.handleSubmit}
               showLoader={false}

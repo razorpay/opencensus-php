@@ -10,7 +10,7 @@ import {
   deepMerge,
 } from 'common/utils/immutable';
 
-import { paiseToRupees, arrayMove } from 'common/utils/rzp-utils';
+import { arrayMove, i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
 import {
   fetchPaymentPageEntity,
   fetchCustomDomain,
@@ -289,15 +289,25 @@ export default (state = initialState, action) => {
         // While creation/editing, all amounts are converted to Paisa (or smaller unit)
 
         if (pi.item.amount) {
-          pi.item.amount = paiseToRupees(pi.item.amount); // Convert in Rupees (or bigger unit)
+          pi.item.amount = i18CurrencyConversionFromMinorUnitToCommonUnit(
+            pi.item.amount,
+            pi.item.currency,
+          ); // Convert in Rupees (or bigger unit)
         }
 
         if (pi.min_amount) {
-          pi.min_amount = paiseToRupees(pi.min_amount); // Convert in Rupees (or bigger unit)
+          pi.min_amount = i18CurrencyConversionFromMinorUnitToCommonUnit(
+            pi.min_amount,
+            pi.item?.currency,
+            //keeping optional chaining here since i am not sure if item will be there or not
+          ); // Convert in Rupees (or bigger unit)
         }
 
         if (pi.max_amount) {
-          pi.max_amount = paiseToRupees(pi.max_amount); // Convert in Rupees (or bigger unit)
+          pi.max_amount = i18CurrencyConversionFromMinorUnitToCommonUnit(
+            pi.max_amount,
+            pi.item?.currency,
+          ); // Convert in Rupees (or bigger unit)
         }
       });
 

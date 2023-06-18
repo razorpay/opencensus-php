@@ -1,4 +1,4 @@
-import { isPresent, isValidGSTIN } from './rzp-utils';
+import { isPresent, isValidGSTIN, getCurrencyConfig } from './rzp-utils';
 
 const rzp_gst = '29AAGCR4375J1ZU';
 
@@ -298,13 +298,15 @@ export function validateAlphanumericWithMinAndMaxLength(value, minLength, maxLen
   return validateAlphanumericWithMaxLength(value, maxLength);
 }
 
-export function validateAmount(val, minAmountAllowed) {
+export function validateAmount(val, minAmountAllowed, currency = 'INR') {
   if (val) {
-    const amountPattern = '^[0-9]+(.([0-9]){1,2})?$';
+    const { decimals } = getCurrencyConfig(currency);
+    const amountPattern = `^[0-9]+(.([0-9]){1,${decimals}})?$`;
     const regex = new RegExp(amountPattern);
+    const validPattern = 123.456789;
 
     if (!regex.test(Number(val))) {
-      return 'Amount must be a number in the format 123.45';
+      return `Amount must be a number in the format ${validPattern.toFixed(decimals)}`;
     }
 
     if (typeof minAmountAllowed !== 'undefined' && Number(val) < Number(minAmountAllowed)) {

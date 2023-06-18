@@ -551,7 +551,9 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           item: {
             name,
             description,
-            amount: amount ? i18CurrencyConversionFromCommonUnitToMinorUnit(amount) : null, // Convert in paisa (smaller unit)
+            amount: amount
+              ? i18CurrencyConversionFromCommonUnitToMinorUnit(amount, currency)
+              : null, // Convert in paisa (smaller unit)
           },
           settings, // Contains position
           image_url,
@@ -559,10 +561,10 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           min_purchase,
           max_purchase,
           min_amount: min_amount
-            ? i18CurrencyConversionFromCommonUnitToMinorUnit(min_amount)
+            ? i18CurrencyConversionFromCommonUnitToMinorUnit(min_amount, currency)
             : null,
           max_amount: max_amount
-            ? i18CurrencyConversionFromCommonUnitToMinorUnit(max_amount)
+            ? i18CurrencyConversionFromCommonUnitToMinorUnit(max_amount, currency)
             : null,
           stock: stock ? stock : null, // stock cannot be 0 or ""
         };

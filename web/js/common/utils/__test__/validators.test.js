@@ -1,4 +1,6 @@
-import { isMobile, flexibleDevUrl } from 'common/utils/validators';
+import { isMobile, flexibleDevUrl, validateAmount } from 'common/utils/validators';
+import abExperimentsMap from 'merchant/utils/abExperimentsMap';
+import { getSplitzExperiments } from 'common/utils/__test__/mocks/fixtures';
 
 const IN_MOBILE_NUMBER = [
   {
@@ -164,5 +166,67 @@ describe('flexibleDevUrl', () => {
     expect(flexibleDevUrl('http://www.example.com/path/to/resource/with spaces?query=string')).toBe(
       false,
     );
+  });
+});
+
+describe('Tests for validateAmount', () => {
+  beforeAll(() => {
+    window.rzp_user = {
+      splitz_experiments: getSplitzExperiments(abExperimentsMap.n_exponent_support),
+    };
+  });
+
+  test('function should return error when amount is invalid', () => {
+    expect(validateAmount('123.123', 100, 'INR')).toBe(
+      'Amount must be a number in the format 123.46',
+    );
+
+    expect(validateAmount('1,123.123', 100, 'INR')).toBe(
+      'Amount must be a number in the format 123.46',
+    );
+
+    expect(validateAmount('1q123.123', 100, 'INR')).toBe(
+      'Amount must be a number in the format 123.46',
+    );
+  });
+
+  test('function should return error when currency is KWD and amount is greater than 3 decimal', () => {
+    expect(validateAmount('123.1234', 100, 'KWD')).toBe(
+      'Amount must be a number in the format 123.457',
+    );
+  });
+
+  test('function should return error when currency is INR and amount is greater than 2 decimal', () => {
+    expect(validateAmount('123.1234', 100, 'INR')).toBe(
+      'Amount must be a number in the format 123.46',
+    );
+  });
+
+  test('function should not return error when currency is KWD and amount is 3 decimal or less', () => {
+    expect(validateAmount('123.123', 100, 'KWD')).toBe(undefined);
+
+    expect(validateAmount('123.12', 100, 'KWD')).toBe(undefined);
+
+    expect(validateAmount('123.1', 100, 'KWD')).toBe(undefined);
+
+    expect(validateAmount('123', 100, 'KWD')).toBe(undefined);
+  });
+
+  test('function should not return error when currency is INR and amount is 2 decimal or less', () => {
+    expect(validateAmount('123.12', 100, 'INR')).toBe(undefined);
+
+    expect(validateAmount('123.1', 100, 'INR')).toBe(undefined);
+
+    expect(validateAmount('123', 100, 'INR')).toBe(undefined);
+  });
+
+  test('function should return error when currency is INR/KWD and amount is less than min value', () => {
+    expect(validateAmount('23', 100, 'INR')).toBe('Amount must be at least 100');
+
+    expect(validateAmount('23', 100, 'KWD')).toBe('Amount must be at least 100');
+  });
+
+  test('function should not return error when empty string is passed', () => {
+    expect(validateAmount('', 100, 'INR')).toBe(undefined);
   });
 });
