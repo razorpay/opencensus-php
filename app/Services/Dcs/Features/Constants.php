@@ -39,6 +39,7 @@ class Constants
     const AsyncBalanceUpdateEnabled = 'async_balance_update_enabled';
     const AsyncTransactionUpdateEnabled = 'async_transaction_update_enabled';
     const AutoRefundsDisabled = 'auto_refunds_disabled';
+    const Disabled = 'disabled';
     const EnableRoutePartnerships = 'route_for_partnerships_enabled';
     const ManualSettlementForSubmerchants = 'manual_settlement_for_submerchants';
     const ImportSettlement = 'import_settlement';
@@ -166,6 +167,7 @@ class Constants
         self::AsyncTransactionUpdateEnabled => "rzp/pg/merchant/ledger/Features",
         self::PgLedgerReverseShadowEnabled => "rzp/pg/merchant/ledger/Features",
         self::AutoRefundsDisabled => "rzp/pg/merchant/refunds/Features",
+        self::Disabled => "rzp/pg/merchant/dashboard/TestMode",
         self::EnableRoutePartnerships => "rzp/platform/partner/route/Features",
         self::ManualSettlementForSubmerchants => "rzp/pg/merchant/settlements/PartnershipsFeatures",
         self::ImportSettlement => "rzp/pg/merchant/settlements/OPGSPFeatures",
@@ -309,6 +311,7 @@ class Constants
         APIFeaturesConstants::PG_LEDGER_REVERSE_SHADOW                      => self::PgLedgerReverseShadowEnabled,
         APIFeaturesConstants::ASYNC_TXN_FILL_DETAILS                        => self::AsyncTransactionUpdateEnabled,
         APIFeaturesConstants::DISABLE_AUTO_REFUNDS                          => self::AutoRefundsDisabled,
+        APIFeaturesConstants::PREVENT_TEST_MODE                             => self::Disabled,
         APIFeaturesConstants::ROUTE_PARTNERSHIPS                            => self::EnableRoutePartnerships,
         APIFeaturesConstants::SUBM_MANUAL_SETTLEMENT                        => self::ManualSettlementForSubmerchants,
         APIFeaturesConstants::ADDITIONAL_ONBOARDING                         => self::AdditionalFieldsHdfcOnboarding,
