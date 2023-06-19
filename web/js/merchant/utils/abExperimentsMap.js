@@ -705,4 +705,10 @@ export default {
     // prod experiment ids
     'Lrb3FnfRl2FVmQ',
   ],
+  partnership_phantom_pure_platform: [
+    // stage
+    'LoGdTEB7Wo0UuW',
+    // prod
+    'LoGggyN9DVhO7A',
+  ],
 };

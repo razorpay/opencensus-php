@@ -208,6 +208,34 @@ describe('User model', () => {
     expect(user.isSodexoInstrumentEnabled).toBe(false);
   });
 
+  test('Should return true when `partnership_phantom_pure_platform` experiment is enabled', () => {
+    window.rzp_user = {
+      ...window.rzp_user,
+      splitz_experiments: {
+        LoGdTEB7Wo0UuW: {
+          name: 'enable',
+        },
+      },
+    };
+
+    const user = getDefaultUserObj();
+
+    expect(user.isPhantomPurePlatformEnabled).toBe(true);
+  });
+
+  test('Should return false when `partnership_phantom_pure_platform` experiment is disabled', () => {
+    window.rzp_user = {
+      ...window.rzp_user,
+      splitz_experiments: {
+        LoGdTEB7Wo0UuW: {},
+      },
+    };
+
+    const user = getDefaultUserObj();
+
+    expect(user.isPhantomPurePlatformEnabled).toBe(false);
+  });
+
   test('should return true when merchant feature flag "file_upload_pp" is set', () => {
     const user = getDefaultUserObj({
       features: [

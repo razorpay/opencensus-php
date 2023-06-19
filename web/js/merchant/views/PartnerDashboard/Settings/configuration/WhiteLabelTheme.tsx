@@ -19,6 +19,7 @@ import Spinner from 'common/ui/Spinner';
 import { TODO_PD } from 'merchant/views/PartnerDashboard/TypesDeclare/index';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { getInitialState } from './utils';
+import { Notification } from 'common/typings/Store/notifications';
 
 declare global {
   interface Window {
@@ -27,14 +28,18 @@ declare global {
 }
 interface WhiteLabelThemePropsT {
   user?: TODO_PD;
-  showNotification?: ActionCreator<TODO_PD>;
+  showNotification?: ActionCreator<Notification>;
+  appId?: null | string;
 }
 
-const WhiteLabelTheme = ({ user, showNotification }: WhiteLabelThemePropsT): JSX.Element => {
+const WhiteLabelTheme = ({
+  user,
+  showNotification,
+  appId = null,
+}: WhiteLabelThemePropsT): JSX.Element => {
   const [isMobilePreview, setIsMobilePreview] = useState<boolean>(false);
   const { id } = user;
-
-  const { data, isLoading, isError, refetch } = useFetchConfig(id, showNotification);
+  const { data, isLoading, isError, refetch } = useFetchConfig(id, appId, showNotification);
   const { saveConfig } = useSaveConfig(refetch, showNotification);
 
   const validationSchema = Yup.object().shape({

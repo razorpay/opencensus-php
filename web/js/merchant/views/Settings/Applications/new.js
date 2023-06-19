@@ -2,8 +2,8 @@ import { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
-import { Link, withRouter } from 'react-router-dom';
-
+import { Link, withRouter, NavLink } from 'react-router-dom';
+import { ArrowLeftIcon, Text } from '@razorpay/blade/components';
 import { autoPrefixUrls, titleCase } from 'common/utils/rzp-utils';
 
 import { required, lenientUrl, flexibleDevUrl } from 'common/utils/validators';
@@ -16,8 +16,14 @@ import InputField from 'common/ui/Forms/InputField';
 import TaggedInput from 'common/ui/Forms/TaggedInput';
 import Fieldset from 'common/ui/Forms/Fieldset';
 import LoaderDots from 'common/ui/LoaderDots';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 import AppWebhook from './AppWebhook';
+
+import {
+  StyledHeader,
+  StyledLink,
+} from 'merchant/views/PartnerDashboard/Settings/configuration/styles';
 
 const info = (user) => ({
   icon: `Your uploaded app icon will be shown to your users on ${
@@ -70,7 +76,7 @@ class NewApplicationForm extends Component {
     details: {},
   };
 
-  UNSAFE_componentWillMount() {
+  componentDidMount() {
     const id = this.props.match.params.id;
     if (!id) return;
     this.setState({ edit: true });
@@ -128,8 +134,10 @@ class NewApplicationForm extends Component {
       });
   }
 
-  UNSAFE_componentWillReceiveProps(nextProps) {
-    this.setState({ edit: !!nextProps.match.params.id });
+  componentDidUpdate(prevProps) {
+    if (prevProps.match.params.id !== this.props.match.params.id) {
+      this.setState({ edit: !!this.props.match.params.id });
+    }
   }
 
   initForm(data) {
@@ -276,24 +284,59 @@ class NewApplicationForm extends Component {
     const {
       handleSubmit,
       location: { pathname },
+      match: { params },
       user,
     } = this.props;
+    const { edit, details } = this.state;
+    const isPartner = pathname.includes('/partners');
+
     return (
       <div class="content-box new-application-form">
-        <div class="content-header">
-          <Link
-            to={pathname.substring(0, pathname.lastIndexOf('/'))}
-            class="breadcrumb__backNav--link "
-          >
-            <i class="i i-arrow-back" />
-            <span> Back&nbsp;</span>
-          </Link>
-          <strong> /&nbsp; {this.state.edit ? 'Edit' : 'Create'} Application</strong>
-        </div>
-        <form
-          class="form-horizontal"
-          onSubmit={handleSubmit(this.state.edit ? this.update : this.create)}
-        >
+        {edit && isPartner ? (
+          <>
+            <header>
+              <StyledHeader>
+                <StyledLink to="/partners/applications">
+                  <ArrowLeftIcon color="action.icon.link.default" size="medium" marginRight="5px" />
+                  All Applications
+                </StyledLink>
+                <strong>
+                  &nbsp;/ {details?.name}&nbsp;({details?.id})
+                </strong>
+              </StyledHeader>
+            </header>
+            <header>
+              <NavLink to={`/partners/applications/${params.id}`}>Integration Settings</NavLink>
+              <ShowWhen additionalCondition={(user) => user.isPhantomPurePlatformEnabled}>
+                <NavLink
+                  to={{
+                    pathname: `/partners/applications/configuration/${params.id}`,
+                    state: { appName: details?.name },
+                  }}
+                >
+                  Onboarding UI Configurator
+                </NavLink>
+              </ShowWhen>
+            </header>
+          </>
+        ) : (
+          <header>
+            <StyledHeader>
+              <Link
+                to={pathname.substring(0, pathname.lastIndexOf('/'))}
+                className="breadcrumb__backNav--link "
+              >
+                <i className="i i-arrow-back" />
+                <span> Back&nbsp;</span>
+              </Link>
+              <Text weight="bold" color="action.tertiary.primary.default">
+                {' '}
+                /&nbsp; {edit ? 'Edit' : 'Create'} Application
+              </Text>
+            </StyledHeader>
+          </header>
+        )}
+        <form class="form-horizontal" onSubmit={handleSubmit(edit ? this.update : this.create)}>
           <Fieldset>
             <div class="form-group">
               <label class="col-md-2 control-label label-required">Name</label>

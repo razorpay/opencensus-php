@@ -2,6 +2,7 @@ import { useQuery, useMutation } from 'react-query';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { TODO_PD } from 'merchant/views/PartnerDashboard/TypesDeclare/index';
 import { PartnerConfig } from './configTypes';
+import { ShowNotificationType } from 'common/typings';
 
 type configValues = {
   data: TODO_PD;
@@ -10,10 +11,15 @@ type configValues = {
   isError: boolean;
 };
 
-export const useFetchConfig = (id: string, showNotification: TODO_PD): configValues => {
+export const useFetchConfig = (
+  id: string,
+  appId: null | string,
+  showNotification?: ShowNotificationType,
+): configValues => {
+  const apiParam = appId ? `application_id=${appId}` : `partner_id=${id}`;
   const fetchPartnerConfigs = () => {
     return merchantFetch({
-      url: `partner_config?partner_id=${id}`,
+      url: `partner_config?${apiParam}`,
       method: 'get',
     });
   };
@@ -38,7 +44,10 @@ type saveConfig = {
   saveConfig: TODO_PD;
 };
 
-export const useSaveConfig = (refetch: TODO_PD, showNotification: TODO_PD): saveConfig => {
+export const useSaveConfig = (
+  refetch: TODO_PD,
+  showNotification?: ShowNotificationType,
+): saveConfig => {
   const savePartnerConfig = (values: PartnerConfig) => {
     const body = {
       partner_metadata: {

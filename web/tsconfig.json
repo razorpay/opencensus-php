@@ -36,6 +36,7 @@
     "js/merchant/views/Navigator",
     "js/merchant/views/ApiKeysAndPlugins",
     "js/merchant/views/Wallet",
+    "js/merchant/views/Settings/Applications",
     "js/merchant/hooks",
     "js/common/hooks",
     "js/common/context",

@@ -106,6 +106,7 @@ export const RoutesConfig = {
   '/partners': Teams.PARTNERSHIP,
   '/partners/applications': Teams.PARTNERSHIP,
   '/partners/applications/new': Teams.PARTNERSHIP,
+  '/partners/applications/configuration': Teams.PARTNERSHIP,
   '/partners/config': Teams.PARTNERSHIP,
   '/partners/earnings': Teams.PARTNERSHIP,
   '/partners/earnings/daily': Teams.PARTNERSHIP,
