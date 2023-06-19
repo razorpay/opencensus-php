@@ -35639,5 +35639,372 @@ class PayoutTest extends OAuthTestCase
 
         $this->startTest();
     }
+
+    public function testOwnerApprovePayoutUsingBearerAuthWithPartnerReadWriteScope()
+    {
+        $this->liveSetUp();
+
+        $this->setUpExperimentForNWFS();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id'  => 'FVLeJYoM0GPWUb', // Should exist in the new WF service
+                'created_at' => 1598967658
+            ]);
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id'  => 'FVLeJYoM0GPWUc', // Should exist in the new WF service
+                'created_at' => 1598967657
+            ]);
+
+        $payout = $this->createPayoutWithWorkflow([
+                                                      'notes' => [
+                                                          "random_key1" => "Hello",
+                                                          "random_key2" => "Hi"
+                                                      ]
+                                                  ], 'rzp_live_TheLiveAuthKey');
+
+        $this->fixtures->on('live')->create(
+            'workflow_entity_map',
+            [
+                'entity_id' => substr($payout["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+            ]);
+
+        // Generate Access token for user with owner role
+        $accessToken = $this->setUpOAuthAndGenerateToken('20000000000000', 'owner');
+
+        $this->ba->oauthBearerAuth($accessToken->toString());
+
+        $testData                   = &$this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
+
+        $workflowPayload = null;
+
+        $workflowServiceClientMock = Mockery::mock('RZP\Services\WorkflowService');
+
+        $this->app->instance('workflow_service', $workflowServiceClientMock);
+
+        $this->app->instance('worker.ctx', null);
+
+        $workflowServiceClientMock->shouldReceive('request')->withArgs(function($path, $payload) use (&$workflowPayload) {
+            $workflowPayload = $payload;
+
+            return true;
+        })->andReturn($this->sendWFApproveMockResponse());
+
+        $this->assertEquals('pending', $payout['status']);
+
+        $this->startTest();
+
+        $this->assertNotNull($workflowPayload);
+
+        // Assert that owner approval details are sent to workflow
+        $this->assertArraySelectiveEquals([
+                                              "entity_id"            => substr($payout['id'], 5),
+                                              "entity_type"          => 'payout',
+                                              "owner_id"             => '10000000000000',
+                                              "owner_type"           => 'merchant',
+                                              "comment"              => 'Approving P2P payout',
+                                              "actor_id"             => '20000000000000',
+                                              "actor_type"           => 'user',
+                                              "actor_property_key"   => 'role',
+                                              "actor_property_value" => 'owner'
+                                          ], $workflowPayload);
+    }
+
+    public function testAdminApprovePayoutUsingBearerAuthWithPartnerReadWriteScope()
+    {
+        $this->liveSetUp();
+
+        $this->setUpExperimentForNWFS();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id'  => 'FVLeJYoM0GPWUb', // Should exist in the new WF service
+                'created_at' => 1598967658
+            ]);
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id'  => 'FVLeJYoM0GPWUc', // Should exist in the new WF service
+                'created_at' => 1598967657
+            ]);
+
+        $payout = $this->createPayoutWithWorkflow([
+                                                      'notes' => [
+                                                          "random_key1" => "Hello",
+                                                          "random_key2" => "Hi"
+                                                      ]
+                                                  ], 'rzp_live_TheLiveAuthKey');
+
+        $this->fixtures->on('live')->create(
+            'workflow_entity_map',
+            [
+                'entity_id' => substr($payout["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+            ]);
+
+        // Generate Access token for user with Admin role
+        $accessToken = $this->setUpOAuthAndGenerateToken('20000000000000', 'admin');
+
+        $this->ba->oauthBearerAuth($accessToken->toString());
+
+        $testData                   = &$this->testData['testOwnerApprovePayoutUsingBearerAuthWithPartnerReadWriteScope'];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/approve';
+
+        $workflowPayload = null;
+
+        $workflowServiceClientMock = Mockery::mock('RZP\Services\WorkflowService');
+
+        $this->app->instance('workflow_service', $workflowServiceClientMock);
+
+        $this->app->instance('worker.ctx', null);
+
+        $workflowServiceClientMock->shouldReceive('request')->withArgs(function($path, $payload) use (&$workflowPayload) {
+            $workflowPayload = $payload;
+
+            return true;
+        })->andReturn($this->sendWFApproveMockResponse('admin'));
+
+        $this->assertEquals('pending', $payout['status']);
+
+        $this->startTest($testData);
+
+        $this->assertNotNull($workflowPayload);
+
+        // Assert that admin approval details are sent to workflow
+        $this->assertArraySelectiveEquals([
+                                              "entity_id"            => substr($payout['id'], 5),
+                                              "entity_type"          => 'payout',
+                                              "owner_id"             => '10000000000000',
+                                              "owner_type"           => 'merchant',
+                                              "comment"              => 'Approving P2P payout',
+                                              "actor_id"             => '20000000000000',
+                                              "actor_type"           => 'user',
+                                              "actor_property_key"   => 'role',
+                                              "actor_property_value" => 'admin'
+                                          ], $workflowPayload);
+    }
+
+    public function testRejectPayoutUsingBearerAuthWithPartnerReadWriteScope()
+    {
+        $this->liveSetUp();
+
+        $this->setUpExperimentForNWFS();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id'  => 'FVLeJYoM0GPWUb', // Should exist in the new WF service
+                'created_at' => 1598967658
+            ]);
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id'  => 'FVLeJYoM0GPWUc', // Should exist in the new WF service
+                'created_at' => 1598967657
+            ]);
+
+        $payout = $this->createPayoutWithWorkflow([
+                                                      'notes' => [
+                                                          "random_key1" => "Hello",
+                                                          "random_key2" => "Hi"
+                                                      ]
+                                                  ], 'rzp_live_TheLiveAuthKey');
+
+        $this->fixtures->on('live')->create(
+            'workflow_entity_map',
+            [
+                'entity_id' => substr($payout["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+            ]);
+
+        // Generate Access token for user with owner role
+        $accessToken = $this->setUpOAuthAndGenerateToken('20000000000000', 'owner');
+
+        $this->ba->oauthBearerAuth($accessToken->toString());
+
+        $testData                   = &$this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . $payout['id'] . '/reject';
+
+        $workflowServiceClientMock = Mockery::mock('RZP\Services\WorkflowService');
+
+        $this->app->instance('workflow_service', $workflowServiceClientMock);
+
+        $this->app->instance('worker.ctx', null);
+
+        $workflowPayload = null;
+
+        $workflowServiceClientMock->shouldReceive('request')->withArgs(function($path, $payload) use (&$workflowPayload) {
+            $workflowPayload = $payload;
+
+            return true;
+        })->andReturn($this->sendWFRejectMockResponse());
+
+        $this->assertEquals('pending', $payout['status']);
+
+        $this->startTest();
+
+        $this->assertNotNull($workflowPayload);
+
+        // Assert that owner reject details are sent to workflow
+        $this->assertArraySelectiveEquals([
+                                              "entity_id"            => substr($payout['id'], 5),
+                                              "entity_type"          => 'payout',
+                                              "owner_id"             => '10000000000000',
+                                              "owner_type"           => 'merchant',
+                                              "comment"              => 'Rejecting P2P payout',
+                                              "actor_id"             => '20000000000000',
+                                              "actor_type"           => 'user',
+                                              "actor_property_key"   => 'role',
+                                              "actor_property_value" => 'owner'
+                                          ], $workflowPayload);
+    }
+
+    public function testPendingPayoutWebhookForMerchantWithOAuthApprovalEnabled()
+    {
+        $this->liveSetUp();
+
+        $this->mockRazorxTreatment('yesbank', 'on', 'on');
+
+        $this->fixtures->feature->create([
+                                             Feature\Entity::ENTITY_TYPE => Feature\Constants::MERCHANT,
+                                             Feature\Entity::ENTITY_ID   => '10000000000000',
+                                             Feature\Entity::NAME        => Feature\Constants::ENABLE_APPROVAL_VIA_OAUTH
+                                         ]);
+
+        $webhookData = null;
+
+        $this->mockServiceStorkRequest(
+            function($path, $storkPayload) use (&$webhookData) {
+                $webhookData = $storkPayload;
+
+                return new \WpOrg\Requests\Response();
+            });
+
+        $this->setupWorkflowForLiveMode();
+
+        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $this->assertEquals('pending', $payout['status']);
+
+        $this->assertNotNull($webhookData);
+
+        $this->assertEquals('10000000000000', $webhookData['event']['owner_id']);
+
+        $payload = json_decode($webhookData['event']['payload']);
+
+        $this->assertEquals($payout['id'], $payload->payload->payout->entity->id);
+
+        $this->assertNotNull($payload->payload->payout->entity->fund_account);
+
+        $this->assertNotNull($payload->payload->payout->entity->fund_account->contact);
+    }
+
+    private function sendWFApproveMockResponse($role = 'owner')
+    {
+        $response = new \WpOrg\Requests\Response();
+
+        $response->body = '{
+                              "count": 1,
+                              "entity": "collection",
+                              "items": [
+                                {
+                                  "id": "FV0rayoQ8epeX6",
+                                  "workflow_id": "FV0pSI6zc8v6X2",
+                                  "state_id": "FV0pTiztDETNyl",
+                                  "action_type": "approved",
+                                  "comment": "Approving",
+                                  "actor_id": "FV0pAuYEKG1QS9",
+                                  "actor_type": "user",
+                                  "status": "created",
+                                  "actor_property_key": "role",
+                                  "actor_property_value":"' . $role . '",
+                                  "actor_meta": {
+                                    "email": "raegan.swaniawski@corkery.com"
+                                  },
+                                  "created_at": "1598362285"
+                                }
+                              ]
+                            }';
+
+        $response->status_code = 200;
+
+        return $response;
+
+    }
+
+    private function sendWFRejectMockResponse()
+    {
+        $response = new \WpOrg\Requests\Response();
+
+        $response->body = '{
+                              "count": 1,
+                              "entity": "collection",
+                              "items": [
+                                {
+                                  "id": "FV0rayoQ8epeX6",
+                                  "workflow_id": "FV0pSI6zc8v6X2",
+                                  "state_id": "FV0pTiztDETNyl",
+                                  "action_type": "reject",
+                                  "comment": "Rejecting",
+                                  "actor_id": "FV0pAuYEKG1QS9",
+                                  "actor_type": "user",
+                                  "status": "created",
+                                  "actor_property_key": "role",
+                                  "actor_property_value": "owner",
+                                  "actor_meta": {
+                                    "email": "raegan.swaniawski@corkery.com"
+                                  },
+                                  "created_at": "1598362285"
+                                }
+                              ]
+                            }';
+
+        $response->status_code = 200;
+
+        return $response;
+
+    }
+
+    private function setUpOAuthAndGenerateToken($userId, $userRole)
+    {
+        $client = Client\Entity::factory()->create(['environment' => 'prod']);
+
+        $accessToken = $this->generateOAuthAccessToken(['scopes' => ['rx_partner_read_write'], 'mode' => 'live', 'client_id' => $client->getId()], 'prod');
+
+        $this->fixtures->feature->create([
+                                             Feature\Entity::ENTITY_TYPE => Feature\Constants::APPLICATION,
+                                             Feature\Entity::ENTITY_ID   => $client->application_id,
+                                             Feature\Entity::NAME        => Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH
+                                         ]);
+
+        $this->fixtures->feature->create([
+                                             Feature\Entity::ENTITY_TYPE => Feature\Constants::MERCHANT,
+                                             Feature\Entity::ENTITY_ID   => '10000000000000',
+                                             Feature\Entity::NAME        => Feature\Constants::ENABLE_APPROVAL_VIA_OAUTH
+                                         ]);
+
+        $this->fixtures->user->createUserForMerchant('10000000000000', ['id' => $userId, 'contact_mobile' => 9999999999], $userRole, 'live');
+
+        $this->fixtures->user->createUserMerchantMapping([
+                                                             'user_id'     => $userId,
+                                                             'merchant_id' => '10000000000000',
+                                                             'product'     => 'banking',
+                                                             'role'        => $userRole
+                                                         ], 'live');
+
+        return $accessToken;
+    }
 }
 

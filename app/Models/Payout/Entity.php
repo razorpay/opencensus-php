@@ -655,6 +655,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::CUSTOMER_ID,
         self::FUND_ACCOUNT_ID,
+        self::FUND_ACCOUNT, // Adding this for payout approval via oauth, which will have bank_account details for trustees
         self::AMOUNT,
         self::CURRENCY,
         self::NOTES,
@@ -2396,7 +2397,11 @@ class Entity extends Base\PublicEntity
         // show fund_account in the response of composite payout.
 
         if ((app('basicauth')->isStrictPrivateAuth() === true) and
-            !(($this->isComposite() === true) or app('basicauth')->isSlackApp() === true or app('basicauth')->isAppleWatchApp() === true))
+            !(($this->isComposite() === true) or
+              app('basicauth')->isSlackApp() === true or
+              app('basicauth')->isAppleWatchApp() === true or
+              $this->merchant->isFeatureEnabled(Features::ENABLE_APPROVAL_VIA_OAUTH) === true)
+        )
         {
             array_forget($attributes, self::FUND_ACCOUNT);
 
@@ -2980,6 +2985,11 @@ class Entity extends Base\PublicEntity
      */
     public function toArrayWebhook()
     {
+        if ($this->merchant->isFeatureEnabled(Features::ENABLE_APPROVAL_VIA_OAUTH) === true)
+        {
+            $this->load('fundAccount.contact');
+        }
+
         $filteredAttributes = parent::toArrayWebhook();
 
         // Add new fields in webhook for MFN only when the payout was created within a batch

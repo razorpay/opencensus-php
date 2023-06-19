@@ -188,4 +188,17 @@ return [
             ],
         ],
     ],
+
+    'testForFundAccountFetchCallByPartnerOauthForNonWhitelistedIp' => [
+        'request'  => [
+            'url'    => '/fund_accounts',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content'     => [
+                'items' => [],
+            ],
+            'status_code' => 200
+        ],
+    ],
 ];

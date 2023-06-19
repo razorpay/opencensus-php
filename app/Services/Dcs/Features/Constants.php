@@ -135,6 +135,7 @@ class Constants
     const CrossOrgLogin = 'cross_org_login';
     const OtpAutoReadAndSubmitDisabled = 'otp_auto_read_submit_disabled';
     const WalletPaytmAutoDebit = 'auto_debit';
+    const EnableApprovalViaOAuth = 'enable_approval_via_oauth';
 
     public static $validDcsKeys = [];
     /**
@@ -266,6 +267,7 @@ class Constants
         self::OtpAutoReadAndSubmitDisabled => 'rzp/pg/merchant/checkout/Otp',
         self::OptimizerRazorpayVas => 'rzp/pg/merchant/optimizer/OnboardingFeatures',
         self::WalletPaytmAutoDebit => 'rzp/pg/merchant/wallet/paytm/AutoDebit',
+        self::EnableApprovalViaOAuth => 'rzp/x/merchant/payouts/Workflows'
     ];
 
     public static function isValidDcsKeyAndName(string $key, string $name): bool
@@ -408,6 +410,7 @@ class Constants
         APIFeaturesConstants::SILENT_REFUND_LATE_AUTH                       => self::SilentRefundLateAuthEnabled,
         APIFeaturesConstants::DISABLE_OTP_AUTO_READ_AND_SUBMIT              => self::OtpAutoReadAndSubmitDisabled,
         APIFeaturesConstants::WALLET_PAYTM_AUTO_DEBIT                       => self::WalletPaytmAutoDebit,
+        APIFeaturesConstants::ENABLE_APPROVAL_VIA_OAUTH                     => self::EnableApprovalViaOAuth,
     ];
 
     /**
@@ -439,6 +442,7 @@ class Constants
         self::TimeoutFeeBreakupPageCheckout => 'direct',
         self::SilentRefundLateAuthEnabled => 'direct',
         self::OtpAutoReadAndSubmitDisabled => 'direct',
+        self::EnableApprovalViaOAuth => 'direct',
     ];
 
     /**

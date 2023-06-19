@@ -35,6 +35,7 @@ use RZP\Models\Settings;
 use RZP\Models\Admin\Org;
 use RZP\Trace\Tracer;
 use RZP\Traits\TrimSpace;
+use RZP\Http\OAuthScopes;
 use RZP\Models\FundAccount;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
@@ -681,7 +682,14 @@ class Service extends Base\Service
 
     public function approveFundAccountPayout(string $id, array $input): array
     {
-        $this->trace->info(TraceCode::PAYOUT_APPROVE_REQUEST, ['id' => $id, 'input' => $input]);
+        /** @var $auth BasicAuth */
+        $auth = $this->app['basicauth'];
+
+        $isPartnerApproval = $this->isXPartnerApproval();
+
+        $this->trace->info(TraceCode::PAYOUT_APPROVE_REQUEST, [
+            'id' => $id, 'input' => $input, 'isPartnerApproval' => $isPartnerApproval
+        ]);
 
         /** @var Entity $payout */
         $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant);
@@ -690,11 +698,31 @@ class Service extends Base\Service
 
         $payoutValidator->validatePayoutStatusForApproveOrReject();
 
-        $payoutValidator->setStrictFalse()->validateInput(Validator::APPROVE_PAYOUT_RULES, $input);
+        if ($isPartnerApproval === true)
+        {
+            $user = optional($auth->getUser())->getId() ?? null;
 
-        $this->user->validateInput('verifyOtp', array_only($input, [User\Entity::OTP, User\Entity::TOKEN]));
+            $this->trace->info(TraceCode::PAYOUT_PARTNER_APPROVE_REQUEST, [
+                'id'       => $id,
+                'input'    => $input,
+                'user'     => $user,
+                'merchant' => $auth->getMerchantId()
+            ]);
 
-        (new User\Core)->verifyOtp($input + ['action' => 'approve_payout', 'payout_id' => $id], $this->merchant, $this->user);
+            $payoutValidator->validatePayoutForApprovalViaOAuth();
+
+            $payoutValidator->validateInput(Validator::PARTNER_PAYOUT_APPROVAL_RULES, $input);
+
+            $input['user_comment'] = $input['remarks'] ?? '';
+        }
+        else
+        {
+            $payoutValidator->setStrictFalse()->validateInput(Validator::APPROVE_PAYOUT_RULES, $input);
+
+            $this->user->validateInput('verifyOtp', array_only($input, [User\Entity::OTP, User\Entity::TOKEN]));
+
+            (new User\Core)->verifyOtp($input + ['action' => 'approve_payout', 'payout_id' => $id], $this->merchant, $this->user);
+        }
 
         $payout = (new Core)->approvePayout($payout, $input);
 
@@ -914,12 +942,36 @@ class Service extends Base\Service
 
     public function rejectFundAccountPayout(string $id, array $input): array
     {
-        $this->trace->info(TraceCode::PAYOUT_REJECT_REQUEST, ['id' => $id]);
+        $auth = $this->app['basicauth'];
+
+        $isPartnerApproval = $this->isXPartnerApproval();
+
+        $this->trace->info(TraceCode::PAYOUT_REJECT_REQUEST, ['id' => $id, 'isPartnerApproval' => $isPartnerApproval]);
 
         /** @var Entity $payout */
         $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $payout->getValidator()->validatePayoutStatusForApproveOrReject();
+        $payoutValidator = $payout->getValidator();
+
+        $payoutValidator->validatePayoutStatusForApproveOrReject();
+
+        if ($isPartnerApproval === true)
+        {
+            $user = $auth->getUser() !== null ? $auth->getUser()->getId() : null;
+
+            $this->trace->info(TraceCode::PAYOUT_PARTNER_REJECT_REQUEST, [
+                'id'       => $id,
+                'input'    => $input,
+                'user'     => $user,
+                'merchant' => $auth->getMerchantId()
+            ]);
+
+            $payoutValidator->validateInput(Validator::PARTNER_PAYOUT_APPROVAL_RULES, $input);
+
+            $payoutValidator->validatePayoutForApprovalViaOAuth();
+
+            $input['user_comment'] = $input['remarks'] ?? '';
+        }
 
         $payout = (new Core)->rejectPayout($payout, $input);
 
@@ -5277,4 +5329,28 @@ class Service extends Base\Service
         return [$response, $statusCode];
     }
 
+    /**
+     * This function should not be a part of this class.
+     * Ideally this should be at a central place that governs whether a token has acess to a resource
+     * Since no new changes are being accepted in BasicAuth, adding it as a function here. Needs to be refactored.
+     */
+    private function isXPartnerApproval()
+    {
+        /** @var $auth BasicAuth */
+        $auth = $this->app['basicauth'];
+
+        if ($auth->getAccessTokenId() === null)
+        {
+            return false;
+        }
+
+        $scopes = $auth->getTokenScopes();
+
+        if (empty($scopes) === true or (in_array(OAuthScopes::RX_PARTNER_READ_WRITE, $scopes, true) === false))
+        {
+            return false;
+        }
+
+        return $auth->getMerchant()->isFeatureEnabled(Features::ENABLE_APPROVAL_VIA_OAUTH) === true;
+    }
 }

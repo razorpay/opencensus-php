@@ -16,12 +16,20 @@ class OAuthScopes
     const RX_READ_ONLY = 'rx_read_only';
     const RX_READ_WRITE = 'rx_read_write';
 
-    const RAZORPAY_X_SCOPES = [self::RX_READ_ONLY, self::RX_READ_WRITE, self::APPLE_WATCH_READ_WRITE];
+    const RAZORPAY_X_SCOPES = [self::RX_READ_ONLY, self::RX_READ_WRITE, self::APPLE_WATCH_READ_WRITE, self::RX_PARTNER_READ_WRITE];
 
     const TALLY_READ_ONLY  = 'tally_read_only';
     const TALLY_READ_WRITE = 'tally_read_write';
 
     const APPLE_WATCH_READ_WRITE = 'apple_watch_read_write';
+
+    /**
+     * Adding a new scope for payout approval by partner
+     * This scope is attached to the following routes currently;
+     * payout_approve, payout_reject, payout_fetch_by_id, payout_fetch_multiple, contact_get
+     * contact_list, fund_account_get, fund_account_list, transaction_statement_fetch, transaction_statement_fetch_multiple
+     */
+    const RX_PARTNER_READ_WRITE = 'rx_partner_read_write';
 
     /**
      * Map of additional scopes for a route (identified by the route name alias)
@@ -58,10 +66,10 @@ class OAuthScopes
         'payout_links_cancel'                            => [self::RX_READ_WRITE],
         'payout_purpose_get'                             => [self::RX_READ_ONLY, self::RX_READ_WRITE],
         'payout_purpose_post'                            => [self::RX_READ_WRITE],
-        'payout_fetch_by_id'                             => [self::RX_READ_ONLY, self::RX_READ_WRITE],
-        'payout_fetch_multiple'                          => [self::RX_READ_ONLY, self::RX_READ_WRITE, self::APPLE_WATCH_READ_WRITE],
-        'payout_reject'                                  => [ self::RX_READ_WRITE, self::APPLE_WATCH_READ_WRITE],
-        'payout_approve'                                 => [ self::RX_READ_WRITE, self::APPLE_WATCH_READ_WRITE],
+        'payout_fetch_by_id'                             => [self::RX_READ_ONLY, self::RX_READ_WRITE, self::RX_PARTNER_READ_WRITE],
+        'payout_fetch_multiple'                          => [self::RX_READ_ONLY, self::RX_READ_WRITE, self::APPLE_WATCH_READ_WRITE, self::RX_PARTNER_READ_WRITE],
+        'payout_reject'                                  => [ self::RX_READ_WRITE, self::APPLE_WATCH_READ_WRITE, self::RX_PARTNER_READ_WRITE],
+        'payout_approve'                                 => [ self::RX_READ_WRITE, self::APPLE_WATCH_READ_WRITE, self::RX_PARTNER_READ_WRITE],
         'payout_2fa_approve'                             => [ self::RX_READ_WRITE, self::APPLE_WATCH_READ_WRITE],
         'user_otp_create'                                => [self::RX_READ_ONLY, self::RX_READ_WRITE, self::APPLE_WATCH_READ_WRITE],
         'activated_banking_accounts_list'                => [self::RX_READ_ONLY, self::RX_READ_WRITE],
@@ -71,15 +79,15 @@ class OAuthScopes
         'virtual_account_create_for_banking'             => [self::RX_READ_WRITE],
         'contact_types_get'                              => [self::RX_READ_ONLY, self::RX_READ_WRITE],
         'contact_types_post'                             => [self::RX_READ_WRITE],
-        'contact_get'                                    => [self::RX_READ_ONLY, self::RX_READ_WRITE],
-        'contact_list'                                   => [self::RX_READ_ONLY, self::RX_READ_WRITE],
+        'contact_get'                                    => [self::RX_READ_ONLY, self::RX_READ_WRITE, self::RX_PARTNER_READ_WRITE],
+        'contact_list'                                   => [self::RX_READ_ONLY, self::RX_READ_WRITE, self::RX_PARTNER_READ_WRITE],
         'contact_create'                                 => [self::RX_READ_WRITE],
         'contact_update'                                 => [self::RX_READ_WRITE],
         'fund_account_validate'                          => [self::READ_WRITE, self::RX_READ_WRITE],
         'fund_account_validate_fetch'                    => [self::READ_ONLY, self::READ_WRITE, self::RX_READ_ONLY, self::RX_READ_WRITE],
         'fund_account_validate_fetch_by_id'              => [self::READ_ONLY, self::READ_WRITE, self::RX_READ_ONLY, self::RX_READ_WRITE],
-        'fund_account_get'                               => [self::READ_ONLY, self::READ_WRITE, self::RX_READ_ONLY, self::RX_READ_WRITE],
-        'fund_account_list'                              => [self::READ_ONLY, self::READ_WRITE, self::RX_READ_ONLY, self::RX_READ_WRITE],
+        'fund_account_get'                               => [self::READ_ONLY, self::READ_WRITE, self::RX_READ_ONLY, self::RX_READ_WRITE, self::RX_PARTNER_READ_WRITE],
+        'fund_account_list'                              => [self::READ_ONLY, self::READ_WRITE, self::RX_READ_ONLY, self::RX_READ_WRITE, self::RX_PARTNER_READ_WRITE],
         'fund_account_create'                            => [self::READ_WRITE, self::RX_READ_WRITE],
         'fund_account_update'                            => [self::READ_WRITE, self::RX_READ_WRITE],
         'merchant_activation_update_partner'             => [],
@@ -116,6 +124,8 @@ class OAuthScopes
         'user_fetch_self'                        => [self::APPLE_WATCH_READ_WRITE],
         'banking_accounts_list'                  => [self::APPLE_WATCH_READ_WRITE],
         'payouts_summary'                        => [self::APPLE_WATCH_READ_WRITE],
+        'transaction_statement_fetch'            => [self::RX_PARTNER_READ_WRITE],
+        'transaction_statement_fetch_multiple'   => [self::RX_PARTNER_READ_WRITE]
     ];
 
     /**

@@ -1776,4 +1776,5 @@ class PublicErrorDescription
 
     const BAD_REQUEST_ACCOUNT_ID_IN_BODY                                            = 'Account id not allowed in body';
 
+    const BAD_REQUEST_PAYOUT_APPROVAL_TOKEN_INVALID                                 = 'Token used is invalid to approve/reject this Payout';
 }

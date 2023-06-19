@@ -1830,6 +1830,11 @@ class Constants
      */
     const REDUCE_OD_BALANCE_FOR_CA = 'reduce_od_balance_for_ca';
 
+    /*
+     * This feature will be used to enable payout approve/reject using oauth token for a merchant
+     */
+    const ENABLE_APPROVAL_VIA_OAUTH = 'enable_approval_via_oauth';
+
     /**
      * Feature flag to check push provisioning is enabled for the merchant
      */
@@ -2549,6 +2554,7 @@ class Constants
         self::SILENT_REFUND_LATE_AUTH         => true,
         self::DISABLE_OTP_AUTO_READ_AND_SUBMIT => true,
         self::WALLET_PAYTM_AUTO_DEBIT         => true,
+        self::ENABLE_APPROVAL_VIA_OAUTH       => true,
     ];
 
     // Entity type constants
@@ -3569,6 +3575,11 @@ class Constants
             'display_name'  => 'Paytm Wallet Link and Pay',
             'documentation' => '',
         ],
+        self::ENABLE_APPROVAL_VIA_OAUTH => [
+            'feature'       => self::ENABLE_APPROVAL_VIA_OAUTH,
+            'display_name'  => 'Enable Approval via OAuth',
+            'documentation' => 'Feature to control payout approvals via Authorized OAuth Tokens'
+        ]
     ];
 
     /**

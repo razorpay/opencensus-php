@@ -28,6 +28,7 @@ use RZP\Models\External;
 use RZP\Models\Workflow;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org;
+use RZP\Http\OAuthScopes;
 use RZP\Jobs\LedgerStatus;
 use RZP\Constants\Product;
 use RZP\Jobs\Transactions;
@@ -6320,7 +6321,8 @@ class Core extends Base\Core
             // On these auth, one can only reject a workflow
             if ((($auth->isAdminAuth() === true) ||
                     ($auth->isProxyAuth() === false)) and
-                    ($auth->isSlackApp() === false))
+                    ($auth->isSlackApp() === false) and
+                    ($this->isXPartnerApproval() === false))
             {
                 // casted to boolval, in case of dashboard request its coming as "1"
                 if (boolval($input[Entity::FORCE_REJECT]) === true)
@@ -6440,7 +6442,8 @@ class Core extends Base\Core
         if ((($auth->isAdminAuth() === true) ||
                 ($auth->isProxyAuth() === false)) and
                 ($auth->isSlackApp() === false) and
-                (!$auth->isAppleWatchApp()))
+                (!$auth->isAppleWatchApp()) and
+                ($this->isXPartnerApproval() === false))
         {
             throw new Exception\BadRequestValidationFailureException('Auth is not proxy for payout approval');
         }
@@ -9087,5 +9090,30 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+
+    /**
+     * This function should not be a part of this class.
+     * Ideally this should be at a central place that governs whether a token has acess to a resource
+     * Since no new changes are being accepted in BasicAuth, adding it as a function here. Needs to be refactored.
+     */
+    private function isXPartnerApproval()
+    {
+        /** @var $auth BasicAuth */
+        $auth = $this->app['basicauth'];
+
+        if ($auth->getAccessTokenId() === null)
+        {
+            return false;
+        }
+
+        $scopes = $auth->getTokenScopes();
+
+        if (empty($scopes) === true or (in_array(OAuthScopes::RX_PARTNER_READ_WRITE, $scopes, true) === false))
+        {
+            return false;
+        }
+
+        return $auth->getMerchant()->isFeatureEnabled(FeatureConstants::ENABLE_APPROVAL_VIA_OAUTH) === true;
     }
 }

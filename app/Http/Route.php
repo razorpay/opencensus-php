@@ -16298,6 +16298,8 @@ class Route
         'payout_create_2FA',
         'fund_account_validate',
         'banking_account_beneficiary_fetch',
+        'payout_approve',
+        'payout_reject',
     ];
 
     /**

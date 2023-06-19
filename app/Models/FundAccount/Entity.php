@@ -16,6 +16,7 @@ use RZP\Models\WalletAccount;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Models\BankingAccount\AccountType;
+use RZP\Models\Feature\Constants as Features;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -309,7 +310,12 @@ class Entity extends Base\PublicEntity
         // Don't forget these attributes if a composite payout request is made through strictPrivateAuth as we need to
         // show contact in the response of composite payout.
         if ((app('basicauth')->isStrictPrivateAuth() === true) and
-            !(($this->isComposite() === true) or ($this->isPSPayout() === true) or app('basicauth')->isSlackApp() or app('basicauth')->isAppleWatchApp()))
+            !(($this->isComposite() === true) or
+              ($this->isPSPayout() === true) or
+              app('basicauth')->isSlackApp() or
+              app('basicauth')->isAppleWatchApp() or
+              $this->merchant->isFeatureEnabled(Features::ENABLE_APPROVAL_VIA_OAUTH) === true)
+        )
         {
             array_forget($attributes, [self::SOURCE, self::CONTACT, self::CUSTOMER]);
 

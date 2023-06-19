@@ -142,6 +142,8 @@ class Validator extends Base\Validator
 
     const PARTNER_BANK_HEALTH_NOTIFICATION = 'partner_bank_health_notification';
 
+    const PARTNER_PAYOUT_APPROVAL_RULES = 'partner_payout_approval';
+
     //
     // This is required for build. Currently, build does not
     // accept ruleName as a parameter. Hence, this list needs
@@ -598,6 +600,10 @@ class Validator extends Base\Validator
         'status'        => 'required|filled|string',
         'channel'       => 'required|filled|string',
         'mode'          => 'required|filled|string'
+    ];
+
+    protected static $partnerPayoutApprovalRules = [
+        'remarks'       => 'required|filled|string'
     ];
 
     protected function validateFtsAccountType($attribute, $ftsAccountType)
@@ -1780,6 +1786,26 @@ class Validator extends Base\Validator
         if(count($allMerchantIds) !== count(array_flip($allMerchantIds))) {
             throw new Exception\BadRequestValidationFailureException(
                 "all merchantIds should be a unique"
+            );
+        }
+    }
+
+    public function validatePayoutForApprovalViaOAuth()
+    {
+        $app = App::getFacadeRoot();
+
+        /** @var Entity $payout */
+        $payout = $this->entity;
+
+        if ($payout->getMerchantId() !== $app['basicauth']->getMerchantId())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_APPROVAL_TOKEN_INVALID,
+                null,
+                [
+                    'id'     => $payout->getId(),
+                    'status' => $payout->getStatus(),
+                ]
             );
         }
     }

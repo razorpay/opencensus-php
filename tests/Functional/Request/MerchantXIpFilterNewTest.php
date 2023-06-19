@@ -8,16 +8,19 @@ use Request;
 use Exception;
 use ApiResponse;
 use RZP\Models\Settings;
+use Razorpay\OAuth\Client;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Settlement\Channel;
-use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 
 class MerchantXIpFilterNewTest extends TestCase
 {
+    use OAuthTrait;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
     use TestsBusinessBanking;
@@ -337,5 +340,33 @@ class MerchantXIpFilterNewTest extends TestCase
         $this->resetRedisKeysForIpWhitelist();
     }
 
+    // Test that, for a request from valid Partner Oauth with `rx_partner_read_write` scope, whitelisting is skipped for non whitelisted IP
+    public function testForFundAccountFetchCallByPartnerOauthForNonWhitelistedIp()
+    {
+        $this->fixtures->on('live')->merchant->addFeatures(['enable_ip_whitelist', 'enable_approval_via_oauth']);
 
+        $ipList = ['1.1.1.1', '2.2.2.2'];
+
+        $redisKey = 'ip_config_10000000000000_api_payouts';
+
+        $redisKey2 = 'ip_config_10000000000000_api_fund_account_validation';
+
+        $this->app['redis']->sadd($redisKey, $ipList);
+
+        $this->app['redis']->sadd($redisKey2, $ipList);
+
+        $this->fixtures->on('live')->create('contact', $this->createContactEntityArray());
+        $this->fixtures->on('live')->create('bank_account', $this->createBankAccountEntityArray());
+        $this->fixtures->on('live')->create('fund_account', $this->createBankingFundAccountEntityArray());
+
+        $client = Client\Entity::factory()->create(['environment' => 'prod']);
+
+        $accessToken = $this->generateOAuthAccessToken(['scopes' => ['rx_partner_read_write'], 'mode' => 'live', 'client_id' => $client->getId()], 'prod');
+
+        $this->ba->oauthBearerAuth($accessToken->toString());
+
+        $this->startTest();
+
+        $this->resetRedisKeysForIpWhitelist();
+    }
 }

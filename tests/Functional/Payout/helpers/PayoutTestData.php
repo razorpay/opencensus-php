@@ -22301,4 +22301,53 @@ return [
             'status_code' => 200
         ],
     ],
+
+    'testOwnerApprovePayoutUsingBearerAuthWithPartnerReadWriteScope' => [
+        'request'  => [
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'method'  => 'POST',
+            'url'     => '/payouts/{id}/approve',
+            'content' => [
+                'remarks' => 'Approving P2P payout',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testRejectPayoutUsingBearerAuthWithPartnerReadWriteScope' => [
+        'request'  => [
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'method'  => 'POST',
+            'url'     => '/payouts/{id}/reject',
+            'content' => [
+                'remarks' => 'Rejecting P2P payout'
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testPendingPayoutWebhookForMerchantWithOAuthApprovalEnabled' => [
+        'entity'   => 'event',
+        'event'    => 'payout.pending',
+        'contains' => [
+            'payout',
+        ],
+        'payload' => [
+            'payout' => [
+                'entity' => [
+                    'entity'     => 'payout',
+                    'status'     => 'pending',
+                    'id'         => 'FV57s8rpBqOD6w',
+                ],
+            ],
+        ],
+    ],
 ];

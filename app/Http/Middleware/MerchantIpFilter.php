@@ -10,7 +10,9 @@ use RZP\Constants\Mode;
 use RZP\Models\Settings;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Http\OAuthScopes;
 use RZP\Http\RequestHeader;
+use RZP\Http\BasicAuth\BasicAuth;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request as HttpRequest;
 use RZP\Models\Feature\Constants as Feature;
@@ -167,6 +169,21 @@ class MerchantIpFilter
                 return $isValidIp;
             }
 
+            /**
+             *  Skipping IP whitelisting for Partner trying to access X APIs using OAuth token with appropriate scope
+             *  Also, Merchant has to be behind the `enable_approval_via_oauth` feature flag
+             */
+            if ($this->isXPartnerApproval() === true)
+            {
+                $this->trace->info(TraceCode::IP_WHITELISTING_SKIP_FOR_REQUEST_VIA_OAUTH,
+                                   [
+                                       'user'        => optional($this->ba->getUser())->getId() ?? null,
+                                       'merchant'    => $merchant->getId(),
+                                       'application' => $this->ba->getOAuthApplicationId(),
+                                   ]);
+                return true;
+            }
+
             if ($merchant->isFeatureEnabled(Feature::ENABLE_IP_WHITELIST) === true)
             {
                 $requestIp = $request->getClientIp();
@@ -241,5 +258,27 @@ class MerchantIpFilter
         }
 
         return $isValidIp;
+    }
+
+    /**
+     * This function should not be a part of this class.
+     * Ideally this should be at a central place that governs whether a token has acess to a resource
+     * Since no new changes are being accepted in BasicAuth, adding it as a function here. Needs to be refactored.
+     */
+    private function isXPartnerApproval()
+    {
+        if ($this->ba->getAccessTokenId() === null)
+        {
+            return false;
+        }
+
+        $scopes = $this->ba->getTokenScopes();
+
+        if (empty($scopes) === true or (in_array(OAuthScopes::RX_PARTNER_READ_WRITE, $scopes, true) === false))
+        {
+            return false;
+        }
+
+        return $this->ba->getMerchant()->isFeatureEnabled(Feature::ENABLE_APPROVAL_VIA_OAUTH) === true;
     }
 }

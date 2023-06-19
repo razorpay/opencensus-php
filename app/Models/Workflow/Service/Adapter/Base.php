@@ -6,10 +6,12 @@ use Razorpay\Trace\Logger as Trace;
 
 use RZP\Jobs\Context;
 use RZP\Trace\TraceCode;
+use RZP\Http\OAuthScopes;
 use RZP\Constants\Product;
 use RZP\Base\RepositoryManager;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Workflow\Service\EntityMap\Entity;
 
@@ -306,6 +308,31 @@ abstract class Base
     }
 
     /**
+     * This function should not be a part of this class.
+     * Ideally this should be at a central place that governs whether a token has acess to a resource
+     * Since no new changes are being accepted in BasicAuth, adding it as a function here. Needs to be refactored.
+     */
+    public static function isXPartnerApproval()
+    {
+        /** @var $auth BasicAuth */
+        $auth = app('basicauth');
+
+        if ($auth->getAccessTokenId() === null)
+        {
+            return false;
+        }
+
+        $scopes = $auth->getTokenScopes();
+
+        if (empty($scopes) === true or (in_array(OAuthScopes::RX_PARTNER_READ_WRITE, $scopes, true) === false))
+        {
+            return false;
+        }
+
+        return $auth->getMerchant()->isFeatureEnabled(Feature::ENABLE_APPROVAL_VIA_OAUTH) === true;
+    }
+
+    /**
      * Returns 'internal'/service for cron auth,
      * Returns admin id/admin for admin auth
      * Returns user id or merchant id/user for proxy/private auth types
@@ -348,7 +375,7 @@ abstract class Base
             $actorType = Constants::MERCHANT;
             $actorPropertyValue = Constants::API;
 
-            if ($ba->isSlackApp() === true || $ba->isAppleWatchApp()) {
+            if ($ba->isSlackApp() === true || $ba->isAppleWatchApp() || BASE::isXPartnerApproval()) {
                 $actorType = Constants::USER;
                 $actorId = $user->getId();
                 $actorPropertyValue = ($repo->merchant->getMerchantUserMapping($merchant->getId(), $user->getId(), null, Product::BANKING))->pivot->role;

@@ -2957,6 +2957,8 @@ class ErrorCode
     
     const BAD_REQUEST_PARTNER_SUBMERCHANT_OAUTH_ONBOARDING_EXP_NOT_ENABLED          = 'BAD_REQUEST_PARTNER_SUBMERCHANT_OAUTH_ONBOARDING_EXP_NOT_ENABLED';
 
+    const BAD_REQUEST_PAYOUT_APPROVAL_TOKEN_INVALID                                 = 'BAD_REQUEST_PAYOUT_APPROVAL_TOKEN_INVALID';
+
     static function getConstants()
     {
         $oClass = new \ReflectionClass(__CLASS__);
