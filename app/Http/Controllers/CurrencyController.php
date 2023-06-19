@@ -47,8 +47,9 @@ class CurrencyController extends Controller
      */
     public function getAllCurrency()
     {
-
-        $data = (new Currency\Core)->getSupportedCurrenciesDetails();
+        $isThreeDecimalCurrencySupported = true;
+        
+        $data = (new Currency\Core)->getSupportedCurrenciesDetails($isThreeDecimalCurrencySupported);
 
         return ApiResponse::json($data);
     }
