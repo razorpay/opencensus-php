@@ -57,7 +57,6 @@ export const ScheduleReportModal = ({
     isCustomEnabled,
     isSubmitButtonLoading,
     recipients,
-    saveReportAs,
     scheduleName,
     customDataDuration,
     selectedConfig,
@@ -69,7 +68,6 @@ export const ScheduleReportModal = ({
     setCustomDurationRange,
     setCustomEnabled,
     setRecipients,
-    setSaveReportAs,
     setScheduleName,
     setSelectedConfig,
     setSelectedDataDuration,
@@ -142,15 +140,13 @@ export const ScheduleReportModal = ({
           : customDataDuration!.startDate.clone().unix(),
         schedule_end_time: customDataDuration!.endDate.clone().unix(),
         created_by: actionViaModal === 'Edit' ? undefined : generatedBy,
-        template_overrides:
-          Boolean(selectedFormat?.value) || Boolean(saveReportAs)
-            ? {
-                file_meta: {
-                  extension: Boolean(selectedFormat?.value) ? selectedFormat?.value : undefined,
-                  filename: Boolean(saveReportAs) ? saveReportAs : undefined,
-                },
-              }
-            : undefined,
+        template_overrides: Boolean(selectedFormat?.value)
+          ? {
+              file_meta: {
+                extension: Boolean(selectedFormat?.value) ? selectedFormat?.value : undefined,
+              },
+            }
+          : undefined,
         emails: recipients,
         ...getWhenScheduleDetails({
           selectedDataDuration,
@@ -310,9 +306,8 @@ export const ScheduleReportModal = ({
           weight="regular"
           color="surface.text.subdued.lowContrast"
         >
-          You can now automate receiving your product's reports to your email by scheduling them.
-          Choose what reports, where and how frequently you want them delivered with a report
-          schedule.
+          You can create schedules on your reports and automate their delivery to your email. Choose
+          what reports, where and how frequently you want them delivered.
         </Text>
       </ReportModalHeader>
       <ScrollableModalContent>
@@ -332,7 +327,7 @@ export const ScheduleReportModal = ({
                 ? `${selectedConfig?.name ?? 'Report type'}, ${scheduleName ?? 'schedule name'},${
                     selectedFormat?.value ?? 'format'
                   }`
-                : 'Select the product, name the report, and the schedule name.'
+                : 'Select the product, name the schedule and select a format.'
             }
           >
             <Dropdown selectionType="single">
@@ -378,15 +373,6 @@ export const ScheduleReportModal = ({
               helpText="Enter a schedule name."
               errorText="Mandatory Field: Enter a schedule name."
               necessityIndicator="required"
-            />
-
-            <TextInput
-              label="Save Report As"
-              placeholder="Eg: Monthly Recon Report"
-              value={saveReportAs}
-              onChange={({ value }) => setSaveReportAs(value ?? '')}
-              helpText="Enter file name for your report."
-              necessityIndicator="optional"
             />
 
             <Dropdown selectionType="single">

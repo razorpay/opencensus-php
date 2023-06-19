@@ -13,7 +13,6 @@ export interface InitialStateType {
 
   // section 1
   selectedConfig?: BaseConfigType;
-  saveReportAs: string;
   scheduleName: string;
   selectedFormat?: {
     label: string;

@@ -19,7 +19,7 @@ export const baseSchedulesTableTemplate: TableTemplateType<
   AdditionalInformationType
 > = {
   headers: [
-    'Report Name & Type',
+    'Schedule & Report Name',
     'Format',
     'Email',
     'Status',

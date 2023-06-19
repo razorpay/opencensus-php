@@ -84,7 +84,7 @@ describe('Create Schedule Modal', () => {
     expect(screen.getByText('Create Report Schedule')).toBeInTheDocument();
     expect(
       screen.getByText(
-        "You can now automate receiving your product's reports to your email by scheduling them. Choose what reports, where and how frequently you want them delivered with a report schedule.",
+        'You can create schedules on your reports and automate their delivery to your email. Choose what reports, where and how frequently you want them delivered.',
       ),
     ).toBeInTheDocument();
     expect(screen.queryByText('What report is this?')).toBeInTheDocument();
@@ -97,7 +97,6 @@ describe('Create Schedule Modal', () => {
     render(<App />);
     expect(screen.getByPlaceholderText('Select A Report')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Eg: Schedule At 5pm daily')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Eg: Monthly Recon Report')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Excel or CSV')).toBeInTheDocument();
     expect(screen.queryByPlaceholderText('Select a duration to schedule.')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Custom Switch')).not.toBeInTheDocument();
@@ -116,7 +115,6 @@ describe('Create Schedule Modal', () => {
     renderDetailedApp();
     // base
     await userEvent.type(screen.getByPlaceholderText('Eg: Schedule At 5pm daily'), 'Rzp Schedule');
-    await userEvent.type(screen.getByPlaceholderText('Eg: Monthly Recon Report'), 'Rzp Doc');
     await userEvent.click(screen.getByPlaceholderText('Excel or CSV'));
     await userEvent.click(screen.getByTestId('CSV'));
 

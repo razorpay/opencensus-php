@@ -15,7 +15,6 @@ export const initialCreateScheduleModalState: InitialStateType = {
   isResetComplete: false,
   // section 1
   selectedConfig: undefined,
-  saveReportAs: '',
   scheduleName: '',
   selectedFormat: undefined,
   selectedAccount: undefined,
@@ -52,9 +51,6 @@ const scheduleSlice = createSlice({
     },
     setSelectedConfig: (state, action) => {
       state.selectedConfig = action.payload;
-    },
-    setSaveReportAs: (state, action) => {
-      state.saveReportAs = action.payload;
     },
     setScheduleName: (state, action) => {
       state.scheduleName = action.payload;
@@ -116,11 +112,6 @@ const scheduleSlice = createSlice({
         );
       }
 
-      // template_overrides.file_meta.filename
-      if (preExistingScheduleData?.template_overrides?.file_meta?.filename) {
-        state.saveReportAs = preExistingScheduleData?.template_overrides?.file_meta?.filename;
-      }
-
       // selectedRepetition, selectedDataDuration, whenTime
       const otherStates = reverseScheduleData(preExistingScheduleData);
 
@@ -147,7 +138,6 @@ export const {
   setCustomEnabled,
   setRecipients,
   setRunForeverEnabled,
-  setSaveReportAs,
   setScheduleName,
   setSelectedAccount,
   setSelectedConfig,
