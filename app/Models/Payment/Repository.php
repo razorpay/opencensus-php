@@ -455,6 +455,8 @@ EOT;
     {
         $terminalRepo = $this->repo->terminal;
 
+        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
+
         $terminaltableName = $terminalRepo->getTableName();
 
         $paymentTerminalId = $this->dbColumn(Entity::TERMINAL_ID);
@@ -478,6 +480,8 @@ EOT;
 
     public function fetchEmiPaymentsWithCardTerminalsBetween($from, $to, $bank)
     {
+        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
+
         $tRepo = $this->repo->terminal;
 
         $tTableName = $tRepo->getTableName();
@@ -874,6 +878,8 @@ EOT;
 
     public function fetchEmiPaymentsWithRelationsBetween($from, $to, $bank, $relations)
     {
+        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
+
         $tRepo = $this->repo->terminal;
 
         $tTableName = $tRepo->getTableName();
@@ -934,6 +940,8 @@ EOT;
 
     public function fetchEmiPaymentsOfCobrandingPartnerWithRelationsBetween($from, $to, $cobrandingPartner, $relations)
     {
+        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
+
         $tRepo = $this->repo->terminal;
 
         $tTableName = $tRepo->getTableName();
@@ -987,6 +995,8 @@ EOT;
 
     public function fetchEmiPaymentsOfCobrandingPartnerAndBankWithRelationsBetween($from, $to, $cobrandingPartner, $bank, $relations)
     {
+        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
+
         $tRepo = $this->repo->terminal;
 
         $tTableName = $tRepo->getTableName();
@@ -1816,6 +1826,8 @@ EOT;
         string $bankCode,
         $relations = [])
     {
+        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
+
         $paymentAttrs = $this->dbColumn('*');
 
         $terminalRepo = $this->repo->terminal;
@@ -1861,6 +1873,8 @@ EOT;
         //   AND `payments`.`status` IN ( $status ) // status is an array
         //   AND `terminals`.`tpv` = $tpvEnabled
         //   AND `terminals`.`corporate` = 0 // corporate payments have separate gateway file generation
+
+        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
 
         $paymentAttrs = $this->dbColumn('*');
 
@@ -3433,6 +3447,8 @@ EOT;
 
     protected function joinQueryTerminal(BuilderEx $query)
     {
+        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
+
         $terminalTable = Table::getTableNameForEntity(Constants\Entity::TERMINAL);
 
         if ($query->hasJoin($terminalTable) === true)
@@ -3483,6 +3499,8 @@ EOT;
 
     public function fetchAxisPaysecurePayments($input)
     {
+        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
+
         $params = $input;
 
         $terminalTableName = $this->repo->terminal->getTableName();

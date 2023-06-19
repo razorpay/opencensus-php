@@ -6,6 +6,7 @@ use RZP\Constants\Table;
 use RZP\Gateway\AxisMigs;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Terminal\Entity as Terminal;
+use RZP\Models\Terminal as TerminalModel;
 
 class Repository extends AxisMigs\Repository
 {
@@ -29,6 +30,8 @@ class Repository extends AxisMigs\Repository
          *  select * from `axis` inner join `terminals` on `terminals`.`id` = `terminal_id` where
          * `vpc_TransactionNo` = ? and `action` = ? and `gateway_merchant_id` = ?
          */
+
+        (new TerminalModel\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
 
         $terminalId = $this->repo->terminal->dbColumn(Terminal::ID);
 

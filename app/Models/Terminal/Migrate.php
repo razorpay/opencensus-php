@@ -58,6 +58,18 @@ trait Migrate
         $this->app['trace']->count($metric, $data);
     }
 
+    public function pushTerminalReadJoinMetrics(string $function)
+    {
+        $metricData = [
+            'route' => $this->app['request.ctx']->getRoute(),
+            "function" => $function,
+            "isJoin"=> 'true'
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
+
+    }
+
     public function compareFetchedTerminal(Entity $terminal, $fetchedTerminal, $compareSubmerchant)
     {
         $data = [

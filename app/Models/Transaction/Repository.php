@@ -1262,6 +1262,8 @@ class Repository extends Base\Repository
      */
     public function fetchPaymentReconStatusSummary(int $from, int $to): array
     {
+        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
+
         $paymentIdColumn = $this->repo->payment->dbColumn(Payment\Entity::ID);
 
         $terminalIdColumn = $this->repo->terminal->dbColumn(Terminal\Entity::ID);
@@ -1382,6 +1384,8 @@ class Repository extends Base\Repository
      */
     public function fetchPaymentUnreconStatusSummary(array $gatewaysWithDate): array
     {
+        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
+
         $unionQueries= [];
 
         $paymentIdColumn = $this->repo->payment->dbColumn(Payment\Entity::ID);
@@ -1459,6 +1463,8 @@ class Repository extends Base\Repository
 
     public function fetchRefundReconStatusSummary(int $from, int $to): array
     {
+        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
+
         $paymentIdColumn = $this->repo->payment->dbColumn(Payment\Entity::ID);
 
         $terminalIdColumn = $this->repo->terminal->dbColumn(Terminal\Entity::ID);
@@ -1483,6 +1489,8 @@ class Repository extends Base\Repository
 
     public function fetchRefundUnreconStatusSummary(array $gatewaysWithDate): array
     {
+        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
+
         $unionQueries = [];
 
         $paymentIdColumn = $this->repo->payment->dbColumn(Payment\Entity::ID);
@@ -1518,6 +1526,8 @@ class Repository extends Base\Repository
 
     protected function getSelectParamsQueryForReconSummary(string $entityName)
     {
+        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
+
         $transactionPaymentIdColumn = $this->dbColumn(Entity::ENTITY_ID);
 
         $transactionAmountColumn = $this->dbColumn(Entity::AMOUNT);
@@ -1582,6 +1592,8 @@ class Repository extends Base\Repository
 
     protected function getMinimumSelectParamsQueryForUnreconSummary(string $entityName)
     {
+        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
+
         $transactionIdColumn = $this->dbColumn(Entity::ID);
 
         $timestampColumn = $this->dbColumn(Entity::CREATED_AT);
@@ -1693,6 +1705,8 @@ class Repository extends Base\Repository
                                         array $refundParams = []
                                         ): array
     {
+        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
+
         $paymentIdColumn = $this->repo->payment->dbColumn(Payment\Entity::ID);
 
         $refundParams = $this->repo->refund->getAliasesForRefundsDbColumns($refundParams);
@@ -1765,6 +1779,8 @@ class Repository extends Base\Repository
 
     protected function getSelectQueryForUnreconciledEntites(array $paymentParams = [], array $refundParams = [])
     {
+        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
+
         $transactionsCreatedAtColumn = $this->dbColumn(Entity::CREATED_AT);
 
         $refundProcessedAtColumn = $this->repo->refund->dbColumn(Refund\Entity::PROCESSED_AT);

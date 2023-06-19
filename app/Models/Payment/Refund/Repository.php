@@ -92,6 +92,9 @@ class Repository extends Base\Repository
             'method'       => 'fetchEmiRefundsWithCardTerminalsBetween',
             'route'        => $this->route
         ]);
+
+        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
+
         $tRepo = $this->repo->terminal;
 
         $paymentRepo = $this->repo->payment;
@@ -659,6 +662,8 @@ class Repository extends Base\Repository
      */
     public function fetchFailedCardRefundsToProcessManually($from, $to, $gateway, $acquirer, $timeRange)
     {
+        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
+
         $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
             'method'       => 'fetchFailedCardRefundsToProcessManually',
             'route'        => $this->route
@@ -716,6 +721,8 @@ class Repository extends Base\Repository
         string $gateway,
         bool $tpvEnabled = false)
     {
+        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
+
         $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
             'method'       => 'fetchRefundsForTpvBetweenTimestamps',
             'route'        => $this->route
@@ -771,6 +778,8 @@ class Repository extends Base\Repository
         int $to,
         string $gateway)
     {
+        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
+
         $this->app['trace']->info(TraceCode::QUERY_REFUNDS_TABLE, [
             'method'       => 'fetchCorporateRefundsBetweenTimestamps',
             'route'        => $this->route

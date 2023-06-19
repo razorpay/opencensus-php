@@ -517,6 +517,8 @@ class Repository extends Base\Repository
     // TODO: need to optimize the query futher
     public function fetchDeletedTokensForMethods(array $methods, $gateways, string $acquirer, $from, $to): Base\PublicCollection
     {
+        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
+
         $selectCols = $this->dbColumn('*');
 
         $tokenMethodColumn = $this->repo->token->dbColumn(Entity::METHOD);
@@ -609,6 +611,8 @@ class Repository extends Base\Repository
      */
     public function fetchPendingEMandateDebitWithGatewayAcquirer(string $gateway, $from, $to, $acquirer)
     {
+        (new Terminal\Service())->pushTerminalReadJoinMetrics(__FUNCTION__);
+
         $paymentRecurringTypeColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING_TYPE);
 
         $paymentRecurringColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING);
