@@ -55,7 +55,6 @@ export const ScheduleReportModal = ({
 }: ScheduleModalPropsType) => {
   const {
     isCustomEnabled,
-    isRecipientsEnabled,
     isSubmitButtonLoading,
     recipients,
     saveReportAs,
@@ -69,7 +68,6 @@ export const ScheduleReportModal = ({
     whenTime,
     setCustomDurationRange,
     setCustomEnabled,
-    setIsRecipientsEnabled,
     setRecipients,
     setSaveReportAs,
     setScheduleName,
@@ -108,9 +106,7 @@ export const ScheduleReportModal = ({
         selectedRepetition?.value &&
         whenTime?.date,
     ),
-    Boolean(
-      isRecipientsEnabled ? recipients && Array.isArray(recipients) && recipients.length : true,
-    ),
+    Boolean(recipients && Array.isArray(recipients) && recipients.length),
   ];
 
   const handleErrorStates = () => {
@@ -566,33 +562,12 @@ export const ScheduleReportModal = ({
             </>
           </CollapsibleFormSection>
           <CollapsibleFormSection
-            title="Do you want this report in an email?"
+            title="Who will receive this report?"
             helpText={
-              (isRecipientsEnabled ? validationsForEachSections[2] : false)
+              validationsForEachSections[2]
                 ? recipients.join(', ')
                 : "Add receiver's email addresses."
             }
-            disabled={!isRecipientsEnabled}
-            endComponent={{
-              component: () => (
-                <Switch
-                  label="Yes"
-                  value={isRecipientsEnabled}
-                  onChange={(bool) => {
-                    setIsRecipientsEnabled(bool);
-                    trackCreateEditScheduleModal({
-                      actionName: 'Enable Emails Switch Toggled',
-                      properties: {
-                        enable_emails: bool,
-                        modalType: actionViaModal,
-                      },
-                      dashboardType,
-                    });
-                  }}
-                />
-              ),
-              visible: 'always',
-            }}
           >
             <MultiSelectDropdown
               label="Add Recipient's Details"

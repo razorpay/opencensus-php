@@ -25,7 +25,6 @@ export interface InitialStateType {
   selectedDataDuration?: DataDurationType;
   selectedRepetition?: RepetitionType;
   customDataDuration?: SelectedRangeType;
-  isRecipientsEnabled: boolean;
   whenTime?: TimePickerRes;
 
   // section 3

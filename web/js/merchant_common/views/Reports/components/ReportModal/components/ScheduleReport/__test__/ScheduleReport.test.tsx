@@ -89,7 +89,7 @@ describe('Create Schedule Modal', () => {
     ).toBeInTheDocument();
     expect(screen.queryByText('What report is this?')).toBeInTheDocument();
     expect(screen.queryByText('What will you receive in this report?')).toBeInTheDocument();
-    expect(screen.queryByText('Do you want this report in an email?')).toBeInTheDocument();
+    expect(screen.queryByText('Who will receive this report?')).toBeInTheDocument();
     expect(screen.getByLabelText('Create Schedule')).toBeInTheDocument();
   });
 
@@ -145,9 +145,7 @@ describe('Create Schedule Modal', () => {
     await userEvent.click(screen.getByPlaceholderText('Data duration covered in each report'));
     await userEvent.click(screen.getByText(getDataDurations(false)[0].label));
 
-    // email
-    await userEvent.click(screen.getByLabelText('Yes Switch'));
-    await userEvent.click(screen.getByText('Do you want this report in an email?'));
+    await userEvent.click(screen.getByText('Who will receive this report?'));
     await userEvent.click(screen.getByLabelText('Add Recipient Field'));
     await userEvent.click(screen.getByLabelText('rzp@rzp.com'));
 

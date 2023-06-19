@@ -24,7 +24,6 @@ export const initialCreateScheduleModalState: InitialStateType = {
   selectedDataDuration: undefined,
   selectedRepetition: undefined,
   customDataDuration: undefined,
-  isRecipientsEnabled: false,
   whenTime: undefined,
 
   // section 3
@@ -74,15 +73,6 @@ const scheduleSlice = createSlice({
     },
     setCustomDurationRange: (state, action) => {
       state.customDataDuration = action.payload;
-    },
-    setIsRecipientsEnabled: (state, action) => {
-      state.isRecipientsEnabled = action.payload;
-      if (!action.payload) {
-        state.recipients = [];
-        if (state.showErrorInSection === 2) {
-          state.showErrorInSection = undefined;
-        }
-      }
     },
     setRecipients: (state, action) => {
       state.recipients = action.payload;
@@ -144,7 +134,6 @@ const scheduleSlice = createSlice({
 
       // emails
       if (preExistingScheduleData?.emails?.length) {
-        state.isRecipientsEnabled = true;
         state.recipients = preExistingScheduleData.emails;
       }
 
@@ -156,7 +145,6 @@ const scheduleSlice = createSlice({
 export const {
   setCustomDurationRange,
   setCustomEnabled,
-  setIsRecipientsEnabled,
   setRecipients,
   setRunForeverEnabled,
   setSaveReportAs,
