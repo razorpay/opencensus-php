@@ -534,14 +534,8 @@ class Payment extends Base
 
         if ($payment->isCreditCardOnUpi()=== true)
         {
-            $mode = $this->mode ?? Mode::LIVE;
-            $variant = $this->app->razorx->getTreatment(
-                $payment->getMerchantId(),
-                RazorxTreatment::ALLOW_CC_ON_UPI_PRICING,
-                $mode
-            );
 
-            if (strtolower($variant) === "on")
+            if ($payment->checkIfCCOnUPIPricingSplitzExperimentEnabled() === true)
             {
                 $receiverType = PaymentsUpi\PayerAccountType::PRICING_PLAN_RECEIVER_TYPE_CREDIT;
             }
@@ -577,7 +571,6 @@ class Payment extends Base
         $filters1[] = [Pricing\Entity::PAYMENT_METHOD_SUBTYPE, $recurringType, false, null];
 
         $rules = $this->applyFiltersOnRules($rules, $filters1);
-
         return $this->applyAmountRangeFilterAndReturnOneRule($rules);
     }
 

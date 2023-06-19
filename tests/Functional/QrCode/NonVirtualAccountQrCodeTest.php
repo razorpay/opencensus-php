@@ -2138,7 +2138,20 @@ class NonVirtualAccountQrCodeTest extends TestCase
             'fixed_rate'          => 0,
         ];
 
-        $this->enableRazorXTreatmentForCCOnUPI();
+        $output = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                            "key" => "result",
+                            "value" => "on"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
 
         $this->fixtures->create('pricing', $ccOnUPIPricingPlan);
 
@@ -2184,7 +2197,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals(360, $feeBreakup[1]['amount']); // 18% GST on Fee = 18% of 2000
     }
 
-    public function testQrCodePricingForCreditCardWithoutRazorx(): void
+    public function testQrCodePricingForCreditCardWithoutSplitz(): void
     {
         $upiPricingPlan = [
             'plan_id'             => 'TestPlan1',
@@ -2228,7 +2241,13 @@ class NonVirtualAccountQrCodeTest extends TestCase
             'percent_rate'        => 200, // 200 base points i.e. 2.00%
             'fixed_rate'          => 0,
         ];
+        $output = [
+            "response" => [
+                "variant" => null
+            ]
+        ];
 
+        $this->mockSplitzTreatment($output);
 
         $this->fixtures->create('pricing', $ccOnUPIPricingPlan);
 
@@ -2318,7 +2337,20 @@ class NonVirtualAccountQrCodeTest extends TestCase
             'fixed_rate'          => 0,
         ];
 
-        $this->enableRazorXTreatmentForCCOnUPI();
+        $output = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                            "key" => "result",
+                            "value" => "on"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
 
         $this->fixtures->create('pricing', $ccOnUPIPricingPlan);
 

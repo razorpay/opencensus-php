@@ -9848,6 +9848,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RAZORX_SKIP_UPI_ICICI_CALLBACK_FOR_BT             = "RAZORX_SKIP_UPI_ICICI_CALLBACK_FOR_BT";
     const SKIP_UPI_ICICI_CALLBACK_PROCESSING                = 'SKIP_UPI_ICICI_CALLBACK_PROCESSING';
 
+    const CC_ON_UPI_PRICING_SPLITZ_ERROR                    = "CC_ON_UPI_PRICING_SPLITZ_ERROR";
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

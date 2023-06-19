@@ -2900,6 +2900,52 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         return false;
     }
+
+    public function checkIfCCOnUPIPricingSplitzExperimentEnabled(): bool
+    {
+        $app = \App::getFacadeRoot();
+        try
+        {
+            $merchantId=$this->getMerchantId();
+            $properties = [
+                'id'            => $merchantId,
+                'experiment_id' => $app['config']->get('app.cc_on_upi_pricing_splitz_experiment_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantId]),
+            ];
+            $response   = $app['splitzService']->evaluateRequest($properties);
+
+            $app['trace']->info(TraceCode::SPLITZ_RESPONSE, [
+                'properties'    => $properties,
+                'merchant_id'   => $merchantId,
+                'response'      => $response
+            ]);
+
+            if ($response['response']['variant'] !== null)
+            {
+                $variables = $response['response']['variant']['variables'] ?? [];
+
+                foreach ($variables as $variable)
+                {
+                    $key   = $variable['key'] ?? '';
+                    $value = $variable['value'] ?? '';
+                    if ($key == "result" && $value == "on")
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        catch (\Exception $e)
+        {
+            $app['trace']->traceException(
+                $e,
+                null,
+                TraceCode::CC_ON_UPI_PRICING_SPLITZ_ERROR);
+        }
+
+        return false;
+    }
+
     public function isQrV2UpiPayment(): bool
     {
         if ($this->isUpi() === false)

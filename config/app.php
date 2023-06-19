@@ -560,6 +560,8 @@ return array(
 
     'dcc_recurring_on_auto_direct_experiment_id' => env('DCC_RECURRING_ON_AUTO_DIRECT_EXPERIMENT_ID'),
 
+    'cc_on_upi_pricing_splitz_experiment_id' => env('CC_ON_UPI_PRICING_SPLITZ_EXPERIMENT_ID'),
+
     'dcc_on_auto_subscription_payments_experiment_id' => env('DCC_ON_AUTO_SUBSCRIPTION_PAYMENTS_EXPERIMENT_ID'),
 
     'shaadi_com_new_currency_support_experiment_id' => env('SHAADI_COM_NEW_CURRENCY_SUPPORT_EXPERIMENT_ID'),
