@@ -51,13 +51,12 @@ class Reconciliator extends Mock\Reconciliator
                 Timezone::IST));
 
             $col = [
-                'Bank Refernce No'        => $row['gateway']['bank_payment_id'],
+                'Bank Reference No'       => $row['gateway']['bank_payment_id'],
                 'Amount'                  => number_format($row['payment']['amount'] / 100, 2, '.', ''),
                 'Date'                    => $date,
-                'Aggregator Refernce No'  => $row['payment']['id'],
+                'Aggregator Reference No' => $row['payment']['id'],
                 'PID'                     => '',
-                'Account_No'              => '9999999999',
-                'Status'                  => '',
+                'Cust Acc No'             => '9999999999',
             ];
 
             $this->content($col, 'col_pnb_recon');

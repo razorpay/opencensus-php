@@ -15,7 +15,6 @@ use RZP\Models\Gateway\File;
 use RZP\Encryption\PGPEncryption;
 use RZP\Tests\Functional\TestCase;
 use RZP\Excel\Import as ExcelImport;
-use RZP\Gateway\Netbanking\Pnb\ReconFields;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -143,25 +142,6 @@ class NetbankingPnbCombinedFileTest extends TestCase
 
         $this->setFetchFileBasedRefundsFromScroogeMockResponse([$refundEntity1, $refundEntity2, $refundEntity3, $refundEntity4 ,$refundEntity6, $refundEntity7]);
 
-        $claimsToBeAsserted = [
-            str_replace('pay_','',$payment1['id']) => [
-                'status' =>'successful',
-                'amount' =>$payment1['amount'],
-                ],
-            str_replace('pay_','',$payment2['id']) => [
-                'status' =>'successful',
-                'amount' =>$payment2['amount'],
-            ],
-            str_replace('pay_','',$payment3['id'])  => [
-                'status' =>'successful',
-                'amount' =>$payment3['amount'],
-            ],
-            str_replace('pay_','',$payment4['id'])  => [
-                'status' =>'successful',
-                'amount' =>$payment4['amount'],
-            ],
-        ];
-
         $refundsToBeAsserted = [
             str_replace('rfnd_','',$refundFull['id']) => [
                 'payment_id' =>str_replace('pay_','',$refundFull['payment_id']),
@@ -209,7 +189,7 @@ class NetbankingPnbCombinedFileTest extends TestCase
 
         $refundfilePath = storage_path('files/filestore') . '/' . $files['items']['1']['location'];
 
-        $this->assertClaimFileContents($claimfilePath, $claimsToBeAsserted);
+        $this->assertClaimFileContents($claimfilePath, [$payment1, $payment2, $payment3, $payment4]);
 
         $this->assertRefundFileContents($refundfilePath, $refundsToBeAsserted);
 
@@ -256,7 +236,7 @@ class NetbankingPnbCombinedFileTest extends TestCase
         Queue::assertPushedOn('beam_test', BeamJob::class);
     }
 
-    protected function assertRefundFileContents($filePath, $refundsToBeAsserted)
+    protected function assertRefundFileContents($filePath, $refundsToBeAsserted): void
     {
         $this->assertTrue(file_exists($filePath));
 
@@ -274,7 +254,7 @@ class NetbankingPnbCombinedFileTest extends TestCase
         }
     }
 
-    protected function assertClaimFileContents($filePath, $paymentsInClaimsWithStatus)
+    protected function assertClaimFileContents($filePath, $payments): void
     {
         $this->assertTrue(file_exists($filePath));
 
@@ -295,17 +275,16 @@ class NetbankingPnbCombinedFileTest extends TestCase
 
         $claimSheet = (new ExcelImport)->toArray($filePath, null, \Maatwebsite\Excel\Excel::XLSX)[0];
 
-        foreach ($claimSheet as $claim)
+        foreach ($claimSheet as $i => $claim)
         {
-            $this->assertTrue(array_key_exists($claim[ReconFields::PAYMENT_ID],$paymentsInClaimsWithStatus));
-
-            $dbPaymentAmount = $paymentsInClaimsWithStatus[$claim[ReconFields::PAYMENT_ID]][ReconFields::AMOUNT];
-            $statusInFile = $paymentsInClaimsWithStatus[$claim[ReconFields::PAYMENT_ID]][ReconFields::STATUS];
-            $claimAmountInFile = $claim['amount'] * 100;
-
-            $this->assertEquals($claimAmountInFile, $dbPaymentAmount);
-
-            $this->assertEquals($statusInFile, $claim[ReconFields::STATUS]);
+            $this->assertEquals(ltrim($payments[$i]['id'], 'pay_'), $claim['aggregator_refernce_no']);
+            $this->assertEquals($this->getFormattedAmount($payments[$i]['amount']), $claim['amount']);
+            $this->assertEquals('successful', $claim['status']);
         }
+    }
+
+    protected function getFormattedAmount($amount): string
+    {
+        return number_format($amount / 100, 2, '.', '');
     }
 }
