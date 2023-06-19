@@ -3590,7 +3590,7 @@ class Base extends BaseCore
 
                    $status = $payout->getStatus();
 
-                   if (($status === Status::CREATED) and
+                   if ((in_array($status, [Status::CREATED, Status::INITIATED], true) === true) and
                        (is_null($fta) === true) and
                        ((is_null($payout->getTransactionId()) === false) or
                         ($accountType === Balance\AccountType::DIRECT)))
