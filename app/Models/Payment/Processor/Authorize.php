@@ -1806,7 +1806,8 @@ trait Authorize
 
             $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_NOT_ELIGIBLE_FOR_AUTO_CAPTURE, $payment, null,[], $properties);
 
-            if ($this->shouldGatewayCapturePayment($payment) === true)
+            if ($this->shouldGatewayCapturePayment($payment) === true and
+                $payment->hasSubscription() === false)
             {
                 $this->gatewayCapturePaymentViaQueue($payment);
             }
