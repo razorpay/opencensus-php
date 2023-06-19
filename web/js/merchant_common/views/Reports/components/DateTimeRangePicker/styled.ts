@@ -74,17 +74,34 @@ export const Date = styled.td<{
   width: ${({ size }) => size}px;
   height: ${({ size }) => size}px;
   background-color: ${({ theme, isFocused, inBetween, isHovered, disabled }) => {
-    const { FIELD_FOCUS_COLOR_L1, FIELD_FOCUS_COLOR_L2, FIELD_FOCUS_COLOR_L3 } =
-      reportsTheme(theme);
-    return disabled
-      ? '#ffffff'
-      : isFocused
-      ? FIELD_FOCUS_COLOR_L3
-      : inBetween
-      ? FIELD_FOCUS_COLOR_L2
-      : isHovered
-      ? FIELD_FOCUS_COLOR_L1
-      : '#ffffff';
+    const {
+      FIELD_FOCUS_COLOR_L1,
+      FIELD_FOCUS_COLOR_L2,
+      GRAY_LEVEL_3,
+      GRAY_LEVEL_1,
+      FIELD_FOCUS_COLOR_L3,
+    } = reportsTheme(theme);
+
+    const getBgColor = () => {
+      switch (true) {
+        case disabled && isFocused:
+          return GRAY_LEVEL_3;
+        case disabled && inBetween:
+          return GRAY_LEVEL_1;
+        case disabled:
+          return '#ffffff';
+        case isFocused:
+          return FIELD_FOCUS_COLOR_L3;
+        case inBetween:
+          return FIELD_FOCUS_COLOR_L2;
+        case isHovered:
+          return FIELD_FOCUS_COLOR_L1;
+        default:
+          return '#ffffff';
+      }
+    };
+
+    return getBgColor();
   }};
   cursor: ${({ disabled }) => (disabled ? 'default' : 'pointer')};
   text-align: center;
@@ -137,7 +154,13 @@ export const AbsoluteWrapper = styled(AS)<{ topOffset?: number }>`
 `;
 
 export const DateTimeRangeContainer = styled(ScrollSafeMargin)<BaseValidationStyledProps>`
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
   border-radius: 4px;
+  user-select: none;
   ${({ theme }) => {
     const { FIELD_SHADOW, FIELD_SHADOW_BLUR_RADIUS } = reportsTheme(theme);
     return `

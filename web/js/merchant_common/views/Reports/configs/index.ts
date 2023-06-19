@@ -20,6 +20,9 @@ export const reportsTheme = (theme: Theme) => {
         HOVER_BG_COLOR: theme.colors.surface.background.level3.lowContrast,
         DISABLED_BG_COLOR: theme.colors.surface.background.level1.lowContrast,
         MARGIN_DIVIDER: theme.spacing[4],
+        GRAY_LEVEL_1: theme.colors.surface.background.level1.lowContrast,
+        GRAY_LEVEL_2: theme.colors.surface.border.normal.lowContrast,
+        GRAY_LEVEL_3: theme.colors.brand.gray[600].lowContrast,
         NEGATIVE_BG: theme.colors.feedback.background.negative.lowContrast,
         NEGATIVE_BORDER: theme.colors.feedback.border.negative.highContrast,
       }

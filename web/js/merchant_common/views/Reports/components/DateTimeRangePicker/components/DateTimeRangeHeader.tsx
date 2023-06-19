@@ -10,9 +10,9 @@ import {
   SelectedRangeInfoBadge,
 } from 'merchant_common/views/Reports/components/DateTimeRangePicker/styled';
 
-export const DateTimeRangeHeader = (): JSX.Element => {
+export const DateTimeRangeHeader = ({ disableTimeSelection }): JSX.Element => {
   const { theme } = useTheme();
-  const [shouldIncludeTime, setShouldIncludeTime] = useState(true);
+  const [shouldIncludeTime, setShouldIncludeTime] = useState(!disableTimeSelection);
   const { endDate, setEndDate, setStartDate, startDate } = useDateTimeRangeContext();
 
   const handleIncludeTime = (val) => {
@@ -31,7 +31,7 @@ export const DateTimeRangeHeader = (): JSX.Element => {
         <Text variant="body" type="normal" weight="bold">
           Selected Date Range:
         </Text>
-        {Boolean(startDate && endDate) ? (
+        {Boolean(startDate && endDate && !disableTimeSelection) ? (
           <Switch label="Include Time" onChange={handleIncludeTime} value={shouldIncludeTime} />
         ) : null}
       </RangeSectionHeader>
@@ -43,7 +43,7 @@ export const DateTimeRangeHeader = (): JSX.Element => {
               {startDate ? startDate.format('MMM DD, YYYY') : 'Choose A Start Date'}
             </Text>
           </SelectedRangeInfoBadge>
-          {shouldIncludeTime && startDate ? (
+          {shouldIncludeTime && startDate && !disableTimeSelection ? (
             <TimePicker value={startDate} onChange={({ date }) => setStartDate(date)} />
           ) : null}
         </RangeSection>
@@ -56,7 +56,7 @@ export const DateTimeRangeHeader = (): JSX.Element => {
               {endDate ? endDate.format('MMM DD, YYYY') : 'Choose An End Date'}
             </Text>
           </SelectedRangeInfoBadge>
-          {shouldIncludeTime && endDate ? (
+          {shouldIncludeTime && endDate && !disableTimeSelection ? (
             <TimePicker value={endDate} onChange={({ date }) => setEndDate(date)} />
           ) : null}
         </RangeSection>

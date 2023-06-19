@@ -90,7 +90,7 @@ export const didDatesUpdate = (prev, curr) => {
   }
 };
 
-export const getFormattedDate = (value, selectedRangeFormat?) => {
+export const getFormattedDate = (value, disableTimeSelection, selectedRangeFormat?) => {
   if (!value) return '';
 
   switch (true) {
@@ -106,9 +106,11 @@ export const getFormattedDate = (value, selectedRangeFormat?) => {
 
     default:
       return `${moment(value.startDate).format(
-        selectedRangeFormat ?? SELECTED_DATE_RANGE_RENDER_FORMAT,
+        selectedRangeFormat ??
+          (disableTimeSelection ? SELECTED_DATE_RENDER_FORMAT : SELECTED_DATE_RANGE_RENDER_FORMAT),
       )} - ${moment(value.endDate).format(
-        selectedRangeFormat ?? SELECTED_DATE_RANGE_RENDER_FORMAT,
+        selectedRangeFormat ??
+          (disableTimeSelection ? SELECTED_DATE_RENDER_FORMAT : SELECTED_DATE_RANGE_RENDER_FORMAT),
       )}`;
   }
 };

@@ -99,7 +99,7 @@ export const DownloadReportModal = ({
       const { startDate, endDate } = customDurationRange ?? {};
       if (!startDate || !endDate) return null;
       if (moment.isMoment(startDate) && moment.isMoment(endDate)) {
-        return getFormattedDate({ startDate, endDate });
+        return getFormattedDate({ startDate, endDate }, false);
       }
     }
     return '';

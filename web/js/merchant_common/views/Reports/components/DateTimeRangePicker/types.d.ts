@@ -102,6 +102,7 @@ export interface SelectedRangeInfoInputPropsType {
   label?: string;
   selectedRangeFormat?: string;
   isValidatedField: boolean;
+  disableTimeSelection: boolean;
   validateRange?: (date: SelectedRangeType) => ValidationConfigType | true;
 }
 
@@ -169,6 +170,10 @@ export interface DateTimeRangePickerPropsType {
    * Disable all the dates upto today (exclusive).
    */
   disablePast?: boolean;
+  /**
+   * Disables time selection for the picker.  Note: [startDate] at 12:00 AM to [endDate] at 11:59 PM.
+   */
+  disableTimeSelection?: boolean;
   /**
    * Disables all the dates after the provided date.
    */

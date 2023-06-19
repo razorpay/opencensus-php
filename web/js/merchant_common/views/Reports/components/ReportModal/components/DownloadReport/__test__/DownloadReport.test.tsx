@@ -234,7 +234,7 @@ describe('Download Reports', () => {
     await userEvent.click(screen.getByLabelText('Custom Switch'));
 
     expect(helpTextEl).toHaveTextContent(
-      getFormattedDate({ startDate: todaysDate, endDate: todaysDate }),
+      getFormattedDate({ startDate: todaysDate, endDate: todaysDate }, false),
     );
   });
 

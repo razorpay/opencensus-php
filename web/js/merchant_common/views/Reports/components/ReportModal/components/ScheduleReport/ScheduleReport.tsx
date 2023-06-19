@@ -432,6 +432,7 @@ export const ScheduleReportModal = ({
                 value={customDataDuration}
                 disableFuture={false}
                 disablePast
+                disableTimeSelection
                 necessityIndicator="required"
                 validateRange={validateCustomDurationForPicker}
                 validationState={showErrorInSection === 1 ? validateCustomDuration() : true}

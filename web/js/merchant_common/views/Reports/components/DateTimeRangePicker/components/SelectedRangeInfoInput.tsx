@@ -22,6 +22,7 @@ export const SelectedRangeInfoInput = ({
   selectedRangeFormat,
   validateRange,
   isValidatedField,
+  disableTimeSelection,
 }: SelectedRangeInfoInputPropsType): JSX.Element => {
   const [isPickerOpen, setPickerOpen] = useState(false);
   const { startDate, endDate, setValidationError } = useDateTimeRangeContext();
@@ -64,7 +65,7 @@ export const SelectedRangeInfoInput = ({
 
   const renderDate = () => {
     if (validValue) {
-      const renderText = getFormattedDate(value, selectedRangeFormat);
+      const renderText = getFormattedDate(value, disableTimeSelection, selectedRangeFormat);
       return (
         <Text variant="body" type="normal" weight="regular" color="surface.text.subtle.lowContrast">
           {renderText}
