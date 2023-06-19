@@ -22,6 +22,12 @@ class Core extends Base\Core
 
         $input[Entity::REQUEST_PAYLOAD] = $requestPayload;
 
+        if (isset($input['payer_account_type']) === true)
+        {
+            // payer account type is not required in upi transfer request entity
+            unset($input['payer_account_type']);
+        }
+
         $upiTransferRequest = new Entity();
 
         try
