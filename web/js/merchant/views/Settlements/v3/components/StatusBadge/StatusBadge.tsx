@@ -1,12 +1,15 @@
-import React from 'react';
-import { capitalize } from 'common/utils/rzp-utils';
 import { Badge, InfoIcon } from '@razorpay/blade/components';
-import { VariantMap } from 'merchant/views/Settlements/v3/constants/info';
-import { BADGE_INFO } from 'merchant/views/Settlements/components/utils';
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
+import { capitalize } from 'common/utils/rzp-utils';
+import { BADGE_INFO } from 'merchant/views/Settlements/components/utils';
+import { VariantMap } from 'merchant/views/Settlements/v3/constants/info';
+import React from 'react';
 import { StyledSpan } from './styled';
 
-const StatusBadge = ({ status }: { status: string }) => {
+const StatusBadge = ({ status }: { status: string }): JSX.Element | null => {
+  if (!status) {
+    return null;
+  }
   const uppercaseStatus = status.toUpperCase();
   return (
     <Badge
