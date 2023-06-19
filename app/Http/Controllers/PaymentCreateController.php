@@ -971,9 +971,18 @@ class PaymentCreateController extends Controller
 
     public function handleSihubWebhook()
     {
-        $input = Request::all();
+        $input = Request::getContent();
 
-        $data = $this->service(E::PAYMENT)->handleSihubWebhook($input);
+        $this->trace->info(
+            TraceCode::PAYMENT_CREATE_ON_PUBLIC,
+            ['sihub webhook input' => $input]);
+
+        $inputData = array(
+            "payload" => $input,
+            "payment" => array("method"=>""),
+        );
+
+        $data = $this->service(E::PAYMENT)->handleSihubWebhook($inputData);
 
         return $data;
     }

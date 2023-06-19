@@ -26,6 +26,7 @@ class Mandate
     const PAUSED_BY                  = 'paused_by';
     const CANCELLED_BY               = 'cancelled_by';
 
+
     /**
      * The mandate's attributes.
      *

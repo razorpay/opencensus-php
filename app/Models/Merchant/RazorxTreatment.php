@@ -804,4 +804,5 @@ final class RazorxTreatment
      *
      */
     const SKIP_UPI_ICICI_CALLBACK_FOR_BT = 'skip_upi_icici_callback_for_bt';
+    const RECURRING_SIHUB_CANCEL_WEBHOOK_ENABLED = 'recurring_sihub_webhook_enabled';
 }

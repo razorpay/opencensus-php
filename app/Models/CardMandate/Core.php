@@ -270,11 +270,41 @@ class Core extends Base\Core
 
     public function processSihubWebhook($input)
     {
-        $response = $this->app['gateway']->call(MandateHubs\MandateHubs::BILLDESK_SIHUB, Payment\Action::CARD_MANDATE_UPDATE, $input, $this->mode);
+        if (!is_null($input)) {
 
-        $mandate = BillDeskSIHub\BillDeskSIHub::getMandateFromSIHubResponse($response['data'], null);
+            $this->trace->info(TraceCode::CARD_MANDATE_ACTION_PROCESS_CALLBACK, [
+                'input' => $input,
+            ]);
 
-        $this->updateMandateFromCallbackResponse($mandate);
+            try {
+                $response = $this->app['gateway']->call(MandateHubs\MandateHubs::BILLDESK_SIHUB, Payment\Action::CARD_MANDATE_UPDATE, $input, $this->mode);
+
+                $this->trace->info(TraceCode::CARD_MANDATE_ACTION_SIHUB_REQUEST, [
+                    'payload' => $response,
+                ]);
+
+                $mandate = BillDeskSIHub\BillDeskSIHub::getMandateFromSIHubResponse($response['data'], null);
+                $mandateId = $mandate->getAttribute(Mandate::MANDATE_ID);
+
+                $cardMandate = $this->repo->card_mandate->findByMandateId($mandateId);
+                $merchantID = $cardMandate->merchant->getId();
+
+                if (!is_null($input) && ($this->app['razorx']->getTreatment($merchantID, Merchant\RazorxTreatment::RECURRING_SIHUB_CANCEL_WEBHOOK_ENABLED, $this->mode) === 'on')) {
+                    // Update status of token & end webhook to merchant only if experiment is turned on for MID
+                    $this->updateMandateFromCallbackResponse($mandate);
+                }
+
+            } catch (\Exception $e){
+                $this->trace->traceException($e,
+                Trace::ERROR,
+                TraceCode::CARD_MANDATE_SIHUB_TOKEN_UPDATE_FAILED,
+                [
+                    'mandate_id' => $mandate->getAttribute(Mandate::MANDATE_ID),
+                ]);
+            }
+        }
+
+        // Returning success regardless of any errors on our end
 
         return [];
     }
