@@ -2453,6 +2453,31 @@ return [
         ],
     ],
 
+    'testAddVirtualAccountFeatureForUnregisteredMerchant' => [
+        'request'  => [
+            'url'     => '/features',
+            'method'  => 'post',
+            'content' => [
+                'names'       => ['virtual_accounts'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000001'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_FEATURE_NOT_ALLOWED_FOR_MERCHANT,
+            'description'         => 'Virtual account feature cannot be enabled for unregistered merchants.',
+        ],
+    ],
+
     'testAddRTBFeatureMerchantLendingCategory' => [
         'request'  => [
             'url'     => '/features',

@@ -1959,6 +1959,21 @@ class ActivationTest extends OAuthTestCase
 
     }
 
+    public function testSmartCollectActivationForUnregisteredMerchants()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->fixtures->edit('merchant',$merchantId,['activated' => 1]);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId, 'business_type'=> 2]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $this->startTest();
+    }
+
     public function testInstantActivationOfRoutesForActiveMerchants()
     {
         $this->markTestSkipped("Skipping the test until Route is added to instant Activation bucket");

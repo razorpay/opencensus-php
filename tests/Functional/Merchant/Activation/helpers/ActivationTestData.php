@@ -1072,6 +1072,34 @@ return [
         ]
     ],
 
+    'testSmartCollectActivationForUnregisteredMerchants' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/merchant/requests',
+            'content' => [
+                'submissions' => [
+                    'business_model'    => 'bc',
+                    'sample_plans'      => 'sp',
+                ],
+                'name' => 'virtual_accounts',
+                'type' => 'product'
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_FEATURE_NOT_ALLOWED_FOR_MERCHANT,
+            'description'         => 'Virtual account feature cannot be enabled for unregistered merchants.',
+        ],
+    ],
+
     'testInstantActivationOfRoutesForActiveMerchants' => [
         'request'         => [
                 'method'  => 'POST',

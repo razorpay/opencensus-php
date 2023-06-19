@@ -1072,6 +1072,23 @@ class FeaturesTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testAddVirtualAccountFeatureForUnregisteredMerchant()
+    {
+        $this->fixtures->create('merchant', [
+            'id' => '10000000000001',
+        ]);
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id'   => '10000000000001',
+                'business_type' => 2
+            ]
+        );
+
+        $this->startTest();
+    }
+
+
     public function testAddRTBFeatureMerchantLendingCategory()
     {
         $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID,

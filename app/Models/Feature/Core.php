@@ -112,6 +112,12 @@ class Core extends Base\Core
             return $feature;
         }
 
+        if (($input[Entity::NAME] === Constants::VIRTUAL_ACCOUNTS) and
+            (in_array($entityType, [Constants::MERCHANT, Constants::ACCOUNT], true) === true))
+        {
+            $this->validateMerchantForVirtualAccountFeature($entityId);
+        }
+
         //
         // These entity types are owned by api, hence we validate their existence
         // here before associating.
@@ -349,6 +355,16 @@ class Core extends Base\Core
                     AppConstants::ACTION   => $action,
                     'error'                => $ex->getMessage()
                 ]);
+        }
+    }
+
+    protected function validateMerchantForVirtualAccountFeature(string $merchantId)
+    {
+        $merchantDetail = $this->repo->merchant_detail->getByMerchantId($merchantId);
+
+        if ($merchantDetail->isUnregisteredBusiness() === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_FEATURE_NOT_ALLOWED_FOR_MERCHANT);
         }
     }
 
