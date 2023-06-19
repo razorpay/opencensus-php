@@ -23,8 +23,9 @@ class MerchantAutomatedAPMOnboardingTest extends OAuthTestCase
 
         $this->fixtures->merchant->enableInternational();
 
-        $this->fixtures->edit('merchant', '10000000000000',
-            ['name' => 'Sample Org Pvt Ltd']);
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'name' => 'Sample Org Pvt Ltd',
+        ]);
 
         $this->fixtures->create('merchant_detail',[
             'merchant_id' => '10000000000000',
@@ -32,8 +33,10 @@ class MerchantAutomatedAPMOnboardingTest extends OAuthTestCase
             'business_type' => 2,
             'business_website' => 'www.sample.org',
             'company_cin' => 'L21091KA2019OPC141331',
-            'gstin'     => '29GGGGG1314R9Z6'
+            'gstin'     => '29GGGGG1314R9Z6',
         ]);
+
+        $this->mockSplitzTreatment();
 
         $this->postEmerchantpayRequestData();
     }
@@ -169,9 +172,6 @@ class MerchantAutomatedAPMOnboardingTest extends OAuthTestCase
      */
     public function testGetEmerchantpayRequestData()
     {
-
-        $this->markTestSkipped("Intermittent failures on non_editable filed, so skipping the test case");
-
         $request = [
             'url' => '/merchant/international/apm_request',
             'method' => 'GET',
@@ -181,7 +181,7 @@ class MerchantAutomatedAPMOnboardingTest extends OAuthTestCase
         $response = $this->makeRequestAndGetContent($request);
 
         self::assertCount(3, $response['instruments']);
-        self::assertCount(2, $response['non_editable']);
+        self::assertCount(4, $response['non_editable']);
         self::assertCount(15, $response['merchant_info']);
         self::assertCount(2, $response['owner_details']);
         self::assertCount(16, $response['owner_details'][0]);
@@ -239,5 +239,24 @@ class MerchantAutomatedAPMOnboardingTest extends OAuthTestCase
 
         $document = $this->getLastEntity('merchant_document', true);
         self::assertEquals('owner', $document['entity_type']);
+    }
+
+    protected function mockSplitzTreatment()
+    {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variant_on',
+                ]
+            ]
+        ];
+
+        $this->splitzMock = \Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturn($output);
     }
 }
