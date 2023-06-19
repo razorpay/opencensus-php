@@ -5,7 +5,10 @@ namespace RZP\Models\Settlement\Processor\Base;
 use RZP\Constants\Environment;
 use RZP\Exception\ServerErrorException;
 use RZP\Mail\Base\Constants;
+use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Services\UfhService;
+use RZP\Models\Merchant;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Models\FileStore\Storage\Base\Bucket;
 use RZP\Models\Base;
@@ -84,6 +87,27 @@ abstract class BaseGifuFile extends Base\Core
                 'UFH Response'   => $responseFromUfhUpload
             ]
         );
+
+        $orgId = (new Merchant\Repository)->getMerchantOrg(current($input));
+
+        $experimentResult = $this->app->razorx->getTreatment($orgId, Merchant\RazorxTreatment::GIFU_CUSTOM,$this->mode);
+
+        $isGifuCustomEnabled = ( $experimentResult === 'on' ) ? true : false;
+
+        $className = get_class($this);
+
+        if (count($responseFromUfhUpload) !== 0 and $responseFromUfhUpload['success'] === true
+            and $isGifuCustomEnabled === true and $className === 'RZP\Models\Settlement\Processor\HDFC\GifuFile')
+        {
+            $cardsCutoffTimestamp = $this->getCardsCutoffTimestamp();
+
+            (new AdminService)->setConfigKeys([ConfigKey::CARD_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $cardsCutoffTimestamp]);
+
+            $upiCutoffTimestamp = $this->getUpiCutoffTimestamp();
+
+            (new AdminService)->setConfigKeys([ConfigKey::UPI_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP => $upiCutoffTimestamp]);
+
+        }
 
         $this->deleteLocalFile($file);
 

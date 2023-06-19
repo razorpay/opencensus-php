@@ -347,6 +347,12 @@ class ConfigKey
     // This will be the cutoff based on which we shall include card refunds starting from this time in settlement file for a window
     const CARD_REFUNDS_SETTLEMENT_FILE_CUTOFF_TIMESTAMP = self::PREFIX . 'card_refunds_settlement_file_cutoff_timestamp';
 
+    // This is the last Timestamp of card ds payments in previous batch of gifu file
+    const CARD_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP = self::PREFIX . 'card_ds_payments_last_batch_settlement_file_cutoff_timestamp';
+
+    // This is the last Timestamp of upi ds payments in previous batch of gifu file
+    const UPI_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP = self::PREFIX . 'upi_ds_payments_last_batch_settlement_file_cutoff_timestamp';
+
     // This key will be a flag for creating a DB connection with master instead of slave
     const USE_MASTER_DB_CONNECTION = self::PREFIX . 'use_master_db_connection';
 

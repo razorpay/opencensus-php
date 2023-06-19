@@ -11,6 +11,8 @@ use RZP\Models\BankAccount\Type;
 use RZP\Models\FileStore\Storage\Base\Bucket;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Admin\Service as AdminService;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Settlement\Processor\Base;
 use RZP\Models\FileStore;
 use RZP\Models\Feature;
@@ -36,6 +38,11 @@ class GifuFile extends Base\BaseGifuFile
     protected $jobNameProd = BeamConstants::HDFC_COLLECT_NOW_JOB_NAME;
 
     protected $type = FileStore\Type::HDFC_COLLECT_NOW_SETTLEMENT_FILE;
+
+    protected $cardsCutoffTimestamp;
+
+    protected $upiCutoffTimestamp;
+
 
     public function __construct()
     {
@@ -107,43 +114,60 @@ class GifuFile extends Base\BaseGifuFile
 
         $isGifuCustomEnabled = ( $experimentResult === 'on' ) ? true : false;
 
-        $dataPayments = null;
+        $dataPayments = [];
 
         if ($isGifuCustomEnabled === true) {
+
             // fetching payments for cards DS
-            $fromForCards = Carbon::yesterday(Timezone::IST)->startOfDay()->getTimestamp(); // 12 Am yesterday
+            $beginForCardsFromCache = (new AdminService)->getConfigKey([
+                'key' => ConfigKey::CARD_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP
+            ]);
 
             $toForCards = Carbon::yesterday(Timezone::IST)->endOfDay()->getTimestamp(); // 11:59:59 PM yesterday
 
-            $paymentsForCards = $this->repo->payment->fetchPaymentsForMethodBetweenTimePeriodForMerchantIds($input, $fromForCards, $toForCards, ['card']);
+            $lastCapturedTimeForCards = $this->repo->payment->fetchLastPaymentCaptureTimestampByMethodAndPeriodForMerchants($input,$beginForCardsFromCache,$toForCards,['card'])->first()->last_capture_timestamp;
 
+            $paymentsForCards = $this->repo->payment->fetchAggregatedPaymentsForMethodBetweenTimePeriodForMerchantIds($input, $beginForCardsFromCache, $lastCapturedTimeForCards, ['card']);
+
+            $this->cardsCutoffTimestamp = $paymentsForCards->count() > 0 ? $lastCapturedTimeForCards + 1 : $beginForCardsFromCache;
+
+            $this->trace->info(TraceCode::GIFU_FILE_DS_PAYMENT_MATRIX,
+                [
+                    'begin time for cards from cache' => $beginForCardsFromCache,
+                    'end time for cards' => $toForCards,
+                    'last captured time for cards payments' => $lastCapturedTimeForCards,
+                    'next cutoff time' => $this->cardsCutoffTimestamp,
+                    'cards payment count' => $paymentsForCards->count()
+                ]
+            );
 
             // fetching payments for UPI DS
-            $fromForUpi = Carbon::yesterday(Timezone::IST)->subDays(1)->setTime(23, 0, 0)->getTimestamp(); // 11 pm day before yesterday
+            $beginForUpiFromCache = (new AdminService)->getConfigKey([
+                'key' => ConfigKey::UPI_DS_PAYMENTS_LAST_BATCH_SETTLEMENT_FILE_CUTOFF_TIMESTAMP
+            ]);
 
             $toForUpi = Carbon::yesterday(Timezone::IST)->setTime(23, 0, 0)->getTimestamp(); // 11 pm yesterday
 
-            $paymentsForUpi = $this->repo->payment->fetchPaymentsForMethodBetweenTimePeriodForMerchantIds($input, $fromForUpi, $toForUpi, ['upi']);
+            $lastCapturedTimeForUpi = $this->repo->payment->fetchLastPaymentCaptureTimestampByMethodAndPeriodForMerchants($input,$beginForUpiFromCache,$toForUpi,['upi'])->first()->last_capture_timestamp;
 
-            $dataPayments = $paymentsForCards->concat($paymentsForUpi);
+            $paymentsForUpi = $this->repo->payment->fetchAggregatedPaymentsForMethodBetweenTimePeriodForMerchantIds($input, $beginForUpiFromCache, $toForUpi, ['upi']);
 
-            $this->trace->info(TraceCode::GIFU_FILE_DS_PAYMENT_COUNT,
+            $this->upiCutoffTimestamp = $paymentsForUpi->count() > 0 ? $lastCapturedTimeForUpi + 1 : $beginForUpiFromCache;
+
+            $this->trace->info(TraceCode::GIFU_FILE_DS_PAYMENT_MATRIX,
                 [
-                    'Cards payment count' => $paymentsForCards->count(),
-                    'Upi payments count' => $paymentsForUpi->count()
-
+                    'begin time for upi from cache' => $beginForUpiFromCache,
+                    'end time for upi' => $toForUpi,
+                    'last captured time for upi payments' => $lastCapturedTimeForUpi,
+                    'next cutoff time' => $this->upiCutoffTimestamp,
+                    'upi payment count' => $paymentsForUpi->count()
                 ]
             );
+
+            $dataPayments = $paymentsForCards->concat($paymentsForUpi);
         }
 
-        $paymentToGatewayAmountMap = [];
-
-        if( $dataPayments != null )
-        {
-            $paymentToGatewayAmountMap = $this->getPaymentToGatewayAmountMap($dataPayments);
-
-            $this->groupPaymentsByMid($dataPayments,$modData);
-        }
+        $this->groupPaymentsByMid($dataPayments,$modData);
 
         $this->trace->info(TraceCode::SETTLEMENT_FILE_MERCHANTS_TO_PROCESS,
             [
@@ -178,7 +202,7 @@ class GifuFile extends Base\BaseGifuFile
 
                 $amount = $this->getAggregatedSettlementAmount($value['settlements'] ?? []);
 
-                $amount = $amount + $this->getAggregatedPaymentAmount($value['payments'] ?? [],$paymentToGatewayAmountMap);
+                $amount = $amount + $this->getAggregatedPaymentAmount($value['payments'] ?? []);
 
                 $narration = $this->getNarration($value['settlements'] ?? [],$mid);
 
@@ -260,20 +284,6 @@ class GifuFile extends Base\BaseGifuFile
 
     }
 
-    protected  function getPaymentToGatewayAmountMap($payments)
-    {
-        $paymentIds = $payments->pluck('id')->toArray();
-
-        $paymentMetaRows = $this->repo->payment_meta->findManyByPaymentIds($paymentIds);
-
-        $paymentToGatewayAmountMap = [];
-        foreach ($paymentMetaRows as $paymentMetaRow) {
-            $paymentToGatewayAmountMap[$paymentMetaRow->payment_id] = $paymentMetaRow->gateway_amount;
-        }
-
-        return $paymentToGatewayAmountMap;
-    }
-
     protected function groupSettlementsByMid($data, &$modData)
     {
         foreach ($data as $datum)
@@ -300,21 +310,13 @@ class GifuFile extends Base\BaseGifuFile
         return '';
     }
 
-    protected function getAggregatedPaymentAmount($data, &$paymentToGatewayAmountMap)
+    protected function getAggregatedPaymentAmount($data)
     {
         $totalSum = 0;
 
         foreach ($data as $datum)
         {
-            if ($datum->isHdfcVasDSCustomerFeeBearerSurcharge() === true)
-            {
-                $totalSum = $totalSum + $paymentToGatewayAmountMap[$datum->id];
-            }
-            else
-            {
-                $totalSum = $totalSum + $datum->amount;
-            }
-
+            $totalSum = $totalSum + $datum->total_amount - $datum->total_fee - $datum->total_mdr;
         }
 
         return $totalSum/100;
@@ -397,4 +399,15 @@ class GifuFile extends Base\BaseGifuFile
 
         return $config[$bucketType];
     }
+
+    public function getCardsCutoffTimestamp()
+    {
+        return $this->cardsCutoffTimestamp;
+    }
+
+    public function getUpiCutoffTimestamp()
+    {
+        return $this->upiCutoffTimestamp;
+    }
+
 }

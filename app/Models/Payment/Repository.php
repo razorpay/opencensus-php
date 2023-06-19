@@ -239,13 +239,33 @@ EOT;
                     ->get();
     }
 
-    public function fetchPaymentsForMethodBetweenTimePeriodForMerchantIds($midList,$from,$to,$method){
+    public function fetchAggregatedPaymentsForMethodBetweenTimePeriodForMerchantIds($midList,$from,$to,$method){
 
         return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+            ->selectRaw(
+                Payment\Entity::MERCHANT_ID.
+                ', SUM(' . Payment\Entity::AMOUNT . ') as total_amount ,'.
+                'SUM(' . Payment\Entity::FEE . ') as total_fee ,'.
+                'SUM(' . Payment\Entity::MDR . ') as total_mdr'
+            )
             ->whereBetween(Payment\Entity::CAPTURED_AT, array($from, $to))
             ->where(Payment\Entity::SETTLED_BY, '!=', 'Razorpay')
-            ->whereIn(Payment\Entity::METHOD,$method)
-            ->whereIn(Payment\Entity::MERCHANT_ID,$midList)
+            ->whereIn(Payment\Entity::METHOD, $method)
+            ->whereIn(Payment\Entity::MERCHANT_ID, $midList)
+            ->groupBy(Payment\Entity::MERCHANT_ID)
+            ->get();
+    }
+
+    public function fetchLastPaymentCaptureTimestampByMethodAndPeriodForMerchants($midList,$from,$to,$method){
+
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+            ->selectRaw(
+                'MAX(' . Payment\Entity::CAPTURED_AT . ') as last_capture_timestamp',
+            )
+            ->whereBetween(Payment\Entity::CAPTURED_AT, array($from, $to))
+            ->where(Payment\Entity::SETTLED_BY, '!=', 'Razorpay')
+            ->whereIn(Payment\Entity::METHOD, $method)
+            ->whereIn(Payment\Entity::MERCHANT_ID, $midList)
             ->get();
     }
 

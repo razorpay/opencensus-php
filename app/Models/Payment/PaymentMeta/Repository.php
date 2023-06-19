@@ -36,13 +36,6 @@ class Repository extends Base\Repository
             ->first();
     }
 
-    public function findManyByPaymentIds($paymentIds)
-    {
-        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
-            ->whereIn(Entity::PAYMENT_ID, $paymentIds)
-            ->get();
-    }
-
     public function findByReferenceId($transactionId)
     {
         return $this->newQuery()
