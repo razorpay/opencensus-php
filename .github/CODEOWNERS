@@ -72,6 +72,8 @@ app/Services/Mock/CheckoutService.php                  @razorpay/checkout-backen
 # Gateways
 #
 
+app/Gateway/Upi/Icici                                  @razorpay/qr-code-devs
+app/Gateway/Upi/Yesbank                                @razorpay/qr-code-devs
 app/Gateway/Upi                                        @razorpay/techupicore
 
 
@@ -80,6 +82,7 @@ app/Gateway/Upi                                        @razorpay/techupicore
 # Functional Tests
 #
 
+tests/Functional/QrCode/                               @razorpay/qr-code-devs
 tests/Functional/Transfer/                             mohamed.safwan@razorpay.com
 tests/Functional/BankingAccountStatement/              @razorpay/Payouts-core
 tests/Functional/Key/                                  @razorpay/spine-edge
@@ -202,3 +205,11 @@ resources/views/payment_button                                  @razorpay/nocode
 resources/views/payment_handle                                  @razorpay/nocode
 resources/views/payment_link                                    @razorpay/nocode
 resources/views/payment_link/partials                           @razorpay/nocode
+
+
+#
+# QrCode
+#
+app/Models/QrCode                                   @razorpay/qr-code-devs
+app/Models/QrPayment                                @razorpay/qr-code-devs
+app/Models/QrPaymentRequest                         @razorpay/qr-code-devs
