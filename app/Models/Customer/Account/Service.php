@@ -378,6 +378,42 @@ class Service extends Base\Service
         return $accounts->toArrayPublic();
     }
 
+    public function deleteBankAccount($id, $baId)
+    {
+        Entity::verifyIdAndSilentlyStripSign($id);
+
+        BankAccount\Entity::verifyIdAndStripSign($baId);
+
+        $account = $this->repo->bank_account->getBankAccountByIdCustomerIdAndMerchantId($baId, $id, $this->merchant->getMerchantId());
+
+        // if account does not exist
+        if($account === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR_BANKING_ACCOUNT_NOT_FOUND,
+                BankAccount\Entity::ENTITY_ID,
+                [
+                    'id' => $id
+                ]);
+        }
+
+        // if bank account is already deleted throw an exception
+        if($account->isDeleted() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACCOUNT_ALREADY_DELETED,
+                BankAccount\Entity::ENTITY_ID,
+                [
+                    'id' => $id
+                ]);
+        }
+
+        // soft delete
+        $this->repo->bank_account->deleteOrFail($account);
+
+        return ['success' => true];
+    }
+
     public function getDeviceCustomer()
     {
         $customerId = $this->device->getCustomerId();

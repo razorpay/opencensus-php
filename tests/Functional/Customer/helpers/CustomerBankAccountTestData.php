@@ -49,4 +49,18 @@ return [
             ]
         ]
     ],
+
+    'testSoftDeleteCustomerBankAccount' => [
+        'request' => [
+            'content' => [
+            ],
+            'url' => '/customers/{cust_id}/bank_account/{bank_id}',
+            'method' => 'DELETE'
+        ],
+        'response' => [
+            'content' => [
+               'success' => true,
+            ]
+        ]
+    ]
 ];

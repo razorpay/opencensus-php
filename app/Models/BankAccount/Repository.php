@@ -352,6 +352,16 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    public function getBankAccountByIdCustomerIdAndMerchantId(string $bankAccountId, string $customerId, string $merchantId)
+    {
+        return $this->newQuery()->withTrashed()
+            ->where(Entity::ID, $bankAccountId)
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->where(Entity::ENTITY_ID, $customerId)
+            ->where(Entity::TYPE, '=', 'customer')
+            ->first();
+    }
+
     public function isBankAccountChanged(Entity $bankAccount): bool
     {
         return $this->newQuery()

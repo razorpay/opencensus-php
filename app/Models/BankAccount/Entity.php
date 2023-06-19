@@ -714,4 +714,9 @@ class Entity extends Base\PublicEntity
             self::ACCOUNT_NUMBER    => $this->getAccountNumber(),
         ];
     }
+
+    public function isDeleted()
+    {
+        return ($this->getAttribute(self::DELETED_AT) !== null);
+    }
 }

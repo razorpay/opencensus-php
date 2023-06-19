@@ -1768,6 +1768,10 @@ class PublicErrorDescription
 
     const BAD_REQUEST_CLOSE_STATIC_QR_CODE_FAILURE                                  = 'Multiple use QR code cannot be closed';
 
+    const BAD_REQUEST_ACCOUNT_ALREADY_DELETED                                       = 'Bank account is already deleted';
+
+    const BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST                                        = 'Bank account does not exist';
+    
     const BAD_REQUEST_QR_CODE_ON_DEMAND_CLOSE_FOR_YES_BANK                          = 'Your current configuration does not support QR creation. Contact support for further assistance';
 
     const BAD_REQUEST_ACCOUNT_ID_IN_BODY                                            = 'Account id not allowed in body';

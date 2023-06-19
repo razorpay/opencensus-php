@@ -243,6 +243,13 @@ class CustomerController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function deleteBankAccounts($id, $baId)
+    {
+        $data = $this->service()->deleteBankAccount($id, $baId);
+
+        return ApiResponse::json($data);
+    }
+
     public function fetchUpiBankAccounts($ifsc = 'RAZR')
     {
         return $this->service()->fetchUpiBankAccounts($ifsc);
