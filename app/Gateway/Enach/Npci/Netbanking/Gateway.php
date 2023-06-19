@@ -1041,6 +1041,8 @@ class Gateway extends Base\Gateway
                                                 ),
                                    25,
                                    '');
+    
+        $merchantName = CategoryCode::getCorporateName($utilityCode) ?? $merchantName;
 
         $displayDetails = [
             'customer_name'      => str_limit($token->getBeneficiaryName(), 40, ''),

@@ -45,6 +45,10 @@ class CategoryCode
       self::U005 => 'Utility Bill payment mobile telephone broadband',
       self::U006 => 'Utility Bill payment water',
     ];
+    
+    public static $emandateCorporateNameMapping = [
+        "YESB00709000028661" => "INDIANCLRCORPLTD"
+    ];
 
     protected static $mccToCategoryCodeMapping = [
         '6012' => self::L001,
@@ -88,4 +92,10 @@ class CategoryCode
     {
         return self::$catCodeToDescriptionMapping[$code];
     }
+    
+    public static function getCorporateName($utilityCode)
+    {
+        return self::$emandateCorporateNameMapping[$utilityCode];
+    }
+    
 }
