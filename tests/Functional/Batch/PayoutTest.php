@@ -3388,6 +3388,23 @@ class PayoutTest extends TestCase
         $this->assertNotNull($batchPayout['creator_name']);
     }
 
+    public function testGetBatchRowsWithCreatorEmailForTypePayouts()
+    {
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayKeysExist($response, ['items', 'entity', 'count', 'has_more']);
+
+        $this->assertNotNull($response['items']);
+
+        $batchPayout = $response['items'][0];
+
+        $this->assertNotNull($batchPayout['creator_email']);
+
+        $this->assertEquals("merchantuser01@razorpay.com", $batchPayout['creator_email']);
+    }
+
     public function testGetBatchRowsWithCreatorNameForTypePaymentLinks()
     {
         $this->ba->proxyAuth();
@@ -3401,6 +3418,21 @@ class PayoutTest extends TestCase
         $batchPayout = $response['items'][0];
 
         $this->assertNull($batchPayout['creator_name']);
+    }
+
+    public function testGetBatchRowsWithCreatorEmailForTypePaymentLinks()
+    {
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayKeysExist($response, ['items', 'entity', 'count', 'has_more']);
+
+        $this->assertNotNull($response['items']);
+
+        $batchPayout = $response['items'][0];
+
+        $this->assertNull($batchPayout['creator_email']);
     }
 
     public function testGetBatchDetails()

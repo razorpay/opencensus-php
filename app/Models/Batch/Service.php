@@ -97,9 +97,9 @@ class Service extends Base\Service
                 {
                     $user = $this->repo->user->getUserFromId($item['creator_id']);
 
-                    $userName = $user->getName();
+                    $item['creator_name'] = $user->getName();
 
-                    $item['creator_name'] = $userName;
+                    $item['creator_email'] = $user->getEmail();
                 }
             }
         }

@@ -1515,6 +1515,27 @@ return [
         ],
     ],
 
+    'testGetBatchRowsWithCreatorEmailForTypePayouts' => [
+        'request'  => [
+            'url'     => '/batches?type=payout',
+            'method'  => 'get',
+            'server' => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' => [
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 200,
+        ],
+
+    ],
+
     'testGetBatchRowsWithCreatorNameForTypePayouts' => [
         'request'  => [
             'url'     => '/batches?type=payout',
@@ -1537,6 +1558,27 @@ return [
     ],
 
     'testGetBatchRowsWithCreatorNameForTypePaymentLinks' => [
+        'request'  => [
+            'url'     => '/batches?type=payment_link',
+            'method'  => 'get',
+            'server' => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+            'content' => [
+
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+            'status_code' => 200,
+        ],
+
+    ],
+
+    'testGetBatchRowsWithCreatorEmailForTypePaymentLinks' => [
         'request'  => [
             'url'     => '/batches?type=payment_link',
             'method'  => 'get',
