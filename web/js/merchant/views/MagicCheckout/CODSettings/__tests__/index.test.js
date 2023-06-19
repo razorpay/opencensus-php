@@ -42,10 +42,10 @@ const App = ({ state = {}, ...props }) => {
 };
 
 describe('COD Engine', () => {
-  test('should render cod engine tabs', () => {
+  test('should render cod engine tabs', async () => {
     render(<App />);
-    const CODEngineTab = screen.getByText('COD Engine');
-    const BlockListTab = screen.getByText('Block List');
+    const CODEngineTab = await screen.findByText('COD Engine');
+    const BlockListTab = await screen.findByText('Block List');
     expect(CODEngineTab).toBeInTheDocument();
     expect(BlockListTab).toBeInTheDocument();
   });
