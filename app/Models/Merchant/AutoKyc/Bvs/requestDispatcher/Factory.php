@@ -142,6 +142,12 @@ class Factory
 
     public function getSyncBvsRequestDispatchers(Merchant\Entity $merchant, Detail\Entity $merchantDetails): array
     {
+        // Linked Account activation is asynchronous and bvs validaitons should be triggered asynchronosly
+        if($merchant->isLinkedAccount() === true)
+        {
+            return [];
+        }
+
         if (($merchant->getOrgId() === OrgEntity::RAZORPAY_ORG_ID) and
             ($merchant->isNoDocOnboardingEnabled() === false) and
             ($merchant->isRouteNoDocKycEnabledForParentMerchant() === false))
