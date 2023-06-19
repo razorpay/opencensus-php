@@ -8,6 +8,7 @@ use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BaseException;
 use RZP\Exception\GatewayErrorException;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Analytics\Metadata;
@@ -413,5 +414,45 @@ class ProcessorTest extends TestCase
         self::assertEmpty($payment->getNotes()->toArray()['bankcode']);
         self::assertEmpty($payment->getNotes()->toArray()['PG-TYPE']);
         self::assertEmpty($payment->getNotes()->toArray()['mode']);
+    }
+
+    public function testCheckMerchantPermissionsForNonActivatedMerchantLiveMode()
+    {
+        // prepare basicAuth mock
+        $authMock = $this->getMockBuilder(BasicAuth::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['isProductBanking','isProxyAuth'])
+            ->getMock();
+
+        $authMock->method('isProductBanking')
+            ->willReturn(true);
+
+        $authMock->method('isProxyAuth')
+            ->willReturn(true);
+
+        $this->app->instance('basicauth', $authMock);
+
+        // set app mode
+        $this->app['rzp.mode'] = 'live';
+
+        // create required fixtures
+        $merchant = $this->fixtures->create('merchant', [
+            'activated' => false
+        ]);
+
+        $payment = $this->fixtures->create('payment');
+
+        $this->fixtures->create('merchant_attribute', [
+            'merchant_id'   =>  $merchant->getId(),
+            'product'       =>  'banking',
+            'group'         =>  'products_enabled',
+            'type'          =>  'X',
+            'value'         =>  'true'
+        ]);
+
+        // create an object & access functions to assert that checkMerchantPermissions has not failed
+        $processor = new ProcessorMock($merchant);
+        $processor->setPayment($payment);
+        self::assertEquals($payment, $processor->getPayment());
     }
 }

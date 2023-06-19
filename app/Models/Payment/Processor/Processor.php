@@ -4482,8 +4482,15 @@ class Processor
             return;
         }
 
-        // On live request, ensure that merchant is activated
-        if ($merchant->isActivated() === false)
+        // On live request, either X should be enabled for merchant for proxy auth calls or merchant should be activated
+        if ($this->app['basicauth']->isProxyAuth() &&
+            $this->app['basicauth']->isProductBanking() &&
+            (new MerchantCore())->isXVaActivated($this->merchant))
+        {
+            // adding this check due to PG onboarding pause
+            return;
+        }
+        else if ($merchant->isActivated() === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ERROR, null, null,
