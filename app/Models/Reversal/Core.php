@@ -985,11 +985,11 @@ class Core extends Base\Core
 
         if ($transfer->getSourceType() === E::ORDER)
         {
-            $payment = $transfer->source->payments()->where('status', 'captured')->first();
+            $payment = $transfer->source->payments()->where(Payment\Entity::STATUS, Payment\Status::CAPTURED)->first();
 
             if($payment === null)
             {
-                $payment = $transfer->source->payments()->where('status', 'refunded')->first();
+                $payment = $transfer->source->payments()->where(Payment\Entity::STATUS, Payment\Status::REFUNDED)->first();
             }
 
         }
@@ -1000,7 +1000,18 @@ class Core extends Base\Core
 
         $merchant = $payment->merchant;
 
-        $refund = (new Payment\Processor\Processor($merchant))->refundPaymentViaMerchant($payment->getPublicId(), $input);
+        if ($merchant->isFeatureEnabled(Feature\Constants::DISABLE_REFUNDS) === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REFUND_NOT_ALLOWED);
+        }
+
+        if (($merchant->isFeatureEnabled(Feature\Constants::DISABLE_CARD_REFUNDS) === true) and
+            ($payment->getMethod() === Payment\Method::CARD))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CARD_REFUND_NOT_ALLOWED);
+        }
+
+        $refund = (new Payment\Processor\Processor($merchant))->refundCapturedPayment($payment, $input, null, null, 'off');
 
         $reversal->customerRefund()->associate($refund);
 

@@ -11,12 +11,14 @@ use RZP\Constants\Entity;
 use RZP\Models\User\Role;
 use RZP\Http\RequestHeader;
 use RZP\Jobs\TransferProcess;
+use RZP\Tests\Traits\MocksRazorx;
 use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\TestCase;
 use RZP\Constants\Mode as EnvMode;
 use RZP\Jobs\Transfers\TransferRecon;
 use RZP\Models\Merchant\RefundSource;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Tests\Functional\Partner\Constants;
 use RZP\Tests\Functional\Partner\PartnerTrait;
@@ -31,6 +33,7 @@ use RZP\Models\Admin\Permission\Name as PermissionName;
 
 class TransferTest extends TestCase
 {
+    use MocksRazorx;
     use MocksSplitz;
     use PaymentTrait;
     use PartnerTrait;
@@ -1086,6 +1089,101 @@ class TransferTest extends TestCase
         $this->assertEquals($marketplaceOldCredits - $amountReversed, $marketplaceNewCredits);
     }
 
+    public function testLinkedAccountReversalAndCustomerRefundWithScroogeRazorxExpsEnabled()
+    {
+        $testName = 'testLinkedAccountReversalAndCustomerRefund';
+
+        $data = $this->setUpForReversalsTests($testName, RefundSource::CREDITS, RefundSource::CREDITS);
+
+        // Setting amount to 1000 to perform full refund.
+        $data['request']['content']['amount'] = 1000;
+        $data['response']['content']['amount'] = 1000;
+
+        // To mock all razorx experiments with 'on' as mocking more than one razorx explicitly is not possible
+        $this->mockRazorxTreatmentV2('', 'on');
+
+        $amountReversed = $data['request']['content']['amount'];
+
+        $marketplaceOldBalance = $this->getBalance('10000000000000');
+
+        $marketplaceOldCredits = $this->getBalanceForType('10000000000000', 'refund_credits');
+
+        $accOldCredits = $this->getBalanceForType($this->linkedAccountId, 'refund_credits');
+
+        $this->setAuthForLinkedAccount();
+
+        $this->startTest($data);
+
+        $marketplaceNewCredits = $this->getBalanceForType('10000000000000', 'refund_credits');
+
+        $accNewCredits = $this->getBalanceForType($this->linkedAccountId, 'refund_credits');
+
+        $reversal = $this->getLastEntity('reversal', true);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $refundId = substr($refund['id'], strpos($refund['id'], "_") + 1);
+
+        $this->assertEquals($reversal['merchant_id'], '10000000000000');
+
+        $this->assertEquals($reversal['customer_refund_id'], 'rfnd_' . $refundId);
+
+        $this->assertEquals($reversal['initiator_id'], 'acc_' . $this->linkedAccountId);
+
+        $this->assertEquals($accOldCredits - $amountReversed, $accNewCredits);
+
+        $this->assertEquals($marketplaceOldBalance + $amountReversed, $this->getBalance('10000000000000'));
+
+        $this->assertEquals($marketplaceOldCredits - $amountReversed, $marketplaceNewCredits);
+    }
+
+    public function testLinkedAccountReversalAndCustomerRefundWithScroogeRazorxExpsDisabled()
+    {
+        $testName = 'testLinkedAccountReversalAndCustomerRefund';
+
+        $data = $this->setUpForReversalsTests($testName, RefundSource::CREDITS, RefundSource::CREDITS);
+
+        // Setting amount to 1000 to perform full refund.
+        $data['request']['content']['amount'] = 1000;
+        $data['response']['content']['amount'] = 1000;
+
+        $this->mockRazorxTreatmentV2(RazorxTreatment::SCROOGE_INTERNATIONAL_REFUND, 'control');
+
+        $amountReversed = $data['request']['content']['amount'];
+
+        $marketplaceOldBalance = $this->getBalance('10000000000000');
+
+        $marketplaceOldCredits = $this->getBalanceForType('10000000000000', 'refund_credits');
+
+        $accOldCredits = $this->getBalanceForType($this->linkedAccountId, 'refund_credits');
+
+        $this->setAuthForLinkedAccount();
+
+        $this->startTest($data);
+
+        $marketplaceNewCredits = $this->getBalanceForType('10000000000000', 'refund_credits');
+
+        $accNewCredits = $this->getBalanceForType($this->linkedAccountId, 'refund_credits');
+
+        $reversal = $this->getLastEntity('reversal', true);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $refundId = substr($refund['id'], strpos($refund['id'], "_") + 1);
+
+        $this->assertEquals($reversal['merchant_id'], '10000000000000');
+
+        $this->assertEquals($reversal['customer_refund_id'], 'rfnd_' . $refundId);
+
+        $this->assertEquals($reversal['initiator_id'], 'acc_' . $this->linkedAccountId);
+
+        $this->assertEquals($accOldCredits - $amountReversed, $accNewCredits);
+
+        $this->assertEquals($marketplaceOldBalance + $amountReversed, $this->getBalance('10000000000000'));
+
+        $this->assertEquals($marketplaceOldCredits - $amountReversed, $marketplaceNewCredits);
+    }
+
     public function testLinkedAccountReversalAndCustomerRefundOnPaymentForWhichPartialRefundNotSupported()
     {
         $testData = $this->setUpForReversalsTests('testLinkedAccountReversalAndCustomerRefund', RefundSource::BALANCE, RefundSource::BALANCE);
@@ -1093,7 +1191,7 @@ class TransferTest extends TestCase
         foreach (['hdfc_debit_emi', 'kotak_debit_emi', 'indusind_debit_emi'] as $gateway)
         {
             $data = $testData;
-            
+
             $payment = $this->getTransferPayment($data['response']['content']['transfer_id']);
 
             $this->fixtures->edit('payment', $payment['id'], ['gateway' => $gateway]);
