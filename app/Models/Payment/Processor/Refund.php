@@ -108,6 +108,14 @@ trait Refund
 
         $isPaymentDisputed = ($payment->isDisputed() === true);
 
+        $isRefundForAuthorizedPayment = false;
+
+        if (isset($input[RefundConstants::REFUND_AUTHORIZED_PAYMENT]))
+        {
+            $isRefundForAuthorizedPayment = ($input[RefundConstants::REFUND_AUTHORIZED_PAYMENT] === true);
+            unset($input[RefundConstants::REFUND_AUTHORIZED_PAYMENT]);
+        }
+
         // either the field is set in the input, or if passed by arg, then it's not a disputed payment
         if ((isset($input[RefundConstants::UNDISPUTED_PAYMENT]) and $input[RefundConstants::UNDISPUTED_PAYMENT] === true) or
             $unDisputedPayment === true)
@@ -136,7 +144,7 @@ trait Refund
 
         try
         {
-            $this->processRefund($input);
+            $this->processRefund($input, $isRefundForAuthorizedPayment);
 
             $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_AUTO_REFUND_SUCCESS, $payment);
         }
@@ -832,6 +840,9 @@ trait Refund
                 'input'         => $input,
             ]);
 
+        // this param will help identify the authorized refund flow
+        $input[RefundConstants::REFUND_AUTHORIZED_PAYMENT] = true;
+
          if ($this->isNonMerchantRefundRequestV1_1($payment) === true)
          {
              $this->trace->info(
@@ -840,9 +851,6 @@ trait Refund
                  'payment_id' => $payment->getId(),
                  'input'      => $input,
              ]);
-
-             // this param will help identify the authorized refund flow
-             $input['refund_authorized'] = true;
 
              // Route refund creation to scrooge
              return $this->newRefundV2Flow($payment, $input);
@@ -2204,7 +2212,7 @@ trait Refund
         return $data;
     }
 
-    protected function processRefund($input = [])
+    protected function processRefund($input = [], $isRefundForAuthorizedPayment = false)
     {
         $payment = $this->refund->payment;
 
@@ -2218,7 +2226,7 @@ trait Refund
         // in cases if any alter query or any other operation is running on refunds table and
         // refund save takes lot more time that expected. For such cases, keeping mutex lock to 10 minutes.
         //
-        $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment)
+        $this->mutex->acquireAndRelease($payment->getId(), function() use ($isRefundForAuthorizedPayment, $data, $payment)
         {
             if ($payment->isExternal() == false)
             {
@@ -2240,12 +2248,11 @@ trait Refund
                     ErrorCode::BAD_REQUEST_TOTAL_REFUND_AMOUNT_IS_GREATER_THAN_THE_PAYMENT_AMOUNT);
             }
 
-            $this->repo->transaction(function()
-            {
+            $this->repo->transaction(function() use ($isRefundForAuthorizedPayment) {
                 $this->recordTransactionForRefund();
 
                 // update the payment entity for refund
-                $this->updatePaymentRefunded();
+                $this->updatePaymentRefunded($isRefundForAuthorizedPayment);
             });
 
             $this->callRefundFunctionOnScrooge($this->refund, $data);
@@ -2563,7 +2570,7 @@ trait Refund
         return Payment\Gateway::supportsReverse($gateway, $gatewayAcquirer);
     }
 
-    protected function updatePaymentRefunded()
+    protected function updatePaymentRefunded($isRefundForAuthorizedPayment = false)
     {
         //
         // Indicates inverse of buggy case where refund entity is already present
@@ -2579,8 +2586,11 @@ trait Refund
             $this->payment->refundAmount($amount, $baseAmount);
         }
 
-        $this->repo->transaction(function()
-        {
+        $this->repo->transaction(function() use ($isRefundForAuthorizedPayment) {
+            if ($this->payment->isExternal() === true)
+            {
+                $this->payment->setAttribute(RefundConstants::REFUND_AUTHORIZED_PAYMENT, $isRefundForAuthorizedPayment);
+            }
             $this->repo->saveOrFail($this->payment);
 
             $this->repo->saveOrFail($this->refund);

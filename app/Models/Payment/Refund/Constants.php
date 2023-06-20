@@ -34,6 +34,7 @@ class Constants
     const MIN_CURRENCY_AMOUNT                  = 'min_currency_amount';
     const REFUND_GATEWAY                       = 'refund_gateway';
     const UNDISPUTED_PAYMENT                   = 'undisputed_payment';
+    const REFUND_AUTHORIZED_PAYMENT            = 'refund_authorized_payment';
 
     /**
      * We get the last 10 days refunds created of a gateway.

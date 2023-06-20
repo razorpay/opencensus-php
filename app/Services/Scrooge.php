@@ -611,10 +611,10 @@ class Scrooge
             unset($input['payment_page']);
         }
 
-        if (isset($input['refund_authorized']) === true)
+        if (isset($input[RefundConstants::REFUND_AUTHORIZED_PAYMENT]) === true)
         {
-            $customheader[self::REFUND_ONLY_UNCAPTURED] = ($input['refund_authorized'] === true);
-            unset($input['refund_authorized']);
+            $customheader[self::REFUND_ONLY_UNCAPTURED] = ($input[RefundConstants::REFUND_AUTHORIZED_PAYMENT] === true);
+            unset($input[RefundConstants::REFUND_AUTHORIZED_PAYMENT]);
         }
 
         $this->setCustomHeaders($customheader);

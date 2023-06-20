@@ -560,7 +560,7 @@ class PGRouter
 
                 $endpoint = 'v1/payments/'.$id;
 
-                return $this->sendRequest($endpoint, Requests::POST, $input, false);
+                return $this->sendRequest($endpoint, Requests::POST, $input, true);
         }
         return null;
     }
