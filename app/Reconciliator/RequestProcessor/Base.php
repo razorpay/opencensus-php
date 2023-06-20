@@ -265,7 +265,7 @@ class Base extends Core
         self::NETBANKING_UCO           => ['hoe_banking.calcutta@ucobank.co.in'],
         self::CARDLESS_EMI_EARLYSALARY => [],
         self::NETBANKING_SARASWAT      => [],
-        self::EMERCHANTPAY             => ['aithal@emerchantpay.com'],
+        self::EMERCHANTPAY             => ['shruthi.krishna@emerchantpay.com'],
         self::NETBANKING_HDFC_CORP     => [],
         self::NETBANKING_DBS           => [],
         self::WALLET_BAJAJ             => ['art-recon@razorpay.com', 'kishor.kangune@bajajfinserv.in'],
