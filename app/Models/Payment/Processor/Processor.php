@@ -666,6 +666,10 @@ class Processor
 
             if ($this->isRearchBVTRequest() === true)
             {
+                if(empty($input[Payment\Entity::TOKEN]) === false)
+                {
+                    $this->preProcessTokenisedPaymentRequestForRearch($input, $merchant);
+                }
                 return true;
             }
 
@@ -1164,6 +1168,94 @@ class Processor
         $input[E::NETWORK_REFERENCE_ID ]=  $nri;
 
         return $input;
+    }
+
+    private function preProcessTokenisedPaymentRequestForRearch(&$input, $merchant) : bool
+    {
+        $tokenId = $input[Payment\Entity::TOKEN];
+
+        try {
+            // First fetch the relevant customer (global or local)
+            list($customer, $customerApp) = (new Customer\Core)->getCustomerAndApp(
+                $input, $merchant, false);
+            if ($customer !== null)
+            {
+                $token = (new Token\Core)->getByTokenIdAndCustomer($tokenId, $customer);
+            }
+            else
+            {
+                $token = (new Token\Core)->getByTokenIdAndMerchant($tokenId, $merchant);
+            }
+
+            if ($token !== null && $token->isLocal() && $token->isRecurring() === false)
+            {
+                $this->trace->info(
+                    TraceCode::PAYMENT_PROCESS_FROM_SAVED_LOCAL,
+                    [
+                        'token_id' => $input[Payment\Entity::TOKEN]
+                    ]);
+
+                $card = $this->repo->card->fetchForToken($token);
+
+                //check if card is not null
+                if(empty($card) === true)
+                {
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "token_card_empty",
+                        'merchant_id' => $merchant->getId(),
+                    ]);
+
+                    return false;
+                }
+                if ($card->getVault() === Card\Vault::PROVIDERS || $card->getVault() === Card\Vault::AXIS)
+                {
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "vault_providers_or_axis",
+                        'merchant_id' => $merchant->getId(),
+                    ]);
+
+                    return false;
+                }
+                if ($card->isNetworkTokenisedCard() === true)
+                {
+                    $this->trace->info(TraceCode::TOKENISED_CARD_PAYMENT_ROUTING_INFO, [
+                        'tokenId'       => $token->getId(),
+                        'isGlobal'      => $token->isGlobal(),
+                        'routedThrough' => 'tokenisedCard',
+                        'cardInfo'      => [
+                            'issuer'    => $card->getIssuer(),
+                            'network'   => $card->getNetworkCode(),
+                            'type'      => $card->getType(),
+                        ],
+                    ]);
+                    $cryptogram = (new Card\CardVault)->fetchCryptogramForPayment($card->getVaultToken(), $merchant);
+                    $cardInput = $this->getCardInputForRearch($cryptogram, $card, $input, $token);
+                    //modify input for cards
+                    $input[Payment\Entity::CARD] = $cardInput;
+                    $input[Payment\Entity::TOKEN] = $token->getId();
+                    return true;
+                }
+            } else {
+                $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                    'reason' => "saved_card_not_network_tokenized",
+                    'merchant_id' => $merchant->getId(),
+                ]);
+                return false;
+            }
+        }
+        catch (\Throwable $e)
+        {
+            //If anything fails while using saved card token then fallback to api flow
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::REARCH_CRITIERIA_SAVE_CARD_CHECK_FAILED,
+                []);
+
+            return false;
+        }
+
+        return false;
     }
 
 
