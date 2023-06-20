@@ -15400,6 +15400,7 @@ class Route
             'payment_fetch_card_metadata',
             'update_token_on_authorized',
             'internal_token_create',
+            'internal_transactions'
         ],
 
         'nbplus_payment_service' => [

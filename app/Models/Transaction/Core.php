@@ -176,7 +176,7 @@ class Core extends Base\Core
         return [$txn, $feesSplit];
     }
 
-    public function createUpdateLedgerTransaction(Payment\Entity $payment)
+    public function createUpdateLedgerTransaction(Payment\Entity $payment, $txnId =null)
     {
         $merchant =  $this->repo->merchant->findByPublicId($payment->getMerchantId());
 
@@ -196,9 +196,11 @@ class Core extends Base\Core
                 return $paymentTxn;
             }
 
-            $txn =  $this->createTransactionForCapturedPayment($payment);
+            $txn =  $this->createTransactionForCapturedPayment($payment, $txnId);
 
-            if($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+            //For rearch card payments, journals are created in payments-card microservice in reverse-shadow mode
+            if(($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) and
+                ($payment->getCpsRoute() !== Payment\Entity::REARCH_CARD_PAYMENT_SERVICE))
             {
                 $this->createPaymentLedgerEntriesInReverseShadow($payment);
             }
@@ -225,7 +227,24 @@ class Core extends Base\Core
             throw new Exception\BadRequestValidationFailureException("Payment Status not in correct status for transaction creation");
         }
 
-        $this->dispatchUpdatedTransactionToCPS($txn, $payment);
+        // Note: If pg_ledger_reverse_shadow flag is enabled for merchant and payment is a rearch card payment,
+        // then we need not dispatch updated transaction to CPS as this is a sync call in payments-card microservice for reverse-shadow mode
+        if(($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true) and
+            ($payment->getCpsRoute() === Payment\Entity::REARCH_CARD_PAYMENT_SERVICE))
+        {
+            $this->trace->info(
+                TraceCode::TRANSACTION_NOT_DISPATCHED_FOR_REARCH_CARD_PAYMENT_IN_REVERSE_SHADOW,
+                [
+                    'payment_id'     => $payment->getId(),
+                    'transaction_id' => $txn->getId(),
+                    'merchant_id'        => $merchant->getId(),
+                ]
+            );
+        }
+        else
+        {
+            $this->dispatchUpdatedTransactionToCPS($txn, $payment);
+        }
 
         return $txn;
     }
@@ -325,11 +344,11 @@ class Core extends Base\Core
         return $txn;
     }
 
-    private function createTransactionForCapturedPayment(Payment\Entity $payment)
+    private function createTransactionForCapturedPayment(Payment\Entity $payment, $txnId = null)
     {
-        return $this->repo->transaction(function() use ($payment)
+        return $this->repo->transaction(function() use ($payment, $txnId)
         {
-            list($txn, $feesSplit) = $this->createOrUpdateFromPaymentCaptured($payment);
+            list($txn, $feesSplit) = $this->createOrUpdateFromPaymentCaptured($payment, $txnId);
 
             // $merchantBalance is required in the caller function only if lateBalanceUpdate is set to true.
 

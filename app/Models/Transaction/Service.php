@@ -432,6 +432,13 @@ class Service extends Base\Service
     {
         $payment = new Payment\Entity();
 
+        $txnId = null;
+
+        if (isset($input['transaction_id']) === true)
+        {
+            $txnId = $input['transaction_id'];
+        }
+
         if (isset($input['payment']['card']) === true)
         {
             $card = (new Card\Entity)->forceFill($input['payment']['card']);
@@ -452,11 +459,11 @@ class Service extends Base\Service
 
         return $this->mutex->acquireAndRelease(
             $resource,
-            function () use ($payment)
+            function () use ($payment, $txnId)
             {
                 try
                 {
-                    $txn = (new Transaction\Core)->createUpdateLedgerTransaction($payment);
+                    $txn = (new Transaction\Core)->createUpdateLedgerTransaction($payment, $txnId);
                 }
                 catch (\Throwable $ex)
                 {
