@@ -701,7 +701,7 @@ class Yesb extends Base
      */
     protected function getCacheKeyForFileNumber($type, $utilityCode): string
     {
-        $date = Carbon::now(Timezone::IST)->startOfDay()->timestamp;
+        $date = $this->getDate();
 
         return self::FILE_CACHE_KEY . "_" . $utilityCode . "_" . $this->mode . "_" . $date . "_" . $type;
     }
@@ -723,7 +723,9 @@ class Yesb extends Base
      */
     protected function getDate(): string
     {
-        return Carbon::now(Timezone::IST)->format('dmY');
+        $offset = (int) $this->gatewayFile->getSubType();
+        
+        return Carbon::now(Timezone::IST)->addDays($offset)->format('dmY');
     }
 
     /**
