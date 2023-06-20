@@ -104,7 +104,7 @@ abstract class Base extends BaseProcessor
         $this->updatePayment($payment, $content);
     }
 
-    public function updateTokenRegistration(Payment\Entity $payment)
+    protected function updateTokenRegistration(Payment\Entity $payment)
     {
         if ($payment->hasInvoice() === true)
         {
@@ -133,7 +133,7 @@ abstract class Base extends BaseProcessor
         return $this->processFailedPayment($payment, $content);
     }
 
-    public function processFailedPayment(Payment\Entity $payment, array $content)
+    protected function processFailedPayment(Payment\Entity $payment, array $content)
     {
         if ($payment->isFailed() === true)
         {

@@ -1023,9 +1023,8 @@ class Core extends Base\Core
 
             return;
         }
-        // if token is received rejected in ack files, not marking it acknowledged in this case
-        if ((empty($gatewayData[Entity::ACKNOWLEDGED_AT]) === false)
-                and ($gatewayRecurringStatus !== RecurringStatus::REJECTED))
+
+        if (empty($gatewayData[Entity::ACKNOWLEDGED_AT]) === false)
         {
             $acknowledgedAt = $gatewayData[Entity::ACKNOWLEDGED_AT];
 

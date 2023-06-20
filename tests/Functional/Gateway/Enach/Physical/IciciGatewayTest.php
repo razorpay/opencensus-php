@@ -592,20 +592,20 @@ class IciciGatewayTest extends TestCase
 
         $completedBatch = $this->getLastEntity('batch', true);
         $this->assertEquals('processed', $completedBatch['status']);
-        $this->assertEquals(1, $completedBatch['success_count']);
-        $this->assertEquals(0, $completedBatch['failure_count']);
+        $this->assertEquals(0, $completedBatch['success_count']);
+        $this->assertEquals(1, $completedBatch['failure_count']);
 
         $payment = $this->getDbLastEntity('payment');
 
-        $this->assertEquals('failed', $payment['status']);
+        $this->assertEquals('created', $payment['status']);
 
         $token = $this->getDbLastEntityToArray('token');
 
         $this->assertNull($token['gateway_token']);
-        $this->assertEquals('rejected', $token['recurring_status']);
+        $this->assertEquals('initiated', $token['recurring_status']);
         $this->assertEquals(false, $token['recurring']);
         $this->assertNull($token['acknowledged_at']);
-        $this->assertNotNull($token['recurring_failure_reason']);
+        $this->assertNull($token['recurring_failure_reason']);
     }
 
     public function testGatewaySuccessRegistrationAckFileRetry()

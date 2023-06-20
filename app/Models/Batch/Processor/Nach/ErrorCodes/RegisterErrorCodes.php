@@ -87,10 +87,6 @@ class RegisterErrorCodes
     const M092 = 'Signed Content does not tally with data mandate';
     const M002 = 'Drawers signature illegible';
     const M071 = 'Property Seal required';
-    const M096 = 'Instrument out dated, stale';
-    const R001 = 'Range between mandate date and current business date exceeds limit days defined';
-    const R002 = 'Mandate representation is not allowed! max allowed limit exceeded';
-    const R003 = 'date of mandate should be before current business date';
 
     protected static $registerErrorCodeDescMappings = [
         self::C003 => 'Account mentioned on the mandate is closed to the destination bank\'s end',
@@ -173,10 +169,6 @@ class RegisterErrorCodes
         self::M092 => 'Signature Mismatch',
         self::M002 => 'Illegible drawer signature. Please note that this reason would soon be discontinued',
         self::M071 => 'Company round stamp required',
-        self::M096 => 'Date of mandate has exceeded 120 working days. Kindly create a new mandate',
-        self::R001 => 'Range between mandate date and current business date exceeds 120 working days. Create a new mandate',
-        self::R002 => 'Mandate representation is not allowed! max allowed limit exceeded. Kindly retry',
-        self::R003 => 'Date of mandate should be before current business date',
     ];
 
     protected static $registerInternalErrorCodeMappings = [
@@ -260,10 +252,6 @@ class RegisterErrorCodes
         self::M092 => ErrorCode::BAD_REQUEST_MISMATCH_SIGNATURE,
         self::M002 => ErrorCode::BAD_REQUEST_MISMATCH_SIGNATURE,
         self::M071 => ErrorCode::BAD_REQUEST_COMPANY_FOR_STAMP_MISSING,
-        self::M096 => ErrorCode::BAD_REQUEST_MANDATE_CREATION_OUTDATED,
-        self::R001 => ErrorCode::BAD_REQUEST_MANDATE_CREATION_OUTDATED,
-        self::R002 => ErrorCode::BAD_REQUEST_MANDATE_REPRESENTATION_LIMIT_EXCEEDED,
-        self::R003 => ErrorCode::BAD_REQUEST_FUTURE_MANDATE_CREATION_DATE,
 
     ];
 

@@ -9,7 +9,6 @@ use RZP\Models\FileStore\Type;
 use RZP\Models\Payment\Gateway;
 use RZP\Exception\BadRequestException;
 use RZP\Gateway\Enach\Npci\Physical\Icici\Registration\Status;
-use RZP\Gateway\Enach\Npci\Physical\Icici\Registration\ErrorCodes;
 
 class NachIcici extends Base
 {
@@ -31,65 +30,51 @@ class NachIcici extends Base
 
         $errorDesc = (string)$acceptDetails->AccptncRslt->RjctRsn->Prtry;
 
-        $tokenStatus = $this->getTokenStatus($accepted);
+        $tokenStatus = $this->getTokenStatus($accepted, $paymentId, $errorDesc);
 
         return [
-            self::GATEWAY_TOKEN      => $umrn,
-            self::TOKEN_STATUS       => $tokenStatus,
-            self::PAYMENT_ID         => $paymentId,
-            self::GATEWAY_ERROR_CODE => $errorDesc,
-            self::TOKEN_ERROR_CODE   => $this->getTokenErrorMessage($tokenStatus, [self::GATEWAY_ERROR_CODE => $errorDesc])
+            self::GATEWAY_TOKEN => $umrn,
+            self::TOKEN_STATUS  => $tokenStatus,
+            self::PAYMENT_ID    => $paymentId,
         ];
     }
 
-    protected function getTokenStatus($status): string
+    protected function getTokenStatus($status, $paymentId, $error): string
     {
         if (Status::isRegistrationSuccess($status) === true)
         {
             return Token\RecurringStatus::INITIATED;
         }
-        return Token\RecurringStatus::REJECTED;
-    }
-
-    protected function getTokenErrorMessage(string $tokenStatus, array $entry)
-    {
-        if ($tokenStatus === Token\RecurringStatus::INITIATED)
-        {
-            return null;
-        }
-        return $this->getApiErrorCode($entry);
-    }
-
-    protected function getApiErrorCode(array $content): string
-    {
-        return ErrorCodes::getRegisterInternalErrorCode($content[self::GATEWAY_ERROR_CODE]);
-    }
-
-    protected function validateParsedData(array $parsedData)
-    {
-        if ((empty($parsedData[self::PAYMENT_ID]) === true) or (empty($parsedData[self::TOKEN_STATUS]) === true))
+        else
         {
             throw new BadRequestException(
-                ErrorCode::GATEWAY_ERROR_INVALID_DATA,
+                ErrorCode::BAD_REQUEST_NACH_REGISTRATION_FAILED,
                 null,
                 [
-                    'data'       => $parsedData,
-                ],
-                'Either payment id or token status is not valid'
+                    'gateway'    => $this->gateway,
+                    'payment_id' => $paymentId,
+                    'error'      => $error,
+                ]
             );
         }
+    }
 
-        if((($parsedData[self::TOKEN_STATUS] === Token\RecurringStatus::INITIATED) and (empty($parsedData[self::GATEWAY_TOKEN]) === true))
-            or (($parsedData[self::TOKEN_STATUS] === Token\RecurringStatus::REJECTED) and (empty($parsedData[self::TOKEN_ERROR_CODE]) === true)))
+    protected function validateParsedData($data)
+    {
+        foreach ($data as $key => $value)
         {
-            throw new BadRequestException(
-                ErrorCode::GATEWAY_ERROR_INVALID_DATA,
-                null,
-                [
-                    'data'       => $parsedData,
-                ],
-                'umrn or error code not there as per token status'
-            );
+            if (empty($value) === true)
+            {
+                throw new BadRequestException(
+                    ErrorCode::GATEWAY_ERROR_INVALID_DATA,
+                    $key,
+                    [
+                        'gateway'       => $this->gateway,
+                        'invalid_field' => $key,
+                        'field_value'   => $value,
+                    ]
+                );
+            }
         }
     }
 

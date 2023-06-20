@@ -33,9 +33,6 @@
         <SeqTp>RCUR</SeqTp>
         <Frqcy>ADHO</Frqcy>
         <FrstColltnDt>2020-02-16</FrstColltnDt>
-        <Drtn>
-          <FrDt>2020-02-11</FrDt>
-        </Drtn>
       </Ocrncs>
       <MaxAmt Ccy="INR">10000.00</MaxAmt>
       <Cdtr>

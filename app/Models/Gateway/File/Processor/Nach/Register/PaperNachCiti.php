@@ -469,7 +469,7 @@ class PaperNachCiti extends Base
             }
             catch (\Throwable $exception){}
 
-            [$url, $formGenerationDate] = (new SubscriptionRegistration\Core())->getUploadedFileUrlByPaymentForNachMethod($payment);
+            $url = (new SubscriptionRegistration\Core())->getUploadedFileUrlByPaymentForNachMethod($payment);
 
             $filePath = $utilityCode . DIRECTORY_SEPARATOR . $paymentId .'.jpg';
 
@@ -477,9 +477,8 @@ class PaperNachCiti extends Base
             {
                 $this->trace->info(TraceCode::GATEWAY_FILE_ERROR_GENERATING_DATA,
                     [
-                        'payment_id'    => $paymentId,
-                        'url'           => $url,
-                        'formCreateAt'  => $formGenerationDate
+                        'payment_id' => $paymentId,
+                        'url'        => $url,
                     ]);
 
                 continue;

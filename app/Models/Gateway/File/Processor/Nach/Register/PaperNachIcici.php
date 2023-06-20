@@ -304,9 +304,9 @@ class PaperNachIcici extends Base
 
         $jpgFileName = $baseFileName . '_detailfront.jpg';
 
-        $formGenerationDate = $this->generateImages($token, $dirName, $tiffFileName, $jpgFileName);
+        $this->generateImages($token, $dirName, $tiffFileName, $jpgFileName);
 
-        $this->generateXml($token, $dirName, $baseFileName, $formGenerationDate);
+        $this->generateXml($token, $dirName, $baseFileName);
 
         // zip file can contain max 150 files (50 registrations - 1 xml, 2 images)
         if (($count % $this->zipFileSize) === ($this->zipFileSize - 1))
@@ -320,9 +320,6 @@ class PaperNachIcici extends Base
         return $dirName;
     }
 
-    /*
-     * Generates the image and returns the date when paper mandate form was generated
-     */
     protected function generateImages($token, $dirName, $tiffName, $jpgName)
     {
         $paymentId = $token['payment_id'];
@@ -335,7 +332,7 @@ class PaperNachIcici extends Base
         }
         catch (\Throwable $exception){}
 
-        [$url, $formGenerationDate] = (new SubscriptionRegistration\Core())->getUploadedFileUrlByPaymentForNachMethod($payment);
+        $url = (new SubscriptionRegistration\Core())->getUploadedFileUrlByPaymentForNachMethod($payment);
 
         $filePath  = $dirName . DIRECTORY_SEPARATOR;
 
@@ -381,11 +378,9 @@ class PaperNachIcici extends Base
 
         Storage::put($filePath . $jpgName ,  $jpgFileContents);
         Storage::put($filePath . $tiffName, $tiffFileContents);
-
-        return $formGenerationDate;
     }
 
-    protected function generateXml($token, $dirName, $fileName, $formGenerationEpoch)
+    protected function generateXml($token, $dirName, $fileName)
     {
         $merchant = $token->merchant;
 
@@ -452,10 +447,6 @@ class PaperNachIcici extends Base
         $occurences->addChild(RequestFields::FREQUENCY, Constants::ADHOC);
 
         $occurences->addChild(RequestFields::FIRST_COLLECTION_DATE, $firstCollectionDate);
-
-        $formGenerationDate = Carbon::createFromTimestamp($formGenerationEpoch, Timezone::IST)->format('Y-m-d');
-
-        ($occurences->addChild(RequestFields::DRTN))->addChild(RequestFields::FORM_DATE, $formGenerationDate);
 
         $endDate = $token->getExpiredAt();
         if (empty($endDate) === false)
