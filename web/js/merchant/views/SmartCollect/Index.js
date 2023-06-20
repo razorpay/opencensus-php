@@ -14,7 +14,9 @@ import QuickGuide from './QuickGuide';
 import PaymentsList from './Payments/List';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import VirtualAccountsList from './VirtualAccounts/List';
-import BlockOnBoarding from './BlockOnBoarding';
+import BlockOnBoarding, {
+  BlockCustomerFeeBearerOnboarding,
+} from 'merchant/components/BlockOnBoarding';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
@@ -22,7 +24,8 @@ import BatchExpiryUpdate from './BatchExpiryUpdate/List';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { fetchFeatureStatus } from 'merchant/reducers/config';
 import { updateVirtualAccountBulkEditStatus } from 'merchant/reducers/virtualaccounts';
-
+import { Alert, Box } from '@razorpay/blade/components';
+import { FEE_BEARER_TYPES } from 'merchant/constants/feeBearer';
 @connect(
   (state) => {
     return {
@@ -64,11 +67,26 @@ export default class SmartCollectContainer extends React.Component {
   render() {
     const { user } = this.props;
     const { isQuickGuideOpen, showOnboarding } = this.props.VAProductOnBoarding;
+    const feeBearer = user.merchant.fee_bearer;
+    const isCustomerFeeBearer = feeBearer === FEE_BEARER_TYPES.CUSTOMER;
+    const isSmartCollectDisabled = !user.isVirtualAccountsEnabled;
 
-    if (user.isUnregisteredBusiness && !user.isVirtualAccountsEnabled) {
+    if (user.isUnregisteredBusiness && isSmartCollectDisabled) {
       return (
-        <div class="SmartCollect-Container">
-          <BlockOnBoarding />
+        <div className="SmartCollect-Container">
+          <BlockOnBoarding
+            title="Smart Collect"
+            description="This feature is not supported for your business type."
+          />
+        </div>
+      );
+    }
+
+    // in case of customer fee bearer if smart-collect is disabled for the user, he should not be able to access onboarding to turn on the smart-collect
+    if (isCustomerFeeBearer && isSmartCollectDisabled) {
+      return (
+        <div className="SmartCollect-Container text-justified">
+          <BlockCustomerFeeBearerOnboarding feature="Smart Collect" />
         </div>
       );
     }
@@ -78,16 +96,16 @@ export default class SmartCollectContainer extends React.Component {
     }
 
     return (
-      <div class="SmartCollect-Container">
+      <div className="SmartCollect-Container">
         <div className="banner-container">
           <ShowWhen additionalCondition={(usr) => usr.isVAAccountOnSCMigration}>
             <AnnouncementBanner
-              class="rewards-anc"
+              className="rewards-anc"
               theme="danger"
               title="Customer Identifier Expiring"
               card_id="sc-yes-bank-monotorium"
             >
-              <span class="display-inline">
+              <span className="display-inline">
                 As per new RBI guidelines, your Customer Identifier details have been updated. Share
                 the new customer identifier details with your customers
               </span>{' '}
@@ -96,6 +114,18 @@ export default class SmartCollectContainer extends React.Component {
         </div>
 
         {isQuickGuideOpen && <QuickGuide className="QuickGuide-v2" />}
+        {isCustomerFeeBearer && (
+          <Box padding="spacing.6" paddingBottom="spacing.0">
+            <Alert
+              contrast="low"
+              description="This product is not supported for merchants accepting payments as per the convenience fee model. Any payments accepted via QR will be auto refunded."
+              intent="notice"
+              title="Smart collect is not available for you"
+              isDismissible={false}
+              isFullWidth
+            />
+          </Box>
+        )}
 
         <ErrorBoundary resetOnProps>
           <Switch>

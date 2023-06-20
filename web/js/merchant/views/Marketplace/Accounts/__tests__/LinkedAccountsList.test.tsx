@@ -1,21 +1,13 @@
 import React from 'react';
 import { render, screen, waitFor, server } from 'common/services/test/test-utils';
 import AccountsList from 'merchant/views/Marketplace/Accounts/List';
-import { accountsListSuccess } from './mocks/handlers';
-import { accountsData } from './mocks/fixtures';
-
-const location = {
-  search: '',
-};
-
-const state = {
-  session: {
-    user: {
-      isAllowedEdit: true,
-      isRouteLinkedAccountCreationDisabled: true,
-    },
-  },
-};
+import { accountsListSuccess } from 'merchant/views/Marketplace/Accounts/__tests__/mocks/handlers';
+import {
+  accountsData,
+  location,
+} from 'merchant/views/Marketplace/Accounts/__tests__/mocks/fixtures';
+import { getInitialReduxState } from 'merchant/views/mocks/fixtures';
+import { FEE_BEARER_TYPES } from 'merchant/constants/feeBearer';
 
 jest.mock('merchant/views/Marketplace/Accounts/components/AccountsList', () => ({
   __esModule: true,
@@ -40,8 +32,13 @@ jest.mock('merchant/components/ShowWhen', () => ({
   showWhenUtil: ({ children }) => <div>{children}</div>,
 }));
 
+const defaultReduxState = getInitialReduxState({
+  isAllowedEdit: true,
+  isRouteLinkedAccountCreationDisabled: true,
+});
+
 describe('Reversal List', () => {
-  const renderApp = () => {
+  const renderApp = (state = defaultReduxState) => {
     render(<AccountsList location={location} />, { initialState: state });
   };
 
@@ -52,5 +49,29 @@ describe('Reversal List', () => {
     await waitFor(() => {
       expect(screen.getByText(accountsData.items[0].id)).toBeInTheDocument();
     });
+  });
+
+  test('should render disabled Add account button when fee_bearer is customer', async () => {
+    server.use(accountsListSuccess());
+    const reduxState = { ...defaultReduxState };
+    reduxState.session.user.merchant.fee_bearer = FEE_BEARER_TYPES.CUSTOMER;
+    renderApp(reduxState);
+    expect(screen.getByTestId('spinner')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(accountsData.items[0].id)).toBeInTheDocument();
+    });
+    expect(screen.getByRole('button', { name: 'Add Account' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add Account' })).toBeDisabled();
+    expect(
+      screen.getByText(
+        'Route is not supported for merchants accepting payments as per the convenience fee model. To enable, click',
+        { exact: false },
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'here' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'here' })).toHaveAttribute(
+      'href',
+      '/app/payments-and-refunds-settings/capture-refund-settings',
+    );
   });
 });

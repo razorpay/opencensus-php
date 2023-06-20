@@ -1,6 +1,5 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { NavLink } from 'react-router-dom';
 import RTracking from 'react-tracking';
 
 import {
@@ -39,6 +38,10 @@ import { getVAQuickGuideIsClosed } from 'merchant/views/SmartCollect/QuickGuide'
 import EmptyList from 'merchant/components/EmptyList';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import { checkIfVirtualAccountRoute } from 'merchant/views/SmartCollect/utils';
+import { Button, PlusIcon, Box } from '@razorpay/blade/components';
+import { NEW_CUSTOMER_IDENTIFER_URL } from 'merchant/constants/urls';
+import { FEE_BEARER_TYPES } from 'merchant/constants/feeBearer';
+import CustomerFeeBearerPopover from 'merchant/components/CustomerFeeBearerPopover';
 
 const EmptyComponent = () => (
   <EmptyList
@@ -225,13 +228,28 @@ export default class VirtualAccountsListContainer extends ListContainer {
       });
   };
 
+  onCreateCustomerIdentifier = () => {
+    const history = this.props.history;
+    history.push(NEW_CUSTOMER_IDENTIFER_URL);
+
+    selfServeTrackInitiate({
+      selfServeAction: 'Customer Identifier Created',
+      page: 'Virtualaccounts',
+      screen: 'Smart Collect',
+    });
+    this.track('create');
+  };
+
   render() {
     const { tabsData } = this.state;
+    const feeBearer = this.props.user.merchant.fee_bearer;
+    const isSmartCollectDisabled = feeBearer === FEE_BEARER_TYPES.CUSTOMER;
+
     return (
       <ProductWrapper
         tabsData={tabsData}
         extra={
-          <>
+          <Box display="flex" alignItems="center">
             <TakeATourButton
               feature={RZPFeatures.VA}
               onClick={() => this.track('tour')}
@@ -247,27 +265,22 @@ export default class VirtualAccountsListContainer extends ListContainer {
             />
 
             <ShowWhen additionalCondition={(user) => user.isAllowedEdit('virtual_accounts')}>
-              <span className="tabbed-header-actions">
-                <span className="cta-container">
-                  <NavLink
-                    class="btn btn-primary"
-                    to="/smartcollect/virtualaccounts/new"
-                    onClick={() => {
-                      selfServeTrackInitiate({
-                        selfServeAction: 'Customer Identifier Created',
-                        page: 'Virtualaccounts',
-                        screen: 'Smart Collect',
-                      });
-                      this.track('create');
-                    }}
-                  >
-                    <i class="i i-plus" />
-                    <span>Create Customer Identifier</span>
-                  </NavLink>
-                </span>
-              </span>
+              <Box display="inline-block">
+                <Button
+                  onClick={this.onCreateCustomerIdentifier}
+                  icon={PlusIcon}
+                  iconPosition="left"
+                  size="small"
+                  type="button"
+                  variant="primary"
+                  isDisabled={isSmartCollectDisabled}
+                >
+                  Create Customer Identifier
+                </Button>
+                {isSmartCollectDisabled && <CustomerFeeBearerPopover feature="Smart Collect" />}
+              </Box>
             </ShowWhen>
-          </>
+          </Box>
         }
       >
         <content>

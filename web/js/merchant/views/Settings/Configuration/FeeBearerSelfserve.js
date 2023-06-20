@@ -1,16 +1,51 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import styled from 'styled-components';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import { Badge, Heading, Link, Text } from '@razorpay/blade/components';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import TextHighlighter from 'common/ui/TextHighlighter';
-import { bindActionCreators } from 'redux';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { getCommonAnalyticsProperties, openTicketModal } from 'common/utils/rzp-utils';
 import LoaderDots from 'common/ui/LoaderDots';
 import { updateMerchant as updateMerchantReducer } from 'merchant/reducers/session';
+import { FEE_BEARER_TYPES } from 'merchant/constants/feeBearer';
+
+const NotSupportedFooter = styled.div`
+  background: #f8f8f9;
+  width: 100%;
+  font-size: ${({ theme }) => theme.typography.fonts.size[75]}px;
+  line-height: ${({ theme }) => theme.typography.lineHeights[50]}px;
+  padding: ${({ theme }) => `${theme.spacing[2]}px ${theme.spacing[4]}px`};
+  border-radius: 3px;
+`;
+
+const CustomerFeeHeading = styled.div`
+  margin-top: 10px;
+  margin-bottom: 10px;
+  @media screen and (min-width: 1024px) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+`;
+
+const CustomerFeeTitle = styled.div`
+  @media screen and (max-width: 1024px) {
+    margin-bottom: 4px;
+  }
+`;
+
+const Loader = (
+  <div className="panel-loader">
+    <LoaderDots />
+  </div>
+);
 
 function FeeBearerSelfserve(props) {
-  const [feeBearer, setfeeBearer] = useState(props.user.merchant.fee_bearer);
+  const currentUser = props.user;
+  const [feeBearer, setfeeBearer] = useState(currentUser.merchant.fee_bearer);
   const [showLoader, setshowLoader] = useState(false);
 
   const handleToggle = async (type) => {
@@ -21,7 +56,7 @@ function FeeBearerSelfserve(props) {
       actionName: 'Fee bearer toggled',
       screen: 'settings',
       properties: {
-        currentFeeBearer: `${props.user.merchant.fee_bearer}`,
+        currentFeeBearer: `${currentUser.merchant.fee_bearer}`,
         NewFeeBearer: `${type}`,
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
@@ -52,7 +87,7 @@ function FeeBearerSelfserve(props) {
           actionName: 'Fee bearer result',
           screen: 'settings',
           properties: {
-            currentFeeBearer: `${props.user.merchant.fee_bearer}`,
+            currentFeeBearer: `${currentUser.merchant.fee_bearer}`,
             NewFeeBearer: `${type}`,
             result: 'Success',
             ...getCommonAnalyticsProperties(window.rzp_user),
@@ -70,7 +105,7 @@ function FeeBearerSelfserve(props) {
         actionName: 'Fee bearer result',
         screen: 'settings',
         properties: {
-          currentFeeBearer: `${props.user.merchant.fee_bearer}`,
+          currentFeeBearer: `${currentUser.merchant.fee_bearer}`,
           NewFeeBearer: `${type}`,
           result: 'Failure',
           failureMessage: `${errors}`,
@@ -80,71 +115,136 @@ function FeeBearerSelfserve(props) {
     }
   };
 
-  const defaultRefundSpeedValue = props.user.merchant.default_refund_speed;
+  const selectCustomerFeeBearer = () => handleToggle(FEE_BEARER_TYPES.CUSTOMER);
+  const selectPlatformFeeBearer = () => handleToggle(FEE_BEARER_TYPES.PLATFORM);
+
+  const isPlatformFeeBearer = feeBearer === FEE_BEARER_TYPES.PLATFORM;
+  const isCustomerFeeBearer = feeBearer === FEE_BEARER_TYPES.CUSTOMER;
+
+  const defaultRefundSpeedValue = currentUser.merchant.default_refund_speed;
+  const isRefundSpeedOptimum = defaultRefundSpeedValue === 'optimum';
+
+  /**
+   * Customer fee bearer is not supported in case user has QR/SC or Route enabled
+   * Details : https://docs.google.com/document/d/1D1-mK0N3V6ft6BSufN-imGFXSWqPy3j6CyYD5vQFuR0/edit#
+   */
+  const isQREnabled = currentUser.isQRCodeProductEnabled;
+  const isSCEnabled = currentUser.isVirtualAccountsEnabled;
+  const isRoutesEnabled = currentUser.isMarketplaceEnabled;
+  const productBeingUsed = useMemo(() => {
+    // no case where none is enabled
+    // in case only one is enabled
+    // QR enabled
+    if (isQREnabled && !isSCEnabled && !isRoutesEnabled) return 'QR code';
+    // SC enabled
+    if (!isQREnabled && isSCEnabled && !isRoutesEnabled) return 'Smart Collect';
+    // Route enabled
+    if (!isQREnabled && !isSCEnabled && isRoutesEnabled) return 'Route';
+
+    // in case more than one is enabled
+    return 'QR, Smart Collect and Route';
+  }, [isQREnabled, isSCEnabled, isRoutesEnabled]);
+  const isCustomerFeeNotSupported = isQREnabled || isSCEnabled || isRoutesEnabled;
+
+  const renderCustomerFeeAction = () => {
+    if (showLoader && isPlatformFeeBearer) {
+      return Loader;
+    }
+    if (isRefundSpeedOptimum) {
+      return <i className="i i-outline-lock" />;
+    }
+    if (isCustomerFeeNotSupported) {
+      return <Badge variant="neutral">NOT SUPPORTED</Badge>;
+    }
+    return (
+      <input
+        type="radio"
+        className="radio-pointer"
+        checked={isCustomerFeeBearer}
+        onChange={selectCustomerFeeBearer}
+      />
+    );
+  };
+
+  const renderPlatformFeeAction = () => {
+    if (showLoader && isCustomerFeeBearer) {
+      return Loader;
+    }
+    return (
+      <input
+        type="radio"
+        className="radio-pointer"
+        checked={isPlatformFeeBearer}
+        onChange={selectPlatformFeeBearer}
+      />
+    );
+  };
 
   return (
-    <div class="panel panel-default fee-bearer-section">
-      <div class="panel-heading pl10" style={{ paddingTop: 0 }}>
-        <span class="title">
+    <div className="panel panel-default fee-bearer-section">
+      <div className="panel-heading pl10 pt0">
+        <span className="title">
           <TextHighlighter>Fee Bearer</TextHighlighter>{' '}
         </span>
 
-        <p class="subtitle">
+        <p className="subtitle">
           For every payment done on Razorpay, we levy a nominal platform fee. Choose your preferred
           mode of payment from the below options -
         </p>
       </div>
 
-      <div class="panel-body" style={{ paddingBottom: '6px' }}>
-        <div class="row">
-          <div class="col-sm-6 p5">
-            <div class={`fee-bearer-panel-col ${feeBearer === 'platform' ? 'active' : null}`}>
+      <div className="panel-body pb6">
+        <div className="row">
+          <div className="col-sm-6 p5">
+            <div
+              className={`fee-bearer-panel-col fee-bearer-container${
+                isPlatformFeeBearer ? ' active' : ''
+              }`}
+            >
               <h4>
                 <b>You pay the fee</b>
-                {showLoader && feeBearer === 'customer' ? (
-                  <div class="panel-loader">
-                    <LoaderDots />
-                  </div>
-                ) : (
-                  <input
-                    type="radio"
-                    class="radio-pointer"
-                    checked={feeBearer === 'platform'}
-                    onChange={() => handleToggle('platform')}
-                  />
-                )}
+                {renderPlatformFeeAction()}
               </h4>
               <p>Razorpay platform fee would be borne by you. </p>
               <br />
             </div>
           </div>
-          <div class="col-sm-6 p5">
+          <div className="col-sm-6 p5">
             <div
-              class={`fee-bearer-panel-col ${feeBearer === 'customer' ? 'active' : null} ${
-                defaultRefundSpeedValue === 'optimum' ? 'disabled' : null
+              className={`fee-bearer-panel-col${isCustomerFeeBearer ? ' active' : ''}${
+                isRefundSpeedOptimum ? ' disabled' : ''
               }`}
             >
-              <h4>
-                <b>Convenience fee model</b>
-                {showLoader && feeBearer === 'platform' ? (
-                  <div class="panel-loader">
-                    <LoaderDots />
-                  </div>
-                ) : defaultRefundSpeedValue === 'optimum' ? (
-                  <i className="i i-outline-lock" />
-                ) : (
-                  <input
-                    type="radio"
-                    class="radio-pointer"
-                    checked={feeBearer === 'customer'}
-                    onChange={() => handleToggle('customer')}
-                  />
+              <div className="fee-bearer-container">
+                <CustomerFeeHeading>
+                  <CustomerFeeTitle>
+                    <Heading size="medium" type="subdued">
+                      Customer pays the fee
+                    </Heading>
+                  </CustomerFeeTitle>
+                  {renderCustomerFeeAction()}
+                </CustomerFeeHeading>
+
+                {!isCustomerFeeNotSupported && (
+                  <Text>You charge a convenience fee to your customer.</Text>
                 )}
-              </h4>
-              <p>You charge a convenience fee to your customer.</p>
-              <br />
+              </div>
+              {isCustomerFeeNotSupported && (
+                <NotSupportedFooter>
+                  This feature is not supported for merchants using {productBeingUsed}. If you still
+                  wish to enable this model, please raise a{' '}
+                  <Link
+                    size="small"
+                    htmlTitle="Raise a support ticket"
+                    onClick={openTicketModal}
+                    variant="button"
+                  >
+                    support ticket.
+                  </Link>
+                </NotSupportedFooter>
+              )}
             </div>
-            {defaultRefundSpeedValue === 'optimum' && (
+            {isRefundSpeedOptimum && (
               <span className="customer-fee-bearer-disabled">
                 Locked when instant refunds is active
               </span>

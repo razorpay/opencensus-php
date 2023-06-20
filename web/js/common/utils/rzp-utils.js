@@ -1673,3 +1673,9 @@ export const exportFileAsExcel = ({ finalDataSend, fileName, fileFormat }) => {
  * @returns {String} - monetary unit text
  */
 export const monetaryUnitText = (countryCode) => MONETARY_UNIT_TEXT[countryCode];
+
+// modal won't open again on same id
+export const openTicketModal = (data = {}) => {
+  const id = `ticket-${Date.now()}`;
+  window.rzpTicketSystem?.openModal(id, data);
+};

@@ -8,6 +8,7 @@ import {
 } from 'merchant/reducers/onboarding';
 import { RZPFeatures } from 'merchant/helpers/data';
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
+import { BlockCustomerFeeBearerOnboarding } from 'merchant/components/BlockOnBoarding';
 import { bindActionCreators } from 'redux';
 
 import QRCodesList from './QRCodes/List';
@@ -17,7 +18,8 @@ import OnBoarding, { getIsQRCodesEnabled, getIsAllowedResetQRCodesOnBoarding } f
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import DashboardBanner from 'common/ui/DashboardBanner';
-
+import { Alert, Box } from '@razorpay/blade/components';
+import { FEE_BEARER_TYPES } from 'merchant/constants/feeBearer';
 class QRCodeContainer extends React.Component {
   UNSAFE_componentWillReceiveProps(nextProps) {
     if (nextProps.qr_codes.loading !== this.props.qr_codes.loading) {
@@ -67,9 +69,22 @@ class QRCodeContainer extends React.Component {
   };
 
   render() {
-    const { productOnBoarding } = this.props;
+    const { productOnBoarding, user } = this.props;
+
+    const feeBearer = user.merchant.fee_bearer;
+    const isCustomerFeeBearer = feeBearer === FEE_BEARER_TYPES.CUSTOMER;
+    const isQRDisabled = !user.isQRCodeProductEnabled;
 
     const { showOnboarding, isQuickGuideOpen } = productOnBoarding;
+
+    // in case of customer fee bearer if qr is disabled for the user, he should not be able to access onboarding to turn on the QR
+    if (isCustomerFeeBearer && isQRDisabled) {
+      return (
+        <div className="text-justified">
+          <BlockCustomerFeeBearerOnboarding feature="QR Codes" />
+        </div>
+      );
+    }
 
     if (showOnboarding) {
       return <OnBoarding />;
@@ -82,7 +97,18 @@ class QRCodeContainer extends React.Component {
         </div>
 
         {isQuickGuideOpen && <QuickGuide className="QuickGuide-v2" />}
-
+        {isCustomerFeeBearer && (
+          <Box padding="spacing.6" paddingBottom="spacing.0">
+            <Alert
+              contrast="low"
+              description="This product is not supported for merchants accepting payments as per the convenience fee model. Any payments accepted via QR will be auto refunded."
+              intent="notice"
+              title="QR Code is not available for you"
+              isDismissible={false}
+              isFullWidth
+            />
+          </Box>
+        )}
         <ErrorBoundary resetOnProps>
           <Switch>
             <ShowWhenRoute

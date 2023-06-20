@@ -9,6 +9,7 @@ import {
   i18CurrencyConversionFromMinorUnitToCommonUnit,
   mergeCurrencyFormatting,
   exportFileAsExcel,
+  openTicketModal,
 } from 'common/utils/rzp-utils';
 import FileSaver from 'file-saver';
 import xlsx from 'xlsx';
@@ -167,6 +168,22 @@ describe('Download Sample File', () => {
     fileFormat = 'csv';
     exportFileAsExcel({ finalDataSend, fileName, fileFormat });
     expect(FileSaver.saveAs).toHaveBeenCalledWith(new Blob(), 'test.csv');
+  });
+});
+
+describe('openTicketModal', () => {
+  test('openTicketModal should call window.rzpTicketSystem.openModal with the correct arguments', () => {
+    const openModalMock = jest.fn();
+    const rzpTicketSystemMock = {
+      openModal: openModalMock,
+    };
+
+    global.rzpTicketSystem = rzpTicketSystemMock;
+    openTicketModal({ ticketData: 'example' });
+
+    expect(openModalMock).toHaveBeenCalledWith(expect.stringContaining('ticket-'), {
+      ticketData: 'example',
+    });
   });
 });
 

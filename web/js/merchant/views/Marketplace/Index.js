@@ -15,13 +15,14 @@ import { updateFeatures } from 'merchant/reducers/config';
 import { fetchTransfers } from 'merchant/reducers/collection';
 import { fetchAccounts } from 'merchant/reducers/marketplace/accounts';
 
-import DocsLink from 'merchant/components/DocsLink';
-import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import AccountsList from 'merchant/views/Marketplace/Accounts/List';
+import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
+import BatchesList from 'merchant/views/Marketplace/Batch/List';
+import { BlockCustomerFeeBearerOnboarding } from 'merchant/components/BlockOnBoarding';
+import DocsLink from 'merchant/components/DocsLink';
 import PaymentsList from 'merchant/views/Marketplace/Payments/List';
 import ReversalsList from 'merchant/views/Marketplace/Reversals/List';
 import TransfersList from 'merchant/views/Marketplace/Transfers/List';
-import BatchesList from 'merchant/views/Marketplace/Batch/List';
 
 import OnBoarding, { getIsAllowedResetRouteBoarding } from './OnBoarding';
 import QuickGuide, { getRouteQuickGuideIsClosed } from './QuickGuide';
@@ -29,6 +30,8 @@ import Wrapper from './RouteWrapper';
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import lazy from 'merchant/routes/LazyLoader';
+import { FEE_BEARER_TYPES } from 'merchant/constants/feeBearer';
+import { Alert, Box } from '@razorpay/blade/components';
 
 //lazy loads
 const PlatformFeeList = lazy(() => import('merchant/views/Marketplace/PlatformFee/List'));
@@ -123,14 +126,28 @@ class MarketplaceContainer extends React.Component {
   render() {
     const { user, routeProductOnBoarding } = this.props;
     const { isQuickGuideOpen, showOnboarding } = routeProductOnBoarding;
-    const { isOrgAxis } = user;
+    const { isOrgAxis, isMarketplaceEnabled } = user;
+
+    const feeBearer = user.merchant.fee_bearer;
+    const isCustomerFeeBearer = feeBearer === FEE_BEARER_TYPES.CUSTOMER;
+    const isRoutesDisabled = !isMarketplaceEnabled;
+
+    // in case of customer fee bearer if route is disabled for the user, he should not be able to access onboarding to turn on the ROUTE
+    if (isCustomerFeeBearer && isRoutesDisabled) {
+      return (
+        <div className="text-justified">
+          <BlockCustomerFeeBearerOnboarding feature="Route" />
+        </div>
+      );
+    }
+
     if (showOnboarding && !isOrgAxis) {
       return <OnBoarding />;
     }
 
     return (
-      <div class="Marketplace-Container">
-        {this.props.user.isDirectTransferEnabled && (
+      <div className="Marketplace-Container">
+        {user.isDirectTransferEnabled && (
           <AnnouncementBanner
             title="Introducing Direct Transfers"
             theme="primary"
@@ -145,6 +162,18 @@ class MarketplaceContainer extends React.Component {
         )}
 
         {isQuickGuideOpen ? <QuickGuide className="QuickGuide-v2" /> : null}
+        {isCustomerFeeBearer && (
+          <Box padding="spacing.6" paddingBottom="spacing.0">
+            <Alert
+              contrast="low"
+              description="This product is not supported for merchants accepting payments as per the convenience fee model. Any payments accepted via QR will be auto refunded."
+              intent="notice"
+              title="Route is not available for you"
+              isDismissible={false}
+              isFullWidth
+            />
+          </Box>
+        )}
 
         <ErrorBoundary resetOnProps>
           <Switch>

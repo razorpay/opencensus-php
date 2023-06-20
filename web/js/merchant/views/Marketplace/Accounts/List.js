@@ -26,6 +26,9 @@ import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/self
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import ProductWrapper from 'common/ui/ProductWrapper';
 import { navItems } from 'merchant/views/Marketplace/NavItems';
+import { FEE_BEARER_TYPES } from 'merchant/constants/feeBearer';
+import { Box } from '@razorpay/blade/components';
+import CustomerFeeBearerPopover from 'merchant/components/CustomerFeeBearerPopover';
 
 @connect(
   (state) => {
@@ -250,7 +253,9 @@ export default class AccountsListContainer extends ListContainer {
   render() {
     const { loading, accounts, user, showNotification, isPlatformFeeTabEnabled } = this.props;
     const status = this.state.status;
-    const isCreationDisabled = user.isRouteLinkedAccountCreationDisabled;
+    const feeBearer = user.merchant.fee_bearer;
+    const isCustomerFeeBearer = feeBearer === FEE_BEARER_TYPES.CUSTOMER;
+    const isCreationDisabled = user.isRouteLinkedAccountCreationDisabled || isCustomerFeeBearer;
     return (
       <ProductWrapper
         tabsData={navItems(isPlatformFeeTabEnabled)}
@@ -266,25 +271,28 @@ export default class AccountsListContainer extends ListContainer {
               <i className="i i-download" />
               <span>Export All (CSV)</span>
             </button>
-
             <ShowWhen
               additionalCondition={(_user) =>
                 _user.isAllowedEdit('accounts') && !isOrgFeatureExist('block_account_update')
               }
             >
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={this.showAddAccountModal}
-                disabled={isCreationDisabled}
-                title={
-                  isCreationDisabled &&
-                  'Linked account creation is not allowed for your business type'
-                }
-              >
-                <i className="i i-plus" />
-                <span>Add Account</span>
-              </button>
+              <Box display="inline-block">
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={this.showAddAccountModal}
+                  disabled={isCreationDisabled}
+                  title={
+                    isCreationDisabled &&
+                    !isCustomerFeeBearer &&
+                    'Linked account creation is not allowed for your business type'
+                  }
+                >
+                  <i className="i i-plus" />
+                  <span>Add Account</span>
+                </button>
+                {isCustomerFeeBearer && <CustomerFeeBearerPopover feature="Route" />}
+              </Box>
             </ShowWhen>
           </>
         }

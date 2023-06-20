@@ -42,15 +42,15 @@ $modal-break = 610px
     float right
 
     @media screen and (max-width $screen-sm-min)
-      float none
-      margin-top 12px
+      float: none;
+      margin-top: 12px;
 
   .panel-body
-    padding: 0 20px 20px
+    padding: 0 20px 20px;
 
     @media screen and (max-width $screen-sm-min)
       &.refund-speed-pannel
-        padding 0 0 20px
+        padding: 0 0 20px;
 
     .form-group
       margin-bottom: 0
@@ -949,6 +949,12 @@ $modal-break = 610px
   .pl10
     padding-left 10px !important
 
+  .pb6
+    padding-bottom: 6px !important;
+
+  .pt0
+    padding-top: 0 !important;
+
   p
     color #7B8199
 
@@ -956,7 +962,13 @@ $modal-break = 610px
     margin 10px 0 -5px
 
   .fee-bearer-panel-col
-    border 1px solid #EBEFF0
+    border: 1px solid #EBEFF0;
+    border-radius: 3px;
+    // to prevent height mismatch
+    min-height: 87px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 
     .panel-loader
       position absolute
@@ -989,10 +1001,10 @@ $modal-break = 610px
     &.disabled
       border-color: #CD8214;
 
-    padding-left 12px
-    padding-top 5px
-    padding-right 4px
-    border-radius 3px
+  .fee-bearer-container
+    padding-left: 12px;
+    padding-top: 4px;
+    padding-right: 4px;
 
   .customer-fee-bearer-disabled
     color: #CD8214;

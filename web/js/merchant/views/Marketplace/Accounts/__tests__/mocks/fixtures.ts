@@ -129,3 +129,7 @@ export const accountsData = {
     },
   ],
 };
+
+export const location = {
+  search: '',
+};

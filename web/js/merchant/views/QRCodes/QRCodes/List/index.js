@@ -24,6 +24,10 @@ import EmptyList from 'merchant/components/EmptyList';
 
 import ListFilter from './Filter';
 import track from './track';
+import { Box, Button, PlusIcon } from '@razorpay/blade/components';
+import { NEW_QR_URL } from 'merchant/constants/urls';
+import { FEE_BEARER_TYPES } from 'merchant/constants/feeBearer';
+import CustomerFeeBearerPopover from 'merchant/components/CustomerFeeBearerPopover';
 
 const tabsData = [
   { title: 'QR Codes', url: '/qr_codes' },
@@ -99,17 +103,22 @@ export default class QRCodesListContainer extends ListContainer {
   onClearAnalytics = () => track.clear();
 
   onCreateQRCode = () => {
+    const history = this.props.history;
+    history.push(NEW_QR_URL);
     triggerHotjarRecording(QR_CODE_CREATE_HOTJAR.trigger, QR_CODE_CREATE_HOTJAR.tags);
     track.create();
   };
 
   render() {
     const { isTestMode } = this.props;
+    const feeBearer = this.props.user.merchant.fee_bearer;
+    const isCreateQRDisabled = feeBearer === FEE_BEARER_TYPES.CUSTOMER;
+
     return (
       <ProductWrapper
         tabsData={tabsData}
         extra={
-          <>
+          <Box display="flex" alignItems="center">
             <TakeATourButton
               feature={RZPFeatures.QR_CODES}
               onSuccess={() => track.tourStatus(true)}
@@ -118,16 +127,22 @@ export default class QRCodesListContainer extends ListContainer {
 
             <DocsLink url="https://razorpay.com/docs/qr-codes/" onClick={track.docs} />
             <ShowWhen additionalCondition={(user) => user.isAllowedEdit('qr_codes')}>
-              <span className="tabbed-header-actions">
-                <span className="cta-container">
-                  <NavLink class="btn btn-primary" to="/qr_codes/new" onClick={this.onCreateQRCode}>
-                    <i class="i i-plus" />
-                    Create QR Codes
-                  </NavLink>
-                </span>
-              </span>
+              <Box display="inline-block">
+                <Button
+                  onClick={this.onCreateQRCode}
+                  icon={PlusIcon}
+                  iconPosition="left"
+                  size="small"
+                  type="button"
+                  variant="primary"
+                  isDisabled={isCreateQRDisabled}
+                >
+                  Create QR Codes
+                </Button>
+                {isCreateQRDisabled && <CustomerFeeBearerPopover feature="QR Code" />}
+              </Box>
             </ShowWhen>
-          </>
+          </Box>
         }
       >
         <content>
