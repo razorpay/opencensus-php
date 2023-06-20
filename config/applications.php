@@ -1181,6 +1181,30 @@ return [
                 'password' => env('APP_LOAN_ORIGINATION_SYSTEM_SECRET'),
             ],
         ],
+        'capital-loc' => [
+            'live'=>[
+                'url'      => env('APP_LINE_OF_CREDIT_URL'),
+                'username' => 'key',
+                'password' => env('APP_LINE_OF_CREDIT_SECRET'),
+            ],
+            'test'=>[
+                'url'      => env('APP_LINE_OF_CREDIT_URL'),
+                'username' => 'key',
+                'password' => env('APP_LINE_OF_CREDIT_SECRET'),
+                ],
+            ],
+        'capital-es' => [
+            'live'=>[
+                'url'      => env('APP_ES_DCS_URL'),
+                'username' => env('APP_ES_USERNAME'),
+                'password' => env('APP_ES_SECRET'),
+            ],
+            'test'=>[
+                'url'      => env('APP_ES_DCS_URL'),
+                'username' => env('APP_ES_USERNAME'),
+                'password' => env('APP_ES_SECRET'),
+            ],
+        ],
         'scrooge' => [
             'live'=>[
                 'url'      => env('SCROOGE_DCS_BASE_URL'),
