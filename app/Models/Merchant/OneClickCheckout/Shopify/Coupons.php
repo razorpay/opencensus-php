@@ -179,6 +179,52 @@ class Coupons extends Base\Core
 
         $value = (new Utils)->formatNumber($checkout['lineItemsSubtotalPrice']['amount'] - $checkout['subtotalPrice']['amount']) * 100;
 
+        if($this->merchant->getId() === 'ChdCdGm7TvuVk6')
+        {
+            $atLeastOneItemHasCouponTag = false;
+            $floorValue = 0;
+            $lineItems = $checkout['lineItems']['edges'];
+            foreach($lineItems as $lineItem){
+                $tags = $lineItem['node']['variant']['product']['tags'] ?? [];
+
+                $lineItemHasCouponTag = false;
+                $lineItemFloorValue = 0;
+                foreach ($tags as $tag){
+                    if(strtolower($tag) === strtolower($promotions['code']))
+                    {
+                        $lineItemHasCouponTag = true;
+                    }
+                    else
+                    {
+                        $tagArray = explode('magic_floor_',$tag);
+                        if(count($tagArray) > 1){
+                            $currentFloorValue = (int)$tagArray[1];
+                            if($currentFloorValue > $lineItemFloorValue)
+                            {
+                                $lineItemFloorValue = $currentFloorValue;
+                            }
+                        }
+                    }
+                }
+                if ($lineItemHasCouponTag){
+                    $atLeastOneItemHasCouponTag = true;
+                    $floorValue = $floorValue + $lineItemFloorValue;
+                }
+                else{
+                    $price = (new Utils)->formatNumber($lineItem['node']['variant']['price']['amount']);
+                    $floorValue = $floorValue + $price;
+                }
+            }
+
+            $totalDiscountedPrice = (new Utils)->formatNumber($checkout['subtotalPrice']['amount']) * 100;
+            $floorValue = $floorValue * 100;
+            if($totalDiscountedPrice < $floorValue && $atLeastOneItemHasCouponTag)
+            {
+                $value = (new Utils)->formatNumber($checkout['lineItemsSubtotalPrice']['amount']) * 100 - $floorValue;
+            }
+            $value = $value < 0 ? 0 : $value;
+        }
+
         return [
             'response' => [
                 'promotion' => [

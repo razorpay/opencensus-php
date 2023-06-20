@@ -455,6 +455,14 @@ class Mutations
                 cursor
                 node {
                   id
+                  variant{
+                    product{
+                      tags
+                    }
+                    price{
+                      amount
+                    }
+                  }
                   title
                   quantity
                   customAttributes {
