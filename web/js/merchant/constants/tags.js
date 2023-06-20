@@ -42,7 +42,6 @@ export const HIDDEN_INTERNATIONAL_FEATURES_TAGS = {
   CheckoutInfo: 'i18_hide_settings.checkout_info',
   FlashCheckout: 'i18_hide_settings.flash_checkout',
   PaymentCapture: 'i18_hide_settings.payment_capture',
-  PaymentAndOrders: 'i18_show_only_payment_orders_webhooks',
   International: 'i18_hide_international',
   WhatsappNotification: 'i18_hide_whatsapp_notification',
   MandateSummary: 'i18_hide_subscription.mandate_summary',
@@ -74,4 +73,7 @@ export const HIDDEN_INTERNATIONAL_FEATURES_TAGS = {
   InvoiceFooterAddress: 'i18_hide_invoice_footer_address',
   OtherIntegrationMethods: 'i18_hide_other_integation_methods',
   SubscriptionPaymentButton: 'i18_hide_subscription_payment_button',
+  FundAccount: 'i18_hide_fund_account',
+  Order: 'i18_hide_order',
+  Payment: 'i18_hide_payment',
 };

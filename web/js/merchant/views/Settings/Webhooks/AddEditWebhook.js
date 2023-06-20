@@ -21,6 +21,15 @@ import sanitizer from 'common/utils/xss-sanitizer';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
+export const HIDE_WEBHOOK_TYPE = {
+  payment: HIDDEN_INTERNATIONAL_FEATURES_TAGS.Payment,
+  order: HIDDEN_INTERNATIONAL_FEATURES_TAGS.Order,
+  invoice: HIDDEN_INTERNATIONAL_FEATURES_TAGS.Invoices,
+  subscription: HIDDEN_INTERNATIONAL_FEATURES_TAGS.Subscriptions,
+  fund_account: HIDDEN_INTERNATIONAL_FEATURES_TAGS.FundAccount,
+  refund: HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds,
+  payment_link: HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentLinks,
+};
 class webhookForm extends Component {
   state = {
     errors: null,
@@ -94,26 +103,20 @@ class webhookForm extends Component {
             };
           }, {});
 
-          // Remove i18 Malaysian merchant un-supported webhooks
-          if (
-            this.props?.userData?.findTag &&
-            this.props.userData.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentAndOrders)
-          ) {
-            Object.keys(events).forEach((eventGroupKey) => {
-              // Currently we are only allowing the order | payments for webhooks.
-              if (!(eventGroupKey === 'order' || eventGroupKey === 'payment')) {
-                delete events[eventGroupKey];
-              }
-              if (
-                eventGroupKey === 'payment' &&
-                this.props.userData.findTag(
-                  HIDDEN_INTERNATIONAL_FEATURES_TAGS.DowntimePaymentEvents,
-                )
-              ) {
-                this.removePaymentDowntimeEvents(events);
-              }
-            });
-          }
+          // Remove merchant un-supported webhooks
+          Object.keys(events).forEach((eventGroupKey) => {
+            const webhookType = HIDE_WEBHOOK_TYPE[eventGroupKey];
+            const i18TagFound = webhookType && userData.findTag?.(webhookType);
+            if (i18TagFound) {
+              delete events[eventGroupKey];
+            }
+            if (
+              eventGroupKey === 'payment' &&
+              userData.findTag?.(HIDDEN_INTERNATIONAL_FEATURES_TAGS.DowntimePaymentEvents)
+            ) {
+              this.removePaymentDowntimeEvents(events);
+            }
+          });
           this.setState(
             {
               groupedWebhooks: events,
