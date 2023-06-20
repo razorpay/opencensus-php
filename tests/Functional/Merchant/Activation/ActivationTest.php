@@ -2775,8 +2775,13 @@ class ActivationTest extends OAuthTestCase
 
     public function kycSubmissionWithSuccessCases($poaVerificationStatus, $bankDetailsVerificationStatus = null)
     {
-        $this->createMerchantDocumentEntries('1cXSLlUU8V9sXl', 'aadhar_front');
-        $this->createMerchantDocumentEntries('1cXSLlUU8V9sXl', 'aadhar_back');
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->createMerchantDocumentEntries($merchantId, 'aadhar_front');
+
+        $this->createMerchantDocumentEntries($merchantId, 'aadhar_back');
+
+        $this->createWebsitePolicyAndNegativeKeywordFixtures($merchantId);
 
         $this->getKycVerificationForPoaVerificationSetup($poaVerificationStatus, $bankDetailsVerificationStatus);
 
@@ -4133,6 +4138,8 @@ class ActivationTest extends OAuthTestCase
 
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $detailAttributes);
 
+        $this->createWebsitePolicyAndNegativeKeywordFixtures($merchantDetail['merchant_id']);
+
         $defaultFavAttribute = [
             ValidationEntity::ACCOUNT_STATUS => "active",
             ValidationEntity::NOTES          => [
@@ -4155,6 +4162,25 @@ class ActivationTest extends OAuthTestCase
         $this->assertEquals('verified', $merchantDetail->getBankDetailsVerificationStatus());
 
         $this->assertEquals($accountStatus, $merchantDetail->getActivationStatus());
+    }
+
+    private function createWebsitePolicyAndNegativeKeywordFixtures($merchantId)
+    {
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantId,
+            'artefact_type'        => 'website_policy',
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02aT',
+            'merchant_id'          => $merchantId,
+            'artefact_type'        => 'negative_keywords',
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
     }
 
     public function testFailureBankDetailsVerificationForUnRegisteredBusiness()
@@ -4262,6 +4288,8 @@ class ActivationTest extends OAuthTestCase
                                                    'business_subcategory'    => 'accounting'
         ]);
 
+        $this->createWebsitePolicyAndNegativeKeywordFixtures($merchantDetail['merchant_id']);
+
         $attribute = $this->getFavAttributes($merchantDetail, "UNREGISTERED", "active");
 
         $attribute1 = $this->getFavAttributes($merchantDetail, "rishabh acharya", "active");
@@ -4292,6 +4320,8 @@ class ActivationTest extends OAuthTestCase
         ];
 
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $attributes);
+
+        $this->createWebsitePolicyAndNegativeKeywordFixtures($merchantDetail['merchant_id']);
 
         $this->ba->cronAuth();
 

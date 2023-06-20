@@ -345,6 +345,25 @@ class CoreTest extends TestCase
         (new KafkaMessageProcessor)->process('api-bvs-validation-result-events', $kafkaEventPayload);
     }
 
+    private function createWebsitePolicyAndNegativeKeywordFixtures($merchantId)
+    {
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantId,
+            'artefact_type'        => 'website_policy',
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
+
+        $this->fixtures->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02aT',
+            'merchant_id'          => $merchantId,
+            'artefact_type'        => 'negative_keywords',
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
+    }
+
     public function testBvsPartlyExecutedValidationProcessForPOIValidation()
     {
         $this->createAndFetchMocks();
@@ -3189,7 +3208,7 @@ class CoreTest extends TestCase
         $this->assertContains($queuedEmails->get(1)->getTemplate(),$expectedEmails);
     }
 
-    public function testGetApplicableActivationStatusPartnershipMccRequiresAdditionalDoc()
+    public function testGetApplicableActivationStatusMccAdditionalDoc()
     {
         Mail::fake();
 
@@ -3230,7 +3249,7 @@ class CoreTest extends TestCase
         $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
-    public function testGetApplicableActivationStatusPartnershipWebsiteAbsent()
+    public function testGetApplicableActivationStatusWebsiteAbsent()
     {
         Mail::fake();
 
@@ -3276,7 +3295,7 @@ class CoreTest extends TestCase
         $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
-    public function testGetApplicableActivationStatusPartnershipWebsitePresentAppURLsAbsent()
+    public function testGetApplicableActivationStatusWebsiteAppURLsAbsent()
     {
         Mail::fake();
 
@@ -3300,6 +3319,8 @@ class CoreTest extends TestCase
             'submitted'                 => true,
             'business_website'          => 'https://google.com',
         ]);
+
+        $this->createWebsitePolicyAndNegativeKeywordFixtures($merchantDetails->getId());
 
         $merchant = $this->fixtures->edit('merchant', $merchantDetails->getId(), [
             'category'             => '5945',
@@ -3323,7 +3344,7 @@ class CoreTest extends TestCase
         $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
-    public function testGetApplicableActivationStatusPartnershipWebsitePresentAppURLsPresent()
+    public function testGetApplicableActivationStatusWebsiteAppURLsPresent()
     {
         Mail::fake();
 
@@ -3351,6 +3372,8 @@ class CoreTest extends TestCase
         $merchant = $this->fixtures->edit('merchant', $merchantDetails->getId(), [
             'category'             => '5945',
         ]);
+
+        $this->createWebsitePolicyAndNegativeKeywordFixtures($merchant->getId());
 
         $this->fixtures->create('merchant_business_detail', [
             'merchant_id' => $merchant->getId(),
@@ -3377,7 +3400,7 @@ class CoreTest extends TestCase
         $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
-    public function testGetApplicableActivationStatusPartnershipWebsitePresentNegativeKeywordFail()
+    public function testGetApplicableActivationStatusWebsiteNegativeKeywordFail()
     {
         Mail::fake();
 
@@ -3414,25 +3437,10 @@ class CoreTest extends TestCase
             'status'               => 'failed'
         ]);
 
-        $input = [
-            "experiment_id" => "LQzMXMbNCUramd",
-            "id"            => $merchant->getId(),
-        ];
-
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'live',
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($input, $output);
-
         $this->assertEquals(Status::UNDER_REVIEW, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
-    public function testGetApplicableActivationStatusPartnershipWebsitePresentNegativeKeywordFailCategoryAviation()
+    public function testGetApplicableActivationStatusWebsiteNegativeKeywordFailAviation()
     {
 
         // This testcase was added as a part of-
@@ -3473,25 +3481,10 @@ class CoreTest extends TestCase
             'status'               => 'failed'
         ]);
 
-        $input = [
-            "experiment_id" => "LQzMXMbNCUramd",
-            "id"            => $merchant->getId(),
-        ];
-
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'live',
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($input, $output);
-
         $this->assertEquals(Status::UNDER_REVIEW, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
-    public function testGetApplicableActivationStatusPartnershipWebsitePresentNegativeKeywordFailCategoryOthers()
+    public function testGetApplicableActivationStatusWebsiteNegativeKeywordFailOthers()
     {
 
         // This testcase was added as a part of-
@@ -3532,25 +3525,11 @@ class CoreTest extends TestCase
             'status'               => 'failed'
         ]);
 
-        $input = [
-            "experiment_id" => "LQzMXMbNCUramd",
-            "id"            => $merchant->getId(),
-        ];
-
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'live',
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($input, $output);
-
-        $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+        // negative keyword check has failed => under review
+        $this->assertEquals(Status::UNDER_REVIEW, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
-    public function testGetApplicableActivationStatusPartnershipWebsitePresentActivated()
+    public function testGetApplicableActivationStatusWebsiteActivated()
     {
         Mail::fake();
 
@@ -3630,7 +3609,7 @@ class CoreTest extends TestCase
         $this->assertEquals(Status::ACTIVATED, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
-    public function testGetApplicableActivationStatusPartnershipWebsitePresentWebsitePolicyFail()
+    public function testGetApplicableActivationStatusWebsitePolicyFail()
     {
         Mail::fake();
 
@@ -3743,21 +3722,6 @@ class CoreTest extends TestCase
         ]);
 
         $input = [
-            "experiment_id" => "LQzMXMbNCUramd",
-            "id"            => $merchant->getId(),
-        ];
-
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'live',
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($input, $output);
-
-        $input = [
             'activation_form_milestone' => 'L2'
         ];
 
@@ -3776,10 +3740,11 @@ class CoreTest extends TestCase
         // here we expect website policy to fail because the result stored in metadata does not contain all links i.e. privacy, terms, contact_us, refund, shipping.
         $this->assertEquals('failed', $verificationData['status']);
 
-        $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+        // website policy check has failed => under review
+        $this->assertEquals(Status::UNDER_REVIEW, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
-    public function testGetApplicableActivationStatusPartnershipWebsitePresentMccFail()
+    public function testGetApplicableActivationStatusMccFail()
     {
         Mail::fake();
 
@@ -3818,7 +3783,15 @@ class CoreTest extends TestCase
             'category'             => '5945',
         ]);
 
-        $this->fixtures->create('merchant_verification_detail', [
+        $this->fixtures->on('live')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantId,
+            'artefact_type'        => Constant::NEGATIVE_KEYWORDS,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
+
+        $this->fixtures->on('test')->create('merchant_verification_detail', [
             'id'                   => 'LGjQP2ZQxa02as',
             'merchant_id'          => $merchantId,
             'artefact_type'        => Constant::NEGATIVE_KEYWORDS,
@@ -3831,7 +3804,7 @@ class CoreTest extends TestCase
             'merchant_id'          => $merchantDetails->getMerchantId(),
             'artefact_type'        => Constant::WEBSITE_POLICY,
             'artefact_identifier'  => 'number',
-            'status'               => 'initiated',
+            'status'               => 'verified',
             'metadata'             =>  [
                 'contact_us' => [
                     'analysis_result' => [
@@ -3910,7 +3883,7 @@ class CoreTest extends TestCase
         $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
-    public function testGetApplicableActivationStatusPartnershipWebsitePresentMccCategorisationFailed()
+    public function testGetApplicableActivationStatusMccCategFail()
     {
         Mail::fake();
 
@@ -3988,7 +3961,7 @@ class CoreTest extends TestCase
         $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
-    public function testGetApplicableActivationStatusPartnershipWebsitePresentActivatedSplitzPilot()
+    public function testGetApplicableActivationStatusWebsiteActivatedPilot()
     {
         Mail::fake();
 
@@ -4072,7 +4045,7 @@ class CoreTest extends TestCase
         $this->assertEquals(Status::ACTIVATED, $businessDetail['metadata']['activation_status']);
     }
 
-    public function testGetApplicableActivationStatusPartnershipWebsiteAbsentSplitzPilot()
+    public function testGetApplicableActivationStatusWebsiteAbsentPilot()
     {
         Mail::fake();
 
@@ -5136,7 +5109,7 @@ class CoreTest extends TestCase
         ], $merchantWebsiteDetail['admin_website_details']['website']['https://www.sukhdev.org']);
     }
 
-    public function testOCRPassedActivatedSplitzPilot()
+    public function testOCRPassedActivatedPilot()
     {
         Queue::fake();
 
@@ -6635,7 +6608,7 @@ class CoreTest extends TestCase
         $this->assertTrue($leadScore > 0);
     }
 
-    public function testGetApplicableActivationStatusPartnershipMccRequiresAdditionalDocSplitzKqu()
+    public function testGetApplicableActivationStatusMccAdditionalDocSplitzKqu()
     {
         Mail::fake();
 
@@ -6676,7 +6649,7 @@ class CoreTest extends TestCase
         $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
-    public function testGetApplicableActivationStatusPartnershipWebsiteAbsentSplitzKqu()
+    public function testGetApplicableActivationStatusWebsiteAbsentSplitzKqu()
     {
         Mail::fake();
 
@@ -6722,7 +6695,7 @@ class CoreTest extends TestCase
         $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
-    public function testGetApplicableActivationStatusPartnershipWebsitePresentAppURLsAbsentSplitzKqu()
+    public function testGetApplicableActivationStatusWebsiteAppURLsAbsentSplitzKqu()
     {
         Mail::fake();
 
@@ -6756,6 +6729,8 @@ class CoreTest extends TestCase
             "id"            => $merchant->getId(),
         ];
 
+        $this->createWebsitePolicyAndNegativeKeywordFixtures($merchant->getId());
+
         $output = [
             "response" => [
                 "variant" => [
@@ -6769,7 +6744,7 @@ class CoreTest extends TestCase
         $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
-    public function testGetApplicableActivationStatusPartnershipWebsitePresentAppURLsPresentSplitzKqu()
+    public function testGetApplicableActivationStatusWebsiteAppURLsPresentSplitzKqu()
     {
         Mail::fake();
 
@@ -6797,6 +6772,8 @@ class CoreTest extends TestCase
         $merchant = $this->fixtures->edit('merchant', $merchantDetails->getId(), [
             'category'             => '5945',
         ]);
+
+        $this->createWebsitePolicyAndNegativeKeywordFixtures($merchant->getId());
 
         $this->fixtures->create('merchant_business_detail', [
             'merchant_id' => $merchant->getId(),
@@ -6823,7 +6800,7 @@ class CoreTest extends TestCase
         $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
-    public function testGetApplicableActivationStatusPartnershipWebsitePresentNegativeKeywordFailSplitzKqu()
+    public function testGetApplicableActivationStatusWebsiteNegativeKeywordFailSplitzKqu()
     {
         Mail::fake();
 
@@ -6860,25 +6837,10 @@ class CoreTest extends TestCase
             'status'               => 'failed'
         ]);
 
-        $input = [
-            "experiment_id" => "LQzMXMbNCUramd",
-            "id"            => $merchant->getId(),
-        ];
-
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'kqu',
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($input, $output);
-
         $this->assertEquals(Status::UNDER_REVIEW, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
-    public function testGetApplicableActivationStatusPartnershipWebsitePresentNegativeKeywordFailCategoryAviationSplitzKqu()
+    public function testGetApplicableActivationStatusNegativeKeywordFailSplitzKqu()
     {
 
         // This testcase was added as a part of-
@@ -6919,25 +6881,10 @@ class CoreTest extends TestCase
             'status'               => 'failed'
         ]);
 
-        $input = [
-            "experiment_id" => "LQzMXMbNCUramd",
-            "id"            => $merchant->getId(),
-        ];
-
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'kqu',
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($input, $output);
-
         $this->assertEquals(Status::UNDER_REVIEW, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
-    public function testGetApplicableActivationStatusPartnershipWebsitePresentNegativeKeywordFailCategoryOthersSplitzKqu()
+    public function testGetApplicableActivationStatusNegativeKeywordFailOthersSplitzKqu()
     {
 
         // This testcase was added as a part of-
@@ -6978,25 +6925,11 @@ class CoreTest extends TestCase
             'status'               => 'failed'
         ]);
 
-        $input = [
-            "experiment_id" => "LQzMXMbNCUramd",
-            "id"            => $merchant->getId(),
-        ];
-
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'kqu',
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($input, $output);
-
-        $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+        // negative keyword check has failed => under review
+        $this->assertEquals(Status::UNDER_REVIEW, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
-    public function testGetApplicableActivationStatusPartnershipWebsitePresentActivatedSplitzKqu()
+    public function testGetApplicableActivationStatusActivatedSplitzKqu()
     {
         Mail::fake();
 
@@ -7076,7 +7009,7 @@ class CoreTest extends TestCase
         $this->assertEquals(Status::KYC_QUALIFIED_UNACTIVATED, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
-    public function testGetApplicableActivationStatusPartnershipWebsitePresentWebsitePolicyFailSplitzKqu()
+    public function testGetApplicableActivationStatusWebsitePolicyFailSplitzKqu()
     {
         Mail::fake();
 
@@ -7189,21 +7122,6 @@ class CoreTest extends TestCase
         ]);
 
         $input = [
-            "experiment_id" => "LQzMXMbNCUramd",
-            "id"            => $merchant->getId(),
-        ];
-
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'kqu',
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($input, $output);
-
-        $input = [
             'activation_form_milestone' => 'L2'
         ];
 
@@ -7222,10 +7140,11 @@ class CoreTest extends TestCase
         // here we expect website policy to fail because the result stored in metadata does not contain all links i.e. privacy, terms, contact_us, refund, shipping.
         $this->assertEquals('failed', $verificationData['status']);
 
-        $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+        // website policy check has failed => under review
+        $this->assertEquals(Status::UNDER_REVIEW, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
-    public function testGetApplicableActivationStatusPartnershipWebsitePresentMccFailSplitzKqu()
+    public function testGetApplicableActivationStatusMccFailSplitzKqu()
     {
         Mail::fake();
 
@@ -7264,7 +7183,15 @@ class CoreTest extends TestCase
             'category'             => '5945',
         ]);
 
-        $this->fixtures->create('merchant_verification_detail', [
+        $this->fixtures->on('live')->create('merchant_verification_detail', [
+            'id'                   => 'LGjQP2ZQxa02as',
+            'merchant_id'          => $merchantId,
+            'artefact_type'        => Constant::NEGATIVE_KEYWORDS,
+            'artefact_identifier'  => 'number',
+            'status'               => 'verified'
+        ]);
+
+        $this->fixtures->on('test')->create('merchant_verification_detail', [
             'id'                   => 'LGjQP2ZQxa02as',
             'merchant_id'          => $merchantId,
             'artefact_type'        => Constant::NEGATIVE_KEYWORDS,
@@ -7277,7 +7204,7 @@ class CoreTest extends TestCase
             'merchant_id'          => $merchantDetails->getMerchantId(),
             'artefact_type'        => Constant::WEBSITE_POLICY,
             'artefact_identifier'  => 'number',
-            'status'               => 'initiated',
+            'status'               => 'verified',
             'metadata'             =>  [
                 'contact_us' => [
                     'analysis_result' => [
@@ -7358,7 +7285,7 @@ class CoreTest extends TestCase
         $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
-    public function testGetApplicableActivationStatusPartnershipWebsitePresentMccCategorisationFailedSplitzKqu()
+    public function testGetApplicableActivationStatusMccCategFailSplitzKqu()
     {
         Mail::fake();
 

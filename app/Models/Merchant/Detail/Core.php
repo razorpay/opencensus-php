@@ -5506,20 +5506,43 @@ class Core extends Base\Core
 
         $isImpersonated = $this->dedupeCore->isMerchantImpersonated($merchantDetails->merchant);
 
-        // including the condition of nc count because we don't want the merchant to go in amp from nc or ur once he
-        // has already been in nc
+        $eligibleForAMP = (
+            $isWhitelisted === true AND
+            $isImpersonated === false AND
+            $this->hasRiskTags($merchantDetails->merchant) === false AND
+            in_array($currentActivationStatus, $excludeActivationStatusList) === false AND
+            (new ClarificationDetailCore)->getNcCount($merchantDetails->merchant) === 0
+            // Merchant should not go in AMP from NC or UR if already been in NC
+        );
 
-        if (((new ClarificationDetailCore)->getNcCount($merchantDetails->merchant) === 0) and
-            ($isWhitelisted === true) and
-            ($isImpersonated === false) and
-            (in_array($currentActivationStatus, $excludeActivationStatusList) === false) and
-            ($this->hasRiskTags($merchantDetails->merchant) === false))
+        $merchantId = $merchantDetails->getMerchantId();
+
+        $negativeKeyword = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifierFromReplica(
+            $merchantId,
+            Constant::NEGATIVE_KEYWORDS,
+            MVD\Constants::NUMBER
+        );
+
+        $websitePolicy = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifierFromReplica(
+            $merchantId,
+            Constant::WEBSITE_POLICY,
+            MVD\Constants::NUMBER
+        );
+
+        if ($this->hasBusinessWebsite($merchantDetails) === true or $this->hasAppUrls($merchantDetails) === true)
         {
-            $merchantId = $merchantDetails->getMerchantId();
+            $eligibleForAMP = (
+                $eligibleForAMP AND
+                optional($websitePolicy)->getStatus() === BvsValidation\Constants::VERIFIED AND
+                optional($negativeKeyword)->getStatus() === BvsValidation\Constants::VERIFIED
+            );
+        }
 
+        if ($eligibleForAMP === true)
+        {
             $splitzVariant = (new Detail\Core)->getSplitzResponse($merchantId, 'merchant_automation_activation_exp_id');
 
-            $activationStatusAutomation = $this->getAutomationActivationStatus($merchantDetails);
+            $activationStatusAutomation = $this->getAutomationActivationStatus($merchantDetails, $websitePolicy, $negativeKeyword);
 
             if (in_array($splitzVariant, [Constants::SPLITZ_LIVE, Constants::SPLITZ_KQU]) === true)
             {
@@ -5553,7 +5576,7 @@ class Core extends Base\Core
         return Status::UNDER_REVIEW;
     }
 
-    private function getAutomationActivationStatus(Entity $merchantDetails): string
+    private function getAutomationActivationStatus(Entity $merchantDetails, $websitePolicy, $negativeKeyword): string
     {
         $merchantId = $merchantDetails->getMerchantId();
 
@@ -5570,12 +5593,6 @@ class Core extends Base\Core
             }
             else
             {
-                $negativeKeyword = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifierFromReplica(
-                    $merchantId,
-                    Constant::NEGATIVE_KEYWORDS,
-                    MVD\Constants::NUMBER
-                );
-
                 if (optional($negativeKeyword)->getStatus() === BvsValidation\Constants::FAILED)
                 {
                     return Status::UNDER_REVIEW;
@@ -5584,12 +5601,6 @@ class Core extends Base\Core
                 $mccCategorisation = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifierFromReplica(
                     $merchantId,
                     Constant::MCC_CATEGORISATION_WEBSITE,
-                    MVD\Constants::NUMBER
-                );
-
-                $websitePolicy = $this->repo->merchant_verification_detail->getDetailsForTypeAndIdentifierFromReplica(
-                    $merchantId,
-                    Constant::WEBSITE_POLICY,
                     MVD\Constants::NUMBER
                 );
 
