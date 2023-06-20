@@ -44,7 +44,8 @@ class CardlessEmiProvider
     public static $disabledInstruments = [
         self::HCIN,
         self::FDRL,
-        self::ZESTMONEY
+        self::ZESTMONEY,
+        self::BARB,
     ];
 
     public static function checkProviderValidity($provider)
