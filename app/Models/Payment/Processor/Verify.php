@@ -13,6 +13,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Verify\Status as VerifyStatus;
 use RZP\Models\Payment\Verify\Action as VerifyAction;
+use \RZP\Models\Feature;
 
 trait Verify
 {
@@ -596,9 +597,20 @@ trait Verify
 
         $payment->setVerified($verifyStatus);
 
-        $this->updateErrorInPaymentFromGatewayIfApplicable($payment, $gatewayData);
+        if(($payment->merchant->isFeatureEnabled(Feature\Constants::SILENT_REFUND_LATE_AUTH) === true)
+            and $payment->isCreated() === true)
+        {
 
-        $this->repo->saveOrFail($payment);
+            $exception = new Exception\BadRequestException($gatewayData['error']['code']);
+
+            $this->updatePaymentFailed($exception,TraceCode::FAIL_CREATED_PAYMENT_UNDER_FEATURE_FLAG);
+        }
+        else
+        {
+            $this->updateErrorInPaymentFromGatewayIfApplicable($payment, $gatewayData);
+
+            $this->repo->saveOrFail($payment);
+        }
     }
 
     protected function updateErrorInPaymentFromGatewayIfApplicable(Payment\Entity $payment, $data)

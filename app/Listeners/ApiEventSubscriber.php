@@ -480,7 +480,15 @@ class ApiEventSubscriber extends Base\Core
 
         $this->notifySubscriptionRegistrationPaymentAuthorized($payment);
 
-        $this->dispatchEventToStork($payload);
+        if(($payment->merchant->isFeatureEnabled(Feature\Constants::SILENT_REFUND_LATE_AUTH) === true)
+            and $payment->isLateAuthorized() === true)
+        {
+            $this->trace->info(TraceCode::SKIP_NOTIFY_ON_LATE_AUTH);
+        }
+        else
+        {
+            $this->dispatchEventToStork($payload);
+        }
 
         $this->dispatchOrderFor1ccShopify($payment);
     }

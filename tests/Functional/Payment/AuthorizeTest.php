@@ -2018,6 +2018,46 @@ class AuthorizeTest extends TestCase
         $this->assertEquals($randomAuthCode, $payment['reference2']);
     }
 
+    public function testAuthCodeUpdateFromLateAuthSilentRefundFeatureFlag()
+    {
+        Mail::fake();
+
+        $randomAuthCode = random_integer(6);
+
+        $this->fixtures->merchant->addFeatures(featureConstants::SILENT_REFUND_LATE_AUTH);
+
+        $this->mockServerContentFunction(
+            function(& $content, $action) use ($randomAuthCode)
+            {
+                if ($action === 'authorize')
+                {
+                    throw new GatewayErrorException('GATEWAY_ERROR_UNKNOWN_ERROR');
+                }
+
+                $content['auth'] = $randomAuthCode;
+            },
+            'hdfc');
+
+        $this->makeRequestAndCatchException(
+            function()
+            {
+                $this->doAuthPayment();
+            },
+            GatewayErrorException::class);
+
+        $payment = $this->getLastPayment(true);
+
+        $this->assertNull($payment['reference2']);
+
+        $this->authorizeFailedPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($randomAuthCode, $payment['reference2']);
+
+        Mail::assertNotQueued(AuthorizedMail::class);
+    }
+
     public function testPaymentWithSkipAuthWithMotoFeatureDisabled()
     {
         $payment = $this->payment;

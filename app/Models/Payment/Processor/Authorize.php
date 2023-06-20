@@ -8572,6 +8572,11 @@ trait Authorize
             {
                 return;
             }
+
+            if($this->payment->merchant->isFeatureEnabled(Feature\Constants::SILENT_REFUND_LATE_AUTH) === true)
+            {
+                return;
+            }
         }
 
         if ($this->payment->hasInvoice() === true)
