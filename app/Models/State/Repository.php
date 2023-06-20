@@ -132,7 +132,7 @@ class Repository extends Base\Repository
         return $this->newQueryWithConnection($this->getMasterReplicaConnection())
                     ->select(Entity::ENTITY_ID)
                     ->where(Entity::ENTITY_TYPE, '=', 'merchant_detail')
-                    ->WhereBetween(Entity::CREATED_AT, [$from, $to])
+                    ->whereBetween(Entity::CREATED_AT, [$from, $to])
                     ->where(Entity::NAME, '=', $name)
                     ->distinct()
                     ->get()

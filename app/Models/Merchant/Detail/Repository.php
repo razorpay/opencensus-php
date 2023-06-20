@@ -650,7 +650,7 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
-    public function fetchRzpOrgMerchantIdsWithPoiAndBankVerified($merchantIds): array
+    public function fetchRzpOrgMerchantIdsWithPoiAndBankVerified(array $merchantIds) : array
     {
         // Merchant Details Table Column
         $detailMerchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
@@ -665,15 +665,12 @@ class Repository extends Base\Repository
 
         $merchantOrgIdColumn = $this->repo->merchant->dbColumn(Merchant\Entity::ORG_ID);
 
-
         return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
                     ->join(Table::MERCHANT, $merchantIdColumn, '=', $detailMerchantIdColumn)
-                    ->select($detailMerchantIdColumn)
                     ->whereIn($detailMerchantIdColumn, $merchantIds)
                     ->where($merchantOrgIdColumn, '=', Org\Entity::RAZORPAY_ORG_ID)
                     ->where($poiVerificationColumn, '=', 'verified')
                     ->where($bankDetailsVerificationColumn, '=', 'verified')
-                    ->get()
                     ->pluck($detailMerchantIdColumn)
                     ->toArray();
     }
@@ -692,14 +689,19 @@ class Repository extends Base\Repository
 
         $aadhaarEsignStatusWithPanColumn = $this->repo->stakeholder->dbColumn(Stakeholder\Entity::AADHAAR_VERIFICATION_WITH_PAN_STATUS);
 
-        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
-                    ->whereIn($detailMerchantIdColumn, $merchantIds)
-                    ->join(Table::STAKEHOLDER, $stakeholderMerchantIdCol, '=', $detailMerchantIdColumn)
-                    ->where($aadhaarEsignStatusColumn, '=', 'verified')
-                    ->where($aadhaarEsignStatusWithPanColumn, '=', 'verified')
-                    ->orWhere($poaVerificationColumn, '=', 'verified')
-                    ->get()
-                    ->pluck($detailMerchantIdColumn)
-                    ->toArray();
+        $query = $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
+                      ->leftJoin(Table::STAKEHOLDER, $detailMerchantIdColumn, '=', $stakeholderMerchantIdCol)
+                      ->whereIn($detailMerchantIdColumn, $merchantIds)
+                      ->where(function($query) use ($aadhaarEsignStatusColumn, $aadhaarEsignStatusWithPanColumn, $poaVerificationColumn) {
+                          $query->where($poaVerificationColumn, '=', 'verified')
+                                ->orWhere(function($query) use ($aadhaarEsignStatusWithPanColumn, $aadhaarEsignStatusColumn) {
+                                    $query->where($aadhaarEsignStatusColumn, '=', 'verified')
+                                          ->where($aadhaarEsignStatusWithPanColumn, '=', 'verified');
+                                });
+                      });
+
+        return $query->pluck($detailMerchantIdColumn)
+                     ->toArray();
     }
+
 }

@@ -237,7 +237,7 @@ class Core extends Base\Core
                    'wf_action_id'   => $workflowAction['id'],
                ]);
 
-            $this->trackEvents($workflowAction, $merchantDetails, $diffData, $settlementClearance);
+            $this->trackEvents($workflowAction, $merchant, $diffData, $settlementClearance);
 
             return $workflowAction;
         }
@@ -416,7 +416,7 @@ class Core extends Base\Core
             'bank_account_verification_status' => $merchantDetails->getBankDetailsVerificationStatus(),
             'date_of_rejection'                => $dateOfRejection,
             'reason_category : reason_code'    => $rejectionsReason,
-            'total_unsettled_amount'           => $balanceAmount / 100 . 'INR',
+            'total_unsettled_amount'           => $balanceAmount,
             'action'                           => Action::RELEASE_FUNDS,
             'risk_attributes'                  => array(Constants::CLEAR_RISK_TAGS => '0'),
         ];

@@ -81,6 +81,7 @@ class PreActivationMerchantReleaseFundsDataCollector extends DbDataCollector
         // Below are the conditions which the merchant should satisfy for the settlements to be released
 
         // Merchant Ids with rejected activation status
+
         $rejectedMerchantIds = $this->repo->state->getEntityIdsWithNameInRange($merchantState, $endDate, $startDate);
 
         $this->app['trace']->info(TraceCode::REJECTED_MERCHANT_IDS, [
@@ -124,19 +125,15 @@ class PreActivationMerchantReleaseFundsDataCollector extends DbDataCollector
     {
         $result = [];
 
-        foreach ($merchantIdList as $merchantId)
-        {
-            $balance = $this->repo->balance->getMerchantBalanceByType($merchantId, BalanceType::PRIMARY) ?? null;
+        $balances = $this->repo->balance->getBalancesForMerchantIds($merchantIdList, BalanceType::PRIMARY);
 
+        foreach ($balances as $merchantId => $balance)
+        {
             if (empty($balance) === false)
             {
-                $balance = $balance->toArrayPublic();
-
-                $balanceAmount = $balance[Balance\Entity::BALANCE];
-
-                if ($balanceAmount > 0)
+                if ($balance > 0)
                 {
-                    $result[] = $merchantId;
+                    $result[] = stringify($merchantId);
                 }
             }
         }
