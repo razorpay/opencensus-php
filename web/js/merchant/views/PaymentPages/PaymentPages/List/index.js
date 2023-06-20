@@ -37,6 +37,10 @@ import PaymentsAndStorefrontTab from './PaymentsAndStorefrontTab';
 import { setIsStorefrontPage } from 'merchant/reducers/paymentPages/storefront';
 import { setIsBatchPaymentPages } from 'merchant/reducers/wysiwyg';
 import { checkBatchPaymentPages } from 'merchant/views/PaymentPages/PaymentPages/utils';
+import {
+  CREATE_PP_DOC_URL,
+  CREATE_BATCH_PP_DOC_URL,
+} from 'merchant/views/PaymentPages/PaymentPages/constants';
 @withRouter
 @connect(
   (state) => ({
@@ -319,7 +323,7 @@ export default class PaymentPagesContainer extends ListContainer {
         </React.Fragment>
       );
     }
-
+    const docLink = isBatchPaymentPages ? CREATE_BATCH_PP_DOC_URL : CREATE_PP_DOC_URL;
     return (
       <ProductWrapper
         tabsData={this.state.tabsData}
@@ -331,8 +335,8 @@ export default class PaymentPagesContainer extends ListContainer {
 
             <ShowWhen additionalCondition={() => user.isOrgAllowedFunctionality('external_links')}>
               <DocLink
-                class="btn btn-link"
-                href="https://razorpay.com/docs/payment-pages/"
+                className="btn btn-link"
+                href={docLink}
                 target="_blank"
                 onClick={track.viewDoc}
               >
