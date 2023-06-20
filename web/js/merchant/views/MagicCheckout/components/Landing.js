@@ -10,7 +10,6 @@ import {
   loadFeedbackForm,
 } from 'merchant/views/MagicCheckout/utils/waitlistForm';
 import { updateMagicCheckoutStatus } from 'merchant/reducers/magicCheckout';
-import * as ModalActions from 'merchant_common/reducers/modals';
 import { sendToLumberjack } from 'common/utils/analytics';
 import { MAGIC_CHECKOUT_STATUS } from 'merchant/views/MagicCheckout/constants';
 
@@ -79,7 +78,7 @@ const MagicCheckoutLanding = (props) => {
                     merchant_id: props.user.current,
                   },
                 });
-                loadWaitlistForm(props.openModal, () => {
+                loadWaitlistForm(props.user, () => {
                   sendToLumberjack({
                     eventName: 'super_checkout_waitlist_form_filled',
                     properties: {
@@ -172,7 +171,6 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) =>
   bindActionCreators(
     {
-      ...ModalActions,
       updateStatus: updateMagicCheckoutStatus,
     },
     dispatch,
