@@ -110,7 +110,9 @@ const EvaluateUseCase = ({
           'Let’s evaluate your use case together'
         )}
       </ServiceProvidedHeading>
-      <ServiceProvidedDescription>Answer keeping your business in mind</ServiceProvidedDescription>
+      <ServiceProvidedDescription>
+        Keep your business in mind while answering
+      </ServiceProvidedDescription>
 
       <ManagePaymentsBanner>
         <ManagePaymentHeading>
@@ -132,8 +134,7 @@ const EvaluateUseCase = ({
           <span>Integrating APIs</span>
         </IntegrateAPIHeading>
         <IntegrateAPIDesc>
-          You will need O -Auth integration to start receiving commissions once you complete the
-          switch
+          You will need to integrate with OAuth to receive commissions after switching
         </IntegrateAPIDesc>
         <IntegrateAPICTA>
           <span onClick={learnMoreClick}>Learn More</span>

@@ -204,7 +204,7 @@ const ApplicationForm = ({
               autoFocus
               label="Phone Number"
               name="phoneNumber"
-              placeholder="Enter mobile number"
+              placeholder="Type here"
               value={defaultPhoneNumber || formik.values.phoneNumber}
               labelPosition="left"
               necessityIndicator="required"
@@ -225,7 +225,7 @@ const ApplicationForm = ({
             <TextInput
               label="Your website URL"
               name="websiteURL"
-              placeholder="www.yourwebsite.com"
+              placeholder="Type here"
               value={formik.values.websiteURL}
               labelPosition="left"
               necessityIndicator="required"

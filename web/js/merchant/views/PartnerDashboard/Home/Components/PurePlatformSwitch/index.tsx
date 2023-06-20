@@ -80,7 +80,7 @@ const PurePlatformSwitchGuide = ({
           &nbsp; on your platform
         </PPSwitchContentTitle>
         <PPSwitchContentDesc>
-          Seamlessly manage payments for your clients with Razorpay APIs integrated on your
+          Seamlessly manage payments for your clients by integrating Razorpay APIs with your
           platform.&nbsp;
           <Link
             href="https://razorpay.com/docs/partners/platform/payments-oauth"

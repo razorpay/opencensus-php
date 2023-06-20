@@ -114,13 +114,13 @@ const ServiceProvided = ({
       <ServiceProvidedHeading>
         {isMobileView ? (
           <MobileHeader
-            title="Select the service you provide"
+            title="Select the services you provide"
             setIsOpen={setIsOpen}
             step={STEPS.SERVICE_PROVIDED}
             trackingExperiments={trackingExperiments}
           />
         ) : (
-          'Tell us more about the service you provide'
+          'Tell us more about the services you provide'
         )}
       </ServiceProvidedHeading>
       <ServiceProvidedDescription>

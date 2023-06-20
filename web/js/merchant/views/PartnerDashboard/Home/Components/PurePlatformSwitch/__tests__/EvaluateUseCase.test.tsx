@@ -9,10 +9,10 @@ describe('<EvaluateUseCase /> ', () => {
     expect(
       screen.getByText('Do you have a product to manage payments for your clients?'),
     ).toBeInTheDocument();
-    expect(screen.getByText('Answer keeping your business in mind')).toBeInTheDocument();
+    expect(screen.getByText('Keep your business in mind while answering')).toBeInTheDocument();
     expect(
       screen.getByText(
-        'You will need O -Auth integration to start receiving commissions once you complete the switch',
+        'You will need to integrate with OAuth to receive commissions after switching',
       ),
     ).toBeInTheDocument();
   });

@@ -83,7 +83,7 @@ const ApplicationReceived = ({
         )}
       </ServiceProvidedHeading>
       <ServiceProvidedDescription>
-        Our sales team will reach out to your for next steps
+        Our sales team will reach out to you for the next steps
       </ServiceProvidedDescription>
 
       <ApplicationFormContent>
@@ -108,8 +108,7 @@ const ApplicationReceived = ({
             </div>
             <ApplicationDotContent>
               <div>
-                Our team will evaluate your responses and reach out to you in case more details are
-                required.
+                Our team will evaluate your response and contact you for more details if needed.
               </div>
               <div className="pp-dot-subtitle">(Can take around 2-3 weeks)</div>
               <ul>
@@ -125,7 +124,7 @@ const ApplicationReceived = ({
               <img src={stepDot} alt="completed step icon" />
             </div>
             <ApplicationDotContent>
-              <div>You can now manage your sub-merchant’s Transactions!</div>
+              <div>You can now manage your sub-merchants' transactions!</div>
               <div className="pp-dot-subtitle">&nbsp;</div>
             </ApplicationDotContent>
           </ApplicationStepWrapper>

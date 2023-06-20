@@ -38,10 +38,10 @@ export const SERVICES_PROVIDED_OPTIONS = [
   'Manage Platform',
   'CRM',
   'Early Stage Investor',
-  'Booking Platforms',
+  'Booking Platform',
   'ERP',
-  'Plugins for E-commerce platform',
-  'Other',
+  'Plugins for E-commerce platforms',
+  'Others',
 ];
 
 export const RESELLER_PARTNER_SERVICES = [

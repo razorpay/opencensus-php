@@ -11,16 +11,16 @@ describe('<ApplicationReceived /> ', () => {
   test('Render Application Received', async () => {
     render(<ApplicationReceived {...stepTestProps} />);
     expect(
-      screen.getByText('Our sales team will reach out to your for next steps'),
+      screen.getByText('Our sales team will reach out to you for the next steps'),
     ).toBeInTheDocument();
     expect(screen.getByText('We have received your request')).toBeInTheDocument();
     expect(
       screen.getByText(
-        'Our team will evaluate your responses and reach out to you in case more details are required.',
+        'Our team will evaluate your response and contact you for more details if needed.',
       ),
     ).toBeInTheDocument();
     expect(
-      screen.getByText('You can now manage your sub-merchant’s Transactions!'),
+      screen.getByText("You can now manage your sub-merchants' transactions!"),
     ).toBeInTheDocument();
 
     const goToDashboardButton = screen.getByRole('button');

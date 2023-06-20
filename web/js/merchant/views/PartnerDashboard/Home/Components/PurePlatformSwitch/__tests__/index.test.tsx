@@ -13,7 +13,7 @@ describe('<PurePlatformSwitchGuide /> ', () => {
     render(<PurePlatformSwitchGuide {...props} />);
     expect(
       screen.getByText(
-        'Seamlessly manage payments for your clients with Razorpay APIs integrated on your platform.',
+        'Seamlessly manage payments for your clients by integrating Razorpay APIs with your platform.',
       ),
     ).toBeInTheDocument();
   });

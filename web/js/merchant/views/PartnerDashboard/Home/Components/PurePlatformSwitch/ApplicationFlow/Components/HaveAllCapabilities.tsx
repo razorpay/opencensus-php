@@ -76,8 +76,8 @@ const HaveAllCapabilities = ({
 
       <ApplicationFormContent>
         <HaveAllCapabilitiesTitle>
-          If you still feel you need more capabilities to manage your clients better reach out to us
-          at partners@razorpay.com
+          If you still feel you need more capabilities to manage your clients better, reach out to
+          us at partners@razorpay.com
         </HaveAllCapabilitiesTitle>
         <HaveAllCapabilitiesImg />
       </ApplicationFormContent>

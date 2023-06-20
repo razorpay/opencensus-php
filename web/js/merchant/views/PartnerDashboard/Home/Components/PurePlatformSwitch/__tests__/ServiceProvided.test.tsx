@@ -14,7 +14,7 @@ describe('<ServiceProvided /> ', () => {
   test('Select a service and click next', async () => {
     render(<ServiceProvided {...stepTestProps} />);
     const FreelancerServiceSelected = screen.getByTestId('Freelancers');
-    const otherServiceSelected = screen.getByTestId('Other');
+    const otherServiceSelected = screen.getByTestId('Others');
 
     expect(FreelancerServiceSelected).toBeInTheDocument();
     await userEvent.click(FreelancerServiceSelected);
