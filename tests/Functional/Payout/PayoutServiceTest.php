@@ -5797,7 +5797,7 @@ class PayoutServiceTest extends TestCase
         $this->assertNotContains(Feature\Constants::IDEMPOTENCY_API_TO_PS, $liveFeaturesArrayAfterTest);
     }
 
-    public function testFreePayoutRollbackWithIdempotencyApiToPsFeatureEnabled()
+    public function testFreePayoutRollbackWithIdempotencyApiToPsFeatureAndFetchVaPayoutsViaPsEnabled()
     {
         $balance = $this->getDbEntities('balance',
                                         [
@@ -5815,6 +5815,7 @@ class PayoutServiceTest extends TestCase
         ]);
 
         $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::IDEMPOTENCY_API_TO_PS]);
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FETCH_VA_PAYOUTS_VIA_PS]);
 
         $liveFeaturesArrayBeforeTest = $this->getDbEntity('feature',
                                                           [
@@ -5825,6 +5826,7 @@ class PayoutServiceTest extends TestCase
 
         $this->assertContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArrayBeforeTest);
         $this->assertContains(Feature\Constants::IDEMPOTENCY_API_TO_PS, $liveFeaturesArrayBeforeTest);
+        $this->assertContains(Feature\Constants::FETCH_VA_PAYOUTS_VIA_PS, $liveFeaturesArrayBeforeTest);
         $this->assertNotContains(Feature\Constants::IDEMPOTENCY_PS_TO_API, $liveFeaturesArrayBeforeTest);
 
         $merchant = $this->getDbEntity('merchant',
@@ -5854,10 +5856,12 @@ class PayoutServiceTest extends TestCase
         $this->assertContains(Feature\Constants::IDEMPOTENCY_PS_TO_API, $liveFeaturesArrayAfterTest);
         $this->assertNotContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArrayAfterTest);
         $this->assertNotContains(Feature\Constants::IDEMPOTENCY_API_TO_PS, $liveFeaturesArrayAfterTest);
+        $this->assertNotContains(Feature\Constants::FETCH_VA_PAYOUTS_VIA_PS, $liveFeaturesArrayAfterTest);
 
         $tagsAfter = $this->fixtures->on('live')->merchant->reloadTags();;
 
         $this->assertFalse(in_array(Constants::IDEMPOTENCY_API_TO_PS, $tagsAfter, true));
+        $this->assertFalse(in_array(Constants::FETCH_VA_PAYOUTS_VIA_PS, $tagsAfter, true));
     }
 
     public function testFreePayoutRollbackValidationFailure()

@@ -1484,10 +1484,24 @@ class Core extends Base\Core
                            ]
         );
 
+        /** @var Entity $payoutServiceFetchVaPayoutsViaPsFeature */
+        $payoutServiceFetchVaPayoutsViaPsFeature = $this->repo->feature->findByEntityTypeEntityIdAndName(
+                $payoutServiceFeature->getEntityType(),
+                $payoutServiceFeature->getEntityId(),
+                Constants::FETCH_VA_PAYOUTS_VIA_PS);
+
+        $this->trace->info(TraceCode::IS_FETCH_VA_PAYOUTS_VIA_PS_FEATURE_ENABLED,
+                           [
+                               'is_feature_enabled' =>
+                                   (empty($payoutServiceFetchVaPayoutsViaPsFeature) === false),
+                           ]
+        );
+
         $feature = $this->repo->feature->transaction(function() use (
             $payoutServiceFeature,
             $shouldSync,
-            $payoutServiceIdempotencyKeyFromApiToPsFeature
+            $payoutServiceIdempotencyKeyFromApiToPsFeature,
+            $payoutServiceFetchVaPayoutsViaPsFeature
         ) {
             if (empty($payoutServiceIdempotencyKeyFromApiToPsFeature) === false)
             {
@@ -1503,6 +1517,11 @@ class Core extends Base\Core
             $this->create($payoutServiceIdempotencyKeyFromPsToApiFeatureInput, $shouldSync);
 
             $this->delete($payoutServiceFeature, $shouldSync);
+
+            if (empty($payoutServiceFetchVaPayoutsViaPsFeature) === false)
+            {
+                $this->delete($payoutServiceFetchVaPayoutsViaPsFeature, $shouldSync);
+            }
         });
 
         $this->trace->info(TraceCode::DISABLE_PAYOUT_SERVICE_ENABLED_FEATURE_RESPONSE,
