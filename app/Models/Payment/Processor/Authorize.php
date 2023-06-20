@@ -9579,7 +9579,8 @@ trait Authorize
             return;
         }
 
-        else if (!$isIntentType && ($methods->isUpiCollectEnabled() === false))
+        else if (!$isIntentType && ($methods->isUpiCollectEnabled() === false)
+                && ($payment->getRecurringType() !== RecurringType::AUTO))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_NOT_ENABLED_FOR_MERCHANT);
