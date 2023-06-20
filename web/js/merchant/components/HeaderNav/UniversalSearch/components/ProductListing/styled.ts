@@ -97,3 +97,12 @@ export const Icon = styled.i(
   width: 14px;
 `,
 );
+
+export const StyledText = styled.div`
+  p {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 175px;
+  }
+`;

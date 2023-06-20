@@ -37,6 +37,8 @@ export type ProductItem = {
   tags: Tags[];
   icon: string;
   group?: string[];
+  attributes?: Record<any, any>;
+  id?: string;
 };
 
 export type ProductType = {
@@ -79,4 +81,61 @@ export interface CommonStateProps {
   searchQuery: string;
 }
 
-export type ObjType = Record<string, unknown>;
+export interface ObjType {
+  optionName: string;
+  optionChosen: number;
+  optionSet: number;
+  optionSetTotal: number;
+}
+
+export type SearchableEntities = 'Payments' | 'Refunds' | 'Orders' | 'Disputes' | 'Settlements';
+
+export interface SearchableEntityType {
+  id: SearchableEntities;
+  route: string;
+  icon: string;
+  attributes: {
+    [key in EntityAttributeIdsTypes]?: string;
+  };
+}
+
+export type SearchableEntitiesType = Record<SearchableEntities, SearchableEntityType>;
+
+export type EntityAttributeIdsTypes =
+  | 'payment_id'
+  | 'order_id'
+  | 'settlement_id'
+  | 'refund_id'
+  | 'dispute_id'
+  | 'email_id'
+  | 'ph_number'
+  | 'payment_status'
+  | 'settlement_status'
+  | 'refund_status'
+  | 'order_status'
+  | 'dispute_type'
+  | 'dispute_state';
+
+export type EntityAttributeTypes =
+  | 'PaymentId'
+  | 'OrderId'
+  | 'SettlementId'
+  | 'RefundId'
+  | 'DisputeId'
+  | 'Email'
+  | 'PhoneNumber'
+  | 'PaymentStatus'
+  | 'SettlementStatus'
+  | 'RefundStatus'
+  | 'OrderStatus'
+  | 'DisputeType'
+  | 'DisputeState';
+
+export interface attributeType {
+  attributeId: EntityAttributeIdsTypes;
+  attributeType: string;
+  matchWith: RegExp | string[];
+  entities: SearchableEntities[];
+}
+
+export type entityAttributesTypes = Record<EntityAttributeTypes, attributeType>;

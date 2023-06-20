@@ -2002,6 +2002,12 @@ export default class User {
     );
   }
 
+  get isSearchv2Phase1Enabled() {
+    return (
+      getSplitzExperimentVariant('search_v2_phase_1')?.variables?.result === 'on' && this.isOrgRZP
+    );
+  }
+
   get isLeftNavRevampEnabled() {
     return getSplitzExperimentVariant('left_nav_revamp')?.variables?.result === 'on';
   }

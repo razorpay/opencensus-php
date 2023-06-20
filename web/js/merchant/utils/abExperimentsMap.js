@@ -705,6 +705,12 @@ export default {
     // prod experiment ids
     'Lrb3FnfRl2FVmQ',
   ],
+  search_v2_phase_1: [
+    // stage env id
+    'M2B7MsOjDv2RCd',
+    // production env id
+    'M2B4FXLdVgc3wj',
+  ],
   partnership_phantom_pure_platform: [
     // stage
     'LoGdTEB7Wo0UuW',

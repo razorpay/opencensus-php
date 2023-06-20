@@ -324,6 +324,8 @@ return [
         // Cross border payments experiments
         'N_EXPONENT_SUPPORT' => env('N_EXPONENT_SUPPORT',''),
 
-        'SODEXO_INSTRUMENT' => env('SODEXO_INSTRUMENT','')
+        'SODEXO_INSTRUMENT' => env('SODEXO_INSTRUMENT',''),
+
+        'SEARCH_V2_PHASE_1' => env('SEARCH_V2_PHASE_1','')
     ]
 ];

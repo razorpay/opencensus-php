@@ -56,6 +56,7 @@ type Getters = {
   isBundlePricingEnabled: boolean;
   isCustomReportExtensionsEnabled: boolean;
   isSodexoInstrumentEnabled: boolean;
+  isSearchv2Phase1Enabled: boolean;
 };
 
 type UserProperties = {

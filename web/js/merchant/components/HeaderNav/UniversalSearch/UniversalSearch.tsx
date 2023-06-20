@@ -29,6 +29,7 @@ import {
 import FtuxTooltip from 'merchant/components/HeaderNav/UniversalSearch/components/FtuxTooltip';
 import { POPULAR_PRODUCTS } from './constants/SearchProducts';
 import { getOnlyKeywordSentence } from './utils/keywordExtractor';
+import { entitySearch } from './utils/EntitySearch';
 
 type UniversalSearchProps = RouteComponentProps & UniversalSearchPropInterface;
 
@@ -164,17 +165,37 @@ const UniversalSearch = ({
     enrollmentStatus.hasEnrolled,
   ]);
 
-  useEffect(() => {
+  const performSearch = (searchQuery, fuseSearch, isSearchv2Phase1Enabled) => {
     let isPopular = true;
     let products = POPULAR_PRODUCTS;
+
     if (searchQuery.length >= 3 && fuseSearch.current) {
-      const sentence = getOnlyKeywordSentence(searchQuery);
-      const result = fuseSearch.current.search(sentence, { limit: 15 });
+      const entitySearchResults = isSearchv2Phase1Enabled
+        ? entitySearch(searchQuery)
+        : { success: false, results: [] };
       isPopular = false;
-      products = result;
+
+      if (entitySearchResults.success) {
+        products = entitySearchResults.results;
+      } else {
+        const sentence = getOnlyKeywordSentence(searchQuery);
+        const productSearchResults = fuseSearch.current.search(sentence, { limit: 15 });
+        products = [...productSearchResults, ...entitySearchResults.results];
+      }
     }
-    setSearchResults({ isPopular, products });
+
+    return { isPopular, products };
+  };
+
+  // main useEffect
+  useEffect(() => {
     if (searchQuery.length) {
+      const { isPopular, products } = performSearch(
+        searchQuery,
+        fuseSearch,
+        user.isSearchv2Phase1Enabled,
+      );
+      setSearchResults({ isPopular, products });
       debouncedTrackCall({
         queryTyped: searchQuery,
         optionSet: products.length ? 1 : 0,

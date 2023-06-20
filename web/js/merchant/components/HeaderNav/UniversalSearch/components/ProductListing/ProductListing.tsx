@@ -16,6 +16,7 @@ import {
   ProductTag,
   StyledList,
   StyledProductListingContainer,
+  StyledText,
 } from './styled';
 
 type SearchResult = {
@@ -29,8 +30,8 @@ const ProductListing = ({
 }: {
   searchResults: SearchResult;
   handleClick: (args: ProductItem, trackProps: ObjType) => void;
-}): JSX.Element =>
-  products.length ? (
+}): JSX.Element => {
+  return products.length ? (
     <>
       {isPopular ? (
         <Text
@@ -55,7 +56,9 @@ const ProductListing = ({
               key={`product-listing-${index}`}
             >
               <Icon className={`i ${item.icon}`} />
-              <Text size="medium">{item.title}</Text>
+              <StyledText>
+                <Text size="medium">{item.title}</Text>
+              </StyledText>
               {item.group?.length ? (
                 <ProductTag>
                   <Text size="small" weight="bold" type="placeholder" contrast="high">
@@ -87,6 +90,7 @@ const ProductListing = ({
       </Box>
     </Box>
   );
+};
 
 const ProductListingWrapper = React.forwardRef(
   (
