@@ -13,7 +13,7 @@ const isUrlValid = (value) => {
   }
   return '';
 };
-const NativeCredentialsForm = ({ closeModal, platform, setCodOrderControl }) => {
+const NativeCredentialsForm = ({ closeModal, platform, submitCredentials }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [url, setUrl] = useState('');
@@ -27,12 +27,12 @@ const NativeCredentialsForm = ({ closeModal, platform, setCodOrderControl }) => 
 
   const onSubmit = useCallback(() => {
     setIsCtaEnabled(false);
-    setCodOrderControl({
+    submitCredentials({
       order_status_update_url: url,
       username,
       password,
     });
-  }, [platform, username, password, setIsCtaEnabled, setCodOrderControl]);
+  }, [platform, username, password, setIsCtaEnabled, submitCredentials]);
 
   return (
     <div className="native-credentials-form">

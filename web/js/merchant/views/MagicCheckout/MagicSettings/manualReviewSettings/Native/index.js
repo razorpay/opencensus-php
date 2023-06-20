@@ -3,7 +3,7 @@ import CommonModal from 'merchant/views/MagicCheckout/common/components/CommonMo
 import InfoModal from 'merchant/views/MagicCheckout/MagicSettings/manualReviewSettings/Native/component/InfoModal';
 import { MANUAL_REVIEW_MODAL } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 
-const NativeModal = ({ platform, setCodOrderControl }) => {
+const NativeModal = ({ platform, submitCredentials }) => {
   const { infoHeader, instructions } = MANUAL_REVIEW_MODAL[platform] || {};
 
   return (
@@ -12,7 +12,7 @@ const NativeModal = ({ platform, setCodOrderControl }) => {
       infoClass=" native-info-container"
       infoComponent={<InfoModal heading={infoHeader} instructions={instructions} />}
       inputComponent={
-        <NativeCredentialsForm platform={platform} setCodOrderControl={setCodOrderControl} />
+        <NativeCredentialsForm platform={platform} submitCredentials={submitCredentials} />
       }
     />
   );
