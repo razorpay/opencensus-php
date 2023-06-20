@@ -8,9 +8,7 @@ use RZP\Error\ErrorCode;
 
 class ShippingRates extends Base\Core
 {
-    const forceEnableCODMids = [
-        'ChdCdGm7TvuVk6',   // boAt
-    ];
+    const forceEnableCODMids = [];
 
     /**
      * allow Shopify merchants to activate COD without
