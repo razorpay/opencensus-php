@@ -781,6 +781,16 @@ class Service extends Base\Service
         }
         catch (Throwable $e)
         {
+            $this->trace->error(TraceCode::MERCHANT_SERVICEABILITY_EXTERNAL_CALL_ERROR,
+                [
+                    'request'   => $request,
+                    'type'      => get_class($e),
+                    'message'   => $e->getMessage(),
+                    'code'      => $e->getCode(),
+                    'trace'     => $e->getTraceAsString(),
+                ]
+            );
+
             throw new Exception\ServerErrorException(
                 'Error while calling URL',
                 ErrorCode::SERVER_ERROR,
