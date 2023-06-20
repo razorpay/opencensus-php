@@ -1485,7 +1485,7 @@ return [
             'url'     => '/submerchants',
             'method'  => 'GET',
             'content' => [
-                'contact_mobile'    => '+919123456788'
+                'contact_mobile'    => '9123456788'
             ],
         ],
         'response' => [

@@ -6,6 +6,7 @@ namespace RZP\Models\Merchant;
 use ApiResponse;
 use App;
 use DB;
+use Lib\PhoneBook;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Http\Response;
@@ -7401,6 +7402,22 @@ class Service extends Base\Service
         if (empty($input[Detail\Entity::ACTIVATION_STATUS]) === false and $input[Detail\Entity::ACTIVATION_STATUS] === 'not_submitted')
         {
             $input[Detail\Entity::ACTIVATION_STATUS] = null;
+        }
+        // format contact mobile to country format
+        if (empty($input[Detail\Entity::CONTACT_MOBILE]) === false)
+        {
+           $number = new PhoneBook($input[Detail\Entity::CONTACT_MOBILE], true, $partner->getCountry());
+
+            if ($number->isValidNumber() === true)
+            {
+                $input[Detail\Entity::CONTACT_MOBILE] = $number->format();
+            }
+            else
+            {
+                $normalizedNumber = $number->getRawInput();
+
+                $input[Detail\Entity::CONTACT_MOBILE] = $normalizedNumber;
+            }
         }
 
         $startTime = millitime();
