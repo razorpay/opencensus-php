@@ -41,29 +41,41 @@ export default class WhitelistExperiment extends React.Component {
       });
   };
 
+  setSegments = () => {
+    const { variants } = this.state;
+    const currentSegments = {};
+    variants.forEach((variant) => {
+      const whitelistedSegmentIds = this.getWhitelistedSegmentIds(variant.id);
+      if (whitelistedSegmentIds) {
+        currentSegments[variant.id] = { id: whitelistedSegmentIds };
+      }
+    });
+    this.setState({
+      selectedSegments: currentSegments,
+    });
+  };
+
   componentDidMount() {
     this.segmentListFetch();
+    this.setSegments();
   }
 
   onSubmit = () => {
     const { data } = this.props;
-    const { variants, selectedWhitelistTypes, selectedSegments } = this.state;
+    const { variants, selectedSegments } = this.state;
     const payload = {
       id: data.id,
       whitelisting: variants.map((variant) => {
         const selectedSegment = selectedSegments[variant.id];
-        if (
-          selectedWhitelistTypes[variant.id] === EntityIds ||
-          !selectedWhitelistTypes[variant.id]
-        ) {
+        if (selectedSegment) {
           return {
             entity_id: variant?.id,
-            ids: variant?.whitelistedIds,
+            segment_id: selectedSegment?.id,
           };
         } else {
           return {
             entity_id: variant?.id,
-            segment_id: selectedSegment?.id,
+            ids: variant?.whitelistedIds,
           };
         }
       }),
@@ -91,7 +103,7 @@ export default class WhitelistExperiment extends React.Component {
     const { data } = this.props;
 
     if (!data.whitelisting || !data.whitelisting.length) {
-      return [];
+      return null;
     }
 
     const whitelist = data.whitelisting.find((matchingId) => matchingId.entity_id === variantId);
@@ -100,7 +112,7 @@ export default class WhitelistExperiment extends React.Component {
       return whitelist.segment_id;
     }
 
-    return [];
+    return null;
   };
 
   handleSelectedType = (e, variantId) => {
@@ -121,6 +133,7 @@ export default class WhitelistExperiment extends React.Component {
   };
 
   setWhitelistIds = ({ target: { value: ids } }, variantId, variants) => {
+    const { selectedSegments } = this.state;
     this.setState({
       variants: variants.map((v) => {
         if (v.id === variantId) {
@@ -131,6 +144,9 @@ export default class WhitelistExperiment extends React.Component {
         }
         return v;
       }),
+    });
+    this.setState({
+      selectedSegments: { ...selectedSegments, [variantId]: undefined },
     });
   };
 
@@ -187,7 +203,14 @@ export default class WhitelistExperiment extends React.Component {
                     placeholder="Select a Segment ID"
                     label="Select Segment ID"
                     options={segments || []}
-                    selected={selectedSegments[variant.id] || whitelistedSegmentIds}
+                    selected={
+                      selectedSegments[variant.id]?.name ||
+                      segments?.find(
+                        (matchingId) =>
+                          matchingId.id ===
+                          (selectedSegments[variant.id]?.id || whitelistedSegmentIds),
+                      )?.name
+                    }
                     onChange={(e) => {
                       this.handleSelectedSegment(e, variant.id);
                     }}
