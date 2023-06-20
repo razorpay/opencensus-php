@@ -129,22 +129,22 @@ class RepositoryTest extends TestCase
         $merchantbusinessDetailProto3 = $this->getBusinessDetailProtoForJson($this->businessDetailEntityJson3);
 
         $merchantbusinessDetailResponse = new MerchantBusinessDetailResponseByMerchantId();
-        $merchantbusinessDetailResponse->setBusinessDetails([$merchantbusinessDetailProto3, $merchantbusinessDetailProto2,$merchantbusinessDetailProto1]);
+        $merchantbusinessDetailResponse->setBusinessDetails([$merchantbusinessDetailProto3, $merchantbusinessDetailProto2, $merchantbusinessDetailProto1]);
 
 
         // test1: Splitz is on, request should go to account service.
         $splitzMock = $this->createSplitzMock();
         $splitzMock->expects($this->any())->method('evaluateRequest')->willReturn($this->sampleSpltizOutput);
         $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
-        $merchantbusinessDetailMockClient  = $this->getMockClient();
+        $merchantbusinessDetailMockClient = $this->getMockClient();
         $merchantbusinessDetailMockClient->expects(
             $this->exactly(1))->method("getByMerchantId")->with("K4O9sCGihrL2bG",
             $merchantbusinessDetail->getDefaultRequestMetaData())->willReturn([$merchantbusinessDetailResponse, null]
         );
         $merchantbusinessDetail->getAsvSdkClient()->setBusinessDetail($merchantbusinessDetailMockClient);
 
-        $asvRouterMock = $this->getAsvRouteMock(['isSaveFlowOrFailure']);
-        $asvRouterMock->expects($this->exactly(1))->method('isSaveFlowOrFailure')->willReturn(false);
+        $asvRouterMock = $this->getAsvRouteMock(['isExclusionFlowOrFailure']);
+        $asvRouterMock->expects($this->exactly(1))->method('isExclusionFlowOrFailure')->willReturn(false);
 
         $repo = new Repository();
         $repo->asvRouter = $asvRouterMock;
@@ -158,12 +158,12 @@ class RepositoryTest extends TestCase
         $splitzMock = $this->createSplitzMock();
         $splitzMock->expects($this->any())->method('evaluateRequest')->willReturn($splitzOff);
         $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
-        $merchantbusinessDetailMockClient  = $this->getMockClient();
+        $merchantbusinessDetailMockClient = $this->getMockClient();
         $merchantbusinessDetailMockClient->expects($this->exactly(0))->method("getByMerchantId")->with($this->any())->willReturn([$merchantbusinessDetailResponse, null]);
         $merchantbusinessDetail->getAsvSdkClient()->setbusinessDetail($merchantbusinessDetailMockClient);
 
-        $asvRouterMock = $this->getAsvRouteMock(['isSaveFlowOrFailure']);
-        $asvRouterMock->expects($this->exactly(1))->method('isSaveFlowOrFailure')->willReturn(false);
+        $asvRouterMock = $this->getAsvRouteMock(['isExclusionFlowOrFailure']);
+        $asvRouterMock->expects($this->exactly(1))->method('isExclusionFlowOrFailure')->willReturn(false);
 
         $repo = new Repository();
         $repo->asvRouter = $asvRouterMock;
@@ -176,12 +176,12 @@ class RepositoryTest extends TestCase
         $splitzMock = $this->createSplitzMock();
         $splitzMock->expects($this->any())->method('evaluateRequest')->willThrowException(new \Exception("sample"));
         $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
-        $merchantbusinessDetailMockClient  = $this->getMockClient();
+        $merchantbusinessDetailMockClient = $this->getMockClient();
         $merchantbusinessDetailMockClient->expects($this->exactly(0))->method("getByMerchantId")->with($this->any())->willReturn([$merchantbusinessDetailResponse, null]);
         $merchantbusinessDetail->getAsvSdkClient()->setbusinessDetail($merchantbusinessDetailMockClient);
 
-        $asvRouterMock = $this->getAsvRouteMock(['isSaveFlowOrFailure']);
-        $asvRouterMock->expects($this->exactly(1))->method('isSaveFlowOrFailure')->willReturn(false);
+        $asvRouterMock = $this->getAsvRouteMock(['isExclusionFlowOrFailure']);
+        $asvRouterMock->expects($this->exactly(1))->method('isExclusionFlowOrFailure')->willReturn(false);
 
         $repo = new Repository();
         $repo->asvRouter = $asvRouterMock;
@@ -190,7 +190,7 @@ class RepositoryTest extends TestCase
         self::assertEquals($businessDetailEntity3->toArray(), $businessDetail->toArray());
 
         // test4: Splitz is on, save flow is on request should not got asv, should go to db.
-        $repo = $this->getRepoWithSplitzAndSaveFlow("true", 0,  true);
+        $repo = $this->getRepoWithSplitzAndSaveFlow("true", 0, true);
         $businessDetail = $repo->getBusinessDetailsForMerchantId("K4O9sCGihrL2bG");
         $businessDetail['audit_id'] = "testtesttest";
         self::assertEquals($businessDetailEntity3->toArray(), $businessDetail->toArray());
@@ -238,20 +238,22 @@ class RepositoryTest extends TestCase
 
     }
 
-    public function getRepoWithSplitzAndSaveFlow($splitzOutput, $splitzCount, $isSaveFlowOrFailure = false) {
-        if($splitzOutput == "exception") {
+    public function getRepoWithSplitzAndSaveFlow($splitzOutput, $splitzCount, $isExclusionFlowOrFailure = false)
+    {
+        if ($splitzOutput == "exception") {
             $this->splitzShouldThrowException($splitzCount);
         } else {
             $this->setSplitzWithOutput($splitzOutput, $splitzCount);
         }
         $repo = new Repository();
-        $asvRouterMock = $this->getAsvRouteMock(['isSaveFlowOrFailure']);
-        $asvRouterMock->expects($this->any())->method('isSaveFlowOrFailure')->willReturn($isSaveFlowOrFailure);
+        $asvRouterMock = $this->getAsvRouteMock(['isExclusionFlowOrFailure']);
+        $asvRouterMock->expects($this->any())->method('isExclusionFlowOrFailure')->willReturn($isExclusionFlowOrFailure);
         $repo->asvRouter = $asvRouterMock;
         return $repo;
     }
 
-    public function testMerchantbusinessDetailFindOrFailRequestRoutedToAsv() {
+    public function testMerchantbusinessDetailFindOrFailRequestRoutedToAsv()
+    {
         $repo = new Repository();
 
         $merchantbusinessDetail = new BusinessDetail();
@@ -273,21 +275,21 @@ class RepositoryTest extends TestCase
         // FindOrFail & FindOrFailpublic should work fine if splitz is on.
         $repo = $this->getRepoWithSplitzAndSaveFlow("true", 2);
 
-        $this->setBusinessDetailMockClientWithIdAndResponse("K9UzmvitzJwyS4", $merchantbusinessDetailResponse, null,"getById", 2);
+        $this->setBusinessDetailMockClientWithIdAndResponse("K9UzmvitzJwyS4", $merchantbusinessDetailResponse, null, "getById", 2);
         $response = $this->getOutputForDbCalls($repo, "K9UzmvitzJwyS4");
         $this->assertEquals($businessDetailEntity1->toArray(), $response);
         $this->assertEquals($this->getOutputForRawDbCalls($repo, "K9UzmvitzJwyS4"), $response);
 
         // FindOrFail & FindOrFailpublic should work fine if splitz is on, asv gives exception.
         $repo = $this->getRepoWithSplitzAndSaveFlow("true", 2);
-        $this->setBusinessDetailMockClientWithIdAndResponse("K9UzmvitzJwyS4", null, new GrpcError(\Grpc\STATUS_DEADLINE_EXCEEDED, "test"),"getById", 2);
+        $this->setBusinessDetailMockClientWithIdAndResponse("K9UzmvitzJwyS4", null, new GrpcError(\Grpc\STATUS_DEADLINE_EXCEEDED, "test"), "getById", 2);
         $response = $this->getOutputForDbCalls($repo, "K9UzmvitzJwyS4");
         $this->assertEquals($businessDetailEntity1->toArray(), $response);
         $this->assertEquals($this->getOutputForRawDbCalls($repo, "K9UzmvitzJwyS4"), $response);
 
         // FindOrFail & FindOrFailpublic should work fine if splitz is on, array of ids.
         $repo = $this->getRepoWithSplitzAndSaveFlow("true", 0);
-        $this->setBusinessDetailMockClientWithIdAndResponse("K9UzmvitzJwyS4", $merchantbusinessDetailResponse, null,"getById", 0);
+        $this->setBusinessDetailMockClientWithIdAndResponse("K9UzmvitzJwyS4", $merchantbusinessDetailResponse, null, "getById", 0);
         $response = $this->getOutputForDbCalls($repo, ["K9UzmvitzJwyS4"]);
         $this->assertEquals([$businessDetailEntity1->toArray()], $response);
         $this->assertEquals($this->getOutputForRawDbCalls($repo, ["K9UzmvitzJwyS4"]), $response);
@@ -318,7 +320,8 @@ class RepositoryTest extends TestCase
     }
 
 
-    public function assertEqualsAssociativeByKey($array1, $array2, $key = "id") {
+    public function assertEqualsAssociativeByKey($array1, $array2, $key = "id")
+    {
         $compareArray1 = [];
         $compareArray2 = [];
 
@@ -332,25 +335,29 @@ class RepositoryTest extends TestCase
 
         self::assertEquals($compareArray1, $compareArray2);
     }
-    private function getExceptionForFindOrFailAsv($repo, $id, $grpcError) {
+
+    private function getExceptionForFindOrFailAsv($repo, $id, $grpcError)
+    {
         try {
-            $this->setBusinessDetailMockClientWithIdAndResponse($id, null, $grpcError,"getById", 1);
+            $this->setBusinessDetailMockClientWithIdAndResponse($id, null, $grpcError, "getById", 1);
             $repo->findOrFailAsv($id);
         } catch (\Exception $e) {
             return $e;
         }
     }
 
-    private function getExceptionForFindOrFailPublicAsv($repo, $id, $grpcError) {
+    private function getExceptionForFindOrFailPublicAsv($repo, $id, $grpcError)
+    {
         try {
-            $this->setBusinessDetailMockClientWithIdAndResponse($id, null, $grpcError,"getById", 1);
+            $this->setBusinessDetailMockClientWithIdAndResponse($id, null, $grpcError, "getById", 1);
             $repo->findOrFailPublicAsv($id);
         } catch (\Exception $e) {
             return $e;
         }
     }
 
-    private function getExceptionForFindAndFailDatabase($repo, $id) {
+    private function getExceptionForFindAndFailDatabase($repo, $id)
+    {
         try {
             $repo->findOrFailDatabase($id);
         } catch (\Exception $e) {
@@ -358,7 +365,8 @@ class RepositoryTest extends TestCase
         }
     }
 
-    private function getExceptionForFindAndFailPublicDatabase($repo, $id) {
+    private function getExceptionForFindAndFailPublicDatabase($repo, $id)
+    {
         try {
             $repo->findOrFailPublicDatabase($id);
         } catch (\Exception $e) {
@@ -366,15 +374,17 @@ class RepositoryTest extends TestCase
         }
     }
 
-    private function setBusinessDetailMockClientWithIdAndResponse($id, $response, $error, $method, $count) {
+    private function setBusinessDetailMockClientWithIdAndResponse($id, $response, $error, $method, $count)
+    {
         $sdkWrapper = new BusinessDetail();
-        $mockClient  = $this->getMockClient();
+        $mockClient = $this->getMockClient();
         $mockClient->expects($this->exactly($count))->method($method)->with($id, $sdkWrapper->getDefaultRequestMetaData())->willReturn([$response, $error]);
         $sdkWrapper->getAsvSdkClient()->setBusinessDetail($mockClient);
     }
 
-    private function getOutputForRawDbCalls($repo, $id, $columns = null, $connectiontype = null) {
-        if($columns == null) {
+    private function getOutputForRawDbCalls($repo, $id, $columns = null, $connectiontype = null)
+    {
+        if ($columns == null) {
             $findOrFailValue = $repo->findOrFailDatabase($id);
             $findOrFailPublicValue = $repo->findOrFailPublicDatabase($id);
         } else {
@@ -382,12 +392,12 @@ class RepositoryTest extends TestCase
             $findOrFailPublicValue = $repo->findOrFailDatabase($id, $columns, $connectiontype);
         }
 
-        if(is_array($id) && $columns==null ) {
-            for($i = 0; $i < count($findOrFailValue); $i++) {
+        if (is_array($id) && $columns == null) {
+            for ($i = 0; $i < count($findOrFailValue); $i++) {
                 $findOrFailValue[$i]['audit_id'] = "testtesttest";
                 $findOrFailPublicValue[$i]['audit_id'] = "testtesttest";
             }
-        } elseif($columns == null) {
+        } elseif ($columns == null) {
             $findOrFailValue['audit_id'] = "testtesttest";
             $findOrFailPublicValue['audit_id'] = "testtesttest";
         }
@@ -396,8 +406,9 @@ class RepositoryTest extends TestCase
         return $findOrFailValue->toArray();
     }
 
-    private function getOutputForDbCalls($repo, $id, $columns = null, $connectiontype = null) {
-        if($columns == null) {
+    private function getOutputForDbCalls($repo, $id, $columns = null, $connectiontype = null)
+    {
+        if ($columns == null) {
             $findOrFailValue = $repo->findOrFail($id);
             $findOrFailPublicValue = $repo->findOrFailPublic($id);
         } else {
@@ -405,30 +416,32 @@ class RepositoryTest extends TestCase
             $findOrFailPublicValue = $repo->findOrFailPublic($id, $columns, $connectiontype);
         }
 
-        if(is_array($id) && $columns == null) {
-            for($i = 0; $i < count($findOrFailValue); $i++) {
+        if (is_array($id) && $columns == null) {
+            for ($i = 0; $i < count($findOrFailValue); $i++) {
                 $findOrFailValue[$i]['audit_id'] = "testtesttest";
                 $findOrFailPublicValue[$i]['audit_id'] = "testtesttest";
             }
-        } elseif($columns == null) {
+        } elseif ($columns == null) {
             $findOrFailValue['audit_id'] = "testtesttest";
             $findOrFailPublicValue['audit_id'] = "testtesttest";
         }
 
         $this->assertEquals($findOrFailValue->toArray(), $findOrFailPublicValue->toArray());
-        $this->assertEquals($this->getOutputForRawDbCalls($repo, $id, $columns,$connectiontype), $findOrFailPublicValue->toArray());
+        $this->assertEquals($this->getOutputForRawDbCalls($repo, $id, $columns, $connectiontype), $findOrFailPublicValue->toArray());
 
         return $findOrFailValue->toArray();
     }
 
-    private function splitzShouldThrowException($count = 1) {
+    private function splitzShouldThrowException($count = 1)
+    {
         $splitzMock = $this->createSplitzMock();
         $splitzMock->expects($this->exactly($count))->method('evaluateRequest')->willThrowException(new \Exception("sample"));
         $this->app[Constant::SPLITZ_SERVICE] = $splitzMock;
         return $splitzMock;
     }
 
-    private function setSplitzWithOutput($output, $count = 1) {
+    private function setSplitzWithOutput($output, $count = 1)
+    {
         $splitz = $this->sampleSpltizOutput;
         $splitz["response"]["variant"]["variables"][0]["value"] = $output;
         $splitzMock = $this->createSplitzMock();
@@ -437,21 +450,24 @@ class RepositoryTest extends TestCase
         return $splitz;
     }
 
-    private function createMerchantbusinessDetailInDatabase($json) {
+    private function createMerchantbusinessDetailInDatabase($json)
+    {
         $this->fixtures->create("merchant_business_detail",
             $this->getBusinessDetailEntityForJson($json)->toArray(),
         );
     }
 
-    private function getBusinessDetailProtoForJson($json) {
+    private function getBusinessDetailProtoForJson($json)
+    {
         $businessDetailProto = new \Rzp\Accounts\Merchant\V1\BusinessDetail();
         $businessDetailProto->mergeFromJsonString($json, false);
         return $businessDetailProto;
     }
 
-    private function getBusinessDetailEntityForJson($json){
+    private function getBusinessDetailEntityForJson($json)
+    {
         $array = json_decode($json, true);
-        $entity  =  new BusinessDetailEntity();
+        $entity = new BusinessDetailEntity();
         $entity->setRawAttributes($array);
         return $entity;
     }
@@ -467,7 +483,8 @@ class RepositoryTest extends TestCase
         return $splitzMock;
     }
 
-    private function getMockClient() {
+    private function getMockClient()
+    {
         return $this->getMockBuilder("Razorpay\Asv\Interfaces\BusinessDetailInterface")
             ->enableOriginalConstructor()
             ->getMock();

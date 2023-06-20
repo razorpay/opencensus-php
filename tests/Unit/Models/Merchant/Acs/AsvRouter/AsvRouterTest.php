@@ -23,21 +23,21 @@ class AsvRouterTest extends TestCase
 
         $asvRouter = new AsvRouter();
 
-        $asvRouter->isSaveFlowOrFailure();
+        $asvRouter->isExclusionFlowOrFailure();
 
         // if we set no value, this should be true, don't route if we are not sure.
-        $this->assertEquals(true, $asvRouter->isSaveFlowOrFailure());
+        $this->assertEquals(true, $asvRouter->isExclusionFlowOrFailure());
 
         // set value not included on email route
         $this->setRequestRoute('fund_transfer_attempt_initiate_action');
-        $this->assertEquals(false, $asvRouter->isSaveFlowOrFailure());
+        $this->assertEquals(false, $asvRouter->isExclusionFlowOrFailure());
 
         $emailCheckRouteArray = ['account_create_v2'];
 
         foreach ($emailCheckRouteArray as $route) {
             $this->setRequestRoute($route);
             $this->assertEquals(app('request.ctx')->getRoute(), $route);
-            $this->assertEquals(true, $asvRouter->isSaveFlowOrFailure());
+            $this->assertEquals(true, $asvRouter->isExclusionFlowOrFailure());
         }
     }
 

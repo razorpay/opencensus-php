@@ -1,7 +1,8 @@
 <?php
 
 namespace RZP\Models\Merchant\Acs\AsvRouter\AsvMaps;
-final class MerchantSaveFlows {
+final class MerchantExclusionFlows
+{
 
     public const MAP = array(
         /* routes */
@@ -63,7 +64,7 @@ final class MerchantSaveFlows {
         'user_fetch' => true,
         'account_edit_v2' => true,
         'merchant_edit_config' => true,
-        'merchant_activation_details' => true,
+        'merchant_activation_details' => true, // Please Be conscious while removing this, this is top traffic read routes
         'merchant_edit_config_logo' => true,
         'merchant_requests_create' => true,
         'growth_get_asset_details' => true,
@@ -117,7 +118,7 @@ final class MerchantSaveFlows {
         'merchant_razorx_evaluate' => true,
         'merchant_toggle_fee_bearer' => true,
         'partner_activation_save' => true,
-        'payment_fetch_multiple' => true,
+        'payment_fetch_multiple' => true, // Please Be conscious while removing this, this is top traffic read routes
         'payment_page_list' => true,
         'pricing_add_plan_rule_bulk' => true,
         'proxy_merchant_edit_support_details' => true,
@@ -152,9 +153,43 @@ final class MerchantSaveFlows {
         'rzp_jobs_triggeracssync' => true,
         'RZP_Mail_Merchant_MerchantDashboardEmail' => true,
         'rzp_mail_user_otp' => true,
+
+
+        // TOP Read Routes To be Excluded
+        'order_payments' => true,
+        'payment_verify_new' => true,
+        // 'payment_fetch_multiple' => true,  // Already Present Above
+        'payment_fetch_by_id' => true,
+        'order_fetch_by_id' => true,
+        'payment_get_status' => true,
+        'payment_create_ajax' => true,
+        'gateway_payment_callback_post' => true,
+        'order_create' => true,
+        'payout_fetch_by_id' => true,
+        'payment_create_upi' => true,
+        'payment_notify' => true,
+        'payment_links_get' => true,
+        '1cc_merchant_preferences' => true,
+        'payment_create_checkout' => true,
+        // 'merchant_activation_details' => true, // Already Present Above
+        'payments_downtime' => true,
+        'admin_fetch_entity_multiple' => true,
+        'account_features_get' => true,
+        'merchant_methods_offers_checkout_internal' => true,
+        'invoice_create' => true,
+        'customer_fetch_internal_for_checkout' => true,
+        'internal_merchant_fetch' => true,
+        'payment_capture' => true,
+        'worker:bucket' => true,
+        'checkout_personalisation_internal' => true,
+        'payment_timeout_new' => true,
+        'update_fts_fund_transfer' => true,
+        'payment_validate_vpa' => true,
+        'customer_fetch_tokens_internal' => true,
     );
 
-    public static function isSaveFlow(string $flow) {
+    public static function isExclusionFLow(string $flow): bool
+    {
         if (array_key_exists($flow, self::MAP)) {
             return true;
         }

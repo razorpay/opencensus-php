@@ -126,8 +126,8 @@ class RepositoryTest extends TestCase
         $merchantEmailMockClient->expects($this->exactly(1))->method("getByMerchantId")->with("CzmiBzNQPErfdT", $merchantEmail->getDefaultRequestMetaData())->willReturn([$merchantEmailResponse, null]);
         $merchantEmail->getAsvSdkClient()->setEmail($merchantEmailMockClient);
 
-        $asvRouterMock = $this->getAsvRouteMock(['isSaveFlowOrFailure']);
-        $asvRouterMock->expects($this->exactly(1))->method('isSaveFlowOrFailure')->willReturn(false);
+        $asvRouterMock = $this->getAsvRouteMock(['isExclusionFlowOrFailure']);
+        $asvRouterMock->expects($this->exactly(1))->method('isExclusionFlowOrFailure')->willReturn(false);
 
         $repo = new Repository();
         $repo->asvRouter = $asvRouterMock;
@@ -145,8 +145,8 @@ class RepositoryTest extends TestCase
         $merchantEmailMockClient->expects($this->exactly(0))->method("getByMerchantId")->with("CzmiBzNQPErfdT", $merchantEmail->getDefaultRequestMetaData())->willReturn([$merchantEmailResponse, null]);
         $merchantEmail->getAsvSdkClient()->setEmail($merchantEmailMockClient);
 
-        $asvRouterMock = $this->getAsvRouteMock(['isSaveFlowOrFailure']);
-        $asvRouterMock->expects($this->exactly(1))->method('isSaveFlowOrFailure')->willReturn(true);
+        $asvRouterMock = $this->getAsvRouteMock(['isExclusionFlowOrFailure']);
+        $asvRouterMock->expects($this->exactly(1))->method('isExclusionFlowOrFailure')->willReturn(true);
 
         $repo = new Repository();
         $repo->asvRouter = $asvRouterMock;
@@ -163,8 +163,8 @@ class RepositoryTest extends TestCase
         $merchantEmailMockClient->expects($this->exactly(1))->method("getByMerchantId")->with("CzmiBzNQPErfdT", $merchantEmail->getDefaultRequestMetaData())->willReturn([new MerchantEmailResponseByMerchantId(), null]);
         $merchantEmail->getAsvSdkClient()->setEmail($merchantEmailMockClient);
 
-        $asvRouterMock = $this->getAsvRouteMock(['isSaveFlowOrFailure']);
-        $asvRouterMock->expects($this->exactly(1))->method('isSaveFlowOrFailure')->willReturn(false);
+        $asvRouterMock = $this->getAsvRouteMock(['isExclusionFlowOrFailure']);
+        $asvRouterMock->expects($this->exactly(1))->method('isExclusionFlowOrFailure')->willReturn(false);
 
         $repo = new Repository();
         $repo->asvRouter = $asvRouterMock;
@@ -184,8 +184,8 @@ class RepositoryTest extends TestCase
         $merchantEmailMockClient->expects($this->exactly(0))->method("getByMerchantId")->with($this->any())->willReturn([$merchantEmailResponse, null]);
         $merchantEmail->getAsvSdkClient()->setEmail($merchantEmailMockClient);
 
-        $asvRouterMock = $this->getAsvRouteMock(['isSaveFlowOrFailure']);
-        $asvRouterMock->expects($this->exactly(1))->method('isSaveFlowOrFailure')->willReturn(false);
+        $asvRouterMock = $this->getAsvRouteMock(['isExclusionFlowOrFailure']);
+        $asvRouterMock->expects($this->exactly(1))->method('isExclusionFlowOrFailure')->willReturn(false);
 
         $repo = new Repository();
         $repo->asvRouter = $asvRouterMock;
@@ -205,8 +205,8 @@ class RepositoryTest extends TestCase
         $merchantEmailMockClient->expects($this->exactly(0))->method("getByMerchantId")->with($this->any())->willReturn([$merchantEmailResponse, null]);
         $merchantEmail->getAsvSdkClient()->setEmail($merchantEmailMockClient);
 
-        $asvRouterMock = $this->getAsvRouteMock(['isSaveFlowOrFailure']);
-        $asvRouterMock->expects($this->exactly(1))->method('isSaveFlowOrFailure')->willReturn(false);
+        $asvRouterMock = $this->getAsvRouteMock(['isExclusionFlowOrFailure']);
+        $asvRouterMock->expects($this->exactly(1))->method('isExclusionFlowOrFailure')->willReturn(false);
 
         $repo = new Repository();
         $repo->asvRouter = $asvRouterMock;
@@ -224,8 +224,8 @@ class RepositoryTest extends TestCase
         $merchantEmailMockClient->expects($this->exactly(0))->method("getByMerchantId")->with($this->any())->willReturn([$merchantEmailResponse, null]);
         $merchantEmail->getAsvSdkClient()->setEmail($merchantEmailMockClient);
 
-        $asvRouterMock = $this->getAsvRouteMock(['isSaveFlowOrFailure']);
-        $asvRouterMock->expects($this->exactly(1))->method('isSaveFlowOrFailure')->willReturn(false);
+        $asvRouterMock = $this->getAsvRouteMock(['isExclusionFlowOrFailure']);
+        $asvRouterMock->expects($this->exactly(1))->method('isExclusionFlowOrFailure')->willReturn(false);
 
         $repo = new Repository();
         $repo->asvRouter = $asvRouterMock;
@@ -242,8 +242,8 @@ class RepositoryTest extends TestCase
         $merchantEmailMockClient->expects($this->exactly(1))->method("getByMerchantId")->with("CzmiBzNQPErfdT", $merchantEmail->getDefaultRequestMetaData())->willReturn([null, new GrpcError(\Grpc\STATUS_ABORTED, "new")]);
         $merchantEmail->getAsvSdkClient()->setEmail($merchantEmailMockClient);
 
-        $asvRouterMock = $this->getAsvRouteMock(['isSaveFlowOrFailure']);
-        $asvRouterMock->expects($this->exactly(1))->method('isSaveFlowOrFailure')->willReturn(false);
+        $asvRouterMock = $this->getAsvRouteMock(['isExclusionFlowOrFailure']);
+        $asvRouterMock->expects($this->exactly(1))->method('isExclusionFlowOrFailure')->willReturn(false);
 
         $repo = new Repository();
         $repo->asvRouter = $asvRouterMock;
@@ -282,8 +282,8 @@ class RepositoryTest extends TestCase
         $merchantEmailMockClient->expects($this->exactly(1))->method("getByMerchantId")->with("CzmiBzNQPErfdT", $merchantEmail->getDefaultRequestMetaData())->willReturn([$merchantEmailResponse, null]);
         $merchantEmail->getAsvSdkClient()->setEmail($merchantEmailMockClient);
 
-        $asvRouterMock = $this->getAsvRouteMock(['isSaveFlowOrFailure']);
-        $asvRouterMock->expects($this->exactly(1))->method('isSaveFlowOrFailure')->willReturn(false);
+        $asvRouterMock = $this->getAsvRouteMock(['isExclusionFlowOrFailure']);
+        $asvRouterMock->expects($this->exactly(1))->method('isExclusionFlowOrFailure')->willReturn(false);
 
         $repo = new Repository();
         $repo->asvRouter = $asvRouterMock;
@@ -299,8 +299,8 @@ class RepositoryTest extends TestCase
         $merchantEmailMockClient->expects($this->exactly(0))->method("getByMerchantId")->with("CzmiBzNQPErfdT", $merchantEmail->getDefaultRequestMetaData())->willReturn([$merchantEmailResponse, null]);
         $merchantEmail->getAsvSdkClient()->setEmail($merchantEmailMockClient);
 
-        $asvRouterMock = $this->getAsvRouteMock(['isSaveFlowOrFailure']);
-        $asvRouterMock->expects($this->exactly(1))->method('isSaveFlowOrFailure')->willReturn(true);
+        $asvRouterMock = $this->getAsvRouteMock(['isExclusionFlowOrFailure']);
+        $asvRouterMock->expects($this->exactly(1))->method('isExclusionFlowOrFailure')->willReturn(true);
 
         $repo = new Repository();
         $repo->asvRouter = $asvRouterMock;
@@ -316,8 +316,8 @@ class RepositoryTest extends TestCase
         $merchantEmailMockClient->expects($this->exactly(1))->method("getByMerchantId")->with("CzmiBzNQPErfdK", $merchantEmail->getDefaultRequestMetaData())->willReturn([new MerchantEmailResponseByMerchantId(), null]);
         $merchantEmail->getAsvSdkClient()->setEmail($merchantEmailMockClient);
 
-        $asvRouterMock = $this->getAsvRouteMock(['isSaveFlowOrFailure']);
-        $asvRouterMock->expects($this->exactly(1))->method('isSaveFlowOrFailure')->willReturn(false);
+        $asvRouterMock = $this->getAsvRouteMock(['isExclusionFlowOrFailure']);
+        $asvRouterMock->expects($this->exactly(1))->method('isExclusionFlowOrFailure')->willReturn(false);
 
         $repo = new Repository();
         $repo->asvRouter = $asvRouterMock;
@@ -335,8 +335,8 @@ class RepositoryTest extends TestCase
         $merchantEmailMockClient->expects($this->exactly(0))->method("getByMerchantId")->with($this->any())->willReturn([$merchantEmailResponse, null]);
         $merchantEmail->getAsvSdkClient()->setEmail($merchantEmailMockClient);
 
-        $asvRouterMock = $this->getAsvRouteMock(['isSaveFlowOrFailure']);
-        $asvRouterMock->expects($this->exactly(1))->method('isSaveFlowOrFailure')->willReturn(false);
+        $asvRouterMock = $this->getAsvRouteMock(['isExclusionFlowOrFailure']);
+        $asvRouterMock->expects($this->exactly(1))->method('isExclusionFlowOrFailure')->willReturn(false);
 
         $repo = new Repository();
         $repo->asvRouter = $asvRouterMock;
@@ -354,8 +354,8 @@ class RepositoryTest extends TestCase
         $merchantEmailMockClient->expects($this->exactly(0))->method("getByMerchantId")->with($this->any())->willReturn([$merchantEmailResponse, null]);
         $merchantEmail->getAsvSdkClient()->setEmail($merchantEmailMockClient);
 
-        $asvRouterMock = $this->getAsvRouteMock(['isSaveFlowOrFailure']);
-        $asvRouterMock->expects($this->exactly(1))->method('isSaveFlowOrFailure')->willReturn(false);
+        $asvRouterMock = $this->getAsvRouteMock(['isExclusionFlowOrFailure']);
+        $asvRouterMock->expects($this->exactly(1))->method('isExclusionFlowOrFailure')->willReturn(false);
 
         $repo = new Repository();
         $repo->asvRouter = $asvRouterMock;
@@ -371,8 +371,8 @@ class RepositoryTest extends TestCase
         $merchantEmailMockClient->expects($this->exactly(0))->method("getByMerchantId")->with($this->any())->willReturn([$merchantEmailResponse, null]);
         $merchantEmail->getAsvSdkClient()->setEmail($merchantEmailMockClient);
 
-        $asvRouterMock = $this->getAsvRouteMock(['isSaveFlowOrFailure']);
-        $asvRouterMock->expects($this->exactly(1))->method('isSaveFlowOrFailure')->willReturn(false);
+        $asvRouterMock = $this->getAsvRouteMock(['isExclusionFlowOrFailure']);
+        $asvRouterMock->expects($this->exactly(1))->method('isExclusionFlowOrFailure')->willReturn(false);
 
         $repo = new Repository();
         $repo->asvRouter = $asvRouterMock;
@@ -389,8 +389,8 @@ class RepositoryTest extends TestCase
         $merchantEmailMockClient->expects($this->exactly(1))->method("getByMerchantId")->with("CzmiBzNQPErfdT", $merchantEmail->getDefaultRequestMetaData())->willReturn([null, new GrpcError(\Grpc\STATUS_ABORTED, "new")]);
         $merchantEmail->getAsvSdkClient()->setEmail($merchantEmailMockClient);
 
-        $asvRouterMock = $this->getAsvRouteMock(['isSaveFlowOrFailure']);
-        $asvRouterMock->expects($this->exactly(1))->method('isSaveFlowOrFailure')->willReturn(false);
+        $asvRouterMock = $this->getAsvRouteMock(['isExclusionFlowOrFailure']);
+        $asvRouterMock->expects($this->exactly(1))->method('isExclusionFlowOrFailure')->willReturn(false);
 
         $repo = new Repository();
         $repo->asvRouter = $asvRouterMock;
@@ -414,37 +414,37 @@ class RepositoryTest extends TestCase
         // Test Case 1 - SaveRoute true - Request for findOrFail & findOrFailPublic  should not go to account service
         $this->setSplitzWithOutput("false", 0);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isSaveFlowOrFailure', 2, true, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 2, true, null);
         $this->assertEquals($merchantEmailEntity1->toArray(), $this->getOutputForDbCalls($repo, "CzmiCwTPCL3t2R"));
 
         // Test Case 2 - SaveRoute false - Splitz off - Request for findOrFail & findOrFailPublic  should not go to account service
         $this->setSplitzWithOutput("false", 2);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isSaveFlowOrFailure', 2, false, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 2, false, null);
         $this->assertEquals($merchantEmailEntity1->toArray(), $this->getOutputForDbCalls($repo, "CzmiCwTPCL3t2R"));
 
         // Test Case 3 - SaveRoute false - Splitz Exception - Request for findOrFail & findOrFailPublic  should not go to account service
         $this->splitzShouldThrowException(2);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isSaveFlowOrFailure', 2, false, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 2, false, null);
         $this->assertEquals($merchantEmailEntity1->toArray(), $this->getOutputForDbCalls($repo, "CzmiCwTPCL3t2R"));
 
         // Test Case 4 - SaveRoute false - Column Selection - Request for findOrFail & findOrFailPublic should not go to account service
         $this->setSplitzWithOutput("false", 0);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isSaveFlowOrFailure', 0, false, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 0, false, null);
         $this->assertEquals(["id" => $merchantEmailEntity1->getId()], $this->getOutputForDbCalls($repo, "CzmiCwTPCL3t2R", ["id"]));
 
         // Test Case 5 - SaveRoute false - Select by multiple Ids - Request for findOrFail & findOrFailPublic should not go to account service
         $this->setSplitzWithOutput("false", 0);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isSaveFlowOrFailure', 0, false, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 0, false, null);
         $this->assertEquals($this->convertEntitiesToAssociativeArrayBasedOnId([$merchantEmailEntity1->toArray(), $merchantEmailEntity2->toArray()]), $this->getOutputForDbCalls($repo, ["CzmiCwTPCL3t2R", "CzmiD0rBAGOort"]));
 
         // Test Case 5 - SaveRoute false - Select by multiple Ids, filter by fields - Request for findOrFail & findOrFailPublic should not go to account service
         $this->setSplitzWithOutput("false", 0);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isSaveFlowOrFailure', 0, false, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 0, false, null);
         $this->assertEquals($this->convertEntitiesToAssociativeArrayBasedOnId([["id" => "CzmiCwTPCL3t2R"], ["id" => "CzmiD0rBAGOort"]]), $this->getOutputForDbCalls($repo, ["CzmiCwTPCL3t2R", "CzmiD0rBAGOort"], ["id"]));
 
         $merchantEmailResponse = (new MerchantEmailResponse())->setEmail($merchantEmailProto1);
@@ -453,14 +453,14 @@ class RepositoryTest extends TestCase
         $this->setSplitzWithOutput("true", 2);
         $this->setMerchantEmailMockClientWithIdAndResponse("CzmiCwTPCL3t2R", $merchantEmailResponse, null, "getById", 2);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isSaveFlowOrFailure', 2, false, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 2, false, null);
         $this->assertEquals($merchantEmailEntity1->toArray(), $this->getOutputForDbCalls($repo, "CzmiCwTPCL3t2R"));
 
         // Test Case 7 - SaveRoute false - Splitz Exception - Request for findOrFail & findOrFailPublic  should not go to account service
         $this->setSplitzWithOutput("true", 2);
         $this->setMerchantEmailMockClientWithIdAndResponse("CzmiCwTPCL3t2R", $merchantEmailResponse, null, "getById", 2);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isSaveFlowOrFailure', 2, false, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 2, false, null);
         $this->assertEquals($merchantEmailEntity1->toArray(), $this->getOutputForDbCalls($repo, "CzmiCwTPCL3t2R"));
 
         // Test Case 8 -  Match not found Exception from DB and ASV: FindOrFail

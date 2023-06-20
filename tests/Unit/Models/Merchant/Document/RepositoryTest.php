@@ -105,7 +105,7 @@ class RepositoryTest extends TestCase
         // Test Case 1 - SaveRoute true - Request for findDocumentByMerchantIdAndType  should not go to account service
         $this->setSplitzWithOutput("false", 0);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isSaveFlowOrFailure', 1, true, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, true, null);
         $merchantDocument = $repo->findDocumentsForMerchantIdAndDocumentType("D2fahy3beSAu0S", "sla_sebi_registration_certificate");
         $merchantDocumentArray = $merchantDocument->toArray();
         $merchantDocumentArray['audit_id'] = 'testtesttestid';
@@ -114,7 +114,7 @@ class RepositoryTest extends TestCase
         // Test Case 2 - SaveRoute false - Splitz off - Request for findDocumentByMerchantIdAndType  should not go to account service
         $this->setSplitzWithOutput("false", 1);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isSaveFlowOrFailure', 1, false, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
         $merchantDocument = $repo->findDocumentsForMerchantIdAndDocumentType("D2fahy3beSAu0S", "sla_sebi_registration_certificate");
         $merchantDocumentArray = $merchantDocument->toArray();
         $merchantDocumentArray['audit_id'] = 'testtesttestid';
@@ -123,14 +123,14 @@ class RepositoryTest extends TestCase
         // Test Case 3 - SaveRoute false - Splitz off - Request for findDocumentByMerchantIdAndType  should not go to account service - Invalid Id
         $this->setSplitzWithOutput("false", 1);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isSaveFlowOrFailure', 1, false, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
         $merchantDocument = $repo->findDocumentsForMerchantIdAndDocumentType("randomId", "sla_sebi_registration_certificate");
         self::assertEquals(null, $merchantDocument);
 
         // Test Case 4 - SaveRoute false - Splitz Exception - Request for findDocumentByMerchantIdAndType  should not go to account service
         $this->splitzShouldThrowException(1);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isSaveFlowOrFailure', 1, false, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
         $merchantDocument = $repo->findDocumentsForMerchantIdAndDocumentType("D2fahy3beSAu0S", "sla_sebi_registration_certificate");
         $merchantDocumentArray = $merchantDocument->toArray();
         $merchantDocumentArray['audit_id'] = 'testtesttestid';
@@ -140,7 +140,7 @@ class RepositoryTest extends TestCase
         $this->setSplitzWithOutput("true", 1);
         $this->setMerchantDocumentMockClientWithIdAndResponse("D2fahy3beSAu0S", $merchantDocumentResponseByMerchantId, null, "getByMerchantId", 1);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isSaveFlowOrFailure', 1, false, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
         $merchantDocument = $repo->findDocumentsForMerchantIdAndDocumentType("D2fahy3beSAu0S", "sla_sebi_registration_certificate");
         $merchantDocumentArray = $merchantDocument->toArray();
         $merchantDocumentArray['audit_id'] = 'testtesttestid';
@@ -150,7 +150,7 @@ class RepositoryTest extends TestCase
         $this->setSplitzWithOutput("true", 1);
         $this->setMerchantDocumentMockClientWithIdAndResponse("randomId000000", new $merchantDocumentResponseByMerchantId(), null, "getByMerchantId", 1);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isSaveFlowOrFailure', 1, false, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
         $merchantDocument = $repo->findDocumentsForMerchantIdAndDocumentType("randomId000000", "sla_sebi_registration_certificate");
         self::assertEquals(null, $merchantDocument);
 
@@ -172,7 +172,7 @@ class RepositoryTest extends TestCase
         // Test Case 1 - SaveRoute true - Request for finById  should not go to account service
         $this->setSplitzWithOutput("false", 0);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isSaveFlowOrFailure', 1, true, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, true, null);
         $merchantDocument = $repo->findDocumentById("JWNkBHL4Waqqf8");
         $merchantDocumentArray = $merchantDocument->toArray();
         $merchantDocumentArray['audit_id'] = 'testtesttestid';
@@ -181,7 +181,7 @@ class RepositoryTest extends TestCase
         // Test Case 2 - SaveRoute false - Splitz off - Request for finById  should not go to account service
         $this->setSplitzWithOutput("false", 1);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isSaveFlowOrFailure', 1, false, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
         $merchantDocument = $repo->findDocumentById("JWNkBHL4Waqqf8");
         $merchantDocumentArray = $merchantDocument->toArray();
         $merchantDocumentArray['audit_id'] = 'testtesttestid';
@@ -190,14 +190,14 @@ class RepositoryTest extends TestCase
         // Test Case 3 - SaveRoute false - Splitz off - Request for finById  should not go to account service - Invalid Id
         $this->setSplitzWithOutput("false", 1);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isSaveFlowOrFailure', 1, false, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
         $merchantDocument = $repo->findDocumentById("randomId");
         self::assertEquals(null, $merchantDocument);
 
         // Test Case 4 - SaveRoute false - Splitz Exception - Request for finById  should not go to account service
         $this->splitzShouldThrowException(1);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isSaveFlowOrFailure', 1, false, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
         $merchantDocument = $repo->findDocumentById("JWNkBHL4Waqqf8");
         $merchantDocumentArray = $merchantDocument->toArray();
         $merchantDocumentArray['audit_id'] = 'testtesttestid';
@@ -207,7 +207,7 @@ class RepositoryTest extends TestCase
         $this->setSplitzWithOutput("true", 1);
         $this->setMerchantDocumentMockClientWithIdAndResponse("JWNkBHL4Waqqf8", $merchantDocumentResponse, null, "getById", 1);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isSaveFlowOrFailure', 1, false, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
         $merchantDocument = $repo->findDocumentById("JWNkBHL4Waqqf8");
         $merchantDocumentArray = $merchantDocument->toArray();
         $merchantDocumentArray['audit_id'] = 'testtesttestid';
@@ -217,7 +217,7 @@ class RepositoryTest extends TestCase
         $this->setSplitzWithOutput("true", 1);
         $this->setMerchantDocumentMockClientWithIdAndResponse("randomId", null, new GrpcError(\Grpc\STATUS_NOT_FOUND, "Not Found"), "getById", 1);
         $repo = new Repository();
-        $repo->asvRouter = $this->getMockAsvRouterInRepository('isSaveFlowOrFailure', 1, false, null);
+        $repo->asvRouter = $this->getMockAsvRouterInRepository('isExclusionFlowOrFailure', 1, false, null);
         $merchantDocument = $repo->findDocumentById("randomId");
         self::assertEquals(null, $merchantDocument);
 

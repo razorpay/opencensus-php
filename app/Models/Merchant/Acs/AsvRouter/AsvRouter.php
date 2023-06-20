@@ -9,7 +9,7 @@ use RZP\Models\Merchant\Acs\SplitzHelper\SplitzHelper;
 use RZP\Modules\Acs\Wrapper\Constant;
 use RZP\Constants\Metric;
 use RZP\Trace\TraceCode;
-use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\MerchantSaveFlows;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\MerchantExclusionFlows;
 
 
 /*
@@ -44,7 +44,7 @@ class AsvRouter
         $this->spitzHelper = new SplitzHelper();
     }
 
-    public function isSaveFlowOrFailure(): bool
+    public function isExclusionFlowOrFailure(): bool
     {
         try {
             $routeOrWorkerName = $this->getRouteOrJobName();
@@ -57,19 +57,19 @@ class AsvRouter
             }
 
 
-            $isSaveFlow = MerchantSaveFlows::isSaveFlow($routeOrWorkerName);
+            $isExclusionFlow = MerchantExclusionFlows::isExclusionFLow($routeOrWorkerName);
 
             // temporarily added this log if the check is working correctly.
             // we need to remove this log before we ramp up for high RPS entites.
-            $this->trace->info(TraceCode::ACCOUNT_SERVICE_CHECK_SAVE_FLOW_RESULT, [
+            $this->trace->info(TraceCode::ACCOUNT_SERVICE_CHECK_EXCLUSION_FLOW_RESULT, [
                 'routeOrWorkerName' => $routeOrWorkerName,
-                'isSaveFlow' => $isSaveFlow
+                'isExclusionFlow' => $isExclusionFlow
             ]);
 
-            return $isSaveFlow;
+            return $isExclusionFlow;
         } catch (\Exception $e) {
 
-            $this->trace->traceException($e, Trace::WARNING, TraceCode::ACCOUNT_SERVICE_CHECK_SAVE_FLOW_EXCEPTION);
+            $this->trace->traceException($e, Trace::WARNING, TraceCode::ACCOUNT_SERVICE_CHECK_EXCLUSION_FLOW_EXCEPTION);
 
             // if we are getting and exception here, we should
             // block the request and let it go to the database
@@ -175,9 +175,9 @@ class AsvRouter
                 return false;
             }
 
-            $isSaveFlow = $this->isSaveFlowOrFailure();
+            $isExclusionFlow = $this->isExclusionFlowOrFailure();
 
-            if ($isSaveFlow === true) {
+            if ($isExclusionFlow === true) {
                 return false;
             }
 
@@ -193,9 +193,9 @@ class AsvRouter
     function shouldRouteToAccountService($id, $repoClass, $functionName): bool
     {
         try {
-            $isSaveFlow = $this->isSaveFlowOrFailure();
+            $isExclusionFlow = $this->isExclusionFlowOrFailure();
 
-            if ($isSaveFlow === true) {
+            if ($isExclusionFlow === true) {
                 return false;
             }
 
