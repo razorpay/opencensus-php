@@ -35,4 +35,6 @@ class RequestFields
     const DEBTOR_ACCOUNT        = 'DbtrAcct';
     const DEBTOR_AGENT          = 'DbtrAgt';
     const CURRENCY              = 'Ccy';
+    const DRTN                  = 'Drtn';
+    const FORM_DATE             = 'FrDt';
 }
