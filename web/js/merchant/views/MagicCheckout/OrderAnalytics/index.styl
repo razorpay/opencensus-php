@@ -1,5 +1,5 @@
 .magic-analytics-container
-  width: 100%
+  width: calc(100% - 140px)
   min-height: 400px
   position: relative
   background-color: #FFF
@@ -12,6 +12,12 @@
   .sticky-header
     position sticky
     top 53px
+
+  .dashboard-header
+    display flex
+    height 110px
+    justify-content space-between
+    align-items center
     background #FFF
     z-index 130
     border: 1px solid #E0E8F4;
@@ -19,10 +25,8 @@
     margin-bottom 10px
     padding 15px
 
-  .dashboard-header
-    display flex
-    justify-content flex-end
-    align-items center
+    .orders-subtext
+      margin-top 3px
 
     .date-range-container
       display flex
@@ -44,6 +48,10 @@
     grid-template-columns: repeat(4, 1fr)
     grid-gap: 10px
 
+    .conversion-chart
+      .panel-body
+        min-height: 220px
+
     .chart-item
       position relative
       border: 1px solid #E0E8F4
@@ -53,6 +61,9 @@
     .panel-topbar-heading
       font-size: 16px
       font-weight: 700
+
+      .help-content
+        margin-left 3px
 
     .panel-heading-aggregate-value
       font-size: 24px
@@ -80,6 +91,7 @@
     .chart-one-thirds-width
       grid-column: span 1
 
+    // stylelint-disable-next-line no-descending-specificity
     .panel-body
       height: auto
       min-height: 150px
@@ -192,9 +204,12 @@
     .tooltip-graph-value
       font-weight: 700;
 
+    .no-data
+      font-size: 10px
+      font-weight: 500
+
 .shimmer-widget
   height 50px
-  margin-top: 5px
   width 150px
   position: relative
   display: inline-block
@@ -202,7 +217,6 @@
   background-size: 800px 104px
   background-image: linear-gradient(to right, #F6F7F8 0%, #EDEEF1 20%, #F6F7F8 40%, #F6F7F8 100%)
   animation: placeshimmer 1s forwards infinite linear
-  background-repeat: no-repeat
 
 @keyframes placehshimmer {
   0% {

@@ -675,6 +675,11 @@ export default {
     //prod
     'LpVdcs5lXhlpdV',
   ],
+  magic_order_analytics_cr: [
+    'LwV4IlXplBdQ4g',
+    //prod
+    'LwV678pnF1EDwq',
+  ],
   show_resume_onboarding: [
     // stage
     'LklQDqgOLE7NNi',

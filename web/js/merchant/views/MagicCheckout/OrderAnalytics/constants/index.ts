@@ -8,47 +8,10 @@ import {
 
 import { i18HumanReadableCurrency, i18HumanReadableNumerals } from 'common/utils/numerals';
 
-import lazy from 'merchant/routes/LazyLoader';
 import FbIcon from 'assets/payment_pages/fb-pixel-logo.svg';
 import GoogleIcon from 'assets/google-icon-transparent.svg';
 import InstagramIcon from 'assets/instagram-logo.svg';
 import WhatsAppIcon from 'assets/whatsapp.svg';
-
-const AverageOrderValue = lazy(() =>
-  import(
-    /* webpackChunkName: "MagicAverageOrderValueWidget" */ 'merchant/views/MagicCheckout/OrderAnalytics/widgets/AverageOrderValue'
-  ),
-);
-const TopSellingProducts = lazy(() =>
-  import(
-    /* webpackChunkName: "MagicTopSellingProductsWidget" */ 'merchant/views/MagicCheckout/OrderAnalytics/widgets/TopSellingProducts'
-  ),
-);
-const TotalSales = lazy(() =>
-  import(
-    /* webpackChunkName: "MagicTotalSalesWidget" */ 'merchant/views/MagicCheckout/OrderAnalytics/widgets/TotalSales'
-  ),
-);
-const TotalOrders = lazy(() =>
-  import(
-    /* webpackChunkName: "MagicTotalOrdersWidget" */ 'merchant/views/MagicCheckout/OrderAnalytics/widgets/TotalOrders'
-  ),
-);
-const TrafficByUTM = lazy(() =>
-  import(
-    /* webpackChunkName: "MagicTrafficByUTMWidget" */ 'merchant/views/MagicCheckout/OrderAnalytics/widgets/TrafficByUTM'
-  ),
-);
-const SalesSplitV2 = lazy(() =>
-  import(
-    /* webpackChunkName: "MagicSalesSplitV2Widget" */ 'merchant/views/MagicCheckout/OrderAnalytics/widgets/SalesSplitV2'
-  ),
-);
-const OrderSplitV2 = lazy(() =>
-  import(
-    /* webpackChunkName: "MagicOrderSplitV2Widget" */ 'merchant/views/MagicCheckout/OrderAnalytics/widgets/OrderSplitV2'
-  ),
-);
 
 export const NO_GRAPH_DATA = {
   customTitle: 'No data to display',
@@ -68,9 +31,11 @@ const GRADIENT_COLORS = {
   GREEN: '#E2F7E2',
   BLUE: '#CEDDF1',
   PURPLE: '#E3D9FF',
+  DARK_BLUE: '#6b7dad',
 };
 
 export const CHART_LABEL_MAPPING = {
+  SUMMARY: 'summary',
   TOTAL_SALES: 'total_sales',
   TOTAL_ORDERS: 'total_orders_placed',
   AVG_ORDER_VALUE: 'average_order_value',
@@ -79,58 +44,13 @@ export const CHART_LABEL_MAPPING = {
   TOP_SELLING_PRODUCTS: 'top_selling_products',
   SALES_SPLIT: 'prepay_vs_cod_total_sales',
   ORDER_SPLIT: 'prepay_vs_cod_total_orders_placed',
+  CONVERSION_FUNNEL: 'conversion_funnel',
+  CONVERSION_RATE: 'conversion_rate',
+  MAGIC_CUSTOMERS: 'magic_customers',
   TOTAL_ORDERS_COD: 'Total Orders - COD',
   TOTAL_ORDERS_PREPAID: 'Total Orders - Prepaid',
   TOTAL_SALES_COD: 'Total Sales - COD',
   TOTAL_SALES_PREPAID: 'Total Sales - Prepaid',
-};
-
-export const WIDTHS = {
-  FULL: 'full-width',
-  TWO_THIRDS: 'two-thirds-width',
-  HALF: 'half-width',
-  ONE_THIRD: 'one-thirds-width',
-};
-
-export const LAYOUT = [
-  {
-    chart: CHART_LABEL_MAPPING.TOTAL_SALES,
-    width: WIDTHS.HALF,
-  },
-  {
-    chart: CHART_LABEL_MAPPING.TOTAL_ORDERS,
-    width: WIDTHS.HALF,
-  },
-  {
-    chart: CHART_LABEL_MAPPING.AVG_ORDER_VALUE,
-    width: WIDTHS.FULL,
-  },
-  {
-    chart: CHART_LABEL_MAPPING.SALES_SPLIT,
-    width: WIDTHS.HALF,
-  },
-  {
-    chart: CHART_LABEL_MAPPING.ORDER_SPLIT,
-    width: WIDTHS.HALF,
-  },
-  {
-    chart: CHART_LABEL_MAPPING.TRAFFIC_UTM_PARAMS,
-    width: WIDTHS.FULL,
-  },
-  {
-    chart: CHART_LABEL_MAPPING.TOP_SELLING_PRODUCTS,
-    width: WIDTHS.FULL,
-  },
-];
-
-export const CHART_COMPONENT_MAP = {
-  [CHART_LABEL_MAPPING.TOTAL_SALES]: TotalSales,
-  [CHART_LABEL_MAPPING.TOTAL_ORDERS]: TotalOrders,
-  [CHART_LABEL_MAPPING.AVG_ORDER_VALUE]: AverageOrderValue,
-  [CHART_LABEL_MAPPING.TRAFFIC_UTM_PARAMS]: TrafficByUTM,
-  [CHART_LABEL_MAPPING.TOP_SELLING_PRODUCTS]: TopSellingProducts,
-  [CHART_LABEL_MAPPING.SALES_SPLIT]: SalesSplitV2,
-  [CHART_LABEL_MAPPING.ORDER_SPLIT]: OrderSplitV2,
 };
 
 export const AGGREGATION_TYPES = {
@@ -166,6 +86,7 @@ export const LINE_CHARTS = [
   CHART_LABEL_MAPPING.ORDER_SPLIT,
   CHART_LABEL_MAPPING.TOTAL_ORDERS_COD,
   CHART_LABEL_MAPPING.TOTAL_ORDERS_PREPAID,
+  CHART_LABEL_MAPPING.CONVERSION_RATE,
 ];
 
 export const CHART_COLORS = {
@@ -176,6 +97,7 @@ export const CHART_COLORS = {
   [CHART_LABEL_MAPPING.TOTAL_SALES_PREPAID]: COLORS.BLUE,
   [CHART_LABEL_MAPPING.TOTAL_ORDERS_COD]: COLORS.DARK_PURPLE,
   [CHART_LABEL_MAPPING.TOTAL_ORDERS_PREPAID]: COLORS.PURPLE,
+  [CHART_LABEL_MAPPING.CONVERSION_RATE]: COLORS.DARK_BLUE,
 };
 
 export const LINE_CHART_GRAPH_COLOR = {
@@ -184,6 +106,7 @@ export const LINE_CHART_GRAPH_COLOR = {
   [CHART_LABEL_MAPPING.AVG_ORDER_VALUE]: GRADIENT_COLORS.GREEN,
   [CHART_LABEL_MAPPING.TOTAL_ORDERS_COD]: GRADIENT_COLORS.BLUE,
   [CHART_LABEL_MAPPING.TOTAL_ORDERS_PREPAID]: GRADIENT_COLORS.PURPLE,
+  [CHART_LABEL_MAPPING.CONVERSION_RATE]: GRADIENT_COLORS.BLUE,
 };
 
 export const METRIC_TYPE = {
@@ -254,30 +177,45 @@ export const DEFAULT_CHART_OPTIONS = {
   },
 };
 
+export const NO_DATA_TEXT = 'Data not available';
+
 export const TOOLTIP_HANDLERS = {
   [CHART_LABEL_MAPPING.TOTAL_SALES]: {
     label: 'Total Sales',
-    value: (val) => i18HumanReadableCurrency(val, 'INR'),
+    value: (val: any) => i18HumanReadableCurrency(val, 'INR'),
   },
   [CHART_LABEL_MAPPING.TOTAL_ORDERS]: {
     label: 'Total Orders',
-    value: (val) => i18HumanReadableNumerals(val),
+    value: (val: any) => i18HumanReadableNumerals(val),
   },
   [CHART_LABEL_MAPPING.AVG_ORDER_VALUE]: {
-    label: 'Average Value',
-    value: (val) => i18HumanReadableCurrency(val, 'INR'),
+    label: 'Average Order Value',
+    value: (val: any) => i18HumanReadableCurrency(val, 'INR'),
   },
   [CHART_LABEL_MAPPING.TOTAL_SALES_COD]: {
-    value: (val) => i18HumanReadableCurrency(val, 'INR'),
+    value: (val: any) => i18HumanReadableCurrency(val, 'INR'),
   },
   [CHART_LABEL_MAPPING.TOTAL_SALES_PREPAID]: {
-    value: (val) => i18HumanReadableCurrency(val, 'INR'),
+    value: (val: any) => i18HumanReadableCurrency(val, 'INR'),
   },
   [CHART_LABEL_MAPPING.TOTAL_ORDERS_PREPAID]: {
-    value: (val) => i18HumanReadableNumerals(val),
+    value: (val: any) => i18HumanReadableNumerals(val),
   },
   [CHART_LABEL_MAPPING.TOTAL_ORDERS_COD]: {
-    value: (val) => i18HumanReadableNumerals(val),
+    value: (val: any) => i18HumanReadableNumerals(val),
+  },
+  [CHART_LABEL_MAPPING.CONVERSION_RATE]: {
+    label: 'Conversion Rate',
+    value: (val: number) => {
+      if (val === 0) {
+        return NO_DATA_TEXT;
+      }
+      return `${val}%`;
+    },
+  },
+  [CHART_LABEL_MAPPING.MAGIC_CUSTOMERS]: {
+    label: 'Magic Customers',
+    value: (val: any) => i18HumanReadableNumerals(val),
   },
 };
 

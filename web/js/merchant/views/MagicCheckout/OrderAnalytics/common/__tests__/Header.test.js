@@ -6,11 +6,14 @@ import { render, screen, userEvent } from 'test-utils';
 import { Provider } from 'react-redux';
 import { storeWithInitialState } from 'merchant/store';
 import moment from 'moment';
+import { OrderAnalyticsProvider } from 'merchant/views/MagicCheckout/OrderAnalytics/OrderAnalyticsContext';
 
 const App = ({ state = {}, ...props }) => {
   return (
     <Provider store={storeWithInitialState({ ...state })}>
-      <Header {...props} />
+      <OrderAnalyticsProvider>
+        <Header {...props} />
+      </OrderAnalyticsProvider>
     </Provider>
   );
 };
@@ -20,14 +23,14 @@ describe('Magic - Header', () => {
     const setTimeRange = jest.fn();
     render(<App updated_at={moment.unix()} setTimeRange={setTimeRange} />);
     expect(
-      screen.getByText('This data is only for razorpay magic processed orders'),
+      screen.getByText('This data is only for Razorpay Magic processed orders'),
     ).toBeInTheDocument();
   });
   test('should call setTimeRange on date change', async () => {
     const setTimeRange = jest.fn();
     render(<App updated_at={moment.unix()} setTimeRange={setTimeRange} />);
     expect(
-      screen.getByText('This data is only for razorpay magic processed orders'),
+      screen.getByText('This data is only for Razorpay Magic processed orders'),
     ).toBeInTheDocument();
     const dropBtn = screen.getByText('Past 2 days');
     expect(dropBtn).toBeInTheDocument();

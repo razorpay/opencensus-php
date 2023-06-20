@@ -2,7 +2,7 @@ import React from 'react';
 // eslint-disable-next-line import/no-cycle
 import { CHART_LABEL_MAPPING } from 'merchant/views/MagicCheckout/OrderAnalytics/constants';
 import GraphWidget from 'merchant/views/MagicCheckout/OrderAnalytics/common/GraphWidget';
-import { customTooltip, getCurrencyValue } from 'merchant/views/MagicCheckout/OrderAnalytics/utils';
+import { customTooltip, getNumericValue } from 'merchant/views/MagicCheckout/OrderAnalytics/utils';
 
 const CHART_OPTIONS = {
   scales: {
@@ -10,7 +10,7 @@ const CHART_OPTIONS = {
       {
         ticks: {
           callback: (value) => {
-            return getCurrencyValue(value);
+            return getNumericValue(value);
           },
         },
       },

@@ -22,6 +22,7 @@ function GraphWidget({
   data,
   isChartStacked,
   customOptions,
+  className = '',
 }) {
   const chartData = useMemo(() => {
     const datasets = data?.values
@@ -36,7 +37,7 @@ function GraphWidget({
 
   return (
     <GenericPanel
-      className="analytics-panel chart-item"
+      className={`analytics-panel chart-item ${className}`}
       isLoading={isFetching}
       hasNoData={!data?.values?.length}
     >

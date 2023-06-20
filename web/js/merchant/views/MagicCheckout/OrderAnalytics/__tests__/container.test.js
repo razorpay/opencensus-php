@@ -19,16 +19,16 @@ describe('Magic - Order Analytics', () => {
     render(<App />);
     await waitFor(() => {
       expect(
-        screen.getByText('This data is only for razorpay magic processed orders'),
+        screen.getByText('This data is only for Razorpay Magic processed orders'),
       ).toBeInTheDocument();
-      expect(screen.getByText('Total Sales')).toBeInTheDocument();
-      expect(screen.getByText('₹ 4.62L')).toBeInTheDocument();
+      expect(screen.getAllByText('Total Sales')[0]).toBeInTheDocument();
+      expect(screen.getAllByText('₹ 4.62L')[0]).toBeInTheDocument();
 
       expect(screen.getByText('Total Orders Placed')).toBeInTheDocument();
-      expect(screen.getByText('569')).toBeInTheDocument();
+      expect(screen.getAllByText('569')[0]).toBeInTheDocument();
 
-      expect(screen.getByText('Average Order Value')).toBeInTheDocument();
-      expect(screen.getByText('₹ 811.70')).toBeInTheDocument();
+      expect(screen.getAllByText('Average Order Value')[0]).toBeInTheDocument();
+      expect(screen.getAllByText('₹ 811.70')[0]).toBeInTheDocument();
 
       expect(screen.getByText('Prepaid vs COD - Total Sales')).toBeInTheDocument();
       expect(screen.getByText('Prepaid vs COD - Total Orders')).toBeInTheDocument();

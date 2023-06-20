@@ -10,6 +10,7 @@ import {
   METRIC_TYPE,
   TOOLTIP_HANDLERS,
   UTM_KEYS,
+  NO_DATA_TEXT,
 } from './constants';
 import { paiseToRupees } from 'common/utils/rzp-utils';
 import { i18HumanReadableCurrency, i18HumanReadableNumerals } from 'common/utils/numerals';
@@ -32,7 +33,7 @@ export const formatAnalyticsResponse = (data) => {
   };
   data.metrics[CHART_LABEL_MAPPING.SALES_SPLIT].values = data.metrics[
     CHART_LABEL_MAPPING.SALES_SPLIT
-  ].values.map((val) => ({
+  ]?.values?.map((val) => ({
     ...val,
     label: `Total Sales - ${val.label}`,
   }));
@@ -43,7 +44,7 @@ export const formatAnalyticsResponse = (data) => {
   };
   data.metrics[CHART_LABEL_MAPPING.ORDER_SPLIT].values = data.metrics[
     CHART_LABEL_MAPPING.ORDER_SPLIT
-  ].values.map((val) => ({
+  ]?.values?.map((val) => ({
     ...val,
     label: `Total Orders - ${val.label}`,
   }));
@@ -180,17 +181,19 @@ export const aggregateUTMData = (values) => {
  */
 
 export const getAggregatedValue = (values, type, operation) => {
-  const sumOfValues = sum(values);
+  const sumOfValues = values?.length ? sum(values) : sum([values]);
   const val =
     operation === AGGERGATE_OPERATION.AVERAGE
-      ? (sumOfValues / values.length).toFixed(2)
+      ? (sumOfValues / values.filter((v) => v).length).toFixed(2)
       : sumOfValues;
   if (type === METRIC_TYPE.CURRENCY) {
     const CURRENCY = 'INR';
-    const convertedAmount = paiseToRupees(val);
+    const convertedAmount = isNaN(val) ? 0 : paiseToRupees(val);
     return i18HumanReadableCurrency(convertedAmount, CURRENCY);
+  } else if (type === METRIC_TYPE.PERCENTAGE) {
+    return isNaN(val) ? '0%' : `${val}%`;
   } else {
-    return i18HumanReadableNumerals(val);
+    return isNaN(val) ? 0 : i18HumanReadableNumerals(val);
   }
 };
 
@@ -283,6 +286,7 @@ export const customTooltip = (tooltipModel, ctx, chartName) => {
       typeof labelColors[index].backgroundColor === 'string'
         ? labelColors[index].backgroundColor
         : labelColors[index].borderColor;
+    const hasNoData = value === NO_DATA_TEXT;
     innerHTML += `
         <div class="magic-tooltip-info">
           <div class="magic-tooltip-visual">
@@ -290,7 +294,7 @@ export const customTooltip = (tooltipModel, ctx, chartName) => {
              <p class="tooltip-graph-label"> ${label}
            </p>
           </div>
-          <div class="tooltip-graph-value"> ${value}</div>
+          <div class="tooltip-graph-value ${hasNoData ? 'no-data' : ''}"> ${value}</div>
         </div>
         `;
   });

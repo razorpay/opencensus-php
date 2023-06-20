@@ -1,7 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import moment from 'moment';
 import DateRangePicker from 'common/ui/DateRangePicker';
+import SummaryWidget from 'merchant/views/MagicCheckout/OrderAnalytics/widgets/Summary';
 import Popover, { PopoverBody } from 'common/ui/Popover';
+import { useOrderAnalyticsContext } from 'merchant/views/MagicCheckout/OrderAnalytics/OrderAnalyticsContext';
+import { TABS } from 'merchant/views/MagicCheckout/OrderAnalytics/constants/tabs';
 import { getPresetsValue } from 'merchant/views/MagicCheckout/CODOrdersTab/utils';
 
 // all ranges offseted by 1 since end date for those preset is day before
@@ -18,21 +21,24 @@ const TODAY = moment().local();
 const DAY_BEFORE = moment().local().subtract('1', 'day');
 
 const Header = ({ setTimeRange, updated_at }) => {
-  const [selectedPreset, setSelectedPreset] = useState(
-    getPresetsValue([DATE_RANGE_PRESETS[DEFAULT_PRESET]])[0],
+  const { activeTab } = useOrderAnalyticsContext();
+  const isConversionTab = activeTab.label === TABS.CONVERSION.label;
+
+  const presetList = useMemo(
+    () => (isConversionTab ? DATE_RANGE_PRESETS.slice(1) : DATE_RANGE_PRESETS),
+    [isConversionTab],
   );
-  const onDatesChange = (start, end) => {
-    setTimeRange({ start, end });
-  };
 
-  const isOutsideRange = (day) =>
-    day.isAfter(TODAY) ||
-    day.isBefore(moment().subtract(91, 'days')) ||
-    day.isBefore(moment('2023-03-01'));
+  const defaultPreset = useMemo(() => {
+    if (isConversionTab) {
+      const timeDiff = DAY_BEFORE.unix() - moment().local().subtract(2, 'days').unix();
+      return { name: 'Custom Range', value: timeDiff };
+    } else {
+      return getPresetsValue([DATE_RANGE_PRESETS[DEFAULT_PRESET]])[0];
+    }
+  }, [isConversionTab]);
 
-  const handlePresetChange = (preset) => {
-    setSelectedPreset(preset);
-  };
+  const [selectedPreset, setSelectedPreset] = useState(defaultPreset);
 
   const endDate = useMemo(() => {
     if (selectedPreset?.name === 'Today') {
@@ -42,11 +48,54 @@ const Header = ({ setTimeRange, updated_at }) => {
     }
   }, [selectedPreset]);
 
+  const onDatesChange = (start, end) => {
+    setTimeRange({ start, end });
+  };
+
+  const handlePresetChange = (preset) => {
+    setSelectedPreset(preset);
+  };
+
+  useEffect(() => {
+    if (isConversionTab) {
+      setSelectedPreset(defaultPreset);
+    }
+  }, [defaultPreset, isConversionTab]);
+
+  const isOutsideRange = (day) => {
+    const defaults =
+      day.isBefore(moment().subtract(91, 'days')) || day.isBefore(moment('2023-03-01'));
+    if (isConversionTab) {
+      return defaults || day.isAfter(DAY_BEFORE);
+    }
+    return defaults || day.isAfter(TODAY);
+  };
+
   return (
     <div className="sticky-header dashboard-header">
+      <div>
+        {!isConversionTab ? (
+          <>
+            <SummaryWidget />
+            <small>
+              <span className="orders-subtext">
+                <i className="i i-info-circle" />
+                This data is only for Razorpay Magic processed orders
+              </span>
+            </small>
+          </>
+        ) : (
+          <div>
+            <span className="orders-subtext">
+              <i className="i i-info-circle" />
+              This data is only for Razorpay Magic processed orders
+            </span>
+          </div>
+        )}
+      </div>
       <div className="date-range-container">
         <DateRangePicker
-          presets={DATE_RANGE_PRESETS}
+          presets={presetList}
           defaultPreset={DEFAULT_PRESET}
           onDatesChange={onDatesChange}
           selectedPresetFromParent={selectedPreset}
@@ -68,7 +117,6 @@ const Header = ({ setTimeRange, updated_at }) => {
             </i>
             &nbsp;
             <span>Data last updated {moment.unix(updated_at).fromNow()} </span> <br />
-            <span>This data is only for razorpay magic processed orders</span>
           </small>
         </div>
       </div>
