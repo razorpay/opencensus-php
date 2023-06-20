@@ -7135,6 +7135,32 @@ class Core extends Base\Core
         return false;
     }
 
+    public function getPartnerBankStatus()
+    {
+        $redis = $this->app['redis'];
+
+        $result = $redis->hgetall(Core::PARTNER_BANK_HEALTH_REDIS_KEY);
+
+        $partnerBankStatus = [];
+
+        foreach ($result as $key => $value)
+        {
+            $value = json_decode($value);
+
+            $partnerBankStatusValue[PayoutConstants::ACCOUNT_TYPE] = $value->account_type;
+
+            $partnerBankStatusValue[PayoutConstants::CHANNEL] = $value->channel;
+
+            $partnerBankStatusValue[PayoutConstants::MODE] = $value->mode;
+
+            $partnerBankStatusValue[PayoutConstants::STATUS] = $value->status;
+
+            $partnerBankStatus[$key] = $partnerBankStatusValue;
+        }
+
+        return $partnerBankStatus;
+    }
+
     public function checkIfPartnerBankIsDown(Entity $payout)
     {
         $redis = $this->app['redis'];

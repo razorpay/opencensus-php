@@ -35640,6 +35640,39 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testGetPartnerBankStatus()
+    {
+        $testDataRBLDowntime = [
+            "payload" => [
+                "mode" => "IMPS",
+                "account_type"=>"direct",
+                "channel" => "RBL",
+                "status" => "downtime",
+                "include_merchants"=> ["ALL"],
+                "exclude_merchants" => [],
+            ]
+        ];
+        $this->setDowntimeInformationForOnHold($testDataRBLDowntime);
+
+        $testDataICICIUptime = [
+            "payload" => [
+                "mode" => "UPI",
+                "account_type"=>"direct",
+                "channel" => "ICICI",
+                "status" => "uptime",
+                "include_merchants"=> ["ALL"],
+                "exclude_merchants" => [],
+            ]
+        ];
+        $this->setDowntimeInformationForOnHold($testDataICICIUptime);
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response);
+    }
+
     public function testOwnerApprovePayoutUsingBearerAuthWithPartnerReadWriteScope()
     {
         $this->liveSetUp();

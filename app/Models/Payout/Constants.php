@@ -65,4 +65,9 @@ class Constants
         "LBX3zrXRQD20QS", "LBWwHD7BTMIToy", "LBYQxFVIPdk1A3", "KQtWekXcgwDObj", "CEguwEip3eDPfV", "KQtR99FZetQe87"
     ];
 
+    public const ACCOUNT_TYPE               = 'account_type';
+
+    public const CHANNEL                    = 'channel';
+
+    public const MODE                       = 'mode';
 }

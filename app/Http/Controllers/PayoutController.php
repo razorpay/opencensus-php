@@ -1013,4 +1013,11 @@ class PayoutController extends Controller
 
         return ApiResponse::json($response, $statusCode);
     }
+
+    public function getPartnerBankStatus()
+    {
+        $response = $this->service()->getPartnerBankStatus();
+
+        return ApiResponse::json($response);
+    }
 }

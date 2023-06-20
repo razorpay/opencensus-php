@@ -1766,6 +1766,8 @@ class Route
         'workflow_config_create_bulk_admin'         => ['post',    'admin/workflow/config/bulk',                          'WorkflowServiceController@bulkCreateWorkflowConfig'                           ],
         'workflow_config_create_internal'           => ['post',    'internal/workflow/config',                            'WorkflowServiceController@createWorkflowConfig'                  ],
 
+        'payout_partner_bank_status'                => ['get',     'payouts/partner-bank/status',                           'PayoutController@getPartnerBankStatus'                  ],
+
         // Workflows API
         'workflow_create'                          => ['post',     'workflows',                                      'WorkflowController@createWorkflow'                                 ],
         'workflow_get'                             => ['get',      'workflows/{id}',                                 'WorkflowController@getWorkflow'                                    ],
@@ -7019,6 +7021,8 @@ class Route
         'merchant_ip_config_fetch',
         'merchant_ip_config_create',
 
+        'payout_partner_bank_status',
+
         // Checkout Service Routes
         'customer_fetch_tokens_internal',
         'invoice_fetch_for_checkout_internal',
@@ -10288,6 +10292,8 @@ class Route
         'payout_links_bulk_reject_owner'            => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'fetch_pending_payouts_summary'             => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'fetch_pending_payout_links_summary'        => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+
+        'payout_partner_bank_status'                  => Permission::CREATE_PAYOUT,
     ];
 
     public static $direct = [
@@ -12096,7 +12102,8 @@ class Route
             'partner_config_edit',
             'partner_config_edit_logo',
             'wallet_dashboard_proxy',
-            'submerchant_partner_feature_check'
+            'submerchant_partner_feature_check',
+            'payout_partner_bank_status',
         ],
 
         'admin_dashboard' => [
@@ -16698,7 +16705,8 @@ class Route
         'payouts_bulk_reject_owner',
         'payout_links_bulk_reject_owner',
         'fetch_pending_payouts_summary',
-        'fetch_pending_payout_links_summary'
+        'fetch_pending_payout_links_summary',
+        'payout_partner_bank_status'
     ];
 
     const PAYOUT_LINKS_SPECIFIC_PUBLIC_ROUTES = [

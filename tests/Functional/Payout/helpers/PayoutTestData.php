@@ -22350,4 +22350,32 @@ return [
             ],
         ],
     ],
+
+    'testGetPartnerBankStatus' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/partner-bank/status',
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+                'HTTP_X-Request-Origin'   => config('applications.banking_service_url'),
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'direct_rbl_imps' => [
+                    'account_type' => 'direct',
+                    'channel'      => 'RBL',
+                    'mode'         => 'IMPS',
+                    'status'       => 'downtime'
+                ],
+                'direct_icici_upi' => [
+                    'account_type' => 'direct',
+                    'channel'      => 'ICICI',
+                    'mode'         => 'UPI',
+                    'status'       => 'uptime'
+                ]
+            ],
+            'status_code' => 200
+        ],
+    ],
 ];
