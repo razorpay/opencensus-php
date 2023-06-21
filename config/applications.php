@@ -1342,6 +1342,17 @@ return [
             'test' => env('UPI_PAYMENT_SERVICE_TEST_URL'),
         ],
     ],
+
+    'payments_cross_border_service' => [
+        'mock'      => env('PAYMENTS_CROSS_BORDER_SERVICE_MOCK', false),
+        'username'  => env('PAYMENTS_CROSS_BORDER_SERVICE_KEY', 'api_user'),
+        'password'  => env('PAYMENTS_CROSS_BORDER_SERVICE_SECRET', 'RANDOM_PXB_SECRET'),
+        'url'       => [
+            'live' => env('PAYMENTS_CROSS_BORDER_SERVICE_LIVE_URL'),
+            'test' => env('PAYMENTS_CROSS_BORDER_SERVICE_TEST_URL'),
+        ],
+    ],
+
     'pspx'  => [
       'username'  => env('PSPX_SERVICE_API_USERNAME'),
       'password'  => env('PSPX_SERVICE_API_PASSWORD'),
