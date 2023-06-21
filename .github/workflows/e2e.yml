@@ -34,22 +34,6 @@ jobs:
     timeout-minutes: 60
     runs-on: [self-hosted]
     steps:
-      - name: Echo conditions
-        run: |
-          echo "Review State: ${{ github.event_name == 'issue_comment'}}"
-          echo "Github Event: ${{ github.event }}"
-          echo "Github Ref: ${{ github.ref }}"
-          echo "Body not present: ${{ !github.event.comment.body }}"
-          echo "Review state is approved: ${{ github.event.review.state == 'approved' }}"
-          echo "Review state: ${{ github.event.review.state }}"
-          echo "Head ref(github.head_ref) ${{ github.head_ref }}"
-          echo "Latest expected commit id: ${{ github.event.pull_request.head.sha }}"
-
-          echo "Condition 1 PR Comment: ${{ github.event_name == 'issue_comment' && contains(github.event.comment.body, '/run-e2e')}}"
-          echo "Condition 2 Master Merge: ${{ github.ref == 'refs/heads/master' && !github.event.comment.body }}"
-          echo "Condition 3 PR Approved: ${{ github.event_name == 'pull_request_review' && github.event.review.state == 'approved' }}"
-          echo "Final Condition: ${{ (github.event_name == 'issue_comment' && contains(github.event.comment.body, '/run-e2e')) || (github.ref == 'refs/heads/master' && !github.event.comment.body) || (github.event_name == 'pull_request_review' && github.event.review.state == 'approved') }}"
-
       - name: Fetch data of comment's associated PR
         uses: xt0rted/pull-request-comment-branch@v1
         id: comment-branch
@@ -60,17 +44,23 @@ jobs:
       - name: Set Commit ID if its a PR comment
         if: ${{ github.event_name == 'issue_comment' && contains(github.event.comment.body, '/run-e2e')}}
         run: |
-          echo "COMMIT_ID=${{ steps.comment-branch.outputs.head_sha }}" >> $GITHUB_ENV
+          echo "COMMIT_ID=$COMMIT_ID" >> $GITHUB_ENV
+        env:
+          COMMIT_ID: ${{ steps.comment-branch.outputs.sha }}
 
       - name: Set Commit ID if its on master
         if: ${{ github.ref == 'refs/heads/master' && !github.event.comment.body }}
         run: |
-          echo "COMMIT_ID=${{ github.sha }}" >> $GITHUB_ENV
+          echo "COMMIT_ID=$COMMIT_ID" >> $GITHUB_ENV
+        env:
+          COMMIT_ID: ${{ github.sha }}
 
       - name: Set Commit ID if it's a PR approval
         if: ${{ github.event_name == 'pull_request_review' && github.event.review.state == 'approved' }}
         run: |
-          echo "COMMIT_ID=${{ github.event.pull_request.head.sha }}" >> $GITHUB_ENV
+          echo "COMMIT_ID=$COMMIT_ID" >> $GITHUB_ENV
+        env:
+          COMMIT_ID: ${{ github.event.pull_request.head.sha }}
 
       - name: Echo COMMIT_ID
         run: |
