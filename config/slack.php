@@ -211,7 +211,9 @@ return array(
         'p0_pp_alerts'           => 'C02661NA20G',
 
         // growth alert channel
-        'platform_growth_alerts' => 'C029XUXDE6S'
+        'platform_growth_alerts' => 'C029XUXDE6S',
+
+        'cb_invoice_verification_alerts' => 'C05BBKBHA67'
     ],
 
     'is_slack_enabled' => env('SLACK_MOCK') === true ? false : true,

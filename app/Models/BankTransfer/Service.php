@@ -5,9 +5,11 @@ namespace RZP\Models\BankTransfer;
 use App;
 use Cache;
 use Carbon\Carbon;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Constants\Environment;
 use RZP\Constants\Product;
 use RZP\Constants\Timezone;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Bank\BankCodes;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Merchant\Account;
@@ -51,6 +53,7 @@ use function GuzzleHttp\default_ca_bundle;
 use RZP\Models\Payment\Processor\IntlBankTransfer;
 use RZP\Models\Pricing\Service as PricingService;
 use RZP\Models\Pricing\Entity as PricingEntity;
+use RZP\Models\Workflow\Service\Builder as WorkflowBuilder;
 
 class Service extends Base\Service
 {
@@ -1998,7 +2001,7 @@ class Service extends Base\Service
 
     protected function notifyUploadInvoice($input = [])
     {
-        $paymentIds = $input['payment_ids'] ?? []; 
+        $paymentIds = $input['payment_ids'] ?? [];
 
         $includeMerchantList = $input['include_merchants'] ?? [];
 
@@ -2008,8 +2011,8 @@ class Service extends Base\Service
 
         $offset = $input['offset'] ?? 0;
 
-        $payments =  $this->repo->payment->getPaymentsWithoutReferenceId(Constants\Entity::CURRENCY_CLOUD, 
-                                                                        Payment\Status::AUTHORIZED, 
+        $payments =  $this->repo->payment->getPaymentsWithoutReferenceId(Constants\Entity::CURRENCY_CLOUD,
+                                                                        Payment\Status::AUTHORIZED,
                                                                         Payment\Method::INTL_BANK_TRANSFER,
                                                                         $paymentIds,
                                                                         $includeMerchantList,
@@ -2068,6 +2071,71 @@ class Service extends Base\Service
     protected function increaseAllowedSystemLimits()
     {
         RuntimeManager::setMaxExecTime(7200);
+    }
+
+    public function cbInvoiceWorkflowCallback($input) {
+        try{
+            (new Validator)->validateInput("crossBorderInvoiceWorkflowCallback", $input);
+        }
+        catch (\Throwable $e)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_VALIDATION_FAILED,null,[
+                'error_description' => $e->getMessage(),
+                'error_code'        => $e->getCode(),
+            ]);
+        }
+
+        $paymentId = $input['payment_id'];
+        $merchantId = $input['merchant_id'];
+        $workflowStatus = $input['workflow_status'];
+        $priority = $input['priority'];
+
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+        if (!isset($merchant)) {
+            throw new Exception\BadRequestException(
+                Error\ErrorCode::BAD_REQUEST_INVALID_MERCHANT_ID);
+        }
+        $this->trace->info(TraceCode::CROSS_BORDER_INVOICE_WORKFLOW_CALLBACK_REQUEST, [
+            "payment_id" => $paymentId,
+            "merchant_id" => $merchantId,
+            "workflow_status" => $workflowStatus,
+            "priority" => $priority,
+        ]);
+
+        $payment = $this->repo->payment->findByIdAndMerchant($paymentId, $merchant);
+        if (isset($payment) === true) {
+            if (!$payment->isB2BExportCurrencyCloudPayment()) {
+                throw new Exception\BadRequestException(
+                    Error\ErrorCode::BAD_REQUEST_INVALID_PAYMENT_ID);
+            }
+            if ($workflowStatus == WorkflowBuilder\Constants::APPROVED) {
+                if (!$merchant->isFeatureEnabled(Feature\Constants::ENABLE_SETTLEMENT_FOR_B2B)) {
+                    $featureParams = [
+                        Feature\Entity::ENTITY_ID => $merchant->getId(),
+                        Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                        Feature\Entity::NAMES => [Feature\Constants::ENABLE_SETTLEMENT_FOR_B2B],
+                        Feature\Entity::SHOULD_SYNC => true
+                    ];
+                    (new Feature\Service)->addFeatures($featureParams);
+                    $this->trace->info(TraceCode::B2B_SETTLEMENT_ENABLE_FEATURE_FLAG_ADDED, [
+                        "payment_id" => $paymentId,
+                        "merchant_id" => $merchantId,
+                    ]);
+                }
+            } else {
+                try {
+                    CrossBorderCommonUseCases::sendSlackNotification(
+                        $paymentId, $merchantId, $priority, "", WorkflowBuilder\Constants::REJECTED);
+                } catch (\Throwable $e) {
+                    $this->trace->traceException($e, Trace::ERROR, TraceCode::CROSS_BORDER_INVOICE_WORKFLOW_NOTIFICATION_FAILED,
+                        [
+                            'payload' => $this->payload,
+                        ]
+                    );
+                }
+            }
+        }
+        return ["success" => true];
     }
 
 }

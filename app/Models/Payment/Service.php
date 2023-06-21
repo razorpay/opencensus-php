@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\DB;
 use Mail;
 use Crypt;
 use Config;
+use RZP\Http\Request\Requests;
+use RZP\Jobs\CrossBorderCommonUseCases;
 use Throwable;
 use Carbon\Carbon;
 use RZP\Base\Luhn;
@@ -16,6 +18,7 @@ use RZP\Constants\Mode;
 use RZP\Base\RuntimeManager;
 
 use RZP\Jobs;
+
 use RZP\Diag\EventCode;
 use RZP\Models\Merchant\Checkout;
 use RZP\Models\Payment\Processor\CardlessEmi;
@@ -85,6 +88,9 @@ use RZP\Models\Invoice\Constants as InvoiceConstants;
 use RZP\Models\Invoice\Type as InvoiceType;
 use RZP\Models\GenericDocument\Service as DocumentService;
 use RZP\Models\Payment\Processor\IntlBankTransfer;
+use RZP\Models\Workflow\Service\Builder as WorkflowBuilder;
+use RZP\Models\Workflow\Service\Client as WorkflowServiceClient;
+
 
 class Service extends Base\Service
 {
@@ -1215,7 +1221,6 @@ class Service extends Base\Service
         $payment = $this->core->retrieveById($id);
 
         $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
-
         $data = $this->getNewProcessor($merchant)->authorizeFailedPayment($payment);
 
         return $data;
@@ -6407,7 +6412,6 @@ class Service extends Base\Service
                             throw new Exception\BadRequestException(
                                 Error\ErrorCode::BAD_REQUEST_INVALID_PAYMENT_ID);
                         }
-
                     $payment->setReference2($document_id);
 
                     $this->repo->saveOrFail($payment);
@@ -6417,6 +6421,9 @@ class Service extends Base\Service
                             'payment_id' => $id,
                             'b2b_invoice_document_id' => $document_id
                         ]);
+
+                    // workflow creation for invoice verification
+                    $this->createWorkflowForInvoiceVerification($payment);
 
                     return true;
                 }
@@ -6435,6 +6442,42 @@ class Service extends Base\Service
         $response['b2b_invoice_updated'] = $isB2BInvoiceUpdated;
 
         return $response;
+    }
+
+    private function createWorkflowForInvoiceVerification(Payment\Entity $payment) {
+        if ($this->mode == Mode::LIVE)
+        {
+            $workflowPriority = $payment->merchant->isFeatureEnabled(Feature\Constants::ENABLE_SETTLEMENT_FOR_B2B) ? "P1" : "P0";
+            $body = (new WorkflowBuilder\CBInvoiceWorkflow())->buildInvoiceWorkflowPayload($payment, $workflowPriority, $payment->getMethod());
+            try {
+                $response = (new WorkflowServiceClient)->createWorkflowProxy($body);
+                if ($workflowPriority == 'P0') {
+                    try {
+                        CrossBorderCommonUseCases::sendSlackNotification(
+                            $payment->getId(), $payment->getMerchantId(), $workflowPriority, $response['id'], ""
+                        );
+                    } catch (\Throwable $e) {
+                        $this->trace->traceException($e, Trace::ERROR, TraceCode::CROSS_BORDER_INVOICE_WORKFLOW_NOTIFICATION_FAILED, [
+                                'payload' => $this->payload,
+                            ]
+                        );
+                    }
+                }
+            } catch (\Throwable $e) {
+                $this->trace->traceException($e, Trace::ERROR, TraceCode::CROSS_BORDER_CREATE_INVOICE_WORKFLOW_FAILED, [
+                        'payload' => $this->payload,
+                    ]
+                );
+                $payload = [
+                    'action' => Jobs\CrossBorderCommonUseCases::CREATE_INVOICE_VERIFICATION_WORKFLOW,
+                    'body' => $body,
+                    'merchant_id' => $payment->getMerchantId(),
+                    'payment_id' => $payment->getId(),
+                    'priority' => $workflowPriority,
+                ];
+                Jobs\CrossBorderCommonUseCases::dispatch($payload)->delay(rand(60, 1000) % 601);
+            }
+        }
     }
 
     /*

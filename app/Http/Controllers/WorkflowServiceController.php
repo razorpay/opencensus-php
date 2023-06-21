@@ -210,4 +210,13 @@ class WorkflowServiceController extends Controller
         return response()->json($response);
     }
 
+    public function listCbWorkflows()
+    {
+        $input = Request::all();
+
+        $response = $this->workflowService->listCbWorkflows($input);
+
+        return response()->json($response);
+    }
+
 }

@@ -138,4 +138,11 @@ class Validator extends Base\Validator
                     $bankTransfer, ['method' => $payment->getMethod()]);
         }
     }
+
+    protected static $crossBorderInvoiceWorkflowCallbackRules = [
+        'payment_id'                       => 'required|string|size:14',
+        'workflow_status'                  => 'required|string|in:approved,rejected',
+        'merchant_id'                      => 'required|string|size:14',
+        'priority'                         => 'required|string|in:P0,P1',
+    ];
 }

@@ -742,4 +742,13 @@ class BankTransferController extends Controller
         return ApiResponse::json($response);
 
     }
+
+    public function cbInvoiceWorkflowCallback()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->cbInvoiceWorkflowCallback($input);
+
+        return ApiResponse::json($data);
+    }
 }

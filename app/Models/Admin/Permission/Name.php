@@ -574,6 +574,7 @@ class Name
     const WFS_CONFIG_CREATE                   = 'wfs_config_create';
     const WFS_CONFIG_UPDATE                   = 'wfs_config_update';
     const WFS_VIEW_SPR_WORKFLOWS              = 'wfs_view_spr_workflows';
+    const WFS_VIEW_CB_WORKFLOWS               = 'wfs_view_cb_workflows';
 
     const CREATE_PAYOUT_BULK                  = 'create_payout_bulk';
     const APPROVE_PAYOUT_BULK                 = 'approve_payout_bulk';

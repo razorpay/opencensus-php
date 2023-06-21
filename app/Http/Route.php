@@ -1934,6 +1934,15 @@ class Route
         'wfs_comments_create'                     => ['post',    'wf-service/comments',                              'WorkflowServiceController@createComment'                           ],
         'wfs_comments_list'                       => ['post',    'wf-service/comments/list',                         'WorkflowServiceController@listComments'                            ],
 
+        // cross border workflows route
+        'wfs_cb_workflows_list'                      => ['post',    'wf-service/cb/workflows/list',                  'WorkflowServiceController@listCbWorkflows'                           ],
+        'wfs_cb_workflows_get'                       => ['get',     'wf-service/cb/workflows/{id}',                  'WorkflowServiceController@getWorkflow'                             ],
+        'wfs_cb_workflow_action_create'              => ['post',    'wf-service/cb/action',                          'WorkflowServiceController@createWorkflowAction'                    ],
+        'wfs_cb_workflow_add_assignee'               => ['post',    'wf-service/cb/workflows/addAssignee',           'WorkflowServiceController@addWorkflowAssignee'                     ],
+        'wfs_cb_workflow_remove_assignee'            => ['delete',  'wf-service/cb/workflows/removeAssignee',        'WorkflowServiceController@removeWorkflowAssignee'                  ],
+        'wfs_cb_comments_create'                     => ['post',    'wf-service/cb/comments',                        'WorkflowServiceController@createComment'                           ],
+        'wfs_cb_comments_list'                       => ['post',    'wf-service/cb/comments/list',                   'WorkflowServiceController@listComments'                            ],
+
         //Vendor Payments
         'vendor_payments_check_existing_invoice'   => ['get',      'vendor-payments/check-invoice-exist',                                     'VendorPaymentController@checkIfInvoiceExistForVendor'              ],
         'vendor_payment_execute_bulk'              => ['post',     'vendor-payments/bulk/execute',                                            'VendorPaymentController@executeVendorPaymentBulk'                  ],
@@ -2301,6 +2310,8 @@ class Route
         'b2b_invoice_collect_address'                       => ['put',      'b2b-exports/{payment_id}/address',        'BankTransferController@createAddressEntityForB2B' ],
         'b2b_invoice_show_address'                          => ['get',      'b2b-exports/{payment_id}/address',        'BankTransferController@getAddressEntityForB2B' ],
         'b2b_send_notification'                             => ['post',     'b2b-exports/notification',                'BankTransferController@sendNotificationForB2B' ],
+
+        'cb_invoice_workflow_callback'                      => ['post',     'internal/cb-invoice-workflow/callback',           'BankTransferController@cbInvoiceWorkflowCallback'],
 
         'capture_cron_for_b2b_payments'        => ['post',     'b2b/payments/capture',                              'BankTransferController@captureCronForB2BPayments'                   ],
         'notifications_for_b2b'                => ['post',     'international/virtual_accounts/payment/create',     'BankTransferController@notificationsFromCurrencyCloud'                         ],
@@ -5932,6 +5943,9 @@ class Route
         'ledger_outbox_partition_cron',
 
         'b2b_send_notification',
+
+        // cross border workflow callback
+        'cb_invoice_workflow_callback',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -8014,6 +8028,13 @@ class Route
         'wfs_workflow_remove_assignee',
         'wfs_comments_create',
         'wfs_comments_list',
+        'wfs_cb_workflows_list',
+        'wfs_cb_workflows_get',
+        'wfs_cb_workflow_action_create',
+        'wfs_cb_workflow_add_assignee',
+        'wfs_cb_workflow_remove_assignee',
+        'wfs_cb_comments_create',
+        'wfs_cb_comments_list',
         'payout_workflow_retry_admin_bulk',
         'payout_wf_config_migrate',
         'create_iir_discrepancy_answer_admin',
@@ -9490,6 +9511,14 @@ class Route
         'wfs_comments_list'                         => Permission::WFS_VIEW_SPR_WORKFLOWS,
         'wfs_workflow_add_assignee'                 => Permission::WFS_VIEW_SPR_WORKFLOWS,
         'wfs_workflow_remove_assignee'              => Permission::WFS_VIEW_SPR_WORKFLOWS,
+
+        'wfs_cb_workflows_list'                     => Permission::WFS_VIEW_CB_WORKFLOWS,
+        'wfs_cb_workflows_get'                      => Permission::WFS_VIEW_CB_WORKFLOWS,
+        'wfs_cb_workflow_action_create'             => Permission::WFS_VIEW_CB_WORKFLOWS,
+        'wfs_cb_workflow_add_assignee'              => Permission::WFS_VIEW_CB_WORKFLOWS,
+        'wfs_cb_workflow_remove_assignee'           => Permission::WFS_VIEW_CB_WORKFLOWS,
+        'wfs_cb_comments_create'                    => Permission::WFS_VIEW_CB_WORKFLOWS,
+        'wfs_cb_comments_list'                      => Permission::WFS_VIEW_CB_WORKFLOWS,
 
         'payout_wf_config_migrate'                 => Permission::WFS_CONFIG_CREATE,
 
@@ -12127,6 +12156,13 @@ class Route
             'wfs_workflow_remove_assignee',
             'wfs_comments_create',
             'wfs_comments_list',
+            'wfs_cb_workflows_list',
+            'wfs_cb_workflows_get',
+            'wfs_cb_workflow_action_create',
+            'wfs_cb_workflow_add_assignee',
+            'wfs_cb_workflow_remove_assignee',
+            'wfs_cb_comments_create',
+            'wfs_cb_comments_list',
             'admin_payouts_workflow_config_get',
             'merchant_website_section_action',
             'merchant_website_section_save',
@@ -15419,7 +15455,8 @@ class Route
             'payout_reject_internal',
             'workflow_state_callback',
             'workflow_state_callback_update',
-            'merchant_assign_pricing_internal'
+            'merchant_assign_pricing_internal',
+            'cb_invoice_workflow_callback'
         ],
 
         'pg_router' => [

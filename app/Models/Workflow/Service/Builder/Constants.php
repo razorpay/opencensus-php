@@ -23,6 +23,7 @@ class Constants{
     const USER = 'user';
     const MERCHANT = 'merchant';
     const PRICINGPLAN = 'pricingplan';
+    const Payment = 'payment';
 
     const DIFF = 'diff';
     const OLD = 'old';
@@ -40,6 +41,8 @@ class Constants{
 
     const CALLBACK_DETAILS = 'callback_details';
     const WORKFLOW_CALLBACKS = 'workflow_callbacks';
+
+    const STATE_CALLBACKS = 'state_callbacks';
     const CREATED = 'created';
     const PROCESSED = 'processed';
     const DOMAIN_STATUS = 'domain_status';
@@ -62,7 +65,10 @@ class Constants{
     const PRICING_WORKFLOW_CONFIG_ID = 'KT8uUeljSM7lUp';
 
     const TITLE_VALUE = 'Pricing Plan approval for MID: ';
+
+    const CB_INVOICE_WORKFLOW_TITLE_VALUE = 'Invoice verification for Payment Id: ';
     const DESCRIPTION_VALUE = 'Merchant Name: ';
+    const CB_INVOICE_WORKFLOW_DESCRIPTION_VALUE = 'Invoice Verification: ';
 
     const ASSIGN_PRICING_PLAN_ROUTE = '/internal/merchants/%s/pricing';
     const REJECT_WORKFLOW_CALLBACK_DUMMY_ROUTE = 'wf-service/workflow/callback';
@@ -89,4 +95,18 @@ class Constants{
     const SELECTED_ENTITIES = 'select_entities';
     const STATES = 'states';
     const ASSIGNEE = 'assignee';
+
+    // CB Invoice Workflow
+    const INVOICE_ID = 'invoice_id';
+    const PAYMENT_ID = 'payment_id';
+    const B2B_INTERNATIONAL_BANK_TRANSFERS = 'b2b_international_bank_transfers';
+
+    const PRIORITY = 'priority';
+    const PRIORITY_P0 = 'P0';
+    const PRIORITY_P1 = 'P1';
+    const TAGS = 'tags';
+    const CB_WORKFLOW_CALLBACK_ROUTE = '/internal/cb-invoice-workflow/callback';
+    const WORKFLOW_STATUS = 'workflow_status';
+
+
 }

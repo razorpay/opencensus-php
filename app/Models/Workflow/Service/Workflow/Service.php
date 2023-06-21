@@ -6,6 +6,8 @@ use RZP\Models\Base;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Workflow\Service\Builder\Constants;
 use RZP\Models\Workflow\Service\Client;
+use RZP\Error\ErrorCode;
+
 
 class Service extends Base\Service
 {
@@ -63,5 +65,26 @@ class Service extends Base\Service
     public function listComments( array $input )
     {
         return $this->workflowServiceClient->listComments($input);
+    }
+
+    /**
+     * @param array $input
+     * @throws BadRequestException
+     */
+    public function listCbWorkflows( array $input )
+    {
+        if (!isset($input[Constants::WORKFLOW][Constants::CONFIG_ID])) {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_CONFIG_ID);
+        }
+        $configId = $this->config->get('applications.workflows.cross_border.' . $input[Constants::WORKFLOW][Constants::CONFIG_ID]);
+        if (!isset($configId)) {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_CONFIG_ID);
+        }
+        $input[Constants::WORKFLOW][Constants::CONFIG_ID] = $configId;
+        $input[Constants::SELECTED_ENTITIES] = [Constants::STATES, Constants::ASSIGNEE];
+
+        return $this->workflowServiceClient->listWorkflows($input);
     }
 }

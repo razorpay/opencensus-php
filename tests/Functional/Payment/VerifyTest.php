@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Payment;
 
 use DB;
 use Carbon\Carbon;
+use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
@@ -1641,5 +1642,63 @@ class VerifyTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals("doc_1234567890",$payment['reference2']);
+    }
+
+    public function testCbWorkflowCallback_WorkflowApproved()
+    {
+        $payment = $this->fixtures->create('payment:authorized', [
+            'method' => 'intl_bank_transfer',
+            'gateway' => 'currency_cloud',
+        ]);
+
+        $merchantID = $payment->merchant->getId();
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantID);
+
+        $this->ba->workflowsAppAuth();
+        s($payment->merchant->isFeatureEnabled(Feature\Constants::ENABLE_SETTLEMENT_FOR_B2B));
+
+        $request = [
+            'url'    => '/internal/cb-invoice-workflow/callback',
+            'method' => 'post',
+            'content' => [
+                'payment_id' => $payment->getId(),
+                'merchant_id' => $merchantID,
+                'workflow_status' => 'approved',
+                'priority' => 'P0'
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+        s($response);
+        $merchant = $this->getDbEntityById('merchant', $merchantID);
+        $this->assertEquals(true, $merchant->isFeatureEnabled(Feature\Constants::ENABLE_SETTLEMENT_FOR_B2B));
+    }
+
+    public function testCbWorkflowCallback_WorkflowRejected()
+    {
+        $payment = $this->fixtures->create('payment:authorized', [
+            'method' => 'intl_bank_transfer',
+            'gateway' => 'currency_cloud',
+        ]);
+
+        $merchantID = $payment->merchant->getId();
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantID);
+
+        $this->ba->workflowsAppAuth();
+
+        $request = [
+            'url'    => '/internal/cb-invoice-workflow/callback',
+            'method' => 'post',
+            'content' => [
+                'payment_id' => $payment->getId(),
+                'merchant_id' => $merchantID,
+                'workflow_status' => 'rejected',
+                'priority' => 'P0'
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+        $merchant = $this->getDbEntityById('merchant', $merchantID);
+        $this->assertEquals(false, $merchant->isFeatureEnabled(Feature\Constants::ENABLE_SETTLEMENT_FOR_B2B));
     }
 }

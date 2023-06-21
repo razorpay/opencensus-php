@@ -1278,12 +1278,16 @@ return [
     ],
 
     'workflows' => [
-        'mock'              => env('WORKFLOWS_MOCK', false),
-        'url'               => env('WORKFLOWS_URL'),
-        'username'          => env('WORKFLOWS_USERNAME'),
-        'password'          => env('WORKFLOWS_PASSWORD'),
-        'secret'            => env('WORKFLOWS_INTERNAL_APP_SECRET'),
-        'spr_config_id'     => env('WORKFLOWS_SPR_CONFIG_ID'),
+        'mock'                          => env('WORKFLOWS_MOCK', false),
+        'url'                           => env('WORKFLOWS_URL'),
+        'username'                      => env('WORKFLOWS_USERNAME'),
+        'password'                      => env('WORKFLOWS_PASSWORD'),
+        'secret'                        => env('WORKFLOWS_INTERNAL_APP_SECRET'),
+        'spr_config_id'                 => env('WORKFLOWS_SPR_CONFIG_ID'),
+        'cross_border' => [
+            'invoice_verification_config_id'         => env('WORKFLOWS_CROSS_BORDER_INVOICE_VERIFICATION_CONFIG_ID'),
+            'invoice_verification_dashboard_domain'  => env('WORKFLOWS_CROSS_BORDER_INVOICE_VERIFICATION_DOMAIN')
+        ]
     ],
 
     'worker' => [
