@@ -2032,6 +2032,40 @@ class Repository extends Base\Repository
                     ->first();
     }
 
+    // Fetch Fund Management Payouts within a certain interval
+    public function fetchFundManagementPayoutsWithinRange(string $merchantId, $retrievalThreshold)
+    {
+        $idColumn          = $this->dbColumn(Entity::ID);
+        $amountColumn      = $this->dbColumn(Entity::AMOUNT);
+        $statusColumn      = $this->dbColumn(Entity::STATUS);
+        $purposeColumn     = $this->dbColumn(Entity::PURPOSE);
+        $createdAtColumn   = $this->dbColumn(Entity::CREATED_AT);
+        $reversedAtColumn  = $this->dbColumn(Entity::REVERSED_AT);
+        $initiatedAtColumn = $this->dbColumn(Entity::INITIATED_AT);
+        $processedAtColumn = $this->dbColumn(Entity::PROCESSED_AT);
+
+        $payoutSelectAttributes = [
+            $idColumn,
+            $amountColumn,
+            $statusColumn,
+            $processedAtColumn,
+            $reversedAtColumn,
+            $initiatedAtColumn,
+            $createdAtColumn
+        ];
+
+        $endTime   = Carbon::now(Timezone::IST)->getTimestamp();
+        $startTime = Carbon::now(Timezone::IST)->subSeconds($retrievalThreshold)->getTimestamp();
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->select($payoutSelectAttributes)
+                    ->merchantId($merchantId)
+                    ->where($purposeColumn, '=', Purpose::RZP_FUND_MANAGEMENT)
+                    ->whereBetween($createdAtColumn, [$startTime, $endTime])
+                    ->whereIn($statusColumn, [Status::PROCESSED, Status::ON_HOLD, Status::INITIATED, Status::REVERSED])
+                    ->get();
+    }
+
     // Not checking for status here, because payouts could be initiated or processed.
     public function fetchFeesForPayoutIds(array $payoutIds, $merchantId, $balanceId)
     {

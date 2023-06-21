@@ -138,6 +138,8 @@ class Base
 
     const FTS_OTP_CREATE = '/otp/send';
 
+    const FTS_ROUTING_FETCH_MODE = '/routing/mode_selection';
+
     // Headers
     const ACCEPT        = 'Accept';
     const ADMIN_EMAIL   = 'admin_email';

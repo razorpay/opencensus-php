@@ -241,6 +241,13 @@ final class Constants
 
     const CBP                            = "CBP";
 
+    // Fetch Mode Constants
+    const OFFSET_AMOUNT                  = "offset_amount";
+
+    const ACTION                         = "action";
+
+    const SELECTED_MODE                  = "selected_mode";
+
     public static function getProducts(): array
     {
         return [

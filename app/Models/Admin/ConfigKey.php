@@ -154,6 +154,8 @@ class ConfigKey
 
     const RBL_STATEMENT_FETCH_RETRY_LIMIT           = self::PREFIX . 'rbl_statement_fetch_retry_limit';
 
+    const FUND_MANAGEMENT_PAYOUTS_RETRIEVAL_THRESHOLD = self::PREFIX . 'fund_management_payouts_retrieval_threshold';
+
     const ICICI_STATEMENT_FETCH_RETRY_LIMIT           = self::PREFIX . 'icici_statement_fetch_retry_limit';
 
     const BLOCK_YESBANK_WALLET_PAYOUTS          = self::PREFIX . 'block_yesbank_wallet_payouts';

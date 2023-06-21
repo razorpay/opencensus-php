@@ -11018,6 +11018,54 @@ return [
         ],
     ],
 
+    'testCreateFundManagementPayoutCustomPurpose' => [
+        'request'   => [
+            'method'  => 'post',
+            'url'     => '/payouts/purposes',
+            'content' => [
+                'purpose'      => 'RZP Fund Management',
+                'purpose_type' => 'RZP Fund Management'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => "The selected purpose type is invalid.",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateFundManagementPayoutCustomPurposeWithRefundPurposeType' => [
+        'request'   => [
+            'method'  => 'post',
+            'url'     => '/payouts/purposes',
+            'content' => [
+                'purpose'      => 'RZP Fund Management',
+                'purpose_type' => 'refund',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => "Purpose 'RZP Fund Management' is an internal purpose used by Razorpay and cannot be added.",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreatePayoutPurposeWithInvalidPurpose' => [
         'request' => [
             'method'  => 'post',

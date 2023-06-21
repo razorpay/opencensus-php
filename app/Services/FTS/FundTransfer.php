@@ -218,6 +218,15 @@ class FundTransfer extends Base
         return $response;
     }
 
+    public function requestModeFromFts(array $input): array
+    {
+        $response = $this->createAndSendRequest(parent::FTS_ROUTING_FETCH_MODE, 'POST', $input);
+
+        (new Validator())->validateInput('fetch_mode', $response);
+
+        return $response;
+    }
+
     /**
      * @return string
      * @throws LogicException

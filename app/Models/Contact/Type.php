@@ -45,7 +45,7 @@ final class Type
         self::CAPITAL_COLLECTIONS_INTERNAL_CONTACT,
         self::XPAYROLL_INTERNAL,
     ];
-    
+
     private $settingsAccessor;
 
     public static $internalAppToAllowedInternalContact = [

@@ -13,6 +13,7 @@ use RZP\Trace\Tracer;
 use RZP\Models\Admin;
 use RZP\Models\State;
 use DeepCopy\DeepCopy;
+use RZP\Models\Contact;
 use RZP\Diag\EventCode;
 use RZP\Models\Counter;
 use RZP\Models\Feature;
@@ -27,6 +28,7 @@ use RZP\Models\Merchant;
 use RZP\Models\External;
 use RZP\Models\Workflow;
 use RZP\Trace\TraceCode;
+use RZP\Traits\TrimSpace;
 use RZP\Models\Admin\Org;
 use RZP\Http\OAuthScopes;
 use RZP\Jobs\LedgerStatus;
@@ -41,6 +43,7 @@ use RZP\Models\Transaction;
 use RZP\Models\FeeRecovery;
 use RZP\Constants\Timezone;
 use RZP\Constants\HyperTrace;
+use RZP\Models\VirtualAccount;
 use RZP\Models\CreditTransfer;
 use RZP\Models\IdempotencyKey;
 use RZP\Models\BankingAccount;
@@ -58,6 +61,7 @@ use RZP\Mail\PayoutLink\Approval;
 use RZP\Jobs\OnHoldPayoutsProcess;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\QueuedPayoutsInitiate;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Payout\Notifications;
 use RZP\Jobs\PayoutServiceDualWrite;
@@ -81,6 +85,7 @@ use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Jobs\PartnerBankDowntimeHoldPayouts;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
+use RZP\Services\FTS\Constants as FTSConstants;
 use RZP\Jobs\BankingAccountStatementSourceLinking;
 use RZP\Jobs\FreePayoutMigrationForPayoutsService;
 use RZP\Services\Segment\EventCode as SegmentEvent;
@@ -88,9 +93,11 @@ use RZP\Models\Payout\Constants as PayoutConstants;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
 use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
 use RZP\Models\BankingAccountStatement\Entity as BASEntity;
 use RZP\Models\Payout\Batch\Constants as BatchPayoutConstants;
+use RZP\Jobs\FundManagementPayouts\FundManagementPayoutInitiate;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 use RZP\Models\Workflow\Service\Adapter\Constants as WorkflowConstants;
 use RZP\Models\Payout\DataMigration\Processor as DataMigrationProcessor;
@@ -111,6 +118,8 @@ use RZP\Models\Transaction\Processor\Ledger\Payout as PayoutsLedgerProcessor;
  */
 class Core extends Base\Core
 {
+    use TrimSpace;
+
     const MUTEX_RESOURCE                    = 'PAYOUT_PROCESSING_%s_%s';
 
     const FREE_PAYOUT_MIGRATE_RESOURCE      = 'FREE_PAYOUT_MIGRATE_%s_%s_%s';
@@ -129,6 +138,8 @@ class Core extends Base\Core
 
     const PAYOUT_REVERSAL_MUTEX_LOCK_TIMEOUT = 3600;
 
+    const FUND_MANAGEMENT_PAYOUTS_RETRIEVAL_THRESHOLD = 21600; // In Seconds
+
     const FAILURE_STATUSES_FOR_PAYOUT_TO_AMEX = [Attempt\Status::FAILED, Attempt\Status::REVERSED];
 
     const STATUSES_FOR_CARD_VAULT_TOKEN_DELETION = [Attempt\Status::PROCESSED, Attempt\Status::REVERSED, Attempt\Status::FAILED];
@@ -136,6 +147,8 @@ class Core extends Base\Core
     const DEFAULT_SLA_FOR_ON_HOLD_PAYOUTS_IN_MINS = 15;
 
     const DEFAULT_SLA_FOR_PARTNER_BANK_ON_HOLD_PAYOUTS_IN_MINS = 60;
+
+    const DEFAULT_FMP_THRESHOLD = 50000000; // In Paisa
 
     const DEFAULT_BENE_BANK_STATUS = 'resolved';
 
@@ -1420,16 +1433,23 @@ class Core extends Base\Core
         return $traceData;
     }
 
-    public function getLatestBalanceForDirectAccount(Merchant\Balance\Entity $balanceEntity)
+    public function getLatestBalanceForDirectAccount(Merchant\Balance\Entity $balanceEntity, $useGatewayBalance = false)
     {
         /** @var BankingAccountStatement\Details\Entity $basDetailsUpdated */
         $basDetailsUpdated = $this->fetchAndUpdateGatewayBalanceIfStale($balanceEntity);
 
-        $variant = $this->app->razorx->getTreatment(
-            $basDetailsUpdated->getId(),
-            Merchant\RazorxTreatment::USE_GATEWAY_BALANCE,
-            $this->mode
-        );
+        if ($useGatewayBalance === false)
+        {
+            $variant = $this->app->razorx->getTreatment(
+                $basDetailsUpdated->getId(),
+                Merchant\RazorxTreatment::USE_GATEWAY_BALANCE,
+                $this->mode
+            );
+        }
+        else
+        {
+            $variant = 'on';
+        }
 
         $balanceAmount = $balanceEntity->getBalanceWithLockedBalance();
 
@@ -1448,6 +1468,50 @@ class Core extends Base\Core
         $balanceAmount = $this->negateODIfApplicable($balanceEntity->merchant, $balanceAmount);
 
         return $balanceAmount;
+    }
+
+    public function getLatestDirectAccountBalanceForFundManagementPayout($fundManagementPayouts, $basDetails)
+    {
+        $basDetails->reload();
+
+        $recentChangeTimestamp = 0;
+
+        /* @var Entity $fundManagementPayout */
+        foreach ($fundManagementPayouts as $fundManagementPayout)
+        {
+            switch ($fundManagementPayout->getStatus())
+            {
+                case Status::REVERSED:
+                    $recentChangeTimestamp = max($recentChangeTimestamp, $fundManagementPayout->getReversedAt());
+
+                    break;
+
+                case Status::PROCESSED:
+                    $recentChangeTimestamp = max($recentChangeTimestamp, $fundManagementPayout->getProcessedAt());
+
+                    break;
+            }
+        }
+
+        if (($recentChangeTimestamp != 0) and
+            ($recentChangeTimestamp > $basDetails->getGatewayBalanceChangeAt()))
+        {
+            $input = [
+                Balance\Entity::CHANNEL        => $basDetails->getChannel(),
+                Balance\Entity::MERCHANT_ID    => $basDetails->getMerchantId(),
+                Balance\Entity::ACCOUNT_NUMBER => $basDetails->getAccountNumber()
+            ];
+
+            $updatedBasDetails = (new BankingAccount\Core)->fetchAndUpdateGatewayBalanceWrapper($input);
+
+            $balanceAmount = $this->negateODIfApplicable($updatedBasDetails->merchant, $updatedBasDetails->getGatewayBalance());
+
+            return $balanceAmount;
+        }
+        else
+        {
+            return $this->getLatestBalanceForDirectAccount($basDetails->balance, true);
+        }
     }
 
     /**
@@ -9117,6 +9181,552 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+
+    public function initiateFundManagementPayoutIfRequired($input)
+    {
+        $channel = $input[Entity::CHANNEL];
+
+        $merchantId = $input[Entity::MERCHANT_ID];
+
+        $thresholds = $input[PayoutConstants::THRESHOLDS];
+
+        $this->mutex->acquireAndRelease(
+            'fund_management_payout_check_' . $merchantId . '_' . $channel,
+            function() use ($merchantId, $channel, $thresholds) {
+                /**
+                 * @var Balance\Entity                         $liteBalanceEntity
+                 * @var BankingAccountStatement\Details\Entity $basDetails
+                 *
+                 * Fetch & Validate Lite account details and Current Account details
+                 */
+                [$liteBalanceEntity, $fundLoadingBankAccountDetails, $basDetails] =
+                    $this->fetchMerchantAccountDetailsAndValidate($merchantId, $channel);
+
+                $this->trace->info(TraceCode::FMP_LITE_AND_CA_DETAILS_FETCHED, [
+                    'merchant_id'                       => $merchantId,
+                    'channel'                           => $channel,
+                    'lite_balance_entity'               => $liteBalanceEntity->getId(),
+                    'fund_loading_bank_account_details' => $fundLoadingBankAccountDetails,
+                    'bas_details'                       => $basDetails->getId(),
+                ]);
+
+                // Get Lite Balance from Ledger (In Paisa)
+                $liteBalance = $liteBalanceEntity->getSharedBankingBalanceFromLedgerWithoutFallbackOnApi();
+
+                $liteBalanceThreshold = $thresholds[PayoutConstants::LITE_BALANCE_THRESHOLD];
+
+                $liteBalanceThresholdWithAllowance = (int) round($liteBalanceThreshold - ($thresholds[PayoutConstants::LITE_DEFICIT_ALLOWED] / 10000) * $liteBalanceThreshold);
+
+                $this->trace->info(TraceCode::LITE_BALANCE_FETCHED_FOR_FMP, [
+                    'merchant_id'                           => $merchantId,
+                    'channel'                               => $channel,
+                    'lite_balance'                          => $liteBalance,
+                    'lite_balance_threshold'                => $liteBalanceThreshold,
+                    'lite_balance_threshold_with_allowance' => $liteBalanceThresholdWithAllowance,
+                ]);
+
+                if ($liteBalance >= $liteBalanceThresholdWithAllowance)
+                {
+                    throw new Exception\LogicException(PayoutConstants::LITE_BALANCE_IS_ABOVE_THRESHOLD, null, [
+                        'merchant_id'                           => $merchantId,
+                        'channel'                               => $channel,
+                        'lite_balance'                          => $liteBalance,
+                        'lite_balance_threshold'                => $liteBalanceThreshold,
+                        'lite_balance_threshold_with_allowance' => $liteBalanceThresholdWithAllowance,
+                    ]);
+                }
+
+                // Get FMPs within retrieval period
+                $retrivalThreshold = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::FUND_MANAGEMENT_PAYOUTS_RETRIEVAL_THRESHOLD]);
+
+                if (empty($statementRetryLimit) === true)
+                {
+                    $retrivalThreshold = self::FUND_MANAGEMENT_PAYOUTS_RETRIEVAL_THRESHOLD; // In secs
+                }
+
+                $fundManagementPayouts = $this->repo->payout->fetchFundManagementPayoutsWithinRange(
+                    $merchantId, $retrivalThreshold);
+
+                $fundManagementPayoutDetails = [];
+
+                $fundManagementPayouts->each(function($fundManagementPayout, $key) use (&$fundManagementPayoutDetails) {
+                    $fundManagementPayoutDetail[Entity::ID]     = $fundManagementPayout->getId();
+                    $fundManagementPayoutDetail[Entity::STATUS] = $fundManagementPayout->getStatus();
+
+                    $fundManagementPayoutDetails[] = $fundManagementPayoutDetail;
+                });
+
+                $this->trace->info(TraceCode::FUND_MANAGEMENT_PAYOUTS_FOUND_WITHIN_RETRIEVAL_THRESHOLD, [
+                    'merchant_id'                     => $merchantId,
+                    'channel'                         => $channel,
+                    'fund_management_payouts_details' => $fundManagementPayoutDetails,
+                    'fund_management_payouts_count'   => count($fundManagementPayoutDetails),
+                    'fmp_retrieval_threshold'         => $retrivalThreshold,
+                ]);
+
+                // Calculate Offset Amount for initiating FMPs
+                $offsetAmount = $this->calculateOffsetAmountForFundManagementPayout(
+                    $fundManagementPayouts, $liteBalance, $thresholds, $merchantId, $channel);
+
+                if ($offsetAmount <= 0)
+                {
+                    throw new Exception\LogicException(PayoutConstants::INVALID_OFFSET_AMOUNT_FOR_FMP, null, [
+                        'merchant_id'     => $merchantId,
+                        'channel'         => $channel,
+                    ]);
+                }
+
+                // Fetch Latest direct account balance
+                $gatewayBalance = $this->getLatestDirectAccountBalanceForFundManagementPayout($fundManagementPayouts, $basDetails);
+
+                $this->trace->info(TraceCode::CA_BALANCE_FETCHED_FOR_FMP, [
+                    'merchant_id'     => $merchantId,
+                    'channel'         => $channel,
+                    'gateway_balance' => $gatewayBalance,
+                    'pffset_amount'   => $offsetAmount,
+                ]);
+
+                if ($gatewayBalance <= $offsetAmount)
+                {
+                    throw new Exception\LogicException(PayoutConstants::CA_BALANCE_NOT_ENOUGH_FOR_FMP, null, [
+                        'merchant_id'     => $merchantId,
+                        'channel'         => $channel,
+                        'gateway_balance' => $gatewayBalance,
+                        'pffset_amount'   => $offsetAmount,
+                    ]);
+                }
+
+                //Create Input for FMPs
+                $fmpInput = $this->createInputForFundManagementPayouts($fundLoadingBankAccountDetails, $merchantId, $basDetails, $offsetAmount);
+
+                $preferredMode = $fmpInput[Entity::MODE];
+
+                $this->trace->info(TraceCode::FUND_MANAGEMENT_PAYOUT_CREATION_INPUT, [
+                    'merchant_id' => $merchantId,
+                    'channel'     => $channel,
+                    'input'       => $fmpInput,
+                ]);
+
+                // Calculate the number of FMPs and its Amount
+                $fmpConfiguration = $this->calculateNumberOfFundManagementPayoutsBasedOnThresholds($thresholds, $preferredMode, $offsetAmount);
+
+                $this->trace->info(TraceCode::FUND_MANAGEMENT_PAYOUT_CREATION_CONFIGURATION, [
+                    'merchant_id'                => $merchantId,
+                    'channel'                    => $channel,
+                    'payout_count_to_amount_map' => $fmpConfiguration,
+                ]);
+
+                // Dispatch FMPs for creation
+                $this->dispatchFundManagementPayouts($merchantId, $channel, $fmpInput, $fmpConfiguration);
+            },
+            300,
+            ErrorCode::BAD_REQUEST_ANOTHER_FUND_MANAGEMENT_REQUEST_IN_PROGRESS
+        );
+    }
+
+    public function fetchMerchantAccountDetailsAndValidate($merchantId, $channel)
+    {
+        /* @var Merchant\Entity $merchant*/
+        $merchant = $this->repo->merchant->findByPublicId($merchantId);
+
+        $isLive = (($merchant->isLive() === true) or
+                   ((new Merchant\Core())->isXVaActivated($merchant) === true));
+
+        if ($isLive === false)
+        {
+            throw new BadRequestValidationFailureException('X is not live for merchant_id ' . $merchantId);
+        }
+
+        // Fetch Lite Accounts For Fund Loading
+        $virtualAccounts = $this->repo->virtual_account->fetchActiveBankingVirtualAccountsFromMerchantId($merchantId);
+
+        $liteBalanceEntity = null;
+        $virtualAccountIds = [];
+        $fundLoadingBankAccountDetails = [];
+
+        /* @var VirtualAccount\Entity $virtualAccount*/
+        foreach ($virtualAccounts as $virtualAccount)
+        {
+            $virtualAccountIds[] = $virtualAccount->getId();
+
+            /* @var BankAccount\Entity $bankAccount*/
+            $bankAccount = $virtualAccount->bankAccount;
+
+            if (isset($bankAccount) === false)
+            {
+                continue;
+            }
+
+            $fundLoadingBankAccountDetails = [
+                BankAccount\Entity::ACCOUNT_NUMBER => $bankAccount->getAccountNumber(),
+                BankAccount\Entity::IFSC           => $bankAccount->getIfscCode(),
+                BankAccount\Entity::NAME           => $bankAccount->getName()
+            ];
+
+            $trimmedBankAccountDetails = $this->trimSpaces($fundLoadingBankAccountDetails);
+
+            try
+            {
+                // Validate Bank Account before initiating Fund Management Payouts
+                (new BankAccount\Validator())->validateInput('addFundAccountBankAccount', $trimmedBankAccountDetails);
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    null,
+                    TraceCode::BANK_ACCOUNT_DETAILS_NOT_SUITABLE_FOR_FUND_MANAGEMENT,
+                    [
+                        'account_details' => $trimmedBankAccountDetails,
+                        'merchant_id'     => $merchantId,
+                        'channel'         => $channel,
+                    ]);
+
+                $fundLoadingBankAccountDetails = [];
+
+                continue;
+            }
+
+            $liteBalanceEntity = $virtualAccount->balance;
+
+            break;
+        }
+
+        if ((empty($fundLoadingBankAccountDetails) === true) or
+            (isset($liteBalanceEntity) === false))
+        {
+            throw new BadRequestValidationFailureException('No Suitable Bank Account found for Fund Loading for ' . $merchantId, null, [
+                'channel'                  => $channel,
+                'lite_account_ids_scanned' => $virtualAccountIds,
+                'lite_balance_Entity'      => optional($liteBalanceEntity)->getId(),
+                'count_of_lite_account'    => count($virtualAccountIds),
+            ]);
+        }
+
+        // Fetch CA banking_account_statement_details for merchantId and channel
+        $basDetails = $this->repo->banking_account_statement_details->getDirectBasDetailEntityByMerchantIdAndChannel($merchantId, $channel);
+
+        if (isset($basDetails) === false)
+        {
+            $this->trace->error(TraceCode::BAS_DETAILS_NOT_FOUND, [
+                'merchant_id' => $merchantId,
+                'channel'     => $channel
+            ]);
+
+            throw new BadRequestValidationFailureException('Bas Details not found for ' . $merchantId, null, [
+                'merchant_id' => $merchantId,
+                'channel'     => $channel
+            ]);
+        }
+
+        $this->validateBankingAccountTpv($basDetails);
+
+        return [$liteBalanceEntity, $fundLoadingBankAccountDetails, $basDetails];
+    }
+
+    public function validateBankingAccountTpv($basDetails)
+    {
+        $disableTpvFeature = $basDetails->merchant->isFeatureEnabled(Feature\Constants::DISABLE_TPV_FLOW);
+
+        if ($disableTpvFeature === false)
+        {
+            $bankingAccountTpv = $this->repo->banking_account_tpv->getApprovedActiveTpvAccountWithPayerAccountNumber(
+                $basDetails->getMerchantId(),
+                $basDetails->getBalanceId(),
+                $basDetails->getAccountNumber()
+            );
+
+            if (isset($bankingAccountTpv) === false)
+            {
+                $this->trace->error(TraceCode::FUND_MANAGEMENT_PAYOUT_BANKING_ACCOUNT_TPV_FAILURE, [
+                    'disable_tpv_feature' => false,
+                    'merchant_id'         => $basDetails->getMerchantId(),
+                    'balance_id'          => $basDetails->getBalanceId(),
+                ]);
+
+                throw new BadRequestValidationFailureException('Banking Account TPV not setup for FMP.', null, [
+                    'merchant_id' => $basDetails->getMerchantId(),
+                    'balance_id'  => $basDetails->getBalanceId(),
+                    'channel'     => $basDetails->getChannel(),
+                ]);
+            }
+        }
+    }
+
+    public function calculateOffsetAmountForFundManagementPayout(
+        $fundManagementPayouts,
+        $liteBalance,
+        $thresholds,
+        $merchantId,
+        $channel)
+    {
+        $liteBalanceThreshold = $thresholds[PayoutConstants::LITE_BALANCE_THRESHOLD];
+
+        $offsetAmount = ($liteBalanceThreshold - $liteBalance);
+
+        $netAmountAlreadyDone = 0;
+
+        $startTime = Carbon::now(Timezone::IST)
+                           ->subSeconds($thresholds[PayoutConstants::FMP_CONSIDERATION_THRESHOLD])->getTimestamp();
+
+        $endTime   = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $countOfOnHoldPayouts = 0;
+        $countOfOnHoldPayoutsConsidered = 0;
+        $countOfInitiatedPayouts = 0;
+        $countOfInitiatedPayoutsConsidered = 0;
+        $countOfProcessedPayouts = 0;
+
+        foreach ($fundManagementPayouts as $fundManagementPayout)
+        {
+            switch ($fundManagementPayout->getStatus())
+            {
+                case Status::ON_HOLD:
+                    if (($fundManagementPayout->getCreatedAt() >= $startTime) and
+                        ($fundManagementPayout->getCreatedAt() <= $endTime))
+                    {
+                        $offsetAmount -= $fundManagementPayout->getAmount();
+
+                        $netAmountAlreadyDone += $fundManagementPayout->getAmount();
+
+                        $countOfOnHoldPayoutsConsidered++;
+                    }
+
+                    $countOfOnHoldPayouts++;
+
+                    break;
+
+                case Status::INITIATED:
+                    if (($fundManagementPayout->getInitiatedAt() >= $startTime) and
+                        ($fundManagementPayout->getInitiatedAt() <= $endTime))
+                    {
+                        $offsetAmount -= $fundManagementPayout->getAmount();
+
+                        $netAmountAlreadyDone += $fundManagementPayout->getAmount();
+
+                        $countOfInitiatedPayoutsConsidered++;
+                    }
+
+                    $countOfInitiatedPayouts++;
+
+                    break;
+
+                case Status::PROCESSED:
+                    $netAmountAlreadyDone += $fundManagementPayout->getAmount();
+
+                    $countOfProcessedPayouts++;
+
+                    break;
+            }
+        }
+
+        $offsetAmount = max($offsetAmount, 0);
+
+        $availableAmount = $thresholds[PayoutConstants::TOTAL_AMOUNT_THRESHOLD] - $netAmountAlreadyDone;
+
+        $this->trace->info(TraceCode::FMP_OFFSET_CALCULATIONS_PARAMETERS, [
+            'merchant_id'                           => $merchantId,
+            'channel'                               => $channel,
+            'filter_start_time'                     => $startTime,
+            'filter_end_time'                       => $endTime,
+            'count_of_on_hold_payouts'              => $countOfOnHoldPayouts,
+            'count_of_on_hold_payouts_considered'   => $countOfOnHoldPayoutsConsidered,
+            'count_of_initiated_payouts'            => $countOfInitiatedPayouts,
+            'count_of_initiated_payouts_considered' => $countOfInitiatedPayoutsConsidered,
+            'count_of_processed_payouts'            => $countOfProcessedPayouts,
+            'offset_amount'                         => $offsetAmount,
+            'net_amount_already_done'               => $netAmountAlreadyDone,
+            'total_amount_threshold'                => $thresholds[PayoutConstants::TOTAL_AMOUNT_THRESHOLD],
+            'available_amount'                      => $availableAmount,
+        ]);
+
+        if ($offsetAmount >= $availableAmount)
+        {
+            return $availableAmount;
+        }
+
+        return $offsetAmount;
+    }
+
+    public function fetchFundManagementPayoutModeForMerchantViaFts($merchantId, $directBalance, $offsetAmount)
+    {
+        $channel = $directBalance->getChannel();
+
+        $bankingAccount = $directBalance->bankingAccount;
+
+        $ftsFundAccountId = optional($bankingAccount)->getFtsFundAccountId();
+
+        if (empty($ftsFundAccountId) === true and
+            (in_array($channel, BankingAccount\Core::$directChannelsForConnectBanking) === true))
+        {
+            $accountNumber = $directBalance->getAccountNumber();
+
+            $ftsFundAccountId = app('banking_account_service')->fetchFtsFundAccountIdFromBas($merchantId, $channel, $accountNumber);
+        }
+
+        /** @var \RZP\Services\FTS\FundTransfer $transferService */
+        $transferService = App::getFacadeRoot()['fts_fund_transfer'];
+
+        $input = [
+            Entity::MERCHANT_ID               => $merchantId,
+            FTSConstants::OFFSET_AMOUNT       => $offsetAmount,
+            Attempt\Entity::SOURCE_ACCOUNT_ID => $ftsFundAccountId,
+            FTSConstants::ACTION              => PayoutConstants::FUND_MANAGEMENT_PAYOUT,
+        ];
+
+        $this->trace->info(TraceCode::FTS_MODE_FETCH_PAYLOAD, $input);
+
+        $transferService->setRequestTimeout(10);
+
+        return $transferService->requestModeFromFts($input);
+    }
+
+    public function createInputForFundManagementPayouts($fundLoadingBankAccountDetails, $merchantId, $basDetails, $offsetAmount)
+    {
+        $compositePayoutPayload = [
+            Entity::FUND_ACCOUNT         => [
+                FundAccount\Entity::ACCOUNT_TYPE => FundAccount\Type::BANK_ACCOUNT,
+                FundAccount\Type::BANK_ACCOUNT   => $fundLoadingBankAccountDetails,
+                FundAccount\Entity::CONTACT      => [
+                    Contact\Entity::TYPE => Contact\Type::SELF,
+                ],
+            ],
+            Entity::CURRENCY             => Currency::INR,
+            Entity::BALANCE_ID           => $basDetails->getBalanceId(),
+            Entity::PURPOSE              => Purpose::RZP_FUND_MANAGEMENT,
+            Entity::QUEUE_IF_LOW_BALANCE => false,
+            Entity::NARRATION            => Purpose::RZP_FUND_MANAGEMENT,
+        ];
+
+        $preferredMode = Mode::IMPS;
+
+        try
+        {
+            $ftsResponse = $this->fetchFundManagementPayoutModeForMerchantViaFts(
+                $merchantId, $basDetails->balance, $offsetAmount);
+
+            $preferredMode = $ftsResponse[FTSConstants::SELECTED_MODE];
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                null,
+                TraceCode::FTS_MODE_FETCH_FAILED,
+                [
+                    'merchant_id' => $merchantId,
+                    'offset_amount' => $offsetAmount
+                ]);
+
+            $this->trace->count(Metric::FTS_MODE_FETCH_FAILURES_COUNT);
+        }
+
+        $compositePayoutPayload[Entity::MODE] = $preferredMode;
+
+        // Get Contact Name from Merchant Billing Label
+        $merchantBillingLabel = $basDetails->merchant->getBillingLabel();
+
+        // Remove all characters other than a-z, A-Z, 0-9 and space
+        $formattedLabel = preg_replace('/[^a-zA-Z0-9 ]+/', '', $merchantBillingLabel);
+
+        // If formattedLabel is non-empty, pick the first 50 chars, else fallback to 'Razorpay'
+        $formattedLabel = ($formattedLabel ? $formattedLabel : 'Razorpay');
+
+        $compositePayoutPayload[Entity::FUND_ACCOUNT][FundAccount\Entity::CONTACT][Contact\Entity::NAME] =
+            str_limit($formattedLabel, 50, '');
+
+        return $compositePayoutPayload;
+    }
+
+    public function calculateNumberOfFundManagementPayoutsBasedOnThresholds($thresholds, $preferredMode, $offsetAmount)
+    {
+        $neftThreshold = $thresholds[PayoutConstants::NEFT_THRESHOLD];
+
+        switch ($preferredMode)
+        {
+            case Mode::NEFT:
+                $countOfFmps = (int) floor($offsetAmount / $neftThreshold);
+
+                return $this->generatePayoutAmountToCountMap($countOfFmps, $offsetAmount, $neftThreshold);
+
+            case Mode::IMPS:
+                $countOfFmps = (int) floor($offsetAmount / (NodalAccount::MAX_IMPS_AMOUNT * 100));
+
+                return $this->generatePayoutAmountToCountMap($countOfFmps, $offsetAmount, NodalAccount::MAX_IMPS_AMOUNT);
+
+            default:
+                $countOfFmps = (int) floor($offsetAmount / self::DEFAULT_FMP_THRESHOLD);
+
+                return $this->generatePayoutAmountToCountMap($countOfFmps, $offsetAmount, self::DEFAULT_FMP_THRESHOLD);
+        }
+    }
+
+    public function generatePayoutAmountToCountMap($count, $totalAmount, $amountThreshold)
+    {
+        $amountToCountMap = [];
+
+        $remainingAmount = $totalAmount - ($count * $amountThreshold);
+
+        if ($count === 0)
+        {
+            $amountToCountMap[$totalAmount] = 1;
+        }
+        else
+        {
+            $amountToCountMap[$amountThreshold] = $count;
+
+            if (isset($amountToCountMap[$remainingAmount]) === true)
+            {
+                $amountToCountMap[$remainingAmount] += 1;
+            }
+            else
+            {
+                $amountToCountMap[$remainingAmount] = 1;
+            }
+        }
+
+        return $amountToCountMap;
+    }
+
+    public function dispatchFundManagementPayouts($merchantId, $channel, $fmpInput, $fmpConfiguration)
+    {
+        foreach ($fmpConfiguration as $payoutAmount => $payoutCount)
+        {
+            $fmpInput[Entity::AMOUNT] = $payoutAmount;
+
+            $params = [
+                Entity::MERCHANT_ID                    => $merchantId,
+                Entity::CHANNEL                        => $channel,
+                PayoutConstants::PAYOUT_CREATE_INPUT   => $fmpInput,
+                PayoutConstants::FMP_UNIQUE_IDENTIFIER => UniqueIdEntity::generateUniqueId(),
+            ];
+
+            do
+            {
+                try
+                {
+                    $this->trace->info(TraceCode::FUND_MANAGEMENT_PAYOUT_CREATION_DISPATCH_INITIATE, $params);
+
+                    FundManagementPayoutInitiate::dispatch($this->mode, $params);
+
+                    $this->trace->info(TraceCode::FUND_MANAGEMENT_PAYOUT_CREATION_DISPATCH_SUCCESS, $params);
+                }
+                catch (\Throwable $throwable)
+                {
+                    $this->trace->traceException(
+                        $throwable,
+                        Trace::ERROR,
+                        TraceCode::FUND_MANAGEMENT_PAYOUT_CREATION_DISPATCH_FAILURE,
+                        $params);
+
+                    $this->trace->count(Metric::FUND_MANAGEMENT_PAYOUT_CREATION_DISPATCH_FAILURE_COUNT);
+                }
+
+                $payoutCount--;
+
+            } while ($payoutCount > 0);
+        }
     }
 
     /**

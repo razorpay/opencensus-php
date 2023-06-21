@@ -39,6 +39,7 @@ use RZP\Http\OAuthScopes;
 use RZP\Models\FundAccount;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
+use RZP\Models\BankAccount;
 use RZP\Mail\Payout\Attachments;
 use RZP\Services\PayoutService;
 use RZP\Http\BasicAuth\BasicAuth;
@@ -298,6 +299,179 @@ class Service extends Base\Service
                                                                       $this->auth->getInternalApp());
 
         return $this->fundAccountPayout($input, true);
+    }
+
+    public function createFundManagementPayout(array $input)
+    {
+        // Validation on the Job Name
+        $jobName = app('worker.ctx')->getJobName() ?? null;
+
+        if ($jobName !== PayoutConstants::FUND_MANAGEMENT_PAYOUT_INITIATE)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
+        }
+
+        $merchantId = $input[Entity::MERCHANT_ID];
+
+        $channel = $input[Entity::CHANNEL];
+
+        $fmpUniqueIdentifier = $input[PayoutConstants::FMP_UNIQUE_IDENTIFIER];
+
+        $payoutCreationPayload = $input[PayoutConstants::PAYOUT_CREATE_INPUT];
+
+        $requestTime = microtime(true);
+
+        $this->trace->info(TraceCode::FUND_MANAGEMENT_PAYOUT_CREATE_REQUEST, [
+            'input'       => $payoutCreationPayload,
+            'merchant_id' => $merchantId,
+            'channel'     => $channel,
+            'time'        => $requestTime,
+        ]);
+
+        $fundManagementPayout = $this->app['api.mutex']->acquireAndRelease(
+            'create_fund_management_payout_' . $fmpUniqueIdentifier . '_' . $merchantId . '_' . $channel,
+            function() use ($merchantId, $payoutCreationPayload) {
+
+                /* @var Merchant\Entity $merchant */
+                $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+                // Setting Merchant Id in Basic Auth
+                $this->app['basicauth']->setMerchant($merchant);
+
+                $this->merchant = $merchant;
+
+                return $this->createFundAccountManagementCompositePayout($payoutCreationPayload, true);
+            },
+            60,
+            ErrorCode::BAD_REQUEST_ANOTHER_FUND_MANAGEMENT_PAYOUT_CREATION_IN_PROGRESS
+        );
+
+        $responseTime = microtime(true);
+
+        $this->trace->info(TraceCode::FUND_MANAGEMENT_PAYOUT_CREATED, [
+            'payout_data'   => $fundManagementPayout,
+            'merchant_id'   => $merchantId,
+            'channel'       => $channel,
+            'time'          => $responseTime,
+            'response_time' => $responseTime - $requestTime,
+        ]);
+    }
+
+    public function createFundAccountManagementCompositePayout(array $input, bool $internal = false): array
+    {
+        $this->validateFundAccountManagementCompositePayoutInput($input);
+
+        (new Validator)->setStrictFalse()
+                       ->validateInput(Validator::BEFORE_CREATE_FUND_ACCOUNT_PAYOUT, $input);
+
+        $input = $this->createContactAndFundAccountAndGetPayoutInputForCompositeRequest($input);
+
+        $payout = $this->core->createPayoutToFundAccount($input, $this->merchant, null, $internal);
+
+        if ($payout->getIsPayoutService() === true)
+        {
+            if (array_key_exists(Entity::FUND_ACCOUNT_ID, $payout->payoutServiceResponse) === true)
+            {
+                $fundAccountId = $payout->payoutServiceResponse[Entity::FUND_ACCOUNT_ID];
+
+                $fundAccount = $this->repo->fund_account->findByPublicIdAndMerchant($fundAccountId, $this->merchant);
+
+                $payout->fundAccount()->associate($fundAccount);
+
+                $payout = $this->postCreationProcessingForCompositePayout($payout);
+
+                $payout->payoutServiceResponse[Entity::FUND_ACCOUNT] = $payout->fundAccount->toArrayPublic();
+            }
+        }
+        else
+        {
+            $payout = $this->postCreationProcessingForCompositePayout($payout);
+        }
+
+        if ($payout->getIsPayoutService() === true)
+        {
+            return $payout->payoutServiceResponse;
+        }
+
+        return $payout->toArrayPublic();
+    }
+
+    public function validateFundAccountManagementCompositePayoutInput($input)
+    {
+        // Only Accept Composite Payout
+        if (isset($input[Entity::FUND_ACCOUNT]) === false)
+        {
+            $this->trace->error(TraceCode::FUND_MANAGEMENT_VANILLA_PAYOUT_CREATION_NOT_ALLOWED, [
+                'merchant_id' => $this->merchant,
+            ]);
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
+        }
+
+        $basDetails = $this->repo->banking_account_statement_details->getDirectBasDetailEntityByMerchantAndBalanceId(
+            $this->merchant->getId(), $input[Entity::BALANCE_ID]);
+
+        // Don't Allow FMPs with balance Id belonging to wrong merchant_id
+        if (isset($basDetails) === false)
+        {
+            $this->trace->error(TraceCode::FMP_CREATION_INVALID_SOURCE_ERROR, [
+                'merchant_id'    => $this->merchant->getId(),
+                'balance_id'     => $input[Entity::BALANCE_ID],
+            ]);
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN, null, [
+                'merchant_id'    => $this->merchant->getId(),
+                'balance_id'     => $input[Entity::BALANCE_ID],
+            ]);
+        }
+
+        $bankAccount   = $input[Entity::FUND_ACCOUNT][FundAccount\Type::BANK_ACCOUNT] ?? null;
+        $accountNumber = $bankAccount[BankAccount\Entity::ACCOUNT_NUMBER] ?? null;
+        $ifsc          = $bankAccount[BankAccount\Entity::IFSC] ?? null;
+        $name          = $bankAccount[BankAccount\Entity::NAME] ?? null;
+
+        // Don't Allow FMPs with invalid Bank Account Details
+        if ((isset($accountNumber) === false) and
+            (isset($ifsc) === false) and
+            (isset($name) === false))
+        {
+            $this->trace->error(TraceCode::FMP_CREATION_INVALID_BANK_ACCOUNT_DETAILS_ERROR, [
+                'merchant_id'    => $this->merchant->getId(),
+                'account_number' => $accountNumber,
+                'ifsc'           => $ifsc,
+                'name'           => $name
+            ]);
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN, null, [
+                'merchant_id'    => $this->merchant->getId(),
+                'account_number' => $accountNumber,
+                'ifsc'           => $ifsc,
+                'name'           => $name
+            ]);
+        }
+
+        $bankAccount = $this->repo->bank_account->findLatestBankAccountByAccountNumber(
+            $accountNumber, $ifsc, $name, BankAccount\Type::VIRTUAL_ACCOUNT, $this->merchant->getId());
+
+        // Don't Allow FMPs for account numbers not belonging to the merchant due to security concerns
+        if (isset($bankAccount) === false)
+        {
+            $this->trace->error(TraceCode::FMP_CREATION_INVALID_BANK_ACCOUNT_DETAILS_ERROR, [
+                'bank_account'   => is_null($bankAccount),
+                'merchant_id'    => $this->merchant->getId(),
+                'account_number' => $accountNumber,
+                'ifsc'           => $ifsc,
+                'name'           => $name
+            ]);
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN, null, [
+                'bank_account'   => is_null($bankAccount),
+                'merchant_id'    => $this->merchant->getId(),
+                'account_number' => $accountNumber,
+                'ifsc'           => $ifsc,
+                'name'           => $name,
+            ]);
+        }
     }
 
     public function validatePayout(array $input): array

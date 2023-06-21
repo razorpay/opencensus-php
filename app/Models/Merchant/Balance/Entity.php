@@ -13,6 +13,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
+use RZP\Models\Payout\Metric;
 use RZP\Models\BankingAccount;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Currency\Currency;
@@ -556,6 +557,47 @@ class Entity extends Base\PublicEntity
                     $balance = (int) $ledgerResponse[LedgerCore::MERCHANT_BALANCE][LedgerCore::BALANCE];
                 }
             }
+        }
+
+        return $balance;
+    }
+
+    public function getSharedBankingBalanceFromLedgerWithoutFallbackOnApi()
+    {
+        $balance = null;
+
+        // call ledger when "ledger_journal_reads" is enabled on the merchant.
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true)
+        {
+            $accountNumber = $this->getAccountNumber();
+
+            $bankingAccount = (new BankingAccount\Repository)
+                ->findByMerchantAndAccountNumberPublic($this->merchant, $accountNumber);
+
+            $ledgerResponse = (new LedgerCore())->fetchBalanceFromLedger($this->merchant->getId(), $bankingAccount->getPublicId());
+            if ((empty($ledgerResponse) === false) &&
+                (empty($ledgerResponse[LedgerCore::MERCHANT_BALANCE]) === false) &&
+                (empty($ledgerResponse[LedgerCore::MERCHANT_BALANCE][LedgerCore::BALANCE]) === false))
+            {
+                $balance = (int) $ledgerResponse[LedgerCore::MERCHANT_BALANCE][LedgerCore::BALANCE];
+            }
+        }
+        else
+        {
+            // Fetch Balance from API if not enabled on ledger reverse shadow
+            $balance = $this->getBalance() - $this->getLockedBalance();
+        }
+
+        if (isset($balance) === false)
+        {
+            app('trace')->count(Metric::LEDGER_LITE_BALANCE_FETCH_ERROR_COUNT);
+
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_BALANCE_DOES_NOT_EXIST, null, [
+                'id'           => $this->getId(),
+                'merchant_id'  => $this->getMerchantId(),
+                'account_type' => $this->getAccountType(),
+                'type'         => $this->getType()
+            ]);
         }
 
         return $balance;

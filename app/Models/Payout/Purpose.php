@@ -29,6 +29,7 @@ class Purpose
     const RZP_FEES             = 'rzp_fees';
     const RZP_TAX_PAYMENT      = 'rzp_tax_pay';
     const MERCHANT_ID          = 'merchant_id';
+    const RZP_FUND_MANAGEMENT  = 'RZP Fund Management';
 
     protected static $default = [
         self::REFUND,
@@ -49,8 +50,9 @@ class Purpose
     ];
 
     protected static $internalPurposeTypeMap = [
-        self::RZP_FEES        => FTAPurpose::SETTLEMENT,
-        self::RZP_TAX_PAYMENT => FTAPurpose::SETTLEMENT,
+        self::RZP_FEES            => FTAPurpose::SETTLEMENT,
+        self::RZP_TAX_PAYMENT     => FTAPurpose::SETTLEMENT,
+        self::RZP_FUND_MANAGEMENT => FTAPurpose::RZP_FUND_MANAGEMENT,
     ];
 
     protected static $finopsPurposeTypeMap = [
@@ -308,7 +310,7 @@ class Purpose
 
         $trimmedPurpose = $this->trimSpaces($purpose);
 
-        // If purpose is 'rzp_fees' or 'inter_account_payout' we won't allow adding it as a custom purpose
+        // If purpose is 'rzp_fees' or 'inter_account_payout' or 'RZP Fund Management' we won't allow adding it as a custom purpose
         if (self::isInInternal($trimmedPurpose) or self::isInFinops(strtolower($trimmedPurpose)) === true)
         {
             throw new BadRequestValidationFailureException(

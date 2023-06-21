@@ -46,6 +46,11 @@ final class Metric
     const PAYOUT_TO_CARDS_VAULT_TOKEN_DELETION_RETRIES_EXHAUSTED    = 'payout_to_cards_vault_token_deletion_retries_exhausted';
     const SUB_ACCOUNT_PAYOUT_TYPE_SET_TOTAL                         = 'sub_account_payout_type_set_total';
     const BULK_PAYOUTS_INTERNAL_SERVER_ERROR                        = 'bulk_payouts_internal_server_error';
+    const FTS_MODE_FETCH_FAILURES_COUNT                             = 'fts_mode_fetch_failures_count';
+    const FUND_MANAGEMENT_PAYOUT_CREATION_DISPATCH_FAILURE_COUNT    = 'fund_management_payout_creation_dispatch_failure_count';
+    const LEDGER_LITE_BALANCE_FETCH_ERROR_COUNT                     = 'ledger_lite_balance_fetch_error_count';
+    const FUND_MANAGEMENT_PAYOUT_CHECK_JOB_FAILURES_COUNT           = 'fund_management_payout_check_job_failures_count';
+    const FUND_MANAGEMENT_PAYOUT_INITIATE_JOB_FAILURES_COUNT        = 'fund_management_payout_initiate_job_failures_count';
 
     // Payout Service Metrics/Alerts
     const INVALID_PAYOUT_CREATE_REQUEST_TO_PAYOUT_SERVICE = 'invalid_payout_create_request_to_payout_service';
@@ -89,6 +94,8 @@ final class Metric
     const PAYOUT_ON_HOLD_TO_QUEUED_DURATION_SECONDS                      = 'payout_on_hold_to_queued_duration_seconds.histogram';
     const PAYOUT_ON_HOLD_TO_CANCELLED_DURATION_SECONDS                   = 'payout_on_hold_to_cancelled_duration_seconds.histogram';
     const PAYOUT_CREATED_TO_QUEUED_DURATION_SECONDS                      = 'payout_created_to_queued_duration_seconds.histogram';
+    const FUND_MANAGEMENT_PAYOUT_CHECK_COMPLETED_DURATION_SECONDS        = 'fund_management_payout_check_completed_duration_seconds.histogram';
+    const FUND_MANAGEMENT_PAYOUT_INITIATED_COMPLETED_DURATION_SECONDS    = 'fund_management_payout_initiated_completed_duration_seconds.histogram';
 
 
     // Dimension constants

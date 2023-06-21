@@ -553,6 +553,14 @@ return [
         'live'       => env('AWS_BANKING_ACCOUNT_STATEMENT_SOURCE_LINKING_LIVE_QUEUE'),
     ],
 
+    'fund_management_payout_check' => [
+        'live'       => env('AWS_FUND_MANAGEMENT_PAYOUT_CHECK_LIVE_QUEUE'),
+    ],
+
+    'fund_management_payout_initiate' => [
+        'live'       => env('AWS_FUND_MANAGEMENT_PAYOUT_INITIATE_LIVE_QUEUE'),
+    ],
+
     'missing_account_statement_detect' => [
         'live'       => env('AWS_MISSING_ACCOUNT_STATEMENT_DETECT_LIVE_QUEUE'),
     ],

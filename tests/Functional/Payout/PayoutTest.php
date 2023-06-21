@@ -13699,7 +13699,47 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($existingPurposesCount, $response['count']);
     }
 
-    public function addCustomPayoutBulkPurposeForMasterCardSend()
+    public function testCreateFundManagementPayoutCustomPurpose()
+    {
+        $this->ba->privateAuth();
+
+        $request = [
+            'method'  => 'get',
+            'url'     => '/payouts/purposes',
+            'content' => [
+            ],
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $existingPurposesCount = $response['count'];
+
+        $this->startTest();
+
+        $this->assertEquals($existingPurposesCount, $response['count']);
+    }
+
+    public function testCreateFundManagementPayoutCustomPurposeWithRefundPurposeType()
+    {
+        $this->ba->privateAuth();
+
+        $request = [
+            'method'  => 'get',
+            'url'     => '/payouts/purposes',
+            'content' => [
+            ],
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $existingPurposesCount = $response['count'];
+
+        $this->startTest();
+
+        $this->assertEquals($existingPurposesCount, $response['count']);
+    }
+
+    public function testAddCustomPayoutBulkPurposeForMasterCardSend()
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS]);
 
@@ -13728,7 +13768,7 @@ class PayoutTest extends OAuthTestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals(($existingPurposesCount+1), $response['count']);
+        $this->assertEquals(($existingPurposesCount), $response['count']);
     }
 
     public function testCreatePayoutPurposeWithInvalidPurpose()

@@ -362,7 +362,20 @@ class Service extends Base\Service
                 ($this->auth->isScroogeApp() === true) or
                 ($this->auth->isXPayrollApp() === true) or
                 ($this->auth->isPayoutService() === true) or
-                ($this->auth->isCapitalCollectionsApp() === true));
+                ($this->auth->isCapitalCollectionsApp() === true) or
+                ($this->isFundManagementPayoutInitiateWorker() === true));
+    }
+
+    protected function isFundManagementPayoutInitiateWorker(): bool
+    {
+        $jobName = app('worker.ctx')->getJobName() ?? null;
+
+        if ($jobName !== Payout\Constants::FUND_MANAGEMENT_PAYOUT_INITIATE)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     protected function handleFundAccountCreationForCustomer(array $input)

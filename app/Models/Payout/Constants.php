@@ -60,6 +60,24 @@ class Constants
 
     public const PAYOUT_ID                  = 'payout_id';
 
+    // Fund Management Payout Constants
+
+    const THRESHOLDS                      = 'thresholds';
+    const NEFT_THRESHOLD                  = 'neft_threshold';
+    const LITE_BALANCE_THRESHOLD          = 'lite_balance_threshold';
+    const LITE_DEFICIT_ALLOWED            = 'lite_deficit_allowed';
+    const FMP_CONSIDERATION_THRESHOLD     = 'fmp_consideration_threshold';
+    const TOTAL_AMOUNT_THRESHOLD          = 'total_amount_threshold';
+    const FUND_MANAGEMENT_PAYOUT          = 'fund_management_payout';
+    const PAYOUT_CREATE_INPUT             = 'payout_create_input';
+    const FMP_UNIQUE_IDENTIFIER           = 'fmp_unique_identifier';
+    const FUND_MANAGEMENT_PAYOUT_INITIATE = 'worker:fund_management_payout_initiate';
+
+    // Fund Management Payout Error Descriptions
+    const LITE_BALANCE_IS_ABOVE_THRESHOLD = 'Lite balance is above threshold.';
+    const CA_BALANCE_NOT_ENOUGH_FOR_FMP   = 'CA balance not enough to initiate FMP';
+    const INVALID_OFFSET_AMOUNT_FOR_FMP   = 'Offset amount is less than equal to zero.';
+
     public const MERCHANT_EXCLUSION_FOR_ON_HOLD_PAYOUT_CA =  [
         "KQmiOStxMbJRKD", "KQmqfUjixRdKwd", "KQWFyOWq9SwLPz", "KQmiOStxMbJRKD", "CFATEjs18VKdtr", "KQWFyOWq9SwLPz", "KQmqfUjixRdKwd",
         "LBX3zrXRQD20QS", "LBWwHD7BTMIToy", "LBYQxFVIPdk1A3", "KQtWekXcgwDObj", "CEguwEip3eDPfV", "KQtR99FZetQe87"
