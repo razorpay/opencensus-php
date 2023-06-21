@@ -1341,6 +1341,8 @@ class Core extends Base\Core
 
         $checkout = (new Checkout)->getCheckoutbyStorefrontId($checkoutId);
 
+        $totalTax =  (new Utils)->formatNumber($checkout['data']['node']['totalTax']['amount']);
+        
         $order = (new RzpOrders())->findOrderByIdAndMerchant($rzpOrder['id']);
 
         $orderMeta = array_first($order->orderMetas ?? [], function ($orderMeta)
@@ -1524,7 +1526,14 @@ class Core extends Base\Core
             $codFeeApplied = $rzpOrder['cod_fee'];
         }
 
-        $discountAmountPaise = $rzpOrder['line_items_total'] + $rzpOrder['shipping_fee'] + $codFeeApplied - $rzpPayment['amount'] - $giftCardAmount;
+        if($body['taxes_included'] === true)
+        {
+            $discountAmountPaise = $rzpOrder['line_items_total'] + $rzpOrder['shipping_fee'] + $codFeeApplied - $rzpPayment['amount'] - $giftCardAmount;
+        }
+        else
+        {
+            $discountAmountPaise = $rzpOrder['line_items_total'] + ($totalTax*100) + $rzpOrder['shipping_fee'] + $codFeeApplied - $rzpPayment['amount'] - $giftCardAmount;
+        }
 
         if(isset($scriptDiscountTitle))
         {
@@ -1681,6 +1690,67 @@ class Core extends Base\Core
                 $body['note_attributes'] = $noteAttributes;
             }
         }
+
+        $taxablePrice = 0;
+        $allocatedAmount = 0;
+
+        if(isset($orderMeta))
+        {
+            $value = $orderMeta->getValue();
+
+            $cartItems = $value['line_items'];
+
+            foreach ($cartItems as $cartItem)
+            {
+
+                if($cartItem['taxable'] === true)
+                {
+
+                    $items = $checkout['data']['node']['lineItems']['edges'];
+
+                    if(isset($items))
+                    {
+                        foreach ($items as $item)
+                        {
+                            if(strpos($item['node']['variant']['id'], strval($cartItem['variant_id'])) !== false)
+                            {
+        
+                                if(!empty($item['node']['discountAllocations']))
+                                {
+
+                                    $allocatedAmount = $allocatedAmount + floatval($item['node']['discountAllocations'][0]['allocatedAmount']['amount']);
+                                }
+                            }
+                        }
+                    }
+                    $taxablePrice = $taxablePrice + (($cartItem['price']/100) * $cartItem['quantity']) - $allocatedAmount;
+                }
+            }
+
+            if(isset($totalTax) && $totalTax > 0 && $taxablePrice > 0)
+            {
+                if($body['taxes_included'] === true)
+                {
+                    $productPrice = $taxablePrice - $totalTax;
+                    $rate = (new Utils)->formatNumber($totalTax / $productPrice);
+                }
+                else
+                {
+                    $rate = (new Utils)->formatNumber($totalTax / $taxablePrice);
+                }
+
+                $taxDetails = [];
+
+                array_push($taxDetails, [
+                    'title' => 'GST',
+                    'rate'  => $rate,
+                    'price' => $totalTax,
+                ]);
+
+                $body['tax_lines'] = $taxDetails;
+            }
+        }
+        
         return $body;
     }
 

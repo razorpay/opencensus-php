@@ -30,7 +30,12 @@ class Service
 
         if (empty($body["failure_code"]) === true)
         {
-            return ['status_code' => 200, 'data' => ['promotions' => [$body]]];
+            return ['status_code' => 200, 'data' =>
+                [
+                    'promotions' => [$body],
+                    'tax_details' => null
+                ]
+            ];
         }
         return ['status_code' => 422, 'data' => $body];
     }

@@ -9576,6 +9576,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const GET_SHOPIFY_CLIENT_ERROR                                    = 'GET_SHOPIFY_CLIENT_ERROR';
     const SHOPIFY_1CC_APPLY_COUPON_ERROR                              = 'SHOPIFY_1CC_APPLY_COUPON_ERROR';
+    const SHOPIFY_1CC_REMOVE_COUPON_ERROR                             = 'SHOPIFY_1CC_REMOVE_COUPON_ERROR';
 
     const IMPACT_PARTNER_PASSING_ACCOUNT_ID_IN_BODY                   = 'IMPACT_PARTNER_PASSING_ACCOUNT_ID_IN_BODY';
 

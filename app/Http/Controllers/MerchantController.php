@@ -3410,9 +3410,9 @@ class MerchantController extends Controller
 
         try
         {
-            (new Merchant\MerchantPromotions\Service())->removeCoupon($input);
+            $response = (new Merchant\MerchantPromotions\Service())->removeCoupon($input);
 
-            return ApiResponse::json([], 200);
+            return ApiResponse::json($response['data'], $response['status_code']);
         }
         catch (\Throwable $ex)
         {

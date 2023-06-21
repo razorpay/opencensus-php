@@ -3247,4 +3247,71 @@ class OrderTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetch1ccOrderWithoutTaxDetails()
+    {
+        $this->fixtures->merchant->addFeatures(FeatureConstants::ONE_CLICK_CHECKOUT);
+
+        $orderData = [
+            Order\Entity::AMOUNT                              => 10000,
+            Order\Entity::RECEIPT                             => 'R1',
+            Order\OrderMeta\Order1cc\Fields::LINE_ITEMS_TOTAL => 10000,
+            Order\OrderMeta\Order1cc\Fields::LINE_ITEMS       => [
+                [
+                    Order\OrderMeta\Order1cc\Fields::LINE_ITEM_NAME     => 'Line Item 1',
+                    Order\OrderMeta\Order1cc\Fields::LINE_ITEM_PRICE    => 1000,
+                    Order\OrderMeta\Order1cc\Fields::LINE_ITEM_QUANTITY => 1,
+                ],
+            ],
+        ];
+
+        $this->createOrder($orderData);
+        $order = $this->getDbLastOrder();
+        $orderEntity = $this->fetchOrderById($order->getPublicId());
+
+        $this->assertNotNull($orderEntity);
+        $this->assertEquals($orderData[Order\Entity::AMOUNT], $orderEntity['amount']);
+        $this->assertEquals($orderData[Order\OrderMeta\Order1cc\Fields::LINE_ITEMS_TOTAL],
+            $orderEntity[Order\OrderMeta\Order1cc\Fields::LINE_ITEMS_TOTAL]);
+        $this->assertNull($orderEntity['tax_details']);
+    }
+
+    public function testFetch1CCOrderWithTaxDetails()
+    {
+        $this->fixtures->merchant->addFeatures(FeatureConstants::ONE_CLICK_CHECKOUT);
+
+        $orderData = [
+            Order\Entity::AMOUNT   => 100000,
+            Order\Entity::RECEIPT  => 'R1',
+            Order\Entity::CURRENCY => 'INR',
+        ];
+
+        $this->createOrder($orderData);
+        $order = $this->getDbLastOrder();
+
+        $this->fixtures->create('order_meta',
+            [
+                'order_id' => $order->getId(),
+                'value'    => ['line_items_total' => $order->getAmount()],
+                'type'     => 'one_click_checkout',
+            ]);
+
+        $taxDetails = [
+            "total_tax"      => 200,
+            "taxes_included" => false,
+        ];
+
+        $updatedValue = [
+            'type'        => 'one_click_checkout',
+            'tax_details' => $taxDetails,
+        ];
+
+        $orderMeta = $this->getDbLastEntity('order_meta');
+        $this->fixtures->edit('order_meta', $orderMeta->id, ['value' => $updatedValue]);
+        $orderEntity = $this->fetchOrderById($order->getPublicId());
+
+        $this->assertNotNull($orderEntity);
+        $this->assertNotNull($orderEntity['tax_details']);
+        $this->assertEquals($taxDetails, $orderEntity['tax_details']);
+
+    }
 }

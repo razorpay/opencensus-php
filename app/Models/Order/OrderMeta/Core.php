@@ -415,10 +415,13 @@ class Core extends Base\Core
             }
         }
 
+        $taxDetails = $value[Order1cc\Fields::TAX_DETAILS] ?? [];
+        $taxValue = (new OneClickCheckoutCore)->getTaxesApplied($taxDetails);
+
         $minimumCartAmountAllowed = 100;
         $subTotal = $lineItemsTotal + $shippingFee;
         $afterDiscountCartAmount = max(0,$lineItemsTotal-$discount);
-        $netPrice = max($minimumCartAmountAllowed, $afterDiscountCartAmount + $shippingFee);
+        $netPrice = max($minimumCartAmountAllowed, $afterDiscountCartAmount + $shippingFee + $taxValue);
 
         if (isset($value[Order1cc\Fields::PROMOTIONS]) === true
             and count($value[Order1cc\Fields::PROMOTIONS]) > 0) {

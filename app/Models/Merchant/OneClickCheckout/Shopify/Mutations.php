@@ -524,6 +524,11 @@ class Mutations
         checkoutDiscountCodeRemove(checkoutId: $checkoutId) {
           checkout {
             id
+            totalTax {
+              amount
+              currencyCode
+            }
+            taxesIncluded
             totalPrice {
               amount
               currencyCode
@@ -550,6 +555,11 @@ class Mutations
             id
             requiresShipping
             totalPrice {
+              amount
+              currencyCode
+            }
+            taxesIncluded
+            totalTax {
               amount
               currencyCode
             }

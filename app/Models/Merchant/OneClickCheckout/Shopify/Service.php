@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\OneClickCheckout\Shopify;
 
 use App;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\OneClickCheckout\Core as OneClickCheckoutCore;
 use Throwable;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -89,7 +90,7 @@ class Service extends Base\Service
         $this->monitoring = new Monitoring();
     }
 
-    public function shopifyCartLineItems(array $checkout, array $productTypeMap) : array
+    public function shopifyCartLineItems(array $checkout, array $productTypeMap, array $cart) : array
     {
         //Cart line items for the modal
         $lineItems = $checkout['lineItems']['edges'];
@@ -116,6 +117,19 @@ class Service extends Base\Service
                 $isCartDiscountApplied = true;
             }
 
+            if(empty($cart) === false)
+            {
+                $cartItems = $cart['items'];
+
+                foreach ($cartItems as $cartItem)
+                {
+                    if(strpos($item['variant']['id'], strval($cartItem['variant_id'])) !== false)
+                    {
+                        $taxable = $cartItem['taxable'];
+                    }
+                }
+            }
+
             $cartLineItems[] = [
                 'variant_id'        => mb_substr(strval($item['variant']['id']), 0, 128, 'UTF-8'),
                 'product_id'        => mb_substr(strval($item['variant']['product']['id']), 0, 128, 'UTF-8'),
@@ -130,6 +144,7 @@ class Service extends Base\Service
                 'weight'            => (int)floatval($item['variant']['weight']),
                 'image_url'         => $item['variant']['image']['url'] ?? "",
                 'type'              => mb_substr($productTypeMap[$item['variant']['sku']] ?? '', 0, 128, 'UTF-8'),
+                'taxable'           => $taxable ?? false,
             ];
         }
 
@@ -139,11 +154,11 @@ class Service extends Base\Service
         ];
     }
 
-    public function shopifyScriptCartLineItems(array $checkout, $cartFromCache, array $productTypeMap) : array
+    public function shopifyScriptCartLineItems(array $checkout, $cartFromCache, array $productTypeMap, $cart) : array
     {
         if (empty($cartFromCache) === true)
         {
-            return $this->shopifyCartLineItems($checkout, $productTypeMap);
+            return $this->shopifyCartLineItems($checkout, $productTypeMap, $cart);
         }
 
         //Cart line items for the modal
@@ -167,6 +182,7 @@ class Service extends Base\Service
                 'weight'            => (int)floatval($item['grams'] / 1000),
                 'image_url'         => "",
                 'type'              => mb_substr($productTypeMap[$item['sku']] ?? '', 0, 128, 'UTF-8'),
+                'taxable'           => $item['taxable'] ?? false,
             ];
 
             foreach ($checkoutLineItems as $lineItem) {
@@ -355,7 +371,7 @@ class Service extends Base\Service
         {
             $cartPrice = (int)(floatval($cart['total_price']));
 
-            $scriptData = $this->getScriptData($cartId, $cartPrice, $checkout, $productTypeMap);
+            $scriptData = $this->getScriptData($cart, $cartPrice, $checkout, $productTypeMap);
 
             $amount = $scriptData['amount'];
 
@@ -365,7 +381,7 @@ class Service extends Base\Service
         }
         else
         {
-            $cartLineItemsData = $this->shopifyCartLineItems($checkout, $productTypeMap);
+            $cartLineItemsData = $this->shopifyCartLineItems($checkout, $productTypeMap, $cart);
 
             $isAutoDiscountApplied = $cartLineItemsData['is_cart_discount_applied'];
 
@@ -396,6 +412,8 @@ class Service extends Base\Service
             'customer_cart'         => (new Pixels)->getDataForFbPixels($checkout),
             'script_coupon_applied' => $isAutoDiscountApplied,
         ];
+
+        $this->updateTaxDetails($order, $checkout);
 
         if (isset($preferenceParams['send_preferences']) === true and $preferenceParams['send_preferences'] === true)
         {
@@ -449,26 +467,28 @@ class Service extends Base\Service
     /**
      * Get the final checkout
      */
-    protected function getScriptData($cartId, $cartPrice, $checkout, array $productTypeMap)
+    protected function getScriptData($cart, $cartPrice, $checkout, array $productTypeMap)
     {
+        $cartId = $cart['token'];
+
         $checkoutAmount = round(floatval($checkout['totalPrice']['amount']) * 100);
 
-        $cart = (new Cart)->getCartData($cartId);
+        $cartFromCache = (new Cart)->getCartData($cartId);
 
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_GET_SCRIPT_DISCOUNT,
             [
                 'type'            => 'create_checkout_amount',
-                'cart'            => $cart,
+                'cart'            => $cartFromCache,
                 'checkout_amount' => $checkoutAmount,
                 'cart_price'      => $cartPrice
             ]);
 
-        if (empty($cart) === true || isset($cart['error']) === true)
+        if (empty($cartFromCache) === true || isset($cartFromCache['error']) === true)
         {
             $amount = $checkoutAmount;
 
-            $cartLineItemsData = $this->shopifyCartLineItems($checkout, $productTypeMap);
+            $cartLineItemsData = $this->shopifyCartLineItems($checkout, $productTypeMap, $cart);
 
             $lineItemsData = $cartLineItemsData['cart_line_items'];
 
@@ -480,7 +500,7 @@ class Service extends Base\Service
         {
             $amount = 0;
 
-            foreach($cart['line_items'] as $item)
+            foreach($cartFromCache['line_items'] as $item)
             {
                 $amount += round(floatval($item['line_price']) * 100);
             }
@@ -493,11 +513,11 @@ class Service extends Base\Service
 
             $this->monitoring->addTraceCount(Metric::SCRIPT_DISCOUNT_FETCH_SUCCESS_COUNT, []);
 
-            $cartLineItemsData = $this->shopifyScriptCartLineItems($checkout, $cart, $productTypeMap);
+            $cartLineItemsData = $this->shopifyScriptCartLineItems($checkout, $cartFromCache, $productTypeMap, $cart);
 
             $lineItemsData = $cartLineItemsData['cart_line_items'];
 
-            $orderNotes = (new Checkout)->getNotesForCheckout($checkout, $cartId, $cart);
+            $orderNotes = (new Checkout)->getNotesForCheckout($checkout, $cartId, $cartFromCache);
         }
 
         return [
@@ -697,6 +717,15 @@ class Service extends Base\Service
 
         $countryCode = $orderArray['customer_details']['shipping_address']['country'];
 
+        if (empty($shopifyOrder['order']['tax_lines']) === false)
+        {
+            $totalTax = $shopifyOrder['order']['tax_lines'][0]['price'];
+        }
+        else
+        {
+            $totalTax = $shopifyOrder['order']['total_tax'];
+        }
+
         $shopifyOrderAmount = round($shopifyOrder['order']['total_price']*100);
 
         // NOTE: promotions is not set if the 1ccResetAPI call fails, until CX team fixes it
@@ -709,7 +738,7 @@ class Service extends Base\Service
             'cod_fee'          => $payment['method'] === 'cod' ? $orderArray['cod_fee'] : 0,
             'order_id'         => $shopifyOrder['order']['name'],
             'id'               => $shopifyOrder['order']['id'],
-            'total_tax'        => $shopifyOrder['order']['total_tax'],
+            'total_tax'        => $totalTax,
             'payment_method'   => $payment['method'],
             'payment_currency' => $payment['currency'],
             'payment_id'       => $paymentId,
@@ -953,6 +982,13 @@ class Service extends Base\Service
         return $applyCouponResponse;
     }
 
+    public function removeShopifyCoupon(string $checkoutId):array
+    {
+        // remove existing coupon
+        return (new Coupons)->removeCoupon($checkoutId);
+
+    }
+
     /**
      * updates the notes of shopify checkout with magic checkout url
      * TODO: see metrics for this
@@ -994,6 +1030,15 @@ class Service extends Base\Service
 
         $digitalProductConfigFlagValue = $digitalProductConfig === null || $digitalProductConfig->getValue() === "1";
 
+        $checkout = $response['data']['checkoutShippingAddressUpdateV2']['checkout'];
+
+        $tax =  ((new Utils)->formatNumber($checkout['totalTax']['amount']) * 100);
+
+        $taxDetails = [
+            'total_tax' => $tax,
+            'taxes_included' => $checkout['taxesIncluded'],
+        ];
+
         if (empty($response['errors']) === false
         or empty($response['data']['checkoutShippingAddressUpdateV2']['checkoutUserErrors']) === false)
         {
@@ -1027,6 +1072,7 @@ class Service extends Base\Service
               'cod'          => false,
               'shipping_fee' => 0,
               'cod_fee'      => null,
+              'tax_details' =>  $taxDetails,
               'is_digital_product' => false
           ];
 
@@ -1090,6 +1136,7 @@ class Service extends Base\Service
             'zipcode'    => $address['zipcode'],
             'state_code' => $address['state_code'],
             'country'    => $address['country'],
+            'tax_details' =>  $taxDetails,
         ];
 
         return array_merge($response, $rates);
@@ -1567,6 +1614,25 @@ class Service extends Base\Service
 
         $this->trace->info($message, $dimensions);
 
+    }
+
+    protected function updateTaxDetails($order, array $checkout): void
+    {
+
+        if (empty($checkout['taxesIncluded']) === true || empty($checkout['totalTaxV2']) === true) {
+            return;
+        }
+
+        $taxAmount = $checkout['totalTaxV2']['amount'] ?? 0;
+
+        $taxDetails = [
+            'total_tax' => (new Utils)->formatNumber($taxAmount) * 100,
+            'taxes_included' => $checkout['taxesIncluded'],
+        ];
+
+        (new OneClickCheckoutCore)->update1CcOrder($order->getId(), [
+            'tax_details' => $taxDetails
+        ]);
     }
 
 }
