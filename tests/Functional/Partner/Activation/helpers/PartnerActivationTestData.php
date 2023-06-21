@@ -84,7 +84,7 @@ return [
                     'merchant_id'  => '1cXSLlUU8V9sXl',
                     'hold_funds'   => false,
                     'verification' => [
-                        'activation_progress' => 80,
+                        'activation_progress' => 78,
                         'status'              => 'disabled',
                         'required_fields'     => ['bank_account_number', 'bank_branch_ifsc'],
                     ],
@@ -114,7 +114,7 @@ return [
                     'merchant_id'  => '1cXSLlUU8V9sXl',
                     'hold_funds'   => false,
                     'verification' => [
-                        'activation_progress' => 90,
+                        'activation_progress' => 89,
                         'status'              => 'disabled',
                         'required_fields'     => ['company_pan'],
                     ],
@@ -144,9 +144,9 @@ return [
                     'merchant_id'  => '1cXSLlUU8V9sXl',
                     'hold_funds'   => false,
                     'verification' => [
-                        'activation_progress' => 80,
+                        'activation_progress' => 89,
                         'status'              => 'disabled',
-                        'required_fields'     => ['company_pan', 'promoter_address_url'],
+                        'required_fields'     => ['company_pan'],
                     ],
                     'can_submit'   => false
                 ]

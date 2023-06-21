@@ -461,15 +461,11 @@ class Core extends Detail\Core
     {
         $merchantDetails = $merchant->merchantDetail;
 
-        [$validationFields, $validationSelectiveRequiredFields] = $this->getPartnerValidationFields($merchantDetails);
+        $validationFields = $this->getPartnerValidationFields($merchantDetails);
 
-        $totalRequiredFieldCount = count($validationFields) + count($validationSelectiveRequiredFields);
+        $totalRequiredFieldCount = count($validationFields);
 
         $merchantDetailsArr = $merchantDetails->toArray();
-
-        $documentsResponse = Tracer::inSpan(['name' => 'fetch_document_response'], function() use ($merchant) {
-            return $this->documentCore()->documentResponse($merchant);
-        });
 
         $requiredFields = [];
 
@@ -481,15 +477,7 @@ class Core extends Detail\Core
             }
         }
 
-        $this->calculateRequiredDocumentFields(
-            $merchant,
-            $validationSelectiveRequiredFields,
-            $documentsResponse,
-            $requiredFields);
-
         $response = [];
-
-        $response[Activation\Constants::DOCUMENTS] = $documentsResponse;
 
         if (count($requiredFields) > 0)
         {
