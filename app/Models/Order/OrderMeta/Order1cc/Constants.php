@@ -51,6 +51,35 @@ final class Constants
         self::CANCEL_INITIATED      => self::CANCEL
     ];
 
+    const PL_AWAITED = "awaited";
+    const PL_MAPPED_AWAITED = "msg_awaited";
+    const PL_SENT = "sent";
+    const PL_MAPPED_SENT = "msg_sent";
+    const PL_FAILED = "failed";
+    const PL_MAPPED_FAILED = "msg_failed";
+    const PL_EXPIRED = "expired";
+    const PL_MAPPED_EXPIRED = "pl_expired";
+    const PL_CANCELLED = "cancelled";
+    const PL_MAPPED_CANCELLED = "pl_cancelled";
+    const PL_PAID = "paid";
+    const PL_MAPPED_PAID = "pl_paid";
+    const MAGIC_PAYMENT_LINK_STATUS_MAPPING = [
+        self::PL_AWAITED => self::PL_MAPPED_AWAITED,
+        self::PL_SENT => self::PL_MAPPED_SENT,
+        self::PL_FAILED => self::PL_MAPPED_FAILED,
+        self::PL_EXPIRED => self::PL_MAPPED_EXPIRED,
+        self::PL_CANCELLED => self::PL_MAPPED_CANCELLED,
+        self::PL_PAID => self::PL_MAPPED_PAID
+    ];
+    const MAGIC_PAYMENT_LINK_REVERSE_STATUS_MAPPING = [
+        self::PL_MAPPED_AWAITED => self::PL_AWAITED,
+        self::PL_MAPPED_SENT => self::PL_SENT,
+        self::PL_MAPPED_FAILED => self::PL_FAILED,
+        self::PL_MAPPED_EXPIRED => self::PL_EXPIRED,
+        self::PL_MAPPED_CANCELLED => self::PL_CANCELLED,
+        self::PL_MAPPED_PAID => self::PL_PAID
+    ];
+
     const ACTION_STATUS            = 'status';
     const ACTION_ERROR             = 'error';
     const ACTION_ERROR_CODE        = 'code';

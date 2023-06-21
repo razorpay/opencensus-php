@@ -39,5 +39,4 @@ class Service
         }
         return ['status_code' => 422, 'data' => $body];
     }
-
 }

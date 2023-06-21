@@ -112,6 +112,7 @@ class OneCCShopifyCreateOrder extends Job
             {
                 (new OneClickCheckout\Shopify\Service)->completeCheckoutWithLock($this->data, false);
             }
+            (new OneClickCheckout\Shopify\Service)->checkPrepayCODFlow($this->data);
             $this->delete();
         }
         catch (BadRequestException $e)

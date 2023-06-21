@@ -4205,7 +4205,9 @@ class Route
         'order_reset_1cc'                           => ['post',       'orders/1cc/{id}/reset',                                 'OrderController@reset1CCOrder'                                ],
         '1cc_configs_update'                        => ['post',       '1cc/merchant/configs',                                  'MerchantController@update1ccConfig'],
         '1cc_configs_get'                           => ['get',        '1cc/merchant/configs',                                  'MerchantController@get1ccConfig'],
-        'internal_1cc_configs_get'                  => ['get',        'internal/1cc/merchants/{id}/configs',                   'MerchantController@getInternal1ccConfig'],
+        '1cc_prepay_cod_configs_get'                => ['get',        '1cc/prepay/configs',                           'MerchantController@get1ccPrepayCodConfig'],
+        'internal_1cc_prepay_cod_configs_get'       => ['get',        'internal/1cc/merchants/{id}/prepay_configs',            'MerchantController@getInternal1ccPrepayCodConfig'],
+        'internal_1cc_configs_get'                  => ['get',         'internal/1cc/merchants/{id}/configs',                  'MerchantController@getInternal1ccConfig'],
         'checkout_1cc_configs_get'                  => ['get',        'checkout/1cc/merchant/configs',                         'MerchantController@getCheckout1ccConfig'],
         '1cc_merchant_preferences'                  => ['get',        'merchant/1cc_preferences',                                  'MerchantController@get1ccMerchantPreferences'],
         '1cc_disable_magic'                         => ['post',       '1cc/magic/disable',                                       'MerchantController@disable1ccMagicCheckout'],
@@ -4250,8 +4252,10 @@ class Route
 
         '1cc_rto_dashboard_list'                     => ['post',   '1cc/rto_prediction_service/dashboard', 'RtoDashboardController@list' ],
         '1cc_cod_order_list'                         => ['get', '1cc/cod/orders', 'OrderController@getCODOrders'],
+        '1cc_prepay_order_list'                      => ['get', '1cc/prepay/orders', 'OrderController@getPrepayOrders'],
+        '1cc_prepay_order_details'                   => ['get', '1cc/prepay/orders/{id}', 'OrderController@getPrepayOrder'],
         '1cc_cod_order_review'                       => ['post', '1cc/orders/cod/review','OrderController@updateActionFor1ccOrder'],
-        'internal_1cc_order_review'              => ['post', 'internal/1cc/orders/review','OrderController@review1ccOrder'],
+        'internal_1cc_order_review'                  => ['post', 'internal/1cc/orders/review','OrderController@review1ccOrder'],
 
         // 1 click checkout shopify integration
         '1cc_shopify_checkout'                      => ['post',       '1cc/shopify/checkout',                                  'OneClickCheckoutController@shopifyCreateCheckout'                ],
@@ -4273,6 +4277,8 @@ class Route
         'update_shopify_1cc_credentials'            => ['post',       '1cc/merchants/{merchant_id}/shopify/credentials',       'MerchantController@updateShopify1ccCredentials'                 ],
         '1cc_address_ingestion_config_get'          => ['get',        '1cc/merchant/address_ingestion/config',    'MerchantController@get1ccAddressIngestionConfig' ],
         '1cc_address_ingestion_addresses_post'      => ['post',       '1cc/merchant/address_ingestion/addresses', 'MerchantController@push1ccAddresses' ],
+        '1cc_process_prepay_cod_orders'             => ['post',       '1cc/orders/cod/convert',                    'MerchantController@convert1ccPrepayCODOrders'],
+        '1cc_get_woocommerce_configs'               => ['get',        'internal/1cc/merchants/woocommerce/configs',                         'MerchantController@getWoocommerce1ccConfigs'],
         '1cc_shopify_fetch_meta_fields'             => ['get',        '1cc/admin/merchants/{id}/shopify/metafields',                            'OneClickCheckoutController@fetchShopifyMetaFields'            ],
         '1cc_shopify_update_meta_fields'            => ['post',       '1cc/admin/merchants/{id}/shopify/metafields',                            'OneClickCheckoutController@updateShopifyMetaFields'           ],
         '1cc_shopify_fetch_themes'                  => ['get',        '1cc/admin/merchants/{id}/shopify/themes',                                'OneClickCheckoutController@fetchShopifyThemes'                ],
@@ -4998,6 +5004,7 @@ class Route
 
         '1cc_address_ingestion_config_get',
         '1cc_address_ingestion_addresses_post',
+        '1cc_process_prepay_cod_orders',
         'wallet_dashboard_proxy'
     ];
 
@@ -5914,9 +5921,11 @@ class Route
         'customer_fetch_by_id_internal',
 
         '1cc_get_shopify_configs',
+        '1cc_get_woocommerce_configs',
 
         // Address Service
         'internal_1cc_configs_get',
+        'internal_1cc_prepay_cod_configs_get',
         'internal_1cc_shopify_customer_addresses_get',
         'raw_address_create_bulk',
 
@@ -6964,6 +6973,7 @@ class Route
         'update_fetch_coupons_url',
         '1cc_configs_update',
         '1cc_configs_get',
+        '1cc_prepay_cod_configs_get',
         '1cc_disable_magic',
         'update_merchant_platform',
         '1cc_cod_eligibility_attribute_list',
@@ -6973,6 +6983,8 @@ class Route
         '1cc_cod_eligibility_attribute_upsert_batch',
         '1cc_rto_dashboard_list',
         '1cc_cod_order_list',
+        '1cc_prepay_order_list',
+        '1cc_prepay_order_details',
         '1cc_merchant_file_upload_audit_create',
         '1cc_merchant_file_upload_audit_list',
         '1cc_cod_order_review',
@@ -12072,6 +12084,7 @@ class Route
             'update_fetch_coupons_url',
             '1cc_configs_update',
             '1cc_configs_get',
+            '1cc_prepay_cod_configs_get',
             '1cc_disable_magic',
             'update_merchant_platform',
             '1cc_cod_eligibility_attribute_list',
@@ -12084,6 +12097,8 @@ class Route
             'state_fetch',
             '1cc_rto_dashboard_list',
             '1cc_cod_order_list',
+            '1cc_prepay_order_list',
+            '1cc_prepay_order_details',
             '1cc_merchant_file_upload_audit_create',
             '1cc_merchant_file_upload_audit_list',
             '1cc_cod_order_review',
@@ -15761,9 +15776,12 @@ class Route
             'raw_address_create_bulk',
         ],
         'magic_checkout_service' => [
+            'internal_1cc_prepay_cod_configs_get',
             'internal_1cc_configs_get',
             'update_shopify_1cc_credentials',
             '1cc_get_shopify_configs',
+            '1cc_get_woocommerce_configs',
+            'internal_sign_payload',
         ],
         'rto_prediction_service_api_web' => [
             'internal_1cc_order_review',

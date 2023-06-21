@@ -1223,6 +1223,7 @@ class UserRolesScope
             'update_fetch_coupons_url'                            => [Role::OWNER, Role::ADMIN],
             '1cc_configs_update'                                  => [Role::OWNER, Role::ADMIN],
             '1cc_configs_get'                                     => Role::ALL_ROLES,
+            '1cc_prepay_cod_configs_get'                          => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE, Role::OPERATIONS],
             '1cc_disable_magic'                                   => [Role::OWNER, Role::ADMIN],
             'update_merchant_platform'                            => [Role::OWNER, Role::ADMIN],
             '1cc_cod_eligibility_attribute_list'                  => [Role::OWNER, Role::ADMIN],
@@ -1244,6 +1245,8 @@ class UserRolesScope
             '1cc_fetch_all_countries_with_zone'                   => [Role::OWNER, Role::ADMIN],
             '1cc_cod_engine_config_summary'                       => [Role::OWNER, Role::ADMIN],
             '1cc_cod_order_list'                                  => Role::ALL_ROLES,
+            '1cc_prepay_order_list'                               => Role::ALL_ROLES,
+            '1cc_prepay_order_details'                            => Role::ALL_ROLES,
             '1cc_cod_order_review'                                => [Role::OWNER,Role::ADMIN, Role::MANAGER, Role::OPERATIONS],
             '1cc_cod_eligibility_attribute_upsert_bulk'           => [Role::OWNER, Role::ADMIN],
             '1cc_cod_eligibility_attribute_delete'                => [Role::OWNER, Role::ADMIN],
@@ -1277,6 +1280,7 @@ class UserRolesScope
             '1cc_merchant_order_review_automation_rule_configs_upsert' => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE, Role::OPERATIONS],
             '1cc_address_ingestion_config_get'                    => Role::ALL_ROLES,
             '1cc_address_ingestion_addresses_post'                => Role::ALL_ROLES,
+            '1cc_process_prepay_cod_orders'                       => Role::ALL_ROLES,
             'wallet_dashboard_proxy'                             => Role::ALL_ROLES,
         ];
 

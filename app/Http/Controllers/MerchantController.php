@@ -3562,6 +3562,36 @@ class MerchantController extends Controller
         return (new Merchant\OneClickCheckout\Config\Service())->get1ccConfig();
     }
 
+    public function get1ccPrepayCodConfig(): array
+    {
+        return (new Merchant\OneClickCheckout\Config\Service())->get1ccPrepayCodConfig();
+    }
+
+    /**
+     * @throws Exception\BadRequestException
+     */
+    public function getInternal1ccPrepayCodConfig($merchantId): array
+    {
+        try
+        {
+            return (new Merchant\OneClickCheckout\Config\Service())->getInternal1ccPrepayCodConfig($merchantId);
+        }
+        catch (\Exception $ex)
+        {
+            if (($ex instanceof Exception\BadRequestException) === true)
+            {
+                $error = $ex->getError();
+                $errorCode = $error->getInternalErrorCode();
+                if ($errorCode == ErrorCode::BAD_REQUEST_INVALID_MERCHANT_ID)
+                {
+                    $data = ["error_class" => $error->getPublicErrorCode(), "internal_error_code" => $errorCode];
+                    return ApiResponse::json($data, 500);
+                }
+            }
+            throw $ex;
+        }
+    }
+
     public function getInternal1ccConfig($merchantId)
     {
         try
@@ -4038,4 +4068,22 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+    public function getWoocommerce1ccConfigs()
+    {
+        $input = Request::all();
+
+        return (new Merchant\OneClickCheckout\Config\Service())->getWoocommerce1ccConfigs($input);
+    }
+
+    public function convert1ccPrepayCODOrders()
+    {
+        $input = Request::all();
+        $this->trace->info(
+            TraceCode::ONE_CC_PREPAY_WOOCOMMERCE_COD_ORDER_CONVERT,
+            [
+                'input'=> $input,
+            ]);
+        $this->app['magic_prepay_cod_provider_service']->convert1ccPrepayCODOrders($input);
+    }
+
 }

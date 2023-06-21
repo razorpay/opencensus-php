@@ -6,6 +6,9 @@ use GuzzleHttp\Client;
 use RZP\Exception\ServerErrorException;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Base\UniqueIdEntity;
+use Google\Service\Compute\Condition;
+use Monolog\Logger;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Http\Request\Requests;
 use RZP\Models\Base;
@@ -196,13 +199,6 @@ class Service extends Base\Service
 
                 if ($updatePlatform === Constants::WOOCOMMERCE)
                 {
-                    if ((!(isset($input[Type::API_KEY]) && isset($input[Type::API_SECRET]))) &&
-                        ($updatedManualControlCodOrderFlag === true && isset($input[Type::MANUAL_CONTROL_COD_ORDER])))
-                    {
-                        $msg = 'Both api_key and api_secret should be sent for woocommerce platform to enable manual control cod order';
-                        throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR,'api_key and api_secret is required', null,$msg);
-
-                    }
                     if (isset($input[Type::API_KEY]) && isset($input[Type::API_SECRET]) && $updatedManualControlCodOrderFlag === true)
                     {
                         (new Merchant\OneClickCheckout\AuthConfig\Service())->updateWoocommerce1ccAuthConfig([
@@ -242,7 +238,8 @@ class Service extends Base\Service
                  */
                 foreach ($input as $key => $value)
                 {
-                    if (in_array($key, Constants::COMMON_CONFIGS) === true && $key !== Constants::COD_INTELLIGENCE && $key !== Constants::MANUAL_CONTROL_COD_ORDER) {
+
+                    if (in_array($key, Constants::COMMON_CONFIGS) === true && !in_array($key,Constants::INTELLIGENCE_CONFIGS)) {
                         $this->add1ccConfigFlags($input, $key);
                     }
 
@@ -289,6 +286,8 @@ class Service extends Base\Service
 
         $this->update1ccIntelligenceConfig($input);
 
+        $this->updatePrepayCodConfigs($input);
+
         $this->updateShippingInfoConfig($shippingProvider);
 
         if ( $input['platform'] === Constants::SHOPIFY && (isset($input[Type::ONE_CLICK_CHECKOUT]))) {
@@ -316,6 +315,46 @@ class Service extends Base\Service
                         'BUY_NOW_ENABLED/DISABLED' => $buyNowValue
                     ]);
             }
+        }
+    }
+
+    protected function updatePrepayCodConfigs($input)
+    {
+        if (isset($input[Type::ONE_CC_PREPAY_COD_CONVERSION]) === true)
+        {
+            $prepayCod = $input[Type::ONE_CC_PREPAY_COD_CONVERSION];
+            (new Validator())->validateInput('prepayCodConversion', $prepayCod);
+            if ($prepayCod[Constants::ENABLED] === true)
+            {
+                switch ($prepayCod[Constants::CONFIGS][Constants::DISCOUNT][Constants::TYPE])
+                {
+                    case Constants::ZERO:
+                        $prepayCod[Constants::CONFIGS][Constants::DISCOUNT][Constants::MINIMUM_ORDER_VALUE] = 0;
+                        $prepayCod[Constants::CONFIGS][Constants::DISCOUNT][Constants::DISCOUNT_PERCENTAGE] = 0;
+                        $prepayCod[Constants::CONFIGS][Constants::DISCOUNT][Constants::MAX_DISCOUNT] = 0;
+                        break;
+                    case Constants::FLAT:
+                        $prepayCod[Constants::CONFIGS][Constants::DISCOUNT][Constants::DISCOUNT_PERCENTAGE] = 0;
+                        break;
+                }
+            }
+
+            $this->mutex->acquireAndRelease(
+                self::MUTEX_KEY . ':' . $this->merchant->getId() . ':' . Type::ONE_CC_PREPAY_COD_CONVERSION,
+                function () use ($prepayCod)
+                {
+                    (new Core())->associateMerchant1ccCODConfig(
+                        Type::ONE_CC_PREPAY_COD_CONVERSION,
+                        $prepayCod[Constants::ENABLED],
+                        $prepayCod[Constants::CONFIGS] ?? []);
+                },
+                self::MUTEX_LOCK_TTL_SEC,
+                ErrorCode::BAD_REQUEST_ANOTHER_1CC_CONFIG_OPERATION_IN_PROGRESS,
+                self::MAX_RETRY_COUNT,
+                self::MAX_RETRY_DELAY_MILLIS - 500,
+                self::MAX_RETRY_DELAY_MILLIS,
+                true
+            );
         }
     }
 
@@ -382,6 +421,32 @@ class Service extends Base\Service
                 true
             );
         }
+    }
+
+    public function get1ccPrepayCodConfig(): array
+    {
+        $currentCodIntelligenceConfigs = $this->merchant->get1ccConfig(Type::COD_INTELLIGENCE);
+
+        $prepayConfigs = $this->merchant->get1ccConfig(Type::ONE_CC_PREPAY_COD_CONVERSION);
+
+        if ($prepayConfigs != null && $prepayConfigs->getValueJson() != null)
+        {
+            $prepayConfigsJson = $prepayConfigs->getValueJson();
+            $prepayConfigsFlag = $prepayConfigs->getValue() == '1';
+            if ($currentCodIntelligenceConfigs != null && $currentCodIntelligenceConfigs->getValue() == '1')
+            {
+                $prepayConfigsJson[Constants::RISK_CATEGORY] = Constants::ALL_RISK_CATEGORIES;
+            }
+            return [
+                Constants::ENABLED => $prepayConfigsFlag,
+                Constants::CONFIGS => $prepayConfigsJson,
+            ];
+        }
+
+        return [
+            Constants::ENABLED => false,
+            Constants::CONFIGS => null,
+        ];
     }
 
     public function get1ccConfig($internal = false)
@@ -514,6 +579,36 @@ class Service extends Base\Service
         $this->app['basicauth']->setMerchant($this->merchant);
 
         return $this->get1ccConfig(true);
+    }
+
+    /**
+     * @throws BadRequestException
+     */
+    public function getInternal1ccPrepayCodConfig($merchantId): array
+    {
+        try
+        {
+            $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Logger::ERROR,
+                TraceCode::MAGIC_GET_PREPAY_CONFIGS_FAILED);
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_MERCHANT_ID);
+        }
+
+        $this->app['basicauth']->setMerchant($this->merchant);
+
+        $response =  $this->get1ccPrepayCodConfig();
+        $platform = $this->merchant->getMerchantPlatformConfig();
+        if ($platform !== null && isset($platform["value"]))
+        {
+            $response["platform"] = $platform["value"] ;
+        }
+
+        return $response;
     }
 
     /**
@@ -789,29 +884,42 @@ class Service extends Base\Service
         return (new MerchantService)->updateShippingMethodProviderConfig($input)->getValueJson();
     }
 
+    /**
+     * @throws BadRequestException
+     */
     public function getShopify1ccConfigs($input)
     {
         (new Validator())->setStrictFalse()->validateInput('gettingShopifyConfig', $input);
 
-        $keyId = $input['key_id'];
-        $mode = substr($keyId, 4, 4);
+        $mode = $this->getModeForConfigs($input);
+        $this->app['basicauth']->authCreds->setModeAndDbConnection($mode);
+
         $this->trace->info(TraceCode::MERCHANT_1CC_CONFIGS_REQUESTED, [
-                'key_id' => $keyId,
+                'input' => $input,
                 'mode' => $mode
         ]);
 
-        $this->app['basicauth']->authCreds->setModeAndDbConnection($mode);
+        if (isset($input['key_id']) === true)
+        {
+            $keyId = $input['key_id'];
 
-        Key\Entity::verifyIdAndStripSign($keyId);
+            Key\Entity::verifyIdAndStripSign($keyId);
 
-        $key = $this->repo->key->findOrFailPublic($keyId);
+            $key = $this->repo->key->findOrFailPublic($keyId);
 
-        $this->merchant = $this->repo->merchant->findOrFail($key->getMerchantId());
+            $input[Constants::MERCHANT_ID] = $key->getMerchantId();
+        }
+        else if (isset($input[Constants::MERCHANT_ID]) === false)
+        {
+            throw new BadRequestException("INVALID_REQUEST");
+        }
 
-        $result[Constants::MERCHANT_ID] = $this->merchant->getId();
+        $this->merchant = $this->repo->merchant->findOrFail($input[Constants::MERCHANT_ID]);
+
+        $result[Constants::MERCHANT_ID] = $input[Constants::MERCHANT_ID];
 
         if (empty($input[Constants::KEYS]) === true) {
-              return $result;
+            return $result;
         }
 
         $merchantAuthConfigs = (new Merchant\OneClickCheckout\AuthConfig\Core)->getShopify1ccConfig($this->merchant->getId());
@@ -835,6 +943,30 @@ class Service extends Base\Service
         }
         return $result;
     }
+
+    protected function getModeForConfigs($input): string
+    {
+        if (isset($input['key_id']) === true)
+        {
+            $keyId = $input['key_id'];
+            return substr($keyId, 4, 4);
+        }
+        else if (isset($input['mode']) === true)
+        {
+            return $input['mode'];
+        }
+        else
+        {
+            if (env('APP_MODE', 'prod') === 'prod')
+            {
+                return 'live';
+            }else
+            {
+                return 'test';
+            }
+        }
+    }
+
 
     /**
      * @param $shippingProvider
@@ -1114,5 +1246,42 @@ class Service extends Base\Service
         }
         $response = json_decode($res->getBody(), true);
         return [$response, 200];
+    }
+
+    public function getWoocommerce1ccConfigs($input)
+    {
+        (new Validator())->setStrictFalse()->validateInput('gettingWoocommerceConfig', $input);
+
+        $mode = $this->getModeForConfigs($input);
+        $this->app['basicauth']->authCreds->setModeAndDbConnection($mode);
+
+        $merchantId = $input[Constants::MERCHANT_ID];
+        $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+        $result[Constants::MERCHANT_ID] = $merchantId;
+
+        if (empty($input[Constants::KEYS]) === true)
+        {
+            return $result;
+        }
+
+        $merchantAuthConfigs = (new Merchant\OneClickCheckout\AuthConfig\Core)->
+        ge1ccAuthConfigsByMerchantIdAndPlatform($merchantId, Constants::WOOCOMMERCE);
+
+        $requestedKeys = explode(',', $input[Constants::KEYS]);
+        if (in_array(Constants::DOMAIN_URL, $requestedKeys) === true)
+        {
+            $domainUrlConfig = $this->merchant->get1ccConfig(Constants::DOMAIN_URL);
+            $result[Constants::DOMAIN_URL] = $domainUrlConfig != null ? $domainUrlConfig->getValue() : "";
+        }
+
+        foreach ($merchantAuthConfigs as $key => $value)
+        {
+            if (in_array($key, $requestedKeys) === true)
+            {
+                $result[$key] = $value;
+            }
+        }
+
+        return $result;
     }
 }

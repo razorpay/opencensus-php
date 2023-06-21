@@ -18,6 +18,7 @@ use RZP\Models\Offer\EntityOffer;
 use RZP\Models\Base\Traits\ExternalCore;
 use RZP\Models\Base\Traits\ExternalRepo;
 use RZP\Models\Order\OrderMeta\Order1cc;
+use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
@@ -273,6 +274,75 @@ class Repository extends Base\Repository
         return $paginatedResult;
     }
 
+    public function getPaginatedPrepayOrders(array $params,
+                                          string $merchantId = null,
+                                          string $connectionType = null)
+    {
+        $connection = $this->getConnectionFromType($connectionType);
+
+        $query = $this->newQueryWithConnection($connection);
+
+        $orderMetaTable = Table::ORDER_META;
+        $amountCol = $this->dbColumn(Entity::AMOUNT);
+        $idCol = $this->dbColumn(Entity::ID);
+        $receiptColumn = $this->dbColumn(Entity::RECEIPT);
+        $createdAtCol = $this->dbColumn(Entity::CREATED_AT);
+        $statusCol = $this->dbColumn(Entity::STATUS);
+        $merchantIdCol = $this->dbColumn(Entity::MERCHANT_ID);
+        $typeCol = $orderMetaTable.'.'.\RZP\Models\Order\OrderMeta\Entity::TYPE;
+        $valueCol = $orderMetaTable.'.'.\RZP\Models\Order\OrderMeta\Entity::VALUE;
+
+        $query = $query
+            ->select($idCol,$receiptColumn,$amountCol,$createdAtCol,$valueCol)
+            ->join($orderMetaTable, $idCol, '=', $orderMetaTable . '.order_id')
+            ->where($statusCol, '=',Status::PLACED )
+            ->where($typeCol, '=',Fields::ONE_CLICK_CHECKOUT )
+            ->where($merchantIdCol , '=', $merchantId );
+
+        $this->addQueryParamMagicPaymentLink($query, $params);
+
+        $this->addQueryParamOrderId($query, $params);
+
+        $this->addQueryParamCodEligibilityRiskTier($query, $params);
+
+        $this->addQueryParamMerchantOrderId($query, $params);
+
+        $this->buildQueryWithParams($query,$params);
+
+        $query->orderBy($this->dbColumn(Common::CREATED_AT), 'desc');
+
+        $paginatedResult = $this->getPaginated($query, $params);
+
+        return $paginatedResult;
+    }
+
+    public function getPrepayOrder(string $orderId,
+                                          string $merchantId = null,
+                                          string $connectionType = null)
+    {
+        $connection = $this->getConnectionFromType($connectionType);
+
+        $query = $this->newQueryWithConnection($connection);
+
+        $orderMetaTable = Table::ORDER_META;
+        $amountCol = $this->dbColumn(Entity::AMOUNT);
+        $idCol = $this->dbColumn(Entity::ID);
+        $receiptColumn = $this->dbColumn(Entity::RECEIPT);
+        $createdAtCol = $this->dbColumn(Entity::CREATED_AT);
+        $statusCol = $this->dbColumn(Entity::STATUS);
+        $merchantIdCol = $this->dbColumn(Entity::MERCHANT_ID);
+        $typeCol = $orderMetaTable.'.'.\RZP\Models\Order\OrderMeta\Entity::TYPE;
+        $valueCol = $orderMetaTable.'.'.\RZP\Models\Order\OrderMeta\Entity::VALUE;
+
+        $query = $query
+            ->select($idCol,$receiptColumn,$amountCol,$createdAtCol,$valueCol)
+            ->join($orderMetaTable, $idCol, '=', $orderMetaTable . '.order_id')
+            ->where($statusCol, '=',Status::PLACED )
+            ->where($typeCol, '=',Fields::ONE_CLICK_CHECKOUT )
+            ->where($merchantIdCol , '=', $merchantId );
+
+        return $query->find($orderId);
+    }
     private function addQueryParamOrderId($query,array & $params)
     {
         $idCol = $this->dbColumn(Entity::ID);
@@ -310,6 +380,28 @@ class Repository extends Base\Repository
             $query->where($riskTierFilter,'=',$params[Fields::COD_ELIGIBILITY_RISK_TIER]);
 
             unset($params[Fields::COD_ELIGIBILITY_RISK_TIER]);
+        }
+    }
+
+    private function addQueryParamMagicPaymentLink($query,array & $params)
+    {
+        $orderMetaTable = Table::ORDER_META;
+
+        $valueCol = $orderMetaTable.'.'.\RZP\Models\Order\OrderMeta\Entity::VALUE;
+
+        $magicPaymentLinkStatus = $valueCol.'->'.Fields::MAGIC_PAYMENT_LINK.'->'.Fields::MAGIC_PAYMENT_LINK_STATUS;
+
+        $query
+            ->whereNotNull($magicPaymentLinkStatus)
+            ->where($magicPaymentLinkStatus,'!=', Order1cc\Constants::PL_MAPPED_AWAITED);
+
+        if (isset($params[Fields::MAGIC_PAYMENT_LINK_STATUS_KEY]))
+        {
+            $query->where(
+                $magicPaymentLinkStatus,'=',
+                Order1cc\Constants::MAGIC_PAYMENT_LINK_STATUS_MAPPING[$params[Fields::MAGIC_PAYMENT_LINK_STATUS_KEY]]);
+
+            unset($params[Fields::MAGIC_PAYMENT_LINK_STATUS_KEY]);
         }
     }
 

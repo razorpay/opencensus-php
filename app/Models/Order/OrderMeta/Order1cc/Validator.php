@@ -109,6 +109,21 @@ class Validator extends Base\Validator
         Fields::REVIEW_MODE => 'sometimes|in:automation,manual',
     ];
 
+    protected static $getPrepayOrdersRules = [
+        Fields::COD_ELIGIBILITY_RISK_TIER           => 'sometimes|in:low,medium,high',
+        Entity::RECEIPT                             => 'sometimes|string|max:40',
+        Entity::ID                                  => 'sometimes|string|size:20',
+        Entity::FROM                                => 'integer',
+        Entity::TO                                  => 'integer',
+        Entity::COUNT                               => 'integer|min:1|max:50',
+        Entity::SKIP                                => 'integer',
+        Fields::MAGIC_PAYMENT_LINK_STATUS_KEY       => 'sometimes|in:awaited,sent,failed,expired,cancelled,paid'
+    ];
+
+    protected static $getPrepayOrderRules = [
+        Entity::ID                                  => 'required|string|size:20',
+    ];
+
     protected static $actionRules = [
         Constants::ACTION       => 'required|in:approve,cancel,hold',
         Entity::ID              => 'required|array|min:1',

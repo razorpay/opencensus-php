@@ -305,6 +305,24 @@ class OrderController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getPrepayOrders(){
+
+        $input = Request::all();
+
+        $data = $this->service()->getPrepayOrders($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getPrepayOrder(string $orderId){
+
+        $input = Request::all();
+
+        $data = $this->service()->getPrepayOrder($orderId, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function updateActionFor1ccOrder(){
 
         $input = Request::all();

@@ -31,6 +31,7 @@ class Type {
     const COUPON_CONFIG                    = 'coupon_config';
     const ORDER_STATUS_UPDATE_URL          = 'order_status_update_url';
     const MANUAL_CONTROL_COD_ORDER         = 'manual_control_cod_order';
+    const ONE_CC_PREPAY_COD_CONVERSION     = 'one_cc_prepay_cod_conversion';
     const API_KEY                          = 'api_key';
     const API_SECRET                       = 'api_secret';
     const USERNAME                         = 'username';

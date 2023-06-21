@@ -118,6 +118,7 @@ use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutProvider\CouponProvider\Se
 use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutProvider\CodEngine\Service as MagicCheckoutCodEngineService;
 use RZP\Models\Merchant\OneClickCheckout\MagicAddressProvider\Service as MagicAddressProviderService;
 use RZP\Models\Merchant\OneClickCheckout\MagicAddressService\Client as MagicAddressServiceClient;
+use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutProvider\PrepayCODProvider\Service as MagicPrepayCODProviderService;
 
 class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvider
 {
@@ -700,6 +701,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerMagicAddressProviderService();
 
         $this->registerMagicAddressServiceClient();
+
+        $this->registerMagicPrepayCODProviderService();
 
         $this->registerFreshchatClient();
 
@@ -1760,6 +1763,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton('magic_address_service_client', function($app)
         {
             return new MagicAddressServiceClient($app);
+        });
+    }
+
+    protected function registerMagicPrepayCODProviderService()
+    {
+        $this->app->singleton('magic_prepay_cod_provider_service', function($app)
+        {
+            return new MagicPrepayCODProviderService($app);
         });
     }
 

@@ -244,11 +244,6 @@ class Core extends Base\Core
             throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID);
         }
 
-        if($order->getStatus() === 'placed')
-        {
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID);
-        }
-
         if($order->hasOrderMeta() === false)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_1CC_ORDER);
@@ -264,6 +259,14 @@ class Core extends Base\Core
         if(empty($orderMetas1cc))
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_1CC_ORDER);
+        }
+
+        $orderMeta1cc = $orderMetas1cc[0];
+        if($order->getStatus() === 'placed' && (
+                $orderMeta1cc[Order1cc\Fields::MAGIC_PAYMENT_LINK] === null ||
+                $orderMeta1cc[Order1cc\Fields::MAGIC_PAYMENT_LINK][Order1cc\Fields::MAGIC_PAYMENT_LINK_STATUS] !== 'pl_created'))
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID);
         }
     }
 

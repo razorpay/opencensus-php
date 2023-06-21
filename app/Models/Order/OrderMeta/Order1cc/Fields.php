@@ -73,6 +73,10 @@ class Fields
     const REVIEW_STATUS = 'review_status';
     const REVIEWED_AT   = 'reviewed_at';
     const REVIEWED_BY   = 'reviewed_by';
+    const MAGIC_PAYMENT_LINK   = 'magic_payment_link';
+    const MAGIC_PAYMENT_LINK_STATUS   = 'status';
+    const MAGIC_PAYMENT_LINK_STATUS_KEY = 'magic_pl_status';
+
     const REVIEW_MODE = 'review_mode';
 
     const ONE_CLICK_CHECKOUT = 'one_click_checkout';

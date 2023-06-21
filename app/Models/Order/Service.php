@@ -7,6 +7,7 @@ use RZP\Constants\Mode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
 use ApiResponse;
+use RZP\Http\Request\Requests;
 use RZP\Http\RequestHeader;
 use RZP\Models\Base;
 use RZP\Models\Feature\Constants as FeatureConstants;
@@ -1077,10 +1078,41 @@ class Service extends Base\Service
 
         $orders = $this->repo->order->getPaginatedCODOrders($params, $this->merchant->getId(), ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
+
         $paginatedOrder = $this->toOneCCOrderArray($orders);
 
         return $paginatedOrder;
 
+    }
+
+    public function getPrepayOrders($input){
+
+        $params = $this->removeEmptyParams($input);
+
+        $this->addDefaultParamCount($params);
+
+        (new Order1cc\Validator)->validateInput('getPrepayOrders', $params);
+
+        if (isset($params[Entity::ID]))
+        {
+            $params[Entity::ID] = substr($input[Entity::ID],6);
+        }
+
+        $orders = $this->repo->order->getPaginatedPrepayOrders($params, $this->merchant->getId(), ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+        $paginatedOrder = $this->toPrepayOrderArray($orders);
+
+        return $paginatedOrder;
+
+    }
+
+    public function getPrepayOrder(string $orderId){
+
+        $orderId = substr($orderId,6);
+
+        $order = $this->repo->order->getPrepayOrder($orderId, $this->merchant->getId(),ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+        return $order?->toCodOrderArray();
     }
 
     private function addDefaultParamCount(array & $params)
@@ -1106,6 +1138,7 @@ class Service extends Base\Service
 
         return $params;
     }
+
     public function toOneCCOrderArray(Base\PublicCollection $publicCollection)
     {
         $array = [];
@@ -1124,19 +1157,33 @@ class Service extends Base\Service
         $array[Order1cc\Constants::HAS_MORE] = $collectionArray[Order1cc\Constants::HAS_MORE];
         $array[Order1cc\Constants::ITEMS] = array_map(function($item)
         {
-            $order = $item->toCodOrderArray();
-            if (isset($order[Order1cc\Fields::COD_ELIGIBILITY_RTO_REASONS]))
-            {
-                $reasons = $this->app['rto_feature_reason_provider_service']->getRTOReasons($order[Order1cc\Fields::COD_ELIGIBILITY_RTO_REASONS]);
+            return $item->toCodOrderArray();
 
-                $order[Order1cc\Fields::COD_ELIGIBILITY_RTO_REASONS] = $reasons;
-            }
-            if (empty($order[Order1cc\Fields::COD_ELIGIBILITY_RTO_CATEGORY]))
-            {
-                $order[Order1cc\Fields::COD_ELIGIBILITY_RTO_CATEGORY] = null;
-            }
+        }, $collectionArray[Order1cc\Constants::ITEMS]);
 
-            return $order;
+        return $array;
+    }
+
+    public function toPrepayOrderArray(Base\PublicCollection $publicCollection)
+    {
+        $array = [];
+
+        $collectionClosure = function () {
+            $array[Order1cc\Constants::ENTITY] = $this->entity;
+            $array[Order1cc\Constants::COUNT] =  count($this->items);
+            $array[Order1cc\Constants::HAS_MORE] = $this->getHasMore();
+            $array[Order1cc\Constants::ITEMS] = $this->items;
+            return $array;
+        };
+
+        $collectionArray = $collectionClosure->call($publicCollection);
+        $array[Order1cc\Constants::ENTITY] = $collectionArray[Order1cc\Constants::ENTITY];
+        $array[Order1cc\Constants::COUNT] = count($collectionArray[Order1cc\Constants::ITEMS]);
+        $array[Order1cc\Constants::HAS_MORE] = $collectionArray[Order1cc\Constants::HAS_MORE];
+        $array[Order1cc\Constants::ITEMS] = array_map(function($item)
+        {
+            return $item->toPrepayOrderArray();
+
         }, $collectionArray[Order1cc\Constants::ITEMS]);
 
         return $array;

@@ -40,6 +40,8 @@ class Constants
     const ONE_CC_ENABLE_GUPSHUP             = 'one_cc_enable_gupshup';
     const COD_ENGINE                        = 'cod_engine';
     const COD_ENGINE_TYPE                   = 'cod_engine_type';
+    const ONE_CC_PREPAY_COD_CONVERSION     = 'one_cc_prepay_cod_conversion';
+
 
     // gift card configs
     const ONE_CC_GIFT_CARD                 = 'one_cc_gift_card';
@@ -163,7 +165,8 @@ class Constants
         self::ONE_CC_CACHE_COUPONS,
         self::ONE_CC_HANDLE_DIGITAL_PRODUCT,
         self::ONE_CC_ENABLE_GUPSHUP,
-        self::COD_ENGINE
+        self::COD_ENGINE,
+        self::ONE_CC_PREPAY_COD_CONVERSION,
     ];
 
     /**
@@ -203,6 +206,19 @@ class Constants
        self::MANUAL_CONTROL_COD_ORDER,
        self::ONE_CC_CAPTURE_GSTIN,
        self::ONE_CC_CAPTURE_ORDER_INSTRUCTIONS,
+       self::ONE_CC_PREPAY_COD_CONVERSION,
+    ];
+
+    const INTELLIGENCE_CONFIGS = [
+        self::ONE_CC_PREPAY_COD_CONVERSION,
+        self::COD_INTELLIGENCE,
+        self::MANUAL_CONTROL_COD_ORDER,
+    ];
+
+    const ALL_RISK_CATEGORIES = [
+        self::HIGH,
+        self::MEDIUM,
+        self::LOW,
     ];
 
     const INTERNAL_CONFIGS = [
@@ -283,4 +299,22 @@ class Constants
 
     // Header key for sending MID to Magic Checkout microservice for internal routes.
     const X_Merchant_Id = 'X-Merchant-Id';
+
+    //Prepay COD constants
+    const CONFIGS = 'configs';
+    const ENABLED = 'enabled';
+    const DISCOUNT = 'discount';
+    const RISK_CATEGORY = 'risk_category';
+    const COMMUNICATION = 'communication';
+    const MAX_DISCOUNT = 'max_discount';
+    const DISCOUNT_PERCENTAGE = 'discount_percentage';
+    const MINIMUM_ORDER_VALUE = 'minimum_order_value';
+    const EXPIRE_SECONDS = 'expire_seconds';
+    const METHODS = 'methods';
+    const FLAT = 'flat';
+    const ZERO = 'zero';
+    const PERCENTAGE = 'percentage';
+    const HIGH = 'high';
+    const MEDIUM = 'medium';
+    const LOW = 'low';
 }

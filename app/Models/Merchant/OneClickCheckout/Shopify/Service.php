@@ -1546,6 +1546,34 @@ class Service extends Base\Service
         }
     }
 
+    /**
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Throwable
+     */
+    public function checkPrepayCODFlow(array $input) {
+        $paymentId = $input['razorpay_payment_id'];
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
+        if ($payment['method'] === 'cod')
+        {
+            $payload = [
+                'order_id' =>  $input['razorpay_order_id'],
+                'merchant_id' => $input['merchant_id'],
+                'mode' => $this->mode,
+            ];
+//            $queueName = $this->app['config']->get('queue.create_magic_payment_links');
+            $this->trace->info(
+                TraceCode::ONE_CC_PREPAY_SHOPIFY_COD_ORDER_CONVERT,
+                [
+                    'payload'=> $payload,
+                ]);
+
+            $this->app['magic_prepay_cod_provider_service']->convert1ccPrepayCODOrders($payload);
+//            $this->app['queue']->connection('sqs')->pushRaw(json_encode($payload), $queueName);
+//            $this->app['magic_checkout_service_client']->sendRequest('v1/payment_links/create', $payload, "POST");
+        }
+
+    }
+
     // validates merchant one cc feature
     private function validateOneCcMerchant(string $merchantId)
     {

@@ -1180,6 +1180,8 @@ class Entity extends Base\PublicEntity
      * */
     public function toCodOrderArray()
     {
+        $app = App::getFacadeRoot();
+
         $arrayPublic = $this->toArrayPublic();
 
         $orderMetaArray = $this->orderMetas;
@@ -1199,6 +1201,67 @@ class Entity extends Base\PublicEntity
             $arrayPublic[OrderMeta\Order1cc\Fields::REVIEWED_BY] = $value[OrderMeta\Order1cc\Fields::REVIEWED_BY] ?? Null;
 
             $arrayPublic[OrderMeta\Order1cc\Fields::REVIEWED_AT] = $value[OrderMeta\Order1cc\Fields::REVIEWED_AT] ?? Null;
+
+            $arrayPublic[OrderMeta\Order1cc\Fields::MAGIC_PAYMENT_LINK] = $value[OrderMeta\Order1cc\Fields::MAGIC_PAYMENT_LINK] ?? Null;
+
+            if ($arrayPublic[OrderMeta\Order1cc\Fields::MAGIC_PAYMENT_LINK] != Null) {
+
+                $magicPaymentLinkData = $arrayPublic[OrderMeta\Order1cc\Fields::MAGIC_PAYMENT_LINK];
+                $magicPaymentLinkData[OrderMeta\Order1cc\Fields::MAGIC_PAYMENT_LINK_STATUS] =
+                    OrderMeta\Order1cc\Constants::MAGIC_PAYMENT_LINK_REVERSE_STATUS_MAPPING[
+                        $magicPaymentLinkData[OrderMeta\Order1cc\Fields::MAGIC_PAYMENT_LINK_STATUS]
+                    ];
+
+                $arrayPublic[OrderMeta\Order1cc\Fields::MAGIC_PAYMENT_LINK] = $magicPaymentLinkData;
+            }
+
+            if (isset($arrayPublic[OrderMeta\Order1cc\Fields::COD_ELIGIBILITY_RTO_REASONS]))
+            {
+                $reasons = $app['rto_feature_reason_provider_service']->getRTOReasons($arrayPublic[OrderMeta\Order1cc\Fields::COD_ELIGIBILITY_RTO_REASONS]);
+
+                $arrayPublic[OrderMeta\Order1cc\Fields::COD_ELIGIBILITY_RTO_REASONS] = $reasons;
+            }
+
+            if (empty($arrayPublic[OrderMeta\Order1cc\Fields::COD_ELIGIBILITY_RTO_CATEGORY]))
+            {
+                $arrayPublic[OrderMeta\Order1cc\Fields::COD_ELIGIBILITY_RTO_CATEGORY] = null;
+            }
+
+        }
+
+        return $arrayPublic;
+    }
+
+    public function toPrepayOrderArray()
+    {
+        $arrayPublic = $this->toArrayPublic();
+
+        $orderMetaArray = $this->orderMetas;
+
+        foreach ($orderMetaArray as $orderMeta)
+        {
+            $value = $orderMeta->getValue();
+
+            unset($arrayPublic[OrderMeta\Order1cc\Fields::CUSTOMER_DETAILS],
+                $arrayPublic[OrderMeta\Order1cc\Fields::SHIPPING_FEE],
+                $arrayPublic[OrderMeta\Order1cc\Fields::COD_FEE],
+                $arrayPublic[OrderMeta\Order1cc\Fields::PROMOTIONS]);
+
+            $arrayPublic[OrderMeta\Order1cc\Fields::MAGIC_PAYMENT_LINK] = $value[OrderMeta\Order1cc\Fields::MAGIC_PAYMENT_LINK] ?? Null;
+
+            if ($arrayPublic[OrderMeta\Order1cc\Fields::MAGIC_PAYMENT_LINK] != null) {
+
+                $magicPaymentLinkData = $arrayPublic[OrderMeta\Order1cc\Fields::MAGIC_PAYMENT_LINK];
+                $magicPaymentLinkData[OrderMeta\Order1cc\Fields::MAGIC_PAYMENT_LINK_STATUS] =
+                    OrderMeta\Order1cc\Constants::MAGIC_PAYMENT_LINK_REVERSE_STATUS_MAPPING[
+                        $magicPaymentLinkData[OrderMeta\Order1cc\Fields::MAGIC_PAYMENT_LINK_STATUS]
+                    ];
+
+                $arrayPublic[OrderMeta\Order1cc\Fields::MAGIC_PAYMENT_LINK] = $magicPaymentLinkData;
+            }
+
+            $arrayPublic[OrderMeta\Order1cc\Fields::COD_ELIGIBILITY_RISK_TIER] = $value[OrderMeta\Order1cc\Fields::COD_INTELLIGENCE][OrderMeta\Order1cc\Fields::COD_ELIGIBILITY_RISK_TIER] ?? Null;
+
         }
 
         return $arrayPublic;
