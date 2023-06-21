@@ -112,6 +112,9 @@ describe('PaymentMethod', () => {
       upi: {
         payer_account_type: 'bank_account',
       },
+      upi_metadata: {
+        flow: 'in_app',
+      },
     };
 
     render(<App payment={payment} upiTransfer={upiTransfer} onUPIClick={jest.fn()} />);
@@ -122,6 +125,8 @@ describe('PaymentMethod', () => {
     expect(screen.getByText(upiTransfer.details.payer_vpa)).toBeInTheDocument();
     expect(screen.getByText('Paid from:')).toBeInTheDocument();
     expect(screen.getByText(titleCase(payment.upi.payer_account_type))).toBeInTheDocument();
+    expect(screen.getByText('Flow:')).toBeInTheDocument();
+    expect(screen.getByText('Turbo UPI')).toBeInTheDocument();
   });
 
   test('should not render paid from details when payer_account_type data not available', () => {
@@ -140,6 +145,22 @@ describe('PaymentMethod', () => {
     expect(screen.queryByText('Paid from:')).not.toBeInTheDocument();
   });
 
+  test('should not render flow details when upi_metadata data not available', () => {
+    const upiTransfer = {
+      ...upiTransferDetails,
+    };
+
+    const payment = {
+      ...defaultUpiPayment,
+    };
+
+    render(<App payment={payment} upiTransfer={upiTransfer} onUPIClick={jest.fn()} />);
+    fireEvent.click(screen.getByText('UPI'));
+    expect(screen.getByText('Payer UPI ID:')).toBeInTheDocument();
+    expect(screen.getByText(upiTransfer.details.payer_vpa)).toBeInTheDocument();
+    expect(screen.queryByText('Flow:')).not.toBeInTheDocument();
+  });
+
   test('should not render payment method details when payment method is upi & loading', () => {
     const upiTransfer = {
       details: {},
@@ -151,12 +172,17 @@ describe('PaymentMethod', () => {
       upi: {
         payer_account_type: 'credit_card',
       },
+      upi_metadata: {
+        flow: 'in_app',
+      },
     };
     render(<App payment={payment} upiTransfer={upiTransfer} onUPIClick={jest.fn()} />);
     fireEvent.click(screen.getByText('UPI'));
     expect(screen.queryByText('Payer UPI ID:')).not.toBeInTheDocument();
     expect(screen.queryByText('Paid from:')).not.toBeInTheDocument();
     expect(screen.queryByText(titleCase(payment.upi.payer_account_type))).not.toBeInTheDocument();
+    expect(screen.queryByText('Flow:')).not.toBeInTheDocument();
+    expect(screen.queryByText('Turbo UPI')).not.toBeInTheDocument();
   });
 
   test('should render payment vpa when payment method is upi & payer vpa is not available', () => {

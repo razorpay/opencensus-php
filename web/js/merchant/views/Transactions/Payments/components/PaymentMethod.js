@@ -173,6 +173,16 @@ export default ({
                 </div>
               </div>
             )}
+            {payment.upi_metadata?.flow === 'in_app' && (
+              <div className="row">
+                <div className="col-sm-12">
+                  <div className="row">
+                    <div className="col-sm-5 col-xs-5">Flow:</div>
+                    <div className="col-sm-7 col-xs-7">Turbo UPI</div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </Definition>
       );
