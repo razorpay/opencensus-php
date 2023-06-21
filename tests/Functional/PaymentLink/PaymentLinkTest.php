@@ -801,6 +801,64 @@ class PaymentLinkTest extends TestCase
 
     }
 
+
+    public function testPaymentPageStatusUpdateWithoutFeatureFlag()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+
+        $testData = $this->testData['setUpPaymentPageForFileUpload'];
+
+        $testData['request']['content']['payment_page_items'] = [
+            [
+                PaymentLinkModel\PaymentPageItem\Entity::ITEM => [
+                    'name'        =>  'amount',
+                    Item\Entity::AMOUNT => 5000,
+                    'currency'    => 'INR',
+                ],
+                'mandatory'         => true,
+            ],
+            [
+                PaymentLinkModel\PaymentPageItem\Entity::ITEM => [
+                    'name'        =>  'testName2',
+                    Item\Entity::AMOUNT => 10000,
+                    'currency'    => 'INR',
+                ],
+                'mandatory'         => false,
+            ]
+        ];
+
+        $resp = $this->startTest($testData);
+
+        $paymentLink = (new PaymentLink\Repository())->findByPublicId($resp['id']);
+
+        $paymentPageItems = (new PaymentLink\PaymentPageItem\Repository())->fetchByPaymentLinkIdAndMerchant($paymentLink->getId(), '10000000000000');
+
+        $this->createPaymentPageRecords($paymentLink->getId());
+
+        $this->createOrderForPaymentLink($paymentPageItems);
+
+        $orderEntity = $this->getDbLastEntity("order");
+
+        $order = $orderEntity;
+
+        // remove feature to ensure payment page record is still getting updated
+        $this->fixtures->merchant->removeFeatures([Constants::FILE_UPLOAD_PP]);
+
+        $this->makePaymentForPaymentLinkWithOrderAndAssert($paymentLink, $order, Payment\Status::CAPTURED,[
+            'pri__ref__id'  => '1234567890',
+            'sec__ref__id_1' => '123456789',
+            'email' => 'abc@abc.com',
+            'phone' => '1234567890',
+        ]);
+
+        $entity = $this->getDbLastEntity('payment_page_record');
+
+        $entityArray = $entity->toArray();
+
+        $this->assertEquals('paid',$entityArray['status']);
+
+    }
+
     public function testPaymentPageRecordForFileUpload()
     {
         $id = $this->setUpPaymentPageForFileUpload();

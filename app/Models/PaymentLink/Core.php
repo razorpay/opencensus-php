@@ -123,7 +123,13 @@ class Core extends Base\Core
 
         $settings[Entity::VERSION] = Version::V2;
 
-        if (($merchant->isFeatureEnabled(Feature::FILE_UPLOAD_PP) === true) and
+        (new Validator())->validatePayerNameAndExpiryForCreate($merchant, $input);
+
+        Tracer::inSpan(['name' => 'payment_page.create.build'], function() use ($paymentLink, $input) {
+            $paymentLink->build($input);
+        });
+
+        if (($paymentLink->getViewType() === ViewType::FILE_UPLOAD_PAGE) and
             (isset($settings[Entity::UDF_SCHEMA])))
         {
             $udfSchema = json_decode($settings[Entity::UDF_SCHEMA], true);
@@ -133,12 +139,6 @@ class Core extends Base\Core
             $settings[Entity::ALL_FIELDS] = json_encode($allFields);
 
         }
-
-        (new Validator())->validatePayerNameAndExpiryForCreate($merchant, $input);
-
-        Tracer::inSpan(['name' => 'payment_page.create.build'], function() use ($paymentLink, $input) {
-            $paymentLink->build($input);
-        });
 
         $validator = new Validator;
 
@@ -559,7 +559,7 @@ class Core extends Base\Core
                     $settings[Entity::VERSION] = Version::V2;
                 }
 
-                if ($this->merchant->isFeatureEnabled(Feature::FILE_UPLOAD_PP) === true)
+                if ($paymentLink->getViewType() === ViewType::FILE_UPLOAD_PAGE)
                 {
                     $allFields = json_decode($paymentLink->getSettings(Entity::ALL_FIELDS), true);
 
@@ -1554,10 +1554,15 @@ class Core extends Base\Core
 
         //Update PaymentPageRecord entity
 
-        if ((isset($payment->merchant) === true) and
-            ($payment->merchant->isFeatureEnabled(Feature::FILE_UPLOAD_PP) === true))
+        if ($paymentLink->getViewType() === ViewType::FILE_UPLOAD_PAGE)
         {
             $notes = $payment->toArray()['notes'];
+
+            $this->trace->info(TraceCode::PAYMENT_PAGE_RECORD_STATUS_UPDATE, [
+                'payment_link_id' => $paymentLink->getId(),
+                'payment_id' => $payment->getId(),
+                'notes' => $notes
+            ]);
 
             if(array_key_exists(PaymentPageRecord\Entity::PRIMARY_REF_ID,$notes) === true)
             {

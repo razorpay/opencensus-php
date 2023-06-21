@@ -354,7 +354,6 @@ class Type
         self::COLLECT_LOCAL_CONSENTS_TO_CREATE_TOKENS,
         self::EZETAP_SETTLEMENT,
         self::MERCHANT_UPLOAD_MIQ,
-        self::PAYMENT_PAGE,
     ];
 
     /**
