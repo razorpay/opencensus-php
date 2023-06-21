@@ -1,5 +1,10 @@
 name: Test Workflow
 on: push
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     name: Test
@@ -17,14 +22,12 @@ jobs:
       - name: Setup yarn
         run: npm install -g yarn
 
-      - name: Install Dependencies
-        run: |
-          yarn config set unsafe-perm true
-          yarn --frozen-lockfile # Automatically installs modules in web too
-        env:
-          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
-          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
-
+      - name: Install dependencies with caching
+        uses: ./.github/actions
+        with: 
+          npm_razorpay_token: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          github_access_token: ${{ secrets.CI_BOT_TOKEN }}
+          
       - name: Test Codebase
         # Automatically installs npm ci in web too
         run: |

@@ -6,6 +6,10 @@ on:
     branches:
       - master
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
   DASHBOARD_SLACK_WEBHOOK_URL: ${{ secrets.DASHBOARD_SLACK_WEBHOOK_URL }}
@@ -31,13 +35,11 @@ jobs:
           apt-get update && apt-get install -y libjpeg-dev libpng-dev libtiff-dev libgif-dev
       - run: npm install -g yarn
 
-      - name: Install Dependencies
-        run: |
-          yarn config set unsafe-perm true
-          HUSKY=0 yarn --frozen-lockfile
-        env:
-          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
-          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+      - name: Install dependencies with caching
+        uses: ./.github/actions
+        with: 
+          npm_razorpay_token: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          github_access_token: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: Build All
         run: cd web && yarn test:build:merchant

@@ -8,6 +8,11 @@ on:
       - created
   pull_request_review:
     types: [submitted]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   APP_NAME: dashboard
   HOME: /actions-runner/_work
@@ -85,21 +90,12 @@ jobs:
       - name: Setup yarn
         run: npm install -g yarn
 
-      # This action allows caching dependencies and build outputs
-      # to improve workflow execution time
-      - name: Cache npm packages
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.OS }}-npm-cache-${{ hashFiles('**/package-lock.json') }}
-
-      - name: Install Dependencies
-        run: |
-          yarn config set unsafe-perm true
-          HUSKY=0 yarn --frozen-lockfile # Automatically installs modules in web too
-        env:
-          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
-          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+      - name: Install dependencies with caching
+        uses: ./.github/actions
+        with: 
+          npm_razorpay_token: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          github_access_token: ${{ secrets.CI_BOT_TOKEN }}
+          
       - name: Login to Harbor
         uses: docker/login-action@v1
         with:
