@@ -176,6 +176,8 @@ class PGRouter
     {
         $this->updateIpandUserAgent($input);
 
+        $this->currentEndPoint = self::PGRouterValidateAndCreatePayment;
+
         $output = $this->sendRequest(self::PGRouterValidateAndCreatePayment, Requests::POST, $input, $throwExceptionOnFailure, 90);
 
         return $output['body'];
@@ -184,6 +186,8 @@ class PGRouter
     public function validateAndCreatePaymentCheckout(array $input, bool $throwExceptionOnFailure = false): array
     {
         $this->updateIpandUserAgent($input);
+
+        $this->currentEndPoint = self::PGRouterValidateAndCreatePaymentCheckout;
 
         $output = $this->sendRequest(self::PGRouterValidateAndCreatePaymentCheckout, Requests::POST, $input, $throwExceptionOnFailure, 90);
 
@@ -194,6 +198,8 @@ class PGRouter
     {
         $this->updateIpandUserAgent($input, true);
 
+        $this->currentEndPoint = self::PGRouterValidateAndCreatePaymentUpi;
+
         $output = $this->sendRequest(self::PGRouterValidateAndCreatePaymentUpi, Requests::POST, $input, $throwExceptionOnFailure, 90);
 
         return $output['body'];
@@ -203,6 +209,8 @@ class PGRouter
     {
         $this->updateIpandUserAgent($input, true);
 
+        $this->currentEndPoint = self::PGRouterPaymentCreateJson;
+
         $output = $this->sendRequest(self::PGRouterPaymentCreateJson, Requests::POST, $input, $throwExceptionOnFailure, 90);
 
         return $output['body'];
@@ -211,6 +219,8 @@ class PGRouter
     public function validateAndCreatePaymentRedirect(array $input, bool $throwExceptionOnFailure = false): array
     {
         $this->updateIpandUserAgent($input, true);
+
+        $this->currentEndPoint = self::PGRouterPaymentCreateRedirect;
 
         $output = $this->sendRequest(self::PGRouterPaymentCreateRedirect, Requests::POST, $input, $throwExceptionOnFailure, 90);
 
@@ -247,6 +257,8 @@ class PGRouter
     public function paymentCapture(string $id, array $captureParams, bool $throwExceptionOnFailure = false): array
     {
         $url = sprintf(self::PGRouterPaymentCapture, $id);
+
+        $this->currentEndPoint = self::PGRouterPaymentCapture;
 
         $output = $this->sendRequest($url, Requests::POST, $captureParams, $throwExceptionOnFailure, 90);
 
@@ -286,6 +298,7 @@ class PGRouter
         $this->updateIpandUserAgent($input, true);
 
         $url = sprintf(self::PGRouterPaymentAuthenticate, $id);
+
         $this->currentEndPoint = self::PGRouterPaymentAuthenticate;
 
         $output = $this->sendRequest($url, Requests::POST, $input, $throwExceptionOnFailure);
@@ -303,6 +316,8 @@ class PGRouter
     {
         $url = sprintf(self::PGRouterPaymentVerify, $id);
 
+        $this->currentEndPoint = self::PGRouterPaymentVerify;
+
         $output = $this->sendRequest($url, Requests::GET, [], $throwExceptionOnFailure, 90);
 
         return $output['body']['data']['payment'];
@@ -316,6 +331,8 @@ class PGRouter
      */
     public function initiatePayment(array $input, bool $throwExceptionOnFailure = false): array
     {
+        $this->currentEndPoint = self::PGRouterInitiatePayment;
+
         return $this->sendRequest(self::PGRouterInitiatePayment, Requests::POST, $input, $throwExceptionOnFailure);
     }
 
@@ -567,6 +584,8 @@ class PGRouter
 
     public function createOrder(array $input, bool $throwExceptionOnFailure = false)
     {
+        $this->currentEndPoint = self::PGRouterCreateOrder;
+
         $response = $this->sendRequest(self::PGRouterCreateOrder, Requests::POST, $input, $throwExceptionOnFailure);
 
         return $this->forceFillOrderFromResponse($response);
@@ -607,6 +626,8 @@ class PGRouter
     public function updateCurrencyCache(array $input, bool $throwExceptionOnFailure = false)
     {
         $endpoint = 'v1/update/currency/rate';
+
+        $this->currentEndPoint = $endpoint;
 
         return $this->sendRequest($endpoint, Requests::PATCH, $input, $throwExceptionOnFailure, self::DEFAULT_REQUEST_TIMEOUT, true);
     }
@@ -697,6 +718,8 @@ class PGRouter
     {
         $url = sprintf(self::PGRouterOTPResendPrivate, $id);
 
+        $this->currentEndPoint = self::PGRouterOTPResendPrivate;
+
         $output = $this->sendRequest($url, Requests::POST, $input, $throwExceptionOnFailure);
 
         return $output['body'];
@@ -747,8 +770,8 @@ class PGRouter
 
         unset($traceData["response"]["data"]["payment"]["card"]);
 
-
         $logResponse = $this->shouldLogResponse($endpoint, $method);
+
         if($logResponse === true)
         {
             $this->trace->info(TraceCode::PG_ROUTER_RESPONSE,
@@ -765,7 +788,9 @@ class PGRouter
     public function shouldLogResponse(string $endpoint, string $method) :bool
     {
         $mapKey = $method.'_'.$endpoint;
+
         $logResponse = true;
+
         if(isset(self::RESPONSE_LOGGER_MAP[$mapKey]))
         {
             $logResponse = self::RESPONSE_LOGGER_MAP[$mapKey];
@@ -867,7 +892,7 @@ class PGRouter
                     ]);
 
                 $dimensions = [
-                    'url' => $request['url']
+                    'url' => $this->currentEndPoint
                 ];
 
                 $this->trace->count(self::PG_ROUTER_REQUEST_FAILURE, $dimensions);
