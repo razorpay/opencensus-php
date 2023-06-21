@@ -1752,7 +1752,7 @@ class Entity extends Base\PublicEntity
         if ($tokenNumber !== null){
 
             $tokenData = null;
-            $tokenData['token_provider']    = $this->getVault();
+            $tokenData['token_provider']    = strtolower($this->getNetwork());
             $tokenData['number']            = $tokenNumber;
             $tokenData['expiry_month']      = is_int($this->getTokenExpiryMonth()) ? $this->getTokenExpiryMonth() : intval($this->getTokenExpiryMonth());
             $tokenData['expiry_year']       = is_int($this->getTokenExpiryYear()) ? $this->getTokenExpiryYear() : intval($this->getTokenExpiryYear());
@@ -1767,7 +1767,7 @@ class Entity extends Base\PublicEntity
         if (!empty($cryptogram)){
 
             $tokenData = null;
-            $tokenData['token_provider']    = $this->getVault();
+            $tokenData['token_provider']    = strtolower($this->getNetwork());
             $tokenData['number']            = $cryptogram['token_number'];
             $tokenData['expiry_month']      = is_int($this->getTokenExpiryMonth()) ? $this->getTokenExpiryMonth() : intval($this->getTokenExpiryMonth());
             $tokenData['expiry_year']       = is_int($this->getTokenExpiryYear()) ? $this->getTokenExpiryYear() : intval($this->getTokenExpiryYear());
