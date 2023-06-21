@@ -453,6 +453,8 @@ final class RazorxTreatment
 
     const BULK_PAYOUT_CA_VA_SEGREGATION_PAYOUTS_SERVICE = 'bulk_payout_ca_va_segregation_payouts_service';
 
+    const WORKFLOW_ACTION_WITH_DB_DUAL_WRITE_PAYOUTS_SERVICE = 'workflow_action_with_db_dual_write_payouts_service';
+
     // Experiment to send create validation metadata to BVS
     const BVS_CREATE_VALIDATION_METADATA = 'BVS_CREATE_VALIDATION_METADATA';
 

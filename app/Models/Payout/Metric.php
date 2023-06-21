@@ -50,8 +50,11 @@ final class Metric
     // Payout Service Metrics/Alerts
     const INVALID_PAYOUT_CREATE_REQUEST_TO_PAYOUT_SERVICE = 'invalid_payout_create_request_to_payout_service';
     const PAYOUT_SERVICE_TIME_OUT_EXCEPTION               = "payout_service_time_out_exception";
+
     const PAYOUT_SERVICE_REQUEST_FAILED                   = "payout_service_request_failed";
     const SERVER_ERROR_PAYOUT_SERVICE_REQUEST_FAILED      = "server_error_payout_service_request_failed";
+
+    const PAYOUT_SERVICE_WORKFLOW_ACTION_FAILED           = "PAYOUT_SERVICE_WORKFLOW_ACTION_FAILED";
 
     // Histograms
     const PAYOUT_QUEUED_TO_CREATED_DURATION_SECONDS                      = 'payout_queued_to_created_duration_seconds.histogram';

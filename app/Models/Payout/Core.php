@@ -2290,7 +2290,8 @@ class Core extends Base\Core
     {
         // If payout workflow is on workflow service, process via workflow service
         // else process via api workflow system
-        if ($this->shouldCallWorkflowService($payout) === true)
+        if (($payout->getIsPayoutService() === true)
+            || ($this->shouldCallWorkflowService($payout) === true))
         {
             return $this->processActionOnPayoutViaWorkflowService($payout, $approve, $input);
         }

@@ -8,6 +8,7 @@ use Queue;
 use Mockery;
 use Carbon\Carbon;
 use Database\Connection;
+use RZP\Services\Mock\WorkflowService;
 use \WpOrg\Requests\Response;
 
 use RZP\Constants\Mode;
@@ -5110,6 +5111,252 @@ class PayoutServiceTest extends TestCase
         }
 
         return $response;
+    }
+
+    public function testApprovePayoutForPayoutServicePayout()
+    {
+        $this->setUpExperimentForNWFS();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::WORKFLOW_ACTION_WITH_DB_DUAL_WRITE_PAYOUTS_SERVICE => 'on']);
+
+        $mock = $this->createMetricsMock();
+
+        $mock->method('histogram')
+            ->will($this->returnCallback(function(string $metric, float $times, array $dimensions = []) {
+                if ($metric === WorkflowService::WORKFLOW_SERVICE_REQUEST_MILLISECONDS)
+                {
+                    $this->assertEquals(100, $times);
+                    $this->assertEquals([], $dimensions);
+                }
+
+                return true;
+            }));
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id'  => 'FVLeJYoM0GPWUb', // Should exist in the new WF service
+                'created_at' => 1598967658
+            ]);
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id'  => 'FVLeJYoM0GPWUc', // Should exist in the new WF service
+                'created_at' => 1598967657
+            ]);
+
+        $balance = $this->getDbEntities('balance',
+            [
+                'account_number' => '2224440041626905',
+            ], 'live')->first();
+
+        $payoutData = [
+            'id'                   => 'Gg7sgBZgvYjlSB',
+            'merchant_id'          => "10000000000000",
+            'fund_account_id'      => "100000000000fa",
+            'method'               => "fund_transfer",
+            'reference_id'         => null,
+            'balance_id'           => $balance->getId(),
+            'user_id'              => "random_user123",
+            'batch_id'             => null,
+            'idempotency_key'      => "random_key",
+            'purpose'              => "refund",
+            'narration'            => "Batman",
+            'purpose_type'         => "refund",
+            'amount'               => 100,
+            'currency'             => "INR",
+            'notes'                => "{}",
+            'fees'                 => 590,
+            'tax'                  => 90,
+            'status'               => "pending",
+            'fts_transfer_id'      => 60,
+            'transaction_id'       => null,
+            'channel'              => "yesbank",
+            'utr'                  => "933815383814",
+            'failure_reason'       => null,
+            'remarks'              => "Check the status by calling getStatus API.",
+            'pricing_rule_id'      => "Bbg7cl6t6I3XA9",
+            'scheduled_at'         => null,
+            'queued_at'            => null,
+            'mode'                 => "IMPS",
+            'fee_type'             => "free_payout",
+            'workflow_feature'     => null,
+            'origin'               => 1,
+            'status_code'          => null,
+            'cancellation_user_id' => null,
+            'registered_name'      => "SUSANTA BHUYAN",
+            'queued_reason'        => "beneficiary_bank_down",
+            'on_hold_at'           => 1663092113,
+            'created_at'           => 1000000000,
+            'updated_at'           => 1000000002,
+        ];
+
+        \DB::connection('test')->table('ps_payouts')->insert($payoutData);
+
+        $workflowEntityMapData = [
+            'id'          => 'randomid111126',
+            'workflow_id' => 'randomid111127',
+            'entity_id'   => 'Gg7sgBZgvYjlSB',
+            'config_id'   => 'randomid111128',
+            'entity_type' => 'payout',
+            'merchant_id' => "10000000000000",
+            'org_id'      => 'randomid111129',
+            'created_at'  => 1000000003,
+            'updated_at'  => 1000000001
+        ];
+
+        \DB::connection('test')->table('ps_workflow_entity_map')->insert($workflowEntityMapData);
+
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $testData                   = &$this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . 'pout_' . $payoutData['id'] . '/approve';
+
+        $payout = $this->startTest();
+
+        $this->assertEquals('pout_Gg7sgBZgvYjlSB', $payout['id']);
+        $this->assertEquals('pending', $payout['status']);
+    }
+
+    public function testApprovePayoutForPayoutServicePayout_DualWriteFailure()
+    {
+        $this->setUpExperimentForNWFS();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::WORKFLOW_ACTION_WITH_DB_DUAL_WRITE_PAYOUTS_SERVICE => 'on']);
+
+        $metricsMock = $this->createMetricsMock();
+
+        $boolMetricCaptured = false;
+
+        $this->mockAndCaptureCountMetric(
+            Metric::PAYOUT_SERVICE_WORKFLOW_ACTION_FAILED,
+            $metricsMock,
+            $boolMetricCaptured,
+            [
+                'route_name' => 'payout_approve',
+                'message'    => 'ErrorCode: PAYOUT_SERVICE_DUAL_WRITE_PAYOUT_NOT_FOUND is not defined'
+            ]
+        );
+
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $this->testData[__FUNCTION__]   = $this->testData['testApprovePayoutForPayoutServicePayout_Without_WorkflowExperiment'];
+        $testData['request']['url'] = '/payouts/' . 'pout_' . '12341234123412' . '/approve';
+
+        $this->startTest($testData);
+
+        $this->assertTrue($boolMetricCaptured);
+    }
+
+    public function testApprovePayoutForPayoutServicePayout_Without_WorkflowExperiment()
+    {
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $testData                   = &$this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . 'pout_' . '12341234123412' . '/approve';
+
+        $this->startTest();
+    }
+
+    public function testRejectPayoutForPayoutServicePayout()
+    {
+        $this->setUpExperimentForNWFS();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->setMockRazorxTreatment([RazorxTreatment::WORKFLOW_ACTION_WITH_DB_DUAL_WRITE_PAYOUTS_SERVICE => 'on']);
+
+        $balance = $this->getDbEntities('balance',
+            [
+                'account_number' => '2224440041626905',
+            ], 'live')->first();
+
+        $payoutData = [
+            'id'                   => 'Gg7sgBZgvYjlSB',
+            'merchant_id'          => "10000000000000",
+            'fund_account_id'      => "100000000000fa",
+            'method'               => "fund_transfer",
+            'reference_id'         => null,
+            'balance_id'           => $balance->getId(),
+            'user_id'              => "random_user123",
+            'batch_id'             => null,
+            'idempotency_key'      => "random_key",
+            'purpose'              => "refund",
+            'narration'            => "Batman",
+            'purpose_type'         => "refund",
+            'amount'               => 100,
+            'currency'             => "INR",
+            'notes'                => "{}",
+            'fees'                 => 590,
+            'tax'                  => 90,
+            'status'               => "pending",
+            'fts_transfer_id'      => 60,
+            'transaction_id'       => null,
+            'channel'              => "yesbank",
+            'utr'                  => "933815383814",
+            'failure_reason'       => null,
+            'remarks'              => "Check the status by calling getStatus API.",
+            'pricing_rule_id'      => "Bbg7cl6t6I3XA9",
+            'scheduled_at'         => null,
+            'queued_at'            => null,
+            'mode'                 => "IMPS",
+            'fee_type'             => "free_payout",
+            'workflow_feature'     => null,
+            'origin'               => 1,
+            'status_code'          => null,
+            'cancellation_user_id' => null,
+            'registered_name'      => "SUSANTA BHUYAN",
+            'queued_reason'        => "beneficiary_bank_down",
+            'on_hold_at'           => 1663092113,
+            'created_at'           => 1000000000,
+            'updated_at'           => 1000000002,
+        ];
+
+        \DB::connection('test')->table('ps_payouts')->insert($payoutData);
+
+        $workflowEntityMapData = [
+            'id'          => 'randomid111126',
+            'workflow_id' => 'randomid111127',
+            'entity_id'   => 'Gg7sgBZgvYjlSB',
+            'config_id'   => 'randomid111128',
+            'entity_type' => 'payout',
+            'merchant_id' => "10000000000000",
+            'org_id'      => 'randomid111129',
+            'created_at'  => 1000000003,
+            'updated_at'  => 1000000001
+        ];
+
+        \DB::connection('test')->table('ps_workflow_entity_map')->insert($workflowEntityMapData);
+
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $testData                   = &$this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . 'pout_' . $payoutData['id'] . '/reject';
+
+        $payout = $this->startTest();
+
+        $this->assertEquals('pout_Gg7sgBZgvYjlSB', $payout['id']);
+        $this->assertEquals('pending', $payout['status']);
+    }
+
+    public function testRejectPayoutForPayoutServicePayout_Without_WorkflowExperiment()
+    {
+        // Approve with Owner role user
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $testData                   = &$this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts/' . 'pout_' . '12341234123412' . '/reject';
+
+        $this->startTest();
     }
 
     public function testAdminFetchPayoutsViaService()

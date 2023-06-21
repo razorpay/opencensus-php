@@ -691,8 +691,27 @@ class Service extends Base\Service
             'id' => $id, 'input' => $input, 'isPartnerApproval' => $isPartnerApproval
         ]);
 
-        /** @var Entity $payout */
-        $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant);
+        try
+        {
+            /** @var Entity $payout */
+            $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant);
+        }
+        catch (\Throwable $exception)
+        {
+            try
+            {
+                $payout = $this->handlePayoutServicePayoutForWorkflowAction($id);
+            }
+            catch (\Throwable $psException)
+            {
+                throw $exception;
+            }
+
+            if (empty($payout) === true)
+            {
+                throw $exception;
+            }
+        }
 
         $payoutValidator =  $payout->getValidator();
 
@@ -729,7 +748,91 @@ class Service extends Base\Service
         return $payout->toArrayPublic();
     }
 
-    public function processActionOnFundAccountPayoutInternal(string $id, bool $approved, array $input): array
+    private function handlePayoutServicePayoutForWorkflowAction(string $payoutId)
+    {
+        try
+        {
+            $merchantId = $this->merchant->getId();
+
+            $variant = $this->app->razorx->getTreatment(
+                $merchantId,
+                RazorxTreatment::WORKFLOW_ACTION_WITH_DB_DUAL_WRITE_PAYOUTS_SERVICE,
+                $this->mode,
+                Payout\Entity::RAZORX_RETRY_COUNT
+            );
+
+            $this->trace->info(
+                TraceCode::WORKFLOW_ACTION_WITH_DB_DUAL_WRITE_PAYOUTS_SERVICE,
+                [
+                    'variant'       => $variant,
+                    'mode'          => $this->mode,
+                    'merchant_id'   => $merchantId,
+                ]);
+
+            if (strtolower($variant) === 'on')
+            {
+                $this->dualWritePayout($payoutId);
+
+                /** @var Entity $payout */
+                $payout = $this->repo->payout->findByPublicIdAndMerchant($payoutId, $this->merchant);
+
+                return $payout;
+            }
+
+            return [];
+        }
+        catch (\Throwable $exception)
+        {
+            /** @var Route $route */
+            $route = $this->app['api.route'];
+
+            $routeName = $route->getCurrentRouteName();
+
+            $this->trace->count(Payout\Metric::PAYOUT_SERVICE_WORKFLOW_ACTION_FAILED, [
+                Constants\Metric::LABEL_ROUTE_NAME => $routeName,
+                Constants\Metric::LABEL_MESSAGE    => $exception->getMessage(),
+            ]);
+
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::PAYOUT_SERVICE_WORKFLOW_ACTION_FAILED,
+                [
+                    'payout_id' => $payoutId
+                ]);
+
+            // We want to throw original exception here
+            throw $exception;
+        }
+    }
+
+    protected function dualWritePayout(string $id)
+    {
+        Entity::verifyIdAndSilentlyStripSign($id);
+
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $data = [
+            'payout_id' => $id,
+            'timestamp' => $currentTime,
+        ];
+
+        $this->trace->info(
+            TraceCode::PAYOUT_SERVICE_DUAL_WRITE_INIT,
+            $data
+        );
+
+        (new Payout\Core)->processDualWrite([
+            'payout_id' => $id,
+            'timestamp' => $currentTime,
+        ]);
+
+        $this->trace->info(
+            TraceCode::PAYOUT_SERVICE_DUAL_WRITE_COMPLETE,
+            $data);
+    }
+
+        public function processActionOnFundAccountPayoutInternal(string $id, bool $approved, array $input): array
     {
         $this->trace->info(TraceCode::PAYOUT_WORKFLOW_ACTION_REQUEST,
             ['id' => $id, 'approved' => $approved, 'input' => $input]);
@@ -948,8 +1051,27 @@ class Service extends Base\Service
 
         $this->trace->info(TraceCode::PAYOUT_REJECT_REQUEST, ['id' => $id, 'isPartnerApproval' => $isPartnerApproval]);
 
-        /** @var Entity $payout */
-        $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant);
+        try
+        {
+            /** @var Entity $payout */
+            $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant);
+        }
+        catch (\Throwable $exception)
+        {
+            try
+            {
+                $payout = $this->handlePayoutServicePayoutForWorkflowAction($id);
+            }
+            catch (\Throwable $psException)
+            {
+                throw $exception;
+            }
+
+            if (empty($payout) === true)
+            {
+                throw $exception;
+            }
+        }
 
         $payoutValidator = $payout->getValidator();
 
