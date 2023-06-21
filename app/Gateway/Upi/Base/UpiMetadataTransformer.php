@@ -10,12 +10,15 @@ use RZP\Gateway\Base\Action;
 use RZP\Models\Customer\Token;
 use RZP\Exception\BaseException;
 use RZP\Exception\LogicException;
+use RZP\Models\Payment\Processor\UpiRecurring;
 use RZP\Models\Payment\UpiMetadata\Mode as Mode;
 use RZP\Models\Payment\UpiMetadata\Entity as Metadata;
 use RZP\Models\Payment\UpiMetadata\InternalStatus as InternalStatus;
 
 class UpiMetadataTransformer extends UpiTransformer
 {
+    use UpiRecurring;
+
     /**
      * @var Metadata
      */
@@ -234,23 +237,15 @@ class UpiMetadataTransformer extends UpiTransformer
         // no next reminder needed when success
         if ($action === Action::AUTHORIZE and $mode === Mode::AUTO)
         {
-            $app = App::getFacadeRoot();
+            $canRetry = $this->checkUpiAutopayIncreaseDebitRetry($this->input[Entity::PAYMENT]['id'], $this->input[Entity::PAYMENT]['merchant_id'], $this->upi);
 
-            $variant = $app['razorx']->getTreatment($this->input[Entity::PAYMENT]['merchant_id'],
-                Merchant\RazorxTreatment::UPI_AUTOPAY_INCREASE_DEBIT_RETRIES,
-                $app['rzp.mode'],
-                3
-            );
-
-            $variant = strtolower($variant);
-
-            if (($variant === 'on' and $attempt >= 10) or ($variant !== 'on' and $attempt >= 3))
+            if (($canRetry === true and $attempt >= 10) or ($canRetry === false and $attempt >= 3))
             {
                 return null;
             }
 
             // Remind after 5 hours if experiment is on.
-            if ($variant === 'on')
+            if ($canRetry === true)
             {
                 $remindAfter = 300;
             }

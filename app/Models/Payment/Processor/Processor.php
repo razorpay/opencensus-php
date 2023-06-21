@@ -8028,12 +8028,9 @@ class Processor
                 {
                     $defaultUpiAutoCaptureExpiry = Constants::AUTO_CAPTURE_DEFAULT_TIMEOUT_UPI_RECURRING_AUTO;
 
-                    $variant = $this->app['razorx']->getTreatment($payment->merchant->getId(),
-                        Merchant\RazorxTreatment::UPI_AUTOPAY_INCREASE_DEBIT_RETRIES,
-                        $this->app['rzp.mode'],
-                        3);
+                    $canRetry = $this->checkUpiAutopayIncreaseDebitRetry($payment->getId(),$payment->merchant->getId());
 
-                    if (strtolower($variant) === 'on')
+                    if ($canRetry === true)
                     {
                         $defaultUpiAutoCaptureExpiry = Constants::AUTO_CAPTURE_TIMEOUT_FOR_UPI_RECURRING_AUTO_DEBIT_RETRIES;
                     }

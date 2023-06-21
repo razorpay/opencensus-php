@@ -74,8 +74,7 @@ app/Services/Mock/CheckoutService.php                  @razorpay/checkout-backen
 
 app/Gateway/Upi/Icici                                  @razorpay/qr-code-devs
 app/Gateway/Upi/Yesbank                                @razorpay/qr-code-devs
-app/Gateway/Upi                                        @razorpay/techupicore
-
+app/Gateway/Upi                                        @razorpay/techupicore sharma.nikhil@razorpay.com kalpana.meena@razorpay.com
 
 
 #

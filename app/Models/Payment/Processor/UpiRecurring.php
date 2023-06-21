@@ -11,6 +11,7 @@ use RZP\Models\Customer;
 use RZP\Models\UpiMandate;
 use RZP\Models\Merchant;
 use RZP\Services\Reminders;
+use RZP\Gateway\Base\Action;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Gateway;
@@ -1463,6 +1464,48 @@ trait UpiRecurring
         }
 
         $input['upi']['expiry_time'] = 5;
+    }
+
+    public function checkUpiAutopayIncreaseDebitRetry($paymentId, $merchantId,  $upi = null)
+    {
+        $app = \App::getFacadeRoot();
+
+        $variant = $app['razorx']->getTreatment($merchantId,
+            Merchant\RazorxTreatment::UPI_AUTOPAY_INCREASE_DEBIT_RETRIES,
+            $app['rzp.mode'],
+            3
+        );
+
+        $variant = strtolower($variant);
+
+        // if razorx is on for 100% traffic
+        if ($variant === 'on100')
+        {
+            return true;
+        }
+
+        $redisKey = "upi_autopay_debit_retry_" . $paymentId . "_" . $merchantId;
+        $redisVal = $app['redis']->get($redisKey);
+
+        if($redisVal === "1")
+        {
+            return true;
+        }
+
+        if($variant === 'on' and $upi !== null and $upi['gateway_data']['ano'] === 1)
+        {
+            $app['trace']->info(
+                TraceCode::UPI_RECURRING_DEBIT_RETRY,
+                [
+                    'payment_id' => $paymentId,
+                    'merchant_id' => $merchantId,
+                ]);
+            $ttl = 50 * 60 * 60; // 50 hours in seconds
+            $app['redis']->set($redisKey, true, 'ex', $ttl, 'nx');
+            return true;
+        }
+
+        return false;
     }
 
     /**

@@ -530,13 +530,9 @@ trait Callback
             if ($this->payment->isUpiAutoRecurring() and
                 in_array($e->getError()->getGatewayErrorCode(), self::$validErrorCodesForUpiAutopayCallbackRetry, true))
             {
-                $variant = $this->app['razorx']->getTreatment($this->payment->getMerchantId(),
-                    Merchant\RazorxTreatment::UPI_AUTOPAY_INCREASE_DEBIT_RETRIES,
-                    $this->app['rzp.mode'],
-                    3
-                );
+                $canRetry = $this->checkUpiAutopayIncreaseDebitRetry($this->payment->getId(), $this->payment->getMerchantId());
 
-                if (strtolower($variant) === 'on')
+                if ($canRetry === true)
                 {
                     $this->trace->info(
                         TraceCode::UPI_AUTOPAY_CALLBACK_FAILURE,
