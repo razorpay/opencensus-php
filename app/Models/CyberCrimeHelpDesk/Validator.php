@@ -50,7 +50,7 @@ class Validator extends BaseValidator
                     throw new BadRequestException('Payment Details are not matching the query asked for payment '. $payment->getId());
                 }
             case Constants::CARD:
-                if (empty($requestData[Payment\Entity::REFERENCE2]) !== false
+                if (empty($requestData[Payment\Entity::REFERENCE2]) === false
                     && $payment->getReference2() !== $requestData[Payment\Entity::REFERENCE2])
                 {
                     throw new BadRequestException('Payment Details are not matching the query asked for payment '. $payment->getId());

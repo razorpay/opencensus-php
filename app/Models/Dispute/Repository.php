@@ -492,7 +492,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
             ->where(Entity::MERCHANT_ID, $merchantId)
             ->whereNotIn(Entity::STATUS, [Status::LOST, Status::WON])
-            ->where(Entity::DEDUCT_AT_ONSET, '=', true)
+            ->where(Entity::DEDUCT_AT_ONSET, '=', false)
             ->first();
     }
 }
