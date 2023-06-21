@@ -1945,6 +1945,374 @@ class PaymentLedgerTest extends TestCase
         return $payment;
     }
 
+    private function createCreditLoadingPaymentInReverseShadow(){
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('fetchAccountsByEntitiesAndMerchantID')
+            ->times(1)
+            ->andReturn([
+                    "body" => [
+                        "accounts"  => [
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "10000.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["merchant_balance"]
+                                ]
+                            ],
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "1000.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["merchant_fee_credits"]
+                                ]
+
+                            ],
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "1000.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["reward"]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            );
+
+        $paymentArray = $this->getPaymentArrayForFeeCreditLoading();
+
+        $paymentArray['amount'] = '2000';
+
+        $billingAddressArray = $this->getDefaultBillingAddressArray();
+
+        $paymentArray['billing_address'] = $billingAddressArray;
+
+        $payment = $this->doAuthAndCapturePayment($paymentArray);
+
+        return $payment;
+    }
+
+
+    public function testMerchantCapturePaymentWithFeeCreditLoadingUsecase()
+    {
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('fetchAccountsByEntitiesAndMerchantID')
+            ->times(1)
+            ->andReturn([
+                    "body" => [
+                        "accounts"  => [
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "10000.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["merchant_balance"]
+                                ]
+                            ],
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "0.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["merchant_fee_credits"]
+                                ]
+
+                            ],
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "0.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["reward"]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            );
+
+        $paymentArray = $this->getPaymentArrayForFeeCreditLoading();
+
+        $billingAddressArray = $this->getDefaultBillingAddressArray();
+
+        $paymentArray['billing_address'] = $billingAddressArray;
+
+        $paymentFromResponse = $this->doAuthAndCapturePayment($paymentArray);
+
+
+
+
+        $input = array('count' => 2);
+        $ledgerOutboxEntities = $this->getEntities('ledger_outbox', $input, true);
+
+        $this->assertGreaterThan(1, count($ledgerOutboxEntities['items']));
+
+        $gatewayCapturedOutboxEntry = [];
+        if ($ledgerOutboxEntities['count'])
+            $gatewayCapturedOutboxEntry = $ledgerOutboxEntities['items'][1];
+
+
+        $gatewayCapturedPayload = base64_decode($gatewayCapturedOutboxEntry['payload_serialized']);
+
+        $actualGatewayCapturedLedgerOutboxEntry = json_decode($gatewayCapturedPayload, true);
+
+        $expectedLedgerOutboxEntry = [
+            "merchant_id" =>  "10000000000000",
+            "currency" => "INR",
+            "transactor_event" =>  "payment_gateway_captured",
+            "money_params" => [
+                "base_amount" => "50000",
+                "amount" => "50000"
+            ],
+            "additional_params" => [
+                "gmv_accounting"    => "fee_credit_gmv"
+            ],
+            "ledger_integration_mode" =>  "reverse-shadow",
+            "tenant" => "PG"
+        ];
+
+        $this->assertArraySubset($expectedLedgerOutboxEntry, $actualGatewayCapturedLedgerOutboxEntry);
+        $this->assertEquals($paymentFromResponse['id'], $actualGatewayCapturedLedgerOutboxEntry['transactor_id']);
+
+        $ledgerOutboxEntity = $this->getLastEntity('ledger_outbox', true);
+
+        $payload = base64_decode($ledgerOutboxEntity['payload_serialized']);
+
+        $actualLedgerOutboxEntry = json_decode($payload, true);
+
+        $expectedLedgerOutboxEntry = [
+            "merchant_id" =>  "10000000000000",
+            "currency" => "INR",
+            "transactor_event" =>  "payment_merchant_captured",
+            "money_params" => [
+                "base_amount" => "50000",
+                "gmv_amount" => "50000",
+                "merchant_balance_amount" => "50000"
+            ],
+            "additional_params" => [
+                "gmv_accounting"    => "fee_credit_gmv"
+            ],
+            "ledger_integration_mode" =>  "reverse-shadow",
+            "tenant" => "PG"
+        ];
+
+        $this->assertArraySubset($expectedLedgerOutboxEntry, $actualLedgerOutboxEntry);
+        $this->assertEquals($paymentFromResponse['id'], $actualLedgerOutboxEntry['transactor_id']);
+    }
+
+
+    public function testMerchantCapturePaymentWithRefundCreditLoadingUsecase()
+    {
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $mockLedger = \Mockery::mock('RZP\Services\Ledger')->makePartial();
+        $this->app->instance('ledger', $mockLedger);
+
+        $mockLedger->shouldReceive('fetchAccountsByEntitiesAndMerchantID')
+            ->times(1)
+            ->andReturn([
+                    "body" => [
+                        "accounts"  => [
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "10000.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["merchant_balance"]
+                                ]
+                            ],
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "0.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["merchant_fee_credits"]
+                                ]
+
+                            ],
+                            [
+                                "id"                => "sampleAccountID",
+                                "name"              => "test name",
+                                "status"            => "ACTIVATED",
+                                "balance"           => "0.000000",
+                                "min_balance"       => "0.000000",
+                                "merchant_id"       => "sampleMerchant",
+                                "created_at"        => "1634027277",
+                                "updated_at"        => "1634027277",
+                                "entities"          => [
+                                    "account_type"      => ["payable"],
+                                    "fund_account_type" => ["reward"]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            );
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $paymentArray['notes'] = [
+            "type"          => "refund_credit",
+            "merchant_id"   => "JVoa37lqQ0hMMv"
+        ];
+
+        $billingAddressArray = $this->getDefaultBillingAddressArray();
+
+        $paymentArray['billing_address'] = $billingAddressArray;
+
+        $paymentFromResponse = $this->doAuthAndCapturePayment($paymentArray);
+
+
+        $input = array('count' => 2);
+        $ledgerOutboxEntities = $this->getEntities('ledger_outbox', $input, true);
+
+        $this->assertGreaterThan(1, count($ledgerOutboxEntities['items']));
+
+        $gatewayCapturedOutboxEntry = [];
+        if ($ledgerOutboxEntities['count'])
+            $gatewayCapturedOutboxEntry = $ledgerOutboxEntities['items'][1];
+
+
+        $gatewayCapturedPayload = base64_decode($gatewayCapturedOutboxEntry['payload_serialized']);
+
+        $actualGatewayCapturedLedgerOutboxEntry = json_decode($gatewayCapturedPayload, true);
+
+        $expectedLedgerOutboxEntry = [
+            "merchant_id" =>  "10000000000000",
+            "currency" => "INR",
+            "transactor_event" =>  "payment_gateway_captured",
+            "money_params" => [
+                "base_amount" => "50000",
+                "amount" => "50000"
+            ],
+            "additional_params" => [
+                "gmv_accounting"    => "refund_credit_gmv"
+            ],
+            "ledger_integration_mode" =>  "reverse-shadow",
+            "tenant" => "PG"
+        ];
+
+        $this->assertArraySubset($expectedLedgerOutboxEntry, $actualGatewayCapturedLedgerOutboxEntry);
+        $this->assertEquals($paymentFromResponse['id'], $actualGatewayCapturedLedgerOutboxEntry['transactor_id']);
+
+        $ledgerOutboxEntity = $this->getLastEntity('ledger_outbox', true);
+
+        $payload = base64_decode($ledgerOutboxEntity['payload_serialized']);
+
+        $actualLedgerOutboxEntry = json_decode($payload, true);
+
+        $expectedLedgerOutboxEntry = [
+            "merchant_id" =>  "10000000000000",
+            "currency" => "INR",
+            "transactor_event" =>  "payment_merchant_captured",
+            "money_params" => [
+                "base_amount" => "50000",
+                "gmv_amount" => "50000",
+                "merchant_balance_amount" => "50000"
+            ],
+            "additional_params" => [
+                "gmv_accounting"    => "refund_credit_gmv"
+            ],
+            "ledger_integration_mode" =>  "reverse-shadow",
+            "tenant" => "PG"
+        ];
+
+        $this->assertArraySubset($expectedLedgerOutboxEntry, $actualLedgerOutboxEntry);
+        $this->assertEquals($paymentFromResponse['id'], $actualLedgerOutboxEntry['transactor_id']);
+    }
+
+    public function getPaymentArrayForFeeCreditLoading()
+    {
+        //
+        // default payment object
+        //
+        $payment = [
+            'amount'            => '50000',
+            'currency'          => 'INR',
+            'email'             => 'a@b.com',
+            'contact'           => '9918899029',
+            'notes'             => [
+                "type"          => "fee_credit",
+                "merchant_id"   => "JVoa37lqQ0hMMv"
+            ],
+            'description'       => 'random description',
+            'bank'              => 'UCBA',
+        ];
+
+        $payment['card'] = array(
+            'number'            => '4012001038443335',
+            'name'              => 'Harshil',
+            'expiry_month'      => '12',
+            'expiry_year'       => '2024',
+            'cvv'               => '566',
+        );
+
+        return $payment;
+    }
+
     private function getKafkaEventPayload($journal, $request = null, $msg = "")
     {
         $kafkaPayload = [
@@ -2080,7 +2448,31 @@ class PaymentLedgerTest extends TestCase
         $this->assertEquals($ledgerOutboxEntity['is_deleted'], 1, 'outbox entry not soft deleted');
 
         $this->assertNotNull($ledgerOutboxEntity['deleted_at'], 'outbox entry not soft deleted');
+    }
 
+    public function testKafkaSuccessForPaymentGatewayCaptureEventCreditLoading()
+    {
+        $this->fixtures->merchant->addFeatures(['pg_ledger_reverse_shadow']);
+
+        $payment = $this->createPaymentInReverseShadow();
+
+        $paymentId = $payment['id'];
+
+        $journal = $this->getPaymentGatewayCapturedJournalResponsePayload($paymentId);
+
+        $kafkaEventPayload = $this->getKafkaEventPayload($journal);
+
+        (new KafkaMessageProcessor)->process(KafkaMessageProcessor::API_PG_LEDGER_ACKNOWLEDGMENTS, $kafkaEventPayload, 'test');
+
+        $txn = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($txn);
+
+        $ledgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => $paymentId.'-'.'payment_gateway_captured']);
+
+        $this->assertEquals($ledgerOutboxEntity['is_deleted'], 1, 'outbox entry not soft deleted');
+
+        $this->assertNotNull($ledgerOutboxEntity['deleted_at'], 'outbox entry not soft deleted');
     }
 
     // PaymentMerchantCaptured

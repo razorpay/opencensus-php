@@ -186,6 +186,8 @@ class Core extends Base\Core
             }
         }
 
+        $creditLoadingPaymentInfo = $this->extractCreditLoadingPaymentInfo($payment);
+
         //Todo: Check with banking team , fee and tax is populated but do not get deducted from balance.
         //Todo: how do we charge this amount from acquirer bank.
         if ($payment->isHdfcNonDSSurcharge() === true)
@@ -205,6 +207,11 @@ class Core extends Base\Core
             $moneyParams[Constants::GMV_AMOUNT]                 = strval(0);
             $moneyParams[Constants::TAX]                        = strval(0);
             $moneyParams[Constants::COMMISSION]                 = strval(0);
+        }
+        else if ($creditLoadingPaymentInfo[Constants::IS_CREDIT_LOADING_PAYMENT] === true)
+        {
+            $moneyParams[Constants::GMV_AMOUNT]                 = strval($amount);
+            $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount);
         }
         else if($this->isPostPaidDynamicFeeBearerFlag($payment,$payment->merchant))
         {
@@ -247,7 +254,7 @@ class Core extends Base\Core
                 $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT] = strval($fee + $tax - $amount);
             }
             // Use case where amount is 0, happens for first payment in emandate subscriptions
-            else if($amount == 0)
+            else if($amount === 0)
             {
                 $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($fee + $tax);
             }
@@ -273,6 +280,24 @@ class Core extends Base\Core
         $amountCredits = $merchantAccountBalances[Constants::MERCHANT_AMOUNT_CREDITS];
 
         $rule = [];
+
+        $creditLoadingPaymentInfo = $this->extractCreditLoadingPaymentInfo($payment);
+
+        if($creditLoadingPaymentInfo[Constants::IS_CREDIT_LOADING_PAYMENT] === true)
+        {
+            $type = $creditLoadingPaymentInfo[Constants::TYPE];
+
+            if($type === Constants::FEE_CREDIT)
+            {
+                $rule[Constants::GMV_ACCOUNTING] = Constants::FEE_CREDIT_GMV;
+            }
+            else if($type === Constants::REFUND_CREDIT)
+            {
+                $rule[Constants::GMV_ACCOUNTING] = Constants::REFUND_CREDIT_GMV;
+            }
+
+            return $rule;
+        }
 
         if($this->isPostpaid($payment) === true)
         {
@@ -313,12 +338,31 @@ class Core extends Base\Core
 
         $gateway = $payment->terminal ? $payment->terminal->getGateway() : "not found";
 
+        $additionalParams = [];
+
+        $creditLoadingPaymentInfo = $this->extractCreditLoadingPaymentInfo($payment);
+
+        if($creditLoadingPaymentInfo[Constants::IS_CREDIT_LOADING_PAYMENT] === true)
+        {
+            $type = $creditLoadingPaymentInfo[Constants::TYPE];
+
+            if($type === Constants::FEE_CREDIT)
+            {
+                $additionalParams[Constants::GMV_ACCOUNTING] = Constants::FEE_CREDIT_GMV;
+            }
+            else if($type === Constants::REFUND_CREDIT)
+            {
+                $additionalParams[Constants::GMV_ACCOUNTING] = Constants::REFUND_CREDIT_GMV;
+            }
+        }
+
         $journalPayload = array(
             Constants::TRANSACTOR_ID                => $transactorId,
             Constants::MERCHANT_ID                  => $payment->getMerchantId(),
             Constants::CURRENCY                     => Constants::INR_CURRENCY,
             Constants::TRANSACTOR_EVENT             => $transactorEvent,
             Constants::TRANSACTION_DATE             => $payment->getUpdatedAt(),
+            Constants::ADDITIONAL_PARAMS             => (count($additionalParams) > 0) ? $additionalParams : null,
             Constants::API_TXN_ID                   => $apiTransactionId,
             Constants::IDENTIFIERS                  => [
                 Constants::GATEWAY          => $gateway,
@@ -337,6 +381,33 @@ class Core extends Base\Core
         $outboxPayload = $this->prepareOutboxPayload($payloadName, $journalPayload);
 
         $this->saveToLedgerOutbox($outboxPayload, $transactorEvent);
+    }
+
+    // This function identifies payments made by any merchant to a razorpay internal merchant
+    public function extractCreditLoadingPaymentInfo(Payment\Entity $payment) : array
+    {
+        if($payment->getNotes() === null)
+        {
+            return [
+                Constants::IS_CREDIT_LOADING_PAYMENT    => false
+            ];
+        }
+
+        $notes = $payment->getNotes()->toArray();
+
+        $type = (isset($notes["type"]) === true) ? $notes["type"] : "";
+
+        if($type === Constants::FEE_CREDIT or $type === Constants::REFUND_CREDIT)
+        {
+            return [
+                Constants::IS_CREDIT_LOADING_PAYMENT    => true,
+                Constants::TYPE                         => $type
+            ];
+        }
+
+        return [
+            Constants::IS_CREDIT_LOADING_PAYMENT    => false
+        ];
     }
 
     public  function createLedgerEntryForCaptureGatewayCommissionReverseShadow(Payment\Entity $payment, $reconGatewayFee, $reconGatewayServiceTax)

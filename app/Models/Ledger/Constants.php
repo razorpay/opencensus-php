@@ -174,4 +174,15 @@ class Constants
     const PRODUCER_KEY  = 'producer_key';
     const TOPIC         = 'topic';
     const MESSAGE       = 'message';
+
+    const IS_CREDIT_LOADING_PAYMENT = "is_credit_loading_payment";
+
+    const FEE_CREDIT        = "fee_credit";
+    const REFUND_CREDIT     = "refund_credit";
+    const AMOUNT_CREDIT     = "amount_credit";
+
+    const FEE_CREDIT_GMV    = "fee_credit_gmv";
+    const REFUND_CREDIT_GMV = "refund_credit_gmv";
+    const AMOUNT_CREDIT_GMV = "amount_credit_gmv";
+    const GMV_ACCOUNTING    = "gmv_accounting";
 }
