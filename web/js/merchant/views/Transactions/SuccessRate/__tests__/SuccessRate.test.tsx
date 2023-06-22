@@ -253,3 +253,22 @@ describe('SR Dashboard International', () => {
     });
   });
 });
+
+describe('SR Admin', () => {
+  beforeEach(() => {
+    server.use(
+      resolvedDowntimesHandler({ isSuccess: true }),
+      ongoingDowntimesHandler({ isSuccess: true }),
+      srApiHandler({ isSuccess: true }),
+      errorApiHandler({ isSuccess: true }),
+    );
+    render(<App />);
+  });
+
+  test('should not show Admin search if not allowed', () => {
+    const srFetchAllSpy = jest.spyOn(services, 'getSR');
+
+    expect(srFetchAllSpy).toHaveBeenCalled();
+    expect(() => screen.getByTestId('admin-search')).toThrow();
+  });
+});

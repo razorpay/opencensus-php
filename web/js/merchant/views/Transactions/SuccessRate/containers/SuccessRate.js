@@ -79,9 +79,10 @@ const SuccessRate = (props) => {
   );
 };
 
-const mapStateToProps = ({ successRate }) => {
+const mapStateToProps = ({ successRate, session }) => {
+  const { user } = session;
   const { activeTab, tabs } = successRate;
-  return { activeTab, tabs };
+  return { user, activeTab, tabs };
 };
 
 const mapDispatchToProps = (dispatch) => {

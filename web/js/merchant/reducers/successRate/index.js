@@ -47,6 +47,7 @@ const SET_SELECTED_DROPDOWN_FILTER_OPTIONS = 'SET_SELECTED_DROPDOWN_FILTER_OPTIO
 const SET_CARD_TYPE_FILTER = 'SET_CARD_TYPE_FILTER';
 const RESET_SR_DASHBOARD = 'RESET_SR_DASHBOARD';
 const SET_FAILURE_REASONS_TYPE = 'SET_FAILURE_REASONS_TYPE';
+const SEARCH_MERCHANT_ID = 'SEARCH_MERCHANT_ID';
 
 export const fetchSuccessRate =
   ({ payload, updateDropdownOptions, resetSelectedInterval = true, refreshMetricTabs = false }) =>
@@ -305,8 +306,16 @@ export const resetSRDashboard = () => {
   return { type: RESET_SR_DASHBOARD };
 };
 
+export const setMerchantIDSearch = (query) => {
+  return {
+    type: SEARCH_MERCHANT_ID,
+    payload: query,
+  };
+};
+
 const getInitialState = () => {
   const state = {
+    searchedMerchantId: '',
     isLoading: true,
     tabLoading: true,
     graphLoading: false,
@@ -353,6 +362,10 @@ export default (state = getInitialState(), action) => {
   const { type, payload } = action;
 
   switch (type) {
+    case SEARCH_MERCHANT_ID: {
+      return merge(state, { searchedMerchantId: payload });
+    }
+
     case `${FETCH_SUCCESS_RATE}::PENDING`: {
       return merge(state, ...payload);
     }

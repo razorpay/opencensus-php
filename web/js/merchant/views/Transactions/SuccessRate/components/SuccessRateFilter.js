@@ -11,6 +11,8 @@ import {
   setActiveTab,
   setCardTypeFilter,
   setGroupTypeFilter,
+  setMerchantIDSearch,
+  resetSRDashboard,
 } from 'merchant/reducers/successRate';
 import {
   getBreakdownInterval,
@@ -33,6 +35,7 @@ import {
 import { DateRangePreset } from './DateRangePreset';
 import TabRefreshButton from './TabRefreshButton';
 
+import SearchMerchant from './SearchMerchant';
 const SuccessRateFilter = (props) => {
   const {
     endDate,
@@ -48,6 +51,10 @@ const SuccessRateFilter = (props) => {
     setActiveTab,
     setGroupTypeFilter,
     setCardTypeFilter,
+    isSrAdminEnabled,
+    setMerchantIDSearch,
+    isLoading,
+    searchedMerchantId,
   } = props;
 
   const [dateRange, setDateRange] = useState({ startDate: '', endDate: '', preset: '' });
@@ -61,6 +68,13 @@ const SuccessRateFilter = (props) => {
     const errors = validateDateRange(dateRange);
     setErrors(errors);
   }, [dateRange]);
+
+  useEffect(() => {
+    const payload = queryFilters();
+    const errorsPayload = getMerchantErrorsPayload();
+    fetchSuccessRate({ payload });
+    fetchMerchantErrors(errorsPayload);
+  }, [searchedMerchantId]);
 
   const onSearch = async (dateRangeParam = dateRange, errorsParam = errors) => {
     const isOverallTabActive = activeTab !== 'Overall';
@@ -92,14 +106,16 @@ const SuccessRateFilter = (props) => {
     trackSuccessRateEvents(filterSuccessRate(payload));
   };
 
-  const onReset = async () => {
+  const resetToInitialState = () => {
     const initialValue = initialFilters();
-    const updateDropdownOptions = false;
-
     updateDateRange(initialValue);
     setActiveTab('Overall');
     setDefaultInterval(DEFAULT_INTERVAL);
     setDefaultLastUpdatedAt();
+  };
+
+  const onReset = async () => {
+    const updateDropdownOptions = false;
 
     const payload = queryFilters(updateDropdownOptions);
     await fetchSuccessRate({ payload, updateDropdownOptions });
@@ -123,6 +139,16 @@ const SuccessRateFilter = (props) => {
   };
 
   const handleSearch = () => onSearch(dateRange, errors);
+
+  const handleSearchByMerchantId = (merchantId) => {
+    resetToInitialState();
+    setMerchantIDSearch(merchantId);
+  };
+
+  const onResetMerchantSearch = () => {
+    resetToInitialState();
+    setMerchantIDSearch('');
+  };
 
   return (
     <div className="sr-filter">
@@ -156,6 +182,13 @@ const SuccessRateFilter = (props) => {
       </div>
 
       <div className="sr-filter-extras">
+        {isSrAdminEnabled ? (
+          <SearchMerchant
+            onSearch={handleSearchByMerchantId}
+            onReset={onResetMerchantSearch}
+            isLoading={isLoading}
+          />
+        ) : null}
         <TabRefreshButton
           timestamp={tab?.lastUpdatedAt}
           activeTab={activeTab}
@@ -166,8 +199,9 @@ const SuccessRateFilter = (props) => {
   );
 };
 
-const mapStateToProps = ({ successRate }) => {
-  const { filters = {}, tabs = {}, activeTab } = successRate;
+const mapStateToProps = ({ session, successRate }) => {
+  const { user } = session;
+  const { filters = {}, tabs = {}, activeTab, searchedMerchantId, isLoading } = successRate;
   const { startDate, endDate, preset } = filters;
 
   return {
@@ -176,6 +210,9 @@ const mapStateToProps = ({ successRate }) => {
     preset,
     activeTab,
     tab: tabs[activeTab],
+    searchedMerchantId,
+    isLoading,
+    isSrAdminEnabled: user.isSrAdminEnabled,
   };
 };
 
@@ -190,6 +227,8 @@ const mapDispatchToProps = (dispatch) => {
       setActiveTab,
       setCardTypeFilter,
       setGroupTypeFilter,
+      setMerchantIDSearch,
+      resetSRDashboard,
     },
     dispatch,
   );

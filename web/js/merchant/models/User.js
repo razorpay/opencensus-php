@@ -2095,6 +2095,10 @@ export default class User {
   get showIsPlusPlusExperiment() {
     return getSplitzExperimentVariant('capital_isplusplus_splitz')?.variables?.result === 'on';
   }
+
+  get isSrAdminEnabled() {
+    return getSplitzExperimentVariant('success_rate_admin')?.variables?.result === 'on';
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

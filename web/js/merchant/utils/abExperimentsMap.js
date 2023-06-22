@@ -670,6 +670,12 @@ export default {
     // prod experiment ids
     'LZi2wmeOZSCjtX',
   ],
+  success_rate_admin: [
+    // stage experiment ids
+    'M4UtH6eWYiFiuA',
+    // prod experiment ids
+    'M4rtQihG8luU57',
+  ],
   magic_cod_engine: [
     // stage experiment ids
     'Lep0tkId1tRQvA',

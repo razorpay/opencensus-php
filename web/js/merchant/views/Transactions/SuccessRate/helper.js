@@ -94,8 +94,8 @@ const getSelectedFilters = ({ selectedDropdownFilterOptions, isOptimizerEnabled 
 
 export const queryFilters = (updateDropdownOptions = false, refreshMetricTabs = false) => {
   const { session, successRate } = store?.getState();
-  const { isOptimizerEnabled = false } = session?.user ?? {};
-  const { filters, activeTab: stateActiveTab, tabs } = successRate;
+  const { isOptimizerEnabled = false, isSrAdminEnabled = false } = session?.user ?? {};
+  const { filters, activeTab: stateActiveTab, tabs, searchedMerchantId } = successRate;
   const activeTab = refreshMetricTabs ? 'Overall' : stateActiveTab;
   const mode = activeTab === 'Overall' || !isOptimizerEnabled ? 'razorpay' : 'optimizer';
   const { startDate, endDate } = filters;
@@ -141,6 +141,8 @@ export const queryFilters = (updateDropdownOptions = false, refreshMetricTabs = 
         : {}),
       ...(!isOptimizerEnabled && activeTab === 'Card' ? { type: [selectedCardType] } : {}),
     },
+    ...(isSrAdminEnabled && searchedMerchantId ? { merchant_id: searchedMerchantId } : {}),
+
     group_by: {
       keys: _group_by,
       limit: isOptimizerEnabled ? 3 : GROUP_BY_KEY_VS_LIMIT[_group_by] || DEFAULT_GROUP_BY_LIMIT, // 3 for dropdown filters in case of optimizer merchant and other limits as per groupBy for graph pills in case of rzp merchant.
@@ -480,8 +482,8 @@ export const getPieChartData = (groupData = [], tags) => {
 
 export const getMerchantErrorsPayload = (updateDropdownOptions) => {
   const { session, successRate } = store?.getState();
-  const { isOptimizerEnabled } = session?.user;
-  const { tabs, activeTab, filters, merchantErrors } = successRate;
+  const { isOptimizerEnabled, isSrAdminEnabled = false } = session?.user;
+  const { tabs, activeTab, filters, merchantErrors, searchedMerchantId } = successRate;
   const { method, selectedDropdownFilterOptions, selectedCardType } = tabs[activeTab];
   const { startDate, endDate } = filters;
   const errorType = merchantErrors[activeTab].failureReasonType ?? 'default';
@@ -513,6 +515,8 @@ export const getMerchantErrorsPayload = (updateDropdownOptions) => {
       ...(!isOptimizerEnabled && activeTab === 'Card' ? { type: [selectedCardType] } : {}),
       ...(errorType !== 'default' ? CUSTOM_ERROR_TYPES[activeTab]?.fetchOptions?.filters : {}),
     },
+    ...(isSrAdminEnabled && searchedMerchantId ? { merchant_id: searchedMerchantId } : {}),
+
     group_by: {
       ...(errorType !== 'default' ? CUSTOM_ERROR_TYPES[activeTab]?.fetchOptions?.groupBy : {}),
       limit: 6,
@@ -760,3 +764,5 @@ export const checkIfFilterValid = ({ activeTab, filter, flags = {} }) => {
   }
   return true;
 };
+
+export const checkIfAdmin = ({ user }) => user.isSrAdminEnabled;
