@@ -98,6 +98,10 @@ export const AllInvitesFilter = ({
       search: stringifyQueryParams({}),
       hash: location.hash,
     });
+    setPagination({
+      skip: 0,
+      count: initState.count,
+    });
     setFormData({
       ...initState,
     });
@@ -110,7 +114,13 @@ export const AllInvitesFilter = ({
         <TextInput label="Name" name="name" value={formData.name} onChange={handleChange} />
       </InputContainer>
       <InputContainer>
-        <TextInput label="Email ID" name="email" value={formData.email} onChange={handleChange} />
+        <TextInput
+          type="email"
+          label="Email ID"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+        />
       </InputContainer>
       <InputContainer>
         <TextInput

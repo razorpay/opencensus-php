@@ -398,8 +398,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
           product: merchantType,
         },
       })
-        .then((response) => {
-          if (!response.success) return;
+        .then(() => {
           showNotification?.({
             type: 'success',
             message:
