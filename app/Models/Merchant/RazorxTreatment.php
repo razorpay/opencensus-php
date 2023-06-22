@@ -752,6 +752,9 @@ final class RazorxTreatment
 
     const UPI_AUTOPAY_REVOKE_PAUSE_TOKEN = 'upi_autopay_revoke_pause_token';
 
+    // Experiment to enable mandate non-revokable
+    const UPI_AUTOPAY_REVOKABLE_FEATURE = 'UPI_AUTOPAY_REVOKABLE_FEATURE';
+
     // Experiment to increase debit retries for merchants
     const UPI_AUTOPAY_INCREASE_DEBIT_RETRIES = 'upi_autopay_increase_debit_retries';
 

@@ -10,6 +10,7 @@ class Constants
     const ATTEMPT               = 'ano';
     const SEQUENCE              = 'sno';
     const EXECUTE_AT            = 'ext';
+    const REVOKABLE             = 'rev';
     const ENVIRONMENT           = 'env';
     const EXCEPTION             = 'exception';
     const GATEWAY_STATUS_CODE   = 'gatewayStatusCode';

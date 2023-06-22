@@ -14,6 +14,7 @@ use RZP\Exception\BaseException;
 use RZP\Exception\LogicException;
 use RZP\Models\Payment\UpiMetadata;
 use RZP\Exception\GatewayErrorException;
+use RZP\Models\Merchant\RazorxTreatment;
 
 trait RecurringTrait
 {
@@ -490,6 +491,17 @@ trait RecurringTrait
         {
             // Env=1 is set for dark
             $attr[Entity::GATEWAY_DATA][Constants::ENVIRONMENT] = 1;
+        }
+
+        if($action === Action::AUTHENTICATE)
+        {
+            $variant = $this->app->razorx->getTreatment($input['payment']['merchant_id'],
+                RazorxTreatment::UPI_AUTOPAY_REVOKABLE_FEATURE, $this->mode, 3);
+
+            if($variant === 'on')
+            {
+                $attr[Entity::GATEWAY_DATA][Constants::REVOKABLE] = "N";
+            }
         }
 
         return $this->createGatewayPaymentEntity($attr, $action, false);

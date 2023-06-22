@@ -237,7 +237,12 @@ class UpiMetadataTransformer extends UpiTransformer
         // no next reminder needed when success
         if ($action === Action::AUTHORIZE and $mode === Mode::AUTO)
         {
-            $canRetry = $this->checkUpiAutopayIncreaseDebitRetry($this->input[Entity::PAYMENT]['id'], $this->input[Entity::PAYMENT]['merchant_id'], $this->upi);
+            $canRetry = false;
+
+            if($this->isSuccess() === false)
+            {
+                $canRetry = $this->checkUpiAutopayIncreaseDebitRetry($this->input[Entity::PAYMENT]['id'], $this->input[Entity::PAYMENT]['merchant_id'], $this->upi);
+            }
 
             if (($canRetry === true and $attempt >= 10) or ($canRetry === false and $attempt >= 3))
             {
