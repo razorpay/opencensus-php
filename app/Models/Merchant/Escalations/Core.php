@@ -13,6 +13,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Store;
+use RZP\Models\Merchant\Detail;
 use RZP\Services\ApachePinotClient;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Admin\Org\Entity as Org;
@@ -36,6 +37,13 @@ class Core extends Base\Core
     const DATA_LAKE_WEB_ATTRIBUTION_QUERY               = "select * from hive.aggregate_pa.mid_attribution where mid in (%s)";
 
     const DATA_LAKE_WEB_ATTRIBUTION_FIRST_TOUCH_QUERY   = "select * from hive.aggregate_pa.payments_product where merchant_id in (%s) and first_txn = 1";
+
+    const OFF = 'off';
+
+    // Run both the query and hybrid query methods, and log any differences in the results.
+    const SHADOW = 'shadow';
+
+    const LIVE = 'live';
 
     public function __construct()
     {
@@ -664,7 +672,8 @@ class Core extends Base\Core
                 $query = sprintf($query, $lastCronTime, $currentCronTime, Constants::LOWEST_PAYMENTS_THRESHOLD);
 
                 $content = [
-                    'query' => $query
+                    'query'   => $query,
+                    'backend' => 'pinot'
                 ];
 
                 // fetch all merchants count who've atleast breached lowest payments threshold
@@ -682,7 +691,7 @@ class Core extends Base\Core
                 }
 
                 $this->trace->info(TraceCode::ESCALATION_ATTEMPT, [
-                    'merchants_count' => count($queryResponse),
+                    'query_response_count' => count($queryResponse),
                     'type'            => 'payments_escalation_timebound',
                     'step'            => 'transacted_merchants_count'
                 ]);
@@ -694,7 +703,8 @@ class Core extends Base\Core
                 $query = sprintf($query, $lastCronTime, $currentCronTime, $resultCount + 1);
 
                 $content = [
-                    'query' => $query
+                    'query'   => $query,
+                    'backend' => 'pinot'
                 ];
 
                 // fetch all merchants who've atleast breached lowest payments threshold
@@ -712,7 +722,7 @@ class Core extends Base\Core
                 }
 
                 $this->trace->info(TraceCode::ESCALATION_ATTEMPT, [
-                    'merchants_count' => count($queryResponse),
+                    'query_response_count' => count($queryResponse),
                     'type'            => 'payments_escalation_timebound',
                     'step'            => 'transacted_merchants'
                 ]);
@@ -740,23 +750,13 @@ class Core extends Base\Core
 
                 return;
             }
-
             $this->trace->info(TraceCode::ESCALATION_ATTEMPT, [
                 'merchants_count' => count($merchantIdList),
                 'type'            => 'payments_escalation',
                 'step'            => 'open_merchants'
             ]);
 
-            $query = "select sum(base_amount) amount,merchant_id from payments_v1 where merchant_id in (%s) group by merchant_id having amount>%s limit %s";
-
-            $query = sprintf($query, "'" . implode("','", $merchantIdList) . "'", Constants::LOWEST_PAYMENTS_THRESHOLD, count($merchantIdList) + 1);
-
-            $content = [
-                'query' => $query
-            ];
-
-            // fetch all merchants who've atleast breached lowest payments threshold
-            $queryResponse = $this->app['eventManager']->getDataFromPinot($content);
+            $queryResponse = $this->fetchQueryResponseForMerchantsGMVList($merchantIdList);
 
             if (empty($queryResponse) === true)
             {
@@ -862,7 +862,8 @@ class Core extends Base\Core
             $query = sprintf($query, $lastCronTime, $currentCronTime, Constants::LOWEST_PAYMENTS_THRESHOLD);
 
             $content = [
-                'query' => $query
+                'query'   => $query,
+                'backend' => 'pinot'
             ];
 
             // fetch all merchants count who've atleast breached lowest payments threshold
@@ -880,7 +881,7 @@ class Core extends Base\Core
             }
 
             $this->trace->info(TraceCode::ESCALATION_ATTEMPT, [
-                'merchants_count' => count($queryResponse),
+                'query_response_count' => count($queryResponse),
                 'type'            => $escalationType . '_timebound',
                 'step'            => 'transacted_merchants_count'
             ]);
@@ -892,7 +893,8 @@ class Core extends Base\Core
             $query = sprintf($query, $lastCronTime, $currentCronTime, $resultCount + 1);
 
             $content = [
-                'query' => $query
+                'query'   => $query,
+                'backend' => 'pinot'
             ];
 
             // fetch all merchants who've atleast breached lowest payments threshold
@@ -910,7 +912,7 @@ class Core extends Base\Core
             }
 
             $this->trace->info(TraceCode::ESCALATION_ATTEMPT, [
-                'merchants_count' => count($queryResponse),
+                'query_response_count' => count($queryResponse),
                 'type'            => $escalationType . '_timebound',
                 'step'            => 'transacted_merchants'
             ]);
@@ -945,16 +947,7 @@ class Core extends Base\Core
             'step'            => 'open_merchants'
         ]);
 
-        $query = "select sum(base_amount) amount,merchant_id from payments_v1 where merchant_id in (%s) group by merchant_id having amount>%s limit %s";
-
-        $query = sprintf($query, "'" . implode("','", $merchantIdList) . "'", Constants::LOWEST_PAYMENTS_THRESHOLD, count($merchantIdList) + 1);
-
-        $content = [
-            'query' => $query
-        ];
-
-        // fetch all merchants who've atleast breached lowest payments threshold
-        $queryResponse = $this->app['eventManager']->getDataFromPinot($content);
+        $queryResponse = $this->fetchQueryResponseForMerchantsGMVList($merchantIdList);
 
         if (empty($queryResponse) === true)
         {
@@ -978,6 +971,224 @@ class Core extends Base\Core
         $merchantsGMVList = array_column($queryResponse, "amount", Entity::MERCHANT_ID);
 
         return [$merchantIdList, $merchantsGMVList];
+    }
+
+    /**
+     * Fetch query response to evaluate merchantsGMVList depending on hybridDataQueryingMode
+     *
+     * @param $merchantIdList
+     * @return array|null[]
+     */
+    private function fetchQueryResponseForMerchantsGMVList($merchantIdList)
+    {
+        try
+        {
+            $queryResponse = [];
+
+            $hybridQueryResponse = [];
+
+            $hybridDataQueryingMode = (new Detail\Core)->getSplitzResponse(UniqueIdEntity::generateUniqueId(),
+                                       Constants::HYBRID_DATA_QUERYING_SPLITZ_EXPERIMENT_ID) ?: self::OFF;
+
+            if ($hybridDataQueryingMode === self::OFF)
+            {
+                $queryResponse = $this->fetchQueryResponseForMerchantsGMVListFromPinot($merchantIdList);
+            }
+
+            if ($hybridDataQueryingMode === self::LIVE)
+            {
+                $queryResponse = $this->fetchHybridQueryResponseForMerchantsGMVListFromPinotAndDataLake($merchantIdList);
+            }
+
+            if ($hybridDataQueryingMode === self::SHADOW)
+            {
+                $queryResponse = $this->fetchQueryResponseForMerchantsGMVListFromPinot($merchantIdList);
+
+                $hybridQueryResponse = $this->fetchHybridQueryResponseForMerchantsGMVListFromPinotAndDataLake($merchantIdList);
+
+                $this->findDifferenceBetweenQueryResponses($queryResponse, $hybridQueryResponse);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::HYBRID_DATA_QUERYING_ATTEMPT_FAILED, [
+                'type'        => Constants::HYBRID_DATA_QUERYING,
+                'exception'   => $e->getMessage()
+            ]);
+        }
+
+        return $queryResponse;
+    }
+
+    /**
+     * Query pinot to retrieve data for entire period
+     *
+     * @param array $merchantIdList
+     * @return array|null[]
+     */
+    private function fetchQueryResponseForMerchantsGMVListFromPinot($merchantIdList)
+    {
+        $query = "select sum(base_amount) amount, merchant_id
+                  from payments_v1
+                  where merchant_id in (%s)
+                  group by merchant_id
+                  having amount > %s
+                  limit %s";
+
+        $merchantIds = "'" . implode("','", $merchantIdList) . "'";
+
+        $threshold = Constants::LOWEST_PAYMENTS_THRESHOLD;
+
+        $limit = count($merchantIdList) + 1;
+
+        $query = sprintf($query, $merchantIds, $threshold, $limit);
+
+        $content = [
+            'query'   => $query,
+            'backend' => 'pinot'
+        ];
+
+        $queryResponse = $this->app['eventManager']->getDataFromPinot($content) ?? [];
+
+        $this->trace->info(TraceCode::HYBRID_DATA_QUERYING_RESPONSE, [
+            'type'                          => 'payments_escalation',
+            'step'                          => 'hybrid_data_querying',
+            'query_response'                => $queryResponse,
+        ]);
+
+        return $queryResponse;
+    }
+
+    /**
+     * Query pinot to retrieve data till retention period
+     * Query datalake to retrieve data before retention period
+     * Return sum of data queried via pinot and datalake as hybrid query response
+     *
+     * @param array $merchantIdList
+     * @return array|null[]
+     */
+    private function fetchHybridQueryResponseForMerchantsGMVListFromPinotAndDataLake($merchantIdList)
+    {
+        date_default_timezone_set('Asia/Kolkata');
+
+        $retentionPeriod = strtotime('-' . Constants::RETENTION_PERIOD . ' days', strtotime('midnight'));
+
+        $merchantIds = "'" . implode("','", $merchantIdList) . "'";
+
+        $threshold = Constants::LOWEST_PAYMENTS_THRESHOLD;
+
+        $limit = count($merchantIdList) + 1;
+
+        // Query pinot
+        $pinotQuery = "select sum(base_amount) amount, merchant_id
+                       from payments_v1
+                       where merchant_id in (%s)
+                       and created_at >= %s
+                       group by merchant_id
+                       having amount > %s
+                       limit %s";
+
+        $pinotQuery = sprintf($pinotQuery, $merchantIds, $retentionPeriod, $threshold, $limit);
+
+        $content = [
+            'query'   => $pinotQuery,
+            'backend' => 'pinot'
+        ];
+
+        $pinotQueryResponse = $this->app['eventManager']->getDataFromPinot($content) ?? [];
+
+        $this->trace->info(TraceCode::HYBRID_DATA_QUERYING_RESPONSE, [
+            'type'                          => 'payments_escalation',
+            'step'                          => 'hybrid_data_querying',
+            'pinot_query_response'          => $pinotQueryResponse,
+        ]);
+
+        // Query datalake
+        $datalakeQuery = "select sum(amount) amount, merchant_id
+                                  from dbt_prod_harvester_agg.payments_v1_agg
+                                  where merchant_id in (%s)
+                                  and created_at < %s
+                                  group by merchant_id
+                                  having sum(amount) > %s
+                                  limit %s";
+
+        $datalakeQuery = sprintf($datalakeQuery, $merchantIds, $retentionPeriod, $threshold, $limit);
+
+        $datalakeQueryResponse = $this->app['datalake.presto']->getDataFromDataLake($datalakeQuery) ?? [];
+
+        $this->trace->info(TraceCode::HYBRID_DATA_QUERYING_RESPONSE, [
+            'type'                          => 'payments_escalation',
+            'step'                          => 'hybrid_data_querying',
+            'datalake_query_response'       => $datalakeQueryResponse,
+        ]);
+
+        if (empty($pinotQueryResponse) === true and empty($datalakeQueryResponse) === true)
+        {
+            $this->trace->info(TraceCode::ESCALATION_ATTEMPT_SKIPPED, [
+                'type'   => Constants::PAYMENTS_ESCALATION,
+                'reason' => 'Null query response',
+            ]);
+
+            return [];
+        }
+
+        // merge pinot and datalake query response
+        $pinotAndDataLakeQueryResponse = array_merge($pinotQueryResponse, $datalakeQueryResponse);
+
+        foreach ($pinotAndDataLakeQueryResponse as ['amount' => $amount, 'merchant_id' => $merchantId])
+        {
+            $hybridQueryResponse[$merchantId]['amount'] = ($hybridQueryResponse[$merchantId]['amount'] ?? 0) + $amount;
+            $hybridQueryResponse[$merchantId]['merchant_id'] = $merchantId;
+        }
+
+        $hybridQueryResponse = array_values($hybridQueryResponse);
+
+        $this->trace->info(TraceCode::HYBRID_DATA_QUERYING_RESPONSE, [
+            'type'                          => 'payments_escalation',
+            'step'                          => 'hybrid_data_querying',
+            'hybrid_query_response'         => $hybridQueryResponse,
+        ]);
+
+        return $hybridQueryResponse;
+    }
+
+    /**
+     * Calculate difference between passed query responses
+     *
+     * @param array $queryResponse
+     * @param array $hybridQueryResponse
+     * @return array|null[]
+     */
+    private function findDifferenceBetweenQueryResponses($queryResponse, $hybridQueryResponse)
+    {
+        $hybridQueryResponseMap = array_column($hybridQueryResponse, 'amount', 'merchant_id');
+
+        $queryResponseMap = array_column($queryResponse, 'amount', 'merchant_id');
+
+        $differenceInQueryResponse = [];
+
+        // merge all the merchant ids (keys) from both the responses and collect distinct merchant ids
+        $distinctMerchantIds = array_unique(array_merge(array_keys($hybridQueryResponseMap), array_keys($queryResponseMap)));
+
+        foreach ($distinctMerchantIds as $merchantId)
+        {
+            $hybridQueryResponseAmount = $hybridQueryResponseMap[$merchantId] ?? 0;
+
+            $queryResponseAmount = $queryResponseMap[$merchantId] ?? 0;
+
+            if ($hybridQueryResponseAmount !== $queryResponseAmount)
+            {
+                $differenceInQueryResponse[$merchantId] = abs($hybridQueryResponseAmount - $queryResponseAmount);
+            }
+        }
+
+        $this->trace->info(TraceCode::HYBRID_DATA_QUERYING_RESPONSE, [
+            'type'                         => 'payments_escalation',
+            'step'                         => 'hybrid_data_querying',
+            'difference_in_query_response' => $differenceInQueryResponse,
+        ]);
+
+        return $differenceInQueryResponse;
     }
 
     public function handleNoDocGmvLimitBreach($timeBound = false)

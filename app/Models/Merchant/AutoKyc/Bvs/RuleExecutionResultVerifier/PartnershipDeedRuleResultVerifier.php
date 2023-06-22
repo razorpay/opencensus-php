@@ -39,7 +39,7 @@ class PartnershipDeedRuleResultVerifier extends BaseRuleResultVerifier
 
             return $data;
         }
-        
+
         $data[Constants::IS_ARTEFACT_VALIDATED]       = $ruleExecutionList[0]['rule_execution_result']['result'];
 
         $data[Constants::IS_SIGNATORY_VALIDATED]      = $ruleExecutionList[1]['rule_execution_result']['result'];

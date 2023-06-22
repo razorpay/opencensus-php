@@ -13,6 +13,7 @@ use RZP\Services\CareServiceClient;
 use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
 use RZP\Services\Dcs\Features\Service as DCSService;
 use RZP\Services\Mock\HarvesterClient;
+use RZP\Services\Mock\DataLakePresto;
 use RZP\Mail\Merchant\MerchantOnboardingEmail;
 use RZP\Notifications\Onboarding\Events;
 use RZP\Services\RazorXClient;
@@ -31,8 +32,14 @@ class CoreTest extends TestCase
     use TestsWebhookEvents;
     use DbEntityFetchTrait;
 
+    const PINOT = 'pinot';
+
+    const DATALAKE = 'datalake';
+
     public function testNoEscalationTriggeredIfMerchantNotInOpenState()
     {
+        $this->mockSplitzTreatmentForMode(Escalations\Core::LIVE);
+
         $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields', [
             'activation_status' => 'activated'
         ]);
@@ -50,6 +57,8 @@ class CoreTest extends TestCase
 
     public function testNoEscalationTriggeredIfMerchantPaymentIsBelowThreshold()
     {
+        $this->mockSplitzTreatmentForMode(Escalations\Core::LIVE);
+
         $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields', [
             'activation_status' => 'under_review'
         ]);
@@ -79,7 +88,7 @@ class CoreTest extends TestCase
         if ($orgexists){
             $this->app->dcs_config_service->method('fetchEntityIdsWithValueByConfigNameAndFieldNameFromDcs')
                 ->willReturn([
-                        $entityId => true,
+                    $entityId => true,
                 ]);
         }else{
             $this->app->dcs_config_service->method('fetchEntityIdsWithValueByConfigNameAndFieldNameFromDcs')->willReturn([]);
@@ -132,12 +141,15 @@ class CoreTest extends TestCase
      */
     public function test_already_escalated_1K_milestone_soft_limt()
     {
+        $this->mockSplitzTreatmentForMode(Escalations\Core::LIVE);
+
         $this->createAndFetchMocks(true);
 
         [$merchantDetail] = $this->createAndFetchFixturesForMilestone('soft_limit');
         $merchantId = $merchantDetail->getMerchantId();
 
-        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 1000);
+        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 500, self::DATALAKE);
+        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 500);
 
         $this->mockDCS();
 
@@ -154,11 +166,14 @@ class CoreTest extends TestCase
         $this->app->instance("rzp.mode", Mode::LIVE);
         Mail::fake();
 
+        $this->mockSplitzTreatmentForMode(Escalations\Core::LIVE);
+
         $this->createAndFetchMocks(true);
 
         [$merchantDetail] = $this->createAndFetchFixturesForMilestone('L1');
 
-        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 5000);
+        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 2500, self::DATALAKE);
+        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 2500);
 
         $this->mockDCS();
 
@@ -174,11 +189,14 @@ class CoreTest extends TestCase
         $this->app->instance("rzp.mode", Mode::LIVE);
         Mail::fake();
 
+        $this->mockSplitzTreatmentForMode(Escalations\Core::LIVE);
+
         $this->createAndFetchMocks(true);
 
         [$merchantDetail] = $this->createAndFetchFixturesForMilestone('L1');
 
-        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 10000);
+        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 5000, self::DATALAKE);
+        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 5000);
 
         $this->addEscalation('L1', 500000);
 
@@ -194,17 +212,17 @@ class CoreTest extends TestCase
         $this->app->instance("rzp.mode", Mode::LIVE);
         Mail::fake();
 
+        $this->mockSplitzTreatmentForMode(Escalations\Core::LIVE);
+
         $this->createAndFetchMocks(true);
 
         [$merchantDetail] = $this->createAndFetchFixturesForMilestone('L1');
 
+        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 5000, self::DATALAKE);
         $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 10000);
-        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 5000);
 
         $this->addEscalation('L1', 500000);
         $this->addEscalation('L1', 1000000);
-
-        $this->mockPinot($merchantDetail->getMerchantId(), 15000);
 
         $this->mockDCS();
 
@@ -221,11 +239,13 @@ class CoreTest extends TestCase
 
         Mail::fake();
 
+        $this->mockSplitzTreatmentForMode(Escalations\Core::LIVE);
+
         $this->createAndFetchMocks(true);
 
         [$merchantDetail] = $this->createAndFetchFixturesForMilestone('hard_limit');
 
-        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', $limit);
+        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', $limit, self::DATALAKE);
         $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 200);
 
         $this->fixtures->create('state', [
@@ -233,8 +253,6 @@ class CoreTest extends TestCase
             State\Entity::NAME          => MerchantDetail\Status::ACTIVATED_MCC_PENDING,
             State\Entity::ENTITY_TYPE   => 'merchant_detail'
         ]);
-
-        $this->mockPinot($merchantDetail->getMerchantId(), $limit + 200);
 
         $this->mockDCS();
 
@@ -255,13 +273,15 @@ class CoreTest extends TestCase
 
         Mail::fake();
 
+        $this->mockSplitzTreatmentForMode(Escalations\Core::LIVE);
+
         $this->createAndFetchMocks(true);
 
         [$merchantDetail] = $this->createAndFetchFixturesForMilestone('hard_limit');
 
         $merchantId = $merchantDetail->getMerchantId();
 
-        $this->createTransaction($merchantId, 'payment', $limit);
+        $this->createTransaction($merchantId, 'payment', $limit, self::DATALAKE);
         $this->createTransaction($merchantId, 'payment', 1);
 
         $this->fixtures->create('state', [
@@ -269,8 +289,6 @@ class CoreTest extends TestCase
             State\Entity::NAME          => MerchantDetail\Status::ACTIVATED_MCC_PENDING,
             State\Entity::ENTITY_TYPE   => 'merchant_detail'
         ]);
-
-        $this->mockPinot($merchantId, $limit + 1);
 
         $this->fixtures->edit('merchant_detail', $merchantId, [
             MerchantDetail\Entity::ACTIVATION_STATUS => MerchantDetail\Status::NEEDS_CLARIFICATION
@@ -299,13 +317,15 @@ class CoreTest extends TestCase
 
         Mail::fake();
 
+        $this->mockSplitzTreatmentForMode(Escalations\Core::LIVE);
+
         $this->createAndFetchMocks(true);
 
         [$merchantDetail] = $this->createAndFetchFixturesForMilestone('hard_limit');
 
         $merchantId = $merchantDetail->getMerchantId();
 
-        $this->createTransaction($merchantId, 'payment', $limit);
+        $this->createTransaction($merchantId, 'payment', $limit, self::DATALAKE);
         $this->createTransaction($merchantId, 'payment', 200);
 
         $this->fixtures->create('state', [
@@ -313,8 +333,6 @@ class CoreTest extends TestCase
             State\Entity::NAME          => MerchantDetail\Status::ACTIVATED_MCC_PENDING,
             State\Entity::ENTITY_TYPE   => 'merchant_detail'
         ]);
-
-        $this->mockPinot($merchantId, $limit + 200);
 
         $this->fixtures->edit('merchant_detail', $merchantId, [
             MerchantDetail\Entity::ACTIVATION_STATUS => MerchantDetail\Status::UNDER_REVIEW
@@ -337,6 +355,8 @@ class CoreTest extends TestCase
 
     public function testEscalation10kMilestoneTimeBoundFalseFilterLinkedAccount()
     {
+        $this->mockSplitzTreatmentForMode(Escalations\Core::LIVE);
+
         $this->createAndFetchMocks(true);
 
         $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields', [
@@ -352,7 +372,8 @@ class CoreTest extends TestCase
             'parent_id' => '100DemoAccount'
         ]);
 
-        $this->createTransaction($merchantId, 'payment', 10000);
+        $this->createTransaction($merchantId, 'payment', 5000, self::DATALAKE);
+        $this->createTransaction($merchantId, 'payment', 5000);
 
         $this->mockDCS();
 
@@ -366,6 +387,8 @@ class CoreTest extends TestCase
 
     public function testEscalation10kMilestoneTimeBoundFalseFilterNonRazorpayOrg()
     {
+        $this->mockSplitzTreatmentForMode(Escalations\Core::LIVE);
+
         $this->createAndFetchMocks(true);
 
         $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields', [
@@ -381,7 +404,8 @@ class CoreTest extends TestCase
             'org_id' => Org::HDFC_ORG
         ]);
 
-        $this->createTransaction($merchantId, 'payment', 10000);
+        $this->createTransaction($merchantId, 'payment', 5000, self::DATALAKE);
+        $this->createTransaction($merchantId, 'payment', 5000);
 
         $this->mockDCS();
 
@@ -395,6 +419,8 @@ class CoreTest extends TestCase
 
     public function testEscalation10kMilestoneTimeBoundTrueFilterLinkedAccount()
     {
+        $this->mockSplitzTreatmentForMode(Escalations\Core::LIVE);
+
         $this->createAndFetchMocks(true);
 
         $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields', [
@@ -410,7 +436,8 @@ class CoreTest extends TestCase
             'parent_id' => '100DemoAccount'
         ]);
 
-        $this->createTransaction($merchantId, 'payment', 10000);
+        $this->createTransaction($merchantId, 'payment', 5000, self::DATALAKE);
+        $this->createTransaction($merchantId, 'payment', 5000);
 
         $this->mockDCS();
 
@@ -424,6 +451,8 @@ class CoreTest extends TestCase
 
     public function testEscalation10kMilestoneTimeBoundTrueFilterNonRazorpayOrg()
     {
+        $this->mockSplitzTreatmentForMode(Escalations\Core::LIVE);
+
         $this->createAndFetchMocks(true);
 
         $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields', [
@@ -439,7 +468,8 @@ class CoreTest extends TestCase
             'org_id' => Org::HDFC_ORG
         ]);
 
-        $this->createTransaction($merchantId, 'payment', 10000);
+        $this->createTransaction($merchantId, 'payment', 5000, self::DATALAKE);
+        $this->createTransaction($merchantId, 'payment', 5000);
 
         $this->mockDCS();
 
@@ -470,6 +500,8 @@ class CoreTest extends TestCase
 
         Mail::fake();
 
+        $this->mockSplitzTreatmentForMode(Escalations\Core::LIVE);
+
         $this->createAndFetchMocks(true);
 
         [$merchantDetail] = $this->createAndFetchFixturesForMilestone('hard_limit');
@@ -481,7 +513,7 @@ class CoreTest extends TestCase
             'org_id' => Org::HDFC_ORG
         ]);
 
-        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', $limit);
+        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', $limit, self::DATALAKE);
         $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 200);
 
         $this->fixtures->create('state', [
@@ -489,8 +521,6 @@ class CoreTest extends TestCase
             State\Entity::NAME          => MerchantDetail\Status::ACTIVATED_MCC_PENDING,
             State\Entity::ENTITY_TYPE   => 'merchant_detail'
         ]);
-
-        $this->mockPinot($merchantDetail->getMerchantId(), $limit + 200);
 
         $this->mockDCS($limit*100,Org::HDFC_ORG,true);
 
@@ -537,6 +567,8 @@ class CoreTest extends TestCase
 
         Mail::fake();
 
+        $this->mockSplitzTreatmentForMode(Escalations\Core::LIVE);
+
         $this->createAndFetchMocks(true);
 
         [$merchantDetail] = $this->createAndFetchFixturesForMilestone('hard_limit');
@@ -548,7 +580,7 @@ class CoreTest extends TestCase
             'org_id' => Org::HDFC_ORG
         ]);
 
-        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', $limit);
+        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', $limit, self::DATALAKE);
         $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 200);
 
         $this->fixtures->create('state', [
@@ -556,8 +588,6 @@ class CoreTest extends TestCase
             State\Entity::NAME          => MerchantDetail\Status::ACTIVATED_MCC_PENDING,
             State\Entity::ENTITY_TYPE   => 'merchant_detail'
         ]);
-
-        $this->mockPinot($merchantDetail->getMerchantId(), $limit + 200);
 
         $this->mockDCS($limit*100);
 
@@ -575,7 +605,7 @@ class CoreTest extends TestCase
 
         $this->verifyEscalationAndAction('hard_limit_level_4', $limit * 100);
 
-}
+    }
 
     /**
      * Scenario:
@@ -588,6 +618,8 @@ class CoreTest extends TestCase
 
         Mail::fake();
 
+        $this->mockSplitzTreatmentForMode(Escalations\Core::LIVE);
+
         $this->createAndFetchMocks(true);
 
         [$merchantDetail] = $this->createAndFetchFixturesForMilestone('hard_limit');
@@ -599,7 +631,7 @@ class CoreTest extends TestCase
             'org_id' => Org::HDFC_ORG
         ]);
 
-        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', $limit);
+        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', $limit, self::DATALAKE);
         $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 200);
 
         $this->fixtures->create('state', [
@@ -607,8 +639,6 @@ class CoreTest extends TestCase
             State\Entity::NAME          => MerchantDetail\Status::ACTIVATED_MCC_PENDING,
             State\Entity::ENTITY_TYPE   => 'merchant_detail'
         ]);
-
-        $this->mockPinot($merchantDetail->getMerchantId(), $limit + 200);
 
         $this->mockDCSThrowException();
 
@@ -637,6 +667,8 @@ class CoreTest extends TestCase
 
         $this->mockSplitzTreatment($output);
 
+        $this->mockSplitzTreatmentForMode(Escalations\Core::LIVE);
+
         $merchant = $this->createPrerequisiteForNoDocEscalation();
 
         $this->fixtures->on('live')->create('merchant_detail:filled_entity', [
@@ -645,7 +677,8 @@ class CoreTest extends TestCase
             'business_website'  => 'http://hello.com'
         ]);
 
-        $this->createTransaction($merchant->getId(), 'payment', 55600);
+        $this->createTransaction($merchant->getId(), 'payment', 27800, self::DATALAKE);
+        $this->createTransaction($merchant->getId(), 'payment', 27800);
 
         (new Escalations\Core())->handleNoDocGmvLimitBreach();
 
@@ -668,6 +701,18 @@ class CoreTest extends TestCase
             ->andReturn($output);
     }
 
+    protected function mockSplitzTreatmentForMode($mode){
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => $mode,
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+    }
+
     protected function mockCareResponse()
     {
         $careMock = Mockery::mock(CareServiceClient::class);
@@ -679,6 +724,8 @@ class CoreTest extends TestCase
 
     public function testEscalation10kMilestoneTimeBoundFalseFilterNoDocMerchant()
     {
+        $this->mockSplitzTreatmentForMode(Escalations\Core::LIVE);
+
         $this->createAndFetchMocks(true);
 
         $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields', [
@@ -694,7 +741,8 @@ class CoreTest extends TestCase
             'entity_type' => 'merchant'
         ]);
 
-        $this->createTransaction($merchantId, 'payment', 10000);
+        $this->createTransaction($merchantId, 'payment', 5000, self::DATALAKE);
+        $this->createTransaction($merchantId, 'payment', 5000);
 
         $this->mockDCS();
 
@@ -706,8 +754,69 @@ class CoreTest extends TestCase
         $this->assertEmpty($escalation);
     }
 
+    public function testHybridDataQueryingOffModeMerchantEscalations()
+    {
+        $this->app->instance("rzp.mode", Mode::LIVE);
+        Mail::fake();
+
+        $this->createAndFetchMocks(true);
+
+        $this->mockSplitzTreatmentForMode(Escalations\Core::OFF);
+
+        [$merchantDetail] = $this->createAndFetchFixturesForMilestone('L1');
+        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 10000);
+
+        $this->mockDCS();
+
+        (new Escalations\Core)->triggerPaymentEscalations(false);
+
+        $this->verifyEscalationAndAction('L1', 1500000);
+    }
+
+    public function testHybridDataQueryingLiveModeMerchantEscalations()
+    {
+        $this->app->instance("rzp.mode", Mode::LIVE);
+        Mail::fake();
+
+        $this->createAndFetchMocks(true);
+
+        $this->mockSplitzTreatmentForMode(Escalations\Core::LIVE);
+
+        [$merchantDetail] = $this->createAndFetchFixturesForMilestone('L1');
+        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 3000);
+        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 9000, self::DATALAKE);
+
+        $this->mockDCS();
+
+        (new Escalations\Core)->triggerPaymentEscalations(false);
+
+        $this->verifyEscalationAndAction('L1', 1000000);
+    }
+
+    public function testHybridDataQueryingShadowModeMerchantEscalations()
+    {
+        $this->app->instance("rzp.mode", Mode::LIVE);
+        Mail::fake();
+
+        $this->createAndFetchMocks(true);
+
+        $this->mockSplitzTreatmentForMode(Escalations\Core::SHADOW);
+
+        [$merchantDetail] = $this->createAndFetchFixturesForMilestone('L1');
+        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 4000);
+        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 12000, self::DATALAKE);
+
+        $this->mockDCS();
+
+        (new Escalations\Core)->triggerPaymentEscalations(false);
+
+        $this->verifyEscalationAndAction('L1', 1500000);
+    }
+
     public function testHardLimitNoDocEscalationInNeedsClarificationState()
     {
+        $this->mockSplitzTreatmentForMode(Escalations\Core::LIVE);
+
         $merchant = $this->createPrerequisiteForNoDocEscalation();
 
         $this->fixtures->on('live')->create('merchant_detail:filled_entity', [
@@ -730,7 +839,8 @@ class CoreTest extends TestCase
 
             });
 
-        $this->createTransaction($merchant->getId(), 'payment', 55600);
+        $this->createTransaction($merchant->getId(), 'payment', 278000, self::DATALAKE);
+        $this->createTransaction($merchant->getId(), 'payment', 278000);
 
         (new Escalations\Core())->handleNoDocGmvLimitBreach();
 
@@ -744,6 +854,8 @@ class CoreTest extends TestCase
 
     public function testHardLimitNoDocEscalationInUnderReviewState()
     {
+        $this->mockSplitzTreatmentForMode(Escalations\Core::LIVE);
+
         $merchant = $this->createPrerequisiteForNoDocEscalation();
 
         $this->fixtures->on('live')->create('merchant_detail:filled_entity', [
@@ -752,7 +864,8 @@ class CoreTest extends TestCase
             'business_website'  => 'http://hello.com'
         ]);
 
-        $this->createTransaction($merchant->getId(), 'payment', 55600);
+        $this->createTransaction($merchant->getId(), 'payment', 278000, self::DATALAKE);
+        $this->createTransaction($merchant->getId(), 'payment', 278000);
 
         (new Escalations\Core())->handleNoDocGmvLimitBreach();
 
@@ -766,6 +879,8 @@ class CoreTest extends TestCase
 
     public function testHardLimitNoDocEscalationWithCompleteKYC()
     {
+        $this->mockSplitzTreatmentForMode(Escalations\Core::LIVE);
+
         $merchant = $this->createPrerequisiteForNoDocEscalation();
 
         //submitting docs during this call( with createValidFields). Also marking gst status as verified to check 3-way flow
@@ -781,7 +896,8 @@ class CoreTest extends TestCase
             'merchant_id'   => $merchant['id']
         ]);
 
-        $this->createTransaction($merchant->getId(), 'payment', 556000);
+        $this->createTransaction($merchant->getId(), 'payment', 278000, self::DATALAKE);
+        $this->createTransaction($merchant->getId(), 'payment', 278000);
 
         (new Escalations\Core())->handleNoDocGmvLimitBreach();
 
@@ -795,6 +911,8 @@ class CoreTest extends TestCase
 
     public function testNoDocEscalationWithPartnerConfigGmvValue()
     {
+        $this->mockSplitzTreatmentForMode(Escalations\Core::LIVE);
+
         $merchant = $this->createPrerequisiteForNoDocEscalation();
 
         //submitting docs during this call( with createValidFields). Also marking gst status as verified to check 3-way flow
@@ -845,7 +963,8 @@ class CoreTest extends TestCase
 
             });
 
-        $this->createTransaction($merchant->getId(), 'payment', 10110000);
+        $this->createTransaction($merchant->getId(), 'payment', 5055000, self::DATALAKE);
+        $this->createTransaction($merchant->getId(), 'payment', 5055000);
 
         (new Escalations\Core())->handleNoDocGmvLimitBreach();
 
@@ -859,6 +978,8 @@ class CoreTest extends TestCase
 
     public function testNinetyPercentileGmvWarningForNoDoc()
     {
+        $this->mockSplitzTreatmentForMode(Escalations\Core::LIVE);
+
         $merchant = $this->createPrerequisiteForNoDocEscalation();
 
         $this->fixtures->on('live')->create('merchant_detail:valid_fields', [
@@ -881,7 +1002,8 @@ class CoreTest extends TestCase
 
             });
 
-        $this->createTransaction($merchant->getId(), 'payment', 45000);
+        $this->createTransaction($merchant->getId(), 'payment', 22500, self::DATALAKE);
+        $this->createTransaction($merchant->getId(), 'payment', 22500);
 
         (new Escalations\Core())->handleNoDocGmvLimitBreach();
 
@@ -894,6 +1016,8 @@ class CoreTest extends TestCase
 
     public function testNinetyPercentileGmvWarningForNoDocInUnderReview()
     {
+        $this->mockSplitzTreatmentForMode(Escalations\Core::LIVE);
+
         $merchant = $this->createPrerequisiteForNoDocEscalation();
 
         $this->fixtures->on('live')->create('merchant_detail:valid_fields', [
@@ -916,7 +1040,8 @@ class CoreTest extends TestCase
 
             });
 
-        $this->createTransaction($merchant->getId(), 'payment', 45000);
+        $this->createTransaction($merchant->getId(), 'payment', 22500, self::DATALAKE);
+        $this->createTransaction($merchant->getId(), 'payment', 22500);
 
         (new Escalations\Core())->handleNoDocGmvLimitBreach();
 
@@ -929,6 +1054,8 @@ class CoreTest extends TestCase
 
     public function testNinetyPercentileGmvWarningForNoDocInNC()
     {
+        $this->mockSplitzTreatmentForMode(Escalations\Core::LIVE);
+
         $merchant = $this->createPrerequisiteForNoDocEscalation();
 
         $this->fixtures->on('live')->create('merchant_detail:valid_fields', [
@@ -951,7 +1078,8 @@ class CoreTest extends TestCase
 
             });
 
-        $this->createTransaction($merchant->getId(), 'payment', 45000);
+        $this->createTransaction($merchant->getId(), 'payment', 22500, self::DATALAKE);
+        $this->createTransaction($merchant->getId(), 'payment', 22500);
 
         (new Escalations\Core())->handleNoDocGmvLimitBreach();
 
@@ -964,6 +1092,8 @@ class CoreTest extends TestCase
 
     public function testNinetyOnePercentileGmvWarningForNoDoc()
     {
+        $this->mockSplitzTreatmentForMode(Escalations\Core::LIVE);
+
         $merchant = $this->createPrerequisiteForNoDocEscalation();
 
         $this->fixtures->on('live')->create('merchant_detail:valid_fields', [
@@ -986,7 +1116,8 @@ class CoreTest extends TestCase
 
             });
 
-        $this->createTransaction($merchant->getId(), 'payment', 47000);
+        $this->createTransaction($merchant->getId(), 'payment', 23500, self::DATALAKE);
+        $this->createTransaction($merchant->getId(), 'payment', 23500);
 
         (new Escalations\Core())->handleNoDocGmvLimitBreach();
 
@@ -999,6 +1130,8 @@ class CoreTest extends TestCase
 
     public function testNoDocEscalationWithGmvLessThanNinetyPercentOfThreshold()
     {
+        $this->mockSplitzTreatmentForMode(Escalations\Core::LIVE);
+
         $merchant = $this->createPrerequisiteForNoDocEscalation();
 
         $this->createAndFetchMocks(true);
@@ -1009,7 +1142,8 @@ class CoreTest extends TestCase
             'business_website'  => 'http://hello.com'
         ]);
 
-        $this->createTransaction($merchant->getId(), 'payment', 40000);
+        $this->createTransaction($merchant->getId(), 'payment', 20000, self::DATALAKE);
+        $this->createTransaction($merchant->getId(), 'payment', 20000);
 
         (new Escalations\Core())->handleNoDocGmvLimitBreach();
 
@@ -1082,6 +1216,8 @@ class CoreTest extends TestCase
 
     public function testInstantActivationSoftLimit_5k_EscalationV2()
     {
+        $this->mockSplitzTreatmentForMode(Escalations\Core::LIVE);
+
         $this->createAndFetchMocks(true);
 
         $this->app->instance("rzp.mode", Mode::LIVE);
@@ -1100,9 +1236,8 @@ class CoreTest extends TestCase
 
         $merchantId = $merchantDetail->getId();
 
-        $this->createTransaction($merchantId, 'payment', 5050);
-
-        $this->mockPinot($merchantId, 5050);
+        $this->createTransaction($merchantId, 'payment', 2525, self::DATALAKE);
+        $this->createTransaction($merchantId, 'payment', 2525);
 
         $this->mockDCS();
 
@@ -1125,6 +1260,8 @@ class CoreTest extends TestCase
 
     public function testInstantActivationSoftLimitV2Escalation_10k_milestone()
     {
+        $this->mockSplitzTreatmentForMode(Escalations\Core::LIVE);
+
         $this->createAndFetchMocks(true);
 
         $this->app->instance("rzp.mode", Mode::LIVE);
@@ -1143,12 +1280,11 @@ class CoreTest extends TestCase
             ->method('canTriggerIAWebhookEscalation')
             ->willReturn(true);
 
-        $this->createTransaction($merchantId, 'payment', 10000);
+        $this->createTransaction($merchantId, 'payment', 5000, self::DATALAKE);
+        $this->createTransaction($merchantId, 'payment', 5000);
 
         $this->addEscalation('L1', 500000);
         $this->addEscalation('soft_limit_ia_v2',500000);
-
-        $this->mockPinot($merchantDetail->getMerchantId(), 10000);
 
         $this->mockDCS();
 
@@ -1167,6 +1303,8 @@ class CoreTest extends TestCase
 
     public function testInstantActivationSoftLimitV2Escalation_15kLimitBreached()
     {
+        $this->mockSplitzTreatmentForMode(Escalations\Core::LIVE);
+
         $this->createAndFetchMocks(true);
 
         $this->app->instance("rzp.mode", Mode::LIVE);
@@ -1185,15 +1323,13 @@ class CoreTest extends TestCase
             ->method('canTriggerIAWebhookEscalation')
             ->willReturn(true);
 
-        $this->createTransaction($merchantId, 'payment', 10000);
+        $this->createTransaction($merchantId, 'payment', 10000, self::DATALAKE);
         $this->createTransaction($merchantId, 'payment', 5200);
 
         $this->addEscalation('L1', 500000);
         $this->addEscalation('soft_limit_ia_v2',500000);
         $this->addEscalation('L1', 1000000);
         $this->addEscalation('soft_limit_ia_v2',1000000);
-
-        $this->mockPinot($merchantDetail->getMerchantId(), 15200);
 
         $this->mockDCS();
 
@@ -1217,14 +1353,14 @@ class CoreTest extends TestCase
     private function createAndFetchMocks($razorXEnabled)
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
 
         $this->app['razorx']->method('getTreatment')
-                            ->willReturn($razorXEnabled ? 'on' : 'off');
+            ->willReturn($razorXEnabled ? 'on' : 'off');
     }
 
     private function addEscalation($milestone, $threshold)
@@ -1287,7 +1423,7 @@ class CoreTest extends TestCase
         return [$merchantDetail];
     }
 
-    private function createTransaction(string $merchantId, string $type, int $amount)
+    private function createTransaction(string $merchantId, string $type, int $amount, string $dataDestination = self::PINOT)
     {
         $transaction = $this->fixtures->on('live')->create('transaction', [
             'type'        => $type,
@@ -1295,22 +1431,61 @@ class CoreTest extends TestCase
             'merchant_id' => $merchantId
         ]);
 
-        $this->mockPinot($merchantId, $amount);
+        if ($dataDestination === self::PINOT)
+        {
+            $this->mockPinot($merchantId, $amount);
+        }
+        if ($dataDestination === self::DATALAKE)
+        {
+            $this->mockDataLake($merchantId, $amount);
+        }
     }
 
     private function mockPinot(string $merchantId, int $amount)
     {
         $pinotService = $this->getMockBuilder(HarvesterClient::class)
-                             ->setConstructorArgs([$this->app])
-                             ->setMethods(['getDataFromPinot'])
-                             ->getMock();
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getDataFromPinot'])
+            ->getMock();
 
         $this->app->instance('eventManager', $pinotService);
 
         $dataFromPinot = ['merchant_id' => $merchantId, "amount" => $amount * 100, "transacted_merchants_count" => 1];
+        $cumulativeDataFromPinot = ['merchant_id' => $merchantId, "amount" => 4*$amount*100, "transacted_merchants_count" => 1];
 
         $pinotService->method('getDataFromPinot')
-                     ->willReturn([$dataFromPinot]);
+            ->will(
+                $this->returnCallback(function ($content) use($dataFromPinot, $cumulativeDataFromPinot)
+                {
+                    $query = $content['query'];
+
+                    // If $query string doesn't contain created_at filter, it is querying for cumulative data
+                    // Hence, return cumulativeDataFromPinot, else return dataFromPinot
+                    if (strpos($query, 'created_at') === false)
+                    {
+                        return [$cumulativeDataFromPinot];
+                    }
+                    else
+                    {
+                        return [$dataFromPinot];
+                    }
+                })
+        );
+    }
+
+    private function mockDataLake(string $merchantId, int $amount)
+    {
+        $prestoService = $this->getMockBuilder(DataLakePresto::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getDataFromDataLake'])
+            ->getMock();
+
+        $this->app->instance('datalake.presto', $prestoService);
+
+        $dataFromDataLake = ['merchant_id' => $merchantId, "amount" => $amount * 100, "transacted_merchants_count" => 1];
+
+        $prestoService->method('getDataFromDataLake')
+            ->willReturn([$dataFromDataLake]);
     }
 
     private function verifyEscalationAndAction($milestone, $threshold, $emptyAction = false, $paymentsEscalationConfig = Escalations\Constants::PAYMENTS_ESCALATION_MATRIX)
@@ -1333,8 +1508,8 @@ class CoreTest extends TestCase
         $this->assertEquals($threshold, $escalation->getAttribute('threshold'));
 
         $actions = DB::table('onboarding_escalation_actions')
-                     ->where('escalation_id', $escalation->getId())
-                     ->get()->toArray();
+            ->where('escalation_id', $escalation->getId())
+            ->get()->toArray();
 
         if ($emptyAction === true)
         {

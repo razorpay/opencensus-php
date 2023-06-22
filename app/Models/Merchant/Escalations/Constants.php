@@ -92,6 +92,13 @@ class Constants
         ],
     ];
 
+    // Retention Period on Pinot
+    // Change it to 30 days once we have enough data on datalake after airflow DAG runs for 30 days
+    const RETENTION_PERIOD = 5; // in days
+
+    const HYBRID_DATA_QUERYING = 'hybrid_data_querying';
+
+    const HYBRID_DATA_QUERYING_SPLITZ_EXPERIMENT_ID = 'hybrid_data_querying_splitz_experiment_id';
 
     // This is required to optimise DB query. We ignore all merchants with GMV below this threshold
     const LOWEST_PAYMENTS_THRESHOLD = 00; // in paisa

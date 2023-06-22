@@ -6931,6 +6931,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const SEND_FRIENDBUY_PURCHASE_EVENT_CRON_TRACE                 = 'SEND_FRIENDBUY_PURCHASE_EVENT_CRON_TRACE';
 
+    // Hybrid Data Querying
+    const HYBRID_DATA_QUERYING_RESPONSE                = 'HYBRID_DATA_QUERYING_RESPONSE';
+    const HYBRID_DATA_QUERYING_ATTEMPT_FAILED          = 'HYBRID_DATA_QUERYING_ATTEMPT_FAILED';
+
     //Merchant Onboarding Escalations
     const ESCALATION_CRON_TRACE                             = 'ESCALATION_CRON_TRACE';
     const ESCALATION_ATTEMPT                                = 'ESCALATION_ATTEMPT';

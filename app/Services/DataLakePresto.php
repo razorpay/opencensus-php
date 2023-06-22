@@ -32,8 +32,10 @@ class DataLakePresto
         );
 
         $this->prestoClient->addConnection([
-            'host' => $host,
-            'user' => $config['user']
+            'host'   => $host,
+            'user'   => $config['user'],
+            'catalog'=> 'hive',
+            'schema' => 'default',
         ]);
     }
 

@@ -72,7 +72,6 @@ class Core extends Base\Core
 
         $validationObj = $this->getvalidationObject($payload);
 
-
         $validationId = $validationObj[Entity::VALIDATION_ID];
 
         try
