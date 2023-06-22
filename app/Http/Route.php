@@ -2026,6 +2026,7 @@ class Route
         // Accounting Integrations
         'accounting_integrations_proxy_routes'      => ['any',      'accounting-integrations/{path?}',          'EdgeProxyController@proxy'                                               ],
         'accounting_integrations_callback'          => ['get',      'direct/accounting-integrations/callback',  'EdgeProxyController@proxy'                                               ],
+        'accounting_integrations_admin_routes'      => ['any',     'accounting-integrations/admin/{path?}',     'EdgeProxyController@proxy'                                               ],
 
         // Accounting Payouts (inside vendor payments)
         'accounting_payouts_integration_status'                 => ['get',     'accounting-payouts/integration/status',          'AccountingPayoutsController@integrationStatus'         ],
@@ -8142,6 +8143,8 @@ class Route
         'payouts_bulk_amount_type',
         'tax_payments_admin_auth_api',
 
+        'accounting_integrations_admin_routes',
+
         'invoice_admin_actions',
 
         // payout-links admin route
@@ -9610,6 +9613,8 @@ class Route
 
         'banking_account_statement_process_admin'     => Permission::MANAGE_BULK_FEATURE_MAPPING,
         'tax_payments_admin_auth_api'                 => Permission::TAX_PAYMENT_ADMIN_AUTH_EXECUTE,
+
+        'accounting_integrations_admin_routes'        => Permission::TAX_PAYMENT_ADMIN_AUTH_EXECUTE,
 
         'invoice_admin_actions'                       => Permission:: TAX_PAYMENT_ADMIN_AUTH_EXECUTE,
 
@@ -14016,6 +14021,7 @@ class Route
             'tax_payments_add_or_update_settings_auto',
             'tax_payments_add_or_update_settings',
             'tax_payments_admin_auth_api',
+            'accounting_integrations_admin_routes',
             'invoice_admin_actions',
             'tax_payments_bulk_pay',
             'tax_payments_cancel',
