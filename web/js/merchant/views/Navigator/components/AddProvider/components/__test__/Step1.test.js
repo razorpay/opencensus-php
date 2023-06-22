@@ -6,38 +6,64 @@ import { Step1 } from 'merchant/views/Navigator/components/AddProvider/component
 import { deepClone } from 'common/utils/rzp-utils';
 
 describe('Step 1 Screen', () => {
-  const mockProps = {
-    isEdit: false,
-    steps: {
-      1: {
-        edit: true,
-        show: true,
-      },
-    },
-    providers: {
-      payu: {
-        'Gateway Name': { data_value: 'PayU' },
-        'Payment Methods': {
-          data_value: ['card', 'upi', 'netbanking', 'emi', 'wallet', 'emandate', 'sodexo'],
-        },
-      },
-      paytm: {
-        'Gateway Name': { data_value: 'PayTm' },
-        'Payment Methods': {
-          data_value: ['card', 'upi', 'netbanking', 'emi', 'wallet', 'emandate'],
-        },
-        optimizer_seamless_disabled: false,
-      },
-    },
-    loadingProviders: false,
-    selectedProvider: null,
-  };
+  let mockProps;
 
-  describe('Add Provider', () => {
-    it('should render Step1 without any errors', () => {
-      expect(() => <Step1 {...mockProps} />).not.toThrowError();
+  beforeEach(() => {
+    mockProps = {
+      isEdit: false,
+      steps: {
+        1: {
+          edit: true,
+          show: true,
+        },
+      },
+      providers: {
+        payu: {
+          'Gateway Name': { data_value: 'PayU' },
+          'Payment Methods': {
+            data_value: ['card', 'upi', 'netbanking', 'emi', 'wallet', 'emandate', 'sodexo'],
+          },
+        },
+        paytm: {
+          'Gateway Name': { data_value: 'PayTm' },
+          'Payment Methods': {
+            data_value: ['card', 'upi', 'netbanking', 'wallet'],
+          },
+          optimizer_seamless_disabled: false,
+        },
+        checkout_dot_com_optimizer: {
+          'Gateway Name': { data_value: 'Checkout.com' },
+          'Payment Methods': {
+            data_value: ['card'],
+          },
+        },
+      },
+      loadingProviders: false,
+      selectedProvider: null,
+    };
+  });
+
+  it('should render Step1 without any errors', () => {
+    expect(() => <Step1 {...mockProps} />).not.toThrowError();
+  });
+
+  describe('List Providers', () => {
+    it('should render provider list spinner', () => {
+      const { queryByTestId } = render(<Step1 {...mockProps} loadingProviders={true} />);
+      expect(queryByTestId('spinner')).toBeInTheDocument();
     });
 
+    it('should render the list of Popular & All Gateways', () => {
+      render(<Step1 {...mockProps} />);
+      expect(screen.getByText('Popular Gateways')).toBeInTheDocument();
+      expect(screen.getByText('All Gateways')).toBeInTheDocument();
+      expect(screen.getAllByTestId('gateway-provider')).toHaveLength(4);
+      expect(screen.getByText('PayTm')).toBeInTheDocument();
+      expect(screen.queryAllByText(/PayU/)).toHaveLength(2);
+    });
+  });
+
+  describe('Search Provider', () => {
     it('should render Gateway label', () => {
       const { getByText } = render(<Step1 {...mockProps} />);
       expect(getByText('Gateway')).toBeInTheDocument();
@@ -61,20 +87,6 @@ describe('Step 1 Screen', () => {
       await waitFor(() => {
         expect(searchInput).toHaveValue('Pro');
       });
-    });
-
-    it('should render provider list spinner', () => {
-      const { queryByTestId } = render(<Step1 {...mockProps} loadingProviders={true} />);
-      expect(queryByTestId('spinner')).toBeInTheDocument();
-    });
-
-    it('should render the list of Popular & All Gateways', () => {
-      render(<Step1 {...mockProps} />);
-      expect(screen.getByText('Popular Gateways')).toBeInTheDocument();
-      expect(screen.getByText('All Gateways')).toBeInTheDocument();
-      expect(screen.getAllByTestId('gateway-provider')).toHaveLength(3);
-      expect(screen.getByText('PayTm')).toBeInTheDocument();
-      expect(screen.queryAllByText(/PayU/)).toHaveLength(2);
     });
 
     it('should render filter list of gateways by serch term', async () => {
@@ -108,7 +120,9 @@ describe('Step 1 Screen', () => {
         expect(screen.getByText('No Providers Found')).toBeInTheDocument();
       });
     });
+  });
 
+  describe('Selected Provider', () => {
     it('should render selected gateway', () => {
       const { getByText, getAllByTestId } = render(
         <Step1 {...mockProps} selectedProvider="payu" />,
@@ -132,8 +146,24 @@ describe('Step 1 Screen', () => {
 
       expect(getAllByTestId('provider-readOnly')).toHaveLength(1);
       expect(getByText('PayU')).toBeInTheDocument();
-
       expect(queryByText('Change Gateway')).not.toBeInTheDocument();
+    });
+
+    it('should render Checkout.com in list of All Gateways', () => {
+      render(<Step1 {...mockProps} />);
+      expect(screen.getByText('All Gateways')).toBeInTheDocument();
+      expect(screen.getByText('Checkout.com')).toBeInTheDocument();
+    });
+
+    it('should render selected gateway', () => {
+      const { getByText, getAllByTestId, queryByText } = render(
+        <Step1 {...mockProps} selectedProvider="checkout_dot_com_optimizer" />,
+      );
+
+      expect(getAllByTestId('selected-gateway')).toHaveLength(1);
+      expect(getByText('Checkout.com')).toBeInTheDocument();
+      expect(getByText('Change Gateway')).toBeInTheDocument();
+      expect(queryByText(/Enable seamless option/)).not.toBeInTheDocument();
     });
   });
 });

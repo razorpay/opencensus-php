@@ -255,9 +255,16 @@ export default class AddProvider extends React.Component {
   };
 
   changeGateway = () => {
-    this.setState({
-      selectedProvider: null,
-      provider: deepClone(INIT_PROVIDER_STATE),
+    this.setState((prevState) => {
+      const steps = Object.keys(prevState.steps).reduce((acc, key) => {
+        acc[key] =
+          key === '1'
+            ? { edit: true, show: true }
+            : { ...prevState.steps[key], edit: false, show: false };
+        return acc;
+      }, {});
+
+      return { selectedProvider: null, provider: deepClone(INIT_PROVIDER_STATE), steps };
     });
   };
 

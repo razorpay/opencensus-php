@@ -34,7 +34,8 @@ export const Step1 = (props) => {
 
   const providersObjectKeys = Object.keys(providers) ?? [];
   const selectedProviderDetails = providers?.[selectedProvider] ?? {};
-  const showSeamlessNote = selectedProvider && steps[1].edit;
+  const showSeamlessNote =
+    selectedProvider && selectedProvider !== 'checkout_dot_com_optimizer' && steps[1].edit;
   const seamlessOptionExist =
     SEAMLESS_PROVIDERS?.includes(selectedProvider) &&
     providers?.[selectedProvider]?.hasOwnProperty('optimizer_seamless_disabled');

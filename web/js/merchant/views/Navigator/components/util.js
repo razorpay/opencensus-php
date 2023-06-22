@@ -1231,29 +1231,31 @@ export const rule = {
 
 const LOGO_PATH = 'static/assets/merchant-dash/providers';
 
-const AXIS_LOGO_PATH = `${window.cdnBaseUrl}/${LOGO_PATH}/axis.png`;
+const getLogoPath = (logoName, extension = 'png') =>
+  `${window.cdnBaseUrl}/${LOGO_PATH}/${logoName}.${extension}`;
 
 export const gatewayLogos = {
-  razorpay: `${window.cdnBaseUrl}/${LOGO_PATH}/razorpay.png`,
-  smart_router: `${window.cdnBaseUrl}/${LOGO_PATH}/razorpay.png`,
-  payu: `${window.cdnBaseUrl}/${LOGO_PATH}/payu.png`,
-  paytm: `${window.cdnBaseUrl}/${LOGO_PATH}/paytm.png`,
-  billdesk_optimizer: `${window.cdnBaseUrl}/${LOGO_PATH}/bill-desk.png`,
-  atom: `${window.cdnBaseUrl}/${LOGO_PATH}/atom.png`,
-  fss: `${window.cdnBaseUrl}/${LOGO_PATH}/fss.png`,
-  cybersource: `${window.cdnBaseUrl}/${LOGO_PATH}/cybersource.png`,
-  cybersource_hdfc: `${window.cdnBaseUrl}/${LOGO_PATH}/cybersource.png`,
-  cybersource_axis: `${window.cdnBaseUrl}/${LOGO_PATH}/cybersource.png`,
-  cashfree: `${window.cdnBaseUrl}/${LOGO_PATH}/cashfree.svg`,
-  ccavenue: `${window.cdnBaseUrl}/${LOGO_PATH}/ccavenue.svg`,
-  upi_mindgate: `${window.cdnBaseUrl}/${LOGO_PATH}/hdfc.png`,
-  pinelabs: `${window.cdnBaseUrl}/${LOGO_PATH}/pinelabs.png`,
-  ingenico: `${window.cdnBaseUrl}/${LOGO_PATH}/ingenico.png`,
-  axis_migs: AXIS_LOGO_PATH,
-  upi_axis: AXIS_LOGO_PATH,
-  hdfc: `${window.cdnBaseUrl}/${LOGO_PATH}/hdfc.png`,
-  upi_icici: `${window.cdnBaseUrl}/${LOGO_PATH}/icici.png`,
-  netbanking_axis: AXIS_LOGO_PATH,
+  razorpay: getLogoPath('razorpay'),
+  smart_router: getLogoPath('razorpay'),
+  payu: getLogoPath('payu'),
+  paytm: getLogoPath('paytm'),
+  billdesk_optimizer: getLogoPath('bill-desk'),
+  atom: getLogoPath('atom'),
+  fss: getLogoPath('fss'),
+  cybersource: getLogoPath('cybersource'),
+  cybersource_hdfc: getLogoPath('cybersource'),
+  cybersource_axis: getLogoPath('cybersource'),
+  cashfree: getLogoPath('cashfree', 'svg'),
+  ccavenue: getLogoPath('ccavenue', 'svg'),
+  upi_mindgate: getLogoPath('hdfc'),
+  pinelabs: getLogoPath('pinelabs'),
+  ingenico: getLogoPath('ingenico'),
+  axis_migs: getLogoPath('axis'),
+  upi_axis: getLogoPath('axis'),
+  hdfc: getLogoPath('hdfc'),
+  upi_icici: getLogoPath('icici'),
+  netbanking_axis: getLogoPath('axis'),
+  checkout_dot_com_optimizer: require('assets/optimizer/checkout-dot-com.png'),
 };
 
 export const popularGateways = ['payu'];

@@ -124,6 +124,43 @@ export const SUPPORTED_GATEWAYS = {
       terminals_key: '',
     },
   },
+  checkout_dot_com_optimizer: {
+    'Gateway Name': {
+      data_type: 'string',
+      data_value: 'Checkout.com',
+      terminals_key: '',
+    },
+    'Client ID': {
+      data_type: 'string',
+      data_value: '',
+      min_length: 1,
+      terminals_key: '',
+    },
+    'Client Secret': {
+      data_type: 'string',
+      data_value: '',
+      min_length: 1,
+      terminals_key: '',
+    },
+    'Payment Methods': {
+      data_type: 'array',
+      data_value: ['card'],
+      terminals_key: '',
+    },
+    Scope: { data_type: 'string', data_value: '', min_length: 1, terminals_key: '' },
+    'Grant Type': {
+      data_type: 'string',
+      data_value: '',
+      min_length: 1,
+      terminals_key: '',
+    },
+    'Processing Channel ID': {
+      data_type: 'string',
+      data_value: '',
+      min_length: 1,
+      terminals_key: '',
+    },
+  },
 };
 
 export const TPV_OPTIONS = ['Non TPV', 'TPV Only', 'Both (TPV and Non TPV)'];

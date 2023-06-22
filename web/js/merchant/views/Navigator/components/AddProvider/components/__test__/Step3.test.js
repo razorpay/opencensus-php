@@ -1,7 +1,13 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import { render, screen } from 'test-utils';
-import { App, PAYU_PROVIDER, PAYTM_PROVIDER, NETBANKING_AXIS_PROVIDER } from './mocks/Step3';
+import {
+  App,
+  PAYU_PROVIDER,
+  PAYTM_PROVIDER,
+  NETBANKING_AXIS_PROVIDER,
+  CKO_PROVIDER,
+} from './mocks/Step3';
 import { deepClone } from 'common/utils/rzp-utils';
 import { TPV_OPTIONS } from './mocks/constants';
 
@@ -82,6 +88,26 @@ describe('Add Provider Step 3 Screen', () => {
     test.each(TPV_OPTIONS)('should render tpv option: %s', (option) => {
       renderApp(NETBANKING_AXIS_PROVIDER);
       expect(screen.getByText(option)).toBeInTheDocument();
+    });
+  });
+
+  describe('For checkout.com gateway', () => {
+    const FIELDS = [
+      'Client ID',
+      'Client Secret',
+      'Payment Methods',
+      'Scope',
+      'Grant Type',
+      'Processing Channel ID',
+    ];
+
+    test('should render without any errors', () => {
+      expect(() => renderApp(CKO_PROVIDER)).not.toThrowError();
+    });
+
+    test.each(FIELDS)('should rendered the requried fields: %s', (field) => {
+      renderApp(CKO_PROVIDER);
+      expect(screen.getByText(field)).toBeInTheDocument();
     });
   });
 });

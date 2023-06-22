@@ -65,6 +65,24 @@ export const NETBANKING_AXIS_PROVIDER = {
   changeGatewayWallets: jest.fn(),
 };
 
+// CKO refers to Checkout.com provider
+export const CKO_PROVIDER = {
+  isEdit: true,
+  selectedProvider: 'checkout_dot_com_optimizer',
+  providers: SUPPORTED_GATEWAYS,
+  provider: {
+    Provider_name: 'checkout.com test 1',
+    Description: 'test',
+    Gateway: 'checkout_dot_com_optimizer',
+    Gateway_details: {
+      'Payment Methods': [],
+    },
+  },
+  validationErrors: {},
+  changeGatewayDetails: jest.fn(),
+  changeGatewayWallets: jest.fn(),
+};
+
 export const App = (props) => {
   return <Step3 {...props} />;
 };
