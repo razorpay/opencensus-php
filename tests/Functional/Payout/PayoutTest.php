@@ -8709,6 +8709,19 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testCreatePayoutFundsOnHoldForCurrentAccountFromFTS()
+    {
+        $this->ba->appAuthTest($this->config['applications.fts.secret']);
+
+        $this->liveSetUpForRbl();
+
+        $this->fixtures->edit('merchant', '10000000000000', ['activated' => 0]);
+
+        $this->fixtures->on('live')->merchant->holdFunds();
+
+        $this->startTest();
+    }
+
     public function testCreatePayoutWithVaultTokenForNonRefundsApp()
     {
         $this->ba->appAuthTest($this->config['applications.settlements_service.secret']);

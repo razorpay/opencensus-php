@@ -1877,6 +1877,11 @@ class BasicAuth
         return $this->internalApp === 'xpayroll';
     }
 
+    public function isFTSApp()
+    {
+        return $this->internalApp === 'fts';
+    }
+
     public function isScroogeApp()
     {
         return $this->internalApp === 'scrooge';

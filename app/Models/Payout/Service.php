@@ -802,7 +802,8 @@ class Service extends Base\Service
                $this->auth->isSettlementsApp() or
                $this->auth->isXPayrollApp() or
                $this->auth->isScroogeApp() or
-               $this->auth->isCapitalCollectionsApp();
+               $this->auth->isCapitalCollectionsApp() or
+               $this->auth->isFTSApp();
     }
 
     public function isSettlementsApp(): bool

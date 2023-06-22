@@ -15261,6 +15261,7 @@ class Route
             'update_fts_fund_transfer',
             'fts_channel_notification',
             'fetch_nodal_beneficiary_code',
+            'payout_create_internal',
         ],
 
         'reminders' => [
