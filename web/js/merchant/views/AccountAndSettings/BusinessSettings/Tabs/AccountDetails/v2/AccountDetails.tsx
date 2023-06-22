@@ -11,7 +11,7 @@ import DetailsViewCard from 'merchant/views/AccountAndSettings/BusinessSettings/
 import { StyledTabContentContainer } from 'merchant/views/AccountAndSettings/styled';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { updateUser } from 'merchant_common/reducers/user';
+import { updateUser, updateUserName } from 'merchant_common/reducers/user';
 import React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -103,6 +103,7 @@ const mapDispatchToProps = (dispatch) =>
       showNotification,
       updateSession,
       updateUser,
+      updateUserName,
     },
     dispatch,
   );

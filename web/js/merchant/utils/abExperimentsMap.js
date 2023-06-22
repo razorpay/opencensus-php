@@ -524,6 +524,12 @@ export default {
     // prod experiment ids
     'LqopA89qO1J3sF',
   ],
+  user_name_update: [
+    // beta experiment ids
+    'M2UYltF2bOH663',
+    // prod experiment ids
+    'M2UVcW1ULZijIu',
+  ],
   show_payroll_widget_exp: [
     //beta experiment ids
     'KmA4axC7yCGMZe',

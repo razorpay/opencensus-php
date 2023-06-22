@@ -1,7 +1,5 @@
-import { Modules } from 'common/constant/enums';
 import UpdateContactMobile from 'common/ui/UpdateContactMobile';
-import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
-import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { minLength } from 'common/utils/validators';
 import User from 'merchant/models/User';
 import { ATTR_DETAILS } from 'merchant/views/Account/constants';
 import MerchantConfigForm from 'merchant/views/Account/Profile/components/MerchantConfigForm';
@@ -13,23 +11,16 @@ import {
 } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
 import EmailSelfServeModal from 'merchant/views/Settings/EmailSelfServe/EmailInput';
 import AddEmailModal from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/AddEmail';
+import { handleUpdateAnalytics } from './utils';
 
 export const updateDisplayNameHandler = (componentScope) => (attributes) => {
   return componentScope
     .updateMerchantConfig(attributes)
     .then((resp) => {
       if (resp.success) {
-        selfServeTrackSuccess({
-          selfServeAction: 'Display Name Updated',
-          page: 'Personal Profile',
-          screen: Modules.AccountAndSettings,
-        });
-        analyticsTrackWithUserInfo({
-          objectName: 'display name update',
-          actionName: 'status',
-          screen: Modules.AccountAndSettings,
+        handleUpdateAnalytics({
+          id: 'display_name',
           properties: {
-            status: 'success',
             newDisplayName: attributes.display_name,
           },
         });
@@ -59,8 +50,36 @@ export const updateContactMobileHandler = (componentScope) => (userData) => {
   componentScope.closeModal();
 };
 
+export const updateUserNameHandler = (componentScope) => (payload) => {
+  return componentScope
+    .updateUserName(payload)
+    .then((response) => {
+      const { success, data } = response;
+      if (success && data?.name) {
+        handleUpdateAnalytics({
+          id: 'name',
+          properties: {
+            newDisplayName: payload.name,
+          },
+        });
+        componentScope.showNotification({
+          type: 'success',
+          message: 'User name changed successfully.',
+        });
+        componentScope.closeModal();
+      }
+      return response;
+    })
+    .catch((err) => {
+      componentScope.showNotification({
+        type: 'error',
+        message: err.errors,
+      });
+    });
+};
+
 export const FORM_MAP: Record<
-  Exclude<PersonalProfileFields, PersonalProfileFields.NAME>,
+  PersonalProfileFields,
   (arg0: FormPayloadConfigInterface) => FormConfigInterface
 > = {
   [PersonalProfileFields.DISPLAY_NAME]: ({ props, id }) => {
@@ -96,6 +115,26 @@ export const FORM_MAP: Record<
   [PersonalProfileFields.PASSWORD]: () => {
     return {
       Component: PasswordForm,
+    };
+  },
+  [PersonalProfileFields.NAME]: ({ id, props }) => {
+    const {
+      user: {
+        user: { [id]: value },
+      },
+    } = props;
+    const attr = {
+      attribute: id,
+      config_type: 'name',
+      label: ATTR_DETAILS[id].label,
+      desc: ATTR_DETAILS[id].desc,
+      value,
+      validateConfig: [minLength(4)],
+      updateMerchantConfig: updateUserNameHandler(props),
+    };
+    return {
+      attributes: attr,
+      Component: MerchantConfigForm,
     };
   },
 };

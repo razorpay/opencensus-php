@@ -252,6 +252,9 @@ return [
         // Contact Details Revamp
         'CONTACT_DETAILS_REVAMP' => env('CONTACT_DETAILS_REVAMP', ''),
 
+        // Update User Name
+        'USER_NAME_UPDATE' => env('USER_NAME_UPDATE', ''),
+
         // Settlement Revamp
         'SETTLEMENT_V3_REVAMP' => env('SETTLEMENT_V3_REVAMP', ''),
 

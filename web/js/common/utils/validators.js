@@ -222,6 +222,13 @@ export const maxLength = (length, message = '') => {
   };
 };
 
+export const minLength = (minLength) => (value) => {
+  if (typeof value !== 'string' || value.length < minLength) {
+    return `Must be ${minLength} characters or more`;
+  }
+  return undefined;
+};
+
 const makeValidator =
   (truthyFn, defaultMessage) =>
   (message = defaultMessage) =>

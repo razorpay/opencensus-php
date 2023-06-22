@@ -123,7 +123,7 @@ export const UserNameConfig = {
     },
   }: User): string => name,
   isVisible: (): boolean => true,
-  shouldEdit: (): boolean => false,
+  shouldEdit: ({ user: { isUserNameUpdateEnabled } }: User): boolean => isUserNameUpdateEnabled,
   selfServeActionName: 'User Name Updated',
   analyticsEventInfo: {
     objectName: 'change username',

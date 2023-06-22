@@ -1,15 +1,15 @@
-import React, { PureComponent } from 'react';
-import { connect } from 'react-redux';
-import AsyncButton from 'react-async-button';
-import ModalHeader from 'common/ui/ModalHeader';
-import { reduxForm, Field } from 'redux-form';
-import { required } from 'common/utils/validators';
+import { Modules } from 'common/constant/enums';
 import InputField from 'common/ui/Forms/InputField';
-import { compose } from 'redux';
+import ModalHeader from 'common/ui/ModalHeader';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
+import { required } from 'common/utils/validators';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
-import { Modules } from 'common/constant/enums';
+import React, { PureComponent } from 'react';
+import AsyncButton from 'react-async-button';
+import { connect } from 'react-redux';
+import { compose } from 'redux';
+import { Field, reduxForm } from 'redux-form';
 
 class MerchantConfigForm extends PureComponent {
   constructor(props) {
@@ -24,8 +24,9 @@ class MerchantConfigForm extends PureComponent {
   }
 
   onAnalyticsTrack = (action) => {
+    const { config_type } = this.props;
     analyticsTrackWithUserInfo({
-      objectName: 'display name edit popup',
+      objectName: `${config_type ? config_type : 'display name'} edit popup`,
       actionName: 'clicked',
       screen: this.props.isNewAccountAndSettingsPage
         ? Modules.AccountAndSettings
@@ -47,7 +48,7 @@ class MerchantConfigForm extends PureComponent {
   }
 
   render() {
-    const { handleSubmit } = this.props;
+    const { handleSubmit, validateConfig = [] } = this.props;
     return (
       <form
         onSubmit={(...a) => {
@@ -76,7 +77,7 @@ class MerchantConfigForm extends PureComponent {
               placeholder={this.props.label}
               name={this.props.attribute}
               class="form-control"
-              validate={required()}
+              validate={[required(), ...validateConfig]}
               autoFocus={true}
             />
             <small class="help-block">{this.props.desc}</small>

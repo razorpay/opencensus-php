@@ -17,3 +17,12 @@ export const updateUser = (data) => ({
   type: UPDATE_USER,
   data,
 });
+
+export const updateUserName = (data) => ({
+  type: UPDATE_USER_ASYNC,
+  payload: merchantFetch({
+    url: 'users/update_name',
+    method: 'post',
+    data,
+  }),
+});
