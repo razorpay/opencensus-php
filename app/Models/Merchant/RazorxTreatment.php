@@ -810,4 +810,7 @@ final class RazorxTreatment
      */
     const SKIP_UPI_ICICI_CALLBACK_FOR_BT = 'skip_upi_icici_callback_for_bt';
     const RECURRING_SIHUB_CANCEL_WEBHOOK_ENABLED = 'recurring_sihub_webhook_enabled';
+
+    // Experiment to pass mandate date creation in icici paper nach registration files
+    const ICICI_PNACH_MANDATE_CREATION_DATE_RAZORX = 'icici_pnach_mandate_creation_date_razorx';
 }

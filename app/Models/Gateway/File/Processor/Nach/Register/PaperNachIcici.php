@@ -33,6 +33,7 @@ use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 use RZP\Gateway\Enach\Npci\Physical\Icici\Registration\Constants;
 use RZP\Gateway\Enach\Npci\Physical\Icici\Registration\RequestFields;
+use RZP\Models\Merchant\RazorxTreatment;
 
 class PaperNachIcici extends Base
 {
@@ -145,10 +146,13 @@ class PaperNachIcici extends Base
         {
             $count = 0;
 
+            $key = Carbon::now()->getTimestamp();
+            $mandateCreateDateEnabled = $this->isMandateCreateDateRazorxEnabled($key);
+
             foreach ($data as $token)
             {
                 // files are grouped based on 50 registrations i.e 150 files
-                $dirName = $this->prepareFilesForToken($token, $count);
+                $dirName = $this->prepareFilesForToken($token, $count, $mandateCreateDateEnabled);
 
                 $count++;
             }
@@ -284,7 +288,7 @@ class PaperNachIcici extends Base
         return number_format($amount / 100, 2, '.', '');
     }
 
-    protected function prepareFilesForToken($token, $count): string
+    protected function prepareFilesForToken($token, $count, $mandateCreateDateEnabled): string
     {
         $fileNo = $count + 1;
 
@@ -304,9 +308,9 @@ class PaperNachIcici extends Base
 
         $jpgFileName = $baseFileName . '_detailfront.jpg';
 
-        $this->generateImages($token, $dirName, $tiffFileName, $jpgFileName);
+        $formGenerationDate = $this->generateImages($token, $dirName, $tiffFileName, $jpgFileName);
 
-        $this->generateXml($token, $dirName, $baseFileName);
+        $this->generateXml($token, $dirName, $baseFileName, $formGenerationDate, $mandateCreateDateEnabled);
 
         // zip file can contain max 150 files (50 registrations - 1 xml, 2 images)
         if (($count % $this->zipFileSize) === ($this->zipFileSize - 1))
@@ -320,6 +324,9 @@ class PaperNachIcici extends Base
         return $dirName;
     }
 
+    /*
+     * Generates the image and returns the date when paper mandate form was generated
+     */
     protected function generateImages($token, $dirName, $tiffName, $jpgName)
     {
         $paymentId = $token['payment_id'];
@@ -332,7 +339,7 @@ class PaperNachIcici extends Base
         }
         catch (\Throwable $exception){}
 
-        $url = (new SubscriptionRegistration\Core())->getUploadedFileUrlByPaymentForNachMethod($payment);
+        [$url, $formGenerationDate] = (new SubscriptionRegistration\Core())->getUploadedFileUrlByPaymentForNachMethod($payment);
 
         $filePath  = $dirName . DIRECTORY_SEPARATOR;
 
@@ -378,9 +385,11 @@ class PaperNachIcici extends Base
 
         Storage::put($filePath . $jpgName ,  $jpgFileContents);
         Storage::put($filePath . $tiffName, $tiffFileContents);
+
+        return $formGenerationDate;
     }
 
-    protected function generateXml($token, $dirName, $fileName)
+    protected function generateXml($token, $dirName, $fileName, $formGenerationEpoch, $mandateCreateDateEnabled)
     {
         $merchant = $token->merchant;
 
@@ -447,6 +456,11 @@ class PaperNachIcici extends Base
         $occurences->addChild(RequestFields::FREQUENCY, Constants::ADHOC);
 
         $occurences->addChild(RequestFields::FIRST_COLLECTION_DATE, $firstCollectionDate);
+
+        if($mandateCreateDateEnabled === true){
+            $formGenerationDate = Carbon::createFromTimestamp($formGenerationEpoch, Timezone::IST)->format('Y-m-d');
+            ($occurences->addChild(RequestFields::DRTN))->addChild(RequestFields::FORM_DATE, $formGenerationDate);
+        }
 
         $endDate = $token->getExpiredAt();
         if (empty($endDate) === false)
@@ -570,5 +584,13 @@ class PaperNachIcici extends Base
         ];
 
         return $accountTypeMap[$accountType] ?? 'savings';
+    }
+
+    private function isMandateCreateDateRazorxEnabled($key): bool
+    {
+        $status = $this->app['razorx']->getTreatment($key,
+            RazorxTreatment::ICICI_PNACH_MANDATE_CREATION_DATE_RAZORX, $this->mode);
+
+        return (strtolower($status) === 'on');
     }
 }

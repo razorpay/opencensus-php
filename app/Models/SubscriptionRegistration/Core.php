@@ -779,11 +779,11 @@ class Core extends Base\Core
         return null;
     }
 
-    public function getUploadedFileUrlByPaymentForNachMethod(Payment\Entity $payment)
+    public function getUploadedFileUrlByPaymentForNachMethod(Payment\Entity $payment): array
     {
         if ($payment->isNach() === false)
         {
-            return null;
+            return [null, null];
         }
 
         $this->app['basicauth']->setMerchant($payment->merchant);
@@ -794,7 +794,7 @@ class Core extends Base\Core
 
         if ($token === null)
         {
-            return null;
+            return [null, null];
         }
 
         $subscriptionRegistration = $this->repo
@@ -803,12 +803,12 @@ class Core extends Base\Core
 
         if ($subscriptionRegistration === null)
         {
-            return null;
+            return [null, null];
         }
 
         $paperMandate = $subscriptionRegistration->paperMandate;
 
-        return $paperMandate->getUploadedFormUrl();
+        return [$paperMandate->getUploadedFormUrl(), $paperMandate->getCreatedAt()] ;
     }
 
     private function isValidForAutoCharge(Entity $tokenRegistration)

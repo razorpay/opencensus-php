@@ -314,6 +314,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FREQUENCY);
     }
 
+    public function getCreatedAt()
+    {
+        return $this->getAttribute(self::CREATED_AT);
+    }
+
     public function isFormUploadedSuccessfully(): bool
     {
         return $this->getStatus() === Status::AUTHENTICATED;
