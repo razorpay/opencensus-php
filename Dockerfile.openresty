@@ -1,5 +1,5 @@
-ARG ONGGI_IMAGE=razorpay/onggi:php-7.2-api
-ARG OPENRESTY_IMAGE=openresty/openresty:1.17.8.2-0-alpine-fat-nosse42
+ARG ONGGI_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:php-8.1-api
+ARG OPENRESTY_IMAGE=c.rzp.io/proxy_dockerhub/openresty/openresty:1.21.4.1-6-alpine-fat
 
 FROM $ONGGI_IMAGE as php-builder
 
@@ -27,6 +27,8 @@ RUN --mount=type=secret,id=git_token set -eu && \
 # Usage specific image which has luarocks compiled.
 FROM $OPENRESTY_IMAGE
 
+RUN apk add openssh-client bash gcc
+
 RUN apk update && \
     apk upgrade && \
     apk add git
@@ -43,33 +45,30 @@ RUN /usr/local/openresty/luajit/bin/luarocks install lua-resty-jwt \
     && gcc -fPIC -shared -I/usr/local/openresty/luajit -o /usr/local/openresty/luajit/lib/lua/5.1/librestyredisslot.so src/redis_slot.c \
     && rm -Rf /src
 
-RUN echo "* Installing deps" && \
-    apk add --no-cache \
-    bash \
-    build-base \
-    ca-certificates \
-    coreutils \
-    curl \
-    dumb-init \
-    git \
-    libxml2-dev \
-    libxslt-dev \
-    libffi-dev \
-    linux-headers \
-    openssl \
-    openssl-dev \
-    py-pip \
-    python \
-    python-dev && \
-    echo "* Installing Alohomora==0.4.7" && \
-    pip install --upgrade pip && \
-    pip install --no-cache-dir "razorpay.alohomora==0.4.7" && \
-    rm -rf ~/.cache/pip/* &&\
-    echo "* Installing gosu" && \
-    curl --location --output /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$ARCH" && \
-    chmod +x /usr/local/bin/gosu && \
-    addgroup -S nginx && \
-    adduser -S nginx -G nginx
+RUN apk add --no-cache
+RUN apk add bash
+RUN apk add --no-cache --upgrade --virtual .build-deps build-base
+RUN apk add ca-certificates
+RUN apk add coreutils
+RUN apk add curl
+RUN apk add dumb-init
+RUN apk add git
+RUN apk add libxml2-dev
+RUN apk add libxslt-dev
+RUN apk add libffi-dev
+RUN apk add linux-headers
+RUN apk add openssl
+RUN apk add openssl-dev
+RUN apk add qemu qemu-img qemu-system-x86_64 qemu-ui-gtk
+RUN apk add py-pip
+RUN apk add gcc musl-dev python3-dev libffi-dev openssl-dev
+RUN echo "* Installing Alohomora==0.5.0"
+RUN pip install "razorpay.alohomora==0.5.0"
+RUN rm -rf ~/.cache/pip/*
+RUN curl --location --output /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$ARCH"
+RUN  chmod +x /usr/local/bin/gosu
+RUN  addgroup -S nginx
+RUN  adduser -S nginx -G nginx
 
 COPY --from=php-builder --chown=nginx:nginx /app/dockerconf/openresty/openresty.conf /usr/local/openresty/nginx/conf/nginx.conf
 COPY --from=php-builder --chown=nginx:nginx /app/dockerconf/openresty/*.lua  /usr/local/openresty/nginx/lua/
