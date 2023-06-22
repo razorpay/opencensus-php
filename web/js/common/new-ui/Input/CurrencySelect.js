@@ -4,7 +4,8 @@ import { PowerSelect } from 'react-power-select';
 import { Label } from 'common/new-ui/Input';
 import { AmountTooltip } from 'common/ui/Amount';
 import ErrorBoundary, { Ranks } from 'common/new-ui/ErrorBoundary';
-import { classList, setNativeValue } from 'common/utils/rzp-utils';
+import { classList, setNativeValue, isNExponentSupported } from 'common/utils/rzp-utils';
+import { isCurrencyThreeDecimal } from 'merchant/helpers/currency/helper';
 import defaultCurrencies from 'merchant/constants/currency';
 
 const frequentlyUsedCurrencies = ['INR', 'USD', 'SGD', 'EUR'];
@@ -76,6 +77,10 @@ class CurrencySelect extends Component {
 
       if (defaultValue && ISO === defaultValue) {
         currency = currencyObj;
+      }
+
+      if (isCurrencyThreeDecimal(isoCurrencyCode) && !isNExponentSupported()) {
+        return;
       }
 
       // If international then populate dropdown options

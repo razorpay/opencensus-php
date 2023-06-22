@@ -1,4 +1,14 @@
 /**
+ * This function takes currency as argument and returns true if currency is 3 decimal
+ * @param {*} currency currency to check
+ * @returns {Boolean} true is currency is 3 decimal
+ */
+export const isCurrencyThreeDecimal = (currency) => {
+  const currencies = ['KWD', 'OMR', 'BHD'];
+  return currencies.includes(currency);
+};
+
+/**
  * Replace dot with comma.
  * Useful for making currencies which use comma
  * as the decimal point.

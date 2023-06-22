@@ -321,7 +321,7 @@ export const getSplitzExperimentVariant = (experimentName) => {
 };
 
 //This will be removed once experiment is ramped to 100%
-const isNExponentSupported = () =>
+export const isNExponentSupported = () =>
   getSplitzExperimentVariant('n_exponent_support').variables?.result === 'on';
 
 /**

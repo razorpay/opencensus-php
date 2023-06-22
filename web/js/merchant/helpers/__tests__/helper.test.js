@@ -1,4 +1,4 @@
-import { CURRENCY_FORMATTERS } from 'merchant/helpers/currency/helper';
+import { CURRENCY_FORMATTERS, isCurrencyThreeDecimal } from 'merchant/helpers/currency/helper';
 
 describe('Tests for currency formatting', () => {
   test('Test for three decimal currency formatting', () => {
@@ -41,5 +41,19 @@ describe('Tests for currency formatting', () => {
 
   test('Test for none currency formatting', () => {
     expect(CURRENCY_FORMATTERS.none(Number(1111111).toFixed(2), 2)).toBe('1111111.00');
+  });
+});
+
+describe('Tests for isCurrencyThreeDecimal', () => {
+  test('Function should return true when 3 decimal currencies are passed', () => {
+    expect(isCurrencyThreeDecimal('KWD')).toBe(true);
+    expect(isCurrencyThreeDecimal('BHD')).toBe(true);
+    expect(isCurrencyThreeDecimal('OMR')).toBe(true);
+  });
+
+  test('Function should return false when 2 decimal currencies are passed', () => {
+    expect(isCurrencyThreeDecimal('INR')).toBe(false);
+    expect(isCurrencyThreeDecimal('USD')).toBe(false);
+    expect(isCurrencyThreeDecimal('AUD')).toBe(false);
   });
 });
