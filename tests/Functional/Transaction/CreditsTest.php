@@ -268,14 +268,15 @@ class CreditsTest extends TestCase
         $this->doAuthAndCapturePayment($payment);
 
         $txn = $this->getLastEntity('transaction', true);
-        $this->assertEquals(0, $txn['fee']);
-        $this->assertEquals(0, $txn['tax']);
-        $this->assertEquals(true, $txn['gratis']);
-        $this->assertEquals('1ZeroPricingR2', $txn['pricing_rule_id']);
+        // As the fee will charged to the merchant in case of partial amount credit
+        $this->assertNotEquals(0, $txn['fee']);
+        $this->assertNotEquals(0, $txn['tax']);
+        $this->assertEquals(false, $txn['gratis']);
 
         $balance = $this->getEntityById('balance', '10000000000000', true);
-        $this->assertEquals(1500000, $balance['balance']);
-        $this->assertEquals(0, $balance['credits']);
+        // Initial balance - 1000000 and payment made 500000, Checking not equal as fee is charged from balance
+        $this->assertNotEquals(1500000, $balance['balance']);
+        $this->assertEquals(100000, $balance['credits']);
 
         // $nodalBalance = $this->getNodalAccountBalance();
         // $this->assertEquals(1500000, $nodalBalance['balance']);

@@ -37,6 +37,7 @@ use RZP\Models\Transaction;
 use RZP\Models\Settlement;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement\Holidays;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Schedule\Library as ScheduleLibrary;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Trace\TraceCode;
@@ -653,7 +654,7 @@ class Core extends Base\Core
                 return $this->calculateFeeForPrepaidDefault($transaction);
 
             // @todo: Need to rethink this.
-            case (($amountCredits > 0) and ($entity->getAmount() !== 0)):
+            case (($amountCredits > 0) and ($entity->getAmount() !== 0) and ($amountCredits >= $transaction->getAmount())):
                 return $this->calculateFeeForAmountCredit($transaction);
 
             case ($feeCredits >= $fee):
@@ -685,7 +686,7 @@ class Core extends Base\Core
 
         switch (true)
         {
-            case (($amountCredits > 0) and ($entity->getAmount() !== 0)):
+            case (($amountCredits > 0) and ($entity->getAmount() !== 0) and ($amountCredits >= $transaction->getAmount())):
                 return $this->calculateFeeForAmountCredit($transaction);
 
             case ($feeCredits >= $fee):
@@ -1379,13 +1380,42 @@ class Core extends Base\Core
         // as both txn were marked as gratis on authorization
         // assert($amountCredits > 0);
 
-        //
-        // Even if free credits is less than txn amount, we still give full
-        // amount as free credits. However, in balance we only go ahead with
-        // updating the actual free credits so that it does not go negative.
-        //
-        if ($amountCredits < $amount)
+        $merchantId = $txn->getMerchantId();
+
+        $mode = $this->app['rzp.mode'] ?? 'live';
+
+        $result = $this->app->razorx->getTreatment(
+            $merchantId, RazorxTreatment::DISABLE_AMOUNT_CREDITS_FOR_GREATER_THAN_TXN_AMOUNT, $mode);
+
+        $this->trace->info(
+            TraceCode::AMOUNT_CREDITS_RAZORX_VARIANT,
+            [
+                'result'        => $result,
+                'mode'          => $mode,
+                'merchant_id'   => $merchantId,
+            ]);
+
+        // This is for safe guarding the GMV loss
+        // Product Doc - https://docs.google.com/document/d/1ja5NzsZJWCDOjn5T_TgzcBNkL6Ubtp5YJwXuxeUSzw4/edit
+        if (($amountCredits < $amount) and (strtolower($result) === RazorxTreatment::RAZORX_VARIANT_ON)
+            and ($txn->isTypePayment() === true))
         {
+            // Error code is not added to make the flow in sync with fee credits.
+            throw new Exception\LogicException(
+                'AmountCredit should be higher or equal to the payment amount',
+                null,
+                [
+                    'transaction_id'            => $txn->getId(),
+                    'merchant_id'               => $txn->getMerchantId(),
+                    'amount_credits'            => $amountCredits,
+                    'transaction_amount'        => $amount,
+                ]);
+        }
+        else if ($amountCredits < $amount)
+        {
+            // Even if free credits is less than txn amount, we still give full
+            // amount as free credits. However, in balance we only go ahead with
+            // updating the actual free credits so that it does not go negative.
             $amount = $amountCredits;
         }
 

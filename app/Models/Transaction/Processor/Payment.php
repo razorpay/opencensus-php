@@ -310,7 +310,8 @@ class Payment extends Base
                 break;
 
             // @todo: Need to rethink this.
-            case (($this->amountCredits > 0) and ($this->source->getAmount() !== 0) and ($this->shouldDisableAmountCredits()=== false)):
+            case (($this->amountCredits > 0) and ($this->source->getAmount() !== 0) and ($this->shouldDisableAmountCredits()=== false)
+                and ($this->amountCredits >= $this->txn->getAmount())):
                 $this->calculateFeeForAmountCredit();
                 break;
 

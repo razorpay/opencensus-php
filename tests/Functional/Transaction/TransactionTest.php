@@ -557,7 +557,7 @@ class TransactionTest extends TestCase
         $this->assertEquals('postpaid', $txn2['fee_model']);
     }
 
-    public function testDirectSettlementAmountCredits()
+    public function testDirectSettlementPartialAmountCredits()
     {
         $this->fixtures->create('credits', [
             'type'        => 'amount',
@@ -577,12 +577,40 @@ class TransactionTest extends TestCase
 
         $this->assertEquals($payment['id'], $transaction['entity_id']);
         $this->assertEquals(0, $transaction['credit']);
+        // As the fee will charged to the merchant in case of partial amount credit
+        $this->assertNotEquals(0, $transaction['debit']);
+        $this->assertEquals('10000000000000', $transaction['balance_id']);
+        $this->assertEquals('prepaid', $transaction['fee_model']);
+        $this->assertEquals('default', $transaction['credit_type']);
+        $this->assertEquals($oldBalance['balance'] - $payment['fee'], $balance['balance']);
+    }
+
+    public function testDirectSettlementAmountCredits()
+    {
+        $this->fixtures->create('credits', [
+            'type'        => 'amount',
+            'value'       => 50000,
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $this->fixtures->merchant->editCredits('50000', '10000000000000');
+
+        $oldBalance = $this->getEntityById('balance', '10000000000000', true);
+
+        $payment = $this->createDirectSettlementPayment();
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $balance = $this->getEntityById('balance', '10000000000000', true);
+
+        $this->assertEquals($payment['id'], $transaction['entity_id']);
+        $this->assertEquals(0, $transaction['credit']);
         $this->assertEquals(0, $transaction['debit']);
         $this->assertEquals('10000000000000', $transaction['balance_id']);
         $this->assertEquals('prepaid', $transaction['fee_model']);
         $this->assertEquals('amount', $transaction['credit_type']);
-        $this->assertEquals($payment['fee'], $transaction['fee_credits']);
-        $this->assertEquals($oldBalance['fee_credits'] - $payment['fee'], $balance['credits']);
+
+        $this->assertEquals($oldBalance['credits'] - $transaction['amount'], $balance['credits']);
     }
 
     public function testDirectSettlementFeeCredits()
