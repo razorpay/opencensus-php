@@ -29,6 +29,7 @@ protoc -I "$parentdir"/proto --twirp_php_out=generated/proto --php_out=generated
 protoc -I "$parentdir"/proto --twirp_php_out=generated/proto --php_out=generated/proto "$parentdir"/proto/platform/bvs/probe/v1/*
 protoc -I "$parentdir"/proto --twirp_php_out=generated/proto --php_out=generated/proto "$parentdir"/proto/platform/bvs/validation/v2/*
 protoc -I "$parentdir"/proto --twirp_php_out=generated/proto --php_out=generated/proto "$parentdir"/proto/platform/obs/verification/v1/*
+protoc -I "$parentdir"/proto --twirp_php_out=generated/proto --php_out=generated/proto "$parentdir"/proto/platform/bvs/consentdocumentmanager/v2/*
 #
 # this will generate swagger json files
 protoc -I "$parentdir"/proto --openapiv2_out "$parentdir"/api/generated/proto \
