@@ -72,6 +72,8 @@ class Constants
 
     const REJECTED_REASON = 'rejection_reason';
 
+    const WORKFLOW_TAGS = 'workflow_tags';
+
     public static function getActionRejectHandlerByPermissionName(string $permissionName): ?string
     {
         if (isset(self::ACTION_REJECT_CALLBACK_HANDLERS[$permissionName]) === false)

@@ -148,6 +148,31 @@ class WorkflowActionTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateWorkflowActionWithTags()
+    {
+        $defaultWorkflowActionId = 'w_action_' . WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID;
+
+        $this->setDefaultActionIdInUrl();
+
+        $this->addPermissionToBaAdmin(AdminPermission\Name::EDIT_ACTION);
+
+        $this->testData[__FUNCTION__]['request']['content']['workflow_tags'] = ['syncinstruments'];
+
+        $this->testData[__FUNCTION__]['response']['content']['org_id'] = Org::RZP_ORG_SIGNED;
+
+        $this->testData[__FUNCTION__]['response']['content']['id'] = $defaultWorkflowActionId;
+
+        $this->startTest();
+
+        $action = $this->fixtures->edit('workflow_action', WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID);
+
+        $action->refresh();
+
+        $tags = $action->tagNames();
+
+        $this->assertEquals('syncinstruments', $tags['0']);
+    }
+
     /**
      * Test edit admin workflow action diff.
      *

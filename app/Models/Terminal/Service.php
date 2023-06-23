@@ -33,6 +33,7 @@ use RZP\Models\Batch\Processor\TerminalCreation;
 use RZP\Models\Batch\Processor\TerminalEdit;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Terminal\Constants as TerminalConstants;
+use RZP\Models\Admin\Permission\Name as Permission;
 
 
 
@@ -511,6 +512,13 @@ class Service extends Base\Service
 
         $terminal = $this->repo->terminal->getById($id);
 
+        $syncInstruments = false;
+        if( isset($input[Constants::SYNC_INSTRUMENTS]) )
+        {
+            $syncInstruments = $input[Constants::SYNC_INSTRUMENTS];
+            unset($input[Constants::SYNC_INSTRUMENTS]);
+        }
+
         $toggle = (bool) $input['toggle'];
 
         $terminalStatusTrace = ($toggle) ? TraceCode::TERMINAL_ENABLE : TraceCode::TERMINAL_DISABLE;
@@ -536,11 +544,17 @@ class Service extends Base\Service
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
         }
+
         $this->app['workflow']
              ->setEntityAndId($terminal->getEntity(), $terminal->getId())
              ->handle($original, $dirty);
 
-        $terminal = (new Terminal\Core)->toggle($terminal, $toggle);
+        if( (new Terminal\Core)->getSyncInstrumentsFlagFromWorkflow($terminal,Permission::TOGGLE_TERMINAL) )
+        {
+            $syncInstruments = true;
+        }
+
+        $terminal = (new Terminal\Core)->toggle($terminal, $toggle, [Constants::SYNC_INSTRUMENTS => $syncInstruments]);
 
         return $terminal->toArrayAdmin();
     }
@@ -1114,17 +1128,17 @@ class Service extends Base\Service
      * All logic will reside here for create and update
      * @param Entity $terminal
      */
-    public function migrateTerminalCreateOrUpdate(string $terminalId) : Entity
+    public function migrateTerminalCreateOrUpdate(string $terminalId, array $options = array()) : Entity
     {
         $client = $this->app['terminals_service'];
 
         $terminal = $this->repo->terminal->getById($terminalId, true, false);
 
-        $terminal = $this->repo->transaction(function () use ($terminal, $client) {
+        $terminal = $this->repo->transaction(function () use ($terminal, $client, $options) {
 
             $this->repo->terminal->lockForUpdateAndReload($terminal);
 
-            $migrateTerminalResponse = $client->migrateTerminal($terminal);
+            $migrateTerminalResponse = $client->migrateTerminal($terminal, $options);
 
             $fetchTerminalResponse = $client->fetchTerminalById($terminal->getId());
 

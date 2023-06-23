@@ -177,6 +177,11 @@ class Handler extends ExceptionHandler
                 $response = $this->gatewayFileExceptionHandler($e);
                 break;
 
+            case $e instanceof MethodInstrumentsTerminalsSyncException:
+                $response = ApiResponse::json($e->getData());
+                $response->setStatusCode($e->getStatusCode());
+                break;
+
             case $e instanceof BaseException:
             case $e instanceof RecoverableException:
                 $response = $this->baseExceptionHandler($e);

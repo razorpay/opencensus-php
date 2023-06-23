@@ -63,4 +63,8 @@ class Constants
 
     const CURRENCY_CODE               = "currency_code";
 
+    const SYNC_INSTRUMENTS            = "sync_instruments";
+
+    const SYNC_INSTRUMENTS_WORKFLOWS_TAG = 'syncinstruments';
+
 }

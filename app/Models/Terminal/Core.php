@@ -24,6 +24,9 @@ use RZP\Models\Mpan\Entity as MpanEntity;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Gateway\Terminal\Service as GatewayTerminalService;
+use RZP\Models\Workflow\Action;
+use RZP\Models\Gateway\Terminal\Constants as TerminalConstants;
+use RZP\Models\Admin\Permission\Name as Permission;
 
 class Core extends Base\Core
 {
@@ -394,6 +397,13 @@ class Core extends Base\Core
                     'input'       => $this->removeSecretFieldsForTrace($input),
                 ]);
 
+            $syncInstruments = false;
+            if( isset($input[TerminalConstants::SYNC_INSTRUMENTS]) )
+            {
+                $syncInstruments = $input[TerminalConstants::SYNC_INSTRUMENTS];
+                unset($input[TerminalConstants::SYNC_INSTRUMENTS]);
+            }
+
             $this->validateBuyPricing($input);
 
             $oldTerminal = $terminal->replicate();
@@ -429,6 +439,21 @@ class Core extends Base\Core
                     ->handle(["terminal_edit"=> []], ["terminal_edit" => $this->redactSecretsOnWorkflow($input)]);
             }
 
+            if(isset($input[Permission::EDIT_TERMINAL_GOD_MODE]) &&
+                ($input[Permission::EDIT_TERMINAL_GOD_MODE] === true || $input[Permission::EDIT_TERMINAL_GOD_MODE] == '1') )
+            {
+                if($this->getSyncInstrumentsFlagFromWorkflow($terminal,Permission::EDIT_TERMINAL_GOD_MODE))
+                {
+                    $syncInstruments = true;
+                }
+
+            }
+            else if ($this->getSyncInstrumentsFlagFromWorkflow($terminal,Permission::EDIT_TERMINAL))
+            {
+                $syncInstruments = true;
+            }
+
+
             $variantFlag = $this->app->razorx->getTreatment($mId, "TERMINAL_EDIT_PROXY", $mode);
 
             // if the $variantFlag is on, it will first edit on terminal service and then on api with shouldSync on creation as false,
@@ -449,7 +474,7 @@ class Core extends Base\Core
                 if(!in_array($tsTerminal->getGateway(), Gateway::TOKENISATION_GATEWAYS)){
                     $terminal->setSyncStatus(SyncStatus::SYNC_SUCCESS);
 
-                    $this->repo->saveOrFail($terminal, ['shouldSync' => $shouldSync]);
+                    $this->repo->saveOrFail($terminal, ['shouldSync' => $shouldSync, TerminalConstants::SYNC_INSTRUMENTS => $syncInstruments]);
 
                     // compare terminal data on both service
                     if (Terminal\Service::compareTerminalEntity($terminal, $tsTerminal) === false)
@@ -464,14 +489,30 @@ class Core extends Base\Core
             }
             else
             {
-                $this->repo->saveOrFail($terminal, ['shouldSync' => $shouldSync]);
+                $this->repo->saveOrFail($terminal, ['shouldSync' => $shouldSync, TerminalConstants::SYNC_INSTRUMENTS => $syncInstruments]);
             }
         }
 
         return $terminal;
     }
 
-    public function toggle($terminal, $toggle)
+    public function getSyncInstrumentsFlagFromWorkflow($terminal, $permission)
+    {
+        if ($this->app['api.route']->isWorkflowExecuteOrApproveCall() === true)
+        {
+            $tags = (new Action\Core())->getCurrentWorkflowTags($terminal->getId(), $terminal->getEntity(), $permission);
+
+            if( in_array(TerminalConstants::SYNC_INSTRUMENTS_WORKFLOWS_TAG, $tags->toArray(), true) )
+            {
+                return true;
+            }
+
+        }
+
+        return false;
+    }
+
+    public function toggle($terminal, $toggle, array $options = array())
     {
         $isEnabled = $terminal->isEnabled();
 
@@ -522,7 +563,9 @@ class Core extends Base\Core
         }
         else
         {
-            $this->repo->saveOrFail($terminal, ['shouldSync' => $shouldSync]);
+            $options['shouldSync'] = $shouldSync;
+
+            $this->repo->saveOrFail($terminal, $options);
         }
 
         return $terminal;

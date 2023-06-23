@@ -559,6 +559,12 @@ class Core extends Base\Core
         // Shift the check to Service.php if the check is
         // a blocker for other functionality
         //
+
+        if(isset($input[Constants::WORKFLOW_TAGS])) {
+            $action->tag($input[Constants::WORKFLOW_TAGS]);
+            unset($input[Constants::WORKFLOW_TAGS]);
+        }
+
         $action->getValidator()->validateActionIsOpen($action);
 
         $action->edit($input);
@@ -1042,6 +1048,29 @@ class Core extends Base\Core
             ->fetchLastUpdatedWorkflowActionInPermissionIds($entityId, $entityName, $permissionIdList);
 
         return $action;
+    }
+
+    public function getCurrentWorkflowTags($entityId, $entity, $permission, $orgId = null)
+    {
+        $action = $this->fetchLastUpdatedWorkflowActionInPermissionList(
+            $entityId,
+            $entity,
+            [$permission],
+            $orgId);
+
+        if (empty($action) === true)
+        {
+            return [];
+        }
+
+        $tags = $action->getTagsAttribute();
+
+        $tags =  $tags->map(function ($tag)
+        {
+            return $tag->slug;
+        });
+
+        return $tags;
     }
 
     public function addNeedClarificationComment(Entity $workFlowAction, array $input)

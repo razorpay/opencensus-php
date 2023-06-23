@@ -105,6 +105,23 @@ return [
             ]
         ],
     ],
+    'testUpdateWorkflowActionWithTags' => [
+        'request' => [
+            'method'  => 'PUT',
+            'url'     => '/w-actions/%s',
+            'content' => [
+                'title'       => 'Test Workflow Action Title.',
+                'description' => 'Test Workflow Action description.',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'title'         => 'Test Workflow Action Title.',
+                'description'   => 'Test Workflow Action description.',
+                'current_level' => 1,
+            ]
+        ],
+    ],
     'testWorkflowActionDiff' => [
         'request' => [
             'method'  => 'GET',

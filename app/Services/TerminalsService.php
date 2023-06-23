@@ -8,9 +8,11 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Exception\MethodInstrumentsTerminalsSyncException;
 use RZP\Http\Controllers\InstrumentRequestController;
 use RZP\Models\Admin\Org;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Gateway\Terminal\Constants;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
@@ -208,9 +210,15 @@ class TerminalsService
         $this->adminOrgId = $this->app['basicauth']->getAdminOrgId();
     }
 
-    public function migrateTerminal(Terminal\Entity $terminal): array
+    public function migrateTerminal(Terminal\Entity $terminal, array $additionalOptions = array()): array
     {
-        $content = json_encode($terminal->toArrayWithPassword(false));
+        $terminalArr = $terminal->toArrayWithPassword(false);
+
+        if(isset($additionalOptions[Constants::SYNC_INSTRUMENTS])) {
+            $terminalArr[Constants::SYNC_INSTRUMENTS] = $additionalOptions[Constants::SYNC_INSTRUMENTS];
+        }
+
+        $content = json_encode($terminalArr);
 
         $params = self::PARAMS[self::CREATE_TERMINAL];
 
@@ -233,7 +241,14 @@ class TerminalsService
 
         $response = $this->sendRequest($params[self::PATH], $content, $params[self::METHOD], $options, $headers);
 
-        return $this->parseAndReturnResponse($response)['data'] ?? [];
+        $parsedResponse = $this->parseAndReturnResponse($response)['data']??[];
+
+        if($parsedResponse['status_code'] === 202) {
+            throw new Exception\MethodInstrumentsTerminalsSyncException(ErrorCode::BAD_REQUEST_TERMINALS_SERVICE_ERROR,
+                $parsedResponse,202, "Method/Instruments need to be updated for the terminal change");
+        }
+
+        return $parsedResponse;
     }
 
     public function fetchTerminalById(string $terminalId): array

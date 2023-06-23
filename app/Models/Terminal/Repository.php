@@ -125,7 +125,7 @@ class Repository extends Base\Repository
 
                 if ($sync === true && $shouldSync === true)
                 {
-                    $entity = (new Terminal\Service)->migrateTerminalCreateOrUpdate($entity->getId());
+                    $entity = (new Terminal\Service)->migrateTerminalCreateOrUpdate($entity->getId(), $options);
 
                     $entity->setSyncStatus(SyncStatus::SYNC_SUCCESS);
 
