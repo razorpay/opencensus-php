@@ -74,8 +74,7 @@ return array(
 	|
 	*/
 
-	'connection' => 'session_redis',
-
+	'connection' => 'session_redis_v2',
     /*
     |--------------------------------------------------------------------------
     | Session Cache Store

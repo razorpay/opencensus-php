@@ -46,6 +46,8 @@ jobs:
           MUTEX_REDIS_PORT: 6379
           SESSION_REDIS_HOST: redis
           SESSION_REDIS_PORT: 6379
+          SESSION_REDIS_HOST_V2: redis
+          SESSION_REDIS_PORT_V2: 6379
           THROTTLE_REDIS_HOST: redis
           THROTTLE_REDIS_PORT: 6379
           ES_HOST: elasticsearch
@@ -130,6 +132,8 @@ jobs:
           MUTEX_REDIS_PORT: 6379
           SESSION_REDIS_HOST: redis
           SESSION_REDIS_PORT: 6379
+          SESSION_REDIS_HOST_V2: redis
+          SESSION_REDIS_PORT_V2: 6379
           THROTTLE_REDIS_HOST: redis
           THROTTLE_REDIS_PORT: 6379
           ES_HOST: elasticsearch
@@ -214,6 +218,8 @@ jobs:
           MUTEX_REDIS_PORT: 6379
           SESSION_REDIS_HOST: redis
           SESSION_REDIS_PORT: 6379
+          SESSION_REDIS_HOST_V2: redis
+          SESSION_REDIS_PORT_V2: 6379
           THROTTLE_REDIS_HOST: redis
           THROTTLE_REDIS_PORT: 6379
           ES_HOST: elasticsearch
@@ -298,6 +304,8 @@ jobs:
           MUTEX_REDIS_PORT: 6379
           SESSION_REDIS_HOST: redis
           SESSION_REDIS_PORT: 6379
+          SESSION_REDIS_HOST_V2: redis
+          SESSION_REDIS_PORT_V2: 6379
           THROTTLE_REDIS_HOST: redis
           THROTTLE_REDIS_PORT: 6379
           ES_HOST: elasticsearch
@@ -382,6 +390,8 @@ jobs:
           MUTEX_REDIS_PORT: 6379
           SESSION_REDIS_HOST: redis
           SESSION_REDIS_PORT: 6379
+          SESSION_REDIS_HOST_V2: redis
+          SESSION_REDIS_PORT_V2: 6379
           THROTTLE_REDIS_HOST: redis
           THROTTLE_REDIS_PORT: 6379
           ES_HOST: elasticsearch
@@ -466,6 +476,8 @@ jobs:
           MUTEX_REDIS_PORT: 6379
           SESSION_REDIS_HOST: redis
           SESSION_REDIS_PORT: 6379
+          SESSION_REDIS_HOST_V2: redis
+          SESSION_REDIS_PORT_V2: 6379
           THROTTLE_REDIS_HOST: redis
           THROTTLE_REDIS_PORT: 6379
           ES_HOST: elasticsearch
@@ -627,6 +639,8 @@ jobs:
           MUTEX_REDIS_PORT: 6379
           SESSION_REDIS_HOST: redis
           SESSION_REDIS_PORT: 6379
+          SESSION_REDIS_HOST_V2: redis
+          SESSION_REDIS_PORT_V2: 6379
           THROTTLE_REDIS_HOST: redis
           THROTTLE_REDIS_PORT: 6379
           ES_HOST: elasticsearch

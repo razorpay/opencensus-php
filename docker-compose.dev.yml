@@ -74,7 +74,9 @@ services:
       MUTEX_REDIS_HOST: api-redis-cluster
       MUTEX_REDIS_PORT: 7000
       SESSION_REDIS_HOST: api-redis-cluster
+      SESSION_REDIS_HOST_V2: api-redis-cluster
       SESSION_REDIS_PORT: 7000
+      SESSION_REDIS_PORT_V2: 7000
       SECURE_REDIS_HOST: api_cache
       THROTTLE_REDIS_HOST: api-redis-cluster
       THROTTLE_REDIS_PORT: 7000

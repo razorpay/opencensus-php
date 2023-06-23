@@ -60,6 +60,8 @@ jobs:
           QUERY_CACHE_REDIS_PORT: 7000
           SESSION_REDIS_HOST: redis
           SESSION_REDIS_PORT: 6379
+          SESSION_REDIS_HOST_V2: redis
+          SESSION_REDIS_PORT_V2: 6379
           MUTEX_REDIS_HOST: redis
           MUTEX_REDIS_PORT: 6379
           THROTTLE_REDIS_HOST: redis
@@ -193,6 +195,8 @@ jobs:
           QUERY_CACHE_REDIS_PORT: 7000
           SESSION_REDIS_HOST: redis
           SESSION_REDIS_PORT: 6379
+          SESSION_REDIS_HOST_V2: redis
+          SESSION_REDIS_PORT_V2: 6379
           MUTEX_REDIS_HOST: redis
           MUTEX_REDIS_PORT: 6379
           THROTTLE_REDIS_HOST: redis
@@ -326,6 +330,8 @@ jobs:
           QUERY_CACHE_REDIS_PORT: 7000
           SESSION_REDIS_HOST: redis
           SESSION_REDIS_PORT: 6379
+          SESSION_REDIS_HOST_V2: redis
+          SESSION_REDIS_PORT_V2: 6379
           MUTEX_REDIS_HOST: redis
           MUTEX_REDIS_PORT: 6379
           THROTTLE_REDIS_HOST: redis

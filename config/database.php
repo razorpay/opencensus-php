@@ -749,6 +749,16 @@ return array(
                 ]
             ],
 
+            'session_redis_v2' => [
+                [
+                    'host'     => env('SESSION_REDIS_HOST_V2'),
+                    'port'     => env('SESSION_REDIS_PORT_V2'),
+                    'timeout'  => 1,
+                    'read_write_timeout' => 1,
+                    'persistent' => true,
+                ]
+            ],
+
             'throttle' => [
                 [
                     'host'               => env('THROTTLE_REDIS_HOST'),

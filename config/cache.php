@@ -89,7 +89,7 @@ return [
 
         'session' => [
             'driver'     => 'redis',
-            'connection' => 'session_redis',
+            'connection' => 'session_redis_v2',
             'prefix'     => 'session:laravel',
         ],
     ],
