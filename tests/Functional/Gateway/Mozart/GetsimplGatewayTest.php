@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Gateway\Mozart;
 
 use RZP\Exception\BadRequestException;
+use RZP\Exception\LogicException;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\GatewayErrorException;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -112,6 +113,34 @@ class GetsimplGatewayTest extends TestCase
         $this->assertequals($getsimplEntity['data']['status'], 'payment_successful');
 
         $this->assertequals($getsimplEntity['data']['data']['transaction']['status'], 'CLAIMED');
+    }
+
+    public function testMultipleCallback()
+    {
+        $payment = $this->payment;
+
+        $payment['contact'] = '8602579721';
+
+        $request = $this->buildAuthPaymentRequest($payment);
+
+        $this->ba->publicAuth();
+
+        $this->makeRequestParent($request);
+
+        $this->processStaticCallback();
+
+        try {
+
+            $this->processStaticCallback();
+            $this->fail('Expected exception ' . BadRequestException::class . ' was not thrown');
+
+        }
+        catch (\Exception $e)
+        {
+            $this->assertExceptionClass($e, BadRequestException::class);
+            $this->assertEquals("The payment has already been processed", $e->getMessage());
+        }
+
     }
 
     public function testOldRedirectionPaymentFlow()

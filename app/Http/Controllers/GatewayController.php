@@ -50,6 +50,16 @@ class GatewayController extends Controller
 {
     use UpiTrait;
 
+    protected $mutex;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+
+    }
+
     /**
      * This is a health Check API for third party url.
      * It basically hits external services (like payment gateway) through api.
@@ -916,6 +926,23 @@ class GatewayController extends Controller
         return $this->staticCallbackGateway('netbanking', 'netbanking_canara', 'live');
     }
 
+    protected function checkMultipleCallback($payment)
+    {
+        $this->trace->info(TraceCode::PAYMENT_CALLBACK_RETRY);
+
+        if ($payment->hasBeenAuthorized() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED, null, ['method' => $payment->getMethod()]);
+        }
+
+    }
+
+    public function getCallbackMutexResource(Payment\Entity $payment): string
+    {
+        return 'callback_' . $payment->getId();
+    }
+
     public function processGetSimplCallback($input)
     {
         $paymentId = $input['merchant_payload'];
@@ -941,67 +968,75 @@ class GatewayController extends Controller
             $this->app['rzp.merchant_callback_url'] = $payment->getCallbackUrl();
         }
 
-        if((isset($input['token']) === false) or ($input['token'] === "null"))
-        {
-            $e = new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
-                null,
-                [
-                    'provider'   => Gateway::GETSIMPL,
-                    'input'      => $input,
-                    'payment_id' => $payment->getPublicId(),
-                    'order_id'   => $payment->getOrderId(),
-                ]);
+        return $this->mutex->acquireAndRelease(
+            $this->getCallbackMutexResource($payment),
+            function() use ($input ,$merchant, $paymentId)
+            {
 
-            $processor = new Payment\Processor\Processor($merchant);
+                $payment = $this->app['repo']->payment->findOrFail($paymentId);
 
-            $processor->setPayment($payment);
+                $this->checkMultipleCallback($payment);
 
-            $processor->updatePaymentAuthFailed($e);
+                if((isset($input['token']) === false) or ($input['token'] === "null"))
+                {
+                    $e = new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                        null,
+                        [
+                            'provider'   => Gateway::GETSIMPL,
+                            'input'      => $input,
+                            'payment_id' => $payment->getPublicId(),
+                            'order_id'   => $payment->getOrderId(),
+                        ]);
 
-            throw $e;
-        }
+                    $processor = new Payment\Processor\Processor($merchant);
 
-        $this->app['trace']->info(
-            TraceCode::PAYLATER_ELLIGIBILITY_CALLBACK,
-            [
-                'gateway'          =>  Payment\Gateway::GETSIMPL,
-                'payment_id'       =>  $input['merchant_payload']
-            ]
-        );
+                    $processor->setPayment($payment);
 
-        $input = Mozart\GetSimpl\Helper::getPaymentInputParameters($input, $payment);
+                    $processor->updatePaymentAuthFailed($e);
 
-        $input['simpltoken'] = $input['token'];
+                    throw $e;
+                }
 
-        $gatewayinput = $input;
+                $input = Mozart\GetSimpl\Helper::getPaymentInputParameters($input, $payment);
 
-        $input['payment'] = $payment;
+                $input['simpltoken'] = $input['token'];
 
-        //we are sending shopify and shopify-payment-app in metadata in the request but in callback flow these two fields are not coming.
-        //Due to which some risks checks are failing. Therefore, adding all the fields in metadata before callback.
+                $gatewayinput = $input;
 
-        $pa = $this->repo->payment_analytics->findLatestByPayment($payment->getId());
+                $input['payment'] = $payment;
 
-        $input['_'] = $pa ? $pa->toArray() : null;
+                //we are sending shopify and shopify-payment-app in metadata in the request but in callback flow these two fields are not coming.
+                //Due to which some risks checks are failing. Therefore, adding all the fields in metadata before callback.
 
-        $payment->setMetadata($input);
+                $pa = $this->repo->payment_analytics->findLatestByPayment($payment->getId());
 
-        $data = (new Payment\Processor\Processor($merchant))->process($input, $gatewayinput);
+                $input['_'] = $pa ? $pa->toArray() : null;
 
-        if ($this->app['rzp.mode'] === 'test')
-        {
-            return $data;
-        }
+                $payment->setMetadata($input);
 
-        assertTrue ($data !== null);
+                $data = (new Payment\Processor\Processor($merchant))->process($input, $gatewayinput);
 
-        if ((isset($data['request'])) and ($data['type'] === 'return'))
-        {
-            return View::make('gateway.callbackReturnUrl')->with('data', $data);
-        }
+                if ($this->app['rzp.mode'] === 'test')
+                {
+                    return $data;
+                }
 
-        return View::make('gateway.callback')->with('data', $data);
+                assertTrue ($data !== null);
+
+                if ((isset($data['request'])) and ($data['type'] === 'return'))
+                {
+                    return View::make('gateway.callbackReturnUrl')->with('data', $data);
+                }
+
+                return View::make('gateway.callback')->with('data', $data);
+
+            },
+            60,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+            20,
+            1000,
+            2000);
     }
 
     public function callbackYesbank()
