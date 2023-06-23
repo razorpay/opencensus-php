@@ -255,9 +255,15 @@ export const ScheduleReportModal = ({
     endDate: moment.Moment;
   }) => {
     switch (true) {
+      case startDate.isBefore(moment().add(1, 'day'), 'day'):
+        return {
+          error: `*Schedule can only run from ${moment()
+            .add(1, 'day')
+            .format('MMM D, YYYY')} onwards.`,
+        };
       case startDate.diff(moment(), 'days') >= 30:
         return {
-          error: `Schedule should start within 30 days (max: ${moment()
+          error: `Schedule should start within 31 days (max: ${moment()
             .add(30, 'day')
             .format('DD MMM YYYY')}) from today.`,
         };
@@ -423,9 +429,9 @@ export const ScheduleReportModal = ({
                 validateRange={validateCustomDurationForPicker}
                 validationState={showErrorInSection === 1 ? validateCustomDuration() : true}
                 modifiers={{
-                  INFO_WHEN_PAST_DISABLED: `*Schedule can only run from ${moment().format(
-                    'MMM D, YYYY',
-                  )} onwards.`,
+                  INFO_WHEN_PAST_DISABLED: `*Schedule can only run from ${moment()
+                    .add(1, 'day')
+                    .format('MMM D, YYYY')} onwards.`,
                 }}
               />
             </Box>
