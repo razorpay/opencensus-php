@@ -2233,6 +2233,15 @@ class ErrorCode
     const BAD_REQUEST_NACH_FORM_MISMATCH                                            = 'BAD_REQUEST_NACH_FORM_MISMATCH';
     const BAD_REQUEST_NACH_FORM_DATA_MISMATCH                                       = 'BAD_REQUEST_NACH_FORM_DATA_MISMATCH';
     const BAD_REQUEST_NACH_FORM_STATUS_PENDING                                      = 'BAD_REQUEST_NACH_FORM_STATUS_PENDING';
+    const BAD_REQUEST_INVALID_IMAGE_HEIGHT                                          = 'BAD_REQUEST_INVALID_IMAGE_HEIGHT';
+    const BAD_REQUEST_INVALID_IMAGE_WIDTH                                           = 'BAD_REQUEST_INVALID_IMAGE_WIDTH';
+    const BAD_REQUEST_HIGH_IMAGE_X_RESOLUTION                                       = 'BAD_REQUEST_HIGH_IMAGE_X_RESOLUTION';
+    const BAD_REQUEST_LOW_IMAGE_X_RESOLUTION                                        = 'BAD_REQUEST_LOW_IMAGE_X_RESOLUTION';
+    const BAD_REQUEST_HIGH_IMAGE_Y_RESOLUTION                                       = 'BAD_REQUEST_HIGH_IMAGE_Y_RESOLUTION';
+    const BAD_REQUEST_LOW_IMAGE_Y_RESOLUTION                                        = 'BAD_REQUEST_LOW_IMAGE_Y_RESOLUTION';
+    const BAD_REQUEST_IMAGE_TOO_BRIGHT                                              = 'BAD_REQUEST_IMAGE_TOO_BRIGHT';
+    const BAD_REQUEST_IMAGE_TOO_DARK                                                = 'BAD_REQUEST_IMAGE_TOO_DARK';
+
 
     // Mandate HQ
     const SERVER_ERROR_MANDATE_HQ_REQUEST_FAILED                                   = 'SERVER_ERROR_MANDATE_HQ_REQUEST_FAILED';
@@ -2963,7 +2972,7 @@ class ErrorCode
     // bank account deletion
     const BAD_REQUEST_ACCOUNT_ALREADY_DELETED                                       = 'BAD_REQUEST_ACCOUNT_ALREADY_DELETED';
     const BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST                                        = 'BAD_REQUEST_ACCOUNT_DOES_NOT_EXIST';
-    
+
     const BAD_REQUEST_PARTNER_SUBMERCHANT_OAUTH_ONBOARDING_EXP_NOT_ENABLED          = 'BAD_REQUEST_PARTNER_SUBMERCHANT_OAUTH_ONBOARDING_EXP_NOT_ENABLED';
 
     const BAD_REQUEST_PAYOUT_APPROVAL_TOKEN_INVALID                                 = 'BAD_REQUEST_PAYOUT_APPROVAL_TOKEN_INVALID';

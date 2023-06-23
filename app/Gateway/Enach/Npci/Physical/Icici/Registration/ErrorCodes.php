@@ -87,6 +87,15 @@ class ErrorCodes
     const M092 = 'M092';
     const M002 = 'M002';
     const M071 = 'M071';
+    //IQA Validation errors
+    const I001 = 'Image Height should be less than or Equal To Allowed Height';
+    const I002 = 'Image Width should be less than or Equal To Allowed Width';
+    const I003 = 'Image X Resolution Should be less than or Equal To Allowed Value';
+    const I004 = 'Image X Resolution Should be more than or Equal To Allowed Value';
+    const I005 = 'Image Y Resolution Should be less than or Equal To Allowed Value';
+    const I006 = 'Image Y Resolution Should be more than or Equal To Allowed Value';
+    const I007 = 'Image is Too Bright';
+    const I008 = 'Image is Too Dark';
 
     /*
      * In ack files of registration, error desc (not error code) is received for initial reject payments
@@ -177,6 +186,15 @@ class ErrorCodes
         self::M092 => 'Signature Mismatch',
         self::M002 => 'Illegible drawer signature. Please note that this reason would soon be discontinued',
         self::M071 => 'Company round stamp required',
+        //IQA Validation errors
+        self::I001 => 'Image Height should be less than or Equal To Allowed Height',
+        self::I002 => 'Image Width should be less than or Equal To Allowed Width',
+        self::I003 => 'Image X Resolution Should be less than or Equal To Allowed Value',
+        self::I004 => 'Image X Resolution Should be more than or Equal To Allowed Value',
+        self::I005 => 'Image Y Resolution Should be less than or Equal To Allowed Value',
+        self::I006 => 'Image Y Resolution Should be more than or Equal To Allowed Value',
+        self::I007 => 'Image is Too Bright',
+        self::I008 => 'Image is Too Dark',
         self::M096 => 'date of mandate has exceeded 120 working days. Kindly create a new mandate',
         self::R001 => 'Range between mandate date and current business date exceeds 120 working days. Create a new mandate',
         self::R002 => 'Mandate representation is not allowed! max allowed limit exceeded. Kindly retry',
@@ -264,6 +282,16 @@ class ErrorCodes
         self::M092 => ErrorCode::BAD_REQUEST_MISMATCH_SIGNATURE,
         self::M002 => ErrorCode::BAD_REQUEST_MISMATCH_SIGNATURE,
         self::M071 => ErrorCode::BAD_REQUEST_COMPANY_FOR_STAMP_MISSING,
+        //IQA Validation errors
+        self::I001 => ErrorCode::BAD_REQUEST_INVALID_IMAGE_HEIGHT,
+        self::I002 => ErrorCode::BAD_REQUEST_INVALID_IMAGE_WIDTH,
+        self::I003 => ErrorCode::BAD_REQUEST_HIGH_IMAGE_X_RESOLUTION,
+        self::I004 => ErrorCode::BAD_REQUEST_LOW_IMAGE_X_RESOLUTION,
+        self::I005 => ErrorCode::BAD_REQUEST_HIGH_IMAGE_Y_RESOLUTION,
+        self::I006 => ErrorCode::BAD_REQUEST_LOW_IMAGE_Y_RESOLUTION,
+        self::I007 => ErrorCode::BAD_REQUEST_IMAGE_TOO_BRIGHT,
+        self::I008 => ErrorCode::BAD_REQUEST_IMAGE_TOO_DARK,
+
         self::M096 => ErrorCode::BAD_REQUEST_MANDATE_CREATION_OUTDATED,
         self::R001 => ErrorCode::BAD_REQUEST_MANDATE_CREATION_OUTDATED,
         self::R002 => ErrorCode::BAD_REQUEST_MANDATE_REPRESENTATION_LIMIT_EXCEEDED,
