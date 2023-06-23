@@ -45,9 +45,7 @@ class Service extends Base\Service
     const SERVICEABLE = 'serviceable';
     const COD =  'cod';
     const DISABLE_SHIPPING_CACHE_RESET = 'disable_shipping_cache_reset'; //shipping cache fix backward compatibility
-    const TAX_DETAILS                    = 'tax_details';
     const DEFAULT_SHIPPING_VARIANT = "__default";
-    const TAX_DETAILS_CACHE_KEY_PREFIX = 'SHIPPING_INFO_TAX_DETAILS_';
 
     /**
      * Get Merchant Serviceability and COD Serviceability for a given Address
@@ -106,8 +104,6 @@ class Service extends Base\Service
             $orderId = $input['order_id'];
 
             $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
-
-            $taxDetails = null;
 
             /**
              * For payment_store product, by defauly we want magic checkout to be used
@@ -200,12 +196,8 @@ class Service extends Base\Service
                 // Not ideal nomenclature but we are doing this as the code is too large to extract "source".
                 $dimensions['platform'] = 'cache';
                 $this->recordShippingInfoResp($cachedResponse, $dimensions);
-
-                $cacheTaxDetails = $this->getTaxDetailsFromCache($orderId, $address, $order->getAmount());
-
                 return [
                     self::SHIPPING_INFO_ADDRESSES => [$cachedResponse],
-                    self::TAX_DETAILS             => $cacheTaxDetails,
                 ];
             }
             //Temporary fix for PP Shipping Fee(Once Shipping Provider is built for PP this can be removed)
@@ -246,11 +238,6 @@ class Service extends Base\Service
                 ]);
                 $isDigitalProduct = $decodedResponse['is_digital_product'];
                 unset($decodedResponse['is_digital_product']);
-
-                if (empty($decodedResponse['tax_details']) === false) {
-                    $taxDetails = $decodedResponse['tax_details'];
-                    unset($decodedResponse['tax_details']);
-                }
 
                 if (empty($decodedResponse['use_fallback']) === false) {
                     unset($decodedResponse['use_fallback']);
@@ -473,15 +460,9 @@ class Service extends Base\Service
                 }
             }
 
-
             $this->cacheMerchantShippingInfo($orderId, $address, $order->getAmount());
-            $this->cacheTaxDetailsForShippingAddress($orderId, $address, $taxDetails, $order->getAmount());
             $this->recordShippingInfoResp($address, $dimensions);
-
-            return [
-                self::SHIPPING_INFO_ADDRESSES => [$address],
-                self::TAX_DETAILS => $taxDetails,
-            ];
+            return [self::SHIPPING_INFO_ADDRESSES => [$address]];
 
         }
         catch (\Throwable $e)
@@ -713,18 +694,6 @@ class Service extends Base\Service
         {
             return $this->app['cache']->get(
                 $this->getShippingInfoOldCacheKey($orderId, $address));
-        }
-    }
-
-    public function getTaxDetailsFromCache($orderId, $address, $orderAmount)
-    {
-        //gets the taxes for the shipping address
-        $taxesCachedResponse = $this->app['cache']->get(
-            $this->getShippingInfoTaxCacheKey($orderId, $address, $orderAmount));
-
-        if (!empty($taxesCachedResponse))
-        {
-            return $taxesCachedResponse;
         }
     }
 
@@ -1065,20 +1034,6 @@ class Service extends Base\Service
     /**
      * @param $orderId
      * @param $address
-     * @param $orderAmount
-     * @param $taxDetails
-     */
-    protected function cacheTaxDetailsForShippingAddress($orderId, $address, $taxDetails, $orderAmount): void
-    {
-        $this->app['cache']->put(
-            $this->getShippingInfoTaxCacheKey($orderId, $address, $orderAmount),
-            $taxDetails,
-            self::SHIPPING_INFO_CACHE_VALIDITY);
-    }
-
-    /**
-     * @param $orderId
-     * @param $address
      * @return string
      */
     private function getShippingInfoCacheKey($orderId, $address, $orderAmount = 0): string
@@ -1309,31 +1264,5 @@ class Service extends Base\Service
             'platform'    => $dimensions['platform'],
         ]);
       }
-    }
-
-    /**
-     * @param $orderId
-     * @param $address
-     * @param int $orderAmount
-     * @return string
-     */
-    protected function getShippingInfoTaxCacheKey($orderId, $address, $orderAmount = 0): string
-    {
-        $zipcode = $address['zipcode'] ?? "";
-        $state = $address['state'] ?? "";
-        $amount = (string)$orderAmount;
-
-        return self::TAX_DETAILS_CACHE_KEY_PREFIX
-            . $this->merchant->getId()
-            . "_"
-            . $orderId
-            . "_"
-            . $amount
-            . "_"
-            . $zipcode
-            . "_"
-            . $state
-            . "_"
-            . $address['country'];
     }
 }

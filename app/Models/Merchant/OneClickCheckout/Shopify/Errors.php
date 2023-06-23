@@ -31,17 +31,6 @@ class Errors
     ];
   }
 
-  public function getRemoveCouponFailedResponse()
-  {
-    return [
-        'response' => [
-            'failure_code'   => 'REMOVE_COUPON_FAILED',
-            'failure_reason' => 'Remove coupon failed',
-        ],
-        'status_code' => 400,
-    ];
-  }
-
   public function getMissingContactCouponResponse()
   {
     return [

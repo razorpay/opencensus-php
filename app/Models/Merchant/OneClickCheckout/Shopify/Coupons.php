@@ -179,13 +179,6 @@ class Coupons extends Base\Core
 
         $value = (new Utils)->formatNumber($checkout['lineItemsSubtotalPrice']['amount'] - $checkout['subtotalPrice']['amount']) * 100;
 
-        $tax =  ((new Utils)->formatNumber($checkout['totalTax']['amount']) * 100);
-
-        $taxDetails = [
-            'total_tax' => $tax,
-            'taxes_included' => $checkout['taxesIncluded'],
-        ];
-
         if($this->merchant->getId() === 'ChdCdGm7TvuVk6')
         {
             $atLeastOneItemHasCouponTag = false;
@@ -239,7 +232,6 @@ class Coupons extends Base\Core
                     'reference_id'  => $promotions['code'],
                     'value'         => (int)$value,
                 ],
-                'tax_details' =>  $taxDetails,
             ],
             'status_code' => 200,
         ];
@@ -262,38 +254,7 @@ class Coupons extends Base\Core
             ],
         ];
 
-        $response = $client->sendStorefrontRequest(json_encode($graphqlQuery));
-
-        $response = json_decode($response, true);
-
-        if (empty($response['errors']) === false)
-        {
-            $this->trace->error(
-                TraceCode::SHOPIFY_1CC_REMOVE_COUPON_ERROR,
-                [
-                    'checkoutId' => $checkoutId,
-                    'response' => $response,
-                ]);
-            return (new Errors)->getRemoveCouponFailedResponse();
-        }
-
-        $data = $response['data']['checkoutDiscountCodeRemove'];
-
-        $checkout = $data['checkout'];
-
-        $tax =  ((new Utils)->formatNumber($checkout['totalTax']['amount']) * 100);
-
-        $taxDetails = [
-            'total_tax' => $tax,
-            'taxes_included' => $checkout['taxesIncluded'],
-        ];
-
-        return [
-            'response' => [
-                'tax_details' => $taxDetails,
-            ],
-            'status_code' => 200,
-        ];
+        return $client->sendStorefrontRequest(json_encode($graphqlQuery));
     }
 
     // Updates the email in Shopify Checkout

@@ -54,15 +54,11 @@ class Core extends Base\Core
 
         $promotions = $value[Order1cc\Fields::PROMOTIONS] ?? [];
 
-        $taxDetails = $value[Order1cc\Fields::TAX_DETAILS] ?? [];
-
-        $totalTaxApplied = $this->getTaxesApplied($taxDetails);
-
         $couponValueApplied = (new Utils\CommonUtils())->getAppliedCouponValue($promotions);
 
         $totalGiftCardValueApplied = $this->calculateTotalGiftCardValue($promotions);
 
-        $adjustedCodFee = max(0, $lineItemsTotal - $couponValueApplied) + $totalTaxApplied + $shippingFee + $codFee - $totalGiftCardValueApplied - $finalCartAmount;
+        $adjustedCodFee = max(0, $lineItemsTotal - $couponValueApplied) + $shippingFee + $codFee - $totalGiftCardValueApplied - $finalCartAmount;
 
         return [
             Order1cc\Fields::NET_PRICE => $finalCartAmount,
@@ -71,8 +67,7 @@ class Core extends Base\Core
             Order1cc\Fields::COD_FEE => $codFee,
             Constants::TOTAL_COUPON_VALUE => $couponValueApplied,
             Constants::TOTAL_GIFT_CARD_VALUE => $totalGiftCardValueApplied,
-            Constants::FINAL_ADJUSTED_COD_VALUE => $totalGiftCardValueApplied != 0 ? $adjustedCodFee : $codFee,
-            Constants::TOTAL_TAX_APPLIED   => $totalTaxApplied,
+            Constants::FINAL_ADJUSTED_COD_VALUE => $totalGiftCardValueApplied != 0 ? $adjustedCodFee : $codFee
         ];
     }
 
@@ -89,11 +84,4 @@ class Core extends Base\Core
         return $discount;
     }
 
-    public function getTaxesApplied($taxDetails)
-    {
-        if (empty($taxDetails) === true || isset($taxDetails['taxes_included']) === false || $taxDetails['taxes_included'] === true) {
-            return 0;
-        }
-        return $taxDetails['total_tax'] ?? 0;
-    }
 }
