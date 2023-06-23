@@ -187,6 +187,7 @@ class ProviderCode
     const UTKARSHBANK        = 'utkarshbank';
     const OMNI               = 'omni';
     const DHANI              = 'dhani';
+    const NIYOICICI          = 'niyoicici';
 
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
@@ -365,6 +366,7 @@ class ProviderCode
         self::PINELABS           => self::PPIW,
         self::ZOICICI            => IFSC::ICIC,
         self::GOAXB              => IFSC::UTIB,
+        self::NIYOICICI          => IFSC::ICIC,
     ];
 
     /**
@@ -462,6 +464,8 @@ class ProviderCode
         ProviderPsp::FAVE,
         ProviderPsp::ZOMATO,
         ProviderPsp::BAJAJ_FINSERVE,
+        ProviderPsp::GO_NIYO,
+        ProviderPsp::EQUITAS_SMALL_FINANCE_BANK_LTD
     ];
 
     /**
@@ -507,6 +511,8 @@ class ProviderCode
         self::OKSBI         => ProviderPsp::GOOGLE_PAY,
         self::ZOICICI       => ProviderPsp::ZOMATO,
         self::ABFSPAY       => ProviderPsp::BAJAJ_FINSERVE,
+        self::NIYOICICI     => ProviderPsp::GO_NIYO,
+        self::EQUITAS       => ProviderPsp::EQUITAS_SMALL_FINANCE_BANK_LTD,
 
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,

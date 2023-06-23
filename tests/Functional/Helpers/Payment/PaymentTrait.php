@@ -3813,6 +3813,7 @@ trait PaymentTrait
             "tmb",
             "omni",
             "dhani",
+            "niyoicici",
         ];
 
         return $vpaHandles;

@@ -34,6 +34,8 @@ class ProviderPsp
     const FAVE              = 'fave';
     const ZOMATO            = 'zomato';
     const BAJAJ_FINSERVE    = 'bajaj_finserve';
+    const GO_NIYO           = 'go_niyo';
+    const EQUITAS_SMALL_FINANCE_BANK_LTD  = 'equitas_small_finance_bank_ltd';
 
     // used only for testing.
     const RAZORPAY      = 'razorpay';
