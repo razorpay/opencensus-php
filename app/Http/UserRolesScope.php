@@ -884,7 +884,7 @@ class UserRolesScope
             'order_edit'                                           => [Role::OWNER, Role::ADMIN],
             'otp_create'                                           => [Role::OWNER, Role::ADMIN],
             'p2p_fetch_private'                                    => [Role::OWNER, Role::ADMIN],
-            'partner_activation_details'                           => [Role::READER_ROLES],
+            'partner_activation_details'                           => Role::READER_ROLES,
             'partner_sales_poc'                                    => [Role::OWNER, Role::ADMIN],
             'partner_request_migration'                            => [Role::OWNER, Role::ADMIN],
             'partner_activation_save'                              => [Role::OWNER, Role::ADMIN],
