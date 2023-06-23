@@ -4558,7 +4558,7 @@ class Core extends Base\Core
             $validationFields = array_diff($validationFields, RequiredFields::BANK_ACCOUNT_FIELDS);
         }
 
-        if (self::shouldSkipKycDocuments($merchantDetails) === true)
+        if ($this->shouldSkipKycDocuments($merchantDetails) === true)
         {
             $validationFields = array_diff($validationFields, RequiredFields::KYC_DOCUMENT_FIELDS);
         }
@@ -5185,18 +5185,27 @@ class Core extends Base\Core
             ];
     }
 
-    public static function shouldSkipKycDocuments(Entity $merchantDetails): bool
+    public function shouldSkipKycDocuments(Entity $merchantDetails): bool
     {
-        $orgId = $merchantDetails->merchant->getOrgId();
+        try
+        {
+            $orgId = $merchantDetails->merchant->getOrgId();
 
-        if (empty($orgId) === true)
+            if (empty($orgId) === true)
+            {
+                return false;
+            }
+
+            $org = $this->repo->org->findOrFail($orgId);
+
+            if($org->isFeatureEnabled(Feature\Constants::SKIP_KYC_VERIFICATION))
+            {
+                return true;
+            }
+        }
+        catch (\Exception)
         {
             return false;
-        }
-
-        if ($orgId === ORG_ENTITY::AXIS_ORG_ID)
-        {
-            return true;
         }
 
         return false;
@@ -6695,7 +6704,7 @@ class Core extends Base\Core
             }
         }
 
-        if ($merchant->getOrgId() !== ORG_ENTITY::AXIS_ORG_ID)
+        if ($this->shouldSkipKycDocuments($merchantDetails) === false)
         {
             //calculate selective optional validation fields for no doc onboarding merchants
             if ($merchant->isNoDocOnboardingEnabled() === true and $isNoDocEnabledAndGmvLimitExhausted === false)

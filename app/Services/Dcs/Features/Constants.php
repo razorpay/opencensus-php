@@ -151,6 +151,7 @@ class Constants
     const OtpAutoReadAndSubmitDisabled = 'otp_auto_read_submit_disabled';
     const WalletPaytmAutoDebit = 'auto_debit';
     const EnableApprovalViaOAuth = 'enable_approval_via_oauth';
+    const SkipKycVerification = 'skip_kyc_verification';
 
     public static $validDcsKeys = [];
     /**
@@ -297,7 +298,8 @@ class Constants
         self::OtpAutoReadAndSubmitDisabled => 'rzp/pg/merchant/checkout/Otp',
         self::OptimizerRazorpayVas => 'rzp/pg/merchant/optimizer/OnboardingFeatures',
         self::WalletPaytmAutoDebit => 'rzp/pg/merchant/wallet/paytm/AutoDebit',
-        self::EnableApprovalViaOAuth => 'rzp/x/merchant/payouts/Workflows'
+        self::EnableApprovalViaOAuth => 'rzp/x/merchant/payouts/Workflows',
+        self::SkipKycVerification => 'rzp/pg/org/onboarding/banking_program/Config',
     ];
 
     public static function isValidDcsKeyAndName(string $key, string $name): bool
@@ -456,6 +458,7 @@ class Constants
         APIFeaturesConstants::DISABLE_OTP_AUTO_READ_AND_SUBMIT              => self::OtpAutoReadAndSubmitDisabled,
         APIFeaturesConstants::WALLET_PAYTM_AUTO_DEBIT                       => self::WalletPaytmAutoDebit,
         APIFeaturesConstants::ENABLE_APPROVAL_VIA_OAUTH                     => self::EnableApprovalViaOAuth,
+        APIFeaturesConstants::SKIP_KYC_VERIFICATION                         => self::SkipKycVerification,
     ];
 
     /**
@@ -499,6 +502,7 @@ class Constants
         self::QualityCheckIntimationEmail   => 'direct',
         self::ShowCustomDccDisclosures       => 'direct',
         self::AdminPasswordResetEnabled => 'direct',
+        self::SkipKycVerification => 'direct',
     ];
 
     public static array $loadedReadEnabledFeatures = [];

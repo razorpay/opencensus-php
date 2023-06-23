@@ -3,9 +3,7 @@
 namespace RZP\Models\Merchant\Detail\Upload\Processors;
 
 use RZP\Models\Batch\Header;
-use RZP\Models\Merchant\Detail;
 use Razorpay\IFSC\Bank as Banks;
-use RZP\Models\Merchant\Document;
 use RZP\Models\Card\Type as CardType;
 use RZP\Models\Card\Network as CardNetwork;
 use RZP\Constants\Product as ProductConstants;
@@ -20,46 +18,7 @@ use RZP\Models\Merchant\BusinessDetail\Constants as BConstants;
 
 class BulkUploadMIQParser
 {
-    /**
-     * Required website details if website present in Upload MIQ file.
-     * @var array
-     */
-    public static $miqWebsiteEntries = [
-        Header::MIQ_WEBSITE_REFUNDS,
-        Header::MIQ_WEBSITE_ABOUT_US,
-        Header::MIQ_WEBSITE_CONTACT_US,
-        Header::MIQ_WEBSITE_CANCELLATION,
-        Header::MIQ_WEBSITE_PRIVACY_POLICY,
-        Header::MIQ_WEBSITE_PRODUCT_PRICING,
-        Header::MIQ_WEBSITE_TERMS_CONDITIONS,
-        Header::MIQ_WEBSITE_SHIPPING_DELIVERY,
-    ];
-
-    /**
-     * Allowed Business Types.
-     * @var array
-     */
-    public static $miqBusinessTypes = [
-        BusinessType::TYPE1 ,
-        BusinessType::TYPE3,
-        BusinessType::TYPE4,
-        BusinessType::TYPE5,
-        BusinessType::TYPE6,
-        BusinessType::TYPE7,
-        BusinessType::TYPE9,
-        BusinessType::TYPE11 ,
-    ];
-
-    private static $documentsForKyc = [
-        Document\Type::AADHAR_FRONT,
-        Document\Type::AADHAR_BACK,
-        Document\Type::BUSINESS_PROOF_URL,
-        Document\Type::BUSINESS_PAN_URL,
-        Document\Type::FORM_12A_URL,
-        Document\Type::FORM_80G_URL
-    ];
-
-    private static $caseInSensitiveHeaders = [
+    private static array $caseInSensitiveHeaders = [
         Header::MIQ_FEE_MODEL,
         Header::MIQ_INTERNATIONAL,
         Header::MIQ_NB_FEE_BEARER,
@@ -72,18 +31,7 @@ class BulkUploadMIQParser
         Header::MIQ_CREDIT_CARD_FEE_BEARER,
     ];
 
-    private static $merchantFeeBearers = [
-        Header::MIQ_NB_FEE_BEARER,
-        Header::MIQ_UPI_FEE_BEARER,
-        Header::MIQ_RUPAY_FEE_BEARER,
-        Header::MIQ_WALLETS_FEE_BEARER,
-        Header::MIQ_BUSINESS_FEE_BEARER,
-        Header::MIQ_INTL_CARD_FEE_BEARER,
-        Header::MIQ_DEBIT_CARD_FEE_BEARER,
-        Header::MIQ_CREDIT_CARD_FEE_BEARER,
-    ];
-
-    private static $miqSensitiveFieldsForLogging = [
+    private static array $miqSensitiveFieldsForLogging = [
         Header::MIQ_BANK_ACC_NUMBER,
         Header::MIQ_BENEFICIARY_NAME,
         Header::MIQ_BUSINESS_PAN,
@@ -92,13 +40,13 @@ class BulkUploadMIQParser
         Header::MIQ_CONTACT_NUMBER,
     ];
 
-    private static $walletPricingMapping = [
+    private static array $walletPricingMapping = [
         Header::MIQ_WALLETS_FREECHARGE  => MethodEntity::FREECHARGE,
         // fee to be charged remaining wallets
         Header::MIQ_WALLETS_ANY         => Header::MIQ_WALLETS_ANY,
     ];
 
-    private static $netBankingPricingMapping = [
+    private static array $netBankingPricingMapping = [
         Header::MIQ_AXIS        =>  Banks::UTIB,
         Header::MIQ_HDFC        =>  Banks::HDFC,
         Header::MIQ_ICICI       =>  Banks::ICIC,
@@ -108,7 +56,7 @@ class BulkUploadMIQParser
         Header::MIQ_NB_ANY      =>  Header::MIQ_NB_ANY,
     ];
 
-    private static $cardPricingMapping = [
+    private static array $cardPricingMapping = [
         Header::MIQ_CREDIT_CARD_FEE_TYPE => [
             UConstants::PRICING_FEE_BEARER          => Header::MIQ_CREDIT_CARD_FEE_BEARER,
             UConstants::PRICING_METHOD_TYPE         => CardType::CREDIT,
@@ -223,7 +171,6 @@ class BulkUploadMIQParser
             MDEntity::BUSINESS_INTERNATIONAL        => $entry[Header::MIQ_INTERNATIONAL] === 'yes' ? 1  : 0,
             MDEntity::COMPANY_CIN                   => $entry[Header::MIQ_CIN] !== '' ? $entry[Header::MIQ_CIN] : null,
             MDEntity::BUSINESS_WEBSITE              => $entry[Header::MIQ_WEBSITE] !== '' ? $entry[Header::MIQ_WEBSITE]  : null,
-            MDEntity::ACTIVATION_FORM_MILESTONE     => "L2",
         ];
     }
 
@@ -249,50 +196,18 @@ class BulkUploadMIQParser
         ];
     }
 
-    /**
-     * *
-     * Response format to be returned to batch service.
-     *
-     * @param array $entry
-     * @return array
-     */
-    public static function getDefaultBatchResponse(array $entry): array
-    {
-        return [
-            Header::MIQ_OUT_FEE_BEARER          => '',
-            Header::MIQ_OUT_MERCHANT_ID         => '',
-            Header::STATUS                      => '',
-            Header::ERROR_CODE                  => '',
-            Header::ERROR_DESCRIPTION           => '',
-            Header::MIQ_OUT_MERCHANT_NAME       => $entry[Header::MIQ_MERCHANT_NAME],
-            Header::MIQ_OUT_MERCHANT_EMAIL      => $entry[Header::MIQ_CONTACT_EMAIL],
-        ];
-    }
-
     public function getMerchantFeeBearerType(array $entry): string
     {
-        $feeBearers = array();
-
-        // default fee bearer, required in merchant creation/activation
-        $feeBearer = MFeeBearer::PLATFORM;
-
-        foreach (self::$merchantFeeBearers as $feeBearerHeader)
+        if (in_array(MFeeBearer::CUSTOMER, $entry, true) and in_array(MFeeBearer::PLATFORM, $entry, true))
         {
-            $feeBearerValue = $entry[$feeBearerHeader];
-
-            $feeBearers[$feeBearerValue] = true;
+            return MFeeBearer::DYNAMIC;
+        }
+        elseif (in_array(MFeeBearer::CUSTOMER, $entry, true))
+        {
+            return MFeeBearer::CUSTOMER;
         }
 
-        if((empty($feeBearers[MFeeBearer::CUSTOMER]) === false) and (empty($feeBearers[MFeeBearer::PLATFORM]) === false))
-        {
-            $feeBearer = MFeeBearer::DYNAMIC;
-        }
-        elseif (empty($feeBearers[MFeeBearer::CUSTOMER]) === false)
-        {
-            $feeBearer = MFeeBearer::CUSTOMER;
-        }
-
-        return $feeBearer;
+        return MFeeBearer::PLATFORM;
     }
 
     /**
@@ -302,16 +217,27 @@ class BulkUploadMIQParser
      * @param array $entry
      * @return void
      */
-    public function preProcessMerchantEntry(array & $entry)
+    public function preProcessMerchantEntry(array & $entry): void
     {
-        foreach (self::$caseInSensitiveHeaders as $header)
+        foreach ($entry as $header => &$value)
         {
-            $entry[$header] = strtolower($entry[$header]);
-        }
+            // Trim spaces before and after if the value is a string
+            if(is_string($value))
+            {
+                $value = trim($value);
+            }
 
-        if(in_array($entry[Header::MIQ_BUSINESS_TYPE], self::$miqBusinessTypes))
-        {
-            $entry[Header::MIQ_BUSINESS_TYPE] = BusinessType::$typeIndexMap[strtolower($entry[Header::MIQ_BUSINESS_TYPE])];
+            if(in_array($header, self::$caseInSensitiveHeaders))
+            {
+                $value = strtolower($value);
+
+                continue;
+            }
+
+            if($header === Header::MIQ_BUSINESS_TYPE)
+            {
+                $value = BusinessType::$typeIndexMap[strtolower($entry[Header::MIQ_BUSINESS_TYPE])] ?? null;
+            }
         }
     }
 
@@ -320,7 +246,7 @@ class BulkUploadMIQParser
      * Masked sensitive miq details from being logged.
      *
      * @param array $entry
-     * @return void
+     * @return array
      */
     public function getMaskedEntryForLogging(array $entry): array
     {
@@ -581,19 +507,5 @@ class BulkUploadMIQParser
         }
 
         return $rules;
-    }
-
-    public static function getDummyActivationFiles(): array
-    {
-        $merchantDocuments = [];
-
-        foreach (self::$documentsForKyc as $document)
-        {
-            $merchantDocuments[$document] = [
-                Document\Constants::FILE_ID => Detail\Constants::DUMMY_ACTIVATION_FILE,
-                Document\Constants::SOURCE  => Document\Source::UFH,
-            ];
-        }
-        return $merchantDocuments;
     }
 }

@@ -49,6 +49,7 @@ class Constants
      */
     const FEE_TYPE_PERCENT            = 'percent';
     const FEE_TYPE_FLAT               = 'flat';
+    const FEE_TYPE_NA                 = 'na';
     const PRICING_FEE_BEARER          = 'pricing_fee_bearer';
     const PRICING_AMOUNT_RANGE_ACTIVE = 'pricing_amount_range_active';
     const PRICING_AMOUNT_RANGES       = 'pricing_amount_ranges';

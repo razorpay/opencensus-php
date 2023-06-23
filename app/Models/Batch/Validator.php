@@ -41,7 +41,6 @@ use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Batch\Helpers\OauthMigration as OMHelper;
 use RZP\Gateway\Netbanking\Hdfc\EMandateDebitFileHeadings as HdfcEMDebitHeadings;
 use RZP\Gateway\Netbanking\Hdfc\EMandateRegisterFileHeadings as HdfcEMRegisterHeadings;
-use RZP\Models\Merchant\Detail\Upload\Processors\BulkUploadMIQParser as UploadMIQParser;
 
 /**
  * Class Validator
@@ -115,11 +114,6 @@ class Validator extends Base\Validator
         . 'txt,';
 
     const VALIDATE_FILE_NAME = 'validate_file_name';
-
-    /**
-     * Validates if https present in URL.
-     */
-    const VALIDATE_HTTPS_RULE = '/^https(.)+$/';
 
     protected static $validateFileNameRules = [
         'filename'      => 'required|string',
@@ -1118,75 +1112,75 @@ class Validator extends Base\Validator
         Entity::CONFIG      => 'filled|array',
     ];
 
-    protected static $merchantUploadMiqTypeRowRules = [
-        Header::MIQ_MERCHANT_NAME                    => 'required|alpha_space|max:255',
-        Header::MIQ_DBA_NAME                         => 'required|alpha_space|max:255',
-        Header::MIQ_WEBSITE                          => 'sometimes|nullable|max:255|regex:'. self::VALIDATE_HTTPS_RULE,
-        Header::MIQ_WEBSITE_ABOUT_US                 => 'sometimes|nullable|max:255|regex:'. self::VALIDATE_HTTPS_RULE,
-        Header::MIQ_WEBSITE_TERMS_CONDITIONS         => 'sometimes|nullable|max:255|regex:'. self::VALIDATE_HTTPS_RULE,
-        Header::MIQ_WEBSITE_CONTACT_US               => 'sometimes|nullable|max:255|regex:'. self::VALIDATE_HTTPS_RULE,
-        Header::MIQ_WEBSITE_PRIVACY_POLICY           => 'sometimes|nullable|max:255|regex:'. self::VALIDATE_HTTPS_RULE,
-        Header::MIQ_WEBSITE_PRODUCT_PRICING          => 'sometimes|nullable|max:255|regex:'. self::VALIDATE_HTTPS_RULE,
-        Header::MIQ_WEBSITE_REFUNDS                  => 'sometimes|nullable|max:255|regex:'. self::VALIDATE_HTTPS_RULE,
-        Header::MIQ_WEBSITE_CANCELLATION             => 'sometimes|nullable|max:255|regex:'. self::VALIDATE_HTTPS_RULE,
-        Header::MIQ_WEBSITE_SHIPPING_DELIVERY        => 'sometimes|nullable|max:255|regex:'. self::VALIDATE_HTTPS_RULE,
-        Header::MIQ_CONTACT_NAME                     => 'required|alpha_space|max:255',
-        Header::MIQ_CONTACT_EMAIL                    => 'required|email|max:255',
-        Header::MIQ_TXN_REPORT_EMAIL                 => 'required|email|max:255',
-        Header::MIQ_ADDRESS                          => 'required|max:255',
-        Header::MIQ_CITY                             => 'required|alpha_space_num|max:255',
-        Header::MIQ_PIN_CODE                         => 'required|alpha_space_num|max:255',
+    protected static array $merchantUploadMiqTypeRowRules = [
+        Header::MIQ_MERCHANT_NAME                    => 'required',
+        Header::MIQ_DBA_NAME                         => 'required',
+        Header::MIQ_WEBSITE                          => 'sometimes',
+        Header::MIQ_WEBSITE_ABOUT_US                 => 'sometimes',
+        Header::MIQ_WEBSITE_TERMS_CONDITIONS         => 'sometimes',
+        Header::MIQ_WEBSITE_CONTACT_US               => 'sometimes',
+        Header::MIQ_WEBSITE_PRIVACY_POLICY           => 'sometimes',
+        Header::MIQ_WEBSITE_PRODUCT_PRICING          => 'sometimes',
+        Header::MIQ_WEBSITE_REFUNDS                  => 'sometimes',
+        Header::MIQ_WEBSITE_CANCELLATION             => 'sometimes',
+        Header::MIQ_WEBSITE_SHIPPING_DELIVERY        => 'sometimes',
+        Header::MIQ_CONTACT_NAME                     => 'required',
+        Header::MIQ_CONTACT_EMAIL                    => 'required',
+        Header::MIQ_TXN_REPORT_EMAIL                 => 'required',
+        Header::MIQ_ADDRESS                          => 'required',
+        Header::MIQ_CITY                             => 'required',
+        Header::MIQ_PIN_CODE                         => 'required',
         Header::MIQ_STATE                            => 'required',
-        Header::MIQ_CONTACT_NUMBER                   => 'required|min:10|max:15|contact_syntax',
-        Header::MIQ_CIN                              => 'filled|companyCin',
+        Header::MIQ_CONTACT_NUMBER                   => 'required',
+        Header::MIQ_CIN                              => 'sometimes',
         Header::MIQ_BUSINESS_TYPE                    => 'required',
-        Header::MIQ_BUSINESS_PAN                     => 'required|companyPan',
-        Header::MIQ_BUSINESS_NAME                    => 'required|max:255',
-        Header::MIQ_AUTHORISED_SIGNATORY_PAN         => 'filled|personalPan',
-        Header::MIQ_PAN_OWNER_NAME                   => 'required|max:255',
+        Header::MIQ_BUSINESS_PAN                     => 'required',
+        Header::MIQ_BUSINESS_NAME                    => 'required',
+        Header::MIQ_AUTHORISED_SIGNATORY_PAN         => 'sometimes',
+        Header::MIQ_PAN_OWNER_NAME                   => 'required',
         Header::MIQ_BUSINESS_CATEGORY                => 'required',
         Header::MIQ_SUB_CATEGORY                     => 'required',
         Header::MIQ_GSTIN                            => 'sometimes',
-        Header::MIQ_BUSINESS_DESCRIPTION             => 'required|max:255',
-        Header::MIQ_ESTD_DATE                        => 'required|before:"today"',
-        Header::MIQ_FEE_MODEL                        => 'required|in:Prepaid,Postpaid',
-        Header::MIQ_UPI_FEE_TYPE                     => 'required|in:Flat,Percent,NA',
-        Header::MIQ_UPI_FEE_BEARER                   => 'sometimes|nullable|in:Platform,Customer',
-        Header::MIQ_UPI                              => 'sometimes|nullable|numeric',
-        Header::MIQ_NB_FEE_TYPE                      => 'required|in:Flat,Percent,NA',
-        Header::MIQ_NB_FEE_BEARER                    => 'sometimes|nullable|in:Platform,Customer',
-        Header::MIQ_AXIS                             => 'sometimes|nullable|numeric',
-        Header::MIQ_HDFC                             => 'sometimes|nullable|numeric',
-        Header::MIQ_ICICI                            => 'sometimes|nullable|numeric',
-        Header::MIQ_SBI                              => 'sometimes|nullable|numeric',
-        Header::MIQ_YES                              => 'sometimes|nullable|numeric',
-        Header::MIQ_NB_ANY                           => 'sometimes|nullable|numeric',
-        Header::MIQ_WALLETS_FEE_TYPE                 => 'required|in:Flat,Percent,NA',
-        Header::MIQ_WALLETS_FEE_BEARER               => 'sometimes|nullable|in:Platform,Customer',
-        Header::MIQ_WALLETS_FREECHARGE               => 'sometimes|nullable|numeric',
-        Header::MIQ_WALLETS_ANY                      => 'sometimes|nullable|numeric',
-        Header::MIQ_DEBIT_CARD_FEE_TYPE              => 'required|in:Flat,Percent,NA',
-        Header::MIQ_DEBIT_CARD_FEE_BEARER            => 'sometimes|nullable|in:Platform,Customer',
-        Header::MIQ_DEBIT_CARD_0_2K                  => 'sometimes|nullable|numeric',
-        Header::MIQ_DEBIT_CARD_2K_1CR                => 'sometimes|nullable|numeric',
-        Header::MIQ_RUPAY_FEE_TYPE                   => 'required|in:Flat,Percent,NA',
-        Header::MIQ_RUPAY_FEE_BEARER                 => 'sometimes|nullable|in:Platform,Customer',
-        Header::MIQ_RUPAY_0_2K                       => 'sometimes|nullable|numeric',
-        Header::MIQ_RUPAY_2K_1CR                     => 'sometimes|nullable|numeric',
-        Header::MIQ_CREDIT_CARD_FEE_TYPE             => 'required|in:Flat,Percent,NA',
-        Header::MIQ_CREDIT_CARD_FEE_BEARER           => 'sometimes|nullable|in:Platform,Customer',
-        Header::MIQ_CREDIT_CARD_0_2K                 => 'sometimes|nullable|numeric',
-        Header::MIQ_CREDIT_CARD_2K_1CR               => 'sometimes|nullable|numeric',
-        Header::MIQ_INTERNATIONAL                    => 'required|string',
-        Header::MIQ_INTL_CARD_FEE_TYPE               => 'required|in:Flat,Percent,NA',
-        Header::MIQ_INTL_CARD_FEE_BEARER             => 'sometimes|nullable|in:Platform,Customer',
-        Header::MIQ_INTERNATIONAL_CARD               => 'sometimes|nullable|numeric',
-        Header::MIQ_BUSINESS_FEE_TYPE                => 'required|in:Flat,Percent,NA',
-        Header::MIQ_BUSINESS_FEE_BEARER              => 'sometimes|nullable|in:Platform,Customer',
-        Header::MIQ_BUSINESS                         => 'sometimes|nullable|numeric',
+        Header::MIQ_BUSINESS_DESCRIPTION             => 'required',
+        Header::MIQ_ESTD_DATE                        => 'required',
+        Header::MIQ_FEE_MODEL                        => 'required',
+        Header::MIQ_UPI_FEE_TYPE                     => 'required',
+        Header::MIQ_UPI_FEE_BEARER                   => 'sometimes',
+        Header::MIQ_UPI                              => 'sometimes',
+        Header::MIQ_NB_FEE_TYPE                      => 'required',
+        Header::MIQ_NB_FEE_BEARER                    => 'sometimes',
+        Header::MIQ_AXIS                             => 'sometimes',
+        Header::MIQ_HDFC                             => 'sometimes',
+        Header::MIQ_ICICI                            => 'sometimes',
+        Header::MIQ_SBI                              => 'sometimes',
+        Header::MIQ_YES                              => 'sometimes',
+        Header::MIQ_NB_ANY                           => 'sometimes',
+        Header::MIQ_WALLETS_FEE_TYPE                 => 'required',
+        Header::MIQ_WALLETS_FEE_BEARER               => 'sometimes',
+        Header::MIQ_WALLETS_FREECHARGE               => 'sometimes',
+        Header::MIQ_WALLETS_ANY                      => 'sometimes',
+        Header::MIQ_DEBIT_CARD_FEE_TYPE              => 'required',
+        Header::MIQ_DEBIT_CARD_FEE_BEARER            => 'sometimes',
+        Header::MIQ_DEBIT_CARD_0_2K                  => 'sometimes',
+        Header::MIQ_DEBIT_CARD_2K_1CR                => 'sometimes',
+        Header::MIQ_RUPAY_FEE_TYPE                   => 'required',
+        Header::MIQ_RUPAY_FEE_BEARER                 => 'sometimes',
+        Header::MIQ_RUPAY_0_2K                       => 'sometimes',
+        Header::MIQ_RUPAY_2K_1CR                     => 'sometimes',
+        Header::MIQ_CREDIT_CARD_FEE_TYPE             => 'required',
+        Header::MIQ_CREDIT_CARD_FEE_BEARER           => 'sometimes',
+        Header::MIQ_CREDIT_CARD_0_2K                 => 'sometimes',
+        Header::MIQ_CREDIT_CARD_2K_1CR               => 'sometimes',
+        Header::MIQ_INTERNATIONAL                    => 'required',
+        Header::MIQ_INTL_CARD_FEE_TYPE               => 'required',
+        Header::MIQ_INTL_CARD_FEE_BEARER             => 'sometimes',
+        Header::MIQ_INTERNATIONAL_CARD               => 'sometimes',
+        Header::MIQ_BUSINESS_FEE_TYPE                => 'required',
+        Header::MIQ_BUSINESS_FEE_BEARER              => 'sometimes',
+        Header::MIQ_BUSINESS                         => 'sometimes',
         Header::MIQ_BANK_ACC_NUMBER                  => 'required',
-        Header::MIQ_BENEFICIARY_NAME                 => 'required|string|min:3|max:120',
-        Header::MIQ_BRANCH_IFSC_CODE                 => 'required|alpha_num|max:11',
+        Header::MIQ_BENEFICIARY_NAME                 => 'required',
+        Header::MIQ_BRANCH_IFSC_CODE                 => 'required',
     ];
 
     protected static $partnerSubmerchantReferralInviteTypeRowRules = [
@@ -2288,44 +2282,7 @@ class Validator extends Base\Validator
         $this->validateEntriesWithPublicExceptionHandled($entries, function (array $entry)
         {
             $this->validateInput('merchantUploadMiqTypeRow', $entry);
-
-            if(empty($entry[Header::MIQ_WEBSITE]) === false)
-            {
-                $this->validateMerchantUploadMiqWebsiteDetails($entry);
-            }
-
-            $this->validateMerchantUploadMiqBusinessType($entry);
         });
-    }
-
-    /**
-     * Validates if website details are required.
-     * @param array $entry
-     * @throws BadRequestValidationFailureException
-     */
-    private function validateMerchantUploadMiqWebsiteDetails(array & $entry)
-    {
-        foreach (UploadMIQParser::$miqWebsiteEntries as $header)
-        {
-            if(empty($entry[$header]) === true)
-            {
-                throw new Exception\BadRequestValidationFailureException($header . ' should not be empty', Entity::FILE);
-            }
-        }
-    }
-
-    /**
-     * Validates Business Types.
-     *
-     * @param array $entry
-     * @throws BadRequestValidationFailureException
-     */
-    private function validateMerchantUploadMiqBusinessType(array & $entry)
-    {
-        if(in_array($entry[Header::MIQ_BUSINESS_TYPE], UploadMIQParser::$miqBusinessTypes) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException($entry[Header::MIQ_BUSINESS_TYPE] . ' invalid business type', Entity::FILE);
-        }
     }
 
     protected function validateAdjustmentEntries(array & $entries, array $params, ME $merchant)

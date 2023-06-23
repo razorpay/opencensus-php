@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Batch;
 
 use RZP\Models\Batch\Header;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Admin\Permission\Name as PName;
 
 class MerchantUploadMiqBatchTest extends TestCase
@@ -44,71 +45,6 @@ class MerchantUploadMiqBatchTest extends TestCase
         $this->startTest();
     }
 
-    public function testValidateHTTPSProtocolMerchantUploadMIQFailed()
-    {
-        $entries = $this->getDefaultFileEntries();
-
-        // validate http protocol type, only https allowed
-        foreach ($entries as & $entry)
-        {
-            $entry[Header::MIQ_WEBSITE] = str_replace("https","http",$entry[Header::MIQ_WEBSITE]);
-        }
-
-        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
-
-        $this->startTest();
-    }
-
-    public function testValidateBusinessTypeMerchantUploadMIQFailed()
-    {
-        $entries = $this->getDefaultFileEntries();
-
-        // validate optional website details if [Header::MIQ_WEBSITE] is present.
-        foreach ($entries as & $entry)
-        {
-            $entry[Header::MIQ_BUSINESS_TYPE]   = 'Dummy Business Type';
-        }
-
-        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
-
-        $this->startTest();
-    }
-
-    public function testValidateWebsiteDetailMerchantUploadMIQSuccess()
-    {
-        $entries = $this->getDefaultFileEntries();
-
-        // skip validation for optional website details if [Header::MIQ_WEBSITE] is empty/not present.
-        foreach ($entries as & $entry)
-        {
-            $entry[Header::MIQ_WEBSITE] = '';
-        }
-
-        foreach ($entries as & $entry)
-        {
-            $entry[Header::MIQ_WEBSITE_CANCELLATION]   = '';
-        }
-
-        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
-
-        $this->startTest();
-    }
-
-    public function testValidateWebsiteDetailMerchantUploadMIQFailed()
-    {
-        $entries = $this->getDefaultFileEntries();
-
-        // validate optional website details if [Header::MIQ_WEBSITE] is present.
-        foreach ($entries as & $entry)
-        {
-            $entry[Header::MIQ_WEBSITE_CANCELLATION]   = '';
-        }
-
-        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
-
-        $this->startTest();
-    }
-
     public function testCreateBatchMerchantUploadMIQSuccess()
     {
         $admin = $this->ba->getAdmin();
@@ -136,30 +72,15 @@ class MerchantUploadMiqBatchTest extends TestCase
         $this->startTest();
     }
 
-    public function testValidateInputMerchantUploadMIQFailed()
-    {
-        $entries = $this->getDefaultFileEntries();
-
-
-        array_push($entries, ...$entries, ...$entries);
-
-        // invalid email id
-        $entries[0][Header::MIQ_CONTACT_EMAIL] = "upload.miq@ @razorpay.com";
-
-        // invalid contact number, min len should be 10 if does not have country code.
-        $entries[1][Header::MIQ_CONTACT_EMAIL] = "999999999";
-
-        // invalid merchant name, special char not allowed except whitespace
-        $entries[2][Header::MIQ_MERCHANT_NAME] = "Test_Merchant";
-
-        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
-
-        $this->startTest();
-    }
-
     public function testCreateMerchantUploadMIQSuccess()
     {
         $this->ba->appAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => "100000razorpay",
+            'entity_type'   => 'org',
+        ]);
 
         $response = $this->startTest();
 
@@ -176,6 +97,12 @@ class MerchantUploadMiqBatchTest extends TestCase
     {
         $this->ba->appAuth();
 
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => "100000razorpay",
+            'entity_type'   => 'org',
+        ]);
+
         $response = $this->startTest();
 
         $this->assertEquals('failure', $response[Header::STATUS]);
@@ -183,9 +110,30 @@ class MerchantUploadMiqBatchTest extends TestCase
         $this->assertEquals('BAD_REQUEST_ERROR', $response[Header::ERROR_CODE]);
     }
 
+    public function testCreateMerchantWithKYCSuccess()
+    {
+        $this->ba->appAuth();
+
+        $response = $this->startTest();
+
+        // Creating the merchant even if there is a failure in KYC submission,
+        // then the banking operations team will take it manually.
+        $this->assertNotEmpty($response[Header::MIQ_OUT_MERCHANT_ID]);
+
+        $this->assertEquals('failure', $response[Header::STATUS]);
+
+        $this->assertEquals('SERVER_ERROR', $response[Header::ERROR_CODE]);
+    }
+
     public function testCreateMerchantWithoutWebsiteDetailsSuccess()
     {
         $this->ba->appAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => "100000razorpay",
+            'entity_type'   => 'org',
+        ]);
 
         $response = $this->startTest();
 
@@ -201,6 +149,12 @@ class MerchantUploadMiqBatchTest extends TestCase
     public function testCreateMerchantDynamicFeeBearerSuccess()
     {
         $this->ba->appAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => "100000razorpay",
+            'entity_type'   => 'org',
+        ]);
 
         $response = $this->startTest();
 
@@ -218,6 +172,12 @@ class MerchantUploadMiqBatchTest extends TestCase
     public function testCreateMerchantWithoutPricingPlan()
     {
         $this->ba->appAuth();
+
+        $this->fixtures->create('feature', [
+            'name'          => Feature::SKIP_KYC_VERIFICATION,
+            'entity_id'     => "100000razorpay",
+            'entity_type'   => 'org',
+        ]);
 
         $response = $this->startTest();
 

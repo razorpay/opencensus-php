@@ -412,4 +412,18 @@ class BusinessCategory
             Sub::UTILITIES_ELECTRIC_GAS_OIL_WATER,
         ],
     ];
+
+    /**
+     * This function checks if the given category is valid
+     *
+     * @param string $category
+     *
+     * @return boolean true/false
+     */
+    public static function isValidCategory(string $category) : bool
+    {
+        $key = __CLASS__ . '::' . strtoupper($category);
+
+        return ((defined($key) === true) and (constant($key) === $category));
+    }
 }

@@ -1220,37 +1220,39 @@ class Service extends Base\Service
     {
         try
         {
-            $response = (new Upload\Core)->processMerchantEntry($input);
+            return (new Upload\Core)->processMerchantEntry($input);
         }
         catch (Exception\BaseException $e)
         {
             $this->trace->traceException($e, null, TraceCode::BATCH_PROCESSING_ERROR, [
-                BatchHeader::MIQ_OUT_MERCHANT_NAME      => $input[BatchHeader::MIQ_MERCHANT_NAME],
-                BatchHeader::MIQ_OUT_MERCHANT_EMAIL     => $input[BatchHeader::MIQ_CONTACT_EMAIL],
+                BatchHeader::MIQ_MERCHANT_NAME      => $input[BatchHeader::MIQ_MERCHANT_NAME],
+                BatchHeader::MIQ_CONTACT_EMAIL     => $input[BatchHeader::MIQ_CONTACT_EMAIL],
             ]);
 
             $error = $e->getError();
 
-            $response[BatchHeader::STATUS]            = BatchStatus::FAILURE;
+            $input[BatchHeader::STATUS]            = BatchStatus::FAILURE;
 
-            $response[BatchHeader::ERROR_CODE]        = $error->getPublicErrorCode();
+            $input[BatchHeader::ERROR_CODE]        = $error->getPublicErrorCode();
 
-            $response[BatchHeader::ERROR_DESCRIPTION] = $error->getDescription();
+            $input[BatchHeader::ERROR_DESCRIPTION] = $error->getDescription();
 
         }
         catch (\Throwable $e)
         {
             $this->trace->traceException($e, null, TraceCode::BATCH_PROCESSING_ERROR, [
-                BatchHeader::MIQ_OUT_MERCHANT_NAME      => $input[BatchHeader::MIQ_MERCHANT_NAME],
-                BatchHeader::MIQ_OUT_MERCHANT_EMAIL     => $input[BatchHeader::MIQ_CONTACT_EMAIL],
+                BatchHeader::MIQ_MERCHANT_NAME      => $input[BatchHeader::MIQ_MERCHANT_NAME],
+                BatchHeader::MIQ_CONTACT_EMAIL     => $input[BatchHeader::MIQ_CONTACT_EMAIL],
             ]);
 
-            $response[BatchHeader::STATUS]     = BatchStatus::FAILURE;
+            $input[BatchHeader::STATUS]     = BatchStatus::FAILURE;
 
-            $response[BatchHeader::ERROR_CODE] = ErrorCode::SERVER_ERROR;
+            $input[BatchHeader::ERROR_CODE] = ErrorCode::SERVER_ERROR;
+
+            $input[BatchHeader::ERROR_DESCRIPTION] = PublicErrorDescription::SERVER_ERROR;
         }
 
-        return $response;
+        return $input;
     }
 
     public function sendWhatsappNotification($id, array $input): array

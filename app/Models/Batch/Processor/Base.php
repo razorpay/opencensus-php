@@ -1878,6 +1878,14 @@ class Base extends BaseModel\Core
 
     public function addSettingsIfRequired(& $input)
     {
+        if($this->batch->getType() === BatchType::MERCHANT_UPLOAD_MIQ)
+        {
+            $admin = $this->app['basicauth']->getAdmin();
+
+            $input[Batch\Entity::CONFIG][Merchant\Entity::ORG_ID] = $admin->getOrgId();
+
+            return;
+        }
         return;
     }
 }

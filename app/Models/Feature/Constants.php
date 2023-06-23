@@ -219,6 +219,12 @@ class Constants
     const SHOW_CUSTOM_DCC_DISCLOSURES = 'show_custom_dcc_discl';
 
     /**
+     * The feature flag is used for VAS merchant on-boarding, enabling the skipping of document verification in KYC form submission,
+     * from the backend. Since KYC verification does not apply to the banking's merchants, the bank itself performs the verification.
+     */
+    const SKIP_KYC_VERIFICATION = "skip_kyc_verification";
+
+    /**
      * Feature flag to allow customer fee bearer model on international payments
      * Affects DCC and MCC flows
      */
@@ -2555,6 +2561,7 @@ class Constants
         self::DISABLE_OTP_AUTO_READ_AND_SUBMIT => true,
         self::WALLET_PAYTM_AUTO_DEBIT         => true,
         self::ENABLE_APPROVAL_VIA_OAUTH       => true,
+        self::SKIP_KYC_VERIFICATION           => true,
     ];
 
     // Entity type constants

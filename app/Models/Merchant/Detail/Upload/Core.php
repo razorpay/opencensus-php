@@ -6,17 +6,18 @@ namespace RZP\Models\Merchant\Detail\Upload;
 use Throwable;
 
 use RZP\Models\Base;
+use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Pricing;
+use RZP\Constants\Entity;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Status;
 use RZP\Exception\BaseException;
 use RZP\Exception\LogicException;
-use RZP\Models\Merchant\Document;
+use RZP\Models\Merchant\Stakeholder;
 use RZP\Models\Merchant\BusinessDetail;
 use RZP\Models\User\Service as UserService;
-use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Detail\Core as MDetailCore;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
@@ -31,17 +32,12 @@ class Core extends Base\Core
     protected $auth;
 
     /**
-     * @var MerchantCore
-     */
-    private $merchantCore;
-
-    /**
      * @var MDetailCore
      */
     private $merchantDetailCore;
 
     /**
-     * @var BDetailService
+     * @var BusinessDetail\Service
      */
     private $businessDetailService;
 
@@ -54,8 +50,6 @@ class Core extends Base\Core
         $this->auth = $this->app['basicauth'];
 
         $this->userService = new UserService();
-
-        $this->merchantCore = new MerchantCore();
 
         $this->merchantDetailCore = new MDetailCore();
 
@@ -107,6 +101,8 @@ class Core extends Base\Core
      */
     public function processMerchantEntry(array $entry): array
     {
+        (new Validator)->validateRequestInput($entry);
+
         $lockKey = $entry[Header::MIQ_CONTACT_EMAIL];
 
         return $this->mutex->acquireAndRelease($lockKey, function () use ($entry)
@@ -118,38 +114,51 @@ class Core extends Base\Core
                 ]
             );
 
-            $parser->preProcessMerchantEntry($entry);
+            // Creating a copy of entry for preprocessing
+            $processedEntry = array_slice($entry, 0);
 
-            $batchResponse = $parser->getDefaultBatchResponse($entry);
+            $parser->preProcessMerchantEntry($processedEntry);
 
-            $merchant = $this->repo->transactionOnLiveAndTest(function () use ($entry, $parser, &$batchResponse)
+            $merchant = $this->repo->transactionOnLiveAndTest(function () use ($processedEntry, $parser, &$entry)
             {
-                $user = $this->createUser($entry[Header::MIQ_CONTACT_EMAIL], $entry[Header::MIQ_MERCHANT_NAME]);
+                $user = $this->createUser($processedEntry[Header::MIQ_CONTACT_EMAIL], $processedEntry[Header::MIQ_MERCHANT_NAME]);
 
-                $merchant = $this->createMerchant($user, $entry[Header::MIQ_CONTACT_EMAIL], $entry[Header::MIQ_MERCHANT_NAME]);
+                $merchant = $this->createMerchant($user, $processedEntry[Header::MIQ_CONTACT_EMAIL], $processedEntry[Header::MIQ_MERCHANT_NAME],
+                    $processedEntry[MerchantEntity::ORG_ID]);
 
-                $feeBearer = $parser->getMerchantFeeBearerType($entry);
+                $feeBearer = $parser->getMerchantFeeBearerType($processedEntry);
 
-                $this->setFeeModelAndFeeBearer($merchant, $entry, $feeBearer);
+                $this->setFeeModelAndFeeBearer($merchant, $processedEntry, $feeBearer);
 
                 if(empty($merchant) === true)
                 {
-                    $batchResponse[Header::STATUS] = Status::FAILURE;
-
-                    $batchResponse[Header::ERROR_DESCRIPTION] = 'Could not create/Find merchant';
-
-                    return null;
+                    throw new Exception\RuntimeException("Failed to create merchant", null,
+                        null, ErrorCode::SERVER_ERROR);
                 }
 
-                $merchantDetailsInput = $parser->getMerchantDetailInput($entry);
+                $entry[Header::MIQ_OUT_MERCHANT_ID] = $merchant->getId();
+
+                $entry[Header::MIQ_OUT_FEE_BEARER] = $merchant->getFeeBearer();
+
+                $merchantDetailsInput = $parser->getMerchantDetailInput($processedEntry);
 
                 $this->merchantDetailCore->saveMerchantDetails($merchantDetailsInput, $merchant);
 
-                // saving dummy files, required in merchant activation.
-                (new Document\Core)->storeInMerchantDocument($merchant, $merchant, $parser->getDummyActivationFiles());
+                $websiteDetails = $parser->getWebsiteDetailInput($processedEntry);
 
-                // submit dummy KYC details
-                $submitData = [DetailEntity::SUBMIT   =>   '1'];
+                $this->businessDetailService->saveBusinessDetailsForMerchant($merchant->getId(), $websiteDetails);
+
+                // The Aadhaar linked status will be validated before form submission if it is set to 1 for Aadhaar linkage.
+                // However, as this is not applicable for the banking merchant, hence setting it to 0.
+                //
+                // The activation form milestone is set to L2 as here we are submitting the KYC form.
+                $submitData = [
+                    Entity::STAKEHOLDER => [
+                        Stakeholder\Entity::AADHAAR_LINKED => 0,
+                    ],
+                    DetailEntity::ACTIVATION_FORM_MILESTONE => "L2",
+                    DetailEntity::SUBMIT => '1',
+                ];
 
                 $response = $this->merchantDetailCore->saveMerchantDetails($submitData, $merchant);
 
@@ -160,35 +169,24 @@ class Core extends Base\Core
                             'merchant_id' => $merchant->getId(),
                         ]);
 
-                    $batchResponse[Header::STATUS] = Status::FAILURE;
+                    $entry[Header::STATUS] = Status::FAILURE;
 
-                    $batchResponse[Header::ERROR_DESCRIPTION] = 'Activation details could not be submitted successfully';
+                    $entry[Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;
+
+                    $entry[Header::ERROR_DESCRIPTION] = 'Failed to submit activation details';
                 }
-
-                // saving merchant category details from business category and sub-category
-                $this->merchantCore->autoUpdateCategoryDetails($merchant, $entry[Header::MIQ_BUSINESS_CATEGORY],
-                    $entry[Header::MIQ_SUB_CATEGORY]);
-
-                // saving website details, required in merchant activation.
-                $websiteDetails = $parser->getWebsiteDetailInput($entry);
-
-                $this->businessDetailService->saveBusinessDetailsForMerchant($merchant->getId(), $websiteDetails);
 
                 return $merchant;
             });
 
-            if(empty($merchant) === false)
+            // Creating pricing plan only, when merchant is created and KYC form submitted successfully.
+            if(!empty($merchant) && empty($entry[Header::STATUS]))
             {
-                // set batch response
-                $batchResponse[Header::MIQ_OUT_MERCHANT_ID] = $merchant->getId();
-
-                $batchResponse[Header::MIQ_OUT_FEE_BEARER]  = $merchant->getFeeBearer();
-
                 try
                 {
                     // create forward pricing plan and assign to merchant.
                     $plan = (new Pricing\Core)->create([ Pricing\Entity::PLAN_NAME => $merchant->getId(),
-                        Pricing\Entity::RULES => $parser->getPricingRulesInput($entry)
+                        Pricing\Entity::RULES => $parser->getPricingRulesInput($processedEntry)
                     ], $merchant->getOrgId()
                     );
 
@@ -196,39 +194,39 @@ class Core extends Base\Core
 
                     $this->repo->saveOrFail($merchant);
 
-                    $batchResponse[Header::STATUS] = Status::SUCCESS;
+                    $entry[Header::STATUS] = Status::SUCCESS;
                 }
                 catch (BaseException $e)
                 {
                     $error = $e->getError();
 
-                    $batchResponse[Header::STATUS]            = Status::FAILURE;
+                    $entry[Header::STATUS]            = Status::FAILURE;
 
-                    $batchResponse[Header::ERROR_CODE]        = $error->getPublicErrorCode();
+                    $entry[Header::ERROR_CODE]        = $error->getPublicErrorCode();
 
-                    $batchResponse[Header::ERROR_DESCRIPTION] = $error->getDescription();
+                    $entry[Header::ERROR_DESCRIPTION] = $error->getDescription();
                 }
                 catch (\Throwable $e)
                 {
                     $this->trace->traceException($e, null, TraceCode::MERCHANT_UPLOAD_MIQ_PRICING_PLAN_CREATION_FAILED, [
-                        Header::MIQ_OUT_MERCHANT_EMAIL          => $entry[Header::MIQ_CONTACT_EMAIL],
-                        Header::MIQ_OUT_MERCHANT_ID             => $merchant->getId(),
+                        Header::MIQ_CONTACT_EMAIL          => $entry[Header::MIQ_CONTACT_EMAIL],
+                        Header::MIQ_OUT_MERCHANT_ID        => $merchant->getId(),
                     ]);
 
-                    $batchResponse[Header::STATUS]   = Status::FAILURE;
+                    $entry[Header::STATUS]   = Status::FAILURE;
 
-                    $batchResponse[Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;
+                    $entry[Header::ERROR_CODE] = ErrorCode::SERVER_ERROR;
 
-                    $batchResponse[Header::ERROR_DESCRIPTION] = 'Could not create pricing plan';
+                    $entry[Header::ERROR_DESCRIPTION] = 'Failed to create pricing plan';
                 }
             }
 
             $this->trace->info(TraceCode::BATCH_SERVICE_UPLOAD_MIQ_CREATE_RESPONSE, [
-                    'response'    =>  $batchResponse,
+                    'response'    =>  $parser->getMaskedEntryForLogging($entry),
                 ]
             );
 
-            return $batchResponse;
+            return $entry;
         });
     }
 
@@ -250,12 +248,12 @@ class Core extends Base\Core
         return $this->userService->create($userInput);
     }
 
-    protected function createMerchant($user, string $email, string $businessName)
+    protected function createMerchant($user, string $email, string $businessName, string $orgId = null)
     {
         $merchantInput = [
             'name'  => $businessName,
             'email' => $email,
-            'org_id'=> $this->auth->getOrgId()
+            'org_id'=> $orgId ?? $this->auth->getOrgId()
         ];
 
         $merchantData = $this->userService->createMerchantFromUser($merchantInput, $user, '', false, [], false);
@@ -271,7 +269,7 @@ class Core extends Base\Core
      * @param string $feeBearer
      * @return void
      */
-    private function setFeeModelAndFeeBearer(MerchantEntity $merchant, array $input, string $feeBearer)
+    private function setFeeModelAndFeeBearer(MerchantEntity $merchant, array $input, string $feeBearer): void
     {
         if(empty($input[Header::MIQ_FEE_MODEL]) === false)
         {
