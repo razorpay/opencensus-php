@@ -5335,6 +5335,12 @@ class Processor
             {
                 return;
             }
+
+            if ($this->mode !== Mode::LIVE)
+            {
+                return;
+            }
+
             // To Avoid duplicate Verification
             if ( $payment->isUpi() === true && $payment->getStatus() !== "authorized" ){
                 return;
@@ -5372,11 +5378,6 @@ class Processor
 
             //Unexpected Payment
             if ( $gatewayResult !== 'on')
-            {
-                return;
-            }
-
-            if ($this->mode !== Mode::LIVE)
             {
                 return;
             }
