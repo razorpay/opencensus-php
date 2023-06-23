@@ -424,8 +424,8 @@ export const ScheduleReportModal = ({
                 validationState={showErrorInSection === 1 ? validateCustomDuration() : true}
                 modifiers={{
                   INFO_WHEN_PAST_DISABLED: `*Schedule can only run from ${moment().format(
-                    'MMM d, YYYY',
-                  )} onwards. While data covered can be past data. By default schedule will run infinitely until deleted.`,
+                    'MMM D, YYYY',
+                  )} onwards.`,
                 }}
               />
             </Box>
