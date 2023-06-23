@@ -6335,4 +6335,27 @@ class Core extends Base\Core
 
         return UserRolePermissionsMap::$restrictedPermissions[SubVaConstants::ACCOUNT_SUB_ACCOUNT];
     }
+
+    /**
+     * Update the user's name.
+     *
+     * @param $userName data containing the new name.
+     * @param Entity $user  The user entity to be updated.
+     * @return Entity The updated user entity.
+     * @throws \Exception If there is an error while saving the user.
+    */
+    public function postUpdateUserName(string $userName, Entity $user) 
+    {
+        // Check if the new name is different from the current name
+        if ($userName === $user->getName()) 
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_USERNAME_MUST_BE_DIFFERENT);
+        }
+        
+        $user->setName($userName);
+        
+        $this->repo->user->saveOrFail($user);
+
+        return $user;
+    }
 }

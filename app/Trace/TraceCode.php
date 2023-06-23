@@ -798,6 +798,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const AUTO_CAPTURE_REFUND_DELAY                             = 'AUTO_CAPTURE_REFUND_DELAY';
 
+    const USER_NAME_UPDATE_REQUEST                              = 'USER_NAME_UPDATE_REQUEST';
+
     const MPESA_GATEWAY_PARAM_ARRAY                             = 'MPESA_GATEWAY_PARAM_ARRAY';
     const INVALID_AUTH                                          = 'INVALID_AUTH';
 

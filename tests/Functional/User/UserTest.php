@@ -11168,4 +11168,46 @@ class UserTest extends TestCase
 
         $this->startTest();
     }
+
+    public function createUserWithMerchant()
+    {
+        $user = $this->fixtures->create('user', [
+            'name' => 'Razorpay user'
+        ]);
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'owner',
+            'product'     => 'primary',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->ba->proxyAuth('rzp_test_'.$merchant['id'], $user['id']);
+    }
+
+    public function testChangeUserName()
+    {
+        $this->createUserWithMerchant();
+
+        $this->startTest();
+    }
+
+    public function testChangeUserNameByPassingSameName()
+    {
+        $this->createUserWithMerchant();
+
+        $this->startTest();
+    }
+
+    public function testChangeUserNameByPassingInvalidName()
+    {
+        $this->createUserWithMerchant();
+
+        $this->startTest();
+    }
+    
 }

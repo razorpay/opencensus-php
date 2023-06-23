@@ -63,7 +63,6 @@ class Constants
     const EMAIL                       = 'email';
     const CONTACT_MOBILE              = 'contact_mobile';
 
-
     // oauth constants start
     const OAUTH_SOURCE = 'oauth_source';
     const CLIENT_ID    = 'client_id';

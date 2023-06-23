@@ -6828,4 +6828,65 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testChangeUserName' => [
+        'request' => [
+            'url' => '/users/update_name',
+            'method'  => 'POST',
+            'content' => [
+                'name' => 'Razorpay user 1'
+            ],
+        ],
+        'response' => [
+            "status_code" => 200,
+            "content" => [
+                'name' => 'Razorpay user 1'
+            ]
+        ],
+    ],
+
+    'testChangeUserNameByPassingSameName' => [
+        'request' => [
+            'url' => '/users/update_name',
+            'method'  => 'POST',
+            'content' => [
+                'name' => 'Razorpay user'
+            ],
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content' => [
+                'error' => [
+                    'description' => 'User name must be different from existing name',
+                ],
+            ]
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USERNAME_MUST_BE_DIFFERENT,
+        ],
+    ],
+
+    'testChangeUserNameByPassingInvalidName' => [
+        'request' => [
+            'url' => '/users/update_name',
+            'method'  => 'POST',
+            'content' => [
+                'name' => 'Ra'
+            ],
+        ],
+        'response' => [
+            "status_code" => 400,
+            "content" => [
+                "error" => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The name must be at least 4 characters.',
+                ],
+            ]
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
 ];

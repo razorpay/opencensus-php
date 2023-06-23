@@ -2284,6 +2284,7 @@ class Route
         'user_patch_password'                      => ['patch',    'users/password',                                 'UserController@postPatchUserPassword'                              ],
         'user_edit_self'                           => ['patch',    'users',                                          'UserController@editSelf'                                           ],
         'user_salesforce_event'                    => ['post',     'users/salesforce_event',                         'UserController@sendUserDetailsToSalesForceEvent'                   ],
+        'user_update_name'                         => ['post',     'users/update_name',                              'UserController@postUpdateUserName'                                 ],                                  
 
         // Fetch user via OAuth (Private Auth)
         'user_fetch'                               => ['get',      'users/{id}',                                     'UserController@getUser'                                            ],
@@ -6083,6 +6084,7 @@ class Route
     //
 
     public static $proxy = [
+        'user_update_name',
         'merchant_bmc_response_fetch',
         'merchant_bmc_response_save',
         'merchant_consents_save',
@@ -11929,6 +11931,7 @@ class Route
             'switch_merchant_token',
             'user_account_unlock',
             'user_change_password',
+            'user_update_name',
             'user_check_has_set_password',
             'user_set_password',
             'user_device_detail_save',

@@ -988,6 +988,7 @@ class UserRolesScope
             'hs_code_fetch'                                        => Role::ALL_ROLES,
             'merchant_patch_hs_code'                               => Role::ALL_ROLES,
             'fetch_hs_code'                                        => Role::ALL_ROLES,
+            'user_update_name'                                     => Role::ALL_ROLES,
             'payment_update_merchant_document'                     => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE],
             'payment_bulk_update_merchant_document'                => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE],
             'razorx_dummy'                                         => [Role::OWNER, Role::ADMIN],

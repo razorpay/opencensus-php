@@ -679,4 +679,18 @@ class UserController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    /**
+     * Change the user's username.
+     *
+     * @return \Illuminate\Http\JsonResponse The JSON response containing the result of the username change operation.
+    */
+    public function postUpdateUserName() 
+    {
+        $input = Request::all();
+        
+        $response = $this->service()->postUpdateUserName($input);
+
+        return APIResponse::json($response);
+    }
 }

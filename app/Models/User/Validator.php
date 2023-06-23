@@ -456,6 +456,10 @@ class Validator extends Base\Validator
         OAuthApplicationConstants::CLIENT_ID    => 'required',
     ];
 
+    protected static $updateUserNameRules = [
+        'name' => 'required|string|min:4|max:200',
+    ];
+
     protected static $teamManagementValidators = [
         'self_user',
         'team_user',
