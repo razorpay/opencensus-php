@@ -1047,7 +1047,7 @@ class Gateway extends Base\Gateway
         $displayDetails = [
             'customer_name'      => str_limit($token->getBeneficiaryName(), 40, ''),
             'bank'               => $bank,
-            'account_number'     => $token->getAccountNumber(),
+            'account_number'     => mask_except_last4($token->getAccountNumber()),
             'max_amount'         => number_format($token->getMaxAmount() / 100, 2, '.', ''),
             'debit_type'         => 'Max Amount',
             'mandate_start_date' => $startDate,

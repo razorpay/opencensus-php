@@ -20,6 +20,7 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Bank\BankCodes;
 use RZP\Models\Payment\Config;
 use RZP\Jobs\SyncOrderPgRouter;
+use RZP\Models\Merchant\Methods;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\BankAccount\Beneficiary;
@@ -484,8 +485,15 @@ class Core extends Base\Core
                 $bankCode = $bankAccount->getBankCode();
 
                 $data[Entity::BANK] = $bankCode;
+    
+                $bankAccountData = $bankAccount->getDataForCheckout();
+                
+                if ($order->getMethod() === Methods\Entity::EMANDATE)
+                {
+                    $bankAccountData[BankAccount\Entity::ACCOUNT_NUMBER] = mask_except_last4($bankAccountData[BankAccount\Entity::ACCOUNT_NUMBER]);
+                }
 
-                $data[Entity::BANK_ACCOUNT] = $bankAccount->getDataForCheckout();
+                $data[Entity::BANK_ACCOUNT] = $bankAccountData;
             }
 
             $data[Entity::AUTH_TYPE] = $tokenRegistration->getAuthType();

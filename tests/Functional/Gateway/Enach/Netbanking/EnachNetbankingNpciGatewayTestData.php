@@ -435,6 +435,42 @@ return [
             'internal_error_code'   => ErrorCode::BAD_REQUEST_ORDER_BANK_INVALID,
         ],
     ],
+    
+    
+    'testEmandatePreferencesWithAccountMasking' => [
+        'request' => [
+            'content' => [],
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+    
+    'testEmandateRegistrationWithAccountMasking' => [
+        'request' => [
+            'content' => [
+                "amount"      => 0,
+                "currency"    => "INR",
+                "method"      => "emandate",
+                "order_id"    => "order_100000000order",
+                "customer_id" => "cust_1000000000cust",
+                "recurring"   => true,
+                "contact"     => "9999999999",
+                "email"       => "test@razorpay.com",
+                "auth_type"   => "netbanking",
+            ],
+            'method'    => 'POST',
+            'url'       => '/payments/create/ajax',
+        ],
+        'response'  => [
+            'content'     => [
+            ],
+            'status_code' => 200,
+        ]
+    ],
 
     'process_via_batch_service' => [
         'request' => [

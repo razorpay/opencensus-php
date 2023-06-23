@@ -214,6 +214,89 @@ class EnachNetbankingNpciGatewayTest extends TestCase
         $this->assertEquals(44, $netcount);
 
     }
+    
+    public function testEmandatePreferencesWithAccountMasking()
+    {
+        $orderInput = [
+            'amount' => 0,
+            'payment_capture' => true,
+            'method' => Method::EMANDATE,
+            'bank'           => 'HDFC',
+            'customer_id'    => 'cust_100000customer',
+            'token'          => [
+                'method'       => 'emandate',
+                'max_amount'   => 2500,
+                'bank_account' => [
+                    'bank_name'          => 'HDFC Bank',
+                    'ifsc_code'          => 'HDFC0001233',
+                    'account_number'     => '914010009305862',
+                    'account_type'       => 'savings',
+                    'beneficiary_name'   => 'test',
+                    'beneficiary_email'  => 'test@razorpay.com',
+                    'beneficiary_mobile' => '9999999999'
+                ],
+            ]
+        ];
+        
+        $order = $this->createOrder($orderInput);
+        
+        $this->ba->publicAuth();
+        
+        $testData['request']['content'] = ['key_id' => $this->ba->getKey(), 'order_id' => $order['id']];
+        
+        $content = $this->startTest($testData);
+        
+        $accountNumber = $content['order']['bank_account']['account_number'];
+        
+        $this->assertEquals("XXXXXXXXXXX5862", $accountNumber);
+    }
+    
+    public function testEmandateRegistrationWithAccountMasking()
+    {
+        $payment = $this->getEmandatePaymentArray('HDFC', 'netbanking', 0);
+        
+        $payment['bank_account'] = [
+            'account_number' => 'XXXXXXXXXXX5862',
+            'ifsc'           => 'HDFC0001233',
+            'name'           => 'Test account',
+            'account_type'   => 'savings',
+        ];
+        
+        $orderInput = [
+            'amount' => 0,
+            'payment_capture' => true,
+            'method' => Method::EMANDATE,
+            'bank'           => 'HDFC',
+            'customer_id'    => 'cust_100000customer',
+            'token'          => [
+                'method'       => 'emandate',
+                'max_amount'   => 2500,
+                'bank_account' => [
+                    'account_number' => '914010009305862',
+                    'account_type'   => 'savings',
+                    'bank_name'          => 'HDFC Bank',
+                    'ifsc_code'          => 'HDFC0001233',
+                    'beneficiary_name'   => 'test',
+                    'beneficiary_email'  => 'test@razorpay.com',
+                    'beneficiary_mobile' => '9999999999'
+                ],
+            ]
+        ];
+        
+        $order = $this->createOrder($orderInput);
+        
+        $payment['order_id'] = $order['id'];
+        
+        $this->doAuthPayment($payment);
+        
+        $payment = $this->getLastEntity('payment', true);
+        
+        $this->assertEquals('captured', $payment['status']);
+        
+        $token = $this->getLastEntity('token', true);
+        
+        $this->assertEquals('914010009305862', $token['bank_details']['account_number']);
+    }
 
     public function testPaymentWithDisplayFeature()
     {

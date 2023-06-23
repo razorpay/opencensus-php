@@ -3099,9 +3099,8 @@ class Processor
                 $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::NAME] =
                     $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::NAME] ?? $tokenRegistrationBankAccount->getBeneficiaryName();
 
-                $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::ACCOUNT_NUMBER] =
-                    $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::ACCOUNT_NUMBER] ?? $tokenRegistrationBankAccount->getAccountNumber();
-
+                $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::ACCOUNT_NUMBER] = $tokenRegistrationBankAccount->getAccountNumber();
+                
                 $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::IFSC] =
                     $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::IFSC] ?? $tokenRegistrationBankAccount->getIfscCode();
 
@@ -3164,6 +3163,11 @@ class Processor
         if ($this->app->runningUnitTests() === true)
         {
             unset($input['_']);
+        }
+    
+        if(empty($input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::ACCOUNT_NUMBER]) === false)
+        {
+            $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::ACCOUNT_NUMBER] = mask_except_last4($input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::ACCOUNT_NUMBER]);
         }
 
         $coproto = [
