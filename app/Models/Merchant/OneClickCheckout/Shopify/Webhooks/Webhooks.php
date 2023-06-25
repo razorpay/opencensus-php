@@ -15,9 +15,12 @@ use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Jobs\OneCCShopifyCreateOrder;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant\OneClickCheckout;
 use RZP\Models\Merchant\OneClickCheckout\Shopify;
 use RZP\Models\Merchant\OneClickCheckout\AuthConfig;
+use RZP\Models\Merchant\OneClickCheckout\Constants;
+use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator;
 
 class Webhooks extends Base\Core
 {
@@ -142,6 +145,22 @@ class Webhooks extends Base\Core
             return;
         }
 
+        $isRzpPayment = $this->isRzpPayment($input);
+        if ($isRzpPayment === false)
+        {
+            $this->trace->count(
+                Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT,
+                ['status' => 'not_applicable', 'reason' => 'non_rzp_order']);
+            $this->trace->error(
+                TraceCode::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_VALIDATION_FAILED,
+                [
+                  'type'             => 'non_rzp_order',
+                  'transactions'     => $input['transactions'],
+                  'razorpay_payment' => $isRzpPayment,
+                ]);
+            return;
+        }
+
         $shopId = $this->utils->stripAndReturnShopId($headers['x-shopify-shop-domain']);
         $configs = $this->getMerchantConfigs($shopId);
 
@@ -236,10 +255,15 @@ class Webhooks extends Base\Core
             return;
         }
         $refundFromWebhook = $this->formatAmountStringToPaise($input['transactions'][0]['amount']);
-
-        $payment = $this->findPaymentAndSetMode(substr($paymentId, 4));
-
-        if ($payment === null)
+        // As keyless auth is not properly supported we only support LIVE mode in production and ignore
+        // any errors which occur when a refund is issued against a test payment via Shopify for 1cc orders.
+        $mode = $this->app->environment(Environment::PRODUCTION) === true ? Mode::LIVE : Mode::TEST;
+        $this->app['basicauth']->setModeAndDbConnection($mode);
+        try
+        {
+            $payment = $this->repo->payment->findOrFail(substr($paymentId, 4));
+        }
+        catch (\Throwable $e)
         {
             $this->trace->count(
                 Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT,
@@ -247,10 +271,13 @@ class Webhooks extends Base\Core
             $this->trace->error(
                 TraceCode::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_VALIDATION_FAILED,
                 [
+                    'error'      => $e->getMessage(),
                     'type'       => 'payment_not_found',
                     'payment_id' => $paymentId,
-                ]);
-            return;
+                    'mode'       => $mode,
+                    'source'     => 'catch_block',
+              ]);
+          return;
         }
 
         // In case of non-1cc orders, we do not lot this as a failure as we could never process this refund.
@@ -276,38 +303,65 @@ class Webhooks extends Base\Core
         }
 
         $paymentAmount = $payment->getAmount();
-
+        // default value for variable scoping.
+        $allowPartialRefund = false;
         if ($paymentAmount > $refundFromWebhook)
         {
-            // We consider this as not applicable as it represents a mismatch in payment amount.
-            // We use number_format function to ensure no rounding off errors can cause this problem.
-            $this->trace->count(
-                Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT,
-                ['status' => 'not_applicable', 'reason' => 'partial_refund']);
-            $this->trace->error(
-                TraceCode::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_VALIDATION_FAILED,
-                [
-                    'type'           => 'partial_refund_sent',
-                    'order_id'       => $order->getPublicId(),
-                    'payment_id'     => $payment->getPublicId(),
-                    'refund_txn'     => $refundFromTxn,
-                    'refund_webhook' => $refundFromWebhook,
-                    'payment_amount' => $paymentAmount,
-                ]);
-            return;
-        }
+            // We enable partial refunds for specific merchants using an experiment.
+            // We use number_format function to ensure no rounding off errors occur.
+            try
+            {
+                $allowPartialRefund = $this->canAllowPartialRefund($paymentId, $this->merchant);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->error(
+                    TraceCode::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_VALIDATION_FAILED,
+                    [
+                        'type'        => 'splitz_exp_failed',
+                        'merchant_id' => $this->merchant->getId(),
+                        'error'       => $e->getMessage()
+                    ]
+                );
+                $allowPartialRefund = false;
+            }
 
+            if ($allowPartialRefund === false)
+            {
+                $this->trace->count(
+                    Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT,
+                    ['status' => 'not_applicable', 'reason' => 'partial_refund']);
+                $this->trace->error(
+                    TraceCode::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_VALIDATION_FAILED,
+                    [
+                        'type'           => 'partial_refund_sent',
+                        'merchant_id'    => $this->merchant->getId(),
+                        'order_id'       => $order->getPublicId(),
+                        'payment_id'     => $payment->getPublicId(),
+                        'refund_txn'     => $refundFromTxn,
+                        'refund_webhook' => $refundFromWebhook,
+                        'payment_amount' => $paymentAmount,
+                    ]);
+                return;
+            }
+        }
+        $refundType = $allowPartialRefund === true ? 'partial': 'full';
         try
         {
-            $res = (new Payment\Service)->refund($paymentId, ['amount' => $paymentAmount]);
+            $res = (new Payment\Service)->refund($paymentId, ['amount' => $refundFromWebhook]);
             $this->trace->count(
                 Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT,
-                ['status' => 'refunded', 'reason' => 'success']);
+                [
+                    'status'      => 'refunded',
+                    'reason'      => 'success',
+                    'refund_type' => $refundType
+                ]);
             $this->trace->info(
                 TraceCode::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_SUCCESS,
                 [
                     'refund_txn'     => $refundFromTxn,
                     'refund_webhook' => $refundFromWebhook,
+                    'refund_type'    => $refundType,
                     'payment_amount' => $payment->getAmount(),
                     'result'         => $res,
                 ]);
@@ -316,7 +370,11 @@ class Webhooks extends Base\Core
         {
             $this->trace->count(
                 Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT,
-                ['status' => 'failed', 'reason' => $error['internal_error_code']]);
+                [
+                    'status'      => 'failed',
+                    'reason'      => $error['internal_error_code'],
+                    'refund_type' => $refundType
+                ]);
             $error = $e->getError();
             $this->trace->error(
                 TraceCode::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_FAILED,
@@ -330,6 +388,25 @@ class Webhooks extends Base\Core
               ]);
               return;
         }
+    }
+
+    /**
+     * This function is to verify whether refund webhook request is for razorpay gateway or not.
+     * In case a refund is issued for a 1cc order where a gift card was applied then Shopify returns
+     * a txn with gateway as Gift card. We do not want that txn.
+     * @param Webhook input
+     * @return Bool
+     */
+    protected function isRzpPayment(array $input): bool
+    {
+        foreach ($input['transactions'] as $refundTxn)
+        {
+            if ($refundTxn['gateway'] === 'Razorpay')
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     protected function storeCartInCache(array $data)
@@ -440,54 +517,20 @@ class Webhooks extends Base\Core
         return $data;
     }
 
-    // There will be only 1 such transaction
+    // To filter the txn related to Rzp payments. This is to skip the gateway
+    // associated with Shopify gift cards which may be sent in refund webhooks.
     protected function getPrepaidTransaction(array $txns): array
     {
         $txn = [];
         for ($i = 0; $i < count($txns); $i++)
         {
-            if ($txns[$i]['status'] === 'success' and $txns[$i]['kind'] === 'sale')
+            if ($txns[$i]['status'] === 'success' and $txns[$i]['kind'] === 'sale' and $txns[$i]['gateway'] === 'Razorpay')
             {
                 $txn = $txns[$i];
                 break;
             }
         }
         return $txn;
-    }
-
-    /**
-     * @param string $paymentId - stripped payment id
-     * @return null|Payment\Entity
-     */
-    protected function findPaymentAndSetMode(string $paymentId)
-    {
-        $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
-        if ($mode === null)
-        {
-            return null;
-        }
-
-        $this->app['basicauth']->setModeAndDbConnection($mode);
-        $this->mode = $mode;
-
-        $payment = null;
-
-        try
-        {
-            $payment = $this->repo->payment->findOrFail($paymentId);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->error(
-                TraceCode::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_FAILED,
-                [
-                  'error'      => $e->getMessage(),
-                  'type'       => 'payment_not_found',
-                  'payment_id' => $paymentId,
-              ]);
-        }
-
-        return $payment;
     }
 
     protected function processFulfillmentUpdateEvent(array $data)
@@ -616,5 +659,21 @@ class Webhooks extends Base\Core
     // safely rounds the number. This is used across API for parsing amounts from Gateways.
     protected function formatAmountStringToPaise(string $amount): int {
       return (int)number_format($amount * 100, 2, '.', '');
+    }
+
+    // Return true in case variant is equal to 'magic_allow_partial_refund'
+    protected function canAllowPartialRefund($paymentId, $merchant): bool
+    {
+        $expResult = (new SplitzExperimentEvaluator())->evaluateExperiment(
+            [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.1cc_allow_partial_refund_splitz_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]),
+            ]
+        );
+        return $expResult['variant'] === 'magic_allow_partial_refund';
     }
 }
