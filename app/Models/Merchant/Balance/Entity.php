@@ -13,7 +13,6 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 use RZP\Constants\Timezone;
-use RZP\Models\Payout\Metric;
 use RZP\Models\BankingAccount;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Currency\Currency;
@@ -21,6 +20,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\RazorxTreatment;
 use Razorpay\Spine\DataTypes\Dictionary;
 use RZP\Models\Merchant\Credits\Constants;
+use RZP\Models\Payout\Metric as PayoutMetric;
 use RZP\Models\BankingAccountStatement\Details;
 use RZP\Models\Merchant\Balance\Ledger\Core as LedgerCore;
 
@@ -590,7 +590,7 @@ class Entity extends Base\PublicEntity
 
         if (isset($balance) === false)
         {
-            app('trace')->count(Metric::LEDGER_LITE_BALANCE_FETCH_ERROR_COUNT);
+            app('trace')->count(PayoutMetric::LEDGER_LITE_BALANCE_FETCH_ERROR_COUNT);
 
             throw new BadRequestException(ErrorCode::BAD_REQUEST_BALANCE_DOES_NOT_EXIST, null, [
                 'id'           => $this->getId(),
