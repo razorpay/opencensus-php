@@ -311,6 +311,7 @@ class Shield
 
                 break;
 
+            case Payment\Method::PAYLATER:
             case Payment\Method::WALLET:
                 $payloadDetails[ShieldConstants::WALLET] = strtolower($payment->getWallet());
 
