@@ -120,6 +120,15 @@ describe('<SuccessRate/>', () => {
     //spinner in the success rate chart
     expect(screen.getAllByTestId('spinner')).toHaveLength(2);
   });
+  test('should call SR api once only after mount', () => {
+    const srFetchAllSpy = jest.spyOn(services, 'getSR');
+    server.use(srApiHandler({ isSuccess: true }), errorApiHandler({ isSuccess: true }));
+
+    render(<App />);
+    const chartShimmers = screen.getAllByTestId('sr-dashboard-chart-shimmer');
+    expect(chartShimmers[0]).toBeVisible();
+    expect(srFetchAllSpy).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('SR Dashboard International', () => {

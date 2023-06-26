@@ -70,10 +70,12 @@ const SuccessRateFilter = (props) => {
   }, [dateRange]);
 
   useEffect(() => {
-    const payload = queryFilters();
-    const errorsPayload = getMerchantErrorsPayload();
-    fetchSuccessRate({ payload });
-    fetchMerchantErrors(errorsPayload);
+    if (searchedMerchantId) {
+      const payload = queryFilters();
+      const errorsPayload = getMerchantErrorsPayload();
+      fetchSuccessRate({ payload });
+      fetchMerchantErrors(errorsPayload);
+    }
   }, [searchedMerchantId]);
 
   const onSearch = async (dateRangeParam = dateRange, errorsParam = errors) => {
