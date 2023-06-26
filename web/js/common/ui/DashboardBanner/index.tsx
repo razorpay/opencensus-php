@@ -16,7 +16,7 @@ const DashboardBanner = ({
   history,
   location,
 }: DashboardBannerProps): React.ReactElement | Array<React.ReactElement> | Array<null> | null => {
-  const routeName = routeToRouteNameMap[location.pathname] || '';
+  const routeName = routeToRouteNameMap[location.pathname] || location.pathname;
 
   useEffect(() => {
     fetchBanners({ fromWhere: location.pathname });
