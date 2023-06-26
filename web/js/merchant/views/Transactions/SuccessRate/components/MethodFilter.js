@@ -1,5 +1,4 @@
 import React from 'react';
-
 import GroupingDropdown from 'merchant/containers/Home/GroupingDropdown';
 import CardTypes from './CardTypes';
 import { checkIfFilterValid } from 'merchant/views/Transactions/SuccessRate/helper';
@@ -14,12 +13,13 @@ const MethodFilter = (props) => {
     isOptimizerEnabled,
     activeTab,
   } = props;
+
   const renderGroupingDropdown = (groupingData = [], index) => {
     const filteredGroupingData = groupingData.filter(({ value }) =>
       checkIfFilterValid({ activeTab, filter: value, flags: { isInternationalEnabled } }),
     );
 
-    if (filteredGroupingData?.length) {
+    if (filteredGroupingData.length > 0) {
       return (
         <GroupingDropdown
           key={index}
@@ -35,9 +35,9 @@ const MethodFilter = (props) => {
 
   if (filtersList?.length) {
     return (
-      <div className="sr-filter sr-method-filters flex">
+      <div data-testid="sr-method-filters" className="sr-filter sr-method-filters flex">
         {!isOptimizerEnabled && (
-          <div>
+          <div data-testid="card-types-button">
             <label>Card type:</label>
             <div className="panel-actions">
               <CardTypes />
@@ -46,11 +46,14 @@ const MethodFilter = (props) => {
         )}
         <div>
           <label>Filter:</label>
-          <div className="flex">{filtersList?.map(renderGroupingDropdown)}</div>
+          <div data-testid="group-filters-dropdown" className="flex">
+            {filtersList?.map(renderGroupingDropdown)}
+          </div>
         </div>
       </div>
     );
   }
+
   return null;
 };
 
