@@ -495,8 +495,8 @@ trait RepositoryFetch
             {
                 if($wdaResponseArray[$key] != $value)
                 {
-                    $responseDiff[$key] = $value;
-
+                    $responseDiff['api'][$key] = $value;
+                    $responseDiff['wda'][$key] = $wdaResponseArray[$key];
                 }
                 continue;
             }
@@ -513,7 +513,8 @@ trait RepositoryFetch
 
                     if($wdaAcquirerData !== $value)
                     {
-                        $responseDiff[$key] = $value;
+                        $responseDiff['api'][$key] = $value;
+                        $responseDiff['wda'][$key] = $wdaAcquirerData;
                     }
 
                     continue;
@@ -524,7 +525,8 @@ trait RepositoryFetch
             {
                 if ($wdaResponseArray[$key] != $value)
                 {
-                    $responseDiff[$key] = $value;
+                    $responseDiff['api'][$key] = $value;
+                    $responseDiff['wda'][$key] = $wdaResponseArray[$key];
                 }
 
                 continue;
@@ -532,7 +534,8 @@ trait RepositoryFetch
 
             if ((isset($wdaResponseArray[$key]) === true) and ($wdaResponseArray[$key] !== $value))
             {
-                $responseDiff[$key] = $value;
+                $responseDiff['api'][$key] = $value;
+                $responseDiff['wda'][$key] = $wdaResponseArray[$key];
             }
         }
 
@@ -1621,14 +1624,27 @@ trait RepositoryFetch
 
             if (empty($responseDiff) === false)
             {
-                $inconsistentParams["different_keys"] = array_keys($responseDiff);
+                $inconsistentParams["different_keys"] = (!is_null($responseDiff['api'])) ? array_keys($responseDiff['api']) : array_keys($responseDiff);
 
-                $this->trace->info(TraceCode::WDA_AND_WARM_DB_INCONSISTENCY, [
-                    'id'          => $id,
-                    'diff'        => $inconsistentParams,
-                    'route_name'  => $this->app['api.route']->getCurrentRouteName(),
-                    'extra_trace' => $extraTrace,
-                ]);
+                if((isset($responseDiff['wda']['updated_at']) === true) and (isset($responseDiff['api']['updated_at']) === true))
+                {
+                    $this->trace->info(TraceCode::WDA_AND_WARM_DB_INCONSISTENCY, [
+                        'id'          => $id,
+                        'diff'        => $inconsistentParams,
+                        'updated_at_difference' => abs($responseDiff['wda']['updated_at'] - $responseDiff['api']['updated_at']),
+                        'route_name'  => $this->app['api.route']->getCurrentRouteName(),
+                        'extra_trace' => $extraTrace,
+                    ]);
+                }
+                else
+                {
+                    $this->trace->info(TraceCode::WDA_AND_WARM_DB_INCONSISTENCY, [
+                        'id'          => $id,
+                        'diff'        => $inconsistentParams,
+                        'route_name'  => $this->app['api.route']->getCurrentRouteName(),
+                        'extra_trace' => $extraTrace,
+                    ]);
+                }
 
                 return true;
             }
