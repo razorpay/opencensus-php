@@ -13,6 +13,7 @@ class Constants
   // Counters
   const METRIC_COUNTER_HTTP_REQUESTS_DOWNSTREAM         = 'http_requests_downstream';
   const METRIC_COUNTER_HTTP_REQUESTS_API_DOWNSTREAM     = 'http_requests_api_downstream';
+  const METRIC_COUNTER_HTTP_REQUESTS_API_DOWNSTREAM_DURATION  = 'http_requests_api_downstream_duration';
   const METRIC_COUNTER_HTTP_REQUESTS                    = 'http_requests';
   const METRIC_HISTOGRAM_HTTP_REQUESTS_DURATION         = 'http_requests_duration';
   const USER_LOGIN_COUNT                                = 'user_login_count';
@@ -110,6 +111,7 @@ class Constants
   const LABEL_HTTP_REQUESTS_API_DOWNSTREAM_PRODUCT           = 'product';
   const LABEL_HTTP_REQUESTS_API_DOWNSTREAM_API_ROUTE_NAME    = 'api_route_name';
   const LABEL_HTTP_REQUESTS_API_DOWNSTREAM_API_RESPONSE_TIME = 'response_time';
+  const ROLE= 'role';
 
   /* Possible Login actions */
   //when user sigin after enterin OTP

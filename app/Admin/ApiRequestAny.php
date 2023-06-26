@@ -21,6 +21,7 @@ use App\Admin\Service as AdminService;
 use Lcobucci\JWT\Encoding\JoseEncoder;
 use Razorpay\Api\Errors\BadRequestError;
 use App\User\Constants as UserConstants;
+use App\User\Helper as UserHelper;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\ConnectException;
 use OpenCensus\Trace\Propagator\ArrayHeaders;
@@ -605,6 +606,8 @@ class ApiRequestAny
                 $dimensions = $this->getApiMetricDimensions($httpCode, $currentRouteName, $apiPathName, $method, $time_taken);
 
                 $app['metrics']->count(Constants::METRIC_COUNTER_HTTP_REQUESTS_API_DOWNSTREAM, Constants::EVENT_COUNT_ONE, $dimensions);
+
+                $app['metrics']->histogram(Constants::METRIC_COUNTER_HTTP_REQUESTS_API_DOWNSTREAM_DURATION, $time_taken, $dimensions);
             }
             catch (\Throwable $t)
             {
@@ -677,6 +680,8 @@ class ApiRequestAny
                 $dimensions = $this->getApiMetricDimensions($httpCode, $currentRouteName, $apiPathName, $method, $time_taken);
 
                 $app['metrics']->count(Constants::METRIC_COUNTER_HTTP_REQUESTS_API_DOWNSTREAM, Constants::EVENT_COUNT_ONE, $dimensions);
+
+                $app['metrics']->histogram(Constants::METRIC_COUNTER_HTTP_REQUESTS_API_DOWNSTREAM_DURATION, $time_taken, $dimensions);
             }
             catch (\Throwable $t)
             {
@@ -710,6 +715,8 @@ class ApiRequestAny
                 $dimensions = $this->getApiMetricDimensions($httpCode, $currentRouteName, $apiPathName, $method, $time_taken);
 
                 $app['metrics']->count(Constants::METRIC_COUNTER_HTTP_REQUESTS_API_DOWNSTREAM, Constants::EVENT_COUNT_ONE, $dimensions);
+
+                $app['metrics']->histogram(Constants::METRIC_COUNTER_HTTP_REQUESTS_API_DOWNSTREAM_DURATION, $time_taken, $dimensions);
             }
             catch (\Throwable $t)
             {
@@ -743,6 +750,8 @@ class ApiRequestAny
                 $dimensions = $this->getApiMetricDimensions($httpCode, $currentRouteName, $apiPathName, $method, $time_taken);
 
                 $app['metrics']->count(Constants::METRIC_COUNTER_HTTP_REQUESTS_API_DOWNSTREAM, Constants::EVENT_COUNT_ONE, $dimensions);
+
+                $app['metrics']->histogram(Constants::METRIC_COUNTER_HTTP_REQUESTS_API_DOWNSTREAM_DURATION, $time_taken, $dimensions);
             }
             catch (\Throwable $t)
             {
@@ -776,6 +785,8 @@ class ApiRequestAny
                 $dimensions = $this->getApiMetricDimensions($httpCode, $currentRouteName, $apiPathName, $method, $time_taken);
 
                 $app['metrics']->count(Constants::METRIC_COUNTER_HTTP_REQUESTS_API_DOWNSTREAM, Constants::EVENT_COUNT_ONE, $dimensions);
+
+                $app['metrics']->histogram(Constants::METRIC_COUNTER_HTTP_REQUESTS_API_DOWNSTREAM_DURATION, $time_taken, $dimensions);
             }
             catch (\Throwable $t)
             {
@@ -810,6 +821,7 @@ class ApiRequestAny
                 $dimensions = $this->getApiMetricDimensions($httpCode, $currentRouteName, $apiPathName, $method, $time_taken);
 
                 $app['metrics']->count(Constants::METRIC_COUNTER_HTTP_REQUESTS_API_DOWNSTREAM, Constants::EVENT_COUNT_ONE, $dimensions);
+                $app['metrics']->histogram(Constants::METRIC_COUNTER_HTTP_REQUESTS_API_DOWNSTREAM_DURATION, $time_taken, $dimensions);
             }
             catch (\Throwable $t)
             {
@@ -866,9 +878,19 @@ class ApiRequestAny
         return $parent;
     }
 
-    protected function getApiMetricDimensions($httpCode, $currentRouteName, $apiPathName, $method, $time_taken)
+    /**
+     * @param $httpCode
+     * @param $currentRouteName
+     * @param $apiPathName
+     * @param $method
+     * @param $time_taken
+     *
+     * @return array
+     */
+    public function getApiMetricDimensions($httpCode, $currentRouteName, $apiPathName, $method, $time_taken): array
     {
         return [
+            Constants::ROLE                                                 => UserHelper::getMerchantRole(),
             Constants::LABEL_HTTP_REQUESTS_API_DOWNSTREAM_STATUS            => $httpCode,
             Constants::LABEL_HTTP_REQUESTS_API_DOWNSTREAM_DASHBOARD_ROUTE   => $currentRouteName ?? 'unknown_route',
             Constants::LABEL_HTTP_REQUESTS_API_DOWNSTREAM_PRODUCT           => ApiUrl::isPrimaryOriginRequest() ? Constants::PRIMARY : Constants::BANKING ,

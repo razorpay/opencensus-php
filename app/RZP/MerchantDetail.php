@@ -3,9 +3,13 @@
 namespace App\RZP;
 
 use Config;
+use App\Trace\TraceCode;
+use App\Metrics\Constants;
+use App\Admin\ApiRequestAny;
 use GuzzleHttp\Post\PostFile;
 use GuzzleHttp\Client as Guzzle;
 use Razorpay\Api\Entity as ApiEntity;
+use App\Admin\ApiRouteCircuitBreaker;
 use Razorpay\Api\Request as ApiRequest;
 use Razorpay\Api\Errors\ServerError as ServerError;
 use Razorpay\Api\Errors\BadRequestError as BadRequestError;
@@ -15,18 +19,48 @@ class MerchantDetail extends Entity
 {
     public function fetchDetails()
     {
-        $error = $response = null;
+        $error = null;
+        $response = null;
+        $httpCode = 200;
+        $relativeUrl = 'merchant/activation';
+        $app = \App::getFacadeRoot();
+        $method = \Request::method();
+        $currentRouteName = \Route::currentRouteName() ?? 'unknown_route';
+        $apiRouteCircuitBreaker = new ApiRouteCircuitBreaker($relativeUrl, 'GET', $currentRouteName);
+        $apiPathName = $apiRouteCircuitBreaker->getApiPathName();
+        $startTime = microtime(true);
+
         try
         {
-            $relativeUrl = 'merchant/activation';
-
             $this->forwardUTMCookies();
 
             $response = $this->request('GET', $relativeUrl)->toArray();
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
+            $httpCode = $e->getHttpStatusCode();
             $error = [ $e->getMessage() ];
+        }
+
+        $endTime = microtime(true);
+
+        $timeTaken = $endTime - $startTime;
+
+        try
+        {
+            $dimensions = (new ApiRequestAny())->getApiMetricDimensions($httpCode, $currentRouteName, $apiPathName, $method,
+                $timeTaken);
+
+            $app['metrics']->count(Constants::METRIC_COUNTER_HTTP_REQUESTS_API_DOWNSTREAM, Constants::EVENT_COUNT_ONE, $dimensions);
+
+            $app['metrics']->histogram(Constants::METRIC_COUNTER_HTTP_REQUESTS_API_DOWNSTREAM_DURATION, $timeTaken, $dimensions);
+        }
+        catch (\Throwable $e)
+        {
+            Trace::info(TraceCode::PUSH_METRICS_FAILED, [
+                'message'     => $e->getMessage(),
+                'line_number' => $e->getLine()
+            ]);
         }
 
         return [ $error, $response ];
