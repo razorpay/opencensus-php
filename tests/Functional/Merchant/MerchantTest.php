@@ -3080,6 +3080,8 @@ class MerchantTest extends TestCase
             MerchantEntity::LOGO_URL => '/logos/random_image_original.png',
             MerchantEntity::DISPLAY_NAME => 'Tester Account 2',
             MerchantEntity::PARTNERSHIP_URL => 'https://dummycdn.razorpay.com/logos/partnership.png',
+            MerchantEntity::CATEGORY2 => 'ecommerce',
+            MerchantEntity::CATEGORY => '5945',
         ]);
 
         $keyEntity = $this->fixtures->create('key', ['merchant_id' => $merchantId]);

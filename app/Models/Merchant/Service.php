@@ -1885,6 +1885,7 @@ class Service extends Base\Service
             'key' => optional($keyEntity)->getPublicKey(),
             'language_code' => $languageCode,
             'org_checkout_logo_url' => optional($org)->getCheckoutLogo() ?? '',
+            'category_name' => $merchant->getCategory2(),
         ];
 
         $optionalInputConfig = $merchant->getOptionalInputConfig();
