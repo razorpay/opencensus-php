@@ -1,6 +1,6 @@
 import styled, { css } from 'styled-components';
 import { Theme } from '@razorpay/blade/components';
-
+import sparklePb from 'assets/sparklePb.png';
 interface CarouselSlideProps {
   active: boolean;
 }
@@ -15,7 +15,9 @@ const PricingHeaderTag = styled.div(
     align-items: flex-start;
     width: 100%;
     padding: ${theme.spacing[5]}px ${theme.spacing[7]}px;
-    background: linear-gradient(130.97deg, #C8BFFF 9.95%, #553EDF 108.91%);
+    background-image: url(${sparklePb}), linear-gradient(130.97deg, #C8BFFF 9.95%, #553EDF 108.91%);
+    background-repeat: no-repeat;
+    background-position: right top;
     flex-direction: column;
     & > h4 {
         color: ${theme.colors.surface.background.level2.lowContrast};
@@ -61,7 +63,7 @@ const PricingPlanContainer = styled.div(
   ({ theme }: { theme: Theme }) => `
   border: 1px solid #bdb3ff; // TODO: remove with blade color format
   box-shadow: inset 0px 0px 16px rgba(85, 62, 223, 0.2);
-  border-radius: ${theme.border.radius.medium};
+  border-radius: ${theme.border.radius.large}px;
   padding: ${theme.spacing[5]}px;
 `,
 );
@@ -70,7 +72,7 @@ const PricingPlanName = styled.div(
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  margin-bottom: ${theme.spacing[3]}px;
+  margin-bottom: ${theme.spacing[7]}px;
   // TODO: remove with blade color format
   & > h2 {
     color: #9586f2;
@@ -143,11 +145,14 @@ const StyleLeftSlide = styled.div(
 );
 const StyleRightSlide = styled.div(
   ({ theme }: { theme: Theme }) => `
-  margin-left: ${theme.spacing[6]}px;
+  margin-left: ${theme.spacing[3]}px;
   display: flex;
 `,
 );
-
+const StyleSlideContainer = styled.div`
+  display: flex;
+  overflow: hidden;
+`;
 const StyledCarouselDotWrapper = styled.div(
   ({ theme }: { theme: Theme }) => `
   display: flex;
@@ -206,4 +211,5 @@ export {
   StyledCarouselDotWrapper,
   StyledCarouselSlide,
   StyledCarouselSlides,
+  StyleSlideContainer,
 };

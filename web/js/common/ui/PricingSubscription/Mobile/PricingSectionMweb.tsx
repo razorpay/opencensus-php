@@ -66,8 +66,7 @@ const PlanBenefitList = ({
       {filteredList.map((featureId): JSX.Element => {
         return (
           <ListItem key={featureId}>
-            {featureIdToFeatureCopyMap[featureId]}
-            {plans[featureId][togglePlan]}
+            {featureIdToFeatureCopyMap[featureId]}&nbsp;{plans[featureId][togglePlan]}
           </ListItem>
         );
       })}
@@ -181,7 +180,7 @@ const PricingSectionMweb = ({
           </StylePercentageColor>
         </StyleStrikePrice>
       ) : null}
-      <Box width="100%" marginX="spacing.0" marginY="spacing.5">
+      <Box width="100%" marginX="spacing.0" marginY="spacing.7">
         <Button
           isLoading={isLoading && selectedPlanId === plans?.id}
           isDisabled={isLoading && selectedPlanId !== plans?.id}

@@ -65,14 +65,14 @@ const PricingHeaderMweb = ({
       marginX={`-${theme.spacing[5]}px`}
     >
       <PricingHeaderTag data-testid="title">
-        <Heading contrast="low" size="large" type="normal" weight="bold">
-          {title}
-        </Heading>
         <PricingBadge addColor data-testid="staticBadge">
           <Badge contrast="low" fontWeight="bold" size="medium" variant="neutral">
             NEW PRICING PLANS
           </Badge>
         </PricingBadge>
+        <Heading contrast="low" size="large" type="normal" weight="bold">
+          {title}
+        </Heading>
       </PricingHeaderTag>
       <PricingSubHeader data-testid="switchContainer">
         <ToggleSwitch

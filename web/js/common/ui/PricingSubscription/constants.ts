@@ -6,5 +6,6 @@ const LS_LABELS = {
 
 /** Time interval wihtin which the asset should'nt be shown */
 const IMPRESSION_TIME_INTERVAL = 24 * 60 * 60 * 1000;
+const TOUCH_SPEED = 5;
 
-export { LS_LABELS, IMPRESSION_TIME_INTERVAL };
+export { LS_LABELS, IMPRESSION_TIME_INTERVAL, TOUCH_SPEED };

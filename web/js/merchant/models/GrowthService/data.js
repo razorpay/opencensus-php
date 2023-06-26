@@ -633,7 +633,7 @@ export const growthAssetSchema = {
                 label: yup.string().required().strict(true),
                 variant: yup.string().required().strict(true),
               }),
-            description: yup.string().required().strict(true),
+            description: yup.string().optional().strict(true),
             f1: yup.object().required().strict(true).shape({
               annual: yup.string(),
               monthly: yup.string(),
