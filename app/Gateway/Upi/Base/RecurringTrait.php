@@ -13,6 +13,7 @@ use RZP\Gateway\Upi\Base\Entity;
 use RZP\Exception\BaseException;
 use RZP\Exception\LogicException;
 use RZP\Models\Payment\UpiMetadata;
+use RZP\Models\VirtualAccount\Receiver;
 use RZP\Exception\GatewayErrorException;
 use RZP\Models\Merchant\RazorxTreatment;
 
@@ -501,6 +502,11 @@ trait RecurringTrait
             if($variant === 'on')
             {
                 $attr[Entity::GATEWAY_DATA][Constants::REVOKABLE] = "N";
+            }
+
+            if ((isset($input['upi_autopay_payment_type']) === true) and ($input['upi_autopay_payment_type'] === Payment\UpiMetadata\Mode::UPI_QR))
+            {
+                $attr[Entity::GATEWAY_DATA][Constants::QR_PAYMENT] = '1';
             }
         }
 

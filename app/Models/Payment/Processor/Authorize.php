@@ -617,6 +617,17 @@ trait Authorize
             // payment analytics, gateway_tokens entities gets appended inside $terminalGatewayInput.
             $terminalGatewayInput = $gatewayInput;
 
+            if ((($payment->isUpiRecurring() === true) and ($payment->isRecurringTypeInitial() === true)) and ((isset($input['_']['upiqr']) === true) and ($input['_']['upiqr'])))
+            {
+                $this->trace->info(
+                    TraceCode::UPI_AUTOPAY_RECEIVER_TYPE_QRCODE_SAVE_LOG,
+                    [
+                        'isUpiRecurring'  => $payment->isUpiRecurring(),
+                        'isUpiQr'         => $input['_']['upiqr']
+                    ]);
+                $terminalGatewayInput['upi_autopay_payment_type'] = Payment\UpiMetadata\Mode::UPI_QR;
+            }
+
             $this->runPostGatewaySelectionPreProcessing($payment, $terminalGatewayInput);
 
             $return = $this->returnSpawnCoprotoIfContactRequired($payment, $input);

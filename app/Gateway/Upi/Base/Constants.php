@@ -17,4 +17,5 @@ class Constants
     const PSP_STATUS_CODE       = 'pspStatusCode';
     const GATEWAY_STATUS_DESC   = 'gatewayStatusDesc';
     const PSP_STATUS_DESC       = 'pspStatusDesc';
+    const QR_PAYMENT            = 'qrp';
 }
