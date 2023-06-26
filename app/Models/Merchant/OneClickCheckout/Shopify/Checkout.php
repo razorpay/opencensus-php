@@ -225,7 +225,7 @@ class Checkout extends Base\Core
     }
 
     // updates email for a storefront checkout
-    public function updateCheckoutEmail(string $checkoutId, string $email)
+    public function updateCheckoutEmail(string $checkoutId, string $email, string $orderId = '')
     {
         $client = $this->getShopifyClientByMerchant();
 
@@ -243,7 +243,31 @@ class Checkout extends Base\Core
             TraceCode::SHOPIFY_1CC_UPDATE_EMAIL_BODY,
             ['checkoutId' => $checkoutId]);
 
-        return $client->sendStorefrontRequest(json_encode($graphqlQuery));
+        $checkoutRes = $client->sendStorefrontRequest(json_encode($graphqlQuery));
+
+        $checkout = json_decode($checkoutRes, true);
+
+        $newCheckoutId = $checkout['data']['checkoutEmailUpdateV2']['checkout']['id']?? null;
+
+        if (($newCheckoutId !== $checkoutId) and
+            ($newCheckoutId !== null) and
+            ($orderId !== ''))
+        {
+            $order = (new RzpOrders)->findOrderByIdAndMerchant($orderId);
+
+            $newNotes = array_merge($order->getNotes()->toArray(), [Constants::STOREFRONT_ID => $newCheckoutId]);
+
+            $this->trace->info(
+            TraceCode::SHOPIFY_1CC_UPDATE_NEW_CHECKOUT_ID,
+            [
+                'checkoutId' => $checkoutId,
+                'newCheckoutId' => $newCheckoutId
+            ]);
+
+            (new RzpOrders)->updateOrderNotes($orderId, $newNotes);
+        }
+
+        return $newCheckoutId;
     }
 
     // we use the Admin REST API instead of Storefront as only the admin API

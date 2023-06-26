@@ -294,7 +294,7 @@ class Service extends Base\Service
 
                 $this->trace->count(Metric::MERCHANT_COUPON_VALIDITY_SHOPIFY_REQUEST_COUNT, $dimensions);
 
-                $res = (new Shopify\Service)->applyShopifyCoupon($input, $this->merchant->getId());
+                $res = (new Shopify\Service)->applyShopifyCoupon($input, $this->merchant->getId(), $orderId);
 
                 $decodedResponse = $res['response'];
 

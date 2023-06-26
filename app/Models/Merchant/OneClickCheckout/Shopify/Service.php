@@ -879,7 +879,7 @@ class Service extends Base\Service
     /**
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function applyShopifyCoupon(array $input, string $merchantId = ''):array
+    public function applyShopifyCoupon(array $input, string $merchantId = '', $orderId):array
     {
         if (empty($input['order_id']) === true)
         {
@@ -906,7 +906,7 @@ class Service extends Base\Service
         {
             try
             {
-                (new Checkout)->updateCheckoutEmail($checkoutId, $input['email']);
+                $checkoutId = (new Checkout)->updateCheckoutEmail($checkoutId, $input['email'], $orderId);
             }
             catch (\Exception $e)
             {

@@ -2380,7 +2380,7 @@ class Core extends Base\Core
             ($platformConfig != null && $platformConfig->getValue() !== Constants::SHOPIFY))
         {
             $this->trace->info(
-                TraceCode::SHOPIFY_1CC_API_ERROR,
+                TraceCode::SHOPIFY_1CC_ORDER_STATUS_PENDING_EXP,
                 [
                     'type' => 'canSetOrderStatusPending',
                     'mode' => $this->mode,
@@ -2403,7 +2403,7 @@ class Core extends Base\Core
         );
 
         $this->trace->info(
-            TraceCode::SHOPIFY_1CC_API_ERROR,
+            TraceCode::SHOPIFY_1CC_ORDER_STATUS_PENDING_EXP,
             [
                 'type' => 'canSetOrderStatusPending',
                 'mode' => $this->mode,
