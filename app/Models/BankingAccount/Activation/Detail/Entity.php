@@ -179,6 +179,8 @@ class Entity extends Base\PublicEntity
     // For Assigning Leads to Bank POC
     const BANK_POC_USER_ID = 'bank_poc_user_id';
     const BANK_POC_NAME = 'bank_poc_name';
+    const BANK_POC_EMAIL = 'bank_poc_email';
+    const BANK_POC_PHONE_NUMBER = 'bank_poc_phone_number';
     const BANK_POC_ASSIGNED_DATE = 'bank_poc_assigned_date';
 
     const RBL_ACTIVATION_DETAILS = 'rbl_activation_details';

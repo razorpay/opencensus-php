@@ -12,22 +12,19 @@ use RZP\Constants\Table;
 use Razorpay\OAuth\Client;
 use RZP\Constants\Timezone;
 use RZP\Models\BankingAccount;
-use RZP\Models\Merchant\RazorxTreatment;
-use RZP\Services\DiagClient;
 use RZP\Services\HubspotClient;
 use RZP\Models\Admin\Permission;
 use RZP\Services\Mock\BankingAccountService;
 use RZP\Services\Mock\Mozart;
 use RZP\Services\RazorXClient;
 use RZP\Models\User\BankingRole;
-use RZP\Http\BasicAuth\BasicAuth;
-use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
-use RZP\Models\BankingAccount\Core;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Config;
 use RZP\Models\BankingAccount\Entity;
 use RZP\Models\BankingAccount\Status;
-use Illuminate\Database\Eloquent\Factory;
 use RZP\Models\User\Entity as UserEntity;
 use RZP\Services\Mock\CapitalCardsClient;
 use RZP\Models\BankingAccount\Gateway\Rbl;
@@ -48,6 +45,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Mail\BankingAccount\StatusNotifications\Created;
+use RZP\Models\BankingAccount\Gateway\Rbl as RblGateway;
 use RZP\Mail\BankingAccount\StatusNotifications\Rejected;
 use RZP\Mail\BankingAccount\StatusNotifications\Processed;
 use RZP\Mail\BankingAccount\StatusNotifications\Cancelled;
@@ -57,7 +55,6 @@ use RZP\Models\BankingAccount\Core as BankingAccountCore;
 use RZP\Mail\BankingAccount as BankingAccountMails;
 use RZP\Mail\BankingAccount\Activation as ActivationMails;
 use RZP\Mail\BankingAccount\StatusNotifications\Processing;
-use RZP\Mail\Invitation\Razorpayx\BankLmsInvite;
 use RZP\Tests\Functional\Helpers\CreateLegalDocumentsTrait;
 use RZP\Tests\Functional\Fixtures\Entity\User as UserFixture;
 use RZP\Models\BankingAccountStatement\Details as BasDetails;
@@ -71,6 +68,7 @@ use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\MerchantNotAvailable;
 use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\MerchantPreparingDoc;
 use RZP\Mail\BankingAccount\StatusNotifications\Factory as StatusUpdateMailerFactory;
 use RZP\Models\BankingAccount\Activation\MIS\Leads;
+use RZP\Models\BankingAccountService\BasDtoAdapter;
 use RZP\Services\PincodeSearch;
 use RZP\Tests\Traits\MocksSplitz;
 
@@ -91,6 +89,8 @@ class BankingAccountTest extends TestCase
     private $partnerOwnerUser;
 
     protected $storkMock;
+    protected $authServiceMock;
+    protected $bankingAccountServiceMock;
 
     protected $bankLMSSetupComplete;
     protected $bankLMSSetupResponse;
@@ -111,6 +111,7 @@ class BankingAccountTest extends TestCase
         $this->app['config']->set('applications.salesforce.mock', true);
 
         $this->authServiceMock = $this->createAuthServiceMock(['sendRequest']);
+        $this->bankingAccountServiceMock = Mockery::mock(BankingAccountService::class, [$this->app])->makePartial();
 
         $this->fixtures->create('merchant', ['id' => self::DefaultPartnerMerchantId]);
 
@@ -494,7 +495,185 @@ class BankingAccountTest extends TestCase
 
         $this->ba->addXOriginHeader();
 
-        $basMock = Mockery::mock(BankingAccountService::class, [$this->app])->makePartial();
+        $basMock = $this->bankingAccountServiceMock;
+
+        $basMock->shouldNotReceive('createBusinessOnBas');
+
+        $basMock->shouldNotReceive('createRblOnboardingApplicationOnBas');
+
+        $this->app->instance('banking_account_service', $basMock);
+
+        $this->createBankingAccountFromDashboard();
+
+        Mail::fake();
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertEquals(AccountType::CURRENT, $bankingAccount->getAccountType());
+
+        $this->assertEquals(null, $bankingAccount['last_statement_attempt_at']);
+
+        $activationDetailEntity = $this->getDbEntity('banking_account_activation_detail', [
+            'banking_account_id' => $bankingAccount->getId()
+        ]);
+
+        $this->assertNotNull($activationDetailEntity);
+
+        Mail::assertNotQueued(XProActivation::class);
+    }
+
+    public function mockBankingAccountServiceCallsForRblOnBasExperiment(bool $shouldMockBusinessCreation) {
+        $basMock = $this->bankingAccountServiceMock;
+
+        if ($shouldMockBusinessCreation)
+        {
+            $basMock->shouldReceive('createBusinessOnBas')->andReturns([
+                'id'                            => 'Le5mr3Cd8iwuvy',
+                'name'                          => 'name',
+                'industry_type'                 => 'default',
+                'merchant_id'                   => self::DefaultMerchantId,
+                'constitution'                  => 'partnership',
+                'registered_address'            => 'abcde',
+                'registered_address_details'    => [
+                    'address_pin_code' => 560030
+                ]
+            ]);
+        }
+        else
+        {
+            $basMock->shouldNotReceive('createBusinessOnBas');
+        }
+
+        $basMock->shouldReceive('createRblOnboardingApplicationOnBas')->andReturn([
+            'id'                    => 'Le8uzhRdJoqH3o',
+            'business_id'           => 'Le5mr3Cd8iwuvy',
+            'application_status'    => 'created',
+            'application_type'      => 'RBL_ONBOARDING_APPLICATION',
+            'sales_team'            => 'SELF_SERVE',
+            'person_details'        => [
+                'first_name'            => 'Merchant Name',
+                'email_id'              => 'test-abc@email.com',
+                'phone_number'          => '9876543210',
+                'role_in_business'      => 'Founder'
+            ],
+            'metadata'              => [
+                'additional_details'    => [
+                    'application_initiated_from'    => 'X_DASHBOARD',
+                    'gstin_prefilled_address'       => 1,
+                ],
+            ],
+        ]);
+
+        $this->app->instance('banking_account_service', $basMock);
+    }
+
+    public function verifyCreateBankingAccountRblOnBasExperiment(bool $shouldCreateBusiness) {
+
+        $attribute = ['activation_status' => 'activated', 'contact_email' => 'test@email.com'];
+
+        if (!$shouldCreateBusiness) {
+            $attribute['bas_business_id'] = 'Le5mr3Cd8iwuvy';
+        }
+
+        $merchantDetail = $this->fixtures->on('live')->edit('merchant_detail', '10000000000000', $attribute);
+        $merchantDetail = $this->fixtures->on('test')->edit('merchant_detail', '10000000000000', $attribute);
+
+        $this->ba->mobAppAuthForProxyRoutes();
+
+        $this->ba->addXOriginHeader();
+
+        $splitzMockInput = [
+            'id'            => '10000000000000',
+            'experiment_id' => 'LGcU6yGzKQCwoY',
+        ];
+
+        $splitzMockOutput = [
+            'response' => [
+                'variant' => [
+                    'name' => 'active'
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzMockInput, $splitzMockOutput);
+
+        $this->mockBankingAccountServiceCallsForRblOnBasExperiment($shouldCreateBusiness);
+
+        $response = $this->createBankingAccountFromDashboard([
+            Entity::ACTIVATION_DETAIL => [
+                ActivationDetail\Entity::BUSINESS_CATEGORY => 'partnership',
+                ActivationDetail\Entity::SALES_TEAM => 'self_serve',
+                ActivationDetail\Entity::MERCHANT_DOCUMENTS_ADDRESS => 'abced',
+                ActivationDetail\Entity::MERCHANT_POC_EMAIL => 'test-abc@email.com',
+                ActivationDetail\Entity::MERCHANT_POC_PHONE_NUMBER => '9876543210',
+                ActivationDetail\Entity::MERCHANT_POC_DESIGNATION => 'Founder',
+                ActivationDetail\Entity::MERCHANT_POC_NAME => 'Merchant Name',
+                ActivationDetail\Entity::BUSINESS_TYPE => 'default',
+                ActivationDetail\Entity::BUSINESS_NAME => 'name',
+                ActivationDetail\Entity::ADDITIONAL_DETAILS => [
+                    'application_initiated_from' => 'X_DASHBOARD',
+                    'gstin_prefilled_address' => 1,
+                ]
+            ]
+        ], false, false);
+
+        $additionalDetails = $response[BankingAccount\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][ActivationDetail\Entity::ADDITIONAL_DETAILS];
+
+        $response[BankingAccount\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS]
+            [ActivationDetail\Entity::ADDITIONAL_DETAILS] = json_decode($additionalDetails, true);
+
+        $this->assertArraySelectiveEquals([
+            'id' => 'bacc_Le8uzhRdJoqH3o',
+            'status' => 'created',
+            'channel' => 'rbl',
+            'account_type' => 'current',
+            BankingAccount\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS => [
+                ActivationDetail\Entity::SALES_TEAM => 'self_serve',
+                ActivationDetail\Entity::ADDITIONAL_DETAILS => [
+                    'application_initiated_from' => 'X_DASHBOARD',
+                    'gstin_prefilled_address' => 1,
+                ],
+            ]
+        ], $response);
+
+        Mail::fake();
+        Mail::assertNotQueued(XProActivation::class);
+
+        /* @var Merchant\Detail\Entity $updatedMerchantDetail*/
+        $updatedMerchantDetail = (new Merchant\Detail\Repository())->getByMerchantId($merchantDetail->merchant['id']);
+        $this->assertEquals('Le5mr3Cd8iwuvy', $updatedMerchantDetail->getBasBusinessId());
+    }
+
+    public function testCreateBankingAccountRblOnBasExperimentBusinessDoesNotExist()
+    {
+        $this->verifyCreateBankingAccountRblOnBasExperiment(true);
+    }
+
+    public function testCreateBankingAccountRblOnBasExperimentBusinessAlreadyExists()
+    {
+        $this->verifyCreateBankingAccountRblOnBasExperiment(false);
+    }
+
+    public function testCreateBankingAccountFromMerchantDashboardServiceabilityExperiment()
+    {
+        $attribute = ['activation_status' => 'activated'];
+
+        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
+
+        $splitzMockInput = [
+            'id'            => '10000000000000',
+            'experiment_id' => 'L2UsfwrU1dDxE4',
+        ];
+
+        $splitzMockOutput = [
+            'response' => [
+                'variant' => [
+                    'name' => 'active'
+                ]
+            ]
+        ];
+
+        $basMock = $this->bankingAccountServiceMock;
 
         $basMock->shouldReceive('sendRequestAndProcessResponse')
             ->andReturn([
@@ -1317,8 +1496,6 @@ class BankingAccountTest extends TestCase
 
         $this->app['config']->set('applications.pincodesearcher.mock', true);
 
-        $this->mockBankingAccountService();
-
         $attribute = ['activation_status' => 'activated'];
 
         $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
@@ -1332,8 +1509,6 @@ class BankingAccountTest extends TestCase
 
     public function testCheckWhitelistPincodeServiceableByIcic()
     {
-        $this->mockBankingAccountService();
-
         $attribute = ['activation_status' => 'activated'];
 
         $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
@@ -1350,8 +1525,6 @@ class BankingAccountTest extends TestCase
         $this->app['config']->set('applications.banking_account.mock', true);
 
         $this->app['config']->set('applications.pincodesearcher.mock', true);
-
-        $this->mockBankingAccountService();
 
         $this->ba->adminAuth();
 
@@ -1462,7 +1635,7 @@ class BankingAccountTest extends TestCase
 
         $response = $this->startTest();
 
-        Mail::assertSent(RZP\Mail\User\RazorpayX\SetPasswordRBLCoCreated::Class, function ($mail)
+        Mail::assertSent(RZP\Mail\User\RazorpayX\SetPasswordRBLCoCreated::class, function ($mail)
         {
             $mail->build();
 
@@ -2141,6 +2314,8 @@ class BankingAccountTest extends TestCase
     public function testFailedBankAccountInfoNotification()
     {
         $this->ba->appAuth('rzp_test', 'RANDOM_RBL_SECRET');
+
+        $this->mockBankingAccountProcessRblAccountOpeningWebhook('Failure');
 
         return $this->startTest();
     }
@@ -3130,7 +3305,7 @@ class BankingAccountTest extends TestCase
             ],
         ];
 
-        $this->ba->appAuthTest($this->config['applications.master_onboarding.secret']);;
+        $this->ba->mobAppAuthForInternalRoutes();
 
         $this->startTest($dataToReplace);
 
@@ -3439,23 +3614,20 @@ class BankingAccountTest extends TestCase
 
                 if (empty($pushNotificationTitle) === false && empty($pushNotificationBody) === false)
                 {
-                    if($clevertapMigrationExpEnabled)
-                    {
-                        $splitzInput = [
-                            'experiment_id' => 'LvyaZT13vrxdWR',
-                            'id'            => $merchantId,
-                        ];
+                    $splitzInput = [
+                        'experiment_id' => 'LvyaZT13vrxdWR',
+                        'id'            => $merchantId,
+                    ];
 
-                        $splitzOutput = [
-                            'response' => [
-                                'variant' => [
-                                    'name' => 'active',
-                                ]
+                    $splitzOutput = [
+                        'response' => [
+                            'variant' => [
+                                'name' => $clevertapMigrationExpEnabled ? 'active' : null,
                             ]
-                        ];
+                        ]
+                    ];
 
-                        $this->mockSplitzTreatment($splitzInput, $splitzOutput);
-                    }
+                    $this->mockSplitzTreatment($splitzInput, $splitzOutput);
 
                     $merchant = $this->getDbEntity('merchant', ['id' => $bankingAccount['merchant_id']]);
 
@@ -3950,8 +4122,6 @@ class BankingAccountTest extends TestCase
 
     public function testUpdateBankingAccountDocketInitiation()
     {
-        $this->mockBankingAccountService();
-
         Mail::fake();
 
         $attribute = [
@@ -4065,8 +4235,6 @@ class BankingAccountTest extends TestCase
             'status'                => 'picked'
         ]);
 
-        $this->mockBankingAccountService();
-
         Mail::fake();
 
         $attribute = [
@@ -4170,8 +4338,6 @@ class BankingAccountTest extends TestCase
 
     public function testUpdateBankingAccountDocketInitiationNegativeBusinessTypeMismatch()
     {
-        $this->mockBankingAccountService();
-
         Mail::fake();
 
         $attribute = [
@@ -5216,7 +5382,7 @@ class BankingAccountTest extends TestCase
 
     public function addSalesforceAuth()
     {
-        $salesforceSecret = \Config::get('applications.salesforce')['secret'];
+        $salesforceSecret = Config::get('applications.salesforce')['secret'];
         $this->ba->basicAuth('rzp_test', $salesforceSecret);
     }
 
@@ -5371,7 +5537,7 @@ class BankingAccountTest extends TestCase
             ],
         ];
 
-        $this->expectException(\RZP\Exception\BadRequestException::class);
+        $this->expectException(\RZP\Exception\BadRequestValidationFailureException::class);
 
         $this->startTest($dataToReplace);
     }
@@ -5596,7 +5762,7 @@ class BankingAccountTest extends TestCase
         $this->assertEquals(0, $additionalDetails[ActivationDetail\Entity::SKIP_MID_OFFICE_CALL]);
     }
 
-    protected function createBankingAccountFromDashboard(array $attributes = [])
+    protected function createBankingAccountFromDashboard(array $attributes = [], bool $assertNotifyMob = true, bool $expectHubSpotMock = true)
     {
         Queue::fake();
 
@@ -5619,24 +5785,25 @@ class BankingAccountTest extends TestCase
 
         Mail::fake();
 
-        $hubspotClient = $this->mockHubSpotClient('trackHubspotEvent');
+        if ($expectHubSpotMock)
+        {
+            $hubspotClient = $this->mockHubSpotClient('trackHubspotEvent');
 
-        $hubspotClient->expects($this->atLeast(1))
-                      ->method('trackHubspotEvent');
-
+            $hubspotClient->expects($this->atLeast(1))
+                ->method('trackHubspotEvent');
+        }
 
         $response = $this->makeRequestAndGetContent($request);
 
         Mail::assertNotQueued(XProActivation::class);
 
-        if (empty($response['errorMessage']))
+        if (empty($response['errorMessage']) and $assertNotifyMob)
         {
             Queue::assertPushed(BankingAccountNotifyMob::class);
         } else
         {
             Queue::assertNotPushed(BankingAccountNotifyMob::class);
         }
-
 
         return $response;
     }
@@ -7198,7 +7365,8 @@ class BankingAccountTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['content']['reviewer_id']                = $randomAdmin->getPublicId();
         $this->testData[__FUNCTION__]['request']['content']['banking_account_ids'][0]     = 'bacc_wrongCurAccId1';
-        $this->testData[__FUNCTION__]['request']['content']['banking_account_ids'][1]     = 'bacc_wrongCurAccId2';
+        $this->testData[__FUNCTION__]['request']['content']['banking_account_ids'][1]     = 'bacc_wrongCurAccId1';
+        $this->testData[__FUNCTION__]['request']['content']['banking_account_ids'][2]     = 'bacc_correctAcctId2';
 
         $this->startTest();
     }
@@ -7219,6 +7387,7 @@ class BankingAccountTest extends TestCase
         $this->testData[__FUNCTION__]['request']['content']['reviewer_id']            = $randomAdmin->getPublicId();
         $this->testData[__FUNCTION__]['request']['content']['banking_account_ids'][0] = $bankingAccount1->getPublicId();
         $this->testData[__FUNCTION__]['request']['content']['banking_account_ids'][1] = 'bacc_wrongCurAccId2';
+        $this->testData[__FUNCTION__]['request']['content']['banking_account_ids'][2] = 'bacc_correctAcctId2';
 
         $this->startTest();
 
@@ -8631,7 +8800,7 @@ class BankingAccountTest extends TestCase
     {
         $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
 
-        $bankingAccount = $this->createBankingAccount();
+        $this->createBankingAccount();
 
         $bankingAccountEntity = $this->getDbLastEntity('banking_account');
 
@@ -8652,10 +8821,24 @@ class BankingAccountTest extends TestCase
             ]
         ]);
 
+        $createdAt = Carbon::now()->timestamp;
+
+        $this->fixtures->create('banking_account_state',
+            [
+                'banking_account_id'    => $bankingAccountEntity->getId(),
+                'status'                => 'initiated',
+                'sub_status'            => 'none',
+                'bank_status'           => null,
+                'created_at'            => $createdAt,
+            ]);
+
         $misProcessor = new MIS\Leads([]);
 
         // Assigning first value of array to fileinput to test with the input we created
         $fileInput[0] = $misProcessor->getFileInput()[0];
+
+        $sentToBankDate = Carbon::createFromTimestamp($createdAt, Timezone::IST)->format('Y-m-d') ?? '';
+        $sentToBankTime = Carbon::createFromTimestamp($createdAt, Timezone::IST)->format('h:i A') ?? '';;
 
         // voluntarily mis-aligned to assert new line
         // TODO: Assert cleanly
@@ -8672,8 +8855,8 @@ class BankingAccountTest extends TestCase
                 Leads::MERCHANT_CITY => 'Bangalore',
                 Leads::CONSTITUTION_TYPE => 'Partnership',
                 Leads::MERCHANT_ICV => 222,
-                Leads::APPLICATION_SUBMISSION_DATE => '',
-                Leads::TIMESTAMP => '',
+                Leads::APPLICATION_SUBMISSION_DATE => $sentToBankDate,
+                Leads::TIMESTAMP => $sentToBankTime,
                 Leads::BUSINESS_MODEL => null,
                 Leads::ACCOUNT_TYPE => 'Insignia',
                 Leads::COMMENT => 'Sample comment',
@@ -8738,21 +8921,21 @@ class BankingAccountTest extends TestCase
                 Leads::UPI_CREDENTIALS_NOT_DONE_REMARKS => null,
                 Leads::DROP_OFF_DATE => '',
                 Leads::API_SERVICE_FIRST_QUERY => null,
-                Leads::API_BEYOND_TAT => null,
+                Leads::API_BEYOND_TAT => '',
                 Leads::API_BEYOND_TAT_DEPENDENCY => null,
                 Leads::FIRST_CALLING_TIME => null,
                 Leads::SECOND_CALLING_TIME => null,
-                Leads::WA_MESSAGE_SENT_DATE => null,
-                Leads::WA_MESSAGE_RESPONSE_DATE => null,
+                Leads::WA_MESSAGE_SENT_DATE => '',
+                Leads::WA_MESSAGE_RESPONSE_DATE => '',
                 Leads::API_DOCKET_RELATED_ISSUE => null,
-                Leads::AOF_SHARED_WITH_MO => null,
-                Leads::AOF_SHARED_DISCREPANCY => null,
+                Leads::AOF_SHARED_WITH_MO => '',
+                Leads::AOF_SHARED_DISCREPANCY => '',
                 Leads::AOF_NOT_SHARED_REASON => null,
                 Leads::CA_BEYOND_TAT_DEPENDENCY => null,
-                Leads::CA_BEYOND_TAT => null,
+                Leads::CA_BEYOND_TAT => '',
                 Leads::CA_SERVICE_FIRST_QUERY => null,
                 Leads::LEAD_IR_STATUS => null,
-                Leads::CUSTOMER_APPOINTMENT_BOOKING_DATE => null,
+                Leads::CUSTOMER_APPOINTMENT_BOOKING_DATE => '',
                 Leads::CUSTOMER_ONBOARDING_TAT => null,
             ]
         ];
@@ -11440,8 +11623,12 @@ class BankingAccountTest extends TestCase
             'banking_account_bank_lms'
         );
 
-        // Assigning first value of array to fileinput to test with the input we created
-        $fileInput[0] = $misProcessor->getFileInput()[0];
+        $rows = $misProcessor->getFileInput();
+
+        $this->assertCount(100, $rows, 'Count should be limited to 100');
+
+        // Assigning first value of array to fileinput to test with the input we created (latest)
+        $fileInput[0] = $rows[0];
 
         $sentToBankTimestamp = $stateLog['created_at'];
 
@@ -11454,107 +11641,203 @@ class BankingAccountTest extends TestCase
 
         if (is_double($customerOnboardingTat) === true)
         {
-            $customerOnboardingTat =  round($customerOnboardingTat / 24);
+            $customerOnboardingTat = round($customerOnboardingTat / 24);
         }
 
         $expectedFileInput = [
             [
-                Leads::RZP_REF_NO => '10000',
-                Leads::MERCHANT_NAME =>  $bankingAccountEntity->merchant->name,
-                Leads::MERCHANT_POC_NAME => 'Sample Name',
-                Leads::MERCHANT_POC_DESIGNATION => 'Financial Consultant',
-                Leads::MERCHANT_POC_EMAIL => 'sample@sample.com',
-                Leads::MERCHANT_POC_PHONE => '9876556789',
-                Leads::PINCODE => $bankingAccountEntity->getPincode(),
-                Leads::MERCHANT_CITY => 'Bangalore',
-                Leads::CONSTITUTION_TYPE => 'Partnership',
-                Leads::MERCHANT_ICV => 222,
-                Leads::APPLICATION_SUBMISSION_DATE => $sentToBankDate,
-                Leads::TIMESTAMP => $sentToBankTime,
-                Leads::BUSINESS_MODEL => null,
-                Leads::ACCOUNT_TYPE => 'Insignia',
-                Leads::COMMENT => 'Sample comment',
-                Leads::EXPECTED_MONTHLY_GMV => 40000,
-                Leads::SALES_POC =>  $bankingAccountEntity->spocs()->first()->name,
-                Leads::SALES_POC_PHONE_NUMBER => $bankingAccountEntity->bankingAccountActivationDetails[ActivationDetail\Entity::SALES_POC_PHONE_NUMBER],
-                Leads::GREEN_CHANNEL => 'Yes',
-                Leads::FOS => 'Yes',
-                Leads::REVIVED_LEAD => '',
-                Leads::OPS_POC_NAME => '',
-                Leads::OPS_POC_EMAIL => '',
-                Leads::DOCKET_DELIVERY_DATE => '2022-10-09',
-                Leads::STATUS => 'VerificationCall',
-                Leads::SUB_STATUS => 'In Processing',
-                Leads::ASSIGNEE => 'Bank',
-                Leads::MID_OFFICE_POC => 'Umakant Vashishtha',
-                Leads::LEAD_REFERRED_BY_RBL_STAFF => 'Yes',
-                Leads::OFFICE_AT_DIFFERENT_LOCATIONS => 'No',
-                Leads::CUSTOMER_APPOINTMENT_DATE => '2022-10-11',
-                Leads::APPOINTMENT_TAT => null,
-                Leads::LEAD_IR_NO => 'IR101',
-                Leads::RM_NAME => 'Sachin s',
-                Leads::RM_MOBILE_NO => '9535362154',
-                Leads::BRANCH_CODE => '195',
-                Leads::BRANCH_NAME => 'Jp Nagar',
-                Leads::BM => 'Venkatathri B',
-                Leads::BM_MOBILE_NO => 8291282195,
-                Leads::TL => 'Manjunath R',
-                Leads::CLUSTER => 'Blr 2',
-                Leads::REGION => 'South & Goa Region',
-                Leads::DOC_COLLECTION_DATE => '2022-10-12',
-                Leads::DOC_COLLECTION_TAT => 1.0,
-                Leads::IP_CHEQUE_VALUE => null,
-                Leads::API_DOCS_RECEIVED_WITH_CA_DOCS => 'No',
-                Leads::API_DOC_DELAY_REASON => 'For some XYZ Reason',
-                Leads::REVISED_DECLARATION => 'No',
-                Leads::ACCOUNT_IR_NO => 'IR102',
-                Leads::ACCT_LOGIN_DATE => '2022-10-12',
-                Leads::IR_LOGIN_TAT => 0.0,
-                Leads::PROMO_CODE => 'RZP123',
-                Leads::CASE_LOGIN => '',
-                Leads::SR_NO => 'SR101',
-                Leads::ACCOUNT_OPEN_DATE => '2019-07-10',
-                Leads::ACCOUNT_IR_CLOSED_DATE => '2022-10-11',
-                Leads::AO_FTNR => 'Yes',
-                Leads::AO_FTNR_REASONS => 'Reason 1,Reason 2',
-                Leads::AO_TAT_EXCEPTION => 'Yes',
-                Leads::AO_TAT_EXCEPTION_REASON => 'ACCOUNT_OPENING_TAT_EXCEPTION_REASON',
-                Leads::API_IR_NO => 'IR103',
-                Leads::API_IR_LOGIN_DATE => '2022-10-14',
-                Leads::LDAP_ID_MAIL_DATE => '',
-                Leads::API_REQUEST_TAT => 852.0,
-                Leads::API_IR_CLOSED_DATE => '2022-10-15',
-                Leads::API_REQUEST_PROCESSING_TAT => 1.0,
-                Leads::API_FTNR => 'Yes',
-                Leads::API_FTNR_REASONS => 'Reason 3,Reason 4',
-                Leads::API_TAT_EXCEPTION => 'Yes',
-                Leads::API_TAT_EXCEPTION_REASON => 'API_ONBOARDING_TAT_EXCEPTION_REASON',
-                Leads::CORP_ID_MAIL_DATE => '2022-10-15',
-                Leads::RZP_CA_ACTIVATED_DATE => '',
-                Leads::UPI_CREDENTIALS_DATE => '',
-                Leads::UPI_CREDENTIALS_NOT_DONE_REMARKS => 'UPI_CREDENTIAL_NOT_DONE_REMARKS',
-                Leads::DROP_OFF_DATE => '',
-                Leads::API_SERVICE_FIRST_QUERY => 'API_SERVICE_FIRST_QUERY',
-                Leads::API_BEYOND_TAT => 'Yes',
-                Leads::API_BEYOND_TAT_DEPENDENCY => 'razorpay',
-                Leads::FIRST_CALLING_TIME => 'FIRST_CALLING_TIME',
-                Leads::SECOND_CALLING_TIME => 'SECOND_CALLING_TIME',
-                Leads::WA_MESSAGE_SENT_DATE => '2022-10-12',
-                Leads::WA_MESSAGE_RESPONSE_DATE => '2022-10-12',
-                Leads::API_DOCKET_RELATED_ISSUE => 'API_DOCKET_RELATED_ISSUE',
-                Leads::AOF_SHARED_WITH_MO => 'No',
-                Leads::AOF_SHARED_DISCREPANCY => 'No',
-                Leads::AOF_NOT_SHARED_REASON => 'AOF_NOT_SHARED_REASON',
-                Leads::CA_BEYOND_TAT_DEPENDENCY => 'client',
-                Leads::CA_BEYOND_TAT => 'No',
-                Leads::CA_SERVICE_FIRST_QUERY => 'CA_SERVICE_FIRST_QUERY',
-                Leads::LEAD_IR_STATUS => 'ir_raised',
-                Leads::CUSTOMER_APPOINTMENT_BOOKING_DATE => $customerAppointmentBookingDate,
-                Leads::CUSTOMER_ONBOARDING_TAT => $customerOnboardingTat,
+                Leads::RZP_REF_NO                         => '10000',
+                Leads::MERCHANT_NAME                      =>  $bankingAccountEntity->merchant->name,
+                Leads::MERCHANT_POC_NAME                  => 'Sample Name',
+                Leads::MERCHANT_POC_DESIGNATION           => 'Financial Consultant',
+                Leads::MERCHANT_POC_EMAIL                 => 'sample@sample.com',
+                Leads::MERCHANT_POC_PHONE                 => '9876556789',
+                Leads::PINCODE                            => $bankingAccountEntity->getPincode(),
+                Leads::MERCHANT_CITY                      => 'Bangalore',
+                Leads::CONSTITUTION_TYPE                  => 'Partnership',
+                Leads::MERCHANT_ICV                       => 222,
+                Leads::APPLICATION_SUBMISSION_DATE        => $sentToBankDate,
+                Leads::TIMESTAMP                          => $sentToBankTime,
+                Leads::BUSINESS_MODEL                     => null,
+                Leads::ACCOUNT_TYPE                       => 'Insignia',
+                Leads::COMMENT                            => 'Sample comment',
+                Leads::EXPECTED_MONTHLY_GMV               => 40000,
+                Leads::SALES_POC                          => $bankingAccountEntity->spocs()->first()->name,
+                Leads::SALES_POC_PHONE_NUMBER             => $bankingAccountEntity->bankingAccountActivationDetails[ActivationDetail\Entity::SALES_POC_PHONE_NUMBER],
+                Leads::GREEN_CHANNEL                      => 'Yes',
+                Leads::FOS                                => 'Yes',
+                Leads::REVIVED_LEAD                       => '',
+                Leads::OPS_POC_NAME                       => '',
+                Leads::OPS_POC_EMAIL                      => '',
+                Leads::DOCKET_DELIVERY_DATE               => '2022-10-09',
+                Leads::STATUS                             => 'VerificationCall',
+                Leads::SUB_STATUS                         => 'In Processing',
+                Leads::ASSIGNEE                           => 'Bank',
+                Leads::MID_OFFICE_POC                     => 'Umakant Vashishtha',
+                Leads::LEAD_REFERRED_BY_RBL_STAFF         => 'Yes',
+                Leads::OFFICE_AT_DIFFERENT_LOCATIONS      => 'No',
+                Leads::CUSTOMER_APPOINTMENT_DATE          => '2022-10-11',
+                Leads::APPOINTMENT_TAT                    => null,
+                Leads::LEAD_IR_NO                         => 'IR101',
+                Leads::RM_NAME                            => 'Sachin s',
+                Leads::RM_MOBILE_NO                       => '9535362154',
+                Leads::BRANCH_CODE                        => '195',
+                Leads::BRANCH_NAME                        => 'Jp Nagar',
+                Leads::BM                                 => 'Venkatathri B',
+                Leads::BM_MOBILE_NO                       => 8291282195,
+                Leads::TL                                 => 'Manjunath R',
+                Leads::CLUSTER                            => 'Blr 2',
+                Leads::REGION                             => 'South & Goa Region',
+                Leads::DOC_COLLECTION_DATE                => '2022-10-12',
+                Leads::DOC_COLLECTION_TAT                 => 1.0,
+                Leads::IP_CHEQUE_VALUE                    => null,
+                Leads::API_DOCS_RECEIVED_WITH_CA_DOCS     => 'No',
+                Leads::API_DOC_DELAY_REASON               => 'For some XYZ Reason',
+                Leads::REVISED_DECLARATION                => 'No',
+                Leads::ACCOUNT_IR_NO                      => 'IR102',
+                Leads::ACCT_LOGIN_DATE                    => '2022-10-12',
+                Leads::IR_LOGIN_TAT                       => 0.0,
+                Leads::PROMO_CODE                         => 'RZP123',
+                Leads::CASE_LOGIN                         => '',
+                Leads::SR_NO                              => 'SR101',
+                Leads::ACCOUNT_OPEN_DATE                  => '2019-07-10',
+                Leads::ACCOUNT_IR_CLOSED_DATE             => '2022-10-11',
+                Leads::AO_FTNR                            => 'Yes',
+                Leads::AO_FTNR_REASONS                    => 'Reason 1,Reason 2',
+                Leads::AO_TAT_EXCEPTION                   => 'Yes',
+                Leads::AO_TAT_EXCEPTION_REASON            => 'ACCOUNT_OPENING_TAT_EXCEPTION_REASON',
+                Leads::API_IR_NO                          => 'IR103',
+                Leads::API_IR_LOGIN_DATE                  => '2022-10-14',
+                Leads::LDAP_ID_MAIL_DATE                  => '',
+                Leads::API_REQUEST_TAT                    => 852.0,
+                Leads::API_IR_CLOSED_DATE                 => '2022-10-15',
+                Leads::API_REQUEST_PROCESSING_TAT         => 1.0,
+                Leads::API_FTNR                           => 'Yes',
+                Leads::API_FTNR_REASONS                   => 'Reason 3,Reason 4',
+                Leads::API_TAT_EXCEPTION                  => 'Yes',
+                Leads::API_TAT_EXCEPTION_REASON           => 'API_ONBOARDING_TAT_EXCEPTION_REASON',
+                Leads::CORP_ID_MAIL_DATE                  => '2022-10-15',
+                Leads::RZP_CA_ACTIVATED_DATE              => '',
+                Leads::UPI_CREDENTIALS_DATE               => '',
+                Leads::UPI_CREDENTIALS_NOT_DONE_REMARKS   => 'UPI_CREDENTIAL_NOT_DONE_REMARKS',
+                Leads::DROP_OFF_DATE                      => '',
+                Leads::API_SERVICE_FIRST_QUERY            => 'API_SERVICE_FIRST_QUERY',
+                Leads::API_BEYOND_TAT                     => 'Yes',
+                Leads::API_BEYOND_TAT_DEPENDENCY          => 'razorpay',
+                Leads::FIRST_CALLING_TIME                 => 'FIRST_CALLING_TIME',
+                Leads::SECOND_CALLING_TIME                => 'SECOND_CALLING_TIME',
+                Leads::WA_MESSAGE_SENT_DATE               => '2022-10-12',
+                Leads::WA_MESSAGE_RESPONSE_DATE           => '2022-10-12',
+                Leads::API_DOCKET_RELATED_ISSUE           => 'API_DOCKET_RELATED_ISSUE',
+                Leads::AOF_SHARED_WITH_MO                 => 'No',
+                Leads::AOF_SHARED_DISCREPANCY             => 'No',
+                Leads::AOF_NOT_SHARED_REASON              => 'AOF_NOT_SHARED_REASON',
+                Leads::CA_BEYOND_TAT_DEPENDENCY           => 'client',
+                Leads::CA_BEYOND_TAT                      => 'No',
+                Leads::CA_SERVICE_FIRST_QUERY             => 'CA_SERVICE_FIRST_QUERY',
+                Leads::LEAD_IR_STATUS                     => 'ir_raised',
+                Leads::CUSTOMER_APPOINTMENT_BOOKING_DATE  => $customerAppointmentBookingDate,
+                Leads::CUSTOMER_ONBOARDING_TAT            => $customerOnboardingTat,
             ]
         ];
 
         $this->assertEquals($expectedFileInput, $fileInput);
+
+        $this->assertEquals([
+            Leads::RZP_REF_NO                            => '40123',
+            Leads::MERCHANT_NAME                         => 'Z-AXIS GROUP OF INDUSTRIES',
+            Leads::MERCHANT_POC_NAME                     => 'aditya',
+            Leads::MERCHANT_POC_DESIGNATION              => 'Proprietor',
+            Leads::MERCHANT_POC_EMAIL                    => 'yaxisgroupofindustries@gmail.com',
+            Leads::MERCHANT_POC_PHONE                    => '+919560569604',
+            Leads::PINCODE                               => '110093',
+            Leads::MERCHANT_CITY                         => 'eastdelhi',
+            Leads::CONSTITUTION_TYPE                     => 'One Person Company',
+            Leads::MERCHANT_ICV                          => 20000,
+            Leads::APPLICATION_SUBMISSION_DATE           => '2023-05-01',
+            Leads::TIMESTAMP                             => '06:54 PM',
+            Leads::BUSINESS_MODEL                        => 'ECOMMERCE',
+            Leads::ACCOUNT_TYPE                          => 'Business Plus',
+            Leads::COMMENT                               => 'Bank\'s Inernal Comment',
+            Leads::EXPECTED_MONTHLY_GMV                  => 500000,
+            Leads::SALES_POC                             => 'Sales person',
+            Leads::SALES_POC_PHONE_NUMBER                => '8989898988',
+            Leads::GREEN_CHANNEL                         => 'Yes',
+            Leads::FOS                                   => 'Yes',
+            Leads::REVIVED_LEAD                          => 'No',
+            Leads::OPS_POC_NAME                          => 'Ops person',
+            Leads::OPS_POC_EMAIL                         => 'ops.person@razorpay.com',
+            Leads::DOCKET_DELIVERY_DATE                  => '',
+            Leads::STATUS                                => 'RazorpayProcessing',
+            Leads::SUB_STATUS                            => 'None',
+            Leads::ASSIGNEE                              => 'RZP',
+            Leads::MID_OFFICE_POC                        => 'Bank POC person',
+            Leads::RM_NAME                               => 'Pankaj Mishra',
+            Leads::RM_MOBILE_NO                          => '9315383526',
+            Leads::BRANCH_CODE                           => '213',
+            Leads::BRANCH_NAME                           => 'Jaipur',
+            Leads::BM                                    => 'Abhishek Chaturvedi',
+            Leads::BM_MOBILE_NO                          => 9414641077,
+            Leads::TL                                    => 'Avijit Shrivastava',
+            Leads::CLUSTER                               => 'Rajasthan',
+            Leads::REGION                                => 'North & East Region',
+            Leads::LEAD_REFERRED_BY_RBL_STAFF            => 'Yes',
+            Leads::OFFICE_AT_DIFFERENT_LOCATIONS         => 'Yes',
+            Leads::CUSTOMER_APPOINTMENT_DATE             => '2023-03-10',
+            Leads::APPOINTMENT_TAT                       => null,
+            Leads::LEAD_IR_NO                            => 'IR 01234',
+            Leads::DOCKET_DELIVERY_DATE                  => '',
+            Leads::DOC_COLLECTION_TAT                    => null,
+            Leads::IP_CHEQUE_VALUE                       => 20000,
+            Leads::API_DOCS_RECEIVED_WITH_CA_DOCS        => 'Yes',
+            Leads::API_DOC_DELAY_REASON                  => 'That\'s how we roll.',
+            Leads::REVISED_DECLARATION                   => 'No',
+            Leads::ACCOUNT_IR_NO                         => 'IR00022515189',
+            Leads::ACCT_LOGIN_DATE                       => '',
+            Leads::IR_LOGIN_TAT                          => null,
+            Leads::PROMO_CODE                            => 'RZPAY',
+            Leads::CASE_LOGIN                            => 'No',
+            Leads::SR_NO                                 => 'SR_NUMBER',
+            Leads::ACCOUNT_OPEN_DATE                     => '2023-03-15',
+            Leads::ACCOUNT_IR_CLOSED_DATE                => '',
+            Leads::AO_FTNR                               => '',
+            Leads::AO_FTNR_REASONS                       => 'AO Negative List/Compliance/Legal/CIBIL',
+            Leads::AO_TAT_EXCEPTION                      => 'No',
+            Leads::AO_TAT_EXCEPTION_REASON               => 'compliance Issue',
+            Leads::API_IR_NO                             => 'API_IR_1234',
+            Leads::API_IR_LOGIN_DATE                     => '',
+            Leads::LDAP_ID_MAIL_DATE                     => '2023-03-09',
+            Leads::API_REQUEST_TAT                       => null,
+            Leads::API_IR_CLOSED_DATE                    => '2023-03-09',
+            Leads::API_REQUEST_PROCESSING_TAT            => null,
+            Leads::API_FTNR                              => '',
+            Leads::API_FTNR_REASONS                      => 'Reason 1, Reason 2',
+            Leads::API_TAT_EXCEPTION                     => 'No',
+            Leads::API_TAT_EXCEPTION_REASON              => 'This time for Africa',
+            Leads::CORP_ID_MAIL_DATE                     => '',
+            Leads::RZP_CA_ACTIVATED_DATE                 => '2023-03-09',
+            Leads::UPI_CREDENTIALS_DATE                  => '2023-03-09',
+            Leads::UPI_CREDENTIALS_NOT_DONE_REMARKS      => 'Something',
+            Leads::DROP_OFF_DATE                         => '',
+            Leads::API_SERVICE_FIRST_QUERY               => null,
+            Leads::API_BEYOND_TAT                        => '',
+            Leads::API_BEYOND_TAT_DEPENDENCY             => null,
+            Leads::FIRST_CALLING_TIME                    => '5 to 6',
+            Leads::SECOND_CALLING_TIME                   => null,
+            Leads::WA_MESSAGE_SENT_DATE                  => '2023-03-09',
+            Leads::WA_MESSAGE_RESPONSE_DATE              => '2023-03-09',
+            Leads::API_DOCKET_RELATED_ISSUE              => null,
+            Leads::AOF_SHARED_WITH_MO                    => 'No',
+            Leads::AOF_SHARED_DISCREPANCY                => '',
+            Leads::AOF_NOT_SHARED_REASON                 => 'Already Login',
+            Leads::CA_BEYOND_TAT_DEPENDENCY              => '',
+            Leads::CA_BEYOND_TAT                         => 'No',
+            Leads::CA_SERVICE_FIRST_QUERY                => '1.on rrt high risk rating by compliance is not mentioned. APPLICANT FOUND IN NEGATIVE LIST ODG452595087230310202422178-ADIL',
+            Leads::CUSTOMER_APPOINTMENT_BOOKING_DATE     => '2023-04-21',
+            Leads::CUSTOMER_ONBOARDING_TAT               => 1.0,
+            Leads::LEAD_IR_STATUS                        => null,
+            Leads::DOC_COLLECTION_DATE                   => '2023-03-09',
+        ], $rows[1]);
     }
 
     public function testBankLmsEndToEndForNotifyingMidOfficeManager()
@@ -11753,8 +12036,6 @@ class BankingAccountTest extends TestCase
     private function makeMerchantAsBankCAOnboardingPartner(string $merchantId = self::DefaultPartnerMerchantId): array
     {
         $merchant = $this->getDbEntityById('merchant', $merchantId);
-
-
 
         $app = ['id'=>'8ckeirnw84ifke'];
 
@@ -13325,4 +13606,343 @@ class BankingAccountTest extends TestCase
 
         return $xsegmentMock;
     }
+
+
+    // =========== RBL on BAS Tests ========== //
+
+    // Test Get Single Application
+    public function testApiToBasDtoAdapter()
+    {
+        $testData = $this->testData['testApiToBasDtoAdapter'];
+
+        $input = $testData['apiInput'];
+
+        $input[BankingAccount\Entity::ACTIVATION_DETAIL][ActivationDetail\Entity::SALES_POC_ID] = 'admin_'.Org::SUPER_ADMIN;
+
+        $basInput = (new BasDtoAdapter)->fromApiInputToBasInput($input);
+
+        $expectedOutput = $testData['expectedBasInput'];
+
+        $expectedOutput['account_managers']['sales_poc']['name'] = 'test admin';
+        $expectedOutput['account_managers']['sales_poc']['email'] = 'superadmin@razorpay.com';
+
+        $this->assertArraySelectiveEquals($expectedOutput, $basInput);
+    }
+
+    // By default uses internal auth
+    // if merchant is passed, then it uses merchant auth
+    public function testGetRblApplicationFromMob($merchant = null)
+    {
+        $this->ba->mobAppAuthForInternalRoutes();
+
+        if (empty($merchant) == false)
+        {
+            $this->ba->setMerchant($merchant);
+        }
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts_internal/bacc_JuLWj2OnFAcg72',
+            ],
+        ];
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testGetRblApplicationFromMerchantDashboard()
+    {
+        $merchant = $this->getDbEntity('merchant', [
+            'id' => self::DefaultMerchantId,
+        ]);
+
+        $this->testGetRblApplicationFromMob($merchant);
+    }
+
+    public function testGetRblApplicationFromAdminLms()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetRblApplicationFromPartnerLms()
+    {
+        $this->setupBankLMSTest();
+
+        $this->startTest();
+    }
+
+    // Test Fetch Multiple Applications
+    public function testFetchRblApplicationsFromAdminLms()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    // Test Fetch Multiple Applications
+    public function testFetchRblApplicationsFromPartnerLms()
+    {
+        $response = $this->setupBankLMSTest();
+
+        $dataToReplace = [
+            'response' => [
+                'content' => [
+                    'items' => [
+                        [
+                            'id' => $response['bankingAccount']['id'],
+                        ],
+                        [
+                            'id' => 'bacc_JuLWj2OnFAcg72'
+                        ],
+                    ]
+                ]
+            ]
+        ];
+
+        $this->startTest($dataToReplace);
+    }
+
+    // Test Update Application
+    private function mockPatchRblApplicationComposite(array $response, array $expectedArgs)
+    {
+        $basMock = $this->bankingAccountServiceMock;
+
+        $basMock->shouldReceive('patchRBLApplicationComposite')
+                ->once()
+                ->withArgs(function($applicationId, $payload) use ($expectedArgs) {
+                    $this->assertEquals($expectedArgs['applicationId'], $applicationId);
+                    $this->assertArraySelectiveEquals($expectedArgs['payload'], $payload);
+                    return true;
+                })
+                ->andReturns($response);
+
+        $this->app->instance('banking_account_service', $basMock);
+    }
+
+    public function testRblOnBasUpdateFromBatch()
+    {
+        $content = [
+            'bank_reference_number' => '1234',
+            'comment' => 'sample comment from batch',
+            'source_team' => 'bank',
+            'source_team_type' => 'external',
+            'added_at' => 1594800229,
+            'assignee_team' => 'sales',
+            'account_open_date' => '23-Jun-2020',
+            'account_login_date' => '23-Jun-2020'
+        ];
+
+        $this->mockPatchRblApplicationComposite([
+            'business' => [
+                'id' => 'LVFoXUXt8aLGQt',
+            ],
+            'person' => [
+                'email_id' => 'yaxisgroupofindustries@gmail.com',
+            ],
+        ], [
+            'applicationId' => '1234',
+            'payload' => [
+                'banking_account_application' => [
+                    'assignee_team' => 'sales',
+                    'metadata' => [
+                        'account_login_date' => 1592850600,
+                        'account_open_date' => 1592850600,
+                    ]
+                ],
+            ]
+        ]);
+
+        $this->assertUpdateViaBatch($content);
+    }
+
+    public function testRblOnBasUpdateFromAdminLms()
+    {
+        $this->ba->adminAuth();
+
+        $this->mockPatchRblApplicationComposite([
+            'banking_account_application' => [
+                'id' => 'JuLWj2OnFAcg72',
+                'application_number' => '203128886',
+                'application_status' => 'picked',
+                'sub_status' => 'none',
+            ],
+        ], [
+            'applicationId' => 'JuLWj2OnFAcg72',
+            'payload' => [
+                'banking_account_application' => [
+                    'application_status' => 'picked',
+                    'sub_status' => 'none',
+                ]
+            ]
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testRblOnBasUpdateFromMerchantDashboard()
+    {
+        $this->mockPatchRblApplicationComposite([
+            'business' => [
+                'id' => 'LVFoXUXt8aLGQt',
+            ],
+            'person' => [
+                'email_id' => 'yaxisgroupofindustries@gmail.com',
+            ],
+            'banking_account_application' => [
+                'id' => 'JuLWj2OnFAcg72',
+                'application_status' => 'created',
+            ],
+        ], [
+            'payload' => [
+                'banking_account_application' => [
+                    'metadata' => [
+                        'additional_details' => [
+                            'agree_to_allocated_bank_and_amb' => 1,
+                        ],
+                    ]
+                ],
+            ],
+            'applicationId' => 'JuLWj2OnFAcg72',
+        ]);
+
+        $dataToReplace = [
+            'request'  => [
+                'url'     => '/banking_accounts_dashboard/bacc_JuLWj2OnFAcg72',
+            ],
+        ];
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function rblOnBasUpdate($dataToReplace, $status = Status::PICKED, $subStatus = Status::NONE)
+    {
+        $dataToReplace['response']['content']['status'] = $status;
+        $dataToReplace['response']['content']['sub_status'] = $subStatus;
+
+        $dataToReplace['request']['content']['status'] = $status;
+        $dataToReplace['request']['content']['sub_status'] = $subStatus;
+
+        $this->mockPatchRblApplicationComposite([
+            'business' => [
+                'id' => 'LVFoXUXt8aLGQt',
+            ],
+            'person' => [
+                'email_id' => 'yaxisgroupofindustries@gmail.com',
+            ],
+            'banking_account_application' => [
+                'id' => 'JuLWj2OnFAcg72',
+                'application_status' => $status,
+                'sub_status' => $subStatus,
+                'metadata' => [
+                    'additional_details' => [
+                        'docket_delivered_date' => '1666204200',
+                    ]
+                ]
+            ],
+        ], [
+            'payload' => [
+                'banking_account_application' => [
+                    'application_status' => $status,
+                    'sub_status' => $subStatus,
+                    'metadata' => [
+                        'additional_details' => [
+                            'docket_delivered_date' => '1666204200',
+                        ]
+                    ],
+                ],
+            ],
+            'applicationId' => 'JuLWj2OnFAcg72',
+        ]);
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function testRblOnBasUpdateFromPartnerLms()
+    {
+        $this->setupBankLMSTest();
+
+        $dataToReplace = [
+            'request' => [
+                'url' => '/banking_accounts/rbl/lms/banking_account/bacc_JuLWj2OnFAcg72',
+            ],
+        ];
+
+        $this->rblOnBasUpdate($dataToReplace, Status::VERIFICATION_CALL, Status::IN_PROCESSING);
+    }
+
+    public function testRblonBasAssignBankPoc()
+    {
+        $response = $this->setupBankLMSTest();
+
+        $user = $response['user'];
+
+        $assertInput = [
+            'bank_poc_user_id'      => $user->getId(),
+            'bank_poc_name'         => $user->getName(),
+            'bank_poc_phone_number' => $user->getContactMobile(),
+            'bank_poc_email'        => $user->getEmail(),
+        ];
+
+        $basMock = $this->bankingAccountServiceMock;
+
+        $basMock->shouldReceive('assignBankPocForRblPartnerLms')
+                ->once()
+                ->withArgs(function($businessId, $applicationId, $basInput) use ($assertInput) {
+                    $this->assertEquals('_', $businessId);
+                    $this->assertEquals('JuLWj2OnFAcg72', $applicationId);
+                    $this->assertEquals($assertInput, $basInput);
+                    return true;
+                })
+                ->andReturns($basMock->getApplicationForRblPartnerLms('_', 'JuLWj2OnFAcg72'));
+
+        $this->app->instance('banking_account_service', $basMock);
+
+        $dataToReplace = [
+            'request' => [
+                'content' => [
+                    'bank_poc_user_id' => $user->getId()
+                ],
+            ]
+        ];
+
+        $this->startTest($dataToReplace);
+    }
+
+    public function mockBankingAccountProcessRblAccountOpeningWebhook($status = 'Success')
+    {
+        $basMock = $this->bankingAccountServiceMock;
+
+        $response = [
+            RblGateway\Fields::RZP_ALERT_NOTIFICATION_RESPONSE => [
+                RblGateway\Fields::HEADER => [
+                    RblGateway\Fields::TRAN_ID => '12345',
+                ],
+                RblGateway\Fields::BODY   =>[
+                    RblGateway\Fields::STATUS => $status
+                ]
+            ],
+        ];
+
+        $basMock->shouldReceive('processRblAccountOpeningWebhook')
+                ->once()
+                ->andReturns($response);
+
+        $this->app->instance('banking_account_service', $basMock);
+    }
+
+    public function testRblOnBasWebhook()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testActivateRblApplication()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
 }

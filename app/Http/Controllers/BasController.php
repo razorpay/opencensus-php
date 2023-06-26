@@ -222,7 +222,7 @@ class BasController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function archiveICICIAccount()
+    public function archiveBankingAccountDependencies()
     {
         $input = Request::all();
 
@@ -231,11 +231,18 @@ class BasController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function unArchiveICICIAccount()
+    public function unarchiveBankingAccountDependencies()
     {
         $input = Request::all();
 
         $data =  $this->service->unArchiveBankingAccount($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getMerchantAttributes(string $merchantId, string $group)
+    {
+        $data =  $this->service->getMerchantAttributes($merchantId, $group);
 
         return ApiResponse::json($data);
     }
@@ -258,11 +265,5 @@ class BasController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getMerchantAttributes(string $merchantId, string $group)
-    {
-        $data =  $this->service->getMerchantAttributes($merchantId, $group);
-
-        return ApiResponse::json($data);
-    }
 }
 

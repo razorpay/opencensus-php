@@ -4,6 +4,10 @@ namespace RZP\Models\BankingAccountService;
 
 class Constants
 {
+    const ID                            = 'id';
+
+    const DATA                          = 'data';
+
     const ACCOUNT_NUMBER                = 'account_number';
 
     const CHANNEL                       = 'channel';
@@ -11,6 +15,8 @@ class Constants
     const MERCHANT_ID                   = 'merchant_id';
 
     const EMAIL_ID                      = 'email_id';
+
+    const PHONE_NUMBER                  = 'phone_number';
 
     const CONSTITUTION                  = 'constitution';
 
@@ -91,7 +97,7 @@ class Constants
 
     const RBL                           = 'RBL';
 
-    const ICICI                           = 'ICICI';
+    const ICICI                         = 'ICICI';
 
     const X_CA_UNIFIED                  = 'X-CA-Unified';
 
@@ -100,6 +106,29 @@ class Constants
     const CURRENT_ACCOUNT               = 'Current_Account';
 
     const CA_CHANNEL_NITRO              = 'NITRO';
+
+    const BUSINESS                      = 'business';
+    const BANKING_ACCOUNT_APPLICATION   = 'banking_account_application';
+
+    const ACCOUNT_MANAGERS              = 'account_managers';
+    const SALES_POC                     = 'sales_poc';
+    const OPS_POC                       = 'ops_poc';
+    const BANK_POC                      = 'bank_poc';
+    const OPS_MX_POC                    = 'ops_mx_poc';
+    const RZP_ADMIN_ID                  = 'rzp_admin_id';
+    const TEAM                          = 'team';
+    const NAME                          = 'name';
+    const EMAIL                         = 'email';
+    const BOOKING_COUNT                 = 'booking_count';
+
+    // RBL Credentials Fields
+    const CREDENTIALS                   = 'credentials';
+    const LDAP_ID                       = 'ldap_id';
+    const LDAP_PASSWORD                 = 'ldap_password';
+    const CORP_ID_CRED                  = 'corp_id';
+    const CLIENT_ID                     = 'client_id';
+    const CLIENT_SECRET                 = 'client_secret';
+    const DEV_PORTAL_PASSWORD           = 'dev_portal_password';
 
     const ACCOUNT_MANAGER_NAME          = 'account_manager_name';
 
@@ -124,4 +153,34 @@ class Constants
     const BANKING_ACCOUNT_STATUS_CHANGED     = 'banking_account_status_changed';
 
     const BANKING_ACCOUNT_SUB_STATUS_CHANGED = 'banking_account_sub_status_changed';
+
+    const TYPE                          = 'type';
+
+    const PARTNER_BANK                  = 'partner_bank';
+
+    const SEARCH_LEADS_API_TO_BAS_QUERY_PARAM_MAPPING = [
+        'merchant_business_name' => 'merchant_name',
+        'status'                 => 'application_status',
+        'bank_reference_number'  => 'application_tracking_id',
+        'business_category'      => 'business_type',
+        'merchant_email'         => 'email_id',
+        'reviewer_id'            => 'ops_poc_id',
+        'sales_team'             => 'sales_team_name',
+    ];
+
+    const API_TO_BAS_ACCOUNT_TYPE_MAPPING = [
+        'current' => 'CA_DIRECT',
+    ];
+
+    const RBL_ONBOARDING_APPLICATION    = 'RBL_ONBOARDING_APPLICATION';
+
+    const APPLICATION_TYPE              = 'application_type';
+
+    const PERSON_DETAILS                = 'person_details';
+
+    const PINCODE                       = 'pincode';
+
+    const REGISTERED_ADDRESS_DETAILS    = 'registered_address_details';
+
+    const ADDRESS_PIN_CODE              = 'address_pin_code';
 }

@@ -77,6 +77,47 @@ if (! function_exists('array_assoc_flatten'))
     }
 }
 
+if (! function_exists('array_assoc_flatten_nth_level'))
+{
+    /**
+     * Same as array_assoc_flatten but restrict to n-th level of nesting
+     */
+    function array_assoc_flatten_nth_level(array $array, string $separatorFormat = "%s.%s", $parent_key = null, $flattenSequential = false, $uptoLevel = 7, $level = 0)
+    {
+        $return = array();
+
+        foreach ($array as $key => $value)
+        {
+            $shouldFlatten = $level < $uptoLevel;
+
+            $key = ($parent_key === null) ? $key : sprintf($separatorFormat, $parent_key, $key);
+    
+            if ($shouldFlatten && is_array($value))
+            {
+                $shouldFlattenArray = (is_sequential_array($value) === false || $flattenSequential === true);
+
+                if ($shouldFlattenArray)
+                {
+                    $tmp = array_assoc_flatten_nth_level($value, $separatorFormat, $key, $flattenSequential, $uptoLevel, $level + 1);
+                    $return = array_merge($return, $tmp);
+                }
+                else
+                {
+                    $return[$key] = $value;
+                }
+            }
+            else
+            {
+                $return[$key] = $value;
+            }
+
+        }
+
+
+        return $return;
+    }
+}
+
 if (! function_exists('array_unset_recursive'))
 {
     function array_unset_recursive(array &$array, $remove)
@@ -1235,5 +1276,22 @@ if(! function_exists('check_array_selective_equals_recursive'))
         }
 
         return $result;
+    }
+}
+
+if(! function_exists('assign_array_by_flattened_path'))
+{
+    /**
+     * Set the nested key-value in an array based on the flattened key
+     */
+    function assign_array_by_flattened_path(&$arr, $path, $value, $separator='.')
+    {
+        $keys = explode($separator, $path);
+
+        foreach ($keys as $key) {
+            $arr = &$arr[$key];
+        }
+
+        $arr = $value;
     }
 }

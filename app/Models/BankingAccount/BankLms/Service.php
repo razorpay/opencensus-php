@@ -11,6 +11,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Jobs\BankingAccount\BankingAccountRblMisReport;
+use RZP\Models\BankingAccountService\BasDtoAdapter;
 use \RZP\Models\Merchant;
 use \RZP\Models\User;
 use RZP\Trace\TraceCode;
@@ -173,13 +174,26 @@ class Service extends BankingAccount\Service
     {
         $this->validator->validateInput(Validator::ASSIGN_BANK_PARTNER_POC_TO_APPLICATION, $input);
 
-        $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
-
-        $this->validator->validateMerchantIsAttachedToPartner($bankingAccount->merchant, $this->partnerBankMerchant);
-
         $bankPocUserId = $input[BankingAccount\Activation\Detail\Entity::BANK_POC_USER_ID];
 
         $this->validator->validateUserBelongsToPartnerBankMerchant($bankPocUserId, $this->partnerBankMerchant);
+
+        [$existsInApi, $bankingAccount] = $this->checkAndGetBankingAccountId($bankingAccountId);
+
+        if ($existsInApi == false)
+        {
+
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_SERVICE_RBL_ON_BAS_REQUEST,
+                [
+                    'banking_account_id' => $bankingAccountId,
+                    'route'              => $this->app['router']->currentRouteName(),
+                ]);
+
+            return $this->bankingAccountService->assignBankPocForRblPartnerLms($bankingAccountId, $bankPocUserId);
+        }
+
+        $this->validator->validateMerchantIsAttachedToPartner($bankingAccount->merchant, $this->partnerBankMerchant);
 
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_ASSIGN_BANK_POC,
@@ -200,10 +214,30 @@ class Service extends BankingAccount\Service
      */
     public function fetchMultipleBankingAccountEntity(array $input): array
     {
-        $entities = $this->core->fetchMultipleBankingAccountEntity($input, $this->partnerBankMerchant);
+        $originalSkip  = $input[BankingAccount\Constants::SKIP] ?? 0;
+        $originalCount = $input[BankingAccount\Constants::COUNT] ?? 10;
+        $sortDirection = $input[Constants::SORT_SENT_TO_BANK_DATE] ?? 'desc';
 
-        // No Requirement from product returning Bank Poc response
-        return $entities->toArrayCaPartnerBankPoc();
+        $rowsToFetch   = $originalSkip + $originalCount;
+
+        // Fetch skip + count rows from both sources
+        // We can apply skip and count after merging data from both sources
+        $input[BankingAccount\Constants::SKIP]  = 0;
+        $input[BankingAccount\Constants::COUNT] = $rowsToFetch;
+
+        // Fetch from DB
+        $bankingAccountsFromDb = $this->core->fetchMultipleBankingAccountEntity($input, $this->partnerBankMerchant);
+        $bankingAccountsFromDbAsArray = $bankingAccountsFromDb->toArrayCaPartnerBankPoc()['items'];
+
+        // Fetch from BAS
+        $bankingAccountsFromBas = $this->bankingAccountService->getMultipleApplicationsForRblPartnerLms($input);
+
+        // Merge data from both sources
+        $bankingAccounts = $this->mergeBankingAccountArrays($bankingAccountsFromDbAsArray, $bankingAccountsFromBas,
+                                                            $originalSkip, $originalCount, Entity::SENT_TO_BANK_DATE,
+                                                            $sortDirection);
+
+        return (new BasDtoAdapter())->arrayAsPublicCollection($bankingAccounts);
     }
 
     /**
@@ -215,8 +249,19 @@ class Service extends BankingAccount\Service
      */
     public function fetchBankingAccountById(string $bankingAccountId, array $input): array
     {
-        $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
+        [$existsInApi, $bankingAccount] = $this->checkAndGetBankingAccountId($bankingAccountId);
 
+        if ($existsInApi == false)
+        {
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_SERVICE_RBL_ON_BAS_REQUEST,
+                [
+                    'banking_account_id' => $bankingAccountId,
+                    'route'              => $this->app['router']->currentRouteName(),
+                ]);
+
+            return $this->bankingAccountService->getApplicationForRblPartnerLms($bankingAccountId);
+        }
         $this->validator->validateMerchantIsAttachedToPartner($bankingAccount->merchant, $this->partnerBankMerchant);
 
         $entity = $this->core->fetchBankingAccountById($bankingAccountId, $input);
@@ -237,10 +282,8 @@ class Service extends BankingAccount\Service
     */
     public function updateLeadDetails(string $bankingAccountId, array $input)
     {
-        $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
-
-        $this->validator->validateMerchantIsAttachedToPartner($bankingAccount->merchant, $this->partnerBankMerchant);
-
+        // Moving validation logic to before we check if the account exist,
+        // because some banking accounts may exist in BAS
         $this->validator->validateInput(Validator::PARTNER_LMS_EDIT, $input);
 
         if (array_key_exists('activation_detail', $input))
@@ -255,6 +298,17 @@ class Service extends BankingAccount\Service
             }
         }
 
+        [$existsInApi, $bankingAccount] = $this->checkAndGetBankingAccountId($bankingAccountId);
+
+        if ($existsInApi === false)
+        {
+            return $this->updateApplicationOnBas($bankingAccountId, $input);
+        }
+
+        $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
+
+        $this->validator->validateMerchantIsAttachedToPartner($bankingAccount->merchant, $this->partnerBankMerchant);
+
         $this->update($bankingAccountId, $input, true);
 
         $entity = $this->core->fetchBankingAccountById($bankingAccountId, $input);
@@ -268,7 +322,19 @@ class Service extends BankingAccount\Service
      */
     public function fetchBankingAccountsActivationActivityById(string $bankingAccountId, array $input): array
     {
-        $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
+        [$existsInApi, $bankingAccount] = $this->checkAndGetBankingAccountId($bankingAccountId);
+
+        if ($existsInApi == false)
+        {
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_SERVICE_RBL_ON_BAS_REQUEST,
+                [
+                    'banking_account_id' => $bankingAccountId,
+                    'route'              => $this->app['router']->currentRouteName(),
+                ]);
+
+            return $this->bankingAccountService->getActivityForRblPartnerLms($bankingAccountId, $input);
+        }
 
         $this->validator->validateMerchantIsAttachedToPartner($bankingAccount->merchant, $this->partnerBankMerchant);
 
@@ -313,29 +379,7 @@ class Service extends BankingAccount\Service
             array_push($activity, $state);
         }
 
-        usort($activity, function ($a, $b) use ($input) {
-            $a_createdAt = $a[Comment\Entity::CREATED_AT];
-            $b_createdAt = $a[Comment\Entity::CREATED_AT];
-
-            if ($a[self::ACTIVITY_TYPE] === self::COMMENT)
-            {
-                $a_createdAt = $a[Comment\Entity::ADDED_AT];
-            }
-
-            if ($b[self::ACTIVITY_TYPE] === self::COMMENT)
-            {
-                $b_createdAt = $b[Comment\Entity::ADDED_AT];
-            }
-
-            if (array_key_exists('sort', $input) && $input['sort'] === 'asc')
-            {
-                return $a_createdAt - $b_createdAt;
-            }
-            else // default
-            {
-                return $b_createdAt - $a_createdAt;
-            }
-        });
+       $this->sortActivity($activity, $input['sort'] ?? 'asc');
 
         $response = [
             'count' => count($activity),
@@ -351,8 +395,19 @@ class Service extends BankingAccount\Service
      */
     public function fetchBankingAccountsActivationCommentById(string $bankingAccountId, array $input): array
     {
-        $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
+        [$existsInApi, $bankingAccount] = $this->checkAndGetBankingAccountId($bankingAccountId);
 
+        if ($existsInApi == false)
+        {
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_SERVICE_RBL_ON_BAS_REQUEST,
+                [
+                    'banking_account_id' => $bankingAccountId,
+                    'route'              => $this->app['router']->currentRouteName(),
+                ]);
+
+            return $this->bankingAccountService->getCommentsForRblPartnerLms($bankingAccountId);
+        }
         $this->validator->validateMerchantIsAttachedToPartner($bankingAccount->merchant, $this->partnerBankMerchant);
 
         // Necessary filters
@@ -369,7 +424,19 @@ class Service extends BankingAccount\Service
      */
     public function createBankingAccountsActivationComment(string $bankingAccountId, array $input)
     {
-        $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
+        [$existsInApi, $bankingAccount] = $this->checkAndGetBankingAccountId($bankingAccountId);
+
+        if ($existsInApi == false)
+        {
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_SERVICE_RBL_ON_BAS_REQUEST,
+                [
+                    'banking_account_id' => $bankingAccountId,
+                    'route'              => $this->app['router']->currentRouteName(),
+                ]);
+
+            return $this->bankingAccountService->addCommentForRblPartnerLms($bankingAccountId, $input);
+        }
 
         $this->validator->validateMerchantIsAttachedToPartner($bankingAccount->merchant, $this->partnerBankMerchant);
 
@@ -429,6 +496,33 @@ class Service extends BankingAccount\Service
     public function setPartnerMerchantBasicAuth()
     {
         $this->app['basicauth']->setMerchant($this->partnerBankMerchant);
+    }
+
+    public function sortActivity(array &$activity, $sortDirection = 'asc')
+    {
+        usort($activity, function ($a, $b) use ($sortDirection) {
+            $a_createdAt = $a[Comment\Entity::CREATED_AT];
+            $b_createdAt = $b[Comment\Entity::CREATED_AT];
+
+            if ($a[self::ACTIVITY_TYPE] === self::COMMENT)
+            {
+                $a_createdAt = $a[Comment\Entity::ADDED_AT];
+            }
+
+            if ($b[self::ACTIVITY_TYPE] === self::COMMENT)
+            {
+                $b_createdAt = $b[Comment\Entity::ADDED_AT];
+            }
+
+            if ($sortDirection === 'asc')
+            {
+                return $a_createdAt - $b_createdAt;
+            }
+            else // default
+            {
+                return $b_createdAt - $a_createdAt;
+            }
+        });
     }
 
 }

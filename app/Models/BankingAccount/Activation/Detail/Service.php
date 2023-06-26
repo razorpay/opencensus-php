@@ -194,8 +194,17 @@ class Service extends Base\Service
                                             bool $isAutomatedUpdate = false,
                                             Base\PublicEntity $entity = null, bool $captureState = true)
     {
+        $bankingAccountService = new BankingAccount\Service();
+
         /** @var BankingAccount\Entity $bankingAccount */
-        $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
+        [$existsInApi, $bankingAccount] = $bankingAccountService->checkAndGetBankingAccountId($bankingAccountId);
+
+        if ($existsInApi === false)
+        {
+            return $bankingAccountService->updateApplicationOnBas($bankingAccountId, [
+                'activation_detail' => $input
+            ]);
+        }
 
         // banking_account_activation_details should not be updated if banking_account is in terminated status
         (new BankingAccount\Validator())->validateAccountNotTerminated($bankingAccount, ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_DETAILS_UPDATE_NOT_ALLOWED);

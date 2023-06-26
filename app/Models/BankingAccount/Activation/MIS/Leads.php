@@ -14,9 +14,22 @@ use RZP\Models\Merchant\Detail\BusinessCategory;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
 use RZP\Models\BankingAccount\BankLms\BranchMaster;
 use RZP\Models\BankingAccount\BankLms\RmMaster;
+use RZP\Models\BankingAccountService\BasDtoAdapter;
+use RZP\Services\BankingAccountService;
 
 class Leads extends Base
 {
+    // Used as count param while fetching RBL leads data from BAS
+    protected $basBatchSize = 150;
+
+    // Total number of leads to fetch from BAS
+    // To be overridden by report, set null for no limit
+    protected $basCountLimit = 100;
+
+    // Total number of leads in MIS file
+    // To be overridden by report, set null for no limit
+    protected $totalCountLimit = 100;
+
     //Headers
     const MERCHANT_ID = 'Merchant ID';
     const MERCHANT_NAME = 'Customer Name';
@@ -123,6 +136,12 @@ class Leads extends Base
 
     const APPLICATION_SUBMISSION_DATE = 'Application Submission Date';
     const TIMESTAMP = 'Timestamp';
+
+    /** @var BranchMaster $branchMaster */
+    protected $branchMaster;
+
+    /** @var RmMaster $rmMaster */
+    protected $rmMaster;
 
     protected static $toPublicMap = [
         self::BUSINESS_MODEL => [
@@ -233,6 +252,10 @@ class Leads extends Base
 
         $this->entity = $entity;
 
+        $this->branchMaster = new BranchMaster();
+
+        $this->rmMaster = new RmMaster();
+
         parent::__construct($input);
 
         $this->trace->info(TraceCode::BANKING_ACCOUNT_LEADS_MIS_REQUEST,
@@ -327,6 +350,211 @@ class Leads extends Base
         }
     }
 
+    private function getRowDetails(array $bankingAccount, array $resolvedData): array
+    {
+        $bankingAccountActivationDetails = $bankingAccount[BankingAccount\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS];
+
+        $rblActivationDetails = $bankingAccountActivationDetails[ActivationDetail\Entity::RBL_ACTIVATION_DETAILS];
+
+        if (empty($rblActivationDetails) === false && is_array($rblActivationDetails) === false)
+        {
+            $rblActivationDetails = json_decode($rblActivationDetails);
+        }
+
+        $additionalDetails = $bankingAccountActivationDetails[ActivationDetail\Entity::ADDITIONAL_DETAILS];
+
+        if (empty($additionalDetails) === false && is_array($additionalDetails) === false)
+        {
+            $additionalDetails = json_decode($additionalDetails);
+        }
+
+        $customerAppointmentDate = $bankingAccountActivationDetails[ActivationDetail\Entity::CUSTOMER_APPOINTMENT_DATE];
+
+        $sentToBankTimestamp   = $resolvedData['sent_to_bank_timestamp'];
+        $bankPocUserName       = $resolvedData['bank_poc_user_name'];
+        $businessModel         = $resolvedData['business_model']; // TODO: Prefer to read from additional details
+        $opsPOCName            = $resolvedData['ops_poc_name'];
+        $salesPocName          = $resolvedData['sales_poc_name'];
+        $opsPOCEmail           = $resolvedData['ops_poc_email'];
+        $comment               = $resolvedData['comment'];
+        $merchantName          = $resolvedData['merchant_name'];
+
+        $businessModel = $this->toPublic(self::BUSINESS_MODEL, $businessModel);
+
+        // Replace HTML tags in comment field, if any
+        $pattern = '/<(.|\n\t)*?>/';
+        $comment = preg_replace($pattern, '', $comment);
+        $comment = preg_replace('/\s+/', ' ', $comment);
+        $comment = str_replace(array("\r", "\n", "\t"), '', $comment);
+
+        $sentToBankDate = '';
+        $sentToBankTime = '';
+
+        if (empty($sentToBankTimestamp) === false)
+        {
+            $sentToBankDate = Carbon::createFromTimestamp($sentToBankTimestamp, Timezone::IST)->format('Y-m-d') ?? '';
+            $sentToBankTime = Carbon::createFromTimestamp($sentToBankTimestamp, Timezone::IST)->format('h:i A') ?? '';;
+        }
+
+        $branchName = '';
+        $branchCluster = '';
+        $branchRegion = '';
+        $branchManagerName = '';
+        $branchManagerPhone = '';
+        $branchCode = $bankingAccountActivationDetails[ActivationDetail\Entity::BRANCH_CODE];
+
+        if (empty($branchCode) === false)
+        {
+            $branch = $this->branchMaster->getBranchByBranchCode($branchCode);
+
+            if (empty($branch) === false)
+            {
+                $branchName = $branch['name'];
+                $branchCluster = $branch['cluster'];
+                $branchRegion = $branch['region'];
+                $branchManagerName = $branch['branch_manager_name'];
+                $branchManagerPhone = $branch['branch_manager_phone'];
+            }
+        }
+
+        $pcarmAH = ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::PCARM_MANAGER_NAME) ?? '';
+        $rmEmployeeCode = $bankingAccountActivationDetails[ActivationDetail\Entity::RM_EMPLOYEE_CODE];
+
+        if (empty($pcarmAH) && empty($rmEmployeeCode) === false)
+        {
+            $rm = $this->rmMaster->getRMByEmployeeCode($rmEmployeeCode);
+
+            if (empty($rm) === false)
+            {
+                $pcarmAH = $rm['manager_name'];
+            }
+        }
+
+        $appointmentTAT = $this->calculateTATInDays($sentToBankTimestamp, $customerAppointmentDate);
+
+        $docCollectionDate = $bankingAccountActivationDetails[ActivationDetail\Entity::DOC_COLLECTION_DATE];
+
+        $docCollectionTAT = $this->calculateTATInDays($customerAppointmentDate, $docCollectionDate);
+
+        $accountLoginDate = $bankingAccountActivationDetails[ActivationDetail\Entity::ACCOUNT_LOGIN_DATE];
+
+        $irLoginTAT = $this->calculateTATInDays($docCollectionDate, $accountLoginDate);
+
+        $accountOpeningDate = $bankingAccount[BankingAccount\Entity::ACCOUNT_ACTIVATION_DATE];
+
+        $apiOnboardingLoginDate = ActivationDetail\Entity::extractFieldFromJSONField($additionalDetails, ActivationDetail\Entity::API_ONBOARDING_LOGIN_DATE);
+
+        $apiRequestTAT = $this->calculateTATInDays($accountOpeningDate, $apiOnboardingLoginDate);
+
+        $apiIRClosedDate = $bankingAccountActivationDetails[ActivationDetail\Entity::API_IR_CLOSED_DATE];
+
+        $customerOnboardingTat = $this->calculateTATInDays($docCollectionDate, $apiIRClosedDate);
+
+        $apiRequestProcessingTAT = $this->calculateTATInDays($apiOnboardingLoginDate, $apiIRClosedDate);
+
+        return [
+
+            self::RZP_REF_NO                       => $bankingAccount[BankingAccount\Entity::BANK_REFERENCE_NUMBER],
+            self::MERCHANT_NAME                    => $merchantName,
+            self::MERCHANT_POC_NAME                => $bankingAccountActivationDetails[ActivationDetail\Entity::MERCHANT_POC_NAME],
+            self::MERCHANT_POC_DESIGNATION         => $bankingAccountActivationDetails[ActivationDetail\Entity::MERCHANT_POC_DESIGNATION],
+            self::MERCHANT_POC_EMAIL               => $bankingAccountActivationDetails[ActivationDetail\Entity::MERCHANT_POC_EMAIL],
+            self::MERCHANT_POC_PHONE               => $bankingAccountActivationDetails[ActivationDetail\Entity::MERCHANT_POC_PHONE_NUMBER],
+            self::PINCODE                          => $bankingAccount[BankingAccount\Entity::PINCODE],
+            self::MERCHANT_CITY                    => $bankingAccountActivationDetails[ActivationDetail\Entity::MERCHANT_CITY],
+            self::CONSTITUTION_TYPE                => $this->toPublic(self::CONSTITUTION_TYPE, $bankingAccountActivationDetails[ActivationDetail\Entity::BUSINESS_CATEGORY]),
+            self::MERCHANT_ICV                     => $bankingAccountActivationDetails[ActivationDetail\Entity::INITIAL_CHEQUE_VALUE],
+            self::APPLICATION_SUBMISSION_DATE      => $sentToBankDate,
+            self::TIMESTAMP                        => $sentToBankTime,
+            self::BUSINESS_MODEL                   => $this->toPublic(self::BUSINESS_MODEL, $businessModel),
+            self::ACCOUNT_TYPE                     => $this->toPublic(self::ACCOUNT_TYPE, $bankingAccountActivationDetails[ActivationDetail\Entity::ACCOUNT_TYPE]),
+            self::COMMENT                          => $comment,
+            self::EXPECTED_MONTHLY_GMV             => $bankingAccountActivationDetails[ActivationDetail\Entity::EXPECTED_MONTHLY_GMV],
+            self::SALES_POC                        => $salesPocName,
+            self::SALES_POC_PHONE_NUMBER           => $bankingAccountActivationDetails[ActivationDetail\Entity::SALES_POC_PHONE_NUMBER],
+            self::GREEN_CHANNEL                    => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($additionalDetails, ActivationDetail\Entity::GREEN_CHANNEL)),
+            self::FOS                              => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($additionalDetails, ActivationDetail\Entity::FEET_ON_STREET)),
+            self::REVIVED_LEAD                     => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($additionalDetails, ActivationDetail\Entity::REVIVED_LEAD)),
+            self::OPS_POC_NAME                     => $opsPOCName,
+            self::OPS_POC_EMAIL                    => $opsPOCEmail,
+            self::DOCKET_DELIVERY_DATE             => $this->convertEpochToDateFormat(ActivationDetail\Entity::extractFieldFromJSONField($additionalDetails, ActivationDetail\Entity::DOCKET_DELIVERED_DATE)),
+            self::STATUS                           => Status::transformFromInternalToExternal($bankingAccount[BankingAccount\Entity::STATUS]),
+            self::SUB_STATUS                       => $bankingAccount[BankingAccount\Entity::SUB_STATUS] ? Status::sanitizeStatus($bankingAccount[BankingAccount\Entity::SUB_STATUS]) : '',
+            self::ASSIGNEE                         => $bankingAccountActivationDetails[BankingAccount\Entity::ASSIGNEE_TEAM] === ActivationDetail\Entity::BANK ? 'Bank' : 'RZP',
+            self::MID_OFFICE_POC                   => $bankPocUserName,
+            self::RM_NAME                          => $bankingAccountActivationDetails[ActivationDetail\Entity::RM_NAME],
+            self::RM_MOBILE_NO                     => $bankingAccountActivationDetails[ActivationDetail\Entity::RM_PHONE_NUMBER],
+            self::BRANCH_CODE                      => $branchCode,
+            self::BRANCH_NAME                      => $branchName,
+            self::BM                               => $branchManagerName,
+            self::BM_MOBILE_NO                     => $branchManagerPhone,
+            self::TL                               => $pcarmAH,
+            self::CLUSTER                          => $branchCluster,
+            self::REGION                           => $branchRegion,
+
+            self::LEAD_REFERRED_BY_RBL_STAFF       => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::LEAD_REFERRED_BY_RBL_STAFF)),
+            self::OFFICE_AT_DIFFERENT_LOCATIONS    => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::OFFICE_DIFFERENT_LOCATIONS)),
+            self::CUSTOMER_APPOINTMENT_DATE        => $this->convertEpochToDateFormat($customerAppointmentDate),
+            self::APPOINTMENT_TAT                  => $appointmentTAT,
+            self::LEAD_IR_NO                       => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::LEAD_IR_NUMBER),
+
+            self::DOC_COLLECTION_DATE               => $this->convertEpochToDateFormat($docCollectionDate),
+            self::DOC_COLLECTION_TAT                => $docCollectionTAT,
+            self::IP_CHEQUE_VALUE                   => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::IP_CHEQUE_VALUE),
+            self::API_DOCS_RECEIVED_WITH_CA_DOCS    => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::API_DOCS_RECEIVED_WITH_CA_DOCS)),
+            self::API_DOC_DELAY_REASON              => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::API_DOCS_DELAY_REASON),
+            self::REVISED_DECLARATION               => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::REVISED_DECLARATION)),
+            self::ACCOUNT_IR_NO                     => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::ACCOUNT_OPENING_IR_NUMBER),
+            self::ACCT_LOGIN_DATE                   => $this->convertEpochToDateFormat($accountLoginDate),
+            self::IR_LOGIN_TAT                      => $irLoginTAT,
+            self::PROMO_CODE                        => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::PROMO_CODE),
+            self::CASE_LOGIN                        => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::CASE_LOGIN_DIFFERENT_LOCATIONS)),
+            self::SR_NO                             => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::SR_NUMBER),
+            self::ACCOUNT_OPEN_DATE                 => $this->convertEpochToDateFormat($accountOpeningDate),
+            self::ACCOUNT_IR_CLOSED_DATE            => $this->convertEpochToDateFormat($bankingAccountActivationDetails[ActivationDetail\Entity::ACCOUNT_OPEN_DATE]),
+            self::AO_FTNR                           => $this->convertToYesNo($bankingAccountActivationDetails[ActivationDetail\Entity::ACCOUNT_OPENING_FTNR], 1, 0),
+            self::AO_FTNR_REASONS                   => $bankingAccountActivationDetails[ActivationDetail\Entity::ACCOUNT_OPENING_FTNR_REASONS],
+            self::AO_TAT_EXCEPTION                  => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::ACCOUNT_OPENING_TAT_EXCEPTION)),
+            self::AO_TAT_EXCEPTION_REASON           => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::ACCOUNT_OPENING_TAT_EXCEPTION_REASON),
+            self::API_IR_NO                         => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::API_IR_NUMBER),
+            self::API_IR_LOGIN_DATE                 => $this->convertEpochToDateFormat($apiOnboardingLoginDate),
+            self::LDAP_ID_MAIL_DATE                 => $this->convertEpochToDateFormat($bankingAccountActivationDetails[ActivationDetail\Entity::LDAP_ID_MAIL_DATE]),
+            self::API_REQUEST_TAT                   => $apiRequestTAT,
+            self::API_IR_CLOSED_DATE                => $this->convertEpochToDateFormat($apiIRClosedDate),
+            self::API_REQUEST_PROCESSING_TAT        => $apiRequestProcessingTAT,
+            self::API_FTNR                          => $this->convertToYesNo($bankingAccountActivationDetails[ActivationDetail\Entity::API_ONBOARDING_FTNR], 1, 0),
+            self::API_FTNR_REASONS                  => $bankingAccountActivationDetails[ActivationDetail\Entity::API_ONBOARDING_FTNR_REASONS],
+            self::API_TAT_EXCEPTION                 => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::API_ONBOARDING_TAT_EXCEPTION)),
+            self::API_TAT_EXCEPTION_REASON          => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::API_ONBOARDING_TAT_EXCEPTION_REASON),
+            self::CORP_ID_MAIL_DATE                 => $this->convertEpochToDateFormat(ActivationDetail\Entity::extractFieldFromJSONField($additionalDetails, ActivationDetail\Entity::API_ONBOARDED_DATE)),
+            self::RZP_CA_ACTIVATED_DATE             => $this->convertEpochToDateFormat($bankingAccountActivationDetails[ActivationDetail\Entity::RZP_CA_ACTIVATED_DATE]),
+            self::UPI_CREDENTIALS_DATE              => $this->convertEpochToDateFormat($bankingAccountActivationDetails[ActivationDetail\Entity::UPI_CREDENTIAL_RECEIVED_DATE]),
+            self::UPI_CREDENTIALS_NOT_DONE_REMARKS  => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::UPI_CREDENTIAL_NOT_DONE_REMARKS),
+            self::DROP_OFF_DATE                     => $this->convertEpochToDateFormat($bankingAccountActivationDetails[ActivationDetail\Entity::DROP_OFF_DATE]),
+
+            self::API_SERVICE_FIRST_QUERY           => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::API_SERVICE_FIRST_QUERY),
+            self::API_BEYOND_TAT                    => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::API_BEYOND_TAT)),
+            self::API_BEYOND_TAT_DEPENDENCY         => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::API_BEYOND_TAT_DEPENDENCY),
+            self::FIRST_CALLING_TIME                => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::FIRST_CALLING_TIME),
+            self::SECOND_CALLING_TIME               => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::SECOND_CALLING_TIME),
+            self::WA_MESSAGE_SENT_DATE              => $this->convertEpochToDateFormat(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::WA_MESSAGE_SENT_DATE)),
+            self::WA_MESSAGE_RESPONSE_DATE          => $this->convertEpochToDateFormat(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::WA_MESSAGE_RESPONSE_DATE)),
+            self::API_DOCKET_RELATED_ISSUE          => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::API_DOCKET_RELATED_ISSUE),
+            self::AOF_SHARED_WITH_MO                => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::AOF_SHARED_WITH_MO)),
+            self::AOF_SHARED_DISCREPANCY            => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::AOF_SHARED_DISCREPANCY)),
+            self::AOF_NOT_SHARED_REASON             => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::AOF_NOT_SHARED_REASON),
+            self::CA_BEYOND_TAT_DEPENDENCY          => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::CA_BEYOND_TAT_DEPENDENCY),
+            self::CA_BEYOND_TAT                     => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::CA_BEYOND_TAT)),
+            self::CA_SERVICE_FIRST_QUERY            => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::CA_SERVICE_FIRST_QUERY),
+            self::CUSTOMER_APPOINTMENT_BOOKING_DATE => $this->convertEpochToDateFormat(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::CUSTOMER_APPOINTMENT_BOOKING_DATE)),
+            self::CUSTOMER_ONBOARDING_TAT           => $customerOnboardingTat,
+            self::LEAD_IR_STATUS                    => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::LEAD_IR_STATUS),
+            
+            // Used only for sorting
+            BankingAccount\Entity::CREATED_AT       => $sentToBankTimestamp,
+        ];
+    }
+
     protected function getData(): array
     {
         $entity = $this->entity;
@@ -348,6 +576,122 @@ class Leads extends Base
         return [$bankingAccounts, $commentsMap, $sentToBankTimestampMap];
     }
 
+    private function getAccountManager(array $bankingAccount, string $type)
+    {
+        if (array_key_exists($type, $bankingAccount))
+        {
+            $poc = $bankingAccount[$type];
+
+            if ($poc['count'] > 0)
+            {
+                return $poc['items'][0];
+            }
+        }
+
+        return null;
+    }
+
+    protected function getFileInputForBasLeads(): array
+    {
+        /** @var BankingAccountService|\RZP\Services\Mock\BankingAccountService $bas */
+        $bas = app('banking_account_service');
+
+        $basAdapter = new BasDtoAdapter();
+        $basApplications = [];
+
+        $skip = 0;
+        $hasMore = true;
+
+        $input = array_merge($this->input, [
+            BankingAccount\Fetch::COUNT => $this->basBatchSize,
+            BankingAccount\Fetch::SKIP => $skip,
+        ]);
+
+        // The below fields are mandatory filters
+        // BAS already applies these filters in this route
+        unset($input['filter_merchants']);
+        unset($input['account_type']);
+        unset($input['channel']);
+        $input['sort_sent_to_bank_date'] = 'desc';
+
+        while ($hasMore)
+        {
+            $input[BankingAccount\Fetch::SKIP] = $skip;
+
+            $applications = $bas->fetchRblApplicationsForPartnerLms($input);
+
+            array_push($basApplications, ...$applications);
+
+            $hasMore = count($applications) == $this->basBatchSize;
+
+            // This will limit fetching the leads from BAS for immediate MIS download requests
+            if (empty($this->basCountLimit) == false && count($basApplications) >= $this->basCountLimit)
+            {
+                $hasMore = false;
+            }
+
+            $skip = $skip + $this->basBatchSize;
+        }
+
+        $bankingAccounts = [];
+
+        foreach ($basApplications as $application)
+        {
+            $bankingAccount = $basAdapter->fromBasResponseToApiResponse($application);
+            array_push($bankingAccounts, $bankingAccount);
+        }
+
+        $basFileInput = [];
+        foreach ($bankingAccounts as $bankingAccount)
+        {
+            $bankingAccountActivationDetails = $bankingAccount[BankingAccount\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS];
+
+            $additionalDetails = $bankingAccountActivationDetails[ActivationDetail\Entity::ADDITIONAL_DETAILS];
+
+            if (is_string($additionalDetails))
+            {
+                $additionalDetails = json_decode($additionalDetails, true);
+
+                $bankingAccount[BankingAccount\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][ActivationDetail\Entity::ADDITIONAL_DETAILS] = $additionalDetails;
+            }
+
+            $businessCategory = $additionalDetails[ActivationDetail\Entity::BUSINESS_DETAILS][ActivationDetail\Entity::CATEGORY];
+
+            $sentToBankDate = $bankingAccount['sent_to_bank_date'];
+            $comment = $bankingAccountActivationDetails['latest_comment'];
+
+            if (empty($sentToBankDate) == false)
+            {
+                $sentToBankDate = (int)$sentToBankDate;
+            }
+
+            $opsPoc = $this->getAccountManager($bankingAccount, 'reviewers');
+            $spoc = $this->getAccountManager($bankingAccount, 'spocs');
+
+            $opsPocName = empty($opsPoc) == false ? $opsPoc['name'] : '';
+            $opsPocEmail = empty($opsPoc) == false ? $opsPoc['email'] : '';
+            $salesPocName = empty($spoc) == false ? $spoc['name'] : '';
+            $bankPocUserName = $bankingAccountActivationDetails[ActivationDetail\Entity::BANK_POC_NAME];
+
+            $merchantName = $bankingAccountActivationDetails[ActivationDetail\Entity::BUSINESS_NAME];
+
+            $resolvedData = [
+                'sent_to_bank_timestamp'   => $sentToBankDate,
+                'comment'                  => $comment,
+                'business_model'           => $businessCategory,
+                'ops_poc_name'             => $opsPocName,
+                'ops_poc_email'            => $opsPocEmail,
+                'sales_poc_name'           => $salesPocName,
+                'bank_poc_user_name'       => $bankPocUserName,
+                'merchant_name'            => $merchantName,
+            ];
+
+            $basFileInput[] = $this->getRowDetails($bankingAccount, $resolvedData);
+        }
+
+        return $basFileInput;
+    }
+
     public function getFileInput()
     {
         [$bankingAccounts, $commentsMap, $sentToBankTimestampMap] = $this->getData();
@@ -365,12 +709,6 @@ class Leads extends Base
                 $comment = $commentsMap[$bankingAccount->getId()];
             }
 
-            // Replace HTML tags in comment field, if any
-            $pattern = '/<(.|\n\t)*?>/';
-            $comment = preg_replace($pattern, '', $comment);
-            $comment = preg_replace('/\s+/', ' ', $comment);
-            $comment = str_replace(array("\r", "\n", "\t"), '', $comment);
-
             $sentToBankTimestamp = null;
 
             if (isset($sentToBankTimestampMap[$bankingAccount->getId()]))
@@ -378,65 +716,17 @@ class Leads extends Base
                 $sentToBankTimestamp = $sentToBankTimestampMap[$bankingAccount->getId()];
             }
 
-            $sentToBankDate = '';
-            $sentToBankTime = '';
+            $opsPOC = $bankingAccount->reviewers->first();
+            $opsPOCName = '';
+            $opsPOCEmail = '';
 
-            if (
-                $sentToBankTimestamp !== null)
+            if ($opsPOC != null)
             {
-                $sentToBankDate = Carbon::createFromTimestamp($sentToBankTimestamp, Timezone::IST)->format('Y-m-d') ?? '';
-                $sentToBankTime = Carbon::createFromTimestamp($sentToBankTimestamp, Timezone::IST)->format('h:i A') ?? '';;
+                $opsPOCName = $opsPOC['name'];
+                $opsPOCEmail = $opsPOC['email'];
             }
 
-            $bankingAccountActivationDetails = $bankingAccount->bankingAccountActivationDetails;
-
-            $additionalDetails = $bankingAccountActivationDetails[ActivationDetail\Entity::ADDITIONAL_DETAILS];
-
-            if (empty($additionalDetails) === false)
-            {
-                $additionalDetails = json_decode($additionalDetails);
-            }
-
-            $rblActivationDetails = $bankingAccountActivationDetails[ActivationDetail\Entity::RBL_ACTIVATION_DETAILS];
-
-            if (empty($rblActivationDetails) === false)
-            {
-                $rblActivationDetails = json_decode($rblActivationDetails);
-            }
-
-            $branchName = '';
-            $branchCluster = '';
-            $branchRegion = '';
-            $branchManagerName = '';
-            $branchManagerPhone = '';
-            $branchCode = $bankingAccountActivationDetails[ActivationDetail\Entity::BRANCH_CODE];
-
-            if (empty($branchCode) === false)
-            {
-                $branch = (new BranchMaster)->getBranchByBranchCode($branchCode);
-
-                if (empty($branch) === false)
-                {
-                    $branchName = $branch['name'];
-                    $branchCluster = $branch['cluster'];
-                    $branchRegion = $branch['region'];
-                    $branchManagerName = $branch['branch_manager_name'];
-                    $branchManagerPhone = $branch['branch_manager_phone'];
-                }
-            }
-
-            $pcarmAH = ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::PCARM_MANAGER_NAME) ?? '';
-            $rmEmployeeCode = $bankingAccountActivationDetails[ActivationDetail\Entity::RM_EMPLOYEE_CODE];
-
-            if (empty($pcarmAH) && empty($rmEmployeeCode) === false)
-            {
-                $rm = (new RmMaster)->getRMByEmployeeCode($rmEmployeeCode);
-
-                if (empty($rm) === false)
-                {
-                    $pcarmAH = $rm['manager_name'];
-                }
-            }
+            $salesPocName = $bankingAccount->spocs->first() ? $bankingAccount->spocs->first()['name'] : '';
 
             $bankPocUserName = '';
 
@@ -450,135 +740,42 @@ class Leads extends Base
                 }
             }
 
-            $opsPOC = $bankingAccount->reviewers->first();
-            $opsPOCName = '';
-            $opsPOCEmail = '';
-
-            if ($opsPOC != null)
-            {
-                $opsPOCName = $opsPOC['name'];
-                $opsPOCEmail = $opsPOC['email'];
-            }
-
-            $customerAppointmentDate = $bankingAccountActivationDetails[ActivationDetail\Entity::CUSTOMER_APPOINTMENT_DATE];
-
-            $appointmentTAT = $this->calculateTATInDays($sentToBankTimestamp, $customerAppointmentDate);
-
-            $docCollectionDate = $bankingAccountActivationDetails[ActivationDetail\Entity::DOC_COLLECTION_DATE];
-
-            $docCollectionTAT = $this->calculateTATInDays($customerAppointmentDate, $docCollectionDate);
-
-            $accountLoginDate = $bankingAccountActivationDetails[ActivationDetail\Entity::ACCOUNT_LOGIN_DATE];
-
-            $irLoginTAT = $this->calculateTATInDays($docCollectionDate, $accountLoginDate);
-
-            $accountOpeningDate = $bankingAccount[BankingAccount\Entity::ACCOUNT_ACTIVATION_DATE];
-
-            $apiOnboardingLoginDate = ActivationDetail\Entity::extractFieldFromJSONField($additionalDetails, ActivationDetail\Entity::API_ONBOARDING_LOGIN_DATE);
-
-            $apiRequestTAT = $this->calculateTATInDays($accountOpeningDate, $apiOnboardingLoginDate);
-
-            $apiIRClosedDate = $bankingAccountActivationDetails[ActivationDetail\Entity::API_IR_CLOSED_DATE];
-
-            $customerOnboardingTat = $this->calculateTATInDays($docCollectionDate, $apiIRClosedDate);
-
-            $apiRequestProcessingTAT = $this->calculateTATInDays($apiOnboardingLoginDate, $apiIRClosedDate);
-
-            $fileInput[] = [
-                self::RZP_REF_NO                       => $bankingAccount[BankingAccount\Entity::BANK_REFERENCE_NUMBER],
-                self::MERCHANT_NAME                    => $bankingAccount->merchant[Merchant\Entity::NAME],
-                self::MERCHANT_POC_NAME                => $bankingAccountActivationDetails[ActivationDetail\Entity::MERCHANT_POC_NAME],
-                self::MERCHANT_POC_DESIGNATION         => $bankingAccountActivationDetails[ActivationDetail\Entity::MERCHANT_POC_DESIGNATION],
-                self::MERCHANT_POC_EMAIL               => $bankingAccountActivationDetails[ActivationDetail\Entity::MERCHANT_POC_EMAIL],
-                self::MERCHANT_POC_PHONE               => $bankingAccountActivationDetails[ActivationDetail\Entity::MERCHANT_POC_PHONE_NUMBER],
-                self::PINCODE                          => $bankingAccount[BankingAccount\Entity::PINCODE],
-                self::MERCHANT_CITY                    => $bankingAccountActivationDetails[ActivationDetail\Entity::MERCHANT_CITY],
-                self::CONSTITUTION_TYPE                => $this->toPublic(self::CONSTITUTION_TYPE, $bankingAccountActivationDetails[ActivationDetail\Entity::BUSINESS_CATEGORY]),
-                self::MERCHANT_ICV                     => $bankingAccountActivationDetails[ActivationDetail\Entity::INITIAL_CHEQUE_VALUE],
-                self::APPLICATION_SUBMISSION_DATE      => $sentToBankDate,
-                self::TIMESTAMP                        => $sentToBankTime,
-                self::BUSINESS_MODEL                   => $this->toPublic(self::BUSINESS_MODEL, $bankingAccount->merchant->merchantDetail[Merchant\Detail\Entity::BUSINESS_CATEGORY]),
-                self::ACCOUNT_TYPE                     => $this->toPublic(self::ACCOUNT_TYPE, $bankingAccountActivationDetails[ActivationDetail\Entity::ACCOUNT_TYPE]),
-                self::COMMENT                          => $comment,
-                self::EXPECTED_MONTHLY_GMV             => $bankingAccountActivationDetails[ActivationDetail\Entity::EXPECTED_MONTHLY_GMV],
-                self::SALES_POC                        => $bankingAccount->spocs->first() ? $bankingAccount->spocs->first()['name'] : '',
-                self::SALES_POC_PHONE_NUMBER           => $bankingAccountActivationDetails[ActivationDetail\Entity::SALES_POC_PHONE_NUMBER],
-                self::GREEN_CHANNEL                    => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($additionalDetails, ActivationDetail\Entity::GREEN_CHANNEL)),
-                self::FOS                              => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($additionalDetails, ActivationDetail\Entity::FEET_ON_STREET)),
-                self::REVIVED_LEAD                     => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($additionalDetails, ActivationDetail\Entity::REVIVED_LEAD)),
-                self::OPS_POC_NAME                     => $opsPOCName,
-                self::OPS_POC_EMAIL                    => $opsPOCEmail,
-                self::DOCKET_DELIVERY_DATE             => $this->convertEpochToDateFormat(ActivationDetail\Entity::extractFieldFromJSONField($additionalDetails, ActivationDetail\Entity::DOCKET_DELIVERED_DATE)),
-                self::STATUS                           => Status::transformFromInternalToExternal($bankingAccount[BankingAccount\Entity::STATUS]),
-                self::SUB_STATUS                       => $bankingAccount[BankingAccount\Entity::SUB_STATUS] ? Status::sanitizeStatus($bankingAccount[BankingAccount\Entity::SUB_STATUS]) : '',
-                self::ASSIGNEE                         => $bankingAccountActivationDetails[BankingAccount\Entity::ASSIGNEE_TEAM] === ActivationDetail\Entity::BANK ? 'Bank' : 'RZP',
-                self::MID_OFFICE_POC                   => $bankPocUserName,
-                self::LEAD_REFERRED_BY_RBL_STAFF       => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::LEAD_REFERRED_BY_RBL_STAFF)),
-                self::OFFICE_AT_DIFFERENT_LOCATIONS    => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::OFFICE_DIFFERENT_LOCATIONS)),
-                self::CUSTOMER_APPOINTMENT_DATE        => $this->convertEpochToDateFormat($customerAppointmentDate),
-                self::APPOINTMENT_TAT                  => $appointmentTAT,
-                self::LEAD_IR_NO                       => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::LEAD_IR_NUMBER),
-                self::RM_NAME                          => $bankingAccountActivationDetails[ActivationDetail\Entity::RM_NAME],
-                self::RM_MOBILE_NO                     => $bankingAccountActivationDetails[ActivationDetail\Entity::RM_PHONE_NUMBER],
-                self::BRANCH_CODE                      => $branchCode,
-                self::BRANCH_NAME                      => $branchName,
-                self::BM                               => $branchManagerName,
-                self::BM_MOBILE_NO                     => $branchManagerPhone,
-                self::TL                               => $pcarmAH,
-                self::CLUSTER                          => $branchCluster,
-                self::REGION                           => $branchRegion,
-                self::DOC_COLLECTION_DATE              => $this->convertEpochToDateFormat($docCollectionDate),
-                self::DOC_COLLECTION_TAT               => $docCollectionTAT,
-                self::IP_CHEQUE_VALUE                  => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::IP_CHEQUE_VALUE),
-                self::API_DOCS_RECEIVED_WITH_CA_DOCS   => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::API_DOCS_RECEIVED_WITH_CA_DOCS)),
-                self::API_DOC_DELAY_REASON             => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::API_DOCS_DELAY_REASON),
-                self::REVISED_DECLARATION              => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::REVISED_DECLARATION)),
-                self::ACCOUNT_IR_NO                    => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::ACCOUNT_OPENING_IR_NUMBER),
-                self::ACCT_LOGIN_DATE                  => $this->convertEpochToDateFormat($accountLoginDate),
-                self::IR_LOGIN_TAT                     => $irLoginTAT,
-                self::PROMO_CODE                       => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::PROMO_CODE),
-                self::CASE_LOGIN                       => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::CASE_LOGIN_DIFFERENT_LOCATIONS)),
-                self::SR_NO                            => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::SR_NUMBER),
-                self::ACCOUNT_OPEN_DATE                => $this->convertEpochToDateFormat($accountOpeningDate),
-                self::ACCOUNT_IR_CLOSED_DATE           => $this->convertEpochToDateFormat($bankingAccountActivationDetails[ActivationDetail\Entity::ACCOUNT_OPEN_DATE]),
-                self::AO_FTNR                          => $this->convertToYesNo($bankingAccountActivationDetails[ActivationDetail\Entity::ACCOUNT_OPENING_FTNR], 1, 0),
-                self::AO_FTNR_REASONS                  => $bankingAccountActivationDetails[ActivationDetail\Entity::ACCOUNT_OPENING_FTNR_REASONS],
-                self::AO_TAT_EXCEPTION                 => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::ACCOUNT_OPENING_TAT_EXCEPTION)),
-                self::AO_TAT_EXCEPTION_REASON          => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::ACCOUNT_OPENING_TAT_EXCEPTION_REASON),
-                self::API_IR_NO                        => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::API_IR_NUMBER),
-                self::API_IR_LOGIN_DATE                => $this->convertEpochToDateFormat($apiOnboardingLoginDate),
-                self::LDAP_ID_MAIL_DATE                => $this->convertEpochToDateFormat($bankingAccountActivationDetails[ActivationDetail\Entity::LDAP_ID_MAIL_DATE]),
-                self::API_REQUEST_TAT                  => $apiRequestTAT,
-                self::API_IR_CLOSED_DATE               => $this->convertEpochToDateFormat($apiIRClosedDate),
-                self::API_REQUEST_PROCESSING_TAT       => $apiRequestProcessingTAT,
-                self::API_FTNR                         => $this->convertToYesNo($bankingAccountActivationDetails[ActivationDetail\Entity::API_ONBOARDING_FTNR], 1, 0),
-                self::API_FTNR_REASONS                 => $bankingAccountActivationDetails[ActivationDetail\Entity::API_ONBOARDING_FTNR_REASONS],
-                self::API_TAT_EXCEPTION                => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::API_ONBOARDING_TAT_EXCEPTION)),
-                self::API_TAT_EXCEPTION_REASON         => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::API_ONBOARDING_TAT_EXCEPTION_REASON),
-                self::CORP_ID_MAIL_DATE                => $this->convertEpochToDateFormat(ActivationDetail\Entity::extractFieldFromJSONField($additionalDetails, ActivationDetail\Entity::API_ONBOARDED_DATE)),
-                self::RZP_CA_ACTIVATED_DATE            => $this->convertEpochToDateFormat($bankingAccountActivationDetails[ActivationDetail\Entity::RZP_CA_ACTIVATED_DATE]),
-                self::UPI_CREDENTIALS_DATE             => $this->convertEpochToDateFormat($bankingAccountActivationDetails[ActivationDetail\Entity::UPI_CREDENTIAL_RECEIVED_DATE]),
-                self::UPI_CREDENTIALS_NOT_DONE_REMARKS => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::UPI_CREDENTIAL_NOT_DONE_REMARKS),
-                self::DROP_OFF_DATE                    => $this->convertEpochToDateFormat($bankingAccountActivationDetails[ActivationDetail\Entity::DROP_OFF_DATE]),
-
-                self::API_SERVICE_FIRST_QUERY          => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::API_SERVICE_FIRST_QUERY),
-                self::API_BEYOND_TAT                   => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::API_BEYOND_TAT)),
-                self::API_BEYOND_TAT_DEPENDENCY        => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::API_BEYOND_TAT_DEPENDENCY),
-                self::FIRST_CALLING_TIME               => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::FIRST_CALLING_TIME),
-                self::SECOND_CALLING_TIME              => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::SECOND_CALLING_TIME),
-                self::WA_MESSAGE_SENT_DATE             => $this->convertEpochToDateFormat(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::WA_MESSAGE_SENT_DATE)),
-                self::WA_MESSAGE_RESPONSE_DATE         => $this->convertEpochToDateFormat(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::WA_MESSAGE_RESPONSE_DATE)),
-                self::API_DOCKET_RELATED_ISSUE         => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::API_DOCKET_RELATED_ISSUE),
-                self::AOF_SHARED_WITH_MO               => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::AOF_SHARED_WITH_MO)),
-                self::AOF_SHARED_DISCREPANCY           => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::AOF_SHARED_DISCREPANCY)),
-                self::AOF_NOT_SHARED_REASON            => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::AOF_NOT_SHARED_REASON),
-                self::CA_BEYOND_TAT_DEPENDENCY         => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::CA_BEYOND_TAT_DEPENDENCY),
-                self::CA_BEYOND_TAT                    => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::CA_BEYOND_TAT)),
-                self::CA_SERVICE_FIRST_QUERY           => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::CA_SERVICE_FIRST_QUERY),
-                self::CUSTOMER_APPOINTMENT_BOOKING_DATE=> $this->convertEpochToDateFormat(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::CUSTOMER_APPOINTMENT_BOOKING_DATE)),
-                self::CUSTOMER_ONBOARDING_TAT          => $customerOnboardingTat,
-                self::LEAD_IR_STATUS                   => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::LEAD_IR_STATUS),
+            $resolvedData = [
+                'sent_to_bank_timestamp'   => $sentToBankTimestamp,
+                'business_model'           => $bankingAccount->merchant->merchantDetail[Merchant\Detail\Entity::BUSINESS_CATEGORY],
+                'ops_poc_name'             => $opsPOCName,
+                'ops_poc_email'            => $opsPOCEmail,
+                'sales_poc_name'           => $salesPocName,
+                'comment'                  => $comment,
+                'merchant_name'            => $bankingAccount->merchant[Merchant\Entity::NAME],
+                'bank_poc_user_name'       => $bankPocUserName,
             ];
+
+            $row = $this->getRowDetails($bankingAccount->toArray(), $resolvedData);
+
+            $fileInput[] = $row;
+        }
+
+        $basLeads = $this->getFileInputForBasLeads();
+
+        array_push($fileInput, ...$basLeads);
+
+        // Sort in descending order of created_at
+        usort($fileInput, function ($a, $b) {
+            $a_createdAt = $a[BankingAccount\Entity::CREATED_AT];
+            $b_createdAt = $b[BankingAccount\Entity::CREATED_AT];
+
+            return $b_createdAt - $a_createdAt;
+        });
+
+        // Remove created_at
+        for ($i=0; $i < count($fileInput); $i++) { 
+            unset($fileInput[$i][BankingAccount\Entity::CREATED_AT]);
+        }
+
+        if (empty($this->totalCountLimit) == false)
+        {
+            $fileInput = array_slice($fileInput, 0, $this->totalCountLimit);
         }
 
         return $fileInput;

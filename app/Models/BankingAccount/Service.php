@@ -4,7 +4,6 @@ namespace RZP\Models\BankingAccount;
 
 use Throwable;
 use Carbon\Carbon;
-use Mail;
 
 use RZP\Exception;
 use RZP\Models\Base;
@@ -17,13 +16,14 @@ use RZP\Http\RequestHeader;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Permission;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Merchant\Balance;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Mode;
 use RZP\Services\CapitalCardsClient;
 use RZP\Models\BankingAccountService;
-use RZP\Services\BankingAccountService as BAS;
 use RZP\Exception\BadRequestException;
+use Illuminate\Support\Facades\Mail;
 use RZP\Exception\IntegrationException;
 use Razorpay\Spine\Exception\DbQueryException;
 use RZP\Models\SubVirtualAccount as SubVA;
@@ -53,6 +53,9 @@ class Service extends Base\Service
 
     protected $notifier;
 
+    /** @var BankingAccountService\Service $bankingAccountService */
+    protected $bankingAccountService;
+
     public function __construct($pincodeSearch = null, $core = null, $bankLmsService = null)
     {
         parent::__construct();
@@ -62,6 +65,8 @@ class Service extends Base\Service
         $this->pincodeSearch = $pincodeSearch ?? $this->app['pincodesearch'];
 
         $this->notifier = new Activation\Notification\Notifier();
+
+        $this->bankingAccountService = new BankingAccountService\Service();
     }
 
     public function createBankingAccountForCapitalCorpCard($input, Balance\Entity $balance): Entity
@@ -83,7 +88,28 @@ class Service extends Base\Service
 
     public function fetch(string $id): array
     {
-        $bankingAccount = $this->repo->banking_account->findByPublicIdAndMerchant($id, $this->merchant);
+        [$existsInApi, $bankingAccount] = $this->checkAndGetBankingAccountId($id);
+
+        if ($existsInApi == false)
+        {
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_SERVICE_FETCH_RBL_APPLICATION_FROM_BAS,
+                [
+                    'id'      => $id,
+                ]);
+
+            $id = $this->repo->banking_account->verifyIdAndStripSign($id);
+
+            return $this->bankingAccountService->getRblApplicationFromBasForInternalFetch($id);
+        }
+
+        if ($bankingAccount->getMerchantId() != $this->merchant->getId())
+        {
+            throw new BadRequestValidationFailureException(
+                'Banking Account does not belong to merchant',
+                'merchant_id'
+            );
+        }
 
         $bankingAccount->load('bankingAccountActivationDetails');
 
@@ -132,6 +158,7 @@ class Service extends Base\Service
      *
      * @return array
      * @throws BadRequestException
+     * @throws Throwable
      */
     public function createByMerchant(array $input): array
     {
@@ -140,6 +167,11 @@ class Service extends Base\Service
             [
                 'input' => $input,
             ]);
+
+        if ($this->app['basicauth']->isMobApp() and $this->core->checkRblOnBasExperimentEnabled($this->merchant->getId()))
+        {
+            return $this->bankingAccountService->createRblOnboardingApplicationOnBas($this->merchant, $input);
+        }
 
         $this->validateOrgForBankingAccount($input[Entity::CHANNEL]);
 
@@ -291,6 +323,50 @@ class Service extends Base\Service
     }
 
     /**
+     * Check if the banking account id exists in db
+     *
+     * To be used to route request to BAS in case the application does not exist on API
+     *
+     * @param string $id
+     */
+    public function checkAndGetBankingAccountId(string $id)
+    {
+        try
+        {
+            /** @var Entity $bankingAccount */
+            $bankingAccount = $this->repo->banking_account->findByPublicId($id);
+
+            return [true, $bankingAccount];
+        }
+        catch (\RZP\Exception\BadRequestException $ex)
+        {
+            if ($ex->getCode() === ErrorCode::BAD_REQUEST_INVALID_ID)
+            {
+                return [false, null];
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            throw $ex;
+        }
+    }
+
+    public function updateApplicationOnBasByReferenceNumber(string $referenceNumber, array $input)
+    {
+        return $this->bankingAccountService->updateRBLApplicationByApplicationIdOrReferenceNumber($referenceNumber, $input);
+    }
+
+    public function updateApplicationOnBas(string $id, array $input)
+    {
+        if (str_starts_with($id, 'bacc'))
+        {
+            $id = $this->repo->banking_account->verifyIdAndStripSign($id);
+        }
+
+        return $this->bankingAccountService->updateRBLApplicationByApplicationIdOrReferenceNumber($id, $input);
+    }
+
+    /**
      * This function to be used only for admin or internal routes since
      * we are not fetching banking_account by merchant_id.
      *
@@ -303,8 +379,31 @@ class Service extends Base\Service
      */
     public function update(string $id, array $input, bool $fromPartnerDashboard = false): array
     {
-        /** @var Entity $bankingAccount */
-        $bankingAccount = $this->repo->banking_account->findByPublicId($id);
+        [$existsInApi, $bankingAccount] = $this->checkAndGetBankingAccountId($id);
+
+        // Remove sensitive fields for tracing purposes
+        $inputTrace = $input;
+
+        foreach(BankingAccountService\Service::SENSITIVE_UPDATE_FIELDS as $sensitiveAccountDetailKey)
+        {
+            unset($inputTrace[$sensitiveAccountDetailKey]);
+        }
+
+        if ($existsInApi === false)
+        {
+
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_SERVICE_PATCH_APPLICATION_COMPOSITE,
+                [
+                    'stage'   => 'Validate request for internal edit',
+                    'id'      => $id,
+                    'input'   => $inputTrace,
+                ]);
+
+            (new Validator)->setStrictFalse()->validateInput(Validator::INTERNAL_EDIT, $input);
+
+            return $this->updateApplicationOnBas($id, $input);
+        }
 
         $previousStatus = $bankingAccount->getStatus();
 
@@ -317,7 +416,7 @@ class Service extends Base\Service
             [
                 'id'      => $bankingAccount->getId(),
                 'channel' => $channel,
-                'input'   => $input,
+                'input'   => $inputTrace,
             ]);
 
         (new Validator)->setStrictFalse()->validateInput(Validator::INTERNAL_EDIT, $input);
@@ -464,6 +563,44 @@ class Service extends Base\Service
 
     public function updateByMerchant(string $id, array $input): array
     {
+
+        [$existsInApi, $bankingAccount] = $this->checkAndGetBankingAccountId($id);
+
+        if ($existsInApi == false)
+        {
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_SERVICE_PATCH_APPLICATION_COMPOSITE,
+                [
+                    'stage'   => 'Validate request for internal edit',
+                    'id'      => $id,
+                    'input'   => $input,
+                ]);
+
+            (new Validator)->setStrictFalse()->validateInput(Validator::INTERNAL_EDIT, $input);
+
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_SERVICE_FETCH_RBL_APPLICATION_FROM_BAS,
+                [
+                    'id'      => $id,
+                ]);
+
+            $id = $this->repo->banking_account->verifyIdAndStripSign($id);
+
+            $bankingAccount = $this->bankingAccountService->getRblApplicationFromBasForInternalFetch($id);
+
+            $serviceabilityResponse = $this->checkPincodeBusinessTypeAndFillMerchantAddress($input);
+
+            if ($serviceabilityResponse['serviceability'] === false OR $serviceabilityResponse['business_type_supported'] === false)
+            {
+                return array_merge($bankingAccount, $serviceabilityResponse);
+            }
+
+            // Firing Events and Status Update Notifications will be handled from BAS
+            $bankingAccount = $this->updateApplicationOnBas($id, $input);
+
+            return array_merge($bankingAccount, $serviceabilityResponse);
+        }
+
         /** @var Entity $bankingAccount */
         $bankingAccount = $this->repo->banking_account->findByPublicId($id);
 
@@ -538,8 +675,25 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_ACTIVATION_PERMITTED_ONLY_ON_ADMIN_AUTH);
         }
 
-        /** @var Entity $bankingAccount */
-        $bankingAccount = $this->repo->banking_account->findByPublicId($id);
+        [$existsInApi, $bankingAccount] = $this->checkAndGetBankingAccountId($id);
+
+        if ($existsInApi == false)
+        {
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_SERVICE_FETCH_RBL_APPLICATION_FROM_BAS,
+                [
+                    'id'      => $id,
+                ]);
+
+            $id = $this->repo->banking_account->verifyIdAndStripSign($id);
+
+            $bankingAccount =  $this->bankingAccountService->activateAccountForRbl($id);
+
+            // Send push notification to merchant
+            $this->core->notifyMerchantAboutUpdatedStatusOnMobileViaPushNotification($bankingAccount);
+
+            return $bankingAccount;
+        }
 
         // validating if user tries to add/change credentials
         // after his account gets activated successfully
@@ -851,8 +1005,19 @@ class Service extends Base\Service
 
     public function getActivationStatusChangeLog(string $bankingAccountId)
     {
-        /** @var Entity $bankingAccount */
-        $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
+        [$existsInApi, $bankingAccount] = $this->checkAndGetBankingAccountId($bankingAccountId);
+
+        if ($existsInApi == false)
+        {
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_SERVICE_RBL_ON_BAS_REQUEST,
+                [
+                    'banking_account_id' => $bankingAccountId,
+                    'route'              => $this->app['router']->currentRouteName(),
+                ]);
+
+            return $this->bankingAccountService->getApplicationStatusLogsForRblLms($bankingAccountId);
+        }
 
         $activationStatusChangeLog = $this->core->getActivationStatusChangeLog($bankingAccount);
 
@@ -877,11 +1042,48 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('bulk_assign_reviewer', $input);
 
-        $bankingAccountIds  = $input[Entity::BANKING_ACCOUNT_IDS];
+        $reviewerId        = $input[Entity::REVIEWER_ID];
+        $bankingAccountIds = $input[Entity::BANKING_ACCOUNT_IDS] ?? [];
 
-        $reviewerId = $input[Entity::REVIEWER_ID];
+        // Remove the prefix from the banking account ids
+        $bankingAccountIdsWithoutPrefix = array_map(function($bankingAccountId) {
+            return str_replace(Entity::getIdPrefix(), '', $bankingAccountId);
+        }, $bankingAccountIds);
 
-        return (new Core)->bulkAssignReviewer($reviewerId, $bankingAccountIds);
+        $bankingAccountIdsInApi = $this->repo->banking_account->getValidBankingAccountIds(Channel::RBL, AccountType::CURRENT, $bankingAccountIdsWithoutPrefix);
+        $bankingAccountIdsInBas = array_values(array_diff($bankingAccountIdsWithoutPrefix, $bankingAccountIdsInApi));
+
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_BULK_ASSIGNER_REVIEWER, [
+            'reviewer_id'             => $reviewerId,
+            'api_banking_account_ids' => $bankingAccountIdsInApi,
+            'bas_banking_account_ids' => $bankingAccountIdsInBas,
+        ]);
+
+        $apiResult = [];
+        $basResult = [];
+
+        // Call this only for those banking accounts which are present in API DB
+        if (!empty($bankingAccountIdsInApi))
+        {
+            // Add bacc_ prefix to banking account ids
+            $bankingAccountIdsInApi = array_map(function($bankingAccountId) {
+                return Entity::getIdPrefix() . $bankingAccountId;
+            }, $bankingAccountIdsInApi);
+
+            $apiResult = (new Core)->bulkAssignReviewer($reviewerId, $bankingAccountIdsInApi);
+        }
+
+        // Call BAS only for those banking accounts which are not present in API DB
+        if (!empty($bankingAccountIdsInBas))
+        {
+            $basInput = $input;
+
+            $basInput[Entity::BANKING_ACCOUNT_IDS] = $bankingAccountIdsInBas;
+
+            $basResult = $this->bankingAccountService->bulkAssignAccountManagerForRbl($basInput);
+        }
+
+        return $this->mergeBulkAssignResult($apiResult, $basResult);
     }
 
     public function prepareInputForUpdate(array $input, string $channel)
@@ -1007,11 +1209,11 @@ class Service extends Base\Service
 
         try
         {
-            $bankingAccount = $this->core->fetchByBankReferenceAndChannel(
+            $admin = $this->repo->admin->findOrFailPublic($input[Entity::ADMIN_ID]);
+
+            $bankingAccount = $this->core->getBankingAccountByBankReferenceAndChannel(
                 $input[Entity::CHANNEL],
                 $input[Entity::BANK_REFERENCE_NUMBER]);
-
-            $admin = $this->repo->admin->findOrFailPublic($input[Entity::ADMIN_ID]);
 
             // Storing admin interpreted via batch in app
             // so that downstream services like BankingAccountComment
@@ -1025,7 +1227,7 @@ class Service extends Base\Service
         }
         catch (Throwable $e)
         {
-            // TODO: throw different validation errors for both the find queries.
+            // TODO: throw different validation errors for admin find query.
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_ID, null,
                 [
@@ -1043,18 +1245,38 @@ class Service extends Base\Service
 
             $newBankingAccountStatus = $updateInput[Entity::STATUS] ?? null;
 
-            // Archiving an already activated banking_account should not be allowed by Batch
-            if ($newBankingAccountStatus == Status::ARCHIVED and
-                $bankingAccount->getStatus() == Status::ACTIVATED)
+            if ($bankingAccount == null)
             {
-                throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_ALREADY_ACTIVATED,
-                    null,
-                    ['id' => $bankingAccount->getId()]
-                );
+                $this->trace->info(
+                    TraceCode::BANKING_ACCOUNT_SERVICE_PATCH_APPLICATION_COMPOSITE,
+                    [
+                        'stage'             => 'Batch Service Update Input',
+                        'input'             => $updateInput,
+                        'reference_number'  => $input[Entity::BANK_REFERENCE_NUMBER],
+                        'channel'           => $input[Entity::CHANNEL],
+                    ]);
+
+                (new Validator)->setStrictFalse()->validateInput(Validator::INTERNAL_EDIT, $input);
+
+                $this->updateApplicationOnBasByReferenceNumber($input[Entity::BANK_REFERENCE_NUMBER], $updateInput);
+            }
+            else
+            {
+
+                // Archiving an already activated banking_account should not be allowed by Batch
+                if ($newBankingAccountStatus == Status::ARCHIVED and
+                    $bankingAccount->getStatus() == Status::ACTIVATED)
+                {
+                    throw new BadRequestException(
+                        ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_ALREADY_ACTIVATED,
+                        null,
+                        ['id' => $bankingAccount->getId()]
+                    );
+                }
+
+                $this->update($bankingAccount->getPublicId(), $updateInput);
             }
 
-            $this->update($bankingAccount->getPublicId(), $updateInput);
         }
         catch (Throwable $e)
         {
@@ -1308,7 +1530,7 @@ class Service extends Base\Service
         try
         {
             // 1. make BAS call
-            $basResponse = (new BankingAccountService\Service())->checkServiceability($pincode)['data'] ?? [];
+            $basResponse = $this->bankingAccountService->checkServiceability($pincode)['data'] ?? [];
 
             // 2. validate response
             (new Validator())->validateInput('basServiceabilityResponse', $basResponse[Constants::PINCODE_DETAILS]);
@@ -1946,4 +2168,101 @@ class Service extends Base\Service
 
         return $serviceableBanks;
     }
+
+    public function fetchMultipleRblApplicationsFromApiAndBas(array $input) : array
+    {
+        $originalSkip  = $input[Constants::SKIP] ?? 0;
+        $originalCount = $input[Constants::COUNT] ?? 20;
+        $rowsToFetch   = $originalSkip + $originalCount;
+
+        // Fetch skip + count rows from both sources
+        // We can apply skip and count after merging data from both sources
+        $input[Constants::SKIP]  = 0;
+        $input[Constants::COUNT] = $rowsToFetch;
+
+        $bankingAccountsFromDb = (new AdminService())->fetchMultipleEntities('banking_account', $input);
+        $bankingAccountsFromDb = $bankingAccountsFromDb['items'];
+
+        $bankingAccountsFromBas = $this->bankingAccountService->fetchApplicationsForRblLms($input);
+
+        $bankingAccounts = $this->mergeBankingAccountArrays($bankingAccountsFromDb, $bankingAccountsFromBas,
+                                                            $originalSkip, $originalCount,
+                                                            Entity::CREATED_AT, 'desc');
+
+
+        // Update merchant details
+        foreach ($bankingAccounts as $index => $bankingAccount)
+        {
+            if (isset($bankingAccount[Entity::MERCHANT]) === false)
+            {
+                /* @var $merchant Merchant\Entity */
+                $merchant = $this->repo->merchant->findByPublicId($bankingAccount[Entity::MERCHANT_ID]);
+                $merchant->load('merchantDetail');
+
+                $bankingAccount[Entity::MERCHANT] = $merchant->toArrayAdmin();
+                $bankingAccounts[$index] = $bankingAccount;
+            }
+        }
+
+        return $bankingAccounts;
+    }
+
+    public function fetchRblApplicationFromApiAndBas(string $bankingAccountId): array
+    {
+        try
+        {
+            return (new AdminService())->fetchEntityById('banking_account', $bankingAccountId);
+        }
+        catch (\Exception $e)
+        {
+            if ($e->getCode() === ErrorCode::BAD_REQUEST_INVALID_ID)
+            {
+                $bankingAccount = $this->bankingAccountService->fetchCompositeApplicationForRbl($bankingAccountId);
+
+                // Add merchant details
+                /* @var $merchant Merchant\Entity */
+                $merchant = $this->repo->merchant->findByPublicId($bankingAccount[Entity::MERCHANT_ID]);
+                $merchant->load('promotions.promotion');
+                $bankingAccount[Entity::MERCHANT] = $merchant->toArrayAdmin();
+
+                return $bankingAccount;
+            }
+            throw $e;
+        }
+    }
+
+    protected function mergeBankingAccountArrays(array  $bankingAccountsFromDb,
+                                                 array  $bankingAccountsFromBas,
+                                                 int    $skip,
+                                                 int    $count,
+                                                 string $sortBy,
+                                                 string $sortDirection): array
+    {
+        $combinedBankingAccounts = array_merge($bankingAccountsFromDb, $bankingAccountsFromBas);
+
+        $createdAt = array_column($combinedBankingAccounts, $sortBy);
+
+        array_multisort($createdAt, $sortDirection === 'asc' ? SORT_ASC : SORT_DESC, $combinedBankingAccounts);
+
+        return array_slice($combinedBankingAccounts, $skip, $count);
+    }
+
+    private function mergeBulkAssignResult(array $apiResult, array $basResult)
+    {
+        $apiSuccessCount = $apiResult['success'] ?? 0;
+        $basSuccessCount = $basResult['success'] ?? 0;
+
+        $apiFailureCount = $apiResult['failed'] ?? 0;
+        $basFailureCount = $basResult['failed'] ?? 0;
+
+        $apiFailedItems = $apiResult['failedItems'] ?? [];
+        $basFailedItems = $basResult['failed_items'] ?? [];
+
+        return array_merge($apiResult, [
+            'success'     => $apiSuccessCount + $basSuccessCount,
+            'failed'      => $apiFailureCount + $basFailureCount,
+            'failedItems' => array_merge($apiFailedItems, $basFailedItems),
+        ]);
+    }
+
 }

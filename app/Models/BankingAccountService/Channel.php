@@ -10,6 +10,7 @@ class Channel
     const ICICI   = FTAChannel::ICICI;
     const YESBANK = FTAChannel::YESBANK;
     const AXIS    = FTAChannel::AXIS;
+    const RBL     = FTAChannel::RBL; // RBL on BAS
 
     protected static $channels = [
         self::ICICI,

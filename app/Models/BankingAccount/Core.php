@@ -17,6 +17,7 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
 use RZP\Models\Admin\Admin;
+use RZP\Models\User;
 use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
 use RZP\Constants\Timezone;
@@ -662,7 +663,19 @@ class Core extends Base\Core
 
             $attributes = $processor->processAccountInfoNotification($input);
 
-            $bankingAccount = $this->fetchByBankReferenceAndChannel($channel, $attributes[Entity::BANK_REFERENCE_NUMBER]);
+            $bankingAccount = $this->getBankingAccountByBankReferenceAndChannel($channel, $attributes[Entity::BANK_REFERENCE_NUMBER]);
+
+            if ($bankingAccount === null)
+            {
+                $this->trace->info(
+                    TraceCode::BANKING_ACCOUNT_SERVICE_RBL_ON_BAS_REQUEST,
+                    [
+                        'input'   => $input,
+                        'route'   => $this->app['router']->currentRouteName(),
+                    ]);
+
+                return (new BasService())->processAccountOpeningWebhookForRbl($input);
+            }
 
             $this->handleStateFromAccountOpeningWebhook($bankingAccount, $attributes);
 
@@ -738,9 +751,7 @@ class Core extends Base\Core
 
     public function fetchByBankReferenceAndChannel(string $channel, string $bankReference)
     {
-        $bankingAccount = $this->repo
-                               ->banking_account
-                               ->findByBankReferenceAndChannel($channel, $bankReference);
+        $bankingAccount = $this->getBankingAccountByBankReferenceAndChannel($channel, $bankReference);
 
         if ($bankingAccount === null)
         {
@@ -756,6 +767,13 @@ class Core extends Base\Core
         }
 
         return $bankingAccount;
+    }
+
+    public function getBankingAccountByBankReferenceAndChannel(string $channel, string $bankReference)
+    {
+        return $this->repo
+                    ->banking_account
+                    ->findByBankReferenceAndChannel($channel, $bankReference);
     }
 
     /**
@@ -2108,7 +2126,7 @@ class Core extends Base\Core
             catch (\Throwable $e)
             {
                 $failedItems[] = [
-                    Entity::ID          => $bankingAccountId,
+                    Entity::BANKING_ACCOUNT_ID          => $bankingAccountId,
                     'error'             => $e->getMessage()
                 ];
             }
@@ -2148,6 +2166,20 @@ class Core extends Base\Core
         $bankingAccount->reviewers()->attach($reviewer, [Entity::AUDITOR_TYPE => 'reviewer']);
 
         $this->repo->saveOrFail($bankingAccount);
+    }
+
+    public function getAdminDetails(string $adminId) : Admin\Entity
+    {
+        if (!str_starts_with($adminId, 'admin_'))
+        {
+            $adminId = 'admin_' . $adminId;
+        }
+        return $this->repo->admin->findByPublicId($adminId);
+    }
+
+    public function getUserDetails(string $userId) : User\Entity
+    {
+        return $this->repo->user->findByPublicId($userId);
     }
 
     public function addSalesPOCToBankingAccount(Entity $bankingAccount, string $spocId)
@@ -2907,6 +2939,7 @@ class Core extends Base\Core
     public function setBankDueDateIfApplicable(Entity $bankingAccount)
     {
         // re-fetching to get the updated data after update for activation details
+        /** @var Entity $bankingAccount */
         $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccount->getPublicId());
 
         $status = $bankingAccount->getStatus();
@@ -3025,7 +3058,7 @@ class Core extends Base\Core
         return true;
     }
 
-    private function checkRequiredFieldsPresentForFreshDeskTicket(array $checker, array $requiredFields, string $validatorOp, ActivationDetail\Validator $validator): bool
+    public function checkRequiredFieldsPresentForFreshDeskTicket(array $checker, array $requiredFields, string $validatorOp, ActivationDetail\Validator $validator): bool
     {
         $checker = array_intersect_key($checker, array_fill_keys($requiredFields, ''));
 
@@ -3059,31 +3092,6 @@ class Core extends Base\Core
         }
 
         return true;
-    }
-
-    public function moveToSTBIfApplicable(Entity $bankingAccount, $entity)
-    {
-        $currentStatus = $bankingAccount->getStatus();
-
-        $currentSubStatus = $bankingAccount->getSubStatus();
-
-        if (!($currentStatus === Status::PICKED && $currentSubStatus == Status::DOCKET_INITIATED))
-        {
-            return;
-        }
-
-        $this->trace->info(TraceCode::BANKING_ACCOUNT_DOCKET_DELIVERED_MOVE_TO_STB, [
-            'banking_account_id' => $bankingAccount->getId(),
-            'merchant_id' => $bankingAccount->getMerchantId(),
-        ]);
-
-        $bankingAccount = $this->updateBankingAccount(
-            $bankingAccount,
-            [
-                Entity::STATUS      => Status::INITIATED,
-                Entity::SUB_STATUS  => Status::NONE,
-            ],
-            $entity, false, false, false);
     }
 
     public function sendDocketIfApplicable($bankingAccount, $entity)
@@ -3457,5 +3465,21 @@ class Core extends Base\Core
             'sub_status'            => array_get($bankingAccount, Entity::SUB_STATUS, ''),
         ];
 
+    }
+
+    public function checkRblOnBasExperimentEnabled(string $merchantId) : bool
+    {
+        $isExperimentEnabled = (new Merchant\Core())->isSplitzExperimentEnable([
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.rbl_on_bas_exp_id')
+        ], Constants::ACTIVE,
+            TraceCode::BANKING_ACCOUNT_RBL_ON_BAS_EXPERIMENT_FAILED);
+
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_RBL_ON_BAS_EXPERIMENT_STATUS, [
+            'experiment_status' => $isExperimentEnabled,
+            'merchant_id'       => $merchantId,
+        ]);
+
+        return $isExperimentEnabled;
     }
 }

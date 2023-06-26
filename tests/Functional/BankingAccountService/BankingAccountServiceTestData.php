@@ -26,11 +26,48 @@ return [
 
     'testArchiveAndCreateNewAccount' => [
         'request'  => [
-            'url'     => '/bas/archive',
+            'url'     => '/bas/archive_banking_account_dependencies',
             'method'  => 'POST',
             'content' => [
-                Constants::ACCOUNT_NUMBER => '12345678903833',
-                Constants::CHANNEL        => 'icici',
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testArchive' => [
+        'request'  => [
+            'url'     => '/bas/archive_banking_account_dependencies',
+            'method'  => 'POST',
+            'content' => [
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testArchiveRbl' => [
+        'request'  => [
+            'url'     => '/bas/archive_banking_account_dependencies',
+            'method'  => 'POST',
+            'content' => [
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testArchiveAndUnArchive' => [
+        'request'  => [
+            'url'     => '/bas/archive_banking_account_dependencies',
+            'method'  => 'POST',
+            'content' => [
             ]
         ],
         'response' => [
@@ -64,35 +101,6 @@ return [
         ],
     ],
 
-    'testArchive' => [
-        'request'  => [
-            'url'     => '/bas/archive',
-            'method'  => 'POST',
-            'content' => [
-                Constants::ACCOUNT_NUMBER => '12345678903833',
-                Constants::CHANNEL        => 'icici',
-            ]
-        ],
-        'response' => [
-            'content' => [
-            ],
-        ],
-    ],
-
-    'testArchiveAndUnArchive' => [
-        'request'  => [
-            'url'     => '/bas/archive',
-            'method'  => 'POST',
-            'content' => [
-                Constants::ACCOUNT_NUMBER => '12345678903833',
-                Constants::CHANNEL        => 'icici',
-            ]
-        ],
-        'response' => [
-            'content' => [
-            ],
-        ],
-    ],
 
     'testCreateBankingEntitiesWithLedgerShadow' => [
         'request'  => [

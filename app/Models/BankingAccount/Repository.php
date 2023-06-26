@@ -1390,6 +1390,18 @@ class Repository extends Base\Repository
             ->toArray();
     }
 
+    public function getValidBankingAccountIds(string $channel, string $accountType, array $bankingAccountIds): array
+    {
+        $bankingAccountId = $this->repo->banking_account->dbColumn(Entity::ID);
+
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+                    ->whereIn($bankingAccountId, $bankingAccountIds)
+                    ->where(Entity::CHANNEL, $channel)
+                    ->where(Entity::ACCOUNT_TYPE, $accountType)
+                    ->pluck(Entity::ID)
+                    ->toArray();
+    }
+
     public function saveOrFail($entity, array $options = array())
     {
         $this->repo->transaction(function()

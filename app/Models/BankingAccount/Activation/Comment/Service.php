@@ -11,17 +11,32 @@ use RZP\Error\ErrorCode;
 use RZP\Mail\System\Trace;
 use RZP\Http\RequestHeader;
 use RZP\Models\BankingAccount;
+use RZP\Models\BankingAccountService;
 use RZP\Exception\BadRequestException;
 
 class Service extends Base\Service
 {
     public function fetchMultiple(string $bankingAccountId, array $input): array
     {
-        /** @var BankingAccount\Entity $bankingAccount */
-        $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
+        $bankingAccountService = new BankingAccount\Service();
+        $basService = new BankingAccountService\Service();
+
+        [$existsInApi, $bankingAccount] = $bankingAccountService->checkAndGetBankingAccountId($bankingAccountId);
+
+        if ($existsInApi == false)
+        {
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_SERVICE_RBL_ON_BAS_REQUEST,
+                [
+                    'banking_account_id' => $bankingAccountId,
+                    'route'              => $this->app['router']->currentRouteName(),
+                ]);
+
+            return $basService->getCommentsForRblLms($bankingAccountId);
+        }
 
         // Disable for now
-        // In batch upload: we are adding comments with type: 'internal' 
+        // In batch upload: we are adding comments with type: 'internal'
         // even with source_team_type: external which don't get reflected on LMS because of this filter
         // if ($this->app['basicauth']->isAdminAuth() === true)
         // {
@@ -50,8 +65,22 @@ class Service extends Base\Service
 
     public function createForBankingAccount(string $bankingAccountId, array $input)
     {
-        /** @var BankingAccount\Entity $bankingAccount */
-        $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
+        $bankingAccountService = new BankingAccount\Service();
+        $basService = new BankingAccountService\Service();
+
+        [$existsInApi, $bankingAccount] = $bankingAccountService->checkAndGetBankingAccountId($bankingAccountId);
+
+        if ($existsInApi == false)
+        {
+            $this->trace->info(
+                TraceCode::BANKING_ACCOUNT_SERVICE_RBL_ON_BAS_REQUEST,
+                [
+                    'banking_account_id' => $bankingAccountId,
+                    'route'              => $this->app['router']->currentRouteName(),
+                ]);
+
+            return $basService->addCommentForRblLms($bankingAccountId, $input);
+        }
 
         $maker = ($this->app['basicauth']->isAdminAuth() === true) ? $this->app['basicauth']->getAdmin() : $this->app['basicauth']->getUser();
 
@@ -110,6 +139,30 @@ class Service extends Base\Service
 
     public function update(string $id, array $input): array
     {
+        $bankingAccountId = $input[Entity::BANKING_ACCOUNT_ID] ?? ''; // banking_account_id from query param
+
+        $bankingAccountService = new BankingAccount\Service();
+        $basService = new BankingAccountService\Service();
+
+        // If banking_account_id is present in query param, then handle routing to BAS if needed
+        if (!empty($bankingAccountId)) {
+
+            [$existsInApi, $bankingAccount] = $bankingAccountService->checkAndGetBankingAccountId($bankingAccountId);
+
+            if ($existsInApi == false)
+            {
+                $this->trace->info(
+                    TraceCode::BANKING_ACCOUNT_SERVICE_RBL_ON_BAS_REQUEST,
+                    [
+                        'banking_account_id' => $bankingAccountId,
+                        'route'              => $this->app['router']->currentRouteName(),
+                    ]);
+
+                return $basService->updateCommentForRbl($bankingAccountId, $id, $input);
+            }
+
+        }
+
         $comment = $this->repo->banking_account_comment->findOrFail($id);
 
         $comment = (new Core)->update($comment, $input);

@@ -5,6 +5,7 @@ use RZP\Models\BankingAccount;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Models\BankingAccount\Gateway\Rbl as RblGateway;
 
 return [
     'testCreateBankingAccount' => [
@@ -2954,7 +2955,7 @@ return [
         'response'  => [
             'content' => [
                 'entity' => 'collection',
-                'count'  => 1,
+                'count'  => 10,
                 'items'  => [],
             ],
             'status_code' => 200,
@@ -3399,7 +3400,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'success'       =>  0,
+                'success'       =>  1,
                 'failed'        =>  2,
                 'failedItems'   =>  [
                     [
@@ -3421,7 +3422,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'success'       =>  1,
+                'success'       =>  2,
                 'failed'        =>  1,
                 'failedItems'   =>  [
                     [
@@ -4463,7 +4464,7 @@ return [
         'response'  => [
             'content' => [
                 'entity' => 'collection',
-                'count'  => 1,
+                'count'  => 10,
                 'items'  => [],
             ],
             'status_code' => 200,
@@ -4482,7 +4483,7 @@ return [
         'response'  => [
             'content' => [
                 'entity' => 'collection',
-                'count'  => 1,
+                'count'  => 10,
                 'items'  => [],
             ],
             'status_code' => 200,
@@ -4501,7 +4502,7 @@ return [
         'response'  => [
             'content' => [
                 'entity' => 'collection',
-                'count'  => 1,
+                'count'  => 10,
                 'items'  => [],
             ],
             'status_code' => 200,
@@ -4520,7 +4521,7 @@ return [
         'response'  => [
             'content' => [
                 'entity' => 'collection',
-                'count'  => 1,
+                'count'  => 10,
                 'items'  => [],
             ],
             'status_code' => 200,
@@ -4539,7 +4540,7 @@ return [
         'response'  => [
             'content' => [
                 'entity' => 'collection',
-                'count'  => 1,
+                'count'  => 10,
                 'items'  => [],
             ],
             'status_code' => 200,
@@ -4558,7 +4559,7 @@ return [
         'response'  => [
             'content' => [
                 'entity' => 'collection',
-                'count'  => 1,
+                'count'  => 10,
                 'items'  => [],
             ],
             'status_code' => 200,
@@ -4577,7 +4578,7 @@ return [
         'response'  => [
             'content' => [
                 'entity' => 'collection',
-                'count'  => 1,
+                'count'  => 10,
                 'items'  => [],
             ],
             'status_code' => 200,
@@ -4596,7 +4597,7 @@ return [
         'response'  => [
             'content' => [
                 'entity' => 'collection',
-                'count'  => 1,
+                'count'  => 10,
                 'items'  => [],
             ],
             'status_code' => 200,
@@ -4615,7 +4616,7 @@ return [
         'response'  => [
             'content' => [
                 'entity' => 'collection',
-                'count'  => 0,
+                'count'  => 10,
                 'items'  => [],
             ],
             'status_code' => 200,
@@ -4634,7 +4635,7 @@ return [
         'response'  => [
             'content' => [
                 'entity' => 'collection',
-                'count'  => 1,
+                'count'  => 10,
                 'items'  => [],
             ],
             'status_code' => 200,
@@ -5285,6 +5286,459 @@ return [
         ],
     ],
 
+    'testApiToBasDtoAdapter' => [
+
+        'apiInput' => [
+            'account_ifsc'                    => 'SBIN01234',
+            'account_number'                  => '12341678786950',
+            'status'                          => 'doc_collection',
+            'sub_status'                      => 'in_review',
+            'beneficiary_pin'                 => '110093',
+            'bank_internal_status'            => 'closed',
+            'pincode'                         => '110093',
+            'balance_id'                      => null,
+            'bank_internal_reference_number'  => '203128886',
+            'beneficiary_name'                => 'Y-AXIS GROUP OF INDUSTRIES',
+            'account_currency'                => 'INR',
+            'beneficiary_email'               => 'SENDMAIL4ADIL@GMAIL.COM',
+            'beneficiary_mobile'              => '+91(0)9560569604',
+            'beneficiary_city'                => 'NEWDE',
+            'beneficiary_state'               => 'DLI',
+            'beneficiary_country'             => 'IN',
+            'beneficiary_address1'            => 'G F PLOT NO 12 KH NO 24 19 B 557',
+            'beneficiary_address2'            => 'MAIN 33 FUTA ROAD RAJIV NAGAR',
+            'beneficiary_address3'            => 'MANDOLI EXTN NEAR BUDH BAZAR DELHI',
+            'bank_reference_number'           => '46436',
+            'account_activation_date'         => 1678786950,
+            'username'                        => 'ldap_id',
+            'password'                        => 'ldap_password',
+            'reference1'                      => 'corp_id',
+            'details' => [
+                'client_id' => 'CLIENT_ID',
+                'client_secret' => 'CLIENT_SECRET',
+                'merchant_email' => 'MERCHANT_EMAIL',
+                'merchant_password' => 'MERCHANT_PASSWORD',
+            ],
+            'activation_detail' => [
+                'merchant_poc_name' => 'MERCHANT_POC_NAME',
+                'merchant_poc_email' => 'yaxisgroupofindustries@gmail.com',
+                'merchant_poc_designation' => 'Proprietor',
+                'merchant_poc_phone_number' => '+919560569604',
+                'merchant_documents_address' => 'B-557, G/F PLOT NO-12 KH NO-24/19, MAIN 33FUTA ROAD RAJIV NAGAR MANDOLI EXTN NEAR BUDH BAZAR, DELHI, North East Delhi, Delhi, 110093',
+                'merchant_city' => 'eastdelhi',
+                'merchant_region' => 'north',
+                'business_category' => 'sole_proprietorship',
+                'average_monthly_balance' => 20000,
+                'expected_monthly_gmv' => 500000,
+                'initial_cheque_value' => 20000,
+                'account_type' => 'business_plus',
+                'is_documents_walkthrough_complete' => 0,
+                'declaration_step' => 1,
+                'sales_team' => 'sme',
+                'created_at' => 1678187524,
+                'sales_poc_phone_number' => '8882777606',
+                'sales_poc_id' => '',
+                'comment' => 'mx available at lcoation',
+                'assignee_team' => 'ops',
+                'rm_name' => 'Pankaj Mishra',
+                'rm_phone_number' => '9315383526',
+                'account_open_date' => 1678732200,
+                'account_login_date' => 1678386600,
+                'business_name' => 'Y-AXIS GROUP OF INDUSTRIES',
+                'business_type' => 'default',
+                'business_pan' => 'BESPA1234K',
+                'merchant_state' => 'delhi',
+                'contact_verified' => 0,
+                'business_pan_validation' => null,
+                'booking_date_and_time' => 1678873350,
+                // 'application_type' => null, // unused
+                'verification_date' => null,
+                'bank_poc_user_id' => 'K6yvvIv3nxpcRp',
+
+                'additional_details' => [
+
+                    'calendly_slot_booking_completed' => 1,
+                    'booking_id' => '12341',
+                    'dwt_completed_timestamp' => 1678873350,
+                    'dwt_scheduled_timestamp' => 1678873350,
+                    'skip_mid_office_call' => true,
+                    'appointment_source' => 'sales',
+                    'sent_docket_automatically' => false,
+                    'reasons_to_not_send_docket' => [
+                        'PoE Not Verified',
+                        'Entity Name Mismatch',
+                        'Entity Type Mismatch',
+                        'Unexpected State Change Log',
+                        'Application with Duplicate Merchant Name',
+                    ],
+                    'docket_not_delivered_reason' => 'Wrong Setup Form',
+                    'dwt_response' => 'What type is this even??',
+
+                    'is_documents_walkthrough_complete' => 0,
+                    'sales_pitch_completed' => 1,
+                    'entity_mismatch_status' => 'entity_name_mismatch',
+                    'green_channel' => true,
+                    'cin' => 'CIN',
+                    'gstin' => '07AYMPA5163E2ZL',
+                    'llpin' => '',
+                    'skip_dwt' => 1,
+                    'feet_on_street' => true,
+                    'api_onboarded_date' => null,
+                    'mid_office_poc_name' => null,
+                    'docket_delivered_date' => null,
+                    'docket_estimated_delivery_date' => null,
+                    'docket_requested_date' => '',
+                    'courier_tracking_id' => '',
+                    'courier_service_name' => '',
+                    'gstin_prefilled_address' => 1,
+                    'api_onboarding_login_date' => null,
+                    'application_initiated_from' => 'X_DASHBOARD',
+                    'account_opening_webhook_date' => 1678873350,
+                    'agree_to_allocated_bank_and_amb' => 1,
+                    'rbl_new_onboarding_flow_declarations' => [
+                        'seal_available' => 1,
+                        'signboard_available' => 1,
+                        'signatories_available_at_preferred_address' => 1,
+                        'available_at_preferred_address_to_collect_docs' => 1
+                    ],
+                    'business_details' => [
+                        'model' => 'Fabric, Needlework, Piece Goods, and Sewing Stores',
+                        'category' => 'ECOMMERCE',
+                        'sub_category' => 'fabric_and_sewing_stores'
+                    ],
+                    'proof_of_entity' => ['source' => 'gstin', 'status' => 'verified'],
+                    'proof_of_address' => ['source' => 'gstin', 'status' => 'verified'],
+
+                    'verified_addresses' => [
+                        [
+                            'source' => 'gstin',
+                            'address' => 'B-557, G/F PLOT NO-12 KH NO-24/19, MAIN 33FUTA ROAD RAJIV NAGAR MANDOLI EXTN NEAR BUDH BAZAR, DELHI, North East Delhi, Delhi, 110093',
+                            'addressDetails' => [
+                                'address_city' => null,
+                                'address_state' => null,
+                                'address_country' => null,
+                                'address_email_id' => null,
+                                'address_landmark' => null,
+                                'address_locality' => null,
+                                'address_pin_code' => '110093',
+                                'address_street_name' => null,
+                                'address_house_number' => null,
+                                'address_building_name' => null,
+                                'address_contact_number' => null
+                            ]
+                        ]
+                    ],
+                    'verified_constitutions' => [
+                        ['constitution' => 'PUBLIC_LIMITED', 'source' => 'gstin']
+                    ],
+                    'entity_proof_documents' => [
+                        [
+                            'file_id' => 'file_LOckRD3Auj6ksw',
+                            'document_type' => 'gst_certificate'
+                        ]
+                    ],
+                ],
+                'rbl_activation_details' => [
+                    'revised_declaration' => false,
+                    'office_different_locations' => false,
+                    'lead_referred_by_rbl_staff' => true,
+                    'bank_due_date' => 1678905000,
+                    'lead_ir_number' => null,
+                    'bank_poc_assigned_date' => 1678352209,
+                    'ip_cheque_value' => null,
+                    'api_docs_delay_reason' => '',
+                    'api_docs_received_with_ca_docs' => true,
+                    'sr_number' => null,
+                    'account_opening_ir_number' => 'IR00022515189',
+                    'case_login_different_locations' => false,
+                    'api_ir_number' => null,
+                    'upi_credential_not_done_remarks' => null,
+                    'promo_code' => 'RZPAY',
+                    'aof_shared_with_mo' => false,
+                    'wa_message_sent_date' => null,
+                    'first_calling_time' => '5 to 6',
+                    'pcarm_manager_name' => 'Avijit Shrivastava ',
+                    'wa_message_response_date' => null,
+                    'aof_not_shared_reason' => 'Already Login',
+                    'api_onboarding_tat_exception_reason' => null,
+                    'account_opening_tat_exception_reason' => 'compliance Issue',
+                    'ca_beyond_tat' => false,
+                    'ca_beyond_tat_dependency' => '',
+                    'lead_referred_by_rbl_staff' => false,
+                    'api_onboarding_tat_exception' => null,
+                    'account_opening_tat_exception' => true,
+                    'aof_shared_discrepancy' => '',
+                    'ca_service_first_query' => '1.on rrt high risk rating by compliance is not mentioned. APPLICANT FOUND IN NEGATIVE LIST ODG452595087230310202422178-ADIL',
+                ],
+                'branch_code' => '281',
+                'customer_appointment_date' => 1678386600,
+                'rm_employee_code' => '',
+                'rm_assignment_type' => 'pcarm',
+                'doc_collection_date' => 1678300200,
+                'account_opening_ir_close_date' => null,
+                'account_opening_ftnr' => 1,
+                'account_opening_ftnr_reasons' => 'AO Negative List/Compliance/Legal/CIBIL',
+                'api_ir_closed_date' => null,
+                'ldap_id_mail_date' => null,
+                'api_onboarding_ftnr' => null,
+                'api_onboarding_ftnr_reasons' => null,
+                'upi_credential_received_date' => null,
+                'rzp_ca_activated_date' => null,
+            ]
+        ],
+
+        'expectedBasInput' => [
+            'banking_account' => [
+                'ifsc' => 'SBIN01234',
+                'account_number' => '12341678786950',
+                // 'balance_id' => null, // not added as part of update
+                'account_currency' => 'INR',
+                'beneficiary_details' => [
+                    'name' => 'Y-AXIS GROUP OF INDUSTRIES',
+                    'pincode' => '110093',
+                    'email' => 'SENDMAIL4ADIL@GMAIL.COM',
+                    'mobile' => '+91(0)9560569604',
+                    'city' => 'NEWDE',
+                    'state' => 'DLI',
+                    'country' => 'IN',
+                    'address1' => 'G F PLOT NO 12 KH NO 24 19 B 557',
+                    'address2' => 'MAIN 33 FUTA ROAD RAJIV NAGAR',
+                    'address3' => 'MANDOLI EXTN NEAR BUDH BAZAR DELHI'
+                ],
+                'metadata' => [
+                    'bank_account_open_date' => 1678786950
+                ],
+            ],
+            'banking_account_application' => [
+                'application_status' => 'doc_collection',
+                'sub_status' => 'in_review',
+                'bank_status' => 'closed',
+                'application_number' => '203128886',
+                'application_tracking_id' => '46436',
+                'average_monthly_balance' => 20000,
+                'expected_monthly_gmv' => 500000,
+                'metadata' => [
+                    'initial_cheque_value' => 20000,
+                    'declaration_step' => 1,
+                    'additional_details' => [
+                        'calendly_slot_booking_completed' => 1,
+                        'booking_id' => '12341',
+                        'booking_date_and_time' => 1678873350,
+                        'dwt_completed_timestamp' => 1678873350,
+                        'dwt_scheduled_timestamp' => 1678873350,
+                        // 'skip_mid_office_call' => true,
+                        // 'appointment_source' => 'sales',
+                        // 'sent_docket_automatically' => false,
+                        // 'reasons_to_not_send_docket' => [
+                        //     'PoE Not Verified',
+                        //     'Entity Name Mismatch',
+                        //     'Entity Type Mismatch',
+                        //     'Unexpected State Change Log',
+                        //     'Application with Duplicate Merchant Name',
+                        // ],
+                        'docket_not_delivered_reason' => 'Wrong Setup Form',
+                        'dwt_response' => 'What type is this even??',
+
+                        'is_documents_walkthrough_complete' => 0,
+                        'sales_pitch_completed' => 1,
+                        'entity_mismatch_status' => 'entity_name_mismatch',
+                        'green_channel' => true,
+                        'cin' => 'CIN',
+                        'gstin' => '07AYMPA5163E2ZL',
+                        'llpin' => '',
+                        'skip_dwt' => 1,
+                        'feet_on_street' => true,
+                        'api_onboarded_date' => null,
+                        'mid_office_poc_name' => null,
+                        'docket_delivered_date' => null,
+                        'docket_estimated_delivery_date' => null,
+                        'docket_requested_date' => '',
+                        'courier_tracking_id' => '',
+                        'courier_service_name' => '',
+                        'gstin_prefilled_address' => 1,
+                        'api_onboarding_login_date' => null,
+                        'application_initiated_from' => 'X_DASHBOARD',
+                        'account_opening_webhook_date' => 1678873350,
+                        'agree_to_allocated_bank_and_amb' => 1,
+                        'rbl_new_onboarding_flow_declarations' => [
+                            'seal_available' => 1,
+                            'signboard_available' => 1,
+                            'signatories_available_at_preferred_address' => 1,
+                            'available_at_preferred_address_to_collect_docs' => 1
+                        ],
+                        'business_details' => [
+                            'model' => 'Fabric, Needlework, Piece Goods, and Sewing Stores',
+                            'category' => 'ECOMMERCE',
+                            'sub_category' => 'fabric_and_sewing_stores'
+                        ],
+                        'proof_of_entity' => ['source' => 'gstin', 'status' => 'verified'],
+                        'proof_of_address' => ['source' => 'gstin', 'status' => 'verified'],
+                        'verified_addresses' => [
+                            [
+                                'source' => 'gstin',
+                                'address' => 'B-557, G/F PLOT NO-12 KH NO-24/19, MAIN 33FUTA ROAD RAJIV NAGAR MANDOLI EXTN NEAR BUDH BAZAR, DELHI, North East Delhi, Delhi, 110093',
+                                'addressDetails' => [
+                                    'address_city' => null,
+                                    'address_state' => null,
+                                    'address_country' => null,
+                                    'address_email_id' => null,
+                                    'address_landmark' => null,
+                                    'address_locality' => null,
+                                    'address_pin_code' => '110093',
+                                    'address_street_name' => null,
+                                    'address_house_number' => null,
+                                    'address_building_name' => null,
+                                    'address_contact_number' => null
+                                ]
+                            ]
+                        ],
+                        'verified_constitutions' => [
+                            ['constitution' => 'PUBLIC_LIMITED', 'source' => 'gstin']
+                        ]
+                    ],
+                    'verification_date' => null
+                ],
+                'bank_account_type' => 'business_plus',
+                'sales_team' => 'SME',
+                'assignee_team' => 'ops',
+                'application_specific_fields' => [
+                    'entity_proof_documents' => [
+                        ['file_id' => 'file_LOckRD3Auj6ksw', 'document_type' => 'gst_certificate']
+                    ]
+                ]
+            ],
+            'business' => [
+                'name' => 'Y-AXIS GROUP OF INDUSTRIES',
+                'registered_address' => 'B-557, G/F PLOT NO-12 KH NO-24/19, MAIN 33FUTA ROAD RAJIV NAGAR MANDOLI EXTN NEAR BUDH BAZAR, DELHI, North East Delhi, Delhi, 110093',
+                'constitution' => 'SOLE_PROPRIETORSHIP',
+                'pan_number' => 'BESPA1234K',
+                'industry_type' => 'default',
+                'registered_address_details' => [
+                    'address_pin_code' => '110093',
+                    'address_city' => 'eastdelhi',
+                    'address_region' => 'north',
+                    'address_state' => 'delhi'
+                ],
+            ],
+            'credentials' => [
+                'auth_username' => 'ldap_id',
+                'auth_password' => 'ldap_password',
+                'corp_id' => 'corp_id',
+                'client_id' => 'CLIENT_ID',
+                'client_secret' => 'CLIENT_SECRET',
+                'email' => 'MERCHANT_EMAIL',
+                'dev_portal_password' => 'MERCHANT_PASSWORD'
+            ],
+            'person' => [
+                'first_name' => 'MERCHANT_POC_NAME',
+                'email_id' => 'yaxisgroupofindustries@gmail.com',
+                'role_in_business' => 'Proprietor',
+                'phone_number' => '+919560569604'
+            ],
+            'account_managers' => [
+                'sales_poc' => [
+                    'rzp_admin_id' => Org::SUPER_ADMIN,
+                    'phone_number' => '8882777606',
+                ],
+                'bank_poc' => ['rzp_admin_id' => 'K6yvvIv3nxpcRp']
+            ],
+            'partner_bank_application' => [
+                'branch_code' => '281',
+                'rm_details' => [
+                    'rm_name' => 'Pankaj Mishra',
+                    'rm_phone_number' => '9315383526',
+                    'rm_employee_code' => '',
+                    'rm_assignment_type' => 'pcarm',
+                    'pcarm_manager_name' => 'Avijit Shrivastava '
+                ],
+                'lead_details' => [
+                    'office_different_locations' => false,
+                    'bank_due_date' => 1678905000,
+                    'lead_ir_number' => null,
+                    'bank_poc_assigned_date' => 1678352209,
+                    'case_login_different_locations' => false
+                ],
+                'doc_collection_details' => [
+                    'customer_appointment_date' => 1678386600,
+                    'doc_collection_date' => 1678300200,
+                    'ip_cheque_value' => null,
+                    'api_docs_delay_reason' => '',
+                    'api_docs_received_with_ca_docs' => true,
+                    // 'customer_appointment_booking_date' => 1678683839 // Not added as input
+                ],
+                'account_opening_details' => [
+                    'account_opening_ir_close_date' => null,
+                    'account_open_date' => 1678732200,
+                    'account_opening_ftnr' => 1,
+                    'account_opening_ftnr_reasons' => 'AO Negative List/Compliance/Legal/CIBIL',
+                    'sr_number' => null,
+                    'account_opening_ir_number' => 'IR00022515189',
+                    'account_opening_tat_exception_reason' => 'compliance Issue'
+                ],
+                'api_onboarding_details' => [
+                    'api_ir_closed_date' => null,
+                    'ldap_id_mail_date' => null,
+                    'api_onboarding_ftnr' => null,
+                    'api_onboarding_ftnr_reasons' => null,
+                    'api_ir_number' => null,
+                    'api_onboarding_tat_exception' => null,
+                    'api_onboarding_tat_exception_reason' => null
+                ],
+                'account_activation_details' => [
+                    'upi_credential_received_date' => null,
+                    'rzp_ca_activated_date' => null,
+                    'upi_credential_not_done_remarks' => null
+                ],
+                'auxiliary_details' => [
+                    'revised_declaration' => false,
+                    'promo_code' => 'RZPAY',
+                    'lead_referred_by_rbl_staff' => true,
+                    'aof_shared_with_mo' => false,
+                    'wa_message_sent_date' => null,
+                    'first_calling_time' => '5 to 6',
+                    'wa_message_response_date' => null,
+                    'aof_not_shared_reason' => 'Already Login',
+                    'ca_beyond_tat' => false,
+                    'ca_beyond_tat_dependency' => '',
+                    'lead_referred_by_rbl_staff' => false,
+                    'aof_shared_discrepancy' => '',
+                    'ca_service_first_query' => '1.on rrt high risk rating by compliance is not mentioned. APPLICANT FOUND IN NEGATIVE LIST ODG452595087230310202422178-ADIL'
+                ],
+            ]
+        ],
+    ],
+
+    'testGetRblApplicationFromMob' => [
+        'request' => [
+            'url'    => '/banking_accounts_internal/bacc_JuLWj2OnFAcg72',
+            'method' => 'GET',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'bacc_JuLWj2OnFAcg72',
+            ]
+        ]
+    ],
+
+    'testGetRblApplicationFromAdminLms' => [
+        'request' => [
+            'url'    => '/admin_lms/banking_accounts/bacc_JuLWj2OnFAcg72',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'bacc_JuLWj2OnFAcg72',
+                'merchant_id' => '10000000000000',
+                'merchant' => [
+                    'id' => '10000000000000'
+                ]
+            ]
+        ]
+    ],
+
     'testExcludeTerminatedAccountsBankingAccountList' => [
         'request' => [
             'url'       => '/banking_accounts',
@@ -5295,6 +5749,115 @@ return [
             'content'       => [
                 'count' => 0
             ]
+        ]
+    ],
+
+    'testGetRblApplicationFromPartnerLms' => [
+        'request' => [
+            'url'    => '/banking_accounts/rbl/lms/banking_account/bacc_JuLWj2OnFAcg72',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'bacc_JuLWj2OnFAcg72',
+                'merchant_id' => '10000000000000',
+                'merchant_name' => 'Z-AXIS GROUP OF INDUSTRIES'
+            ]
+        ]
+    ],
+
+    'testFetchRblApplicationsFromAdminLms' => [
+        'request' => [
+            'url'    => '/admin_lms/banking_accounts',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'id' => 'bacc_JuLWj2OnFAcg72'
+                ]
+            ],
+        ]
+    ],
+
+    'testFetchRblApplicationsFromPartnerLms' => [
+        'request' => [
+            'url'    => '/banking_accounts/rbl/lms/banking_account',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 10,
+                'items'  => [
+                    [
+                        'id' => 'bacc_JuLWj2OnFAcg72'
+                    ]
+                ],
+            ]
+        ]
+    ],
+
+    'testRblOnBasUpdateFromAdminLms' => [
+        'request'  => [
+            'url'     => '/banking_accounts/bacc_JuLWj2OnFAcg72',
+            'method'  => 'PATCH',
+            'content' => [
+                RZP\Models\BankingAccount\Entity::STATUS     => RZP\Models\BankingAccount\Status::PICKED,
+                RZP\Models\BankingAccount\Entity::SUB_STATUS => RZP\Models\BankingAccount\Status::NONE,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                RZP\Models\BankingAccount\Entity::STATUS => RZP\Models\BankingAccount\Status::PICKED,
+                'channel'                      => 'rbl',
+            ]
+        ],
+    ],
+
+    'testRblOnBasUpdateFromMerchantDashboard' => [
+        'request'  => [
+            'url'     => '/banking_accounts_dashboard/bacc_{id}',
+            'method'  => 'PATCH',
+            'server' => [
+                'X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'content' => [
+                'activation_detail' => [
+                    'additional_details' => [
+                        'agree_to_allocated_bank_and_amb' => 1,
+                    ],
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'channel' => 'rbl',
+                'status'  => 'created',
+            ],
+        ]
+    ],
+
+    'rblOnBasUpdate' => [
+        'request'  => [
+            'url'     => '/banking_accounts/bacc_JuLWj2OnFAcg72',
+            'method'  => 'PATCH',
+            'content' => [
+                'status' => 'picked',
+                'sub_status' => 'none',
+                'activation_detail' => [
+                    'additional_details' => [
+                        'docket_delivered_date' => '1666204200',
+                    ],
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'channel' => 'rbl',
+                'status'  => 'picked',
+                'sub_status'  => 'none',
+            ],
         ]
     ],
 
@@ -5309,6 +5872,77 @@ return [
                 'count' => 0
             ]
         ]
-    ]
+    ],
 
+    'testRblonBasAssignBankPoc' => [
+        'request' => [
+            'url'    => '/banking_accounts/rbl/lms/activation/bacc_JuLWj2OnFAcg72/bank_poc',
+            'method' => 'PATCH',
+            'content' => [
+                'bank_poc_user_id' => 'abcde'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'bacc_JuLWj2OnFAcg72'
+            ]
+        ]
+    ],
+
+    'testRblOnBasWebhook' => [
+        'request' => [
+            'url'    => '/banking_accounts/internal/webhooks/account_info/rbl',
+            'method' => 'POST',
+            'content' => [
+                'RZPAlertNotiReq' => [
+                    'Header' => [ 
+                        'TranID' => '220128134659', 
+                        'Corp_ID' => 'RZPAY' 
+                    ],
+                    'Body' => [
+                        'Account No.' => '4099834512998',
+                        'Customer Name' => 'Umakant Vashishtha',
+                        'Customer ID' => '203107174',
+                        'Account Open Date' => '09-06-2023',
+                        'IFSC' => 'RATN0000438',
+                        'RZP_Ref No' => '26180',
+                        'Address1' => 'SHOP NO 28 SHRI KRISHNA VIHAR',
+                        'Address2' => 'NEAR GANESH NAGAR NIWARU ROAD',
+                        'Address3' => 'JHOTWARA',
+                        'CITY' => 'JAIPU',
+                        'COUNTRY' => 'IN',
+                        'STATE' => 'RAJ',
+                        'PINCODE' => '302012',
+                        'Phone no.' => '9899807189',
+                        'Email Id' => 'rbl-on-bas@gmail.com'
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                RblGateway\Fields::RZP_ALERT_NOTIFICATION_RESPONSE => [
+                    RblGateway\Fields::HEADER => [
+                        RblGateway\Fields::TRAN_ID => '12345',
+                    ],
+                    RblGateway\Fields::BODY   =>[
+                        RblGateway\Fields::STATUS => 'Success'
+                    ]
+                ],
+            ]
+        ]
+    ],
+
+    'testActivateRblApplication' => [
+        'request' => [
+            'url'    => '/banking_accounts/bacc_JuLWj2OnFAcg72/activate',
+            'method' => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'bacc_JuLWj2OnFAcg72'
+            ]
+        ]
+    ]
 ];

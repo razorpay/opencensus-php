@@ -416,4 +416,20 @@ class BankingAccountController extends Controller
 
         return $response;
     }
+
+    public function fetchMultipleRblApplicationsFromApiAndBas() {
+        $input = Request::all();
+
+        $response = $this->service()->fetchMultipleRblApplicationsFromApiAndBas($input);
+
+        return $response;
+    }
+
+    public function fetchRblApplicationFromApiAndBas(string $bankingAccountId) {
+        $input = Request::all();
+
+        $response = $this->service()->fetchRblApplicationFromApiAndBas($bankingAccountId);
+
+        return $response;
+    }
 }

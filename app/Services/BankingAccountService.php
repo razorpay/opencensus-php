@@ -13,6 +13,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Environment;
 use RZP\Http\Request\Requests;
+use RZP\Http\BasicAuth\BasicAuth;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\BankingAccountService\Core;
@@ -29,12 +30,32 @@ use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
 class BankingAccountService
 {
     const CONTENT_TYPE_JSON = 'application/json';
-    const GET = 'GET';
-    const DATA = 'data';
-    const GET_GENERATED_CREDENTIALS_PATH = 'internal/rbl/banking_account/%s/credentials';
-    const GENERATE_CREDENTIALS_PATH = 'internal/rbl/credentials';
+    const DATA              = 'data';
 
-    const DOWNLOAD_DOCKET_PDF_PATH = 'internal/rbl/banking_account/%s/credentials/download?business_category=%s&merchant_name=%s';
+    const GET   = 'GET';
+    const POST  = 'POST';
+    const PATCH = 'PATCH';
+
+    const GET_GENERATED_CREDENTIALS_PATH        = 'internal/rbl/banking_account/%s/credentials';
+    const GENERATE_CREDENTIALS_PATH             = 'internal/rbl/credentials';
+    const DOWNLOAD_DOCKET_PDF_PATH              = 'internal/rbl/banking_account/%s/credentials/download?business_category=%s&merchant_name=%s';
+    const PARTNER_LMS_RBL_APPLICATIONS          = 'partner_lms/rbl/applications';
+    const PARTNER_LMS_RBL_ASSIGN_BANK_POC       = 'partner_lms/rbl/business/%s/application/%s/assign_poc';
+    const PARTNER_LMS_RBL_ACTIVITY              = 'partner_lms/rbl/business/%s/application/%s/activity';
+    const PARTNER_LMS_RBL_GET_COMMENTS          = 'partner_lms/rbl/business/%s/application/%s/comments';
+    const PARTNER_LMS_RBL_ADD_COMMENT           = 'partner_lms/rbl/business/%s/application/%s/comment';
+    const PARTNER_LMS_RBL_COMPOSITE_APPLICATION = 'partner_lms/rbl/business/%s/composite-applications/%s';
+    const CREATE_BUSINESS                       = 'business';
+    const CREATE_RBL_ONBOARDING_APPLICATION     = 'business/%s/apply';
+    const COMPOSITE_APPLICATION                 = 'business/%s/composite-applications/%s';
+    const SEARCH_LEADS_PATH                     = 'admin/leads/search';
+    const GET_APPLICATION_STATUS_LOGS           = 'admin/business/%s/application/%s/application_status_logs?sort_order=desc';
+    const GET_APPLICATION_COMMENTS              = 'admin/business/%s/application/%s/comments';
+    const CREATE_APPLICATION_COMMENT            = 'admin/business/%s/application/%s/comment';
+    const UPDATE_APPLICATION_COMMENT            = 'admin/business/%s/application/%s/comments/%s';
+    const BULK_ASSIGN_ACCOUNT_MANAGER           = 'admin/banking_accounts/bulk_assign_account_manager';
+    const ACTIVATE_RBL_ACCOUNT                  = 'admin/business/%s/applications/%s/activate_account';
+    const RBL_ACCOUNT_OPENING_WEBHOOK           = 'webhooks/rbl/account_opening';
 
     protected $baseUrl;
 
@@ -42,6 +63,7 @@ class BankingAccountService
 
     protected $secret;
 
+    /* @var $ba BasicAuth */
     protected $ba;
 
     protected $timeOut;
@@ -107,7 +129,7 @@ class BankingAccountService
     {
         $businessId = $this->getBusinessId($merchantId);
 
-        $path = 'business/'. $businessId . '/banking_account_by_account_number/'. $accountNumber . '/credentials';
+        $path = 'business/' . $businessId . '/banking_account_by_account_number/' . $accountNumber . '/credentials';
 
         $headers = [
             Fields::CHANNEL => $channel,
@@ -181,7 +203,7 @@ class BankingAccountService
     {
         $businessId = $this->getBusinessId($merchantId);
 
-        $path = 'business/'. $businessId .'/banking_account_by_account_number/' . $accountNumber;
+        $path = 'business/' . $businessId . '/banking_account_by_account_number/' . $accountNumber;
 
         $headers = [
             Fields::CHANNEL => $channel,
@@ -256,7 +278,7 @@ class BankingAccountService
         return $bcc . $bankingAccountId;
     }
 
-    public function sendRequestAndProcessResponse($path, $method, $content, $headers = [], $preProcess = true)
+    public function sendRequestAndProcessResponse($path, $method, $content, $headers = [], $queryParams = [], $preProcess = true)
     {
         if ($preProcess === true)
         {
@@ -264,10 +286,15 @@ class BankingAccountService
             $this->preprocessForDashboardGetRequest($path, $content);
         }
 
+        if (!empty($queryParams))
+        {
+            $path = $this->addQueryParamsToUrl($path, $queryParams);
+        }
+
         $response = $this->sendRequest($path, $method, $content, $headers);
 
         $this->app['trace']->info(TraceCode::BANKING_ACCOUNT_SERVICE_RESPONSE, [
-            'status_code'     => $response->status_code,
+            'status_code' => $response->status_code,
         ]);
 
         return $this->processResponse($response);
@@ -316,45 +343,47 @@ class BankingAccountService
                 'Internal Server Error occurred',
                 ErrorCode::SERVER_ERROR);
         }
-        else if($response->status_code >= 400)
+        else
         {
-            if(empty($parsedResponse['error']) === false)
+            if ($response->status_code >= 400)
             {
-                $error = $parsedResponse['error'];
-            }
-            else
-            {
-                $error = json_encode($response->body, true);
-            }
-            $this->trace->error(
-                TraceCode::BANKING_ACCOUNT_SERVICE_BAD_REQUEST,
-                [
-                    'error' => $error,
-                ]);
-
-
-            if ($response->status_code == 400)
-            {
-                if (isset($error['description']))
+                if (empty($parsedResponse['error']) === false)
                 {
-                    $description = $error['description'];
+                    $error = $parsedResponse['error'];
+                }
+                else
+                {
+                    $error = json_encode($response->body, true);
+                }
+                $this->trace->error(
+                    TraceCode::BANKING_ACCOUNT_SERVICE_BAD_REQUEST,
+                    [
+                        'error' => $error,
+                    ]);
 
+                if ($response->status_code == 400)
+                {
+                    if (isset($error['description']))
+                    {
+                        $description = $error['description'];
+
+                        throw new Exception\BadRequestException(
+                            ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_SERVICE_ERROR, null,
+                            [
+                                'errorDetail' => $response->body
+                            ], $description);
+                    }
+                }
+                else
+                {
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_SERVICE_ERROR, null,
                         [
                             'errorDetail' => $response->body
-                        ], $description);
+                        ], $error);
                 }
-            }
-            else
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_SERVICE_ERROR, null,
-                    [
-                        'errorDetail' => $response->body
-                    ], $error);
-            }
 
+            }
         }
 
         return $parsedResponse;
@@ -383,21 +412,22 @@ class BankingAccountService
     protected function getHeaders(): array
     {
         $headers = [
-            'Accept' => self::CONTENT_TYPE_JSON,
-            'Content-Type' => self::CONTENT_TYPE_JSON,
+            'Accept'            => self::CONTENT_TYPE_JSON,
+            'Content-Type'      => self::CONTENT_TYPE_JSON,
             'X-Razorpay-TaskId' => $this->app['request']->getTaskId(),
-            'Api-Token' => $this->secret,
+            'Api-Token'         => $this->secret,
         ];
 
-        if ($this->ba->getMerchantId() !== null) {
+        if ($this->ba->getMerchantId() !== null)
+        {
             $headers['X-Razorpay-MerchantId'] = $this->ba->getMerchantId();
         }
 
         if ($this->ba->isAdminAuth() === true)
         {
-            $headers['X-Admin-Id'] = $this->ba->getAdmin()->getId() ?? '';
+            $headers['X-Admin-Id']    = $this->ba->getAdmin()->getId() ?? '';
             $headers['X-Admin-Email'] = $this->ba->getAdmin()->getEmail() ?? '';
-            $headers['X-Admin-Name'] = $this->ba->getAdmin()->getName() ?? '';
+            $headers['X-Admin-Name']  = $this->ba->getAdmin()->getName() ?? '';
         }
 
         $devstackLabel = $this->app['request']->header(RequestHeader::DEV_SERVE_USER);
@@ -407,7 +437,9 @@ class BankingAccountService
             $headers[RequestHeader::DEV_SERVE_USER] = $devstackLabel;
         }
 
-        $adminIdHeader = $this->app['request']->header('X-Admin-Id');
+        {
+            $adminIdHeader = $this->app['request']->header('X-Admin-Id');
+        }
 
         if (empty($adminIdHeader) === false)
         {
@@ -427,20 +459,24 @@ class BankingAccountService
 
         if ($user !== null)
         {
-            $headers['X-Razorpay-UserId']   = $user->getId();
+            $headers['X-Razorpay-User-Id'] = $user->getId();
 
-            $headers['X-Razorpay-UserRole'] = $this->ba->getUserRole();
+            $headers['X-Razorpay-User-Email'] = $user->getEmail();
+
+            $headers['X-Razorpay-User-Name'] = $user->getName();
+
+            $headers['X-Razorpay-User-Role'] = $this->ba->getUserRole();
         }
 
-        $headers['X-Razorpay-Mode']          = $this->ba->getMode();
+        $headers['X-Razorpay-Mode'] = $this->ba->getMode();
 
-        $headers['X-Razorpay-Auth']          = $this->ba->getAuthType();
+        $headers['X-Razorpay-Auth'] = $this->ba->getAuthType();
 
         return $headers;
     }
 
     //Dashboard backend passes the get params in request body
-    public function preprocessForDashboardGetRequest(& $url, & $content)
+    public function preprocessForDashboardGetRequest(&$url, &$content)
     {
         /* @var Request $request */
         $request = $this->app['request'];
@@ -459,7 +495,7 @@ class BankingAccountService
         {
             $extraParams = http_build_query($body);
 
-            $url .= $urlAppend .$extraParams;
+            $url .= $urlAppend . $extraParams;
 
             $content = [];
         }
@@ -486,12 +522,12 @@ class BankingAccountService
 
     public function getBusinessId($merchantId)
     {
-        /* @var Entity $merchantDetail */
+        /** @var Entity $merchantDetail */
         $merchantDetail = $this->app['repo']->merchant_detail->findOrFail($merchantId);
 
         $businessId = $merchantDetail->getBasBusinessId();
 
-        if(empty($businessId) === true)
+        if (empty($businessId) === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_BAS_BUSINESS_ID_NOT_CREATED);
@@ -502,14 +538,14 @@ class BankingAccountService
 
     public function isBusinessExists(string $merchantId)
     {
-        $this->getBusinessId($merchantId);
+        return $this->getBusinessId($merchantId);
     }
 
     public function getBusinessDetails(string $merchantId)
     {
         $businessId = $this->getBusinessId($merchantId);
 
-        $path = 'business/'. $businessId;
+        $path = 'business/' . $businessId;
 
         $response = $this->sendRequestAndProcessResponse($path, 'GET', [], []);
 
@@ -520,20 +556,21 @@ class BankingAccountService
     {
         $path = sprintf(self::GET_GENERATED_CREDENTIALS_PATH, $bankingAccountId);
 
-        try {
+        try
+        {
 
             $response = $this->sendRequestAndProcessResponse($path, self::GET, [], []);
 
             return $response[self::DATA];
         }
-        catch(\Throwable $e)
+        catch (\Throwable $e)
         {
             $this->trace->traceException($e,
-                Trace::ERROR,
-                TraceCode::BANKING_ACCOUNT_SERVICE_GET_CREDENTIALS_ERROR,
-                [
-                    'bankingAccountId' => $bankingAccountId
-                ]);
+                                         Trace::ERROR,
+                                         TraceCode::BANKING_ACCOUNT_SERVICE_GET_CREDENTIALS_ERROR,
+                                         [
+                                             'bankingAccountId' => $bankingAccountId
+                                         ]);
 
             throw $e;
 
@@ -544,20 +581,21 @@ class BankingAccountService
     {
         $path = self::GENERATE_CREDENTIALS_PATH;
 
-        try {
+        try
+        {
 
             $response = $this->sendRequestAndProcessResponse($path, Requests::POST, $content, []);
 
             return $response[self::DATA];
         }
-        catch(\Throwable $e)
+        catch (\Throwable $e)
         {
             $this->trace->traceException($e,
-                Trace::ERROR,
-                TraceCode::BANKING_ACCOUNT_SERVICE_GET_CREDENTIALS_ERROR,
-                [
-                    'bankingAccountId' => $bankingAccountId
-                ]);
+                                         Trace::ERROR,
+                                         TraceCode::BANKING_ACCOUNT_SERVICE_GET_CREDENTIALS_ERROR,
+                                         [
+                                             'bankingAccountId' => $bankingAccountId
+                                         ]);
 
             throw $e;
 
@@ -576,8 +614,8 @@ class BankingAccountService
             $response = $this->sendRequestAndProcessResponse($path, self::GET, [], []);
 
             $this->trace->info(TraceCode::BANKING_ACCOUNT_DOCKET_INITIATION_INFO, [
-                'stage'     => 'service >> get pdf url',
-                'response'  => $response,
+                'stage'    => 'service >> get pdf url',
+                'response' => $response,
             ]);
 
             $url = '';
@@ -593,14 +631,14 @@ class BankingAccountService
 
             return $url;
         }
-        catch(\Throwable $ex)
+        catch (\Throwable $ex)
         {
             $this->trace->traceException($ex,
-                Trace::ERROR,
-                TraceCode::BANKING_ACCOUNT_SERVICE_GET_DOCKET_URL_ERROR,
-                [
-                    'bankingAccountId' => $bankingAccountId
-                ]);
+                                         Trace::ERROR,
+                                         TraceCode::BANKING_ACCOUNT_SERVICE_GET_DOCKET_URL_ERROR,
+                                         [
+                                             'bankingAccountId' => $bankingAccountId
+                                         ]);
 
             throw $ex;
         }
@@ -612,11 +650,517 @@ class BankingAccountService
 
         $bankingAccount = $this->fetchAccountDetails($merchantId);
 
-        if(empty($bankingAccount) === false)
+        if (empty($bankingAccount) === false)
         {
             $bankingAccount = (new Core())->generateInMemoryBankingAccount($merchantId, $bankingAccount);
         }
 
         return $bankingAccount;
+    }
+
+    public function fetchRblApplicationsForPartnerLms(array $input)
+    {
+        $path = self::PARTNER_LMS_RBL_APPLICATIONS;
+
+        try
+        {
+            $response = $this->sendRequestAndProcessResponse($path, self::GET, [], [], $input, false);
+
+            return $response[self::DATA] ?? [];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                                         Trace::ERROR,
+                                         TraceCode::BANKING_ACCOUNT_SERVICE_REQUEST_ERROR,
+                                         [
+                                             'path'  => $path,
+                                             'input' => $input
+                                         ]);
+
+            throw $e;
+        }
+    }
+
+    public function fetchRblApplications($input)
+    {
+
+        $path = self::SEARCH_LEADS_PATH;
+
+        try
+        {
+            $response = $this->sendRequestAndProcessResponse($path, self::GET, [], [], $input, false);
+
+            return $response[self::DATA] ?? [];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                                         Trace::ERROR,
+                                         TraceCode::BANKING_ACCOUNT_SERVICE_REQUEST_ERROR,
+                                         [
+                                             'path'         => $path,
+                                             'query_params' => $input,
+                                         ]);
+
+            throw $e;
+        }
+    }
+
+    public function getRblCompositeApplication(string $businessId, string $applicationId)
+    {
+        $path = sprintf(self::COMPOSITE_APPLICATION, $businessId, $applicationId);
+
+        try
+        {
+            $response = $this->sendRequestAndProcessResponse($path, self::GET, [], [], [], false);
+
+            return $response[self::DATA];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                                         Trace::ERROR,
+                                         TraceCode::BANKING_ACCOUNT_SERVICE_FETCH_RBL_APPLICATION_FROM_BAS_ERROR,
+                                         [
+                                             'id' => $applicationId
+                                         ]);
+
+            throw $e;
+        }
+    }
+
+    /**
+     * Call BAS endpoint for composite update
+     *
+     * @param string $bankingAccountId Banking Account Id
+     *
+     * @param array  $input            Input
+     *
+     * @throws \Throwable
+     */
+    public function patchRBLApplicationComposite(string $applicationIdOrReferenceNumber, array $input, string $merchantId = null)
+    {
+        $businessId = '_';
+
+        if (empty($merchantId) == false)
+        {
+            // Business ID is guaranteed to exist,
+            // this will throw error if business ID does not exist in merchant details
+            $businessId = $this->getBusinessId($merchantId);
+        }
+
+        $path = sprintf(self::COMPOSITE_APPLICATION, $businessId, $applicationIdOrReferenceNumber);
+
+        try
+        {
+            $response = $this->sendRequestAndProcessResponse($path, Request::METHOD_PATCH, $input, [], [], false);
+
+            return $response[self::DATA];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                                         Trace::ERROR,
+                                         TraceCode::BANKING_ACCOUNT_SERVICE_PATCH_APPLICATION_COMPOSITE_ERROR, // TODO
+                                         [
+                                             'input' => $input
+                                         ]);
+
+            throw $e;
+        }
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function createBusinessOnBas(array $input): array
+    {
+        try
+        {
+            $response = $this->sendRequestAndProcessResponse(self::CREATE_BUSINESS, Request::METHOD_POST, $input, [], [], false);
+
+            return $response[self::DATA];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                                         Trace::ERROR,
+                                         TraceCode::BANKING_ACCOUNT_SERVICE_CREATE_BUSINESS_ERROR,
+                                         [
+                                             'input' => $input,
+                                         ]);
+
+            throw $e;
+        }
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function createRblOnboardingApplicationOnBas(string $businessId, array $input): array
+    {
+        $path = sprintf(self::CREATE_RBL_ONBOARDING_APPLICATION, $businessId);
+
+        try
+        {
+            $response = $this->sendRequestAndProcessResponse($path, Request::METHOD_POST, $input, [], [], false);
+
+            return $response[self::DATA];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                                         Trace::ERROR,
+                                         TraceCode::BANKING_ACCOUNT_SERVICE_CREATE_RBL_APPLICATION_ERROR,
+                                         [
+                                             'input' => $input,
+                                         ]);
+
+            throw $e;
+        }
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function getApplicationStatusLogs(string $businessId, string $applicationId, array $queryParams = [])
+    {
+        $path = sprintf(self::GET_APPLICATION_STATUS_LOGS, $businessId, $applicationId);
+
+        try
+        {
+            $response = $this->sendRequestAndProcessResponse($path, self::GET, [], [], $queryParams, false);
+
+            return $response[self::DATA] ?? [];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                                         Trace::ERROR,
+                                         TraceCode::BANKING_ACCOUNT_SERVICE_REQUEST_ERROR,
+                                         [
+                                             'path' => $path,
+                                         ]);
+
+            throw $e;
+        }
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function getApplicationComments(string $businessId, string $applicationId)
+    {
+        $path = sprintf(self::GET_APPLICATION_COMMENTS, $businessId, $applicationId);
+
+        try
+        {
+            $response = $this->sendRequestAndProcessResponse($path, self::GET, [], [], [], false);
+
+            return $response[self::DATA] ?? [];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                                         Trace::ERROR,
+                                         TraceCode::BANKING_ACCOUNT_SERVICE_REQUEST_ERROR,
+                                         [
+                                             'path' => $path,
+                                         ]);
+
+            throw $e;
+        }
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function addApplicationComment(string $businessId, string $applicationId, array $input)
+    {
+        $path = sprintf(self::CREATE_APPLICATION_COMMENT, $businessId, $applicationId);
+
+        try
+        {
+            $response = $this->sendRequestAndProcessResponse($path, self::POST, $input, [], [], false);
+
+            return $response[self::DATA];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                                         Trace::ERROR,
+                                         TraceCode::BANKING_ACCOUNT_SERVICE_REQUEST_ERROR,
+                                         [
+                                             'path'  => $path,
+                                             'input' => $input,
+                                         ]);
+
+            throw $e;
+        }
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function updateApplicationComment(string $businessId, string $applicationId, string $commentId, array $input)
+    {
+        $path = sprintf(self::UPDATE_APPLICATION_COMMENT, $businessId, $applicationId, $commentId);
+
+        try
+        {
+            $response = $this->sendRequestAndProcessResponse($path, self::PATCH, $input, [], [], false);
+
+            return $response[self::DATA];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                                         Trace::ERROR,
+                                         TraceCode::BANKING_ACCOUNT_SERVICE_REQUEST_ERROR,
+                                         [
+                                             'path'  => $path,
+                                             'input' => $input,
+                                         ]);
+
+            throw $e;
+        }
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function bulkAssignAccountManagerForRbl(array $input)
+    {
+        $path = self::BULK_ASSIGN_ACCOUNT_MANAGER;
+
+        try
+        {
+            $response = $this->sendRequestAndProcessResponse($path, self::POST, $input, [], [], false);
+
+            return $response[self::DATA];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                                         Trace::ERROR,
+                                         TraceCode::BANKING_ACCOUNT_SERVICE_REQUEST_ERROR,
+                                         [
+                                             'path'  => $path,
+                                             'input' => $input,
+                                         ]);
+
+            throw $e;
+        }
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function processRblAccountOpeningWebhook(array $input)
+    {
+        $path = self::RBL_ACCOUNT_OPENING_WEBHOOK;
+
+        try
+        {
+            $response = $this->sendRequestAndProcessResponse($path, self::POST, $input, [], [], false);
+
+            return $response[self::DATA];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                                         Trace::ERROR,
+                                         TraceCode::BANKING_ACCOUNT_SERVICE_REQUEST_ERROR,
+                                         [
+                                             'path'  => $path,
+                                             'input' => $input,
+                                         ]);
+
+            throw $e;
+        }
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function activateRblAccount(string $businessId, string $applicationId)
+    {
+        $path = sprintf(self::ACTIVATE_RBL_ACCOUNT, $businessId, $applicationId);
+
+        try
+        {
+            $response = $this->sendRequestAndProcessResponse($path, self::POST, [], [], [], false);
+
+            return $response[self::DATA];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                                         Trace::ERROR,
+                                         TraceCode::BANKING_ACCOUNT_SERVICE_REQUEST_ERROR,
+                                         [
+                                             'path' => $path,
+                                         ]);
+
+            throw $e;
+        }
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function getApplicationForRblPartnerLms(string $businessId, string $applicationId)
+    {
+        $path = sprintf(self::PARTNER_LMS_RBL_COMPOSITE_APPLICATION, $businessId, $applicationId);
+
+        try
+        {
+            $response = $this->sendRequestAndProcessResponse($path, self::GET, [], [], [], false);
+
+            return $response[self::DATA];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                                         Trace::ERROR,
+                                         TraceCode::BANKING_ACCOUNT_SERVICE_REQUEST_ERROR,
+                                         [
+                                             'path' => $path,
+                                         ]);
+
+            throw $e;
+        }
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function assignBankPocForRblPartnerLms(string $businessId, string $applicationId, array $input)
+    {
+        $path = sprintf(self::PARTNER_LMS_RBL_ASSIGN_BANK_POC, $businessId, $applicationId);
+
+        try
+        {
+            $response = $this->sendRequestAndProcessResponse($path, self::POST, $input, [], [], false);
+
+            return $response[self::DATA];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                                         Trace::ERROR,
+                                         TraceCode::BANKING_ACCOUNT_SERVICE_REQUEST_ERROR,
+                                         [
+                                             'path'  => $path,
+                                             'input' => $input,
+                                         ]);
+
+            throw $e;
+        }
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function getActivityForRblPartnerLms(string $businessId, string $applicationId)
+    {
+        $path = sprintf(self::PARTNER_LMS_RBL_ACTIVITY, $businessId, $applicationId);
+
+        try
+        {
+            $response = $this->sendRequestAndProcessResponse($path, self::GET, [], [], [], false);
+
+            return $response[self::DATA];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                                         Trace::ERROR,
+                                         TraceCode::BANKING_ACCOUNT_SERVICE_REQUEST_ERROR,
+                                         [
+                                             'path' => $path,
+                                         ]);
+
+            throw $e;
+        }
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function getCommentsForRblPartnerLms(string $businessId, string $applicationId)
+    {
+        $path = sprintf(self::PARTNER_LMS_RBL_GET_COMMENTS, $businessId, $applicationId);
+
+        try
+        {
+            $response = $this->sendRequestAndProcessResponse($path, self::GET, [], [], [], false);
+
+            return $response[self::DATA];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                                         Trace::ERROR,
+                                         TraceCode::BANKING_ACCOUNT_SERVICE_REQUEST_ERROR,
+                                         [
+                                             'path' => $path,
+                                         ]);
+
+            throw $e;
+        }
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function addCommentForRblPartnerLms(string $businessId, string $applicationId, array $input)
+    {
+        $path = sprintf(self::PARTNER_LMS_RBL_ADD_COMMENT, $businessId, $applicationId);
+
+        try
+        {
+            $response = $this->sendRequestAndProcessResponse($path, self::POST, $input, [], [], false);
+
+            return $response[self::DATA];
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                                         Trace::ERROR,
+                                         TraceCode::BANKING_ACCOUNT_SERVICE_REQUEST_ERROR,
+                                         [
+                                             'path'  => $path,
+                                             'input' => $input,
+                                         ]);
+
+            throw $e;
+        }
+    }
+
+    public function addQueryParamsToUrl($url, $newParams): string
+    {
+        $urlParts       = parse_url($url);
+        $existingParams = array();
+
+        if (isset($urlParts['query']))
+        {
+            parse_str($urlParts['query'], $existingParams);
+        }
+
+        $mergedParams   = array_merge($existingParams, $newParams);
+        $queryParamsStr = http_build_query($mergedParams);
+
+        if (!empty($queryParamsStr))
+        {
+            $newUrl = $urlParts['path'] . '?' . $queryParamsStr;
+        }
+        else
+        {
+            $newUrl = $urlParts['path'];
+        }
+
+        return $newUrl;
     }
 }

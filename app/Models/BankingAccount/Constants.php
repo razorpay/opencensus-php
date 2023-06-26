@@ -83,4 +83,7 @@ class Constants
     const NAME = 'name';
 
     const IS_UPI_ALLOWED = 'is_upi_allowed';
+
+    const SKIP  = 'skip';
+    const COUNT = 'count';
 }

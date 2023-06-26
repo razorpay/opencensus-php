@@ -81,7 +81,7 @@ class BankingAccountServiceTest extends TestCase
         return $schedule;
     }
 
-    public function testCreateBankingEntities()
+    public function testCreateBankingEntities($bank = 'icici')
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
@@ -100,12 +100,20 @@ class BankingAccountServiceTest extends TestCase
 
         $this->ba->bankingAccountServiceAppAuth();
 
-        $response = $this->startTest();
+        $dataToReplace = [
+            'request'  => [
+                'content' => [
+                    Constants::CHANNEL        => $bank,
+                ]
+            ]
+        ];
+
+        $response = $this->startTest($dataToReplace);
 
         $balance = $this->getDbEntity('balance',
                                       [
                                               'merchant_id'    => '10000000000000',
-                                              'channel'        => 'icici',
+                                              'channel'        => $bank,
                                               'account_type'   => 'direct',
                                               'account_number' => '12345678903833',
                                           ]);
@@ -117,7 +125,7 @@ class BankingAccountServiceTest extends TestCase
         $basd = $this->getDbEntity('banking_account_statement_details',
                                        [
                                            'merchant_id'    => '10000000000000',
-                                           'channel'        => 'icici',
+                                           'channel'        => $bank,
                                            'balance_id'     => $balance->getId(),
                                            'account_number' => '12345678903833',
                                        ]);
@@ -166,10 +174,10 @@ class BankingAccountServiceTest extends TestCase
 
         $dataToReplace = [
             'request' => [
-                'url'     => '/bas/archive',
+                'url'     => '/bas/archive_banking_account_dependencies',
                 'content' => [
                     "balance_id" => $balance_id1,
-                    "merchant_id" => 10000000000000
+                    "merchant_id" => 10000000000000,
                 ]
             ]
         ];
@@ -199,14 +207,6 @@ class BankingAccountServiceTest extends TestCase
         $this->assertNotEquals($balance_id1, $response['balance_id']);
     }
 
-    public function testGetMerchantAttributes()
-    {
-        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_current_accounts', 'ca_allocated_bank', 'RBL');
-        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_current_accounts', 'ca_proceeded_bank', 'RBL');
-
-        $this->startTest();
-    }
-
     public function testArchive()
     {
         $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_current_accounts', 'ca_allocated_bank', 'ICICI');
@@ -219,10 +219,50 @@ class BankingAccountServiceTest extends TestCase
 
         $dataToReplace = [
             'request' => [
-                'url'     => '/bas/archive',
+                'url'     => '/bas/archive_banking_account_dependencies',
                 'content' => [
                     "balance_id" => $balance_id1,
-                    "merchant_id" => 10000000000000
+                    "merchant_id" => 10000000000000,
+                ]
+            ]
+        ];
+
+        $this->ba->bankingAccountServiceAppAuth();
+
+        $response = $this->startTest($dataToReplace);
+
+        $merchant_detail = $this->getDbEntity('merchant_detail',
+                                              [
+                                                  'merchant_id'    => '10000000000000',
+                                              ]);
+
+        $this->assertNull($merchant_detail->getBasBusinessId());
+    }
+
+    public function testGetMerchantAttributes()
+    {
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_current_accounts', 'ca_allocated_bank', 'RBL');
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_current_accounts', 'ca_proceeded_bank', 'RBL');
+
+        $this->startTest();
+    }
+
+    public function testArchiveRbl()
+    {
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_current_accounts', 'ca_allocated_bank', 'RBL');
+
+        $this->createMerchantAttribute('10000000000000', 'banking', 'x_merchant_current_accounts', 'ca_proceeded_bank', 'RBL');
+
+        $response = $this->testCreateBankingEntities('rbl');
+
+        $balance_id1 = $response['balance_id'];
+
+        $dataToReplace = [
+            'request' => [
+                'url'     => '/bas/archive_banking_account_dependencies',
+                'content' => [
+                    Constants::BALANCE_ID => $balance_id1,
+                    Constants::MERCHANT_ID => 10000000000000,
                 ]
             ]
         ];
@@ -251,10 +291,10 @@ class BankingAccountServiceTest extends TestCase
 
         $dataToReplace = [
             'request' => [
-                'url'     => '/bas/archive',
+                'url'     => '/bas/archive_banking_account_dependencies',
                 'content' => [
                     "balance_id" => $balance_id1,
-                    "merchant_id" => 10000000000000
+                    "merchant_id" => 10000000000000,
                 ]
             ]
         ];
@@ -272,10 +312,11 @@ class BankingAccountServiceTest extends TestCase
 
         $dataToReplace = [
             'request' => [
-                'url'     => '/bas/unarchive',
+                'url'     => '/bas/unarchive_banking_account_dependencies',
                 'content' => [
                     "business_id" => '23sdasfr34454',
-                    "merchant_id" => 10000000000000
+                    "merchant_id" => 10000000000000,
+                    Constants::PARTNER_BANK => Constants::ICICI,
                 ]
             ]
         ];

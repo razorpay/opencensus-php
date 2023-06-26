@@ -452,6 +452,8 @@ return array(
 
     'commission_invoice_bucket_migration_exp_id'  => env('COMMISSION_INVOICE_BUCKET_MIGRATION_EXP_ID'),
 
+    'rbl_on_bas_exp_id' => env('RBL_ON_BAS_EXP_ID'),
+
     'vendor_payment_metro_to_kafka_exp_id' => env('VENDOR_PAYMENT_SPLITZ_EXPERIMENT_METRO_TO_KAFKA'),
 
 

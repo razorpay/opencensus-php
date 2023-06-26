@@ -6,6 +6,7 @@ namespace RZP\Models\BankingAccount\Activation\CallLog;
 use RZP\Error\ErrorCode;
 use RZP\Mail\System\Trace;
 use RZP\Models\BankingAccount;
+use RZP\Models\BankingAccountService\BasDtoAdapter;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Exception;
@@ -18,8 +19,14 @@ class Service extends Base\Service
      */
     public function fetchMultiple(string $bankingAccountId, array $input): array
     {
-        /** @var BankingAccount\Entity $bankingAccount */
-        $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
+        $bankingAccountService = new BankingAccount\Service();
+
+        [$existsInApi, $bankingAccount] = $bankingAccountService->checkAndGetBankingAccountId($bankingAccountId);
+
+        if ($existsInApi === false)
+        {
+            return (new BasDtoAdapter())->arrayAsPublicCollection([]); // Call logs are deprecated for RBL on BAS
+        }
 
         $input[Entity::BANKING_ACCOUNT_ID] = $bankingAccount->getId();
 

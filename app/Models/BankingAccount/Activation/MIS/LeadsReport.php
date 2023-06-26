@@ -12,6 +12,17 @@ class LeadsReport extends Leads
 {
     const BATCH_SIZE = 150;
 
+    // Used as count param while fetching RBL leads data from BAS
+    protected $basBatchSize = 150;
+
+    // Total number of leads to fetch from BAS
+    // To be overridden by report, set null for no limit
+    protected $basCountLimit = null;
+
+    // Total number of leads in MIS file
+    // To be overridden by report, set null for no limit
+    protected $totalCountLimit = null;
+
     protected function getData(): array
     {
         /** ============== PREPARE DATA ================ */

@@ -7,7 +7,9 @@ use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 
 class Validator extends Base\Validator
 {
-    const BVS_INITIATE_VALIDATION = 'bvs_initiate_validation';
+    const BVS_INITIATE_VALIDATION   = 'bvs_initiate_validation';
+    const ARCHIVE_BANKING_ACCOUNT   = 'archive_banking_account';
+    const UNARCHIVE_BANKING_ACCOUNT = 'unarchive_banking_account';
 
     const HANDLE_NOTIFICATION_VALIDATION = 'handle_notification_validation';
 
@@ -52,6 +54,17 @@ class Validator extends Base\Validator
         'banking_account.banking_account_activation_details.additional_details' => 'sometimes|array',
         'banking_account.banking_account_activation_details.contact_verified'   => 'required_if:notification_type,status_change|integer',
         'banking_account.banking_account_activation_details.sales_team'         => 'required_if:notification_type,x_pro_activation|string',
+    ];
+
+    protected static $archiveBankingAccountRules = [
+        Constant::MERCHANT_ID     => 'required|string|max:14',
+        Constants::BALANCE_ID     => 'required|string|max:14',
+    ];
+
+    protected static $unarchiveBankingAccountRules = [
+        Constant::MERCHANT_ID     => 'required|string|max:14',
+        Constants::BUSINESS_ID    => 'required|string|max:14',
+        Constants::PARTNER_BANK   => 'required|string|in:RBL,ICICI',
     ];
 
     protected function validateArtefactType($attribute, $artefactType): bool
