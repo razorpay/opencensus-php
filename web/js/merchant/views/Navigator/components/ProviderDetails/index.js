@@ -87,6 +87,8 @@ export default class ProviderDetails extends Component {
         strPaymentMethods += ', sodexo';
       }
 
+      const isPaytmAutoDebitEnabled = !!user?.isPaytmAutoDebitEnabled;
+
       return (
         <div className="content-wrapper content-sm txn-details optimizer-provider-detail">
           {this.props.provider_detail_loading ? (
@@ -146,14 +148,14 @@ export default class ProviderDetails extends Component {
                     </div>
                   )}
 
-                  {provider?.Gateway === 'paytm' && user?.isPaytmAutoDebitEnabled && (
+                  {provider?.Gateway === 'paytm' && isPaytmAutoDebitEnabled ? (
                     <div className="list-group details-row-container">
                       <EntityDetailRow
                         label="Wallet auto-debit Enabled"
                         value={walletAutoDebit ? 'Yes' : 'No'}
                       />
                     </div>
-                  )}
+                  ) : null}
 
                   <TPVDetails tpv={upiFeatures?.tpv} />
 
@@ -168,7 +170,11 @@ export default class ProviderDetails extends Component {
                     </div>
                   )}
 
-                  <APIDetails providerDetails={providerDetails} />
+                  <APIDetails
+                    providerDetails={providerDetails}
+                    isPaytmAutoDebitEnabled={isPaytmAutoDebitEnabled}
+                    walletAutoDebit={walletAutoDebit}
+                  />
                 </div>
               </div>
             </div>

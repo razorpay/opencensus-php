@@ -27,7 +27,7 @@ export function WalletAutoDebit({ label, provider, changeEnableAutoDebitSwitch }
           <div className="auto-debit-switch-wrapper">
             <SwitchField
               type="prime round"
-              defaultChecked={false}
+              defaultChecked={provider?.Gateway_details?.[label]}
               onChange={changeEnableAutoDebitSwitch}
             />
             <span>{provider?.Gateway_details?.[label] ? 'Enabled' : 'Disabled'}</span>

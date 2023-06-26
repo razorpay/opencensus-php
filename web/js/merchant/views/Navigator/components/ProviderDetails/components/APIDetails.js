@@ -12,7 +12,12 @@ const IGNORE_FIELDS = [
   WALLET_AUTO_DEBIT_KEY,
 ];
 
-function APIDetails({ providerDetails }) {
+function APIDetails({ providerDetails, isPaytmAutoDebitEnabled, walletAutoDebit }) {
+  const ignoreFields =
+    !isPaytmAutoDebitEnabled || !walletAutoDebit
+      ? IGNORE_FIELDS.concat('CLIENT_KEY', 'CLIENT_SECRET')
+      : IGNORE_FIELDS;
+
   return (
     <div className="list-group details-row-container">
       <EntityDetailRow
@@ -20,7 +25,7 @@ function APIDetails({ providerDetails }) {
         value={() => (
           <div className="provider-api-details">
             {providerDetails.map(([key, values], index) => {
-              if (!IGNORE_FIELDS.includes(key) && !key.includes('metadata')) {
+              if (!ignoreFields.includes(key) && !key.includes('metadata')) {
                 return (
                   <Fragment key={index}>
                     <div className="key-name">{titleCase(key)}</div>
