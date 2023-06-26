@@ -436,7 +436,8 @@ class Core extends Base\Core
         $query = sprintf($query, $from, $to);
 
         $content = [
-            'query' => $query
+            'query'   => $query,
+            'backend' => 'pinot'
         ];
 
         // fetch all merchants count merchants that have transacted since last time cron ran
@@ -466,7 +467,8 @@ class Core extends Base\Core
         $query = sprintf($query, $from, $to, $resultCount + 1);
 
         $content = [
-            'query' => $query
+            'query'   => $query,
+            'backend' => 'pinot'
         ];
 
         // fetch all merchants who've have done the transaction since last time cron ran
@@ -512,7 +514,8 @@ class Core extends Base\Core
             $query = sprintf($query, "'" . implode("','", $merchantIdChunk) . "'", count($merchantIdChunk) + 1);
 
             $content = [
-                'query' => $query
+                'query'   => $query,
+                'backend' => 'pinot'
             ];
 
             // fetch all merchants first transaction timestamp
