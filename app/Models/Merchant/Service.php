@@ -5570,6 +5570,11 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
+        if ($product === null)
+        {
+            $product = Product::PRIMARY;
+        }
+        
         $users = $this->core()->getUsers($merchant, $product);
 
         return $users;

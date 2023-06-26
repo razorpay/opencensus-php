@@ -15409,7 +15409,8 @@ class Route
             'payout_create_internal',
             'payout_create_2FA_internal',
             'payout_fetch_by_id_internal',
-            'setl_adj_add'
+            'setl_adj_add',
+            'merchant_fetch_internal_users'
         ],
 
         'partnerships' => [
