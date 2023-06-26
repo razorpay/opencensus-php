@@ -1,0 +1,16 @@
+name: Report Rate Limit
+on: push
+  
+# Get rate limit for CI_BOT_TOKEN
+
+jobs:
+  api-rate-limit:
+    runs-on: [self-hosted]
+    steps:
+      - id: get_api_rate_limit
+        name: Get Rate Limit Report
+        run: |
+          curl -H 'Accept: application/vnd.github.v3+json' -H 'Authorization: token ${{ secrets.CI_BOT_TOKEN }}' https://api.github.com/rate_limit > rate_limit.json
+          cat rate_limit.json
+          report=$(cat rate_limit.json | jq '.rate.used/.rate.limit*100')
+          echo "::set-output name=report::$(printf '%.2f' $report)"
