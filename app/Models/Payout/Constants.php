@@ -63,6 +63,7 @@ class Constants
     // Fund Management Payout Constants
 
     const THRESHOLDS                      = 'thresholds';
+    const ALL_MERCHANTS                   = 'all_merchants';
     const NEFT_THRESHOLD                  = 'neft_threshold';
     const LITE_BALANCE_THRESHOLD          = 'lite_balance_threshold';
     const LITE_DEFICIT_ALLOWED            = 'lite_deficit_allowed';

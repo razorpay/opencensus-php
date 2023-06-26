@@ -2,12 +2,14 @@
 
 namespace RZP\Jobs\FundManagementPayouts;
 
-use Razorpay\Trace\Logger as Trace;
+use App;
 
 use RZP\Jobs\Job as Job;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payout\Metric;
 use RZP\Models\Payout\Entity;
+use RZP\Models\Payout\Constants;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payout\Service as PayoutService;
 
 class FundManagementPayoutInitiate extends Job
@@ -54,6 +56,8 @@ class FundManagementPayoutInitiate extends Job
      */
     public $timeout = 100;
 
+    const FUND_MANAGEMENT_PAYOUT_INITIATE_DISABLE = 'fund_management_payout_initiate_disable';
+
     public function __construct(string $mode, array $params)
     {
         $this->params = $params;
@@ -75,6 +79,18 @@ class FundManagementPayoutInitiate extends Job
             parent::handle();
 
             $this->trace->info(TraceCode::FUND_MANAGEMENT_PAYOUT_INITIATE_JOB_INIT, [$this->params]);
+
+            if ($this->checkIfKillSwitchIsEnabledForMerchants($this->params[Entity::MERCHANT_ID]) === true)
+            {
+                $this->delete();
+
+                $this->trace->info(TraceCode::FUND_MANAGEMENT_PAYOUT_INITIATE_JOB_DELETED, [
+                    Entity::MERCHANT_ID => $this->params[Entity::MERCHANT_ID],
+                    Entity::CHANNEL     => $this->params[Entity::CHANNEL],
+                ]);
+
+                return;
+            }
 
             (new PayoutService())->createFundManagementPayout($this->params);
 
@@ -109,5 +125,37 @@ class FundManagementPayoutInitiate extends Job
         }
 
         $this->delete();
+    }
+
+    public function checkIfKillSwitchIsEnabledForMerchants($merchantId)
+    {
+        $app = App::getFacadeRoot();
+
+        try
+        {
+            $response = $app['redis']->hGetAll(self::FUND_MANAGEMENT_PAYOUT_INITIATE_DISABLE);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::FMP_REDIS_DISABLE_ERROR, [
+                Entity::MERCHANT_ID => $merchantId
+            ]);
+
+            $this->trace->count(Metric::FMP_INITIATE_DISABLE_REDIS_FAILURES_COUNT);
+        }
+
+        if ((isset($response[Constants::ALL_MERCHANTS]) === true) and
+            (boolval($response[Constants::ALL_MERCHANTS]) === true))
+        {
+            return true;
+        }
+
+        if ((isset($response[$merchantId]) === true) and
+            (boolval($response[$merchantId]) === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

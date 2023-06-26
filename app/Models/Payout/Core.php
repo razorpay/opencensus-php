@@ -9191,7 +9191,7 @@ class Core extends Base\Core
 
         $thresholds = $input[PayoutConstants::THRESHOLDS];
 
-        $this->mutex->acquireAndRelease(
+        $this->mutex->acquireAndReleaseStrict(
             'fund_management_payout_check_' . $merchantId . '_' . $channel,
             function() use ($merchantId, $channel, $thresholds) {
                 /**
@@ -9240,7 +9240,7 @@ class Core extends Base\Core
                 // Get FMPs within retrieval period
                 $retrivalThreshold = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::FUND_MANAGEMENT_PAYOUTS_RETRIEVAL_THRESHOLD]);
 
-                if (empty($statementRetryLimit) === true)
+                if (empty($retrivalThreshold) === true)
                 {
                     $retrivalThreshold = self::FUND_MANAGEMENT_PAYOUTS_RETRIEVAL_THRESHOLD; // In secs
                 }
@@ -9269,7 +9269,7 @@ class Core extends Base\Core
                 $offsetAmount = $this->calculateOffsetAmountForFundManagementPayout(
                     $fundManagementPayouts, $liteBalance, $thresholds, $merchantId, $channel);
 
-                if ($offsetAmount <= 0)
+                if ($offsetAmount < 100)  // offset should be greater than 1 rupee because it is the min payout amount.
                 {
                     throw new Exception\LogicException(PayoutConstants::INVALID_OFFSET_AMOUNT_FOR_FMP, null, [
                         'merchant_id'     => $merchantId,
@@ -9320,7 +9320,7 @@ class Core extends Base\Core
                 // Dispatch FMPs for creation
                 $this->dispatchFundManagementPayouts($merchantId, $channel, $fmpInput, $fmpConfiguration);
             },
-            300,
+            600,
             ErrorCode::BAD_REQUEST_ANOTHER_FUND_MANAGEMENT_REQUEST_IN_PROGRESS
         );
     }
@@ -9672,18 +9672,15 @@ class Core extends Base\Core
         {
             $amountToCountMap[$totalAmount] = 1;
         }
+        elseif ($remainingAmount === 0)
+        {
+            $amountToCountMap[$amountThreshold] = $count;
+        }
         else
         {
             $amountToCountMap[$amountThreshold] = $count;
 
-            if (isset($amountToCountMap[$remainingAmount]) === true)
-            {
-                $amountToCountMap[$remainingAmount] += 1;
-            }
-            else
-            {
-                $amountToCountMap[$remainingAmount] = 1;
-            }
+            $amountToCountMap[$remainingAmount] = 1;
         }
 
         return $amountToCountMap;

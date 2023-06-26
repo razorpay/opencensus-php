@@ -328,7 +328,7 @@ class Service extends Base\Service
             'time'        => $requestTime,
         ]);
 
-        $fundManagementPayout = $this->app['api.mutex']->acquireAndRelease(
+        $fundManagementPayout = $this->app['api.mutex']->acquireAndReleaseStrict(
             'create_fund_management_payout_' . $fmpUniqueIdentifier . '_' . $merchantId . '_' . $channel,
             function() use ($merchantId, $payoutCreationPayload) {
 
@@ -342,7 +342,7 @@ class Service extends Base\Service
 
                 return $this->createFundAccountManagementCompositePayout($payoutCreationPayload, true);
             },
-            60,
+            120,
             ErrorCode::BAD_REQUEST_ANOTHER_FUND_MANAGEMENT_PAYOUT_CREATION_IN_PROGRESS
         );
 
