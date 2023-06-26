@@ -73,7 +73,8 @@
     "js/merchant/components/HeaderNav/UniversalSearch",
     "js/merchant/components/Activation",
     "js/merchant/components/styled",
-    "js/merchant/components/Announcements/TerminalStatus"
+    "js/merchant/components/Announcements/TerminalStatus",
+    "js/merchant/views/RazorpayXWidget"
   ],
   "exclude": ["node_modules", "js/common/utils"],
   "types": ["resize-observer-browser"]

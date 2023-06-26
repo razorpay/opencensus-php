@@ -1,5 +1,5 @@
 import { OnBoardingWrapper } from 'merchant/components/OnBoarding';
-import { Button } from '@razorpay/blade/components';
+import { ArrowRightIcon, Box, Button } from '@razorpay/blade/components';
 import { FeatureTiles } from './FeatureTile';
 import { getUser } from 'merchant/store';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -15,8 +15,16 @@ import {
   utmMediumMap,
   utmSourceMap,
 } from 'merchant/helpers/x/updateUtmCookie';
+import { BulletPointsContainer } from './BulletPointsContainer';
+import { BankingXHeadingV2, BankingXSubHeadingV2 } from './styles';
+import Image from 'common/ui/Image';
 
 const user = getUser();
+
+export const BankingWidgetVariants = {
+  V1: 'V1',
+  V2: 'V2',
+};
 
 const handleGetStartedButton = (get_started_cta) => {
   const businessType = getSfBusinessTypeOfUser();
@@ -49,8 +57,9 @@ const handleGetStartedButton = (get_started_cta) => {
 
 const Onboarding = ({ x_banking_widget }) => {
   const widgetData = x_banking_widget?.slide[0];
+  const variant = widgetData?.variant || BankingWidgetVariants.V2;
 
-  return (
+  return variant === BankingWidgetVariants.V1 ? (
     <OnBoardingWrapper class="RazorpayX">
       <div
         className="OnBoarding--Slide OnBoarding--ImageSlide OnBoarding--Landing Slider"
@@ -87,6 +96,48 @@ const Onboarding = ({ x_banking_widget }) => {
         </div>
       </div>
     </OnBoardingWrapper>
+  ) : (
+    variant === BankingWidgetVariants.V2 && (
+      <OnBoardingWrapper class="RazorpayX">
+        <Box
+          backgroundImage={`url(${widgetData?.background_illustration?.url})`}
+          backgroundColor="surface.background.level1.highContrast"
+          minWidth="90%"
+          margin="0 auto"
+          height="100%"
+          justifyContent="space-between"
+          display="flex"
+          minHeight="550px"
+          key="LandingSlideV2"
+          position="relative"
+        >
+          <Box marginLeft="60px" maxWidth="420px" display="flex" alignItems="center">
+            <Image
+              width="100%"
+              src={widgetData?.left_illustration?.url}
+              alt={widgetData?.left_illustration?.alt_text}
+            />
+          </Box>
+          <Box width="60%" alignSelf="flex-start" padding="60px">
+            {widgetData ? <BankingXHeadingV2>{widgetData?.headline}</BankingXHeadingV2> : null}
+            <BankingXSubHeadingV2>{widgetData?.sub_headline}</BankingXSubHeadingV2>
+            <BulletPointsContainer widgetData={widgetData} />
+          </Box>
+          <Box position="absolute" bottom="spacing.8" right="64px">
+            <Button
+              type="button"
+              className="Forward-Button"
+              iconAfter="arrow-forward"
+              onClick={() => handleGetStartedButton(widgetData?.get_started_cta)}
+              iconPosition="right"
+              icon={ArrowRightIcon}
+            >
+              {widgetData?.get_started_cta?.label}
+            </Button>
+          </Box>
+        </Box>
+      </OnBoardingWrapper>
+    )
   );
 };
 
