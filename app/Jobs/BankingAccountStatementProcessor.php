@@ -80,6 +80,12 @@ class BankingAccountStatementProcessor extends Job
                         BAS\Details\Entity::BALANCE_ID => $BASCore->getBasDetails()->getBalanceId(),
                     ]);
 
+                // Add merchant context in params
+                $this->params = $this->params + [
+                        BAS\Entity::MERCHANT_ID        => $BASCore->getBasDetails()->getMerchantId(),
+                        BAS\Details\Entity::BALANCE_ID => $BASCore->getBasDetails()->getBalanceId()
+                    ];
+
                 $workerStartTime = Carbon::now()->getTimestamp();
 
                 $BASCore->processStatementForAccountV2($this->params);

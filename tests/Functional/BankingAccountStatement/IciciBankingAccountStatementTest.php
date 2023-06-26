@@ -22,6 +22,7 @@ use RZP\Models\BankingAccount\Channel;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Exception\GatewayErrorException;
 use RZP\Tests\Traits\TestsWebhookEvents;
+use RZP\Jobs\BankingAccountStatementRecon;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Services\Mock\BankingAccountService;
 use RZP\Models\Admin\Service as AdminService;
@@ -45,6 +46,7 @@ use RZP\Models\BankingAccountStatement\Entity as BasEntity;
 use RZP\Models\BankingAccountStatement\Details as BasDetails;
 use RZP\Jobs\IciciBankingAccountStatement as IciciBankingAccountStatementJob;
 use RZP\Models\BankingAccountStatement\Processor\Icici\RequestResponseFields as F;
+use function Termwind\renderUsing;
 
 class IciciBankingAccountStatementTest extends TestCase
 {
@@ -496,6 +498,39 @@ class IciciBankingAccountStatementTest extends TestCase
         return $response;
     }
 
+    protected function getIciciDataResponseWithTempRecords()
+    {
+        $response = [
+            "data"              => [
+                "ACCOUNTNO" => "2224440041626905",
+                "AGGR_ID"   => "RZP1234",
+                "CORP_ID"   => "RAZORPAY",
+                "RESPONSE"  => "SUCCESS",
+                "Record"    => [
+                    [
+                        "AMOUNT"        => "100.00",
+                        "BALANCE"       => "9,800.00",
+                        "CHEQUENO"      => "607",
+                        "REMARKS"       => "UPI/212483983015/Payment to 2022/ashuviya16@okax/IDFC FIRST Bank/20220504181136",
+                        "TRANSACTIONID" => "S71034864",
+                        "TXNDATE"       => "18-02-2021 10:59:00",
+                        "TYPE"          => "DR",
+                        "VALUEDATE"     => "18-02-2021"
+                    ],
+                ],
+                "URN"       => "SR189932540",
+                "USER_ID"   => "SATYANAR"
+            ],
+            "error"             => null,
+            "external_trace_id" => "0fd2229a19bf561b600847afb283c551",
+            "mozart_id"         => "c0qd3ta055u5f78fipug",
+            "next"              => [],
+            "success"           => true
+        ];
+
+        return $response;
+    }
+
     protected function getIciciDataResponseForRtgs()
     {
         $response = [
@@ -705,6 +740,10 @@ class IciciBankingAccountStatementTest extends TestCase
 
     public function testDispatchIciciAccountStatementFetch($channel = Channel::ICICI)
     {
+        $setDate = Carbon::create(2021, 2, 18, 16, 32, 0, Timezone::IST);
+
+        Carbon::setTestNow($setDate);
+
         $this->ba->cronAuth();
 
         $request = [
@@ -721,6 +760,242 @@ class IciciBankingAccountStatementTest extends TestCase
         $this->makeRequestAndGetContent($request);
 
         Queue::assertPushed(IciciBankingAccountStatementJob::class, 1);
+
+        Carbon::setTestNow();
+    }
+
+    public function testIciciStatementFetchDispatchForIciciNonBankingHours()
+    {
+        Queue::fake();
+
+        $setDate = Carbon::create(2016, 6, 17, 4, 32, 0, Timezone::IST);
+
+        Carbon::setTestNow($setDate);
+
+        (new AdminService)->setConfigKeys([ConfigKey::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT => 3]);
+
+        $this->fixtures->create('banking_account_statement_details', [
+            BasDetails\Entity::ID                                  => 'xba00000000002',
+            BasDetails\Entity::MERCHANT_ID                         => '10000000000012',
+            BasDetails\Entity::BALANCE_ID                          => 'xba00000000002',
+            BasDetails\Entity::ACCOUNT_NUMBER                      => '2323230041626902',
+            BasDetails\Entity::CHANNEL                             => BasDetails\Channel::ICICI,
+            BasDetails\Entity::STATUS                              => BasDetails\Status::ACTIVE,
+            BasDetails\Entity::GATEWAY_BALANCE                     => 80,
+            BasDetails\Entity::STATEMENT_CLOSING_BALANCE           => 80,
+            BasDetails\Entity::GATEWAY_BALANCE_CHANGE_AT           => Carbon::now(Timezone::IST)->subMinutes(20)->getTimestamp(),
+            BasDetails\Entity::STATEMENT_CLOSING_BALANCE_CHANGE_AT => Carbon::now(Timezone::IST)->subMinutes(25)->getTimestamp(),
+            BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT           => Carbon::now(Timezone::IST)->subMinutes(25)->getTimestamp()
+        ]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $setDate = Carbon::create(2016, 6, 17, 22, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($setDate);
+
+        $this->startTest();
+
+        $setDate = Carbon::create(2016, 6, 17, 6, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($setDate);
+
+        $this->startTest();
+
+        $setDate = Carbon::create(2016, 6, 17, 0, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($setDate);
+
+        $this->startTest();
+
+        Queue::assertPushed(IciciBankingAccountStatementJob::class, 0);
+
+        Carbon::setTestNow();
+    }
+
+    public function testIciciStatementFetchDisableInJob()
+    {
+        $setDate = Carbon::create(2016, 6, 17, 4, 32, 0, Timezone::IST);
+
+        Carbon::setTestNow($setDate);
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $mozartMock = Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mockedResponse = $this->getIciciDataResponse();
+
+        $mozartMock->shouldReceive('sendMozartRequest')
+                   ->andReturnUsing(function($request) use ($mockedResponse) {
+                       return $mockedResponse;
+                   })->times(0);
+
+        $this->app->instance('mozart', $mozartMock);
+
+        $this->fixtures->create('balance', [
+            'id'             => 'xbalance000001',
+            'type'           => 'banking',
+            'account_type'   => 'direct',
+            'account_number' => '409102065472',
+            'merchant_id'    => '10000000000012',
+            'balance'        => 300000
+        ]);
+
+        $this->fixtures->create('banking_account_statement_details', [
+            BasDetails\Entity::ID                                  => 'xba00000000002',
+            BasDetails\Entity::MERCHANT_ID                         => '10000000000012',
+            BasDetails\Entity::BALANCE_ID                          => 'xbalance000001',
+            BasDetails\Entity::ACCOUNT_NUMBER                      => '409102065472',
+            BasDetails\Entity::CHANNEL                             => BasDetails\Channel::ICICI,
+            BasDetails\Entity::STATUS                              => BasDetails\Status::ACTIVE,
+            BasDetails\Entity::GATEWAY_BALANCE                     => 80,
+            BasDetails\Entity::STATEMENT_CLOSING_BALANCE           => 80,
+            BasDetails\Entity::GATEWAY_BALANCE_CHANGE_AT           => Carbon::now(Timezone::IST)->subMinutes(20)->getTimestamp(),
+            BasDetails\Entity::STATEMENT_CLOSING_BALANCE_CHANGE_AT => Carbon::now(Timezone::IST)->subMinutes(25)->getTimestamp(),
+            BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT           => Carbon::now(Timezone::IST)->subMinutes(25)->getTimestamp()
+        ]);
+
+        $iciciStatementFetchJob = new IciciBankingAccountStatementJob(EnvMode::TEST, [
+            'channel'        => 'icici',
+            'account_number' => '409102065472'
+        ]);
+
+        $iciciStatementFetchJob->handle();
+
+        $setDate = Carbon::create(2016, 6, 17, 22, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($setDate);
+
+        $iciciStatementFetchJob->handle();
+
+        $setDate = Carbon::create(2016, 6, 17, 6, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($setDate);
+
+        $iciciStatementFetchJob->handle();
+
+        $setDate = Carbon::create(2016, 6, 17, 0, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($setDate);
+
+        $iciciStatementFetchJob->handle();
+
+        $setDate = Carbon::create(2016, 6, 17, 8, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($setDate);
+
+        $mozartMock->shouldReceive('sendMozartRequest')
+                   ->andReturnUsing(function($request) use ($mockedResponse) {
+                       return $mockedResponse;
+                   })->times(1);
+
+        $this->app->instance('mozart', $mozartMock);
+
+        $iciciStatementFetchJob->handle();
+
+        Carbon::setTestNow();
+    }
+
+    public function testIciciStatementFetchDisableInReconJob()
+    {
+        $setDate = Carbon::create(2016, 6, 17, 4, 32, 0, Timezone::IST);
+
+        Carbon::setTestNow($setDate);
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $mozartMock = Mockery::mock(Mozart::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mockedResponse = $this->getIciciDataResponse();
+
+        $mozartMock->shouldReceive('sendMozartRequest')
+                   ->andReturnUsing(function($request) use ($mockedResponse) {
+                       return $mockedResponse;
+                   })->times(0);
+
+        $this->app->instance('mozart', $mozartMock);
+
+        $this->fixtures->create('balance', [
+            'id'             => 'xbalance000001',
+            'type'           => 'banking',
+            'account_type'   => 'direct',
+            'account_number' => '409102065472',
+            'merchant_id'    => '10000000000012',
+            'balance'        => 300000
+        ]);
+
+        $this->fixtures->create('banking_account_statement_details', [
+            BasDetails\Entity::ID                                  => 'xba00000000002',
+            BasDetails\Entity::MERCHANT_ID                         => '10000000000012',
+            BasDetails\Entity::BALANCE_ID                          => 'xbalance000001',
+            BasDetails\Entity::ACCOUNT_NUMBER                      => '409102065472',
+            BasDetails\Entity::CHANNEL                             => BasDetails\Channel::ICICI,
+            BasDetails\Entity::STATUS                              => BasDetails\Status::ACTIVE,
+            BasDetails\Entity::GATEWAY_BALANCE                     => 80,
+            BasDetails\Entity::STATEMENT_CLOSING_BALANCE           => 80,
+            BasDetails\Entity::GATEWAY_BALANCE_CHANGE_AT           => Carbon::now(Timezone::IST)->subMinutes(20)->getTimestamp(),
+            BasDetails\Entity::STATEMENT_CLOSING_BALANCE_CHANGE_AT => Carbon::now(Timezone::IST)->subMinutes(25)->getTimestamp(),
+            BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT           => Carbon::now(Timezone::IST)->subMinutes(25)->getTimestamp()
+        ]);
+
+        $iciciStatementFetchJob = new BankingAccountStatementRecon(EnvMode::TEST, [
+            'channel'           => 'icici',
+            'account_number'    => '409102065472',
+            'from_date'         => Carbon::now(Timezone::IST)->startOfDay()->getTimestamp(),
+            'to_date'           => Carbon::now(Timezone::IST)->endOfDay()->getTimestamp(),
+            'expected_attempts' => 1,
+            'pagination_key'    => null,
+            'save_in_redis'     => false,
+        ], true);
+
+        $iciciStatementFetchJob->handle();
+
+        $setDate = Carbon::create(2016, 6, 17, 22, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($setDate);
+
+        $iciciStatementFetchJob->handle();
+
+        $setDate = Carbon::create(2016, 6, 17, 6, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($setDate);
+
+        $iciciStatementFetchJob->handle();
+
+        // For midnight, we are allowing fetch due to redis key being enabled
+        $setDate = Carbon::create(2016, 6, 17, 0, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($setDate);
+
+        (new AdminService)->setConfigKeys([ConfigKey::ICICI_STATEMENT_FETCH_ENABLE_IN_OFF_HOURS => true]);
+
+        $mozartMock->shouldReceive('sendMozartRequest')
+                   ->andReturnUsing(function($request) use ($mockedResponse) {
+                       return $mockedResponse;
+                   })->times(1);
+
+        $this->app->instance('mozart', $mozartMock);
+
+        $iciciStatementFetchJob->handle();
+
+        $setDate = Carbon::create(2016, 6, 17, 8, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($setDate);
+
+        (new AdminService)->setConfigKeys([ConfigKey::ICICI_STATEMENT_FETCH_ENABLE_IN_OFF_HOURS => false]);
+
+        $mozartMock->shouldReceive('sendMozartRequest')
+                   ->andReturnUsing(function($request) use ($mockedResponse) {
+                       return $mockedResponse;
+                   })->times(1);
+
+        $this->app->instance('mozart', $mozartMock);
+
+        $iciciStatementFetchJob->handle();
+
+        Carbon::setTestNow();
     }
 
     /**
@@ -728,6 +1003,10 @@ class IciciBankingAccountStatementTest extends TestCase
      */
     public function testIciciAccountStatementCase1($mockedResponse = null)
     {
+        $setDate = Carbon::create(2021, 2, 18, 16, 32, 0, Timezone::IST);
+
+        Carbon::setTestNow($setDate);
+
         if ($mockedResponse === null)
         {
             $mockedResponse = $this->getIciciDataResponse();
@@ -811,6 +1090,8 @@ class IciciBankingAccountStatementTest extends TestCase
         ];
 
         $this->assertArraySubset($txnExpected, $txnActual, true);
+
+        Carbon::setTestNow();
     }
 
     public function testFetchIciciMissingAccountStatement()
@@ -909,6 +1190,10 @@ class IciciBankingAccountStatementTest extends TestCase
 
     public function testIciciAccountStatementWithVariousRegex()
     {
+        $setDate = Carbon::create(2021, 2, 18, 16, 32, 0, Timezone::IST);
+
+        Carbon::setTestNow($setDate);
+
         $mockedResponse = $this->getIciciDataResponseForVariousRegex();
 
         $this->setMozartMockResponse($mockedResponse);
@@ -1011,6 +1296,8 @@ class IciciBankingAccountStatementTest extends TestCase
                            })->all();
 
         $this->assertEqualsCanonicalizing($utrsExpected, $utrsActual);
+
+        Carbon::setTestNow($setDate);
     }
 
     /**
@@ -1092,6 +1379,10 @@ class IciciBankingAccountStatementTest extends TestCase
 
     public function testConstructingLasttrid()
     {
+        $setDate = Carbon::create(2021, 2, 18, 16, 32, 0, Timezone::IST);
+
+        Carbon::setTestNow($setDate);
+
         (new AdminService)->setConfigKeys(
             [
                 ConfigKey::ICICI_STATEMENT_FETCH_RATE_LIMIT    => 1,
@@ -1142,6 +1433,8 @@ class IciciBankingAccountStatementTest extends TestCase
         $basdAfterSecondRun = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
 
         $this->assertNotNull($basdAfterSecondRun[BasDetails\Entity::STATEMENT_CLOSING_BALANCE_CHANGE_AT]);
+
+        Carbon::setTestNow();
     }
 
     protected function setupForIciciPayout($channel = Channel::ICICI, $amount = 10095, $mode = FundTransfer\Mode::IMPS)
@@ -1199,6 +1492,10 @@ class IciciBankingAccountStatementTest extends TestCase
 
     public function testUtrMappingForNEFT()
     {
+        $setDate = Carbon::now(Timezone::IST)->firstOfMonth()->addDays(15)->addHours(10);
+
+        Carbon::setTestNow($setDate);
+
         $this->fixtures->create('banking_account_statement',
                                 [
                                     'type'                      => 'credit',
@@ -1290,10 +1587,16 @@ class IciciBankingAccountStatementTest extends TestCase
         $this->assertEquals(EntityConstants::PAYOUT, $feeBreakup[0]['name']);
         $this->assertEquals(90, $feeBreakup[1]['amount']);
         $this->assertEquals(EntityConstants::TAX, $feeBreakup[1]['name']);
+
+        Carbon::setTestNow();
     }
 
     public function testUtrMappingForIMPS()
     {
+        $setDate = Carbon::now(Timezone::IST)->firstOfMonth()->addDays(15)->addHours(10);
+
+        Carbon::setTestNow($setDate);
+
         $this->mockLedgerSns(0);
 
         $this->fixtures->create('banking_account_statement',
@@ -1386,11 +1689,17 @@ class IciciBankingAccountStatementTest extends TestCase
         $this->assertEquals(EntityConstants::PAYOUT, $feeBreakup[0]['name']);
         $this->assertEquals(90, $feeBreakup[1]['amount']);
         $this->assertEquals(EntityConstants::TAX, $feeBreakup[1]['name']);
+
+        Carbon::setTestNow($setDate);
     }
 
     // asserting external credit and payout events to ledger
     public function testUtrMappingForIMPSWithLedgerShadow()
     {
+        $setDate = Carbon::now(Timezone::IST)->firstOfMonth()->addDays(15)->addHours(10);
+
+        Carbon::setTestNow($setDate);
+
         $this->fixtures->merchant->addFeatures([Features::DA_LEDGER_JOURNAL_WRITES]);
 
         $ledgerSnsPayloadArray = [];
@@ -1540,10 +1849,16 @@ class IciciBankingAccountStatementTest extends TestCase
                 $this->assertArrayNotHasKey('api_transaction_id', $ledgerRequestPayload['additional_params']);
             }
         }
+
+        Carbon::setTestNow($setDate);
     }
 
     public function testUtrMappingForFeePayoutWithLedgerShadow()
     {
+        $setDate = Carbon::now(Timezone::IST)->firstOfMonth()->addDays(15)->addHours(10);
+
+        Carbon::setTestNow($setDate);
+
         $this->fixtures->merchant->addFeatures([Features::DA_LEDGER_JOURNAL_WRITES]);
 
         $ledgerSnsPayloadArray = [];
@@ -1684,10 +1999,16 @@ class IciciBankingAccountStatementTest extends TestCase
             $this->assertEquals($apiTransactionIdArray[$index], $ledgerRequestPayload['api_transaction_id']);
             $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
         }
+
+        Carbon::setTestNow($setDate);
     }
 
     public function testUtrMappingForRTGS()
     {
+        $setDate = Carbon::now(Timezone::IST)->firstOfMonth()->addDays(15)->addHours(10);
+
+        Carbon::setTestNow($setDate);
+
         $this->fixtures->create('banking_account_statement',
                                 [
                                     'type'                      => 'credit',
@@ -1776,6 +2097,8 @@ class IciciBankingAccountStatementTest extends TestCase
         $this->assertEquals(EntityConstants::PAYOUT, $feeBreakup[0]['name']);
         $this->assertEquals(270, $feeBreakup[1]['amount']);
         $this->assertEquals(EntityConstants::TAX, $feeBreakup[1]['name']);
+
+        Carbon::setTestNow($setDate);
     }
 
     // currently IFT mode is not supported for icici current account. so it will throw error
@@ -1800,6 +2123,10 @@ class IciciBankingAccountStatementTest extends TestCase
 
     public function testWebhookEventForIciciAccountStatementForSuccessfulMappingToExternal()
     {
+        $setDate = Carbon::create(2021, 2, 18, 16, 32, 0, Timezone::IST);
+
+        Carbon::setTestNow($setDate);
+
         $mockedResponse = $this->getIciciDataResponse();
 
         unset($mockedResponse[F::DATA][F::RECORD][1]);
@@ -1821,10 +2148,16 @@ class IciciBankingAccountStatementTest extends TestCase
         $this->expectWebhookEventWithContents('transaction.created', $eventTestDataKey);
 
         $this->startTest();
+
+        Carbon::setTestNow($setDate);
     }
 
     public function testWebhookEventForIciciAccountStatementForSuccessfulMappingToReversal()
     {
+        $setDate = Carbon::now(Timezone::IST)->firstOfMonth()->addDays(15)->addHours(10);
+
+        Carbon::setTestNow($setDate);
+
         $this->setupForIciciPayout(Channel::ICICI, 100, FundTransfer\Mode::NEFT);
 
         $payout = $this->getDbLastEntity('payout');
@@ -1888,11 +2221,17 @@ class IciciBankingAccountStatementTest extends TestCase
         $this->testData[__FUNCTION__] = $testData;
 
         $this->startTest();
+
+        Carbon::setTestNow($setDate);
     }
 
     // asserting external credit, external debit, payout and reversal events to ledger
     public function testWebhookEventForIciciAccountStatementForSuccessfulMappingToReversalWithLedgerShadow()
     {
+        $setDate = Carbon::now(Timezone::IST)->firstOfMonth()->addDays(15)->addHours(10);
+
+        Carbon::setTestNow($setDate);
+
         $this->fixtures->merchant->addFeatures([Features::DA_LEDGER_JOURNAL_WRITES]);
 
         $ledgerSnsPayloadArray = [];
@@ -2004,10 +2343,16 @@ class IciciBankingAccountStatementTest extends TestCase
             $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
             $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
         }
+
+        Carbon::setTestNow($setDate);
     }
 
     public function testWebhookEventForIciciAccountStatementForSuccessfulMappingToReversalForFeePayoutWithLedgerShadow()
     {
+        $setDate = Carbon::now(Timezone::IST)->firstOfMonth()->addDays(15)->addHours(10);
+
+        Carbon::setTestNow($setDate);
+
         $this->fixtures->merchant->addFeatures([Features::DA_LEDGER_JOURNAL_WRITES]);
 
         $ledgerSnsPayloadArray = [];
@@ -2115,6 +2460,8 @@ class IciciBankingAccountStatementTest extends TestCase
             $this->assertEquals($transactorTypeArray[$index], $ledgerRequestPayload['transactor_event']);
             $this->assertArrayNotHasKey('fee_accounting', $ledgerRequestPayload['additional_params']);
         }
+
+        Carbon::setTestNow($setDate);
     }
 
     public function testIciciAccountStatementGatewayException()
@@ -2328,6 +2675,81 @@ class IciciBankingAccountStatementTest extends TestCase
         $this->assertArraySubset($basExpected, $basActual, true);
     }
 
+    public function testIciciAccountStatementFetchV2ExcludingWronglyMarkedTempRecords()
+    {
+        $this->fixtures->create('banking_account_statement',
+                                [
+                                    'type'                      => 'debit',
+                                    'amount'                    => '10000',
+                                    'channel'                   => 'icici',
+                                    'account_number'            => 2224440041626905,
+                                    'bank_transaction_id'       => 'S71034864',
+                                    'description'               => "Acc Debit Charge",
+                                    'balance'                   => 990000,
+                                    'transaction_date'          => 1613586600,
+                                    'posted_date'               => 1613626140,
+                                    'bank_serial_number'        => 'S71034864',
+                                    'transaction_id'            => 'JzYlLzcIIQL45S',
+                                    'entity_type'               => 'external',
+                                    'entity_id'                 => 'JzYlLzMRxzj6po'
+                                ]);
+
+        $mockedResponse = $this->getIciciDataResponseWithTempRecords();
+
+        $this->setMozartMockResponse($mockedResponse);
+
+        $basd = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->fixtures->edit('balance', $basd[BasDetails\Entity::BALANCE_ID], ['balance' => 990000]);
+
+        (new AdminService)->setConfigKeys([
+                                              ConfigKey::ICICI_STATEMENT_FETCH_ALLOW_DESCRIPTION => [
+                                                  'UPI/212483983015/Payment to 2022/ashuviya16@okax/IDFC FIRST Bank/20220504181136'
+                                              ]
+                                          ]);
+
+        IciciBankingAccountStatementJob::dispatch('test', [
+            'channel'           => Channel::ICICI,
+            'account_number'    => 2224440041626905
+        ]);
+
+        $transactions = $mockedResponse[F::DATA][F::RECORD];
+
+        $txn = last($transactions);
+
+        $basActual = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT, true);
+
+        $externalActual = $this->getLastEntity(EntityConstants::EXTERNAL, true);
+
+        $externalId = str_after($externalActual[ExternalEntity::ID], 'ext_');
+
+        $externalTxnId = $externalActual[ExternalEntity::TRANSACTION_ID];
+
+        $txnEntity = $this->getDbEntityById(EntityConstants::TRANSACTION, $externalTxnId);
+
+        $txnActual = $txnEntity->toArray();
+
+        $this->assertEquals($txnActual[TransactionEntity::POSTED_AT], $basActual[BasEntity::POSTED_DATE]);
+
+        $basExpected = [
+            BasEntity::MERCHANT_ID           => $txnActual[TransactionEntity::MERCHANT_ID],
+            BasEntity::BANK_TRANSACTION_ID   => trim($txn[F::TRANSACTION_ID]),
+            BasEntity::TYPE                  => 'debit',
+            BasEntity::AMOUNT                => 10000,
+            BasEntity::BALANCE               => 980000,
+            BasEntity::POSTED_DATE           => 1613626140,
+            BasEntity::TRANSACTION_DATE      => 1613586600,
+            BasEntity::DESCRIPTION           => trim($txn[F::REMARKS]),
+            BasEntity::CHANNEL               => 'icici',
+            BasEntity::ENTITY_ID             => $externalId,
+            BasEntity::ENTITY_TYPE           => $externalActual[ExternalEntity::ENTITY],
+            BasEntity::TRANSACTION_ID        => $txnActual[TransactionEntity::ID],
+            BasEntity::BANK_SERIAL_NUMBER    => "607"
+        ];
+
+        $this->assertArraySubset($basExpected, $basActual, true);
+    }
+
     /**
      * balance b
     t1 r1  c  a1        b+a1 = cb1      c=> credit
@@ -2351,6 +2773,10 @@ class IciciBankingAccountStatementTest extends TestCase
      */
     public function testDedupLogicForIcici()
     {
+        $setDate = Carbon::create(2021, 2, 18, 16, 32, 0, Timezone::IST);
+
+        Carbon::setTestNow($setDate);
+
         (new AdminService)->setConfigKeys([
                                               ConfigKey::ACCOUNT_STATEMENT_V2_FLOW => ['2224440041626905']]);
 
@@ -2418,11 +2844,15 @@ class IciciBankingAccountStatementTest extends TestCase
 
         $this->assertEquals(3, count($basEntities));
 
-
+        Carbon::setTestNow($setDate);
     }
 
     public function testDedupLogicForIciciCaseWhenDifferenceResets()
     {
+        $setDate = Carbon::create(2021, 2, 18, 16, 32, 0, Timezone::IST);
+
+        Carbon::setTestNow($setDate);
+
         (new AdminService)->setConfigKeys([
                                               ConfigKey::ACCOUNT_STATEMENT_V2_FLOW => ['2224440041626905']]);
 
@@ -2503,10 +2933,16 @@ class IciciBankingAccountStatementTest extends TestCase
         $this->assertEquals(999500, $basAfter[3][BasEntity::BALANCE]);
 
         $this->assertEquals(4, count($basEntities));
+
+        Carbon::setTestNow();
     }
 
     public function testIciciAccountStatementFetchExistingAccounts()
     {
+        $setDate = Carbon::create(2021, 2, 18, 16, 32, 0, Timezone::IST);
+
+        Carbon::setTestNow($setDate);
+
         $this->testData[__FUNCTION__] = $this->testData['testIciciAccountStatementCase1'];
 
         $mockedResponse = $this->getIciciDataResponseForExistingAccounts();
@@ -2595,10 +3031,16 @@ class IciciBankingAccountStatementTest extends TestCase
         ];
 
         $this->assertArraySubset($txnExpected, $txnActual, true);
+
+        Carbon::setTestNow();
     }
 
     public function testLasttridValueWhenBalanceForLastTransactionIsInSingleDigit()
     {
+        $setDate = Carbon::create(2021, 2, 18, 16, 32, 0, Timezone::IST);
+
+        Carbon::setTestNow($setDate);
+
         (new AdminService)->setConfigKeys(
             [
                 ConfigKey::ICICI_STATEMENT_FETCH_RATE_LIMIT    => 1,
@@ -2700,6 +3142,8 @@ class IciciBankingAccountStatementTest extends TestCase
 
         //assert the balance that is sent in lasttrid to mozart
         $this->assertEquals('1|S71034864|18-02-2021 00:00:00|INR|.08|18-02-2021 10:59:00', $lasttrid);
+
+        Carbon::setTestNow();
     }
 
 
@@ -3000,6 +3444,10 @@ class IciciBankingAccountStatementTest extends TestCase
 
     public function testDryRunInsertMissingAccountStatement()
     {
+        $setDate = Carbon::create(2021, 2, 18, 16, 32, 0, Timezone::IST);
+
+        Carbon::setTestNow($setDate);
+
         $this->testIciciAccountStatementCase1();
 
         $this->fixtures->merchant->addFeatures([Features::DA_LEDGER_JOURNAL_WRITES]);
@@ -3083,6 +3531,8 @@ class IciciBankingAccountStatementTest extends TestCase
         $this->assertEquals($initialStatement2[0][BasEntity::BALANCE], $finalStatement2[0][BasEntity::BALANCE]);
 
         $this->assertEquals($initialStatement3[0][BasEntity::BALANCE], $finalStatement3[0][BasEntity::BALANCE]);
+
+        Carbon::setTestNow();
     }
 
     public function testICICIStatementFetchFor2FAMerchants()
@@ -3094,6 +3544,10 @@ class IciciBankingAccountStatementTest extends TestCase
 
     public function testICICIStatementShouldNotFetchForNon2FAMerchantsIfBlockIsEnabled()
     {
+        $setDate = Carbon::create(2021, 2, 18, 16, 32, 0, Timezone::IST);
+
+        Carbon::setTestNow($setDate);
+
         (new AdminService)->setConfigKeys([ConfigKey::RX_ICICI_BLOCK_NON_2FA_NON_BAAS_FOR_CA => true]);
 
         $mockedResponse = $this->getIciciDataResponse();
@@ -3126,6 +3580,8 @@ class IciciBankingAccountStatementTest extends TestCase
         $this->assertNull($basdAfterTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
 
         $this->assertNull($basActual);
+
+        Carbon::setTestNow();
     }
 
     public function testICICIStatementFetchForBaasMerchantsWhenCredentialsIsReturnedByBas()
@@ -3187,6 +3643,10 @@ class IciciBankingAccountStatementTest extends TestCase
 
     public function testICICIStatementShouldNotFetchForBaasMerchantsWhenCredentialsIsNotReturnedByBas()
     {
+        $setDate = Carbon::create(2021, 2, 18, 16, 32, 0, Timezone::IST);
+
+        Carbon::setTestNow($setDate);
+
         (new AdminService)->setConfigKeys([ConfigKey::RX_ICICI_BLOCK_NON_2FA_NON_BAAS_FOR_CA => true]);
 
         $mockedResponse = $this->getIciciDataResponse();
@@ -3225,6 +3685,8 @@ class IciciBankingAccountStatementTest extends TestCase
         $this->assertNotNull($basdAfterTest[BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT]);
 
         $this->assertNull($basActual);
+
+        Carbon::setTestNow();
     }
 
     public function testICICIStatementFetchForNon2FANonBaasMerchantsIfBlockIsDisabled()
@@ -3498,6 +3960,10 @@ class IciciBankingAccountStatementTest extends TestCase
 
     public function testIciciAccountStatementTxnMappingUsingGatewayRefNo()
     {
+        $setDate = Carbon::now(Timezone::IST)->firstOfMonth()->addDays(15)->addHours(10);
+
+        Carbon::setTestNow($setDate);
+
         $this->mockLedgerSns(0);
 
         $channel = Channel::ICICI;
@@ -3598,6 +4064,8 @@ class IciciBankingAccountStatementTest extends TestCase
         $this->assertEquals($reversal['transaction_id'], $basEntries[1]['transaction_id']);
         $this->assertEquals(TransactionEntity::CREDIT, $basEntries[1]['type']);
         $this->assertEquals($payout['id'], $reversal['entity_id']);
+
+        Carbon::setTestNow();
     }
 
     public function testIciciMissingAccountStatementDetection()

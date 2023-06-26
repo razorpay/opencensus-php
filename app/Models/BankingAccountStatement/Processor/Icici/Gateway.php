@@ -99,6 +99,16 @@ class Gateway extends BaseProcessor
         TraceCode::BANKING_ACCOUNT_STATEMENT_TRANSACTIONS_DO_NOT_EXIST_WITH_THE_GIVEN_CRITERIA,
     ];
 
+    /*
+     * Stores the $descriptions which are wrongly identified as temporary records and should be allowed to be saved.
+     */
+    protected $descriptionsToSkip = [];
+
+    /*
+     * Stores the variant value for temporary records experiment.
+     */
+    protected $temporaryRecordVariant = 'control';
+
     const MAX_ATTEMPTS_TO_FETCH_CREDENTIALS_FROM_BAS = 3;
 
     protected $statementRecordsToMatch = [
@@ -177,6 +187,12 @@ class Gateway extends BaseProcessor
 
     protected function sendRequestAndGetResponse(array $input)
     {
+        if (($this->channel === Channel::ICICI) and
+            ((new BankingAccountStatementCore())->checkIfIciciStatementFetchEnabled() === false))
+        {
+            return [];
+        }
+
         $attemptCount = 0;
 
         // Retry logic is placed to retry when gateway exceptions are caught. Retry limit is in place for upper bound.
@@ -224,6 +240,14 @@ class Gateway extends BaseProcessor
 
         $credentials = $this->getCredentialsFromBAS();
 
+        $this->descriptionsToSkip = (new AdminService)->getConfigKey(['key' => ConfigKey::ICICI_STATEMENT_FETCH_ALLOW_DESCRIPTION]);
+
+        $this->temporaryRecordVariant = $this->app->razorx->getTreatment(
+            $this->basDetails->getMerchantId(),
+            Merchant\RazorxTreatment::BANKING_ACCOUNT_STATEMENT_TEMP_RECORDS,
+            $this->mode
+        );
+
         do
         {
             $isRetriableGatewayException = true;
@@ -252,6 +276,7 @@ class Gateway extends BaseProcessor
                         Trace::ERROR,
                         TraceCode::BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST_FAILED,
                         [
+                            Entity::MERCHANT_ID    => $merchantId,
                             Entity::ACCOUNT_NUMBER => $this->accountNumber,
                             Entity::CHANNEL        => $this->channel,
                         ]);
@@ -270,6 +295,7 @@ class Gateway extends BaseProcessor
                                 [
                                     'message'              => $ex->getMessage(),
                                     'data'                 => $ex->getData(),
+                                    Entity::MERCHANT_ID    => $merchantId,
                                     Entity::ACCOUNT_NUMBER => $this->accountNumber,
                                     Entity::CHANNEL        => $this->channel
                                 ]);
@@ -304,6 +330,7 @@ class Gateway extends BaseProcessor
                         Trace::ERROR,
                         TraceCode::BANKING_ACCOUNT_STATEMENT_INVALID_MOZART_RESPONSE,
                         [
+                            Entity::MERCHANT_ID    => $merchantId,
                             Entity::ACCOUNT_NUMBER => $this->accountNumber,
                             Entity::CHANNEL        => $this->channel,
                             'response'             => $bankResponse ?? [],
@@ -349,6 +376,12 @@ class Gateway extends BaseProcessor
 
     public function sendRequestToFetchStatement(array $input)
     {
+        if (($this->channel === Channel::ICICI) and
+            ((new BankingAccountStatementCore())->checkIfIciciStatementFetchEnabled(false, true) === false))
+        {
+            return [[], false, ''];
+        }
+
         $statementRetry = 0;
         $statementRetryLimit = 1;
         $attemptCount = 0;
@@ -393,6 +426,14 @@ class Gateway extends BaseProcessor
         $previousLasttrid = null;
 
         $credentials = $this->getCredentialsFromBAS();
+
+        $this->descriptionsToSkip = (new AdminService)->getConfigKey(['key' => ConfigKey::ICICI_STATEMENT_FETCH_ALLOW_DESCRIPTION]);
+
+        $this->temporaryRecordVariant = $this->app->razorx->getTreatment(
+            $this->basDetails->getMerchantId(),
+            Merchant\RazorxTreatment::BANKING_ACCOUNT_STATEMENT_TEMP_RECORDS,
+            $this->mode
+        );
 
         do
         {
@@ -793,6 +834,7 @@ class Gateway extends BaseProcessor
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_STATEMENT_RESPONSE_COUNT,
             [
+                Entity::MERCHANT_ID    => optional($this->basDetails)->getMerchantId(),
                 Entity::ACCOUNT_NUMBER => $this->accountNumber,
                 'txn_count'            => count($transactionsData)
             ]);
@@ -807,20 +849,15 @@ class Gateway extends BaseProcessor
                                [
                                    'record_no'            => $recordNumber,
                                    Entity::CHANNEL        => $this->getChannel(),
-                                   Entity::ACCOUNT_NUMBER => $this->accountNumber
+                                   Entity::ACCOUNT_NUMBER => $this->accountNumber,
+                                   Entity::MERCHANT_ID    => optional($this->basDetails)->getMerchantId(),
                                ] + $transactionData
             );
 
-            $variant = $this->app->razorx->getTreatment(
-                $this->basDetails->getMerchantId(),
-                Merchant\RazorxTreatment::BANKING_ACCOUNT_STATEMENT_TEMP_RECORDS,
-                $this->mode
-            );
-
-            if (($variant === 'on') or
-                ($variant === 'control'))
+            if (($this->temporaryRecordVariant === 'on') or
+                ($this->temporaryRecordVariant === 'control'))
             {
-                $this->checkForTemporaryRecord($transactionData);
+                $this->checkForTemporaryRecord($transactionData, $this->descriptionsToSkip);
             }
 
             if ($this->allowRecordsToSave === false)
@@ -851,7 +888,7 @@ class Gateway extends BaseProcessor
         return $transactions;
     }
 
-    protected function checkForTemporaryRecord($transactionData)
+    protected function checkForTemporaryRecord($transactionData, $descriptionsToSkip = [])
     {
         $postedDate = $this->getPostedDateFromResponse($transactionData);
 
@@ -859,15 +896,23 @@ class Gateway extends BaseProcessor
 
         $description = $this->getDescriptionFromResponse($transactionData);
 
-        if ((preg_match("/\/(20)([0-9]{12})$/", $description, $matches) === 1) and
-            (preg_match("/[0-9]{1}[\D]+[0-9]{1}/", $description, $matches) !== 1))
+        if (preg_match("/\/(20)([0-9]{12})$/", $description, $matches) === 1)
         {
+            if (in_array($description, $descriptionsToSkip, true) === true)
+            {
+                return;
+            }
+
             $timeInDescription = intval(substr($description, -14));
 
             // if difference is less than 2 days, we won't allow the records to be saved
             if (abs($longFormatPostedDate - $timeInDescription) < 2000000)
             {
                 $this->allowRecordsToSave = false;
+
+                $this->trace->count(Metric::BANKING_ACCOUNT_STATEMENT_ICICI_TEMP_RECORD_COUNT, [
+                                        Entity::MERCHANT_ID      => $this->basDetails->getMerchantId(),
+                                    ]);
             }
 
             $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_ICICI_TEMP_RECORD,
@@ -878,12 +923,6 @@ class Gateway extends BaseProcessor
                                    Entity::ACCOUNT_NUMBER   => $this->accountNumber
                                ] + $transactionData
             );
-
-            $this->trace->count(Metric::BANKING_ACCOUNT_STATEMENT_ICICI_TEMP_RECORD_COUNT,
-                                [
-                                    Entity::MERCHANT_ID      => $this->basDetails->getMerchantId(),
-                                ]);
-
         }
     }
 

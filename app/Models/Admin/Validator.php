@@ -137,6 +137,8 @@ class Validator extends Base\Validator
         ConfigKey::RBL_STATEMENT_FETCH_ATTEMPT_LIMIT              => 'filled|integer',
         ConfigKey::RBL_STATEMENT_FETCH_SPECIAL_ATTEMPT_LIMIT      => 'filled|integer',
         ConfigKey::ICICI_STATEMENT_FETCH_ATTEMPT_LIMIT            => 'filled|integer',
+        ConfigKey::ICICI_STATEMENT_FETCH_ALLOW_DESCRIPTION        => 'filled|array',
+        ConfigKey::ICICI_STATEMENT_FETCH_ENABLE_IN_OFF_HOURS      => 'filled|boolean',
         ConfigKey::RBL_STATEMENT_FETCH_RETRY_LIMIT                => 'filled|integer',
         ConfigKey::BLOCK_X_REGISTRATION                           => 'filled|boolean',
         ConfigKey::BLOCK_YESBANK_RX_FAV                           => 'filled|boolean',

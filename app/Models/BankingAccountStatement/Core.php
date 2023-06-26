@@ -357,6 +357,7 @@ class Core extends Base\Core
                         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BAS_DETAILS_FOR_ACCOUNT_IS_NOT_ACTIVE, null, [
                             'account_number'     => $accountNumber,
                             'channel'            => $channel,
+                            Entity::MERCHANT_ID  => optional($this->basDetails)->getMerchantId(),
                             'bas_details_id'     => $basDetailEntity->getId(),
                             'bas_details_status' => $basDetailEntity->getStatus(),
                         ]);
@@ -2167,8 +2168,9 @@ class Core extends Base\Core
                         $basEntities = $this->repo->banking_account_statement->fetchUnlinkedBasRecords($accountNumber, $channel, $limit);
 
                         $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_ROWS_FETCHED, [
-                            'count'                     => count($basEntities),
-                            'account_number'            => $accountNumber,
+                            'count'             => count($basEntities),
+                            'account_number'    => $accountNumber,
+                            Entity::MERCHANT_ID => $merchant->getId(),
                         ]);
 
                         if (count($basEntities) == 0)
@@ -2180,11 +2182,11 @@ class Core extends Base\Core
 
                         $endTime = microtime(true);
 
-                        $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_BULK_LINKING_TIME,
-                            [
-                                'account_number'         => $accountNumber,
-                                'time_to_link_records'   => $endTime - $startTime,
-                            ]);
+                        $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_BULK_LINKING_TIME, [
+                            'account_number'       => $accountNumber,
+                            Entity::MERCHANT_ID    => $merchant->getId(),
+                            'time_to_link_records' => $endTime - $startTime,
+                        ]);
 
                         $saveLimit--;
                     }
@@ -2206,6 +2208,7 @@ class Core extends Base\Core
                     [
                         'channel'           => $channel,
                         'account_number'    => $accountNumber,
+                        Entity::MERCHANT_ID => $merchant->getId(),
                         'message'           => $e->getMessage(),
                     ]);
             }
@@ -2869,6 +2872,7 @@ class Core extends Base\Core
                         'bas_id'         => $basEntity->getId(),
                         'utr'            => $basEntity->getUtr(),
                         'account_number' => $basEntity->getAccountNumber(),
+                        'merchant_id'    => $basEntity->getMerchantId(),
                         'message'        => $e->getMessage(),
                     ]);
 
@@ -2922,12 +2926,13 @@ class Core extends Base\Core
 
             $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_SOURCE_CREATION_V2,
                                [
-                                   'source_entity'          => $sourceEntity->toArray(),
-                                   'bas_id'                 => $basEntity->getId(),
-                                   'account_number'         => $basEntity->getAccountNumber(),
-                                   'entity_linking_time'    => (microtime(true) - $startTime) * 1000,
-                                   'entity_id'              => $sourceEntity->getId(),
-                                   'entity_type'            => $basEntity->getEntityType(),
+                                   'source_entity'       => $sourceEntity->toArray(),
+                                   'bas_id'              => $basEntity->getId(),
+                                   'account_number'      => $basEntity->getAccountNumber(),
+                                   'merchant_id'         => $basEntity->getMerchantId(),
+                                   'entity_linking_time' => (microtime(true) - $startTime) * 1000,
+                                   'entity_id'           => $sourceEntity->getId(),
+                                   'entity_type'         => $basEntity->getEntityType(),
                                ]);
 
             return [$sourceEntity, $isSourceAlreadyCreated];
@@ -2955,6 +2960,7 @@ class Core extends Base\Core
                     'bas_id'         => $basEntity->getId(),
                     'utr'            => $basEntity->getUtr(),
                     'account_number' => $basEntity->getAccountNumber(),
+                    'merchant_id'    => $basEntity->getMerchantId(),
                     'credit_bas_count' => count($creditBasTemp),
                 ]);
 
@@ -2977,6 +2983,7 @@ class Core extends Base\Core
                         'bas_id'         => $basEntity->getId(),
                         'utr'            => $basEntity->getUtr(),
                         'account_number' => $basEntity->getAccountNumber(),
+                        'merchant_id'    => $basEntity->getMerchantId(),
                         'credit_bas_id'  => $creditBas->getId(),
                         'payout_id'      => $payout->getId(),
                         'payout_status'  => $payout->getStatus()
@@ -3093,14 +3100,14 @@ class Core extends Base\Core
             }
         }
 
-        $this->trace->info(TraceCode::BAS_ENTRY_SOURCE_MAPPING_DETAILS,
-                   [
-                       'source_id'   => $sourceEntity->getPublicId(),
-                       'source_type' => $sourceEntity->getEntityName(),
-                       'bas_id'      => $basEntity->getId(),
-                       'account_no'  => $basEntity->getAccountNumber(),
-                       'remarks'     => $remarks
-                   ]);
+        $this->trace->info(TraceCode::BAS_ENTRY_SOURCE_MAPPING_DETAILS, [
+            'source_id'   => $sourceEntity->getPublicId(),
+            'source_type' => $sourceEntity->getEntityName(),
+            'bas_id'      => $basEntity->getId(),
+            'account_no'  => $basEntity->getAccountNumber(),
+            'merchant_id' => $basEntity->getMerchantId(),
+            'remarks'     => $remarks
+        ]);
 
         if ($this->isStatementUnderFix === true)
         {
@@ -3156,12 +3163,12 @@ class Core extends Base\Core
 
         $reversal = $this->fetchExistingReversalIfPresent($basEntity, $createExternalSource, $remarks);
 
-        $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_EXISTING_REVERSAL,
-                        [
-                            'bas_id'        => $basEntity->getId(),
-                            'account_no'    => $basEntity->getAccountNumber(),
-                            'reversal'      => $reversal,
-                        ]);
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_EXISTING_REVERSAL, [
+            'bas_id'         => $basEntity->getId(),
+            'account_number' => $basEntity->getAccountNumber(),
+            'merchant_id'    => $basEntity->getMerchantId(),
+            'reversal'       => $reversal,
+        ]);
 
         if ($createExternalSource === true)
         {
@@ -3203,11 +3210,12 @@ class Core extends Base\Core
             }
 
             $this->trace->info(TraceCode::AUTO_RECON_PAYOUT_REVERSAL_CREATE_REQUEST,
-                            [
-                                'payout_id'         => $existingPayout->getId(),
-                                'bas_id'            => $basEntity->getId(),
-                                'account_number'    => $basEntity->getAccountNumber(),
-                            ]);
+                               [
+                                   'payout_id'      => $existingPayout->getId(),
+                                   'bas_id'         => $basEntity->getId(),
+                                   'account_number' => $basEntity->getAccountNumber(),
+                                   'merchant_id'    => $basEntity->getMerchantId(),
+                               ]);
 
             $reverseReason = $existingPayout->getFailureReason() ?? 'REVERSAL';
 
@@ -3217,22 +3225,22 @@ class Core extends Base\Core
 
             $reversal = $existingPayout->reversal;
 
-            $this->trace->info(TraceCode::AUTO_RECON_PAYOUT_REVERSAL_CREATED,
-                [
-                    'payout_id'     => $existingPayout->getId(),
-                    'reversal_id'   => $reversal->getId(),
-                    'bas_id'        => $basEntity->getId(),
-                    'account_no'    => $basEntity->getAccountNumber(),
-                ]);
+            $this->trace->info(TraceCode::AUTO_RECON_PAYOUT_REVERSAL_CREATED, [
+                'payout_id'      => $existingPayout->getId(),
+                'reversal_id'    => $reversal->getId(),
+                'bas_id'         => $basEntity->getId(),
+                'account_number' => $basEntity->getAccountNumber(),
+                'merchant_id'    => $basEntity->getMerchantId(),
+            ]);
 
             $reversal = (new Reversal\Core)->createTransactionFromPayoutReversal($reversal);
-            $this->trace->info(TraceCode::REVERSAL_TRANSACTION_CREATED,
-                [
-                    'reversal_id'       => $reversal->getId(),
-                    'transaction_id'    => $reversal->transaction->getId(),
-                    'bas_id'            => $basEntity->getId(),
-                    'account_no'        => $basEntity->getAccountNumber(),
-                ]);
+            $this->trace->info(TraceCode::REVERSAL_TRANSACTION_CREATED, [
+                'reversal_id'    => $reversal->getId(),
+                'transaction_id' => $reversal->transaction->getId(),
+                'bas_id'         => $basEntity->getId(),
+                'account_number' => $basEntity->getAccountNumber(),
+                'merchant_id'    => $basEntity->getMerchantId(),
+            ]);
         }
 
         if (($isReversalAlreadyCreated === true) and
@@ -3240,13 +3248,13 @@ class Core extends Base\Core
             ($reversal->transaction === null))
         {
             $reversal = (new Reversal\Core)->createTransactionFromPayoutReversal($reversal);
-            $this->trace->info(TraceCode::REVERSAL_TRANSACTION_CREATED,
-                [
-                    'reversal_id' => $reversal->getId(),
-                    'transaction_id' => $reversal->transaction->getId(),
-                    'bas_id' => $basEntity->getId(),
-                    'account_no' => $basEntity->getAccountNumber(),
-                ]);
+            $this->trace->info(TraceCode::REVERSAL_TRANSACTION_CREATED, [
+                'reversal_id'    => $reversal->getId(),
+                'transaction_id' => $reversal->transaction->getId(),
+                'bas_id'         => $basEntity->getId(),
+                'account_number' => $basEntity->getAccountNumber(),
+                'merchant_id'    => $basEntity->getMerchantId(),
+            ]);
         }
 
         return [$reversal, $isReversalAlreadyCreated];
@@ -3276,10 +3284,11 @@ class Core extends Base\Core
         {
             $this->trace->error(
                 TraceCode::BAS_ENTRY_FOR_A_FAILED_PAYOUT,
-                 [
-                     'bas_id'    => $basEntity->getId(),
-                     'payout_id' => $payout->getId()
-                 ]);
+                [
+                    'bas_id'      => $basEntity->getId(),
+                    'payout_id'   => $payout->getId(),
+                    'merchant_id' => $basEntity->getMerchantId(),
+                ]);
 
             Tracer::startSpanWithAttributes(Constants\HyperTrace::BAS_ENTRY_FOR_A_FAILED_PAYOUT,
                                             [
@@ -3292,13 +3301,13 @@ class Core extends Base\Core
 
         (new DownstreamProcessor('fund_account_payout', $payout, $this->mode))->processTransaction();
         $transactionId = $payout->transaction ? $payout->transaction->getID() : null;
-        $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESS_PAYOUT_TRANSACTION,
-            [
-                'bas_id'            => $basEntity->getId(),
-                'account_no'        => $basEntity->getAccountNumber(),
-                'payout'            => $payout,
-                'transaction_id'    => $transactionId
-            ]);
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESS_PAYOUT_TRANSACTION, [
+            'bas_id'         => $basEntity->getId(),
+            'account_number' => $basEntity->getAccountNumber(),
+            'merchant_id'    => $basEntity->getMerchantId(),
+            'payout'         => $payout,
+            'transaction_id' => $transactionId
+        ]);
 
         $this->repo->saveOrFail($payout);
 
@@ -3372,14 +3381,14 @@ class Core extends Base\Core
                          ->reversal
                          ->fetchFromUtr($utr, $basEntity->getAmount(), $balance->getId());
 
-        $this->trace->info(TraceCode::BAS_REVERSALS_FETCHED_VIA_UTR,
-                           [
-                               'utr'                                    => $utr,
-                               'reversal_ids'                           => $reversals->getQueueableIds(),
-                               'bas_id'                                 => $basEntity->getId(),
-                               'account_no'                             => $basEntity->getAccountNumber(),
-                               'reversals_fetched_via_utr_mapping_time' => (microtime(true) - $startTime) * 1000
-                           ]);
+        $this->trace->info(TraceCode::BAS_REVERSALS_FETCHED_VIA_UTR, [
+            'utr'                                    => $utr,
+            'reversal_ids'                           => $reversals->getQueueableIds(),
+            'bas_id'                                 => $basEntity->getId(),
+            'account_number'                         => $basEntity->getAccountNumber(),
+            'merchant_id'                            => $basEntity->getMerchantId(),
+            'reversals_fetched_via_utr_mapping_time' => (microtime(true) - $startTime) * 1000
+        ]);
 
         foreach ($reversals as $key => $reversal)
         {
@@ -3388,6 +3397,7 @@ class Core extends Base\Core
                 $data = [
                     'channel'                    => $basEntity->getChannel(),
                     'amount'                     => $basEntity->getAmount(),
+                    'merchant_id'                => $basEntity->getMerchantId(),
                     'current_reversal_id'        => $reversal->getId(),
                     'reversal_ids_with_same_utr' => $reversals->getQueueableIds(),
                     'utr'                        => $utr
@@ -3428,6 +3438,7 @@ class Core extends Base\Core
             $data = [
                 'channel'      => $basEntity->getChannel(),
                 'amount'       => $basEntity->getAmount(),
+                'merchant_id'  => $basEntity->getMerchantId(),
                 'reversal_ids' => $reversals->getQueueableIds(),
                 'utr'          => $utr
             ];
@@ -3480,11 +3491,12 @@ class Core extends Base\Core
 
             $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_UTR_FOR_CREDIT_MAPPING,
                                [
-                                   'utr'                                   => $utr,
-                                   'payout_ids'                            => $payouts->getQueueableIds(),
-                                   'bas_id'                                => $basEntity->getId(),
-                                   'account_no'                            => $basEntity->getAccountNumber(),
-                                   'payouts_fetched_via_utr_mapping_time'  => (microtime(true) - $startTime) * 1000
+                                   'utr'                                  => $utr,
+                                   'payout_ids'                           => $payouts->getQueueableIds(),
+                                   'bas_id'                               => $basEntity->getId(),
+                                   'account_no'                           => $basEntity->getAccountNumber(),
+                                   'merchant_id'                          => $basEntity->getMerchantId(),
+                                   'payouts_fetched_via_utr_mapping_time' => (microtime(true) - $startTime) * 1000
                                ]);
 
             if ($basEntity->getType() === Type::CREDIT)
@@ -3501,10 +3513,11 @@ class Core extends Base\Core
                         $remarks                = 'multiple payouts found with same utr for credit mapping';
 
                         $data = [
-                            'channel'    => $basEntity->getChannel(),
-                            'amount'     => $basEntity->getAmount(),
-                            'payout_ids' => $payouts->getQueueableIds(),
-                            'utr'        => $utr
+                            'channel'     => $basEntity->getChannel(),
+                            'amount'      => $basEntity->getAmount(),
+                            'merchant_id' => $basEntity->getMerchantId(),
+                            'payout_ids'  => $payouts->getQueueableIds(),
+                            'utr'         => $utr
                         ];
 
                         $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_DUPLICATE_PAYOUT_UTR_FOR_CREDIT_MAPPING, [
@@ -3618,14 +3631,14 @@ class Core extends Base\Core
                     $basEntity->getAmount(),
                     $balance->getId());
 
-                $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_CMS_REF_NO_FOR_IFT_FOR_CREDIT_MAPPING,
-                                   [
-                                       'cms_ref_no'                                          => $bankTxnId,
-                                       'payout_ids'                                          => $payouts->getQueueableIds(),
-                                       'bas_id'                                              => $basEntity->getId(),
-                                       'account_no'                                          => $basEntity->getAccountNumber(),
-                                       'payouts_fetched_via_cms_ref_no_for_ift_mapping_time' => (microtime(true) - $startTime) * 1000,
-                                   ]);
+                $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_CMS_REF_NO_FOR_IFT_FOR_CREDIT_MAPPING, [
+                    'cms_ref_no'                                          => $bankTxnId,
+                    'payout_ids'                                          => $payouts->getQueueableIds(),
+                    'bas_id'                                              => $basEntity->getId(),
+                    'merchant_id'                                         => $basEntity->getMerchantId(),
+                    'account_number'                                      => $basEntity->getAccountNumber(),
+                    'payouts_fetched_via_cms_ref_no_for_ift_mapping_time' => (microtime(true) - $startTime) * 1000,
+                ]);
             }
         }
 
@@ -3640,10 +3653,11 @@ class Core extends Base\Core
             $remarks                = 'multiple payouts found with same ' . $identifier . ' for IFT for credit mapping';
 
             $data = [
-                'channel'    => $basEntity->getChannel(),
-                'amount'     => $basEntity->getAmount(),
-                'payout_ids' => $payouts->getQueueableIds(),
-                'cms_ref_no' => $bankTxnId
+                'channel'     => $basEntity->getChannel(),
+                'amount'      => $basEntity->getAmount(),
+                'merchant_id' => $basEntity->getMerchantId(),
+                'payout_ids'  => $payouts->getQueueableIds(),
+                'cms_ref_no'  => $bankTxnId
             ];
 
             $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_DUPLICATE_PAYOUT_CMS_REF_NO_FOR_IFT_FOR_CREDIT_MAPPING, [
@@ -3673,14 +3687,14 @@ class Core extends Base\Core
             $basEntity->getAmount(),
             $balance->getId());
 
-        $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_CMS_REF_NO_FOR_NON_IFT_FOR_CREDIT_MAPPING,
-                           [
-                               'cms_ref_no' => $bankTxnId,
-                               'payout_ids' => $payouts->getQueueableIds(),
-                               'bas_id'     => $basEntity->getId(),
-                               'account_no' => $basEntity->getAccountNumber(),
-                               'payouts_fetched_via_cms_ref_no_for_non_ift_mapping_time' => (microtime(true) - $startTime ) * 1000,
-                           ]);
+        $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_CMS_REF_NO_FOR_NON_IFT_FOR_CREDIT_MAPPING, [
+            'cms_ref_no'                                              => $bankTxnId,
+            'payout_ids'                                              => $payouts->getQueueableIds(),
+            'bas_id'                                                  => $basEntity->getId(),
+            'account_number'                                          => $basEntity->getAccountNumber(),
+            'merchant_id'                                             => $basEntity->getMerchantId(),
+            'payouts_fetched_via_cms_ref_no_for_non_ift_mapping_time' => (microtime(true) - $startTime) * 1000,
+        ]);
 
         if ($payouts->count() === 1)
         {
@@ -3694,10 +3708,11 @@ class Core extends Base\Core
             $remarks = 'multiple payouts found with same cms ref no for non IFT for credit mapping';
 
             $data = [
-                'channel'    => $basEntity->getChannel(),
-                'amount'     => $basEntity->getAmount(),
-                'payout_ids' => $payouts->getQueueableIds(),
-                'cms_ref_no' => $bankTxnId
+                'channel'     => $basEntity->getChannel(),
+                'amount'      => $basEntity->getAmount(),
+                'payout_ids'  => $payouts->getQueueableIds(),
+                'merchant_id' => $basEntity->getMerchantId(),
+                'cms_ref_no'  => $bankTxnId
             ];
 
             $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_DUPLICATE_PAYOUT_CMS_REF_NO_FOR_NON_IFT_FOR_CREDIT_MAPPING, [
@@ -3761,14 +3776,14 @@ class Core extends Base\Core
 
             $payouts = $this->repo->payout->fetchFromUtr($utr, $basEntity->getAmount(), $balance->getId());
 
-            $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_UTR_FOR_DEBIT_MAPPING,
-                               [
-                                   'utr'                        => $utr,
-                                   'payout_ids'                 => $payouts->getQueueableIds(),
-                                   'bas_id'                     => $basEntity->getId(),
-                                   'account_no'                 => $basEntity->getAccountNumber(),
-                                   'payouts_fetched_via_utr_mapping_time' => (microtime(true) - $startTime) * 1000
-                               ]);
+            $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_UTR_FOR_DEBIT_MAPPING, [
+                'utr'                                  => $utr,
+                'payout_ids'                           => $payouts->getQueueableIds(),
+                'bas_id'                               => $basEntity->getId(),
+                'account_number'                       => $basEntity->getAccountNumber(),
+                'merchant_id'                          => $basEntity->getMerchantId(),
+                'payouts_fetched_via_utr_mapping_time' => (microtime(true) - $startTime) * 1000
+            ]);
 
             foreach ($payouts as $key => $payout)
             {
@@ -3777,6 +3792,7 @@ class Core extends Base\Core
                     $data = [
                         'channel'                  => $basEntity->getChannel(),
                         'amount'                   => $basEntity->getAmount(),
+                        'merchant_id'              => $basEntity->getMerchantId(),
                         'current_payout_id'        => $payout->getId(),
                         'payout_ids_with_same_utr' => $payouts->getQueueableIds(),
                     ];
@@ -3815,10 +3831,11 @@ class Core extends Base\Core
                 $remarks = 'multiple unlinked payouts found with same utr for debit mapping';
 
                 $data = [
-                    'channel'    => $basEntity->getChannel(),
-                    'amount'     => $basEntity->getAmount(),
-                    'payout_ids' => $payouts->getQueueableIds(),
-                    'utr'        => $utr
+                    'channel'     => $basEntity->getChannel(),
+                    'amount'      => $basEntity->getAmount(),
+                    'merchant_id' => $basEntity->getMerchantId(),
+                    'payout_ids'  => $payouts->getQueueableIds(),
+                    'utr'         => $utr
                 ];
 
                 $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_MULTIPLE_UNLINKED_PAYOUTS_WITH_SAME_UTR, [
@@ -3927,14 +3944,14 @@ class Core extends Base\Core
                     $basEntity->getAmount(),
                     $balance->getId());
 
-                $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_CMS_REF_NO_FOR_IFT_FOR_DEBIT_MAPPING,
-                                   [
-                                       'cms_ref_no'                                          => $bankTxnId,
-                                       'payout_ids'                                          => $payouts->getQueueableIds(),
-                                       'bas_id'                                              => $basEntity->getId(),
-                                       'account_no'                                          => $basEntity->getAccountNumber(),
-                                       'payouts_fetched_via_cms_ref_no_for_ift_mapping_time' => (microtime(true) - $startTime) * 1000
-                                   ]);
+                $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_CMS_REF_NO_FOR_IFT_FOR_DEBIT_MAPPING, [
+                    'cms_ref_no'                                          => $bankTxnId,
+                    'payout_ids'                                          => $payouts->getQueueableIds(),
+                    'bas_id'                                              => $basEntity->getId(),
+                    'account_number'                                      => $basEntity->getAccountNumber(),
+                    'merchant_id'                                         => $basEntity->getMerchantId(),
+                    'payouts_fetched_via_cms_ref_no_for_ift_mapping_time' => (microtime(true) - $startTime) * 1000
+                ]);
             }
         }
 
@@ -3949,9 +3966,10 @@ class Core extends Base\Core
             $remarks                = 'multiple payouts found with same ' . $identifier . ' for IFT for debit mapping';
 
             $data = [
-                'channel'    => $basEntity->getChannel(),
-                'amount'     => $basEntity->getAmount(),
-                'payout_ids' => $payouts->getQueueableIds(),
+                'channel'     => $basEntity->getChannel(),
+                'amount'      => $basEntity->getAmount(),
+                'merchant_id' => $basEntity->getMerchantId(),
+                'payout_ids'  => $payouts->getQueueableIds(),
             ];
 
             $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_DUPLICATE_PAYOUT_CMS_REF_NO_FOR_IFT_FOR_DEBIT_MAPPING, [
@@ -3979,14 +3997,14 @@ class Core extends Base\Core
                                                                         $basEntity->getAmount(),
                                                                         $balance->getId());
 
-        $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_CMS_REF_NO_FOR_NON_IFT_FOR_DEBIT_MAPPING,
-                           [
-                               'cms_ref_no'                                => $bankTxnId,
-                               'payout_ids'                                => $payouts->getQueueableIds(),
-                               'bas_id'                                    => $basEntity->getId(),
-                               'account_no'                                => $basEntity->getAccountNumber(),
-                               'payouts_fetched_via_cms_ref_no_for_non_ift_mapping_time' => (microtime(true) - $startTime) * 1000
-                           ]);
+        $this->trace->info(TraceCode::BAS_PAYOUTS_FETCHED_VIA_CMS_REF_NO_FOR_NON_IFT_FOR_DEBIT_MAPPING, [
+            'cms_ref_no'                                              => $bankTxnId,
+            'payout_ids'                                              => $payouts->getQueueableIds(),
+            'bas_id'                                                  => $basEntity->getId(),
+            'account_number'                                          => $basEntity->getAccountNumber(),
+            'merchant_id'                                             => $basEntity->getMerchantId(),
+            'payouts_fetched_via_cms_ref_no_for_non_ift_mapping_time' => (microtime(true) - $startTime) * 1000
+        ]);
 
         if ($payouts->count() > 1)
         {
@@ -3994,9 +4012,10 @@ class Core extends Base\Core
             $remarks                = 'multiple payouts found with same cms ref no for non IFT for debit mapping';
 
             $data = [
-                'channel'    => $basEntity->getChannel(),
-                'amount'     => $basEntity->getAmount(),
-                'payout_ids' => $payouts->getQueueableIds(),
+                'channel'     => $basEntity->getChannel(),
+                'amount'      => $basEntity->getAmount(),
+                'merchant_id' => $basEntity->getMerchantId(),
+                'payout_ids'  => $payouts->getQueueableIds(),
             ];
 
             $this->trace->error(TraceCode::BANKING_ACCOUNT_STATEMENT_FETCH_DUPLICATE_PAYOUT_CMS_REF_NO_FOR_NON_IFT_FOR_CREDIT_MAPPING, [
@@ -4095,6 +4114,15 @@ class Core extends Base\Core
     //
     public function dispatchAccountNumberForChannel(string $channel, array $input)
     {
+        if (($channel === BASDetails\Channel::ICICI) and
+            ($this->checkIfIciciStatementFetchEnabled() === false))
+        {
+            return [
+                'accounts_processed' => [],
+                'reason'             => 'ICICI Statement Fetch does not happen during this period.',
+            ];
+        }
+
         $limit = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::BANKING_ACCOUNT_STATEMENT_RATE_LIMIT]);
 
         $limit = (empty($input['limit']) === false) ? $input['limit'] : $limit;
@@ -4256,6 +4284,50 @@ class Core extends Base\Core
                 ($isMerchantInactive === false));
     }
 
+    public function checkIfIciciStatementFetchEnabled($considerBankHolidays = false, $checkRedisForStatementFetch = false)
+    {
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $startOfDay = Carbon::now(Timezone::IST)->startOfDay();
+        $endOfDay = Carbon::now(Timezone::IST)->endOfDay();
+
+        // Check if current time lies between 10 pm and 12 am today
+        $isInTheSecondHalf = (($currentTime >= $endOfDay->clone()->subHours(2)->getTimestamp())
+                              and ($currentTime <= $endOfDay->clone()->getTimestamp()));
+
+        // Check if current time lies between 12 am and 6 am today
+        $isInTheFirstHalf = (($currentTime >= $startOfDay->clone()->getTimestamp())
+                             and ($currentTime <= $startOfDay->clone()->addHours(6)->getTimestamp()));
+
+        $this->trace->info(TraceCode::ICICI_STATEMENT_FETCH_ENABLED, [
+            'current_time'     => Carbon::now(Timezone::IST)->format('d M y h:i A'),
+            'is_between_10_12' => $isInTheSecondHalf,
+            'is_between_12_6'  => $isInTheFirstHalf,
+            'is_enabled'       => !(($isInTheSecondHalf === true) or ($isInTheFirstHalf === true)),
+        ]);
+
+        // Icici statement should not happen between 10 pm and 6 am everyday
+        if (($isInTheSecondHalf === true) or
+            ($isInTheFirstHalf === true))
+        {
+            if ($checkRedisForStatementFetch === true)
+            {
+                $statementFetchEnabled = (new AdminService)->getConfigKey(['key' => ConfigKey::ICICI_STATEMENT_FETCH_ENABLE_IN_OFF_HOURS]);
+
+                if (boolval($statementFetchEnabled) === true)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // Todo:: Add redis support for bank Holidays from FTS for ICICI.
+
+        return true;
+    }
+
     public function fetchMissingAccountStatementsForChannel($channel, $input, $isNewCron = false, $isMonitoring = false)
     {
         $merchantId = $input[Entity::MERCHANT_ID] ?? null;
@@ -4266,19 +4338,16 @@ class Core extends Base\Core
             'merchant_id' => $merchantId,
         ]);
 
-        unset($input[Entity::MERCHANT_ID]);
-
         $countOfStatements = $this->repo->banking_account_statement->getCountOfStatementsInGivenPostedDateRange($channel, $input);
 
         [$expectedAttempts, $allowedToFetch] = $this->getExpectedAttemptsForChannel($channel, $countOfStatements);
 
-        $this->trace->info(
-            TraceCode::FETCH_MISSING_ACCOUNT_STATEMENTS_ATTEMPTS,
-            [
-                'expected_attempts'   => $expectedAttempts,
-                'count_of_statements' => $countOfStatements,
-                'allowed_to_fetch'    => $allowedToFetch,
-            ]);
+        $this->trace->info(TraceCode::FETCH_MISSING_ACCOUNT_STATEMENTS_ATTEMPTS, [
+            'expected_attempts'   => $expectedAttempts,
+            'count_of_statements' => $countOfStatements,
+            'allowed_to_fetch'    => $allowedToFetch,
+            'merchant_id'         => $merchantId,
+        ]);
 
         if ($allowedToFetch === false)
         {
@@ -4288,6 +4357,7 @@ class Core extends Base\Core
                 [
                     'count_of_statements' => $countOfStatements,
                     'allowed_to_fetch'    => $allowedToFetch,
+                    'merchant_id'         => $merchantId,
                 ],
                 'No of statements to be fetched for date range is greater than threshold'
             );
@@ -4307,7 +4377,10 @@ class Core extends Base\Core
                 self::DELAY                     => $delay,
                 BASConstants::PAGINATION_KEY    => $paginationKey,
                 Entity::SAVE_IN_REDIS           => $input[Entity::SAVE_IN_REDIS],
+                Entity::MERCHANT_ID             => $merchantId,
             ]);
+
+        unset($input[Entity::MERCHANT_ID]);
 
         if ($isNewCron === true)
         {
@@ -4565,12 +4638,8 @@ class Core extends Base\Core
                     'count_of_account_numbers'    => count($accountNumbersWithPaginationKeyNull)
                 ]);
 
-                $this->trace->histogram(
-                    Metric::MISSING_STATEMENT_RECON_PAGINATION_KEY_ALREADY_NULL,
-                    count($accountNumbersWithPaginationKeyNull), [
-                        Entity::CHANNEL => $channel
-                    ]
-                );
+                $this->trace->count(Metric::MISSING_STATEMENT_RECON_PAGINATION_KEY_ALREADY_NULL,
+                                    [Entity::CHANNEL => $channel], count($accountNumbersWithPaginationKeyNull));
 
                 $accountNumbers = array_diff($accountNumbers, $accountNumbersWithPaginationKeyNull);
 
@@ -4677,6 +4746,7 @@ class Core extends Base\Core
                 BASDetails\Entity::CHANNEL        => $channel,
                 BASDetails\Entity::ACCOUNT_NUMBER => $accountNumber,
                 BASDetails\Entity::BALANCE_ID     => $balanceId,
+                Entity::MERCHANT_ID               => optional($this->basDetails)->getMerchantId(),
                 self::DELAY                       => $delay,
                 self::ATTEMPT_NUMBER              => $attemptNumber
             ]);

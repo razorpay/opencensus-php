@@ -27,6 +27,7 @@ final class Metric
     const MISSING_BANKING_ACCOUNT_STATEMENT_FETCH_JOB_FAILED  = 'missing_banking_account_statement_fetch_job_failed';
     const BANKING_ACCOUNT_STATEMENT_FETCH_JOB_FAILED          = 'banking_account_statement_fetch_job_failed';
     const BANKING_ACCOUNT_STATEMENT_ICICI_TEMP_RECORD_COUNT   = 'banking_account_statement_icici_temp_record_count';
+    const MISSING_STATEMENT_RECON_PAGINATION_KEY_ALREADY_NULL = 'missing_statement_recon_pagination_key_already_null_count';
 
     //histograms
     const BAS_FETCH_PROCESS_DURATION_SECONDS                  = 'bas_fetch_process_duration_seconds.histogram';
@@ -34,6 +35,5 @@ final class Metric
     const BAS_UPDATE_COMPLETED_DURATION_SECONDS               = 'bas_update_completed_duration_seconds.histogram';
     const BAS_INSERT_COMPLETED_DURATION_SECONDS               = 'bas_insert_completed_duration_seconds.histogram';
     const MISSING_STATEMENTS_COUNT                            = 'missing_statements_count.histogram';
-    const MISSING_STATEMENT_RECON_PAGINATION_KEY_ALREADY_NULL = 'missing_statement_recon_pagination_key_already_null.histogram';
 }
 

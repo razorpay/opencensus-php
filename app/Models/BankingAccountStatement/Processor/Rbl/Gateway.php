@@ -495,7 +495,7 @@ class Gateway extends BaseProcessor
                 $this->trace->info(
                     TraceCode::BANKING_ACCOUNT_STATEMENT_RBL_V2_RESPONSE_TIME,
                     [
-                        'merchant_id'         => $this->basDetails->getMerchantId(),
+                        'merchant_id'         => optional($this->basDetails)->getMerchantId(),
                         'channel'             => $this->channel,
                         'account_number'      => $this->accountNumber,
                         'response_time'       => $endTime - $startTime
@@ -514,8 +514,9 @@ class Gateway extends BaseProcessor
                         Trace::ERROR,
                         TraceCode::BANKING_ACCOUNT_STATEMENT_REMOTE_FETCH_REQUEST_FAILED_V2,
                         [
-                            Entity::ACCOUNT_NUMBER      => $this->accountNumber,
-                            Entity::CHANNEL             => $this->channel,
+                            Entity::MERCHANT_ID    => optional($this->basDetails)->getMerchantId(),
+                            Entity::ACCOUNT_NUMBER => $this->accountNumber,
+                            Entity::CHANNEL        => $this->channel,
                         ]);
 
                     $statementRetry++ ;
@@ -538,6 +539,7 @@ class Gateway extends BaseProcessor
                         [
                             Entity::ACCOUNT_NUMBER      => $this->accountNumber,
                             Entity::CHANNEL             => $this->channel,
+                            Entity::MERCHANT_ID         => optional($this->basDetails)->getMerchantId(),
                             RequestResponseFields::DATA => $bankResponse ?? [],
                         ]);
                 }
@@ -1249,6 +1251,7 @@ class Gateway extends BaseProcessor
                 Entity::ACCOUNT_NUMBER => $this->accountNumber,
                 Entity::CHANNEL        => $this->channel,
                 'txn_count'            => count($transactionsData),
+                Entity::MERCHANT_ID    => optional($this->basDetails)->getMerchantId(),
             ]);
 
         foreach ($transactionsData as $transactionData)
@@ -1267,7 +1270,8 @@ class Gateway extends BaseProcessor
                                    'record_no'            => $recordNumber,
                                    'record_saved'         => $allowRecordToSave,
                                    Entity::CHANNEL        => $this->getChannel(),
-                                   Entity::ACCOUNT_NUMBER => $this->accountNumber
+                                   Entity::ACCOUNT_NUMBER => $this->accountNumber,
+                                   Entity::MERCHANT_ID    => optional($this->basDetails)->getMerchantId(),
                                ] + $transactionData
             );
 

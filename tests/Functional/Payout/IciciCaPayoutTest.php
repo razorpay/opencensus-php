@@ -862,6 +862,10 @@ class IciciCaPayoutTest extends TestCase
 
     public function testIciciAccountStatementFetchV2()
     {
+        $setDate = Carbon::create(2016, 6, 17, 10, 32, 0, Timezone::IST);
+
+        Carbon::setTestNow($setDate);
+
         $this->ba->cronAuth();
 
         $request = [
@@ -883,6 +887,8 @@ class IciciCaPayoutTest extends TestCase
         $this->makeRequestAndGetContent($request);
 
         Queue::assertPushed(IciciBankingAccountStatementJob::class, 1);
+
+        Carbon::setTestNow();
     }
 
     protected function setUpMerchantForBusinessBankingLive(

@@ -147,6 +147,10 @@ class ConfigKey
     // last transaction mentioned to fetch more data.
     const ICICI_STATEMENT_FETCH_ATTEMPT_LIMIT         = self::PREFIX . 'icici_statement_fetch_attempt_limit';
 
+    const ICICI_STATEMENT_FETCH_ALLOW_DESCRIPTION     = self::PREFIX . 'icici_statement_fetch_allow_description';
+
+    const ICICI_STATEMENT_FETCH_ENABLE_IN_OFF_HOURS     = self::PREFIX . 'icici_statement_fetch_enable_in_off_hours';
+
     // special attempt limit for merchants transacting more.
     const RBL_STATEMENT_FETCH_SPECIAL_ATTEMPT_LIMIT = self::PREFIX . 'rbl_statement_fetch_special_attempt_limit';
 

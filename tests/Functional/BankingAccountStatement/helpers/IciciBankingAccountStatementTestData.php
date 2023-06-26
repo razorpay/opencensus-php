@@ -35,6 +35,20 @@ return [
         ],
     ],
 
+    'testIciciStatementFetchDispatchForIciciNonBankingHours' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/banking_account_statement/process/icici',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'accounts_processed' => [],
+                'reason'             => 'ICICI Statement Fetch does not happen during this period.'
+            ]
+        ]
+    ],
+
     'testIciciAccountStatementWithVariousRegex' => [
         'request'  => [
             'method'  => 'POST',
