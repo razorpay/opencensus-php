@@ -7043,11 +7043,6 @@ class Core extends Base\Core
 
     public function updateStatusAfterFtaInitiatedForPayoutService(Entity $payout)
     {
-        // no need to pass fts info for initiated status.
-        $this->payoutStatusServiceClient->updatePayoutStatusViaFTS(
-            $payout->getId(),
-            Status::INITIATED);
-
         $payout->setStatus(Status::INITIATED);
 
         $this->repo->saveOrFail($payout);

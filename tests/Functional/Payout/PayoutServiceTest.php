@@ -503,6 +503,16 @@ class PayoutServiceTest extends TestCase
             ->willReturn($this->createResponseForPayoutServiceMock($fail, $status));
     }
 
+    public function mockPayoutServiceStatusShouldNotBeInvoked()
+    {
+        $payoutServiceStatusMock = Mockery::mock('RZP\Services\PayoutService\Status',
+                      [$this->app])->makePartial();
+
+        $payoutServiceStatusMock->shouldNotReceive('updatePayoutStatusViaFTS');
+
+        $this->app->instance(PayoutServiceStatus::PAYOUT_SERVICE_STATUS, $payoutServiceStatusMock);
+    }
+
     public function mockPayoutServiceStatusWithChecks($status, &$success, $fail = false)
     {
         $payoutServiceStatusMock = Mockery::mock('RZP\Services\PayoutService\Status',
@@ -2138,7 +2148,7 @@ class PayoutServiceTest extends TestCase
             'shouldAllowTransfersViaFts' => [true, 'Dummy'],
         ]);
 
-        $mock->shouldReceive('requestFundTransfer')->once()->andReturn(
+        $mock->shouldReceive('createAndSendRequest')->once()->andReturn(
             [
                 'body' => [
                     'status'           => 'initiated',
@@ -2148,6 +2158,8 @@ class PayoutServiceTest extends TestCase
                 'code' => 201,
             ]
         );
+
+        $this->mockPayoutServiceStatusShouldNotBeInvoked();
 
         $this->ba->appAuthLive();
 
@@ -2281,6 +2293,8 @@ class PayoutServiceTest extends TestCase
                 'code' => 201,
             ]
         );
+
+        $this->mockPayoutServiceStatusShouldNotBeInvoked();
 
         $this->ba->appAuthLive();
 
