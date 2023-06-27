@@ -267,6 +267,17 @@ class Core extends Base\Core
         // Fetch all merchants that have been created since last time cron ran
         $merchantIds = $this->repo->merchant->fetchMerchantsCreatedBetween($from, $to);
 
+        if (empty($merchantIds) === true)
+        {
+            $this->trace->info(TraceCode::WEB_ATTRIBUTION_DETAILS_CRON_TRACE, [
+                'type'            => 'pushWebAttributionFirstTouchDetailsToSegmentCron',
+                'step'            => 'soft limit breach on auto kyc',
+                'reason'          => 'no merchants found',
+            ]);
+
+            return;
+        }
+
         $this->trace->info(TraceCode::WEB_ATTRIBUTION_DETAILS_CRON_TRACE, [
             'last_cron_time'  => $lastCronTime,
             'merchants_count' => count($merchantIds),
