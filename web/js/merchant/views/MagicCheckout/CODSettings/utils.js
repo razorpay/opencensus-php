@@ -14,11 +14,11 @@ export const formatRulesToSlabs = (feeRules = []) => {
   }));
 };
 
-export const formatSlabsToFeeRules = (slabs = [], rateSlabs) => {
+export const formatSlabsToFeeRules = (slabs = []) => {
   return slabs.map((slab) => ({
     id: slab.id,
     fee_type: 'cod_fee',
-    rule_type: rateSlabs ? 'slab' : 'flat',
+    rule_type: 'slab',
     fee: slab.fee ? rupeesToPaise(slab.fee) : 0,
     rule: {
       order_amount: {
