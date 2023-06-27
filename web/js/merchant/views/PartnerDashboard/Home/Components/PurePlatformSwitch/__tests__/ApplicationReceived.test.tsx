@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, userEvent, waitFor } from 'common/services/test/test-utils';
+import { render, screen, userEvent } from 'common/services/test/test-utils';
 import ApplicationReceived from 'merchant/views/PartnerDashboard/Home/Components/PurePlatformSwitch/ApplicationFlow/Components/ApplicationReceived';
 import { stepTestProps } from 'merchant/views/PartnerDashboard/Home/Components/PurePlatformSwitch/__tests__/mocks/fixtures';
 import * as flagAction from 'merchant/reducers/partner';
@@ -26,9 +26,6 @@ describe('<ApplicationReceived /> ', () => {
     const goToDashboardButton = screen.getByRole('button');
     expect(goToDashboardButton).toBeInTheDocument();
     await userEvent.click(goToDashboardButton);
-    await waitFor(() => {
-      expect(stepTestProps.setStep).toHaveBeenCalled();
-    });
     expect(setPartnerSwitchSpy).toHaveBeenCalled();
   });
 

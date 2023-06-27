@@ -20,10 +20,10 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getExperimentsForTracking } from 'merchant/views/PartnerDashboard/Home/Components/utils';
 
 const HaveAllCapabilities = ({
-  setStep,
   setIsOpen,
   trackingExperiments,
   user,
+  closeModal,
 }: StepComponentProps): JSX.Element => {
   useEffect(() => {
     analyticsTrack({
@@ -54,7 +54,6 @@ const HaveAllCapabilities = ({
         ...getExperimentsForTracking(user),
       },
     });
-    setStep('');
     if (isMobileView) setIsOpen(false);
     else closeModal();
   };

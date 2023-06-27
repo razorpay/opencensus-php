@@ -26,7 +26,6 @@ import { getExperimentsForTracking } from 'merchant/views/PartnerDashboard/Home/
 import { setPartnerSwitchFlag } from 'merchant/reducers/partner';
 
 const ApplicationReceived = ({
-  setStep,
   setIsOpen,
   trackingExperiments,
   closeModal,
@@ -62,7 +61,6 @@ const ApplicationReceived = ({
         ...getExperimentsForTracking(user),
       },
     });
-    setStep('');
     setPartnerSwitchFlag();
     if (isMobileView) setIsOpen(false);
     else closeModal();

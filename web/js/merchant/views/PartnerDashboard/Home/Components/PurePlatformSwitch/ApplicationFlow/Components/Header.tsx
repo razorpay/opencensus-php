@@ -72,7 +72,7 @@ export const MobileHeader = ({
 
 const Header = ({ closeModal, step, setStep, trackingExperiments }: HeaderProps): JSX.Element => {
   const goBack = () => {
-    let currentStep = '';
+    let currentStep = 'default';
     if (step === STEPS.HAVE_ALL_CAPABILITIES) currentStep = STEPS.SERVICE_PROVIDED;
     else {
       const stepList = Object.keys(STEP_COMPONENTS);
@@ -84,7 +84,7 @@ const Header = ({ closeModal, step, setStep, trackingExperiments }: HeaderProps)
     analyticsTrack({
       objectName: 'Form',
       actionName: 'Retreat',
-      screen: '',
+      screen: step,
       properties: {
         location: 'partner home',
         formName: 'PartnerTypeSwitch',

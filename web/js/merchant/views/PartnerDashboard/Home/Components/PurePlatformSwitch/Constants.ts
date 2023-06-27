@@ -77,10 +77,10 @@ export interface StepComponentProps {
   setIsOpen: (val: boolean) => void;
   trackingExperiments: trackingExperimentsProps;
   user: any;
+  closeModal: () => void;
 }
 
 export interface ApplicationReceivedProps {
-  setStep: (val: string) => void;
   setIsOpen: (val: boolean) => void;
   trackingExperiments: trackingExperimentsProps;
   closeModal: () => void;
@@ -92,7 +92,6 @@ export interface ApplicationFormProps {
   setStep: (val: string) => void;
   setIsOpen: (val: boolean) => void;
   trackingExperiments: trackingExperimentsProps;
-  closeModal: () => void;
   user: any;
   showNotification: ShowNotificationT;
 }
