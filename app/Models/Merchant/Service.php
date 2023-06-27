@@ -183,6 +183,7 @@ use RZP\Models\EntityOrigin\Core as EntityOriginCore;
 use \RZP\Models\Workflow\Action\Entity as ActionEntity;
 use RZP\Models\Merchant\HsCode\HsCodeList;
 use RZP\Models\Merchant\Consent as Consent;
+use RZP\Models\Merchant\Analytics\DataProcessor;
 
 class Service extends Base\Service
 {
@@ -1976,7 +1977,7 @@ class Service extends Base\Service
         }
     }
 
-    protected function getErrorSourceCategoryForFailureAnalysis($errorCode, $method)
+    public function getErrorSourceCategoryForFailureAnalysis($errorCode, $method)
     {
         [$errorCodeJson,] = $this->app['error_mapper']->getErrorMapping($errorCode, $method);
 
@@ -1987,6 +1988,13 @@ class Service extends Base\Service
         }
 
         return MerchantConstants::OTHER_FAILURE;
+    }
+
+    public function getErrorReason($errorCode, $method)
+    {
+        [$errorCodeJson,] = $this->app['error_mapper']->getErrorMapping($errorCode, $method);
+
+        return $errorCodeJson['error_description'] ?? MerchantConstants::DEFAULT_ERROR_DESCRIPTION;
     }
 
     public function shouldShowSettlementUxRevamp(): bool
@@ -6597,11 +6605,15 @@ class Service extends Base\Service
 
     public function fetchAnalytics(array $input): array
     {
+        (new Validator())->validateCheckoutQueries($input);
+
         $input = (new Core())->processMerchantAnalyticsQuery($this->merchant->getId(), $input);
 
         $this->trace->info(TraceCode::HARVESTER_REQUEST_DETAILS,[
             "data" => $input
         ]);
+
+        $dataProcessor = new DataProcessor();
 
         $variant = $this->app->razorx->getTreatment(
             $this->merchant->getId(),
@@ -6610,11 +6622,15 @@ class Service extends Base\Service
         );
 
         if(strcmp($variant, Constants::RAZORX_EXPERIMENT_ON) != 0) {
-            return $this->app['eventManager']->query($input, self::REQUEST_TIMEOUT_MERCHANT_ANALYTICS);
+            $response = $this->app['eventManager']->query($input, self::REQUEST_TIMEOUT_MERCHANT_ANALYTICS);
+
+            return $dataProcessor->processMerchantAnalyticsResponse($response);
         }
 
         if(isset($input[Constants::AGGREGATIONS]) === false) {
-            return $this->app['eventManager']->query($input, self::REQUEST_TIMEOUT_MERCHANT_ANALYTICS);
+            $response = $this->app['eventManager']->query($input, self::REQUEST_TIMEOUT_MERCHANT_ANALYTICS);
+
+            return $dataProcessor->processMerchantAnalyticsResponse($response);
         }
 
         $queries = $this->segregateQueries($input);
@@ -6631,7 +6647,7 @@ class Service extends Base\Service
             }
         }
 
-        return $response;
+        return $dataProcessor->processMerchantAnalyticsResponse($response);
     }
 
     public function segregateQueries(array $input): array

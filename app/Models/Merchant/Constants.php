@@ -290,7 +290,6 @@ final class Constants
     const CAP_CA_FUNGIBLE_TO_PITCH = 'CAP_CA_FUNGIBLE_TO_PITCH';
     const CAP_CA_FUNGIBLE_ON_HOLD  = 'CAP_CA_FUNGIBLE_ON_HOLD';
 
-
     public static $EntityBatchActionSettingParams = [
         self::BATCH_ACTION,
         self::IDEMPOTENT_ID,
@@ -1098,6 +1097,8 @@ final class Constants
     const OTHER_FAILURE       = 'other_failure';
     const FAILURE_DETAILS     = 'failure_details';
     const SUMMARY             = 'summary';
+
+    const DEFAULT_ERROR_DESCRIPTION = 'There was an issue with the payment request.';
 
     const NUMBER_OF_TOTAL_PAYMENTS      = 'number_of_total_payments';
     const NUMBER_OF_SUCCESSFUL_PAYMENTS = 'number_of_successful_payments';

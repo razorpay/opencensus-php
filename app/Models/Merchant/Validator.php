@@ -46,6 +46,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 use \RZP\Models\Workflow\Action\Entity as ActionEntity;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Detail\ActivationFlow as ActivationFlow;
+use RZP\Models\Merchant\Analytics\Constants as AnalyticsConstants;
 use RZP\Models\RiskWorkflowAction\Constants as RiskActionConstants;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
@@ -3474,5 +3475,126 @@ class Validator extends Base\Validator
 
         ORG_ENTITY::isOrgCurlec($merchant->getOrgId()) &&  $this->validateIsActivated($merchant);
 
+    }
+
+    protected static $industryLevelQueryAggregationRules = [
+        'details'                  => 'required|array',
+        'details.index'            => 'required|string|in:cx_high_level_funnel',
+        'details.group_by'         => 'required|array',
+        'details.group_by.*'       => 'required|string|in:behav_submit_event,render_checkout_open_event,status,histogram_daily,histogram_hourly,histogram_weekly,histogram_monthly',
+        'details.histogram_column' => 'created_at',
+        'details.mode'             => 'required|string|in:test,live',
+        'agg_type'                 => 'required|string|in:count',
+        'filter_key'               => 'required|string|in:checkout_industry_level_sr,checkout_industry_level_cr',
+    ];
+
+    protected static $industryLevelQueryFilterRules = [
+        'filters'                      => 'required|array|size:1',
+        'filters.*.created_at'         => 'required|array',
+        'filters.*.checkout_library'   => 'required|array',
+        'filters.*.checkout_library.*' => 'string',
+        'filters.*.merchant_category'  => 'required|string',
+    ];
+
+    public function validateIndustryLevelQuery(array $filters, array $aggregations): void
+    {
+        $this->validateinput('industry_level_query_filter', $filters);
+        $this->validateinput('industry_level_query_aggregation', $aggregations);
+    }
+
+    /**
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function validateCheckoutQueries(array $input): void
+    {
+        $aggregations = $input[AnalyticsConstants::AGGREGATIONS] ?? [];
+
+        foreach ($aggregations as $aggregationName => $aggregation)
+        {
+            $filterKey = $aggregation[AnalyticsConstants::FILTER_KEY] ?? '';
+            $groupBy = $aggregation[AnalyticsConstants::DETAILS][AnalyticsConstants::GROUP_BY] ?? [];
+
+            if (in_array($aggregationName, AnalyticsConstants::CR_RELATED_AGGREGATION_NAMES))
+            {
+                $this->validateGroupByForCrQuery($groupBy);
+            }
+
+            if (in_array($aggregationName, AnalyticsConstants::SR_RELATED_AGGREGATION_NAMES))
+            {
+                $this->validateGroupByForSrQuery($groupBy);
+            }
+
+            if (in_array($aggregationName, AnalyticsConstants::ERROR_METRICS_RELATED_AGGREGATION_NAMES))
+            {
+                $this->validateGroupByForErrorMetricsQuery($groupBy);
+            }
+
+            if (in_array($aggregationName, AnalyticsConstants::INDUSTRY_LEVEL_QUERIES))
+            {
+                $filter = $input[Constants::FILTERS][$aggregationName] ?? [];
+
+                $industryLevelFilters = [Constants::FILTERS => $filter];
+
+                $this->validateIndustryLevelQuery($industryLevelFilters, $aggregation);
+            }
+
+            if (in_array($filterKey, AnalyticsConstants::INDUSTRY_LEVEL_QUERIES) and $filterKey !== $aggregationName)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'filter_key: ' . $filterKey . ' can only be used with ' . $filterKey . ' aggregation'
+                );
+            }
+        }
+    }
+
+    /**
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    private function validateGroupByForCrQuery(array $groupByFields): void
+    {
+        $missingStrings = array_diff(AnalyticsConstants::GROUP_BY_FIELDS_FOR_CR, $groupByFields);
+
+        if (empty($missingStrings) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Group By field is invalid for CR query. Missing required fields: ' . implode(', ', $missingStrings)
+            );
+        }
+    }
+
+    /**
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    private function validateGroupByForSrQuery(array $groupByFields): void
+    {
+        $missingStrings = array_diff(AnalyticsConstants::GROUP_BY_FIELDS_FOR_SR, $groupByFields);
+
+        if (empty($missingStrings) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Group By field is invalid for SR query. Missing required fields: ' . implode(', ', $missingStrings)
+            );
+        }
+    }
+
+    /**
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    private function validateGroupByForErrorMetricsQuery(array $groupByFields): void
+    {
+        $missingStrings = array_diff(
+            [
+                AnalyticsConstants::INTERNAL_ERROR_CODE,
+                AnalyticsConstants::LAST_SELECTED_METHOD,
+            ],
+            $groupByFields
+        );
+
+        if (empty($missingStrings) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Group By field is invalid for Error Metrics query. Missing required fields: ' . implode(', ', $missingStrings)
+            );
+        }
     }
 }

@@ -129,6 +129,7 @@ use RZP\Models\Merchant\Consent\Constants as MerchantConsentConstants;
 use RZP\Trace\Tracer;
 use RZP\Models\Typeform\Core as TypeformCore;
 use RZP\Models\Typeform\Constants as TypeformConstant;
+use RZP\Models\Merchant\Analytics\Constants as AnalyticsConstants;
 
 class Core extends Base\Core
 {
@@ -3161,8 +3162,14 @@ class Core extends Base\Core
         //
         $filters = & $input[Entity::FILTERS];
 
-        foreach ($filters as & $filter)
+        foreach ($filters as $filterName => &$filter)
         {
+            if ($this->isIndustryLevelQuery($filterName))
+            {
+                // Skips adding default merchant_id clause in industry level queries
+                continue;
+            }
+
             if (empty($filter) === true)
             {
                 $filter[] = [Entity::KEY_MERCHANT_ID => $merchantId];
@@ -10161,4 +10168,8 @@ class Core extends Base\Core
 
     }
 
+    private function isIndustryLevelQuery(string $filterName): bool
+    {
+        return in_array($filterName, AnalyticsConstants::INDUSTRY_LEVEL_QUERIES, true);
+    }
 }
