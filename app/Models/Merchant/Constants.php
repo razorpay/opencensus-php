@@ -865,6 +865,9 @@ final class Constants
     const DISABLE_INTERNATIONAL_WHATSAPP_TEMPLATE_NAME_MOBILE_SIGNUP = 'whatsapp_risk_international_disablement_email_signup';
     const DISABLE_INTERNATIONAL_WHATSAPP_TEMPLATE_MOBILE_SIGNUP      = 'Hi {merchantName}, we regret to inform you that acceptance of international payments has been paused due to a risk alert raised by our banking partners. Please check link {supportTicketLink} for more details';
 
+    // WDA migration Experiments
+    const WDA_MIGRATION_ACQUISITION_SPLITZ_EXP_ID = 'wda_migration_acquisition_splitz_exp_id';
+
     const MERCHANT_RISK_ACTION_CRON_ADD_TAG_MAP = [
         Action::SUSPEND      => self::MERCHANT_RISK_SUSPEND_CRON_TAG,
         Action::HOLD_FUNDS   => self::MERCHANT_RISK_FOH_CRON_TAG,

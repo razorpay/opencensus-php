@@ -16,6 +16,7 @@ use RZP\Constants\Es;
 use RZP\Base\BuilderEx;
 use RZP\Constants\Mode;
 use RZP\Models\Pricing;
+use Rzp\Wda_php\Symbol;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
@@ -24,13 +25,16 @@ use RZP\Constants\Product;
 use RZP\Models\BankAccount;
 use RZP\Constants\Timezone;
 use RZP\Models\Admin\Group;
+use RZP\Services\WDAService;
 use RZP\Base\ConnectionType;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
+use Rzp\Wda_php\WDAQueryBuilder;
 use RZP\Models\Terminal\Category;
 use RZP\Models\Base\EsRepository;
 use RZP\Models\TrustedBadge\Constants as TrustedBadgeConstants;
 use RZP\Models\Partner\Activation;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Merchant\BusinessDetail;
 use RZP\Models\State\Entity as ActionState;
@@ -550,6 +554,26 @@ class Repository extends Base\Repository
 
     public function fetchAllLiveActivatedRegularMerchantsOfOrg(int $from, int $to, $org = Org\Entity::RAZORPAY_ORG_ID)
     {
+        $experimentResult = (new Detail\Core)->getSplitzResponse(UniqueIdEntity::generateUniqueId(),
+            Constants::WDA_MIGRATION_ACQUISITION_SPLITZ_EXP_ID);
+
+        $isWDAExperimentEnabled = ( $experimentResult === 'live' ) ? true : false;
+
+        try
+        {
+            if(($this->app['api.route']->isWDAServiceRoute() === true) and ($isWDAExperimentEnabled === true))
+            {
+                return $this->fetchAllLiveActivatedRegularMerchantsOfOrgFromWda($from, $to, $org);
+            }
+        }
+        catch(\Throwable $ex)
+        {
+            $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
+                'wda_migration_error' => $ex->getMessage(),
+                'route_name'          => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+        }
+
         return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
             ->select(Entity::ID)
             ->where(Entity::LIVE, '=', 1)
@@ -563,6 +587,83 @@ class Repository extends Base\Repository
             ->get()
             ->pluck(Entity::ID)
             ->toArray();
+    }
+
+    /**
+     * Fetches all live and activated regular merchants of org from query through wda service layer
+     *
+     * @param int $from
+     * @param int $to
+     * @param string $org
+     *
+     * @return array
+     *
+     * @throws \Exception
+     */
+    public function fetchAllLiveActivatedRegularMerchantsOfOrgFromWda(int $from, int $to, $org = Org\Entity::RAZORPAY_ORG_ID): array
+    {
+        $this->trace->info(TraceCode::WDA_SERVICE_REQUEST, [
+            'method_name'  => __FUNCTION__,
+            'from'         => $from,
+            'to'           => $to,
+            'org'          => $org,
+        ]);
+
+        $startTimeMs = round(microtime(true) * 1000);
+
+        $wdaClient = $this->app['wda-client']->wdaClient;
+
+        $wdaQueryBuilder = new WDAQueryBuilder();
+
+        $wdaQueryBuilder->addQuery($this->getTableName(), Entity::ID);
+
+        $wdaQueryBuilder->resources($this->getTableName());
+
+        $wdaQueryBuilder->filters($this->getTableName(), Entity::LIVE, [1], Symbol::EQ)
+            ->filters($this->getTableName(), Entity::ACTIVATED, [1], Symbol::EQ)
+            ->filters($this->getTableName(), Entity::ORG_ID, [$org], Symbol::EQ)
+            ->filters($this->getTableName(), Entity::ACTIVATED_AT, [$from, $to], Symbol::BETWEEN)
+            ->filters($this->getTableName(), Entity::SUSPENDED_AT, [], Symbol::NULL)
+            ->filters($this->getTableName(), Entity::BUSINESS_BANKING, [false], Symbol::EQ)
+            ->filters($this->getTableName(), Entity::PARENT_ID, [], Symbol::NULL)
+            ->filters($this->getTableName(), Entity::PARTNER_TYPE, [], Symbol::NULL);
+
+        $wdaQueryBuilder->namespace($this->getEntityObject()->getConnection()->getDatabaseName());
+
+        $wdaQueryBuilder->cluster(WDAService::ADMIN_CLUSTER);
+
+        $this->trace->info(TraceCode::WDA_SERVICE_QUERY, [
+            'wda_query_builder' => $wdaQueryBuilder->build()->serializeToJsonString(),
+            'route_name'        => $this->app['api.route']->getCurrentRouteName(),
+        ]);
+
+        $response = $wdaClient->fetchMultipleWithExpand($wdaQueryBuilder->build(), $this->newQuery()->getModel(), []);
+
+        $liveActivatedRegularMerchantsOfOrg = $this->convertWdaResponseToArray($response, Entity::ID);
+
+        $endTimeMs = round(microtime(true) * 1000);
+
+        $queryDuration = $endTimeMs - $startTimeMs;
+
+        $this->trace->info(TraceCode::WDA_SERVICE_RESPONSE, [
+            'route_name'       => $this->app['api.route']->getCurrentRouteName(),
+            'method_name'      => __FUNCTION__,
+            'merchants_count'  => count($liveActivatedRegularMerchantsOfOrg),
+            'duration_ms'      => $queryDuration,
+        ]);
+
+        return $liveActivatedRegularMerchantsOfOrg;
+    }
+
+    public function convertWdaResponseToArray(array $response, $Id): array
+    {
+        $arrayResponse = [];
+
+        foreach ($response as $result) {
+            $arrayResponse[] = $result[$Id];
+        }
+
+        return $arrayResponse;
     }
 
     public function fetchAllInstantlyActivatedMerchants(int $from, int $to)
