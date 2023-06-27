@@ -11,6 +11,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Contact;
 use RZP\Services\Mozart;
 use RZP\Services\Ledger;
+use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Models\Payout\Purpose;
 use RZP\Models\BankingAccount;
@@ -24,6 +25,7 @@ use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Transaction\CreditType;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Payout\Mode as PayoutMode;
+use RZP\Models\Payout\Core as PayoutCore;
 use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Admin\Service as AdminService;
@@ -34,6 +36,7 @@ use RZP\Models\Payout\Status as PayoutStatus;
 use RZP\Services\FTS\Constants as FTSConstants;
 use RZP\Models\BankingAccountStatement\Details;
 use RZP\Tests\Functional\Helpers\EntityFetchTrait;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Models\Payout\Constants as PayoutConstants;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
@@ -49,6 +52,7 @@ class FundManagementPayoutTest extends TestCase
     use DbEntityFetchTrait;
     use TestsWebhookEvents;
     use TestsBusinessBanking;
+    use RequestResponseFlowTrait;
 
     protected $directBalance;
 
@@ -57,6 +61,8 @@ class FundManagementPayoutTest extends TestCase
     protected $basDetails;
 
     protected $directCounter;
+
+    protected $testBalanceConfig;
 
     protected function setUp(): void
     {
@@ -110,6 +116,15 @@ class FundManagementPayoutTest extends TestCase
             BankingAccountTpv\Entity::CREATED_BY           => 'test',
             BankingAccountTpv\Entity::TYPE                 => BankingAccountTpv\Type::BANK_ACCOUNT,
             BankingAccountTpv\Entity::IS_ACTIVE            => true,
+        ];
+
+        $this->testBalanceConfig = [
+            'channel'                     => Channel::RBL,
+            'neft_threshold'              => 500000,
+            'lite_balance_threshold'      => 3000000,
+            'lite_deficit_allowed'        => 5,
+            'fmp_consideration_threshold' => 14400,
+            'total_amount_threshold'      => 200000,
         ];
 
         $this->bankingAccountTpv = $this->fixtures->create('banking_account_tpv', $bankingAccountTpvParams);
@@ -231,7 +246,6 @@ class FundManagementPayoutTest extends TestCase
                               ->andThrowExceptions([new \Exception("Server Error")])->times($times);
         }
 
-
         $this->app->instance('mozart', $mozartServiceMock);
     }
 
@@ -274,7 +288,7 @@ class FundManagementPayoutTest extends TestCase
         return $ftsMock;
     }
 
-    public function mockLedgerFetchLiteBalance($balance, $throwError =  false, $times = 1)
+    public function mockLedgerFetchLiteBalance($balance, $throwError = false, $times = 1)
     {
         $this->app['rzp.mode'] = Mode::TEST;
 
@@ -285,10 +299,10 @@ class FundManagementPayoutTest extends TestCase
             'body' => [
                 "merchant_id"      => "10000000000000",
                 "merchant_balance" => [
-                    "balance"      => $balance,
-                    "min_balance"  => "10000.000000"
+                    "balance"     => $balance,
+                    "min_balance" => "10000.000000"
                 ],
-                "reward_balance"  => [
+                "reward_balance"   => [
                     "balance"     => "20.000000",
                     "min_balance" => "-20.000000"
                 ],
@@ -325,8 +339,6 @@ class FundManagementPayoutTest extends TestCase
                               ->andThrowExceptions([new \Exception("Server Error")])->times($times);
         }
 
-
-
         $this->app->instance('ledger', $ledgerServiceMock);
     }
 
@@ -360,7 +372,7 @@ class FundManagementPayoutTest extends TestCase
                         'purpose'        => Purpose::RZP_FUND_MANAGEMENT,
                         'mode'           => PayoutMode::IMPS,
                         'narration'      => Purpose::RZP_FUND_MANAGEMENT,
-                        'fund_account' => [
+                        'fund_account'   => [
                             'bank_account' => [
                                 'name'           => $this->bankAccount->getName(),
                                 'account_number' => $this->bankAccount->getAccountNumber(),
@@ -386,7 +398,7 @@ class FundManagementPayoutTest extends TestCase
 
         $boolJobFailureMetricCaptured = false;
 
-        $this->mockCountMetric(PayoutMetric::FUND_MANAGEMENT_PAYOUT_CHECK_JOB_FAILURES_COUNT, $boolJobFailureMetricCaptured,[
+        $this->mockCountMetric(PayoutMetric::FUND_MANAGEMENT_PAYOUT_CHECK_JOB_FAILURES_COUNT, $boolJobFailureMetricCaptured, [
             PayoutEntity::CHANNEL => Channel::RBL,
             'error_message'       => 'BAD_REQUEST_VALIDATION_FAILURE',
         ]);
@@ -414,7 +426,7 @@ class FundManagementPayoutTest extends TestCase
 
         $boolJobFailureMetricCaptured = false;
 
-        $this->mockCountMetric(PayoutMetric::FUND_MANAGEMENT_PAYOUT_CHECK_JOB_FAILURES_COUNT, $boolJobFailureMetricCaptured,[
+        $this->mockCountMetric(PayoutMetric::FUND_MANAGEMENT_PAYOUT_CHECK_JOB_FAILURES_COUNT, $boolJobFailureMetricCaptured, [
             PayoutEntity::CHANNEL => Channel::RBL,
             'error_message'       => 'BAD_REQUEST_VALIDATION_FAILURE',
         ]);
@@ -442,7 +454,7 @@ class FundManagementPayoutTest extends TestCase
 
         $boolJobFailureMetricCaptured = false;
 
-        $this->mockCountMetric(PayoutMetric::FUND_MANAGEMENT_PAYOUT_CHECK_JOB_FAILURES_COUNT, $boolJobFailureMetricCaptured,[
+        $this->mockCountMetric(PayoutMetric::FUND_MANAGEMENT_PAYOUT_CHECK_JOB_FAILURES_COUNT, $boolJobFailureMetricCaptured, [
             PayoutEntity::CHANNEL => Channel::RBL,
             'error_message'       => 'BAD_REQUEST_VALIDATION_FAILURE',
         ]);
@@ -470,7 +482,7 @@ class FundManagementPayoutTest extends TestCase
 
         $boolJobFailureMetricCaptured = false;
 
-        $this->mockCountMetric(PayoutMetric::FUND_MANAGEMENT_PAYOUT_CHECK_JOB_FAILURES_COUNT, $boolJobFailureMetricCaptured,[
+        $this->mockCountMetric(PayoutMetric::FUND_MANAGEMENT_PAYOUT_CHECK_JOB_FAILURES_COUNT, $boolJobFailureMetricCaptured, [
             PayoutEntity::CHANNEL => Channel::RBL,
             'error_message'       => 'BAD_REQUEST_VALIDATION_FAILURE',
         ]);
@@ -536,7 +548,7 @@ class FundManagementPayoutTest extends TestCase
 
         $boolJobFailureMetricCaptured = false;
 
-        $this->mockCountMetric(PayoutMetric::FUND_MANAGEMENT_PAYOUT_CHECK_JOB_FAILURES_COUNT, $boolJobFailureMetricCaptured,[
+        $this->mockCountMetric(PayoutMetric::FUND_MANAGEMENT_PAYOUT_CHECK_JOB_FAILURES_COUNT, $boolJobFailureMetricCaptured, [
             PayoutEntity::CHANNEL => Channel::RBL,
             'error_message'       => 'BAD_REQUEST_BALANCE_DOES_NOT_EXIST',
         ]);
@@ -570,7 +582,7 @@ class FundManagementPayoutTest extends TestCase
 
         $boolJobFailureMetricCaptured = false;
 
-        $this->mockCountMetric(PayoutMetric::FUND_MANAGEMENT_PAYOUT_CHECK_JOB_FAILURES_COUNT, $boolJobFailureMetricCaptured,[
+        $this->mockCountMetric(PayoutMetric::FUND_MANAGEMENT_PAYOUT_CHECK_JOB_FAILURES_COUNT, $boolJobFailureMetricCaptured, [
             PayoutEntity::CHANNEL => Channel::RBL,
             'error_message'       => PayoutConstants::LITE_BALANCE_IS_ABOVE_THRESHOLD,
         ]);
@@ -633,10 +645,10 @@ class FundManagementPayoutTest extends TestCase
                 PayoutEntity::REVERSED_AT  => Carbon::now(Timezone::IST)->subMinutes(60)->getTimestamp(),
             ],
             [
-                PayoutEntity::AMOUNT       => 7000000,
-                PayoutEntity::STATUS       => PayoutStatus::ON_HOLD,
-                PayoutEntity::CREATED_AT   => Carbon::now(Timezone::IST)->subMinutes(40)->getTimestamp(),
-                PayoutEntity::ON_HOLD_AT   => Carbon::now(Timezone::IST)->subMinutes(39)->getTimestamp(),
+                PayoutEntity::AMOUNT     => 7000000,
+                PayoutEntity::STATUS     => PayoutStatus::ON_HOLD,
+                PayoutEntity::CREATED_AT => Carbon::now(Timezone::IST)->subMinutes(40)->getTimestamp(),
+                PayoutEntity::ON_HOLD_AT => Carbon::now(Timezone::IST)->subMinutes(39)->getTimestamp(),
             ],
             [
                 PayoutEntity::AMOUNT       => 8500000,
@@ -742,10 +754,10 @@ class FundManagementPayoutTest extends TestCase
                 PayoutEntity::REVERSED_AT  => Carbon::now(Timezone::IST)->subMinutes(60)->getTimestamp(),
             ],
             [
-                PayoutEntity::AMOUNT       => 4000000,
-                PayoutEntity::STATUS       => PayoutStatus::ON_HOLD,
-                PayoutEntity::CREATED_AT   => Carbon::now(Timezone::IST)->subMinutes(40)->getTimestamp(),
-                PayoutEntity::ON_HOLD_AT   => Carbon::now(Timezone::IST)->subMinutes(39)->getTimestamp(),
+                PayoutEntity::AMOUNT     => 4000000,
+                PayoutEntity::STATUS     => PayoutStatus::ON_HOLD,
+                PayoutEntity::CREATED_AT => Carbon::now(Timezone::IST)->subMinutes(40)->getTimestamp(),
+                PayoutEntity::ON_HOLD_AT => Carbon::now(Timezone::IST)->subMinutes(39)->getTimestamp(),
             ],
             [
                 PayoutEntity::AMOUNT       => 1000000,
@@ -829,7 +841,7 @@ class FundManagementPayoutTest extends TestCase
 
         $mozartSuccess = false;
 
-        $this->mockMozartFetchGatewayBalance(4000,  $mozartSuccess);
+        $this->mockMozartFetchGatewayBalance(4000, $mozartSuccess);
 
         $this->fixtures->edit('banking_account_statement_details', $this->basDetails->getId(), [
             Details\Entity::GATEWAY_BALANCE           => 200000,
@@ -857,10 +869,10 @@ class FundManagementPayoutTest extends TestCase
                 PayoutEntity::REVERSED_AT  => Carbon::now(Timezone::IST)->subMinutes(60)->getTimestamp(),
             ],
             [
-                PayoutEntity::AMOUNT       => 4000000,
-                PayoutEntity::STATUS       => PayoutStatus::ON_HOLD,
-                PayoutEntity::CREATED_AT   => Carbon::now(Timezone::IST)->subMinutes(40)->getTimestamp(),
-                PayoutEntity::ON_HOLD_AT   => Carbon::now(Timezone::IST)->subMinutes(39)->getTimestamp(),
+                PayoutEntity::AMOUNT     => 4000000,
+                PayoutEntity::STATUS     => PayoutStatus::ON_HOLD,
+                PayoutEntity::CREATED_AT => Carbon::now(Timezone::IST)->subMinutes(40)->getTimestamp(),
+                PayoutEntity::ON_HOLD_AT => Carbon::now(Timezone::IST)->subMinutes(39)->getTimestamp(),
             ],
             [
                 PayoutEntity::AMOUNT       => 1000000,
@@ -894,7 +906,8 @@ class FundManagementPayoutTest extends TestCase
     }
 
     /**
-     * FMP check failing due to low gateway balance on CA. CA balance here is fetched from DB as there was a failure in fetching from Bank
+     * FMP check failing due to low gateway balance on CA. CA balance here is fetched from DB as there was a failure in
+     * fetching from Bank
      */
     public function testFundManagementPayoutCheck_CaGatewayBalanceFetchFailureFromBank()
     {
@@ -915,7 +928,7 @@ class FundManagementPayoutTest extends TestCase
 
         $mozartSuccess = false;
 
-        $this->mockMozartFetchGatewayBalance(4000,  $mozartSuccess, true);
+        $this->mockMozartFetchGatewayBalance(4000, $mozartSuccess, true);
 
         $this->fixtures->edit('banking_account_statement_details', $this->basDetails->getId(), [
             Details\Entity::GATEWAY_BALANCE           => 200000,
@@ -943,10 +956,10 @@ class FundManagementPayoutTest extends TestCase
                 PayoutEntity::REVERSED_AT  => Carbon::now(Timezone::IST)->subMinutes(60)->getTimestamp(),
             ],
             [
-                PayoutEntity::AMOUNT       => 4000000,
-                PayoutEntity::STATUS       => PayoutStatus::ON_HOLD,
-                PayoutEntity::CREATED_AT   => Carbon::now(Timezone::IST)->subMinutes(40)->getTimestamp(),
-                PayoutEntity::ON_HOLD_AT   => Carbon::now(Timezone::IST)->subMinutes(39)->getTimestamp(),
+                PayoutEntity::AMOUNT     => 4000000,
+                PayoutEntity::STATUS     => PayoutStatus::ON_HOLD,
+                PayoutEntity::CREATED_AT => Carbon::now(Timezone::IST)->subMinutes(40)->getTimestamp(),
+                PayoutEntity::ON_HOLD_AT => Carbon::now(Timezone::IST)->subMinutes(39)->getTimestamp(),
             ],
             [
                 PayoutEntity::AMOUNT       => 1000000,
@@ -1002,11 +1015,11 @@ class FundManagementPayoutTest extends TestCase
 
         $mozartSuccess = false;
 
-        $this->mockMozartFetchGatewayBalance(100000,  $mozartSuccess);
+        $this->mockMozartFetchGatewayBalance(100000, $mozartSuccess);
 
         $ftsSuccess = false;
 
-        $this->mockFTSFetchMode(PayoutMode::NEFT,  $ftsSuccess, true);
+        $this->mockFTSFetchMode(PayoutMode::NEFT, $ftsSuccess, true);
 
         $this->fixtures->edit('banking_account_statement_details', $this->basDetails->getId(), [
             Details\Entity::GATEWAY_BALANCE           => 200000,
@@ -1034,10 +1047,10 @@ class FundManagementPayoutTest extends TestCase
                 PayoutEntity::REVERSED_AT  => Carbon::now(Timezone::IST)->subMinutes(60)->getTimestamp(),
             ],
             [
-                PayoutEntity::AMOUNT       => 4000000,
-                PayoutEntity::STATUS       => PayoutStatus::ON_HOLD,
-                PayoutEntity::CREATED_AT   => Carbon::now(Timezone::IST)->subMinutes(40)->getTimestamp(),
-                PayoutEntity::ON_HOLD_AT   => Carbon::now(Timezone::IST)->subMinutes(39)->getTimestamp(),
+                PayoutEntity::AMOUNT     => 4000000,
+                PayoutEntity::STATUS     => PayoutStatus::ON_HOLD,
+                PayoutEntity::CREATED_AT => Carbon::now(Timezone::IST)->subMinutes(40)->getTimestamp(),
+                PayoutEntity::ON_HOLD_AT => Carbon::now(Timezone::IST)->subMinutes(39)->getTimestamp(),
             ],
             [
                 PayoutEntity::AMOUNT       => 1000000,
@@ -1069,13 +1082,13 @@ class FundManagementPayoutTest extends TestCase
         $this->assertFalse((bool) $ftsSuccess);
 
         $expectedParams = [
-            "payout_create_input"   => [
-                "balance_id"     => $this->directBalance->getId(),
-                "amount"         => 9500000,
-                "currency"       => "INR",
-                "mode"           => "IMPS",
-                "purpose"        => "RZP Fund Management",
-                "fund_account"   => [
+            "payout_create_input" => [
+                "balance_id"   => $this->directBalance->getId(),
+                "amount"       => 9500000,
+                "currency"     => "INR",
+                "mode"         => "IMPS",
+                "purpose"      => "RZP Fund Management",
+                "fund_account" => [
                     "account_type" => "bank_account",
                     "bank_account" => [
                         "name"           => $this->bankAccount->getName(),
@@ -1083,13 +1096,13 @@ class FundManagementPayoutTest extends TestCase
                         "account_number" => $this->bankAccount->getAccountNumber(),
                     ],
                     "contact"      => [
-                        "name" =>  $this->basDetails->merchant->getBillingLabel(),
+                        "name" => $this->basDetails->merchant->getBillingLabel(),
                         "type" => Contact\Type::SELF,
                     ]
                 ],
             ],
-            "merchant_id"           => "10000000000000",
-            "channel"               => Channel::RBL,
+            "merchant_id"         => "10000000000000",
+            "channel"             => Channel::RBL,
         ];
 
         Queue::assertPushed(FundManagementPayoutInitiate::class, function($job) use ($expectedParams) {
@@ -1128,11 +1141,11 @@ class FundManagementPayoutTest extends TestCase
 
         $mozartSuccess = false;
 
-        $this->mockMozartFetchGatewayBalance(100000,  $mozartSuccess);
+        $this->mockMozartFetchGatewayBalance(100000, $mozartSuccess);
 
         $ftsSuccess = false;
 
-        $this->mockFTSFetchMode(PayoutMode::RTGS,  $ftsSuccess);
+        $this->mockFTSFetchMode(PayoutMode::RTGS, $ftsSuccess);
 
         $this->fixtures->edit('banking_account_statement_details', $this->basDetails->getId(), [
             Details\Entity::GATEWAY_BALANCE           => 200000,
@@ -1160,10 +1173,10 @@ class FundManagementPayoutTest extends TestCase
                 PayoutEntity::REVERSED_AT  => Carbon::now(Timezone::IST)->subMinutes(60)->getTimestamp(),
             ],
             [
-                PayoutEntity::AMOUNT       => 4000000,
-                PayoutEntity::STATUS       => PayoutStatus::ON_HOLD,
-                PayoutEntity::CREATED_AT   => Carbon::now(Timezone::IST)->subMinutes(40)->getTimestamp(),
-                PayoutEntity::ON_HOLD_AT   => Carbon::now(Timezone::IST)->subMinutes(39)->getTimestamp(),
+                PayoutEntity::AMOUNT     => 4000000,
+                PayoutEntity::STATUS     => PayoutStatus::ON_HOLD,
+                PayoutEntity::CREATED_AT => Carbon::now(Timezone::IST)->subMinutes(40)->getTimestamp(),
+                PayoutEntity::ON_HOLD_AT => Carbon::now(Timezone::IST)->subMinutes(39)->getTimestamp(),
             ],
             [
                 PayoutEntity::AMOUNT       => 1000000,
@@ -1195,13 +1208,13 @@ class FundManagementPayoutTest extends TestCase
         $this->assertTrue((bool) $ftsSuccess);
 
         $expectedParams = [
-            "payout_create_input"   => [
-                "balance_id"     => $this->directBalance->getId(),
-                "amount"         => 9500000,
-                "currency"       => "INR",
-                "mode"           => "IMPS",
-                "purpose"        => "RZP Fund Management",
-                "fund_account"   => [
+            "payout_create_input" => [
+                "balance_id"   => $this->directBalance->getId(),
+                "amount"       => 9500000,
+                "currency"     => "INR",
+                "mode"         => "IMPS",
+                "purpose"      => "RZP Fund Management",
+                "fund_account" => [
                     "account_type" => "bank_account",
                     "bank_account" => [
                         "name"           => $this->bankAccount->getName(),
@@ -1214,8 +1227,8 @@ class FundManagementPayoutTest extends TestCase
                     ]
                 ],
             ],
-            "merchant_id"           => "10000000000000",
-            "channel"               => Channel::RBL,
+            "merchant_id"         => "10000000000000",
+            "channel"             => Channel::RBL,
         ];
 
         Queue::assertPushed(FundManagementPayoutInitiate::class, function($job) use ($expectedParams) {
@@ -1254,11 +1267,11 @@ class FundManagementPayoutTest extends TestCase
 
         $mozartSuccess = false;
 
-        $this->mockMozartFetchGatewayBalance(100000,  $mozartSuccess);
+        $this->mockMozartFetchGatewayBalance(100000, $mozartSuccess);
 
         $ftsSuccess = false;
 
-        $this->mockFTSFetchMode(PayoutMode::NEFT,  $ftsSuccess);
+        $this->mockFTSFetchMode(PayoutMode::NEFT, $ftsSuccess);
 
         $this->fixtures->edit('banking_account_statement_details', $this->basDetails->getId(), [
             Details\Entity::GATEWAY_BALANCE           => 200000,
@@ -1290,10 +1303,10 @@ class FundManagementPayoutTest extends TestCase
                 PayoutEntity::REVERSED_AT  => Carbon::now(Timezone::IST)->subMinutes(60)->getTimestamp(),
             ],
             [
-                PayoutEntity::AMOUNT       => 4000000,
-                PayoutEntity::STATUS       => PayoutStatus::ON_HOLD,
-                PayoutEntity::CREATED_AT   => Carbon::now(Timezone::IST)->subMinutes(40)->getTimestamp(),
-                PayoutEntity::ON_HOLD_AT   => Carbon::now(Timezone::IST)->subMinutes(39)->getTimestamp(),
+                PayoutEntity::AMOUNT     => 4000000,
+                PayoutEntity::STATUS     => PayoutStatus::ON_HOLD,
+                PayoutEntity::CREATED_AT => Carbon::now(Timezone::IST)->subMinutes(40)->getTimestamp(),
+                PayoutEntity::ON_HOLD_AT => Carbon::now(Timezone::IST)->subMinutes(39)->getTimestamp(),
             ],
             [
                 PayoutEntity::AMOUNT       => 1000000,
@@ -1330,12 +1343,12 @@ class FundManagementPayoutTest extends TestCase
         $this->assertTrue((bool) $ftsSuccess);
 
         $expectedParams = [
-            "payout_create_input"   => [
-                "balance_id"     => $this->directBalance->getId(),
-                "currency"       => "INR",
-                "mode"           => "NEFT",
-                "purpose"        => "RZP Fund Management",
-                "fund_account"   => [
+            "payout_create_input" => [
+                "balance_id"   => $this->directBalance->getId(),
+                "currency"     => "INR",
+                "mode"         => "NEFT",
+                "purpose"      => "RZP Fund Management",
+                "fund_account" => [
                     "account_type" => "bank_account",
                     "bank_account" => [
                         "name"           => $this->bankAccount->getName(),
@@ -1348,8 +1361,8 @@ class FundManagementPayoutTest extends TestCase
                     ]
                 ],
             ],
-            "merchant_id"           => "10000000000000",
-            "channel"               => Channel::RBL,
+            "merchant_id"         => "10000000000000",
+            "channel"             => Channel::RBL,
         ];
 
         $totalAmountOfFmps = 0;
@@ -1393,11 +1406,11 @@ class FundManagementPayoutTest extends TestCase
 
         $mozartSuccess = false;
 
-        $this->mockMozartFetchGatewayBalance(100000,  $mozartSuccess);
+        $this->mockMozartFetchGatewayBalance(100000, $mozartSuccess);
 
         $ftsSuccess = false;
 
-        $this->mockFTSFetchMode(PayoutMode::NEFT,  $ftsSuccess);
+        $this->mockFTSFetchMode(PayoutMode::NEFT, $ftsSuccess);
 
         $this->fixtures->edit('banking_account_statement_details', $this->basDetails->getId(), [
             Details\Entity::GATEWAY_BALANCE           => 200000,
@@ -1429,10 +1442,10 @@ class FundManagementPayoutTest extends TestCase
                 PayoutEntity::REVERSED_AT  => Carbon::now(Timezone::IST)->subMinutes(60)->getTimestamp(),
             ],
             [
-                PayoutEntity::AMOUNT       => 4000000,
-                PayoutEntity::STATUS       => PayoutStatus::ON_HOLD,
-                PayoutEntity::CREATED_AT   => Carbon::now(Timezone::IST)->subMinutes(40)->getTimestamp(),
-                PayoutEntity::ON_HOLD_AT   => Carbon::now(Timezone::IST)->subMinutes(39)->getTimestamp(),
+                PayoutEntity::AMOUNT     => 4000000,
+                PayoutEntity::STATUS     => PayoutStatus::ON_HOLD,
+                PayoutEntity::CREATED_AT => Carbon::now(Timezone::IST)->subMinutes(40)->getTimestamp(),
+                PayoutEntity::ON_HOLD_AT => Carbon::now(Timezone::IST)->subMinutes(39)->getTimestamp(),
             ],
             [
                 PayoutEntity::AMOUNT       => 1000000,
@@ -1469,13 +1482,13 @@ class FundManagementPayoutTest extends TestCase
         $this->assertTrue((bool) $ftsSuccess);
 
         $expectedParams = [
-            "payout_create_input"   => [
-                "balance_id"     => $this->directBalance->getId(),
-                "currency"       => "INR",
-                "mode"           => "NEFT",
-                "amount"         => 4500000,
-                "purpose"        => "RZP Fund Management",
-                "fund_account"   => [
+            "payout_create_input" => [
+                "balance_id"   => $this->directBalance->getId(),
+                "currency"     => "INR",
+                "mode"         => "NEFT",
+                "amount"       => 4500000,
+                "purpose"      => "RZP Fund Management",
+                "fund_account" => [
                     "account_type" => "bank_account",
                     "bank_account" => [
                         "name"           => $this->bankAccount->getName(),
@@ -1488,8 +1501,8 @@ class FundManagementPayoutTest extends TestCase
                     ]
                 ],
             ],
-            "merchant_id"           => "10000000000000",
-            "channel"               => Channel::RBL,
+            "merchant_id"         => "10000000000000",
+            "channel"             => Channel::RBL,
         ];
 
         $totalAmountOfFmps = 0;
@@ -1533,11 +1546,11 @@ class FundManagementPayoutTest extends TestCase
 
         $mozartSuccess = false;
 
-        $this->mockMozartFetchGatewayBalance(100000,  $mozartSuccess);
+        $this->mockMozartFetchGatewayBalance(100000, $mozartSuccess);
 
         $ftsSuccess = false;
 
-        $ftsMock = $this->mockFTSFetchMode(PayoutMode::IMPS,  $ftsSuccess);
+        $ftsMock = $this->mockFTSFetchMode(PayoutMode::IMPS, $ftsSuccess);
 
         $ftsMock->shouldReceive('shouldAllowTransfersViaFts')
                 ->andReturn([true, 'Dummy']);
@@ -1545,7 +1558,7 @@ class FundManagementPayoutTest extends TestCase
         $ftsTransferSuccess = false;
 
         $ftsMock->shouldReceive('createAndSendRequest')
-                ->andReturnUsing(function(string $endpoint, string $method, array $input) use(&$ftsTransferSuccess) {
+                ->andReturnUsing(function(string $endpoint, string $method, array $input) use (&$ftsTransferSuccess) {
 
                     self::assertEquals('/transfer', $endpoint);
                     self::assertEquals('POST', $method);
@@ -1594,10 +1607,10 @@ class FundManagementPayoutTest extends TestCase
                 PayoutEntity::REVERSED_AT  => Carbon::now(Timezone::IST)->subMinutes(60)->getTimestamp(),
             ],
             [
-                PayoutEntity::AMOUNT       => 4000000,
-                PayoutEntity::STATUS       => PayoutStatus::ON_HOLD,
-                PayoutEntity::CREATED_AT   => Carbon::now(Timezone::IST)->subMinutes(40)->getTimestamp(),
-                PayoutEntity::ON_HOLD_AT   => Carbon::now(Timezone::IST)->subMinutes(39)->getTimestamp(),
+                PayoutEntity::AMOUNT     => 4000000,
+                PayoutEntity::STATUS     => PayoutStatus::ON_HOLD,
+                PayoutEntity::CREATED_AT => Carbon::now(Timezone::IST)->subMinutes(40)->getTimestamp(),
+                PayoutEntity::ON_HOLD_AT => Carbon::now(Timezone::IST)->subMinutes(39)->getTimestamp(),
             ],
             [
                 PayoutEntity::AMOUNT       => 1000000,
@@ -1699,7 +1712,7 @@ class FundManagementPayoutTest extends TestCase
         $ftsTransferSuccess = false;
 
         $ftsMock->shouldReceive('createAndSendRequest')
-                ->andReturnUsing(function(string $endpoint, string $method, array $input) use(&$ftsTransferSuccess) {
+                ->andReturnUsing(function(string $endpoint, string $method, array $input) use (&$ftsTransferSuccess) {
 
                     self::assertEquals('/transfer', $endpoint);
                     self::assertEquals('POST', $method);
@@ -1768,7 +1781,7 @@ class FundManagementPayoutTest extends TestCase
         $ftsTransferSuccess = false;
 
         $ftsMock->shouldReceive('createAndSendRequest')
-                ->andReturnUsing(function(string $endpoint, string $method, array $input) use(&$ftsTransferSuccess) {
+                ->andReturnUsing(function(string $endpoint, string $method, array $input) use (&$ftsTransferSuccess) {
 
                     self::assertEquals('/transfer', $endpoint);
                     self::assertEquals('POST', $method);
@@ -1841,7 +1854,7 @@ class FundManagementPayoutTest extends TestCase
         $ftsTransferSuccess = false;
 
         $ftsMock->shouldReceive('createAndSendRequest')
-                ->andReturnUsing(function(string $endpoint, string $method, array $input) use(&$ftsTransferSuccess) {
+                ->andReturnUsing(function(string $endpoint, string $method, array $input) use (&$ftsTransferSuccess) {
 
                     self::assertEquals('/transfer', $endpoint);
                     self::assertEquals('POST', $method);
@@ -1911,7 +1924,7 @@ class FundManagementPayoutTest extends TestCase
         $ftsTransferSuccess = false;
 
         $ftsMock->shouldReceive('createAndSendRequest')
-                ->andReturnUsing(function(string $endpoint, string $method, array $input) use(&$ftsTransferSuccess) {
+                ->andReturnUsing(function(string $endpoint, string $method, array $input) use (&$ftsTransferSuccess) {
 
                     self::assertEquals('/transfer', $endpoint);
                     self::assertEquals('POST', $method);
@@ -2018,14 +2031,14 @@ class FundManagementPayoutTest extends TestCase
             ]);
 
         $this->fixtures->create('contact', [
-            'id'          => '1000000contact',
-            'name'        => $this->basDetails->merchant->getBillingLabel(),
-            'merchant_id' => $this->basDetails->getMerchantId(),
-            'type'        => 'self',
-            'active'      => 1,
-            'contact'     => null,
-            'email'       => null,
-            'reference_id'=> null,
+            'id'           => '1000000contact',
+            'name'         => $this->basDetails->merchant->getBillingLabel(),
+            'merchant_id'  => $this->basDetails->getMerchantId(),
+            'type'         => 'self',
+            'active'       => 1,
+            'contact'      => null,
+            'email'        => null,
+            'reference_id' => null,
         ]);
 
         $bankAccount = $this->fixtures->create('bank_account', [
@@ -2058,7 +2071,7 @@ class FundManagementPayoutTest extends TestCase
         $ftsTransferSuccess = false;
 
         $ftsMock->shouldReceive('createAndSendRequest')
-                ->andReturnUsing(function(string $endpoint, string $method, array $input) use(&$ftsTransferSuccess) {
+                ->andReturnUsing(function(string $endpoint, string $method, array $input) use (&$ftsTransferSuccess) {
 
                     self::assertEquals('/transfer', $endpoint);
                     self::assertEquals('POST', $method);
@@ -2155,14 +2168,14 @@ class FundManagementPayoutTest extends TestCase
                                   $this->basDetails->getMerchantId(), false);
 
         $this->fixtures->create('contact', [
-            'id'          => '1000000contact',
-            'name'        => $this->basDetails->merchant->getBillingLabel(),
-            'merchant_id' => $this->basDetails->getMerchantId(),
-            'type'        => 'self',
-            'active'      => 1,
-            'contact'     => null,
-            'email'       => null,
-            'reference_id'=> null,
+            'id'           => '1000000contact',
+            'name'         => $this->basDetails->merchant->getBillingLabel(),
+            'merchant_id'  => $this->basDetails->getMerchantId(),
+            'type'         => 'self',
+            'active'       => 1,
+            'contact'      => null,
+            'email'        => null,
+            'reference_id' => null,
         ]);
 
         $bankAccount = $this->fixtures->create('bank_account', [
@@ -2195,7 +2208,7 @@ class FundManagementPayoutTest extends TestCase
         $ftsTransferSuccess = false;
 
         $ftsMock->shouldReceive('createAndSendRequest')
-                ->andReturnUsing(function(string $endpoint, string $method, array $input) use(&$ftsTransferSuccess) {
+                ->andReturnUsing(function(string $endpoint, string $method, array $input) use (&$ftsTransferSuccess) {
 
                     self::assertEquals('/transfer', $endpoint);
                     self::assertEquals('POST', $method);
@@ -2391,5 +2404,211 @@ class FundManagementPayoutTest extends TestCase
         $this->assertFalse((bool) $boolJobFailureMetricCaptured);
 
         $this->app['redis']->del(FundManagementPayoutInitiate::FUND_MANAGEMENT_PAYOUT_INITIATE_DISABLE);
+    }
+
+    // -- Fund Management Cron Tests Start Here
+    public function testFundManagementPayoutCheckQueueDispatch_SingleMerchants_Dedupe()
+    {
+        $this->ba->cronAuth();
+
+        Queue::fake();
+
+        $count = 0;
+
+        $this->app['rzp.mode'] = Mode::TEST;
+
+        $redis = $this->app['redis'];
+
+        $merchantIds = $this->testData['testFundManagementPayoutCheckQueueDispatch_SingleMerchants_Dedupe']['request']['content']['merchant_ids'];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            $this->setFundManagementPayoutBalanceConfig($merchantId, $this->testBalanceConfig);
+        }
+
+        $this->startTest();
+
+        $expectedParams = $this->testBalanceConfig;
+
+        Queue::assertPushed(FundManagementPayoutCheck::class, function($job) use (&$count, $merchantIds, $expectedParams) {
+            $this->assertEquals('fund_management_payout_check', $job->getJobName());
+            $this->validateQueueParams($merchantIds[0], $expectedParams, $job->getParams());
+            $count++;
+
+            return true;
+        });
+
+        $this->assertEquals(1, $count);
+
+        foreach ($merchantIds as $merchantId)
+        {
+            $redis->hdel(PayoutCore::CA_FUND_MANAGEMENT_PAYOUT_BALANCE_CONFIG_REDIS_KEY, $merchantId);
+        }
+    }
+
+    public function testFundManagementPayoutCheckQueueDispatch_MultipleMerchants()
+    {
+        $this->ba->cronAuth();
+
+        Queue::fake();
+
+        $count = 0;
+
+        $this->app['rzp.mode'] = Mode::TEST;
+
+        $redis = $this->app['redis'];
+
+        $boolJobFailureMetricCaptured = false;
+
+        $merchantIds = $this->testData['testFundManagementPayoutCheckQueueDispatch_MultipleMerchants']['request']['content']['merchant_ids'];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            $this->setFundManagementPayoutBalanceConfig($merchantId, $this->testBalanceConfig);
+        }
+
+        $this->mockCountMetric(PayoutMetric::FUND_MANAGEMENT_PAYOUT_CRON_DISPATCH_FAILURES_COUNT, $boolJobFailureMetricCaptured, [
+            PayoutEntity::MERCHANT_ID => $merchantIds[1],
+        ]);
+
+        $this->startTest();
+
+        Queue::assertPushed(FundManagementPayoutCheck::class, function($job) use (&$count, $merchantIds) {
+            $this->assertEquals('fund_management_payout_check', $job->getJobName());
+            $count++;
+
+            return true;
+        });
+
+        $this->assertEquals(2, $count);
+        $this->assertFalse((bool) $boolJobFailureMetricCaptured);
+
+        foreach ($merchantIds as $merchantId)
+        {
+            $redis->hdel(PayoutCore::CA_FUND_MANAGEMENT_PAYOUT_BALANCE_CONFIG_REDIS_KEY, $merchantId);
+        }
+    }
+
+    public function testFundManagementPayoutCheckQueueDispatch_MultipleMerchants_ValidationFailure_InvalidDataType()
+    {
+        $this->ba->cronAuth();
+
+        Queue::fake();
+
+        $count = 0;
+
+        $this->app['rzp.mode'] = Mode::TEST;
+
+        $redis = $this->app['redis'];
+
+        $boolJobFailureMetricCaptured = false;
+
+        $merchantIds = $this->testData['testFundManagementPayoutCheckQueueDispatch_MultipleMerchants']['request']['content']['merchant_ids'];
+
+        $testBalanceConfigValidationFailure = [
+            'channel'                     => 'rbl',
+            'neft_threshold'              => '500000ABC',
+            'lite_balance_threshold'      => 3000000,
+            'lite_deficit_allowed'        => 5,
+            'fmp_consideration_threshold' => 14400,
+            'total_amount_threshold'      => 200000,
+        ];
+
+        $this->setFundManagementPayoutBalanceConfig($merchantIds[0], $this->testBalanceConfig);
+        $this->setFundManagementPayoutBalanceConfig($merchantIds[1], $testBalanceConfigValidationFailure);
+
+        $this->mockCountMetric(PayoutMetric::FUND_MANAGEMENT_PAYOUT_CRON_DISPATCH_FAILURES_COUNT, $boolJobFailureMetricCaptured, [
+            PayoutEntity::MERCHANT_ID => $merchantIds[1],
+        ]);
+
+        $this->startTest();
+
+        $expectedParams = $this->testBalanceConfig;
+
+        Queue::assertPushed(FundManagementPayoutCheck::class, function($job) use (&$count, $merchantIds, $expectedParams) {
+            $this->assertEquals('fund_management_payout_check', $job->getJobName());
+            $this->validateQueueParams($merchantIds[0], $expectedParams, $job->getParams());
+            $count++;
+
+            return true;
+        });
+
+        $this->assertEquals(1, $count);
+        $this->assertTrue((bool) $boolJobFailureMetricCaptured);
+
+        foreach ($merchantIds as $merchantId)
+        {
+            $redis->hdel(PayoutCore::CA_FUND_MANAGEMENT_PAYOUT_BALANCE_CONFIG_REDIS_KEY, $merchantId);
+        }
+    }
+
+    public function testFundManagementPayoutCheckQueueDispatch_MultipleMerchants_ValidationFailure_MissingRequiredField()
+    {
+        $this->ba->cronAuth();
+        $redis = $this->app['redis'];
+
+        Queue::fake();
+
+        $count = 0;
+
+        $this->app['rzp.mode'] = Mode::TEST;
+
+        $boolJobFailureMetricCaptured = false;
+
+        $merchantIds = $this->testData['testFundManagementPayoutCheckQueueDispatch_MultipleMerchants']['request']['content']['merchant_ids'];
+
+        $testBalanceConfigValidationFailure = [
+            'channel'                     => 'rbl',
+            'lite_balance_threshold'      => 3000000,
+            'lite_deficit_allowed'        => 5,
+            'fmp_consideration_threshold' => 14400,
+            'total_amount_threshold'      => 200000,
+        ];
+
+        $this->mockCountMetric(PayoutMetric::FUND_MANAGEMENT_PAYOUT_CRON_DISPATCH_FAILURES_COUNT, $boolJobFailureMetricCaptured, [
+            PayoutEntity::MERCHANT_ID => $merchantIds[1],
+        ]);
+
+        $this->setFundManagementPayoutBalanceConfig($merchantIds[0], $this->testBalanceConfig);
+        $this->setFundManagementPayoutBalanceConfig($merchantIds[1], $testBalanceConfigValidationFailure);
+
+        $this->startTest();
+
+        $expectedParams = $this->testBalanceConfig;
+
+        Queue::assertPushed(FundManagementPayoutCheck::class, function($job) use (&$count, $expectedParams, $merchantIds, $boolJobFailureMetricCaptured) {
+            $this->assertEquals('fund_management_payout_check', $job->getJobName());
+            $this->validateQueueParams($merchantIds[0], $expectedParams, $job->getParams());
+            $count++;
+
+            return true;
+        });
+
+        $this->assertEquals(1, $count);
+        $this->assertTrue($boolJobFailureMetricCaptured);
+
+        foreach ($merchantIds as $merchantId)
+        {
+            $redis->hdel(PayoutCore::CA_FUND_MANAGEMENT_PAYOUT_BALANCE_CONFIG_REDIS_KEY, $merchantId);
+        }
+    }
+
+    // --Fund Management Payout Cron Tests End Here
+    public function setFundManagementPayoutBalanceConfig($merchantId, $balanceConfig)
+    {
+        $redis = $this->app['redis'];
+
+        $redis->hset(PayoutCore::CA_FUND_MANAGEMENT_PAYOUT_BALANCE_CONFIG_REDIS_KEY, $merchantId, json_encode($balanceConfig));
+    }
+
+    public function validateQueueParams($merchantId, $expectedParams, $actualParams)
+    {
+        $this->assertEquals($merchantId, $actualParams[PayoutConstants::MERCHANT_ID]);
+        $this->assertEquals($expectedParams[PayoutConstants::CHANNEL], $actualParams[PayoutConstants::CHANNEL]);
+        $this->assertEquals($expectedParams[PayoutConstants::NEFT_THRESHOLD], $actualParams[PayoutConstants::THRESHOLDS][PayoutConstants::NEFT_THRESHOLD]);
+        $this->assertEquals($expectedParams[PayoutConstants::LITE_BALANCE_THRESHOLD], $actualParams[PayoutConstants::THRESHOLDS][PayoutConstants::LITE_BALANCE_THRESHOLD]);
+        $this->assertEquals($expectedParams[PayoutConstants::LITE_DEFICIT_ALLOWED], $actualParams[PayoutConstants::THRESHOLDS][PayoutConstants::LITE_DEFICIT_ALLOWED]);
+        $this->assertEquals($expectedParams[PayoutConstants::FMP_CONSIDERATION_THRESHOLD], $actualParams[PayoutConstants::THRESHOLDS][PayoutConstants::FMP_CONSIDERATION_THRESHOLD]);
+        $this->assertEquals($expectedParams[PayoutConstants::TOTAL_AMOUNT_THRESHOLD], $actualParams[PayoutConstants::THRESHOLDS][PayoutConstants::TOTAL_AMOUNT_THRESHOLD]);
     }
 }

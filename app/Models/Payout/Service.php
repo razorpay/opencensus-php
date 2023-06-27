@@ -5650,9 +5650,16 @@ class Service extends Base\Service
 
         return $auth->getMerchant()->isFeatureEnabled(Features::ENABLE_APPROVAL_VIA_OAUTH) === true;
     }
+
     public function getPartnerBankStatus(): array
     {
         return $this->core->getPartnerBankStatus();
     }
 
+    public function caFundManagementPayoutCheck($input)
+    {
+        $merchantIds = array_unique($input[Entity::MERCHANT_IDS]);
+
+        return $this->core->caFundManagementPayoutCheck($merchantIds);
+    }
 }

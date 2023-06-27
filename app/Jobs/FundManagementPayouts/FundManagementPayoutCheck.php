@@ -104,4 +104,9 @@ class FundManagementPayoutCheck extends Job
 
         $this->delete();
     }
+
+    public function getParams()
+    {
+        return $this->params;
+    }
 }

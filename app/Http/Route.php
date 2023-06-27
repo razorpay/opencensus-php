@@ -1921,6 +1921,9 @@ class Route
 
         'payout_get_holiday_details'              => ['get',     'holidays',                                        'PayoutController@getHolidayDetails'],
 
+        //fund_management_routes
+        'ca_check_fund_management_payout_cron'    => ['post', 'ca-fund-management-payouts/cron/check',        'PayoutController@caFundManagementPayoutCheck'],
+
         //Routes related to workflows microservice
         'wfs_config_create'                       => ['post',    'wf-service/configs',                               'WorkflowServiceController@createConfig'                            ],
         'wfs_config_update'                       => ['patch',   'wf-service/configs',                               'WorkflowServiceController@updateConfig'                            ],
@@ -5978,6 +5981,9 @@ class Route
 
         // cross border workflow callback
         'cb_invoice_workflow_callback',
+
+        // Fund Management Payouts
+        'ca_check_fund_management_payout_cron',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -14663,6 +14669,9 @@ class Route
             'banking_account_statement_automate_recon_cron',
             'banking_account_statement_async_insert_missing_cron',
             'banking_account_statement_detect_missing_cron',
+
+            // Fund Management Payouts
+            'ca_check_fund_management_payout_cron',
 
             'create_test_payouts_for_downtime_detection_icici',
             'create_test_payouts_for_downtime_detection_yesb',

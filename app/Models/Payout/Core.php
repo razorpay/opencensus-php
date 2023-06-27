@@ -96,6 +96,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
 use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
 use RZP\Models\BankingAccountStatement\Entity as BASEntity;
+use RZP\Jobs\FundManagementPayouts\FundManagementPayoutCheck;
 use RZP\Models\Payout\Batch\Constants as BatchPayoutConstants;
 use RZP\Jobs\FundManagementPayouts\FundManagementPayoutInitiate;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
@@ -199,6 +200,8 @@ class Core extends Base\Core
     const PARTNER_BANK_HEALTH_REDIS_KEY = "partner_bank_health";
 
     const PAYOUT_SERVICE_TEMPORARY_METADATA_TABLE = 'payout_meta_temporary';
+
+    const CA_FUND_MANAGEMENT_PAYOUT_BALANCE_CONFIG_REDIS_KEY = 'ca_fund_management_payout_balance_config';
 
     const ACCOUNT_TYPE_DIRECT = 'direct';
 
@@ -9744,5 +9747,65 @@ class Core extends Base\Core
         }
 
         return $auth->getMerchant()->isFeatureEnabled(FeatureConstants::ENABLE_APPROVAL_VIA_OAUTH) === true;
+    }
+
+    public function caFundManagementPayoutCheck($merchantIDs): array
+    {
+        $failedMerchantIds     = [];
+        $successfulMerchantIds = [];
+
+        $redis = $this->app['redis'];
+        foreach ($merchantIDs as $merchantId)
+        {
+            try
+            {
+                $keyValue = json_decode($redis->hget(self::CA_FUND_MANAGEMENT_PAYOUT_BALANCE_CONFIG_REDIS_KEY, $merchantId), true);
+
+                (new Validator())->validateInput(Validator::UPDATE_BALANCE_MANAGEMENT_CONFIG, $keyValue);
+
+                $jobRequest = [
+                    Entity::CHANNEL             => $keyValue[PayoutConstants::CHANNEL],
+                    Entity::MERCHANT_ID         => $merchantId,
+                    PayoutConstants::THRESHOLDS => [
+                        PayoutConstants::NEFT_THRESHOLD              => $keyValue[PayoutConstants::NEFT_THRESHOLD],
+                        PayoutConstants::LITE_BALANCE_THRESHOLD      => $keyValue[PayoutConstants::LITE_BALANCE_THRESHOLD],
+                        PayoutConstants::LITE_DEFICIT_ALLOWED        => $keyValue[PayoutConstants::LITE_DEFICIT_ALLOWED],
+                        PayoutConstants::FMP_CONSIDERATION_THRESHOLD => $keyValue[PayoutConstants::FMP_CONSIDERATION_THRESHOLD],
+                        PayoutConstants::TOTAL_AMOUNT_THRESHOLD      => $keyValue[PayoutConstants::TOTAL_AMOUNT_THRESHOLD],
+                    ],
+                ];
+
+                $this->trace->info(
+                    TraceCode::FUND_MANAGEMENT_PAYOUT_CHECK_JOB_REQUEST, $jobRequest);
+
+                FundManagementPayoutCheck::dispatch($this->mode, $jobRequest);
+
+                $this->trace->info(TraceCode::FUND_MANAGEMENT_PAYOUT_CHECK_JOB_DISPATCHED);
+                $successfulMerchantIds[] = $merchantId;
+            }
+            catch (\Throwable $exception)
+            {
+                $this->trace->traceException(
+                    $exception,
+                    Trace::ERROR,
+                    TraceCode::FUND_MANAGEMENT_PAYOUT_CHECK_JOB_DISPATCH_FAILED,
+                    [
+                        Entity::MERCHANT_ID => $merchantId,
+                    ]);
+
+                $this->trace->count(Metric::FUND_MANAGEMENT_PAYOUT_CRON_DISPATCH_FAILURES_COUNT, [
+                    Entity::MERCHANT_ID => $merchantId,
+                ]);
+
+                $failedMerchantIds[] = $merchantId;
+
+                continue;
+            }
+        }
+
+        return [
+            'dispatch_failed'     => $failedMerchantIds,
+            'dispatch_successful' => $successfulMerchantIds,
+        ];
     }
 }

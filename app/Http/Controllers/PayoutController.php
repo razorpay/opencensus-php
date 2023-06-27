@@ -1020,4 +1020,13 @@ class PayoutController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function caFundManagementPayoutCheck()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->caFundManagementPayoutCheck($input);
+
+        return ApiResponse::json($data);
+    }
 }

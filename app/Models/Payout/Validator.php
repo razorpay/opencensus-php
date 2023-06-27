@@ -144,6 +144,8 @@ class Validator extends Base\Validator
 
     const PARTNER_PAYOUT_APPROVAL_RULES = 'partner_payout_approval';
 
+    const UPDATE_BALANCE_MANAGEMENT_CONFIG = 'update_balance_management_config';
+
     //
     // This is required for build. Currently, build does not
     // accept ruleName as a parameter. Hence, this list needs
@@ -604,6 +606,15 @@ class Validator extends Base\Validator
 
     protected static $partnerPayoutApprovalRules = [
         'remarks'       => 'required|filled|string'
+    ];
+
+    protected static $updateBalanceManagementConfigRules = [
+        'channel'                     => 'required|filled|string',
+        'neft_threshold'              => 'required|integer|min:100',
+        'lite_balance_threshold'      => 'required|integer|min:100',
+        'lite_deficit_allowed'        => 'required|integer',
+        'fmp_consideration_threshold' => 'required|integer',
+        'total_amount_threshold'      => 'required|integer|min:100',
     ];
 
     protected function validateFtsAccountType($attribute, $ftsAccountType)
