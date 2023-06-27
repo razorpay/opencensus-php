@@ -1107,13 +1107,13 @@ class Core extends Base\Core
         ]);
 
         // Query datalake
-        $datalakeQuery = "select sum(amount) amount, merchant_id
-                                  from dbt_prod_harvester_agg.payments_v1_agg
-                                  where merchant_id in (%s)
-                                  and created_at < %s
-                                  group by merchant_id
-                                  having sum(amount) > %s
-                                  limit %s";
+        $datalakeQuery = "select sum(base_amount) amount, merchant_id
+                          from dbt_prod_harvester_agg.payments_v1_agg
+                          where merchant_id in (%s)
+                          and created_at < %s
+                          group by merchant_id
+                          having sum(base_amount) > %s
+                          limit %s";
 
         $datalakeQuery = sprintf($datalakeQuery, $merchantIds, $retentionPeriod, $threshold, $limit);
 
