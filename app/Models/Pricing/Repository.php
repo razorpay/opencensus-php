@@ -680,7 +680,8 @@ class Repository extends Base\Repository
         $amountRangeActive = 0,
         $orgId = null,
         $appName = null,
-        $receiverType = null
+        $receiverType = null,
+        $procurer = null,
     )
     {
         $rule = $this->newQueryWithOrgIdParam($orgId)
@@ -698,6 +699,9 @@ class Repository extends Base\Repository
         //Added for backward compatibility. If receiver_type is not empty only then filter
         if (!empty($receiverType)) {
             $rule = $rule->where(Entity::RECEIVER_TYPE,'=',$receiverType);
+        }
+        if (!empty($procurer)) {
+            $rule = $rule->where(Entity::PROCURER,'=',$procurer);
         }
 
         return $rule->first();
