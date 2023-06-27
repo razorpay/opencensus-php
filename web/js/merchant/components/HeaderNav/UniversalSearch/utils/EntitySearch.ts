@@ -8,7 +8,20 @@ import {
   SearchableEntities,
   SearchableEntityType,
   ProductType,
+  defaultEntityParamTypes,
 } from 'merchant/components/HeaderNav/UniversalSearch/typings';
+import moment from 'moment';
+
+const DEFAULT_DATE_RANGE_IN_DAYS = 30;
+const DEFAULT_COUNTRY_CODE = '+91';
+
+const defaultQueryParamsPerEntity: defaultEntityParamTypes = {
+  Payments: 'q',
+  Settlements: 'utr',
+  Orders: 'q',
+  Refunds: 'q',
+  Disputes: 'q',
+};
 
 export function entitySearch(searchQuery: string): {
   success: boolean;
@@ -95,6 +108,14 @@ export function transformEntitySearchResults(
   return finalResults;
 }
 
+export const getDefaultDateRangeForPayments = (): { to: number; from: number } => {
+  const now = moment();
+  const to = now.startOf('D').unix(); // to
+  const from = now.startOf('D').subtract(DEFAULT_DATE_RANGE_IN_DAYS, 'days').endOf('D').unix(); // from
+
+  return { to, from };
+};
+
 export function makeQuery(
   result: SearchableEntityType,
   searchQuery: string,
@@ -106,20 +127,27 @@ export function makeQuery(
   let queryParam: string | undefined;
   // uniquely identified the attribute
   if (matchedAttribute.length === 1) {
-    if (matchedAttribute[0] === 'ph_number' && result.id === 'Payments') {
-      let countryCode = '+91';
-      let number: string | undefined;
+    if (result.id === 'Payments') {
+      const { to, from } = getDefaultDateRangeForPayments();
 
-      if (searchQuery?.charAt(0) === '+') {
-        countryCode = searchQuery.substring(0, 3);
-        number = searchQuery.substring(3, 13);
-      } else if (queryParam?.charAt(0) === '0') {
-        number = searchQuery.substring(1, 11);
+      if (matchedAttribute[0] === 'ph_number') {
+        let countryCode = DEFAULT_COUNTRY_CODE;
+        let number: string | undefined;
+
+        if (searchQuery?.charAt(0) === '+') {
+          countryCode = searchQuery.substring(0, 3);
+          number = searchQuery.substring(3, 13);
+        } else if (queryParam?.charAt(0) === '0') {
+          number = searchQuery.substring(1, 11);
+        }
+        const value = number ? number : searchQuery;
+        return `${result.route}?country_code=${countryCode}&${
+          entityAttributes[matchedAttribute[0]]
+        }=${value}&from=${from}&to=${to}`;
+      } else {
+        queryParam = entityAttributes[matchedAttribute[0]];
+        return `${result.route}?${queryParam}=${searchQuery}&from=${from}&to=${to}`;
       }
-      const value = number ? number : searchQuery;
-      return `${result.route}?country_code=${countryCode}&${
-        entityAttributes[matchedAttribute[0]]
-      }=${value}`;
     } else {
       queryParam = entityAttributes[matchedAttribute[0]];
       return `${result.route}?${queryParam}=${searchQuery}`;
@@ -138,5 +166,6 @@ export function makeQuery(
   }
 
   // search failed to determine entity attribute
-  return `${result.route}?q=${searchQuery}`;
+  const genericParam = defaultQueryParamsPerEntity[result.id];
+  return `${result.route}?${genericParam}=${searchQuery}`;
 }

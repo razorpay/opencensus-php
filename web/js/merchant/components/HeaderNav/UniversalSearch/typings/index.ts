@@ -139,3 +139,5 @@ export interface attributeType {
 }
 
 export type entityAttributesTypes = Record<EntityAttributeTypes, attributeType>;
+
+export type defaultEntityParamTypes = Record<SearchableEntities, string>;

@@ -201,6 +201,12 @@ const UniversalSearch = ({
         optionSet: products.length ? 1 : 0,
         optionSetTotal: products.length,
       });
+    } else {
+      // Incase nothing is present in searchbar, we show only popular products
+      setSearchResults({
+        isPopular: true,
+        products: POPULAR_PRODUCTS,
+      });
     }
   }, [searchQuery]);
 

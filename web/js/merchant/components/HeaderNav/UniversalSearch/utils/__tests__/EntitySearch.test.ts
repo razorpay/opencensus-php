@@ -2,6 +2,7 @@ import {
   entitySearch,
   transformEntitySearchResults,
   makeQuery,
+  getDefaultDateRangeForPayments,
 } from 'merchant/components/HeaderNav/UniversalSearch/utils/EntitySearch';
 import { searchableEntities } from 'merchant/components/HeaderNav/UniversalSearch/configs';
 import {
@@ -132,8 +133,11 @@ describe('Make query util', () => {
       },
     };
     const query = makeQuery(entity, searchKey, ['payment_id'], 'entity_id');
+    const { to, from } = getDefaultDateRangeForPayments();
 
-    expect(query).toBe(`${entity.route}?${entity.attributes.payment_id}=${searchKey}`);
+    expect(query).toBe(
+      `${entity.route}?${entity.attributes.payment_id}=${searchKey}&from=${from}&to=${to}`,
+    );
   });
 
   test(`Search query can't be identified`, () => {
