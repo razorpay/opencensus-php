@@ -76,14 +76,14 @@ class PreActivationMerchantReleaseFundsDataAction extends BaseAction
             try
             {
                 $settlementClearanceExpEnabled = (new Detail\Core())
-                    ->getSplitzResponse($merchantId, 'SETTLEMENT_CLEARANCE_EXPERIMENT_ID');
+                    ->getSplitzResponse($merchantId, 'settlement_clearance_experiment_id');
 
                 $this->app['trace']->info(TraceCode::PRE_ACTIVATION_MERCHANT_RELEASE_FUNDS_EXP_ENABLED, [
                     'merchant_id'                   => $merchantId,
                     'settlementClearanceExpEnabled' => $settlementClearanceExpEnabled
                 ]);
 
-                if ($settlementClearanceExpEnabled === true)
+                if ($settlementClearanceExpEnabled === 'true')
                 {
                     $this->createRiskActionForAdminId($workflowAdmin, $input);
                 }
