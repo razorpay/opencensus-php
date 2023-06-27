@@ -493,7 +493,7 @@ class Validator extends Base\Validator
         'netbanking.bank_transaction_id'       => 'sometimes',
         'netbanking.bank_account_number'       => 'sometimes',
         'netbanking.gateway_merchant_id'       => 'sometimes',
-        'netbanking.gateway'                   => 'required|string|in:netbanking_sbi,netbanking_icici,netbanking_hdfc',
+        'netbanking.gateway'                   => 'required|string|in:netbanking_sbi,netbanking_icici,netbanking_hdfc,netbanking_axis',
         'meta'                                 => 'required|array',
         'meta.force_auth_payment'              => 'required|boolean',
         'meta.art_request_id'                  => 'required',
