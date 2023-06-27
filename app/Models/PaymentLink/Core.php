@@ -134,7 +134,7 @@ class Core extends Base\Core
         {
             $udfSchema = json_decode($settings[Entity::UDF_SCHEMA], true);
 
-            $allFields = $this->generateAllFieldsFromUDF($udfSchema);
+            $allFields = $this->generateAllFieldsFromUDF($udfSchema, $input);
 
             $settings[Entity::ALL_FIELDS] = json_encode($allFields);
 
@@ -207,7 +207,7 @@ class Core extends Base\Core
         return $paymentLink;
     }
 
-    public function generateAllFieldsFromUDF(array $udfSchema): array
+    public function generateAllFieldsFromUDF(array $udfSchema, array $input): array
     {
         $allFields = [];
 
@@ -220,11 +220,27 @@ class Core extends Base\Core
             $fieldCount++;
         }
 
+        // we need to add payment_page_items as well, as they also should be shown as separate columns in report
+        if (isset($input[Entity::PAYMENT_PAGE_ITEMS]) === true)
+        {
+            foreach ($input[Entity::PAYMENT_PAGE_ITEMS] as $item)
+            {
+                if ((isset($item[Item\Entity::ITEM]) === true) and
+                    (isset($item[Item\Entity::ITEM][Item\Entity::NAME]) === true))
+                {
+                    $itemName = $item[Item\Entity::ITEM][Item\Entity::NAME];
+                    $allFields[$itemName] = 'field_'.$fieldCount;
+
+                    $fieldCount++;
+                }
+            }
+        }
+
         return $allFields;
     }
 
 
-    public function  updateAllFieldsFromUDF(array $udfSchema, array $allFields): array
+    public function  updateAllFieldsFromUDF(array $udfSchema, array $allFields, array $input): array
     {
         $newFields = [];
 
@@ -238,6 +254,22 @@ class Core extends Base\Core
                 $totalFields++;
 
                 $newFields[$title] = 'field_'.$totalFields;
+            }
+        }
+
+        if (isset($input[Entity::PAYMENT_PAGE_ITEMS]) === true)
+        {
+            foreach ($input[Entity::PAYMENT_PAGE_ITEMS] as $item)
+            {
+                if ((isset($item[Item\Entity::ITEM]) === true) and
+                    (isset($item[Item\Entity::ITEM][Item\Entity::NAME]) === true) and
+                    (array_key_exists($item[Item\Entity::ITEM][Item\Entity::NAME], $allFields) === false))
+                {
+                    $totalFields++;
+
+                    $itemName = $item[Item\Entity::ITEM][Item\Entity::NAME];
+                    $newFields[$itemName] = 'field_'.$totalFields;
+                }
             }
         }
 
@@ -567,7 +599,7 @@ class Core extends Base\Core
 
                         $udfSchema = json_decode($settings[Entity::UDF_SCHEMA], true);
 
-                        $allFields = $this->updateAllFieldsFromUDF($udfSchema, $allFields);
+                        $allFields = $this->updateAllFieldsFromUDF($udfSchema, $allFields, $input);
 
                         $settings[Entity::ALL_FIELDS] = json_encode($allFields);
 

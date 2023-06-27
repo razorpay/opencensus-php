@@ -530,7 +530,7 @@ class PaymentLinkTest extends TestCase
 
         self::assertEquals($settings['key'], 'all_fields');
 
-        self::assertEquals($settings['value'], "{\"Email\":\"field_1\",\"Phone\":\"field_2\",\"contact\":\"field_3\",\"Address\":\"field_4\",\"DOB\":\"field_5\"}");
+        self::assertEquals($settings['value'], "{\"Email\":\"field_1\",\"Phone\":\"field_2\",\"contact\":\"field_3\",\"Address\":\"field_4\",\"DOB\":\"field_5\",\"item1\":\"field_6\",\"item2\":\"field_7\"}");
 
         return $res['id'];
     }
@@ -547,7 +547,7 @@ class PaymentLinkTest extends TestCase
 
         self::assertEquals($settings['key'], 'all_fields');
 
-        self::assertEquals($settings['value'], "{\"Email\":\"field_1\",\"Phone\":\"field_2\",\"contact\":\"field_3\",\"Address\":\"field_4\",\"DOB\":\"field_5\",\"Father Name\":\"field_6\"}");
+        self::assertEquals($settings['value'], "{\"Email\":\"field_1\",\"Phone\":\"field_2\",\"contact\":\"field_3\",\"Address\":\"field_4\",\"DOB\":\"field_5\",\"item1\":\"field_6\",\"item2\":\"field_7\",\"Father Name\":\"field_8\",\"item3\":\"field_9\"}");
     }
 
     public function testCreatePaymentPageRecordWithCustomFieldsSchema()
@@ -566,9 +566,188 @@ class PaymentLinkTest extends TestCase
 
         $entityArray = $entity->toArray();
 
-        $this->assertEquals($entityArray['custom_field_schema'], '{"field_4": {"key": "Address", "value": "test", "dataType": "string"}, "field_5": {"key": "DOB", "value": "test123", "dataType": "string"}}');
+        $this->assertEquals($entityArray['custom_field_schema'], '{"field_4": {"key": "Address", "value": "test", "dataType": "string"}, "field_5": {"key": "DOB", "value": "test123", "dataType": "string"}, "field_6": {"key": "item1", "value": "100001", "dataType": "string"}, "field_7": {"key": "item2", "value": "20000", "dataType": "string"}}');
     }
 
+    public function setupPaymentPageForUDFSchemaValidations()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+        $resp = $this->startTest();
+
+        $entity = $this->getDbLastEntity("payment_link");
+
+        $entityArray = $entity->toArray();
+
+        self::assertEquals($entityArray['view_type'], 'file_upload_page');
+
+        return $resp['id'];
+    }
+
+    public function testPaymentPageRecordRegexValidationPositive()
+    {
+        $id = $this->setupPaymentPageForUDFSchemaValidations();
+
+        $batch_id = 'batch_KoGILWQCoVkOz5';
+
+        $testData = $this->testData['testCreatePaymentPageRecordSecurityValidations'];
+
+        $testData['request']['url'] = '/payment_pages/'. $id. '/create_record/'. $batch_id;
+
+        $testData['request']['content'] = [
+            'amount'         => '101',
+            'sms_notify'     => TRUE,
+            'email_notify'   => TRUE,
+            'Email' => 'test@test.com',
+            'Phone' => 1231231234,
+            'Primary Reference Id' => 'test123123',
+            'Secondary Reference Id' => 'test123',
+            'URL' => 'https://razorpay.com',
+            'PAN' => 'ABCDP1234X',
+            'DOB' => '16 Jun, 2023',
+            'Amount 2' => 1234.56
+        ];
+
+        $this->ba->batchAppAuth();
+
+        $resp = $this->makeRequestAndGetContent($testData["request"]);
+
+        $this->assertEquals($resp["error_code"], "");
+        $this->assertEquals($resp["error_description"], "");
+    }
+
+    // invalid email
+    public function testPaymentPageRecordRegexValidationNegative1()
+    {
+        $id = $this->setupPaymentPageForUDFSchemaValidations();
+
+        $batch_id = 'batch_KoGILWQCoVkOz5';
+
+        $testData = $this->testData['testCreatePaymentPageRecordSecurityValidations'];
+
+        $testData['request']['url'] = '/payment_pages/'. $id. '/create_record/'. $batch_id;
+
+        $testData['request']['content'] = [
+            'amount'         => '101',
+            'sms_notify'     => TRUE,
+            'email_notify'   => TRUE,
+            'Email' => 'testtest.com',
+            'Phone' => 1231231234,
+            'Primary Reference Id' => 'test123123',
+            'Secondary Reference Id' => 'test123',
+            'URL' => 'https://razorpay.com',
+            'PAN' => 'ABCDP1234X',
+            'DOB' => '16 Jun, 2023',
+            'Amount 2' => 1234.56
+        ];
+
+        $this->ba->batchAppAuth();
+
+        $resp = $this->makeRequestAndGetContent($testData["request"]);
+
+        $this->assertEquals($resp["error_code"], "BAD_REQUEST_VALIDATION_FAILURE");
+        $this->assertEquals($resp["error_description"], "The email field is invalid. Does not match the regex pattern ^(?i)(([^<>()\\[\\]\\.,;:\\s@\"]+(\\.[^<>()\\[\\]\\.,;:\\s@\"]+)*)|(\".+\"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,}))$");
+    }
+
+
+    // invalid phone
+    public function testPaymentPageRecordRegexValidationNegative2()
+    {
+        $id = $this->setupPaymentPageForUDFSchemaValidations();
+
+        $batch_id = 'batch_KoGILWQCoVkOz5';
+
+        $testData = $this->testData['testCreatePaymentPageRecordSecurityValidations'];
+
+        $testData['request']['url'] = '/payment_pages/'. $id. '/create_record/'. $batch_id;
+
+        $testData['request']['content'] = [
+            'amount'         => '101',
+            'sms_notify'     => TRUE,
+            'email_notify'   => TRUE,
+            'Email' => 'test@test.com',
+            'Phone' => 123456,
+            'URL' => 'https://razorpay.com',
+            'Primary Reference Id' => 'test123123',
+            'Secondary Reference Id' => 'test123',
+            'PAN' => 'ABCDP1234X',
+            'DOB' => '16 Jun, 2023',
+            'Amount 2' => 1234.56
+        ];
+
+        $this->ba->batchAppAuth();
+
+        $resp = $this->makeRequestAndGetContent($testData["request"]);
+
+        $this->assertEquals($resp["error_code"], "BAD_REQUEST_VALIDATION_FAILURE");
+        $this->assertEquals($resp["error_description"], "The phone field is invalid. Does not match the regex pattern ^([0-9]){8,}$");
+    }
+
+
+    // invalid dob
+    public function testPaymentPageRecordRegexValidationNegative3()
+    {
+        $id = $this->setupPaymentPageForUDFSchemaValidations();
+
+        $batch_id = 'batch_KoGILWQCoVkOz5';
+
+        $testData = $this->testData['testCreatePaymentPageRecordSecurityValidations'];
+
+        $testData['request']['url'] = '/payment_pages/'. $id. '/create_record/'. $batch_id;
+
+        $testData['request']['content'] = [
+            'amount'         => '101',
+            'sms_notify'     => TRUE,
+            'email_notify'   => TRUE,
+            'Email' => 'test@test.com',
+            'Phone' => 12345678,
+            'URL' => 'https://razorpay.com',
+            'Primary Reference Id' => 'test123123',
+            'Secondary Reference Id' => 'test123',
+            'PAN' => 'ABCDP1234X',
+            'DOB' => '1612',
+            'Amount 2' => 1234.56
+        ];
+
+        $this->ba->batchAppAuth();
+
+        $resp = $this->makeRequestAndGetContent($testData["request"]);
+
+        $this->assertEquals($resp["error_code"], "BAD_REQUEST_VALIDATION_FAILURE");
+        $this->assertEquals($resp["error_description"], "The dob field is invalid. Does not match the regex pattern ^(([0]?[1-9])?|([1-2][0-9])?|([3][0,1])?) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)(, | )(1[6-8][0-9]{2}|19[0-8][0-9]|199[0-9]|[2-9][0-9]{3})$");
+    }
+
+    // invalid pan
+    public function testPaymentPageRecordRegexValidationNegative4()
+    {
+        $id = $this->setupPaymentPageForUDFSchemaValidations();
+
+        $batch_id = 'batch_KoGILWQCoVkOz5';
+
+        $testData = $this->testData['testCreatePaymentPageRecordSecurityValidations'];
+
+        $testData['request']['url'] = '/payment_pages/'. $id. '/create_record/'. $batch_id;
+
+        $testData['request']['content'] = [
+            'amount'         => '101',
+            'sms_notify'     => TRUE,
+            'email_notify'   => TRUE,
+            'Email' => 'test@test.com',
+            'Phone' => 12345678,
+            'URL' => 'https://razorpay.com',
+            'Primary Reference Id' => 'test123123',
+            'Secondary Reference Id' => 'test123',
+            'PAN' => '123',
+            'DOB' => '16 Jun, 2023',
+            'Amount 2' => 1234.56
+        ];
+
+        $this->ba->batchAppAuth();
+
+        $resp = $this->makeRequestAndGetContent($testData["request"]);
+
+        $this->assertEquals($resp["error_code"], "BAD_REQUEST_VALIDATION_FAILURE");
+        $this->assertEquals($resp["error_description"], "The pan field is invalid. Does not match the regex pattern ^[a-zA-z]{5}\d{4}[a-zA-Z]{1}$");
+    }
 
     public function testCreatePaymentPageRecordSecurityValidations()
     {
@@ -614,7 +793,7 @@ class PaymentLinkTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($testData["request"]);
 
-        $testData['request']['content']['Phone'] = 'new_primary_Ref';
+        $testData['request']['content']['Phone'] = 'newprimaryRef';
         $content = $this->makeRequestAndGetContent($testData["request"]);
 
         $this->assertEquals($content["error_description"], "Secondary reference id should be unique, duplicate value for test123");
@@ -963,7 +1142,7 @@ class PaymentLinkTest extends TestCase
 
         $this->ba->batchAppAuth();
 
-        $this->sendRequest($testData['request']);
+        $resp = $this->sendRequest($testData['request']);
 
         return $id;
     }

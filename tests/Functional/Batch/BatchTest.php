@@ -6,8 +6,10 @@ use Hash;
 use Mail;
 use Closure;
 use Mockery;
+use RZP\Models\Item;
 use RZP\Exception\AssertionException;
 use RZP\Models\Vpa;
+use RZP\Models\Feature\Constants;
 use RZP\Models\Batch;
 use RZP\Models\Payout;
 use RZP\Models\Merchant;
@@ -295,6 +297,107 @@ class BatchTest extends TestCase
         $this->createAndPutCsvFileInRequest($entries, __FUNCTION__);
 
         $this->startTest($testData);
+    }
+
+
+    public function setupPaymentPageWithItemsForBatchValidate()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+
+        $testData = $this->testData['setUpPaymentPageForFileUpload'];
+
+        $testData['request']['content']['payment_page_items'] = [
+            [
+                'item' => [
+                    'name'        =>  'item1',
+                    Item\Entity::AMOUNT => 5000,
+                    'currency'    => 'INR',
+                ],
+                'mandatory'         => true,
+            ],
+            [
+                'item' => [
+                    'name'        =>  'testName2',
+                    Item\Entity::AMOUNT => 10000,
+                    'currency'    => 'INR',
+                ],
+                'mandatory'         => false,
+            ]
+        ];
+
+        $resp = $this->startTest($testData);
+
+        return $resp["id"];
+    }
+
+    // send all fields
+    public function testFormBuilderBatchValidatePositive1()
+    {
+        $this->ba->proxyAuth();
+
+        $id = $this->setupPaymentPageWithItemsForBatchValidate();
+
+        $entries = $this->getFormBuilderBatchEntries();
+
+        $this->testData[__FUNCTION__]['request']['content']['config']['payment_page_id'] = $id;
+
+        $this->createAndPutCsvFileInRequest($entries, __FUNCTION__);
+
+        $this->startTest();
+    }
+
+    // send only required fields
+    public function testFormBuilderBatchValidatePositive2()
+    {
+        $this->ba->proxyAuth();
+
+        $id = $this->setupPaymentPageWithItemsForBatchValidate();
+
+        $entries = $this->getFormBuilderBatchEntries();
+
+        unset($entries[0]['testName2'], $entries[0]['Address 2']);
+
+        $this->testData[__FUNCTION__]['request']['content']['config']['payment_page_id'] = $id;
+
+        $this->createAndPutCsvFileInRequest($entries, __FUNCTION__);
+
+        $this->startTest();
+    }
+
+    // missing required field from usf_schema
+    public function testFormBuilderBatchValidateNegative1()
+    {
+        $this->ba->proxyAuth();
+
+        $id = $this->setupPaymentPageWithItemsForBatchValidate();
+
+        $entries = $this->getFormBuilderBatchEntries();
+
+        unset($entries[0]['contact']);
+
+        $this->testData[__FUNCTION__]['request']['content']['config']['payment_page_id'] = $id;
+
+        $this->createAndPutCsvFileInRequest($entries, __FUNCTION__);
+
+        $this->startTest();
+    }
+
+    // missing required field from payment_page_items
+    public function testFormBuilderBatchValidateNegative2()
+    {
+        $this->ba->proxyAuth();
+
+        $id = $this->setupPaymentPageWithItemsForBatchValidate();
+
+        $entries = $this->getFormBuilderBatchEntries();
+
+        unset($entries[0]['item1']);
+
+        $this->testData[__FUNCTION__]['request']['content']['config']['payment_page_id'] = $id;
+
+        $this->createAndPutCsvFileInRequest($entries, __FUNCTION__);
+
+        $this->startTest();
     }
 
     public function testPLBulkBatchCreateForValidUserRoles()

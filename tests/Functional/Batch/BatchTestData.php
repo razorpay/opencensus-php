@@ -43,6 +43,135 @@ return [
         ],
     ],
 
+
+    'setupPaymentPageWithItemsForBatchValidate' => [
+        'request'  => [
+            'url'     => '/payment_pages',
+            'method'  => 'post',
+            'content' => [
+                'title'         => 'Sample title',
+                "settings" => [
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"contact\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}},{\"name\":\"sec__ref__id_1\",\"required\":true,\"title\":\"DOB\",\"type\":\"string\",\"pattern\":\"phone\",\"settings\":{\"position\":4}},{\"name\":\"address\",\"required\":false,\"title\":\"Address 2\",\"type\":\"string\",\"pattern\":\"phone\",\"settings\":{\"position\":5}}]",
+                ],
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'view_type' => 'file_upload_page',
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'description' => NULL,
+                            'amount'      => NULL,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFormBuilderBatchValidatePositive1' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'payment_page',
+                'config' => [
+                    'payment_page_id' => '123'
+                ]
+            ],
+        ],
+        'response' => [
+            'content'     => [
+
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+
+    'testFormBuilderBatchValidatePositive2' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'payment_page',
+                'config' => [
+                    'payment_page_id' => '123'
+                ]
+            ],
+        ],
+        'response' => [
+            'content'     => [
+
+            ],
+            'status_code' => 200,
+        ]
+    ],
+
+    'testFormBuilderBatchValidateNegative1' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'payment_page',
+                'config' => [
+                    'payment_page_id' => '123'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The uploaded file has invalid headers',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_HEADERS,
+        ],
+    ],
+
+
+    'testFormBuilderBatchValidateNegative2' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'payment_page',
+                'config' => [
+                    'payment_page_id' => '123'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The uploaded file has invalid headers',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_HEADERS,
+        ],
+    ],
+
     'testCreateBatchOfFundAccountTypeRequestFileEntries' => [
         // Expected to create new bank account & new contact.
         [

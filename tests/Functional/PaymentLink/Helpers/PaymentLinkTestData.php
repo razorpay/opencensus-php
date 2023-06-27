@@ -5899,14 +5899,29 @@ return [
             'content' => [
                 'title'         => 'Sample title',
                 "settings" => [
-                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"contact\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}},{\"name\":\"address\",\"required\":true,\"title\":\"Address\",\"type\":\"string\",\"pattern\":\"phone\",\"settings\":{\"position\":4}},{\"name\":\"sec__ref__id_1\",\"required\":true,\"title\":\"DOB\",\"type\":\"string\",\"pattern\":\"phone\",\"settings\":{\"position\":4}}]",
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Phone\",\"required\":true,\"type\":\"string\",\"pattern\":\"alphanumeric\",\"minLength\":\"3\",\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"contact\",\"type\":\"string\",\"pattern\":\"alphanumeric\",\"settings\":{\"position\":3}},{\"name\":\"address\",\"required\":true,\"title\":\"Address\",\"type\":\"string\",\"pattern\":\"alphanumeric\",\"settings\":{\"position\":4}},{\"name\":\"sec__ref__id_1\",\"required\":true,\"title\":\"DOB\",\"type\":\"string\",\"pattern\":\"alphanumeric\",\"settings\":{\"position\":4}}]",
                 ],
                 'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
                 'view_type' => 'file_upload_page',
                 'payment_page_items' => [
                     [
                         'item' => [
-                            'name'        =>  'amount',
+                            'name'        =>  'item1',
+                            'description' => NULL,
+                            'amount'      => 100000,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ],
+                    [
+                        'item' => [
+                            'name'        =>  'item2',
                             'description' => NULL,
                             'amount'      => 100000,
                             'currency'    => 'INR',
@@ -5942,7 +5957,7 @@ return [
                 'payment_page_items' => [
                     [
                         'item' => [
-                            'name'        =>  'amount',
+                            'name'        =>  'item3',
                             'description' => NULL,
                             'amount'      => 100000,
                             'currency'    => 'INR',
@@ -5976,7 +5991,9 @@ return [
                 'Address'         => 'test',
                 'sms_notify'     => TRUE,
                 'email_notify'   => TRUE,
-                'DOB' => 'test123'
+                'DOB' => 'test123',
+                "item1" => 100001,
+                "item2" => 20000
             ],
         ],
         'response' => [
@@ -5997,7 +6014,9 @@ return [
                 'Address'        => 'test',
                 'sms_notify'     => TRUE,
                 'email_notify'   => TRUE,
-                'DOB'            => 'test123'
+                'DOB'            => 'test123',
+                'item1'          => 10000,
+                'item2'          => 10000
             ],
         ],
         'response' => [
@@ -6019,7 +6038,9 @@ return [
                 'Address'        => 'test',
                 'sms_notify'     => TRUE,
                 'email_notify'   => TRUE,
-                'DOB'            => '1234567890'
+                'DOB'            => '1234567890',
+                'item1'          => 10000,
+                'item2'          => 10000
             ],
         ],
         'response' => [
@@ -6410,7 +6431,43 @@ return [
             'content' => [
                 'title'         => 'Sample title',
                 "settings" => [
-                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"contact\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}},{\"name\":\"sec__ref__id_1\",\"required\":true,\"title\":\"DOB\",\"type\":\"string\",\"pattern\":\"phone\",\"settings\":{\"position\":4}}]",
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"contact\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}},{\"name\":\"sec__ref__id_1\",\"required\":true,\"title\":\"DOB\",\"type\":\"string\",\"pattern\":\"alphanumeric\",\"settings\":{\"position\":4}}]",
+                ],
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'view_type' => 'file_upload_page',
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'description' => NULL,
+                            'amount'      => NULL,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    'setupPaymentPageForUDFSchemaValidations' => [
+        'request'  => [
+            'url'     => '/payment_pages',
+            'method'  => 'post',
+            'content' => [
+                'title'         => 'Sample title',
+                "settings" => [
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Primary Reference Id\",\"required\":true,\"type\":\"string\",\"pattern\":\"alphanumeric\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"url\",\"required\":true,\"title\":\"URL\",\"type\":\"string\",\"pattern\":\"url\",\"settings\":{\"position\":3}},{\"name\":\"sec__ref__id_1\",\"required\":true,\"title\":\"Secondary Reference Id\",\"type\":\"string\",\"pattern\":\"alphanumeric\",\"settings\":{\"position\":4}},{\"name\":\"dob\",\"required\":true,\"title\":\"DOB\",\"type\":\"string\",\"pattern\":\"date\",\"settings\":{\"position\":5}}, {\"name\":\"amount\",\"required\":true,\"title\":\"Amount 2\",\"type\":\"string\",\"pattern\":\"amount\",\"settings\":{\"position\":6}}, {\"name\":\"phone\",\"required\":true,\"title\":\"Phone\",\"type\":\"string\",\"pattern\":\"phone\",\"settings\":{\"position\":7}},{\"name\":\"pan\",\"required\":true,\"title\":\"PAN\",\"type\":\"string\",\"pattern\":\"pan\",\"settings\":{\"position\":8}}]",
                 ],
                 'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
                 'view_type' => 'file_upload_page',

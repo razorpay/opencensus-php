@@ -5624,10 +5624,10 @@ class Header
 
         foreach ($udf_schema as $udf)
         {
+            $title = $udf['title'];
+
             if ($udf['required'] === true)
             {
-                $title = $udf['title'];
-
                 if (!in_array($title, $actualHeaders,'true'))
                 {
 
@@ -5640,6 +5640,9 @@ class Header
                         ]);
                 }
             }
+
+            // Remove the checked header from $actualHeaders to track extra elements later
+            unset($actualHeaders[array_search($title, $actualHeaders)]);
         }
 
         $paymentLink = (new PaymentLink())->find($pl_id);
@@ -5648,10 +5651,10 @@ class Header
 
         foreach ($payment_page_items as $paymentPageItem) {
 
+            $item = $paymentPageItem->item;
+
             if($paymentPageItem['mandatory'] === true)
             {
-                $item = $paymentPageItem->item;
-
                 if (!in_array($item['name'], $actualHeaders,'true'))
                 {
 
@@ -5664,6 +5667,20 @@ class Header
                         ]);
                 }
             }
+
+            // Remove the checked header from $actualHeaders to track extra elements later
+            unset($actualHeaders[array_search($item['name'], $actualHeaders)]);
+        }
+
+        // Check for extra headers not present in udf_schema or payment_page_items
+        if (empty($actualHeaders) === false) {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_HEADERS,
+                null,
+                [
+                    'unexpected_headers' => $actualHeaders,
+                ]
+            );
         }
     }
 

@@ -167,6 +167,21 @@ trait BatchTestTrait
         ];
     }
 
+    public function getFormBuilderBatchEntries(): array
+    {
+        return [
+            [
+                'Email' => 'test@test.com',
+                'Phone' => '1231231233',
+                'contact' => '1231231233',
+                'DOB' => '1231323',
+                'item1' => '121',
+                'testName2' => '123',
+                'Address 2' => '123'
+            ]
+        ];
+    }
+
     public function getRecurringAxisChargeBatch()
     {
         return [

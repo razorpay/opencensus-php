@@ -7,6 +7,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\PaymentLink\Entity as PaymentLink;
 use RZP\Models\PaymentLink\Service as Service;
+use RZP\Models\PaymentLink\Template\UdfSchema;
 use RZP\Models\Settings\Repository as Settings;
 use RZP\Trace\TraceCode;
 use RZP\Models\Batch\Entity as Batch;
@@ -120,9 +121,11 @@ class Core extends Base\Core
     {
         $id = PaymentLink::stripDefaultSign($paymentPage->getId());
 
-            $response = $this->setUdfParameters($id, $input);
+        $response = $this->setUdfParameters($id, $input);
 
-            $response = $this->setAmountParameters($paymentPage, $response, $input);
+        $this->validateUDFWithRegex($paymentPage, $input);
+
+        $response = $this->setAmountParameters($paymentPage, $response, $input);
 
         $response[Entity::PAYMENT_LINK_ID] = $id;
 
@@ -138,6 +141,34 @@ class Core extends Base\Core
         $response[Entity::STATUS] = Status::UNPAID;
 
         return $response;
+    }
+
+    public function validateUDFWithRegex(Base\Entity $paymentPage, array $input)
+    {
+        $id = PaymentLink::stripDefaultSign($paymentPage->getId());
+
+        $udfSchema = $paymentPage->getSettingsAccessor()->get(PaymentLink::UDF_SCHEMA);
+
+        $udfSchema = json_decode($udfSchema, true);
+
+        // build {name: value} array
+
+        $keys = array_keys($input);
+        $allUdfEntries = [];
+
+        foreach ($udfSchema as $udf)
+        {
+            if (in_array($udf[PaymentLink::TITLE],$keys) === true)
+            {
+                $name = $udf[PaymentLink::NAME];
+
+                $allUdfEntries[$name] = $input[$udf[PaymentLink::TITLE]];
+            }
+        }
+
+        $udfSchemaEntity = new UdfSchema($paymentPage);
+
+        $udfSchemaEntity->validate($allUdfEntries);
     }
 
     public function setUdfParameters(string $id, array $input)
