@@ -1487,6 +1487,13 @@ class Service extends Base\Service
                 {
                     $input[Payment\Entity::ORDER] = $order;
                 }
+                # have to send conv_fee & gst to PG-router to validate order with payment amount
+                if($order->getFeeConfigId() !== null and
+                    $payment->getConvenienceFee() !== null)
+                {
+                    $input['convenience_fee'] = $payment->getConvenienceFee();
+                    $input['convenience_fee_gst'] = $payment->getConvenienceFeeGst();
+                }
             }
 
             $paymentMap = $this->app['pg_router']->paymentCapture($id, $input, true);

@@ -333,6 +333,11 @@ class Processor
     const FEE_BEARER_CARD_PAYMENTS_VIA_PGROUTER = 'fee_bearer_card_payments_via_pg_router';
 
     /**
+    * Razorx flag to indicate if a Dynamic Convenience Fee Payment should go via PG Router and CPS or just via API service
+    */
+    const DYNAMIC_CONVENIENCE_PAYMENTS_VIA_PGROUTER = 'dynamic_convenience_payments_via_pg_router';
+
+    /**
      * Razorx flag to indicate if open wallet Payment should go via PG Router and CPS or just via API service
      */
     const OPEN_WALLET_CARD_PAYMENTS_VIA_PGROUTER = 'open_wallet_card_payments_via_pg_router';
@@ -715,7 +720,7 @@ class Processor
                     (($order->hasOffers() === true) or
                         ($order->isDiscountApplicable() === true) or
                         ($order->getProductId() !== null and $order->getProductType() !== ProductType::PAYMENT_LINK_V2) or
-                        ($order->getFeeConfigId() !== null) or
+//                        ($order->getFeeConfigId() !== null) or
                         ($order->invoice !== null)))
                 {
                     $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
@@ -771,7 +776,8 @@ class Processor
 
             //checking it here since we don't have to call the exp. twice
             $feeBearerResult = $this->app->razorx->getTreatment($merchant->getId(), self::FEE_BEARER_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
-            $isMerchantCustomerOrDynamicFeeBearer = $merchant->isFeeBearerCustomerOrDynamic();
+            $dynamicConvFeeResult = $this->app->razorx->getTreatment($merchant->getId(), self::DYNAMIC_CONVENIENCE_PAYMENTS_VIA_PGROUTER, $this->mode);
+            $isMerchantCustomerFeeBearer = $merchant->isFeeBearerCustomer();
 
 
             //Check for saved card token payments
@@ -780,7 +786,7 @@ class Processor
                 $tokenId = $input[Payment\Entity::TOKEN];
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::SAVED_CARD_TOKEN_PAYMENTS_VIA_PGROUTER, $this->mode);
 
-                if ($result === 'on' && ($feeBearerResult === "on" || $isMerchantCustomerOrDynamicFeeBearer === false))
+                if ($result === 'on' && ($feeBearerResult === "on" || $isMerchantCustomerFeeBearer === false))
                 {
                     try {
                         // First fetch the relevant customer (global or local)
@@ -925,14 +931,35 @@ class Processor
                 }
             }
 
-            if ($merchant->isFeeBearerCustomerOrDynamic() === true )
+            if ($merchant->isFeeBearerCustomer() === true )
             {
                 $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
-                    'reason' => "check_for_customer_or_dynamic_fee_bearer_rearch",
+                    'reason' => "check_for_customer_fee_bearer_rearch",
                     'merchant_id' => $merchant->getId(),
                     '$feeBearerResult' => $feeBearerResult,
                 ]);
                 return ($feeBearerResult === 'on');
+            }
+
+            if ($merchant->isFeeBearerDynamic() === true && $dynamicConvFeeResult === 'on') {
+                // Re-calculates fees on the amount, using a dummy payment creation flow.
+                // This sets re-calculated fee and amount value (in paise) in $input.
+                // Hence, saving original amount as amount.
+                $feesArray = $this->processAndReturnFees($input);
+                $input['amount'] = $feesArray['original_amount'];
+
+                if (isset($feesArray['customer_fee']) === true) {
+                    $input['convenience_fee'] = $feesArray['customer_fee'];
+
+                    $input['convenience_fee_gst'] = $feesArray['customer_fee_gst'];
+                }
+
+                $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                    'reason' => "check_for_dynamic_fee_bearer_rearch",
+                    'merchant_id' => $merchant->getId(),
+                    '$feeBearerResult' => $feeBearerResult,
+                ]);
+                return ($dynamicConvFeeResult === 'on');
             }
 
 
@@ -3100,7 +3127,7 @@ class Processor
                     $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::NAME] ?? $tokenRegistrationBankAccount->getBeneficiaryName();
 
                 $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::ACCOUNT_NUMBER] = $tokenRegistrationBankAccount->getAccountNumber();
-                
+
                 $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::IFSC] =
                     $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::IFSC] ?? $tokenRegistrationBankAccount->getIfscCode();
 
@@ -3164,7 +3191,7 @@ class Processor
         {
             unset($input['_']);
         }
-    
+
         if(empty($input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::ACCOUNT_NUMBER]) === false)
         {
             $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::ACCOUNT_NUMBER] = mask_except_last4($input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::ACCOUNT_NUMBER]);
@@ -3419,7 +3446,7 @@ class Processor
         if( $payment->hasOrder() === true and
             $payment->order->getFeeConfigId() !== null )
         {
-            $order = $this->repo->order->findByPublicId($payment->getOrderId());
+            $order = $this->repo->order->findByPublicId($payment->getApiOrderId());
             $rzpFee = $fee - $tax;
 
             $customerFee = $this->calculateCustomerFee($payment, $order, $rzpFee);
@@ -3431,11 +3458,6 @@ class Processor
             $payment->setFeeBearer(Merchant\FeeBearer::PLATFORM);
         }
 
-        if ($payment->getFeeBearer() === Merchant\FeeBearer::PLATFORM)
-        {
-            $fee = 0;
-            $tax = 0;
-        }
 
         //Verifying if value sent in Convenience Fee
         //is valid or not
