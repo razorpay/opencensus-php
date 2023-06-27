@@ -637,7 +637,6 @@ class Gateway
         self::UPI_ICICI,
         self::UPI_MINDGATE,
         self::UPI_AXIS,
-        self::UPI_AXISOLIVE,
         self::NETBANKING_SVC,
         self::ATOM,
         self::UPI_AIRTEL,
