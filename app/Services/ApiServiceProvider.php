@@ -118,6 +118,7 @@ use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutProvider\CouponProvider\Se
 use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutProvider\CodEngine\Service as MagicCheckoutCodEngineService;
 use RZP\Models\Merchant\OneClickCheckout\MagicAddressProvider\Service as MagicAddressProviderService;
 use RZP\Models\Merchant\OneClickCheckout\MagicAddressService\Client as MagicAddressServiceClient;
+use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutProvider\MerchantPluginProvider\Service as MagicCheckoutPluginService;
 use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutProvider\PrepayCODProvider\Service as MagicPrepayCODProviderService;
 
 class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvider
@@ -858,6 +859,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerMagicCodEngineService();
 
         $this->registerCheckoutService();
+
+        $this->registerMagicCheckoutPluginService();
     }
 
     protected function registerCacheManager()
@@ -2608,6 +2611,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             $implementation = $mock ? Mock\CheckoutService::class : CheckoutService::class;
 
             return new $implementation($app);
+        });
+    }
+
+    protected function registerMagicCheckoutPluginService()
+    {
+        $this->app->singleton('magic_checkout_plugin_service', function($app)
+        {
+            return new MagicCheckoutPluginService($app);
         });
     }
 }

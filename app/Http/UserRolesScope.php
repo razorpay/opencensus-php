@@ -1283,6 +1283,7 @@ class UserRolesScope
             '1cc_address_ingestion_addresses_post'                => Role::ALL_ROLES,
             '1cc_process_prepay_cod_orders'                       => Role::ALL_ROLES,
             'wallet_dashboard_proxy'                             => Role::ALL_ROLES,
+            '1cc_wooc_ingestion_plugins_post'                    => Role::ALL_ROLES,
         ];
 
         /*

@@ -4281,8 +4281,12 @@ class Route
         'update_shopify_1cc_credentials'            => ['post',       '1cc/merchants/{merchant_id}/shopify/credentials',       'MerchantController@updateShopify1ccCredentials'                 ],
         '1cc_address_ingestion_config_get'          => ['get',        '1cc/merchant/address_ingestion/config',    'MerchantController@get1ccAddressIngestionConfig' ],
         '1cc_address_ingestion_addresses_post'      => ['post',       '1cc/merchant/address_ingestion/addresses', 'MerchantController@push1ccAddresses' ],
+
+        '1cc_wooc_ingestion_plugins_post'           => ['post',       '1cc/merchant/woocommerce/plugins_list', 'MerchantController@push1ccWoocPluginInfo' ],
+
         '1cc_process_prepay_cod_orders'             => ['post',       '1cc/orders/cod/convert',                    'MerchantController@convert1ccPrepayCODOrders'],
         '1cc_get_woocommerce_configs'               => ['get',        'internal/1cc/merchants/woocommerce/configs',                         'MerchantController@getWoocommerce1ccConfigs'],
+
         '1cc_shopify_fetch_meta_fields'             => ['get',        '1cc/admin/merchants/{id}/shopify/metafields',                            'OneClickCheckoutController@fetchShopifyMetaFields'            ],
         '1cc_shopify_update_meta_fields'            => ['post',       '1cc/admin/merchants/{id}/shopify/metafields',                            'OneClickCheckoutController@updateShopifyMetaFields'           ],
         '1cc_shopify_fetch_themes'                  => ['get',        '1cc/admin/merchants/{id}/shopify/themes',                                'OneClickCheckoutController@fetchShopifyThemes'                ],
@@ -5010,7 +5014,9 @@ class Route
 
         '1cc_address_ingestion_config_get',
         '1cc_address_ingestion_addresses_post',
+        '1cc_wooc_ingestion_plugins_post',
         '1cc_process_prepay_cod_orders',
+
         'wallet_dashboard_proxy'
     ];
 
