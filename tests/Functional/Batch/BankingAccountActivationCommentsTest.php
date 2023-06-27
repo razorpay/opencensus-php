@@ -394,6 +394,57 @@ class BankingAccountActivationCommentsTest extends TestCase
         $this->startTest();
     }
 
+    public function testBatchUploadForIciciVideoKycBulkUpload(array $entries = [])
+    {
+        if (empty($entries) === true)
+        {
+            $entries = [
+                [
+                    Batch\Header::APPLICATION_NO                                   =>  '777-000011055',
+                    Batch\Header::TRACKER_ID                                       =>  'WEB111111111114700',
+                    Batch\Header::CLIENT_NAME                                      =>  'ABC Pvt Ltd. ',
+                    Batch\Header::F_NAME                                           =>  'First Name',
+                    Batch\Header::L_NAME                                           =>  'Last Name',
+                    Batch\Header::ICICI_CA_ACCOUNT_NUMBER                          =>  '1234543122',
+                    Batch\Header::LEADID                                           =>  '123456789',
+                    Batch\Header::COMMENT_OR_REMARKS                               =>  'this is test comment',
+                    Batch\Header::ICICI_LEADID_CREATION_DATE                       =>  'comment',
+                    Batch\Header::ICICI_T3_VKYC_COMPLETION_DATE                    =>  '19/07/2022',
+                    Batch\Header::ICICI_VKYC_INELIGIBLE_DATE                       =>  '19/07/2022',
+                    Batch\Header::ICICI_VKYC_INELIGIBLE_REASON                     =>  'vkyc ineligible reason',
+                    Batch\Header::ICICI_VKYC_COMPLETION_DATE                       =>  '12/05/2022',
+                    Batch\Header::ICICI_VKYC_DROP_OFF_DATE                         =>  '19/07/2022',
+                    Batch\Header::ICICI_VKYC_UNSUCCESSFUL_DATE                     =>  '19/07/2022',
+                    Batch\Header::ICICI_LEAD_ASSIGNED_TO_PHYSICAL_TEAM_DATE        =>  '19/07/2022',
+                    Batch\Header::ICICI_VKYC_STATUS        =>  'Sent to bank',
+                ],
+                [
+                    Batch\Header::APPLICATION_NO                                   =>  '888-000011055',
+                    Batch\Header::TRACKER_ID                                       =>  'WEB111111111114700',
+                    Batch\Header::CLIENT_NAME                                      =>  'ASD Pvt Ltd. ',
+                    Batch\Header::F_NAME                                           =>  'First Name',
+                    Batch\Header::L_NAME                                           =>  'Last Name',
+                    Batch\Header::ICICI_CA_ACCOUNT_NUMBER                          =>  '1234543122',
+                    Batch\Header::LEADID                                           =>  '123456789',
+                    Batch\Header::COMMENT_OR_REMARKS                               =>  'this is test comment',
+                    Batch\Header::ICICI_LEADID_CREATION_DATE                       =>  'comment',
+                    Batch\Header::ICICI_T3_VKYC_COMPLETION_DATE                    =>  '19/07/2022',
+                    Batch\Header::ICICI_VKYC_INELIGIBLE_DATE                       =>  '19/07/2022',
+                    Batch\Header::ICICI_VKYC_INELIGIBLE_REASON                     =>  'vkyc ineligible reason',
+                    Batch\Header::ICICI_VKYC_COMPLETION_DATE                       =>  '12/05/2022',
+                    Batch\Header::ICICI_VKYC_DROP_OFF_DATE                         =>  '19/07/2022',
+                    Batch\Header::ICICI_VKYC_UNSUCCESSFUL_DATE                     =>  '19/07/2022',
+                    Batch\Header::ICICI_LEAD_ASSIGNED_TO_PHYSICAL_TEAM_DATE        =>  '19/07/2022',
+                    Batch\Header::ICICI_VKYC_STATUS                                =>  'Sent to bank',
+                ],
+            ];
+        }
+
+        $this->createAndPutCsvFileInRequest($entries, __FUNCTION__);
+
+        $this->startTest();
+    }
+
     public function testBatchUploadForIciciBulkUploadCommentsIncorrectHeaders()
     {
         $entries = [
@@ -407,9 +458,25 @@ class BankingAccountActivationCommentsTest extends TestCase
         $this->expectException(BadRequestValidationFailureException::class);
 
         $this->testBatchUploadForIciciBulkUploadComments($entries);
-        
+
     }
-    
+
+    public function testBatchUploadForIciciVideoKycBulkUploadIncorrectHeaders()
+    {
+        $entries = [
+            [
+                Batch\Header::APPLICATION_NO               =>  '123123123',
+                Batch\Header::TRACKER_ID                 =>  '34342312312',
+                "not-correct"                           =>  'definitely not correct'
+            ]
+        ];
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->testBatchUploadForIciciVideoKycBulkUpload($entries);
+
+    }
+
     public function testBatchUploadForRblBulkUploadCommentsFailureCase()
     {
         $this->fixtures->create('banking_account', ['id' => '01234567890123', 'account_type' => 'current', 'status' => 'archived']);
@@ -443,6 +510,3 @@ class BankingAccountActivationCommentsTest extends TestCase
         $bankingAccountService->createCommentFromBatch($requestPayload);
     }
 }
-
-
-

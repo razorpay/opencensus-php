@@ -85,6 +85,8 @@ class MailTags
     const BATCH_BANKING_ACCOUNT_ACTIVATION_COMMENTS_FILE         = 'batch_banking_account_activation_comments_file';
     const BATCH_ICICI_LEAD_ACCOUNT_ACTIVATION_COMMENTS_FILE      = 'batch_icici_lead_account_activation_comments_file';
     const BATCH_ICICI_BULK_UPLOAD_COMMENTS_FILE                  = 'batch_icici_bulk_upload_comments_file';
+
+    const BATCH_ICICI_VIDEO_KYC_BULK_UPLOAD_FILE                 = 'batch_icici_video_kyc_bulk_upload_file';
     const BATCH_RBL_BULK_UPLOAD_COMMENTS_FILE                    = 'batch_rbl_bulk_upload_comments_file';
 
     const BATCH_PARTNER_SUBMERCHANT_INVITE_FILE = 'batch_partner_submerchant_invite_file';

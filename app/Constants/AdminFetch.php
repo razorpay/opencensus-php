@@ -652,6 +652,7 @@ class AdminFetch
                         'nach_debit_nach_citi',
                         'rbl_bulk_upload_comments',
                         'icici_bulk_upload_comments',
+                        'icici_video_kyc_bulk_upload',
                         'website_checker',
                         'emandate_debit_hdfc',
                         'create_exec_risk_action',

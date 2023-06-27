@@ -391,6 +391,11 @@ class Validator extends Base\Validator
         Entity::CONFIG        => 'filled|array',
     ];
 
+    protected static $iciciVideoKycBulkUploadCreateRules = [
+        Entity::FILE          => 'required|file' . self::DEFAULT_MIME_RULE,
+        Entity::TYPE          => 'required|in:icici_video_kyc_bulk_upload',
+        Entity::CONFIG        => 'filled|array',
+    ];
 
     protected static $iciciStpMisCreateRules = [
         Entity::FILE        => 'required|file' . self::DEFAULT_MIME_RULE,

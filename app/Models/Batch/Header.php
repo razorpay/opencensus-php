@@ -1275,6 +1275,26 @@ class Header
     const ACCOUNT_NUMBER_CHANGE                   = 'Account number change (Y/N)';
     const FOLLOW_UP_DATE                          = 'Follow up date';
 
+
+    //ICICI Video KYC
+    const ICICI_LEADID_CREATION_DATE                    = 'Lead ID creation date [OTP date]';
+
+    const ICICI_T3_VKYC_COMPLETION_DATE                 = 'T+3 date for V KYC completion';
+
+    const ICICI_VKYC_INELIGIBLE_DATE                    = 'VKYC ineligible date';
+
+    const ICICI_VKYC_INELIGIBLE_REASON                  = 'VKYC ineligible reason';
+
+    const ICICI_VKYC_COMPLETION_DATE                    = 'VKYC completion date';
+
+    const ICICI_VKYC_DROP_OFF_DATE                      = 'VKYC drop off date';
+
+    const ICICI_VKYC_UNSUCCESSFUL_DATE                  = 'VKYC unsuccessful date';
+
+    const ICICI_LEAD_ASSIGNED_TO_PHYSICAL_TEAM_DATE     = 'Lead assigned to physical process team date';
+
+    const ICICI_VKYC_STATUS                             = 'Status';
+
     //Mastercard
     const SR_NO                                = "Sr. No";
     const CARD_NUMBER                          = "Card Number";
@@ -4854,6 +4874,28 @@ class Header
                 self::FIRST_DISPOSITION,
                 self::SECOND_DISPOSITION,
                 self::THIRD_DISPOSISTION,
+            ],
+        ],
+
+        Type::ICICI_VIDEO_KYC_BULK_UPLOAD => [
+            self::INPUT => [
+                self::APPLICATION_NO,
+                self::TRACKER_ID,
+                self::CLIENT_NAME,
+                self::F_NAME,
+                self::L_NAME,
+                self::ICICI_CA_ACCOUNT_NUMBER,
+                self::LEADID,
+                self::COMMENT_OR_REMARKS,
+                self::ICICI_LEADID_CREATION_DATE,
+                self::ICICI_T3_VKYC_COMPLETION_DATE,
+                self::ICICI_VKYC_INELIGIBLE_DATE,
+                self::ICICI_VKYC_INELIGIBLE_REASON,
+                self::ICICI_VKYC_COMPLETION_DATE,
+                self::ICICI_VKYC_DROP_OFF_DATE,
+                self::ICICI_VKYC_UNSUCCESSFUL_DATE,
+                self::ICICI_LEAD_ASSIGNED_TO_PHYSICAL_TEAM_DATE,
+                self::ICICI_VKYC_STATUS
             ]
         ],
 

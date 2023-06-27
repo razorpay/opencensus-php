@@ -90,4 +90,19 @@ return [
             ],
         ],
     ],
+
+    'testBatchUploadForIciciVideoKycBulkUpload'   => [
+        'request' => [
+            'url'  => '/admin/batches',
+            'method'  => 'post',
+            'content' =>  [
+                'type'    => 'icici_video_kyc_bulk_upload',
+            ]
+        ],
+        'response'  =>    [
+            'content' =>  [
+                'status'      =>     'CREATED'
+            ],
+        ],
+    ],
 ];
