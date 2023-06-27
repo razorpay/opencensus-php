@@ -992,6 +992,8 @@ class Service extends Base\Service
         {
 
             Session::put('current_merchant_id', $merchantId);
+            
+            Session::forget('is_merchant_login');
 
             $traceData = [
                 'id'          => $user->id,

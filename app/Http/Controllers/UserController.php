@@ -242,6 +242,9 @@ class UserController extends Controller
             {
                 // Chunk based straming: send second chunk
                 $view = view('merchant.index2', $data)->render();
+                $this->trace->info(TraceCode::CHUNKED_DETAILS, [
+                    'chunkRendered' => '2',
+                ]);
 
                 echo($view);
                 ob_flush();
@@ -351,6 +354,10 @@ class UserController extends Controller
 
         $isMerchantLogin = Session::get('is_merchant_login');
 
+        $this->trace->info(TraceCode::CHUNKED_DETAILS, [
+            'shouldRenderCBS' => $isMerchantLogin,
+        ]);
+
         if (is_null($isMerchantLogin) === true)
         {
             if (empty($userError) and empty($orgError))
@@ -379,6 +386,9 @@ class UserController extends Controller
 
                 // Chunk based straming: send first chunk
                 $view = view('merchant.index1', $data)->render();
+                $this->trace->info(TraceCode::CHUNKED_DETAILS, [
+                    'chunkRendered' => '1',
+                ]);
 
                 echo $view;
                 ob_flush();
