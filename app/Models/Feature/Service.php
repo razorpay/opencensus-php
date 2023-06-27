@@ -17,6 +17,7 @@ use RZP\Base\RuntimeManager;
 use RZP\Jobs\DCS\AssignFeatures;
 use RZP\Models\Merchant\Credits;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Jobs\DCS\ValidateFeaturesAPIAndDCS;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Feature\Constants as Features;
