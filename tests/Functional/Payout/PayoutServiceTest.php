@@ -7972,6 +7972,29 @@ class PayoutServiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchPayoutMultipleWithIdParam()
+    {
+        $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FETCH_VA_PAYOUTS_VIA_PS]);
+
+        $request['url'] = '/payouts';
+
+        $input = [
+            'id'             => 'pout_Gg7sgBZgvYjlSB',
+            'count'          => 10,
+            'account_number' => $this->bankingBalance->getAccountNumber(),
+        ];
+
+        $query = (new PayoutServiceFetch)->buildQueryFromInput($input);
+
+        $request['url'] .= '?' . $query;
+
+        $this->mockPayoutServiceFetch(false, $request);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
     public function testFetchPayoutMultipleWithErrorFromService()
     {
         $this->fixtures->on('live')->merchant->addFeatures([Feature\Constants::FETCH_VA_PAYOUTS_VIA_PS]);

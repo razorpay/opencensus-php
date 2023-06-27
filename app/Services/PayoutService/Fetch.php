@@ -16,9 +16,11 @@ class Fetch extends Base
 
     const ARRAY_ENCODING_REGEX_PATTERN_REPLACEMENT = '%5B%5D';
 
+    const FETCH_BY_ID_PAYOUT_ID = 'fetch_by_id_payout_id';
+
     public function fetch(string $entity, string $id, array $input)
     {
-        $input += ['id' => $id];
+        $input += [self::FETCH_BY_ID_PAYOUT_ID => $id];
 
         return $this->getEntity($entity, $input);
     }
@@ -60,12 +62,12 @@ class Fetch extends Base
 
     protected function modifyUriAndContentIfApplicable(array &$input, &$url)
     {
-        if ((isset($input['id']) === true) and
-            (empty($input['id']) === false))
+        if ((isset($input[self::FETCH_BY_ID_PAYOUT_ID]) === true) and
+            (empty($input[self::FETCH_BY_ID_PAYOUT_ID]) === false))
         {
-            $url = $url . '/' . $input['id'];
+            $url = $url . '/' . $input[self::FETCH_BY_ID_PAYOUT_ID];
 
-            unset($input['id']);
+            unset($input[self::FETCH_BY_ID_PAYOUT_ID]);
         }
 
         $query = $this->buildQueryFromInput($input);
