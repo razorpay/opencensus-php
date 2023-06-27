@@ -457,6 +457,20 @@ class Service extends Base\Service
         return ['items'   =>  $response];
     }
 
+    /**
+     * fetches all the required entities for partnership service
+     * @param array $input
+     *
+     * @return array
+     */
+    public function fetchPartnerRelatedEntitiesForPRTS(array $input): array
+    {
+        $merchantIds = explode(',',$input['ids']);
+        $requiredEntities = explode(',',$input['expand']);
+
+        return $this->core->fetchPartnerRelatedEntitiesForPRTS($merchantIds, $requiredEntities);
+
+    }
     public function isMarketplaceTransferExpEnabled(?Merchant\Entity $partner): bool
     {
         if (empty($partner) === true)

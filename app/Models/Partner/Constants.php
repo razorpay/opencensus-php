@@ -3,6 +3,8 @@
 namespace RZP\Models\Partner;
 
 use RZP\Models\Merchant;
+use RZP\Models\Tax\Gst\GstTaxIdMap;
+use RZP\Models\Merchant\Invoice\TaxName;
 
 class Constants
 {
@@ -10,6 +12,9 @@ class Constants
     const WEEKLY_ACTIVATION_SUMMARY_JOB_PAGE_SIZE = 300;
     const WEEKLY_ACTIVATION_SUMMARY_PARTNER_LIMIT = 1000000;
     const WEEKLY_ACTIVATION_SUMMARY_JOB_BATCH_SIZE = 10;
+
+    const ADDRESS ='address';
+    const COUNTRY ='country';
 
     public static $subMActivationStatusLabels = [
         'activated' => 'Activated',
@@ -58,5 +63,23 @@ class Constants
     public static $defaultPaymentMethodsPartnerTypes = [
         Merchant\Constants::AGGREGATOR,
         Merchant\Constants::FULLY_MANAGED,
+    ];
+
+    public static array $taxComponentNameMap = [
+        TaxName::CGST  => [
+            'tax_id'   => GstTaxIdMap::CGST_90000,
+            'name'     => 'CGST 9%',
+            'rate'     => '90000',
+        ],
+        TaxName::SGST  => [
+            'tax_id'   => GstTaxIdMap::SGST_90000,
+            'name'     => 'SGST 9%',
+            'rate'     => '90000',
+        ],
+        TaxName::IGST  => [
+            'tax_id'   => GstTaxIdMap::IGST_180000,
+            'name'     => 'IGST 18%',
+            'rate'     => '180000',
+        ]
     ];
 }

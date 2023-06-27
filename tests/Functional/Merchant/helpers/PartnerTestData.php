@@ -3087,4 +3087,71 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testFetchEntitiesForPartnershipService' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/internal/partnerships/merchant',
+        ],
+        'response' => [
+            'content' => [[
+                'merchant'           => [
+                    'partner_type'       => 'reseller',
+                    'country'            => 'IN'
+                ],
+                'merchant_details'   => [
+                    'activation_status'  => 'activated',
+                    'gstin'              => '29ABCDE1234L1Z1'
+                ],
+                'partner_activation' => [
+                    'activation_status'  => 'activated'
+                ],
+                'commission_balance' => [
+                    'balance_id'         => 'balanceIdTest1'
+                ]
+            ]],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFetchPartialEntitiesForPartnershipService' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/internal/partnerships/merchant',
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'merchant'      => [
+                        'partner_type' => 'reseller',
+                        'country'      => 'IN'
+                    ],
+                    'tax_components' => [
+                        [
+                            'name'     => 'CGST 9%',
+                            'rate'     => '90000',
+                        ],
+                        [
+                            'name'     => 'SGST 9%',
+                            'rate'     => '90000',
+                        ]
+                    ]
+                ],
+                [
+                    'merchant'       => [
+                        'id'           => 'partnerMerchId',
+                        'partner_type' => 'reseller',
+                        'country'      => 'IN'
+                    ],
+                    'tax_components' => [
+                        [
+                            'name'     => 'IGST 18%',
+                            'rate'     => '180000',
+                        ]
+                    ]
+                ]
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

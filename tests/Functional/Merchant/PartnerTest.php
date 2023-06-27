@@ -5367,6 +5367,53 @@ class PartnerTest extends OAuthTestCase
         $this->startTest($testData);
     }
 
+    public function testFetchEntitiesForPartnershipService()
+    {
+        [$partnerId, $app, $subMerchant] = $this->createResellerPartnerAndSubmerchant();
+
+        $this->fixtures->merchant_detail->edit($partnerId, [
+            'business_registered_address' => 'Koramangala',
+            'business_registered_state'   => 'KARNATAKA',
+            'business_registered_pin'     => 560047,
+            'business_dba'                => 'test',
+            'business_name'               => 'rzp_test',
+            'business_registered_city'    => 'Bangalore',
+            'activation_status'           => 'activated',
+            'gstin'                       => '29ABCDE1234L1Z1'
+        ]);
+        $this->fixtures->create('partner_activation', ['merchant_id' => $partnerId,'activation_status' => 'activated']);
+        $this->fixtures->create('balance', [
+            'type'           => 'commission',
+            'merchant_id'    => $partnerId,
+            'balance'        => 300000,
+            'id'             => "balanceIdTest1"
+        ]);
+
+        $this->ba->partnershipServiceAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/internal/partnerships/merchant?ids='.$partnerId.'&expand=merchant,merchant_detail,partner_activation,commission_balance';
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testFetchPartialEntitiesForPartnershipService()
+    {
+        [$partnerId, $app, $subMerchant] = $this->createResellerPartnerAndSubmerchant();
+        $this->createMerchant('partnerMerchId','merch',true);
+        $this->fixtures->merchant_detail->edit('partnerMerchId', [
+            'gstin'  => '37ABCDE1234L1Z1'
+        ]);
+        $this->ba->partnershipServiceAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/internal/partnerships/merchant?ids='.$partnerId.',partnerMerchId'.'&expand=merchant,tax_components';
+
+        $this->runRequestResponseFlow($testData);
+    }
+
     private function createResellerPartnerAndSubmerchant(string $submerchantId = '101submerchant', string $appId = 'reseller84ifke')
     {
         list($partner, $app) = $this->createPartnerAndApplication(['partner_type' => 'reseller'], ['id' => $appId]);

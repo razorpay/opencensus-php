@@ -140,4 +140,13 @@ class PartnerController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function fetchPartnerRelatedEntitiesForPRTS()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->fetchPartnerRelatedEntitiesForPRTS($input);
+
+        return ApiResponse::json($response);
+    }
 }

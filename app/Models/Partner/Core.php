@@ -10,6 +10,7 @@ use RZP\Constants\Mode;
 use RZP\Constants\Product;
 use RZP\Exception;
 use RZP\Trace\Tracer;
+use Illuminate\Support\Str;
 use RZP\Jobs\PartnerMigrationAuditJob;
 use RZP\Jobs\BulkMigrateResellerToAggregatorJob;
 use RZP\Models\Base\PublicCollection;
@@ -23,6 +24,7 @@ use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Error\ErrorCode;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\Entity as E;
+use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\Metric;
 use RZP\Models\Partner\Metric as PartnerMetrics;
 use RZP\Models\Merchant\Detail;
@@ -34,6 +36,7 @@ use RZP\Models\Partner\Activation;
 use RZP\lib\ConditionParser\Parser;
 use Illuminate\Support\Facades\Mail;
 use RZP\Models\Merchant\Detail\Entity;
+use RZP\Models\Pricing\Calculator\Tax\IN\Utils as TaxUtils;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\PartnerActivationMigration;
 use RZP\Models\Merchant\Detail\ValidationFields;
@@ -1548,5 +1551,113 @@ class Core extends Detail\Core
         MigrateResellerToPurePlatformPartnerJob::dispatch($input['merchant_id'],$actorDetails);
 
         return ['triggered' => 'true', 'input' => $input];
+    }
+
+    /**
+     * @param array $merchantIds
+     * @param array $requiredEntities [merchant,merchant_details,tax_components,partner_activation,commission_balance]
+     *
+     * @return array
+     */
+    public function fetchPartnerRelatedEntitiesForPRTS(array $merchantIds, array $requiredEntities): array
+    {
+        $result    = [];
+        $relations = [];
+        foreach($requiredEntities as $entity)
+        {
+            if(in_array($entity, ["tax_components","merchant"], true)  == false)
+            {
+                $relations[] = Str::camel($entity);
+            }
+        }
+        $merchants =  $this->repo->merchant->findManyWithRelations($merchantIds, $relations);
+        foreach ($merchants as $merchant) {
+            if (empty($merchant) == false and $merchant->isPartner())
+            {
+                $result[] = $this->buildPartnershipResponseForMerchant($merchant, $requiredEntities);
+            }
+        }
+        return $result;
+    }
+
+    public function buildPartnershipResponseForMerchant(Merchant\Entity $merchant, array $entities): array
+    {
+        $output =[];
+        foreach($entities as $entity) {
+            switch ($entity) {
+                case "merchant":
+                    $output["merchant"] = $this->buildMerchantArray($merchant);
+                    break;
+                case "partner_activation":
+                    $output["partner_activation"] = $this->buildPartnerActivationArray($merchant);
+                    break;
+                case "commission_balance":
+                    $output["commission_balance"]= $this->buildCommissionBalanceArray($merchant);
+                    break;
+                case "tax_components":
+                    $output["tax_components"] = $this->buildTaxComponentArray($merchant);
+                    break;
+                case "merchant_detail":
+                    $output["merchant_details"] = $this->buildMerchantDetailsArray($merchant);
+            }
+        }
+        return $output;
+    }
+
+    private function buildMerchantDetailsArray(Merchant\Entity $merchant): array
+    {
+        $merDetail = $merchant->merchantDetail;
+        if ($merDetail == null) {
+            return [];
+        }
+        return [
+            Entity::ID        => $merDetail->getContactMobile(),
+            Entity::GSTIN             => $merDetail->getGstin(),
+            Entity::PROMOTER_PAN      => $merDetail->getPromoterPan(),
+            Entity::COMPANY_PAN       => $merDetail->getPan(),
+            Entity::ACTIVATION_STATUS => $merDetail->getActivationStatus(),
+            PartnerConstants::ADDRESS => $merDetail->getBusinessRegisteredAddressAsText()
+        ];
+    }
+
+    private function buildTaxComponentArray(Merchant\Entity $merchant): array
+    {
+        $taxComponent = [];
+        $taxes = TaxUtils::getTaxComponents($merchant);
+        foreach ($taxes as $name => $rate) {
+            $taxComponent[] = PartnerConstants::$taxComponentNameMap[$name];
+        }
+        return $taxComponent;
+    }
+
+    private function buildCommissionBalanceArray(Merchant\Entity $merchant): array
+    {
+        $commBalance = $merchant->commissionBalance;
+        if ($commBalance == null) {
+            return [];
+        }
+        return [ Balance\Entity::BALANCE_ID => $commBalance->getId() ];
+    }
+
+    private function buildPartnerActivationArray(Merchant\Entity $merchant): array
+    {
+        $partnerActivation = $merchant->partnerActivation;
+        if ($partnerActivation == null) {
+            return [];
+        }
+        return [Activation\Entity::ACTIVATION_STATUS => $partnerActivation->getActivationStatus() ];
+    }
+
+    private function buildMerchantArray(Merchant\Entity $merchant): array
+    {
+        return [
+            Merchant\Entity::ID           => $merchant->getId(),
+            Merchant\Entity::NAME         => $merchant->getName(),
+            Merchant\Entity::PARTNER_TYPE => $merchant->getPartnerType(),
+            Merchant\Entity::CREATED_AT   => $merchant->getCreatedAt(),
+            PartnerConstants::COUNTRY     => $merchant->getCountry(),
+            Merchant\Entity::EMAIL        => $merchant->getEmail(),
+            Merchant\Entity::ORG_ID       => $merchant->getOrgId()
+        ];
     }
 }
