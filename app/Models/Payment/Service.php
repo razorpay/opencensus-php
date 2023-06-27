@@ -4920,7 +4920,14 @@ class Service extends Base\Service
         $processor = $this->getNewProcessor($this->merchant);
         $data = $processor->processAndReturnPaymentFees( $payment);
 
-        $data['zero_pricing_rule_id'] = (new Fee)->getZeroPricingPlanRule($payment)->getId();
+        try
+        {
+            if ($this->merchant->getCountry() === 'IN')
+            {
+                $data['zero_pricing_rule_id'] = (new Fee)->getZeroPricingPlanRule($payment)->getId();
+            }
+        }
+        catch (\Throwable $exception){}
 
         $esInput['payment_ids'] = array($id);
         $this->paymentsCardEsSyncCron($esInput);
@@ -4949,7 +4956,14 @@ class Service extends Base\Service
                 $processor = $this->getNewProcessor($this->merchant);
                 $data = $processor->processAndReturnPaymentFees($payment);
 
-                $data['zero_pricing_rule_id'] = (new Fee)->getZeroPricingPlanRule($payment)->getId();
+                try
+                {
+                    if ($this->merchant->getCountry() === 'IN')
+                    {
+                        $data['zero_pricing_rule_id'] = (new Fee)->getZeroPricingPlanRule($payment)->getId();
+                    }
+                }
+                catch (\Throwable $exception){}
 
                 break;
 
