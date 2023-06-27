@@ -2,7 +2,9 @@
 
 namespace RZP\Models\Merchant;
 
+use RZP\Models\Merchant\Referral\Entity as ReferralEntity;
 use Throwable;
+use ApiResponse;
 use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
 use RZP\Models\Feature;
@@ -145,6 +147,103 @@ class CapitalSubmerchantUtility
     }
 
     /**
+     * Fetch capital applications based on $product and $merchantId from LOS Service
+     *
+     * @param string $merchantId
+     * @param string $productId
+     *
+     * @return array
+     * @throws Throwable
+     */
+    public function fetchApplicationsForMerchantAndProduct(string $merchantId, string $productId)
+    {
+        $this->trace->info(
+            TraceCode::FETCH_CAPITAL_APPLICATIONS_FOR_MERCHANT_REQUEST,
+            [
+                'merchant_id' => $merchantId,
+                'product_id'  => $productId
+            ]
+        );
+
+        try
+        {
+            $response = $this->app['losService']->sendRequest(
+                Constants::GET_CAPITAL_APPLICATIONS_URL,
+                [
+                    "merchant_id"         => $merchantId,
+                    Constants::PRODUCT_ID => $productId,
+                ],
+                [
+                    'X-Service-Name' => $this->app['basicauth']->getInternalApp() ?? '',
+                    'X-Auth-Type'    => 'internal',
+                ]
+            );
+
+            $statusCode = $response->status_code;
+            $body = json_decode($response->body, true);
+
+            $this->trace->info(
+                TraceCode::FETCH_CAPITAL_APPLICATIONS_FOR_MERCHANT_RESPONSE,
+                [
+                    'status_code' => $statusCode,
+                    'body'        => $body
+                ]
+            );
+
+            return ['body' => $body, 'status' => $statusCode];
+        }
+        catch (Throwable $ex)
+        {
+            $this->trace->error(
+                TraceCode::BAD_REQUEST_COULD_NOT_FETCH_MERCHANT_CAPITAL_APPLICATIONS,
+                [
+                    "merchant_id"         => $merchantId,
+                    Constants::PRODUCT_ID => $productId,
+                    'exception'           => $ex,
+                    'description'         => 'Could not fetch capital merchant applications.',
+                ]
+            );
+
+            throw $ex;
+        }
+    }
+
+    public function isCapitalReferralCodeApplicable(Merchant\Entity $merchant, ReferralEntity $referral)
+    {
+        // If merchant's contact name is null, user will fall into pre-signup flow. The referral code will be consumed at that stage.
+        if($merchant->merchantDetail->getContactName() === null)
+        {
+            return false;
+        }
+
+        // If the merchant has the capital loc tag attached or it has an existing LOC application, we will not consume referral code.
+        if($merchant->isTagAddedBasedOnPrefix(Constants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX) === true)
+        {
+            return false;
+        }
+
+        $isCapitalPartnershipExpEnabled = $this->isCapitalPartnershipEnabledForPartner($referral->getMerchantId());
+
+        if ($isCapitalPartnershipExpEnabled === false)
+        {
+            return false;
+        }
+
+        $productIds = CapitalSubmerchantUtility::getLOSProductIds();
+
+        $locProductId = $productIds[Constants::CAPITAL_LOC_EMI_PRODUCT_NAME];
+
+        $response = $this->fetchApplicationsForMerchantAndProduct($merchant->getId(), $locProductId);
+
+        if(empty($response) === false and empty($response['body']) === false and empty($response['body']['applications']) === false)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Checks if the partner is whitelisted under capital_partnership experiment
      *
      * @param string $partnerId
@@ -163,6 +262,33 @@ class CapitalSubmerchantUtility
 
         $this->trace->info(
             TraceCode::CAPITAL_PARTNERSHIP_EXPERIMENT,
+            [
+                "properties" => $properties,
+                "enabled"    => $isExpEnabled,
+            ]
+        );
+
+        return $isExpEnabled;
+    }
+
+    /**
+     * New referral link flow is kept behind this experiment
+     *
+     * @param string $partnerId
+     *
+     * @return bool
+     */
+    public function isGenerateNewCapitalReferralLinkExpEnabled(string $partnerId): bool
+    {
+        $properties = [
+            'id'            => $partnerId,
+            'experiment_id' => $this->app['config']->get('app.capital_partner_new_referral_link_experiment_id'),
+        ];
+
+        $isExpEnabled = $this->merchantCore()->isSplitzExperimentEnable($properties, 'enable');
+
+        $this->trace->info(
+            TraceCode::CAPITAL_PARTNER_NEW_REFERRAL_EXPERIMENT,
             [
                 "properties" => $properties,
                 "enabled"    => $isExpEnabled,

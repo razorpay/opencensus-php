@@ -91,6 +91,7 @@ final class Constants
     const CREATE_CAPITAL_APPLICATION_LOS_URL            = "twirp/rzp.capital.los.origination.v1.ApplicationAPI/CreateApplicationNew";
     const GET_PRODUCTS_LOS_URL                          = "twirp/rzp.capital.los.admin.v1.ProductAPI/GetProducts";
     const GET_CAPITAL_APPLICATIONS_BULK_URL             = "twirp/rzp.capital.los.origination.v1.ApplicationAPI/GetApplicationsForPartnerBulk";
+    const GET_CAPITAL_APPLICATIONS_URL                  = "twirp/rzp.capital.los.origination.v1.ApplicationAPI/GetApplicationsByParam";
 
 
     // Capital LOS CreateApplicationRequestNew payload fields
@@ -217,6 +218,8 @@ final class Constants
     const RAZORPAY_PARTNERSHIP_OAUTH_TERMS       = 'https://razorpay.com/terms/razorpayx/partnership/';
 
     const RAZORPAY_PARTNER_AUTH_TERMS            = 'https://razorpay.com/terms/razorpayx/partnership/';
+
+    const RAZORPAY_LINE_OF_CREDIT_SIGN_UP        = 'https://razorpay.com/x/line-of-credit/';
 
     const INCREASE_TRANSACTION_LIMIT_POST_WORKFLOW_APPROVE          = 'RZP\Http\Controllers\MerchantController@postTransactionLimitWorkflowApprove';
 

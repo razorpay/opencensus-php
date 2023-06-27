@@ -21,6 +21,7 @@ use Illuminate\Hashing\BcryptHasher;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Exception\BadRequestException;
 use libphonenumber\NumberParseException;
+use RZP\Models\Merchant\Detail\Entity as MDEntity;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\BusinessDetail\Constants as BDConstants;
 use RZP\Models\OAuthApplication\Constants as OAuthApplicationConstants;
@@ -130,10 +131,11 @@ class Validator extends Base\Validator
     ];
 
     protected static $oauthRequestRules = [
-        Constants::OAUTH_SOURCE => 'sometimes|string',
-        Constants::ID_TOKEN     => 'required|string',
-        Entity::OAUTH_PROVIDER  => 'required|string|custom',
-        Entity::EMAIL           => 'required|email',
+        Constants::OAUTH_SOURCE   => 'sometimes|string',
+        Constants::ID_TOKEN       => 'required|string',
+        Entity::OAUTH_PROVIDER    => 'required|string|custom',
+        Entity::EMAIL             => 'required|email',
+        MDEntity::REFERRAL_CODE   => 'filled|string',
     ];
 
     protected static $editEmailForMerchantRules = [
@@ -166,11 +168,12 @@ class Validator extends Base\Validator
     ];
 
     protected static $loginRules = [
-        Entity::EMAIL           => 'required|email',
-        Entity::PASSWORD        => 'required|between:6,50',
-        Entity::CAPTCHA         => 'required_without:captcha_disable',
-        Entity::CAPTCHA_DISABLE => 'sometimes|string',
-        Entity::APP             => 'sometimes|string',
+        Entity::EMAIL             => 'required|email',
+        Entity::PASSWORD          => 'required|between:6,50',
+        Entity::CAPTCHA           => 'required_without:captcha_disable',
+        Entity::CAPTCHA_DISABLE   => 'sometimes|string',
+        Entity::APP               => 'sometimes|string',
+        MDEntity::REFERRAL_CODE   => 'filled|string',
     ];
 
     protected static $loginMobileRules = [
@@ -189,12 +192,13 @@ class Validator extends Base\Validator
     ];
 
     protected static $verifyLoginOtpRules = [
-        Entity::CONTACT_MOBILE          => 'required_without:email|max:15|contact_syntax',
-        Entity::EMAIL                   => 'required_without:contact_mobile|email',
-        Entity::TOKEN                   => 'required|string',
-        Entity::OTP                     => 'required|string|between:4,6',
-        Entity::CAPTCHA                 => 'required_without:captcha_disable',
-        Entity::CAPTCHA_DISABLE         => 'sometimes|string',
+        Entity::CONTACT_MOBILE            => 'required_without:email|max:15|contact_syntax',
+        Entity::EMAIL                     => 'required_without:contact_mobile|email',
+        Entity::TOKEN                     => 'required|string',
+        Entity::OTP                       => 'required|string|between:4,6',
+        Entity::CAPTCHA                   => 'required_without:captcha_disable',
+        Entity::CAPTCHA_DISABLE           => 'sometimes|string',
+        MDEntity::REFERRAL_CODE           => 'filled|string',
     ];
 
     protected static $loginOtp2faPasswordRules = [
@@ -202,11 +206,12 @@ class Validator extends Base\Validator
     ];
 
     protected static $loginOauthRules = [
-        Entity::EMAIL           => 'required|email',
-        Entity::OAUTH_PROVIDER  => 'required|string|custom',
-        Constants::ID_TOKEN     => 'sometimes|string',
-        Constants::OAUTH_SOURCE => 'sometimes|string',
-        Entity::APP             => 'sometimes|string',
+        Entity::EMAIL             => 'required|email',
+        Entity::OAUTH_PROVIDER    => 'required|string|custom',
+        Constants::ID_TOKEN       => 'sometimes|string',
+        Constants::OAUTH_SOURCE   => 'sometimes|string',
+        Entity::APP               => 'sometimes|string',
+        MDEntity::REFERRAL_CODE   => 'filled|string',
     ];
 
     protected static $sendVerificationOtpRules = [

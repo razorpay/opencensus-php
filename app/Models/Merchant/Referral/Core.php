@@ -176,17 +176,29 @@ class Core extends Base\Core
 
         $isExpEnabled = (new CapitalSubmerchantUtility())->isCapitalPartnershipEnabledForPartner($merchant->getId());
 
+        $generateNewCapitalReferralLinkExpEnabled = (new CapitalSubmerchantUtility())->isGenerateNewCapitalReferralLinkExpEnabled($merchant->getId());
+
         if ($isExpEnabled === true)
         {
             $this->trace->info(
                 TraceCode::PARTNER_REFERRAL_LINK_FOR_CAPITAL,
                 [
-                    "partner_id" => $merchant->getId(),
+                    "partner_id"                                => $merchant->getId(),
+                    "create_new_capital_referral_link_enabled"  => $generateNewCapitalReferralLinkExpEnabled
                 ]
             );
 
+            if($generateNewCapitalReferralLinkExpEnabled === true)
+            {
+                $url = Merchant\Constants::RAZORPAY_LINE_OF_CREDIT_SIGN_UP;
+            }
+            else
+            {
+                $url = $this->config['applications.banking_service_url'] . '/auth/';
+            }
+
             $productConfig[Product::CAPITAL] = [
-                "url"    => $this->config['applications.banking_service_url'] . '/auth/',
+                "url"    => $url,
                 "params" => [
                     "referral_code" => null,
                     "intent"        => Merchant\Attribute\Type::CAPITAL_LOC_EMI,
@@ -348,6 +360,13 @@ class Core extends Base\Core
                 $refCode = $referral->getReferralCode();
 
                 $oldUrl = $referral->getReferralLink();
+
+                $generateNewCapitalReferralLinkExpEnabled = (new CapitalSubmerchantUtility())->isGenerateNewCapitalReferralLinkExpEnabled($referral->getMerchantId());
+
+                if($generateNewCapitalReferralLinkExpEnabled)
+                {
+                    $productConfig[Product::CAPITAL]["url"] = Merchant\Constants::RAZORPAY_LINE_OF_CREDIT_SIGN_UP;
+                }
 
                 $productConfig[$referral->getProduct()]["params"]["referral_code"] = $refCode;
 

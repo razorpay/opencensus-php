@@ -112,6 +112,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Store;
 use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use RZP\Models\Merchant\Store\ConfigKey as StoreConfigKey;
+use RZP\Models\Merchant\Referral\Entity as ReferralEntity;
 use RZP\Models\Merchant\Consent\Processor\Factory as ProcessorFactory;
 
 class Service extends Base\Service
@@ -1986,7 +1987,14 @@ class Service extends Base\Service
 
         unset($input[Entity::REFERRAL_CODE]);
 
-        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input, $refCode)
+        $referral = null;
+
+        if (empty($refCode) === false)
+        {
+            $referral = (new Referral\Core)->fetchReferralByReferralCode($refCode);
+        }
+
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input, $referral)
         {
             $this->applyCoupon($input);
 
@@ -2002,11 +2010,11 @@ class Service extends Base\Service
                 $this->handlePreSignUpOptionalFields($input);
             }
 
-            if (empty($refCode) === false)
+            if (empty($referral) === false)
             {
                 $this->trace->info(TraceCode::MERCHANT_REFERRAL_APPLY_REQUEST, $input);
 
-                $this->applyReferralPartner($refCode);
+                $this->applyReferralPartner($referral);
             }
 
             $this->saveMerchantDetailForPreSignUp($input);
@@ -2064,9 +2072,46 @@ class Service extends Base\Service
 
         $this->createLegalDocumentsForBanking($merchant);
 
-        $this->createCapitalApplicationIfApplicable($merchant, $refCode);
+        $this->createCapitalApplicationIfApplicable($merchant, $referral);
 
         return $this->getPreSignupDetails();
+    }
+
+    /**
+     * This function consumes merchant & referral code and based on referral product, it makes merchant a submerchant and take necessary actions.
+     * For capital product, we also create LOC applications if it doesnt exist already.
+     *
+     * @param string $refCode
+     * @param Merchant\Entity $merchant
+     *
+     * @return void
+     */
+    public function applyReferralIfApplicable(string $refCode, Merchant\Entity $merchant)
+    {
+        $referral = (new Referral\Core)->fetchReferralByReferralCode($refCode);
+
+        if (empty($referral) === true)
+        {
+            return;
+        }
+
+        switch ($referral->getProduct())
+        {
+            case Product::CAPITAL:
+
+                $flag = (new CapitalSubmerchantUtility())->isCapitalReferralCodeApplicable($merchant, $referral);
+
+                if($flag === true)
+                {
+                    $this->applyReferralPartner($referral, $merchant);
+
+                    $this->createCapitalApplicationIfApplicable($merchant, $referral);
+                }
+                break;
+
+            default:
+                break;
+        }
     }
 
     /**
@@ -2075,29 +2120,18 @@ class Service extends Base\Service
      * the referring partner.
      *
      * @param Merchant\Entity $subMerchant
-     * @param string|null     $refCode
+     * @param ReferralEntity|null $referral
      *
      * @return void
+     * @throws BadRequestException
      * @throws BadRequestValidationFailureException
-     * @throws IntegrationException
-     * @throws Throwable
      */
-    private function createCapitalApplicationIfApplicable(Merchant\Entity $subMerchant, string $refCode = null): void
+    private function createCapitalApplicationIfApplicable(Merchant\Entity $subMerchant, Referral\Entity $referral = null): void
     {
-
-        // If referral code is empty or not present, we need not create an application for submerchant
-        // as it is not a partner referred submerchant
-        if (empty($refCode) === true)
-        {
-            return;
-        }
-
         // If referral code is present, but there is no referral entity associated against it
         // we need not create an application for submerchant.
         // This could happen in cases where the referral code is a typo or when the merchant
         // who referred is no longer a partner
-        $referral = (new Referral\Core)->fetchReferralByReferralCode($refCode);
-
         if (empty($referral) === true)
         {
             return;
@@ -2180,21 +2214,16 @@ class Service extends Base\Service
     }
 
     /**
-     * @param string $refCode
-     *
+     * @param ReferralEntity $referral
+     * @param Merchant\Entity|null $merchant
      */
-    private function applyReferralPartner(string $refCode)
+    private function applyReferralPartner(Referral\Entity $referral, Merchant\Entity $merchant = null)
     {
-        $subMerchant = $this->app['basicauth']->getMerchant();
-
-        $referral = (new Referral\Core)->fetchReferralByReferralCode($refCode);
-
-        if (empty($referral) === true)
-        {
-            return;
-        }
+        $subMerchant = $this->app['basicauth']->getMerchant() ?? $merchant;
 
         $referralProduct = $referral->getProduct() ?? Product::PRIMARY;
+
+        $isCapitalLocSignupPageVisited = false;
 
         if ($referralProduct == Product::CAPITAL)
         {
@@ -2205,7 +2234,7 @@ class Service extends Base\Service
             $this->trace->info(
                 TraceCode::PARTNER_REFERRAL_FOR_CAPITAL,
                 [
-                    "referral_code"           => $refCode,
+                    "referral_code"           => $referral->getReferralCode(),
                     "referral_product"        => $referralProduct,
                     "actual_referral_product" => $actualReferralProduct,
                     "partner_id"              => $referral->getMerchantId(),
@@ -2219,11 +2248,18 @@ class Service extends Base\Service
             {
                 return;
             }
+
+            $utmParams = [];
+            (new User\Service)->addUtmParameters($utmParams);
+
+            $isCapitalLocSignupPageVisited = ((isset($utmParams['first_page']) and ($utmParams['first_page'] === User\Constants::CAPITAL_LOC_SIGNUP_STATIC_PAGE))
+                or (isset($utmParams['final_page']) and ($utmParams['final_page'] === User\Constants::CAPITAL_LOC_SIGNUP_STATIC_PAGE))
+                or (isset($utmParams['website']) and ($utmParams['website'] === User\Constants::CAPITAL_LOC_SIGNUP_STATIC_PAGE)));
         }
 
         $requestProduct = $this->auth->getRequestOriginProduct();
 
-        if ($referralProduct === $requestProduct)
+        if ($referralProduct === $requestProduct or ( $referral->getProduct() == Product::CAPITAL and $isCapitalLocSignupPageVisited ))
         {
             $mappingInput = [
                 'partner_id'     => $referral->getMerchantId(),

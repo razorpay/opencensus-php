@@ -4684,12 +4684,12 @@ class PartnerTest extends OAuthTestCase
 
     }
 
-    protected function markBankingSubmerchantAsCapitalSubmerchant(string $merchantId)
+    public function markBankingSubmerchantAsCapitalSubmerchant(string $merchantId, string $partnerId = self::DEFAULT_MERCHANT_ID)
     {
         $submerchant = $this->getDbEntityById('merchant', $merchantId, 'live');
         (new Merchant\Core())->appendTag(
             $submerchant,
-            Merchant\Constants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX . self::DEFAULT_MERCHANT_ID
+            Merchant\Constants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX . $partnerId
         );
     }
 

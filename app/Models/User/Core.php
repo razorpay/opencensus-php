@@ -66,6 +66,7 @@ use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 use RZP\Models\SubVirtualAccount\Constants as SubVaConstants;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetailEntity;
 use RZP\Models\Merchant\Credits\Balance\Entity as CreditEntity;
+use RZP\Models\Merchant\Detail\Service as MerchantDetailService;
 use RZP\Mail\User\ContactMobileUpdated as ContactMobileUpdatedMail;
 use RZP\Models\OAuthApplication\Constants as OAuthApplicationConstants;
 use RZP\Models\User\RateLimitLoginSignup\Facade as LoginSignupRateLimit;
@@ -1064,7 +1065,7 @@ class Core extends Base\Core
 
     protected function traceLoginRoute(array $input)
     {
-        $keysToTrace = [Entity::EMAIL, Entity::APP, Entity::OAUTH_PROVIDER, Constants::OAUTH_SOURCE];
+        $keysToTrace = [Entity::EMAIL, Entity::APP, Entity::OAUTH_PROVIDER, Constants::OAUTH_SOURCE, MerchantDetailEntity::REFERRAL_CODE];
 
         $data = [];
         foreach ($keysToTrace as $key)
@@ -1090,7 +1091,7 @@ class Core extends Base\Core
 
     protected function traceMobileLoginRoute(array $input, string $traceCode = TraceCode::USER_MOBILE_LOGIN)
     {
-        $keysToTrace = [Entity::CONTACT_MOBILE];
+        $keysToTrace = [Entity::CONTACT_MOBILE, MerchantDetailEntity::REFERRAL_CODE];
 
         $data = [];
         foreach ($keysToTrace as $key)
@@ -1192,6 +1193,8 @@ class Core extends Base\Core
 
         $this->checkUserAccountNotLockedOrThrowException($user);
 
+        $this->applyReferralIfApplicable($input, $user);
+
         $this->checkSecondFactorAuthAndSendOtp($user);
 
         (new Core)->trackOnboardingEvent($user->getEmail(),
@@ -1238,6 +1241,32 @@ class Core extends Base\Core
         }
 
         return $this->get($user, true);
+    }
+
+    private function applyReferralIfApplicable(array $input, Entity $user)
+    {
+        if((isset($input[MerchantDetailEntity::REFERRAL_CODE]) === true) and (empty($input[MerchantDetailEntity::REFERRAL_CODE]) === false))
+        {
+            $merchant = $user->merchants()->first();
+
+            if(empty($merchant) === false)
+            {
+                try
+                {
+                    (new MerchantDetailService())->applyReferralIfApplicable($input[MerchantDetailEntity::REFERRAL_CODE], $merchant);
+                }
+                catch (Throwable $ex)
+                {
+                    app('trace')->error(
+                        TraceCode::BAD_REQUEST_COULD_NOT_APPLY_REFERRAL_CODE_FOR_CAPITAL_SUBMERCHANTS,
+                        [
+                            'exception'   => $ex,
+                            'description' => 'Capital referral code cannot be applied during SignIn',
+                        ]
+                    );
+                }
+            }
+        }
     }
 
     public function findMerchant($userId){
@@ -2190,6 +2219,8 @@ class Core extends Base\Core
             ]
         );
 
+        $this->applyReferralIfApplicable($input, $user);
+
         $this->checkSecondFactorAuthForOtpLogin($user);
 
         return $this->get($user);
@@ -2761,6 +2792,8 @@ class Core extends Base\Core
                 $this->invalidateContactInfo($user);
             });
         }
+
+        $this->applyReferralIfApplicable($input, $user);
 
         $this->checkSecondFactorAuthAndSendOtp($user);
 
@@ -6344,16 +6377,16 @@ class Core extends Base\Core
      * @return Entity The updated user entity.
      * @throws \Exception If there is an error while saving the user.
     */
-    public function postUpdateUserName(string $userName, Entity $user) 
+    public function postUpdateUserName(string $userName, Entity $user)
     {
         // Check if the new name is different from the current name
-        if ($userName === $user->getName()) 
+        if ($userName === $user->getName())
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_USERNAME_MUST_BE_DIFFERENT);
         }
-        
+
         $user->setName($userName);
-        
+
         $this->repo->user->saveOrFail($user);
 
         return $user;

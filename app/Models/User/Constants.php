@@ -181,6 +181,8 @@ class Constants
 
     const CA_STATIC_PAGE = 'razorpay.com/x/current-accounts/';
 
+    const CAPITAL_LOC_SIGNUP_STATIC_PAGE = 'razorpay.com/x/line-of-credit/';
+
     const PASSWORD_RESET_TOKEN_EXPIRY_TIME =  86400; //24 hour
 
     const CO_CREATED_CREATE_PASSWORD_TOKEN_EXPIRY_TIME = 604800; //7 Days

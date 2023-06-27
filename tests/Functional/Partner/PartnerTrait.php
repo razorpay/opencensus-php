@@ -80,6 +80,61 @@ trait PartnerTrait
                        );
     }
 
+    public function mockGetNoApplicationRequestOnLOSService($mockLOSService): void
+    {
+        $mockLOSService->shouldReceive('sendRequest')
+            ->atLeast()
+            ->once()
+            ->with(
+                MerchantConstants::GET_CAPITAL_APPLICATIONS_URL,
+                Mockery::type('array'),
+                Mockery::type('array')
+            )->andReturnUsing(
+                function() {
+                    $resp              = new Response;
+                    $resp->success     = false;
+                    $resp->status_code = 404;
+                    $resp->body        = json_encode(
+                        [
+                            "msg"  => "record not found",
+                            "code" => "not_found"
+                        ]
+                    );
+
+                    return $resp;
+                }
+            );
+    }
+
+    public function mockGetApplicationRequestOnLOSService($mockLOSService): void
+    {
+        $payload = json_encode(["id" => "LfFGpg2vt6zh5E", "product_id" => "JsP6pHbeMKn10E", "state" => "STATE_CREATED"]);
+
+        $mockLOSService->shouldReceive('sendRequest')
+            ->atLeast()
+            ->once()
+            ->with(
+                MerchantConstants::GET_CAPITAL_APPLICATIONS_URL,
+                Mockery::type('array'),
+                Mockery::type('array')
+            )->andReturnUsing(
+                function() use ($payload) {
+                    $resp              = new Response;
+                    $resp->success     = true;
+                    $resp->status_code = 200;
+                    $resp->body        = json_encode(
+                        [
+                            "applications"  => [
+                                $payload
+                            ]
+                        ]
+                    );
+
+                    return $resp;
+                }
+            );
+    }
+
     public function setUpPartnerMerchantAppAndGetClient(
         string $env = 'dev',
         array $attributes = [],

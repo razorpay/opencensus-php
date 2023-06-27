@@ -3574,6 +3574,18 @@ class Entity extends Base\PublicEntity
         return in_array(strtolower($tagName), $tagNames, true) === true;
     }
 
+    /**
+     * @param string $tagPrefix
+     *
+     * @return bool
+     */
+    public function isTagAddedBasedOnPrefix(string $tagPrefix): bool
+    {
+        $tagNames = $this->liveTagNames();
+
+        return empty(preg_grep("/^".$tagPrefix."/", $tagNames)) === false;
+    }
+
     public function toArrayUser()
     {
         $attributes = [

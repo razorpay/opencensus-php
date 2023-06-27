@@ -1337,6 +1337,33 @@ return [
         ],
     ],
 
+    'testVerifyCapitalReferralDuringMobileLogin' => [
+        'request' => [
+            'url'     => '/users/login/otp/verify',
+            'method'  => 'POST',
+            'content' => [
+                'otp'            => '0007',
+                'token'          => 'Gvt61zZ3Iwzcqy',
+                'contact_mobile' => '9012345678',
+                'captcha'        => 'faked',
+                'referral_code'  => 'teslacomikejzc',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'confirmed'               => true,
+                'merchants'               => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testMobileLoginVerifyOtpNoUserMobile' => [
         'request' => [
             'url'     => '/users/login/otp/verify',
@@ -2252,6 +2279,35 @@ return [
                 'email'          => 'hello123@gmail.com',
                 'oauth_provider' => "[\"google\"]",
                 'id_token'       => 'valid id token'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'confirmed'      => true,
+                'merchants'      => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testCapitalReferralWithOauthLogin' => [
+        'request'  => [
+            'url'     => '/users/oauth-login',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+            'content' => [
+                'email'          => 'hello123@gmail.com',
+                'oauth_provider' => "[\"google\"]",
+                'id_token'       => 'valid id token',
+                'referral_code'  => 'teslacomikejzc'
             ],
         ],
         'response' => [
@@ -3380,6 +3436,37 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_USER_2FA_LOGIN_OTP_REQUIRED,
+        ],
+    ],
+
+    'testCapitalReferralFlowDuringLogin' => [
+        'request' => [
+            'url'     => '/users/login',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+            'content' => [
+                'email'                 => 'user@domain.com',
+                'password'              => 'hello123',
+                'captcha_disable'       => 'DISABLE_THE_CAPTCHA_YOU_SHALL',
+                'referral_code'         => 'teslacomikejzc'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'contact_mobile'          => null,
+                'contact_mobile_verified' => false,
+                'confirmed'               => true,
+                'merchants'               => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner'
+                    ]
+                ]
+            ],
         ],
     ],
 

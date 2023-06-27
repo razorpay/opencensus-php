@@ -602,6 +602,8 @@ return array(
 
     'capital_partnership_experiment_id' => env('CAPITAL_PARTNERSHIP_EXPERIMENT_ID'),
 
+    'capital_partner_new_referral_link_experiment_id' => env('CAPITAL_PARTNER_NEW_REFERRAL_LINK_EXPERIMENT_ID'),
+
     '1cc_enable_v165_splitz_experiment_id' => env('MAGIC_CHECKOUT_ENABLE_V165_EXP_ID'),
 
     '1cc_coupons_with_se_splitz_experiment_id' => env('MAGIC_CHECKOUT_COUPONS_WITH_SCRIPT_EDITOR_EXP_ID'),
