@@ -89,7 +89,11 @@ class Service
     const APPROVE_REJECT_INVOICE        = 'ApproveRejectInvoice';
 
     const GET_TIMELINE_VIEW        = 'GetApprovalTimeline';
-    const GET_LATEST_APPROVERS                  = 'GetLatestApprovers';
+    const GET_LATEST_APPROVERS     = 'GetLatestApprovers';
+
+    const GET_VENDOR_ADVANCE     = 'GetVendorAdvance';
+    const CREATE_VENDOR_ADVANCE  = 'CreateVendorAdvance';
+    const LIST_VENDOR_ADVANCE    = 'ListVendorAdvance';
 
     const BASE_PATH = 'twirp/vendorpayments.Vendorpayments';
 
@@ -270,6 +274,43 @@ class Service
         }
 
         $result['users'] = $this->repo->user->findManyByPublicIds($userIds)->toArrayPublic();
+    }
+
+    public function createVendorAdvance(MerchantEntity $merchant, array $input, Entity $user = null)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::CREATE_VENDOR_ADVANCE);
+
+        if ($user === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST);
+        }
+
+        $input['user_id'] = $user->getPublicId();
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function getVendorAdvance(MerchantEntity $merchant, string $vendorAdvanceId)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_VENDOR_ADVANCE);
+
+        $input = [self::ID => $vendorAdvanceId];
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function listVendorAdvances(MerchantEntity $merchant, array $input, Entity $user = null)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::LIST_VENDOR_ADVANCE);
+
+        if ($user === null)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_USER_ID_HEADER_MISSING_FROM_REQUEST);
+        }
+
+        $input['user_id'] = $user->getPublicId();
+
+        return $this->makeRequest($merchant, $url, $input);
     }
 
     public function create(MerchantEntity $merchant, array $input, Entity $user = null)

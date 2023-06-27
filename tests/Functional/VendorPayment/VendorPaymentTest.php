@@ -766,7 +766,7 @@ class VendorPaymentTest extends TestCase
 
     public function testGetSettings()
     {
-        $this->ba->proxyAuth();
+        $this->ba->proxyAuth('rzp_live_10000000000000');
 
         $vpMock = Mockery::mock('RZP\Services\VendorPayment');
 
@@ -781,7 +781,7 @@ class VendorPaymentTest extends TestCase
 
     public function testApproveRejectInvoice()
     {
-        $this->ba->proxyAuth();
+        $this->ba->proxyAuth('rzp_live_10000000000000');
 
         $vpMock = Mockery::mock('RZP\Services\VendorPayment');
 
@@ -792,5 +792,62 @@ class VendorPaymentTest extends TestCase
         $this->startTest();
 
         $vpMock->shouldHaveReceived('approveReject');
+    }
+
+    public function testCreateVendorAdvance()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('createVendorAdvance')->andReturn([
+            'id' => 'vda_testID'
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('createVendorAdvance');
+    }
+
+    public function testGetVendorAdvance()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('getVendorAdvance')->andReturn([
+            'id' => 'vda_testID'
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('getVendorAdvance');
+    }
+
+    public function testListVendorAdvance()
+    {
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('listVendorAdvances')->andReturn([
+            'entity' => 'vendor_advance',
+            'count' => 1,
+            'items' => [
+                [
+                    'id' => 'vda_testID',
+                ]
+            ]
+        ]);
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $this->startTest();
+
+        $vpMock->shouldHaveReceived('listVendorAdvances');
     }
 }

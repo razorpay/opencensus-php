@@ -867,7 +867,6 @@ return [
             'method'  => 'GET',
             'server'  => [
                 'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
-                'HTTP_X-Dashboard-User-Id' => '20000000000000',
             ],
             'url'     => '/vendor-payments/get_settings',
             'content' => [],
@@ -882,7 +881,6 @@ return [
             'method'  => 'POST',
             'server'  => [
                 'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
-                'HTTP_X-Dashboard-User-Id' => '20000000000000',
             ],
             'url'     => '/vendor-payments/approve-reject',
             'content' => [],
@@ -891,4 +889,59 @@ return [
             'content' => []
         ]
     ],
+
+    'testCreateVendorAdvance' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'url'     => '/vendor-payments/vendor-advances',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'vda_testID'
+            ]
+        ]
+    ],
+
+    'testGetVendorAdvance' => [
+        'request'  => [
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'url'     => '/vendor-payments/vendor-advances/vda_testID',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'vda_testID'
+            ]
+        ]
+    ],
+
+    'testListVendorAdvance' => [
+        'request'  => [
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'url'     => '/vendor-payments/vendor-advances',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'vendor_advance',
+                'count' => 1,
+                'items' => [
+                    [
+                        'id' => 'vda_testID',
+                    ]
+                ]
+            ]
+        ]
+    ],
+
 ];

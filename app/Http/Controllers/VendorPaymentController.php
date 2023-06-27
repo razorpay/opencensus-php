@@ -113,6 +113,21 @@ class VendorPaymentController extends Controller
         return ApiResponse::json(['success' => true]);
     }
 
+    public function createVendorAdvance()
+    {
+        return $this->service->createVendorAdvance($this->ba->getMerchant(), $this->input, $this->ba->getUser());
+    }
+
+    public function getVendorAdvance(string $vendorAdvanceId)
+    {
+        return $this->service->getVendorAdvance($this->ba->getMerchant(), $vendorAdvanceId);
+    }
+
+    public function listVendorAdvances()
+    {
+        return $this->service->listVendorAdvances($this->ba->getMerchant(), $this->input, $this->ba->getUser());
+    }
+
     public function sendMailGeneric()
     {
         return $this->service->sendMail($this->input);

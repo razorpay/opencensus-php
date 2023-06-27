@@ -1946,6 +1946,9 @@ class Route
         'wfs_cb_comments_list'                       => ['post',    'wf-service/cb/comments/list',                   'WorkflowServiceController@listComments'                            ],
 
         //Vendor Payments
+        'vendor_payment_create_vendor_advance'     => ['post',     'vendor-payments/vendor-advances',                                         'VendorPaymentController@createVendorAdvance'                       ],
+        'vendor_payment_get_vendor_advance'        => ['get',      'vendor-payments/vendor-advances/{id}',                                    'VendorPaymentController@getVendorAdvance'                          ],
+        'vendor_payment_list_vendor_advance'       => ['get',      'vendor-payments/vendor-advances',                                         'VendorPaymentController@listVendorAdvances'                        ],
         'vendor_payments_check_existing_invoice'   => ['get',      'vendor-payments/check-invoice-exist',                                     'VendorPaymentController@checkIfInvoiceExistForVendor'              ],
         'vendor_payment_execute_bulk'              => ['post',     'vendor-payments/bulk/execute',                                            'VendorPaymentController@executeVendorPaymentBulk'                  ],
         'vendor_payment_upcoming_mail_cron'        => ['post',     'vendor-payments/sendUpcomingMailCron',                                    'VendorPaymentController@sendUpcomingMailCron'                      ],
@@ -2286,7 +2289,7 @@ class Route
         'user_patch_password'                      => ['patch',    'users/password',                                 'UserController@postPatchUserPassword'                              ],
         'user_edit_self'                           => ['patch',    'users',                                          'UserController@editSelf'                                           ],
         'user_salesforce_event'                    => ['post',     'users/salesforce_event',                         'UserController@sendUserDetailsToSalesForceEvent'                   ],
-        'user_update_name'                         => ['post',     'users/update_name',                              'UserController@postUpdateUserName'                                 ],                                  
+        'user_update_name'                         => ['post',     'users/update_name',                              'UserController@postUpdateUserName'                                 ],
 
         // Fetch user via OAuth (Private Auth)
         'user_fetch'                               => ['get',      'users/{id}',                                     'UserController@getUser'                                            ],
@@ -6742,6 +6745,10 @@ class Route
         'vendor_payment_get_latest_approvers',
         'vendor_payment_get_timeline_view',
 
+        'vendor_payment_create_vendor_advance',
+        'vendor_payment_get_vendor_advance',
+        'vendor_payment_list_vendor_advance',
+
         'vendor_payment_get_by_id',
         'vendor_payment_create',
         'vendor_payment_edit',
@@ -10069,6 +10076,9 @@ class Route
         'vendor_payment_contact_get'                   => Permission::VIEW_CONTACT,
         'vendor_payment_contact_create'                => Permission::CREATE_CONTACT,
         'vendor_payment_contact_update'                => Permission::UPDATE_CONTACT,
+        'vendor_payment_create_vendor_advance'         => Permission::CREATE_VENDOR_PAYMENTS,
+        'vendor_payment_get_vendor_advance'            => Permission::VIEW_VENDOR_PAYMENTS,
+        'vendor_payment_list_vendor_advance'           => Permission::VIEW_VENDOR_PAYMENTS,
         'vendor_payment_create'                        => Permission::CREATE_VENDOR_PAYMENTS,
         'vendor_payments_check_existing_invoice'       => Permission::CREATE_VENDOR_PAYMENTS,
         'vendor_payment_list'                          => Permission::VIEW_VENDOR_PAYMENTS,
@@ -11996,6 +12006,9 @@ class Route
             'vendor_payment_contact_get',
             'vendor_payment_contact_list',
             'vendor_payment_contact_update',
+            'vendor_payment_create_vendor_advance',
+            'vendor_payment_get_vendor_advance',
+            'vendor_payment_list_vendor_advance',
             'vendor_payment_create',
             'vendor_payments_check_existing_invoice',
             'vendor_payment_edit',
@@ -16543,6 +16556,9 @@ class Route
         'vendor_payment_contact_get',
         'vendor_payment_contact_create',
         'vendor_payment_contact_update',
+        'vendor_payment_create_vendor_advance',
+        'vendor_payment_get_vendor_advance',
+        'vendor_payment_list_vendor_advance',
         'vendor_payment_create',
         'vendor_payments_check_existing_invoice',
         'vendor_payment_list',
