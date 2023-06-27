@@ -500,6 +500,26 @@ class Validator extends Base\Validator
         'meta.version'                         => 'required',
     ];
 
+    protected static $authorizeFailedCardPaymentRules = [
+        'payment'                              => 'required|array',
+        'payment.method'                       => 'required|string|in:card',
+        'payment.id'                           => 'required|string|size:14',
+        'payment.amount'                       => 'required|integer',
+        'card'                                 => 'required|array',
+        'card.auth_code'                       => 'required|string',
+        'card.rrn'                             => 'required|string',
+        'card.arn'                             => 'required|string',
+        'meta'                                 => 'required|array',
+        'meta.force_auth_payment'              => 'required|boolean',
+        'meta.art_request_id'                  => 'required',
+        'meta.version'                         => 'required',
+    ];
+
+    protected static $createTransactionAuthorizedCardPaymentRules = [
+     'payment_id'                              => 'required|string|size:14',
+     'art_request_id'                          => 'required'
+    ];
+
     protected static $authorizeFailedWalletPaymentRules = [
         'payment'                              => 'required|array',
         'payment.method'                       => 'required|string|in:wallet',

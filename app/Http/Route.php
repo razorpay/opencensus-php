@@ -247,6 +247,8 @@ class Route
         'payment_fetch_by_id'                      => ['get',      'payments/{id}',                                  'PaymentController@getPayment'                                      ],
         'payment_fetch_by_id_internal'             => ['get',      'payments_internal/{id}',                         'PaymentController@getPaymentById'                              ],
         'payment_upi_authorize_failed'             => ['post',     'payments/authorize/upi/failed',                  'PaymentController@postAuthorizeFailedUpiPayment'                   ],
+        'payment_card_authorize_failed'            => ['post',     'payments/authorize/card/failed',                 'PaymentController@postAuthorizeFailedCardPayment'                   ],
+        'payment_card_recon_create_transaction'    => ['post',     'payments/recon/create/transaction',              'PaymentController@postReconCreateTransaction'                       ],
         'payment_nbplus_authorize_failed'          => ['post',     'payments/authorize/nbplus/failed',               'PaymentController@postAuthorizeFailedNetbankingPayment'            ],
         'subscription_payment_fetch_by_id'         => ['get',      'payments/{paymentId}/subscriptions/{subId}',     'PaymentController@getPaymentForSubscription'                       ],
         'subscription_fetch_by_id'                 => ['get',      'payments//subscriptions/{subId}',                 'PaymentController@getPaymentwithSubscription'                       ],
@@ -5876,6 +5878,10 @@ class Route
         'payments_card_es_sync_cron',
 
         'payment_upi_authorize_failed',
+
+        'payment_card_authorize_failed',
+
+        'payment_card_recon_create_transaction',
 
         'developer_console_maintenance',
 
@@ -15784,7 +15790,9 @@ class Route
             'internal_reconcile',
             'internal_receive',
             'recon_update_data',
-            'payment_nbplus_authorize_failed'
+            'payment_nbplus_authorize_failed',
+            'payment_card_authorize_failed',
+            'payment_card_recon_create_transaction'
         ],
 
         'smart_collect' => [

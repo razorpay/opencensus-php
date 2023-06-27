@@ -1162,6 +1162,7 @@ class CardPaymentService
 
     protected function traceResponse($response, $data)
     {
+
         $traceResponse = $response;
 
         // For axis_migs we don't send gateway request in redirect case,

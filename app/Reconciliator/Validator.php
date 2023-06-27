@@ -245,7 +245,8 @@ class Validator extends Base\Core
         'reconciled_at'                 => 'required|filled|epoch',
         'gateway_settled_at'            => 'sometimes|epoch',
         'netbanking'                    => 'sometimes',
-        'wallet'                        => 'sometimes'
+        'wallet'                        => 'sometimes',
+        'card'                          => 'sometimes'
     ];
 
     const UPDATE_NETBANKING_RECON_DATA_RULES = [
@@ -253,6 +254,7 @@ class Validator extends Base\Core
         'netbanking'                                       => 'required|array',
         'wallet'                                           => 'sometimes',
         'upi'                                              => 'sometimes',
+        'card'                                             => 'sometimes',
         'gateway_settled_at'                               => 'sometimes|epoch',
         'netbanking.gateway_transaction_id'                => 'sometimes',
         'netbanking.bank_transaction_id'                   => 'sometimes',
@@ -265,10 +267,30 @@ class Validator extends Base\Core
         'reconciled_at'                                    => 'required|filled|epoch',
     ];
 
+    const UPDATE_CARD_RECON_DATA_RULES = [
+        'payment_id'                                       => 'required|string|size:14',
+        'netbanking'                                       => 'sometimes',
+        'upi'                                              => 'sometimes',
+        'gateway_settled_at'                               => 'sometimes|epoch',
+        'wallet'                                           => 'sometimes|array',
+        'card'                                             => 'required|array',
+        'card.auth_code'                                   => 'required|string',
+        'card.rrn'                                         => 'required|string',
+        'card.arn'                                         => 'required|string',
+        'card.gateway_fee'                                 => 'required|string',
+        'card.gateway_service_tax'                         => 'required|string',
+        'reconciled_type'                                  => 'required|string',
+        'amount'                                           => 'required',
+        'card.gateway_fee'                                 => 'required',
+        'card.gateway_service_tax'                         => 'required',
+        'reconciled_at'                                    => 'required|filled|epoch',
+    ];
+
     const UPDATE_WALLET_RECON_DATA_RULES = [
         'payment_id'                                       => 'required|string|size:14',
         'netbanking'                                       => 'sometimes',
         'upi'                                              => 'sometimes',
+        'card'                                             => 'sometimes',
         'gateway_settled_at'                               => 'sometimes|epoch',
         'wallet'                                           => 'required|array',
         'wallet.wallet_transaction_id'                     => 'sometimes|string',
@@ -1030,6 +1052,14 @@ class Validator extends Base\Core
     public function validateUpdateUpiReconData(array $input)
     {
         (new JitValidator)->rules(self::UPDATE_UPI_RECON_DATA_RULES)
+            ->caller($this)
+            ->input($input)
+            ->validate();
+    }
+
+      public function validateUpdateCardReconData(array $input)
+    {
+        (new JitValidator)->rules(self::UPDATE_CARD_RECON_DATA_RULES)
             ->caller($this)
             ->input($input)
             ->validate();

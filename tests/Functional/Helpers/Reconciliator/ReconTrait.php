@@ -319,4 +319,17 @@ trait ReconTrait
 
         return $content;
     }
+
+     protected function makeUpdatePostReconRequestAndGetContent(array $input)
+    {
+        $request = [
+            'method'  => 'POST',
+            'content' => $input,
+            'url'     => '/reconciliate/data',
+        ];
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
 }

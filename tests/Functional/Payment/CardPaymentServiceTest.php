@@ -7,6 +7,7 @@ use App;
 use Mockery;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factory;
+use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
 use \WpOrg\Requests\Response;
 use RZP\Exception;
 use RZP\Models\Address\Repository;
@@ -44,6 +45,7 @@ class CardPaymentServiceTest extends TestCase
     use PaymentTrait;
     use DbEntityFetchTrait;
     use TerminalTrait;
+
 
     protected $razorxValue = 'on';
 
@@ -167,9 +169,6 @@ class CardPaymentServiceTest extends TestCase
         $this->assertEquals('BAD_REQUEST_ERROR', $payment['error_code']);
         $this->assertEquals('BAD_REQUEST_PAYMENT_FAILED', $payment['internal_error_code']);
 
-        $keys = (new Admin\Service)->getConfigKeys();
-
-        // $this->assertEquals(0, $keys[Admin\ConfigKey::CARD_PAYMENT_SERVICE_ENABLED]);
     }
 
     public function testAuthorizeViaCpsPaymentUpdateInternationalCard()
@@ -6749,6 +6748,477 @@ class CardPaymentServiceTest extends TestCase
         $this->assertEquals('mpi_blade', $payment['authentication_gateway']);
 
         $this->assertTrue($this->assertSatisfied);
+    }
+
+    public function testForceAuthorizeFailedCardPayment()
+    {
+        $this->markTestSkipped();
+        $this->razorxValue = "cardps";
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $terminal = $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $flows = [
+            'pin'          => '1',
+            'headless_otp' => '1',
+            'otp'          => '1',
+            'magic'        => '1',
+            'iframe'       => '1',
+        ];
+
+        $this->fixtures->edit('iin', 556763, ['flows' => $flows]);
+
+        $this->enableCpsConfig();
+
+        $paymentArray = $this->getDefaultPaymentArray();
+        $paymentArray['card']['number'] = '5567630000002004';
+
+        $this->mockCps($terminal, 'headless_fatal_mock');
+
+        $this->makeRequestAndCatchException(
+            function() use ($paymentArray)
+            {
+                $this->doAuthPayment($paymentArray);
+            },
+            \RZP\Exception\GatewayErrorException::class);
+
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(Payment\Entity::CARD_PAYMENT_SERVICE, $payment['cps_route']);
+
+        $this->assertEquals('failed', $payment['status']);
+        $this->assertEquals($terminal->getId(), $payment['terminal_id']);
+        $this->assertEquals('GATEWAY_ERROR', $payment['error_code']);
+        $this->assertEquals('GATEWAY_ERROR_UNKNOWN_ERROR', $payment['internal_error_code']);
+
+        $cardService = \Mockery::mock('RZP\Services\CardPaymentService')->makePartial();
+
+        $this->app->instance('card.payments', $cardService);
+
+        $cardService->shouldReceive('fetchAuthorizationData')
+            ->andReturnUsing(function( array $input)
+            {
+                $responseItems = [];
+                $response = $this->mockCpsAuthFetchResponse($input['payment_ids']);
+                foreach ($response['items'] as $item)
+                {
+                    $responseItems[$item['payment_id']] = $item;
+                }
+                return $responseItems;
+            });
+
+
+        $content = $this->getDefaultCardForceAuthorizePayload();
+        $content['payment']['id'] = substr($payment['id'] ,4);
+        $content['meta']['force_auth_payment'] = true;
+
+        $response = $this->markForceAuthorizeFailedPaymentAndGetPayment($content);
+
+        $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertEquals('authorized', $updatedPayment['status']);
+        $this->assertEquals(true,$response['success']);
+        $this->assertNotNull($updatedPayment['transaction_id'],'Transaction Id should not be null');
+        $this->assertEquals(0,$response['gateway_fee']);
+        $this->assertEquals(0,$response['gateway_service_tax']);
+    }
+
+    public function testAuthorizeFailedCardPaymentViaVerifyDuringRecon()
+    {
+        $this->razorxValue = "cardps";
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $terminal = $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $flows = [
+            'pin'          => '1',
+            'headless_otp' => '1',
+            'otp'          => '1',
+            'magic'        => '1',
+            'iframe'       => '1',
+        ];
+
+        $this->fixtures->edit('iin', 556763, ['flows' => $flows]);
+
+        $this->enableCpsConfig();
+
+        $paymentArray = $this->getDefaultPaymentArray();
+        $paymentArray['card']['number'] = '5567630000002004';
+
+        $this->mockCps($terminal, 'headless_fatal_mock');
+
+        $this->makeRequestAndCatchException(
+            function() use ($paymentArray)
+            {
+                $this->doAuthPayment($paymentArray);
+            },
+            \RZP\Exception\GatewayErrorException::class);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals(Payment\Entity::CARD_PAYMENT_SERVICE, $payment['cps_route']);
+        $this->assertEquals('failed', $payment['status']);
+        $this->assertEquals('GATEWAY_ERROR', $payment['error_code']);
+        $this->assertEquals('GATEWAY_ERROR_UNKNOWN_ERROR', $payment['internal_error_code']);
+
+        $content = $this->getDefaultCardForceAuthorizePayload();
+        $content['payment']['id'] = substr($payment['id'],4);
+        $content['meta']['force_auth_payment'] = false;
+        $this->mockCpsVerifyRequest();
+        $response = $this->markForceAuthorizeFailedPaymentAndGetPayment($content);
+
+        $updatedPayment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertEquals('authorized', $updatedPayment['status']);
+
+        $this->assertEquals(true,$response['success']);
+        $this->assertNotNull($updatedPayment['transaction_id'],'Transaction Id should not be null');
+        $this->assertEquals(0,$response['gateway_fee']);
+        $this->assertEquals(0,$response['gateway_service_tax']);
+    }
+
+    public function testAuthorizeFailedCardPaymentForAlreadyAuthorisedPayment()
+    {
+        $this->razorxValue = "cardps";
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $terminal = $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $flows = [
+            'pin'          => '1',
+            'headless_otp' => '1',
+            'otp'          => '1',
+            'magic'        => '1',
+            'iframe'       => '1',
+        ];
+
+        $this->fixtures->edit('iin', 556763, ['flows' => $flows]);
+
+        $this->enableCpsConfig();
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $paymentArray['card']['number'] = '5567630000002004';
+
+        $this->mockCps($terminal, 'headless_mock');
+
+        $this->doAuthPayment($paymentArray);
+
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals(Payment\Entity::CARD_PAYMENT_SERVICE, $payment['cps_route']);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $content = $this->getDefaultCardForceAuthorizePayload();
+        $content['payment']['id'] = $payment['id'];
+        $content['meta']['force_auth_payment'] = true;
+
+        $this->makeRequestAndCatchException(function() use ($content)
+        {
+            $request = [
+                'url'     => '/payments/authorize/card/failed',
+                'method'  => 'POST',
+                'content' => $content,
+            ];
+
+            $this->ba->appAuth();
+
+            $this->makeRequestAndGetContent($request);
+        }, Exception\BadRequestValidationFailureException::class);
+
+     $this->assertNull($payment['transation_id']);
+    }
+
+    public function testUpdatePostReconData()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $terminal = $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->enableCpsConfig();
+
+        $this->mockCps($terminal, "auth_across_terminal_mock");
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $this->doAuthAndCapturePayment($paymentArray);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(Payment\Entity::CARD_PAYMENT_SERVICE, $payment['cps_route']);
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $content = $this->getDefaultCardPostReconArray();
+
+        $content['payment_id'] = substr($payment['id'],4);
+
+        $content['reconciled_at'] = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $content['card']['rrn'] = "3234566788";
+
+        $content['card']['arn'] = "AXIS003421Y3T";
+
+        $content['card']['auth_code'] = "435676";
+
+        $response = $this->makeUpdatePostReconRequestAndGetContentForCard($content);
+
+        $paymentEntity = $this->getDbLastEntity('payment');
+
+        $this->assertEquals('3234566788', $paymentEntity['reference16']);
+
+        $this->assertEquals('435676', $paymentEntity['reference2']);
+
+        $this->assertEquals('AXIS003421Y3T', $paymentEntity['reference1']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotEmpty($transactionEntity['reconciled_at']);
+
+        $this->assertEquals('mis', $transactionEntity['reconciled_type']);
+
+        $this->assertEquals('18', $transactionEntity['gateway_service_tax']);
+
+        $this->assertEquals('118', $transactionEntity['gateway_fee']);
+
+        $this->assertTrue($response['success']);
+    }
+
+
+    public function testUpdatePostReconDataForAlreadyReconciled()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $terminal = $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->enableCpsConfig();
+
+        $this->mockCps($terminal, "auth_across_terminal_mock");
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $this->doAuthAndCapturePayment($paymentArray);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(Payment\Entity::CARD_PAYMENT_SERVICE, $payment['cps_route']);
+
+        $this->assertEquals('captured', $payment['status']);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->fixtures->edit('transaction', $transactionEntity['id'], ['reconciled_at' => Carbon::now(Timezone::IST)->getTimestamp()]);
+
+        $content = $this->getDefaultCardPostReconArray();
+
+        $content['payment_id'] = substr($payment['id'],4);
+
+        $content['reconciled_at'] = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $content['card']['rrn'] = "3234566788";
+
+        $content['card']['arn'] = "AXIS003421Y3T";
+
+        $content['card']['auth_code'] = "435676";
+
+        $response = $this->makeUpdatePostReconRequestAndGetContentForCard($content);
+
+        $this->assertFalse($response['success']);
+
+        $this->assertEquals('ALREADY_RECONCILED', $response['error']['code']);
+    }
+
+    public function testCreateTransactionDuringReconProcess()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $terminal = $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->enableCpsConfig();
+
+        $this->mockCps($terminal, "auth_across_terminal_mock");
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $this->doAuthPayment($paymentArray);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $content = $this->getDefaultArtPayloadForCreatingTransaction();
+
+        $content['payment_id'] = substr($payment['id'],4);
+
+        $response = $this->makeCreateTransactionRequestAndGetContent($content);
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertEquals($transactionEntity['gateway_fee'],0);
+
+        $this->assertEquals($transactionEntity['gateway_service_tax'],0);
+
+        $this->assertEquals($response['gateway_service_tax'],0);
+
+        $this->assertEquals($response['gateway_fee'],0);
+
+        $this->assertTrue($response['success']);
+    }
+
+    public function testCreateTransactionFailureDuringReconProcess()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $terminal = $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->enableCpsConfig();
+
+        $this->mockCps($terminal, "auth_across_terminal_mock");
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $this->doAuthPayment($paymentArray);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $content = $this->getDefaultArtPayloadForCreatingTransaction();
+
+        $content['payment_id'] = substr($payment['id'],5);
+
+
+        $this->makeRequestAndCatchException(function() use ($content)
+        {
+            $request = [
+                'url'     => '/payments/recon/create/transaction',
+                'method'  => 'POST',
+                'content' => $content,
+            ];
+
+            $this->ba->appAuth();
+
+            $this->makeRequestAndGetContent($request);
+        }, Exception\BadRequestValidationFailureException::class);
+    }
+
+
+     public function testCreateTransactionDuringReconProcessForAlreadyCreatedTransaction()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $terminal = $this->fixtures->create('terminal:shared_hitachi_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->enableCpsConfig();
+
+        $this->mockCps($terminal, "auth_across_terminal_mock");
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $this->doAuthAndCapturePayment($paymentArray);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $transactionEntity1 = $this->getDbLastEntity('transaction');
+
+        $content = $this->getDefaultArtPayloadForCreatingTransaction();
+
+        $content['payment_id'] = substr($payment['id'],4);
+
+        $response = $this->makeCreateTransactionRequestAndGetContent($content);
+
+        $transactionEntity2 = $this->getDbLastEntity('transaction');
+
+        $this->assertEquals($transactionEntity2['gateway_fee'],0);
+
+        $this->assertEquals($transactionEntity2['gateway_service_tax'],0);
+
+        $this->assertEquals($response['gateway_service_tax'],0);
+
+        $this->assertEquals($response['gateway_fee'],0);
+
+        $this->assertTrue($response['success']);
+
+        $this->assertEquals($transactionEntity1['id'],$transactionEntity2['id']);
+
+    }
+
+    protected function mockCpsAuthFetchResponse($input)
+    {
+        $res = array_map(function($paymentId)
+        {
+            return [
+                'id'         => 'acasd123',
+                'payment_id' => $paymentId,
+                'auth_code'  => 'A1233V',
+                'rrn'        => '123456789101',
+            ];
+        }, $input);
+
+        return [
+            'count'  => sizeof($input),
+            'entity' => 'authorize',
+            'items'  => $res,
+        ];
     }
 
 }

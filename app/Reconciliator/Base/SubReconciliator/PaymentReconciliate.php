@@ -695,7 +695,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         }
     }
 
-    protected function handleVerifyPayment()
+    public function handleVerifyPayment()
     {
         $paymentService = new Payment\Service;
 
@@ -944,7 +944,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         return false;
     }
 
-    protected function getPaymentTransaction()
+    public function getPaymentTransaction()
     {
         if (($this->payment->isExternal() === false) or
             ($this->payment->hasTransaction() === true))
@@ -957,7 +957,24 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         return $txn;
     }
 
-    protected function handleVerifyAuthorized()
+
+    public function setPayment($payment)
+    {
+        $this->payment = $payment ;
+    }
+
+    public function setTransaction ()
+    {
+       $this->paymentTransaction = $this->getPaymentTransaction(); ;
+    }
+
+    public function setGateway ($gateway)
+    {
+       $this->gateway = $gateway; ;
+    }
+
+
+    public function handleVerifyAuthorized()
     {
         $this->payment = $this->paymentRepo->findOrFail($this->payment->getId());
 
@@ -2306,6 +2323,11 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 'gateway'       => $this->gateway,
                 'batch_id'      => $this->batchId,
             ]);
+
+        if (isset($this->merchant) === false )
+        {
+            $this->merchant = $this->repo->merchant->fetchMerchantFromEntity($this->payment); ;
+        }
 
         $paymentProcessor = new Payment\Processor\Processor($this->merchant);
 

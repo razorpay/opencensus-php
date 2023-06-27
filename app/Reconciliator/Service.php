@@ -6,11 +6,15 @@ use Queue;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Exception;
+use RZP\Exception\ReconciliationException;
+use RZP\Jobs\CardsPaymentRecon;
 use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Constants\Mode;
+use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
 use RZP\Models\Transaction;
@@ -31,6 +35,8 @@ use RZP\Reconciliator\Base\Foundation\ScroogeReconciliate;
 use RZP\Reconciliator\Base\SubReconciliator\NbPlus\NbPlusServiceRecon;
 use RZP\Reconciliator\Base\SubReconciliator\Upi\Constants as UpsConstants;
 use RZP\Reconciliator\Base\SubReconciliator\Upi\UpiPaymentServiceReconciliate;
+use RZP\Models\Ledger\ReverseShadow\Payments\Core as ReverseShadowPaymentsCore;
+use RZP\Reconciliator\Base\SubReconciliator\PaymentReconciliate;
 
 class Service extends Base\Service
 {
@@ -787,6 +793,11 @@ class Service extends Base\Service
             return $this->updateUpiReconciliationData($input, $payment);
         }
 
+       else if($payment->isMethodCardOrEmi() === true)
+        {
+            return $this->updateCardReconciliationData($input, $payment);
+        }
+
         $this->trace->info(
             TraceCode::METHOD_NOT_SUPPORTED_FOR_RECON,
             $input
@@ -846,6 +857,81 @@ class Service extends Base\Service
                 {
                     (new UpiPaymentServiceReconciliate)->handleUnExpectedPaymentRefundInRecon($payment);
                 }
+            });
+
+            $this->core->pushSuccessPaymentReconMetrics($payment,"art");
+
+            return [
+                'success'     => true,
+                'gateway'     => $payment->getGateway(),
+
+            ];
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::RECON_UPDATE_RECONCILIATION_DATA_FAILED,
+                [
+                    'paymentId' => $paymentId,
+                    'gateway'   => $payment->getGateway(),
+                ]
+            );
+            throw $ex;
+        }
+    }
+
+      /**
+     * Update post reconciliation data from ART
+     * @param array $input
+     * @return array
+     * @throws \Throwable
+     */
+    public function updateCardReconciliationData(array $input, Payment\Entity $payment)
+    {
+        (new Validator)->validateUpdateCardReconData($input);
+
+        $paymentId = $input['payment_id'];
+
+        if ($payment->isExternal() === true)
+        {
+            $payment->transaction = $this->repo->transaction->fetchByEntityAndAssociateMerchant($payment);
+        }
+
+        $transaction = $payment->transaction;
+
+        if ((empty($transaction) === false) and
+            ($transaction->isReconciled() === true))
+        {
+            return [
+                'success'        => false,
+                'gateway'        => $payment->getGateway(),
+                'error' => [
+                    'code'        => InfoCode::ALREADY_RECONCILED,
+                    'description' => 'Card payment is already reconciled'
+                ],
+            ];
+        }
+
+        $this->trace->info(
+            TraceCode::RECON_UPDATE_RECONCILIATION_DATA_STARTED,
+           [
+               'input'   => $input,
+               'gateway' => $payment->getGateway(),
+           ]
+        );
+
+        try
+        {
+           $payment->reload()->transaction->reload();
+
+            $this->repo->transaction(function () use ($paymentId, $input, $payment)
+            {
+                $this->updateTransactionData($input, $payment);
+
+                $this->updateCpsData($input, $payment);
+
             });
 
             $this->core->pushSuccessPaymentReconMetrics($payment,"art");
@@ -1078,6 +1164,60 @@ class Service extends Base\Service
         $this->repo->saveOrFail($gatewayPayment);
     }
 
+    protected function updateCpsData (array $input, Payment\Entity $payment)
+    {
+
+        try {
+
+            if ($payment->isRoutedThroughCardPayments() === true || $payment->getCpsRoute() === Payment\Entity::REARCH_CARD_PAYMENT_SERVICE)
+            {
+             $dataToUpdate = [];
+
+             if (empty($input['card']['auth_code']) === false)
+             {
+                $dataToUpdate['auth_code'] = trim($input['card']['auth_code']);
+             }
+
+             if (empty($input['card']['rrn']) === false)
+             {
+                $dataToUpdate['rrn'] = trim($input['card']['rrn']);
+             }
+
+            // add other gateway details for other gateway
+
+            $dataToUpdate['gateway_transaction_id'] =  null;
+
+            $dataToUpdate['gateway_reference_id1']  =  null;
+
+
+             $data = [
+                'payment_id' => $payment->getId(),
+                'params'     => $dataToUpdate,
+                'mode'       => $this->mode,
+                'gateway'    => $payment->getGateway(),
+                'batch_id'   => null,
+            ];
+
+             CardsPaymentRecon::dispatch($data);
+            }
+
+        }
+         catch (\Exception $ex)
+                {
+                    $this->trace->traceException(
+                        $ex,
+                        Trace::ERROR,
+                        TraceCode::ART_RECON_UPDATE_GATEWAY_DATA_FAILED,
+                        [
+                            'input'   => $input,
+                            'gateway' =>  $payment->getGateway(),
+                        ]
+                    );
+
+                }
+
+    }
+
     /** Persist/update transaction data post recon
      * @param array $input
      * @param Payment\Entity $payment
@@ -1107,22 +1247,60 @@ class Service extends Base\Service
 
         $transaction->setReconciledType($input['reconciled_type']);
 
-        if ($payment->getMethod() === Payment\Method::UPI && isset($input['gateway_settled_at']) === true){
+        if (($payment->getMethod() === Payment\Method::UPI || $payment->getMethod() === Payment\Method::CARD) && isset($input['gateway_settled_at']) === true){
 
             $transaction->setGatewaySettledAt($input['gateway_settled_at']);
 
         }
 
-        if ($payment->getMethod() !== Payment\Method::UPI)
+        if ($payment->getMethod() !== Payment\Method::UPI && $payment->getMethod() !== Payment\Method::CARD)
         {
             $transaction->setGatewayAmount($input['amount']);
         }
 
-        $this->repo->saveOrFail($transaction);
+        if ($payment->isMethodCardOrEmi() === true)
+        {
+            // verify this logic  for new integration
+            $fee = (int)$input["card"]["gateway_fee"];
 
+            $gst = (int)$input["card"]["gateway_service_tax"];
+
+            $transaction = $this->recordGatewayFeeAndServiceTax($transaction ,$fee ,$gst );
+
+            $payment->setGatewayCaptured(true);
+
+            if (empty($input['card']['auth_code']) === false)
+            {
+                $payment->setReference2($input['card']['auth_code']);
+            }
+
+            if (empty($input['card']['rrn']) === false)
+            {
+                 $payment->setReference16($input['card']['rrn']);
+            }
+
+            if (empty($input['card']['arn']) === false)
+            {
+                 $payment->setReference1($input['card']['arn']);
+            }
+
+            $this->repo->saveOrFail($payment);
+
+            $this->repo->saveOrFail($transaction);
+
+            if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+                {
+                    (new ReverseShadowPaymentsCore())->createLedgerEntryForCaptureGatewayCommissionReverseShadow($payment, $fee, $gst);
+                }
+       }
+       else
+       {
+            $this->repo->saveOrFail($transaction);
+       }
         if (($payment->isExternal() === true) and
-            ($payment->isUpi() === true) and
-            ($payment->isRoutedThroughPaymentsUpiPaymentService() === true))
+            (($payment->isUpi() === true and
+            $payment->isRoutedThroughPaymentsUpiPaymentService() === true) or
+            ($payment->isCard() === true)))
         {
             (new Transaction\Core)->dispatchUpdatedTransactionToCPS($transaction, $payment);
         }
@@ -1597,4 +1775,20 @@ class Service extends Base\Service
 
         (New NbPlusServiceRecon)->dispatchToNbplusServiceWalletQueue($data);
     }
+
+    protected function recordGatewayFeeAndServiceTax($transaction , $reconGatewayFee, $reconGatewayServiceTax)
+    {
+        if ($transaction->getGatewayFee() === 0)
+        {
+            $transaction->setGatewayFee($reconGatewayFee);
+        }
+
+         if ($transaction->getGatewayServiceTax() === 0)
+        {
+            $transaction->setGatewayServiceTax($reconGatewayServiceTax);
+        }
+
+        return $transaction;
+    }
+
 }

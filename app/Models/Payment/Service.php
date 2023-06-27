@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Mail;
 use Crypt;
 use Config;
+use RZP\Reconciliator\Base\SubReconciliator\PaymentReconciliate;
 use RZP\Http\Request\Requests;
 use RZP\Jobs\CrossBorderCommonUseCases;
 use Throwable;
@@ -5869,6 +5870,148 @@ class Service extends Base\Service
 
     }
 
+   public function reconCreateCardTransaction (array $input)
+   {
+        $this->trace->info(
+                    TraceCode::ART_PAYMENT_CREATE_TRANSACTION_REQUEST,
+                    [
+                        'input'            => $input,
+                    ]);
+
+        (new Payment\Validator)->validateInput('create_transaction_authorized_card_payment', $input);
+
+        $paymentId = $input['payment_id'];
+
+        $payment = $this->repo->payment->findOrFail($paymentId);
+
+        if ($payment->isMethodCardOrEmi() === false)
+        {
+             throw new Exception\BadRequestValidationFailureException(
+                'Method is not Card/Emi');
+        }
+
+        $paymentRecon = new PaymentReconciliate();
+
+        $paymentRecon->setGateway($payment->getGateway());
+
+        $paymentRecon->setPayment($payment);
+
+        $isSuccess = $paymentRecon->handleVerifyAuthorized();// this function  is creating transaction entity
+
+        $this->trace->info(
+                    TraceCode::ART_PAYMENT_CREATE_TRANSACTION_RESPONSE,
+                    [
+                        'success'                    => $isSuccess,
+                        'gateway'                    => $payment->getGateway(),
+                        'gateway_fee'                => $paymentRecon->getPaymentTransaction()->getGatewayFee(),
+                        'gateway_service_tax'        => $paymentRecon->getPaymentTransaction()->getGatewayServiceTax()
+
+                    ]);
+        return  [
+            'success'              => $isSuccess,
+            'payment_id'           => $payment->getId(),
+            'gateway_fee'          => $paymentRecon->getPaymentTransaction()->getGatewayFee(),
+            'gateway_service_tax'  => $paymentRecon->getPaymentTransaction()->getGatewayServiceTax(),
+            'art_request_id'       => $input['art_request_id'] ?? '',
+        ];
+
+   }
+
+
+
+
+    /**
+     * Authorizes failed payment based on ART input
+     * [force_authorize_failed,verify_authorize_failed]
+     * @param array $input
+     * @return array
+     * @throws BadRequestException
+     * @throws BadRequestValidationFailureException
+     * @throws \Exception
+     */
+    public function authorizeFailedCardPayment(array $input)
+    {
+
+        $fields = [
+            EntityConstants::CARD,
+            EntityConstants::PAYMENT,
+            Entity::META,
+        ];
+
+        $input = array_only($input, $fields);
+
+        $this->trace->info(
+                    TraceCode::ART_PAYMENT_FORCE_AUTHORIZE_REQUEST,
+                    [
+                        'input'            => $input,
+                    ]);
+
+        switch ($input['payment']['method'])
+        {
+            case Payment\Method::CARD:
+            case Payment\Method::EMI:
+                (new Payment\Validator)->validateInput('authorize_failed_card_payment', $input);
+                break;
+            default:
+                throw new Exception\BadRequestValidationFailureException(
+                    Error\PublicErrorDescription::BAD_REQUEST_INVALID_PAYMENT_METHOD
+                );
+        }
+
+        $paymentId = $input['payment']['id'];
+
+        $payment = $this->repo->payment->findOrFail($paymentId);
+
+        $paymentRecon = new PaymentReconciliate();
+
+        $paymentRecon->setPayment($payment);
+
+        $paymentRecon->setTransaction();
+
+        $gateway = $payment->getGateway();
+
+        if (($payment !== null) and
+            ($payment->getAmount() !== (int) $input['payment']['amount']))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                Error\PublicErrorDescription::BAD_REQUEST_AMOUNT_MISMATCH,
+                Payment\Entity::AMOUNT,
+                [
+                    'payment_entity_amount' => $payment->getAmount(),
+                    'input_amount'          => $input['payment']['amount'],
+                    'payment_id'            => $payment->getId(),
+                ]);
+        }
+
+         if ($payment->isFailed() === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Non failed payment given for authorization');
+        }
+
+        if (($input['meta']['force_auth_payment'] === true) and
+            ($this->isForceAuthAllowed($gateway) === true))
+        {
+            return $this->forceAuthorizeCardPayment($payment, $input, $paymentRecon);
+        }
+        else
+        {
+           $verifySuccess = $paymentRecon->handleVerifyPayment();
+           $payment->reload();
+           return  [
+            'success'               => $verifySuccess  and  (($payment->getStatus() === Payment\Status::AUTHORIZED) or ($payment->getStatus() === Payment\Status::CAPTURED)),
+            'payment_id'            => $payment->getId(),
+            'amount'                => $payment->getAmount(),
+            'status'                => $payment->getStatus(),
+            'rrn'                   => $payment->getReference16(),
+            'gateway_fee'           => $paymentRecon->getPaymentTransaction() ? $paymentRecon->getPaymentTransaction()->getGatewayFee() : null,
+            'gateway_service_tax'   => $paymentRecon->getPaymentTransaction() ? $paymentRecon->getPaymentTransaction()->getGatewayServiceTax() : null,
+            'art_request_id'        => $input['meta']['art_request_id'],
+           ];
+        }
+
+    }
+
     /**
      * Force authorize failed payment
      * @param Entity $payment
@@ -5930,6 +6073,65 @@ class Service extends Base\Service
             'art_request_id' => $input['meta']['art_request_id'],
         ];
     }
+
+
+
+    /**
+     * Force authorize failed payment
+     * @param Entity $payment
+     * @param array $input
+     * @return array
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function forceAuthorizeCardPayment(Payment\Entity $payment, array $input = [],$paymentRecon)
+    {
+        $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
+
+        $input['acquirer'] = $this->getAcquirerData($input);
+
+        $this->repo->transaction(function () use ($paymentRecon, $payment, $input, $merchant)
+        {
+
+            $processor = $this->getNewProcessor($merchant);
+
+            // to send force_authorize call to cps
+            if ($payment->getCpsRoute() === Payment\Entity::REARCH_CARD_PAYMENT_SERVICE)
+            {
+                $payment->enableCardPaymentService();
+            }
+
+            $response = $processor->forceAuthorizeFailedPayment($payment, $input);
+
+            if ((empty($response['status']) === false) and
+                ($response['status'] !== Payment\Status::FAILED))
+            {
+                $paymentRecon->handleVerifyAuthorized();
+            }
+            else
+            {
+                $this->trace->info(
+                    TraceCode::ART_PAYMENT_FORCE_AUTHORIZE_FAILED,
+                    [
+                        'payment_id' => $payment->getId(),
+                        'amount'     => $payment->getAmount(),
+                        'gateway'    => $payment->getGateway(),
+                    ]);
+            }
+        });
+
+
+        return [
+            'success'               => (($payment->getStatus() === Payment\Status::AUTHORIZED) or ($payment->getStatus() === Payment\Status::CAPTURED)),
+            'payment_id'            => $payment->getId(),
+            'amount'                => $payment->getAmount(),
+            'status'                => $payment->getStatus(),
+            'rrn'                   => $payment->getReference16(),
+            'gateway_fee'           => $paymentRecon->getPaymentTransaction()->getGatewayFee(),
+            'gateway_service_tax'   => $paymentRecon->getPaymentTransaction()->getGatewayServiceTax(),
+            'art_request_id'        => $input['meta']['art_request_id'],
+        ];
+    }
+
 
     /**
      * Force authorize failed payment
@@ -6136,6 +6338,12 @@ class Service extends Base\Service
         else if($input['payment']['method'] == Method::NETBANKING) {
             return [
                 Payment\Entity::REFERENCE1 => $input['netbanking']['bank_transaction_id'],
+            ];
+        }
+         else if($input['payment']['method'] == Method::CARD) {
+            return [
+                Payment\Entity::REFERENCE16 => $input['card']['rrn'],
+                Payment\Entity::REFERENCE2  => $input['card']['auth_code']
             ];
         }
         return [];

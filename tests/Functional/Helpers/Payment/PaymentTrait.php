@@ -12,6 +12,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Services\RazorXClient;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Constants\Shield as ShieldConstants;
+use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
 use Symfony\Component\DomCrawler\Crawler;
 
 use RZP\Exception;
@@ -2316,6 +2317,41 @@ trait PaymentTrait
         ];
     }
 
+
+    protected function getDefaultCardForceAuthorizePayload()
+    {
+        return [
+             'card' => [
+                'auth_code'     => '123456789013',
+                'rrn'           => '4531245576',
+                'arn'           => 'AXId27bf16312dc428ab7a305ea57e20393',
+                'gateway'       => 'axis',
+            ],
+            'payment' => [
+                'id'        =>  'LYW58PWqtYdvVl',
+                'method'    => 'card',
+                'amount'    => 50000,
+            ],
+            'meta' => [
+                'art_request_id' => '123423454',
+                'version'        => 'api_v2',
+            ]
+        ];
+    }
+
+    protected function markForceAuthorizeFailedPaymentAndGetPayment(array $content)
+    {
+        $request = [
+            'url'      => '/payments/authorize/card/failed',
+            'method'   => 'POST',
+            'content'  => $content,
+        ];
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function getDefaultUpiPostReconArray()
     {
         return [
@@ -2344,6 +2380,32 @@ trait PaymentTrait
             'reconciled_type' => 'mis',
             'amount'          => 5000,
             'reconciled_at'   => '1642476459',
+        ];
+    }
+
+
+    protected function getDefaultCardPostReconArray()
+    {
+        return [
+            'card' => [
+                'arn'                 => '123455789012',
+                'rrn'                 => '4531245576',
+                'auth_code'           => '433455',
+                'gateway_fee'         => '118',
+                'gateway_service_tax' => '18'
+            ],
+                'payment_id'      => 'IShcnbF6tsOy',
+                'reconciled_type' => 'mis',
+                'amount'          => 50000,
+                'reconciled_at'   => '1642476459',
+        ];
+    }
+
+  protected function getDefaultArtPayloadForCreatingTransaction()
+    {
+        return [
+                'payment_id'      => 'IShcnbF6tsOy',
+                'art_request_id'          => 'qwywqergweru'
         ];
     }
 
@@ -2410,6 +2472,32 @@ trait PaymentTrait
         list ($uri, $method, $values) = $this->getFormDataFromResponse($response->body, $url);
 
         return [$uri, $method, $values, $response];
+    }
+
+    protected function makeCreateTransactionRequestAndGetContent(array $input)
+    {
+        $request = [
+            'method'  => 'POST',
+            'content' => $input,
+            'url'     => '/payments/recon/create/transaction',
+        ];
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    private function makeUpdatePostReconRequestAndGetContentForCard(array $input)
+    {
+        $request = [
+            'method'  => 'POST',
+            'content' => $input,
+            'url'     => '/reconciliate/data',
+        ];
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
     }
 
     protected function getFormRequestFromResponse($content, $url)
