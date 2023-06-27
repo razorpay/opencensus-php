@@ -13747,9 +13747,13 @@ class BankingAccountTest extends TestCase
                     'assignee_team' => 'sales',
                     'metadata' => [
                         'account_login_date' => 1592850600,
-                        'account_open_date' => 1592850600,
                     ]
                 ],
+                'partner_bank_application'  => [
+                    'account_opening_details'   => [
+                        'account_open_date' => 1592850600
+                    ]
+                ]
             ]
         ]);
 
