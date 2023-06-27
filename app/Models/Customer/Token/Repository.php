@@ -13,12 +13,15 @@ use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Models\Customer;
+use Rzp\Wda_php\Cluster;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
+use RZP\Trace\TraceCode;
 use RZP\Base\ConnectionType;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Method;
 use RZP\Exception\ServerErrorException;
+use Rzp\Wda_php\WDARegisterQueryRequestBuilder;
 
 class Repository extends Base\Repository
 {
@@ -360,6 +363,27 @@ class Repository extends Base\Repository
      */
     public function fetchPendingEmandateRegistrationOptimised(string $gateway, int $from, int $to)
     {
+        try
+        {
+            $variant = $this->app['razorx']->getTreatment(
+                $from,
+                Merchant\RazorxTreatment::FETCH_PENDING_EMANDATE_REGISTRATION_FROM_WDA,
+                $this->app['rzp.mode']
+            );
+
+            if($variant === 'on')
+            {
+                return $this->fetchPendingEmandateRegistrationFromWDA($gateway, $from, $to);
+            }
+        }
+        catch(\Throwable $ex)
+        {
+            $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
+                'wda_migration_error' => $ex->getMessage(),
+                'route_name'          => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+        }
+
         $paymentTokenIdColumn = $this->repo->payment->dbColumn(Payment\Entity::TOKEN_ID);
 
         $paymentGlobalTokenIdColumn = $this->repo->payment->dbColumn(Payment\Entity::GLOBAL_TOKEN_ID);
@@ -408,13 +432,60 @@ class Repository extends Base\Repository
             })
             ->where($paymentRecurringTypeColumn, '=', Payment\RecurringType::INITIAL)
             ->where($paymentRecurringColumn, '=', 1)
-            ->where($paymentRecurringColumn, '=', Method::EMANDATE)
+            ->where($paymentMethodColumn, '=', Method::EMANDATE)
             ->where($paymentGatewayColumn, '=', $gateway)
             ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::INITIATED)
             ->where($tokenRecurringColumn, '!=', 1)
             ->with(['customer', 'merchant']);
 
         return $localTokenQuery->union($globalTokenQuery)->get();
+    }
+
+    /**
+     * @param string $gateway
+     * @param int $from
+     * @param int $to
+     * @return mixed
+     */
+    public function fetchPendingEmandateRegistrationFromWDA(string $gateway, int $from, int $to)
+    {
+        $this->trace->info(TraceCode::WDA_SERVICE_REQUEST, [
+            'function'     => __FUNCTION__,
+            'input_params' => ['from' => $from, 'to' => $to, 'gateway' => $gateway],
+            'route_name'   => $this->app['api.route']->getCurrentRouteName(),
+        ]);
+
+        $wdaClient = $this->app['wda-client']->wdaClient;
+
+        $statement = "(SELECT tokens.*, payments.id as payment_id FROM tokens INNER JOIN payments ON tokens.id = payments.token_id AND payments.authorized_at >= @val2 AND payments.authorized_at <= @val3 WHERE payments.recurring_type = 'initial' AND payments.recurring = 1 AND payments.method = 'emandate' AND payments.gateway = @val1 AND recurring_status = 'initiated' AND tokens.recurring != 1 AND tokens.deleted_at is null) UNION (SELECT tokens.*, payments.id as payment_id FROM tokens inner join payments on tokens.id = payments.global_token_id AND payments.authorized_at >= @val2 AND payments.authorized_at <= @val3 WHERE payments.recurring_type = 'initial' AND payments.recurring = 1 AND payments.method = 'emandate' AND payments.gateway = @val1 AND recurring_status = 'initiated' AND tokens.recurring != 1 AND tokens.deleted_at is null)";
+        $parameter = ['val1' => $gateway, 'val2' => $from, 'val3' => $to];
+
+        $wdaRegisterQuery = new WDARegisterQueryRequestBuilder();
+
+        $wdaRegisterQuery->sqlStatement($statement);
+        $wdaRegisterQuery->params($parameter);
+        $wdaRegisterQuery->setCluster(Cluster::ADMIN_CLUSTER);
+
+        $registerData = $wdaClient->registerQuery($wdaRegisterQuery->build());
+
+        $queryResponseData =  $wdaClient->execRegisteredQuery($registerData);
+
+        $collection = new Base\PublicCollection();
+
+        foreach ($queryResponseData->getEntities() as $entity)
+        {
+            $token = json_decode($entity->serializeToJsonString(), true);
+
+            $merchant = $this->repo->merchant->find($token['merchant_id']);
+            $customer = $this->repo->customer->findById($token['customer_id']);
+
+            $token->customer()->associate($customer);
+            $token->merchant()->associate($merchant);
+
+            $collection->push($token);
+        }
+
+        return $collection;
     }
 
     /**
