@@ -34,11 +34,17 @@ class CurrentAccount extends Base
 
     protected function getSubject()
     {
+        $subject = self::SUBJECT;
+
         $merchantId = $this->data['merchant_id'];
 
         $merchantName = $this->data['merchant_name'] ?? "";
 
-        return sprintf(self::SUBJECT, $merchantId, $merchantName);
+        if($this->data['banking_account_application_type'] === 'ICICI_VIDEO_KYC_APPLICATION'){
+            $subject .= ' ICICI Video KYC';
+        }
+
+        return sprintf($subject, $merchantId, $merchantName);
     }
 
     protected function getMailData()

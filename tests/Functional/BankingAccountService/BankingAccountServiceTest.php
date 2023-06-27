@@ -1306,6 +1306,63 @@ class BankingAccountServiceTest extends TestCase
 
     }
 
+    public function testSendIciciVideoKycLeadToFreshDesk()
+    {
+        $this->ba->bankingAccountServiceAppAuth();
+
+        $merchantDetailArray = [
+            'contact_name'                     => 'rzp',
+            'contact_email'                    => 'test1@rzp.com',
+            'merchant_id'                      => '10000000000000',
+            'business_operation_address'       => 'Koramangala',
+            'business_operation_state'         => 'KARNATAKA',
+            'business_operation_pin'           => 560034,
+            'business_dba'                     => 'test',
+            'business_name'                    => 'INTERNET BANKING CA',
+            'business_operation_city'          => 'Bangalore',
+            'activation_status'                => 'activated',
+            'contact_mobile'                   => '1234567890',
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailArray);
+
+        $expectedPayload = [
+            'merchant_id'               => '10000000000000',
+            'CA_Preferred_Phone'        => '33322323',
+            'CA_Preferred_Email'        => 'abc@def.com',
+            'merchant_name'             => 'test merchant',
+            'merchant_email'            => 'test@test.com',
+            'merchant_phone'            => '929292929',
+            'constitution'              => 'PRIVATE_LIMITED',
+            'pincode'                   => '332332',
+            'sales_team'                => 'SELF_SERVE',
+            'account_manager_name'      => 'test_name',
+            'account_manager_email'     => 'testemail@test.com',
+            'account_manager_phone'     => '33332222',
+            'banking_account_application_type'   => 'ICICI_VIDEO_KYC_APPLICATION'
+        ];
+
+        $diagMock = $this->createAndReturnDiagMock();
+
+        $diagMock->shouldReceive('trackOnboardingEvent')
+            ->once()
+            ->withArgs(function($eventData, $merchant, $ex, $actualData) use ($expectedPayload) {
+                $this->assertEquals($expectedPayload, $actualData);
+                $this->assertEquals(EventCode::X_CA_ONBOARDING_FRESHDESK_TICKET_CREATE_ICICI, $eventData);
+                return true;
+            })
+            ->andReturnNull();
+
+        Mail::fake();
+
+        $this->startTest();
+
+        Mail::assertQueued(CurrentAccount::class, function ($mail) {
+            $mail->build();
+            return $mail->subject === 'RazorpayX | Current Account [10000000000000 | test merchant] ICICI Video KYC';
+        });
+    }
+
     public function testSendRblApplicationInProgressLeadsToSalesForce()
     {
         $this->ba->cronAuth();
