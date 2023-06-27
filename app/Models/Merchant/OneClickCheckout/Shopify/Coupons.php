@@ -186,6 +186,7 @@ class Coupons extends Base\Core
             $lineItems = $checkout['lineItems']['edges'];
             foreach($lineItems as $lineItem){
                 $tags = $lineItem['node']['variant']['product']['tags'] ?? [];
+                $quantity = $lineItem['node']['quantity'] ?? 0;
 
                 $lineItemHasCouponTag = false;
                 $lineItemFloorValue = 0;
@@ -208,11 +209,11 @@ class Coupons extends Base\Core
                 }
                 if ($lineItemHasCouponTag){
                     $atLeastOneItemHasCouponTag = true;
-                    $floorValue = $floorValue + $lineItemFloorValue;
+                    $floorValue = $floorValue + $lineItemFloorValue * $quantity;
                 }
                 else{
                     $price = (new Utils)->formatNumber($lineItem['node']['variant']['price']['amount']);
-                    $floorValue = $floorValue + $price;
+                    $floorValue = $floorValue + $price * $quantity;
                 }
             }
 
