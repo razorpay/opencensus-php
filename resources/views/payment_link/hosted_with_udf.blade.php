@@ -78,6 +78,7 @@
                 view_preferences: data.view_preferences,
                 keyless_header: data.keyless_header,
                 checkout_2_enabled: data.checkout_2_enabled ?? false,
+                is_pp_batch_upload: data.is_pp_batch_upload ?? false,
               };
         </script>
 
