@@ -890,6 +890,7 @@ class ApiRequestAny
     public function getApiMetricDimensions($httpCode, $currentRouteName, $apiPathName, $method, $time_taken): array
     {
         return [
+            Constants::ORIGIN                                               => ApiUrl::getRequestOriginUrl() ?? 'unknown_origin',
             Constants::ROLE                                                 => UserHelper::getMerchantRole(),
             Constants::LABEL_HTTP_REQUESTS_API_DOWNSTREAM_STATUS            => $httpCode,
             Constants::LABEL_HTTP_REQUESTS_API_DOWNSTREAM_DASHBOARD_ROUTE   => $currentRouteName ?? 'unknown_route',

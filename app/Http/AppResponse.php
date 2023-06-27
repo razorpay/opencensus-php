@@ -93,7 +93,8 @@ class AppResponse
         $request = app('request');
 
         return [
-            Constants::ROLE                                         => UserHelper::getMerchantRole(),
+            Constants::ORIGIN                                     => ApiUrl::getRequestOriginUrl() ?? 'unknown_origin',
+            Constants::ROLE                                       => UserHelper::getMerchantRole(),
             Constants::LABEL_HTTP_REQUESTS_DOWNSTREAM_STATUS      => $response['status_code']  ?? $response['http_status_code']  ?? 'unknown_status',
             Constants::LABEL_HTTP_REQUESTS_DOWNSTREAM_IS_SUCCESS  => $response['success']                                     ?? 'unknown_success',
             Constants::LABEL_HTTP_REQUESTS_DOWNSTREAM_ROUTE       => $request->route() !== null ? $request->route()->getName() :  'unknown_route',

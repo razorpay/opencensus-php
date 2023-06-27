@@ -168,6 +168,7 @@ class Helper
             $currentMerchant = $user->currentMerchant();
     
             if (empty($currentMerchant) === true) {
+
                 return $role;
             }
             

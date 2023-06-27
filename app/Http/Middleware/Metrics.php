@@ -59,6 +59,7 @@ class Metrics
         $routeName = $request->route() !== null ? $request->route()->getName() : 'unknown_route';
 
         return [
+            Constants::ORIGIN                          => ApiUrl::getRequestOriginUrl() ?? 'unknown_origin',
             Constants::ROLE                            => UserHelper::getMerchantRole(),
             Constants::LABEL_HTTP_REQUESTS_PRODUCT     => ApiUrl::isBankingOriginRequest() ? Constants::BANKING : Constants::PRIMARY ,
             Constants::LABEL_HTTP_REQUESTS_METHOD      => $request->getMethod()                         ?? 'unknown_method',
