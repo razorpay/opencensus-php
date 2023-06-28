@@ -95,13 +95,17 @@ class Constants
   const LABEL_HTTP_REQUESTS_DOWNSTREAM_IS_SUCCESS   = 'is_success';
   const LABEL_HTTP_REQUESTS_DOWNSTREAM_CONTROLLER   = 'controller';
   const LABEL_HTTP_REQUESTS_DOWNSTREAM_ROUTE        = 'route';
-  const LABEL_HTTP_REQUESTS_PRODUCT                 = 'product';
 
   // Metric labels - HTTP_REQUESTS
   const LABEL_HTTP_REQUESTS_METHOD                  = 'method';
   const LABEL_HTTP_REQUESTS_ROUTE                   = 'route';
   const LABEL_HTTP_REQUESTS_STATUS                  = 'status';
   const LABEL_HTTP_REQUESTS_CONTROLLER              = 'controller';
+  const LABEL_HTTP_REQUESTS_PRODUCT                 = 'product';
+  const LABEL_HTTP_REQUESTS_ROLE                    = 'role';
+  const LABEL_HTTP_REQUESTS_DOMAIN                  = 'domain';
+  const LABEL_HTTP_REQUESTS_GRAPHQL_CLIENT          = 'graphql_client';
+
   const LABEL_RZP_TEAM                              = 'rzp_team';
 
   // Metric labels - HTTP_REQUESTS_API_DOWNSTREAM
@@ -111,8 +115,6 @@ class Constants
   const LABEL_HTTP_REQUESTS_API_DOWNSTREAM_PRODUCT           = 'product';
   const LABEL_HTTP_REQUESTS_API_DOWNSTREAM_API_ROUTE_NAME    = 'api_route_name';
   const LABEL_HTTP_REQUESTS_API_DOWNSTREAM_API_RESPONSE_TIME = 'response_time';
-  const ROLE    =  'role';
-  const ORIGIN  =  'origin';
 
   /* Possible Login actions */
   //when user sigin after enterin OTP

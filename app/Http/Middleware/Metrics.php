@@ -58,15 +58,18 @@ class Metrics
     {
         $routeName = $request->route() !== null ? $request->route()->getName() : 'unknown_route';
 
+        $apolloClientName = $request->header('apollographql-client-name');
+
         return [
-            Constants::ORIGIN                          => ApiUrl::getRequestOriginUrl() ?? 'unknown_origin',
-            Constants::ROLE                            => UserHelper::getMerchantRole(),
-            Constants::LABEL_HTTP_REQUESTS_PRODUCT     => ApiUrl::isBankingOriginRequest() ? Constants::BANKING : Constants::PRIMARY ,
-            Constants::LABEL_HTTP_REQUESTS_METHOD      => $request->getMethod()                         ?? 'unknown_method',
-            Constants::LABEL_HTTP_REQUESTS_ROUTE       => $routeName,
-            Constants::LABEL_HTTP_REQUESTS_STATUS      => $this->getStatusCode($response),
-            Constants::LABEL_HTTP_REQUESTS_CONTROLLER  => $request->route() !== null ? $request->route()->getAction()['controller']  : 'unknown_controller',
-            Constants::LABEL_RZP_TEAM                  => RouteTeamMap::getTeamNamesForRoute($routeName),
+            Constants::LABEL_HTTP_REQUESTS_DOMAIN         => $request->server->get('SERVER_NAME') ?? 'unknown_domain',
+            Constants::LABEL_HTTP_REQUESTS_ROLE           => UserHelper::getMerchantRole(),
+            Constants::LABEL_HTTP_REQUESTS_GRAPHQL_CLIENT => $apolloClientName ?? 'unknown_graphql_client',
+            Constants::LABEL_HTTP_REQUESTS_PRODUCT        => ApiUrl::isBankingOriginRequest() ? Constants::BANKING : Constants::PRIMARY ,
+            Constants::LABEL_HTTP_REQUESTS_METHOD         => $request->getMethod() ?? 'unknown_method',
+            Constants::LABEL_HTTP_REQUESTS_ROUTE          => $routeName,
+            Constants::LABEL_HTTP_REQUESTS_STATUS         => $this->getStatusCode($response),
+            Constants::LABEL_HTTP_REQUESTS_CONTROLLER     => $request->route() !== null ? $request->route()->getAction()['controller']  : 'unknown_controller',
+            Constants::LABEL_RZP_TEAM                     => RouteTeamMap::getTeamNamesForRoute($routeName),
         ];
     }
 

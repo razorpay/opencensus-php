@@ -156,22 +156,22 @@ class Helper
     {
         return $user->role === 'owner';
     }
-    
+
     public static function getMerchantRole():string
     {
         $user = Auth::guard('user')->user();
-    
-        $role ="unknown_role";
-        
-        if (empty($user) === false) {
-            
-            $currentMerchant = $user->currentMerchant();
-    
-            if (empty($currentMerchant) === true) {
 
+        $role ="unknown_role";
+
+        if (empty($user) === false)
+        {
+            $currentMerchant = $user->currentMerchant();
+
+            if (empty($currentMerchant) === true)
+            {
                 return $role;
             }
-            
+
             $role = $currentMerchant->role;
         }
         return $role;
