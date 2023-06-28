@@ -31,6 +31,21 @@ class NbplusPaylaterLazypayReconciliationTest extends NbPlusPaymentServicePaylat
 
         $this->provider = 'lazypay';
 
+        $splitzMockResponse = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                            "key" => "result",
+                            "value" => "on"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzMockResponse);
+
         $this->payment = $this->getDefaultPayLaterPaymentArray($this->provider);
     }
 
@@ -105,6 +120,17 @@ class NbplusPaylaterLazypayReconciliationTest extends NbPlusPaymentServicePaylat
         $batch = $this->getDbLastEntityToArray('batch');
 
         $this->assertEquals($batch['status'], 'processed');
+    }
+
+    protected function mockSplitzTreatment($output)
+    {
+        $this->splitzMock = \Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturn($output);
     }
 
     public function mockScroogeResponse($refundId, $paymentId)

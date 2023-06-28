@@ -72,6 +72,8 @@ class NbPlusPaymentServicePaylaterTest extends TestCase
 
         $this->fixtures->merchant->enablePayLater();
 
+        $this->fixtures->merchant->enablePaylaterProviders(['lazypay' => 1]);
+
         // s2s flow
         $this->terminal = $this->fixtures->create('terminal:paylater_lazypay_terminal');
 
@@ -87,6 +89,21 @@ class NbPlusPaymentServicePaylaterTest extends TestCase
     public function testAuthorizeS2S()
     {
         $this->provider = 'lazypay';
+
+        $splitzMockResponse = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                            "key" => "result",
+                            "value" => "on"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzMockResponse);
 
         $paymentArray = $this->getDefaultPayLaterPaymentArray($this->provider);
 
@@ -126,6 +143,21 @@ class NbPlusPaymentServicePaylaterTest extends TestCase
     {
         $this->provider = 'lazypay';
 
+        $splitzMockResponse = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                            "key" => "result",
+                            "value" => "on"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzMockResponse);
+
         $paymentArray = $this->getDefaultPayLaterPaymentArray($this->provider);
 
         $response = $this->doAuthPayment($paymentArray);
@@ -145,6 +177,21 @@ class NbPlusPaymentServicePaylaterTest extends TestCase
     public function testPaymentVerifyFailed()
     {
         $this->provider = 'lazypay';
+
+        $splitzMockResponse = [
+            "response" => [
+                "variant" => [
+                    "variables" => [
+                        [
+                            "key" => "result",
+                            "value" => "on"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzMockResponse);
 
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
@@ -253,6 +300,17 @@ class NbPlusPaymentServicePaylaterTest extends TestCase
 
             return $resp;
         }
+    }
+
+    protected function mockSplitzTreatment($output)
+    {
+        $this->splitzMock = \Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturn($output);
     }
 
     protected function mockVerifyFailure()

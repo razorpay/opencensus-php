@@ -2942,7 +2942,7 @@ class Processor
 
     protected function preProcessPaymentInputsForPayLater($input, $payment)
     {
-        $this->verifyPayLaterEnabled();
+        $this->verifyPayLaterEnabled($payment);
 
         if (empty($input['ott']) === false)
         {

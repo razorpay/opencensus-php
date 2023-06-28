@@ -1277,6 +1277,13 @@ class Core extends Base\Core
 
                 }
 
+                $merchantWhitelistedForLazypay = (new MerchantCore())->isMerchantWhitelistedForLazypay($merchant);
+
+                if($instrument === Payment\Gateway::LAZYPAY and !$merchantWhitelistedForLazypay)
+                {
+                    unset($providers[$index]);
+                }
+
             }
 
             $this->sortPaylaterProviders($providers);

@@ -11,6 +11,7 @@ use Route;
 use Request;
 use Carbon\Carbon;
 use Lib\PhoneBook;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\NetbankingConfig;
 
 use RZP\Models\Ledger\ReverseShadow\Payments\Core as ReverseShadowPaymentsCore;
@@ -9686,7 +9687,7 @@ trait Authorize
         }
     }
 
-    protected function verifyPayLaterEnabled()
+    protected function verifyPayLaterEnabled(Payment\Entity $payment)
     {
         /**
          * @var $merchantMethods \RZP\Models\Merchant\Methods\Entity
@@ -9698,6 +9699,25 @@ trait Authorize
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARDLESS_EMI_NOT_ENABLED_FOR_MERCHANT);
+        }
+
+        $paylaterProviders = $merchantMethods->getEnabledPaylaterProviders();
+
+        $wallet = $payment[Payment\Entity::WALLET];
+
+        if(isset($wallet) === true and $wallet === Payment\Gateway::LAZYPAY and (isset($paylaterProviders[$wallet]) === false or
+                $paylaterProviders[$wallet] == 0))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_INSTRUMENT_NOT_ENABLED);
+        }
+
+        $merchantWhitelistedForLazypay = (new MerchantCore())->isMerchantWhitelistedForLazypay($payment->merchant);
+
+        if(isset($wallet) === true and $wallet === Payment\Gateway::LAZYPAY and !$merchantWhitelistedForLazypay)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_INSTRUMENT_NOT_ENABLED);
         }
     }
 
@@ -12395,7 +12415,7 @@ trait Authorize
                 break;
 
             case Payment\Method::PAYLATER:
-                $this->verifyPayLaterEnabled();
+                $this->verifyPayLaterEnabled($payment);
                 break;
 
             case Payment\Method::NACH:

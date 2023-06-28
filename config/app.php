@@ -652,5 +652,7 @@ return array(
 
     'eligibility_on_std_checkout_splitz_experiment_id' =>env('ELIGIBILITY_ON_STD_CHECKOUT_SPLITZ_EXPERIMENT_ID'),
 
-    'clevertap_migration_splitz_experiment_id' => env('CLEVERTAP_MIGRATION_SPLITZ_EXPERIMENT_ID')
+    'clevertap_migration_splitz_experiment_id' => env('CLEVERTAP_MIGRATION_SPLITZ_EXPERIMENT_ID'),
+
+    'lazypay_whitelisted_merchants_experiment_id' => env('LAZYPAY_WHITELISTED_MERCHANTS_SPLITZ_EXP_ID'),
 );
