@@ -4,7 +4,11 @@ namespace RZP\Models\Customer\AppToken;
 
 use RZP\Models\Base;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use RZP\Models\Customer\Entity as CustomerEntity;
 
+/**
+ * @property-read CustomerEntity $customer
+ */
 class Entity extends Base\PublicEntity
 {
     use SoftDeletes;

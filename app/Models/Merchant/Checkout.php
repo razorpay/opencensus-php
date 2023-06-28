@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant;
 use App;
 use Request;
 use Carbon\Carbon;
+use RZP\Base\ConnectionType;
 use RZP\Constants\Country;
 use RZP\Constants\Timezone;
 use RZP\Constants\Mode;

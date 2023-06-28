@@ -336,9 +336,11 @@ class Service extends Base\Service
         {
             $app = (new AppToken\Core)->getAppByAppTokenId($appTokenId, $this->merchant);
 
-            $tokens = $this->core->fetchTokensByCustomerForCheckout($app->customer, $this->merchant);
+            if ($app !== null && $app->customer !== null) {
+                $tokens = $this->core->fetchTokensByCustomerForCheckout($app->customer, $this->merchant);
 
-            $tokens = $this->core->filterTokensForCheckout($tokens);
+                $tokens = $this->core->filterTokensForCheckout($tokens);
+            }
         }
 
         return $tokens->toArrayPublic();
