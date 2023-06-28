@@ -419,7 +419,7 @@ trait Callback
                     ErrorCode::BAD_REQUEST_PAYMENT_FAILED_BY_AVS);
             }
 
-            return $this->postPaymentAuthorizeProcessing($payment);
+            return $this->processAuthorizeResponse($payment);
         }
 
         // If it failed recently, then throw relevant exception
