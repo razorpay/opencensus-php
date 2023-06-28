@@ -343,7 +343,8 @@ function PaymentDetails(props) {
                 <ShowWhen
                   apiFeatureEnabled="Marketplace"
                   additionalCondition={(usr) =>
-                    !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentTransfers)
+                    !usr.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentTransfers) &&
+                    !showPlatformFee
                   }
                 >
                   <EntityDetailRow label="Transfer">
