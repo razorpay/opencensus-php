@@ -244,9 +244,7 @@ class Validator extends Base\Validator
         // if currency conversion is enabled, it should be a valid currency
         if ((($merchant->convertOnApi() === null) and
             ($currency !== $merchant->getCurrency())) or
-            (in_array($currency, Currency::SUPPORTED_CURRENCIES, true) === false) or
-            ((in_array($currency, Currency::THREE_DECIMAL_CURRENCIES, true) === true) and
-             $this->merchant->isShaadiComNewCurrencyEnabled() === false))
+            (in_array($currency, Currency::SUPPORTED_CURRENCIES, true) === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ORDER_CURRENCY_NOT_SUPPORTED,

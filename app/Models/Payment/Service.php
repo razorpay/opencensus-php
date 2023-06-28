@@ -2535,19 +2535,9 @@ class Service extends Base\Service
             if (($this->isDccEnabledIIN($iinEntity, $merchant) === true)
                 and ($currency !== $iinEntity->getIinCurrency()))
             {
-                $isThreeDecimalCurrencySupported = false;
-                if (($input instanceof Payment\Entity) === true)
-                {
-                    $isThreeDecimalCurrencySupported = $this->isthreeDecimalCurrencySupportedForMerchant($input, $merchant);
-                }
-
-                $dccInfo = $this->getDCCInfo($amount, $currency, $merchant->getDccMarkupPercentage(), $isThreeDecimalCurrencySupported);
+                $dccInfo = $this->getDCCInfo($amount, $currency, $merchant->getDccMarkupPercentage());
+                
                 $dccInfo['card_currency'] = $iinEntity->getIinCurrency() ?? Currency\Currency::USD;
-
-                if($isThreeDecimalCurrencySupported === false and
-                    in_array($iinEntity->getIinCurrency(), Currency\Currency::THREE_DECIMAL_CURRENCIES)){
-                    $dccInfo['card_currency'] = Currency\Currency::USD;
-                }
 
                 $dccInfo['show_markup'] = $merchant->isDCCMarkupVisible();
 
@@ -2707,43 +2697,6 @@ class Service extends Base\Service
         return $countries;
     }
 
-    public function isthreeDecimalCurrencySupportedForMerchant($payment, $merchant)
-    {
-        // BHD, KWD, and OMR currencies are only supported for merchant shaadi.com with the experiment to control the traffic
-        // If request is not s2s or not from shaadi.com, don't show new currencies in list
-        $library = $this->getLibraryFromPayment($payment);
-
-        if(in_array($library, Analytics\Metadata::SUPPORTED_LIBRARIES_FOR_THREE_DECIMAL_CURRENCIES) === false or $merchant->isShaadiComNewCurrencyEnabled() === false)
-        {
-            return false;
-        }
-
-        // check experiment
-        try
-        {
-            $properties = [
-                'id'            => UniqueIdEntity::generateUniqueId(),
-                'experiment_id' => $this->app['config']->get('app.shaadi_com_new_currency_support_experiment_id'),
-            ];
-
-            $response = $this->app['splitzService']->evaluateRequest($properties);
-            $variant = $response['response']['variant']['name'] ?? '';
-            if ($variant === 'variant_on')
-            {
-                return true;
-            }
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException(
-                $e,
-                null,
-                TraceCode::SHAADI_COM_NEW_CURRENCY_SUPPORT_SPLITZ_ERROR
-            );
-        }
-        return false;
-    }
-
     public function isDccEnabledIIN($iinEntity, $merchant): bool
     {
         if (($iinEntity !== null) and
@@ -2757,13 +2710,13 @@ class Service extends Base\Service
         return false;
     }
 
-    public function getDCCInfo($baseAmount, $baseCurrency, $markupPercent, $isThreeDecimalCurrencySupported=false)
+    public function getDCCInfo($baseAmount, $baseCurrency, $markupPercent)
     {
         $dccInfo = [];
 
         $currencyRequestId = UniqueIdEntity::generateUniqueId();
 
-        $dccInfo['all_currencies'] = (new Currency\DCC\Service)->getConvertedCurrencies($baseCurrency, $baseAmount, $currencyRequestId, $markupPercent, $isThreeDecimalCurrencySupported);
+        $dccInfo['all_currencies'] = (new Currency\DCC\Service)->getConvertedCurrencies($baseCurrency, $baseAmount, $currencyRequestId, $markupPercent);
 
         $dccInfo['currency_request_id'] = $currencyRequestId;
 

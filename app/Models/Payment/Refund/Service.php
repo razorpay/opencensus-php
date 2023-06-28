@@ -824,6 +824,9 @@ class Service extends Base\Service
 
                         $data[RefundConstants::MIN_CURRENCY_AMOUNT] = Currency::getMinAmount($payment->getCurrency());
 
+                        $data[RefundConstants::PAYMENT_RAW_CURRENCY_DENOMINATION] = Currency::getDenomination($payment->getCurrency());
+
+                        $data[RefundConstants::GATEWAY_CURRENCY_DENOMINATION] = Currency::getDenomination($payment->getGatewayCurrency());
                     }
 
                     $response[RefundConstants::ENTITIES][Constants\Entity::PAYMENT][RefundConstants::DATA] = $data;

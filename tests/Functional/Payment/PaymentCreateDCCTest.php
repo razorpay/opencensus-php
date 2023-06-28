@@ -250,18 +250,7 @@ class PaymentCreateDCCTest extends TestCase
     {
         $payment = $this->payment;
         $features = array('s2s','s2s_json');
-        if ($featureEnabled === true)
-        {
-            $output = [
-                "response" => [
-                    "variant" => [
-                        "name" => 'variant_on',
-                    ]
-                ]
-            ];
 
-            $this->mockSplitzTreatment($output);
-        }
         $this->fixtures->merchant->addFeatures($features);
 
         $responseContent = $this->doS2SPrivateAuthJsonPayment($payment);
@@ -370,7 +359,6 @@ class PaymentCreateDCCTest extends TestCase
         return $this->sendRequest($flowsData);
     }
 
-    // Usecase: the flows should mark the KW card as currency USD as KWD is not supported by flows API
     public function testKWDInStandardCheckout()
     {
         $iin = $this->createIIN('542859','KW');
@@ -380,7 +368,7 @@ class PaymentCreateDCCTest extends TestCase
         $showMarkup = $responseContent['show_markup'];
 
         // KWD shouldnt be selected as the feature is not for this merchant
-        $this->assertEquals("USD", $cardCurrency);
+        $this->assertEquals("KWD", $cardCurrency);
         $this->assertNotNull($responseContent['all_currencies']);
         $this->assertNotNull($currencyRequestId);
         $this->assertEquals(false, $showMarkup);
@@ -393,65 +381,6 @@ class PaymentCreateDCCTest extends TestCase
 
         $paymentAuth = $this->doAuthPayment($payment);
         $this->capturePayment($paymentAuth['razorpay_payment_id'], $payment['amount']);
-    }
-
-    // Cornercase: the flows API has forced a currency but the user
-    // inspects the submit button and modifies the currency
-    // the currency shouldn't be supported
-    public function testKWDInStandardCheckoutSkippingFlows()
-    {
-        $iin = $this->createIIN('542859','KW');
-        $responseContent = json_decode($this->getFlowsData($iin)->getContent(), true);
-        $cardCurrency = $responseContent['card_currency'];
-        $currencyRequestId = $responseContent['currency_request_id'];
-        $showMarkup = $responseContent['show_markup'];
-
-        // KWD shouldnt be selected as the feature is not for this merchant
-        $this->assertEquals("USD", $cardCurrency);
-        $this->assertNotNull($responseContent['all_currencies']);
-        $this->assertNotNull($currencyRequestId);
-        $this->assertEquals(false, $showMarkup);
-
-        $payment = $this->payment;
-        $payment['dcc_currency'] = 'KWD';
-        $payment['currency_request_id'] = $currencyRequestId;
-        $payment['card']['number'] = '5428590000004146';
-        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
-
-        try{
-            $this->doAuthPayment($payment);
-
-        }
-        catch(\Exception $e){
-            $this->assertExceptionClass($e, BadRequestException::class);
-        }
-    }
-
-    // Usecase: even if the merchant is enabled with the shaadi_com flag still they are not enabled on Standard Checkout library
-    public function testKWDInStandardCheckoutForShaadi_com()
-    {
-        $iin = $this->createIIN('542859','KW');
-
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'variant_on',
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($output);
-
-        $responseContent = json_decode($this->getFlowsData($iin)->getContent(), true);
-        $cardCurrency = $responseContent['card_currency'];
-        $currencyRequestId = $responseContent['currency_request_id'];
-        $showMarkup = $responseContent['show_markup'];
-
-        // KWD shouldnt be selected as even if the feature is enabled this is standard checkout
-        $this->assertEquals("USD", $cardCurrency);
-        $this->assertNotNull($responseContent['all_currencies']);
-        $this->assertNotNull($currencyRequestId);
-        $this->assertEquals(false, $showMarkup);
     }
 
     public function testPaymentValidateAndRedirectDCCS2SForShaadiComFeatureEnabled()
@@ -467,21 +396,6 @@ class PaymentCreateDCCTest extends TestCase
         $this->assertEquals($paymentMeta['forex_rate'], $paymentEntity['forex_rate']);
         $this->assertEquals($paymentMeta['dcc_offered'], $paymentEntity['dcc_offered']);
         $this->assertEquals($paymentMeta['dcc_mark_up_percent'], $paymentEntity['dcc_mark_up_percent']);
-    }
-
-    public function testPaymentValidateAndRedirectDCCS2SForShaadiComFeatureNotEnabled()
-    {
-        $exceptionOccurred = false;
-        try
-        {
-            $this->paymentValidateAndRedirectDCCS2SForShaadiCom(false);
-        }
-        catch (\Exception $e)
-        {
-            $exceptionOccurred = true;
-            $this->assertExceptionClass($e, BadRequestException::class);
-        }
-        $this->assertTrue($exceptionOccurred);
     }
 
     public function testPaymentCreateWithDCC()
@@ -1137,7 +1051,6 @@ class PaymentCreateDCCTest extends TestCase
 
         $this->assertEquals("USD", $cardCurrency);
         $this->assertNotNull($responseContent['all_currencies']);
-        $this->assertArrayNotHasKey('BHD', $responseContent['all_currencies']);
         $this->assertNotNull($currencyRequestId);
     }
 

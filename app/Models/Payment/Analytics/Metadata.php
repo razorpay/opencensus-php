@@ -200,10 +200,6 @@ class Metadata
         self::EMBEDDED,
     ];
 
-    const SUPPORTED_LIBRARIES_FOR_THREE_DECIMAL_CURRENCIES = [
-        self::S2S,
-    ];
-
     public static function getStringForValue($value, array $map)
     {
         if ($value === null)

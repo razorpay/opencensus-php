@@ -386,8 +386,6 @@ return array(
 
     'partners_excluded_from_instant_act_v2_api_exp_id'  => env('PARTNERS_EXCLUDED_FROM_INSTANT_ACT_V2_API_EXP_ID'),
 
-    'new_currency_support_exp_id' => env('NEW_CURRENCY_SUPPORT_EXP_ID'),
-
     'send_sms_on_commission_invoice_issued_exp_id' => env('SEND_SMS_ON_COMMISSION_INVOICE_ISSUED_EXP_ID'),
 
     'redirect_malaysia_card_payments_via_api' => env('REDIRECT_MALAYSIA_CARD_PAYMENTS_VIA_API'),
@@ -569,10 +567,6 @@ return array(
     'cc_on_upi_pricing_splitz_experiment_id' => env('CC_ON_UPI_PRICING_SPLITZ_EXPERIMENT_ID'),
 
     'dcc_on_auto_subscription_payments_experiment_id' => env('DCC_ON_AUTO_SUBSCRIPTION_PAYMENTS_EXPERIMENT_ID'),
-
-    'shaadi_com_new_currency_support_experiment_id' => env('SHAADI_COM_NEW_CURRENCY_SUPPORT_EXPERIMENT_ID'),
-
-    'shaadi_com_new_currency_support_experiment_id' => env('SHAADI_COM_NEW_CURRENCY_SUPPORT_EXPERIMENT_ID'),
 
     'partner_independent_kyc_exp_id' => env('PARTNER_INDEPENDENT_KYC_EXP_ID'),
 
