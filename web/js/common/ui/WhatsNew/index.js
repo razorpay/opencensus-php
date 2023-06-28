@@ -448,22 +448,23 @@ class WhatsNew extends Component {
 
   trackOnCardView = () => {
     let index = this.notificationsRefsList.length - 1;
+
     while (index >= 0) {
       const cardElement = this.notificationsRefsList[index]?.ref?.current;
       const position = this.notificationsRefsList[index]?.position;
       if (cardElement && isElementXPercentInViewport(cardElement, 75, 116)) {
         const eventName = 'dashboard.click.notification.card.viewed';
-        this.props.tracking.trackEvent(
-          window.rzpQ.merchantActions().success(eventName, {
-            trackingID: cardElement.getAttribute('id'),
-            position,
-            ...getNotificationTrackingProperties(
-              this.props.announcements[index],
-              eventName,
-              this.props.user.current,
-            ),
-          }),
-        );
+
+        const payload = {
+          trackingID: cardElement.getAttribute('id'),
+          position,
+          ...getNotificationTrackingProperties(
+            this.notificationsRefsList[index]?.notification,
+            eventName,
+          ),
+        };
+
+        this.props.tracking.trackEvent(window.rzpQ.merchantActions().success(eventName, payload));
         this.notificationsRefsList.splice(index, 1);
       }
       if (!cardElement) this.notificationsRefsList.splice(index, 1);
@@ -488,8 +489,8 @@ class WhatsNew extends Component {
           tracking={this.props.tracking}
           pushSlider={this.props.pushSlider}
           emptySliderStack={this.props.emptySliderStack}
-          addOwnRef={(ref, position) => {
-            this.notificationsRefsList.push({ ref, position });
+          addOwnRef={(ref, position, notification) => {
+            this.notificationsRefsList.push({ ref, position, notification });
           }}
           notificationRef={this.notificationsRefsList}
         />
@@ -626,14 +627,15 @@ const NotificationCard = ({
         id,
         ...notification,
       };
-      tracking.trackEvent(
-        window.rzpQ.merchantActions().success(eventName, {
-          trackingID: id,
-          position: index + 1,
-          ...getNotificationTrackingProperties(notificationData, eventName),
-        }),
-      );
-    } else addOwnRef(ref, index + 1);
+
+      const payload = {
+        trackingID: id,
+        position: index + 1,
+        ...getNotificationTrackingProperties(notificationData, eventName),
+      };
+
+      tracking.trackEvent(window.rzpQ.merchantActions().success(eventName, payload));
+    } else addOwnRef(ref, index + 1, { id, ...(notification || {}) });
   }, []);
 
   const handleCTAClick = (e, btn, urlPath, isExternal, id) => {
