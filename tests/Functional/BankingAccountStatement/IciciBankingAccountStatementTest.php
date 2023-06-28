@@ -1096,6 +1096,10 @@ class IciciBankingAccountStatementTest extends TestCase
 
     public function testFetchIciciMissingAccountStatement()
     {
+        $setDate = Carbon::now(Timezone::IST)->firstOfMonth()->addDays(15)->addHours(10);
+
+        Carbon::setTestNow($setDate);
+
         (new AdminService)->setConfigKeys([ConfigKey::ICICI_MISSING_STATEMENT_FETCH_MAX_RECORDS => 8000]);
 
         $metricsMock = $this->createMetricsMock();
@@ -1171,6 +1175,8 @@ class IciciBankingAccountStatementTest extends TestCase
         $this->assertTrue($boolMetricCaptured);
 
         $this->assertArraySubset($basExpected, array_first($merchantMissingStatementList));
+
+        Carbon::setTestNow();
     }
 
     public function testIciciDisableAccountStatementFetch()
@@ -1306,7 +1312,11 @@ class IciciBankingAccountStatementTest extends TestCase
      */
     public function testIciciAccountStatementCase2()
     {
-       $mockedResponse = $this->getIciciErrorResponse();
+        $setDate = Carbon::now(Timezone::IST)->firstOfMonth()->addDays(15)->addHours(10);
+
+        Carbon::setTestNow($setDate);
+
+        $mockedResponse = $this->getIciciErrorResponse();
 
         $basdBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
 
@@ -1332,6 +1342,8 @@ class IciciBankingAccountStatementTest extends TestCase
         $basdAfterTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
 
         $this->assertNull($basdAfterTest[BasDetails\Entity::STATEMENT_CLOSING_BALANCE_CHANGE_AT]);
+
+        Carbon::setTestNow();
     }
 
     protected function getIciciPage1Response()
@@ -2500,6 +2512,10 @@ class IciciBankingAccountStatementTest extends TestCase
 
     public function testIciciAccountStatementFetchV2WithDuplicateRecords()
     {
+        $oldDateTime = Carbon::create(2021, 3, 27, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
         (new AdminService)->setConfigKeys([
                                               ConfigKey::ACCOUNT_STATEMENT_V2_FLOW => ['2224440041626905']]);
 
@@ -2604,10 +2620,16 @@ class IciciBankingAccountStatementTest extends TestCase
         ];
 
         $this->assertArraySubset($txnExpected, $txnActual, true);
+
+        Carbon::setTestNow();
     }
 
     public function testIciciAccountStatementFetchV2DedupeLogicWithChequeNo()
     {
+        $oldDateTime = Carbon::create(2021, 3, 27, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
         $this->fixtures->create('banking_account_statement',
                                 [
                                     'type'                      => 'debit',
@@ -2673,10 +2695,16 @@ class IciciBankingAccountStatementTest extends TestCase
         ];
 
         $this->assertArraySubset($basExpected, $basActual, true);
+
+        Carbon::setTestNow();
     }
 
     public function testIciciAccountStatementFetchV2ExcludingWronglyMarkedTempRecords()
     {
+        $oldDateTime = Carbon::create(2021, 3, 27, 12, 0, 0, Timezone::IST);
+
+        Carbon::setTestNow($oldDateTime);
+
         $this->fixtures->create('banking_account_statement',
                                 [
                                     'type'                      => 'debit',
@@ -2748,6 +2776,8 @@ class IciciBankingAccountStatementTest extends TestCase
         ];
 
         $this->assertArraySubset($basExpected, $basActual, true);
+
+        Carbon::setTestNow();
     }
 
     /**
@@ -4070,6 +4100,10 @@ class IciciBankingAccountStatementTest extends TestCase
 
     public function testIciciMissingAccountStatementDetection()
     {
+        $setDate = Carbon::now(Timezone::IST)->firstOfMonth()->addDays(15)->addHours(10);
+
+        Carbon::setTestNow($setDate);
+
         $this->setMockRazorxTreatment([RazorxTreatment::BAS_FETCH_RE_ARCH => 'on']);
 
         $basDetails = $this->getDbEntity('banking_account_statement_details', ['account_number' => 2224440041626905]);
@@ -4143,5 +4177,7 @@ class IciciBankingAccountStatementTest extends TestCase
                 'mismatch_type'   => "missing_debit",
                 'analysed_bas_id' => $latestBAS->getId()
             ], $missingStatementDetectionConfig['2224440041626905']['mismatch_data'][0]);
+
+        Carbon::setTestNow();
     }
 }
