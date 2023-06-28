@@ -542,6 +542,74 @@ class TerminalTest extends TestCase
         $this->assertEquals($content['type'], ['non_recurring']);
     }
 
+    public function testCreateUPIInAppIOSTerminal()
+    {
+        $this->startTest();
+    }
+
+    public function testEditUPIInAppIOSTerminal()
+    {
+        $terminal = $this->fixtures->create('terminal:upi_in_app_ios_terminal');
+
+        $data = [
+            'gateway'                   => 'upi_axisolive',
+            'type'                      => [
+                'ios' => '0',
+            ],
+        ];
+
+        $content = $this->editTerminal($terminal->getId(), $data);
+
+        $this->assertEquals($content['type'], ['in_app']);
+        $this->assertNOTEquals($content['type'], ['ios']);
+    }
+
+    public function testCreateUPIInAppAndroidTerminal()
+    {
+        $this->startTest();
+    }
+
+    public function testEditUPIInAppAndroidTerminal()
+    {
+        $terminal = $this->fixtures->create('terminal:upi_in_app_android_terminal');
+
+        $data = [
+            'gateway'                   => 'upi_axisolive',
+            'type'                      => [
+                'android' => '0',
+            ],
+        ];
+
+        $content = $this->editTerminal($terminal->getId(), $data);
+
+        $this->assertEquals($content['type'], ['in_app']);
+        $this->assertNOTEquals($content['type'], ['android']);
+    }
+
+    public function testCreateUPIInAppIOSAndAndroidTerminal()
+    {
+        $this->startTest();
+    }
+
+    public function testEditUPIInAppIOSAndAndroidTerminal()
+    {
+        $terminal = $this->fixtures->create('terminal:upi_in_app_ios_and_android_terminal');
+
+        $data = [
+            'gateway'                   => 'upi_axisolive',
+            'type'                      => [
+                'ios'      => '0',
+                'android'  => '0',
+            ],
+        ];
+
+        $content = $this->editTerminal($terminal->getId(), $data);
+
+        $this->assertEquals($content['type'], ['in_app']);
+        $this->assertNOTEquals($content['type'], ['ios']);
+        $this->assertNOTEquals($content['type'], ['android']);
+    }
+
     public function testAddBharatQrTerminal()
     {
         $this->startTest();

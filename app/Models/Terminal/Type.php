@@ -86,6 +86,10 @@ class Type
 
     const SODEXO                           = "sodexo";
 
+    const IOS                              = "ios";
+
+    const ANDROID                          = "android";
+
     protected static $types = [
         self::NON_RECURRING,
         self::RECURRING_3DS,
@@ -116,6 +120,8 @@ class Type
         self::IN_APP,
         self::SODEXO,
         self::ENABLE_AUTO_DEBIT,
+        self::IOS,
+        self::ANDROID
     ];
 
     protected static $bitPosition = [
@@ -148,6 +154,8 @@ class Type
         self::DISABLE_OPTIMISER_REFUNDS        => 27,
         self::SODEXO                           => 28,
         self::ENABLE_AUTO_DEBIT                => 29,
+        self::IOS                              => 30,
+        self::ANDROID                          => 31,
     ];
 
     /**

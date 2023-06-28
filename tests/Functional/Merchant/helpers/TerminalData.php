@@ -847,6 +847,95 @@ return [
         ]
     ],
 
+    'testCreateUPIInAppIOSTerminal' => [
+        'request'  => [
+            'content' => [
+                'gateway'              => 'upi_axis',
+                'gateway_merchant_id'  => '12345',
+                'gateway_merchant_id2' => 'rzpbqr@icici',
+                'upi'                  => true,
+                'vpa'                  => 'some@axis',
+                'type'                 => [
+                    'in_app'         => '1',
+                    'ios'            => '1',
+                ],
+            ],
+            'method'  => 'POST',
+            'url'     => '/merchants/10000000000000/terminals',
+        ],
+        'response' => [
+            'content' => [
+                'gateway_merchant_id'  => '12345',
+                'gateway_merchant_id2' => 'rzpbqr@icici',
+                'enabled'              => true,
+                'type'    => [
+                    'in_app',
+                    'ios',
+                ],
+            ]
+        ]
+    ],
+
+    'testCreateUPIInAppAndroidTerminal' => [
+        'request'  => [
+            'content' => [
+                'gateway'              => 'upi_axis',
+                'gateway_merchant_id'  => '12345',
+                'gateway_merchant_id2' => 'rzpbqr@icici',
+                'upi'                  => true,
+                'vpa'                  => 'some@axis',
+                'type'                 => [
+                    'in_app'         => '1',
+                    'android'        => '1',
+                ],
+            ],
+            'method'  => 'POST',
+            'url'     => '/merchants/10000000000000/terminals',
+        ],
+        'response' => [
+            'content' => [
+                'gateway_merchant_id'  => '12345',
+                'gateway_merchant_id2' => 'rzpbqr@icici',
+                'enabled'              => true,
+                'type'    => [
+                    'in_app',
+                    'android',
+                ],
+            ]
+        ]
+    ],
+
+    'testCreateUPIInAppIOSAndAndroidTerminal' => [
+        'request'  => [
+            'content' => [
+                'gateway'              => 'upi_axis',
+                'gateway_merchant_id'  => '12345',
+                'gateway_merchant_id2' => 'rzpbqr@icici',
+                'upi'                  => true,
+                'vpa'                  => 'some@axis',
+                'type'                 => [
+                    'in_app'         => '1',
+                    'ios'            => '1',
+                    'android'        => '1',
+                ],
+            ],
+            'method'  => 'POST',
+            'url'     => '/merchants/10000000000000/terminals',
+        ],
+        'response' => [
+            'content' => [
+                'gateway_merchant_id'  => '12345',
+                'gateway_merchant_id2' => 'rzpbqr@icici',
+                'enabled'              => true,
+                'type'    => [
+                    'in_app',
+                    'ios',
+                    'android',
+                ],
+            ]
+        ]
+    ],
+
     'testAddBharatQrTerminal' => [
         'request' => [
             'content' => [

@@ -5361,6 +5361,76 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createUPIInAppIOSTerminal(array $attributes = [])
+    {
+        $default = [
+            'id'                        => '1000UpiInAppTl',
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'upi_axisolive',
+            'gateway_merchant_id'       => 'razorpay axis upi',
+            'gateway_terminal_id'       => 'nodal account upi axis',
+            'gateway_merchant_id2'      => 'razorpayaxis@axis',
+            'gateway_terminal_password' => 'razorpay_password',
+            'vpa'                       => 'some@axis',
+            'upi'                       => true,
+            'type'                      => [
+                Type::IN_APP        => '1',
+                Type::IOS           => '1',
+            ],
+        ];
+
+        $attributes = array_merge($default, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createUPIInAppAndroidTerminal(array $attributes = [])
+    {
+        $default = [
+            'id'                        => '1000UpiInAppTl',
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'upi_axisolive',
+            'gateway_merchant_id'       => 'razorpay axis upi',
+            'gateway_terminal_id'       => 'nodal account upi axis',
+            'gateway_merchant_id2'      => 'razorpayaxis@axis',
+            'gateway_terminal_password' => 'razorpay_password',
+            'vpa'                       => 'some@axis',
+            'upi'                       => true,
+            'type'                      => [
+                Type::IN_APP        => '1',
+                Type::ANDROID       => '1',
+            ],
+        ];
+
+        $attributes = array_merge($default, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createUPIInAppIOSAndAndroidTerminal(array $attributes = [])
+    {
+        $default = [
+            'id'                        => '1000UpiInAppTl',
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'upi_axisolive',
+            'gateway_merchant_id'       => 'razorpay axis upi',
+            'gateway_terminal_id'       => 'nodal account upi axis',
+            'gateway_merchant_id2'      => 'razorpayaxis@axis',
+            'gateway_terminal_password' => 'razorpay_password',
+            'vpa'                       => 'some@axis',
+            'upi'                       => true,
+            'type'                      => [
+                Type::IN_APP        => '1',
+                Type::IOS           => '1',
+                Type::ANDROID       => '1',
+            ],
+        ];
+
+        $attributes = array_merge($default, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedBajajTerminal(array $attributes = [])
     {
         $termId = Shared::BAJAJ_RAZORPAY_TERMINAL;

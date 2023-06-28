@@ -1893,6 +1893,14 @@ class Entity extends Base\PublicEntity
         return ($this->isTypeApplicable(Type::IN_APP) === true);
     }
 
+    public function isIOS() {
+        return ($this->isTypeApplicable(Type::IOS) === true);
+    }
+
+    public function isAndroid() {
+        return ($this->isTypeApplicable(Type::ANDROID) === true);
+    }
+
     public function isMoto()
     {
         return ($this->isTypeApplicable(Type::MOTO) === true);
