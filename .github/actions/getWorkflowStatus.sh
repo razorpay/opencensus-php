@@ -4,6 +4,7 @@ URI="https://api.github.com"
 API_HEADER="Accept: application/vnd.github.v3+json"
 AUTH_HEADER="Authorization: token ${GITHUB_TOKEN}"
 branch_name=${BRANCH}
+branch_name=$(echo "$branch_name"|jq -sRr @uri)
 workflow_file=${WORKFLOW}
 iterate_count=0
 
