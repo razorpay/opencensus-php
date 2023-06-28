@@ -126,4 +126,30 @@ class Constants
                            self::APPSTORE_URL;
 
     const VALID_DELIVERABLE_TYPE = 'goods,services';
+
+    const SHIPPING_PERIOD = 'shipping_period';
+
+    const QUESTION_ID = 'question_id';
+
+    const ANSWER = 'answer';
+
+    const COMMON_QUESTIONS_IN_WEBSITE_POLICY_AND_BMC = [
+        self::SHIPPING_PERIOD => 'question_2',
+    ];
+
+    const WEBSITE_POLICY_QUESTION_MAPPING = [
+        self::SHIPPING_PERIOD => [
+            self::QUESTION_ID           => 'question_2',
+            '0-2 days'                  => 'option_2_1',
+            '3-5 days'                  => 'option_2_2',
+            '6-8 days'                  => 'option_2_3',
+            '8+ days'                   => 'option_2_4',
+            'Not applicable'            => 'option_2_5',
+        ],
+    ];
+
+    const FIELD_VALUE_TYPE_MAPPING = [
+        self::SHIPPING_PERIOD => 'string',
+    ];
+
 }

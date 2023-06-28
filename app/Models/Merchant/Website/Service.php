@@ -13,8 +13,11 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Models\Merchant\Metric;
 use RZP\Models\Merchant\Utility;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Error\PublicErrorDescription;
+use RZP\Exception\ServerErrorException;
 use RZP\Notifications\Onboarding\Events;
 use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Models\Merchant\Detail\BusinessType;
@@ -28,6 +31,7 @@ use RZP\Models\Merchant\Detail\BusinessCategory;
 use RZP\Models\Merchant\Detail\BusinessSubcategory as Sub;
 use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
+use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Models\Merchant\BusinessDetail\Constants as BusinessConstants;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Workflow\Action;
@@ -384,7 +388,13 @@ class Service extends Base\Service
 
     }
 
-
+    /**
+     * @param array $input
+     *
+     * @return mixed
+     * @throws BadRequestException
+     * @throws ServerErrorException
+     */
     public function saveMerchantWebsiteSection(array $input)
     {
         $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO, [
@@ -427,7 +437,32 @@ class Service extends Base\Service
             (new EmailService)->proxyEditSupportDetails($this->merchant, $emailInput);
         }
 
-        $websiteDetail = $this->core->createOrEditWebsiteDetails($merchantDetail, $input);
+        //website input : {shipping_period" : "0-7 days", "refund_period : "1-2 days"}
+
+        $isResponseUpdatedInPgos = false;
+
+        try
+        {
+            $commonKeysValues = array_intersect_key($input, Constants::COMMON_QUESTIONS_IN_WEBSITE_POLICY_AND_BMC);
+
+            $this->trace->info(TraceCode::COMMON_QUESTIONS_IN_WEBSITE_POLICY_AND_BMC, [
+                "commonKeyValues"  => $commonKeysValues,
+                "merchant_id"      => $this->merchant->getId()
+            ]);
+
+            if(empty($commonKeysValues) === false)
+            {
+                $this->saveMerchantBMCResponse($commonKeysValues);
+
+                $isResponseUpdatedInPgos = true;
+            }
+
+            $websiteDetail = $this->core->createOrEditWebsiteDetails($merchantDetail, $input);
+        }
+        catch (\Throwable $e)
+        {
+            $this->raiseAlertAndThrowError($isResponseUpdatedInPgos, $e);
+        }
 
         return $this->createResponse($websiteDetail->toArrayPublic(), $websiteDetail, $merchantDetail);
 
@@ -2374,5 +2409,160 @@ class Service extends Base\Service
         }
 
         return false;
+    }
+
+    private function saveMerchantBMCResponse($commonKeysValues)
+    {
+        $data = [];
+
+        //common key values format: {shipping_period" : "0-7 days"}
+
+        foreach ($commonKeysValues as $key => $values)
+        {
+            if (is_array($values) === true)
+            {
+                foreach ($values as &$value)
+                {
+                    $value = Constants::WEBSITE_POLICY_QUESTION_MAPPING[$key][$value];
+                }
+            }
+
+            $data[] = [
+                Constants::QUESTION_ID => Constants::WEBSITE_POLICY_QUESTION_MAPPING[$key][Constants::QUESTION_ID],
+                Constants::ANSWER      => (is_array($values) === true) ?
+                    $values : [Constants::WEBSITE_POLICY_QUESTION_MAPPING[$key][$values]]
+            ];
+
+            $this->trace->info(TraceCode::SAVE_MERCHANT_BMC_RESPONSE, [
+                "bmc_response" => $data,
+            ]);
+        }
+
+        //$data =
+        //[
+        //  {
+        //      "question_id": "question_2",
+        //      "answer": ["option_2_3"]
+        //  }
+        //]
+
+        $pgosPayload = [
+            "data" => $data
+        ];
+
+        $pgosProxyController = new MerchantOnboardingProxyController();
+
+        $response = $pgosProxyController->handlePGOSProxyRequests('save_merchant_bmc_response',
+                                                                  $pgosPayload, $this->merchant);
+
+        $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+            'response' => $response
+        ]);
+    }
+
+    /**
+     * @param array $bmcInput
+     * @param bool  $isBMCResponseUpdated
+     *
+     * @throws ServerErrorException
+     */
+    public function updateCommonWebsiteQuestions(array $bmcInput, bool $isBMCResponseUpdated)
+    {
+        /* expected data in $bmcInput
+        {
+        "data":
+            [
+            {
+                "question_id":"question_2",
+                "answer":["option_2_2"]
+            },
+            {
+                "question_id":"question_3",
+                "answer":["option_3_2"]
+            }
+            ]
+        }
+        */
+
+        try
+        {
+            $this->trace->info(TraceCode::UPDATE_COMMON_WEBSITE_QUESTIONS, [
+                "input"                 => $bmcInput,
+                "isBMCResponseUpdated"  => $isBMCResponseUpdated
+            ]);
+
+            $flattenedBMCInput = [];
+
+            foreach ($bmcInput['data'] as $item)
+            {
+                $flattenedBMCInput[$item[Constants::QUESTION_ID]] = $item[Constants::ANSWER ];
+            }
+
+            //$flattenedBMCInput = {"question_2":["option_2_2"], "question_3":["option_3_2"]}
+
+            $commonKeysValues = array_intersect_key($flattenedBMCInput, array_flip(Constants::COMMON_QUESTIONS_IN_WEBSITE_POLICY_AND_BMC));
+
+            //$commonKeysValues = {"question_2":["option_2_2"]}
+
+            if(empty($commonKeysValues) === false)
+            {
+                $transformedPayloadForWebsitePolicy = [];
+
+                foreach (Constants::WEBSITE_POLICY_QUESTION_MAPPING as $key => $value)
+                {
+                    $questionId = $value[Constants::QUESTION_ID];
+
+                    if (isset($commonKeysValues[$questionId]) === true)
+                    {
+                        if (Constants::FIELD_VALUE_TYPE_MAPPING[$key] === 'string')
+                        {
+                            $transformedPayloadForWebsitePolicy[$key] = array_keys($value, $commonKeysValues[$questionId][0])[0] ?? '';
+                        }
+                        else
+                        {
+                            $answers = [];
+
+                            foreach ($commonKeysValues[$questionId] as $option)
+                            {
+                                $answers[] = array_keys($value, $option)[0] ?? [];
+                            }
+
+                            $transformedPayloadForWebsitePolicy[$key] = $answers;
+                        }
+                    }
+                }
+
+                $this->trace->info(TraceCode::UPDATE_MERCHANT_WEBSITE_DETAILS, [
+                    "website_input" => $transformedPayloadForWebsitePolicy
+                ]);
+
+                //{"$transformedPayloadForWebsitePolicy":{"shipping_period":"8-14 days"}}
+
+                $this->core->createOrEditWebsiteDetails($this->merchant->merchantDetail, $transformedPayloadForWebsitePolicy);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->raiseAlertAndThrowError($isBMCResponseUpdated, $e);
+        }
+
+    }
+
+    /**
+     * @param bool                  $isResponseUpdatedInPgos
+     * @param \Exception|\Throwable $e
+     *
+     * @throws ServerErrorException
+     */
+    private function raiseAlertAndThrowError(bool $isResponseUpdatedInPgos, \Exception|\Throwable $e): void
+    {
+        if ($isResponseUpdatedInPgos === true)
+        {
+            $this->trace->count(Metric::DATA_MISMATCH_FOR_WEBSITE_POLICY_AND_BMC_RESPONSE);
+        }
+
+        $this->trace->traceException($e);
+
+        throw new ServerErrorException(PublicErrorDescription::SERVER_ERROR, ErrorCode::SERVER_ERROR);
     }
 }

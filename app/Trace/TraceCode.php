@@ -8351,6 +8351,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_TNC_GET_REQUEST                              = 'MERCHANT_TNC_GET_REQUEST';
     const MERCHANT_TNC_GET_REQUEST_SUCCESS                      = 'MERCHANT_TNC_GET_REQUEST_SUCCESS';
 
+    const UPDATE_COMMON_WEBSITE_QUESTIONS                       = 'UPDATE_COMMON_WEBSITE_QUESTIONS';
+    const UPDATE_MERCHANT_WEBSITE_DETAILS                       = 'UPDATE_MERCHANT_WEBSITE_DETAILS';
+    const SAVE_MERCHANT_BMC_RESPONSE                            = 'SAVE_MERCHANT_BMC_RESPONSE';
+    const COMMON_QUESTIONS_IN_WEBSITE_POLICY_AND_BMC            = 'COMMON_QUESTIONS_IN_WEBSITE_POLICY_AND_BMC';
+
     # Account Service
     const ACS_SYNC_EVENT_PUBLISH_FAILED                         = 'ACS_SYNC_EVENT_PUBLISH_FAILED';
     const ACS_SYNC_EVENT_PUBLISHED                              = 'ACS_SYNC_EVENT_PUBLISHED';

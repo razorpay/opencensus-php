@@ -40,6 +40,9 @@ class TncActivationTest extends TestCase
         parent::setUp();
 
         Config::set('services.kafka.producer.mock', true);
+
+        //PGOS proxy request mocking
+        Config::set('pgos.proxy.request.mock', true);
     }
 
     protected function mockRazorxTreatment()
@@ -1218,5 +1221,60 @@ class TncActivationTest extends TestCase
         $this->assertFalse($result);
     }
 
+    //Test case to update website policy response when bmc response is updated
+    public function testUpdateWebsitePolicyResponseWhenBMCResponseUpdated()
+    {
+        $merchant = $this->createMerchant(['business_website' => 'https://hello.com'], false);
 
+        $this->createWebsiteDetails([
+                                        'merchant_id'              => $merchant->getId(),
+                                        "merchant_website_details" => [
+                                            "terms" => [
+                                                "section_status" => 1,
+                                                "website"        => [
+                                                    "https://hello.com" => [
+                                                        "url" => "https://hello.co.in/terms"
+                                                    ]
+                                                ]
+                                            ]
+                                        ]
+                                    ]);
+
+        $payload = [
+            "data" => [
+                [
+                    "question_id" => "question_2",
+                    "answer"      => [
+                        "option_2_1"
+                    ]
+                ]
+            ]
+        ];
+
+        (new Merchant\Website\Service())->updateCommonWebsiteQuestions($payload, true);
+
+        $merchantWebsiteDetail = $this->getDbLastEntity('merchant_website');
+
+        $this->assertEquals($merchant->getId(), $merchantWebsiteDetail->getMerchantId());
+
+        $this->assertEquals("0-2 days", $merchantWebsiteDetail['shipping_period']);
+    }
+
+    //Test case to update bmc response when website policy response is updated
+    public function testUpdateBMCResponseWhenWebsitePolicyResponseUpdated()
+    {
+        Config::set('pgos.proxy.request.mock', true);
+
+        $this->createMerchant(['business_website' => 'https://hello.com']);
+
+        $input = [
+            "shipping_period"             => "0-2 days"
+        ];
+
+        (new Merchant\Website\Service)->saveMerchantWebsiteSection($input);
+
+        $merchantWebsiteDetail = $this->getDbLastEntity('merchant_website');
+
+        $this->assertEquals("0-2 days", $merchantWebsiteDetail['shipping_period']);
+    }
 }

@@ -2,12 +2,16 @@
 
 namespace RZP\Http\Controllers;
 
+use App;
 use Request;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Core;
 use RZP\Models\Admin\Permission\Name;
+use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
 use RZP\Trace\TraceCode;
+use RZP\Exception\ServerErrorException;
+use RZP\Models\Merchant\Website\Service as WebsiteService;
 
 class MerchantOnboardingProxyController extends BaseProxyController
 {
@@ -61,6 +65,11 @@ class MerchantOnboardingProxyController extends BaseProxyController
         self::GET_CLEARBIT_DOMAIN_INFO      => 10
     ];
 
+    const ROUTES_WITH_PGOS_EXPERIMENT_ALWAYS_ENABLE = [
+        self::GET_MERCHANT_BMC_RESPONSE,
+        self::SAVE_MERCHANT_BMC_RESPONSE,
+    ];
+
     public function __construct()
     {
         parent::__construct("pgos");
@@ -89,9 +98,20 @@ class MerchantOnboardingProxyController extends BaseProxyController
             'payload'    => $payload
         ]);
 
+        $app = App::getFacadeRoot();
+
+        $mock = $app['config']['pgos.proxy.request.mock'];
+
+        if($mock === true)
+        {
+            return null;
+        }
+
         // check if for the merchant the experiment is enabled or not
         // check if merchant is a regular merchant or not
-        if (self::isPGOSMigrationExperimentEnabled($merchantId, self::PGOS_SHADOW_MODE_EXPERIMENT_ID, self::ENABLE) and
+        if (($this->isPGOSMigrationExperimentEnabled($merchantId, self::PGOS_SHADOW_MODE_EXPERIMENT_ID,
+                                                    self::ENABLE) or
+             in_array($routeKey, self::ROUTES_WITH_PGOS_EXPERIMENT_ALWAYS_ENABLE)) and
             (new Core)->isRegularMerchant($merchant) === true)
         {
             // get path from defined route url map
@@ -99,7 +119,7 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
             $route = $this->getRoute($twirpPath);
 
-            $headers = $this->getHeadersForDashboardRequest($payload);
+            $headers = $this->getHeadersForDashboardRequest($payload, $merchantId);
 
             $this->trace->info(TraceCode::PGOS_PROXY_REQUEST, [
                 'route'     => $route,
@@ -119,13 +139,13 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
         $path = $request->getPathInfo();
 
-        if(empty($id) === true)
+        if (empty($id) === true)
         {
             $routeKey = str_replace('/v1/pg/onboarding/', '', $path);
         }
         else
         {
-            $routeKey = str_replace('/v1/pg/onboarding/'.$id.'/', '', $path);
+            $routeKey = str_replace('/v1/pg/onboarding/' . $id . '/', '', $path);
         }
 
         $body = $request->all();
@@ -142,7 +162,20 @@ class MerchantOnboardingProxyController extends BaseProxyController
             'twirpPath' => $twirpPath,
         ]);
 
-        return $this->sendRequestAndParseResponse($route, 'POST', $twirpPath, $body, $headers);
+        try
+        {
+            $response = $this->sendRequestAndParseResponse($route, 'POST', $twirpPath, $body, $headers);
+
+            $this->routeSpecificPostProcessor($routeKey, $body);
+
+            return $response;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e);
+
+            throw new ServerErrorException(PublicErrorDescription::SERVER_ERROR, ErrorCode::SERVER_ERROR);
+        }
     }
 
     public function getTwirpRouteName($routeKey)
@@ -188,4 +221,18 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
         return $variant === $mode;
     }
+
+    /**
+     * @param string $routeKey
+     * @param array  $body
+     */
+    private function routeSpecificPostProcessor(string $routeKey, array $body)
+    {
+        switch ($routeKey)
+        {
+            case self::SAVE_MERCHANT_BMC_RESPONSE:
+                (new WebsiteService())->updateCommonWebsiteQuestions($body, true);
+        }
+    }
+
 }
