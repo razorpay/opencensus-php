@@ -620,4 +620,169 @@ return [
             'content' => [],
         ],
     ],
+
+    'testMerchantFetchTpvsRouteViaBankingProductForViewOnlyRole' => [
+        'request' => [
+            'url'     => '/merchant/tpvs',
+            'method'  => 'GET',
+            'content' => [
+                'balance_id'           => '10000000000000',
+                'payer_name'           => 'Razorpay',
+                'payer_account_number' => '98711120003344',
+                'payer_ifsc'           => 'CITI0000006',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'merchant_id'          => '10000000000000',
+                        'balance_id'           => '10000000000000',
+                        'status'               => 'approved',
+                        'payer_name'           => 'Razorpay',
+                        'payer_account_number' => '98711120003344',
+                        'payer_ifsc'           => 'CITI0000006',
+                        'created_by'           => 'OPS_A',
+                        'bank_name'            => 'CITI Bank',
+                        'type'                 => 'bank_account',
+                        'is_active'            => true,
+                    ],
+                    [
+                        'merchant_id'          => '10000000000000',
+                        'balance_id'           => '10000000000000',
+                        'status'               => 'rejected',
+                        'payer_name'           => 'Razorpay',
+                        'payer_account_number' => '8927398273',
+                        'payer_ifsc'           => 'CITI0000006',
+                        'created_by'           => 'OPS_A',
+                        'bank_name'            => 'CITI Bank',
+                        'type'                 => 'bank_account',
+                        'is_active'            => false,
+                        'remarks'              => 'Invalid docs'
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testMerchantTpvCreateRouteViaBankingProductForViewOnlyRole' => [
+        'request' => [
+            'url'     => '/merchant/tpv',
+            'method'  => 'POST',
+            'content' => [
+                'balance_id'           => '10000000000000',
+                'payer_name'           => 'Razorpay',
+                'payer_account_number' => '98711120003344',
+                'payer_ifsc'           => 'CITI0000006',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Authentication failed',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testMerchantTpvCreateRouteViaBankingProductForFinanceL1Role' => [
+        'request' => [
+            'url'     => '/merchant/tpv',
+            'method'  => 'POST',
+            'content' => [
+                'balance_id'           => '10000000000000',
+                'payer_name'           => 'Razorpay',
+                'payer_account_number' => '98711120003344',
+                'payer_ifsc'           => 'CITI0000006',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'merchant_id'          => '10000000000000',
+                'balance_id'           => '10000000000000',
+                'status'               => 'pending',
+                'payer_name'           => 'Razorpay',
+                'payer_account_number' => '98711120003344',
+                'payer_ifsc'           => 'CITI0000006',
+                'is_active'            => false,
+                'type'                 => 'bank_account',
+            ],
+        ],
+    ],
+
+    'testMerchantTpvCreateRouteViaBankingProductForOwnerRole' => [
+        'request' => [
+            'url'     => '/merchant/tpv',
+            'method'  => 'POST',
+            'content' => [
+                'balance_id'           => '10000000000000',
+                'payer_name'           => 'Razorpay',
+                'payer_account_number' => '98711120003344',
+                'payer_ifsc'           => 'CITI0000006',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'merchant_id'          => '10000000000000',
+                'balance_id'           => '10000000000000',
+                'status'               => 'pending',
+                'payer_name'           => 'Razorpay',
+                'payer_account_number' => '98711120003344',
+                'payer_ifsc'           => 'CITI0000006',
+                'is_active'            => false,
+                'type'                 => 'bank_account',
+            ],
+        ],
+    ],
+
+    'testMerchantTpvCreateRouteViaBankingProductForOperationsRole' => [
+        'request'  => [
+            'url'     => '/merchant/tpv',
+            'method'  => 'POST',
+            'content' => [
+                'balance_id'           => '10000000000000',
+                'payer_name'           => 'Razorpay',
+                'payer_account_number' => '98711120003344',
+                'payer_ifsc'           => 'CITI0000006',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Authentication failed',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testMerchantTpvCreateRouteViaBankingProductForAdminRole' => [
+        'request'  => [
+            'url'     => '/merchant/tpv',
+            'method'  => 'POST',
+            'content' => [
+                'balance_id'           => '10000000000000',
+                'payer_name'           => 'Razorpay',
+                'payer_account_number' => '98711120003344',
+                'payer_ifsc'           => 'CITI0000006',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'merchant_id'          => '10000000000000',
+                'balance_id'           => '10000000000000',
+                'status'               => 'pending',
+                'payer_name'           => 'Razorpay',
+                'payer_account_number' => '98711120003344',
+                'payer_ifsc'           => 'CITI0000006',
+                'is_active'            => false,
+                'type'                 => 'bank_account',
+            ],
+        ],
+    ],
 ];

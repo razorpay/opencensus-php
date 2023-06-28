@@ -11722,58 +11722,6 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
-    public function testMerchantTpvCreateRouteViaBankingProductWithBlockingFeatureEnabled()
-    {
-        $this->enableRazorXTreatmentForBlockBankingRoutes();
-
-        $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000');
-
-        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
-
-        $this->ba->addXOriginHeader();
-
-        $this->startTest();
-    }
-
-    public function testMerchantFetchTpvsRouteViaBankingProductForViewOnlyRole()
-    {
-        $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
-
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-            ->will($this->returnCallback(
-                function ($mid, $feature, $mode) {
-                    if ($feature === 'rx_custom_access_control_enabled')
-                    {
-                        return 'off';
-                    }
-
-                    if ($feature === 'rx_custom_access_control_disabled')
-                    {
-                        return 'on';
-                    }
-
-                    if ($feature === 'razorpay_x_acl_deny_unauthorised')
-                    {
-                        return 'on';
-                    }
-
-                    return 'control';
-                }));
-
-        $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'view_only');
-
-        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
-
-        $this->ba->addXOriginHeader();
-
-        $this->startTest();
-    }
-
     public function testUserFetchPurposeCodeRouteViaBankingProductWithBlockingFeatureEnabled()
     {
         $this->enableRazorXTreatmentForBlockBankingRoutes();

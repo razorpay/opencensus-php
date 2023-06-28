@@ -804,7 +804,7 @@ class UserRolesScope
             'generate_gifu_file' => [Role::OWNER, Role::ADMIN], // testing
             'merchant_edit_pre_signup_details'                     => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
             'merchant_fetch_config_internal'                       => [Role::OWNER, Role::ADMIN],
-            'merchant_fetch_tpvs'                                  => [Role::OWNER, Role::ADMIN],
+            'merchant_fetch_tpvs'                                  => [Role::OWNER, Role::ADMIN, Role::OPERATIONS, Role::FINANCE, Role::VIEW_ONLY],
             'merchant_fire_hubspot_event'                          => [Role::OWNER, Role::ADMIN],
             'merchant_get_apps_on_appstore'                        => [Role::OWNER, Role::ADMIN],
             'merchant_get_disabled_banks'                          => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::OPERATIONS, Role::FINANCE, Role::SUPPORT],
@@ -848,7 +848,7 @@ class UserRolesScope
             'merchant_website_section_fetch'                       => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
             'merchant_website_section_page_load'                   => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
             'merchant_tnc_details_by_mid'                          => [Role::OWNER, Role::MANAGER, Role::ADMIN, Role::FINANCE],
-            'merchant_tpv_create'                                  => [Role::OWNER, Role::ADMIN],
+            'merchant_tpv_create'                                  => [Role::OWNER, Role::ADMIN, Role::FINANCE],
             'merchant_verify_attributes'                           => [Role::OWNER, Role::ADMIN],
             'merchant_workflow_details'                            => Role::ALL_ROLES,
             'merchant_consents_admin_fetch'                        => [Role::ADMIN],

@@ -6818,39 +6818,6 @@ return [
         ]
     ],
 
-    'testMerchantFetchTpvsRouteViaBankingProductForViewOnlyRole' => [
-        'request' => [
-            'url'     => '/merchant/tpvs',
-            'method'  => 'GET',
-            'content' => [],
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Authentication failed',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-    ],
-
-    'testMerchantTpvCreateRouteViaBankingProductWithBlockingFeatureEnabled' => [
-        'request' => [
-            'url'     => '/merchant/tpv',
-            'method'  => 'POST',
-            'content' => [],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'description' => PublicErrorDescription::BAD_REQUEST_ROUTE_NOT_ACCESSIBLE_VIA_BANKING,
-                ],
-            ],
-            'status_code' => 400,
-        ]
-    ],
-
     'testUserFetchPurposeCodeRouteViaBankingProductWithBlockingFeatureEnabled' => [
         'request' => [
             'url'     => '/users/purpose/code',

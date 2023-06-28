@@ -1095,6 +1095,7 @@ class Name
     const VIEW_ALL_ROLES                        = 'view_all_roles';
     const VIEW_DEVELOPER_CONTROLS               = 'view_developer_controls';
     const VIEW_BANKING                          = 'view_banking';
+    const CREATE_BANKING                        = 'create_banking';
     const VIEW_BILLING                          = 'view_billing';
 //    const VIEW_WORKFLOW                         = 'view_workflow';
 //    const VIEW_REPORTING                        = 'view_reporting';

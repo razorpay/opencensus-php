@@ -845,4 +845,239 @@ class BankingAccountTpvTest extends TestCase
 
         $this->startTest();
     }
+
+    protected function mockRazorEnableXDenyUauthorisedAndDisableCAC()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 'razorpay_x_acl_deny_unauthorised')
+                    {
+                        return 'on';
+                    }
+                    if ($feature === 'rx_custom_access_control_enabled')
+                    {
+                        return 'off';
+                    }
+                    if ($feature === 'rx_custom_access_control_disabled')
+                    {
+                        return 'on';
+                    }
+                    return 'off';
+                }));
+    }
+
+    public function testMerchantTpvCreateRouteViaBankingProductForViewOnlyRole()
+    {
+        $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'view_only');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->ba->addXOriginHeader();
+
+        $this->mockRazorEnableXDenyUauthorisedAndDisableCAC();
+
+        $this->startTest();
+    }
+
+    public function testMerchantTpvCreateRouteViaBankingProductForOperationsRole()
+    {
+        $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'operations');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->ba->addXOriginHeader();
+
+        $this->mockRazorEnableXDenyUauthorisedAndDisableCAC();
+
+        $this->startTest();
+    }
+
+    public function testMerchantTpvCreateRouteViaBankingProductForOwnerRole()
+    {
+        $attribute =
+            [
+                'activation_status' => 'activated',
+                'merchant_id'       => '10000000000000',
+                'business_type'     => '2',
+            ];
+
+        $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->fixtures->edit('merchant', 10000000000000, ['live' => 1]);
+
+        $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'owner');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->mockRazorEnableXDenyUauthorisedAndDisableCAC();
+
+        $this->ba->addXOriginHeader();
+
+        $response = $this->startTest();
+
+        $merchant = $this->getDbEntity('merchant', ['id' => '10000000000000']);
+
+        $this->assertEquals($response['created_by'], $merchant['name']);
+
+        $this->assertFalse(isset($response['fund_account_validation_id']));
+
+        $tpv = $this->getDbEntity('banking_account_tpv',
+            [
+                'merchant_id'          => '10000000000000',
+                'status'               => 'pending',
+                'payer_account_number' => '98711120003344',
+            ]);
+
+        $this->assertNotNull($tpv);
+
+        $fav = $this->getDbEntity('fund_account_validation',
+            [
+                'id' => $tpv->fund_account_validation_id,
+            ]);
+
+        $this->assertNotNull($fav);
+
+        $this->assertEquals('100000Razorpay', $fav->getMerchantId());
+    }
+
+    public function testMerchantTpvCreateRouteViaBankingProductForFinanceL1Role()
+    {
+        $attribute =
+            [
+                'activation_status' => 'activated',
+                'merchant_id'       => '10000000000000',
+                'business_type'     => '2',
+            ];
+
+        $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->fixtures->edit('merchant', 10000000000000, ['live' => 1]);
+
+        $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'finance_l1');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->mockRazorEnableXDenyUauthorisedAndDisableCAC();
+
+        $this->ba->addXOriginHeader();
+
+        $response = $this->startTest();
+
+        $merchant = $this->getDbEntity('merchant', ['id' => '10000000000000']);
+
+        $this->assertEquals($response['created_by'], $merchant['name']);
+
+        $this->assertFalse(isset($response['fund_account_validation_id']));
+
+        $tpv = $this->getDbEntity('banking_account_tpv',
+            [
+                'merchant_id'          => '10000000000000',
+                'status'               => 'pending',
+                'payer_account_number' => '98711120003344',
+            ]);
+
+        $this->assertNotNull($tpv);
+
+        $fav = $this->getDbEntity('fund_account_validation',
+            [
+                'id' => $tpv->fund_account_validation_id,
+            ]);
+
+        $this->assertNotNull($fav);
+
+        $this->assertEquals('100000Razorpay', $fav->getMerchantId());
+    }
+
+    public function testMerchantTpvCreateRouteViaBankingProductForAdminRole()
+    {
+        $attribute =
+            [
+                'activation_status' => 'activated',
+                'merchant_id'       => '10000000000000',
+                'business_type'     => '2',
+            ];
+
+        $this->fixtures->create('merchant_detail', $attribute);
+
+        $this->fixtures->edit('merchant', 10000000000000, ['live' => 1]);
+
+        $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'admin');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->mockRazorEnableXDenyUauthorisedAndDisableCAC();
+
+        $this->ba->addXOriginHeader();
+
+        $response = $this->startTest();
+
+        $merchant = $this->getDbEntity('merchant', ['id' => '10000000000000']);
+
+        $this->assertEquals($response['created_by'], $merchant['name']);
+
+        $this->assertFalse(isset($response['fund_account_validation_id']));
+
+        $tpv = $this->getDbEntity('banking_account_tpv',
+            [
+                'merchant_id'          => '10000000000000',
+                'status'               => 'pending',
+                'payer_account_number' => '98711120003344',
+            ]);
+
+        $this->assertNotNull($tpv);
+
+        $fav = $this->getDbEntity('fund_account_validation',
+            [
+                'id' => $tpv->fund_account_validation_id,
+            ]);
+
+        $this->assertNotNull($fav);
+
+        $this->assertEquals('100000Razorpay', $fav->getMerchantId());
+    }
+
+    public function testMerchantFetchTpvsRouteViaBankingProductForViewOnlyRole()
+    {
+        $attribute =
+            [
+                'activation_status' => 'activated',
+                'merchant_id'       => '10000000000000',
+                'business_type'     => '2',
+            ];
+
+        $this->fixtures->create('merchant_detail', $attribute);
+
+        $attributes = $this->getTpvInput();
+
+        $this->fixtures->create('banking_account_tpv', $attributes);
+
+        $attributes[Entity::STATUS] = Status::REJECTED;
+
+        $attributes[Entity::IS_ACTIVE] = false;
+
+        $attributes[Entity::REMARKS] = 'Invalid docs';
+
+        $attributes[Entity::PAYER_ACCOUNT_NUMBER] = '8927398273';
+
+        $this->fixtures->create('banking_account_tpv', $attributes);
+
+        $user = $this->fixtures->user->createBankingUserForMerchant('10000000000000', [], 'view_only');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->mockRazorEnableXDenyUauthorisedAndDisableCAC();
+
+        $this->ba->addXOriginHeader();
+
+        $this->startTest();
+    }
 }
