@@ -7,6 +7,7 @@ use Request;
 use Route as RouteFacade;
 use OpenCensus\Trace\Tracer;
 
+use RZP\Jobs\Context;
 use RZP\Http\RequestHeader;
 use RZP\Http\Route;
 use RZP\Constants\Tracing;
@@ -141,6 +142,8 @@ class ApiTraceProcessor
         $this->overrideRequestAttributes($record);
 
         $this->keysBasedScrubbingForBankingRoutes($record);
+
+        $this->addTraceAttributesForWorkers($record);
 
         return $record;
     }
@@ -477,5 +480,26 @@ class ApiTraceProcessor
         $razorpayId = $this->app->request->headers->get(RequestHeader::X_RAZORPAY_REQUEST_ID);
 
         $record['request']['x-razorpay-request-id'] = $razorpayId;
+    }
+
+    protected function addTraceAttributesForWorkers(&$record)
+    {
+        /**@var Context $workerContext */
+        $workerContext = $this->app['worker.ctx'];
+
+        $uniqueJobId = $workerContext->fetchUniqueJobId();
+        $jobUuid     = $workerContext->fetchJobUuid();
+
+        // This will be useful for fetching logs for a single execution of a job
+        if ($uniqueJobId !== null)
+        {
+            $record['request']['unique_job_id'] = $uniqueJobId;
+        }
+
+        // This will be useful for debugging if job is released multiple times by the queue.
+        if ($jobUuid !== null)
+        {
+            $record['request']['job_uuid'] = $jobUuid;
+        }
     }
 }

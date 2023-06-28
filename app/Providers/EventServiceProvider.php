@@ -211,6 +211,7 @@ class EventServiceProvider extends ServiceProvider
         // Actual job class is wrapped under likes of SyncJob, SqsJob classes.
         // Also we only have to deal with Job classes extending our base Job.
         //
+        // Todo:: to handle encrypted payload data
         $resolvedJob  = unserialize($job->payload()['data']['command']); // nosemgrep : php.lang.security.unserialize-use.unserialize-use
 
         if ($resolvedJob instanceof Job === true)

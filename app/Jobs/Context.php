@@ -2,6 +2,10 @@
 
 namespace RZP\Jobs;
 
+use Carbon\Carbon;
+use Illuminate\Queue\Jobs\SyncJob;
+
+use RZP\Constants\Timezone;
 use RZP\Foundation\Application;
 
 /**
@@ -26,6 +30,10 @@ class Context
      */
     protected $mode;
 
+    protected $uniqueJobId;
+
+    protected $jobUuid;
+
     public function __construct(Application $app)
     {
         $this->app = $app;
@@ -41,6 +49,19 @@ class Context
         $this->mode = $job->getMode();
 
         $this->jobName = self::PREFIX . $job->getJobName();
+
+        $this->uniqueJobId = bin2hex(random_bytes(16)) . '_' . Carbon::now(Timezone::IST)->getTimestamp();
+
+        $internalJob = $job->job;
+
+        if ($internalJob instanceof SyncJob)
+        {
+            $this->jobUuid = optional($internalJob)->payload()['uuid'] ?? null;
+        }
+        else
+        {
+            $this->jobUuid = optional($internalJob)->uuid();
+        }
     }
 
     /**
@@ -67,5 +88,21 @@ class Context
         $pos = strpos($this->jobName, 'payout');
 
         return ($pos !== false);
+    }
+
+    /**
+     * @return string|null
+     */
+    public function fetchUniqueJobId()
+    {
+        return $this->uniqueJobId;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function fetchJobUuid()
+    {
+        return $this->jobUuid;
     }
 }
