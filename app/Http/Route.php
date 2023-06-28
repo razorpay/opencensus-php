@@ -15466,6 +15466,7 @@ class Route
         ],
 
         'terminals_service' => [
+            'feature_get_multiple_internal',
             'internal_merchant_fetch',
             'internal_payment_instruments_fetch',
             'internal_merchant_workflow_details_fetch',
