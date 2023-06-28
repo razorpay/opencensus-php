@@ -164,6 +164,10 @@ class Constants
     const EnableApprovalViaOAuth = 'enable_approval_via_oauth';
     const SkipKycVerification = 'skip_kyc_verification';
 
+    // settlements service features
+    const SettlementsServiceOnboarding = 'settlement_service_onboarded';
+    const SettlementsServiceStopSMS = 'stop_settlement_sms';
+
     public static $validDcsKeys = [];
     /**
      * Stores the mapping of the features to their corresponding dcs keys
@@ -322,6 +326,8 @@ class Constants
         self::WalletPaytmAutoDebit => 'rzp/pg/merchant/wallet/paytm/AutoDebit',
         self::EnableApprovalViaOAuth => 'rzp/x/merchant/payouts/Workflows',
         self::SkipKycVerification => 'rzp/pg/org/onboarding/banking_program/Config',
+        self::SettlementsServiceOnboarding => 'rzp/pg/merchant/settlements/Onboarding',
+        self::SettlementsServiceStopSMS => 'rzp/pg/merchant/settlements/Communication',
     ];
 
     public static function isValidDcsKeyAndName(string $key, string $name): bool
@@ -492,6 +498,8 @@ class Constants
         APIFeaturesConstants::WALLET_PAYTM_AUTO_DEBIT                       => self::WalletPaytmAutoDebit,
         APIFeaturesConstants::ENABLE_APPROVAL_VIA_OAUTH                     => self::EnableApprovalViaOAuth,
         APIFeaturesConstants::SKIP_KYC_VERIFICATION                         => self::SkipKycVerification,
+        APIFeaturesConstants::NEW_SETTLEMENT_SERVICE                        => self::SettlementsServiceOnboarding,
+        APIFeaturesConstants::SETTLEMENTS_SMS_STOP                          => self::SettlementsServiceStopSMS,
     ];
 
     /**
@@ -565,6 +573,8 @@ class Constants
             "cross_org_login" => "direct",
             "timeout_fee_breakup_page_checkout" => "direct",
             "silent_refund_late_auth_enabled" => "direct",
+            "stop_settlement_sms" => "direct",
+            "settlement_service_onboarded" => "direct",
         ],
         "org" => [
             "disable_free_credit_unreg"=> "client",

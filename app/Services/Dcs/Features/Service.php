@@ -252,7 +252,7 @@ class Service extends Base
             {
                 $data = [] ;
                 $res = [];
-                foreach ($featureNames as $dcsFeatureName => $_)
+                foreach ($featureNames as $dcsFeatureName)
                 {
                     $key = DcsConstants::$featureToDCSKeyMapping[$dcsFeatureName];
                     $data[$key][] = Utility::extractActualDcsName($dcsFeatureName);
@@ -376,7 +376,8 @@ class Service extends Base
                 return $response;
             }
 
-            $enabled_features = $this->fetchByEntityIdAndFeatureNames($entityId, $dcsFeatures, $mode,
+
+            $enabled_features = $this->fetchByEntityIdAndFeatureNames($entityId, array_keys($dcsFeatures), $mode,
                 true, $entityType, true);
 
             $this->cache->set($cacheKey, $enabled_features, 30);

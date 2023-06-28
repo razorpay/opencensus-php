@@ -1645,6 +1645,7 @@ class Service extends Base\Service
     {
         if ((isset($input['flow']) === true) and ($input['flow'] === 'validate'))
         {
+            // Job to validate the entities in DCS and API for a flag
             ValidateFeaturesAPIAndDCS::dispatchNow($input, $this->mode);
             return [
                 'response' => 'DCS Features validate Job dispatched',

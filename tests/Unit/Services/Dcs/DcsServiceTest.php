@@ -303,7 +303,7 @@ class DcsServiceTest extends TestCase
             );
 
         $res = $this->dcsService->fetchByEntityIdAndFeatureNames("LNWDzDK1sqQnjY",
-            ["payment_link_no_expiry_enabled" => "direct"], "test", false, "merchant");
+            ["payment_link_no_expiry_enabled"], "test", false, "merchant");
         $this->assertNotNull($res, "response shouldn't come as null");
         $this->assertEquals(1, sizeof($res), "response should have only one element");
         $this->assertEquals("enable_merchant_expiry_pl",
@@ -342,7 +342,7 @@ class DcsServiceTest extends TestCase
             );
 
         $res = $this->dcsService->fetchByEntityIdAndFeatureNames("LNWDzDK1sqQnjP",
-            ["payment_link_no_expiry_enabled" => "direct"], "test", false, "merchant");
+            ["payment_link_no_expiry_enabled"], "test", false, "merchant");
         $this->assertEmpty($res, "response should  come as empty");
         $this->assertEquals(0, sizeof($res), "response should have only one element");
 
@@ -379,10 +379,10 @@ class DcsServiceTest extends TestCase
 
         $res = $this->dcsService->fetchByEntityIdAndFeatureNames("LNWDzDK1sqQnjZ",
             [
-                "payment_link_no_expiry_enabled" => "direct",
-                "eligibility_enabled" => "direct",
-                "payment_page_customer_decide_amount_enabled" => "direct",
-                "payment_page_create_own_template_enabled" => "direct"
+                "payment_link_no_expiry_enabled",
+                "eligibility_enabled",
+                "payment_page_customer_decide_amount_enabled",
+                "payment_page_create_own_template_enabled"
             ], "test", false, "merchant");
         $this->assertNotEmpty($res, "response shouldnt come as empty");
 
@@ -409,7 +409,7 @@ class DcsServiceTest extends TestCase
         $this->expectExceptionMessage("unauthorized Error");
 
         $res = $this->dcsService->fetchByEntityIdAndFeatureNames("LNWDzDK1sqQnjY",
-            ["payment_link_no_expiry_enabled" => "direct"], "test", false, "merchant");
+            ["payment_link_no_expiry_enabled"], "test", false, "merchant");
     }
 
     public function testFetchByEntityIdsAndName()
