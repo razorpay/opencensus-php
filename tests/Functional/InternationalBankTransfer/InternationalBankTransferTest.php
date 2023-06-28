@@ -290,6 +290,7 @@ class InternationalBankTransferTest extends TestCase
         $this->assertEquals('ach',$paymentEntity['wallet']);
         $this->assertEquals(83300000,$paymentEntity['base_amount']);
         $this->assertEquals(8500000,$paymentEntity['amount']);
+        $this->assertEquals('IF-20230609-GFOTB9',$paymentEntity['reference1']);
 
         $this->testSendNotificationForB2B($paymentEntity);
     }
@@ -321,6 +322,7 @@ class InternationalBankTransferTest extends TestCase
         $this->assertEquals('ach',$paymentEntity['wallet']);
         $this->assertEquals(294000,$paymentEntity['base_amount']);
         $this->assertEquals(30000,$paymentEntity['amount']);
+        $this->assertEquals('IF-20230609-GFOTB9',$paymentEntity['reference1']);
     }
 
     public function testCashManagerSWIFTTransactionFlow()
@@ -350,6 +352,7 @@ class InternationalBankTransferTest extends TestCase
         $this->assertEquals('swift',$paymentEntity['wallet']);
         $this->assertEquals(294000,$paymentEntity['base_amount']);
         $this->assertEquals(30000,$paymentEntity['amount']);
+        $this->assertEquals('IF-20230609-GFOTB9',$paymentEntity['reference1']);
     }
 
     public function testCashManagerTransactionNotificationForCurrencyCloudWithDifferentMcc()
@@ -381,6 +384,7 @@ class InternationalBankTransferTest extends TestCase
         $this->assertEquals('intl_bank_transfer',$paymentEntity['method']);
         $this->assertEquals(294000,$paymentEntity['base_amount']);
         $this->assertEquals(30000,$paymentEntity['amount']);
+        $this->assertEquals('IF-20230609-GFOTB9',$paymentEntity['reference1']);
     }
 
     public function testCashManagerTransactionNotificationForCurrencyCloudWithDifferentMethodSpecificMcc()
@@ -417,6 +421,7 @@ class InternationalBankTransferTest extends TestCase
         $this->assertEquals('intl_bank_transfer',$paymentEntity['method']);
         $this->assertEquals(240000,$paymentEntity['base_amount']);
         $this->assertEquals(30000,$paymentEntity['amount']);
+        $this->assertEquals('IF-20230609-GFOTB9',$paymentEntity['reference1']);
     }
 
     public function testTransferCompletedNotificationACHFromCurrencyCloud()

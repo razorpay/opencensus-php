@@ -87,7 +87,8 @@ return [
                     'currency' => 'USD',
                     'amount' => '47',
                     'related_entity_type' => 'inbound_funds',
-                    'related_entity_id' => 'a0d9034e-bc9f-45e7-a1e4-6485735798f6'
+                    'related_entity_id' => 'a0d9034e-bc9f-45e7-a1e4-6485735798f6',
+                    'related_entity_short_reference' => 'IF-20230609-GFOTB9'
             ]
         ],
         'response' => [
@@ -146,7 +147,8 @@ return [
                     'currency' => 'USD',
                     'amount' => '47',
                     'related_entity_type' => 'inbound_funds',
-                    'related_entity_id' => 'a0d9034e-bc9f-45e7-a1e4-6485735798f6'
+                    'related_entity_id' => 'a0d9034e-bc9f-45e7-a1e4-6485735798f6',
+                    'related_entity_short_reference' => 'IF-20230609-GFOTB9'
                 ]
             ]
         ],
@@ -173,7 +175,8 @@ return [
                     'currency' => 'USD',
                     'amount' => '47',
                     'related_entity_type' => 'inbound_funds',
-                    'related_entity_id' => 'a0d9034e-bc9f-45e7-a1e4-6485735798f6'
+                    'related_entity_id' => 'a0d9034e-bc9f-45e7-a1e4-6485735798f6',
+                    'related_entity_short_reference' => 'IF-20230609-GFOTB9'
                 ]
             ]
         ],

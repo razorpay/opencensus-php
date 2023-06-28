@@ -1627,7 +1627,7 @@ class Service extends Base\Service
 
         $response = $this->app->mozart->sendMozartRequest('payments',Constants\Entity::CURRENCY_CLOUD,'get_sender_detail',$request);
 
-        $payment = $this->core->createAndAuthorizePaymentForIntlBankTransfer($response['data'],$merchantId);
+        $payment = $this->core->createAndAuthorizePaymentForIntlBankTransfer($response['data'],$merchantId,$input);
 
         return [
             'success' => 'true',

@@ -901,11 +901,11 @@ class Core extends Base\Core
         }
     }
 
-    public function createAndAuthorizePaymentForIntlBankTransfer($input,$merchantId)
+    public function createAndAuthorizePaymentForIntlBankTransfer($input,$merchantId,$webhookRequest)
     {
         try
         {
-            $payment = $this->createPaymentEntityForIntlBankTransfer($input,$merchantId);
+            $payment = $this->createPaymentEntityForIntlBankTransfer($input,$merchantId,$webhookRequest);
 
             // Merchants should add customer billing address from merchant dashboard
             // https://razorpay.slack.com/archives/C024U3B04LD/p1682496775025409?thread_ts=1681996740.555379&cid=C024U3B04LD
@@ -938,7 +938,7 @@ class Core extends Base\Core
         return $payment;
     }
 
-    protected function createPaymentEntityForIntlBankTransfer($response, $merchantId)
+    protected function createPaymentEntityForIntlBankTransfer($response, $merchantId,$webhookRequest)
     {
         // Get Mode For Intl Bank Transfer Payment from get_sender_details API Response
         $mode = $this->getIntlBankTransferModeFromResponse($response);
@@ -977,7 +977,7 @@ class Core extends Base\Core
 
         $payment->build($input);
 
-        $payment->setReference1($response['id']);
+        $payment->setReference1($webhookRequest['related_entity_short_reference']);
 
         $this->paymentCurrencyConversions($payment);
 
