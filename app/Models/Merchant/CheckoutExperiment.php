@@ -72,6 +72,7 @@ class CheckoutExperiment
             'dcc_vas_merchants'                                  => false,
             'emi_via_cards_revamp'                               => false,
             'upi_turbo'                                          => false,
+            'checkout_offers_ux'                                 => false,
             'enable_otp_auto_read_and_auto_submit'               => 'control',
         ];
 
@@ -365,6 +366,14 @@ class CheckoutExperiment
             'app.checkout_upi_turbo_splitz_experiment_id',
             'UpiTurbo',
             'upi_turbo',
+            ['merchant_id' => $this->merchantId]
+        );
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.checkout_offers_ux_splitz_experiment_id',
+            'CheckoutOffersUx',
+            'checkout_offers_ux',
             ['merchant_id' => $this->merchantId]
         );
       
@@ -732,6 +741,11 @@ class CheckoutExperiment
         $variant = $response['variant']['name'] ?? '';
 
         return $variant === 'variant_on';
+    }
+
+    private function handleCheckoutOffersUxResponse($response): bool
+    {
+        return $response['variant']['name'] === 'variant_on';
     }
 
     private function handleEmiViaCardRevampResponse($response): bool

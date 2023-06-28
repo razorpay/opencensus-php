@@ -550,6 +550,8 @@ return array(
 
     'checkout_upi_turbo_splitz_experiment_id' => env('CHECKOUT_UPI_TURBO_SPLITZ_EXPERIMENT_ID'),
 
+    'checkout_offers_ux_splitz_experiment_id' => env('CHECKOUT_OFFERS_UX_SPLITZ_EXPERIMENT_ID'),
+    
     'checkout_upi_number_contact_blacklist_splitz_experiment_id' => env('CHECKOUT_UPI_NUMBER_CONTACT_BLACKLIST_SPLITZ_EXPERIMENT_ID'),
 
     'dedicated_terminal_qr_code_splitz_experiment_id' => env('DEDICATED_TERMINAL_QR_CODE_SPLITZ_EXPERIMENT_ID'),
