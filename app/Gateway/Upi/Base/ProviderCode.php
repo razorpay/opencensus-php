@@ -188,6 +188,7 @@ class ProviderCode
     const OMNI               = 'omni';
     const DHANI              = 'dhani';
     const NIYOICICI          = 'niyoicici';
+    const NAVIAXIS           = 'naviaxis';
 
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
@@ -367,6 +368,7 @@ class ProviderCode
         self::ZOICICI            => IFSC::ICIC,
         self::GOAXB              => IFSC::UTIB,
         self::NIYOICICI          => IFSC::ICIC,
+        self::NAVIAXIS           => IFSC::UTIB,
     ];
 
     /**
@@ -465,7 +467,8 @@ class ProviderCode
         ProviderPsp::ZOMATO,
         ProviderPsp::BAJAJ_FINSERVE,
         ProviderPsp::GO_NIYO,
-        ProviderPsp::EQUITAS_SMALL_FINANCE_BANK_LTD
+        ProviderPsp::EQUITAS_SMALL_FINANCE_BANK_LTD,
+        ProviderPsp::NAVI
     ];
 
     /**
@@ -513,6 +516,7 @@ class ProviderCode
         self::ABFSPAY       => ProviderPsp::BAJAJ_FINSERVE,
         self::NIYOICICI     => ProviderPsp::GO_NIYO,
         self::EQUITAS       => ProviderPsp::EQUITAS_SMALL_FINANCE_BANK_LTD,
+        self::NAVIAXIS      => ProviderPsp::NAVI,
 
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,

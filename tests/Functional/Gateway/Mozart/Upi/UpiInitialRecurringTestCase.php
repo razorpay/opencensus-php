@@ -1568,6 +1568,7 @@ class UpiInitialRecurringTestCase extends TestCase
         $cases['bajajfinserve_abfspay_allow']   = ['razorpay@abfspay', $throwables['whitelisted']];
         $cases['goniyo_niyoicici_allow']        = ['razorpay@niyoicici', $throwables['whitelisted']];
         $cases['equitassmallfinancebankltd_equitas_allow']  = ['razorpay@equitas', $throwables['whitelisted']];
+        $cases['navi_naviaxis_allow']           = ['razorpay@naviaxis', $throwables['whitelisted']];
 
         $cases['gpay_okbizaxis_reject']         = ['razorpay@okbizaxis', $throwables['not_whitelisted']];
 
