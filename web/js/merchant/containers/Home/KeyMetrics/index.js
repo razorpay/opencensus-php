@@ -25,8 +25,6 @@ import {
 } from 'merchant/components/Home/data';
 import { trackNoData, trackError } from 'merchant/containers/Home/ga';
 import Tooltip from 'merchant/components/Home/Tooltip';
-import errorService from '@razorpay/universe-utils/errorService';
-import { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 import {
@@ -53,14 +51,6 @@ import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/self
 const csvDateFormat = 'DD-MM-YYYY';
 
 const gutterBetweenTabs = 16; // 16px
-
-const captureException = (errorMsg) =>
-  errorService.captureError(new Error(errorMsg), {
-    tags: {
-      team: Teams.PG_DASHBOARD,
-    },
-    rank: Ranks.P2,
-  });
 
 const TabContent = ({
   value,
@@ -525,14 +515,6 @@ class KeyMetricsContainer extends Component {
                 histogram,
                 refreshTinyGraphs,
               });
-            } else {
-              captureException(`
-                [UNDEFINED ERROR] - KEY METRICS HISTOGRAM DATA,
-                CONTEXT: {
-                  tabName: ${tabName},
-                  apiResponse: ${JSON.stringify(data.data)}
-                }
-              `);
             }
           }
 
