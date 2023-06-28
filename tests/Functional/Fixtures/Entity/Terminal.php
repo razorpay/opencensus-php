@@ -3920,6 +3920,35 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createDedicatedSharpTerminal($attributes)
+    {
+        $termId = Shared::SHARP_RAZORPAY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'sharp',
+            'gateway_merchant_id'       => 'test_merchant_sharp',
+            'gateway_terminal_id'       => 'nodal account',
+            'gateway_terminal_password' => 'razorpay_password',
+            'gateway_terminal_password2' => 'abcdef',
+            'gateway_secure_secret2'     => 'abcdef',
+            'vpa'                       => 'testvpa@yesb',
+            'upi'                       => true,
+            'tpv'                       => 2,
+            'type'                      => [
+                Type::PAY               => '1',
+                Type::NON_RECURRING     => '1',
+                Type::ONLINE            => '1',
+                Type::COLLECT           => '1',
+            ],
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createLiveDedicatedUpiYesbankTerminal($attributes)
     {
         $termId = Shared::UPI_LIVE_YESBANK_DEDICATED_TERMINAL;

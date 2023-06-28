@@ -129,6 +129,15 @@ class Generator extends QrCode\Generator
                     return $vpa;
                 }
 
+                // For test mode on prod, check vpa/ gatewayMerchantId2 fields whereever the vpa is available.
+                case Gateway::SHARP:
+                {
+                    if (empty($terminal->getVpa()) === false)
+                    {
+                        return $terminal->getVpa();
+                    }
+                }
+
                 default:
                 {
                     if (empty($terminal->getGatewayMerchantId2()) === false)

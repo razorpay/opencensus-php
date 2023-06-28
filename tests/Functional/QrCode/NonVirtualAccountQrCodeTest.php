@@ -635,27 +635,49 @@ class NonVirtualAccountQrCodeTest extends TestCase
             case Gateway::UPI_ICICI:
             {
                 $vpa = $terminal->getGatewayMerchantId2();
+
+                switch ($qrCodeEntity['usage'])
+                {
+                    case "single_use":
+                    {
+                        $this->assertStringContainsString('icicirefID', $qrCodeEntity['qr_string']);
+
+                        break;
+                    }
+                    case "multiple_use":
+                    {
+                        $tr = 'RZP' . substr($response['id'], 3, 14) . 'qrv2';
+                        $this->assertStringContainsString($tr, $qrCodeEntity['qr_string']);
+                        break;
+                    }
+                }
+                break;
+            }
+
+            default:
+            {
+                $vpa = $terminal->getVpa();
+
+                switch ($qrCodeEntity['usage'])
+                {
+                    case "single_use":
+                    {
+                        $this->assertStringContainsString('icicirefID', $qrCodeEntity['qr_string']);
+
+                        break;
+                    }
+                    case "multiple_use":
+                    {
+                        $tr = substr($response['id'], 3, 14) . 'qrv2';
+                        $this->assertStringContainsString($tr, $qrCodeEntity['qr_string']);
+                        break;
+                    }
+                }
                 break;
             }
         }
 
         $this->assertStringContainsString($vpa, $qrCodeEntity['qr_string']);
-
-        switch ($qrCodeEntity['usage'])
-        {
-            case "single_use":
-            {
-                $this->assertStringContainsString('icicirefID', $qrCodeEntity['qr_string']);
-
-                break;
-            }
-            case "multiple_use":
-            {
-                $tr = 'RZP' . substr($response['id'], 3, 14) . 'qrv2';
-                $this->assertStringContainsString($tr, $qrCodeEntity['qr_string']);
-                break;
-            }
-        }
 
         if ($qrCodeEntity['fixed_amount'] === true)
         {
@@ -2064,6 +2086,25 @@ class NonVirtualAccountQrCodeTest extends TestCase
             'LiveAccountMer');
 
         $this->runEntityAssertionsForDedicatedTerminalQr($response, $terminal, 'live');
+    }
+
+    public function testCreateStaticQrWithDedicatedTerminalSharpGateway()
+    {
+        $terminal = $this->fixtures->create('terminal:dedicated_sharp_terminal');
+
+        $output = $this->getDedicatedTerminalSplitzResponseForOnVariant();
+
+        $this->mockSplitzTreatment($output);
+
+        $response = $this->createQrCode(
+            [
+                'usage' => 'multiple_use',
+                'type' => 'upi_qr',
+            ],
+            'test',
+            'LiveAccountMer');
+
+        $this->runEntityAssertionsForDedicatedTerminalQr($response, $terminal, 'test');
     }
 
     protected function enableRazorXTreatmentForQrDedicatedTerminal()
