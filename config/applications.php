@@ -1516,6 +1516,9 @@ return [
         'splitz_experiment_merchant_business_detail_read_by_id' => env('ASV_SPLITZ_EXPERIMENT_BUSINESS_DETAIL_READ_BY_ID', ''),
         'splitz_experiment_merchant_document_read_by_type_and_merchant_id' => env('ASV_SPLITZ_EXPERIMENT_MERCHANT_DOCUMENT_READ_BY_TYPE_AND_MERCHANT_ID', ''),
         'splitz_experiment_merchant_document_read_by_id' => env('ASV_SPLITZ_EXPERIMENT_MERCHANT_DOCUMENT_READ_BY_ID', ''),
+        'splitz_experiment_stakeholder_read_by_id' => env('ASV_SPLITZ_EXPERIMENT_STAKEHOLDER_READ_BY_ID', ''),
+        'splitz_experiment_stakeholder_read_by_merchant_id' => env('ASV_SPLITZ_EXPERIMENT_STAKEHOLDER_READ_BY_MERCHANT_ID', ''),
+        'splitz_experiment_address_read_by_stakeholder_id' => env('ASV_SPLITZ_EXPERIMENT_ADDRESS_READ_BY_STAKEHOLDER_ID', ''),
     ],
 
     'recon'         => [

@@ -5,6 +5,8 @@ namespace RZP\Models\Merchant\Acs\AsvRouter\AsvMaps;
 // this is a map that, maps repo class to SDK wrapper class and returns the wrapper class instance
 
 use RZP\Error\ErrorCode;
+use RZP\Models\Address\Repository as AddressRepository;
+use RZP\Models\Merchant\Stakeholder\Repository as StakeholderRepository;
 use RZP\Models\Merchant\Website\Repository as MerchantWebsiteRepository;
 use RZP\Models\Merchant\Email\Repository as MerchantEmailRepository;
 use RZP\Models\Merchant\Document\Repository as MerchantDocumentRepository;
@@ -31,6 +33,14 @@ final class RepoAndFunctionToSplitzMap {
         MerchantDocumentRepository::class => array(
             FunctionConstant::GET_BY_ID => SplitzConstant::SPLITZ_DOCUMENT_GET_BY_ID,
             FunctionConstant::GET_BY_TYPE_AND_MERCHANT_ID => SplitzConstant::SPLITZ_DOCUMENT_GET_BY_TYPE_AND_MERCHANT_ID,
+        ),
+        AddressRepository::class => array(
+            FunctionConstant::GET_BY_STAKEHOLDER_ID => SplitzConstant::SPLITZ_ADDRESS_GET_BY_STAKEHOLDER_ID,
+        ),
+        StakeholderRepository::class => array(
+            FunctionConstant::FIND_OR_FAIL => SplitzConstant::SPLITZ_STAKEHOLDER_GET_BY_ID,
+            FunctionConstant::FIND_OR_FAIL_PUBLIC => SplitzConstant::SPLITZ_STAKEHOLDER_GET_BY_ID,
+            FunctionConstant::GET_BY_MERCHANT_ID => SplitzConstant::SPLITZ_STAKEHOLDER_GET_BY_MERCHANT_ID,
         )
     );
 

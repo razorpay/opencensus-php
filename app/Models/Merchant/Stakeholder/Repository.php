@@ -4,20 +4,57 @@ namespace RZP\Models\Merchant\Stakeholder;
 
 use RZP\Models\Base;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
+use RZP\Models\Merchant\Acs\traits\AsvFetchCommon;
+use RZP\Models\Merchant\Acs\traits\AsvFind;
 use RZP\Models\Merchant\Stakeholder\Entity as MerchantStakeholderEntity;
 use RZP\Modules\Acs\Wrapper\MerchantStakeholder as MerchantStakeholderWrapper;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as ASVV2Constant;
+use RZP\Models\Merchant\Acs\SplitzHelper\SplitzHelper;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Stakeholder as StakeholderSDKWrapper;
+
 
 class Repository extends Base\Repository
 {
     use RepositoryUpdateTestAndLive;
+    use AsvFetchCommon;
+    use AsvFind;
 
     protected $entity = 'stakeholder';
+
+    public AsvRouter $asvRouter;
+
+    function __construct()
+    {
+        parent::__construct();
+
+        $this->asvRouter = new AsvRouter();
+    }
+
 
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID     => 'sometimes|string|size:14',
     ];
 
     public function fetchStakeholders(string $merchantId): Base\PublicCollection
+    {
+        return $this->getEntityDetails(
+            ASVV2Constant::GET_STAKEHOLDER_BY_MERCHANT_ID,
+            $this->asvRouter->shouldRouteToAccountService($merchantId, get_class($this), FunctionConstant::GET_BY_MERCHANT_ID),
+            (new StakeholderSDKWrapper())->getByMerchantIdIgnoreInvalidArgumentCallback($merchantId),
+            $this->fetchStakeholdersDatabaseCallback($merchantId)
+        );
+    }
+
+    public function fetchStakeholdersDatabaseCallback(string $merchantId): \Closure
+    {
+        return function() use ($merchantId) {
+            return $this->fetchStakeholdersDatabase($merchantId);
+        };
+    }
+
+    public function fetchStakeholdersDatabase(string $merchantId): Base\PublicCollection
     {
         return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, $merchantId)

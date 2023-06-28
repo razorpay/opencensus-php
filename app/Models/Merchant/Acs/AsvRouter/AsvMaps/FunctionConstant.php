@@ -10,4 +10,6 @@ final class FunctionConstant
 
     const GET_BY_TYPE_AND_MERCHANT_ID = 'GET_BY_TYPE_AND_MERCHANT_ID';
     const GET_BY_ID = 'GET_BY_ID';
+
+    const GET_BY_STAKEHOLDER_ID = 'GET_BY_STAKEHOLDER_ID';
 }

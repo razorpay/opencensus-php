@@ -179,7 +179,7 @@ class Core extends Base\Core
 
             foreach ($input[Constants::ADDRESSES] as $addressArr)
             {
-                $address = $this->repo->address->fetchPrimaryAddressOfEntityOfType($stakeholder, $addressArr[Address\Entity::TYPE]);
+                $address = $this->repo->address->fetchPrimaryAddressForStakeholderOfTypeResidential($stakeholder, $addressArr[Address\Entity::TYPE]);
 
                 if (empty($address) === true)
                 {

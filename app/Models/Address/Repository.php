@@ -6,12 +6,31 @@ use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\Address\Entity as AddressEntity;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvMaps\FunctionConstant;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
+use RZP\Models\Merchant\Acs\traits\AsvFetch;
+use RZP\Models\Merchant\Acs\traits\AsvFetchCommon;
 use RZP\Models\Merchant\Stakeholder\Entity as MerchantStakeholderEntity;
 use RZP\Modules\Acs\Wrapper\MerchantStakeholder as MerchantStakeholderWrapper;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Stakeholder as StakeholderSDKWrapper;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as ASVV2Constant;
+
 
 class Repository extends Base\Repository
 {
+
+    use AsvFetchCommon;
     protected $entity = 'address';
+
+    public AsvRouter $asvRouter;
+
+    function __construct()
+    {
+        parent::__construct();
+
+        $this->asvRouter = new AsvRouter();
+    }
+
 
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID => 'sometimes|alpha_num|size:14',
@@ -42,6 +61,21 @@ class Repository extends Base\Repository
                                      ->first();
 
         return $primaryAddressOfType;
+    }
+
+    public function fetchPrimaryAddressOfEntityOfTypeCallBack(Base\Entity $entity, $type) {
+        return function() use ($entity, $type) {
+            return $this->fetchPrimaryAddressOfEntityOfType($entity, $type);
+        };
+    }
+
+    public function fetchPrimaryAddressForStakeholderOfTypeResidential(Base\Entity $stakeholder, $type) {
+        return $this->getEntityDetails(
+            ASVV2Constant::GET_PRIMARY_ADDRESS_FOR_STAKEHOLDER,
+            $this->asvRouter->shouldRouteToAccountService($stakeholder->getId(), get_class($this), FunctionConstant::GET_BY_STAKEHOLDER_ID),
+            (new StakeholderSDKWrapper())->getAddressForStakeholderIgnoreInvalidArgumentCallBack($stakeholder->getId()),
+            $this->fetchPrimaryAddressOfEntityOfTypeCallBack($stakeholder, $type)
+        );
     }
 
     public function findByEntityAndId($addressId, Base\Entity $entity)

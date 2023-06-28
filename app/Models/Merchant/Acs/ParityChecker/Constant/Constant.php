@@ -50,6 +50,10 @@ class Constant
 
     const MERCHANT_BUSINESS_DETAIL  = 'merchant_business_detail';
 
+    const STAKEHOLDER  = 'stakeholder';
+
+    const ADDRESS  = 'stakeholder';
+
     const ENTITY = 'entity';
 
     const MERCHANT_ID = 'merchant_id';
@@ -69,5 +73,7 @@ class Constant
     const API_ENTITY_RAW_ATTRIBUTES ='api_entity_raw_attributes';
 
     const ASV_ENTITY_RAW_ATTRIBUTES ='asv_entity_raw_attributes';
+    const FIND_OR_FAIL_API_ARRAY = 'FIND_OR_FAIL_API_ARRAY';
+    const FIND_OR_FAIL_PUBLIC_API_ARRAY = 'FIND_OR_FAIL_PUBLIC_API_ARRAY';
 
 }

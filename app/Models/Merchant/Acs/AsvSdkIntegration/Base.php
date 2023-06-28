@@ -10,6 +10,7 @@ use Razorpay\Asv\Error\GrpcError;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BaseException;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant;
 use RZP\Exception;
@@ -136,6 +137,31 @@ class Base
 
                 throw $err;
         }
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function getByMerchantIdIgnoreInvalidArgument(string $merchantId, ?RequestMetadata $requestMetadata = null): ?PublicCollection
+    {
+        try {
+            $entityByMerchantId = $this->getByMerchantId($merchantId, $requestMetadata);
+        } catch (\Exception $e) {
+            if($e->getCode() == ErrorCode::BAD_REQUEST_INVALID_ARGUMENT) {
+                return new PublicCollection();
+            }
+
+            throw $e;
+        }
+
+        return $entityByMerchantId;
+    }
+
+    public function getByMerchantIdIgnoreInvalidArgumentCallback(string $merchantId, ?RequestMetadata $requestMetadata = null): \Closure
+    {
+        return function() use ($merchantId, $requestMetadata) {
+            return $this->getByMerchantIdIgnoreInvalidArgument($merchantId, $requestMetadata);
+        };
     }
 
     /**

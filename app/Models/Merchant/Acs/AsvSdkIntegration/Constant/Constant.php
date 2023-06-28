@@ -21,7 +21,6 @@ class Constant
     CONST SPLITZ_WEBSITE_READ_FIND = "splitz_experiment_website_read_find";
 
     const ASV_SPLITZ_EXPERIMENT_MERCHANT_EMAIL_READ_BY_MERCHANT_ID = 'splitz_experiment_merchant_email_read_by_merchant_id';
-
     // function identifiers
     CONST GET_WEBSITE_BY_MERCHANT_ID = "ASV_MERCHANT_WEBSITE_getWebsiteDetailsForMerchantId";
 
@@ -31,8 +30,10 @@ class Constant
     CONST GET_EMAIL_BY_TYPE_AND_MERCHANT_ID = "getByTypeAndMerchantId";
 
     CONST GET_EMAIL_BY_MERCHANT_ID = 'getEmailByMerchantId';
+    const GET_STAKEHOLDER_BY_MERCHANT_ID = 'GET_STAKEHOLDER_BY_MERCHANT_ID';
 
     const GET_DOCUMENT_BY_ID = 'AsvMerchantDocument_getDocumentById';
 
     const GET_DOCUMENT_BY_TYPE_AND_MERCHANT_ID = 'AsvMerchantDocument_getDocumentByTypeAndMerchantId';
+    const GET_PRIMARY_ADDRESS_FOR_STAKEHOLDER =  'GET_PRIMARY_ADDRESS_FOR_STAKEHOLDER';
 }

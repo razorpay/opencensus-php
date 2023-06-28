@@ -16,4 +16,11 @@ final class SplitzConstant
     const SPLITZ_DOCUMENT_GET_BY_TYPE_AND_MERCHANT_ID = 'splitz_experiment_merchant_document_read_by_type_and_merchant_id';
 
     const SPLITZ_DOCUMENT_GET_BY_ID = 'splitz_experiment_merchant_document_read_by_id';
+
+    const SPLITZ_STAKEHOLDER_GET_BY_ID = 'splitz_experiment_stakeholder_read_by_id';
+    const SPLITZ_STAKEHOLDER_GET_BY_MERCHANT_ID = 'splitz_experiment_stakeholder_read_by_merchant_id';
+
+    const SPLITZ_ADDRESS_GET_BY_STAKEHOLDER_ID = 'splitz_experiment_address_read_by_stakeholder_id';
+
+
 }

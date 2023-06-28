@@ -13,7 +13,9 @@ use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantEmail as MerchantEmailSDKW
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\BusinessDetail as BusinessDetailSdkWrapper;
 use RZP\Models\Merchant\Email\Repository as MerchantEmailRepository;
 use RZP\Models\Merchant\Document\Repository as MerchantDocumentRepository;
+use RZP\Models\Merchant\Stakeholder\Repository as StakeholderRepository;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantDocument as MerchantDocumentSDKWrapper;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Stakeholder as StakholderSdkWrapper;
 
 
 final class RepoToSdkWrapperMap {
@@ -24,6 +26,7 @@ final class RepoToSdkWrapperMap {
         MerchantEmailRepository::class => MerchantEmailSDKWrapper::class,
         MerchantBusinessDetailRepository::class => BusinessDetailSdkWrapper::class,
         MerchantDocumentRepository::class => MerchantDocumentSDKWrapper::class,
+        StakeholderRepository::class => StakholderSdkWrapper::class,
     );
 
     /**

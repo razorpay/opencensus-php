@@ -51,7 +51,7 @@ class Response extends Base\Core
         ];
         $this->addAttributesToResponse($stakeholder, $attributes, $response[Constants::PHONE]);
 
-        $address = $this->repo->address->fetchPrimaryAddressOfEntityOfType($stakeholder, Constants::RESIDENTIAL);
+        $address = $this->repo->address->fetchPrimaryAddressForStakeholderOfTypeResidential($stakeholder, Constants::RESIDENTIAL);
 
         if (empty($address) === false)
         {
