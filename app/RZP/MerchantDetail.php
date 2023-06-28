@@ -14,6 +14,7 @@ use Razorpay\Api\Request as ApiRequest;
 use Razorpay\Api\Errors\ServerError as ServerError;
 use Razorpay\Api\Errors\BadRequestError as BadRequestError;
 use Auth;
+use Trace;
 
 class MerchantDetail extends Entity
 {
@@ -26,8 +27,7 @@ class MerchantDetail extends Entity
         $app = \App::getFacadeRoot();
         $method = \Request::method();
         $currentRouteName = \Route::currentRouteName() ?? 'unknown_route';
-        $apiRouteCircuitBreaker = new ApiRouteCircuitBreaker($relativeUrl, 'GET', $currentRouteName);
-        $apiPathName = $apiRouteCircuitBreaker->getApiPathName();
+        $apiPathName = 'merchant_activation_details';
         $startTime = microtime(true);
 
         try
