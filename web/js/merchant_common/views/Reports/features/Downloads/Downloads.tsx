@@ -19,7 +19,6 @@ import { openModal } from 'merchant_common/reducers/modals';
 import { useDashboardType } from 'merchant_common/views/Reports/contexts/ReportsContext';
 import { useTheme } from 'merchant_common/views/Reports/hooks';
 import { trackDownloadsSection } from 'merchant_common/views/Reports/configs/analytics.config';
-import { patchedSelectOnChange } from 'merchant_common/views/Reports/components/blade.patch';
 
 const mapStateToProps = ({ reportsCore }, { dashboardType }) => {
   const { allConfigs } = reportsCore[dashboardType].overview.reportConfigs;
@@ -102,24 +101,27 @@ const DownloadsSection = connect(
             <Dropdown selectionType="single">
               <SelectInput
                 label=""
-                onChange={patchedSelectOnChange(({ values }) =>
-                  handleDownloadsFilter(downloadsFilterDropdown[+values[0]]),
-                )}
+                onChange={({ values }) =>
+                  handleDownloadsFilter(downloadsFilterDropdown[+values[0]])
+                }
                 placeholder="Choose Logs Filter"
                 validationState="none"
+                value={downloadsFilterDropdown
+                  .findIndex((refFilter) => refFilter.value === logTableFilterType)
+                  .toString()}
               />
               <DropdownOverlay>
-                <ActionList surfaceLevel={2}>
-                  {downloadsFilterDropdown.map(({ label, value }, index) => (
+                <ActionList
+                  options={downloadsFilterDropdown}
+                  itemComponent={({ data: { label }, index }) => (
                     <ActionListItem
                       key={index}
-                      isDefaultSelected={value === logTableFilterType}
                       title={label}
                       value={index.toString()}
                       testID={label}
                     />
-                  ))}
-                </ActionList>
+                  )}
+                />
               </DropdownOverlay>
             </Dropdown>
           </DropdownWrapper>

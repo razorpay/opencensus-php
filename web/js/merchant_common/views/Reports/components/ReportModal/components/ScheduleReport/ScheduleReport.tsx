@@ -36,7 +36,6 @@ import {
 import { createSchedule } from 'merchant_common/views/Reports/api/schedules';
 import { getWhenScheduleDetails } from './utils';
 import { useScheduleReportReducer } from './hooks/useScheduleReportReducer';
-import { patchedSelectOnChange } from 'merchant_common/views/Reports/components/blade.patch';
 import { trackCreateEditScheduleModal } from 'merchant_common/views/Reports/configs/analytics.config';
 import { ScheduleType } from 'merchant_common/views/Reports/types/schedule';
 
@@ -340,9 +339,7 @@ export const ScheduleReportModal = ({
               <SelectInput
                 necessityIndicator="required"
                 label="Select Report"
-                onChange={patchedSelectOnChange(({ values }) =>
-                  setSelectedConfig(allReportConfigs[+values[0]]),
-                )}
+                onChange={({ values }) => setSelectedConfig(allReportConfigs[+values[0]])}
                 placeholder="Select A Report"
                 validationState={
                   showErrorInSection === 0 ? (Boolean(selectedConfig) ? 'none' : 'error') : 'none'
@@ -351,23 +348,17 @@ export const ScheduleReportModal = ({
                   selectedConfig?.description ?? 'Select report you want to receive report about.'
                 }
                 errorText="Mandatory Field: Select report you want to receive report about."
+                value={allReportConfigs
+                  .findIndex((config) => selectedConfig && config.id === selectedConfig.id)
+                  .toString()}
               />
               <DropdownOverlay>
-                {/* @blade-patch -> "key" */}
-                <ActionList key={selectedConfig?.id} surfaceLevel={2}>
-                  {allReportConfigs.map((data, index) => {
-                    return (
-                      <ActionListItem
-                        key={data.id}
-                        isDefaultSelected={
-                          selectedConfig && allReportConfigs[index].id === selectedConfig.id
-                        }
-                        title={data.name}
-                        value={index.toString()}
-                      />
-                    );
-                  })}
-                </ActionList>
+                <ActionList
+                  options={allReportConfigs}
+                  itemComponent={({ data: { id, name }, index }) => (
+                    <ActionListItem key={id} title={name} value={index.toString()} />
+                  )}
+                />
               </DropdownOverlay>
             </Dropdown>
 
@@ -385,28 +376,27 @@ export const ScheduleReportModal = ({
               <SelectInput
                 label="Select Format"
                 name="selectedConfig"
-                onChange={patchedSelectOnChange(({ values }) =>
-                  setSelectedFormat(availableFormat[+values[0]]),
-                )}
+                onChange={({ values }) => setSelectedFormat(availableFormat[+values[0]])}
                 placeholder="Excel or CSV"
                 validationState="none"
                 helpText="Select the format in which you want to receive the report in."
                 necessityIndicator="optional"
+                value={availableFormat
+                  .findIndex((format) => format.value === selectedFormat?.value)
+                  .toString()}
               />
               <DropdownOverlay>
-                <ActionList surfaceLevel={2}>
-                  {availableFormat.map(({ label, value }, index) => {
-                    return (
-                      <ActionListItem
-                        key={value}
-                        title={label}
-                        isDefaultSelected={value === selectedFormat?.value}
-                        value={index.toString()}
-                        testID={label}
-                      />
-                    );
-                  })}
-                </ActionList>
+                <ActionList
+                  options={availableFormat}
+                  itemComponent={({ data: { label }, index }) => (
+                    <ActionListItem
+                      key={label}
+                      title={label}
+                      value={index.toString()}
+                      testID={label}
+                    />
+                  )}
+                />
               </DropdownOverlay>
             </Dropdown>
           </CollapsibleFormSection>
@@ -464,9 +454,9 @@ export const ScheduleReportModal = ({
                   necessityIndicator="required"
                   helpText="Select data duration to cover in report."
                   placeholder="Data duration covered in each report"
-                  onChange={patchedSelectOnChange(({ values }) =>
-                    setSelectedDataDuration(getDataDurations(isCustomEnabled)[+values[0]]),
-                  )}
+                  onChange={({ values }) =>
+                    setSelectedDataDuration(getDataDurations(isCustomEnabled)[+values[0]])
+                  }
                   validationState={
                     showErrorInSection === 1
                       ? selectedDataDuration?.value
@@ -475,18 +465,19 @@ export const ScheduleReportModal = ({
                       : 'none'
                   }
                   errorText="Mandatory Field: Select duration to cover in report."
+                  value={getDataDurations(isCustomEnabled)
+                    .findIndex(
+                      (refDataDuration) => refDataDuration.value === selectedDataDuration?.value,
+                    )
+                    .toString()}
                 />
                 <DropdownOverlay>
-                  <ActionList key={selectedDataDuration?.value} surfaceLevel={2}>
-                    {getDataDurations(isCustomEnabled).map((data, index) => (
-                      <ActionListItem
-                        key={data.label}
-                        title={data.label}
-                        value={index.toString()}
-                        isDefaultSelected={data?.value === selectedDataDuration?.value}
-                      />
-                    ))}
-                  </ActionList>
+                  <ActionList
+                    options={getDataDurations(isCustomEnabled)}
+                    itemComponent={({ data: { label }, index }) => (
+                      <ActionListItem key={label} title={label} value={index.toString()} />
+                    )}
+                  />
                 </DropdownOverlay>
               </Dropdown>
 
@@ -500,13 +491,13 @@ export const ScheduleReportModal = ({
                   placeholder="None"
                   necessityIndicator="required"
                   isDisabled={!selectedDataDuration?.value}
-                  onChange={patchedSelectOnChange(({ values }) =>
+                  onChange={({ values }) =>
                     setSelectedRepetition(
                       (selectedDataDuration
                         ? getRepetitions(selectedDataDuration.value, isCustomEnabled)
                         : [])[+values[0]],
-                    ),
-                  )}
+                    )
+                  }
                   validationState={
                     showErrorInSection === 1
                       ? selectedRepetition?.value
@@ -514,30 +505,24 @@ export const ScheduleReportModal = ({
                         : 'error'
                       : 'none'
                   }
+                  value={(selectedDataDuration
+                    ? getRepetitions(selectedDataDuration.value, isCustomEnabled)
+                    : []
+                  )
+                    .findIndex((refRepetition) => refRepetition.label === selectedRepetition?.label)
+                    .toString()}
                 />
                 <DropdownOverlay>
                   <ActionList
-                    key={`${selectedDataDuration?.value}${selectedRepetition?.value}${
-                      isCustomEnabled ? '1' : '0'
-                    }`}
-                    surfaceLevel={2}
-                  >
-                    {(selectedDataDuration
-                      ? getRepetitions(selectedDataDuration.value, isCustomEnabled)
-                      : []
-                    ).map((data, index) => (
-                      <ActionListItem
-                        key={data.label}
-                        title={data.label}
-                        value={index.toString()}
-                        isDefaultSelected={
-                          selectedRepetition
-                            ? data.label === selectedRepetition?.label
-                            : index === 0
-                        }
-                      />
-                    ))}
-                  </ActionList>
+                    options={
+                      selectedDataDuration
+                        ? getRepetitions(selectedDataDuration.value, isCustomEnabled)
+                        : []
+                    }
+                    itemComponent={({ data: { label }, index }) => (
+                      <ActionListItem key={label} title={label} value={index.toString()} />
+                    )}
+                  />
                 </DropdownOverlay>
               </Dropdown>
 

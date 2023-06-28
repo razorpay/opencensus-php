@@ -28,7 +28,6 @@ import { MarginDivider } from 'merchant_common/views/Reports/components/styled';
 import { CloseModalButtonContainer, CustomDurationWrapper, FieldWrapper } from './styled';
 import { CustomConfigType } from 'merchant_common/views/Reports/types';
 import { MonthIndex } from 'merchant_common/views/Reports/components/types';
-import { patchedSelectOnChange } from 'merchant_common/views/Reports/components/blade.patch';
 
 const mapStateToProps = ({ accounts, session }, { dashboardType }) => {
   const { user, mode } = session;
@@ -119,33 +118,25 @@ const DownloadCustomReport = connect(
               <SelectInput
                 necessityIndicator="required"
                 label="Select Report"
-                onChange={patchedSelectOnChange(
-                  ({ values }) => customConfigs && setSelectedConfig(customConfigs[+values[0]]),
-                )}
+                onChange={({ values }) =>
+                  customConfigs && setSelectedConfig(customConfigs[+values[0]])
+                }
                 placeholder="Select A Report"
                 helpText={
                   selectedConfig?.description ?? 'Select report you want to receive report about.'
                 }
                 errorText="Mandatory Field: Select report you want to receive report about."
+                value={customConfigs
+                  ?.findIndex((customConfig) => customConfig.id === selectedConfig?.id)
+                  .toString()}
               />
               <DropdownOverlay>
-                {/* @blade-patch -> "key" */}
-                <ActionList key={selectedConfig?.id} surfaceLevel={2}>
-                  {(customConfigs ?? []).map((data, index) => {
-                    return (
-                      <ActionListItem
-                        key={index}
-                        isDefaultSelected={
-                          customConfigs &&
-                          selectedConfig &&
-                          customConfigs[index].id === selectedConfig.id
-                        }
-                        title={data.name}
-                        value={index.toString()}
-                      />
-                    );
-                  })}
-                </ActionList>
+                <ActionList
+                  options={customConfigs ?? ([] as CustomConfigType[])}
+                  itemComponent={({ data: { name, id }, index }) => {
+                    return <ActionListItem key={id} title={name} value={index.toString()} />;
+                  }}
+                />
               </DropdownOverlay>
             </Dropdown>
             {selectedConfig?.helpInfo && (

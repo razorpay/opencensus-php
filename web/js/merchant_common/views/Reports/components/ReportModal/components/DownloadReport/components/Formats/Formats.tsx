@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-
 import {
   ActionList,
   ActionListItem,
@@ -12,8 +11,7 @@ import {
   DELIMITER_PLACEHOLDER,
   FORMATS_PLACEHOLDER,
 } from 'merchant_common/views/Reports/components/ReportModal/components/DownloadReport/components/Formats/constants';
-import { Delimiter, Format } from 'merchant_common/views/Reports/types';
-import { patchedSelectOnChange } from 'merchant_common/views/Reports/components/blade.patch';
+import { Delimiter } from 'merchant_common/views/Reports/types';
 
 import { FormatsProps } from './types';
 import { getAvailableDelimiter } from './utils';
@@ -50,28 +48,20 @@ export function Formats({
         <SelectInput
           label="Select Format"
           name="selectedFormat"
-          onChange={patchedSelectOnChange(handleFormatSelect)}
+          onChange={handleFormatSelect}
           placeholder={FORMATS_PLACEHOLDER}
           validationState="none"
           helpText="Select the format in which you want to receive the report in."
           necessityIndicator="optional"
+          value={availableFormats.findIndex((e) => e.label === selectedFormat?.label).toString()}
         />
         <DropdownOverlay>
-          <ActionList surfaceLevel={2}>
-            {availableFormats.map(({ label, value }: Format, index: number) => {
-              const isDefaultSelected = label === selectedFormat?.label;
-
-              return (
-                <ActionListItem
-                  key={value}
-                  title={label}
-                  isDefaultSelected={isDefaultSelected}
-                  value={index.toString()}
-                  testID={label}
-                />
-              );
-            })}
-          </ActionList>
+          <ActionList
+            options={availableFormats}
+            itemComponent={({ data: { label }, index }) => (
+              <ActionListItem key={label} title={label} value={index.toString()} testID={label} />
+            )}
+          />
         </DropdownOverlay>
       </Dropdown>
 
@@ -80,7 +70,7 @@ export function Formats({
           <SelectInput
             label="Select Delimiter"
             name="selectedDelimiter"
-            onChange={patchedSelectOnChange(handleDelimiterSelect)}
+            onChange={handleDelimiterSelect}
             placeholder={DELIMITER_PLACEHOLDER}
             validationState={
               showErrorInSection === 0 && !Boolean(selectedDelimiter) ? 'error' : 'none'
@@ -90,24 +80,17 @@ export function Formats({
             isDisabled={availableDelimiters.length === 1}
             errorText={DELIMITER_ERROR_TEXT}
             testID="delimiterInput"
+            value={availableDelimiters
+              .findIndex((e) => e.label === selectedDelimiter?.label)
+              .toString()}
           />
           <DropdownOverlay>
-            {/* @blade-patch -> "key" */}
-            <ActionList surfaceLevel={2} key={selectedDelimiter?.label}>
-              {availableDelimiters.map(({ label }: Delimiter, index: number) => {
-                const isDefaultSelected = label === selectedDelimiter?.label;
-
-                return (
-                  <ActionListItem
-                    key={label}
-                    title={label}
-                    isDefaultSelected={isDefaultSelected}
-                    value={index.toString()}
-                    testID={label}
-                  />
-                );
-              })}
-            </ActionList>
+            <ActionList
+              options={availableDelimiters}
+              itemComponent={({ data: { label }, index }) => (
+                <ActionListItem key={label} title={label} value={index.toString()} testID={label} />
+              )}
+            />
           </DropdownOverlay>
         </Dropdown>
       ) : null}

@@ -7,7 +7,7 @@ import { MemoryRouter, Route, Switch } from 'react-router-dom';
 
 import AccountDetail from 'merchant/views/Wallet/AccountDetail';
 
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { waitForLoadingToFinish } from 'test-utils';
 
 describe('Wallet: AccountDetail component', () => {
@@ -20,19 +20,16 @@ describe('Wallet: AccountDetail component', () => {
       </BladeProvider>,
     );
 
-    await waitForLoadingToFinish();
-
-    expect(screen.getByText('Razor')).toBeInTheDocument();
-    expect(screen.getByText('acme.corp@email.com')).toBeInTheDocument();
-    expect(screen.getByText('9999999999')).toBeInTheDocument();
-    expect(screen.getByText('Jun 5, 2023')).toBeInTheDocument();
-    expect(screen.getByText('Razorpay_Employee_Wallet_Program')).toBeInTheDocument();
-    expect(screen.getByText('account')).toBeInTheDocument();
-
-    await waitForLoadingToFinish();
-
-    expect(screen.getByTestId('amount')?.textContent).toBe('₹200');
-    expect(screen.getByTestId('utilisation-graph')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Razor')).toBeInTheDocument();
+      expect(screen.getByText('acme.corp@email.com')).toBeInTheDocument();
+      expect(screen.getByText('9999999999')).toBeInTheDocument();
+      expect(screen.getByText('Jun 5, 2023')).toBeInTheDocument();
+      expect(screen.getByText('Razorpay_Employee_Wallet_Program')).toBeInTheDocument();
+      expect(screen.getByText('account')).toBeInTheDocument();
+      expect(screen.getByTestId('amount')?.textContent).toBe('₹200.00');
+      expect(screen.getByTestId('utilisation-graph')).toBeInTheDocument();
+    });
   });
 
   it('should not render limits graph when rendering container account', async () => {

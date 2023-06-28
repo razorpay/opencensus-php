@@ -26,7 +26,6 @@ import { useTheme } from 'merchant_common/views/Reports/hooks';
 import { ReportModalHeader } from 'merchant_common/views/Reports/components/ReportModal/styled';
 import { FlexCentered } from 'merchant_common/views/Reports/components/styled';
 import { RunHistoryTable } from './components/RunHistoryTable';
-import { patchedSelectOnChange } from 'merchant_common/views/Reports/components/blade.patch';
 import { useRunHistoryReducer } from './hooks/useRunHistoryReducer';
 import { downloadsFilterDropdown } from 'merchant_common/views/Reports/features/Downloads/constants/dropdownOptions';
 
@@ -123,24 +122,27 @@ const ScheduleRunHistory = connect(
               <Dropdown selectionType="single">
                 <SelectInput
                   label=""
-                  onChange={patchedSelectOnChange(({ values }) =>
-                    logsHistoryReducer.handleLogsFilter(downloadsFilterDropdown[+values[0]]),
-                  )}
+                  onChange={({ values }) =>
+                    logsHistoryReducer.handleLogsFilter(downloadsFilterDropdown[+values[0]])
+                  }
                   placeholder="Choose Logs Filter"
                   validationState="none"
+                  value={downloadsFilterDropdown
+                    .findIndex((refFilter) => refFilter.value === logsHistoryReducer?.filter?.value)
+                    .toString()}
                 />
                 <DropdownOverlay key={logsHistoryReducer?.filter.value}>
-                  <ActionList surfaceLevel={2}>
-                    {downloadsFilterDropdown.map(({ label, value }, index) => (
+                  <ActionList
+                    options={downloadsFilterDropdown}
+                    itemComponent={({ data: { label }, index }) => (
                       <ActionListItem
-                        key={index}
-                        isDefaultSelected={value === logsHistoryReducer?.filter?.value}
+                        key={label}
                         title={label}
                         value={index.toString()}
                         testID={label}
                       />
-                    ))}
-                  </ActionList>
+                    )}
+                  />
                 </DropdownOverlay>
               </Dropdown>
             </DropdownWrapper>

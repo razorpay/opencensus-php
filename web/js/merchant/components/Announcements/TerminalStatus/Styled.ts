@@ -15,7 +15,7 @@ const getBorderColor = (theme, status) => {
 export const Banner = styled.div(
   ({ status, theme }: { status: string; theme: Theme }) => `
   background: ${theme.colors.surface.background.level2.lowContrast};
-  box-shadow: 0px 4px 10px ${theme.shadows.color.level[1]};
+  box-shadow: ${theme.elevation.lowRaised};
   border-radius: ${theme.border.radius.medium}px;
   border-top: 7px solid ${getBorderColor(theme, status)};
   margin: ${theme.spacing[5]}px;

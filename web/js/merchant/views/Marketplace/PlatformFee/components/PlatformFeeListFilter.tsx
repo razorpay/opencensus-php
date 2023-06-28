@@ -38,36 +38,12 @@ interface PlatformFilterListProps {
   setPagination: (val: { skip: number; count: number }) => void;
 }
 
-// temp logic to reset Blade dropdown component after formReset. will update the logic once blade provides method to reset
-const useForceRerender = () => {
-  const [rerenderTargetKey, setRerenderTargetKey] = useState(1);
-  const forceRerenderTarget = () => {
-    setRerenderTargetKey(rerenderTargetKey + 1);
-  };
-  return { rerenderTargetKey, forceRerenderTarget };
-};
-
-// Blade dropdown takes default value from initial render so using this method to check params in initial render.
-const getDecodedParams = (locationProp = location) => {
-  let params = {};
-  if (locationProp.search) {
-    params = getURLQueryParams(locationProp.search);
-  }
-
-  for (const key in params) {
-    if (params.hasOwnProperty(key)) {
-      params[key] = decodeURI(params[key]);
-    }
-  }
-  return decodeSensitiveFields(params);
-};
-
 const initState = {
   id: '',
-  status: getDecodedParams().status,
+  status: '',
   source: '',
   recipient: '',
-  count: getDecodedParams().count || '25',
+  count: '25',
 };
 
 export const PlatformFeeListFilter = ({
@@ -78,10 +54,9 @@ export const PlatformFeeListFilter = ({
   setPagination,
 }: PlatformFilterListProps): JSX.Element => {
   const [formData, setFormData] = useState<PlatformFeeFilters>(initState);
-  const { rerenderTargetKey, forceRerenderTarget } = useForceRerender();
 
-  const handleFormSubmit = () => {
-    const searchParams = stringifyQueryParams(encodeSensitiveFields(formData));
+  const handleFormSubmit = (searchData) => {
+    const searchParams = stringifyQueryParams(encodeSensitiveFields(searchData));
     history.push({
       pathname: location.pathname,
       hash: location.hash,
@@ -90,20 +65,31 @@ export const PlatformFeeListFilter = ({
     if (count !== Number(formData.count)) {
       setPagination({
         skip: 0,
-        count: Number(formData.count),
+        count: Number(searchData.count),
       });
     }
     onSearch(searchParams);
   };
 
+  const getDecodedParams = () => {
+    let params = {};
+    if (location.search) {
+      params = getURLQueryParams(location.search);
+    }
+    for (const key in params) {
+      if (params.hasOwnProperty(key)) {
+        params[key] = decodeURI(params[key]);
+      }
+    }
+    return decodeSensitiveFields(params);
+  };
+
   useEffect(() => {
-    const decodedParams = getDecodedParams(location);
-    setFormData((prevVal) => {
-      return { ...prevVal, ...decodedParams };
-    });
+    const decodedParams = getDecodedParams();
+    const searchData = { ...formData, ...decodedParams };
+    setFormData(searchData);
     if (JSON.stringify(decodedParams) !== '{}') {
-      forceRerenderTarget();
-      handleFormSubmit();
+      handleFormSubmit(searchData);
     }
   }, []);
 
@@ -119,7 +105,6 @@ export const PlatformFeeListFilter = ({
       search: stringifyQueryParams({}),
       hash: location.hash,
     });
-    forceRerenderTarget();
     setFormData({
       ...initState,
     });
@@ -130,6 +115,9 @@ export const PlatformFeeListFilter = ({
     onSearch('');
   };
 
+  const handleSubmit = () => {
+    handleFormSubmit(formData);
+  };
   return (
     <FilterContainer>
       <InputContainer>
@@ -161,16 +149,12 @@ export const PlatformFeeListFilter = ({
             }}
             placeholder="Select Option"
             validationState="none"
+            value={formData.status}
           />
           <DropdownOverlay>
-            <ActionList key={rerenderTargetKey}>
+            <ActionList>
               {statusMenu.map((item, index) => (
-                <ActionListItem
-                  title={item.title}
-                  value={item.value}
-                  key={`status-${index}`}
-                  isDefaultSelected={formData.status === item.value}
-                />
+                <ActionListItem title={item.title} value={item.value} key={`status-${index}`} />
               ))}
             </ActionList>
           </DropdownOverlay>
@@ -195,7 +179,7 @@ export const PlatformFeeListFilter = ({
         />
       </InputContainer>
       <ButtonContainer>
-        <Button onClick={handleFormSubmit}>Search</Button>
+        <Button onClick={handleSubmit}>Search</Button>
       </ButtonContainer>
       <ButtonContainer>
         <Button variant="tertiary" onClick={handleReset}>

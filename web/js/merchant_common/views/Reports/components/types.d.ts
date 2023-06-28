@@ -20,7 +20,11 @@ export type BaseValidationStyledProps = {
   open?: boolean;
 };
 
-export type SelectInputOnChangeProps = {
-  name?: string | undefined;
-  values: string[];
-};
+export interface ActionListComponentProps<T> {
+  options: T[];
+  itemComponent: (x: { data: T; index: number }) => JSX.Element;
+  /**
+   * For reports default is 2.
+   */
+  surfaceLevel?: 2 | 3 | undefined;
+}

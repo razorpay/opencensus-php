@@ -10,6 +10,13 @@ process.env.hostName = 'http://localhost:6006';
 const RetryTimes = process.env.UT_RETRY_TIMES || 3;
 
 // Global mocks
+
+global.ResizeObserver = jest.fn().mockImplementation(() => ({
+  observe: jest.fn(),
+  unobserve: jest.fn(),
+  disconnect: jest.fn(),
+}));
+
 jest.mock('merchant/utils/ajax');
 jest.mock('merchant/views/TicketSupport/utils.js', () => ({
   CreateTicketEmitter: jest.fn(),
@@ -36,6 +43,7 @@ jest.mock('merchant/views/Transactions/AnalyticsTrack', () => ({
   selfServerTrack: jest.fn(),
   selfServeTrackResult: jest.fn(),
 }));
+
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterAll(() => server.close());
 

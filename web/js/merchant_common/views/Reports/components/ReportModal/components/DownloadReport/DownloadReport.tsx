@@ -40,7 +40,6 @@ import {
   REPORT_GENERATE_LOG_POST_INVALID_RES,
 } from 'merchant_common/views/Reports/constants/notifications';
 import { trackDownloadModal } from 'merchant_common/views/Reports/configs/analytics.config';
-import { patchedSelectOnChange } from 'merchant_common/views/Reports/components/blade.patch';
 import { getFormattedDate } from 'merchant_common/views/Reports/components/DateTimeRangePicker/utils';
 import { Delimiter, Format } from 'merchant_common/views/Reports/types';
 
@@ -353,9 +352,7 @@ export const DownloadReportModal = ({
               <SelectInput
                 necessityIndicator="required"
                 label="Select Report"
-                onChange={patchedSelectOnChange(({ values }) =>
-                  setSelectedConfig(allReportConfigs[+values[0]]),
-                )}
+                onChange={({ values }) => setSelectedConfig(allReportConfigs[+values[0]])}
                 placeholder="Select A Report"
                 validationState={
                   showErrorInSection === 0 && !Boolean(selectedConfig) ? 'error' : 'none'
@@ -363,24 +360,16 @@ export const DownloadReportModal = ({
                 helpText={
                   selectedConfig?.description ?? 'Select report you want to receive report about.'
                 }
+                value={allReportConfigs.findIndex((e) => e.id === selectedConfig?.id).toString()}
                 errorText="Mandatory Field: Select report you want to receive report about."
               />
               <DropdownOverlay>
-                {/* @blade-patch -> "key" */}
-                <ActionList key={selectedConfig?.id} surfaceLevel={2}>
-                  {allReportConfigs.map((data, index) => {
-                    return (
-                      <ActionListItem
-                        key={data.id}
-                        isDefaultSelected={
-                          selectedConfig && allReportConfigs[index].id === selectedConfig.id
-                        }
-                        title={data.name}
-                        value={index.toString()}
-                      />
-                    );
-                  })}
-                </ActionList>
+                <ActionList
+                  itemComponent={({ data: { id, name }, index }) => (
+                    <ActionListItem key={id} title={name} value={index.toString()} />
+                  )}
+                  options={allReportConfigs}
+                />
               </DropdownOverlay>
             </Dropdown>
 
@@ -482,9 +471,9 @@ export const DownloadReportModal = ({
                   helpText="Select duration to cover in report."
                   placeholder="Select duration covered in each report"
                   necessityIndicator="required"
-                  onChange={patchedSelectOnChange(({ values }) =>
-                    setSelectedPredefinedDurationRange(preDefinedDurations[+values[0]]),
-                  )}
+                  onChange={({ values }) =>
+                    setSelectedPredefinedDurationRange(preDefinedDurations[+values[0]])
+                  }
                   validationState={
                     showErrorInSection === 1
                       ? validateDefaultDuration()
@@ -493,22 +482,22 @@ export const DownloadReportModal = ({
                       : 'none'
                   }
                   errorText="Mandatory Field: Select duration to cover in report."
+                  value={preDefinedDurations
+                    .findIndex((e) => e.value === selectedPredefinedDurationRange?.value)
+                    .toString()}
                 />
                 <DropdownOverlay>
-                  <ActionList surfaceLevel={2}>
-                    {preDefinedDurations.map((data, index) => (
+                  <ActionList
+                    options={preDefinedDurations}
+                    itemComponent={({ data, index }) => (
                       <ActionListItem
                         key={data.label}
-                        isDefaultSelected={
-                          preDefinedDurations[index].value ===
-                          selectedPredefinedDurationRange?.value
-                        }
                         title={data.label}
                         value={index.toString()}
                         testID={data.label}
                       />
-                    ))}
-                  </ActionList>
+                    )}
+                  />
                 </DropdownOverlay>
               </Dropdown>
             )}

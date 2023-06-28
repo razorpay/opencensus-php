@@ -1,5 +1,6 @@
 import React from 'react';
 import { Text, Badge, Heading, Box, useTheme } from '@razorpay/blade/components';
+import { makeSpace } from '@razorpay/blade/utils';
 import { Label, Input, Switch } from 'common/ui/PricingSubscription/PricingStyled';
 import {
   PricingHeaderTag,
@@ -62,7 +63,7 @@ const PricingHeaderMweb = ({
       alignItems="flex-start"
       flexDirection="column"
       marginBottom="spacing.6"
-      marginX={`-${theme.spacing[5]}px`}
+      margin={makeSpace(-theme.spacing[5])}
     >
       <PricingHeaderTag data-testid="title">
         <PricingBadge addColor data-testid="staticBadge">

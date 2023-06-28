@@ -1,12 +1,12 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { sortCardsByReportType } from 'merchant_common/views/Reports/utils/commonUtils';
 import {
-  ActionList,
   ActionListItem,
   Dropdown,
   DropdownOverlay,
   Heading,
   SelectInput,
+  ActionList,
 } from 'merchant_common/views/Reports/components';
 import { OverViewPropsType } from 'merchant_common/views/Reports/features/Overview/types';
 import { Card } from 'merchant_common/views/Reports/features/Overview/components/Card';
@@ -25,7 +25,6 @@ import {
 } from './styled';
 import { REPORT_OVERVIEW_LOADING_SKELETONS_COUNT } from 'merchant_common/views/Reports/constants';
 import { trackOverviewSection } from 'merchant_common/views/Reports/configs/analytics.config';
-import { patchedSelectOnChange } from 'merchant_common/views/Reports/components/blade.patch';
 
 export const OverviewSection = ({
   allReportConfigs,
@@ -40,7 +39,10 @@ export const OverviewSection = ({
   dashboardType,
   isOverviewRecentsFilterEnabled,
 }: OverViewPropsType): JSX.Element => {
-  const overviewFilterDropdownOptions = overviewConfigFilterOptions(isOverviewRecentsFilterEnabled);
+  const overviewFilterDropdownOptions = useMemo(
+    () => overviewConfigFilterOptions(isOverviewRecentsFilterEnabled),
+    [isOverviewRecentsFilterEnabled],
+  );
   const [filter, setFilter] = useState(overviewFilterDropdownOptions[0].value);
   const { theme } = useTheme();
 
@@ -187,24 +189,27 @@ export const OverviewSection = ({
             <SelectInput
               label="Filter:"
               labelPosition="top"
-              onChange={patchedSelectOnChange(({ values }) =>
-                handleFilterDropdownSelection(overviewFilterDropdownOptions[+values[0]]),
-              )}
+              onChange={({ values }) =>
+                handleFilterDropdownSelection(overviewFilterDropdownOptions[+values[0]])
+              }
               placeholder="Choose A Filter"
               validationState="none"
+              value={overviewFilterDropdownOptions
+                .findIndex((refFilter) => refFilter.value === filter)
+                .toString()}
             />
             <DropdownOverlay>
-              <ActionList surfaceLevel={2}>
-                {overviewFilterDropdownOptions.map(({ label, value }, index) => (
+              <ActionList
+                options={overviewFilterDropdownOptions}
+                itemComponent={({ data: { label, value }, index }) => (
                   <ActionListItem
                     key={value}
-                    isDefaultSelected={value === filter}
                     title={label}
                     value={index.toString()}
                     testID={label}
                   />
-                ))}
-              </ActionList>
+                )}
+              />
             </DropdownOverlay>
           </Dropdown>
         </DropdownWrapper>
@@ -213,5 +218,3 @@ export const OverviewSection = ({
     </>
   );
 };
-
-// ..

@@ -33,16 +33,12 @@ const InputSelector = ({ setInput }: InputSelectorProps): JSX.Element => {
           validationState="none"
           isRequired={true}
           testID="test-load-dropdown"
+          defaultValue="accounts"
         />
         <DropdownOverlay>
           <ActionList surfaceLevel={2}>
             {LOAD_TYPE?.map((type) => (
-              <ActionListItem
-                key={type.name}
-                title={type.label}
-                value={type.name}
-                isDefaultSelected={type.name === 'accounts'}
-              />
+              <ActionListItem key={type.name} title={type.label} value={type.name} />
             ))}
           </ActionList>
         </DropdownOverlay>

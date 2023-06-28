@@ -1,12 +1,21 @@
-import { SelectInputOnChangeProps } from './types';
+import React, { memo } from 'react';
+import { ActionList as ActionL } from '@razorpay/blade/components';
+import { ActionListComponentProps } from './types';
 
-// All blade patch including this file and others as well can be tracked using @blade-patch
-
-// @blade-patch
-// Issue: https://github.com/razorpay/blade/issues/1102
-export const patchedSelectOnChange = (handler: (x: SelectInputOnChangeProps) => void) => {
-  return (selectProps: SelectInputOnChangeProps) => {
-    if (selectProps.values && selectProps.values[0] === '') return () => {};
-    return handler(selectProps);
-  };
+const ActionListComponent = <T,>({
+  options,
+  surfaceLevel = 2,
+  itemComponent,
+}: ActionListComponentProps<T>): JSX.Element => {
+  return (
+    <ActionL surfaceLevel={surfaceLevel}>
+      {options.map((data, index) => {
+        return itemComponent({ data, index });
+      })}
+    </ActionL>
+  );
 };
+
+// Mapping all the ActionListItem directly impacts the performance of main component where its actually used.
+// Reason being the option map loop run for every render.
+export const ActionList = memo(ActionListComponent) as typeof ActionListComponent;

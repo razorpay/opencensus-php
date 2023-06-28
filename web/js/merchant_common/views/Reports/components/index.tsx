@@ -26,7 +26,6 @@ export {
   UserIcon,
   Dropdown,
   DropdownOverlay,
-  ActionList,
   ActionListItem,
   TextInput,
   SelectInput,
@@ -40,6 +39,9 @@ export {
   PlayIcon,
   FileTextIcon,
 } from '@razorpay/blade/components';
+
+// patched blade components
+export { ActionList } from './blade.patch';
 
 // custom components
 export * from './StatusIndicator';

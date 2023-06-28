@@ -1,7 +1,6 @@
 import React from 'react';
 
-import { render, screen } from '@testing-library/react';
-import { waitForLoadingToFinish } from 'common/services/test/test-utils';
+import { render, screen, waitFor } from '@testing-library/react';
 
 import AccountBalanceContainer from 'merchant/views/Wallet/AccountDetail/containers/AccountBalanceContainer';
 import { BladeProvider } from '@razorpay/blade/components';
@@ -15,9 +14,9 @@ describe('Wallet: AccountBalanceContainer tests', () => {
       </BladeProvider>,
     );
 
-    await waitForLoadingToFinish();
-
-    expect(screen.getByTestId('amount')?.textContent).toBe('₹200');
-    expect(screen.getByTestId('utilisation-graph')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId('amount')?.textContent).toBe('₹200.00');
+      expect(screen.getByTestId('utilisation-graph')).toBeInTheDocument();
+    });
   });
 });

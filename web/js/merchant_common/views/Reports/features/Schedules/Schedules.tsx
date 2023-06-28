@@ -17,7 +17,6 @@ import { handleScheduleFilter } from 'merchant_common/views/Reports/redux/reduce
 import { openModal } from 'merchant_common/reducers/modals';
 import { useDashboardType } from 'merchant_common/views/Reports/contexts/ReportsContext';
 import { schedulesFilterDropdown } from './data/dropdownOptions';
-import { patchedSelectOnChange } from 'merchant_common/views/Reports/components/blade.patch';
 import { trackScheduleSection } from 'merchant_common/views/Reports/configs/analytics.config';
 
 const mapStateToProps = ({ reportsCore }, { dashboardType }) => {
@@ -90,24 +89,27 @@ const SchedulesSection = connect(
             <Dropdown selectionType="single">
               <SelectInput
                 label=""
-                onChange={patchedSelectOnChange(({ values }) =>
-                  handleSchedulesFilterChange(schedulesFilterDropdown[+values[0]]),
-                )}
+                onChange={({ values }) =>
+                  handleSchedulesFilterChange(schedulesFilterDropdown[+values[0]])
+                }
                 placeholder="Choose Schedules Filter"
                 validationState="none"
+                value={schedulesFilterDropdown
+                  .findIndex((refFilter) => refFilter.value === scheduleFilter)
+                  .toString()}
               />
               <DropdownOverlay>
-                <ActionList surfaceLevel={2}>
-                  {schedulesFilterDropdown.map(({ label, value }, index) => (
+                <ActionList
+                  options={schedulesFilterDropdown}
+                  itemComponent={({ data: { label }, index }) => (
                     <ActionListItem
                       key={index}
-                      isDefaultSelected={value === scheduleFilter}
                       title={label}
                       value={index.toString()}
                       testID={label}
                     />
-                  ))}
-                </ActionList>
+                  )}
+                />
               </DropdownOverlay>
             </Dropdown>
           </DropdownWrapper>
