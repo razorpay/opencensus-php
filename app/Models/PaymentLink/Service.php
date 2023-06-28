@@ -179,7 +179,9 @@ class Service extends Base\Service
 
         (new Validator)->validateInput('validateSendNotificationToAllRecords', $input);
 
-        $records = $this->repo->payment_page_record->findByPaymentPageIdorFail($id);
+        $batchId = $input[PaymentPageRecord\Entity::BATCH_ID];
+
+        $records = $this->repo->payment_page_record->findByPaymentPageIdAndBatchIdorFail($id, $batchId);
 
         if(in_array('sms',$input['notify_on']) === true)
         {
@@ -392,19 +394,24 @@ class Service extends Base\Service
      */
     public function fetchRecordsForPL($input, $paymentLinkId)
     {
-        $paymentPage = $this->repo->payment_link->findByPublicId($paymentLinkId);
+        $paymentPage = $this->getPaymentLinkAndSetModeAndMerchant($paymentLinkId);
 
         $udfSchema = $paymentPage->getSettingsAccessor()->get(Entity::UDF_SCHEMA);
 
         $udfSchema = json_decode($udfSchema, true);
 
-        $input = $this->transformInput($input, $udfSchema);
-
         $this->validateInputForFetchPL($input, $udfSchema);
 
         $priRefId = $input[PaymentPageRecord\Entity::PRIMARY_REF_ID];
 
-        $paymentPageRecord = $this->repo->payment_page_record->findByPaymentPageAndPrimaryRefIdOrFail($paymentLinkId,$priRefId);
+        try{
+            $paymentPageRecord = $this->repo->payment_page_record->findByPaymentPageAndPrimaryRefIdOrFail($paymentLinkId, $priRefId);
+        }
+        catch (\Throwable)
+        {
+            throw new BadRequestValidationFailureException(
+                'Primary Reference Id\'s Mismatch.');
+        }
 
         $valid = $this->checkSecondaryRefIds($input,$paymentPageRecord, $udfSchema);
 
@@ -425,7 +432,7 @@ class Service extends Base\Service
 
         $names = array_column($value, 'name');
 
-        $response = $this->buildResponse($paymentPageRecord, $names, $value, $nameToTitle);
+        $response = $this->buildResponse($paymentPageRecord, $names, $value, $nameToTitle, $input);
 
         return $response;
 
@@ -533,9 +540,11 @@ class Service extends Base\Service
         return false;
     }
 
-    protected function buildResponse($paymentPageRecord,$keys, $udfSchema, $nameToTitle)
+    protected function buildResponse($paymentPageRecord, $keys, $udfSchema, $nameToTitle, $input)
     {
         $response = [];
+
+        $data = [];
 
         $fields = [
             PaymentPageRecord\Entity::EMAIL,
@@ -545,25 +554,36 @@ class Service extends Base\Service
 
         $intersection = array_values(array_uintersect($keys,$fields,'strcasecmp'));
 
-        $paymentPageRecord = $paymentPageRecord->toArray();
-
         foreach ($intersection as $key)
         {
             $responseKey = $nameToTitle[$key];
 
+            $value = $key;
+
             if($key === 'pri__ref__id')
-                $key = 'primary_reference_id';
+                $value = 'primary_reference_id';
 
             if((isset($paymentPageRecord[strtolower($key)]) === true) and
                 ($paymentPageRecord[strtolower($key)] !== null))
-                $response[$responseKey] = $paymentPageRecord[strtolower($key)];
+                $data[$value] = $paymentPageRecord[strtolower($key)];
         }
 
         $otherDetails = json_decode($paymentPageRecord['other_details'],true);
 
         $otherDetails = array_diff_key($otherDetails,$response);
 
-        return array_merge($otherDetails,$response);
+        $response['data'] = $data;
+
+        $response['data'][PaymentPageRecord\Entity::PRIMARY_REF_ID] = $paymentPageRecord[PaymentPageRecord\Entity::PRIMARY_REFERENCE_ID];
+        $response['data'][PaymentPageRecord\Entity::SECONDARY_1] = $input[PaymentPageRecord\Entity::SECONDARY_1];
+        $response['data'][PaymentPageRecord\Entity::PHONE] = $paymentPageRecord[PaymentPageRecord\Entity::CONTACT];
+
+        $response['other_details'] = $otherDetails;
+
+        $response['other_details']['status'] = $paymentPageRecord[PaymentPageRecord\Entity::STATUS];
+        $response['other_details'][PaymentPageRecord\Entity::AMOUNT] = $paymentPageRecord[PaymentPageRecord\Entity::AMOUNT];
+
+        return $response;
     }
 
     public function createOrder(string $id, array $input)

@@ -2,8 +2,11 @@
 
 namespace RZP\Models\PaymentLink\PaymentPageRecord;
 
+use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Batch\Entity as Batch;
 use RZP\Models\PaymentLink\Entity as PaymentLink;
 use RZP\Models\PaymentLink\PaymentPageRecord\Status as STATUS;
 
@@ -55,14 +58,17 @@ class Repository extends Base\Repository
         return $res;
     }
 
-    public function findByPaymentPageIdorFail(
-        string $payment_page_id
+    public function findByPaymentPageIdAndBatchIdorFail(
+        string $payment_page_id,
+        string $batch_id
     )
     {
         PaymentLink::silentlyStripSign($payment_page_id);
+        Batch::silentlyStripSign($batch_id);
 
         return $this->newQuery()
             ->where(Entity::PAYMENT_LINK_ID, $payment_page_id)
+            ->where(Entity::BATCH_ID, $batch_id)
             ->get()
             ->toArray();
     }

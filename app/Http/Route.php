@@ -1385,7 +1385,7 @@ class Route
         'payment_page_activate'                    => ['patch',    'payment_pages/{id}/activate',                    'PaymentLinkController@activate'                                    ],
         'payment_page_slug_exists'                 => ['get',      'payment_pages/{slug}/exists',                    'PaymentLinkController@slugExists'                                  ],
         'payment_page_item_update'                 => ['patch',    'payment_pages/payment_page_item/{id}',           'PaymentLinkController@updatePaymentPageItem'                       ],
-        'payement_page_fetch'                      => ['post',     'payment_pages/{pl_id}/fetch_records',            'PaymentLinkController@fetchRecordsForPL'                           ],
+        'payment_page_fetch_records'               => ['post',     'payment_pages/{pl_id}/fetch_records',            'PaymentLinkController@fetchRecordsForPL'                           ],
         'payment_page_create_order'                => ['post',     'payment_pages/{id}/order',                       'PaymentLinkController@createOrder'                                 ],
         'payment_page_create_order_option'         => ['options',  'payment_pages/{id}/order',                       'PaymentLinkController@createOrderOptions'                          ],
         'payment_page_set_merchant_details'        => ['post',     'payment_pages/merchant_details',                 'PaymentLinkController@setMerchantDetails'                          ],
@@ -6459,7 +6459,6 @@ class Route
         'payment_page_get_details',
         'payment_page_list',
         'payment_page_create',
-        'payement_page_fetch',
         'payment_page_cds_domain_create',
         'payment_page_cds_domain_list',
         'payment_page_cds_domain_delete',
@@ -10385,6 +10384,7 @@ class Route
     ];
 
     public static $direct = [
+        'payment_page_fetch_records',
         'notifications_for_b2b',
         'merchant_website_section_download',
         'public_merchant_website_section_page_load',
@@ -11547,7 +11547,6 @@ class Route
             'payment_otp_submit_private',
             'payment_page_activate',
             'payment_page_create',
-            'payement_page_fetch',
             'payment_page_cds_domain_create',
             'payment_page_cds_domain_list',
             'payment_page_cds_domain_delete',
@@ -13492,7 +13491,6 @@ class Route
             'payment_otp_submit_private',
             'payment_page_activate',
             'payment_page_create',
-            'payement_page_fetch',
             'payment_page_cds_domain_create',
             'payment_page_cds_domain_list',
             'payment_page_cds_domain_delete',

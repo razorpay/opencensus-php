@@ -1181,7 +1181,8 @@ return [
             'content' => [
                 'notify_on' => [
                     'email'
-                ]
+                ],
+                'batch_id' => 'batch_KoGILWQCoVkOz5',
             ],
         ],
         'response' => [
@@ -1196,7 +1197,8 @@ return [
             'content' => [
                 'notify_on' => [
                     'email'
-                ]
+                ],
+                'batch_id' => 'batch_KoGILWQCoVkOz5',
             ],
         ],
         'response' => [
@@ -1211,7 +1213,8 @@ return [
             'content' => [
                 'notify_on' => [
                     'sms'
-                ]
+                ],
+                'batch_id' => 'batch_KoGILWQCoVkOz5',
             ],
         ],
         'response' => [
@@ -1226,7 +1229,8 @@ return [
             'content' => [
                 'notify_on' => [
                     'random'
-                ]
+                ],
+                'batch_id' => 'batch_KoGILWQCoVkOz5',
             ],
         ],
         'response' => [
@@ -1270,16 +1274,25 @@ return [
             'url' => '/payment_pages/{pl_id}/fetch_records',
             'method' => 'post',
             'content' => [
-                'Phone' => '1234567890',
-                'contact' => '0987654321',
+                'pri__ref__id' => '1234567890',
+                'sec__ref__id_1' => '0987654321',
             ],
         ],
         'response'=> [
             'status_code' => 200,
             'content' => [
-                'Email' => 'paridhi.jain@rzp.com',
-                'Phone'   => '1234567890',
-                'amount' => '101'
+                'data' => [
+                    'pri__ref__id' => '1234567890',
+                    'sec__ref__id_1' =>"0987654321",
+                    'phone' => '0987654321',
+                    'email' => "paridhi.jain@rzp.com",
+                ],
+                'other_details' =>[
+                    'amount' => 101,
+                    'contact' => "0987654321",
+                    'sec__ref__id_1' =>"0987654321",
+                    'status' =>"unpaid",
+                ],
             ]
         ],
     ],
@@ -1289,8 +1302,8 @@ return [
             'url' => '/payment_pages/{pl_id}/fetch_records',
             'method' => 'post',
             'content' => [
-                'Phone' => '1234567890',
-                'contact' => '0987654321',
+                'pri__ref__id' => '1234567890',
+                'sec__ref__id_1' => '0987654321',
             ],
         ],
         'response' => [
@@ -1313,7 +1326,7 @@ return [
             'url' => '/payment_pages/{pl_id}/fetch_records',
             'method' => 'post',
             'content' => [
-                'Phone' => '1234567890'
+                'pri__ref__id' => '1234567890'
             ],
         ],
         'response' => [
@@ -1335,8 +1348,8 @@ return [
             'url' => '/payment_pages/{pl_id}/fetch_records',
             'method' => 'post',
             'content' => [
-                'Phone' => '1234567890',
-                'contact' => '0987654320',
+                'pri__ref__id' => '1234567890',
+                'sec__ref__id_1' => '0987654320',
             ],
         ],
         'response' => [
@@ -1359,7 +1372,7 @@ return [
             'url' => '/payment_pages/{pl_id}/fetch_records',
             'method' => 'post',
             'content' => [
-                'Phone' => '1234567890'
+                'pri__ref__id' => '1234567890'
             ],
         ],
         'response' => [
@@ -1367,6 +1380,30 @@ return [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'The sec  ref  id 1 field is required.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testFetchRecordsForPLFailureIncorrectPriRefId' => [
+        'request' => [
+            'url' => '/payment_pages/{pl_id}/fetch_records',
+            'method' => 'post',
+            'content' => [
+                'pri__ref__id' => '1234567891',
+                'sec__ref__id_1' => '0987654320',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Primary Reference Id\'s Mismatch.'
                 ],
             ],
             'status_code' => 400,

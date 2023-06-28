@@ -1271,7 +1271,7 @@ class PaymentLinkTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/'. $res . '/fetch_records';
 
-        $this->ba->proxyAuth();
+        $this->ba->directAuth();
 
         $this->startTest($this->testData[__FUNCTION__]);
     }
@@ -1284,7 +1284,7 @@ class PaymentLinkTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/'. $res . '/fetch_records';
 
-        $this->ba->proxyAuth();
+        $this->ba->directAuth();
 
         $this->startTest($this->testData[__FUNCTION__]);
     }
@@ -1297,11 +1297,10 @@ class PaymentLinkTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/'. $res . '/fetch_records';
 
-        $this->ba->proxyAuth();
+        $this->ba->directAuth();
 
         $this->startTest($this->testData[__FUNCTION__]);
     }
-
 
     public function testFetchRecordsForPLWithOnlyPrimaryRefIdFailure()
     {
@@ -1311,7 +1310,7 @@ class PaymentLinkTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/'. $res . '/fetch_records';
 
-        $this->ba->proxyAuth();
+        $this->ba->directAuth();
 
         $this->startTest($this->testData[__FUNCTION__]);
     }
@@ -1324,7 +1323,20 @@ class PaymentLinkTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/'. $res . '/fetch_records';
 
-        $this->ba->proxyAuth();
+        $this->ba->directAuth();
+
+        $this->startTest($this->testData[__FUNCTION__]);
+    }
+
+    public function testFetchRecordsForPLFailureIncorrectPriRefId()
+    {
+        $this->createPaymentLinkWithMultipleItem();
+
+        $res = $this->setUpCreateRecordForFileUpload("setUpPaymentPageWithSecRefIdForFileUpload");
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/'. $res . '/fetch_records';
+
+        $this->ba->directAuth();
 
         $this->startTest($this->testData[__FUNCTION__]);
     }
