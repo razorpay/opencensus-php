@@ -167,6 +167,24 @@ class BatchController extends Controller
     }
 
     /**
+     * @param Request $request
+     *
+     * After Batch is processed, Batch Service will
+     * call batch/sendsms route to trigger sms
+     * to merchant about batch completion.
+     *
+     * @return mixed
+     */
+    public function sendSMS(Request $request)
+    {
+        $input = $request->all();
+
+        $response = $this->service()->sendSMS($input);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
      * @param $path
      *
      * @return array

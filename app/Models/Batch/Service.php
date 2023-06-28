@@ -314,6 +314,22 @@ class Service extends Base\Service
         return $this->core()->sendMail($input);
     }
 
+    /**
+     * @param array $input
+     *
+     * @return array
+     */
+    public function sendSMS(array $input): array
+    {
+        $this->trace->info(TraceCode::BATCH_SEND_SMS_REQUEST, $input);
+
+        $validator = new Validator();
+
+        $validator->validateInput('sendSMS', $input);
+
+        return $this->core()->sendSMS($input);
+    }
+
     public function getReconBatchesWithFiles(array $input)
     {
         $result = $this->repo->batch->getReconBatchesWithFiles($input);

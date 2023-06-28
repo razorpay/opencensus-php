@@ -2728,6 +2728,7 @@ class ErrorCode
     const BAD_REQUEST_INTERNAL_ENTITY_NOT_FOUND                                     = 'BAD_REQUEST_INTERNAL_ENTITY_NOT_FOUND';
     const BAD_REQUEST_INTERNAL_BALANCE_NOT_FOUND                                    = 'BAD_REQUEST_INTERNAL_BALANCE_NOT_FOUND';
     const BAD_REQUEST_INTERNAL_BANK_ACCOUNT_NOT_FOUND                               = 'BAD_REQUEST_INTERNAL_BANK_ACCOUNT_NOT_FOUND';
+    const BAD_REQUEST_SMS_TEMPLATE_NOT_FOUND                                        = 'BAD_REQUEST_SMS_TEMPLATE_NOT_FOUND';
 
     //Reserve Balance/Credits Fund Addition Error Codes
     const BAD_REQUEST_FUND_ADDITION_TYPE_IS_INVALID                                 = 'BAD_REQUEST_FUND_ADDITION_TYPE_IS_INVALID';

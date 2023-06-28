@@ -854,6 +854,11 @@ class Validator extends Base\Validator
         Entity::SETTINGS         => 'sometimes|array|nullable',
     ];
 
+    protected static $sendSMSRules = [
+        Entity::BATCH            => 'required|array|custom',
+        Entity::SETTINGS         => 'sometimes|array|nullable',
+    ];
+
     protected static $sendMailBatchRules = [
         Entity::TYPE        => 'required|custom',
         Entity::MERCHANT_ID => 'required|alpha_num|size:14',

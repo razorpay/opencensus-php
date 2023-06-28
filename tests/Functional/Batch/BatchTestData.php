@@ -484,6 +484,50 @@ return [
         ],
     ],
 
+    'testSendSMSFromBatchService' => [
+        'request'  => [
+            'url'     => '/batch/sendsms',
+            'method'  => 'post',
+            'content' => [
+                'batch'            => [
+                    'type'        => 'partner_submerchant_referral_invite',
+                    'merchant_id' => 'CVuOcOYoUiAqNY',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ],
+        ],
+    ],
+
+    'testSendSMSFromBatchServiceInvalidTemplate' => [
+        'request'  => [
+            'url'     => '/batch/sendsms',
+            'method'  => 'post',
+            'content' => [
+                'batch'            => [
+                    'type'        => 'random_batch',
+                    'merchant_id' => 'CVuOcOYoUiAqNY',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Not a valid type: random_batch',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testPayoutApprovalSendMailFromBatchService' => [
         'request'  => [
             'url'     => '/batch/sendmail',

@@ -18,6 +18,7 @@ use RZP\Services\RazorXClient;
 use RZP\Mail\Batch\PaymentLink;
 use RZP\Mail\Batch\PayoutApproval;
 use RZP\Tests\Functional\Assertion\Assertion;
+use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -32,6 +33,7 @@ class BatchTest extends TestCase
 {
     use BatchTestTrait;
     use TestsBusinessBanking;
+    use WebhookTrait;
 
     protected function setUp(): void
     {
@@ -150,6 +152,38 @@ class BatchTest extends TestCase
 
             return true;
         });
+    }
+
+    public function testSendSMSFromBatchService()
+    {
+        $this->ba->proxyAuth();
+
+        $this->mockStorkService();
+
+        $this->ba->batchAppAuth();
+
+        $merchant = $this->fixtures->create('merchant', ['id' => 'CVuOcOYoUiAqNY']);
+        $this->fixtures->create('merchant_detail', [
+            'contact_mobile' => '9876543210',
+            'merchant_id' => $merchant->getId(),
+        ]);
+
+        $this->startTest();
+
+    }
+
+    public function testSendSMSFromBatchServiceInvalidTemplate()
+    {
+        $this->ba->proxyAuth();
+
+        $this->mockStorkService();
+
+        $this->ba->batchAppAuth();
+
+        $this->fixtures->create('merchant', ['id' => 'CVuOcOYoUiAqNY']);
+
+        $this->startTest();
+
     }
 
     public function testPayoutApprovalSendMailFromBatchService()

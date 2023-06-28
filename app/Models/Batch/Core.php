@@ -446,6 +446,39 @@ class Core extends Base\Core
         return ['success' => true];
     }
 
+    /**
+     * @param array $input
+     *
+     * @return array
+     * @throws \Exception
+     */
+    public function sendSMS(array $input): array
+    {
+        $batch = $input[Entity::BATCH];
+
+        $type = $batch[Entity::TYPE];
+        $type = studly_case($type);
+
+        $merchantId = $batch['merchant_id'];
+        $merchant   = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $smsClass = "\\RZP\\SMS\\Batch\\$type";
+
+        $sms = new $smsClass($batch, $merchant);
+
+        try
+        {
+            if(empty($merchant->merchantDetail->getContactMobile()) === false)
+            {
+                $this->app->stork_service->sendSms($this->mode, $sms->getSMSPayload());
+            }
+        } catch (\Throwable $e) {
+            $this->trace->traceException($e);
+        }
+
+        return ['success' => true];
+    }
+
     protected function emandateResponseFileInstrumentationIfApplicable(& $input, $processor)
     {
         if((isset($input["type"]) === true) and
