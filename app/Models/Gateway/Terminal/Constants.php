@@ -67,4 +67,6 @@ class Constants
 
     const SYNC_INSTRUMENTS_WORKFLOWS_TAG = 'syncinstruments';
 
+    const TERMINAL_EDIT_GOD_MODE = 'terminal_edit_god_mode';
+
 }

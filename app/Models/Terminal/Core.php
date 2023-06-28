@@ -439,8 +439,8 @@ class Core extends Base\Core
                     ->handle(["terminal_edit"=> []], ["terminal_edit" => $this->redactSecretsOnWorkflow($input)]);
             }
 
-            if(isset($input[Permission::EDIT_TERMINAL_GOD_MODE]) &&
-                ($input[Permission::EDIT_TERMINAL_GOD_MODE] === true || $input[Permission::EDIT_TERMINAL_GOD_MODE] == '1') )
+            if(isset($input[TerminalConstants::TERMINAL_EDIT_GOD_MODE]) &&
+                ($input[TerminalConstants::TERMINAL_EDIT_GOD_MODE] === true || $input[TerminalConstants::TERMINAL_EDIT_GOD_MODE] == '1') )
             {
                 if($this->getSyncInstrumentsFlagFromWorkflow($terminal,Permission::EDIT_TERMINAL_GOD_MODE))
                 {
