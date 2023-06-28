@@ -7873,7 +7873,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'NEFT is not a valid mode for account type vpa',
+                    'description' => 'Invalid combination of payout mode (NEFT) and beneficiary account type (UPI)',
                 ],
             ],
             'status_code' => 400,

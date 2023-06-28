@@ -82,6 +82,14 @@ class Mode extends Core
         ],
     ];
 
+    protected static $accountTypePublicNameMap = [
+        Type::BANK_ACCOUNT   => 'Bank Account',
+        Type::VPA            => 'UPI',
+        Type::CARD           => 'Card',
+        Type::WALLET_ACCOUNT => 'Wallet',
+    ];
+
+
     /**
      * Don't have nodal bank specific issuer map since SHK confirmed
      * that all nodal banks will support the same list of card issuers.
@@ -276,7 +284,8 @@ class Mode extends Core
         if ((isset(self::$modeAccountTypeMap[$accountType]) === false) or
             (in_array($mode, self::$modeAccountTypeMap[$accountType], true) === false))
         {
-            throw new BadRequestValidationFailureException("$mode is not a valid mode for account type $accountType");
+            $accountTypePublic = self::$accountTypePublicNameMap[$accountType] ?? $accountType;
+            throw new BadRequestValidationFailureException("Invalid combination of payout mode ($mode) and beneficiary account type ($accountTypePublic)");
         }
     }
 
