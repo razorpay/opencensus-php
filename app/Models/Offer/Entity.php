@@ -676,14 +676,15 @@ class Entity extends Base\PublicEntity
     public function toArrayCheckout(int $amount = null)
     {
         $data = [
-            self::ID              => $this->getPublicId(),
-            self::NAME            => $this->getAttribute(self::NAME),
-            self::PAYMENT_METHOD  => $this->getAttribute(self::PAYMENT_METHOD),
-            self::PAYMENT_NETWORK => $this->getAttribute(self::PAYMENT_NETWORK),
-            self::ISSUER          => $this->getAttribute(self::ISSUER),
-            self::DISPLAY_TEXT    => $this->getAttribute(self::DISPLAY_TEXT),
-            self::EMI_SUBVENTION  => $this->getAttribute(self::EMI_SUBVENTION),
-            self::TYPE            => $this->getAttribute(self::TYPE),
+            self::ID                  => $this->getPublicId(),
+            self::NAME                => $this->getAttribute(self::NAME),
+            self::PAYMENT_METHOD      => $this->getAttribute(self::PAYMENT_METHOD),
+            self::PAYMENT_METHOD_TYPE => $this->getAttribute(self::PAYMENT_METHOD_TYPE),
+            self::PAYMENT_NETWORK     => $this->getAttribute(self::PAYMENT_NETWORK),
+            self::ISSUER              => $this->getAttribute(self::ISSUER),
+            self::DISPLAY_TEXT        => $this->getAttribute(self::DISPLAY_TEXT),
+            self::EMI_SUBVENTION      => $this->getAttribute(self::EMI_SUBVENTION),
+            self::TYPE                => $this->getAttribute(self::TYPE),
         ];
 
         if ($this->getProductType() === 'subscription')

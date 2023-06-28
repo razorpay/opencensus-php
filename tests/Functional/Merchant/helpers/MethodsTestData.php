@@ -1049,6 +1049,7 @@ return [
                     [
                         'name' => "Test Offer",
                         'payment_method' => "card",
+                        'payment_method_type' => "credit",
                         'payment_network' => "VISA",
                         'issuer' => "HDFC",
                         'type' => "instant",
@@ -1058,6 +1059,7 @@ return [
                     [
                         'name' => "Test Offer",
                         'payment_method' => "card",
+                        'payment_method_type' => "credit",
                         'payment_network' => "VISA",
                         'issuer' => "HDFC",
                         'type' => "instant",
@@ -1211,6 +1213,7 @@ return [
                     [
                         'name' => "Test Offer",
                         'payment_method' => "card",
+                        'payment_method_type' => "credit",
                         'payment_network' => "VISA",
                         'issuer' => "HDFC",
                         'type' => "instant",
@@ -1220,6 +1223,7 @@ return [
                     [
                         'name' => "Test Offer",
                         'payment_method' => "card",
+                        'payment_method_type' => "credit",
                         'payment_network' => "VISA",
                         'issuer' => "HDFC",
                         'type' => "instant",
@@ -1304,6 +1308,7 @@ return [
                     [
                         'name' => "Test Offer",
                         'payment_method' => "card",
+                        'payment_method_type' => "credit",
                         'payment_network' => "VISA",
                         'issuer' => "HDFC",
                         'type' => "instant",
@@ -1313,6 +1318,7 @@ return [
                     [
                         'name' => "Test Offer",
                         'payment_method' => "card",
+                        'payment_method_type' => "credit",
                         'payment_network' => "VISA",
                         'issuer' => "HDFC",
                         'type' => "instant",
