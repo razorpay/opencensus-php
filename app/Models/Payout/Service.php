@@ -5662,4 +5662,19 @@ class Service extends Base\Service
 
         return $this->core->caFundManagementPayoutCheck($merchantIds);
     }
+
+    public function getCABalanceManagementConfig($merchantId): array
+    {
+        return $this->core->getCABalanceManagementConfig($merchantId);
+    }
+
+    public function updateCABalanceManagementConfig(array $input, string $merchantId): array
+    {
+        (new Validator())->validateInput(Validator::UPDATE_BALANCE_MANAGEMENT_CONFIG, $input);
+
+        $this->core->updateCABalanceManagementConfig($merchantId, $input);
+
+        return ['message' => 'Config for ' . $merchantId . ' updated successfully'];
+    }
+
 }

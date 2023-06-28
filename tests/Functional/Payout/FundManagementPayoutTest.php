@@ -2,6 +2,7 @@
 
 namespace Functional\Payout;
 
+use Hash;
 use Queue;
 use Mockery;
 use Carbon\Carbon;
@@ -17,6 +18,7 @@ use RZP\Models\Payout\Purpose;
 use RZP\Models\BankingAccount;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\BankingAccountTpv;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
@@ -2594,6 +2596,109 @@ class FundManagementPayoutTest extends TestCase
     }
 
     // --Fund Management Payout Cron Tests End Here
+
+    // --Fund Management Payout Admin Config Tests Start Here
+    public function testFundManagementPayoutConfig_SetConfig()
+    {
+        $token = $this->getAdminToken();
+
+        $this->ba->adminAuth('live', $token);
+
+        $redis = $this->app['redis'];
+
+        $testBalanceConfig = $this->testData['testFundManagementPayoutConfig_SetConfig']['request']['content'];
+
+        $merchantId = '10000000000000';
+
+        $this->startTest();
+
+        $actualConfig = $this->getFundManagementPayoutBalanceConfig($merchantId);
+        $this->assertNotNull($actualConfig, 'The returned redis config is null');
+
+        $this->assertEquals($testBalanceConfig[PayoutConstants::CHANNEL], $actualConfig[PayoutConstants::CHANNEL]);
+        $this->assertEquals($testBalanceConfig[PayoutConstants::NEFT_THRESHOLD], $actualConfig[PayoutConstants::NEFT_THRESHOLD]);
+        $this->assertEquals($testBalanceConfig[PayoutConstants::LITE_BALANCE_THRESHOLD], $actualConfig[PayoutConstants::LITE_BALANCE_THRESHOLD]);
+        $this->assertEquals($testBalanceConfig[PayoutConstants::FMP_CONSIDERATION_THRESHOLD], $actualConfig[PayoutConstants::FMP_CONSIDERATION_THRESHOLD]);
+        $this->assertEquals($testBalanceConfig[PayoutConstants::TOTAL_AMOUNT_THRESHOLD], $actualConfig[PayoutConstants::TOTAL_AMOUNT_THRESHOLD]);
+
+        $redis->hdel(PayoutCore::CA_FUND_MANAGEMENT_PAYOUT_BALANCE_CONFIG_REDIS_KEY, $merchantId);
+    }
+
+    public function testFundManagementPayoutConfig_SetConfig_UpdateExisting()
+    {
+        $token = $this->getAdminToken();
+
+        $this->ba->adminAuth('live', $token);
+
+        $redis = $this->app['redis'];
+
+        $testBalanceConfigOld = [
+            'payload' => [
+                'channel'                     => 'rbl',
+                'neft_threshold'              => 500000,
+                'lite_balance_threshold'      => 3000000,
+                'lite_deficit_allowed'        => 5,
+                'fmp_consideration_threshold' => 14400,
+                'total_amount_threshold'      => 200000,
+            ],
+        ];
+
+        $testBalanceConfigNew = $this->testData['testFundManagementPayoutConfig_SetConfig_UpdateExisting']['request']['content'];
+
+        $merchantId = '10000000000000';
+
+        $this->setFundManagementPayoutBalanceConfig($merchantId, $testBalanceConfigOld);
+
+        $this->startTest();
+
+        $actualConfig = $this->getFundManagementPayoutBalanceConfig($merchantId);
+        $this->assertNotNull($actualConfig, 'The returned redis config is null');
+
+        $this->assertEquals($testBalanceConfigNew[PayoutConstants::CHANNEL], $actualConfig[PayoutConstants::CHANNEL]);
+        $this->assertEquals($testBalanceConfigNew[PayoutConstants::NEFT_THRESHOLD], $actualConfig[PayoutConstants::NEFT_THRESHOLD]);
+        $this->assertEquals($testBalanceConfigNew[PayoutConstants::LITE_BALANCE_THRESHOLD], $actualConfig[PayoutConstants::LITE_BALANCE_THRESHOLD]);
+        $this->assertEquals($testBalanceConfigNew[PayoutConstants::FMP_CONSIDERATION_THRESHOLD], $actualConfig[PayoutConstants::FMP_CONSIDERATION_THRESHOLD]);
+        $this->assertEquals($testBalanceConfigNew[PayoutConstants::TOTAL_AMOUNT_THRESHOLD], $actualConfig[PayoutConstants::TOTAL_AMOUNT_THRESHOLD]);
+
+        $redis->hdel(PayoutCore::CA_FUND_MANAGEMENT_PAYOUT_BALANCE_CONFIG_REDIS_KEY, $merchantId);
+    }
+
+    public function testFundManagementPayoutConfig_GetConfig()
+    {
+        $token = $this->getAdminToken();
+
+        $this->ba->adminAuth('live', $token);
+
+        $redis = $this->app['redis'];
+
+        $merchantId = '10000000000000';
+
+        $this->setFundManagementPayoutBalanceConfig($merchantId, $this->testBalanceConfig);
+
+        $response = $this->startTest();
+
+        $this->assertEquals($this->testBalanceConfig, $response);
+
+        $redis->hdel(PayoutCore::CA_FUND_MANAGEMENT_PAYOUT_BALANCE_CONFIG_REDIS_KEY, $merchantId);
+    }
+
+    public function testFundManagementPayoutConfig_GetConfig_Empty()
+    {
+        $token = $this->getAdminToken();
+
+        $this->ba->adminAuth('live', $token);
+
+        $this->startTest();
+    }
+    // --Fund Management Payout Admin Config Tests End Here
+
+    public function getFundManagementPayoutBalanceConfig($merchantId)
+    {
+        $redis = $this->app['redis'];
+
+        return json_decode($redis->hget(PayoutCore::CA_FUND_MANAGEMENT_PAYOUT_BALANCE_CONFIG_REDIS_KEY, $merchantId), true);
+    }
+
     public function setFundManagementPayoutBalanceConfig($merchantId, $balanceConfig)
     {
         $redis = $this->app['redis'];
@@ -2610,5 +2715,42 @@ class FundManagementPayoutTest extends TestCase
         $this->assertEquals($expectedParams[PayoutConstants::LITE_DEFICIT_ALLOWED], $actualParams[PayoutConstants::THRESHOLDS][PayoutConstants::LITE_DEFICIT_ALLOWED]);
         $this->assertEquals($expectedParams[PayoutConstants::FMP_CONSIDERATION_THRESHOLD], $actualParams[PayoutConstants::THRESHOLDS][PayoutConstants::FMP_CONSIDERATION_THRESHOLD]);
         $this->assertEquals($expectedParams[PayoutConstants::TOTAL_AMOUNT_THRESHOLD], $actualParams[PayoutConstants::THRESHOLDS][PayoutConstants::TOTAL_AMOUNT_THRESHOLD]);
+    }
+
+    public function getAdminToken()
+    {
+        $adminForLive = $this->attachPermissionToAdmin('test');
+
+        $adminToken = $this->fixtures->on('test')->create('admin_token', [
+            'admin_id' => $adminForLive->getId(),
+            'token'    => Hash::make('ThisIsATokenForTest'),
+        ]);
+
+        return 'ThisIsATokenForTest' . $adminToken->getId();
+    }
+
+    public function attachPermissionToAdmin($mode)
+    {
+        $admin = $this->fixtures->on($mode)->create('admin', [
+            'id'     => 'poutBalnAdmnId',
+            'org_id' => Org::RZP_ORG,
+            'name'   => 'Admin Edit Config'
+        ]);
+
+        $role = $this->fixtures->on($mode)->create('role', [
+            'id'     => 'poutBalnAdmnId',
+            'org_id' => Org::RZP_ORG,
+            'name'   => 'Admin Edit Config',
+        ]);
+
+        $permission = $this->fixtures->on($mode)->create('permission', [
+            'name' => 'edit_balance_management_config'
+        ]);
+
+        $role->permissions()->attach($permission->getId());
+
+        $admin->roles()->attach($role);
+
+        return $admin;
     }
 }

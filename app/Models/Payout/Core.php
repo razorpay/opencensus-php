@@ -9808,4 +9808,42 @@ class Core extends Base\Core
             'dispatch_successful' => $successfulMerchantIds,
         ];
     }
+
+    public function getCABalanceManagementConfig($merchantId): array
+    {
+        $redis = $this->app['redis'];
+
+        $keyValue = json_decode($redis->hget(self::CA_FUND_MANAGEMENT_PAYOUT_BALANCE_CONFIG_REDIS_KEY, $merchantId), true);
+
+        if (empty($keyValue) === false)
+        {
+            $this->trace->info(
+                TraceCode::FUND_MANAGEMENT_BALANCE_CONFIG_GET_SUCCESSFUL,
+                [
+                    'config'      => $keyValue,
+                    'configKey'   => self::CA_FUND_MANAGEMENT_PAYOUT_BALANCE_CONFIG_REDIS_KEY,
+                    'merchant_id' => $merchantId
+                ]);
+
+            return $keyValue;
+        }
+
+        return [self::MESSAGE => 'config for ' . $merchantId . ' not present'];
+    }
+
+    public function updateCABalanceManagementConfig($merchantId, $config) : void
+    {
+        $redis = $this->app['redis'];
+
+        $redis->hset(self::CA_FUND_MANAGEMENT_PAYOUT_BALANCE_CONFIG_REDIS_KEY, $merchantId, json_encode($config));
+
+        $this->trace->info(
+            TraceCode::FUND_MANAGEMENT_BALANCE_CONFIG_SET_SUCCESSFUL,
+            [
+                'new_config'  => $config,
+                'key'         => $redis->hget(self::CA_FUND_MANAGEMENT_PAYOUT_BALANCE_CONFIG_REDIS_KEY, $merchantId),
+                'configKey'   => self::CA_FUND_MANAGEMENT_PAYOUT_BALANCE_CONFIG_REDIS_KEY,
+                'merchant_id' => $merchantId
+            ]);
+    }
 }

@@ -1029,4 +1029,21 @@ class PayoutController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function getCABalanceManagementConfig(string $merchantId)
+    {
+        $data = $this->service()->getCABalanceManagementConfig($merchantId);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateCABalanceManagementConfig(string $merchantId)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateCABalanceManagementConfig($input, $merchantId);
+
+        return ApiResponse::json($data);
+    }
+
 }

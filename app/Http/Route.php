@@ -1923,7 +1923,9 @@ class Route
         'payout_get_holiday_details'              => ['get',     'holidays',                                        'PayoutController@getHolidayDetails'],
 
         //fund_management_routes
-        'ca_check_fund_management_payout_cron'    => ['post', 'ca-fund-management-payouts/cron/check',        'PayoutController@caFundManagementPayoutCheck'],
+        'ca_check_fund_management_payout_cron' => ['post', 'ca-fund-management-payouts/cron/check', 'PayoutController@caFundManagementPayoutCheck'],
+        'fund_management_balance_get_config'   => ['get', 'fund-management-payout/balance-config/merchants/{merchant_id}', 'PayoutController@getCABalanceManagementConfig'],
+        'fund_management_balance_set_config'   => ['post', 'fund-management-payout/balance-config/merchants/{merchant_id}', 'PayoutController@updateCABalanceManagementConfig'],
 
         //Routes related to workflows microservice
         'wfs_config_create'                       => ['post',    'wf-service/configs',                               'WorkflowServiceController@createConfig'                            ],
@@ -5392,6 +5394,8 @@ class Route
         'payout_service_process_scheduled_payout',
         'migration_multi_va_on_x',
         'update_fts_fund_transfer',
+        'fund_management_balance_get_config',
+        'fund_management_balance_set_config',
         'setl_initiate_adhoc',
         'payments_downtime_trigger_cron',
         'payment_card_vault_migrate',
@@ -7122,6 +7126,8 @@ class Route
         'merchant_nc_revamp_eligibility_admin',
         'merchant_ip_config_opt_status_admin',
         'merchant_ip_config_fetch_admin',
+        'fund_management_balance_get_config',
+        'fund_management_balance_set_config',
         'merchant_ip_config_create_admin',
         'salesforce_event_admin',
         'salesforce_event_admin_one_ca',
@@ -9333,6 +9339,9 @@ class Route
         'payout_send_2FA_otp'                      => Permission::CREATE_PAYOUT,
         'undo_payout_creation'                     => Permission::CREATE_PAYOUT,
         'resume_payout_creation'                   => Permission::CREATE_PAYOUT,
+
+        'fund_management_balance_get_config'       => Permission::EDIT_BALANCE_MANAGEMENT_CONFIG,
+        'fund_management_balance_set_config'       => Permission::EDIT_BALANCE_MANAGEMENT_CONFIG,
 
         'payment_on_hold_bulk_update'              => Permission::SETTLEMENT_RELEASE_HOLD_PAYMENT,
         'payment_card_vault_migrate'               => Permission::VAULT_TOKEN_CREATE,
@@ -12346,6 +12355,8 @@ class Route
             'admin_access_maps_bootstrap_cache',
             'admin_change_password',
             'admin_create',
+            'fund_management_balance_get_config',
+            'fund_management_balance_set_config',
             'admin_delete',
             'admin_dummy_account_test',
             'admin_edit',

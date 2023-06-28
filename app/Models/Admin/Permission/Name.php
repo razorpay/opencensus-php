@@ -1140,6 +1140,8 @@ class Name
 
     const MERCHANT_USER_WRITE                   = 'merchant_user_write';
 
+    const EDIT_BALANCE_MANAGEMENT_CONFIG        = 'edit_balance_management_config';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,

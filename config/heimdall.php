@@ -2302,6 +2302,13 @@ return [
             ],
         ],
 
+        PermissionCategory::MERCHANT_FUND_MANAGEMENT => [
+            Permission::EDIT_BALANCE_MANAGEMENT_CONFIG => [
+                'description' => 'fetch/edit balance management config',
+                'assignable'  => true,
+            ],
+        ],
+
         PermissionCategory::X_DASHBOARD_FE => [
             Permission::UPDATE_USER_ROLE => [
                 'assignable'    => true,
