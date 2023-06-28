@@ -36,6 +36,8 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\InheritanceMap;
 use RZP\Services\SumoLogic\Service as SumoLogicService;
 use RZP\Models\Merchant\BusinessDetail;
+use RZP\Models\Merchant\OneClickCheckout\Config\Service as OneClickCheckoutConfigService;
+use RZP\Models\Merchant\OneClickCheckout;
 
 
 class MerchantController extends Controller
@@ -4090,7 +4092,13 @@ class MerchantController extends Controller
             [
                 'input'=> $input,
             ]);
-        $this->app['magic_prepay_cod_provider_service']->convert1ccPrepayCODOrders($input);
+        $prepayConfigs = (new OneClickCheckoutConfigService)->get1ccPrepayCodConfig();
+
+        if ($prepayConfigs[(new OneClickCheckout\Constants)::ENABLED] === true)
+        {
+            $this->app['magic_prepay_cod_provider_service']->convert1ccPrepayCODOrders($input);
+        }
+        return ApiResponse::json([]);
     }
 
 }

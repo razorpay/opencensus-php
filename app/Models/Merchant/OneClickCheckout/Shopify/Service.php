@@ -23,6 +23,7 @@ use RZP\Models\Order\OrderMeta;
 use RZP\Models\Merchant\Merchant1ccConfig\Type;
 use RZP\Models\Merchant\OneClickCheckout\Shopify\ConsumerApp\Client as ConsumerAppClient;
 use RZP\Models\Merchant\OneClickCheckout\Shopify\Constants as ShopifyConstants;
+use RZP\Models\Merchant\OneClickCheckout\Config\Service as OneClickCheckoutConfigService;
 
 class Service extends Base\Service
 {
@@ -1503,17 +1504,28 @@ class Service extends Base\Service
      * @throws Exception\BadRequestValidationFailureException
      * @throws Throwable
      */
-    public function checkPrepayCODFlow(array $input) {
+    public function checkPrepayCODFlow(array $input, bool $fromShopifyApi = true) {
+        if ($fromShopifyApi === false)
+        {
+            $this->app['basicauth']->setMode($input['mode']);
+
+            $this->merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+
+            $this->app['basicauth']->setMerchant($this->merchant);
+        }
+
+        $prepayConfigs = (new OneClickCheckoutConfigService)->get1ccPrepayCodConfig();
+
         $paymentId = $input['razorpay_payment_id'];
         $payment = $this->repo->payment->findByPublicIdAndMerchant($paymentId, $this->merchant);
-        if ($payment['method'] === 'cod')
+        if ($payment['method'] === 'cod' && $prepayConfigs[(new OneClickCheckout\Constants)::ENABLED] === true)
         {
             $payload = [
                 'order_id' =>  $input['razorpay_order_id'],
                 'merchant_id' => $input['merchant_id'],
                 'mode' => $this->mode,
             ];
-//            $queueName = $this->app['config']->get('queue.create_magic_payment_links');
+
             $this->trace->info(
                 TraceCode::ONE_CC_PREPAY_SHOPIFY_COD_ORDER_CONVERT,
                 [
@@ -1521,8 +1533,7 @@ class Service extends Base\Service
                 ]);
 
             $this->app['magic_prepay_cod_provider_service']->convert1ccPrepayCODOrders($payload);
-//            $this->app['queue']->connection('sqs')->pushRaw(json_encode($payload), $queueName);
-//            $this->app['magic_checkout_service_client']->sendRequest('v1/payment_links/create', $payload, "POST");
+
         }
 
     }

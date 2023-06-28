@@ -110,12 +110,12 @@ class OneClickCheckoutController extends Controller
         $headers = Request::header();
         $bodyJSON = $this->parseToJSONIfApplicable($rawContents, $headers['content-type'][0]);
 
+        $response = [];
         try
         {
             $result = (new Shopify\Service)->completeCheckoutWithLock($bodyJSON);
             $response = ApiResponse::json($result, 200);
             $this->addCorsHeaders($response, 'POST, OPTIONS');
-            return $response;
         }
         catch (\Throwable $e)
         {
@@ -123,6 +123,23 @@ class OneClickCheckoutController extends Controller
             $this->addCorsHeaders($response, 'POST, OPTIONS');
             return $response;
         }
+
+        try
+        {
+            (new Shopify\Service)->checkPrepayCODFlow($bodyJSON);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(
+                TraceCode::ONE_CC_PREPAY_COD_CREATE_PL_FAILED,
+                [
+                    'order_id'    =>  $bodyJSON['razorpay_order_id'],
+                    'merchant_id' => $bodyJSON['merchant_id'],
+                    'error'       => $e->getMessage(),
+                ]);
+        }
+        return $response;
+
     }
 
     public function shopifyOAuthRedirect()

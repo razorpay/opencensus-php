@@ -112,7 +112,7 @@ class OneCCShopifyCreateOrder extends Job
             {
                 (new OneClickCheckout\Shopify\Service)->completeCheckoutWithLock($this->data, false);
             }
-            (new OneClickCheckout\Shopify\Service)->checkPrepayCODFlow($this->data);
+            $this->handlePrepayCODFlow();
             $this->delete();
         }
         catch (BadRequestException $e)
@@ -163,6 +163,24 @@ class OneCCShopifyCreateOrder extends Job
                 ]);
             $this->trace->count(Metric::SHOPIFY_1CC_SQS_JOB_RETRY_COUNT, ['job' => $event]);
             $this->release($delay);
+        }
+    }
+
+    protected function handlePrepayCODFlow()
+    {
+        try
+        {
+            (new OneClickCheckout\Shopify\Service)->checkPrepayCODFlow($this->data, false);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(
+                TraceCode::ONE_CC_PREPAY_COD_CREATE_PL_FAILED,
+                [
+                    'order_id'    =>  $this->data['razorpay_order_id'],
+                    'merchant_id' => $this->data['merchant_id'],
+                    'error'       => $e->getMessage(),
+                ]);
         }
     }
 }
