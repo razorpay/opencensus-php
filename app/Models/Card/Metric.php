@@ -16,8 +16,8 @@ class Metric extends Base\Core
     const CARD_VAULT_METRICS                       = 'card_vault_metrics';
     const CARD_METADATA_FETCH                      = 'card_metadata_fetch';
     const CARD_METADATA_SAVE                       = 'card_metadata_save';
-    const CARD_METADATA_FETCH_AFTER_5_DAYS         = 'card_metadata_fetch_after_5_days';
-    const CARD_METADATA_FETCH_BEFORE_OR_ON_5TH_DAY = 'card_metadata_fetch_before_or_on_5th_day';
+    const CARD_METADATA_FETCH_AFTER_3_DAYS         = 'card_metadata_fetch_after_3_days';
+    const CARD_METADATA_FETCH_BEFORE_OR_ON_3RD_DAY = 'card_metadata_fetch_before_or_on_3rd_day';
     const CARD_METADATA_FETCH_FROM_API_DB          = 'card_metadata_fetch_from_api_db';
     const CARD_METADATA_FETCH_FROM_VAULT           = 'card_metadata_fetch_from_vault';
     const LABEL_STATUS                             = 'status';

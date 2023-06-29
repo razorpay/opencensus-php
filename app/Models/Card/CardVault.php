@@ -293,23 +293,23 @@ class CardVault extends Base\Core
 
             $diff = Carbon::now(Timezone::IST)->getTimestamp() - $createdtAt;
 
-            // checking if we are hitting card meta data fetch api after 5 days (5*24*60*60 seconds)
-            if ($diff > 432000)
+            // checking if we are hitting card meta data fetch api after 3 days (3*24*60*60 seconds)
+            if ($diff > 259200)
             {
-                $this->trace->info(TraceCode::CARD_METADATA_FETCH_AFTER_5_DAYS, [
+                $this->trace->info(TraceCode::CARD_METADATA_FETCH_AFTER_3_DAYS, [
                     'card_id'               => $card->getId(),
                     'created_at'            => $createdtAt,
                     'difference'            => $diff,
                     'route'                 => $routeName
                 ]);
 
-                $this->trace->count(Metric::CARD_METADATA_FETCH_AFTER_5_DAYS, ["route" => $routeName]);
+                $this->trace->count(Metric::CARD_METADATA_FETCH_AFTER_3_DAYS, ["route" => $routeName]);
 
                 return [];
             }
             else
             {
-                $this->trace->count(Metric::CARD_METADATA_FETCH_BEFORE_OR_ON_5TH_DAY, ["route" => $routeName]);
+                $this->trace->count(Metric::CARD_METADATA_FETCH_BEFORE_OR_ON_3RD_DAY, ["route" => $routeName]);
             }
 
             $this->trace->count(Metric::CARD_METADATA_FETCH ,["route" => $routeName]);

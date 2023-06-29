@@ -7321,7 +7321,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VAULT_ENCRYPTION_FAILED                             = 'VAULT_ENCRYPTION_FAILED';
     const VAULT_CARD_METADATA_SAVE_FAILED                     = 'VAULT_CARD_METADATA_SAVE_FAILED';
     const VAULT_CARD_METADATA_FETCH_FAILED                    = 'VAULT_CARD_METADATA_FETCH_FAILED';
-    const CARD_METADATA_FETCH_AFTER_5_DAYS                    = 'CARD_METADATA_FETCH_AFTER_5_DAYS';
+    const CARD_METADATA_FETCH_AFTER_3_DAYS                    = 'CARD_METADATA_FETCH_AFTER_3_DAYS';
 
     const PAYMENT_META_REFERENCE_CREATION_ERROR               = 'PAYMENT_META_REFERENCE_CREATION_ERROR';
     const PAYMENT_META_REFERENCE                              = 'PAYMENT_META_REFERENCE';
