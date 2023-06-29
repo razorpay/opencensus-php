@@ -22,6 +22,7 @@ class Entity extends Base\PublicEntity
     const VENDOR_PAYMENTS                = 'vendor_payments';
     const TAX_PAYMENTS                   = 'tax_payments';
     const VENDOR_SETTLEMENTS             = 'vendor_settlements';
+    const VENDOR_ADVANCE                 = 'vendor_advance';
     const SETTLEMENTS                    = 'settlements';
     const XPAYROLL                       = 'xpayroll';
     const REFUND                         = 'refund';

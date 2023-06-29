@@ -14,6 +14,7 @@ use RZP\Models\User\BankingRole;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
+use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
 
 class VendorPaymentTest extends TestCase
 {
@@ -792,6 +793,36 @@ class VendorPaymentTest extends TestCase
         $this->startTest();
 
         $vpMock->shouldHaveReceived('approveReject');
+    }
+
+    function testPayoutStatusPushForVendorAdvanceAsSource()
+    {
+        $vpMock = Mockery::mock('RZP\Services\VendorPayments');
+
+        $vpMock->shouldReceive('pushPayoutStatusUpdate');
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        $payout = $this->fixtures->create('payout', [
+            'status' => 'processed',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+            'reference_id' => 'reference_id',
+            'utr' => 'utr',
+            'user_id' => 'user_id',
+            'mode' => 'NEFT',
+            'narration' => 'narration',
+        ]);
+
+        $this->fixtures->create('payout_source', [
+            'payout_id' => $payout->getId(),
+            'source_id' => 'vda_DummyId',
+            'source_type' => 'vendor_advance',
+            'priority' => 1
+        ]);
+
+        SourceUpdater::update($payout);
+
+        $vpMock->shouldHaveReceived('pushPayoutStatusUpdate');
     }
 
     public function testCreateVendorAdvance()

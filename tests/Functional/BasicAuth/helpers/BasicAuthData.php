@@ -1504,7 +1504,7 @@ return [
         'response' => [
             'content' => [
                     'entity' => 'collection',
-                    'count' => 6,
+                    'count' => 7,
                     'items' =>
                                 [
                                     [
@@ -1530,7 +1530,11 @@ return [
                                     [
                                             'purpose' => 'vendor bill',
                                             'purpose_type' => 'settlement',
-                                    ]
+                                    ],
+                                    [
+                                        'purpose' => 'vendor advance',
+                                        'purpose_type' => 'settlement',
+                                    ],
                                 ]
             ]
         ],

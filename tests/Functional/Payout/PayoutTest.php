@@ -16475,6 +16475,54 @@ class PayoutTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testCreateVendorAdvancePayoutWithSourceDetails()
+    {
+        $this->ba->appAuthTest($this->config['applications.vendor_payments.secret']);
+
+        $this->startTest();
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutSources = $payout->getSourceDetails()->toArray();
+
+        $this->assertNotNull($payout->getId());
+
+        $this->assertEquals("vendor advance", $payout->getPurpose());
+
+        $this->assertNotNull($payoutSources);
+
+        $this->assertEquals("vendor_advance", $payoutSources[0]['source_type']);
+    }
+
+    public function testFetchVendorAdvancePayoutWithSourceIdAndSourceTypeOnInternalAuth()
+    {
+        $this->testCreateVendorAdvancePayoutWithSourceDetails();
+
+        /** @var Payout\Entity $payout */
+        $payout = $this->getDbLastEntity('payout');
+
+        $payoutSources = $payout->getSourceDetails()->toArray();
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payouts_internal/' . $payout->getPublicId();
+
+        $response = $this->startTest();
+
+        $this->assertEquals("vendor advance", $response['purpose']);
+
+        $responsePayoutIds = [$response['id']];
+
+        $payoutIds = [$payout->getPublicId()];
+
+        $this->assertCount(0, array_diff($responsePayoutIds, $payoutIds));
+
+        $sourceDetails = [Payout\Entity::SOURCE_DETAILS => $payoutSources];
+
+        $this->assertArraySelectiveEquals($sourceDetails, $response);
+    }
+
     public function testCreatePayoutLinkPayoutWithOrigin()
     {
         $this->ba->appAuthTest($this->config['applications.payout_links.secret']);

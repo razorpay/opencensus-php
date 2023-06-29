@@ -30,6 +30,7 @@ class Factory
                 case PayoutSourceEntity::VENDOR_PAYMENTS:
                 case PayoutSourceEntity::TAX_PAYMENTS:
                 case PayoutSourceEntity::VENDOR_SETTLEMENTS:
+                case PayoutSourceEntity::VENDOR_ADVANCE:
 
                     array_push($subscriberList, (new VendorPaymentUpdater($payout, $mode)));
 

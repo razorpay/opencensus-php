@@ -423,10 +423,8 @@ class Service
             {
                 case PayoutSourceEntity::VENDOR_PAYMENTS:
                 case PayoutSourceEntity::TAX_PAYMENTS:
-                    $input['source_type'] = $sourceDetail->getSourceType();
-                    $input['source_id'] = $sourceDetail->getSourceId();
-                    break;
                 case PayoutSourceEntity::VENDOR_SETTLEMENTS:
+                case PayoutSourceEntity::VENDOR_ADVANCE:
                     $input['source_type'] = $sourceDetail->getSourceType();
                     $input['source_id'] = $sourceDetail->getSourceId();
                     break;

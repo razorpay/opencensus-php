@@ -8570,7 +8570,7 @@ return [
         'response' => [
             'content' => [
                 'entity'    => 'collection',
-                'count'     => 6,
+                'count'     => 7,
                 'items'     =>  [
                     [
                         'purpose'       =>  'refund',
@@ -8594,6 +8594,10 @@ return [
                     ],
                     [
                         'purpose'       => 'vendor bill',
+                        'purpose_type'  =>  'settlement',
+                    ],
+                    [
+                        'purpose'       => 'vendor advance',
                         'purpose_type'  =>  'settlement',
                     ]
                 ],
@@ -8646,7 +8650,7 @@ return [
         'response' => [
             'content' => [
                 'entity'    => 'collection',
-                'count'     => 7,
+                'count'     => 8,
                 'items'     =>  [
                     [
                         'purpose'       => 'Give Mehul A Bonus',
@@ -8676,6 +8680,10 @@ return [
                         'purpose'       => 'vendor bill',
                         'purpose_type'  => 'settlement',
                     ],
+                    [
+                        'purpose'       => 'vendor advance',
+                        'purpose_type'  =>  'settlement',
+                    ]
                 ],
             ],
         ],
@@ -8707,7 +8715,7 @@ return [
         'response' => [
             'content' => [
                 'entity'    => 'collection',
-                'count'     => 10,
+                'count'     => 11,
                 'items'     =>  [
                     [
                         'purpose'   => 'Give Mehul A Bonus',
@@ -8749,6 +8757,10 @@ return [
                         'purpose'       => 'vendor bill',
                         'purpose_type'  => 'settlement',
                     ],
+                    [
+                        'purpose'       => 'vendor advance',
+                        'purpose_type'  =>  'settlement',
+                    ]
                 ],
             ],
         ],
@@ -8776,7 +8788,7 @@ return [
         'response' => [
             'content' => [
                 'entity'    => 'collection',
-                'count'     => 9,
+                'count'     => 10,
                 'items'     =>  [
                     [
                         'purpose'   => 'Give Sumit A Bonus',
@@ -8814,6 +8826,10 @@ return [
                         'purpose'       => 'vendor bill',
                         'purpose_type'  => 'settlement',
                     ],
+                    [
+                        'purpose'       => 'vendor advance',
+                        'purpose_type'  =>  'settlement',
+                    ]
                 ],
             ],
         ],
@@ -8900,7 +8916,7 @@ return [
         'response' => [
             'content' => [
                 'entity'    => 'collection',
-                'count'     => 10,
+                'count'     => 11,
                 'items'     =>  [
                     [
                         'purpose'   => 'Give Mehul A Bonus',
@@ -8942,6 +8958,10 @@ return [
                         'purpose'       => 'vendor bill',
                         'purpose_type'  => 'settlement',
                     ],
+                    [
+                        'purpose'       => 'vendor advance',
+                        'purpose_type'  =>  'settlement',
+                    ]
                 ],
             ],
 
@@ -13445,6 +13465,75 @@ return [
                     ],
                 ],
             ],
+        ],
+    ],
+
+    'testCreateVendorAdvancePayoutWithSourceDetails' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+                'HTTP_X-Payout-Idempotency' => 'test_i_key',
+            ],
+            'url'     => '/payouts_internal',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'vendor advance',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'origin'          => 'dashboard',
+                'source_details'  => [
+                    [
+                        'source_id'   => 'vda_dummyID',
+                        'source_type' => 'vendor_advance',
+                        'priority'    => 1,
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'purpose'         => 'vendor advance',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+                'origin'          => 'dashboard',
+                'source_details'  => [
+                    [
+                        'source_id'   => 'vda_dummyID',
+                        'source_type' => 'vendor_advance',
+                        'priority'    => 1,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchVendorAdvancePayoutWithSourceIdAndSourceTypeOnInternalAuth' => [
+        'request'   => [
+            'method'  => 'GET',
+            'url'     => '/payouts_internal/{id}',
+            'server'  => [
+                'HTTP_X-Razorpay-Account'   => '10000000000000',
+            ],
+        ],
+        'response' => [
+            'content' => [],
         ],
     ],
 
