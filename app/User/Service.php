@@ -992,9 +992,16 @@ class Service extends Base\Service
         {
 
             Session::put('current_merchant_id', $merchantId);
+    
+            // Forgetting is_merchant_login session for current Merchant i.e the merchant who has done switched account.
+            // so that switched merchant not go through Chunked Based streaming part in first render.
+            $isMerchantLogin = Session::get('is_merchant_login');
             
-            Session::forget('is_merchant_login');
-
+            if ($isMerchantLogin !== null)
+            {
+                Session::forget('is_merchant_login');
+            }
+            
             $traceData = [
                 'id'          => $user->id,
                 'merchant_id' => $merchantId,

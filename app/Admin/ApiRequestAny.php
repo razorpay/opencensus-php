@@ -21,7 +21,6 @@ use App\Admin\Service as AdminService;
 use Lcobucci\JWT\Encoding\JoseEncoder;
 use Razorpay\Api\Errors\BadRequestError;
 use App\User\Constants as UserConstants;
-use App\User\Helper as UserHelper;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\ConnectException;
 use OpenCensus\Trace\Propagator\ArrayHeaders;
@@ -893,7 +892,6 @@ class ApiRequestAny
 
         return [
             Constants::LABEL_HTTP_REQUESTS_DOMAIN                           => $domain ?? 'unknown_domain',
-            Constants::LABEL_HTTP_REQUESTS_ROLE                             => UserHelper::getMerchantRole(),
             Constants::LABEL_HTTP_REQUESTS_API_DOWNSTREAM_STATUS            => $httpCode,
             Constants::LABEL_HTTP_REQUESTS_API_DOWNSTREAM_DASHBOARD_ROUTE   => $currentRouteName ?? 'unknown_route',
             Constants::LABEL_HTTP_REQUESTS_API_DOWNSTREAM_PRODUCT           => ApiUrl::isPrimaryOriginRequest() ? Constants::PRIMARY : Constants::BANKING ,

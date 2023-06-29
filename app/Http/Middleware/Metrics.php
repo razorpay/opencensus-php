@@ -9,7 +9,6 @@ use App\Http\ApiUrl;
 use App\Trace\TraceCode;
 use App\Metrics\Constants;
 use App\Http\RouteTeamMap;
-use App\User\Helper as UserHelper;
 
 
 class Metrics
@@ -62,7 +61,6 @@ class Metrics
 
         return [
             Constants::LABEL_HTTP_REQUESTS_DOMAIN         => $request->server->get('SERVER_NAME') ?? 'unknown_domain',
-            Constants::LABEL_HTTP_REQUESTS_ROLE           => UserHelper::getMerchantRole(),
             Constants::LABEL_HTTP_REQUESTS_GRAPHQL_CLIENT => $apolloClientName ?? 'unknown_graphql_client',
             Constants::LABEL_HTTP_REQUESTS_PRODUCT        => ApiUrl::isBankingOriginRequest() ? Constants::BANKING : Constants::PRIMARY ,
             Constants::LABEL_HTTP_REQUESTS_METHOD         => $request->getMethod() ?? 'unknown_method',
