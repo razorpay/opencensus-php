@@ -4,6 +4,7 @@ namespace RZP\Models\Card;
 
 use App;
 use Carbon\Carbon;
+use RZP\Constants\Country;
 use RZP\Exception;
 use RZP\Constants\Timezone;
 
@@ -11,6 +12,7 @@ use RZP\Models\Card;
 use RZP\Models\Card\IIN;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
@@ -1270,12 +1272,31 @@ class Entity extends Base\PublicEntity
                 ($vault === Card\Vault::RZP_ENCRYPTION));
     }
 
-    public function isTokenisationCompliant(): bool
+    public function isTokenisationCompliant(Merchant\Entity $merchant): bool
+
     {
+
+        if($merchant == null){
+
+            $app  = \App::getFacadeRoot();
+
+            $auth = $app['basicauth'];
+
+            $merchant = $auth->getMerchant();
+        }
+
+        if ($merchant === null)
+        {
+            $merchant = $this->merchant;
+        }
+
+        $isMalaysianMerchant = ($merchant !== null) ? Country::matches($merchant->getCountry(), Country::MY) : false;
+
         return (
             $this->isInternational() ||
             $this->isBajaj() ||
-            ($this->isLocal() && $this->isNetworkTokenisedCard())
+            ($this->isLocal() && $this->isNetworkTokenisedCard()) ||
+            $isMalaysianMerchant
         );
     }
 
@@ -1398,12 +1419,21 @@ class Entity extends Base\PublicEntity
             return false;
         }
 
+        $app  = \App::getFacadeRoot();
+
+        if(Country::matches($merchant->getCountry() , Country::MY))
+        {
+            $properties = [
+                'id'            => $iin->getType(),
+                'experiment_id' =>$app['config']->get('app.enabled_recurring_card_types_malaysia'),
+            ];
+            return (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
+        }
+
         if ($iin->isRecurring() === false)
         {
             return false;
         }
-
-        $app  = \App::getFacadeRoot();
 
         // allow international IIN
         // allow domestic card if razorX is disabled

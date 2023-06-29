@@ -346,6 +346,12 @@ class Entity extends Base\PublicEntity
 
     public function isCardMandateApplicable(Merchant\Entity $merchant, bool $hasSubscription = false)
     {
+        // CardMandate is built to fullfill Indian rbi guidelines , so returning false for any other countries.
+
+
+        if(\RZP\Constants\Country::matches($merchant->getCountry() , Country::IN) == false){
+            return false;
+        }
         // For Optimizer merchants, Payu gateway acts as a mandatehub, meaning it creates mandate + payment in a single
         // payment API call. As of march 2023, We will not override the below IIN checks for Optimizer. We will allow
         // recurring payments for Optimizer only if below check passes + additionally during mandate creation we do BIN

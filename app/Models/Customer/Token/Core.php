@@ -3577,7 +3577,7 @@ class Core extends Base\Core
 
         $tokensWithoutNonCompliantCards = $tokens->filter(static function (Entity $token) {
             // removed all non-tokenised saved cards
-            if ($token->hasCard() && ($token->card->isTokenisationCompliant() === false))
+            if ($token->hasCard() && ($token->card->isTokenisationCompliant($token->merchant) === false))
             {
                 return false;
             }

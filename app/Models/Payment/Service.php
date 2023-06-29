@@ -7034,7 +7034,7 @@ class Service extends Base\Service
 
             $entity['token'] = $network_token_data;
         }
-        else if (($payment->isCard() === true) && ($payment->isRecurring() === false) && ( empty($payment->localToken) === false ) && ($payment->localToken->card->isTokenisationCompliant() === false) && ( ($entity['token']['status'] === 'failed') || ($entity['token']['status'] === null ) )) {
+        else if (($payment->isCard() === true) && ($payment->isRecurring() === false) && ( empty($payment->localToken) === false ) && ($payment->localToken->card->isTokenisationCompliant($payment->merchant) === false) && ( ($entity['token']['status'] === 'failed') || ($entity['token']['status'] === null ) )) {
 
             $errorCode = $payment->localToken->getInternalErrorCode() ?? ErrorCode::BAD_REQUEST_TOKEN_CREATION_FAILED;
 

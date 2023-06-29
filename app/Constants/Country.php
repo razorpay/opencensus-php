@@ -1302,6 +1302,13 @@ class Country
         return self::$countryAlpha3CodeMap[$code] ?? null;
     }
 
+    /* Obtain the 2 country codes and compare
+  */
+    public static function matches(string $country1, string $country2)
+    {
+        return strcasecmp($country1, $country2) == 0;
+    }
+
     public static function getcountryDetails()
     {
         $data = array();

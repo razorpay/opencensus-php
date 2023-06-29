@@ -14,6 +14,7 @@ use DateTimeZone;
 use Carbon\Carbon;
 use RZP\Base\Luhn;
 use RZP\Base\Repository;
+use RZP\Constants\Country;
 use RZP\Error\Error;
 use RZP\Exception;
 use RZP\Exception\BadRequestException;
@@ -593,6 +594,11 @@ class Processor
         if (app()->isEnvironmentProduction() === true  and ($this->mode === Mode::TEST))
         {
             return false;
+        }
+
+        if (isset($input[Payment\Entity::SUBSCRIPTION_ID]) === true)
+        {
+           return false;
         }
 
         /*
@@ -3863,6 +3869,10 @@ class Processor
 
         $variant = $this->app->razorx->getTreatment($experimentVariable, Merchant\RazorxTreatment::DISABLE_RZP_TOKENISED_PAYMENT, $this->mode);
 
+        $merchant = $this->merchant;
+
+        $isMalaysianMerchant = Country::matches($merchant->getCountry(), Country::MY);
+
         if( strtolower($variant) === 'on')
         {
             if (($input[Payment\Entity::METHOD]) == Payment\Method::CARD and (isset($input[Payment\Entity::TOKEN]) === true)) {
@@ -3877,13 +3887,12 @@ class Processor
 
                 } else {
 
-                    $merchant = $this->merchant;
-
                     $token = (new Customer\Token\Core)->getByTokenId($tokenId);
                     if (($token->getMerchantId() !== $merchant->getId()))
                     {
-                        if (($token->getMerchantId() !== self::RAZORPAY_ORG_ID)
-                            or ($token->card->isInternational() === false))
+                        if (!$isMalaysianMerchant
+                            and (($token->getMerchantId() !== self::RAZORPAY_ORG_ID)
+                            or ($token->card->isInternational() === false)))
                         {
                             throw new Exception\BadRequestException(
                                 ErrorCode::BAD_REQUEST_TOKEN_NOT_APPLICABLE,
@@ -3899,7 +3908,7 @@ class Processor
 
                 $this->trace->info(TraceCode::TRACK_TOKENISED_PAYMENT_VALIDATION, [
                     'token' => $token->getId(),
-                    'isCompliant' => $token->card->isTokenisationCompliant(),
+                    'isCompliant' => $token->card->isTokenisationCompliant($token->merchant),
                 ]);
 
                 if ($token->card->getVault() === Card\Vault::AXIS)
@@ -3908,7 +3917,7 @@ class Processor
                     $input[Payment\Method::CARD][Card\Entity::VAULT] = Card\Vault::AXIS;
                 }
 
-                if ($token->card->isTokenisationCompliant() === false) {
+                if ($token->card->isTokenisationCompliant($token->merchant) === false) {
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_TOKEN_NOT_APPLICABLE,
                         'token');
@@ -6130,6 +6139,20 @@ class Processor
                 ]
             );
         }
+        else if ($this->shouldPopulateSubscriptionInfoToGatewayData())
+        {
+            $gatewayData['card_mandate']['recurring_frequency'] = CardMandate\MandateHubs\MandateHQ\Constants::FREQUENCY_AS_PRESENTED;
+
+        }
+    }
+
+    private function shouldPopulateSubscriptionInfoToGatewayData(){
+        $merchant = $this->payment->merchant;
+        if(Country::matches($merchant->getCountry() , Country::MY) && $this->payment->isRecurring())
+        {
+            return true;
+        }
+        return false;
     }
 
     /**

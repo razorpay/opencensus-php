@@ -349,6 +349,9 @@ class CardVault extends Base\Core
     public function getBuNamespaceIfApplicable($input, $isRzpX = false ,$gateway=null)
     {
         $buNamespace =null;
+
+        $merchantCountry = $this->merchant != null ? $this->merchant->getCountry() : 'IN';
+
         try
         {
             if($isRzpX === false)
@@ -371,6 +374,11 @@ class CardVault extends Base\Core
                 else if (isset($gateway) === true and $gateway === 'paysecure')
                 {
                     $buNamespace = 'payments_paysecure';
+
+                }
+                else if (empty(BuNamespace::BU_NAMESPACE[$merchantCountry]) === false)
+                {
+                    return BuNamespace::BU_NAMESPACE[$merchantCountry];
                 }
             }
             else
@@ -400,8 +408,6 @@ class CardVault extends Base\Core
             if (empty($input['iin']) === false)
             {
                 $iin = $this->repo->card->retrieveIinDetails($input['iin']);
-
-                $merchantCountry = $this->merchant != null ? $this->merchant->getCountry() : 'IN';
 
                 if (empty($iin) == false)
                 {

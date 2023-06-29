@@ -149,7 +149,7 @@ class Service extends Base\Service
 
         $token = $this->core->getByTokenIdAndCustomer($tokenId, $customer);
 
-       if (($this->mode !== MODE::TEST || ($this->app->runningUnitTests() === true)) && ($token->isCard() === true) && ($token->isRecurring() === false) && ($token->card->isTokenisationCompliant() === false) && ( ($token->getStatus() === 'failed') || ($token->getStatus() === null )))
+       if (($this->mode !== MODE::TEST || ($this->app->runningUnitTests() === true)) && ($token->isCard() === true) && ($token->isRecurring() === false) && ($token->card->isTokenisationCompliant($token->merchant) === false) && ( ($token->getStatus() === 'failed') || ($token->getStatus() === null )))
        {
             $errorCode = $token->getInternalErrorCode() ?? ErrorCode::BAD_REQUEST_TOKEN_CREATION_FAILED;
 

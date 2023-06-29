@@ -1901,6 +1901,19 @@ trait PaymentTrait
         return $payment;
     }
 
+    protected function getDefaultRecurringPaymentArrayForMYMerchant()
+    {
+        $payment = $this->getDefaultPaymentArrayForMYMerchant();
+
+        $payment['recurring'] = true;
+
+        $payment['acs_afa_authentication'] = array();
+        $payment['validate_payment']['afa_required'] = false;
+        $payment['network_transaction_id'] = "039217544591994";
+
+        return $payment;
+    }
+
     protected function getDefaultUpiRecurringPaymentArray()
     {
         $payment = $this->getDefaultUpiPaymentArray();

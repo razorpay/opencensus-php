@@ -5,6 +5,7 @@ namespace Functional\Payment;
 use Mockery;
 use RZP\Models\Address\Repository;
 use RZP\Models\Address\Type;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Modules;
 use RZP\Models\Offer;
 use RZP\Models\Order;
@@ -153,6 +154,146 @@ class SubscriptionPaymentTest extends TestCase
         $this->assertEquals(Token\RecurringStatus::CONFIRMED, $token->getRecurringStatus());
         $this->assertTrue($token->isRecurring());
     }
+
+    public function testCreateInitialPaymentMYCard()
+    {
+        $org = $this->fixtures->create('org:curlec_org');
+
+        $this->fixtures->org->addFeatures([FeatureConstants::ORG_CUSTOM_BRANDING],$org->getId());
+
+        $this->fixtures->merchant->edit('10000000000000', ['country_code' => 'MY','org_id'    => $org->getId()]);
+
+        $this->fixtures->iin->create([
+            'iin'       => '514024',
+            'country'   => 'MY',
+            'type'      => 'credit',
+            'recurring' => 1,
+        ]);
+
+        $this->subscriptionMock = $this->mockSubscriptionForMYMerchant();
+
+        $cardPayment = array_merge($this->getDefaultRecurringPaymentArrayForMYMerchant(), [
+            'amount' => 99900,
+            'subscription_id' => 'sub_FVOmqpnh3WyQ09',
+        ]);
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $cardPayment,
+        ];
+
+        $this->ba->publicAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getDbLastEntity(Entity::PAYMENT);
+
+        $this->assertEquals($this->subscription->getId(), $payment->getSubscriptionId());
+        $this->assertTrue($payment->isAuthorized());
+        $this->assertFalse(empty($payment->getTokenId()));
+        $this->assertFalse(empty($payment->getCardId()));
+        $this->assertTrue($payment->isRecurringTypeInitial());
+
+        $token = $this->getDbLastEntity(Entity::TOKEN);
+
+        $this->assertEquals($payment->getTokenId(), $token->getId());
+        $this->assertTrue($token->isCard());
+        $this->assertEquals($this->subscription->getId(), $token->getEntityId());
+        $this->assertEquals(Entity::SUBSCRIPTION, $token->getEntityType());
+        $this->assertEquals($payment->getCardId(), $token->getCardId());
+        $this->assertEquals(Token\RecurringStatus::CONFIRMED, $token->getRecurringStatus());
+        $this->assertTrue($token->isRecurring());
+    }
+
+    public function testAutoMYPaymentCard()
+    {
+        $this->subscriptionMock = $this->mockSubscription();
+
+        $mandateHQ = Mockery::mock('RZP\Services\MandateHQ', [$this->app]);
+
+        $this->app->instance('mandateHQ', $mandateHQ);
+
+        $mandateHQ->shouldReceive('isBinSupported')
+            ->andReturnUsing(function ()
+            {
+                return false;
+            });
+
+        $this->fixtures->iin->create([
+            'iin'       => '514024',
+            'country'   => 'MY',
+            'type'      => 'credit',
+            'recurring' => 1,
+        ]);
+
+        $payment = $this->cardPayment;
+        $payment['card']['number'] = '5140241918501669';
+        $payment['currency'] = 'MYR';
+
+        $payment['order_id'] = $this->fixtures->create(
+            'order',
+            ['amount' => $this->cardPayment['amount'],
+                'currency' => 'MYR'])->getPublicId();
+
+        $this->ba->publicAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $payment,
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $token = $this->getDbLastEntity(Entity::TOKEN);
+
+        $this->subscription->setStatus(Subscription\Status::AUTHENTICATED);
+        $this->subscription->recurring_type = 'auto';
+        $this->subscription->global_customer = true;
+        $this->subscription->status = 'halted';
+
+        $this->ba->subscriptionsAuth();
+
+        $order = $this->fixtures->create(
+            'order',
+            ['amount' => $this->cardPayment['amount'],
+                'currency' => 'MYR']);
+
+        $paymentArray = array_merge($this->cardPayment, [
+            'token' => $token->getPublicId(),
+            'order_id' => $order->getPublicId(),
+            'currency' => 'MYR'
+        ]);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/subscriptions',
+            'content' => $paymentArray,
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getDbLastEntity(Entity::PAYMENT);
+
+        $this->assertEquals($this->subscription->getId(), $payment->getSubscriptionId());
+        $this->assertTrue($payment->isAuthorized());
+        $this->assertFalse(empty($payment->getTokenId()));
+        $this->assertFalse(empty($payment->getCardId()));
+        $this->assertEquals($payment->getTokenId(), $token->getId());
+        $this->assertTrue($payment->isRecurringTypeAuto());
+    }
+
 
     public function testAutoPaymentCardInternational()
     {
@@ -1516,6 +1657,44 @@ class SubscriptionPaymentTest extends TestCase
         return $subscriptionMock;
     }
 
+    protected function mockSubscriptionForMYMerchant()
+    {
+        $subscriptionMock = $this->getMockBuilder(Mock\External::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['fetchSubscriptionInfo', 'paymentProcess'])
+            ->getMock();
+
+        $subscriptionMock->method('fetchSubscriptionInfo')
+            ->will($this->returnCallback(
+                function ()
+                {
+                    return $this->createSubscriptionEntityForMYMerchant();
+                }));
+
+        $subscriptionMock->method('paymentProcess')
+            ->will($this->returnCallback(
+                function ()
+                {
+                    return null;
+                }));
+
+        $moduleManagerMock = $this->getMockBuilder(Modules\Manager::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['createSubscriptionDriver'])
+            ->getMock();
+
+        $moduleManagerMock->method('createSubscriptionDriver')
+            ->will($this->returnCallback(
+                function () use ($subscriptionMock)
+                {
+                    return $subscriptionMock;
+                }));
+
+        $this->app->instance('module', $moduleManagerMock);
+
+        return $subscriptionMock;
+    }
+
     protected function createSubscriptionEntity(array $subscriptionData = [])
     {
         $subscriptionData = array_merge($this->testData['sample_subscription_data'], $subscriptionData);
@@ -1527,6 +1706,27 @@ class SubscriptionPaymentTest extends TestCase
         $subscription->setExternal(true);
 
         $invoice = $this->createInvoiceForSubscription($subscription);
+
+        $subscription->current_invoice_id = $invoice->getId();
+
+        $this->customer =  $this->fixtures->create('customer');
+
+        $subscription->customer_id = $this->customer->getId();
+
+        return $subscription;
+    }
+
+    protected function createSubscriptionEntityForMYMerchant(array $subscriptionData = [])
+    {
+        $subscriptionData = array_merge($this->testData['sample_subscription_data_MY_merchant'], $subscriptionData);
+
+        $subscription = new Subscription\Entity;
+
+        $subscription->forceFill($subscriptionData);
+
+        $subscription->setExternal(true);
+
+        $invoice = $this->createInvoiceForSubscriptionForMYMerchant($subscription);
 
         $subscription->current_invoice_id = $invoice->getId();
 
@@ -1550,6 +1750,27 @@ class SubscriptionPaymentTest extends TestCase
                     [
                         'id'              => $invoiceId,
                         'order_id'        => $order->getId(),
+                        'amount'          => $subscription->getCurrentInvoiceAmount(),
+                        'subscription_id' => $subscription->getId()
+                    ],
+                    $overrideWith));
+
+        return $invoice;
+    }
+
+    protected function createInvoiceForSubscriptionForMYMerchant(Subscription\Entity $subscription, $overrideWith = []): Invoice\Entity
+    {
+        $invoiceId = UniqueIdEntity::generateUniqueId();
+
+        $this->fixtures->order->edit('100000000order', ['currency' => 'MYR']);
+
+        $invoice = $this->fixtures
+            ->create(
+                'invoice',
+                array_merge(
+                    [
+                        'id'              => $invoiceId,
+                        'order_id'        => '100000000order',
                         'amount'          => $subscription->getCurrentInvoiceAmount(),
                         'subscription_id' => $subscription->getId()
                     ],

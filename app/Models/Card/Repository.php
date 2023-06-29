@@ -5,6 +5,7 @@ namespace RZP\Models\Card;
 use DB;
 use App;
 use RZP\Base\ConnectionType;
+use RZP\Constants\Country;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base;
 use RZP\Models\Card;
@@ -401,7 +402,19 @@ class Repository extends Base\Repository
 
     public function checkIfCardMetaDataIsApplicableForDBSave(Card\Entity $card) : bool
     {
-        if ($card->isInternational() ===  true or $card->isBajaj() === true )
+        $app  = \App::getFacadeRoot();
+
+        $auth = $app['basicauth'];
+
+        $merchant = $auth->getMerchant();
+
+        if ($merchant === null)
+        {
+            $merchant = $this->merchant;
+        }
+        $isMalaysianRegionalFlow = $merchant != null && Country::matches($merchant->getCountry(), Country::MY);
+
+        if ($card->isInternational() ===  true or $card->isBajaj() === true or $isMalaysianRegionalFlow)
         {
             return true;
         }
