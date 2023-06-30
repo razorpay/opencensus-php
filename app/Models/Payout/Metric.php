@@ -51,8 +51,12 @@ final class Metric
     const LEDGER_LITE_BALANCE_FETCH_ERROR_COUNT                     = 'ledger_lite_balance_fetch_error_count';
     const FUND_MANAGEMENT_PAYOUT_CHECK_JOB_FAILURES_COUNT           = 'fund_management_payout_check_job_failures_count';
     const FUND_MANAGEMENT_PAYOUT_INITIATE_JOB_FAILURES_COUNT        = 'fund_management_payout_initiate_job_failures_count';
+
+    const BULK_PAYOUT_ERROR_DESCRIPTION_COUNT                       = 'bulk_payout_error_description_count';
+
     const FMP_INITIATE_DISABLE_REDIS_FAILURES_COUNT                 = 'fmp_initiate_disable_redis_failures_count';
     const FUND_MANAGEMENT_PAYOUT_CRON_DISPATCH_FAILURES_COUNT       = 'fund_management_payout_cron_dispatch_failures_count';
+
 
     // Payout Service Metrics/Alerts
     const INVALID_PAYOUT_CREATE_REQUEST_TO_PAYOUT_SERVICE = 'invalid_payout_create_request_to_payout_service';
@@ -107,6 +111,8 @@ final class Metric
     const DASHBOARD      = 'dashboard';
     const IS_BANKING     = 'is_banking';
     const IS_JOB_DELETED = 'is_job_deleted';
+
+    const ERROR_DESCRIPTION = 'error_description';
 
     public static function pushStatusChangeMetrics(Entity $payout, string $previousStatus = null)
     {

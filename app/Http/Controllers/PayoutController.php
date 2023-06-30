@@ -473,7 +473,55 @@ class PayoutController extends Controller
 
         $response = $this->service()->createBulkPayout($input);
 
+        $this->trackBulkPayoutErrors($response);
+
         return ApiResponse::json($response);
+    }
+
+    protected function trackBulkPayoutErrors(array $response): void
+    {
+        try {
+            $count = $response['count'];
+
+            if ($count > 0)
+            {
+                $items = $response['items'];
+
+                if (empty($items) === false)
+                {
+                    $errorObj = $response['error'];
+
+                    if (empty($errorObj) === false)
+                    {
+                        $errorDescription = $errorObj['description'];
+
+                        if (empty($errorDescription) === false)
+                        {
+                            $this->app['trace']->info(
+                                TraceCode::BULK_PAYOUTS_ERROR_DESCRIPTION,
+                                [
+                                    'error' =>  $errorObj,
+                                ]
+                            );
+
+                            $dimensions = [
+                                Metric::ERROR_DESCRIPTION => $errorDescription,
+                            ];
+
+                            $this->trace->count(Metric::BULK_PAYOUT_ERROR_DESCRIPTION_COUNT, $dimensions);
+                        }
+                    }
+                }
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::ERROR_TRIGGERING_METRIC_FOR_BULK_PAYOUTS
+            );
+        }
     }
 
     /**
