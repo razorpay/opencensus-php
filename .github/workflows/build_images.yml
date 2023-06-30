@@ -76,7 +76,7 @@ jobs:
             OPENCENSUS_IMAGE=c.rzp.io/razorpay/onggi:opencensus-php-v2020.10.28
           secrets: |
             git_token=${{ secrets.GIT_TOKEN }}
-            
+
   build-worker:
     runs-on: [ api-public ]
     needs: [ cancel ]
@@ -138,46 +138,10 @@ jobs:
           secrets: |
             git_token=${{ secrets.GIT_TOKEN }}
 
-            platforms: linux/amd64,linux/arm64
-  build-openresty:
-    runs-on: [api-public]
-    needs: [cancel]
-    continue-on-error: false
-    name: Build Openresty Harbor
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Docker Setup QEMU
-        uses: docker/setup-qemu-action@v2.1.0
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v2
-      - name: Login to Harbor
-        uses: docker/login-action@v1
-        with:
-          registry: c.rzp.io
-          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
-          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
-      - name: build
-        uses: docker/build-push-action@v3
-        with:
-          tags: c.rzp.io/razorpay/api:openresty-${{ github.sha }}
-          push: true
-          file: ./Dockerfile.openresty
-          platforms: linux/amd64,linux/arm64
-          build-args: |
-            GIT_COMMIT_HASH=${{ github.sha }}
-            GIT_USERNAME=rzp
-            GIT_TOKEN=${{ secrets.GIT_TOKEN }}
-            ONGGI_IMAGE=c.rzp.io/razorpay/onggi-multi-arch:php-8.1-api-web
-            OPENRESTY_IMAGE=c.rzp.io/proxy_dockerhub/openresty/openresty:1.21.4.1-6-alpine-fat
-          secrets: |
-            git_token=${{ secrets.GIT_TOKEN }}
-
   build-e2e:
     name: E2E test build
     runs-on: [ api-public ]
-    needs: [ build-web, build-worker, build-checkout, build-openresty]
+    needs: [ build-web, build-worker, build-checkout ]
     steps:
       - uses: actions/checkout@v2
       - name: Login to Harbor
@@ -264,7 +228,7 @@ jobs:
   build-slit:
     name: SLIT test build
     runs-on: [ api-public ]
-    needs: [ build-web, build-worker, build-checkout, build-openresty]
+    needs: [ build-web, build-worker, build-checkout ]
     steps:
       - uses: actions/checkout@v2
       - name: Login to Harbor
@@ -330,7 +294,7 @@ jobs:
   trigger_regression_suite:
     runs-on: [ api-public ]
     name: Regression Suite
-    needs: [ validate_php_syntax, build-web, build-worker, build-checkout, build-openresty]
+    needs: [ validate_php_syntax, build-web, build-worker, build-checkout ]
     if: github.ref == 'refs/heads/master'
     steps:
       - name: Webhook
