@@ -2168,7 +2168,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
             $this->env = $app['env'];
 
-            if($this->env === 'bvt' or $this->env === 'automation' or $this->env === 'func' or $this->env === 'availability')
+            if($this->env === 'bvt' or $this->env === 'automation' or $this->env === 'func' or $this->env === 'availability' or $this->env === 'perf' or $this->env === 'perf2')
             {
                 return new MultiCurl($responseFactory, ['timeout' => 5]);
             }

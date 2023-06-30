@@ -21,11 +21,18 @@ final class Environment
     const AXIS           = 'axis';
     const BETA           = 'beta';
     const QA_ENVS        = [self::PERF, self::FUNC, self::AUTOMATION, self::BVT, self::AVAILABILITY, self::PERF1, self::PERF2];
+
     const LOWER_ENVS     = [self::DEV, self::BETA, self::AXIS];
+    const PERF_ENV       = [self::PERF, self::AVAILABILITY, self::PERF1, self::PERF2];
 
     public static function isEnvironmentQA(string $env): bool
     {
         return in_array($env, self::QA_ENVS, true);
+    }
+
+    public static function isEnvironmentPerf(string $env): bool
+    {
+        return in_array($env, self::PERF_ENV, true);
     }
 
     public static function isLowerEnvironment(string $env): bool

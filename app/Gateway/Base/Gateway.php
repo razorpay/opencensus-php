@@ -1412,7 +1412,7 @@ class Gateway
 
         $type = strtoupper($type);
 
-        if (($this->env === 'func' or $this->env === 'automation' or $this->env === 'bvt' or $this->env === 'availability' ) and
+        if (($this->env === 'func' or $this->env === 'automation' or $this->env === 'bvt' or $this->env === 'availability' or $this->env === 'perf' or $this->env === 'perf2') and
             (isset($this->externalMockDomain) === true))
         {
             return $this->getExternalMockUrl($type);
