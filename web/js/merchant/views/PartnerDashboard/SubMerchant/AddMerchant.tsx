@@ -251,6 +251,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
             this.setState((prevState) => ({
               step: prevState.step + 1,
               merchantEmail: params.email,
+              merchantContact: params.contact_mobile,
             }));
           } else {
             showNotification?.({
@@ -985,8 +986,6 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
                       {this.isPGInviteFlow()
                         ? `Razorpay account creation invite link will be sent via email and SMS(if contact number provided) to your affiliate`
                         : `${this.orgName} account access link will be sent to your affiliate's email `}
-                      {/* MobileNumber SMS Text will be added later */}
-                      {/* {merchantContact ? 'and phone number' : ''} */}
                     </span>
                   </div>
 
@@ -1041,6 +1040,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
             ) : (
               <SuspenseWithLoader>
                 <RzpSuccessContainer
+                  merchantContact={this.isPGInviteFlow() ? merchantContact : null}
                   merchantEmail={merchantEmail}
                   referralUrl={referralUrl}
                   tracking={tracking}

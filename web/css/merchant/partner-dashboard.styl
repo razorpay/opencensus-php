@@ -238,6 +238,10 @@ $fux-text-color = #162F56DE;
       max-width: 300px;
       margin: 0 auto;
 
+    &:hover {
+      background: transparent;
+    }
+
   .submerchant-filter-wrapper
     margin: 20px 0 0;
     display: flex;
@@ -251,15 +255,24 @@ $fux-text-color = #162F56DE;
     .list-filter-container
       width: calc(100% - 160px);
 
-  .invite-filter-wrapper
     .list-filter-item
       flex-basis: 150px;
 
       &.count
         flex-basis: 70px;
 
-    .list-filter-container
-      width: 100%;
+    &.combined-filter-enabled
+      .list-filter-container
+        width: 100%;
+
+      .list-filter-item
+        flex-basis: 160px;
+
+        &.count
+          flex-basis: 70px;
+
+    &.invite-flow-enabled
+      margin-top: 0;
 
   &.page-x
     .data-table

@@ -603,11 +603,11 @@ export default {
     // prod
     'L3DutoiWP8H6Zn',
   ],
-  submerchant_onboarding_via_easy: [
+  partnerships_combined_contact_filter: [
     // beta
-    'Ll1axsqawpT8RI',
+    'M7GGcZW6UqtnPU',
     // prod
-    'Ll1Zh4tGjRH0IS',
+    'M7GKFjFdXexw0Q',
   ],
   partnerships_invite_flow: [
     // beta

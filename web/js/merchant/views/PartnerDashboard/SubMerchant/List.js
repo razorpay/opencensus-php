@@ -192,7 +192,7 @@ export default class SubMerchantsList extends Component {
 
     this.state = {
       tabsData: [
-        { url: '/partners/submerchants', title: 'Payments' },
+        { url: '/partners/submerchants', title: 'Payments', isActive: this.isPaymentsTabActive },
         {
           url: '/partners/submerchants/capital',
           title: 'Line Of Credit',
@@ -206,6 +206,11 @@ export default class SubMerchantsList extends Component {
       ],
     };
   }
+
+  isPaymentsTabActive = () => {
+    const product = this.getProductType();
+    return product === PRODUCT_TYPE.PG;
+  };
 
   trackUserEvent = (eventName, properties = {}) => {
     const { user, tracking } = this.props;
@@ -337,23 +342,25 @@ export default class SubMerchantsList extends Component {
                   <Route
                     path={`${this.props.match.path}/all`}
                     render={(props) => (
-                      <div className="content-wrapper">
+                      <>
                         <PGInvitesNavLinks prefix={this.props.match.path} />
-                        <Suspense
-                          fallback={
-                            <Box
-                              minHeight="300px"
-                              display="flex"
-                              justifyContent="center"
-                              alignItems="center"
-                            >
-                              <Spinner accessibilityLabel="spinner" size="xlarge" />
-                            </Box>
-                          }
-                        >
-                          <AllInvitesTable {...props} />
-                        </Suspense>
-                      </div>
+                        <div className="content-wrapper">
+                          <Suspense
+                            fallback={
+                              <Box
+                                minHeight="300px"
+                                display="flex"
+                                justifyContent="center"
+                                alignItems="center"
+                              >
+                                <Spinner accessibilityLabel="spinner" size="xlarge" />
+                              </Box>
+                            }
+                          >
+                            <AllInvitesTable {...props} />
+                          </Suspense>
+                        </div>
+                      </>
                     )}
                     exact
                   />

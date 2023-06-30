@@ -160,6 +160,7 @@ describe('AddMerchant', () => {
 
   test('should send create invite call for partnerships invite flow', async () => {
     const createSubmerchantInviteSpy = jest.spyOn(api, 'createSubmerchantInvite');
+    isPartner.mockImplementation((type) => type === 'reseller');
     renderApp({ isPartnershipsInviteFlowEnabled: true, isPartnershipForCapitalEnabled: false });
     const merchantBox = screen.getByText('Razorpay Payments');
     await userEvent.click(merchantBox);
@@ -183,6 +184,12 @@ describe('AddMerchant', () => {
       product: 'primary',
       partner_id: 'K0KQSNE7BypZ5VE',
     });
+    // Check that we moved to next step
+    await waitFor(() => {
+      expect(screen.queryByText('Inviting...')).not.toBeInTheDocument();
+    });
+    expect(screen.getByText('Merchant Added Successfully')).toBeInTheDocument();
+    isPartner.mockReset();
   });
 
   test('should return separate sample batch file for partnerships invite flow', async () => {

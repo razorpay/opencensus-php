@@ -3,6 +3,7 @@ import SocialShareGroup from 'merchant/views/PartnerDashboard/SubMerchant/compon
 import { TODO_PD } from 'merchant/views/PartnerDashboard/TypesDeclare';
 
 export interface RzpSuccessProps {
+  merchantContact: string;
   merchantEmail: string;
   referralUrl: string;
   tracking: TODO_PD;
@@ -11,6 +12,7 @@ export interface RzpSuccessProps {
   partnerID: string;
 }
 const RzpSuccessContainer = ({
+  merchantContact,
   merchantEmail,
   referralUrl,
   tracking,
@@ -24,18 +26,18 @@ const RzpSuccessContainer = ({
         <div className="left-icon-container">
           <i className="i i-done ModeIndicator--live-icon" />
         </div>
-        <div className="text-container">
-          <div>
-            <span className="success-text">
-              Razorpay account access link will be sent to your affiliate's email at
-            </span>
-          </div>
+        <div className="text-container" data-testid="success-text">
+          <span className="success-text">
+            Razorpay account access link will be sent to your affiliate's email at&nbsp;
+          </span>
           <div className="merchant-email-wrapper">
-            <span className="merchant-email">
-              {merchantEmail}
-              {/* MobileNumber SMS Text will be added later */}
-              {/* {merchantContact ? `and +91-${merchantContact}` : ''} */}
-            </span>
+            <span className="merchant-email">{merchantEmail}</span>
+            {merchantContact ? (
+              <>
+                &nbsp; and via SMS on &nbsp;
+                <span className="merchant-email">+91-{merchantContact}</span>
+              </>
+            ) : null}
           </div>
         </div>
       </div>

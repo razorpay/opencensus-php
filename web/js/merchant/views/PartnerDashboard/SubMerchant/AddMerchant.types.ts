@@ -60,6 +60,6 @@ export interface ReduxFormEvent extends Event {
 export type NewMerchant = {
   name: string;
   email: string;
-  contact_mobile: number;
+  contact_mobile: string;
   password: string;
 };

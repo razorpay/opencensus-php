@@ -723,8 +723,9 @@ class ProductSubMerchantsList extends ListContainer {
     const isPGProductWithInviteFlow =
       user.isPartnershipsInviteFlowEnabled && product === PRODUCT_TYPE.PG;
 
-    const isPGWithOnboardingViaEasy =
-      user.isSubmOnboardingViaEasyEnabled && product === PRODUCT_TYPE.PG;
+    const isCombinedContactFilterEnabled =
+      isPGProductWithInviteFlow ||
+      (user.isPartnershipsContactFilterEnabled && user.isOrgRZP && product === PRODUCT_TYPE.PG);
 
     const shouldShowWelcomeScreen =
       (!isPGProductWithInviteFlow || isPGInvitesEmpty) &&
@@ -771,7 +772,7 @@ class ProductSubMerchantsList extends ListContainer {
     ];
 
     const getTableColumns_PG = () => {
-      const emailOrContact = isPGWithOnboardingViaEasy ? mobileAndEmail : email;
+      const emailOrContact = isCombinedContactFilterEnabled ? mobileAndEmail : email;
       let columns = [
         this.name(user.isPartner('pure_platform')),
         id,
@@ -819,57 +820,61 @@ class ProductSubMerchantsList extends ListContainer {
 
     const currentProduct = product === PRODUCT_TYPE.PG ? 'page-pg' : 'page-x';
 
-    const filtersAndExportSection = (
-      <div
-        className={`submerchant-filter-wrapper ${
-          isPGWithOnboardingViaEasy ? 'invite-filter-wrapper' : ''
-        }`}
-      >
-        <ListFilter
-          form="SubmerchantListFilter"
-          type="link"
-          count={this.state.count}
-          onSearchAnalytics={trackSearchAnalytics}
-          onClearAnalytics={trackClearAnalytics}
-          showAppIdFilter={user.isPartner('pure_platform')}
-          showMobileNumberFilter={isPGWithOnboardingViaEasy}
-        />
-        <button
-          class="btn btn-default export-all-btn"
-          onClick={this.confirmAndDownload}
-          disabled={this.state.affiliatesDownloading}
-        >
-          {!this.state.affiliatesDownloading ? (
-            <>
-              <i className="i i-download" />
-              <span>Export All (CSV)</span>
-            </>
-          ) : (
-            <>Exporting Affiliates...</>
-          )}
-        </button>
-      </div>
-    );
     return (
       <tabbed-container class="sub-merchants-tab">
         <div className={`sub-merchants-list ${currentProduct}`}>
+          {!shouldShowWelcomeScreen && isPGProductWithInviteFlow ? (
+            <PGInvitesNavLinks prefix="/partners/submerchants" />
+          ) : null}
           <div
             className={`content-wrapper ${disabledResellerKYCStyle} ${
               shouldShowWelcomeScreen ? 'partner-welcome' : ''
             }`}
           >
-            {isPGProductWithInviteFlow && !shouldShowWelcomeScreen && (
-              <PGInvitesNavLinks prefix="/partners/submerchants" />
-            )}
-            {isPGProductWithInviteFlow && !shouldShowWelcomeScreen && (
-              <>
-                {filtersAndExportSection}
-                <DataTable
-                  title="Sub Merchants"
+            {!shouldShowWelcomeScreen ? (
+              <div
+                className={`submerchant-filter-wrapper ${
+                  isPGProductWithInviteFlow ? 'invite-flow-enabled' : ''
+                } ${isCombinedContactFilterEnabled ? 'combined-filter-enabled' : ''}`}
+              >
+                <ListFilter
+                  form="SubmerchantListFilter"
                   count={this.state.count}
-                  skip={this.state.skip}
-                  paginate={this.paginate}
-                  empty_placeholder={
+                  onSearchAnalytics={trackSearchAnalytics}
+                  onClearAnalytics={trackClearAnalytics}
+                  showAppIdFilter={user.isPartner('pure_platform')}
+                  showContactFilter={isCombinedContactFilterEnabled}
+                  showPhoneNumberFilter={!isCombinedContactFilterEnabled}
+                  showEmailIdFilter={!isCombinedContactFilterEnabled}
+                />
+                <button
+                  class="btn btn-default export-all-btn"
+                  onClick={this.confirmAndDownload}
+                  disabled={this.state.affiliatesDownloading}
+                >
+                  {!this.state.affiliatesDownloading ? (
+                    <>
+                      <i className="i i-download" />
+                      <span>Export All (CSV)</span>
+                    </>
+                  ) : (
+                    <>Exporting Affiliates...</>
+                  )}
+                </button>
+              </div>
+            ) : null}
+            {isPGProductWithInviteFlow ? (
+              <DataTable
+                title="Sub Merchants"
+                count={this.state.count}
+                skip={this.state.skip}
+                paginate={this.paginate}
+                empty_placeholder={
+                  isFilterSearchUsed ? (
+                    <div class="empty-table-message">
+                      <h4>No Search results found</h4>
+                    </div>
+                  ) : (
                     <div class="empty-table-message">
                       <h4>All Accepted Invites</h4>
                       <p className="m-t">
@@ -877,15 +882,15 @@ class ProductSubMerchantsList extends ListContainer {
                         invite sent by you.
                       </p>
                     </div>
-                  }
-                  columns={getResellerInviteFlowColumnsForRZP()}
-                  {...this.props}
-                />
-              </>
-            )}
-            {!isPGProductWithInviteFlow && (
+                  )
+                }
+                columns={getResellerInviteFlowColumnsForRZP()}
+                {...this.props}
+              />
+            ) : null}
+
+            {!isPGProductWithInviteFlow ? (
               <>
-                {!shouldShowWelcomeScreen && filtersAndExportSection}
                 {isFilterSearchUsed &&
                   (!isNonEmptyList || (this.isCapitalProduct && !isNonEmptyCapitalList)) && (
                     <div style={{ flex: 2, textAlign: 'center' }}>
@@ -905,8 +910,7 @@ class ProductSubMerchantsList extends ListContainer {
                   />
                 )}
               </>
-            )}
-
+            ) : null}
             {isNonEmptyList && product === PRODUCT_TYPE.X && (
               <DataTable
                 title="Sub Merchants"

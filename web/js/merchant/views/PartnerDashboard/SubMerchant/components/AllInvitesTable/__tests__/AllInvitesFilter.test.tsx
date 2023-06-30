@@ -87,4 +87,24 @@ describe('All Invites Filter', () => {
     expect(screen.getByLabelText('Name')).toHaveValue('');
     expect(onSearch).toBeCalled();
   });
+
+  test('should show validation errors for invalid input', async () => {
+    renderApp();
+
+    const nameField = screen.getByLabelText('Name');
+    await userEvent.type(nameField, 'ABC');
+
+    const searchButton = screen.getByRole('button', { name: 'Search' });
+    expect(searchButton).toBeDisabled();
+
+    expect(screen.getByText('Name should have at least 4 characters.')).toBeInTheDocument();
+
+    await userEvent.type(nameField, 'ABCD');
+    expect(searchButton).toBeEnabled();
+
+    const emailField = screen.getByLabelText('Email ID');
+    await userEvent.type(emailField, 'notAnEmail');
+    expect(searchButton).toBeDisabled();
+    expect(screen.getByText('Please enter a valid email id.')).toBeInTheDocument();
+  });
 });

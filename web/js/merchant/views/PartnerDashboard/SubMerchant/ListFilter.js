@@ -1,7 +1,13 @@
 import ListFilter from 'merchant/components/ListFilter';
 import { Field } from 'redux-form';
 
-export default ({ type, showAppIdFilter, showMobileNumberFilter = false, ...otherProps }) => (
+export default ({
+  showAppIdFilter,
+  showContactFilter = false,
+  showEmailIdFilter = true,
+  showPhoneNumberFilter = true,
+  ...otherProps
+}) => (
   <ListFilter {...otherProps}>
     <div class="form-group list-filter-item">
       <label>Account Name</label>
@@ -13,24 +19,33 @@ export default ({ type, showAppIdFilter, showMobileNumberFilter = false, ...othe
       <Field name="id" component="input" class="form-control input-sm" />
     </div>
 
-    {showMobileNumberFilter && (
+    {showPhoneNumberFilter ? (
       <div class="form-group list-filter-item">
         <label>Phone Number</label>
         <Field name="contact_mobile" component="input" class="form-control input-sm" />
       </div>
-    )}
+    ) : null}
 
-    <div class="form-group list-filter-item">
-      <label>Email ID</label>
-      <Field name="email" component="input" class="form-control input-sm" />
-    </div>
+    {showContactFilter ? (
+      <div class="form-group list-filter-item">
+        <label>Contact</label>
+        <Field name="contact_info" component="input" class="form-control input-sm" />
+      </div>
+    ) : null}
 
-    {showAppIdFilter && (
+    {showEmailIdFilter ? (
+      <div class="form-group list-filter-item">
+        <label>Email ID</label>
+        <Field name="email" component="input" class="form-control input-sm" />
+      </div>
+    ) : null}
+
+    {showAppIdFilter ? (
       <div class="form-group list-filter-item">
         <label>Application Id</label>
         <Field name="application_id" component="input" class="form-control input-sm" />
       </div>
-    )}
+    ) : null}
 
     <div class="form-group list-filter-item count">
       <label>Count</label>

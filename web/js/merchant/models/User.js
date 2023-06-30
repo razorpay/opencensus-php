@@ -1250,16 +1250,16 @@ export default class User {
     return getSplitzExperimentVariant('enable_easy_dashboard_nc')?.variables?.result === 'on';
   }
 
-  get isSubmOnboardingViaEasyEnabled() {
+  get isPartnershipsContactFilterEnabled() {
     return (
-      getSplitzExperimentVariant('submerchant_onboarding_via_easy')?.variables?.result === 'on'
+      getSplitzExperimentVariant('partnerships_combined_contact_filter')?.variables?.result === 'on'
     );
   }
 
   get isPartnershipsInviteFlowEnabled() {
     const variant = getSplitzExperimentVariant('partnerships_invite_flow');
-    if (variant.name === 'whitelist') return true;
     const isExperimentEnabled = variant?.variables?.result === 'on';
+    if (variant.name === 'whitelist') return isExperimentEnabled;
     return (
       isExperimentEnabled &&
       this.created_at >= PARTNERSHIPS_INVITES_TAB_AUDIENCE_EPOCH &&

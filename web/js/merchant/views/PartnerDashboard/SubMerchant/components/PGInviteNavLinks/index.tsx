@@ -5,6 +5,8 @@ import FtuxTooltip from './components/FtuxTooltip';
 
 const StyledPGInvitesNavLinks = styled.div(
   ({ theme }) => `
+  padding: 20px 24px 12px;
+  background: ${theme.colors.surface.background.level2.lowContrast};
   position: relative;
   .navlink { 
     padding-right: ${theme.spacing[7]}px;

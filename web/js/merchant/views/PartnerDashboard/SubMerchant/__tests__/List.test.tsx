@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from 'common/services/test/test-utils';
+import { render, screen, waitFor } from 'common/services/test/test-utils';
 import List from 'merchant/views/PartnerDashboard/SubMerchant/List';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
@@ -20,6 +20,7 @@ const state = {
       isPartnershipForCapitalEnabled: true,
       isPartnershipForXEnabled: true,
       isPartnershipFUX: true,
+      isPartnershipsInviteFlowEnabled: false,
       instantActivation,
     },
   },
@@ -79,6 +80,23 @@ describe('List', () => {
     };
     renderApp(newState);
     expect(screen.queryByText('Line Of Credit')).not.toBeInTheDocument();
+  });
+
+  it('should render Invites flow navlinks if the feature is enabled', async () => {
+    const newState = {
+      session: {
+        user: {
+          ...state.session.user,
+          isPartnershipsInviteFlowEnabled: true,
+        },
+      },
+    };
+    renderApp(newState);
+    await waitFor(() => {
+      expect(screen.queryByTestId('spinner')).not.toBeInTheDocument();
+    });
+    expect(screen.getByText('All Invites')).toBeInTheDocument();
+    expect(screen.getByText('Accepted Invites')).toBeInTheDocument();
   });
 
   describe('should not render RazorpayX if...', () => {
