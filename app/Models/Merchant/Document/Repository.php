@@ -228,6 +228,8 @@ class Repository extends Base\Repository
             ->where(Entity::MERCHANT_ID, $merchantId)
             ->where(Entity::DOCUMENT_TYPE, $documentType)
             ->whereNull(Entity::DELETED_AT)
+            ->orderBy(Entity::CREATED_AT, 'desc')
+            ->orderBy(Entity::ID, 'desc')
             ->get()
             ->first();
     }

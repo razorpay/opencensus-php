@@ -53,6 +53,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
             ->where(Entity::MERCHANT_ID, '=', $merchantId)
             ->orderBy(Entity::CREATED_AT, 'desc')
+            ->orderBy(Entity::ID, 'desc')
             ->first();
     }
 
