@@ -258,6 +258,16 @@ abstract class AuthCreds
      */
     public function canNonKycActivatedMerchantAccessPrivateXRoutes(): bool
     {
+        $route = $this->app['api.route']->getCurrentRouteName();
+
+        $isBankingRouteAndPrivate = $this->isBankingRouteAndPrivate($route);
+        $isPayoutLinksPublicRoute = $this->isPayoutLinksPublicRoutes($route);
+
+        if (! ($isBankingRouteAndPrivate || $isPayoutLinksPublicRoute))
+        {
+            return false;
+        }
+
         $isMerchantCaActivated = Tracer::inspan(['name' => HyperTrace::AUTH_CRED_IS_CURRENT_ACCOUNT_ACTIVATED], function ()
         {
             return (new Merchant\Core())->isCurrentAccountActivated($this->merchant);
@@ -270,10 +280,6 @@ abstract class AuthCreds
 
         if ($isMerchantCaActivated === true || $isMerchantVaActivated === true)
         {
-            $route = $this->app['api.route']->getCurrentRouteName();
-
-            $isBankingRouteAndPrivate = $this->isBankingRouteAndPrivate($route);
-
             if ($isBankingRouteAndPrivate === true)
             {
                 $this->trace->count(Metric::PRIVATE_X_ROUTE_HITS_BY_CA_ACTIVATED_MERCHANT_COUNT);
@@ -281,36 +287,10 @@ abstract class AuthCreds
                 return true;
             }
 
-            $isPayoutLinksPublicRoute = $this->isPayoutLinksPublicRoutes($route);
-
             if ($isPayoutLinksPublicRoute === true)
             {
                 $this->trace->count(Metric::PUBLIC_X_PAYOUT_LINKS_ROUTE_HITS_BY_CA_ACTIVATED_MERCHANT_COUNT);
 
-                return true;
-            }
-
-            //TODO : Need to remove this experiment after sometime
-            $variant =  Tracer::inspan(['name' => HyperTrace::AUTH_CRED_GET_TREATMENT], function () use ($route)
-            {
-                return $this->razorx->getTreatment($route,
-                    RazorxTreatment::RAZORPAY_X_AUTHORISE_CA_ACTIVATED_MERCHANT_TO_ACCESS_X_PRIVATE_ROUTES,
-                    $this->getMode());
-            });
-
-            $log = [
-                'merchant_id'  => $this->merchant->getId(),
-                'experiment'   => $variant,
-                'mode'         => $this->getMode(),
-                'route_name'   => $route
-            ];
-
-            $this->trace->error(
-                TraceCode::UNAUTHORISED_PRIVATE_ROUTE_ACCESS_BY_CA_ACTIVATED_MERCHANT, $log);
-
-            // Allow unauthorized access when variant is on
-            if (strtolower($variant) === 'on')
-            {
                 return true;
             }
         }
