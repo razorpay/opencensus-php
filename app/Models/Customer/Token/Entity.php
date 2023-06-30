@@ -130,6 +130,15 @@ class Entity extends Base\PublicEntity
     const CARD_RECURRING_MAX_AMOUNT         = 100000000;
     const LEAST_MAX_AMOUNT_LIMIT            = 0;
 
+    // Mapping of Max Recurring Amount with method and country code.
+    const RECURRING_MAX_AMOUNT             = [
+        'MY' => [
+            Payment\Method::CARD => 3000000
+        ],
+        'IN' => [
+            Payment\Method::CARD => 100000000
+        ]
+    ];
     /**
      * We use this to set the number of years after which the
      * emandate token will get expired and cannot be used

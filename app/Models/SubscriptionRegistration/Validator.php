@@ -36,7 +36,6 @@ class Validator extends Base\Validator
 
     protected static $createValidators = [
         Entity::AUTH_TYPE,
-        Entity::MAX_AMOUNT,
         Entity::FIRST_PAYMENT_AMOUNT,
     ];
 
@@ -117,7 +116,7 @@ class Validator extends Base\Validator
         Entity::RECURRING_STATUS  => 'sometimes|recurring_status',
     ];
 
-    public function validateMaxAmount(array $input)
+    public function validateMaxAmount(array $input, $countryCode = 'IN')
     {
         $maxAmount = $input[Entity::MAX_AMOUNT] ?? null;
 
@@ -140,7 +139,7 @@ class Validator extends Base\Validator
             }
             elseif ($method === Payment\Method::CARD or $method === null)
             {
-                $maxAmountLimit = Token\Entity::CARD_RECURRING_MAX_AMOUNT;
+                $maxAmountLimit = Token\Entity::RECURRING_MAX_AMOUNT[$countryCode][Payment\Method::CARD];
             }
 
             if ($maxAmount > $maxAmountLimit)

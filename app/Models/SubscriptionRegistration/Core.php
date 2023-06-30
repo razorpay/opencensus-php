@@ -56,6 +56,8 @@ class Core extends Base\Core
 
         $validator->validateMethodAndFirstPaymentAmount($input);
 
+        $validator->validateMaxAmount($input, $this->merchant->getCountry());
+
         if (($input[Entity::METHOD] !== Method::NACH) and
             ($input[Entity::METHOD] !== Method::UPI))
         {

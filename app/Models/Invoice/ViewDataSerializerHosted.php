@@ -4,6 +4,7 @@ namespace RZP\Models\Invoice;
 
 use Carbon\Carbon;
 use Config;
+use RZP\Constants\Org;
 use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 use RZP\Models\Base;
 use RZP\Models\Order;
@@ -133,21 +134,19 @@ class ViewDataSerializerHosted extends Base\Core
     {
         $org = $this->merchant->org;
 
-        $branding = [
-            'show_rzp_logo' => true,
-            'branding_logo' => '',
-             ORG_ENTITY::BUSINESS_NAME => $org->getBusinessName(),
-        ];
+        $merchantCountryCode = $this->merchant->getCountry();
 
-        if($this->merchant->shouldShowCustomOrgBranding() === true)
+        $branding = Org::ORG_BRANDING[$merchantCountryCode];
+        $branding['bussiness_name'] = $org->getBusinessName() ?: Org::ORG_BRANDING[$merchantCountryCode][Org::BUSSINESS_NAME];
+        $branding['branding_logo'] = $org->getInvoiceLogo()   ?: Org::ORG_BRANDING[$merchantCountryCode][Org::BRANDING_LOGO];
+
+        if($this->merchant->shouldShowCustomOrgBranding() === true and $merchantCountryCode === 'IN')
         {
-            if(ORG_ENTITY::isOrgCurlec($org->getId()) === true){
-                $branding = array_merge($this->core->getCurlecBrandingConfig(), $branding);
-            }else{
-                $branding['show_rzp_logo'] = false;
-            }
+            $branding['show_rzp_logo'] = false;
+
             $branding['branding_logo'] = $org->getInvoiceLogo() ?: 'https://cdn.razorpay.com/static/assets/hostedpages/axis_logo.svg';
 
+            $branding['bussiness_name'] = $org->getBusinessName() ?: 'Razorpay';
         }
 
         return [

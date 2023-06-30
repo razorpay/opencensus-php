@@ -2,12 +2,15 @@
 
 namespace RZP\Tests\Functional\SubscriptionRegistration;
 
+use Google\Rpc\BadRequest;
 use Mail;
 use Mockery;
 use Queue;
 use Carbon\Carbon;
 
 use RZP\Constants\Mode;
+use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\SubscriptionRegistration\Validator;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
@@ -1040,5 +1043,66 @@ class SubscriptionRegistrationTest extends TestCase
     public function testCreateAuthLinkBlankEmail()
     {
         $this->startTest();
+    }
+
+    public function testValidateMaxAmountWhenInputMaxAmountNull()
+    {
+        $validator = new Validator();
+        $countryCode = 'IN';
+        $validator->validateMaxAmount([], $countryCode);
+    }
+
+    public function testValidateMaxAmountIndia()
+    {
+        $validator = new Validator();
+        $countryCode = 'IN';
+        $validator->validateMaxAmount([
+            'max_amount' => 1000,
+            'auth_type' => 'card',
+        ], $countryCode);
+    }
+
+    public function testValidateMaxAmountIndiaMoreThanMaxLimit()
+    {
+        $validator = new Validator();
+        $countryCode = 'IN';
+
+        try {
+            $validator->validateMaxAmount([
+                'max_amount' => 1000000000,
+                'auth_type' => 'card',
+            ], $countryCode);
+        }
+        catch (\Exception $e)
+        {
+            $this->assertExceptionClass($e, BadRequestValidationFailureException::class);
+        }
+    }
+
+    public function testValidateMaxAmountMalaysia()
+    {
+        $validator = new Validator();
+        $countryCode = 'MY';
+        $validator->validateMaxAmount([
+            'max_amount' => 1000,
+            'auth_type' => 'card',
+        ], $countryCode);
+    }
+
+    public function testValidateMaxAmountMalaysiaMoreThanMaxLimit()
+    {
+        $validator = new Validator();
+        $countryCode = 'MY';
+
+        try {
+            $validator->validateMaxAmount([
+                'max_amount' => 1000000000,
+                'auth_type' => 'card',
+            ], $countryCode);
+        }
+        catch (\Exception $e)
+        {
+            $this->assertExceptionClass($e, BadRequestValidationFailureException::class);
+        }
     }
 }
