@@ -1,3 +1,4 @@
+import { hideSearchFTUXBannerByLocalStorage } from '../utils';
 import { loginByMobile, loginByEmail } from '../utils/common';
 import { routes } from '../utils/constants';
 const { test, expect } = require('@playwright/test');
@@ -11,6 +12,7 @@ test.describe.parallel('Dashboard login flow @flow=auth', () => {
     test(`should login with email in ${cred.type} mode: @priority=critical @duration=long`, async ({
       page,
     }) => {
+      await hideSearchFTUXBannerByLocalStorage({ page });
       await page.goto(routes.SIGN_IN_PATH);
       await expect(page).toHaveTitle(/Razorpay Dashboard/);
 
@@ -19,7 +21,6 @@ test.describe.parallel('Dashboard login flow @flow=auth', () => {
 
       // validating landing page url after login
       await expect(page).toHaveURL(routes.DASHBOARD);
-
       // storing login state in context to re-use at other logins
       await page.context().storageState({
         path: cred.storagePath,
@@ -32,6 +33,7 @@ test.describe.parallel('Dashboard login flow @flow=auth', () => {
     test(`should login with mobile in ${cred.type} mode: @priority=critical @duration=long`, async ({
       page,
     }) => {
+      await hideSearchFTUXBannerByLocalStorage({ page });
       await page.goto(routes.SIGN_IN_PATH);
       await expect(page).toHaveTitle(/Razorpay Dashboard/);
 
@@ -40,7 +42,6 @@ test.describe.parallel('Dashboard login flow @flow=auth', () => {
 
       // validating landing page url after login
       await expect(page).toHaveURL(routes.DASHBOARD);
-
       // storing login state in context to re-use at other logins
       await page.context().storageState({
         path: cred.storagePath,
@@ -52,6 +53,7 @@ test.describe.parallel('Dashboard login flow @flow=auth', () => {
     test(`should login with email in ${cred.type} mode: @priority=critical @duration=long`, async ({
       page,
     }) => {
+      await hideSearchFTUXBannerByLocalStorage({ page });
       await page.goto(routes.SIGN_IN_PATH);
       await expect(page).toHaveTitle(/Razorpay Dashboard/);
 
@@ -60,7 +62,6 @@ test.describe.parallel('Dashboard login flow @flow=auth', () => {
 
       // validating landing page url after login
       await expect(page).toHaveURL(routes.DASHBOARD);
-
       // storing login state in context to re-use at other logins
       await page.context().storageState({
         path: cred.storagePath,

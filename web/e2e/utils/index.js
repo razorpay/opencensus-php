@@ -1,5 +1,6 @@
 const { expect } = require('@playwright/test');
 const { COMMON_SELECTORS } = require('./selectors');
+const { routes } = require('./constants');
 
 function generateRandomText(length) {
   const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -55,6 +56,118 @@ function generateRandomWebsiteUrl() {
   return `https://www.youtube.com/${keyword}`;
 }
 
+const generateDataForPaymentLink = () => {
+  const amount = '100';
+  const description = generateRandomText(50).toString();
+  const email = generateRandomEmail();
+  const phone = generateRandomPhoneNumber().toString();
+  const refId = generateRandomText(12);
+  return {
+    amount,
+    description,
+    email,
+    phone,
+    refId,
+  };
+};
+
+const switchToTestMode = async ({ page }) => {
+  await page.goto(routes.DASHBOARD);
+  let modeSwitchToggle;
+  try {
+    modeSwitchToggle = await page.waitForSelector('a.switch-modes-toggle', {
+      timeout: 5000,
+    });
+  } catch (error) {
+    // Element not found within the specified timeout
+  }
+
+  if (modeSwitchToggle) {
+    await modeSwitchToggle.click();
+    await page.locator('li[data-test="Test Mode"]').click();
+    await page.waitForSelector('a.switch-modes-toggle');
+  }
+};
+
+const hideSearchFTUXBannerByLocalStorage = async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem(
+      'universal-search-ftux',
+      JSON.stringify({
+        count: 3,
+        expireAt: '2023-05-12T15:25:27+05:30',
+      }),
+    );
+  });
+};
+
+const hideSearchFTUXBannerByClick = async ({ page }) => {
+  let gotItElement;
+  try {
+    gotItElement = await page.waitForSelector('[data-testid="search-ftux-gotit"]', {
+      timeout: 5000,
+    });
+  } catch (error) {
+    // Element not found within the specified timeout
+  }
+  if (gotItElement) {
+    await gotItElement.click();
+  } else {
+    console.log('Universal search FTUX "GOT IT" element not found.');
+  }
+};
+
+const getNextDate = async ({ page, offset }) => {
+  const now = new Date();
+  const currentDate = now;
+
+  now.setDate(now.getDate() + Number(offset));
+
+  const targetDate = new Date(currentDate.getTime() + offset * 24 * 60 * 60 * 1000);
+
+  let currentMonth = currentDate.getMonth();
+  let currentYear = currentDate.getFullYear();
+
+  const targetMonth = targetDate.getMonth();
+  const targetYear = targetDate.getFullYear();
+
+  while (currentMonth !== targetMonth || currentYear !== targetYear) {
+    // eslint-disable-next-line no-await-in-loop
+    await page.getByTitle('Next month (PageDown)').click();
+    currentMonth++;
+    if (currentMonth > 11) {
+      currentMonth = 0;
+      currentYear++;
+    }
+  }
+
+  const month = now.getMonth();
+  const monthNames = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+  const date = `${monthNames[month]} ${now.getDate()}, ${now.getFullYear()}`;
+  return date;
+};
+
+const fillExpiry = async ({ page, expire_by }) => {
+  await page.getByPlaceholder('DD-MM-YYYY').click();
+  await page.waitForSelector('.rc-calendar-table');
+  const dateToSelect = await getNextDate({ page, offset: expire_by });
+  await page.locator(`td[title="${dateToSelect}"]`).click();
+  await page.waitForSelector('.rc-calendar-table', { state: 'hidden' });
+};
+
 module.exports = {
   generateRandomText,
   generateRandomPhoneNumber,
@@ -64,4 +177,10 @@ module.exports = {
   getDemoGSTIN,
   expectSuccessNotification,
   generateRandomWebsiteUrl,
+  generateDataForPaymentLink,
+  switchToTestMode,
+  hideSearchFTUXBannerByClick,
+  hideSearchFTUXBannerByLocalStorage,
+  getNextDate,
+  fillExpiry,
 };

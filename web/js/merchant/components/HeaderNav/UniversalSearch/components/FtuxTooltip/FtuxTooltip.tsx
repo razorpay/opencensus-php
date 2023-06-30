@@ -46,7 +46,7 @@ const FtuxTooltip = ({
           You can search for payment products, Account & Settings, and more
         </Text>
         <FtuxAction onClick={handleClick}>
-          <Text weight="bold" type="subtle" contrast="high">
+          <Text weight="bold" type="subtle" contrast="high" data-testid="search-ftux-gotit">
             GOT IT
           </Text>
         </FtuxAction>
