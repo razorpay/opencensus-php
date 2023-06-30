@@ -75,14 +75,12 @@
             <directory>./tests/Functional/Growth/</directory>
             <directory>./tests/Functional/LocationService/</directory>
             <directory>./tests/Functional/FreshdeskTicket/</directory>
-            <directory>./tests/Functional/Partner/</directory>
             <exclude>./tests/Functional/AThirdWatch/</exclude>
             <exclude>./tests/Functional/Admin/GroupEsTest.php</exclude>
         </testsuite>
         <testsuite name="Application-2 Test Suite">
             <directory>./tests/Functional/QrCodeConfig/</directory>
             <directory>./tests/Functional/AutoGenerateApiDocs/</directory>
-            <directory>./tests/Functional/EntityOrigin/</directory>
             <directory>./tests/Functional/InstrumentRequest/</directory>
             <directory>./tests/Functional/Batch/</directory>
             <directory>./tests/Functional/CheckoutOrder/</directory>
@@ -159,7 +157,6 @@
             <file>./tests/Functional/Merchant/MerchantAnalyticsTest.php</file>
             <file>./tests/Functional/Merchant/MerchantAttributeTest.php</file>
             <file>./tests/Functional/Merchant/MerchantBankingInvoiceTest.php</file>
-            <file>./tests/Functional/Merchant/MerchantCoreTest.php</file>
             <file>./tests/Functional/Merchant/MerchantCreateTest.php</file>
             <file>./tests/Functional/Merchant/MerchantDocumentTest.php</file>
             <file>./tests/Functional/Merchant/MerchantEmailTest.php</file>
@@ -172,7 +169,6 @@
             <file>./tests/Functional/Merchant/MerchantNotificationConfigTest.php</file>
             <file>./tests/Functional/Merchant/MerchantOneCcConfigTest.php</file>
             <file>./tests/Functional/Merchant/MerchantPromotionsTest.php</file>
-            <file>./tests/Functional/Merchant/MerchantReferralTest.php</file>
             <file>./tests/Functional/Merchant/MerchantRequestTest.php</file>
             <file>./tests/Functional/Merchant/MerchantRiskNoteTest.php</file>
             <file>./tests/Functional/Merchant/MethodsTest.php</file>
@@ -182,7 +178,6 @@
             <file>./tests/Functional/Merchant/PartnerConfigTest.php</file>
         </testsuite>
         <testsuite name="Features-2-4 Test Suite">
-            <file>./tests/Functional/Merchant/PartnerFUXTest.php</file>
             <file>./tests/Functional/Merchant/PartnerTerminalOnboardingTest.php</file>
             <file>./tests/Functional/Merchant/PaymentDowntimeTest.php</file>
             <file>./tests/Functional/Merchant/PaymentLimitTest.php</file>
@@ -474,6 +469,11 @@
         </testsuite>
         <testsuite name="SMEP Partnerships Test Suite">
             <directory>./tests/Functional/Partner/</directory>
+            <directory>./tests/Functional/EntityOrigin/</directory>
+            <file>./tests/Functional/Merchant/PartnerFUXTest.php</file>
+            <file>./tests/Functional/Merchant/MerchantCoreTest.php</file>
+            <file>./tests/Functional/Merchant/MerchantReferralTest.php</file>
+
         </testsuite>
         <testsuite name="Cross Border Test Suite">
             <directory>./tests/Functional/Currency/</directory>
