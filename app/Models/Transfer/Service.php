@@ -5,20 +5,19 @@ namespace RZP\Models\Transfer;
 use RZP\Models\Base;
 use RZP\Trace\Tracer;
 use RZP\Models\Payment;
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Reversal;
 use RZP\Models\Transfer;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Base\ConnectionType;
-use RZP\Models\EntityOrigin;
 use RZP\Jobs\TransferProcess;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Exception\BadRequestException;
 use RZP\Constants\Entity as EntityConstant;
-use RZP\Models\Merchant\MerchantApplications;
 use RZP\Exception\SettlementIdUpdateException;
 use RZP\Models\Settlement\Entity as Settlement;
 use RZP\Jobs\Transfers\TransferSettlementStatus;
@@ -76,12 +75,40 @@ class Service extends Base\Service
 
         $transfers = Tracer::inSpan(['name' => 'transfer.fetch_multiple'], function() use ($transferTypeFilter, $input, $merchantId)
         {
-            if ($transferTypeFilter === Constant::PLATFORM )
+            try
             {
-                $linkedAccountIds = $this->repo->merchant->fetchActivatedLinkedAccountIdsForParentMerchant($this->merchant->getId());
+                if ($transferTypeFilter === Constant::PLATFORM )
+                {
+                    $linkedAccountIds = $this->repo->merchant->fetchActivatedLinkedAccountIdsForParentMerchant($this->merchant->getId());
 
-                $input[Constant::EXCLUDED_LINKED_ACCOUNTS] = $linkedAccountIds;
+                    $input[Constant::EXCLUDED_LINKED_ACCOUNTS] = $linkedAccountIds;
+                }
+                else
+                {
+                    $result = (new Merchant\Service())->isFeatureEnabledForPartnerOfSubmerchant(Feature\Constants::ROUTE_PARTNERSHIPS, $this->merchant->getId());
+
+                    if( $result[Constant::FEATURE_ENABLED] === true)
+                    {
+                        $linkedAccountIds = $this->repo->merchant->fetchActivatedLinkedAccountIdsForParentMerchant($this->merchant->getId());
+
+                        $input[Constant::INCLUDED_LINKED_ACCOUNTS] = $linkedAccountIds;
+                    }
+                }
             }
+            catch (Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::TRANSFER_FILTER_SET_FAILED,
+                    [
+                        'merchant_id'       => $this->merchant->getId(),
+                        'filter_type'       => $transferTypeFilter,
+                        'filters'           => $input,
+                    ]
+                );
+            }
+
             return $this->repo
                         ->transfer
                         ->fetch($input, $merchantId);

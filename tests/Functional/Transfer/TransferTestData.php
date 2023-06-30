@@ -1059,6 +1059,51 @@ return [
         ],
     ],
 
+    'testFetchMultipleNonPlatformTransfers' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/transfers',
+            'content' => [],
+        ],
+        'response'  => [
+            'content' => [
+                'count'         => 2,
+                'items'         => [
+                    [
+                        "id"                        => 'trf_LhV9fg1fXklNUG',
+                        "recipient"                 => 'acc_10000000000004',
+                        "currency"                  => "INR",
+                        "amount"                    => 1000,
+                        'status'                    => 'processed',
+                        'amount_reversed'           => 0,
+                        'notes'                     => [],
+                        'fees'                      => 0,
+                        'tax'                       => 0,
+                        'on_hold'                   => false,
+                        'on_hold_until'             => null,
+                        'recipient_settlement_id'   => null,
+                        'linked_account_notes'      => [],
+                    ],
+                    [
+                        "id"                        => 'trf_LhV9fg1fXagWCN',
+                        "recipient"                 => 'acc_10000000000004',
+                        "currency"                  => "INR",
+                        "amount"                    => 1000,
+                        'status'                    => 'processed',
+                        'amount_reversed'           => 0,
+                        'notes'                     => [],
+                        'fees'                      => 0,
+                        'tax'                       => 0,
+                        'on_hold'                   => false,
+                        'on_hold_until'             => null,
+                        'recipient_settlement_id'   => null,
+                        'linked_account_notes'      => [],
+                    ]
+                ],
+            ],
+        ],
+    ],
+
     'testFetchMultiplePlatformTransfers' => [
         'request' => [
             'method'  => 'GET',
