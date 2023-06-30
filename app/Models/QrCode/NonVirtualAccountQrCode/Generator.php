@@ -561,8 +561,7 @@ class Generator extends QrCode\Generator
 
         if ($this->checkIfDedicatedTerminalSplitzExperimentEnabled($qrCode->merchant->getId()) === true)
         {
-            //@todo:: Check for static and dynamic QR. For static QR, terminal type offline should be passed
-            $terminals = (new VirtualAccount\Provider())->getTerminalForMethod(Payment\Method::UPI, $qrCode);
+            $terminals = $this->getDedicatedTerminalForQrCreate($qrCode);
 
             $errorMessage = '';
             $errorCode    = '';
@@ -658,5 +657,33 @@ class Generator extends QrCode\Generator
         }
 
         return false;
+    }
+
+    /**
+     * @param Entity $qrCode
+     *
+     * @return mixed
+     */
+    protected function getDedicatedTerminalForQrCreate(Entity $qrCode)
+    {
+        //@todo:: Check for static and dynamic QR. For static QR, terminal type offline should be passed
+        $terminals = (new VirtualAccount\Provider())->getTerminalForMethod(Payment\Method::UPI, $qrCode);
+
+        $dedicatedTerminals = array_filter($terminals, function(Terminal\Entity $terminal)
+        {
+            return ($terminal->isShared() === false);
+        });
+
+        if (count($dedicatedTerminals) === 0)
+        {
+            throw new LogicException('No dedicated terminal found for merchant',
+                                     ErrorCode::SERVER_ERROR_NO_TERMINAL_FOUND,
+                                     [
+                                         'fetched_terminal_ids' => $terminals->getIds()
+                                     ]
+            );
+        }
+
+        return $dedicatedTerminals;
     }
 }
