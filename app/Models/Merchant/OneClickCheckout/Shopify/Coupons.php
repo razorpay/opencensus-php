@@ -333,7 +333,7 @@ class Coupons extends Base\Core
         if (
             ($errorType === self::APPLY_COUPON_API_ERROR) ||
             (
-                empty($checkoutDiscountCodeApplyV2['checkoutUserErrors']) === false &&
+                empty($response['data']['checkoutDiscountCodeApplyV2']['checkoutUserErrors']) === false &&
                 $this->isCheckoutUserErrorSafe($response) === false
             )
         )
