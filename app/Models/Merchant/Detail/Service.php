@@ -1886,11 +1886,16 @@ class Service extends Base\Service
         // Referrer merchant doesn't need to complete presignup details.
         $referrerMerchant = $this->merchant->getReferrer();
 
-        $isReferrerMerchantFromPhantom = false;
+        $isReferrerMerchantFromPhantomOrEasy = false;
 
         if (!empty($referrerMerchant))
         {
-            $isReferrerMerchantFromPhantom = Merchant\PhantomUtility::isPhantomOnBoardingWhitelistedForPartner($referrerMerchant);
+            // is referred merchant on easy onboarding
+            $isReferrerMerchantFromPhantomOrEasy = $this->merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING);
+            if ($isReferrerMerchantFromPhantomOrEasy === false)
+            {
+                $isReferrerMerchantFromPhantomOrEasy = Merchant\PhantomUtility::isPhantomOnBoardingWhitelistedForPartner($referrerMerchant);
+            }
         }
 
         $presignupDetails = [];
@@ -1898,7 +1903,7 @@ class Service extends Base\Service
         // Referrer Merchant check for presignup details.
         if ((empty($referrerMerchant) === true) or
             (Merchant\Entity::verifyUniqueId($referrerMerchant, false) === 0) or
-            ($isReferrerMerchantFromPhantom === true))
+            ($isReferrerMerchantFromPhantomOrEasy === true))
         {
             $merchantDetails = $this->fetchMerchantDetails();
 
