@@ -1196,14 +1196,7 @@ class Repository extends Base\Repository
      */
     protected function addQueryParamActivationStatus($query, $params)
     {
-        if ($params[Detail\Entity::ACTIVATION_STATUS] === Detail\Status::ACTIVATED)
-        {
-            $query->whereIn(Detail\Entity::ACTIVATION_STATUS, Detail\Status::PAYMENTS_ENABLED_STATUSES, 'or');
-        }
-        else
-        {
-            $query->where(Detail\Entity::ACTIVATION_STATUS, $params[Detail\Entity::ACTIVATION_STATUS]);
-        }
+        $query->where(Detail\Entity::ACTIVATION_STATUS, $params[Detail\Entity::ACTIVATION_STATUS]);
 
         return $query;
     }

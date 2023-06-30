@@ -1835,59 +1835,6 @@ return [
             ],
         ],
     ],
-    'testFetchPartnerSubmerchantsFilterByActivationStatusForActivated' => [
-        'request'  => [
-            'url'     => '/submerchants',
-            'method'  => 'GET',
-            'content' => [
-                'activation_status' => 'activated'
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'entity' => 'collection',
-                'count'  => 2,
-                'items'  => [
-                    [
-                        'id'               => 'acc_10000000000009',
-                        'name'             => 'random_name_1',
-                        'email'            => 'subm1@xyz.com',
-                        'hold_funds'       => false,
-                        'details'          => [
-                            'activation_status' => 'activated_mcc_pending',
-                        ],
-                        'user'              => [
-                            'email'             => 'subm1@xyz.com',
-                            'contact_mobile'    => null,
-                        ],
-                        'dashboard_access'  => false,
-                        'application'       => [
-                            'id'=> '8ckeirnw84ifkf'
-                        ],
-                        'kyc_access'        => null,
-                    ],
-                    [
-                        'id'               => 'acc_10000000000011',
-                        'name'             => 'random_name_1',
-                        'email'            => 'subm2@xyz.com',
-                        'hold_funds'       => false,
-                        'details'          => [
-                            'activation_status' => 'activated',
-                        ],
-                        'user'              => [
-                            'email'             => 'subm2@xyz.com',
-                            'contact_mobile'    => null,
-                        ],
-                        'dashboard_access'  => false,
-                        'application'       => [
-                            'id'=> '8ckeirnw84ifke'
-                        ],
-                        'kyc_access'        => null,
-                    ],
-                ],
-            ],
-        ],
-    ],
 
     'testFetchPartnerSubmerchantsPurePlatformFilters' => [
         'request'  => [
