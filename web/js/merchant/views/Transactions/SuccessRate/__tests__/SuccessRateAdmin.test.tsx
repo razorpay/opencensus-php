@@ -61,9 +61,6 @@ describe('SuccessRate Admin', () => {
     const input = screen.getByPlaceholderText('Search Merchant ID') as HTMLInputElement;
     await userEvent.type(input, 'DWnCsGeq9ClyNX');
     await userEvent.click(screen.getByTestId('admin-search-set-btn'));
-    await waitFor(() => {
-      screen.getByLabelText('Loading Content');
-    });
     expect(screen.getByTestId('Overall-tab')).toHaveClass('active');
     expect(srFetchAllSpy).toHaveBeenLastCalledWith(
       expect.objectContaining({
@@ -73,10 +70,16 @@ describe('SuccessRate Admin', () => {
   });
 
   test('should reset SR dashboard upon clicking "Reset" button', async () => {
+    const srFetchAllSpy = jest.spyOn(services, 'getSR');
     await waitFor(() => {
       expect(screen.getByTestId('admin-search')).toBeVisible();
     });
     await userEvent.click(screen.getByTestId('admin-search-reset-btn'));
     expect(screen.getByTestId('Overall-tab')).toHaveClass('active');
+    expect(srFetchAllSpy).toHaveBeenLastCalledWith(
+      expect.not.objectContaining({
+        merchant_id: '',
+      }),
+    );
   });
 });

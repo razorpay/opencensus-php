@@ -54,7 +54,6 @@ const SuccessRateFilter = (props) => {
     isSrAdminEnabled,
     setMerchantIDSearch,
     isLoading,
-    searchedMerchantId,
   } = props;
 
   const [dateRange, setDateRange] = useState({ startDate: '', endDate: '', preset: '' });
@@ -68,15 +67,6 @@ const SuccessRateFilter = (props) => {
     const errors = validateDateRange(dateRange);
     setErrors(errors);
   }, [dateRange]);
-
-  useEffect(() => {
-    if (searchedMerchantId) {
-      const payload = queryFilters();
-      const errorsPayload = getMerchantErrorsPayload();
-      fetchSuccessRate({ payload });
-      fetchMerchantErrors(errorsPayload);
-    }
-  }, [searchedMerchantId]);
 
   const onSearch = async (dateRangeParam = dateRange, errorsParam = errors) => {
     const isOverallTabActive = activeTab !== 'Overall';
@@ -145,11 +135,19 @@ const SuccessRateFilter = (props) => {
   const handleSearchByMerchantId = (merchantId) => {
     resetToInitialState();
     setMerchantIDSearch(merchantId);
+    const payload = queryFilters();
+    const errorsPayload = getMerchantErrorsPayload();
+    fetchSuccessRate({ payload });
+    fetchMerchantErrors(errorsPayload);
   };
 
   const onResetMerchantSearch = () => {
     resetToInitialState();
     setMerchantIDSearch('');
+    const payload = queryFilters();
+    const errorsPayload = getMerchantErrorsPayload();
+    fetchSuccessRate({ payload });
+    fetchMerchantErrors(errorsPayload);
   };
 
   return (
