@@ -4,14 +4,12 @@ namespace RZP\Http;
 
 use ApiResponse;
 use Razorpay\OAuth\OAuthServer;
-use RZP\Http\Edge\PassportUtil;
 use Illuminate\Support\Facades\App;
 use Razorpay\Edge\Passport\Passport;
 use Razorpay\OAuth\Application\Repository;
 use Razorpay\OAuth\Token\Entity as OAuthToken;
 
 use RZP\Exception;
-use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -405,17 +403,6 @@ class OAuth
         // not sent in trace logs
         $this->ba->setTokenScopes($tokenScopes);
 
-        $isRazorpayXExclusiveRoute = $this->isBankingRoute();
-
-        $isApplicationAllowedForBankingRoutes = (new Feature\Service())->checkFeatureEnabled(Feature\Constants::APPLICATION,
-                                                            $response[OAuthToken::APPLICATION_ID],
-                                                Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH)['status'];
-
-        if ($isRazorpayXExclusiveRoute === true and $isApplicationAllowedForBankingRoutes === false)
-        {
-            return ApiResponse::unauthorizedOauthAccessToRazorpayX();
-        }
-
         //Fetches partnerMerchantId from applicationId and adds to ba.
         $application = (new Repository())->findOrFail($response[OAuthToken::APPLICATION_ID]);
         $this->ba->setPartnerMerchantId($application->getMerchantId());
@@ -501,11 +488,6 @@ class OAuth
 
         // remove account Id in query Params, if sent.
         $this->request->query->remove(BasicAuth::ACCOUNT_ID);
-
-        if ($partnerMerchant->isFeatureEnabled(Feature\Constants::AGGREGATOR_OAUTH_CLIENT) === false)
-        {
-            return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_PARTNER_AUTH_NOT_ALLOWED);
-        }
 
         $error = $this->checkAndSetAccountId($accountId);
 
