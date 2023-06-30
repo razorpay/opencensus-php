@@ -40,6 +40,11 @@ final class PostAuthenticate
      */
     protected $ba;
 
+    /**
+     * @var PassportUtil|null
+     */
+    protected $passportUtil;
+
     const TYPE_MERCHANT  = "merchant";
     const TYPE_PARTNER   = "partner";
     const DEFAULT_DOMAIN = "razorpay";
@@ -52,6 +57,8 @@ final class PostAuthenticate
         $this->reqCtx = app('request.ctx.v2');
         $this->trace  = app('trace');
         $this->ba     = app('basicauth');
+        // set PassportUtil only if passport exists
+        $this->passportUtil = empty($this->reqCtx->passport) ? null : new PassportUtil($this->reqCtx->passport);
     }
 
     /**
@@ -67,6 +74,7 @@ final class PostAuthenticate
         try {
             $funcStartedAt = millitime();
             $this->ensureRequestContextAdditionalAttrs($request);
+            $this->reportAuthFlowMismatches($authenticated);
             $this->reportAuthenticationMismatches($authenticated, $request);
             $this->reportImpersonationMismatches($authenticated, $request);
             $this->ensureRequestContextPassport($authenticated);
@@ -243,6 +251,7 @@ final class PostAuthenticate
         $consumerId = '';
         // authCreds will be null when key and secret are not passed and request fails with basic auth expected error.
         // verify authCreds is set before calling getKeyEntity()
+
         $keyEntity = isset($this->ba->authCreds) ? $this->ba->getKeyEntity() : null;
         // keyEntity returns string due to intialization, and will not be set to object if request fails with invalid apikey.
         // make sure keyEntity is an object before calling getMerchantId()
@@ -386,7 +395,7 @@ final class PostAuthenticate
     /**
      * Reports any mismatches in AuthZ enforcement result between Edge & API middleware.
      *
-     * @param bool $authenticated Whether Middleware\Authenticate found request to be authenticated.
+     * @param bool $authenticated whether Middleware\Authenticate found request to be authenticated.
      * @param Request $request Current request object
      */
     private function reportAuthorizationEnforcementMismatches(bool $authenticated, Request $request)
@@ -505,6 +514,90 @@ final class PostAuthenticate
         $dimensions['merchant_id']  = $this->ba->getMerchantId();
         $dimensions['trace_id']     = $this->reqCtx->edgeTraceId;
         $this->trace->warning(TraceCode::EDGE_IMPERSONATION_MISMATCH, $dimensions);
+    }
+
+    /**
+     * Reports any mismatches in auth flow between edge and API
+     *
+     * @param bool $authenticated whether Middleware\Authenticate found request to be authenticated.
+     */
+    private function reportAuthFlowMismatches(bool $authenticated)
+    {
+        // just major auth schemes supported at edge alone for now
+        if (! ($this->isPrivateAuth() || $this->isPartnerAuth() || $this->isPublicAuth() || $this->isOAuth()))
+        {
+            return;
+        }
+
+        // if edge passport is empty return
+        if (empty($this->reqCtx->passport))
+        {
+            $this->trace->warning(TraceCode::PASSPORT_NOT_FOUND, $this->ba->getRequestMetricDimensions());
+            return;
+        }
+
+        // if request is not authenticated return
+        if ($authenticated === false)
+        {
+            return;
+        }
+
+        $apiAuthFlow  = $this->getAuthTypeAtAPI();
+
+        $edgeAuthFlow = empty($this->passportUtil) ? '' : $this->passportUtil->getAuthTypeFromPassport();
+
+        // no mismatch if API and Edge results are same.
+        if ( $apiAuthFlow == $edgeAuthFlow )
+        {
+            return;
+        }
+
+        $dimensions                   = $this->ba->getRequestMetricDimensions();
+        $dimensions['api_auth_flow']  = $apiAuthFlow;
+        $dimensions['edge_auth_flow'] = $edgeAuthFlow;
+        $this->trace->count(Metric::EDGE_AUTHFLOW_MISMATCH_TOTAL, $dimensions);
+
+        // TODO: use passport directly to reduce dependency on ba module
+        $dimensions['key_id']         = $this->ba->getPublicKey();
+        $dimensions['merchant_id']    = $this->ba->getMerchantId();
+        $this->trace->warning(TraceCode::EDGE_AUTHFLOW_MISMATCH, $dimensions);
+    }
+
+    /**
+     * Gets auth type at API from ba context.
+     * later can be extended for other auth schemes as required
+     *
+     * @return string   ''
+     *                  merchant_auth_without_impersonation
+     *                  merchant_auth_with_impersonation
+     *                  partner_auth_without_impersonation
+     *                  partner_auth_with_impersonation
+     *                  oauth_without_impersonation
+     *                  oauth_with_impersonation
+     *                  keyless_auth
+     *                  public_merchant_auth_without_impersonation
+     *                  public_partner_auth_without_impersonation
+     *                  public_partner_auth_with_impersonation
+     *                  public_oauth_without_impersonation
+     *                  public_oauth_with_impersonation
+     */
+    private function getAuthTypeAtAPI(): string
+    {
+        if (empty($this->ba->authCreds)) {
+            return '';
+        }
+
+        if ($this->ba->isKeylessPublicAuth()) {
+            return PassportUtil::KEYLESS_AUTH;
+        }
+
+        $prefix = $this->ba->isPublicAuth() ? PassportUtil::PUBLIC_PREFIX : '';
+        $authType = $this->ba->isOAuth() ? PassportUtil::OAUTH :
+            (($this->ba->authCreds instanceof BasicAuth\KeyAuthCreds) ? self::TYPE_MERCHANT . PassportUtil::AUTH_SUFFIX : self::TYPE_PARTNER . PassportUtil::AUTH_SUFFIX);
+        $suffix = empty($this->ba->getAccountId()) ? PassportUtil::WITHOUT_IMPERSONATION : PassportUtil::WITH_IMPERSONATION;
+
+        $authType = $prefix . $authType . $suffix;
+        return $authType;
     }
 }
 

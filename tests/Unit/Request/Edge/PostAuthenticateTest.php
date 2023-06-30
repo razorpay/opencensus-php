@@ -4,7 +4,9 @@ namespace RZP\Tests\Unit\Request\Edge;
 
 use Razorpay\Edge\Passport;
 
+use RZP\Http\BasicAuth\ClientAuthCreds;
 use RZP\Http\BasicAuth\KeyAuthCreds;
+use RZP\Http\Edge\Metric;
 use RZP\Tests\TestCase;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\Edge\PostAuthenticate;
@@ -139,9 +141,11 @@ class PostAuthenticateTest extends TestCase
             ->setConstructorArgs([$this->app])
             ->setMethods(['getMode', 'getMerchantId', 'getAuthType', 'isProxyAuth', 'getAccountId',
                 'getPartnerMerchantId', 'getOAuthClientId', 'getOAuthApplicationId',
-                'getPublicKey', 'getPassport', 'setPassportDomain', 'getRequestMetricDimensions', 'getPassportImpersonationClaims'])
+                'getPublicKey', 'getPassport', 'setPassportDomain', 'getRequestMetricDimensions', 'getPassportImpersonationClaims',
+                'isKeylessPublicAuth', 'isPublicAuth', 'isOAuth'])
             ->getMock();
         $this->app->instance('basicauth', $mock);
+
 
         return $mock;
     }
@@ -250,8 +254,8 @@ class PostAuthenticateTest extends TestCase
         $authCredsMock->shouldReceive('getKeyEntity')->andReturn($keyEntityMock);
         $keyEntityMock->shouldReceive('getMerchantId')->andReturn($expectedConsumerId);
         $ba->expects($this->once())->method('getMode')->willReturn($expectedMode);
-        $ba->expects($this->exactly(2))->method('getMerchantId')->willReturn($expectedImpersonatedConsumerId);
-        $ba->expects($this->once())->method('getAccountId')->willReturn("10000000000000");
+        $ba->expects($this->any())->method('getMerchantId')->willReturn($expectedImpersonatedConsumerId);
+        $ba->expects($this->any())->method('getAccountId')->willReturn("10000000000000");
         $ba->expects($this->atLeast(1))->method('getPublicKey')->willReturn($expectedCredentialPublicKey);
         $ba->expects($this->once())->method('getAuthType')->willReturn('private');
         $ba->expects($this->once())->method('isProxyAuth')->willReturn(false);
@@ -264,8 +268,13 @@ class PostAuthenticateTest extends TestCase
 
         if ($expectedMismatch === true)
         {
-            $trace->shouldReceive('count')->times(1);
+            $traceCount = ($expectedConsumerType == 'partner') ? 2 : 1;
+            $trace->shouldReceive('count')->times($traceCount);
             $trace->shouldReceive('warning')->with(TraceCode::PASSPORT_ATTRS_MISMATCH, Mockery::type('array'));
+            if ($expectedConsumerType == 'partner')
+            {
+                $trace->shouldReceive('warning')->with(TraceCode::EDGE_AUTHFLOW_MISMATCH, Mockery::type('array'));
+            }
         }
 
         (new PostAuthenticate)->handle(true, $request);
@@ -335,6 +344,7 @@ class PostAuthenticateTest extends TestCase
      * @param bool $mockPassportConsumer
      * @param bool $mockPassportImpersonation
      * @param bool $mockPassportCredential
+     * @param bool $expectedAuthFlowMismatch
      * @param bool $expectedMismatch
      */
     public function testKeyAuthOnInvalidRequests(Passport\Passport $passport,
@@ -344,6 +354,7 @@ class PostAuthenticateTest extends TestCase
                                                  bool $mockPassportConsumer,
                                                  bool $mockPassportImpersonation,
                                                  bool $mockPassportCredential,
+                                                 bool $expectedAuthFlowMismatch,
                                                  bool $expectedMismatch)
     {
 
@@ -365,8 +376,8 @@ class PostAuthenticateTest extends TestCase
             $authCredsMock->shouldReceive('getKeyEntity')->andReturn('rzp_test_10000000000000');
         }
         $ba->expects($this->once())->method('getMode')->willReturn('live');
-        $ba->expects($this->once())->method('getMerchantId')->willReturn('10000000000000');
-        $ba->expects($this->once())->method('getAccountId')->willReturn("");
+        $ba->expects($this->any())->method('getMerchantId')->willReturn('10000000000000');
+        $ba->expects($this->any())->method('getAccountId')->willReturn("");
         $ba->expects($this->atLeast(1))->method('getPublicKey')->willReturn('');
         $ba->expects($this->once())->method('getAuthType')->willReturn('private');
         $ba->expects($this->once())->method('isProxyAuth')->willReturn(false);
@@ -401,6 +412,11 @@ class PostAuthenticateTest extends TestCase
             $trace->shouldReceive('count')->times(1);
             $trace->shouldReceive('warning')->with(TraceCode::PASSPORT_ATTRS_MISMATCH, Mockery::type('array'));
         }
+        if ($expectedAuthFlowMismatch === true)
+        {
+            $trace->shouldReceive('count')->times(1);
+            $trace->shouldReceive('warning')->with(TraceCode::EDGE_AUTHFLOW_MISMATCH, Mockery::type('array'));
+        }
 
         (new PostAuthenticate)->handle(true, $request);
         $this->assertSame($reqCtx->passportAttrsMismatch, $expectedMismatch);
@@ -429,15 +445,15 @@ class PostAuthenticateTest extends TestCase
 
         return [
             // case 1 - not identified not authenticated authCreds not set due to key and secret not passed
-            [$passport, $passport->mode, false, false, false, false, false, true],
+            [$passport, $passport->mode, false, false, false, false, false, false, true],
             // case 2 - not identified not authenticated keyEntity not set due to invalid apikey
-            [$passport, $passport->mode, true, true, false, false, false, true],
+            [$passport, $passport->mode, true, true, false, false, false, true, true],
             // case 3 - passport consumer not present
-            [$passport, $passport->mode, true, true, false, true, true, true],
+            [$passport, $passport->mode, true, true, false, false, true, true, true],
             // case 4 - passport credential not present
-            [$passport, $passport->mode, true, true, true, true, false, true],
+            [$passport, $passport->mode, true, true, true, true, false, true, true],
             // case 5 - passport impersonation not present
-            [$passport, $passport->mode, true, true, true, false, true, true],
+            [$passport, $passport->mode, true, true, true, false, true, false, true],
         ];
     }
 
@@ -472,14 +488,16 @@ class PostAuthenticateTest extends TestCase
         $trace = Mockery::mock('Razorpay\Trace\Logger');
         $this->app->instance("trace", $trace);
         $trace->shouldReceive('histogram')->times(1);
+        $trace->shouldReceive('count')->times(1);
         //there shouldn't be any exceptions
         $trace->shouldReceive('error')->times(0);
+        $trace->shouldReceive('warning')->with(TraceCode::EDGE_AUTHFLOW_MISMATCH, Mockery::type('array'));
 
         $ba = $this->mockBasicAuth();
-        $ba->expects($this->once())->method('getMode')->willReturn($expectedMode);
+        $ba->expects($this->any())->method('getMode')->willReturn($expectedMode);
         $ba->expects($this->once())->method('getPartnerMerchantId')->willReturn($expectedConsumerId);
         $ba->expects($this->once())->method('getAccountId')->willReturn("10000000000000");
-        $ba->expects($this->exactly(2))->method('getMerchantId')->willReturn($expectedImpersonatedConsumerId);
+        $ba->expects($this->any())->method('getMerchantId')->willReturn($expectedImpersonatedConsumerId);
         $ba->expects($this->atLeast(1))->method('getPublicKey')->willReturn($expectedCredentialPublicKey);
         $ba->expects($this->once())->method('getAuthType')->willReturn('private');
         $ba->expects($this->atLeastOnce())->method('isProxyAuth')->willReturn(false);
@@ -861,6 +879,7 @@ class PostAuthenticateTest extends TestCase
         $trace->shouldReceive('histogram')->times(1);
         //there shouldn't be any exceptions
         $trace->shouldReceive('error')->times(0);
+        $trace->shouldReceive('warning')->once()->with(TraceCode::EDGE_AUTHFLOW_MISMATCH, Mockery::type('array'));
 
         $ba = $this->mockBasicAuth();
         $authCredsMock = Mockery::mock(KeyAuthCreds::class);
@@ -872,9 +891,13 @@ class PostAuthenticateTest extends TestCase
         $ba->expects($this->atLeastOnce())->method('getMerchantId')->willReturn("");
         $ba->expects($this->any())->method('getPartnerMerchantId')->willReturn(null);
         $ba->expects($this->once())->method('getAuthType')->willReturn($authType);
+        if ($authType === 'public')
+        {
+            $ba->expects($this->any())->method('isKeylessPublicAuth')->willReturn(false);
+        }
         $ba->expects($this->atLeastOnce())->method('isProxyAuth')->willReturn(false);
 
-        $trace->shouldReceive('count')->times(1);
+        $trace->shouldReceive('count')->times(2);
         $trace->shouldReceive('warning')->with(TraceCode::PASSPORT_ATTRS_MISMATCH, Mockery::type('array'));
 
         (new PostAuthenticate)->handle(true, $request);
@@ -891,6 +914,196 @@ class PostAuthenticateTest extends TestCase
             ['mockPrivateRouteWithOAuthBearerToken', 'private'],
             // Case 4 - partner auth
             ['mockPrivateRouteWithPartnerAuthToken', 'private']
+        ];
+    }
+
+    /**
+     * @dataProvider getAuthFlowMismatchesCases
+     *
+     * @param string                            $requestType
+     * @param Passport\Passport|null            $passport
+     * @param string                            $authType
+     * @param string|null                       $consumerType
+     * @param Passport\ConsumerClaims|null      $consumerClaims
+     * @param Passport\OauthClaims|null         $oauthClaims
+     * @param bool                              $expectedMismatch
+     */
+    public function testAuthFlowMismatches($requestType, $passport, $authType, $consumerType, $consumerClaims, $oauthClaims, $expectedMismatch)
+    {
+        if (! empty($passport))
+        {
+            $passport->consumer = $consumerClaims;
+            $passport->oauth = empty($oauthClaims) ? null : $oauthClaims;
+        }
+
+        $request = $this->{$requestType}();
+        app('request.ctx')->init();
+        app('request.ctx')->resolveKeyIdIfApplicable();
+        $reqCtx = app('request.ctx.v2');
+        $reqCtx->passport = $passport;
+
+        $trace = Mockery::mock('Razorpay\Trace\Logger');
+        $this->app->instance('trace', $trace);
+        $trace->shouldReceive('histogram')->times(1);
+        //there shouldn't be any exceptions
+        $trace->shouldReceive('error')->times(0);
+        if (! empty($consumerType))
+        {
+            $trace->shouldReceive('count')->once()->with(Metric::PASSPORT_ATTRS_MISMATCH_TOTAL, Mockery::type('array'));
+            $trace->shouldReceive('warning')->once()->with(TraceCode::PASSPORT_ATTRS_MISMATCH, Mockery::type('array'));
+        }
+
+        $ba = $this->mockBasicAuth();
+        $authCredsMock = ($consumerType == 'partner') ? Mockery::mock(ClientAuthCreds::class) : Mockery::mock(KeyAuthCreds::class) ;
+        $ba->authCreds = $authCredsMock;
+        $authCredsMock->shouldReceive('getKeyEntity')->andReturn(null);
+        $ba->expects($this->any())->method('getMode')->willReturn('live');
+        $ba->expects($this->once())->method('getAuthType')->willReturn($authType);
+        if ($authType === 'public')
+        {
+            $ba->expects($this->any())->method('isKeylessPublicAuth')->willReturn(false);
+        }
+        $ba->expects($this->atLeastOnce())->method('isProxyAuth')->willReturn(false);
+
+        if ($expectedMismatch)
+        {
+            $trace->shouldReceive('count')->once()->with(Metric::EDGE_AUTHFLOW_MISMATCH_TOTAL, Mockery::type('array'));
+            $trace->shouldReceive('warning')->once()->with(TraceCode::EDGE_AUTHFLOW_MISMATCH, Mockery::type('array'));
+        }
+
+        if (empty($passport))
+        {
+            $trace->shouldReceive('warning')->once()->with(TraceCode::PASSPORT_NOT_FOUND, Mockery::type('array'));
+        }
+
+        (new PostAuthenticate)->handle(true, $request);
+        Mockery::close();
+    }
+
+    public function getAuthFlowMismatchesCases()
+    {
+        $passport = new Passport\Passport;
+        $passport->identified = true;
+        $passport->authenticated = true;
+        $passport->mode = 'live';
+        $passport->credential = new Passport\CredentialClaims;
+        $passport->credential->username = 'rzp_live_10000000000000';
+        $passport->credential->publicKey = 'rzp_live_10000000000000';
+
+        $consumer = new Passport\ConsumerClaims;
+        $consumer->id = '10000000000000';
+        $consumer->type = 'merchant';
+
+        $oauth = new Passport\OauthClaims;
+        $oauth->appId = 'oauth_application_id';
+        $oauth->clientId = 'oauth_client_id';
+        $oauth->accessTokenId = 'oauth_access_token_id';
+        $oauth->ownerType = 'merchant';
+        $oauth->ownerId = 'oauth_owner_id';
+        $oauth->userId = 'oauth_user_id';
+        $oauth->env = 'test';
+
+        // $requestType, $passport, $authType, $consumerType, $consumerClaims, $oauthClaims, $expectedMismatch
+        return [
+            // Case 1 - Edge passport empty
+            ['mockPrivateRoute', null, 'private', null, $consumer, null, false],
+            // Case 2 - not private or public or oauth.
+            ['mockDirectRoute', $passport, 'direct', null, $consumer, null, false],
+            // Case 3 - no mismatch
+            ['mockPrivateRoute', $passport, 'private', 'merchant', $consumer, null, false],
+            // Case 4 - mismatch public auth
+            ['mockPublicRouteWithKeyInHeaders', $passport, 'public', 'partner', $consumer, null, true],
+            // Case 5 - mismatch private partner auth
+            ['mockPrivateRouteWithPartnerAuthToken', $passport, 'partner', 'partner', $consumer, null, true],
+            // Case 6 - mismatch oauth
+            ['mockPrivateRouteWithOAuthBearerToken', $passport, 'oauth', 'merchant', $consumer, $oauth, true],
+        ];
+    }
+
+    /**
+     * @dataProvider getAuthTypeAtAPICases
+     *
+     * @param class-string|null                 $authCredsClass
+     * @param bool                              $isKeylessAuth
+     * @param bool                              $isPublicAuth
+     * @param bool                              $isOauth
+     * @param string|null                       $accoundId
+     * @param string                            $expectedValue
+     */
+    public function testGetAuthTypeAtAPI($authCredsClass, $isKeylessAuth, $isPublicAuth, $isOauth, $accoundId, $expectedValue)
+    {
+        $request = $this->mockPrivateRouteWithLiveMode();
+        app('request.ctx')->init();
+        app('request.ctx')->resolveKeyIdIfApplicable();
+        $reqCtx = app('request.ctx.v2');
+        $reqCtx->passport = new Passport\Passport;
+
+        $trace = Mockery::mock('Razorpay\Trace\Logger');
+        $this->app->instance('trace', $trace);
+        $trace->shouldReceive('histogram')->times(1);
+        //there shouldn't be any exceptions
+        $trace->shouldReceive('error')->times(0);
+
+        $ba = $this->mockBasicAuth();
+        $ba->expects($this->any())->method('getMode')->willReturn('live');
+        $ba->expects($this->once())->method('getAuthType')->willReturn('private');
+        $ba->expects($this->atLeastOnce())->method('isProxyAuth')->willReturn(false);
+        $ba->expects($this->any())->method('isKeylessPublicAuth')->willReturn($isKeylessAuth);
+        $ba->expects($this->any())->method('isPublicAuth')->willReturn($isPublicAuth);
+        $ba->expects($this->any())->method('isOAuth')->willReturn($isOauth);
+        $ba->expects($this->any())->method('getAccountId')->willReturn($accoundId);
+
+        $traceCount = empty($authCredsClass) ? 1 : 2;
+        $trace->shouldReceive('count')->times($traceCount);
+        $trace->shouldReceive('warning')->once()->with(TraceCode::PASSPORT_ATTRS_MISMATCH, Mockery::type('array'));
+
+        if (! empty($authCredsClass))
+        {
+            $authCredsMock = Mockery::mock($authCredsClass);
+            $ba->authCreds = $authCredsMock;
+            $authCredsMock->shouldReceive('getKeyEntity')->andReturn(null);
+        }
+
+        $trace->shouldReceive('warning')->andReturnUsing(function ($message, $context) use ($expectedValue) {
+           if ($message == TraceCode::EDGE_AUTHFLOW_MISMATCH) {
+               self::assertEquals($context['api_auth_flow'], $expectedValue);
+           }
+        });
+
+        (new PostAuthenticate)->handle(true, $request);
+        Mockery::close();
+    }
+
+    public function getAuthTypeAtAPICases()
+    {
+        // $authCredsClass, $isKeylessAuth, $isPublicAuth, $isOauth, $accoundId, $expectedValue
+        return [
+            // Case 1 - unauthenticated unidentified request
+            [null, false, false, false, null, ''],
+            // Case 2 - keyless_auth
+            [KeyAuthCreds::class, true, false, false, null, 'keyless_auth'],
+            // Case 3 - public_merchant_auth
+            [KeyAuthCreds::class, false, true, false, null, 'public_merchant_auth_without_impersonation'],
+            // Case 4 - public_partner_auth
+            [ClientAuthCreds::class, false, true, false, null, 'public_partner_auth_without_impersonation'],
+            // Case 5 - public_partner_auth_with_impersonation
+            [ClientAuthCreds::class, false, true, false, '123', 'public_partner_auth_with_impersonation'],
+            // Case 6 - public_oauth_without_impersonation
+            [KeyAuthCreds::class, false, true, true, null, 'public_oauth_without_impersonation'],
+            // Case 7 - public_oauth_with_impersonation
+            [KeyAuthCreds::class, false, true, true, '123', 'public_oauth_with_impersonation'],
+            // Case 8 - merchant_auth
+            [KeyAuthCreds::class, false, false, false, null, 'merchant_auth_without_impersonation'],
+            // Case 9 - merchant_auth_with_impersonation
+            [KeyAuthCreds::class, false, false, false, '123', 'merchant_auth_with_impersonation'],
+            // Case 10 - partner_auth
+            [ClientAuthCreds::class, false, false, false, null, 'partner_auth_without_impersonation'],
+            // Case 11 - partner_auth_with_impersonation
+            [ClientAuthCreds::class, false, false, false, '123', 'partner_auth_with_impersonation'],
+            // Case 12 - oauth_without_impersonation
+            [KeyAuthCreds::class, false, false, true, null, 'oauth_without_impersonation'],
+            // Case 13 - oauth_with_impersonation
+            [KeyAuthCreds::class, false, false, true, '123', 'oauth_with_impersonation'],
         ];
     }
 }

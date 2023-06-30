@@ -2,14 +2,26 @@
 
 namespace RZP\Http\Edge;
 
+use Razorpay\Edge\Passport\Passport;
 use RZP\Trace\TraceCode;
 use Illuminate\Support\Facades\App;
-use Razorpay\Edge\Passport\Passport;
 use Razorpay\OAuth\Application\Repository;
 
 class PassportUtil
 {
-    protected $passport;
+    const OAUTH   = "oauth";
+
+    const WITHOUT_IMPERSONATION = "_without_impersonation";
+    const WITH_IMPERSONATION    = "_with_impersonation";
+
+    const KEYLESS_AUTH  = 'keyless_auth';
+    const PUBLIC_PREFIX = 'public_';
+    const AUTH_SUFFIX   = '_auth';
+
+    /*
+     * Edge Passport
+     */
+    protected Passport $passport;
 
     protected $app;
 
@@ -115,4 +127,45 @@ class PassportUtil
         return ($application->getMerchantId() === $this->passport->consumer->id);
     }
 
+    /**
+     * gets auth flow type from passport data.
+     * later can be extended for other auth schemes as required
+     *
+     * @return string   ''
+     *                  merchant_auth_without_impersonation
+     *                  merchant_auth_with_impersonation
+     *                  partner_auth_without_impersonation
+     *                  partner_auth_with_impersonation
+     *                  oauth_without_impersonation
+     *                  oauth_with_impersonation
+     *                  keyless_auth
+     *                  public_merchant_auth_without_impersonation
+     *                  public_partner_auth_without_impersonation
+     *                  public_partner_auth_with_impersonation
+     *                  public_oauth_without_impersonation
+     *                  public_oauth_with_impersonation
+     */
+    public function getAuthTypeFromPassport()
+    {
+        if (empty($this->passport->consumer)) {
+            return '';
+        }
+
+        $prefix = '';
+        // consumer identification request
+        if ($this->passport->authenticated === false && $this->passport->identified === true) {
+            // keyless auth request
+            if (empty($this->passport->credential)) {
+                return self::KEYLESS_AUTH;
+            }
+
+            $prefix = self::PUBLIC_PREFIX;
+        }
+
+        $authType = empty($this->passport->oauth) ? ($this->passport->consumer->type . self::AUTH_SUFFIX) : self::OAUTH;
+        $suffix = (empty($this->passport->impersonation) || empty($this->passport->impersonation->consumer)) ? self::WITHOUT_IMPERSONATION : self::WITH_IMPERSONATION;
+
+        $authType = $prefix . $authType . $suffix;
+        return $authType;
+    }
 }
