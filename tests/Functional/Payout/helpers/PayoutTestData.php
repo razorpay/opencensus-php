@@ -22557,4 +22557,64 @@ return [
             'status_code' => 200
         ],
     ],
+
+    'testPushNotificationForPayoutPendingOnApprovalWithNonExistingMerchantIds' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/pending/push-notification',
+            'content' => [
+                'include_merchant_ids'  => ['22244400416269'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'reminderEventCount' => 0 // no events fired
+            ],
+        ],
+    ],
+
+    'testPushNotificationForPayoutPendingOnApprovalWithExistingMerchantIds' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/pending/push-notification',
+            'content' => [
+                'include_merchant_ids'  => ['10000000000000'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'reminderEventCount' => 2 // 2 PNs fired
+            ],
+        ],
+    ],
+
+    'testPushNotificationForPayoutPendingOnApprovalWithExistingMerchantIdsAddedToExcludeList' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/pending/push-notification',
+            'content' => [
+                'exclude_merchant_ids'  => ['10000000000000'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'reminderEventCount' => 0 // Eventhough the merchant has pending payouts, since it is added to the exclude list no PN fired
+            ],
+        ],
+    ],
+
+    'testPushNotificationForPayoutPendingOnApprovalWithNonExistingMerchantIdsAddedToExcludeList' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/pending/push-notification',
+            'content' => [
+                'exclude_merchant_ids'  => ['22244400416269'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'reminderEventCount' => 2 // 2 PN fired for the pending payouts on the MID 10000000000000
+            ],
+        ],
+    ],
 ];

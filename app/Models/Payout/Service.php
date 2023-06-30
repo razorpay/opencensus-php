@@ -1092,18 +1092,38 @@ class Service extends Base\Service
         return $this->core->prepareTemplateAndDispatchEmail($approverList, $payoutLinksApproverList, $merchantPendingPayoutLinksMeta);
     }
 
-    public function sendPendingPayoutApprovalReminder()
+    public function sendPendingPayoutApprovalReminder($input): array
     {
+        $this->trace->info(TraceCode::PAYOUTS_PENDING_APPROVAL_SEND_PUSH_NOTIFICATION, [
+            'input' => $input,
+        ]);
+
+        (new Validator)->validateInput('pending_payout_approval_reminder', $input);
+
+        $includeMerchantIds = [];
+
+        $excludeMerchantIds = [];
+
+        if (array_key_exists(PayoutConstants::INCLUDE_MERCHANT_IDS, $input))
+        {
+            $includeMerchantIds = $input[PayoutConstants::INCLUDE_MERCHANT_IDS];
+        }
+
+        if (array_key_exists(PayoutConstants::EXCLUDE_MERCHANT_IDS, $input))
+        {
+            $excludeMerchantIds = $input[PayoutConstants::EXCLUDE_MERCHANT_IDS];
+        }
+
         $startAt = millitime();
 
-        $approverList = $this->repo->payout->fetchMerchantUserDataHavingPendingPayouts();
+        $approveList = $this->repo->payout->fetchMerchantUserDataHavingPendingPayouts($includeMerchantIds, $excludeMerchantIds);
 
         $this->trace->info(TraceCode::PENDING_APPROVAL_REMINDER_MERCHANT_QUERY_DURATION, [
             'query_execution_time' => millitime() - $startAt,
-            'approver_list'         => $approverList
+            'approve_list'         => $approveList
         ]);
 
-        return $this->core->getPendingPayoutsDataAndDispatchEvents($approverList);
+        return $this->core->getPendingPayoutsDataAndDispatchEvents($approveList);
     }
 
     public function sendPendingPayoutsNotificationToSlack()

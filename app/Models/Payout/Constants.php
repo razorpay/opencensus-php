@@ -89,4 +89,8 @@ class Constants
     public const CHANNEL                    = 'channel';
 
     public const MODE                       = 'mode';
+
+    public const INCLUDE_MERCHANT_IDS       = 'include_merchant_ids';
+
+    public const EXCLUDE_MERCHANT_IDS       = 'exclude_merchant_ids';
 }

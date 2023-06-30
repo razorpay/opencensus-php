@@ -2558,7 +2558,7 @@ class Repository extends Base\Repository
         return $query->count();
     }
 
-    public function fetchMerchantUserDataHavingPendingPayouts()
+    public function fetchMerchantUserDataHavingPendingPayouts(array $includeMerchantIds = [], array $excludeMerchantIds = [])
     {
         /*
         select `merchant_users`.`user_id`, `users`.`name`, `users`.`email`, `merchants`.`name` as `business_name`, `payouts`.`merchant_id`, `merchant_users`.`role`,
@@ -2571,7 +2571,11 @@ class Repository extends Base\Repository
         inner join `merchant_users` on `payouts`.`merchant_id` = `merchant_users`.`merchant_id`
         inner join `merchants` on `payouts`.`merchant_id` = `merchants`.`id`
         inner join `users` on `merchant_users`.`user_id` = `users`.`id`
-            where `merchant_users`.`role` = `unique_workflows`.`actor_type_value` and `merchant_users`.`product` = ? and `payouts`.`status` = ?
+            where `merchant_users`.`role` = `unique_workflows`.`actor_type_value`
+                and `merchant_users`.`product` = ?
+                and `payouts`.`status` = ?
+                and `payouts`.`merchant_id` not in [$excludeMerchantIds]
+                and `payouts`.`merchant_id` in [$includeMerchantIds]
             group by `merchant_id`, `name`, `user_id`, `name`, `email`, `role`, `business_name`
         */
 
@@ -2620,8 +2624,19 @@ class Repository extends Base\Repository
             ->join(Table::MERCHANT, $payoutMerchantId, '=', $merchantIdColumn)
             ->join(Table::USER, $merchantUserUserIdColumn, '=', $userIdColumn)
             ->where($merchantUserProductColumn, Merchant\Balance\Type::BANKING)
-            ->where($payoutStatus, Status::PENDING)
-            ->groupBy(
+            ->where($payoutStatus, Status::PENDING);
+
+        if (sizeof($includeMerchantIds) != 0)
+        {
+            $query->whereIn($payoutMerchantId, $includeMerchantIds);
+        }
+
+        if (sizeof($excludeMerchantIds) != 0)
+        {
+            $query->whereNotIn($payoutMerchantId, $excludeMerchantIds);
+        }
+
+        $query->groupBy(
                 Entity::MERCHANT_ID,
                 Merchant\Entity::NAME,
                 Merchant\MerchantUser\Entity::USER_ID,

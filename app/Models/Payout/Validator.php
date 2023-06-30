@@ -420,6 +420,13 @@ class Validator extends Base\Validator
         Entity::QUEUE_IF_LOW_BALANCE => 'sometimes|filled|boolean',
     ];
 
+    protected static $pendingPayoutApprovalReminderRules = [
+        PayoutConstants::INCLUDE_MERCHANT_IDS           => 'sometimes|array',
+        PayoutConstants::INCLUDE_MERCHANT_IDS . '.*'    => 'sometimes|string|size:14',
+        PayoutConstants::EXCLUDE_MERCHANT_IDS           => 'sometimes|array',
+        PayoutConstants::EXCLUDE_MERCHANT_IDS . '.*'    => 'sometimes|string|size:14',
+    ];
+
     protected static $batchApproveRules = [
         Entity::PAYOUT_IDS           => 'required|array',
         Entity::PAYOUT_IDS . '.*'    => 'required|public_id|size:19',

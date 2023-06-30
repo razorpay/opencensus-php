@@ -36140,5 +36140,201 @@ class PayoutTest extends OAuthTestCase
 
         return $accessToken;
     }
+
+    public function testPushNotificationForPayoutPendingOnApprovalWithNonExistingMerchantIds()
+    {
+        $this->liveSetUp();
+
+        $bankingAccountAttributes = [
+            'id'             => 'ABCde1234ABCde',
+            'account_number' => '2224440041626998',
+            'balance_id'     => $this->bankingBalance->getId(),
+            'account_type'   => 'nodal',
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes, 'live');
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->createPayoutWithWorkflowEntities(12345, '2224440041626905', Payout\Purpose::CASHBACK, 'FXMwu4HMK7ZT0C');
+        $this->createPayoutWithWorkflowEntities(23456, '2224440041626905', Payout\Purpose::CASHBACK, 'FXMwu4HMK7ZT0D');
+        $this->createPayoutWithWorkflowEntities(11111, '2224440041626905', Payout\Purpose::SALARY, 'FXMwu4HMK7ZT0F');
+        $this->createPayoutWithWorkflowEntities(50000, '2224440041626905', Payout\Purpose::SALARY, 'FXMwu4HMK7ZT0G');
+        $this->createPayoutWithWorkflowEntities(65432, '2224440041626905', Payout\Purpose::REFUND, 'FXMwu4HMK7ZT0H');
+
+        $this->ba->cronAuth('live');
+
+        $this->storkMock
+            ->shouldNotReceive('requestAndGetParsedBody'); // No PN fired, since the given merchant has no pending payouts
+
+        $this->startTest();
+    }
+
+    public function testPushNotificationForPayoutPendingOnApprovalWithExistingMerchantIds()
+    {
+        $this->liveSetUp();
+
+        $bankingAccountAttributes = [
+            'id'             => 'ABCde1234ABCde',
+            'account_number' => '2224440041626998',
+            'balance_id'     => $this->bankingBalance->getId(),
+            'account_type'   => 'nodal',
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes, 'live');
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->createPayoutWithWorkflowEntities(12345, '2224440041626905', Payout\Purpose::CASHBACK, 'FXMwu4HMK7ZT0C');
+        $this->createPayoutWithWorkflowEntities(23456, '2224440041626905', Payout\Purpose::CASHBACK, 'FXMwu4HMK7ZT0D');
+        $this->createPayoutWithWorkflowEntities(11111, '2224440041626905', Payout\Purpose::SALARY, 'FXMwu4HMK7ZT0F');
+        $this->createPayoutWithWorkflowEntities(50000, '2224440041626905', Payout\Purpose::SALARY, 'FXMwu4HMK7ZT0G');
+        $this->createPayoutWithWorkflowEntities(65432, '2224440041626905', Payout\Purpose::REFUND, 'FXMwu4HMK7ZT0H');
+
+        $this->ba->cronAuth('live');
+
+        $splitzResp = [
+            "response" => [
+                'variant' => [
+                    'name' => null,
+                ]
+            ]
+        ];
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.clevertap_migration_splitz_experiment_id');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+                   ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+        $this->storkMock
+            ->shouldReceive('requestAndGetParsedBody')
+            ->times(2)
+            ->with(
+                Mockery::on(function ($route)
+                {
+                    return true;
+                }),
+                Mockery::on(function ($params)
+                {
+                    $title = $params['message']['push_notification_channels'][0]['push_notification_request']['target_user_campaign_request']['content_title'];
+                    $body = $params['message']['push_notification_channels'][0]['push_notification_request']['target_user_campaign_request']['content_body'];
+                    $this->assertEquals('merchant', $params['message']['owner_type']);
+                    $this->assertEquals('Approve Pending Payouts', $title);
+                    $this->assertEquals('5 payouts worth ₹1,623.44 pending your approval', $body);
+                    return true;
+                })
+            )
+            ->andReturnUsing(function ()
+            {
+                return [
+                    'success' => true
+                ];
+            }); // PN Fired since the actual merchant is added in the include_merchant_ids
+
+        $this->startTest();
+    }
+
+    public function testPushNotificationForPayoutPendingOnApprovalWithExistingMerchantIdsAddedToExcludeList()
+    {
+        $this->liveSetUp();
+
+        $bankingAccountAttributes = [
+            'id'             => 'ABCde1234ABCde',
+            'account_number' => '2224440041626998',
+            'balance_id'     => $this->bankingBalance->getId(),
+            'account_type'   => 'nodal',
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes, 'live');
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->createPayoutWithWorkflowEntities(12345, '2224440041626905', Payout\Purpose::CASHBACK, 'FXMwu4HMK7ZT0C');
+        $this->createPayoutWithWorkflowEntities(23456, '2224440041626905', Payout\Purpose::CASHBACK, 'FXMwu4HMK7ZT0D');
+        $this->createPayoutWithWorkflowEntities(11111, '2224440041626905', Payout\Purpose::SALARY, 'FXMwu4HMK7ZT0F');
+        $this->createPayoutWithWorkflowEntities(50000, '2224440041626905', Payout\Purpose::SALARY, 'FXMwu4HMK7ZT0G');
+        $this->createPayoutWithWorkflowEntities(65432, '2224440041626905', Payout\Purpose::REFUND, 'FXMwu4HMK7ZT0H');
+
+        $this->ba->cronAuth('live');
+
+        $splitzResp = [
+            "response" => [
+                'variant' => [
+                    'name' => null,
+                ]
+            ]
+        ];
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.clevertap_migration_splitz_experiment_id');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+                   ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+        $this->storkMock
+            ->shouldNotReceive('requestAndGetParsedBody'); // Eventhough the merchant has pending payouts, since it is added to the exclude list no PN fired
+
+        $this->startTest();
+    }
+
+    public function testPushNotificationForPayoutPendingOnApprovalWithNonExistingMerchantIdsAddedToExcludeList()
+    {
+        $this->liveSetUp();
+
+        $bankingAccountAttributes = [
+            'id'             => 'ABCde1234ABCde',
+            'account_number' => '2224440041626998',
+            'balance_id'     => $this->bankingBalance->getId(),
+            'account_type'   => 'nodal',
+        ];
+
+        $this->createBankingAccount($bankingAccountAttributes, 'live');
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->createPayoutWithWorkflowEntities(12345, '2224440041626905', Payout\Purpose::CASHBACK, 'FXMwu4HMK7ZT0C');
+        $this->createPayoutWithWorkflowEntities(23456, '2224440041626905', Payout\Purpose::CASHBACK, 'FXMwu4HMK7ZT0D');
+        $this->createPayoutWithWorkflowEntities(11111, '2224440041626905', Payout\Purpose::SALARY, 'FXMwu4HMK7ZT0F');
+        $this->createPayoutWithWorkflowEntities(50000, '2224440041626905', Payout\Purpose::SALARY, 'FXMwu4HMK7ZT0G');
+        $this->createPayoutWithWorkflowEntities(65432, '2224440041626905', Payout\Purpose::REFUND, 'FXMwu4HMK7ZT0H');
+
+        $this->ba->cronAuth('live');
+
+        $splitzResp = [
+            "response" => [
+                'variant' => [
+                    'name' => null,
+                ]
+            ]
+        ];
+        $splitzMock = $this->getSplitzMock();
+        $expId = $this->app['config']->get('app.clevertap_migration_splitz_experiment_id');
+        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))
+                   ->with(Mockery::hasValue($expId))->andReturn($splitzResp);
+
+        $this->storkMock
+            ->shouldReceive('requestAndGetParsedBody')
+            ->times(2)
+            ->with(
+                Mockery::on(function ($route)
+                {
+                    return true;
+                }),
+                Mockery::on(function ($params)
+                {
+                    $title = $params['message']['push_notification_channels'][0]['push_notification_request']['target_user_campaign_request']['content_title'];
+                    $body = $params['message']['push_notification_channels'][0]['push_notification_request']['target_user_campaign_request']['content_body'];
+                    $this->assertEquals('merchant', $params['message']['owner_type']);
+                    $this->assertEquals('Approve Pending Payouts', $title);
+                    $this->assertEquals('5 payouts worth ₹1,623.44 pending your approval', $body);
+                    return true;
+                })
+            )
+            ->andReturnUsing(function ()
+            {
+                return [
+                    'success' => true
+                ];
+            }); // PN fired for the pending payouts on the MID 10000000000000
+
+        $this->startTest();
+    }
 }
 

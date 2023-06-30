@@ -268,7 +268,29 @@ class PayoutController extends Controller
     {
         try
         {
-            $response = $this->service()->sendPendingPayoutApprovalReminder();
+            $input = Request::all();
+
+            $response = $this->service()->sendPendingPayoutApprovalReminder($input);
+
+            return ApiResponse::json($response);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PENDING_PAYOUT_APPROVAL_REMINDER_FAILED
+            );
+        }
+    }
+
+    public function pendingPayoutPushNotification()
+    {
+        try
+        {
+            $input = Request::all();
+
+            $response = $this->service()->sendPendingPayoutApprovalReminder($input);
 
             return ApiResponse::json($response);
         }
