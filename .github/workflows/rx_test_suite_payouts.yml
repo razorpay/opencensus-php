@@ -1,0 +1,529 @@
+on: [push]
+jobs:
+  cancel:
+    runs-on: [api-public]
+    name: Cancel Previous Runs
+    if: always()
+    timeout-minutes: 1
+    steps:
+      - uses: styfle/cancel-workflow-action@0.9.0
+        if: github.ref != 'refs/heads/master'
+        name: cancel old workflows
+        id: cancel
+        with:
+          all_but_latest: true
+          workflow_id: "rx_test_suite_payouts.yml"
+          access_token: ${{ github.token }}
+      - if: github.ref == 'refs/heads/master'
+        name: Don't cancel old workflows
+        id: dont_cancel
+        run: |
+          echo "Don't cancel old workflow"
+  rx_test_suite-1_payouts:
+    runs-on: [api-public]
+    needs: [cancel]
+    container:
+      image: c.rzp.io/razorpay/onggi:php-8.1-api-web
+      options: "--entrypoint /bin/bash"
+      credentials:
+        username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+        password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+    continue-on-error: false
+    name: Rx Test Suite-1 Payouts
+    steps:
+      - name: checkout
+        id: checkout
+        uses: razorpay/checkout-action@08eef2bd6ada50786812e7351457a762856a532f
+      - name: "Cache dependencies installed with composer"
+        uses: "actions/cache@v3.0.0"
+        with:
+          path: "/github/home/.composer/cache"
+          key: "api-composer-${{ hashFiles('composer.lock') }}"
+      - name: prepare_test
+        run: ci-assets/prepare_test.sh
+        env:
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+      - name: rx_test_suite-1_payouts
+        run: ci-assets/rx_test_suite-1_payouts.sh
+        env:
+          DB_LIVE_HOST: mysql
+          DB_TEST_HOST: mysql
+          DB_AUTH_HOST: mysql
+          DB_LIVE_DATABASE: api_live
+          DB_TEST_DATABASE: api_test
+          DB_AUTH_DATABASE: api_auth
+          REDIS_HOST: redis
+          QUERY_CACHE_REDIS_HOST: redis
+          QUERY_CACHE_REDIS_PORT: 6379
+          MUTEX_REDIS_HOST: redis
+          MUTEX_REDIS_PORT: 6379
+          SESSION_REDIS_HOST: redis
+          SESSION_REDIS_PORT: 6379
+          SESSION_REDIS_HOST_V2: redis
+          SESSION_REDIS_PORT_V2: 6379
+          THROTTLE_REDIS_HOST: redis
+          THROTTLE_REDIS_PORT: 6379
+          ES_HOST: elasticsearch
+          ES_AUDIT_HOST: elasticsearch
+          LQEXT_TESTING_TXN_SKIP_COUNT: 3
+          API_DOCS_FILE_NAME: rx_test_suite-1_payouts.json
+          GIT_COMMIT_HASH: ${{ github.sha }}
+          API_UI_TEST_SUMO_COLLECTION_URL_TEMP: ${{ secrets.API_UI_TEST_SUMO_COLLECTION_URL_TEMP }}
+      - name: Push UT Metrics
+        if: always()
+        run: ci-assets/ut_metrics.sh
+        env:
+          GIT_COMMIT: ${{ github.sha }}
+          BRANCH: ${{ github.ref }}
+          TEST_SUITE_NAME: ${{ github.job }}
+      - name: set repo env
+        run: |
+          echo "REPO=$(echo ${GITHUB_REPOSITORY##*/})" >> $GITHUB_ENV
+          echo "GIT_BRANCH=$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
+      - name: Copy all api details files from s3 to local
+        uses: docker://amazon/aws-cli:2.2.25
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_CACHE_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
+        with:
+          args: s3 sync s3://rzp-actions-cache/_docs/${{ env.REPO }}/ ./_docs/
+      - name: Push Newly generated api details file to s3
+        uses: docker://amazon/aws-cli:2.2.25
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_CACHE_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
+        with:
+          args: s3 cp _docs/rx_test_suite-1_payouts.json s3://rzp-actions-cache/_docs/${{ env.REPO }}/rx_test_suite-1_payouts.json
+      - name: Combine all temporary files and generate final file
+        run: |
+          php artisan AutoGenerateApiDocs:CombineApiDetailsFile
+          php artisan AutoGenerateApiDocs:GenerateOpenApiSpecifications
+          ls ./_docs/
+      - name: Check if a file exists
+        id: check_files
+        run: |
+          if [ -f _docs/open_api_spec.json ]; then
+            echo '::set-output name=file_exists::true'
+            echo "Open api specification found"
+          else
+            echo '::set-output name=file_exists::false'
+            echo "Open api specification not found"
+          fi
+      - name: if exists push open api specification file
+        if: steps.check_files.outputs.file_exists == 'true'
+        uses: docker://amazon/aws-cli:2.2.25
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.IDOCS_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.IDOCS_AWS_SECRET_ACCESS_KEY }}
+        with:
+          args: s3 cp _docs/open_api_spec.json s3://rzp-idocs/_docs/${{ env.REPO }}/${{ env.GIT_BRANCH }}.json
+    services:
+      redis:
+        credentials:
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+        image: c.rzp.io/proxy_dockerhub/library/redis:alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      mysql:
+        credentials:
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+        image: c.rzp.io/proxy_dockerhub/bitnami/mysql:8.0
+        env:
+          MYSQL_DATABASE: api
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
+      elasticsearch:
+        credentials:
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+        image: c.rzp.io/proxy_dockerhub/library/elasticsearch:5.6-alpine
+        env:
+          ES_JAVA_OPTS: -Xms512m -Xmx512m
+  rx_test_suite-2_payouts:
+    runs-on: [api-public]
+    needs: [cancel]
+    container:
+      image: c.rzp.io/razorpay/onggi:php-8.1-api-web
+      options: "--entrypoint /bin/bash"
+      credentials:
+        username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+        password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+    continue-on-error: false
+    name: Rx Test Suite-2 Payouts
+    steps:
+      - name: checkout
+        id: checkout
+        uses: razorpay/checkout-action@08eef2bd6ada50786812e7351457a762856a532f
+      - name: "Cache dependencies installed with composer"
+        uses: "actions/cache@v3.0.0"
+        with:
+          path: "/github/home/.composer/cache"
+          key: "api-composer-${{ hashFiles('composer.lock') }}"
+      - name: prepare_test
+        run: ci-assets/prepare_test.sh
+        env:
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+      - name: rx_test_suite-2_payouts
+        run: ci-assets/rx_test_suite-2_payouts.sh
+        env:
+          DB_LIVE_HOST: mysql
+          DB_TEST_HOST: mysql
+          DB_AUTH_HOST: mysql
+          DB_LIVE_DATABASE: api_live
+          DB_TEST_DATABASE: api_test
+          DB_AUTH_DATABASE: api_auth
+          REDIS_HOST: redis
+          QUERY_CACHE_REDIS_HOST: redis
+          QUERY_CACHE_REDIS_PORT: 6379
+          MUTEX_REDIS_HOST: redis
+          MUTEX_REDIS_PORT: 6379
+          SESSION_REDIS_HOST: redis
+          SESSION_REDIS_PORT: 6379
+          SESSION_REDIS_HOST_V2: redis
+          SESSION_REDIS_PORT_V2: 6379
+          THROTTLE_REDIS_HOST: redis
+          THROTTLE_REDIS_PORT: 6379
+          ES_HOST: elasticsearch
+          ES_AUDIT_HOST: elasticsearch
+          LQEXT_TESTING_TXN_SKIP_COUNT: 3
+          API_DOCS_FILE_NAME: rx_test_suite-2_payouts.json
+          GIT_COMMIT_HASH: ${{ github.sha }}
+          API_UI_TEST_SUMO_COLLECTION_URL_TEMP: ${{ secrets.API_UI_TEST_SUMO_COLLECTION_URL_TEMP }}
+      - name: Push UT Metrics
+        if: always()
+        run: ci-assets/ut_metrics.sh
+        env:
+          GIT_COMMIT: ${{ github.sha }}
+          BRANCH: ${{ github.ref }}
+          TEST_SUITE_NAME: ${{ github.job }}
+      - name: set repo env
+        run: |
+          echo "REPO=$(echo ${GITHUB_REPOSITORY##*/})" >> $GITHUB_ENV
+          echo "GIT_BRANCH=$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
+      - name: Copy all api details files from s3 to local
+        uses: docker://amazon/aws-cli:2.2.25
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_CACHE_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
+        with:
+          args: s3 sync s3://rzp-actions-cache/_docs/${{ env.REPO }}/ ./_docs/
+      - name: Push Newly generated api details file to s3
+        uses: docker://amazon/aws-cli:2.2.25
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_CACHE_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
+        with:
+          args: s3 cp _docs/rx_test_suite-2_payouts.json s3://rzp-actions-cache/_docs/${{ env.REPO }}/rx_test_suite-2_payouts.json
+      - name: Combine all temporary files and generate final file
+        run: |
+          php artisan AutoGenerateApiDocs:CombineApiDetailsFile
+          php artisan AutoGenerateApiDocs:GenerateOpenApiSpecifications
+          ls ./_docs/
+      - name: Check if a file exists
+        id: check_files
+        run: |
+          if [ -f _docs/open_api_spec.json ]; then
+            echo '::set-output name=file_exists::true'
+            echo "Open api specification found"
+          else
+            echo '::set-output name=file_exists::false'
+            echo "Open api specification not found"
+          fi
+      - name: if exists push open api specification file
+        if: steps.check_files.outputs.file_exists == 'true'
+        uses: docker://amazon/aws-cli:2.2.25
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.IDOCS_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.IDOCS_AWS_SECRET_ACCESS_KEY }}
+        with:
+          args: s3 cp _docs/open_api_spec.json s3://rzp-idocs/_docs/${{ env.REPO }}/${{ env.GIT_BRANCH }}.json
+    services:
+      redis:
+        credentials:
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+        image: c.rzp.io/proxy_dockerhub/library/redis:alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      mysql:
+        credentials:
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+        image: c.rzp.io/proxy_dockerhub/bitnami/mysql:8.0
+        env:
+          MYSQL_DATABASE: api
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
+      elasticsearch:
+        credentials:
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+        image: c.rzp.io/proxy_dockerhub/library/elasticsearch:5.6-alpine
+        env:
+          ES_JAVA_OPTS: -Xms512m -Xmx512m
+  rx_test_suite-3_payouts:
+    runs-on: [api-public]
+    needs: [cancel]
+    container:
+      image: c.rzp.io/razorpay/onggi:php-8.1-api-web
+      options: "--entrypoint /bin/bash"
+      credentials:
+        username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+        password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+    continue-on-error: false
+    name: Rx Test Suite-3 Payouts
+    steps:
+      - name: checkout
+        id: checkout
+        uses: razorpay/checkout-action@08eef2bd6ada50786812e7351457a762856a532f
+      - name: "Cache dependencies installed with composer"
+        uses: "actions/cache@v3.0.0"
+        with:
+          path: "/github/home/.composer/cache"
+          key: "api-composer-${{ hashFiles('composer.lock') }}"
+      - name: prepare_test
+        run: ci-assets/prepare_test.sh
+        env:
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+      - name: rx_test_suite-3_payouts
+        run: ci-assets/rx_test_suite-3_payouts.sh
+        env:
+          DB_LIVE_HOST: mysql
+          DB_TEST_HOST: mysql
+          DB_AUTH_HOST: mysql
+          DB_LIVE_DATABASE: api_live
+          DB_TEST_DATABASE: api_test
+          DB_AUTH_DATABASE: api_auth
+          REDIS_HOST: redis
+          QUERY_CACHE_REDIS_HOST: redis
+          QUERY_CACHE_REDIS_PORT: 6379
+          MUTEX_REDIS_HOST: redis
+          MUTEX_REDIS_PORT: 6379
+          SESSION_REDIS_HOST: redis
+          SESSION_REDIS_PORT: 6379
+          SESSION_REDIS_HOST_V2: redis
+          SESSION_REDIS_PORT_V2: 6379
+          THROTTLE_REDIS_HOST: redis
+          THROTTLE_REDIS_PORT: 6379
+          ES_HOST: elasticsearch
+          ES_AUDIT_HOST: elasticsearch
+          LQEXT_TESTING_TXN_SKIP_COUNT: 3
+          API_DOCS_FILE_NAME: rx_test_suite-3_payouts.json
+          GIT_COMMIT_HASH: ${{ github.sha }}
+          API_UI_TEST_SUMO_COLLECTION_URL_TEMP: ${{ secrets.API_UI_TEST_SUMO_COLLECTION_URL_TEMP }}
+      - name: Push UT Metrics
+        if: always()
+        run: ci-assets/ut_metrics.sh
+        env:
+          GIT_COMMIT: ${{ github.sha }}
+          BRANCH: ${{ github.ref }}
+          TEST_SUITE_NAME: ${{ github.job }}
+      - name: set repo env
+        run: |
+          echo "REPO=$(echo ${GITHUB_REPOSITORY##*/})" >> $GITHUB_ENV
+          echo "GIT_BRANCH=$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
+      - name: Copy all api details files from s3 to local
+        uses: docker://amazon/aws-cli:2.2.25
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_CACHE_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
+        with:
+          args: s3 sync s3://rzp-actions-cache/_docs/${{ env.REPO }}/ ./_docs/
+      - name: Push Newly generated api details file to s3
+        uses: docker://amazon/aws-cli:2.2.25
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_CACHE_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
+        with:
+          args: s3 cp _docs/rx_test_suite-3_payouts.json s3://rzp-actions-cache/_docs/${{ env.REPO }}/rx_test_suite-3_payouts.json
+      - name: Combine all temporary files and generate final file
+        run: |
+          php artisan AutoGenerateApiDocs:CombineApiDetailsFile
+          php artisan AutoGenerateApiDocs:GenerateOpenApiSpecifications
+          ls ./_docs/
+      - name: Check if a file exists
+        id: check_files
+        run: |
+          if [ -f _docs/open_api_spec.json ]; then
+            echo '::set-output name=file_exists::true'
+            echo "Open api specification found"
+          else
+            echo '::set-output name=file_exists::false'
+            echo "Open api specification not found"
+          fi
+      - name: if exists push open api specification file
+        if: steps.check_files.outputs.file_exists == 'true'
+        uses: docker://amazon/aws-cli:2.2.25
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.IDOCS_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.IDOCS_AWS_SECRET_ACCESS_KEY }}
+        with:
+          args: s3 cp _docs/open_api_spec.json s3://rzp-idocs/_docs/${{ env.REPO }}/${{ env.GIT_BRANCH }}.json
+    services:
+      redis:
+        credentials:
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+        image: c.rzp.io/proxy_dockerhub/library/redis:alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      mysql:
+        credentials:
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+        image: c.rzp.io/proxy_dockerhub/bitnami/mysql:8.0
+        env:
+          MYSQL_DATABASE: api
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
+      elasticsearch:
+        credentials:
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+        image: c.rzp.io/proxy_dockerhub/library/elasticsearch:5.6-alpine
+        env:
+          ES_JAVA_OPTS: -Xms512m -Xmx512m
+  rx_test_suite-4_payouts:
+    runs-on: [api-public]
+    needs: [cancel]
+    container:
+      image: c.rzp.io/razorpay/onggi:php-8.1-api-web
+      options: "--entrypoint /bin/bash"
+      credentials:
+        username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+        password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+    continue-on-error: false
+    name: Rx Test Suite-4 Payouts
+    steps:
+      - name: checkout
+        id: checkout
+        uses: razorpay/checkout-action@08eef2bd6ada50786812e7351457a762856a532f
+      - name: "Cache dependencies installed with composer"
+        uses: "actions/cache@v3.0.0"
+        with:
+          path: "/github/home/.composer/cache"
+          key: "api-composer-${{ hashFiles('composer.lock') }}"
+      - name: prepare_test
+        run: ci-assets/prepare_test.sh
+        env:
+          GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
+      - name: rx_test_suite-4_payouts
+        run: ci-assets/rx_test_suite-4_payouts.sh
+        env:
+          DB_LIVE_HOST: mysql
+          DB_TEST_HOST: mysql
+          DB_AUTH_HOST: mysql
+          DB_LIVE_DATABASE: api_live
+          DB_TEST_DATABASE: api_test
+          DB_AUTH_DATABASE: api_auth
+          REDIS_HOST: redis
+          QUERY_CACHE_REDIS_HOST: redis
+          QUERY_CACHE_REDIS_PORT: 6379
+          MUTEX_REDIS_HOST: redis
+          MUTEX_REDIS_PORT: 6379
+          SESSION_REDIS_HOST: redis
+          SESSION_REDIS_PORT: 6379
+          SESSION_REDIS_HOST_V2: redis
+          SESSION_REDIS_PORT_V2: 6379
+          THROTTLE_REDIS_HOST: redis
+          THROTTLE_REDIS_PORT: 6379
+          ES_HOST: elasticsearch
+          ES_AUDIT_HOST: elasticsearch
+          LQEXT_TESTING_TXN_SKIP_COUNT: 3
+          API_DOCS_FILE_NAME: rx_test_suite-4_payouts.json
+          GIT_COMMIT_HASH: ${{ github.sha }}
+          API_UI_TEST_SUMO_COLLECTION_URL_TEMP: ${{ secrets.API_UI_TEST_SUMO_COLLECTION_URL_TEMP }}
+      - name: Push UT Metrics
+        if: always()
+        run: ci-assets/ut_metrics.sh
+        env:
+          GIT_COMMIT: ${{ github.sha }}
+          BRANCH: ${{ github.ref }}
+          TEST_SUITE_NAME: ${{ github.job }}
+      - name: set repo env
+        run: |
+          echo "REPO=$(echo ${GITHUB_REPOSITORY##*/})" >> $GITHUB_ENV
+          echo "GIT_BRANCH=$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
+      - name: Copy all api details files from s3 to local
+        uses: docker://amazon/aws-cli:2.2.25
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_CACHE_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
+        with:
+          args: s3 sync s3://rzp-actions-cache/_docs/${{ env.REPO }}/ ./_docs/
+      - name: Push Newly generated api details file to s3
+        uses: docker://amazon/aws-cli:2.2.25
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.ACTIONS_CACHE_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.ACTIONS_CACHE_AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{secrets.ACTIONS_CACHE_AWS_REGION}}
+        with:
+          args: s3 cp _docs/rx_test_suite-4_payouts.json s3://rzp-actions-cache/_docs/${{ env.REPO }}/rx_test_suite-4_payouts.json
+      - name: Combine all temporary files and generate final file
+        run: |
+          php artisan AutoGenerateApiDocs:CombineApiDetailsFile
+          php artisan AutoGenerateApiDocs:GenerateOpenApiSpecifications
+          ls ./_docs/
+      - name: Check if a file exists
+        id: check_files
+        run: |
+          if [ -f _docs/open_api_spec.json ]; then
+            echo '::set-output name=file_exists::true'
+            echo "Open api specification found"
+          else
+            echo '::set-output name=file_exists::false'
+            echo "Open api specification not found"
+          fi
+      - name: if exists push open api specification file
+        if: steps.check_files.outputs.file_exists == 'true'
+        uses: docker://amazon/aws-cli:2.2.25
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.IDOCS_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.IDOCS_AWS_SECRET_ACCESS_KEY }}
+        with:
+          args: s3 cp _docs/open_api_spec.json s3://rzp-idocs/_docs/${{ env.REPO }}/${{ env.GIT_BRANCH }}.json
+    services:
+      redis:
+        credentials:
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+        image: c.rzp.io/proxy_dockerhub/library/redis:alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      mysql:
+        credentials:
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+        image: c.rzp.io/proxy_dockerhub/bitnami/mysql:8.0
+        env:
+          MYSQL_DATABASE: api
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
+      elasticsearch:
+        credentials:
+          username: ${{ secrets.HARBOR_DOCKER_USERNAME }}
+          password: ${{ secrets.HARBOR_DOCKER_PASSWORD }}
+        image: c.rzp.io/proxy_dockerhub/library/elasticsearch:5.6-alpine
+        env:
+          ES_JAVA_OPTS: -Xms512m -Xmx512m

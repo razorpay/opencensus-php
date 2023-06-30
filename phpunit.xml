@@ -49,7 +49,6 @@
             <directory>./tests/Functional/CorporateCards/</directory>
             <directory>./tests/Functional/InstrumentRules/</directory>
             <directory>./tests/Functional/Art/</directory>
-            <directory>./tests/Functional/PayoutDowntime/</directory>
             <directory>./tests/Functional/Affordability/</directory>
             <directory>./tests/Functional/VendorPortal/</directory>
             <directory>./tests/Functional/UpiTransfer/</directory>
@@ -87,7 +86,6 @@
             <directory>./tests/Functional/Address/</directory>
             <directory>./tests/Functional/P2p/</directory>
             <directory>./tests/Functional/LedgerJournalJob/</directory>
-            <directory>./tests/Functional/AccountingPayouts/</directory>
             <directory>./tests/Functional/Reward/</directory>
             <directory>./tests/Functional/Fixtures/</directory>
             <directory>./tests/Functional/Report/</directory>
@@ -105,7 +103,6 @@
             <directory>./tests/Functional/CreditNote/</directory>
             <directory>./tests/Functional/Helpers/</directory>
             <directory>./tests/Functional/BankTransfer/</directory>
-            <directory>./tests/Functional/BankingAccount/</directory>
             <directory>./tests/Functional/Offline/</directory>
             <directory>./tests/Functional/BasicAuth/</directory>
             <directory>./tests/Functional/Store/</directory>
@@ -121,10 +118,7 @@
             <directory>./tests/Functional/FundTransfer/</directory>
             <directory>./tests/Functional/Invitation/</directory>
             <directory>./tests/Functional/Key/</directory>
-            <directory>./tests/Functional/PayoutDowntime/</directory>
             <directory>./tests/Functional/BankingAccountTpv/</directory>
-            <directory>./tests/Functional/BankingAccountService/</directory>
-            <directory>./tests/Functional/FundLoadingDowntime/</directory>
             <!--<directory>./tests/Functional/AutoGenerateApiDocsTest/</directory>-->
         </testsuite>
         <testsuite name="Features-2 Test Suite">
@@ -134,7 +128,6 @@
             <file>./tests/Functional/Merchant/AmountCreditsTest.php</file>
             <file>./tests/Functional/Merchant/AppCheckerTest.php</file>
             <file>./tests/Functional/Merchant/BalanceConfigTest.php</file>
-            <file>./tests/Functional/Merchant/BalanceTest.php</file>
             <file>./tests/Functional/Merchant/BatchActionTest.php</file>
             <file>./tests/Functional/Merchant/BulkFraudNotifyTest.php</file>
             <file>./tests/Functional/Merchant/CardRedactionTest.php</file>
@@ -156,7 +149,7 @@
             <file>./tests/Functional/Merchant/MailmodoTest.php</file>
             <file>./tests/Functional/Merchant/MerchantAnalyticsTest.php</file>
             <file>./tests/Functional/Merchant/MerchantAttributeTest.php</file>
-            <file>./tests/Functional/Merchant/MerchantBankingInvoiceTest.php</file>
+            <file>./tests/Functional/Merchant/MerchantCoreTest.php</file>
             <file>./tests/Functional/Merchant/MerchantCreateTest.php</file>
             <file>./tests/Functional/Merchant/MerchantDocumentTest.php</file>
             <file>./tests/Functional/Merchant/MerchantEmailTest.php</file>
@@ -206,14 +199,10 @@
         </testsuite>
         <testsuite name="Features-3-1 Test Suite">
             <directory>./tests/Functional/Payout/</directory>
-            <directory>./tests/Functional/Counter/</directory>
             <directory>./tests/Functional/RequestLog/</directory>
-            <directory>./tests/Functional/PayoutSource/</directory>
-            <directory>./tests/Functional/FundLoadingDowntime/</directory>
             <file>./tests/Unit/PayoutDetails/CoreTest.php</file>
             <file>./tests/Unit/Utility/IfscValidationTest.php</file>
             <file>./tests/Unit/PayoutSource/PayoutSourceTest.php</file>
-            <file>./tests/Functional/Merchant/LowBalanceConfigTest.php</file>
         </testsuite>
         <testsuite name="Features-3-2 Test Suite">
             <directory>./tests/Functional/Order/</directory>
@@ -287,13 +276,10 @@
         </testsuite>
         <testsuite name="Feature-6 Test Suite">
             <directory>./tests/Functional/TaxPayments/</directory>
-            <directory>./tests/Functional/AccountingPayouts/</directory>
             <directory>./tests/Functional/Contact/</directory>
             <directory>./tests/Functional/FundAccounts/</directory>
             <directory>./tests/Unit/PaymentsUpi</directory>
             <directory>./tests/Functional/PaymentsUpi</directory>
-            <directory>./tests/Functional/FeeRecovery/</directory>
-            <directory>./tests/Functional/PayoutLink/</directory>
             <file>./tests/Functional/Merchant/FeaturesTest.php</file>
             <!--<file>./tests/Functional/Gateway/Mozart/UpiMindgateRecurringTest.php</file>-->
         </testsuite>
@@ -437,20 +423,13 @@
             <directory>./tests/Functional/Payout/</directory>
         </testsuite>
         <testsuite name="Rx Test Suite Core">
-            <directory>./tests/Functional/FeeRecovery/</directory>
             <directory>./tests/Functional/Contact/</directory>
             <directory>./tests/Functional/FundAccounts/</directory>
             <directory>./tests/Functional/BankingAccountStatement/</directory>
-            <directory>./tests/Functional/BankingAccount/</directory>
             <directory>./tests/Functional/FundTransfer/</directory>
-            <directory>./tests/Functional/Counter/</directory>
             <directory>./tests/Functional/BankingAccountTpv/</directory>
             <directory>./tests/Functional/RequestLog/</directory>
             <directory>./tests/Functional/BankTransfer/</directory>
-            <directory>./tests/Unit/Models/Contact</directory>
-            <file>./tests/Functional/Merchant/BalanceTest.php</file>
-            <file>./tests/Functional/Merchant/MerchantBankingInvoiceTest.php</file>
-            <file>./tests/Functional/Merchant/LowBalanceConfigTest.php</file>
         </testsuite>
         <testsuite name="ES Ondemand Test Suite">
             <directory>./tests/Functional/Settlement/SettlementOndemand</directory>
@@ -494,6 +473,33 @@
         </testsuite>
         <testsuite name="Affordibility Test Suite">
             <directory>./tests/Functional/Offer/</directory>
+        </testsuite>
+        <testsuite name="Rx Test Suite-1 Payouts">
+            <directory>./tests/Functional/PayoutSource/</directory>
+            <directory>./tests/Functional/PayoutDowntime/</directory>
+        </testsuite>
+        <testsuite name="Rx Test Suite-2 Payouts">
+            <directory>./tests/Functional/Counter/</directory>
+            <directory>./tests/Functional/FundLoadingDowntime/</directory>
+        </testsuite>
+        <testsuite name="Rx Test Suite-3 Payouts">
+            <directory>./tests/Functional/FeeRecovery/</directory>
+        </testsuite>
+        <testsuite name="Rx Test Suite-4 Payouts">
+            <file>./tests/Functional/Merchant/BalanceTest.php</file>
+            <file>./tests/Functional/Merchant/LowBalanceConfigTest.php</file>
+        </testsuite>
+        <testsuite name="RazorpayX Test-1 Suite">
+            <directory>./tests/Functional/BankingAccountService/</directory>
+            <directory>./tests/Functional/BankingAccount/</directory>
+        </testsuite>
+        <testsuite name="RazorpayX Test-2 Suite">
+            <directory>./tests/Unit/Models/Contact</directory>
+            <directory>./tests/Functional/AccountingPayouts/</directory>
+        </testsuite>
+        <testsuite name="RazorpayX Test-3 Suite">
+            <directory>./tests/Functional/PayoutLink/</directory>
+            <file>./tests/Functional/Merchant/MerchantBankingInvoiceTest.php</file>
         </testsuite>
         <testsuite name="NoCode Test Suite">
             <directory>./tests/Functional/Invoice/</directory>
