@@ -290,6 +290,10 @@ final class Constants
     const CAP_CA_FUNGIBLE_TO_PITCH = 'CAP_CA_FUNGIBLE_TO_PITCH';
     const CAP_CA_FUNGIBLE_ON_HOLD  = 'CAP_CA_FUNGIBLE_ON_HOLD';
 
+    // Constant for total lead score
+    const TOTAL_LEAD_SCORE = 'total_lead_score';
+
+
     public static $EntityBatchActionSettingParams = [
         self::BATCH_ACTION,
         self::IDEMPOTENT_ID,

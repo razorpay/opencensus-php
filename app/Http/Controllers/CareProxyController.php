@@ -7,6 +7,9 @@ use ApiResponse;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Permission\Name;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Merchant\Entity;
+use RZP\Trace\TraceCode;
 
 class CareProxyController extends Controller
 {
@@ -165,6 +168,14 @@ class CareProxyController extends Controller
         self::CREATE_QUICKLINKS                       => Name::QUICKLINK_CREATE,
     ];
 
+    /**
+     * A route can belong to multiple features, mapped here
+     *  if feature is enabled for a org: then access will be denied
+     */
+    const ROUTE_VS_ORG_LEVEL_FEATURE = [
+        self::FRESHDESK_MERCHANT_CREATE_TICKET => [Feature::ORG_FRESHDESK_CREATE_TICKET],
+    ];
+
     const MERCHANT_ROUTES = [
         self::CHECK_ELIGIBILITY,
         self::CHECK_INSTANT_CALLBACK_ELIGIBILITY,
@@ -269,6 +280,8 @@ class CareProxyController extends Controller
     {
         $this->validatePathForRequest(self::MERCHANT_ROUTES, $path);
 
+        $this->verifyOrgLevelFeatureAccess($path);
+
         $input = Request::all();
 
         $response = $this->app['care_service']->dashboardProxyRequest($path, $input);
@@ -339,8 +352,72 @@ class CareProxyController extends Controller
         }
     }
 
+    /**
+     * Returns an array of feature names to which the current route is mapped under
+     *
+     * @param $route
+     *
+     * @return array
+     */
+    public static function getOrgLevelFeaturesForRoute($route) : array
+    {
+        return self::ROUTE_VS_ORG_LEVEL_FEATURE[$route] ?? [];
+    }
+
     protected function validatePermissionForRequest($path)
     {
         $this->ba->getAdmin()->hasPermissionOrFail(self::ROUTE_VS_PERMISSION[$path]);
+    }
+
+    /**
+     * Checks if the accessed route is a feature route.
+     * If yes:
+     *  Checks if the org has denied access to the feature :
+     *  if org has any of route feature : access unavailable
+     *
+     *  $authReturn will either be null or store an error object
+     *
+     * Null return indicates available access
+     *
+     * @param string $route the care service route for which the API request is made
+     * @throws BadRequestException
+     */
+    protected function verifyOrgLevelFeatureAccess(string $route)
+    {
+        $orgLevelRouteFeatures = self::getOrgLevelFeaturesForRoute($route);
+        $merchant = $this->ba->getMerchant();
+
+        // The current route does not require any feature to be check. Allow access.
+        if (empty($orgLevelRouteFeatures) === true)
+        {
+            return;
+        }
+
+        $orgEnableFeatures = $merchant->org->getEnabledFeatures();
+
+        $orgRouteFeatures = array_intersect($orgLevelRouteFeatures, $orgEnableFeatures);
+
+        // if org has not any enabled feature for route : allow access
+        if (empty($orgRouteFeatures) === true)
+        {
+            return;
+        }
+
+        $this->trace->info(TraceCode::ORG_LEVEL_FEATURE_ACCESS_VALIDATION_FAILURE, [
+            Entity::ORG_ID      => $merchant->getOrgId(),
+            Entity::MERCHANT_ID => $merchant->getId(),
+        ]);
+
+        if (($this->app['basicauth']->isAdminLoggedInAsMerchantOnDashboard() === true) or
+            ($this->app['basicauth']->isAdminAuth() === true))
+        {
+            $this->trace->info(TraceCode::ALLOW_ROUTE_ACCESS_FOR_ADMIN_OR_LOGIN_AS_MERCHANT, [
+                "is_admin_auth" => $this->app['basicauth']->isAdminAuth(),
+            ]);
+
+            return;
+        }
+
+        throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
     }
 }

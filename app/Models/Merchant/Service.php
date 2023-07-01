@@ -6002,6 +6002,8 @@ class Service extends Base\Service
 
         $data[EntityConstants::MERCHANT_DETAIL][BusinessDetailConstants::PG_USE_CASE] = $businessDetails->getPgUseCase();
 
+        $data[EntityConstants::MERCHANT_DETAIL][Constants::TOTAL_LEAD_SCORE] = optional($merchant->merchantBusinessDetail)->getTotalLeadScore() ?? 0;
+
         if($merchantDetail != null) {
 
             $merchantAov = $merchantDetail->avgOrderValue;

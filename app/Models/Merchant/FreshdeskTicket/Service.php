@@ -932,7 +932,6 @@ class Service extends Base\Service
             $this->trace->traceException($throwable);
         }
 
-
         return $this->rewriteFreshdeskTicket($ticketCreateResponse, $ticketEntity, $type);
     }
 
