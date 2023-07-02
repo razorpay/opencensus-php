@@ -84,6 +84,16 @@ class Constants
         "LBX3zrXRQD20QS", "LBWwHD7BTMIToy", "LBYQxFVIPdk1A3", "KQtWekXcgwDObj", "CEguwEip3eDPfV", "KQtR99FZetQe87"
     ];
 
+    const RAZORPAYX_LITE                    = 'RazorpayX Lite';
+
+    const CHANNEL_AXIS_BANK                      = 'Axis Bank';
+
+    const CHANNEL_ICICI_BANK                     = 'ICICI Bank';
+
+    const CHANNEL_RBL_BANK                       = 'RBL Bank';
+
+    const CHANNEL_YES_BANK                       = 'Yes Bank';
+
     public const ACCOUNT_TYPE               = 'account_type';
 
     public const CHANNEL                    = 'channel';

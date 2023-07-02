@@ -22530,6 +22530,31 @@ return [
         ],
     ],
 
+    'testSendReminderCallbackForBatchPayoutSummaryEmailSuccess' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payouts/batch/C3fzDCb4hA4F6b/merchant/10000000000000/summary/email',
+        ],
+        'response' => [
+            'content' => [
+                'error_code' => 'BAD_REQUEST_REMINDER_NOT_APPLICABLE',
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testSendReminderCallbackForBatchPayoutSummaryEmailFailure' => [
+        'request'  => [
+            'method' => 'POST',
+            'url'    => '/payouts/batch/C3fzDCb4hA4F6b/merchant/100000000000/summary/email',
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testGetPartnerBankStatus' => [
         'request'  => [
             'method'  => 'GET',

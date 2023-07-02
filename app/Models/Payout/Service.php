@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Mail;
 
+use Monolog\Logger;
 use RZP\Constants\Mode;
 use RZP\Constants\Product;
 use RZP\Diag\EventCode;
@@ -47,6 +48,7 @@ use RZP\Exception\DbQueryException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Jobs\PayoutAttachmentEmail;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Mail\User\BulkPayoutSummary;
 use RZP\Models\BankingAccountService;
 use RZP\Models\Base\PublicCollection;
 use RZP\Error\PublicErrorDescription;
@@ -58,10 +60,12 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Workflow\Service\Adapter;
 use RZP\Jobs\ApprovedPayoutDistribution;
 use RZP\Models\PartnerBankHealth\Events;
+use RZP\Models\Merchant\Balance\Channel;
 use RZP\Models\Payout\Mode as PayoutMode;
 use RZP\Exception\ServerNotFoundException;
 use RZP\Models\Merchant\Account as Account;
 use RZP\Models\Payout\Batch as PayoutsBatch;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\PayoutsDetails as PayoutDetails;
@@ -117,6 +121,8 @@ class Service extends Base\Service
     protected $workflowConfigService;
 
     protected $userCore;
+
+    protected $batch;
 
     protected const IS_VALID_PURPOSE = "is_valid_purpose";
 
@@ -195,6 +201,8 @@ class Service extends Base\Service
         $this->payoutDetailsCore = new PayoutDetails\Core();
 
         $this->userCore = new User\Core();
+
+        $this->batch = new Batch\Service();
     }
 
     public function fetchPayoutsDetailsForDcc($input) : array
@@ -2993,7 +3001,276 @@ class Service extends Base\Service
             $this->user,
             $this->mode === Mode::TEST);
 
-        return $this->app->batchService->processBatch($batchId, $input, $this->merchant);
+        $response = $this->app->batchService->processBatch($batchId, $input, $this->merchant);
+
+        $batchPayoutSummaryEmailVariant = $this->app->razorx->getTreatment(
+            $this->merchant->getId(),
+            RazorxTreatment::BATCH_PAYOUTS_SUMMARY_EMAIL,
+            $this->mode);
+
+        if (strtolower($batchPayoutSummaryEmailVariant) == 'on')
+        {
+            $this->createBatchPayoutEmailSummaryReminder($response);
+        }
+
+
+        return $response;
+    }
+
+    private function createBatchPayoutEmailSummaryReminder($batchResponse)
+    {
+        $batchId = $batchResponse['id'];
+
+        $merchantId = $this->merchant->getMerchantId();
+
+        $reminderData = [
+            'remind_at' => Carbon::now()->addMinutes(BatchPayoutConstants::PAYOUTS_BATCH_REMINDERS_CALLBACK_TIME)->timestamp, // T+2 days
+        ];
+
+        $namespace  = BatchPayoutConstants::PAYOUTS_BATCH_NAMESPACE;
+
+        $callbackUrl = sprintf(BatchPayoutConstants::PAYOUTS_BATCH_REMINDERS_CALLBACK_URL, $batchId, $merchantId);
+
+        $request = [
+            'namespace'     => $namespace,
+            'entity_id'     => $batchId,
+            'entity_type'   => 'batch',
+            'reminder_data' => $reminderData,
+            'callback_url'  => $callbackUrl,
+        ];
+
+        try
+        {
+            $this->trace->info(
+                TraceCode::BULK_PAYOUTS_SUMMARY_EMAIL_REMINDER_CREATE_REQUEST,
+                [
+                    'create_reminder_callback' => [
+                        'request' => $request,
+                        'merchant_id' => $merchantId
+                    ],
+                ]);
+
+            $this->app['reminders']->createReminder($request, '100000razorpay');
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::BULK_PAYOUTS_SUMMARY_EMAIL_REMINDER_CREATE_FAILED,
+                [
+                    'request'           => $request,
+                    'merchant_id'       => $merchantId,
+                ]);
+        }
+    }
+
+    public function emailBatchPayoutsSummary(string $batchId, string $merchantId): array
+    {
+        try
+        {
+            $this->trace->info(
+                TraceCode::BULK_PAYOUT_SUMMARY_EMAIL,
+                [
+                    'reminder_callback_received' => [
+                        'batch_id' => $batchId,
+                        'merchant_id' => $merchantId
+                    ],
+                ]);
+
+            list($mailData, $user) = $this->getBulkPayoutSummaryMailData($batchId, $merchantId);
+
+            $this->trace->info(
+                TraceCode::BULK_PAYOUT_SUMMARY_EMAIL,
+                [
+                    'mail_data' => $mailData,
+                ]);
+
+            $bulkPayoutSummaryMailable = new BulkPayoutSummary($mailData, $user);
+
+            Mail::queue($bulkPayoutSummaryMailable);
+
+            // throw a 400 response to stop further reminders from scheduling
+            return [['error_code' => ErrorCode::BAD_REQUEST_REMINDER_NOT_APPLICABLE], 400];
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::BULK_PAYOUT_SUMMARY_EMAIL_FAILED,
+                [
+                    'batch_id'          => $batchId,
+                    'merchant_id'       => $merchantId,
+                ]);
+
+            // throw a 200 response to continue scheduling reminders
+            return [[], 200];
+        }
+    }
+
+    protected function getBulkPayoutSummaryMailData($batchId, $merchantId): array
+    {
+        $merchant = $this->repo->merchant->getMerchant($merchantId);
+
+        $batchDetails = $this->batch->getBatchById('batch_' . $batchId, $merchant);
+
+        $batchName = $batchDetails[BatchPayoutConstants::NAME];
+
+        $batchCreatedAt = $batchDetails[BatchPayoutConstants::CREATED_AT];
+
+        $batchCreatorId = $batchDetails[BatchPayoutConstants::CREATOR_ID];
+
+        $totalCount = $batchDetails[BatchPayoutConstants::TOTAL_COUNT];
+
+        $totalAmount = $batchDetails[BatchPayoutConstants::PROCESSED_AMOUNT];
+
+        $debitAccountNumber = $batchDetails[BatchPayoutConstants::CONFIG][BatchPayoutConstants::ACCOUNT_NUMBER];
+
+        $debitAccountName = $this->getAccountName($debitAccountNumber, $merchant);
+
+        $payoutsSummary = $this->repo->payout->getPayoutsSummaryForBatchId($batchId);
+
+        $user = $this->repo->user->getUserFromId($batchCreatorId);
+
+        $userName = $user->getName();
+
+        $payoutsStatusSummary = $this->getPayoutsStatusSummary($payoutsSummary);
+
+        $this->trace->info(
+            TraceCode::BULK_PAYOUT_SUMMARY_EMAIL,
+            [
+                'payouts_summary' => $payoutsStatusSummary,
+            ]);
+
+        /*
+        $mailData will contain the data required to send the mail
+        $mailData = [
+            'batch_id' => 'batch_12345678901234',
+            'batch_name' => 'This is a sample batch',
+            'user_name' => 'I am Ironman',
+            'total_amount' => 10000,
+            'total_count' => 10,
+            'source_account' => ICICI Bank,
+            'current_time' => 'Tue, May 9, 2023 7:46 PM',
+            'batch_created_at' => 'Tue, May 9, 2023 7:46 PM',
+            'payout_status_count' => [
+                'processing' => [
+                    'total_amount' => 1000,
+                    'total_count' => 1
+                ],
+                'processed' => [
+                    'total_amount' => 9000,
+                    'total_count' => 9
+                ],
+            ]
+        ]
+         * */
+
+        $mailData = array();
+
+        $mailData[BatchPayoutConstants::BATCH_ID] = 'batch_' . $batchId;
+
+        $mailData[BatchPayoutConstants::BATCH_NAME] = $batchName;
+
+        $mailData[BatchPayoutConstants::USER_NAME] = $userName;
+
+        $mailData[BatchPayoutConstants::TOTAL_AMOUNT] = $totalAmount;
+
+        $mailData[BatchPayoutConstants::TOTAL_COUNT] = $totalCount;
+
+        $mailData[BatchPayoutConstants::SOURCE_ACCOUNT] = $debitAccountName;
+
+        $mailData[BatchPayoutConstants::CURRENT_TIME] = Carbon::now(Timezone::IST)->toDayDateTimeString();
+
+        $mailData[BatchPayoutConstants::BATCH_CREATED_AT] = Carbon::createFromTimestamp($batchCreatedAt, Timezone::IST)->toDayDateTimeString();
+
+        $mailData[BatchPayoutConstants::PAYOUT_STATUS_COUNT] = $payoutsStatusSummary;
+
+        return [$mailData, $user];
+    }
+
+    protected function getAccountName($accountNumber, $merchant): string
+    {
+        // If merchant is enabled on Account Sub-account feature, do not show the account number
+        if ($merchant->isFeatureEnabled(Features::ASSUME_MASTER_ACCOUNT) === true ||
+            $merchant->isFeatureEnabled(Features::ASSUME_SUB_ACCOUNT) === true)
+        {
+            return '';
+        }
+
+        $balance = $this->repo->balance->getBalanceByAccountNumber($accountNumber);
+
+        $channel = $balance->getChannel();
+
+        $accountType = $balance->getAccountType();
+
+        $debitAccountName = PayoutConstants::RAZORPAYX_LITE;
+
+        if ($accountType === AccountType::SHARED)
+        {
+            return $debitAccountName;
+        }
+
+        switch ($channel)
+        {
+            case Channel::AXIS:
+                $debitAccountName = PayoutConstants::CHANNEL_AXIS_BANK;
+                break;
+            case Channel::ICICI:
+                $debitAccountName = PayoutConstants::CHANNEL_ICICI_BANK;
+                break;
+            case Channel::RBL:
+                $debitAccountName = PayoutConstants::CHANNEL_RBL_BANK;
+                break;
+            case Channel::YESBANK:
+                $debitAccountName = PayoutConstants::CHANNEL_YES_BANK;
+                break;
+            default:
+                $debitAccountName = $channel;
+                break;
+        }
+
+        return $debitAccountName;
+    }
+
+    protected function getPayoutsStatusSummary($payoutsSummary): array
+    {
+        $payoutsStatusSummary = array();
+
+        foreach ($payoutsSummary as $payoutSummary)
+        {
+            $amount = $payoutSummary->getAmount();
+
+            $status = Status::getPublicStatusFromInternalStatus($payoutSummary->getStatus());
+
+            if (array_key_exists($status, $payoutsStatusSummary))
+            {
+                $summary = $payoutsStatusSummary[$status];
+
+                $totalAmount = $summary[BatchPayoutConstants::TOTAL_AMOUNT];
+
+                $totalAmount = $totalAmount + $amount;
+
+                $totalCount = $summary[BatchPayoutConstants::TOTAL_COUNT];
+
+                $totalCount = $totalCount + 1;
+            }
+            else
+            {
+                $totalAmount = $amount;
+
+                $totalCount = 1;
+            }
+
+            $payoutsStatusSummary[$status] = [
+                BatchPayoutConstants::TOTAL_AMOUNT => $totalAmount,
+                BatchPayoutConstants::TOTAL_COUNT  => $totalCount
+            ];
+        }
+
+        return $payoutsStatusSummary;
+
     }
 
     public function getBatchRows(string $batchId, array $input)

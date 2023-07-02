@@ -18,6 +18,42 @@ class Constants
 
     const EXTENSION_CSV = 'csv';
 
+    const BATCH_ID              = 'batch_id';
+
+    const BATCH_NAME            = 'batch_name';
+
+    const USER_NAME             = 'user_name';
+
+    const TOTAL_AMOUNT          = 'total_amount';
+
+    const TOTAL_COUNT           = 'total_count';
+
+    const SOURCE_ACCOUNT        = 'source_account';
+
+    const CURRENT_TIME          = 'current_time';
+
+    const BATCH_CREATED_AT      = 'batch_created_at';
+
+    const PAYOUT_STATUS_COUNT   = 'payout_status_count';
+
+    const CREATED_AT            = 'created_at';
+
+    const CREATOR_ID            = 'creator_id';
+
+    const PROCESSED_AMOUNT      = 'processed_amount';
+
+    const ACCOUNT_NUMBER        = 'account_number';
+
+    const CONFIG                = 'config';
+
+    const NAME                  = 'name';
+
+    const PAYOUTS_BATCH_NAMESPACE                       = 'payouts_batch';
+
+    const PAYOUTS_BATCH_REMINDERS_CALLBACK_URL          = 'payouts/batch/%s/merchant/%s/summary/email';
+
+    const PAYOUTS_BATCH_REMINDERS_CALLBACK_TIME         = 2880; // 2 days
+
     const BANK_TRANSFER_WITH_BENE_ID_BATCH_TYPE         = 'payouts_bank_transfer_bene_id';
 
     const BANK_TRANSFER_WITH_BENE_DETAILS_BATCH_TYPE    = 'payouts_bank_transfer_bene_details';

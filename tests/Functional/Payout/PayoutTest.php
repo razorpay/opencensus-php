@@ -68,6 +68,7 @@ use RZP\Jobs\PayoutServiceDualWrite;
 use RZP\Mail\Payout\PendingApprovals;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Jobs\PayoutSourceUpdaterJob;
+use RZP\Mail\User\BulkPayoutSummary;
 use RZP\Jobs\PayoutPostCreateProcess;
 use RZP\Models\Base\PublicCollection;
 use RZP\Mail\Banking\LowBalanceAlert;
@@ -36335,6 +36336,28 @@ class PayoutTest extends OAuthTestCase
             }); // PN fired for the pending payouts on the MID 10000000000000
 
         $this->startTest();
+    }
+
+    public function testSendReminderCallbackForBatchPayoutSummaryEmailSuccess()
+    {
+        Mail::fake();
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
+        Mail::assertQueued(BulkPayoutSummary::class);
+    }
+
+    public function testSendReminderCallbackForBatchPayoutSummaryEmailFailure()
+    {
+        Mail::fake();
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
+        Mail::assertNotQueued(BulkPayoutSummary::class);
     }
 }
 

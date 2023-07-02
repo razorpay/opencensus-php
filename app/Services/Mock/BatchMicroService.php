@@ -296,9 +296,12 @@ class BatchMicroService extends BaseBatchMicroService
             'failure_count'    => 0,
             'attempts'         => 0,
             'status'           => 'COMPLETED',
-            'settings'         => null,
             'amount'           => 3799,
-            'processed_amount' => 0
+            'processed_amount' => 0,
+            'creator_id'       => 'MerchantUser01',
+            'config'           => [
+                'account_number' => '2224440041626905'
+            ]
         ];
     }
 

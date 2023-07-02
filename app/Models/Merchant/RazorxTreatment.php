@@ -214,6 +214,8 @@ final class RazorxTreatment
     // status reason map via PS
     const STATUS_REASON_MAP_VIA_PS = 'status_reason_map_via_ps';
 
+    const BATCH_PAYOUTS_SUMMARY_EMAIL = 'batch_payouts_summary_email';
+
     // Experiment to send login email notification to user
     const USER_LOGIN_EMAIL_NOTIFICATION = 'user_login_email_notification';
 

@@ -1898,6 +1898,7 @@ class Route
         'payouts_bulk_template_file'               => ['post',     'payouts/batch/template',                         'PayoutController@getTemplateFileForBulkPayouts'                      ],
         'payouts_batch_process'                    => ['post',     'payouts/batch/{id}/process',                     'PayoutController@processPayoutsBatch'                             ],
         'payouts_get_batch_rows'                   => ['get',      'payouts/batch/{id}/rows',                        'PayoutController@getBatchRows'                                    ],
+        'payouts_summary_email'                    => ['post',     'payouts/batch/{id}/merchant/{mid}/summary/email','PayoutController@emailBatchPayoutsSummary'                            ],
 
         // Payout Outbox
         'undo_payout_creation'                      => ['post',     'payouts/{id}/undo',                            'PayoutOutboxController@undoPayout'                                     ],
@@ -5135,6 +5136,9 @@ class Route
         // metro routes
         'payout_email_attachments',
         'account_service_handle_update_event',
+
+        // reminder routes
+        'payouts_summary_email',
 
         // growth routes
         'growth_pricing_bundle_email',
@@ -15344,6 +15348,7 @@ class Route
             'merchant_international_enablement_reminder',
             'developer_console_maintenance',
             'emerchantpay_apm_onboard_maf',
+            'payouts_summary_email',
         ],
 
         'batch' => [

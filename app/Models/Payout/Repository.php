@@ -3022,4 +3022,23 @@ class Repository extends Base\Repository
         return $query->count();
     }
 
+    public function getPayoutsSummaryForBatchId(string $batchId)
+    {
+        /*
+            SELECT payouts.id, payouts.status, payouts.amount
+            from payouts
+            where payouts.batch_id = 'batch_id';
+         * */
+        $payoutBatchIdColumn            = $this->repo->payout->dbColumn(Entity::BATCH_ID);
+
+        $idColumn   = $this->repo->payout->dbColumn(Entity::ID);
+        $statusColumn = $this->repo->payout->dbColumn(Entity::STATUS);
+        $amountColumn = $this->repo->payout->dbColumn(Entity::AMOUNT);
+
+        return $this->newQuery()
+            ->select($idColumn, $statusColumn, $amountColumn)
+            ->where($payoutBatchIdColumn, '=', $batchId)
+            ->get();
+    }
+
 }
