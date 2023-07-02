@@ -231,6 +231,11 @@ class Processor extends VirtualAccount\Processor
 
         $paymentArray = array_merge($paymentArray, $parentPaymentArray);
 
+        if (isset($this->gatewayInput[GatewayResponseParams::PAYER_ACCOUNT_TYPE]) === true)
+        {
+            $paymentArray[Payment\Entity::PAYER_ACCOUNT_TYPE] = $this->gatewayInput[GatewayResponseParams::PAYER_ACCOUNT_TYPE];
+        }
+
         // TODO: find a better method to do this. This is done in order to bypass validation
         if ($this->gatewayInput[Entity::METHOD] === Method::CARD)
         {

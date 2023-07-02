@@ -1119,6 +1119,171 @@ class UpiMindgateGatewayTest extends TestCase
         }
     }
 
+    public function testUnexpectedPaymentWithPayerAccountTypeSuccess()
+    {
+        $this->disableUnexpectedPaymentRefundImmediately();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $response = $this->createUnexpectedPayment($data);
+
+        $this->assertTrue($response['success']);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $callbackAmount = explode('|', $data['meRes'])[2];
+
+        // Asserting that conversion to int has not changed amount
+        $this->assertEquals(($callbackAmount), $paymentEntity['amount']/100);
+
+        $authorizeUpiEntity = $this->getLastEntity('upi', true);
+
+        $paymentTransactionEntity = $this->getLastEntity('transaction', true);
+
+        $assertEqualsMap = [
+            'authorized'                           => $paymentEntity['status'],
+            'authorize'                            => $authorizeUpiEntity['action'],
+            'pay'                                  => $authorizeUpiEntity['type'],
+            $paymentEntity['id']                   => 'pay_' . $authorizeUpiEntity['payment_id'],
+            $paymentTransactionEntity['id']        => 'txn_' . $paymentEntity['transaction_id'],
+            $paymentTransactionEntity['entity_id'] => $paymentEntity['id'],
+            $paymentTransactionEntity['type']      => 'payment',
+            $paymentTransactionEntity['amount']    => $paymentEntity['amount'],
+            '826115528405'                         => $paymentEntity['reference16'],
+            'bank_account'                         => $paymentEntity['reference2'],
+        ];
+
+        foreach ($assertEqualsMap as $matchLeft => $matchRight)
+        {
+            $this->assertEquals($matchLeft, $matchRight);
+        }
+
+        $this->assertNull($paymentEntity['verified']);
+
+        $this->verifyPayment($paymentEntity['id']);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertNull($paymentEntity['refund_at']);
+
+        $this->assertEquals($paymentEntity['verified'], 1);
+
+        $this->getFailureInVerifyRefund();
+
+        $this->refundAuthorizedPayment($paymentEntity['id']);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $refundEntity = $this->getLastEntity('refund', true);
+
+        $refundUpiEntity = $this->getLastEntity('upi', true);
+
+        $refundTransactionEntity = $this->getLastEntity('transaction', true);
+
+        $assertEqualsMap = [
+            'refunded'                            => $paymentEntity['status'],
+            $paymentEntity['id']                  => 'pay_' . $refundUpiEntity['payment_id'],
+            'refund'                              => $refundUpiEntity['action'],
+            'collect'                             => $refundUpiEntity['type'],
+            $paymentEntity['amount']              => $refundUpiEntity['amount'],
+            $refundEntity['id']                   => 'rfnd_' . $refundUpiEntity['refund_id'],
+            $paymentEntity['amount']              => $refundEntity['amount'],
+            'processed'                           => $refundEntity['status'],
+            $refundTransactionEntity['id']        => 'txn_' . $refundEntity['transaction_id'],
+            $refundTransactionEntity['entity_id'] => $refundEntity['id'],
+            $refundTransactionEntity['type']      => 'refund',
+            $refundTransactionEntity['amount']    => $refundEntity['amount'],
+        ];
+
+        foreach ($assertEqualsMap as $matchLeft => $matchRight)
+        {
+            $this->assertEquals($matchLeft, $matchRight);
+        }
+    }
+
+    public function testUnexpectedPaymentWithInvalidPayerAccountTypeSuccess()
+    {
+        $this->disableUnexpectedPaymentRefundImmediately();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $response = $this->createUnexpectedPayment($data);
+
+        $this->assertTrue($response['success']);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $callbackAmount = explode('|', $data['meRes'])[2];
+
+        // Asserting that conversion to int has not changed amount
+        $this->assertEquals(($callbackAmount), $paymentEntity['amount']/100);
+
+        $authorizeUpiEntity = $this->getLastEntity('upi', true);
+
+        $paymentTransactionEntity = $this->getLastEntity('transaction', true);
+
+        // Null assertion in the case of invalid payer account type
+        $this->assertNull($paymentEntity['reference2']);
+
+        $assertEqualsMap = [
+            'authorized'                           => $paymentEntity['status'],
+            'authorize'                            => $authorizeUpiEntity['action'],
+            'pay'                                  => $authorizeUpiEntity['type'],
+            $paymentEntity['id']                   => 'pay_' . $authorizeUpiEntity['payment_id'],
+            $paymentTransactionEntity['id']        => 'txn_' . $paymentEntity['transaction_id'],
+            $paymentTransactionEntity['entity_id'] => $paymentEntity['id'],
+            $paymentTransactionEntity['type']      => 'payment',
+            $paymentTransactionEntity['amount']    => $paymentEntity['amount'],
+            '826115528405'                         => $paymentEntity['reference16'],
+        ];
+
+        foreach ($assertEqualsMap as $matchLeft => $matchRight)
+        {
+            $this->assertEquals($matchLeft, $matchRight);
+        }
+
+        $this->assertNull($paymentEntity['verified']);
+
+        $this->verifyPayment($paymentEntity['id']);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertNull($paymentEntity['refund_at']);
+
+        $this->assertEquals($paymentEntity['verified'], 1);
+
+        $this->getFailureInVerifyRefund();
+
+        $this->refundAuthorizedPayment($paymentEntity['id']);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $refundEntity = $this->getLastEntity('refund', true);
+
+        $refundUpiEntity = $this->getLastEntity('upi', true);
+
+        $refundTransactionEntity = $this->getLastEntity('transaction', true);
+
+        $assertEqualsMap = [
+            'refunded'                            => $paymentEntity['status'],
+            $paymentEntity['id']                  => 'pay_' . $refundUpiEntity['payment_id'],
+            'refund'                              => $refundUpiEntity['action'],
+            'collect'                             => $refundUpiEntity['type'],
+            $paymentEntity['amount']              => $refundUpiEntity['amount'],
+            $refundEntity['id']                   => 'rfnd_' . $refundUpiEntity['refund_id'],
+            $paymentEntity['amount']              => $refundEntity['amount'],
+            'processed'                           => $refundEntity['status'],
+            $refundTransactionEntity['id']        => 'txn_' . $refundEntity['transaction_id'],
+            $refundTransactionEntity['entity_id'] => $refundEntity['id'],
+            $refundTransactionEntity['type']      => 'refund',
+            $refundTransactionEntity['amount']    => $refundEntity['amount'],
+        ];
+
+        foreach ($assertEqualsMap as $matchLeft => $matchRight)
+        {
+            $this->assertEquals($matchLeft, $matchRight);
+        }
+    }
     public function testUnexpectedPaymentFail()
     {
         $data = $this->testData[__FUNCTION__];
@@ -1343,6 +1508,157 @@ class UpiMindgateGatewayTest extends TestCase
         $this->assertArraySubset([
             'acquirer_data' => [
                 'rrn' => '025403043687'
+            ]
+        ], $payment);
+
+        $this->assertEquals($bharatQr['payment_id'], $payment['id']);
+
+        $upi = $this->getLastEntity('upi', true);
+
+        $this->assertNotNull($upi['payment_id']);
+
+        $this->assertEquals($bharatQr['expected'], true);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('captured', $payment['status']);
+    }
+
+    public function testUpiQrPaymentProcessWithSavingsPayerAccountType()
+    {
+        $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
+
+        $this->qrCode = $this->createVirtualAccount();
+
+        $this->ba->directAuth();
+
+        $qrCodeId = substr($this->qrCode['id'], 3);
+
+        $request = $this->mockServer()->getAsyncCallbackContentForBharatQr($qrCodeId, 100, ['rrn' => '025403043688', 'payer_account_type' => 'SAVINGS!NA!NA!NA!NA']);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('OK', $response[0]);
+
+        //Created Qr Entity As Expected
+        $bharatQr = $this->getLastEntity('bharat_qr', true);
+
+        // Payment is automatically captured
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(100, $payment['amount']);
+        $this->assertEquals('025403043688', $payment['reference16']);
+        $this->assertEquals('bank_account', $payment['reference2']);
+
+        $this->assertArraySubset([
+            'acquirer_data' => [
+                'rrn' => '025403043688'
+            ]
+        ], $payment);
+
+        $this->assertEquals($bharatQr['payment_id'], $payment['id']);
+
+        $upi = $this->getLastEntity('upi', true);
+
+        $this->assertNotNull($upi['payment_id']);
+
+        $this->assertEquals($bharatQr['expected'], true);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('captured', $payment['status']);
+    }
+
+    public function testUpiQrPaymentProcessWithCreditPayerAccountType()
+    {
+        $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
+
+        $this->qrCode = $this->createVirtualAccount();
+
+        $this->ba->directAuth();
+
+        $qrCodeId = substr($this->qrCode['id'], 3);
+
+        $request = $this->mockServer()->getAsyncCallbackContentForBharatQr($qrCodeId, 100, ['rrn' => '025403043689', 'payer_account_type' => 'CREDIT!NA!NA!NA!NA']);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('OK', $response[0]);
+
+        //Created Qr Entity As Expected
+        $bharatQr = $this->getLastEntity('bharat_qr', true);
+
+        // Payment is automatically captured
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(100, $payment['amount']);
+        $this->assertEquals('025403043689', $payment['reference16']);
+        $this->assertEquals('credit_card', $payment['reference2']);
+
+        $this->assertArraySubset([
+            'acquirer_data' => [
+                'rrn' => '025403043689'
+            ]
+        ], $payment);
+
+        $this->assertEquals($bharatQr['payment_id'], $payment['id']);
+
+        $upi = $this->getLastEntity('upi', true);
+
+        $this->assertNotNull($upi['payment_id']);
+
+        $this->assertEquals($bharatQr['expected'], true);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('captured', $payment['status']);
+    }
+
+    public function testUpiQrPaymentProcessWithInvalidPayerAccountType()
+    {
+        $this->fixtures->merchant->addFeatures(['virtual_accounts', 'bharat_qr']);
+
+        $this->qrCode = $this->createVirtualAccount();
+
+        $this->ba->directAuth();
+
+        $qrCodeId = substr($this->qrCode['id'], 3);
+
+        $request = $this->mockServer()->getAsyncCallbackContentForBharatQr($qrCodeId, 100, ['rrn' => '025403043699', 'payer_account_type' => 'INVALID!NA!NA!NA!NA']);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $xmlResponse = $response['original'];
+
+        $response = $this->parseResponseXml($xmlResponse);
+
+        $this->assertEquals('OK', $response[0]);
+
+        //Created Qr Entity As Expected
+        $bharatQr = $this->getLastEntity('bharat_qr', true);
+
+        // Payment is automatically captured
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(100, $payment['amount']);
+        $this->assertEquals('025403043699', $payment['reference16']);
+        $this->assertNull($payment['reference2']);
+
+
+        $this->assertArraySubset([
+            'acquirer_data' => [
+                'rrn' => '025403043699'
             ]
         ], $payment);
 

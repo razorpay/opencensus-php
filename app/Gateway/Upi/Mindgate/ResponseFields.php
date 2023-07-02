@@ -37,6 +37,7 @@ class ResponseFields
     const REFERENCE_7               = 'reference_7';
     const REFERENCE_8               = 'reference_8';
     const REFERENCE_9               = 'reference_9';
+    const PAYER_ACCOUNT_TYPE        = 'payer_account_type';
 
     /**
      * These are the expected field orders
@@ -108,6 +109,7 @@ class ResponseFields
         self::BANK_REFERENCE,
         self::REFERENCE_6,
         self::REFERENCE_7,
+        self::PAYER_ACCOUNT_TYPE,
     ];
 
     const VALIDATE_VPA  = [

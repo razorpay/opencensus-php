@@ -465,9 +465,9 @@ class Gateway extends Base\Gateway
 
         $paymentId = $response['payment_id'];
 
-        if ((strlen($paymentId) > 14) and 
+        if ((strlen($paymentId) > 14) and
             (starts_with($paymentId, 'STQ') === true) and
-            ($this->action !== Action::VALIDATE_PUSH) and 
+            ($this->action !== Action::VALIDATE_PUSH) and
             ($this->action !== Action::VERIFY))
        {
             $paymentId = substr($paymentId, 3, 14);
@@ -602,6 +602,12 @@ class Gateway extends Base\Gateway
             BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[ResponseFields::UPI_TXN_ID],
         ];
 
+        $payerAccountType = $this->getInternalPayerAccountType($input);
+
+        if (isset($payerAccountType) === true) {
+            $qrData[BharatQr\GatewayResponseParams::PAYER_ACCOUNT_TYPE] = $payerAccountType;
+        }
+
         return [
             'callback_data' => $input,
             'qr_data'       => $qrData
@@ -628,6 +634,12 @@ class Gateway extends Base\Gateway
             UpiTransfer\GatewayResponseParams::PROVIDER_REFERENCE_ID => $input[ResponseFields::UPI_TXN_ID],
             UpiTransfer\GatewayResponseParams::TRANSACTION_REFERENCE => $input[ResponseFields::PAYMENT_ID],
         ];
+
+        $payerAccountType = $this->getInternalPayerAccountType($input);
+
+        if (isset($payerAccountType) === true) {
+            $upiTransferData[BharatQr\GatewayResponseParams::PAYER_ACCOUNT_TYPE] = $payerAccountType;
+        }
 
         return [
             'callback_data'     => $input,
@@ -1729,6 +1741,12 @@ class Gateway extends Base\Gateway
             'email'    => 'void@razorpay.com',
         ];
 
+        $payerAccountType = $this->getInternalPayerAccountType($callbackData);
+
+        if (isset($payerAccountType) === true) {
+            $payment[BharatQr\GatewayResponseParams::PAYER_ACCOUNT_TYPE] = $payerAccountType;
+        }
+
         $terminal = $this->getTerminalDetailsFromCallback($callbackData);
 
         return [
@@ -2118,5 +2136,23 @@ class Gateway extends Base\Gateway
 
         // return true if ciphertext is hexadecimal
         return ctype_xdigit($ciphertext);
+    }
+
+    /**
+     * Get internal payer account type from gateway payer account type
+     * @param $input
+     * @return string|void
+     */
+    protected function getInternalPayerAccountType($input)
+    {
+      if (isset($input[BharatQr\GatewayResponseParams::PAYER_ACCOUNT_TYPE]) === true)
+      {
+          $payerAccountType = explode("!", (string)$input[BharatQr\GatewayResponseParams::PAYER_ACCOUNT_TYPE]);
+          if ((sizeof($payerAccountType)) > 0 and
+              (in_array(strtolower($payerAccountType[0]), PayerAccountType::SUPPORTED_PAYER_ACCOUNT_TYPES)) === true) {
+              return PayerAccountType::getPayerAccountType(strtolower($payerAccountType[0]));
+          }
+      }
+
     }
 }

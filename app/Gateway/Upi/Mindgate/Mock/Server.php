@@ -248,6 +248,12 @@ class Server extends Base\Mock\Server
             $rrn = $meta['rrn'];
         }
 
+        $payerAccountType='NA';
+
+        if (isset($meta['payer_account_type']) === true)
+        {
+            $payerAccountType = $meta['payer_account_type'];
+        }
 
         $content = [
             random_integer(10),
@@ -268,7 +274,11 @@ class Server extends Base\Mock\Server
             'NA',
             'NA',
             'NA',
-            'PNB!10000000000!PNBI1111111!8966829290'
+            'PNB!10000000000!PNBI1111111!8966829290',
+            'NA',
+            'NA',
+            $payerAccountType,
+            'NA'
         ];
 
         $this->content($content,'callback');
