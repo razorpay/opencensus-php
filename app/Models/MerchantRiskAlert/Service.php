@@ -188,12 +188,25 @@ class Service extends Base\Service
         $workflowActions = (new Action\Core)->fetchOpenActionOnEntityOperation(
             $merchant->getId(), Constants::MERCHANT_DETAIL_KEY, Permission\Name::MERCHANT_RISK_ALERT_FOH);
 
+        $workflowTags = $this->getWorkflowTags($input, $merchant);
+
         if ($workflowActions->isNotEmpty() === true)
         {
+            $action = $workflowActions->first();
+
+            $action->tag($workflowTags);
+
+            $actionId = $action->getId();
+
+            (new Comment\Service())->createForWorkflowAction([
+                'comment'   => sprintf('NEW_TRIGGER: %s', json_encode($workflowTags)),
+            ], Action\Entity::getSignedId($actionId), $this->getMaker());
+
+
+            $this->repo->workflow_action->saveOrFail($action);
+
             return;
         }
-
-        $workflowTags = $this->getWorkflowTags($input, $merchant);
 
         try
         {
@@ -580,6 +593,7 @@ class Service extends Base\Service
 
         return $workflowTags;
     }
+
 
     public function getMerchantDisputeDetails(string $merchantId, array $input)
     {

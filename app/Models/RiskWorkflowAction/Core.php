@@ -19,6 +19,9 @@ use RZP\Models\Merchant\Validator as MerchantValidator;
 use RZP\Models\Merchant\Detail\Constants as DetailConstant;
 use RZP\Models\Merchant\Stakeholder\Core  as StakeholderCore;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
+use RZP\Models\Workflow\Action as WorkflowAction;
+use RZP\Models\Comment;
+use RZP\Models\Admin\Org;
 
 class Core extends Base\Core
 {
@@ -171,6 +174,22 @@ class Core extends Base\Core
 
             $tags = $this->getTags($riskAttributes, $workflowTags, $settlementClearance);
 
+            if (isset($input[Constants::RISK_ATTRIBUTES]) && isset($input[Constants::RISK_ATTRIBUTES][Constants::RISK_SOURCE])
+                && $input[Constants::RISK_ATTRIBUTES][Constants::RISK_SOURCE] === Constants::RISK_SOURCE_MERCHANT_RISK_ALERTS)
+            {
+                $this->app['basicauth']->setOrgId(Org\Entity::RAZORPAY_ORG_ID);
+
+                $workflowActions = (new WorkflowAction\Core)->fetchOpenActionOnEntityOperation(
+                    $merchant->getId(), 'merchant', Permission\Name::EDIT_MERCHANT_DISABLE_INTERNATIONAL);
+
+                if ($workflowActions->isNotEmpty() === true)
+                {
+                    $this->addTagsForOpenWorkflowIfApplicable($workflowTags, $workflowActions, $maker);
+                }
+
+            }
+
+
             $riskAttributesParams = $this->getParamsForMerchantAction($riskAction, $riskAttributes);
 
             if (isset($input['entity_id']) === true)
@@ -253,6 +272,22 @@ class Core extends Base\Core
 
             throw $e;
         }
+    }
+
+    protected function addTagsForOpenWorkflowIfApplicable($workflowTags, $workflowActions, $maker)
+    {
+        $action = $workflowActions->first();
+
+        $action->tag($workflowTags);
+
+        $actionId = $action->getId();
+
+        (new Comment\Service())->createForWorkflowAction([
+            'comment'   => sprintf('NEW_TRIGGER: %s', json_encode($workflowTags)),
+        ], WorkflowAction\Entity::getSignedId($actionId), $maker);
+
+
+        $this->repo->workflow_action->saveOrFail($action);
     }
 
     protected function trackEvents($workflowAction, $merchant, $diffData, bool $settlementClearance = false)

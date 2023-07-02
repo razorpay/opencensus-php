@@ -11,13 +11,16 @@ use RZP\Http\Controllers\WorkflowController ;
 
 class Service extends Base\Service
 {
-    public function createForWorkflowAction(array $input, string $actionId)
+    public function createForWorkflowAction(array $input, string $actionId, $admin = null)
     {
         Action::verifyIdAndStripSign($actionId);
 
         $action = $this->repo->workflow_action->findOrFailPublic($actionId);
 
-        $admin = $this->app['basicauth']->getAdmin();
+        if ($admin === null)
+        {
+            $admin = $this->app['basicauth']->getAdmin();
+        }
 
         $comment = $this->core()->createForWorkflowAction($input, $action, $admin);
 
