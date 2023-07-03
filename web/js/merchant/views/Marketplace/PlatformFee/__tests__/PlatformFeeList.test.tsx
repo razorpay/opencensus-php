@@ -1,5 +1,12 @@
 import React from 'react';
-import { render, screen, waitFor, server, userEvent } from 'common/services/test/test-utils';
+import {
+  render,
+  screen,
+  waitFor,
+  server,
+  userEvent,
+  waitForLoadingToFinish,
+} from 'common/services/test/test-utils';
 import PlatformFee from 'merchant/views/Marketplace/PlatformFee/List';
 import { platformFeeData, platformFeeDataEmpty } from './mocks/fixtures';
 import { platformFeeListSuccess, platformFeeListError } from './mocks/handlers';
@@ -59,6 +66,9 @@ describe('Platform Fee List', () => {
   test('should render filtered data after clicking search', async () => {
     server.use(platformFeeListSuccess());
     renderApp();
+    const spinner = screen.getByTestId('spinner');
+    expect(spinner).toBeInTheDocument();
+    await waitForLoadingToFinish();
     await waitFor(() => {
       expect(screen.getByText('Platform Fee Id')).toBeInTheDocument();
     });

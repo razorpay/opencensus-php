@@ -21,7 +21,6 @@ describe('Platform Fee Filter', () => {
       <PlatformFeeListFilter
         location={locationProp}
         setPagination={handlePagination}
-        count={25}
         onSearch={onSearch}
         history={history}
       />,

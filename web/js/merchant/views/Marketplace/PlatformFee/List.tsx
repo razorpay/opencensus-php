@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { compose, ActionCreator, bindActionCreators } from 'redux';
 import { useQuery } from 'react-query';
 import { Link, withRouter } from 'react-router-dom';
-import { Amount, Spinner } from '@razorpay/blade/components';
+import { Amount } from '@razorpay/blade/components';
 import { History, Location } from 'history';
 import { paiseToRupees } from 'common/utils/rzp-utils';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -15,10 +15,7 @@ import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import TransferSource from 'merchant/views/Marketplace/Transfers/components/TransferSource';
 import { RouteTransfersStatusLabel } from 'merchant/components/StatusLabel';
 import { PlatformFeeListFilter } from 'merchant/views/Marketplace/PlatformFee/components/PlatformFeeListFilter';
-import {
-  SpinnerContainer,
-  ContentBox,
-} from 'merchant/views/Marketplace/PlatformFee/components/styles';
+import { ContentBox } from 'merchant/views/Marketplace/PlatformFee/components/styles';
 import { Notification } from 'common/typings/Store/notifications';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import ProductWrapper from 'common/ui/ProductWrapper';
@@ -57,6 +54,19 @@ interface PlatformFeeProps {
   isPlatformFeeTabEnabled: boolean;
 }
 
+interface listItemsProps {
+  id: string;
+  recipient: string;
+  amount: number;
+  status: string;
+  source: string;
+  recipient_details: {
+    email: string;
+    name: string;
+  };
+  created_at: number;
+}
+
 const PlatformFee = ({
   showNotification,
   history,
@@ -68,13 +78,14 @@ const PlatformFee = ({
     count: 25,
   });
   const [searchParams, setSearchParams] = useState('');
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState<listItemsProps[]>([]);
+  const [id, setId] = useState('');
 
   const handleParams = (): string => {
     if (searchParams && searchParams !== '') {
-      return `${searchParams.replace('?', '&')}&skip=${paginationState.skip}`;
+      return `${searchParams}&skip=${paginationState.skip}`;
     } else {
-      return `&skip=${paginationState.skip}&count=${paginationState.count}`;
+      return `?transfer_type=platform&skip=${paginationState.skip}&count=${paginationState.count}`;
     }
   };
   const { isLoading, refetch } = useQuery(
@@ -83,7 +94,11 @@ const PlatformFee = ({
     {
       refetchOnWindowFocus: false,
       onSuccess: (data) => {
-        setItems(data.data.items);
+        if (id) {
+          setItems([data.data]);
+        } else {
+          setItems(data.data.items);
+        }
       },
       onError: (err: { errors: Array<string> }) => {
         showNotification?.({
@@ -94,9 +109,11 @@ const PlatformFee = ({
     },
   );
 
-  const search = (params: string) => {
+  const search = (id: string, params: string) => {
     setSearchParams(params);
+    setId(id);
     refetch();
+    setItems([]);
   };
 
   return (
@@ -115,35 +132,28 @@ const PlatformFee = ({
           <TestModeBanner />
 
           <PlatformFeeListFilter
-            onSearch={(params) => search(params)}
-            count={paginationState.count}
+            onSearch={(id, params) => search(id, params)}
             location={location}
             history={history}
             setPagination={setPagination}
           />
-          {isLoading ? (
-            <SpinnerContainer>
-              <Spinner testID="spinner" accessibilityLabel="spinner" size="xlarge" />
-            </SpinnerContainer>
-          ) : (
-            <DataTable
-              title="Platform Fee"
-              columns={[
-                platformFeeId,
-                source,
-                recipient,
-                recipientName,
-                platformAmount,
-                createdAt,
-                transferStatus,
-              ]}
-              count={paginationState.count}
-              skip={paginationState.skip}
-              paginate={setPagination}
-              loading={isLoading}
-              items={items}
-            />
-          )}
+          <DataTable
+            title="Platform Fee"
+            columns={[
+              platformFeeId,
+              source,
+              recipient,
+              recipientName,
+              platformAmount,
+              createdAt,
+              transferStatus,
+            ]}
+            count={paginationState.count}
+            skip={paginationState.skip}
+            paginate={setPagination}
+            loading={isLoading}
+            items={items}
+          />
         </div>
       </ContentBox>
     </ProductWrapper>

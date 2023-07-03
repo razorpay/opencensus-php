@@ -31,8 +31,7 @@ type PlatformFeeFilters = {
 };
 
 interface PlatformFilterListProps {
-  count: number;
-  onSearch: (searchParams: string) => void;
+  onSearch: (id: string, searchParams: string) => void;
   history: History;
   location: Location;
   setPagination: (val: { skip: number; count: number }) => void;
@@ -48,27 +47,31 @@ const initState = {
 
 export const PlatformFeeListFilter = ({
   onSearch,
-  count,
   location,
   history,
   setPagination,
 }: PlatformFilterListProps): JSX.Element => {
   const [formData, setFormData] = useState<PlatformFeeFilters>(initState);
 
-  const handleFormSubmit = (searchData) => {
+  const handleFormSubmit = (searchData: PlatformFeeFilters) => {
+    const { id, ...queryParams } = searchData;
     const searchParams = stringifyQueryParams(encodeSensitiveFields(searchData));
+    const apiParams = stringifyQueryParams(encodeSensitiveFields(queryParams));
     history.push({
       pathname: location.pathname,
       hash: location.hash,
       search: searchParams,
     });
-    if (count !== Number(formData.count)) {
-      setPagination({
-        skip: 0,
-        count: Number(searchData.count),
-      });
-    }
-    onSearch(searchParams);
+
+    setPagination({
+      skip: 0,
+      count: Number(searchData.count),
+    });
+    const params = id
+      ? `/${id}?transfer_type=platform${apiParams.replace('?', '&')}`
+      : `?transfer_type=platform${apiParams.replace('?', '&')}`;
+
+    onSearch(id, params);
   };
 
   const getDecodedParams = () => {
@@ -112,12 +115,14 @@ export const PlatformFeeListFilter = ({
       skip: 0,
       count: 25,
     });
-    onSearch('');
+    onSearch('', '');
   };
 
   const handleSubmit = () => {
     handleFormSubmit(formData);
   };
+
+  const isSearchAndResetDisabled = JSON.stringify(formData) === JSON.stringify(initState);
   return (
     <FilterContainer>
       <InputContainer>
@@ -179,10 +184,12 @@ export const PlatformFeeListFilter = ({
         />
       </InputContainer>
       <ButtonContainer>
-        <Button onClick={handleSubmit}>Search</Button>
+        <Button onClick={handleSubmit} isDisabled={isSearchAndResetDisabled}>
+          Search
+        </Button>
       </ButtonContainer>
       <ButtonContainer>
-        <Button variant="tertiary" onClick={handleReset}>
+        <Button variant="tertiary" onClick={handleReset} isDisabled={isSearchAndResetDisabled}>
           Clear
         </Button>
       </ButtonContainer>
