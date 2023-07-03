@@ -3657,6 +3657,8 @@ class Constants
         self::LEDGER_JOURNAL_READS,
         self::LEDGER_REVERSE_SHADOW,
         self::DA_LEDGER_JOURNAL_WRITES,
+        self::PG_LEDGER_JOURNAL_WRITES,
+        self::PG_LEDGER_REVERSE_SHADOW
     ];
 
     // Payout service related features
