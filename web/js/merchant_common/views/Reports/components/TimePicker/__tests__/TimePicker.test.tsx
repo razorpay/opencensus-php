@@ -4,7 +4,7 @@ import { TimePicker } from 'merchant_common/views/Reports/components';
 import moment from 'moment';
 
 const getInitialStates = (date) => {
-  return date.format('h:mm A');
+  return date.startOf('hour').format('h:mm A');
 };
 
 describe('TimePicker', () => {
@@ -57,9 +57,9 @@ describe('TimePicker', () => {
     expect(screen.getByLabelText(`Hour -> ${moment().format('h')}`)).toHaveTextContent(
       moment().format('h'),
     );
-    expect(screen.getByLabelText(`Minute -> ${moment().format('mm')}`)).toHaveTextContent(
-      moment().format('mm'),
-    );
+    expect(
+      screen.getByLabelText(`Minute -> ${moment().startOf('hour').format('mm')}`),
+    ).toHaveTextContent(moment().startOf('hour').format('mm'));
     expect(screen.getByLabelText(`Meridiem -> ${moment().format('A')}`)).toHaveTextContent(
       moment().format('A'),
     );

@@ -463,6 +463,7 @@ export const DownloadReportModal = ({
                 validationState={showErrorInSection === 1 ? validateCustomDuration() : true}
                 validateRange={validateCustomDurationForPicker}
                 necessityIndicator="required"
+                minutesInterval={5}
               />
             ) : (
               <Dropdown selectionType="single">

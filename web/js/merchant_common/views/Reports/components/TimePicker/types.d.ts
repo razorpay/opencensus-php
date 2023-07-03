@@ -1,6 +1,8 @@
 import moment from 'moment';
-import { NecessityIndicatorType } from 'merchant_common/views/Reports/components/types';
-
+import {
+  NecessityIndicatorType,
+  MinutesInterval,
+} from 'merchant_common/views/Reports/components/types';
 export interface TimeInfoPropsType {
   chevUpClick: () => void;
   chevDownClick: () => void;
@@ -30,6 +32,7 @@ export interface BaseTimePickerProps {
   onClose?: () => void;
   errorText?: string;
   necessityIndicator?: NecessityIndicatorType;
+  minutesInterval?: MinutesInterval;
 }
 
 export interface TimePickerCalPropsType extends BaseTimePickerProps {
@@ -39,3 +42,14 @@ export interface TimePickerCalPropsType extends BaseTimePickerProps {
 export interface TimePickerPropsType extends BaseTimePickerProps {
   defaultValue?: moment.Moment;
 }
+
+enum MinutesChangeType {
+  'increase' = 'increase',
+  'decrease' = 'decrease',
+}
+export type MinutesModifierFn = (
+  action: keyof typeof MinutesChangeType,
+  x: number,
+  fn: (y: number) => void,
+  y?: MinutesInterval,
+) => void;

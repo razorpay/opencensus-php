@@ -28,3 +28,5 @@ export interface ActionListComponentProps<T> {
    */
   surfaceLevel?: 2 | 3 | undefined;
 }
+
+export type MinutesInterval = 5 | 10 | 15 | 20 | 30;

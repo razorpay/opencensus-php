@@ -10,7 +10,7 @@ import {
   SelectedRangeInfoBadge,
 } from 'merchant_common/views/Reports/components/DateTimeRangePicker/styled';
 
-export const DateTimeRangeHeader = ({ disableTimeSelection }): JSX.Element => {
+export const DateTimeRangeHeader = ({ disableTimeSelection, minutesInterval }): JSX.Element => {
   const { theme } = useTheme();
   const [shouldIncludeTime, setShouldIncludeTime] = useState(!disableTimeSelection);
   const { endDate, setEndDate, setStartDate, startDate } = useDateTimeRangeContext();
@@ -44,7 +44,11 @@ export const DateTimeRangeHeader = ({ disableTimeSelection }): JSX.Element => {
             </Text>
           </SelectedRangeInfoBadge>
           {shouldIncludeTime && startDate && !disableTimeSelection ? (
-            <TimePicker value={startDate} onChange={({ date }) => setStartDate(date)} />
+            <TimePicker
+              minutesInterval={minutesInterval}
+              value={startDate}
+              onChange={({ date }) => setStartDate(date)}
+            />
           ) : null}
         </RangeSection>
         <RangeSection>
@@ -57,7 +61,11 @@ export const DateTimeRangeHeader = ({ disableTimeSelection }): JSX.Element => {
             </Text>
           </SelectedRangeInfoBadge>
           {shouldIncludeTime && endDate && !disableTimeSelection ? (
-            <TimePicker value={endDate} onChange={({ date }) => setEndDate(date)} />
+            <TimePicker
+              minutesInterval={5}
+              value={endDate}
+              onChange={({ date }) => setEndDate(date)}
+            />
           ) : null}
         </RangeSection>
       </SelectedRangeInfo>

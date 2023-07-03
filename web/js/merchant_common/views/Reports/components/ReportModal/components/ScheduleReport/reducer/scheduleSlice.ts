@@ -22,7 +22,10 @@ export const initialCreateScheduleModalState: InitialStateType = {
   // section 2
   selectedDataDuration: undefined,
   selectedRepetition: undefined,
-  customDataDuration: undefined,
+  customDataDuration: {
+    startDate: moment().add(1, 'day').startOf('day'),
+    endDate: moment().add(30, 'day').endOf('day'),
+  },
   whenTime: undefined,
 
   // section 3

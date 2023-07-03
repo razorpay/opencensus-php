@@ -33,6 +33,7 @@ const Picker = ({
   necessityIndicator,
   errorText,
   disableTimeSelection = false,
+  minutesInterval,
 }: DateTimeRangePickerPropsType): JSX.Element => {
   const { theme } = useTheme();
   const daySize = DAY_SIZE;
@@ -52,7 +53,10 @@ const Picker = ({
             disableTimeSelection={disableTimeSelection}
           >
             <DateTimeRangeContainer>
-              <DateTimeRangeHeader disableTimeSelection={disableTimeSelection} />
+              <DateTimeRangeHeader
+                minutesInterval={minutesInterval}
+                disableTimeSelection={disableTimeSelection}
+              />
               <CalendarContent aria-label={ariaLabel} theme={theme}>
                 <VisibleRangeContainer
                   showToday={showToday}

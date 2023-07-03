@@ -1,6 +1,9 @@
 import * as moment from 'moment';
 import { ReactChild } from 'react';
-import { NecessityIndicatorType } from 'merchant_common/views/Reports/components/types';
+import {
+  NecessityIndicatorType,
+  MinutesInterval,
+} from 'merchant_common/views/Reports/components/types';
 
 export enum ViewMode {
   date = 'date',
@@ -200,6 +203,10 @@ export interface DateTimeRangePickerPropsType {
    */
   modifiers?: ModifierType;
   necessityIndicator?: NecessityIndicatorType;
+  /**
+   * To increment/decrement minutes of time picker with an offset.
+   */
+  minutesInterval?: MinutesInterval;
 }
 
 export type VisibleRangeType = moment.Moment[] | null;

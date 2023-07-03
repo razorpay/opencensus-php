@@ -14,6 +14,7 @@ import { defineMatchMedia } from 'merchant_common/views/Reports/components/DateT
 import { changeScheduleStringsToNumerics } from 'merchant_common/views/Reports/features/Schedules/utils';
 import { rest } from 'msw';
 import ScheduleReport from 'merchant_common/views/Reports/components/ReportModal/components/ScheduleReport';
+import { getFormattedDate } from 'merchant_common/views/Reports/components/DateTimeRangePicker/utils';
 
 const initialState = getOverViewStateWith({
   allConfigs: {
@@ -24,14 +25,7 @@ const initialState = getOverViewStateWith({
 });
 
 const TEST_CONFIG = mockConfigs[0];
-const SELECTED_SCHEDULE_DURATION = {
-  startDate: moment().add(2, 'month').set({
-    date: 2,
-  }),
-  endDate: moment().add(2, 'month').set({
-    date: 20,
-  }),
-};
+
 const TEST_USER = {
   name: 'Rzp',
   email: 'unactivated@gmail.com',
@@ -120,24 +114,16 @@ describe('Create Schedule Modal', () => {
 
     // duration
     await userEvent.click(screen.getByText('What will you receive in this report?'));
-    await userEvent.click(screen.getByText('Select a duration to schedule.'));
 
-    const nextBtn = screen.getByLabelText('Next Range');
-    await userEvent.click(nextBtn);
-    await userEvent.click(nextBtn);
-
-    await userEvent.click(
-      screen.getByLabelText(
-        `Date is ${SELECTED_SCHEDULE_DURATION.startDate.clone().format('DD MMMM YYYY')}`,
-      ),
+    const renderText = getFormattedDate(
+      {
+        startDate: moment().startOf('day').add(1, 'day'),
+        endDate: moment().endOf('day').add(30, 'day'),
+      },
+      true,
     );
 
-    await userEvent.click(
-      screen.getByLabelText(
-        `Date is ${SELECTED_SCHEDULE_DURATION.endDate.clone().format('DD MMMM YYYY')}`,
-      ),
-    );
-
+    expect(screen.getByText(renderText)).toBeInTheDocument();
     await userEvent.click(screen.getByLabelText('Custom Switch'));
     await userEvent.click(screen.getByLabelText('Custom Switch'));
     await userEvent.click(screen.getByPlaceholderText('Data duration covered in each report'));
@@ -149,7 +135,7 @@ describe('Create Schedule Modal', () => {
 
     await userEvent.click(screen.getByLabelText('Create Schedule'));
 
-    await expect(scheduleSpy).not.toBeCalled();
+    await expect(scheduleSpy).toBeCalled();
   }, 10000);
 
   it('should be able to edit data', async () => {

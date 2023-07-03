@@ -17,9 +17,10 @@ import { TimePickerCalPropsType, TimePickerPropsType } from './types';
 import { useClickOutSide, useTheme } from 'merchant_common/views/Reports/hooks';
 import { FieldFooter } from 'merchant_common/views/Reports/components/FieldFooter';
 import { FieldLabel } from 'merchant_common/views/Reports/components/FieldLabel';
+import { handleMinutesChange } from './utils';
 
 const getInitialStates = (date) => {
-  return date.format('h:m:A').split(':');
+  return date.startOf('hour').format('h:m:A').split(':');
 };
 
 export const TimePicker = ({
@@ -27,6 +28,7 @@ export const TimePicker = ({
   onChange,
   disableInput = false,
   onClose = () => {},
+  minutesInterval,
 }: TimePickerCalPropsType): JSX.Element => {
   // in h
   const [hour, setHour] = useState<number>(+getInitialStates(value)[0]);
@@ -106,8 +108,12 @@ export const TimePicker = ({
               <TimeInfo
                 role="Minute"
                 ariaLabel={moment(`${minutes}`, 'm').format('mm')}
-                chevUpClick={() => setMinutes(minutes === 0 ? 59 : minutes - 1)}
-                chevDownClick={() => setMinutes(minutes === 59 ? 0 : minutes + 1)}
+                chevUpClick={() =>
+                  handleMinutesChange('decrease', minutes, setMinutes, minutesInterval)
+                }
+                chevDownClick={() =>
+                  handleMinutesChange('increase', minutes, setMinutes, minutesInterval)
+                }
               >
                 {moment(`${minutes}`, 'm').format('mm')}
               </TimeInfo>
@@ -137,9 +143,9 @@ export const TimePickerField = ({
   validate = () => true,
   necessityIndicator,
   errorText,
+  minutesInterval,
 }: TimePickerPropsType): JSX.Element => {
   const isValidated = validate();
-
   // in h
   const [hour, setHour] = useState<number>(+getInitialStates(defaultValue)[0]);
 
@@ -222,8 +228,12 @@ export const TimePickerField = ({
               <TimeInfo
                 role="Minute"
                 ariaLabel={moment(`${minutes}`, 'm').format('mm')}
-                chevUpClick={() => setMinutes(minutes === 0 ? 59 : minutes - 1)}
-                chevDownClick={() => setMinutes(minutes === 59 ? 0 : minutes + 1)}
+                chevUpClick={() =>
+                  handleMinutesChange('decrease', minutes, setMinutes, minutesInterval)
+                }
+                chevDownClick={() =>
+                  handleMinutesChange('increase', minutes, setMinutes, minutesInterval)
+                }
               >
                 {moment(`${minutes}`, 'm').format('mm')}
               </TimeInfo>

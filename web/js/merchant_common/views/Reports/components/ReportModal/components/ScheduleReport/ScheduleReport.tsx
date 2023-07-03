@@ -256,19 +256,17 @@ export const ScheduleReportModal = ({
     switch (true) {
       case startDate.isBefore(moment().add(1, 'day'), 'day'):
         return {
-          error: `*Schedule can only run from ${moment()
-            .add(1, 'day')
-            .format('MMM D, YYYY')} onwards.`,
+          error: `*Schedule can only be created from the next day onwards`,
         };
       case startDate.diff(moment(), 'days') >= 30:
         return {
-          error: `Schedule should start within 31 days (max: ${moment()
+          error: `*Schedule should start within 31 days (max: ${moment()
             .add(30, 'day')
             .format('DD MMM YYYY')}) from today.`,
         };
       case endDate.diff(startDate, 'days') >= 184:
         return {
-          error: `You can schedule upto ${startDate
+          error: `*You can schedule upto ${startDate
             .clone()
             .add(184, 'day')
             .format('DD MMM YYYY')}.`,
@@ -535,6 +533,7 @@ export const ScheduleReportModal = ({
                 onChange={setWhenTime}
                 defaultValue={whenTime?.date ?? moment()}
                 necessityIndicator="required"
+                minutesInterval={15}
                 validate={() => (showErrorInSection === 1 ? moment.isMoment(whenTime?.date) : true)}
               />
             </>
