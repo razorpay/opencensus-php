@@ -7,6 +7,10 @@ use RZP\Services\Elfin;
 
 class Service extends Elfin\Service
 {
+
+    // we use this to expand a given short url to it's original form
+    static array $shortURLToURL = [];
+
     /**
      * {@inheritDoc}
      */
@@ -16,8 +20,10 @@ class Service extends Elfin\Service
         // Generates random short url and returns
         //
 
-        $url = 'http://dwarf.razorpay.in/' . random_alphanum_string(7);
+        $shortURL = 'http://dwarf.razorpay.in/' . random_alphanum_string(7);
 
-        return $url;
+        self::$shortURLToURL[$shortURL] = $url;
+
+        return $shortURL;
     }
 }

@@ -16,6 +16,7 @@ use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Tests\Functional\Partner\Constants;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
+use RZP\Services\Elfin\Mock\Service as ElfinMock;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -284,6 +285,98 @@ class MerchantReferralTest extends OAuthTestCase
         $this->mockAllSplitzTreatment($output);
     }
 
+    public function testCreateOrFetchNewMerchantReferralPartnerEligibleForCapital(): void
+    {
+        $input = [
+            'experiment_id' => 'M6dmstlJXnnU8F',
+            'id'            => Constants::DEFAULT_MERCHANT_ID,
+        ];
+
+        $output = [
+            'response' => [
+                'variant' => [
+                    'name' => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $input = [
+            'experiment_id' => 'L0rynez0HhIXHb',
+            'id'            => Constants::DEFAULT_MERCHANT_ID,
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::RESELLER
+            ]
+        );
+
+        $this->fixtures->merchant->createDummyPartnerApp();
+
+        $this->ba->proxyAuth();
+
+        $testdata = &$this->testData['testCreateOrFetchMerchantReferralPartnerEligibleForCapital'];
+
+        $response = $this->startTest($testdata);
+
+        $bankingReferral = $this->getDbEntity(
+            'referrals',
+            [
+                'merchant_id' => Constants::DEFAULT_MERCHANT_ID,
+                'product'     => Product::BANKING,
+            ],
+            Mode::LIVE
+        );
+
+        $capitalReferral = $this->getDbEntity(
+            'referrals',
+            [
+                'merchant_id' => Constants::DEFAULT_MERCHANT_ID,
+                'product'     => Product::CAPITAL,
+            ],
+            Mode::LIVE
+        );
+
+        $pgReferral = $this->getDbEntity(
+            'referrals',
+            [
+                'merchant_id' => Constants::DEFAULT_MERCHANT_ID,
+                'product'     => Product::PRIMARY,
+            ],
+            Mode::LIVE
+        );
+
+        $pgReferralUrl = $this->config['applications.dashboard.url']
+                         . 'signup?referral_code='
+                         . $pgReferral->getReferralCode()
+                         . '&eo=1';
+        $bankingReferralUrl = $this->config['applications.banking_service_url']
+                              . '/auth/signup?referral_code='
+                              . $bankingReferral->getReferralCode();
+        $capitalReferralUrl = Merchant\Constants::RAZORPAY_LINE_OF_CREDIT_SIGN_UP
+                              . '?referral_code='
+                              . $capitalReferral->getReferralCode()
+                              . '&intent=capital_loc_emi';
+
+        $this->assertEquals(ElfinMock::$shortURLToURL[$response['referrals']['primary']['url']], $pgReferralUrl);
+        $this->assertEquals(ElfinMock::$shortURLToURL[$response['referrals']['banking']['url']], $bankingReferralUrl);
+        $this->assertEquals(ElfinMock::$shortURLToURL[$response['referrals']['capital']['url']], $capitalReferralUrl);
+
+        $this->assertEquals($response['referrals']['primary']['ref_code'], $pgReferral->getReferralCode());
+        $this->assertEquals($response['referrals']['banking']['ref_code'], $bankingReferral->getReferralCode());
+        $this->assertEquals($response['referrals']['capital']['ref_code'], $capitalReferral->getReferralCode());
+
+        $this->assertEquals($response['referrals']['primary']['url'], $pgReferral->getReferralLink());
+        $this->assertEquals($response['referrals']['banking']['url'], $bankingReferral->getReferralLink());
+        $this->assertEquals($response['referrals']['capital']['url'], $capitalReferral->getReferralLink());
+
+    }
+
     /**
      * Asserts that the function returns the expected capital Referral Entity as well
      * for a particular merchant whitelisted for the capital partnership experiment
@@ -345,6 +438,22 @@ class MerchantReferralTest extends OAuthTestCase
             ],
             Mode::LIVE
         );
+
+        $pgReferralUrl = $this->config['applications.dashboard.url']
+                         . 'signup?referral_code='
+                         . $pgReferral->getReferralCode()
+                         . '&eo=1';
+        $bankingReferralUrl = $this->config['applications.banking_service_url']
+                              . '/auth/signup?referral_code='
+                              . $bankingReferral->getReferralCode();
+        $capitalReferralUrl = $this->config['applications.banking_service_url']
+                              . '/auth/signup?referral_code='
+                              . $capitalReferral->getReferralCode()
+                              . '&intent=capital_loc_emi';
+
+        $this->assertEquals(ElfinMock::$shortURLToURL[$response['referrals']['primary']['url']], $pgReferralUrl);
+        $this->assertEquals(ElfinMock::$shortURLToURL[$response['referrals']['banking']['url']], $bankingReferralUrl);
+        $this->assertEquals(ElfinMock::$shortURLToURL[$response['referrals']['capital']['url']], $capitalReferralUrl);
 
         $this->assertEquals($response['referrals']['primary']['ref_code'], $pgReferral->getReferralCode());
         $this->assertEquals($response['referrals']['banking']['ref_code'], $bankingReferral->getReferralCode());

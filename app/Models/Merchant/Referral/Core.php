@@ -39,13 +39,13 @@ class Core extends Base\Core
     {
         return [
             Product::PRIMARY => [
-                "url"    => $this->config['applications.dashboard.url'],
+                "url"    => $this->config['applications.dashboard.url'] . 'signup',
                 "params" => [
                     "referral_code" => null,
                 ]
             ],
             Product::BANKING => [
-                "url"    => $this->config['applications.banking_service_url'] . '/auth/',
+                "url"    => $this->config['applications.banking_service_url'] . '/auth/signup',
                 "params" => [
                     "referral_code" => null,
                 ]
@@ -154,7 +154,7 @@ class Core extends Base\Core
     {
         // Adds type label & dashboard path for referral.
 
-        $longUrl = $dashboardUrl . "signup?";
+        $longUrl = $dashboardUrl . "?";
 
         $longUrl = $longUrl . http_build_query($urlParams);
 
@@ -194,7 +194,7 @@ class Core extends Base\Core
             }
             else
             {
-                $url = $this->config['applications.banking_service_url'] . '/auth/';
+                $url = $this->config['applications.banking_service_url'] . '/auth/signup';
             }
 
             $productConfig[Product::CAPITAL] = [
@@ -342,7 +342,7 @@ class Core extends Base\Core
         $productConfig = $this->getReferralConfig();
 
         $productConfig[Product::CAPITAL] = [
-            "url"    => $this->config['applications.banking_service_url'] . '/auth/',
+            "url"    => $this->config['applications.banking_service_url'] . '/auth/signup',
             "params" => [
                 "referral_code" => null,
                 "intent"        => Merchant\Attribute\Type::CAPITAL_LOC_EMI,
