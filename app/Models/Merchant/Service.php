@@ -5584,7 +5584,7 @@ class Service extends Base\Service
         {
             $product = Product::PRIMARY;
         }
-        
+
         $users = $this->core()->getUsers($merchant, $product);
 
         return $users;
@@ -5955,13 +5955,13 @@ class Service extends Base\Service
             $data[EntityConstants::MERCHANT_DOCUMENT] = $documentsResponse;
         }
 
-      $this->trace->info(TraceCode::MERCHANT_GET_INTERNAL,
+        $data[EntityConstants::MERCHANT_DETAIL] = $this->getMerchantDetailForInternalGetMerchant($merchantDetail);
+
+        $this->trace->info(TraceCode::MERCHANT_GET_INTERNAL,
             [
                 'merchant_id' => $merchantId,
-                'merchant_detail'    => $merchantDetail,
+                'merchant_detail'    => $data[EntityConstants::MERCHANT_DETAIL],
             ]);
-
-        $data[EntityConstants::MERCHANT_DETAIL] = $this->getMerchantDetailForInternalGetMerchant($merchantDetail);
 
         $supportInformation = (new PayoutLinkService())->getMerchantSupportSettings($merchant);
 
@@ -6054,6 +6054,7 @@ class Service extends Base\Service
             try
             {
                 $detail[Detail\Constants::BUSINESS_TYPE_DISPLAY_NAME] = BusinessType::getDisplayNameFromKey(BusinessType::getKeyFromIndex($detail[Detail\Entity::BUSINESS_TYPE]));
+                $detail[Detail\Constants::BUSINESS_TYPE_KEY] = BusinessType::getKeyFromIndex($detail[Detail\Entity::BUSINESS_TYPE]);
             }
             catch (Exception\BadRequestValidationFailureException $e)
             {

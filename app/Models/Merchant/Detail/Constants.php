@@ -93,6 +93,7 @@ class Constants
     const AADHAAR_FRONT_COMPLETE = 'aadhaar_front_complete';
 
     const BUSINESS_TYPE_DISPLAY_NAME = 'business_type_display_name';
+    const BUSINESS_TYPE_KEY = 'business_type_key';
 
     // Email constants
     const MERCHANT             = 'merchant';
