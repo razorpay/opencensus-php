@@ -147,6 +147,7 @@ class Type
     const MSO_DOCUMENT                      = 'mso_document';
     const GOVT_AUTHORISATION_LETTER         = 'govt_authorisation_letter';
     const CANCELLED_CHEQUE_VIDEO            = 'cancelled_cheque_video';
+    const BOARD_RESOLUTION_LETTER           = 'board_resolution_letter';
 
     const NC_ADDITIONAL_DOCUMENTS = [
 
@@ -207,7 +208,8 @@ class Type
         self::BBPS_DOCUMENT,
         self::MSO_DOCUMENT,
         self::GOVT_AUTHORISATION_LETTER,
-        self::CPV_REPORT
+        self::CPV_REPORT,
+        self::BOARD_RESOLUTION_LETTER
     ];
 
     const DOCUMENT_DESCRIPTION_MAP = [
@@ -268,7 +270,8 @@ class Type
         self::BBPS_DOCUMENT                     => "BBPS document",
         self::MSO_DOCUMENT                      => "MSO/ Local cable opertor",
         self::GOVT_AUTHORISATION_LETTER         => "Govt authorisation Letter",
-        self::CPV_REPORT                        => "CPV report"
+        self::CPV_REPORT                        => "CPV report",
+        self::BOARD_RESOLUTION_LETTER           => "Board Resolution Letter"
     ];
 
     const PROOF_TYPES = [
@@ -412,6 +415,7 @@ class Type
         self::BBPS_DOCUMENT,
         self::MSO_DOCUMENT,
         self::GOVT_AUTHORISATION_LETTER,
+        self::BOARD_RESOLUTION_LETTER,
         self::CPV_REPORT
     ];
 
@@ -474,6 +478,7 @@ class Type
         self::FFMC_LICENSE                      => self::ADDITIONAL_DOCUMENTS,
         self::NBFC_REGISTRATION_CERTIFICATE     => self::ADDITIONAL_DOCUMENTS,
         self::AMFI_CERTIFICATE                  => self::ADDITIONAL_DOCUMENTS,
+        self::BOARD_RESOLUTION_LETTER           => self::ADDITIONAL_DOCUMENTS,
 
         self::SLA_SEBI_REGISTRATION_CERTIFICATE  => self::ADDITIONAL_DOCUMENTS,
         self::SLA_IRDAI_REGISTRATION_CERTIFICATE => self::ADDITIONAL_DOCUMENTS,
