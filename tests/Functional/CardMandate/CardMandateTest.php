@@ -1017,6 +1017,66 @@ class CardMandateTest extends TestCase
         $this->assertEquals('monthly', $cardMandate->getFrequency());
     }
 
+    public function testSiHubSubscriptionRegistrationInitialCardMandatePaymentWithMonthlyFrequency()
+    {
+        $this->fixtures->create('terminal:shared_billdesk_sihub_terminal');
+
+        $this->fixtures->terminal->disableTerminal($this->mandateHqTerminal['id']);
+
+        $this->fixtures->edit('iin', '411111',[
+            'mandate_hubs' => ['billdesk_sihub'=>'1'],
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['allow_billdesk_sihub']);
+
+        $this->paymentInput['amount'] = 100;
+
+        $subr = $this->fixtures->create('subscription_registration',
+            ['method' => 'card', 'max_amount' => 500, 'expire_at' => 4091958776, 'frequency' => 'monthly', 'notes' => []]);
+
+        $order = $this->fixtures->create('order',
+            ['amount' => 100, 'payment_capture' => 1]);
+
+        $this->fixtures->create('invoice',
+            ['entity_type' => 'subscription_registration', 'entity_id' => $subr->id, 'order_id' => $order->id]);
+
+        $this->paymentInput['order_id'] = $order->getPublicId();
+
+        $this->paymentInput['card']['number'] = '4111111111111111';
+
+        $this->mockCps(null, 'entity_fetch');
+
+        $this->mockCheckBin();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $this->paymentInput,
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($response['razorpay_payment_id'] ?? null);
+
+        $payment = $this->getDbLastEntity(E::PAYMENT);
+        $this->assertEquals('captured', $payment->getStatus());
+        $this->assertEquals('initial', $payment->getRecurringType());
+        $this->assertNotNull($payment->getTokenId());
+
+        $token = $payment->localToken;
+        $this->assertNotEmpty($token);
+        $this->assertEquals('confirmed', $token->getRecurringStatus());
+        $this->assertEquals($subr['max_amount'], $token->getMaxAmount());
+        $this->assertEquals($subr['expire_at'], $token->getExpiredAt());
+        $this->assertEquals('monthly', $token->getFrequency());
+
+        $cardMandate = $this->getDbLastEntity(E::CARD_MANDATE);
+        $this->assertNotEmpty($cardMandate);
+        $this->assertEquals('active', $cardMandate->getStatus());
+        $this->assertEquals('VkHYuA3NH3', $cardMandate->getMandateId());
+        $this->assertEquals('monthly', $cardMandate->getFrequency());
+    }
+
     public function testSubscriptionRegistrationTokenizedInitialCardMandatePaymentAmountGreaterThanMaxAmount()
     {
         $this->mockCheckBin();

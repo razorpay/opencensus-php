@@ -202,6 +202,11 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
             'start_time' => $startTime,
         ]);
 
+        if($tokenData['frequency'] === null)
+        {
+            $tokenData['frequency'] = Constants::FREQUENCY_AS_PRESENTED;
+        }
+
         $endTime = $payment->localToken->getExpiredAt();
 
         if ($endTime === null)

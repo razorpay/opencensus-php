@@ -50,4 +50,5 @@ class Constants
     const CAVV2                 = 'cavv2';
     const BILLDESK_SIHUB        = 'billdesk_sihub';
 
+    const FREQUENCY_AS_PRESENTED = 'as_presented';
 }

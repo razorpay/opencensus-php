@@ -52,7 +52,8 @@ class AuthenticateInitData extends Base\Mock\Server
                 'amount'    => 6,
                 'currency'  => 356,
                 'id'        => 'VkHYuA3NH3',
-                'status'    => 'pending'
+                'status'    => 'pending',
+                'frequency' => 'monthly'
             ],
         ];
     }
