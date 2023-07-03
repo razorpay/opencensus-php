@@ -246,7 +246,6 @@
             <exclude>./tests/Unit/Elfin</exclude>
             <exclude>./tests/Unit/Entity</exclude>
             <exclude>./tests/Unit/Fetch</exclude>
-            <exclude>./tests/Unit/PaymentsUpi</exclude>
             <exclude>./tests/Unit/Models/Merchant/</exclude>
             <exclude>./tests/Unit/Models/Offers/</exclude>
             <exclude>./tests/Unit/Services/MutexTest.php</exclude>
@@ -278,8 +277,6 @@
             <directory>./tests/Functional/TaxPayments/</directory>
             <directory>./tests/Functional/Contact/</directory>
             <directory>./tests/Functional/FundAccounts/</directory>
-            <directory>./tests/Unit/PaymentsUpi</directory>
-            <directory>./tests/Functional/PaymentsUpi</directory>
             <file>./tests/Functional/Merchant/FeaturesTest.php</file>
             <!--<file>./tests/Functional/Gateway/Mozart/UpiMindgateRecurringTest.php</file>-->
         </testsuite>
@@ -453,6 +450,10 @@
             <file>./tests/Functional/Merchant/MerchantCoreTest.php</file>
             <file>./tests/Functional/Merchant/MerchantReferralTest.php</file>
 
+        </testsuite>
+        <testsuite name="UPI Suite Test Suite">
+            <directory>./tests/Functional/PaymentsUpi</directory>
+            <directory>./tests/Unit/PaymentsUpi</directory>
         </testsuite>
         <testsuite name="Cross Border Test Suite">
             <directory>./tests/Functional/Currency/</directory>
