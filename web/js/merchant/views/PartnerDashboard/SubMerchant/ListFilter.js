@@ -1,4 +1,5 @@
 import ListFilter from 'merchant/components/ListFilter';
+import ActivationStatusFilter from './components/ActivationStatusFilter';
 import { Field } from 'redux-form';
 
 export default ({
@@ -6,6 +7,7 @@ export default ({
   showContactFilter = false,
   showEmailIdFilter = true,
   showPhoneNumberFilter = true,
+  showActivationStatusFilter = false,
   ...otherProps
 }) => (
   <ListFilter {...otherProps}>
@@ -30,6 +32,13 @@ export default ({
       <div class="form-group list-filter-item">
         <label>Contact</label>
         <Field name="contact_info" component="input" class="form-control input-sm" />
+      </div>
+    ) : null}
+
+    {showActivationStatusFilter ? (
+      <div class="form-group list-filter-item">
+        <label>Activation Status</label>
+        <Field name="activation_status" component={ActivationStatusFilter} />
       </div>
     ) : null}
 

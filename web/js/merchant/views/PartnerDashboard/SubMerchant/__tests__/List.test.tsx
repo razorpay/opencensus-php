@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from 'common/services/test/test-utils';
+import { render, screen, waitForLoadingToFinish } from 'common/services/test/test-utils';
 import List from 'merchant/views/PartnerDashboard/SubMerchant/List';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
@@ -92,9 +92,7 @@ describe('List', () => {
       },
     };
     renderApp(newState);
-    await waitFor(() => {
-      expect(screen.queryByTestId('spinner')).not.toBeInTheDocument();
-    });
+    await waitForLoadingToFinish();
     expect(screen.getByText('All Invites')).toBeInTheDocument();
     expect(screen.getByText('Accepted Invites')).toBeInTheDocument();
   });

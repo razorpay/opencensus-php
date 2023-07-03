@@ -13,7 +13,7 @@ const StyledFtuxTooltip = styled.div(
     left: ${tooltipPos[0]}px;
     top: ${tooltipPos[1]}px;
     width: 240px;
-    background-color: ${theme.colors.action.background.primary.hover};
+    background-color: ${theme.colors.brand.primary[500]};
     padding: ${theme.spacing[4]}px ${theme.spacing[5]}px;
 
     &:before {
@@ -23,7 +23,7 @@ const StyledFtuxTooltip = styled.div(
       z-index: 1;
       border-bottom: 10px solid transparent;
       border-left: 0;
-      border-right: 15px solid ${theme.colors.action.background.primary.hover};
+      border-right: 15px solid ${theme.colors.brand.primary[500]};
       border-style: solid;
       border-top: 10px solid transparent;
       content: '';
@@ -36,18 +36,19 @@ const StyledFtuxTooltip = styled.div(
 const FtuxAction = styled(Button)(
   ({ theme }) => `
   border: ${theme.border.width.thin}px solid white;
-  background-color: ${theme.colors.action.background.primary.hover};
-  color: ${theme.colors.surface.text.normal.highContrast};
+  background-color: ${theme.colors.brand.primary[500]};
+  color: ${theme.colors.surface.text.normal.lowContrast};
+  min-height: ${theme.spacing[6]}px;
   &:hover,&:focus {
     border: ${theme.border.width.thin}px solid white;
-    background-color: ${theme.colors.action.background.primary.hover};
+    background-color: ${theme.colors.brand.primary[500]};
   }
 `,
 );
 
 const tooltipPos = {
-  [ACCEPTED_INVITES]: [118, -55],
-  [ALL_INVITES]: [202, -55],
+  [ACCEPTED_INVITES]: [140, -35],
+  [ALL_INVITES]: [225, -35],
 };
 
 const FtuxTooltip = (): JSX.Element | null => {
@@ -75,7 +76,7 @@ const FtuxTooltip = (): JSX.Element | null => {
     <FadeTransition duration={500} in appear>
       <StyledFtuxTooltip tooltipPos={tooltipPos[navlinkStep]}>
         <Text type="subtle" contrast="high">
-          {navlinkStep === ACCEPTED_INVITES && (
+          {navlinkStep === ACCEPTED_INVITES ? (
             <Text type="subtle" size="small" contrast="high">
               All Affiliate Accounts that have accepted your invite.{' '}
               <Link
@@ -89,7 +90,7 @@ const FtuxTooltip = (): JSX.Element | null => {
               </Link>{' '}
               for your sub-merchants and accelerate their onboarding.
             </Text>
-          )}
+          ) : null}
           {navlinkStep === ALL_INVITES ? (
             <Text type="subtle" size="small" contrast="high">
               List of all invites you have sent out. Switch to Accepted Invites tab for Affiliates

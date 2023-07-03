@@ -843,9 +843,10 @@ class ProductSubMerchantsList extends ListContainer {
                   onSearchAnalytics={trackSearchAnalytics}
                   onClearAnalytics={trackClearAnalytics}
                   showAppIdFilter={user.isPartner('pure_platform')}
+                  showActivationStatusFilter={isCombinedContactFilterEnabled}
                   showContactFilter={isCombinedContactFilterEnabled}
-                  showPhoneNumberFilter={!isCombinedContactFilterEnabled}
                   showEmailIdFilter={!isCombinedContactFilterEnabled}
+                  showPhoneNumberFilter={!isCombinedContactFilterEnabled}
                 />
                 <button
                   class="btn btn-default export-all-btn"
