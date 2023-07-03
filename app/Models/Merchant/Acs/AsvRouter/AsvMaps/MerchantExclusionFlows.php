@@ -5,7 +5,7 @@ final class MerchantExclusionFlows
 {
 
     public const MAP = array(
-        /* routes */
+        /* Save routes */
         'merchant_mtu_update_dashboard' => true,
         'merchant_billing_label_update' => true,
         'merchant_activation_update' => true,
@@ -64,7 +64,7 @@ final class MerchantExclusionFlows
         'user_fetch' => true,
         'account_edit_v2' => true,
         'merchant_edit_config' => true,
-        'merchant_activation_details' => true, // Please Be conscious while removing this, this is top traffic read routes
+        'merchant_activation_details' => true,  // Please Be conscious while removing this, this is top traffic read routes
         'merchant_edit_config_logo' => true,
         'merchant_requests_create' => true,
         'growth_get_asset_details' => true,
@@ -118,7 +118,6 @@ final class MerchantExclusionFlows
         'merchant_razorx_evaluate' => true,
         'merchant_toggle_fee_bearer' => true,
         'partner_activation_save' => true,
-        'payment_fetch_multiple' => true, // Please Be conscious while removing this, this is top traffic read routes
         'payment_page_list' => true,
         'pricing_add_plan_rule_bulk' => true,
         'proxy_merchant_edit_support_details' => true,
@@ -128,8 +127,49 @@ final class MerchantExclusionFlows
         'settlement_ondemand_fees_dashboard' => true,
         'smart_dashboard_merchant_details_patch' => true,
         'splitz_evaluate_bulk_proxy' => true,
+        'payment_fetch_multiple' => true, // Please Be conscious while removing this, this is top traffic read routes
+        'settlement_ondemand_feature_ena' => true,
+        'admin_patch_purpose_code' => true,
         'user_otp_create' => true,
         'whitelisted_domain' => true,
+        'merchant_activation_business_categories_v2' => true,
+        'merchant_store_fetch' => true,
+        'los_service' => true,
+        'merchant_requests_update' => true,
+        'reporting_config_list' => true,
+        'ufh_get_file_signed_url' => true,
+        'payout_links_integration_details' => true,
+        'oauth_token_fetch_multiple' => true,
+        'merchant_workflow_details' => true,
+        'merchant_instrument_status_get_by_merchant_id' => true,
+        'create_international_virtual_accounts' => true,
+        'view_cac_role' => true,
+        'mob_save_workflow' => true,
+        'cac_role_fetch_all' => true,
+        'transaction_statement_fetch_multiple_for_banking' => true,
+        'payout_fetch_multiple' => true,
+        'tax_payments_invalid_tan_status' => true,
+        'list_low_balance_config' => true,
+        'invoice_fetch_multiple' => true,
+        'merchant_bank_account_change_status' => true,
+        'payouts_summary' => true,
+        'payout_links_workflow_summary' => true,
+        'switch_merchant_token' => true,
+        'fetch_merchant_balance_configs' => true,
+        'merchant_create_lead_to_salesforce' => true,
+        'fetch_payout_downtimes_enabled' => true,
+        'vendor_payment_summary' => true,
+        'oauth_fetch_submerchant_applications' => true,
+        'payouts_workflow_summary' => true,
+        'tax_payments_monthly_summary' => true,
+        'payouts_workflow_config_get' => true,
+        'merchant_fetch_users' => true,
+        'null' => true,
+        'none' => true,
+        'worker:sub_merchant_support_entities_create_job' => true,
+        'worker:cross_border_common_use_cases' => true,
+        'worker:website_update_processor' => true,
+        'worker:batch' => true,
         'worker:update_merchant_context' => true,
         'worker:bvs_validation_job' => true,
         'worker:merchant_hold_funds_sync' => true,
@@ -153,7 +193,8 @@ final class MerchantExclusionFlows
         'rzp_jobs_triggeracssync' => true,
         'RZP_Mail_Merchant_MerchantDashboardEmail' => true,
         'rzp_mail_user_otp' => true,
-
+        'RZP_Jobs_Transfers_LinkedAccountBankVerificationStatusBackfill' => true,
+        'RZP_Jobs_UpdateMerchantContext' => true,
 
         // TOP Read Routes To be Excluded
         'order_payments' => true,

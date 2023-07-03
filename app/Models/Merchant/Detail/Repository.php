@@ -13,14 +13,17 @@ use RZP\Models\Merchant;
 use RZP\Models\Merchant\AccessMap;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Org;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Stakeholder;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Modules\Acs\Wrapper\MerchantDetail as MerchantDetailWrapper;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Acs\traits\AsvFind;
 
 class Repository extends Base\Repository
 {
+    use AsvFind;
     use Base\RepositoryUpdateTestAndLive
     {
         saveOrFail as saveOrFailTestAndLive;
@@ -28,6 +31,31 @@ class Repository extends Base\Repository
     }
 
     protected $entity = 'merchant_detail';
+
+    function __construct()
+    {
+        parent::__construct();
+
+        $this->asvRouter = new AsvRouter();
+    }
+
+    public function fetchAllMerchantIDsFromSlaveDB($input)
+    {
+        $query = $this->newQueryWithConnection($this->getAccountServiceReplicaConnection())
+            ->select([Entity::MERCHANT_ID])
+            ->distinct()
+            ->orderBy(Entity::MERCHANT_ID);
+
+        if (isset($input['after_merchant_id']) === true) {
+            $query->where(Entity::MERCHANT_ID, '>', $input['after_merchant_id']);
+        }
+
+        if (isset($input['count']) === true) {
+            $query->take($input['count']);
+        }
+
+        return $query->get();
+    }
 
     /**
      * @override

@@ -27,6 +27,12 @@ class FetchMerchant
                     Constant::AFTER_ID => $merchantId
                 ])->toArray(),
                 key: Constant::ID),
+            Constant::MERCHANT_DETAIL => $this->getMerchantIds(
+                $this->repo->merchant_detail->fetchAllMerchantIDsFromSlaveDB([
+                    Constant::COUNT => $count,
+                    Constant::AFTER_MERCHANT_ID => $merchantId
+                ])->toArray(),
+                key: Constant::MERCHANT_ID),
             Constant::MERCHANT_WEBSITE => $this->getMerchantIds(
                 $this->repo->merchant_website->fetchAllMerchantIDsFromSlaveDB([
                     Constant::COUNT => $count,

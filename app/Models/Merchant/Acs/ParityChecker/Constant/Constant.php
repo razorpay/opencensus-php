@@ -42,6 +42,8 @@ class Constant
 
     const MERCHANT = 'merchant';
 
+    const MERCHANT_DETAIL = 'merchant_detail';
+
     const MERCHANT_WEBSITE = 'merchant_website';
 
     const MERCHANT_EMAIL  = 'merchant_email';

@@ -22,5 +22,5 @@ final class SplitzConstant
 
     const SPLITZ_ADDRESS_GET_BY_STAKEHOLDER_ID = 'splitz_experiment_address_read_by_stakeholder_id';
 
-
+    const SPLITZ_MERCHANT_DETAIL_GET_BY_ID = 'splitz_experiment_merchant_detail_read_by_id';
 }

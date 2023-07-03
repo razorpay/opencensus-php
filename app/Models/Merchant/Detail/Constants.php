@@ -177,6 +177,8 @@ class Constants
 
     const ACTIVATION_FORM_SUBMISSION_KAFKA               = 'activation_form_submission_kafka_event';
 
+    const ONBOARDING_MILESTONE                           = 'onboarding_milestone';
+
 
     //gstin integration constants
     const COMPANY_NAME        = 'company_name';

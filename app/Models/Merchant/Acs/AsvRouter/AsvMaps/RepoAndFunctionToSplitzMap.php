@@ -12,6 +12,7 @@ use RZP\Models\Merchant\Email\Repository as MerchantEmailRepository;
 use RZP\Models\Merchant\Document\Repository as MerchantDocumentRepository;
 use RZP\Models\Merchant\BusinessDetail\Repository as MerchantBusinessDetailRepository;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Constant\Constant as AsvConstant;
+use RZP\Models\Merchant\Detail\Repository as MerchantDetailRepository;
 
 final class RepoAndFunctionToSplitzMap {
     public const MAP = array(
@@ -41,6 +42,10 @@ final class RepoAndFunctionToSplitzMap {
             FunctionConstant::FIND_OR_FAIL => SplitzConstant::SPLITZ_STAKEHOLDER_GET_BY_ID,
             FunctionConstant::FIND_OR_FAIL_PUBLIC => SplitzConstant::SPLITZ_STAKEHOLDER_GET_BY_ID,
             FunctionConstant::GET_BY_MERCHANT_ID => SplitzConstant::SPLITZ_STAKEHOLDER_GET_BY_MERCHANT_ID,
+        ),
+        MerchantDetailRepository::class => array(
+            FunctionConstant::FIND_OR_FAIL => SplitzConstant::SPLITZ_MERCHANT_DETAIL_GET_BY_ID,
+            FunctionConstant::FIND_OR_FAIL_PUBLIC => SplitzConstant::SPLITZ_MERCHANT_DETAIL_GET_BY_ID,
         )
     );
 
