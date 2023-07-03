@@ -21,7 +21,6 @@ import {
   setGroupTypeFilter,
   setSelectedDropdownFilterOptions,
   setDefaultInterval,
-  setCardTypeFilter,
   setFailureReasonType,
 } from 'merchant/reducers/successRate';
 import {
@@ -35,10 +34,7 @@ import {
   methodDropdownChange,
   trackSuccessRateEvents,
 } from 'merchant/views/Transactions/SuccessRate/trackEvents';
-import {
-  DEFAULT_GROUP_BY,
-  INITIAL_SELECTED_CARD_TYPE,
-} from 'merchant/views/Transactions/SuccessRate/constants';
+import { DEFAULT_GROUP_BY } from 'merchant/views/Transactions/SuccessRate/constants';
 
 const GraphWidget = (props) => {
   const {
@@ -49,7 +45,6 @@ const GraphWidget = (props) => {
     setGroupTypeFilter,
     setSelectedDropdownFilterOptions,
     setDefaultInterval,
-    setCardTypeFilter,
     user,
     setFailureReasonType,
   } = props;
@@ -80,7 +75,6 @@ const GraphWidget = (props) => {
     if (!lastUpdatedAt || diffInSec >= 300) {
       if (tab.name === 'Card') {
         setGroupTypeFilter(DEFAULT_GROUP_BY[tab.name]);
-        setCardTypeFilter(INITIAL_SELECTED_CARD_TYPE);
       }
 
       const payload = queryFilters(updateDropdownOptions);
@@ -159,12 +153,14 @@ const GraphWidget = (props) => {
               {!isDropdownFilterLoading && (
                 <MethodFilter
                   activeTab={activeTab}
+                  tab={tabs?.[activeTab]}
                   disabled={isLoading || tabLoading}
                   filtersList={dropdownFilterOptions}
                   handleGroupingChange={handleGroupingChange}
-                  selectedGrouping={selectedDropdownFilterOptions}
                   isOptimizerEnabled={user.isOptimizerEnabled}
+                  selectedGrouping={selectedDropdownFilterOptions}
                   isInternationalEnabled={user.international}
+                  user={user}
                 />
               )}
               <GraphPanel />
@@ -187,7 +183,6 @@ const mapDispatchToProps = (dispatch) => {
       fetchMerchantErrors,
       setSelectedDropdownFilterOptions,
       setDefaultInterval,
-      setCardTypeFilter,
       setFailureReasonType,
     },
     dispatch,

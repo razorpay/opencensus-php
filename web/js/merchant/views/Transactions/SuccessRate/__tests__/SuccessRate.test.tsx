@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, server, screen, waitFor, userEvent } from 'test-utils';
+import { render, server, screen, waitFor, userEvent, waitForElementToBeRemoved } from 'test-utils';
 import SuccessRate from 'merchant/views/Transactions/SuccessRate/containers/SuccessRate';
 import {
   errorApiHandler,
@@ -120,6 +120,7 @@ describe('<SuccessRate/>', () => {
     //spinner in the success rate chart
     expect(screen.getAllByTestId('spinner')).toHaveLength(2);
   });
+
   test('should call SR api once only after mount', () => {
     const srFetchAllSpy = jest.spyOn(services, 'getSR');
     server.use(srApiHandler({ isSuccess: true }), errorApiHandler({ isSuccess: true }));
@@ -128,6 +129,136 @@ describe('<SuccessRate/>', () => {
     const chartShimmers = screen.getAllByTestId('sr-dashboard-chart-shimmer');
     expect(chartShimmers[0]).toBeVisible();
     expect(srFetchAllSpy).toHaveBeenCalledTimes(1);
+  });
+  test('should not show method types if not allowed', async () => {
+    server.use(srApiHandler({ isSuccess: true }), errorApiHandler({ isSuccess: true }));
+    render(<App />);
+    const srFetchAllSpy = jest.spyOn(services, 'getSR');
+
+    expect(srFetchAllSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        filters: { method: ['card', 'upi', 'netbanking', 'emandate'] },
+      }),
+    );
+    await waitFor(() => {
+      expect(screen.getByTestId('Overall-tab')).toHaveClass('active');
+    });
+    expect(screen.queryByTestId('method-types')).not.toBeInTheDocument();
+    await userEvent.click(screen.getByTestId('UPI-tab').firstChild as HTMLElement);
+    expect(srFetchAllSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        filters: { method: ['upi'] },
+      }),
+    );
+    await waitFor(() => {
+      expect(screen.getByTestId('UPI-tab')).toHaveClass('active');
+    });
+    expect(screen.queryByTestId('method-types')).not.toBeInTheDocument();
+    await userEvent.click(screen.getByTestId('Netbanking-tab').firstChild as HTMLElement);
+    expect(srFetchAllSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        filters: { method: ['netbanking'] },
+      }),
+    );
+    await waitFor(() => {
+      expect(screen.getByTestId('Netbanking-tab')).toHaveClass('active');
+    });
+    expect(screen.queryByTestId('method-types')).not.toBeInTheDocument();
+    await userEvent.click(screen.getByTestId('Emandate-tab').firstChild as HTMLElement);
+    expect(srFetchAllSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        filters: { method: ['emandate'] },
+      }),
+    );
+    await waitFor(() => {
+      expect(screen.getByTestId('Emandate-tab')).toHaveClass('active');
+    });
+    expect(screen.queryByTestId('method-types')).not.toBeInTheDocument();
+  });
+
+  test('should show method types upon clicking on card and reflect changes in sr payload', async () => {
+    const srFetchAllSpy = jest.spyOn(services, 'getSR');
+    server.use(srApiHandler({ isSuccess: true }), errorApiHandler({ isSuccess: true }));
+    render(<App />);
+    await userEvent.click(screen.getByTestId('Card-tab').firstChild as HTMLElement);
+    expect(srFetchAllSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        filters: { method: ['card'], type: ['credit'] },
+      }),
+    );
+    await waitFor(() => {
+      expect(screen.getByLabelText('filter-options')).toBeVisible();
+    });
+    expect(screen.getByTestId('method-types')).toBeVisible();
+
+    //Debit
+    await userEvent.click(screen.getByText('Debit'));
+    await waitForElementToBeRemoved(() => screen.getAllByTestId('sr-dashboard-chart-shimmer')[0]);
+    expect(srFetchAllSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        filters: { method: ['card'], type: ['debit'] },
+      }),
+    );
+
+    //Credit
+    await userEvent.click(screen.getByText('Credit'));
+    await waitForElementToBeRemoved(() => screen.getAllByTestId('sr-dashboard-chart-shimmer')[0]);
+    expect(srFetchAllSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        filters: { method: ['card'], type: ['credit'] },
+      }),
+    );
+
+    //Prepaid
+    await userEvent.click(screen.getByText('Prepaid'));
+    await waitForElementToBeRemoved(() => screen.getAllByTestId('sr-dashboard-chart-shimmer')[0]);
+    expect(srFetchAllSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        filters: { method: ['card'], type: ['prepaid'] },
+      }),
+    );
+  });
+  test('should show method types upon clicking on card and reflect changes in error payload', async () => {
+    const merchantErrorSpy = jest.spyOn(services, 'getMerchantError');
+    server.use(srApiHandler({ isSuccess: true }), errorApiHandler({ isSuccess: true }));
+    render(<App />);
+    await userEvent.click(screen.getByTestId('Card-tab').firstChild as HTMLElement);
+    expect(merchantErrorSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        filters: { method: ['card'], type: ['credit'] },
+      }),
+    );
+    await waitFor(() => {
+      expect(screen.getByLabelText('filter-options')).toBeVisible();
+    });
+    expect(screen.getByTestId('method-types')).toBeVisible();
+
+    //Debit
+    await userEvent.click(screen.getByText('Debit'));
+    await waitForElementToBeRemoved(() => screen.getAllByTestId('sr-dashboard-chart-shimmer')[0]);
+    expect(merchantErrorSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        filters: { method: ['card'], type: ['debit'] },
+      }),
+    );
+
+    //Credit
+    await userEvent.click(screen.getByText('Credit'));
+    await waitForElementToBeRemoved(() => screen.getAllByTestId('sr-dashboard-chart-shimmer')[0]);
+    expect(merchantErrorSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        filters: { method: ['card'], type: ['credit'] },
+      }),
+    );
+
+    //Prepaid
+    await userEvent.click(screen.getByText('Prepaid'));
+    await waitForElementToBeRemoved(() => screen.getAllByTestId('sr-dashboard-chart-shimmer')[0]);
+    expect(merchantErrorSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        filters: { method: ['card'], type: ['prepaid'] },
+      }),
+    );
   });
 });
 

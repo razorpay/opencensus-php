@@ -1,5 +1,5 @@
 import moment from 'moment';
-import { CARD_GROUPING_DATA } from 'merchant/views/Transactions/SuccessRate/constants';
+import { CARD_GROUPING_DATA, SR_FILTERS } from 'merchant/views/Transactions/SuccessRate/constants';
 
 type Interval = {
   from: number;
@@ -7,6 +7,23 @@ type Interval = {
   sr: number;
   successful: number;
   total: number;
+};
+
+export const DEFAULT_PROPS = {
+  MethodFilter: {
+    filtersList: [SR_FILTERS.Card],
+    activeTab: 'Card',
+    tab: { selectedMethodType: 'debit' },
+    user: { isOptimizerEnabled: true },
+    isOptimizerEnabled: true,
+    selectedGrouping: [
+      {
+        value: 'network',
+        text: 'Card Networks',
+        query: 'filter',
+      },
+    ],
+  },
 };
 
 export type BaseStruct = {

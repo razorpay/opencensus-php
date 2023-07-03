@@ -102,7 +102,7 @@ export const queryFilters = (updateDropdownOptions = false, refreshMetricTabs = 
   const {
     selectedDropdownFilterOptions = {},
     selectedInterval,
-    selectedCardType,
+    selectedMethodType,
   } = tabs[activeTab] || {};
 
   let _group_by = [DEFAULT_GROUP_BY[activeTab]];
@@ -125,6 +125,8 @@ export const queryFilters = (updateDropdownOptions = false, refreshMetricTabs = 
     }, []);
   }
 
+  const methodType = activeTab === 'Card' && isOptimizerEnabled ? null : selectedMethodType;
+
   const payload = {
     entity: 'payments',
     from: startDate.unix(),
@@ -139,10 +141,9 @@ export const queryFilters = (updateDropdownOptions = false, refreshMetricTabs = 
             isOptimizerEnabled,
           })
         : {}),
-      ...(!isOptimizerEnabled && activeTab === 'Card' ? { type: [selectedCardType] } : {}),
+      ...(methodType ? { type: [methodType] } : {}),
     },
     ...(isSrAdminEnabled && searchedMerchantId ? { merchant_id: searchedMerchantId } : {}),
-
     group_by: {
       keys: _group_by,
       limit: isOptimizerEnabled ? 3 : GROUP_BY_KEY_VS_LIMIT[_group_by] || DEFAULT_GROUP_BY_LIMIT, // 3 for dropdown filters in case of optimizer merchant and other limits as per groupBy for graph pills in case of rzp merchant.
@@ -484,7 +485,7 @@ export const getMerchantErrorsPayload = (updateDropdownOptions) => {
   const { session, successRate } = store?.getState();
   const { isOptimizerEnabled, isSrAdminEnabled = false } = session?.user;
   const { tabs, activeTab, filters, merchantErrors, searchedMerchantId } = successRate;
-  const { method, selectedDropdownFilterOptions, selectedCardType } = tabs[activeTab];
+  const { method, selectedDropdownFilterOptions, selectedMethodType } = tabs[activeTab];
   const { startDate, endDate } = filters;
   const errorType = merchantErrors[activeTab].failureReasonType ?? 'default';
 
@@ -499,6 +500,8 @@ export const getMerchantErrorsPayload = (updateDropdownOptions) => {
     }, []);
   }
 
+  const methodType = activeTab === 'Card' && isOptimizerEnabled ? null : selectedMethodType;
+
   const payload = {
     entity: 'payments',
     from: startDate.unix(),
@@ -512,7 +515,7 @@ export const getMerchantErrorsPayload = (updateDropdownOptions) => {
             isOptimizerEnabled,
           })
         : {}),
-      ...(!isOptimizerEnabled && activeTab === 'Card' ? { type: [selectedCardType] } : {}),
+      ...(methodType ? { type: [methodType] } : {}),
       ...(errorType !== 'default' ? CUSTOM_ERROR_TYPES[activeTab]?.fetchOptions?.filters : {}),
     },
     ...(isSrAdminEnabled && searchedMerchantId ? { merchant_id: searchedMerchantId } : {}),

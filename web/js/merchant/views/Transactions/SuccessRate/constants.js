@@ -168,6 +168,7 @@ export const tabMeta = {
   downtimes: { resolved: [], ongoing: [] },
   failureReasonType: 'default',
   merchantErrors: {},
+  selectedMethodType: null,
 };
 
 export const metricsCard = {
@@ -486,20 +487,30 @@ export const fetchDefaultReturn = {
   histogram: { labels: [], datasets: [] },
 };
 
-export const CARD_TYPES = [
-  {
-    label: 'Credit',
-    name: 'credit',
+export const METHOD_TYPES_MAP = {
+  Card: {
+    name: 'Card Types:',
+    shouldRender: ({ user }) => !user.isOptimizerEnabled,
+    defaultType: 'credit',
+    types: [
+      {
+        name: 'Credit',
+        value: 'credit',
+        shouldRender: () => true,
+      },
+      {
+        name: 'Debit',
+        value: 'debit',
+        shouldRender: () => true,
+      },
+      {
+        name: 'Prepaid',
+        value: 'prepaid',
+        shouldRender: () => true,
+      },
+    ],
   },
-  {
-    label: 'Debit',
-    name: 'debit',
-  },
-  {
-    label: 'Prepaid',
-    name: 'prepaid',
-  },
-];
+};
 
 export const CARD_NETWORKS = {
   AMEX: 'American Express',

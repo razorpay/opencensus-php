@@ -25,6 +25,7 @@ import {
   CARD,
   NETBANKING,
   EMANDATE,
+  METHOD_TYPES_MAP,
 } from 'merchant/views/Transactions/SuccessRate/constants';
 import {
   getSR,
@@ -44,10 +45,10 @@ const SET_METRICS_DATA = 'SET_METRICS_DATA';
 const FETCH_MERCHANT_ERRORS = 'FETCH_MERCHANT_ERRORS';
 const FETCH_INTERVALS = 'FETCH_INTERVALS';
 const SET_SELECTED_DROPDOWN_FILTER_OPTIONS = 'SET_SELECTED_DROPDOWN_FILTER_OPTIONS';
-const SET_CARD_TYPE_FILTER = 'SET_CARD_TYPE_FILTER';
 const RESET_SR_DASHBOARD = 'RESET_SR_DASHBOARD';
 const SET_FAILURE_REASONS_TYPE = 'SET_FAILURE_REASONS_TYPE';
 const SEARCH_MERCHANT_ID = 'SEARCH_MERCHANT_ID';
+const SET_METHOD_TYPE = 'SET_METHOD_TYPE';
 
 export const fetchSuccessRate =
   ({ payload, updateDropdownOptions, resetSelectedInterval = true, refreshMetricTabs = false }) =>
@@ -298,10 +299,6 @@ export const setSelectedDropdownFilterOptions = (option) => {
   };
 };
 
-export const setCardTypeFilter = (value) => {
-  return { type: SET_CARD_TYPE_FILTER, payload: value };
-};
-
 export const resetSRDashboard = () => {
   return { type: RESET_SR_DASHBOARD };
 };
@@ -310,6 +307,13 @@ export const setMerchantIDSearch = (query) => {
   return {
     type: SEARCH_MERCHANT_ID,
     payload: query,
+  };
+};
+
+export const setMethodType = (value) => {
+  return {
+    type: SET_METHOD_TYPE,
+    payload: value,
   };
 };
 
@@ -335,12 +339,14 @@ const getInitialState = () => {
       title: tabsTitleMap[tabName],
       optimizerEnabled,
     };
+
     state.tabs[tabName] = {
       ...tabMeta,
       name: tabName,
       method: DEFAULT_METHOD[tabName],
       group_by: DEFAULT_GROUP_BY[tabName],
       optimizerEnabled,
+      selectedMethodType: METHOD_TYPES_MAP[tabName]?.defaultType,
     };
   });
 
@@ -486,12 +492,6 @@ export default (state = getInitialState(), action) => {
       return stateClone;
     }
 
-    case SET_CARD_TYPE_FILTER: {
-      const stateClone = cloneDeep(state);
-      lodashset(stateClone, `tabs.${state.activeTab}.selectedCardType`, payload);
-      return stateClone;
-    }
-
     case SET_FAILURE_REASONS_TYPE: {
       const stateClone = cloneDeep(state);
       lodashset(stateClone, `merchantErrors.${state.activeTab}.failureReasonType`, payload);
@@ -500,6 +500,12 @@ export default (state = getInitialState(), action) => {
 
     case RESET_SR_DASHBOARD: {
       const stateClone = getInitialState();
+      return stateClone;
+    }
+
+    case SET_METHOD_TYPE: {
+      const stateClone = cloneDeep(state);
+      lodashset(stateClone, `tabs.${state.activeTab}.selectedMethodType`, payload);
       return stateClone;
     }
 
