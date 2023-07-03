@@ -975,6 +975,72 @@ class TerminalTest extends TestCase
         $this->assertEquals( "razorpay", $content['procurer']);
     }
 
+    public function testValidateDeletev3Terminal()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opVt',
+                'merchant_id' => '10000000000000',
+                'gateway'                  => 'eghl',
+                'gateway_terminal_id'      => '12344',
+                'gateway_merchant_id'      => '12344',
+                'procurer'                 => 'merchant'
+            ]);
+
+
+        $tid = $terminal['id'];
+
+        $data = [
+            'procurer' => "razorpay",
+        ];
+
+        $this->terminalsServiceMock = $this->getTerminalsServiceMock();
+
+        $this->mockTerminalsServiceProxyRequest(
+            ["id" => "AqdfGh5460opVt",
+                "gateway" => "eghl",
+                "procurer" => "razorpay",
+                "merchant_id" => "10000000000000"]);
+
+        $content = $this->validateDeleteTerminalv3($tid, $data);
+
+        $this->assertEquals( "razorpay", $content['procurer']);
+    }
+
+    public function testDeletev3Terminal()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opVt',
+                'merchant_id' => '10000000000000',
+                'gateway'                  => 'eghl',
+                'gateway_terminal_id'      => '12344',
+                'gateway_merchant_id'      => '12344',
+                'procurer'                 => 'merchant'
+            ]);
+
+
+        $tid = $terminal['id'];
+
+        $data = [
+            'procurer' => "razorpay",
+        ];
+
+        $this->terminalsServiceMock = $this->getTerminalsServiceMock();
+
+        $this->mockTerminalsServiceProxyRequest(
+            ["id" => "AqdfGh5460opVt",
+                "gateway" => "eghl",
+                "procurer" => "razorpay",
+                "merchant_id" => "10000000000000"]);
+
+        $content = $this->deleteTerminalv3($tid, $data);
+
+        $this->assertEquals( "razorpay", $content['procurer']);
+    }
+
     public function testEditNonPaysecureTerminalWithNonAxisTerminalOrgId()
     {
         $org = $this->fixtures->org->createHdfcOrg();

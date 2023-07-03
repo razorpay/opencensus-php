@@ -495,6 +495,20 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function validateDeleteTerminalv3($mid, $tid)
+    {
+        $data = $this->service(E::TERMINAL)->validateDeleteTerminalv3($mid, $tid);
+
+        return ApiResponse::json($data);
+    }
+
+    public function deleteTerminalv3($mid, $tid)
+    {
+        $data = $this->service(E::TERMINAL)->deleteTerminalv3($mid, $tid);
+
+        return ApiResponse::json($data);
+    }
+
     public function putTerminal($mid, $tid)
     {
         $input = Request::all();

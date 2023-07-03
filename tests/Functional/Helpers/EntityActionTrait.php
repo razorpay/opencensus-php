@@ -35,6 +35,32 @@ trait EntityActionTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    protected function deleteTerminalv3($mid, $tid)
+    {
+        $request = array(
+            'url' => '/merchants/'.$mid.'/terminals/'.$tid.'/v3',
+            'method' => 'delete');
+
+        $this->ba->getAdmin()->merchants()->attach($mid);
+
+        $this->ba->adminAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function validateDeleteTerminalv3($mid, $tid)
+    {
+        $request = array(
+            'url' => '/merchants/'.$mid.'/terminals/'.$tid.'/validatedeletev3',
+            'method' => 'post');
+
+        $this->ba->getAdmin()->merchants()->attach($mid);
+
+        $this->ba->adminAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function restoreTerminal($tid)
     {
         $request = array(

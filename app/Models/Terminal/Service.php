@@ -294,6 +294,33 @@ class Service extends Base\Service
         return $terminal->toArrayAdmin();
     }
 
+    public function validateDeleteTerminalv3($mid, $tid)
+    {
+        $this->trace->info(
+            TraceCode::TERMINAL_DELETE,
+            [
+                'merchant_id'       => $mid,
+                'terminal_id'       => $tid,
+            ]);
+
+        printf($tid);
+
+        $path = "v3/terminals/".$tid;
+        $this->app['terminals_service']->proxyTerminalService('', "POST", $path);
+
+    }
+
+    public function deleteTerminalv3($mid, $tid)
+    {
+        $this->app['workflow']
+            ->setEntityAndId('terminal', $tid)
+            ->handle(['terminal_id'=>$tid], []);
+
+        $path = "v3/terminals/".$tid;
+
+        $this->app['terminals_service']->proxyTerminalService('', "DELETE", $path);
+    }
+
     public function deleteTerminal2($id)
     {
         $this->trace->info(
