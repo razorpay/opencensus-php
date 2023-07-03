@@ -39,20 +39,6 @@ use RZP\Models\Locale\Core as LocaleCore;
 
 trait Callback
 {
-    protected static $validErrorCodesForUpiAutopayCallbackRetry = [
-        'U30',
-        'BT',
-        'UM9',
-        'U91',
-        'U67',
-        'UM2',
-        'UM8',
-        'U29',
-        'U90',
-        'U28',
-        'UM8'
-    ];
-
     protected $shouldAuthorizePaymentOnCallback = true;
 
     /**
@@ -528,7 +514,7 @@ trait Callback
         catch (Exception\BaseException $e)
         {
             if ($this->payment->isUpiAutoRecurring() and
-                in_array($e->getError()->getGatewayErrorCode(), self::$validErrorCodesForUpiAutopayCallbackRetry, true))
+                $e->getError()->getGatewayErrorCode() != null)
             {
                 $canRetry = $this->checkUpiAutopayIncreaseDebitRetry($this->payment->getId(), $this->payment->getMerchantId());
 

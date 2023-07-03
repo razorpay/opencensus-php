@@ -1057,7 +1057,6 @@ class UpiIciciAutoRecurringTest extends TestCase
         $this->createDbUpiMandate([
             'frequency'         => 'as_presented',
             'start_time'        => Carbon::now()->getTimestamp(),
-            'end_time'          => null,
             'recurring_value'   => null,
             ]);
 
@@ -1219,7 +1218,6 @@ class UpiIciciAutoRecurringTest extends TestCase
         $this->createDbUpiMandate([
             'frequency'         => 'as_presented',
             'start_time'        => Carbon::now()->getTimestamp(),
-            'end_time'          => null,
             'recurring_value'   => null,
         ]);
 
@@ -1442,7 +1440,6 @@ class UpiIciciAutoRecurringTest extends TestCase
         $this->createDbUpiMandate([
             'frequency'         => 'as_presented',
             'start_time'        => Carbon::now()->getTimestamp(),
-            'end_time'          => null,
             'recurring_value'   => null,
         ]);
 
@@ -1611,7 +1608,6 @@ class UpiIciciAutoRecurringTest extends TestCase
         $this->createDbUpiMandate([
             'frequency'         => 'as_presented',
             'start_time'        => Carbon::now()->getTimestamp(),
-            'end_time'          => null,
             'recurring_value'   => null,
         ]);
 
@@ -1803,7 +1799,6 @@ class UpiIciciAutoRecurringTest extends TestCase
         $this->createDbUpiMandate([
             'frequency'         => 'as_presented',
             'start_time'        => Carbon::now()->getTimestamp(),
-            'end_time'          => null,
             'recurring_value'   => null,
         ]);
 
@@ -2154,7 +2149,6 @@ class UpiIciciAutoRecurringTest extends TestCase
         $this->createDbUpiMandate([
             'frequency'         => 'as_presented',
             'start_time'        => Carbon::now()->getTimestamp(),
-            'end_time'          => null,
             'recurring_value'   => null,
         ]);
 
@@ -2319,7 +2313,7 @@ class UpiIciciAutoRecurringTest extends TestCase
         $this->createDbUpiMandate([
             'frequency'         => 'as_presented',
             'start_time'        => Carbon::now()->getTimestamp(),
-            'end_time'          => null,
+            'end_time'          => Carbon::now()->addYears(1)->getTimestamp(),
             'recurring_value'   => null,
         ]);
 

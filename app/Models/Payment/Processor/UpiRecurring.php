@@ -493,7 +493,23 @@ trait UpiRecurring
 
     protected function validateAutoRecurringForUpi(Payment\Entity $payment, array $input, Token\Entity $token)
     {
-        //TODO:: This has to be added in the auto recurring PR for upi.
+        $upiMandate = $token->getUpiMandate();
+
+        // if mandate expiry is withing 25 hr will not allow to create subsequent payment.
+        if ($upiMandate !== null)
+        {
+            $mandateExpiry = $upiMandate['end_time'];
+            $currentTime = Carbon::now()->getTimestamp();
+            $diffInHours = round(($mandateExpiry - $currentTime)/3600);
+            
+            if($diffInHours <= 25)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'You cannot initiate subsequent payments within 25 hours of expiration of the mandate',
+                    null,
+                    []);
+            }
+        }
     }
 
     protected function validateAutoRecurringForUpiBeforePreDebit(Entity $payment)
