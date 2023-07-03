@@ -161,6 +161,11 @@ trait UpiTrait
         {
             $input[Payment\Method::UPI]['flow'] = $input['_']['flow'];
         }
+        else if ((isset($input['_flow']) === true) and (Entity::isValidFlow($input['_flow'])))
+        {
+            $input[Payment\Method::UPI]['flow'] = $input['_flow'];
+            unset($input['_flow']);
+        }
 
         if (isset($input[Payment\Method::UPI]['flow']) === false)
         {
