@@ -22,6 +22,7 @@ use RZP\Models\{Base, Payment};
 use RZP\Error\PublicErrorDescription;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Models\Dispute\Constants as DisputeConstants;
 use RZP\Services\Segment\Constants as SegmentConstants;
 
 class Service extends Base\Service
@@ -64,6 +65,21 @@ class Service extends Base\Service
         Entity::GATEWAY_DISPUTE_STATUS,
         Reason\Entity::NETWORK_CODE,
         Reason\Entity::REASON_CODE,
+        Entity::PHASE,
+        Entity::RAISED_ON,
+        Entity::EXPIRES_ON,
+        Entity::GATEWAY_AMOUNT,
+        Entity::GATEWAY_CURRENCY,
+        Entity::SKIP_EMAIL,
+        Entity::INTERNAL_RESPOND_BY,
+        Entity::DEDUCT_AT_ONSET,
+    ];
+
+    const BULK_CREATE_DISPUTES_INGESTION_FOR_BANKS = [
+        Entity::PAYMENT_ID,
+        Entity::GATEWAY_DISPUTE_ID,
+        Entity::GATEWAY_DISPUTE_STATUS,
+        Reason\Entity::NETWORK_CODE,
         Entity::PHASE,
         Entity::RAISED_ON,
         Entity::EXPIRES_ON,
@@ -141,6 +157,7 @@ class Service extends Base\Service
             self::BULK_CREATE_DISPUTES_COLUMNS_NEW,
             self::BULK_CREATE_DISPUTES_COLUMNS_SILENT,
             self::BULK_CREATE_DISPUTES_COLUMNS_NEW_SILENT,
+            self::BULK_CREATE_DISPUTES_INGESTION_FOR_BANKS,
         ],
         self::BULK_EDIT_ACTION => [
             self::BULK_EDIT_DISPUTES_COLUMNS,
@@ -486,6 +503,14 @@ class Service extends Base\Service
      */
     public function getDisputeReasonEntity(string $network, string $networkCode, string $reasonCode) : array
     {
+        // special case need to be handled
+        // there exist two reasons with network RUPAY and network code 1065
+        // old one should be deleted, but it can't de deleted because we are already having disputes with that reason
+        // product team will come with a proper handling for this case
+        if (($network ===  DisputeConstants::NETWORK_RUPAY ) and ($networkCode === DisputeConstants::GATEWAY_CODE_1065) and empty($reasonCode) === true){
+            $reasonCode = DisputeConstants::DISPUTE_REASON_CODE_ACCOUNT_DEBITED_NO_TRANSACTION_CONFIRMATION;
+        }
+
         // Fetching Reason ID from dispute_reasons table
         $reasons = (new Reason\Service())->getReasonFromAttributes($network, $networkCode, $reasonCode);
 
@@ -988,7 +1013,7 @@ class Service extends Base\Service
                 $disputeReason = $this->getDisputeReasonEntity(
                     $input[Reason\Entity::NETWORK],
                     $input[Reason\Entity::NETWORK_CODE],
-                    $input[Reason\Entity::REASON_CODE]
+                    $input[Reason\Entity::REASON_CODE] ?? "",
                 );
 
                 $disputeReasonId = $disputeReason['id'];

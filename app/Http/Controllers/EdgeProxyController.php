@@ -90,10 +90,13 @@ class EdgeProxyController extends Controller
         $method      = $request->method();
         $path        = $this->getPath($request->path(), $prefixTrim, $prefixAdd);
         $query       = $request->getQueryString();
-        $body        = $request->getContent();
         $contentType = $request->header(RequestHeader::CONTENT_TYPE);
+        $body        = $this->getContent($contentType, $request);
         $auth        = $hostCfg['auth'];
         $devServeHeader = $request->header(RequestHeader::DEV_SERVE_USER);
+
+        // remove trailing slash in host
+        $host = rtrim($host,'/');
 
         if (isset($devServeHeader) === false)
         {
@@ -200,5 +203,9 @@ class EdgeProxyController extends Controller
         $path = $prefixAdd . $path;
 
         return $path;
+    }
+
+    protected function getContent($contentType, Request $request){
+        return $request->getContent();
     }
 }

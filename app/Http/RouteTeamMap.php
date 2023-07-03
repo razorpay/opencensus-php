@@ -17,6 +17,8 @@ class RouteTeamMap
     const TEAM_UNKNOWN                  = 'unknown_unknown';
     const TEAM_PAYMENTS_SETTLEMENTS     = 'payments_settlements';
     const TEAM_PAYMENTS_DOWNTIME        = 'payments_downtime';
+    // cmma : sop and disputes team
+    const TEAM_CMMA                    = 'cmma';
 
     /**
      * @return string comma separated list of team names for the particular route
@@ -513,6 +515,11 @@ class RouteTeamMap
         'setl_trigger_es_multiple'                        => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_set_dcs_object'                             => [self::TEAM_PAYMENTS_SETTLEMENTS],
         //downtime manager route
-        'downtime_auto_resolve_cron'                      =>[self::TEAM_PAYMENTS_DOWNTIME]
+        'downtime_auto_resolve_cron'                      =>[self::TEAM_PAYMENTS_DOWNTIME],
+        'dispute_ingestion'                               => [self::TEAM_CMMA],
+        'dispute_bulk_create_internal'                    => [self::TEAM_CMMA],
+        'dispute_dcs_config_add'                          => [self::TEAM_CMMA],
+        'dispute_dcs_config_get'                          => [self::TEAM_CMMA],
+        'dispute_dcs_config_update'                       => [self::TEAM_CMMA],
     ];
 }

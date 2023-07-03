@@ -30,12 +30,16 @@ class Repository extends Base\Repository
      */
     public function getReasonFromAttributes(string $network, string $gatewayCode, string $code)
     {
-        return $this->newQuery()
-                    ->select('*')
-                    ->where(Entity::NETWORK, $network)
-                    ->where(Entity::GATEWAY_CODE, $gatewayCode)
-                    ->where(Entity::CODE, $code)
-                    ->get();
+        $query = $this->newQuery()
+                      ->select('*')
+                      ->where(Entity::NETWORK, $network)
+                      ->where(Entity::GATEWAY_CODE, $gatewayCode);
+
+        if( empty($code) === false ){
+            return $query->where(Entity::CODE, $code)->get();
+        }
+
+        return $query->get();
     }
 
     public function getReasonByNetworkAndGatewayCode(string $network, string $gatewayCode)

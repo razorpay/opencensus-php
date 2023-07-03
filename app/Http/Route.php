@@ -2718,6 +2718,14 @@ class Route
         'get_dispute_document_types_metadata'      => ['get',      'disputes/documents/types',                       'DisputeController@getDisputeDocumentTypesMetadataDescription'      ],
         'patch_dispute_contest_by_id'              => ['patch',    'disputes/{id}/contest',                          'DisputeController@patchDisputeContestById',                        ],
         'post_dispute_accept_by_id'                => ['post',     'disputes/{id}/accept',                           'DisputeController@postDisputeAcceptById'                           ],
+        'dispute_bulk_create_internal'             => ['post',     'disputes/bulk-create/internal',                  'DisputeController@bulkCreate'                                      ],
+
+        // disputes service proxy routes
+        'dispute_ingestion'                        => ['post',     'disputes/dispute-ingestion/bank-files',           'DisputesProxyController@proxy'],
+        'dispute_dcs_config_add'                   => ['post',     'disputes/dcs/add-config/{path?}',                 'EdgeProxyController@proxy'],
+        'dispute_dcs_config_get'                   => ['get',      'disputes/dcs/get-config/{path?}',                 'EdgeProxyController@proxy'],
+        'dispute_dcs_config_update'                => ['patch',    'disputes/dcs/update-config/{path?}',              'EdgeProxyController@proxy'],
+
 
         'debit_note_batch'                         => ['post',     'debit_note/batch',                               'DebitNoteController@postBatch',                                    ],
 
@@ -6009,6 +6017,8 @@ class Route
 
         // Fund Management Payouts
         'ca_check_fund_management_payout_cron',
+
+        'dispute_bulk_create_internal',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -7140,6 +7150,10 @@ class Route
     //
     public static $admin = [
         'merchant_bmc_response_fetch_admin',
+        'dispute_ingestion',
+        'dispute_dcs_config_add',
+        'dispute_dcs_config_update',
+        'dispute_dcs_config_get',
         'admin_1cc_whitelist_coupons',
         //media Service routes
         'media_service_upload_file',
@@ -8448,6 +8462,10 @@ class Route
     ];
 
     public static $routePermission = [
+        'dispute_ingestion'                             => Permission::BULK_DISPUTE_INGESTION_FOR_BANK,
+        'dispute_dcs_config_add'                        => Permission::DISPUTES_DCS_CONFIG_UPDATE,
+        'dispute_dcs_config_update'                     => Permission::DISPUTES_DCS_CONFIG_UPDATE,
+        'dispute_dcs_config_get'                        => Permission::DISPUTES_DCS_CONFIG_GET,
         'merchant_activation_clarifications_save_admin'      => Permission::EDIT_MERCHANT,
         'merchant_activation_clarifications_fetch_admin'=> Permission::VIEW_MERCHANT,
         'merchant_nc_revamp_eligibility_admin'          => Permission::VIEW_MERCHANT,
@@ -12251,6 +12269,10 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'dispute_ingestion',
+            'dispute_dcs_config_add',
+            'dispute_dcs_config_update',
+            'dispute_dcs_config_get',
             'merchant_bmc_response_fetch_admin',
             'media_service_upload_file',
             'media_service_get_bucket',
@@ -15743,7 +15765,8 @@ class Route
         ],
 
         'disputes' => [
-            'payment_refund_internal'
+            'payment_refund_internal',
+            'dispute_bulk_create_internal',
         ],
 
         'banking_account_service' => [

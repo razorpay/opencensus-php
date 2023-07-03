@@ -884,6 +884,15 @@ return [
             Permission::MERCHANT_DISPUTE_BULK_EDIT  => [
                 'assignable'  => true,
             ],
+            Permission::BULK_DISPUTE_INGESTION_FOR_BANK => [
+                'assignable'  => true,
+            ],
+            Permission::DISPUTES_DCS_CONFIG_GET =>[
+                'assignable'  => true,
+            ],
+            Permission::DISPUTES_DCS_CONFIG_UPDATE =>[
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::PRICING => [

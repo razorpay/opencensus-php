@@ -412,6 +412,15 @@ class Authorization
         $this->addProxyAuthHeaders($merchantUser);
     }
 
+    public function disputesServiceAuth($mode = 'test')
+    {
+        $disputesConfig = \Config::get('applications.disputes');
+
+        $pwd = $disputesConfig['secret'];
+
+        $this->appAuth('rzp_' . $mode, $pwd);
+    }
+
     public function addXOriginHeader()
     {
         $this->appHeaders['X-Request-Origin'] = \Config::get('applications.banking_service_url');

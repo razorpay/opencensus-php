@@ -73,4 +73,9 @@ Razorpay';
 
     const FRAUD_CHARGEBACK = 'fraud_chargeback';
 
+    const NETWORK_RUPAY = 'RuPay';
+    const GATEWAY_CODE_1065 = '1065';
+    const DISPUTE_REASON_CODE_ACCOUNT_DEBITED_NO_TRANSACTION_CONFIRMATION = 'account_debited_but_transaction_confirmation_not_received_at_merchant_location';
+
+
 }

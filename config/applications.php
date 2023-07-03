@@ -1399,6 +1399,8 @@ return [
             'username' => 'api',
             'secret' => env('DISPUTES_API_SECRET', 'dispute_secret'),
         ],
+        // secret key need to be added here to run the UTs
+        'secret' =>  env('DISPUTES_API_SECRET', 'dispute_secret'),
         'mock'     => env('DISPUTES_MOCK', false),
         'base_url'      => env('DISPUTES_BASE_URL', 'https://disputes.int.stage.razorpay.in/api/')
     ],

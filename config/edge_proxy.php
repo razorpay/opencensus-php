@@ -15,6 +15,12 @@ return [
         'accounting_integrations_admin_routes' => ['host_id' => 'accounting_integrations_admin_api'],
         'wallet_dashboard_proxy'               => ['host_id' => 'wallet'],
         'partnerships_service_proxy'           => ['host_id' => 'partnerships'],
+
+        // disputes service proxy routes
+        'dispute_ingestion'                => ['host_id' => 'disputes'],
+        'dispute_dcs_config_add'           => ['host_id' => 'disputes'],
+        'dispute_dcs_config_get'           => ['host_id' => 'disputes'],
+        'dispute_dcs_config_update'        => ['host_id' => 'disputes'],
     ],
 
     // Map- <Host identifier, <Host, Auth[username, password]>>
@@ -69,6 +75,14 @@ return [
             'path_prefix_to_skip' => 'v1/wallet/proxy/',
             'path_prefix_to_add'  => 'v1/',
         ],
+
+        'disputes' => [
+            'host'               => env('DISPUTES_BASE_URL'),
+            'auth'                => ['api', env('DISPUTES_API_SECRET')],
+            'path_prefix_to_skip' => 'v1/disputes/',
+            'path_prefix_to_add'  => 'v1/',
+        ],
+
         'partnerships' => [
             'host'                => env('PARTNERSHIPS_LIVE_URL'),
             'auth'                => ['api', env('PARTNERSHIPS_API_SECRET')],

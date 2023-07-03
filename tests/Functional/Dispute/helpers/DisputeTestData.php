@@ -2056,6 +2056,17 @@ return [
         ],
     ],
 
+    'testBulkCreateDisputesWithoutReasonCode' => [
+        'request' => [
+            'url' => '/disputes/bulk-create/internal',
+            'method' => 'post',
+            'files' => [],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     'testPhaseBasedBulkCreateMails' => [
         'request' => [
             'url' => '/disputes/merchant_emails/initiate',

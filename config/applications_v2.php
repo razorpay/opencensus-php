@@ -1200,7 +1200,7 @@ return [
             ]
         ]
     ],
-    env('APP_V2_ID_DISPUTES')          => [
+    env('APP_V2_ID_DISPUTES')       => [
         "name"        => "disputes",
         "credentials" => [
             [

@@ -1750,6 +1750,53 @@ class DisputeTest extends TestCase
         }
     }
 
+
+    public function testBulkCreateDisputesWithoutReasonCode()
+    {
+        $fileData = $this->getBulkDisputeUploadedFileDataWithoutReasonCode();
+
+        $uploadedFile = $this->getBulkDisputeUploadedXLSXFileFromFileData($fileData);
+
+        $testData['request']['files'][DisputeFileCore::FILE] = $uploadedFile;
+
+        $this->ba->disputesServiceAuth();
+
+        $this->startTest($testData);
+
+        $fileRowByPaymentIdMap = [];
+
+        foreach ($fileData as $fileRow)
+        {
+            $fileRowByPaymentIdMap[$fileRow['payment_id']] = $fileRow;
+        }
+
+        $disputes = $this->getEntities('dispute', [], true)['items'];
+
+        $this->assertCount(count($fileData), $disputes);
+
+        foreach ($disputes as $disputeEntityItem)
+        {
+            $fileRow = $fileRowByPaymentIdMap[$disputeEntityItem['payment_id']];
+
+            $this->assertEquals($fileRow['gateway_amount'], $disputeEntityItem['amount']);
+
+            $this->assertEquals($fileRow['gateway_dispute_id'], $disputeEntityItem['gateway_dispute_id']);
+
+            $this->assertEquals($fileRow['gateway_dispute_status'], $disputeEntityItem['status']);
+
+            $this->assertEquals($fileRow['phase'], $disputeEntityItem['phase']);
+
+            if ($fileRow['skip_email'] === 'N')
+            {
+                $this->assertEquals(EmailNotificationStatus::SCHEDULED, $disputeEntityItem[Entity::EMAIL_NOTIFICATION_STATUS]);
+            }
+            else if ($fileRow['skip_email'] === 'Y')
+            {
+                $this->assertEquals(EmailNotificationStatus::DISABLED, $disputeEntityItem[Entity::EMAIL_NOTIFICATION_STATUS]);
+            }
+        }
+    }
+
     public function testPhaseBasedBulkCreateMails()
     {
         Mail::fake();
@@ -3185,6 +3232,120 @@ class DisputeTest extends TestCase
             'raised_on'              => date('d/m/Y', (strtotime('-1 month', strtotime('now')))),
             'expires_on'             => date('d/m/Y', (strtotime('+1 month', strtotime('now')))),
             'amount'                 => 60000,
+            'skip_email'             => 'N',
+            'internal_respond_by'    => date('d/m/Y', (strtotime('+10 day', strtotime('now')))),
+            'deduct_at_onset'        => 'N',
+        ];
+
+        $fileData[] = $row;
+
+        return $fileData;
+    }
+
+    protected function getBulkDisputeUploadedFileDataWithoutReasonCode()
+    {
+        $reason = $this->fixtures->create('dispute_reason', [
+            'code'    => 'dummy_reason',
+            'network' => Network::VISA,
+        ]);
+
+        $fileData = [];
+
+        $row = [
+            'payment_id'             => $this->fixtures->create('payment:captured')->getPublicId(),
+            'gateway_dispute_id'     => 'Dispute100001',
+            'gateway_dispute_status' => 'open',
+            'network_code'           => $reason['network'] . '-' . $reason['gateway_code'],
+            'phase'                  => Phase::CHARGEBACK,
+            'raised_on'              => date('d/m/Y', (strtotime('-1 month', strtotime('now')))),
+            'expires_on'             => date('d/m/Y', (strtotime('+1 month', strtotime('now')))),
+            'gateway_amount'         => 10000,
+            'gateway_currency'       => 'INR',
+            'skip_email'             => 'N',
+            'internal_respond_by'    => date('d/m/Y', (strtotime('+10 day', strtotime('now')))),
+            'deduct_at_onset'        => 'N',
+        ];
+
+        $fileData[] = $row;
+
+        $row = [
+            'payment_id'             => $this->fixtures->create('payment:captured')->getPublicId(),
+            'gateway_dispute_id'     => 'Dispute100002',
+            'gateway_dispute_status' => 'open',
+            'network_code'           => $reason['network'] . '-' . $reason['gateway_code'],
+            'phase'                  => Phase::PRE_ARBITRATION,
+            'raised_on'              => date('d/m/Y', (strtotime('-1 month', strtotime('now')))),
+            'expires_on'             => date('d/m/Y', (strtotime('+1 month', strtotime('now')))),
+            'gateway_amount'         => 20000,
+            'gateway_currency'       => 'INR',
+            'skip_email'             => 'N',
+            'internal_respond_by'    => date('d/m/Y', (strtotime('+10 day', strtotime('now')))),
+            'deduct_at_onset'        => 'N',
+        ];
+
+        $fileData[] = $row;
+
+        $row = [
+            'payment_id'             => $this->fixtures->create('payment:captured')->getPublicId(),
+            'gateway_dispute_id'     => 'Dispute100003',
+            'gateway_dispute_status' => 'open',
+            'network_code'           => $reason['network'] . '-' . $reason['gateway_code'],
+            'phase'                  => Phase::ARBITRATION,
+            'raised_on'              => date('d/m/Y', (strtotime('-1 month', strtotime('now')))),
+            'expires_on'             => date('d/m/Y', (strtotime('+1 month', strtotime('now')))),
+            'gateway_amount'         => 30000,
+            'gateway_currency'       => 'INR',
+            'skip_email'             => 'N',
+            'internal_respond_by'    => date('d/m/Y', (strtotime('+10 day', strtotime('now')))),
+            'deduct_at_onset'        => 'N',
+        ];
+
+        $fileData[] = $row;
+
+        $row = [
+            'payment_id'             => $this->fixtures->create('payment:captured')->getPublicId(),
+            'gateway_dispute_id'     => 'Dispute100004',
+            'gateway_dispute_status' => 'open',
+            'network_code'           => $reason['network'] . '-' . $reason['gateway_code'],
+            'phase'                  => Phase::RETRIEVAL,
+            'raised_on'              => date('d/m/Y', (strtotime('-1 month', strtotime('now')))),
+            'expires_on'             => date('d/m/Y', (strtotime('+1 month', strtotime('now')))),
+            'gateway_amount'         => 40000,
+            'gateway_currency'       => 'INR',
+            'skip_email'             => 'N',
+            'internal_respond_by'    => date('d/m/Y', (strtotime('+10 day', strtotime('now')))),
+            'deduct_at_onset'        => 'N',
+        ];
+
+        $fileData[] = $row;
+
+        $row = [
+            'payment_id'             => $this->fixtures->create('payment:captured')->getPublicId(),
+            'gateway_dispute_id'     => 'Dispute100005',
+            'gateway_dispute_status' => 'open',
+            'network_code'           => $reason['network'] . '-' . $reason['gateway_code'],
+            'phase'                  => Phase::FRAUD,
+            'raised_on'              => date('d/m/Y', (strtotime('-1 month', strtotime('now')))),
+            'expires_on'             => date('d/m/Y', (strtotime('+1 month', strtotime('now')))),
+            'gateway_amount'         => 50000,
+            'gateway_currency'       => 'INR',
+            'skip_email'             => 'N',
+            'internal_respond_by'    => date('d/m/Y', (strtotime('+10 day', strtotime('now')))),
+            'deduct_at_onset'        => 'N',
+        ];
+
+        $fileData[] = $row;
+
+        $row = [
+            'payment_id'             => $this->fixtures->create('payment:captured')->getPublicId(),
+            'gateway_dispute_id'     => 'Dispute100006',
+            'gateway_dispute_status' => 'open',
+            'network_code'           => $reason['network'] . '-' . $reason['gateway_code'],
+            'phase'                  => Phase::CHARGEBACK,
+            'raised_on'              => date('d/m/Y', (strtotime('-1 month', strtotime('now')))),
+            'expires_on'             => date('d/m/Y', (strtotime('+1 month', strtotime('now')))),
+            'gateway_amount'         => 60000,
+            'gateway_currency'       => 'INR',
             'skip_email'             => 'N',
             'internal_respond_by'    => date('d/m/Y', (strtotime('+10 day', strtotime('now')))),
             'deduct_at_onset'        => 'N',

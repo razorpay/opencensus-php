@@ -1142,6 +1142,10 @@ class Name
 
     const EDIT_BALANCE_MANAGEMENT_CONFIG        = 'edit_balance_management_config';
 
+    const BULK_DISPUTE_INGESTION_FOR_BANK = 'bulk_dispute_ingestion_for_bank';
+    const DISPUTES_DCS_CONFIG_GET         = 'disputes_dcs_config_get';
+    const DISPUTES_DCS_CONFIG_UPDATE      = 'disputes_dcs_config_update';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,
