@@ -2214,6 +2214,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_NOTIFY_HOLIDAY                               = 'MERCHANT_NOTIFY_HOLIDAY';
     const MERCHANT_NEWSLETTER_MAILING_LIST_CREATED              = 'MERCHANT_NEWSLETTER_MAILING_LIST_CREATED';
     const MERCHANT_ACCOUNT_ACTIVATED                            = 'MERCHANT_ACCOUNT_ACTIVATED';
+    const MERCHANT_PAYMENT_LIVE_STATUS                          = 'MERCHANT_PAYMENT_LIVE_STATUS';
     const MERCHANT_BUSINESS_BANKING_ACCOUNT                     = 'MERCHANT_BUSINESS_BANKING_ACCOUNT';
     const MERCHANT_ACCOUNT_INSTANTLY_ACTIVATED                  = 'MERCHANT_ACCOUNT_INSTANTLY_ACTIVATED';
     const MERCHANT_ACCOUNT_KYC_VERIFIED                         = 'MERCHANT_ACCOUNT_KYC_VERIFIED';
@@ -9964,6 +9965,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FUND_MANAGEMENT_BALANCE_CONFIG_GET_SUCCESSFUL     = 'FUND_MANAGEMENT_BALANCE_CONFIG_GET_SUCCESSFUL';
 
     const CC_ON_UPI_PRICING_SPLITZ_ERROR                    = "CC_ON_UPI_PRICING_SPLITZ_ERROR";
+
+    const MERCHANT_OBSERVER_ACTION_FAILURE                  = 'MERCHANT_OBSERVER_ACTION_FAILURE';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',

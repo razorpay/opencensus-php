@@ -11154,6 +11154,47 @@ We look forward to transacting with you!
         $this->startTest();
     }
 
+    public function testMerchantObserverPaymentsEditLiveMode()
+    {
+        $this->app['rzp.mode'] = 'live';
+
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods(['pushIdentifyAndTrackEvent'])
+                            ->getMock();
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->Exactly(1))
+                    ->method('pushIdentifyAndTrackEvent')
+                    ->will($this->returnCallback(function($merchant, $eventAttributes, $eventName) {
+                        if ($eventName === "Merchant Funds And Payment Status")
+                        {
+                            $this->assertTrue(array_key_exists("activated", $eventAttributes));
+                            $this->assertTrue(array_key_exists("live", $eventAttributes));
+                            $this->assertTrue(in_array($eventName, ["Merchant Funds And Payment Status"], true));
+                        }
+                    }));
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
+            'business_type' => 4,
+            'submitted'     => 1,
+        ]);
+
+        $merchant = $merchantDetail->merchant;
+
+        $this->app['basicauth']->setMerchant($merchant);
+
+        $this->assertFalse($merchant->isActivated());
+
+        $this->fixtures->merchant->edit($merchantDetail->getId(), ['activated' => true, 'live' => true]);
+
+        $merchant = $this->getDbLastEntity('merchant');
+
+        $this->assertTrue($merchant->isActivated());
+
+    }
+
     public function testSkipBankVerificationInCaseOfVerifiedMerchantAccount()
     {
         $merchant = $this->fixtures->create('merchant',[

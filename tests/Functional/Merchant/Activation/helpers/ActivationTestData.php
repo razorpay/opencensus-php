@@ -3390,6 +3390,25 @@ return [
         ],
     ],
 
+    'testL2SegmentEventNotSentDuringNC' =>[
+        'request'  => [
+            'content' => [
+                'submit' => true
+            ],
+            'url'     => '/merchant/activation',
+            'method'  => 'POST',
+
+        ],
+        'response' => [
+            'content' => [
+                'submitted'         => true,
+                'activation_status' => 'under_review',
+                'can_submit'        => true,
+                'locked'            => true,
+            ],
+        ],
+    ],
+
     'testValidateNeedsClarificationStatusChange' => [
         'request'  => [
             'content' => [

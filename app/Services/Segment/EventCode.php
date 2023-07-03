@@ -133,7 +133,9 @@ class EventCode
 
     const ACQ_SETTLEMENT_CLEARANCE_WORKFLOW_CREATED = 'Acq Settlement Clearance Workflow Created';
 
-    CONST ACQ_SETTLEMENT_CLEARANCE_FAILED           = 'Acq Settlement Clearance Failed' ;
+    const ACQ_SETTLEMENT_CLEARANCE_FAILED           = 'Acq Settlement Clearance Failed' ;
+
+    const MERCHANT_FUNDS_PAYMENT_STATUS = 'Merchant Funds And Payment Status';
 
     //Lead Score Calculation
     const LEAD_SCORE_CALCULATED = "Lead Score Calculated";

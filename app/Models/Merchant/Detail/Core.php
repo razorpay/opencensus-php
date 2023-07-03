@@ -1242,7 +1242,10 @@ class Core extends Base\Core
             Merchant\Constants::PHANTOM_ONBOARDING => $isPhantomOnboarding
         ];
 
-        $this->app['segment-analytics']->pushTrackEvent($merchant, $properties, SegmentEvent::L2_SUBMISSION);
+        if (empty($merchantDetails->getSubmittedAt()) === true)
+        {
+            $this->app['segment-analytics']->pushTrackEvent($merchant, $properties, SegmentEvent::L2_SUBMISSION);
+        }
 
         $canUpdateMerchantContext = false;
 
@@ -9726,4 +9729,23 @@ class Core extends Base\Core
         return $hasWebsite;
     }
 
+    public function sendSegmentEventForFundsAndPaymentStatus(Merchant\Entity $merchant , array $properties)
+    {
+        try
+        {
+            $this->app['segment-analytics']->pushIdentifyAndTrackEvent($merchant, $properties, SegmentEvent::MERCHANT_FUNDS_PAYMENT_STATUS);
+
+            $this->trace->info(TraceCode::SEGMENT_EVENT_PUSH, [
+                'properties'         => $properties,
+                'segment_event_name' => SegmentEvent::MERCHANT_FUNDS_PAYMENT_STATUS
+            ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SEGMENT_EVENT_PUSH_FAILURE, [
+                'MerchantId'   => $merchant->getId(),
+                'ErrorMessage' => $e->getMessage()
+            ]);
+        }
+    }
 }

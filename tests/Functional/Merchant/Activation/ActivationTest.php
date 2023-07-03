@@ -6272,4 +6272,58 @@ class ActivationTest extends OAuthTestCase
 
         $this->app->instance('merchantRiskClient', $merchantRiskClientMock);
     }
+
+    public function testL2SegmentEventNotSentDuringNC(): void
+    {
+        $segmentMock = $this->getMockBuilder(SegmentAnalyticsClient::class)
+                            ->setConstructorArgs([$this->app])
+                            ->setMethods(['pushIdentifyAndTrackEvent'])
+                            ->getMock();
+
+        $this->app->instance('segment-analytics', $segmentMock);
+
+        $segmentMock->expects($this->exactly(2))
+                    ->method('pushIdentifyAndTrackEvent')
+                    ->will($this->returnCallback(function($merchant, $eventAttributes, $eventName) {
+                        if ($eventName === "KYC Form Saved")
+                        {
+                            $this->assertTrue(array_key_exists("business_type", $eventAttributes));
+                            $this->assertTrue(array_key_exists("business_category", $eventAttributes));
+                            $this->assertTrue(in_array($eventName, ["KYC Form Saved"], true));
+                        }
+                        else
+                        {
+                            if ($eventName === "Activation Status changed")
+                            {
+                                $this->assertTrue(array_key_exists("activation_status", $eventAttributes));
+                                $this->assertTrue(array_key_exists("activated", $eventAttributes));
+                                $this->assertTrue(array_key_exists("live", $eventAttributes));
+                                $this->assertTrue(in_array($eventName, ["Activation Status changed"], true));
+                            }
+                        }
+                    }));
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
+                                                  ['business_type'                    => 1,
+                                                   'promoter_pan_name'                => 'pankaj kumar',
+                                                   'poa_verification_status'          => 'verified',
+                                                   'bank_details_verification_status' => 'verified',
+                                                   'submitted'                        => 1,
+                                                   'activation_status'                => 'needs_clarification',
+                                                   'submitted_at'                     => now()->getTimestamp()]);
+
+        $this->createDocumentEntities($merchantDetail[MerchantDetails::MERCHANT_ID],
+                                      [
+                                          'address_proof_url',
+                                          'business_pan_url',
+                                          'business_proof_url',
+                                          'promoter_address_url'
+                                      ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail[MerchantDetails::MERCHANT_ID]);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail[MerchantDetails::MERCHANT_ID], $merchantUser['id']);
+
+        $this->startTest();
+    }
 }
