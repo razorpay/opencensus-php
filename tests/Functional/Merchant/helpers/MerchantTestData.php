@@ -15080,4 +15080,49 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
         ],
     ],
+
+    'testGetConfigWithShopIdAndMode' => [
+        'request' => [
+            'url' => '/1cc/merchant/shopify/configs?shop_id=plugins-store&mode=test',
+            'method' => 'get',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                'merchant_id' => '10000000000000',
+            ],
+        ],
+    ],
+
+    'testGetConfigWithShopIdAndInvalidMode' => [
+        'request' => [
+            'url' => '/1cc/merchant/shopify/configs?shop_id=plugins-store&mode=testing',
+            'method' => 'get',
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR
+                ],
+            ],
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testGetConfigWithMerchantIdAndMode' => [
+        'request' => [
+            'url' => '/1cc/merchant/shopify/configs?merchant_id=10000000000000&mode=test',
+            'method' => 'get',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                'merchant_id' => '10000000000000',
+            ],
+        ],
+    ],
 ];

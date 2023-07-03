@@ -63,4 +63,15 @@ class Repository extends Base\Repository
             ->where(Entity::CONFIG, '=', $config)
             ->delete();
     }
+
+    public function findLatestMerchantIdByPlatformConfigValue(string $value, string $platform, string $config)
+    {
+        return $this->newQuery()
+            ->where(Entity::PLATFORM, '=', $platform)
+            ->where(Entity::CONFIG, '=', $config)
+            ->where(Entity::VALUE, '=', $value)
+            ->where(Base\Entity::DELETED_AT, '=', null)
+            ->latest()
+            ->first();
+    }
 }

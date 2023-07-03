@@ -394,9 +394,24 @@ class Service extends Base\Service
             {
                 $rzpOrderId = $order->getPublicId();
                 $orderAmount = $orderMetaArray['line_items_total'];
+                $orderAmountInRupee = $orderAmount/pow(10,2);
+                $roundOrderAmount = round($orderAmountInRupee)*100;
+                $products = [];
+                foreach ($orderMetaArray['line_items'] as $lineItems){
+                    $product = array();
+                    $product['id'] = $lineItems['product_id'];
+                    array_push($products, $product);
+                }
+
+                $customerInfo = array();
+                $customerInfo['email'] = $orderMetaArray['customer_details']['email'];
+                $customerInfo['phone'] = $orderMetaArray['customer_details']['contact'];
+                $customerInfo['ip'] = $orderMetaArray['customer_details']['ip'];
+
                 $inputOrder = [
-                    'id'     => $rzpOrderId,
-                    'amount' => $orderAmount
+                    'id'            => $rzpOrderId,
+                    'amount'        => $roundOrderAmount,
+                    'products'      => $products
                 ];
                 // cod engine uses shopify locations codes , override google location with shopify
                 $stateCode = $stateCodeFromName = (new StateMap)->getPincodeMappedStateCode($address['zipcode']);
@@ -413,10 +428,11 @@ class Service extends Base\Service
                     'country_code' => strtoupper($address['country'])
                 ];
                 $codEngineEvaluateRequest = [
-                    'merchant_id' => $this->merchant->getMerchantId(),
-                    'type'        => $codEngineConfigs[Merchant1ccConfig\Type::COD_ENGINE_TYPE],
-                    'order'       => $inputOrder,
-                    'location'    => $location
+                    'merchant_id'   => $this->merchant->getMerchantId(),
+                    'type'          => $codEngineConfigs[Merchant1ccConfig\Type::COD_ENGINE_TYPE],
+                    'order'         => $inputOrder,
+                    'location'      => $location,
+                    'customer_info' => $customerInfo,
                 ];
 
                 if ($isDigitalProduct === false)
@@ -451,11 +467,14 @@ class Service extends Base\Service
                     );
                     $address['cod'] = $isCodEligible;
                     $address['cod_fee'] = $codFee;
-                    // set cod fee for all shipping methods to support multiple shipping
-                    foreach ($address['shipping_methods'] as &$method)
+                    // set cod fee for all shipping methods to support multiple shipping if feature flag is enabled.
+                    if($this->merchant->isFeatureEnabled(FeatureConstants::ONE_CC_SHOPIFY_MULTIPLE_SHIPPING))
                     {
-                        $method['cod'] = $isCodEligible;
-                        $method['cod_fee'] = $codFee;
+                        foreach ($address['shipping_methods'] as &$method)
+                        {
+                            $method['cod'] = $isCodEligible;
+                            $method['cod_fee'] = $codFee;
+                        }
                     }
                 }
             }

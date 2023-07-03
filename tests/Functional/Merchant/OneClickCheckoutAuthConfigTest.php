@@ -64,4 +64,43 @@ class OneClickCheckoutAuthConfigTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testGetConfigWithShopIdAndMode()
+    {
+        $this->ba->publicAuth();
+        $testData = $this->testData[__FUNCTION__];
+        $this->setUpAuthConfigForMerchant();
+        $this->ba->appAuthLive($this->config['applications.magic_checkout_service.secret']);
+        $this->startTest($testData);
+    }
+
+    public function testGetConfigWithShopIdAndInvalidMode()
+    {
+        $this->ba->publicAuth();
+        $testData = $this->testData[__FUNCTION__];
+        $this->setUpAuthConfigForMerchant();
+        $this->ba->appAuthLive($this->config['applications.magic_checkout_service.secret']);
+        $this->startTest($testData);
+    }
+
+    public function testGetConfigWithMerchantIdAndMode()
+    {
+        $this->ba->publicAuth();
+        $testData = $this->testData[__FUNCTION__];
+        $this->setUpAuthConfigForMerchant();
+        $this->ba->appAuthLive($this->config['applications.magic_checkout_service.secret']);
+        $this->startTest($testData);
+    }
+
+    private function setUpAuthConfigForMerchant()
+    {
+        $this->fixtures->create(
+            'merchant_1cc_auth_configs',
+            [
+                "merchant_id" => "10000000000000",
+                "platform" => "shopify",
+                "config" => "shop_id",
+                "value" => "plugins-store",
+            ]
+        );
+    }
 }
