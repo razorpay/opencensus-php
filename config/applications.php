@@ -756,6 +756,8 @@ return [
         'username'        => 'api',
         'secret'          => env('SPLITZ_SECRET'),
         'request_timeout' => env('SPLITZ_REQUEST_TIMEOUT', 0.1),
+        'evaluate_request_timeout' => env('SPLITZ_EVALUATE_REQUEST_TIMEOUT', 0.1),
+        'bulk_evaluate_request_timeout' => env('SPLITZ_BULK_EVALUATE_REQUEST_TIMEOUT', 0.5),
     ],
 
     'growth' => [

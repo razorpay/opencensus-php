@@ -37,6 +37,8 @@ class SplitzService extends Base\Service
     // Used in response to a preflight request which includes the Access-Control-Request-Headers to indicate which HTTP headers can be used during the actual request.
     const ACCESS_CONTROL_ALLOW_HEADERS = 'Access-Control-Allow-Headers';
 
+    const METRIC_SPLITZ_REQUEST_DURATION_MILLISECS = 'splitz_request_duration_milli_seconds.histogram';
+
     /**
      * @var string
      */
@@ -76,6 +78,8 @@ class SplitzService extends Base\Service
         $this->key            = $splitzConfig['username'];
         $this->secret         = $splitzConfig['secret'];
         $this->requestTimeout = $splitzConfig['request_timeout'];
+        $this->evalRequestTimeout = $splitzConfig['evaluate_request_timeout'];
+        $this->bulkEvalRequestTimeout = $splitzConfig['bulk_evaluate_request_timeout'];
         $this->ba             = app('basicauth');
     }
 
@@ -105,6 +109,7 @@ class SplitzService extends Base\Service
 
         try
         {
+            $reqStartAt = millitime();
             $response = Requests::request(
                 $requestParams['url'],
                 $requestParams['headers'],
@@ -112,6 +117,10 @@ class SplitzService extends Base\Service
                 $requestParams['method'],
                 $requestParams['options']);
 
+            $dimensions = [
+                "path"                       => $path,
+            ];
+            $this->trace->histogram(self::METRIC_SPLITZ_REQUEST_DURATION_MILLISECS, millitime() - $reqStartAt, $dimensions);
             return $this->parseAndReturnResponse($response);
         }
         catch (Throwable $e)
@@ -130,6 +139,13 @@ class SplitzService extends Base\Service
 
         $headers['Content-Type'] = self::CONTENT_TYPE_JSON;
 
+        $timeout = $this->requestTimeout;
+        if (self::EVALUATE_URL == $path) {
+            $timeout = $this->evalRequestTimeout;
+        } elseif (self::EVALUATE_BULK_URL == $path) {
+            $timeout = $this->bulkEvalRequestTimeout;
+        }
+
         // send passport if not evaluate route
         if (($path != self::EVALUATE_URL && $path != self::EVALUATE_BULK_URL) && empty($this->ba) === false)
         {
@@ -139,7 +155,7 @@ class SplitzService extends Base\Service
         $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
 
         $options = [
-            'timeout' => $this->requestTimeout,
+            'timeout' => $timeout,
             'auth'    => [$this->key, $this->secret],
         ];
 
