@@ -31,8 +31,9 @@ export const magicPrepayCODConfigsReducer = (state = initState, action) => {
       return state;
     case ACTIONS.UPDATE_CONFIGS_SUCCESS:
       return merge(state, {
-        prepayCODConfigs: action?.data?.one_cc_prepay_cod_conversion?.configs || {},
-        isPrepayCODEnabled: action?.data?.one_cc_prepay_cod_conversion?.enabled || true,
+        prepayCODConfigs:
+          action?.data?.one_cc_prepay_cod_conversion?.configs || state.prepayCODConfigs,
+        isPrepayCODEnabled: action?.data?.one_cc_prepay_cod_conversion?.enabled,
         error: null,
       });
     case ACTIONS.RESET_CONFIGS:

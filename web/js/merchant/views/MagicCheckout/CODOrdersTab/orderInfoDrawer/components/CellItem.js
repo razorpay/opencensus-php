@@ -49,8 +49,8 @@ export const customerDetails = {
 export const discount = {
   title: 'Discount',
   value: (item) => {
-    const { discount } = item?.magic_payment_link;
-    return discount ? `₹ ${discount / 100} off` : 'N/A';
+    const discount = item?.promotions[0]?.value || item?.magic_payment_link?.discount;
+    return discount >= 0 ? `₹ ${discount / 100} off` : 'N/A';
   },
   columnClass: 'discount',
 };

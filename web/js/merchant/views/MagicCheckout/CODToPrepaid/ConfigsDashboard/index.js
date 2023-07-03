@@ -109,7 +109,7 @@ const ConfigsDashboard = (props) => {
       </h3>
       {platform === 'woocommerce' && (
         <div className="wooc-update-plugin-msg">
-          Note: To use this feature, please update your Razorpay WooCommerce plugin to version 4.5.2
+          Note: To use this feature, please update your Razorpay WooCommerce plugin to version 4.5.3
           or above.
         </div>
       )}
