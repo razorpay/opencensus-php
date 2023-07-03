@@ -52,7 +52,7 @@ class Constants
 
     const PAYOUTS_BATCH_REMINDERS_CALLBACK_URL          = 'payouts/batch/%s/merchant/%s/summary/email';
 
-    const PAYOUTS_BATCH_REMINDERS_CALLBACK_TIME         = 2880; // 2 days
+    const PAYOUTS_BATCH_REMINDERS_CALLBACK_TIME         = 120; // 2 hours
 
     const BANK_TRANSFER_WITH_BENE_ID_BATCH_TYPE         = 'payouts_bank_transfer_bene_id';
 

@@ -3024,7 +3024,7 @@ class Service extends Base\Service
         $merchantId = $this->merchant->getMerchantId();
 
         $reminderData = [
-            'remind_at' => Carbon::now()->addMinutes(BatchPayoutConstants::PAYOUTS_BATCH_REMINDERS_CALLBACK_TIME)->timestamp, // T+2 days
+            'remind_at' => Carbon::now()->addMinutes(BatchPayoutConstants::PAYOUTS_BATCH_REMINDERS_CALLBACK_TIME)->timestamp, // T+2 hours
         ];
 
         $namespace  = BatchPayoutConstants::PAYOUTS_BATCH_NAMESPACE;
