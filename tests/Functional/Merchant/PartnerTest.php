@@ -1813,7 +1813,37 @@ class PartnerTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testFetchPartnerSubmerchantsOptimisedWithContactMobileFilter()
+    {
+        $this->mockSubmerchantFetchMultipleOptimisedExperiment();
+
+        $this->allowAdminToAccessPartnerMerchant();
+
+        $this->allowAdminToAccessMerchant(self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->createResellerPartnerSubmerchant();
+
+        $this->ba->adminProxyAuth();
+
+        $this->startTest();
+    }
+
     public function testFetchPartnerSubmerchantsOptimisedWithContactNoFilter()
+    {
+        $this->mockSubmerchantFetchMultipleOptimisedExperiment();
+
+        $this->allowAdminToAccessPartnerMerchant();
+
+        $this->allowAdminToAccessMerchant(self::DEFAULT_SUBMERCHANT_ID);
+
+        $this->createResellerPartnerSubmerchant();
+
+        $this->ba->adminProxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testFetchPartnerSubmerchantsOptimisedWithEmailFilter()
     {
         $this->mockSubmerchantFetchMultipleOptimisedExperiment();
 

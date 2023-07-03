@@ -171,6 +171,7 @@ final class Constants
     const MERCHANT_USER                           = 'MERCHANT_USER';
 
     const USER_CONTACT_MOBILE                     = 'user_contact_mobile';
+    const CONTACT_INFO                            = 'contact_info';
 
     // Instant Refunds Pricing Fetch related constants
     const RULES                     = 'rules';

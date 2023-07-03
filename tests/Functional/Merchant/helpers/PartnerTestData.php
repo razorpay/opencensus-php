@@ -1480,12 +1480,74 @@ return [
         ],
     ],
 
+    'testFetchPartnerSubmerchantsOptimisedWithContactMobileFilter' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [
+                'contact_mobile'      => '9123456788'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [[
+                    'id'               => 'acc_10000000000009',
+                    'name'             => 'submerchant',
+                    'email'            => 'testing@example.com',
+                    'hold_funds'       => false,
+                    'details'          => [
+                        'activation_status' => 'activated',
+                    ],
+                    'user'             => [
+                        'email'             => 'testing@example.com',
+                        'contact_mobile'    => '9123456788',
+                    ],
+                    'dashboard_access'  => false,
+                    'kyc_access'        => null,
+                ]],
+            ],
+        ],
+    ],
+
     'testFetchPartnerSubmerchantsOptimisedWithContactNoFilter' => [
         'request'  => [
             'url'     => '/submerchants',
             'method'  => 'GET',
             'content' => [
-                'contact_mobile'    => '9123456788'
+                'contact_info'    => '9123456788'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [[
+                    'id'               => 'acc_10000000000009',
+                    'name'             => 'submerchant',
+                    'email'            => 'testing@example.com',
+                    'hold_funds'       => false,
+                    'details'          => [
+                        'activation_status' => 'activated',
+                    ],
+                    'user'             => [
+                        'email'             => 'testing@example.com',
+                        'contact_mobile'    => '9123456788',
+                    ],
+                    'dashboard_access'  => false,
+                    'kyc_access'        => null,
+                ]],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantsOptimisedWithEmailFilter' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [
+                'contact_info'    => 'testing@example.com'
             ],
         ],
         'response' => [

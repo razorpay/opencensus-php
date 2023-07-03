@@ -6,6 +6,7 @@ namespace RZP\Models\Merchant;
 use ApiResponse;
 use App;
 use DB;
+use EmailValidator\Validator as EmailValidator;
 use Lib\PhoneBook;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request as HttpRequest;
@@ -7427,23 +7428,23 @@ class Service extends Base\Service
         {
             $input[Detail\Entity::ACTIVATION_STATUS] = null;
         }
-        // format contact mobile to country format
-        if (empty($input[Detail\Entity::CONTACT_MOBILE]) === false)
-        {
-           $number = new PhoneBook($input[Detail\Entity::CONTACT_MOBILE], true, $partner->getCountry());
-
-            if ($number->isValidNumber() === true)
+        // if contact info is present check if it is email or contact no
+        if (empty($input[Constants::CONTACT_INFO]) === false ) {
+            if((new EmailValidator)->isEmail($input[Constants::CONTACT_INFO]))
             {
-                $input[Detail\Entity::CONTACT_MOBILE] = $number->format();
+                $input[Entity::EMAIL] = $input[Constants::CONTACT_INFO] ;
             }
             else
             {
-                $normalizedNumber = $number->getRawInput();
-
-                $input[Detail\Entity::CONTACT_MOBILE] = $normalizedNumber;
+                $input[Detail\Entity::CONTACT_MOBILE] = $input[Constants::CONTACT_INFO] ;
             }
+            unset($input[Constants::CONTACT_INFO]);
         }
-
+        // format contact mobile to country format
+        if (empty($input[Detail\Entity::CONTACT_MOBILE]) === false)
+        {
+            $input[Detail\Entity::CONTACT_MOBILE] = $this->normalizeContactNo($input[Detail\Entity::CONTACT_MOBILE], $partner);
+        }
         $startTime = millitime();
         $isExpEnabled = $this->isSubmerchantFetchMultipleOptimisationExpEnabled($partner->getId());
 
@@ -7467,6 +7468,25 @@ class Service extends Base\Service
         return $response;
     }
 
+    /**
+     * normalizes contact no based on country
+     * exmaple - converts 9999999999 to +919999999999
+     * @param string $contactNo
+     * @param Entity $partner
+     *
+     * @return array|mixed|string|string[]
+     * @throws \libphonenumber\NumberParseException
+     */
+    private function normalizeContactNo(string $contactNo, Entity $partner)
+    {
+        $number = new PhoneBook($contactNo, true, $partner->getCountry());
+        if ($number->isValidNumber() === true)
+        {
+            return $number->format();
+        }
+        $normalizedNumber = $number->getRawInput();
+        return $normalizedNumber;
+    }
     private function isSubmerchantFetchMultipleOptimisationExpEnabled(string $partnerId) : bool
     {
         $authType = $this->app['basicauth']->getAuthType();
