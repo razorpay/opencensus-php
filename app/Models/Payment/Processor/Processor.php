@@ -3198,11 +3198,6 @@ class Processor
             unset($input['_']);
         }
 
-        if(empty($input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::ACCOUNT_NUMBER]) === false)
-        {
-            $input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::ACCOUNT_NUMBER] = mask_except_last4($input[Payment\Entity::BANK_ACCOUNT][Payment\Entity::ACCOUNT_NUMBER]);
-        }
-
         $coproto = [
             'type'    => 'respawn',
             'request' => [
