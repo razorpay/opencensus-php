@@ -136,24 +136,19 @@ class MySqlConnection extends BaseMySqlConnection
         {
             $dbConfig = $this->getConfig();
 
-            $proxysqlActive = App::getFacadeRoot()['proxysql.config']->isProxySqlActive();
+            $this->trace->traceException($e,
+                Trace::ERROR,
+                TraceCode::DB_CONNECTION_FAILED_RETRYING_CONNECTION,
+                [
+                    'query' => true,
+                    'name'  => $dbConfig['name'] ?? '',
+                    'func' => 'MySqlConnection::tryAgainIfCausedByLostConnection',
+                ]
+            );
 
-            if ((App::getFacadeRoot()->environment() !== 'automation') and
-                ($proxysqlActive === true))
-            {
-                $this->trace->traceException($e,
-                    Trace::ERROR,
-                    TraceCode::PROXY_SQL_CONNECTION_FAILED_TRYING_NORMAL_CONNECTION,
-                    [
-                        'query' => true,
-                        'name'  => $dbConfig['name'] ?? '',
-                        'func' => 'MySqlConnection::tryAgainIfCausedByLostConnection',
-                    ]
-                );
-
-                App::getFacadeRoot()['proxysql.config']->unsetSocketFromDatabaseConfig($this->getName());
-                App::getFacadeRoot()['proxysql.config']->resetDatabaseConnectionHostAndPort($this->getName());
-            }
+            // Commenting this as we want to move to reconnect back to proxySQL
+            // App::getFacadeRoot()['proxysql.config']->unsetSocketFromDatabaseConfig($this->getName());
+            // App::getFacadeRoot()['proxysql.config']->resetDatabaseConnectionHostAndPort($this->getName());
 
             try
             {
@@ -165,7 +160,7 @@ class MySqlConnection extends BaseMySqlConnection
             {
                 $this->trace->traceException($ex,
                     Trace::ERROR,
-                    TraceCode::RECONNECT_FAILED_AFTER_PROXY_SQL_FAILURE,
+                    TraceCode::RECONNECT_FAILED_AFTER_DB_CONNECTION_FAILURE,
                     [
                         'func' => 'MySqlConnection::tryAgainIfCausedByLostConnection',
                     ]

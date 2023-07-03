@@ -70,41 +70,36 @@ class MySqlConnector extends BaseMySqlConnector
         {
             if ($this->causedByLostConnection($e) === true)
             {
-                // If it was proxysql connection that failed then,
-                // create connection using mysql host now.
-                if ((App::getFacadeRoot()->environment() !== 'func') and
-                    ($proxysqlActive === true))
-                {
-                    $this->app['proxysql.config']->unsetSocketFromDatabaseConfig($config['name']);
-                    $this->app['proxysql.config']->resetDatabaseConnectionHostAndPort($config['name']);
-                    unset($config['unix_socket']);
+                // Commenting this as we want to move to reconnect back to proxySQL
+                // $this->app['proxysql.config']->unsetSocketFromDatabaseConfig($config['name']);
+                // $this->app['proxysql.config']->resetDatabaseConnectionHostAndPort($config['name']);
+                // unset($config['unix_socket']);
 
-                    $this->app['trace']->traceException($e,
+                $this->app['trace']->traceException($e,
+                    Trace::ERROR,
+                    TraceCode::DB_CONNECTION_FAILED_RETRYING_CONNECTION,
+                    [
+                        'name'  => $config['name'] ?? '',
+                        'func' => 'MySqlConnector::connect',
+                    ]
+                );
+
+                // connection retry
+                try
+                {
+                    $connection = parent::connect($config);
+                }
+                catch (\Exception $ex)
+                {
+                    $this->app['trace']->traceException($ex,
                         Trace::ERROR,
-                        TraceCode::PROXY_SQL_CONNECTION_FAILED_TRYING_NORMAL_CONNECTION,
+                        TraceCode::RECONNECT_FAILED_AFTER_DB_CONNECTION_FAILURE,
                         [
-                            'name'  => $config['name'] ?? '',
                             'func' => 'MySqlConnector::connect',
                         ]
                     );
 
-                    // connection retry
-                    try
-                    {
-                        $connection = parent::connect($config);
-                    }
-                    catch (\Exception $ex)
-                    {
-                        $this->app['trace']->traceException($ex,
-                            Trace::ERROR,
-                            TraceCode::RECONNECT_FAILED_AFTER_PROXY_SQL_FAILURE,
-                            [
-                                'func' => 'MySqlConnector::connect',
-                            ]
-                        );
-
-                        throw $ex;
-                    }
+                    throw $ex;
                 }
             }
             else
