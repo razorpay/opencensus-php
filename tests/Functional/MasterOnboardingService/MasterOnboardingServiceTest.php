@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\MasterOnboardingService;
 
 use DB;
 use Config;
+use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -224,6 +225,45 @@ class MasterOnboardingServiceTest extends TestCase
         $this->ba->adminAuth();
 
         $this->startTest();
+    }
+
+    public function testMobAdminRequestUserIdResolutionFailure()
+    {
+        $merchantId = '10000000000001';
+
+        $userId = '10000000000002';
+
+        $this->testData[__FUNCTION__] = $this->testData['testAdminCreateIntent'];
+
+        $this->addRoleAndPermissionForAdmin();
+
+        $this->fixtures->create('merchant', [
+            'id' => $merchantId
+        ]);
+
+        $this->fixtures->create('user', [
+            'id' => $userId
+        ]);
+
+        $this->fixtures->create('merchant_user', [
+            'merchant_id'   => $merchantId,
+            'user_id'       => $userId,
+            'role'          => 'manager',
+            'product'       => 'banking',
+        ]);
+
+        $dataToReplace = [
+            'request' => [
+                'content'   => [
+                    'merchant_id'   => $merchantId,
+                    'user_id'       => $userId,
+                ]
+            ],
+        ];
+
+        $this->expectException(BadRequestException::class);
+
+        $this->startTest($dataToReplace);
     }
 
     public function createMerchantDetailWithBusinessId(array $attributes = [])

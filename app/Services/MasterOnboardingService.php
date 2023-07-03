@@ -5,6 +5,8 @@ namespace RZP\Services;
 use App;
 use Config;
 use Request;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
 use RZP\Http\Request\Requests;
@@ -79,6 +81,9 @@ class MasterOnboardingService
         return array_merge($headers, $this->getProxyHeadersForAdminRequest($data));
     }
 
+    /**
+     * @throws BadRequestException
+     */
     private function getProxyHeadersForAdminRequest(array $data = []) : array
     {
         // Merchant context is set via X-Razorpay-Account header
@@ -102,7 +107,13 @@ class MasterOnboardingService
             // Adding this since ops team can start onboarding for PG merchants as well
             $user = $merchant->owners(ProductType::PRIMARY)->first();
 
-            $userId = $user->getId();
+            $userId = optional($user)->getId();
+        }
+
+        // if userId is still not resolved, throw error
+        if (empty($userId) === true) {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_USER_ID_COULD_NOT_BE_RESOLVED);
         }
 
         return [
