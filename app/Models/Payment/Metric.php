@@ -10,6 +10,7 @@ use RZP\Models\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Upi\Base\ProviderCode;
+use RZP\Models\Payment\Service as PaymentService;
 
 class Metric extends Base\Core
 {
@@ -25,6 +26,8 @@ class Metric extends Base\Core
     const LABEL_CARD_NETWORK                    = 'card_network';
     const LABEL_CARD_TOKENISED                  = 'card_tokenised';
     const LABEL_CARD_VAULT                      = 'card_vault';
+    const LABEL_CARD_PROTOCOL_VERSION           = 'card_protocol_version';
+    const LABEL_CARD_ENROLLMENT_STATUS          = 'card_enrolled';
     const LABEL_PAYMENT_LATE_AUTHORIZED         = 'late_authorized';
     const LABEL_PAYMENT_AUTO_CAPTURED           = 'auto_captured';
     const LABEL_PAYMENT_GATEWAY_CAPTURED        = 'gateway_captured';
@@ -336,6 +339,21 @@ class Metric extends Base\Core
             $tokenised = $card->isTokenPan();
 
             $vault = $card->getVault();
+
+            try
+            {
+                $authenticationData = (new PaymentService())->getAuthenticationEntity3ds2($payment->getPublicId());
+                $protocolVersion = $this->getCardProtcolVersion($authenticationData);
+                if (isset($authenticationData['enrollment_status']))
+                {
+                    $enrolled = $authenticationData['enrollment_status'];
+                }
+            }
+            catch(\Throwable $e)
+            {
+                $protocolVersion = null;
+                $enrolled = null;
+            }
         }
 
         if ($payment->isCardRecurring() === true)
@@ -361,11 +379,13 @@ class Metric extends Base\Core
         }
 
         $dimensions += [
-            self::LABEL_CARD_NETWORK        => $network  ?? null,
-            self::LABEL_CARD_TYPE           => $cardType ?? null,
-            self::LABEL_CARD_TOKENISED      => $tokenised ?? null,
-            self::LABEL_CARD_VAULT          => $vault ?? null,
-            self::LABEL_PAYMENT_MANDATE_HUB => $mandateHub ?? null,
+            self::LABEL_CARD_NETWORK            => $network  ?? null,
+            self::LABEL_CARD_TYPE               => $cardType ?? null,
+            self::LABEL_CARD_TOKENISED          => $tokenised ?? null,
+            self::LABEL_CARD_VAULT              => $vault ?? null,
+            self::LABEL_PAYMENT_MANDATE_HUB     => $mandateHub ?? null,
+            self::LABEL_CARD_PROTOCOL_VERSION   => $protocolVersion ?? null,
+            self::LABEL_CARD_ENROLLMENT_STATUS  => $enrolled ?? null,
         ];
 
         $upiDimensions = $this->getDefaultUpiDimensions($payment);
@@ -427,6 +447,19 @@ class Metric extends Base\Core
             return ProviderCode::getPspForAppName($appName);
         }
 
+        return null;
+    }
+
+    protected function getCardProtcolVersion($authenticationData)
+    {
+        if (isset($authenticationData['protocol_version'])) {
+            if($authenticationData['protocol_version'] == '2.1.0' || $authenticationData['protocol_version'] == '2.2.0'){
+                return "3DS2";
+            }
+            else {
+                return "3DS1";
+            }
+        }
         return null;
     }
 
