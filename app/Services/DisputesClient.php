@@ -22,16 +22,17 @@ use RZP\Http\Controllers\DisputeController;
 
 class DisputesClient
 {
-    const CONTENT_TYPE        = 'content-type';
-    const CONTENT_TYPE_JSON   = 'application/json';
-    const X_TASK_ID           = 'X-Razorpay-TaskId';
-    const X_MERCHANT_ID       = 'X-Merchant-ID';
-    const X_AUTH_TYPE         = 'X-Auth-Type';
-    const X_INTERNAL_APP      = 'X-Internal-App';
-    const X_ADMIN_ID          = 'X-Admin-Id';
-    const X_USER_ID           = 'X-User-Id';
-    const DISPUTES_DUAL_WRITE = "v1/disputes/dual-write";
-    const MAX_RETRIES         = 1;
+    const CONTENT_TYPE          = 'content-type';
+    const CONTENT_TYPE_JSON     = 'application/json';
+    const X_TASK_ID             = 'X-Razorpay-TaskId';
+    const X_MERCHANT_ID         = 'X-Merchant-ID';
+    const X_AUTH_TYPE           = 'X-Auth-Type';
+    const X_AUTH_TYPE_LIFECYCLE = 'X-Auth-Type-Lifecycle';
+    const X_INTERNAL_APP        = 'X-Internal-App';
+    const X_ADMIN_ID            = 'X-Admin-Id';
+    const X_USER_ID             = 'X-User-Id';
+    const DISPUTES_DUAL_WRITE   = "v1/disputes/dual-write";
+    const MAX_RETRIES           = 1;
 
     const DISPUTES                  = 'disputes';
     const DISPUTE_REASONS           = 'dispute_reasons';
@@ -85,10 +86,6 @@ class DisputesClient
 
     function getAuthType(): string
     {
-        if ($this->app['basicauth']->isProxyAuth() === true)
-        {
-            return self::AUTH_TYPE_PROXY;
-        }
         if ($this->app['basicauth']->isExpress() === true)
         {
             return self::AUTH_TYPE_EXPRESS;
@@ -101,6 +98,10 @@ class DisputesClient
         {
             return self::AUTH_TYPE_PRIVATE;
         }
+        if ($this->app['basicauth']->isProxyAuth() === true)
+        {
+            return self::AUTH_TYPE_PROXY;
+        }
         return $this->app['basicauth']->getAuthType();
     }
 
@@ -108,11 +109,12 @@ class DisputesClient
     private function getDisputesHeaders() : array
     {
         $headers = [
-            self::CONTENT_TYPE      => 'application/json',
-            self::X_TASK_ID         => $this->app['request']->getTaskId(),
-            self::X_MERCHANT_ID     => $this->app['basicauth']->getMerchantId() ?? '',
-            self::X_AUTH_TYPE       => $this->getAuthType() ?? '',
-            self::X_INTERNAL_APP    => $this->app['basicauth']->getInternalApp() ?? '',
+            self::CONTENT_TYPE                  => 'application/json',
+            self::X_TASK_ID                     => $this->app['request']->getTaskId(),
+            self::X_MERCHANT_ID                 => $this->app['basicauth']->getMerchantId() ?? '',
+            self::X_AUTH_TYPE                   => $this->getAuthType() ?? '',
+            self::X_AUTH_TYPE_LIFECYCLE         => $this->app['basicauth']->getAuthType(),
+            self::X_INTERNAL_APP                => $this->app['basicauth']->getInternalApp() ?? '',
         ];
 
         if ($this->app['basicauth']->getAdmin() !== null)
@@ -134,9 +136,14 @@ class DisputesClient
      * @throws Exception\BadRequestException
      * @throws \Throwable
      */
-    public function forwardToDisputesService()
+    public function forwardToDisputesService($input = null)
     {
-        return $this->requestAndGetParseBody(Request::method(), Request::path(), Request::all(), 0);
+        if ($input == null)
+        {
+            $input = Request::all();
+        }
+
+        return $this->requestAndGetParseBody(Request::method(), Request::path(), $input, 0);
     }
 
     public function fetchMultiple(string $entity, array $input)
@@ -205,6 +212,14 @@ class DisputesClient
         $variant = $this->app['razorx']->getTreatment($table, RazorxTreatment::DISPUTES_DUAL_WRITE, $this->app['basicauth']->getMode() ?? Mode::LIVE);
 
         return $variant === RazorxTreatment::RAZORX_VARIANT_ON;
+    }
+
+    public function isShadowModeDualWrite($route): bool
+    {
+        $featureFlag = sprintf("%s_%s", RazorxTreatment::DISPUTES_DUAL_WRITE_SHADOW_MODE, $this->app['api.route']->getCurrentRouteName());
+
+        return $this->app['razorx']->getTreatment($this->app['request']->getTaskId(), $featureFlag, $this->app['basicauth']->getMode() ?? Mode::LIVE)
+            === RazorxTreatment::RAZORX_VARIANT_ON;
     }
 
     /**

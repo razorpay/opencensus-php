@@ -724,6 +724,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REASON_CODE);
     }
 
+    public function getDeductionSourceId()
+    {
+        return $this->getAttribute(self::DEDUCTION_SOURCE_ID);
+    }
+
     public function isChildDispute(): bool
     {
         return $this->isAttributeNotNull(self::PARENT_ID);

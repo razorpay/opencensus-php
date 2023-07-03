@@ -25,6 +25,11 @@ class DisputesClient
         return [];
     }
 
+    public function isShadowModeDualWrite($route)
+    {
+        return false;
+    }
+
 
     public function sendDualWriteToDisputesService($entityData, $table, $action)
     {

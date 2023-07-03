@@ -138,10 +138,11 @@ class Core extends Base\Core
                 'payment_id' => $payment->getId()
             ]);
 
+        $isShadowModeDualWrite = $this->app['disputes']->isShadowModeDualWrite($this->app['api.route']->getCurrentRouteName());
 
         return $this->mutex->acquireAndRelease(
             $payment->getId(),
-            function() use ($payment, $reason, $input)
+            function() use ($payment, $reason, $input, $isShadowModeDualWrite)
             {
                 $input = $this->preProcessInputForCreate($input);
 
@@ -170,7 +171,7 @@ class Core extends Base\Core
 
                 $payment->setDisputed(true);
 
-                $dispute = $this->repo->transaction(function() use ($dispute, $payment)
+                $dispute = $this->repo->transaction(function() use ($dispute, $payment, $isShadowModeDualWrite)
                 {
                     if ($dispute->getDeductAtOnset() === true)
                     {
@@ -183,7 +184,10 @@ class Core extends Base\Core
 
                     $dispute->refresh();
 
-                    $this->app['disputes']->sendDualWriteToDisputesService($dispute->toDualWriteArray(), Table::DISPUTE, DisputeConstants::CREATE);
+                    if ($isShadowModeDualWrite === false)
+                    {
+                        $this->app['disputes']->sendDualWriteToDisputesService($dispute->toDualWriteArray(), Table::DISPUTE, DisputeConstants::CREATE);
+                    }
 
                     return $dispute;
                 });
@@ -195,6 +199,24 @@ class Core extends Base\Core
                 $this->trace->count(Metrics::DISPUTE_CREATE);
 
                 $this->firePaymentDisputeWebhookEvent($payment, $dispute, WebhookEvent::PAYMENT_DISPUTE_CREATED);
+
+                if ($isShadowModeDualWrite === true)
+                {
+                    $input[Entity::ID] = $dispute->getId();
+
+                    $input[Entity::DEDUCTION_SOURCE_ID] = ($dispute->getDeductionSourceId() !== null) ? $dispute->getDeductionSourceId() : '';
+
+                    try
+                    {
+                        $this->app['disputes']->forwardToDisputesService($input);
+                    }
+                    catch (\Throwable $e)
+                    {
+                        $this->trace->count(Metrics::DISPUTE_DUAL_WRITE_SHADOW_MODE_FAILURE, [
+                            'route_name'    =>  $this->app['api.route']->getCurrentRouteName(),
+                        ]);
+                    }
+                }
 
                 return $dispute;
             });
