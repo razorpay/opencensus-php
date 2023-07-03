@@ -128,10 +128,11 @@ export function fetchStorefrontEntity(id, isTransform) {
   });
 }
 
-export function fetchPaymentPagesList(data) {
+export function fetchPaymentPagesList(data, extraParams = {}) {
   return merchantFetch({
     url: 'payment_pages',
     data,
+    ...extraParams,
   });
 }
 

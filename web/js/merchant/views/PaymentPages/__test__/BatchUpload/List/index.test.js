@@ -22,11 +22,11 @@ describe('Batch Payment Page - Batch Details', () => {
       session: {
         user: { isPaymentPageFileUploadEnabled: true, isAllowedView: jest.fn(() => false) },
       },
-      wysiwyg: { isBatchPaymentPages: true },
     };
     const props = {
       ...defaultProps,
       id: 'pl_LpoFCooJAk0a2j',
+      isBatchPaymentPages: true,
     };
     renderApp(initialState, props);
     await waitForLoadingToFinish();
@@ -39,11 +39,11 @@ describe('Batch Payment Page - Batch Details', () => {
       session: {
         user: { isPaymentPageFileUploadEnabled: true, isAllowedView: jest.fn(() => false) },
       },
-      wysiwyg: { isBatchPaymentPages: true },
     };
     const props = {
       ...defaultProps,
       id: 'pl_parsingerrortest',
+      isBatchPaymentPages: true,
     };
     renderApp(initialState, props);
     await waitForLoadingToFinish();
@@ -57,11 +57,11 @@ describe('Batch Payment Page - Batch Details', () => {
       session: {
         user: { isPaymentPageFileUploadEnabled: true, isAllowedView: jest.fn(() => false) },
       },
-      wysiwyg: { isBatchPaymentPages: true },
     };
     const props = {
       ...defaultProps,
       id: 'pl_apierrortest',
+      isBatchPaymentPages: true,
     };
     renderApp(initialState, props);
     await waitForLoadingToFinish();
@@ -73,11 +73,11 @@ describe('Batch Payment Page - Batch Details', () => {
       session: {
         user: { isPaymentPageFileUploadEnabled: true, isAllowedView: jest.fn(() => false) },
       },
-      wysiwyg: { isBatchPaymentPages: true },
     };
     const props = {
       ...defaultProps,
       id: 'pl_apierrortest',
+      isBatchPaymentPages: true,
     };
     renderApp(initialState, props);
     await waitForLoadingToFinish();
@@ -94,11 +94,11 @@ describe('Batch Payment Page - Batch Details', () => {
       session: {
         user: { isPaymentPageFileUploadEnabled: true, isAllowedView: jest.fn(() => false) },
       },
-      wysiwyg: { isBatchPaymentPages: true },
     };
     const props = {
       ...defaultProps,
       id: 'pl_validid',
+      isBatchPaymentPages: true,
     };
     renderApp(initialState, props);
     await waitForLoadingToFinish();
@@ -114,11 +114,11 @@ describe('Batch Payment Page - Batch Details', () => {
       session: {
         user: { isPaymentPageFileUploadEnabled: true, isAllowedView: jest.fn(() => false) },
       },
-      wysiwyg: { isBatchPaymentPages: true },
     };
     const props = {
       ...defaultProps,
       id: 'pl_LpoFCooJAk0a2j',
+      isBatchPaymentPages: true,
     };
     renderApp(initialState, props);
     await waitForLoadingToFinish();
@@ -137,11 +137,11 @@ describe('Batch Payment Page - Batch Details', () => {
           merchant: { country_code: 'IN' },
         },
       },
-      wysiwyg: { isBatchPaymentPages: true },
     };
     const props = {
       ...defaultProps,
       id: 'pl_LpoFCooJAk0a2j',
+      isBatchPaymentPages: true,
     };
     jest.setTimeout(30000);
     renderApp(initialState, props, true);
@@ -168,11 +168,11 @@ describe('Batch Payment Page - Batch Details', () => {
       session: {
         user: { isPaymentPageFileUploadEnabled: true, isAllowedView: jest.fn(() => false) },
       },
-      wysiwyg: { isBatchPaymentPages: true },
     };
     const props = {
       ...defaultProps,
       id: 'pl_valid_id',
+      isBatchPaymentPages: true,
     };
     renderApp(initialState, props, true);
     await waitForLoadingToFinish();
@@ -208,11 +208,11 @@ describe('Batch Payment Page - Batch Details', () => {
           isAllowedView: jest.fn(() => false),
         },
       },
-      wysiwyg: { isBatchPaymentPages: true },
     };
     const props = {
       ...defaultProps,
       id: 'pl_valid_id',
+      isBatchPaymentPages: true,
     };
     renderApp(initialState, props, true);
     await waitForLoadingToFinish();
@@ -248,11 +248,11 @@ describe('Batch Payment Page - Batch Details', () => {
           isAllowedView: jest.fn(() => false),
         },
       },
-      wysiwyg: { isBatchPaymentPages: true },
     };
     const props = {
       ...defaultProps,
       id: 'pl_valid_id',
+      isBatchPaymentPages: true,
     };
     renderApp(initialState, props, true);
     await waitForLoadingToFinish();
@@ -282,11 +282,11 @@ describe('Batch Payment Page - Batch Details', () => {
       session: {
         user: { isPaymentPageFileUploadEnabled: true, isAllowedView: jest.fn(() => false) },
       },
-      wysiwyg: { isBatchPaymentPages: true },
     };
     const props = {
       ...defaultProps,
       id: 'pl_notify_error_test',
+      isBatchPaymentPages: true,
     };
     renderApp(initialState, props, true);
     await waitForLoadingToFinish();
@@ -316,11 +316,11 @@ describe('Batch Payment Page - Batch Details', () => {
       session: {
         user: { isPaymentPageFileUploadEnabled: true, isAllowedView: jest.fn(() => false) },
       },
-      wysiwyg: { isBatchPaymentPages: true },
     };
     const props = {
       ...defaultProps,
       id: 'pl_invalid_id',
+      isBatchPaymentPages: true,
     };
     renderApp(initialState, props, true);
     await waitForLoadingToFinish();

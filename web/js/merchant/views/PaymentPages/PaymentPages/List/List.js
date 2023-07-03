@@ -1,3 +1,4 @@
+import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { PaymentPagesStatusLabel } from 'merchant/components/StatusLabel';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
@@ -6,20 +7,14 @@ import TableBody from 'common/ui/TableBody';
 import Time from 'common/ui/Time';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import {
-  getUnitsDescription,
-  checkBatchPaymentPages,
-} from 'merchant/views/PaymentPages/PaymentPages/utils';
+import { getUnitsDescription } from 'merchant/views/PaymentPages/PaymentPages/utils';
+import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/PaymentPages/constants';
 import ShowWhen from 'merchant/components/ShowWhen';
 
 import { trackListActions } from 'merchant/views/PaymentPages/PaymentPages/ga';
 import track from './track';
 
-// import mockPaymentPagesList from './data-mock';
-
-export default ({ paymentPages, loading, isStorefrontPage }) => {
-  // paymentPages = mockPaymentPagesList;
-
+export default ({ paymentPages, loading, isStorefrontPage, isBatchPaymentPages }) => {
   const trackCopyClick = () => {
     trackListActions('Click Copy URL');
     track.copyUrl();
@@ -28,13 +23,15 @@ export default ({ paymentPages, loading, isStorefrontPage }) => {
   const trackTitleClick = () => {
     trackListActions('Title Click');
   };
-  const isBatchPaymentPages = checkBatchPaymentPages();
+
   const ShowItem = ({ children }) => (
     <ShowWhen additionalCondition={() => isBatchPaymentPages}>{children}</ShowWhen>
   );
+
   const HideItem = ({ children }) => (
     <ShowWhen additionalCondition={() => !isBatchPaymentPages}>{children}</ShowWhen>
   );
+
   return (
     <div class="table-responsive Table--PaymentpagesV3">
       <table class="table table-hover table-striped">
@@ -78,7 +75,7 @@ export default ({ paymentPages, loading, isStorefrontPage }) => {
                   </HideItem>
                   <ShowItem>
                     <NavLink
-                      to={`/paymentpages/batchpaymentpages/${id}/payments#batchpaymentpages`}
+                      to={`${BATCH_PAYMENT_PAGES_BASE_URL}/${id}/payments#batchpaymentpages`}
                       onClick={trackTitleClick}
                     >
                       {title}

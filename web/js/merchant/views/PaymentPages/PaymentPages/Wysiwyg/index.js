@@ -49,7 +49,6 @@ import {
   replaceInFormItems,
   setShiprocketModal,
   updateMagicData,
-  setIsBatchPaymentPages,
 } from 'merchant/reducers/wysiwyg';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -69,10 +68,14 @@ import {
   isFormItemOfTypeAmount,
 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
 import { transfeeRuleToApiFormat } from 'merchant/views/PaymentPages/PaymentPages/helpers';
-import { checkBatchPaymentPages } from 'merchant/views/PaymentPages/PaymentPages/utils';
 
 import { DEFAULT_RULE } from 'merchant/views/MagicCheckout/constants';
 import { FIXED_FIELDS } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers/preAddedFields';
+import { PAYMENT_PAGES_TYPES } from 'merchant/views/PaymentPages/PaymentPages/CreateEdit';
+import {
+  BATCH_PAYMENT_PAGES_BASE_URL,
+  SEC_REF_ID,
+} from 'merchant/views/PaymentPages/PaymentPages/constants';
 
 const MagicCheckoutEnabledModal = lazy(() =>
   import(
@@ -128,12 +131,10 @@ const ERROR = {
     setSettingsModal,
     setShiprocketModal,
     updateMagicData,
-    setIsBatchPaymentPages,
   },
 )
 @RTracking(() => window.rzpQ.component('PaymentPagesWysiwyg'))
 export default class PaymentPagesWysiwyg extends React.PureComponent {
-  _isMounted = true;
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -142,6 +143,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   supportPhoneRef = React.createRef();
   supportEmailRef = React.createRef();
   _isMounted = true;
+  searchQuery = getURLQueryParams(this.props.location.search);
 
   state = {
     isPageReady: false,
@@ -152,10 +154,13 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     isMagicSettingsModalOpen: false,
     magicFeeRule: { ...DEFAULT_RULE },
     isMagicCheckoutEnabled: false,
+    isBatchPaymentPages:
+      this.props.isBatchPaymentPages ||
+      this.searchQuery?.type === PAYMENT_PAGES_TYPES.batch_payment_page,
   };
 
   UNSAFE_componentWillMount() {
-    const { id, setIsBatchPaymentPages } = this.props;
+    const { id } = this.props;
     this.fetchEntity(id, true);
 
     // Preload Social media image
@@ -163,9 +168,6 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     socialMediaIcons.src = 'https://cdn.razorpay.com/static/assets/social-share/icons.png';
 
     this.fetchIfIntentDuplicate();
-    const isBatchPaymentPages = checkBatchPaymentPages();
-    // set the batch pp identifier
-    isBatchPaymentPages && setIsBatchPaymentPages(true);
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -305,15 +307,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   };
 
   componentDidMount() {
-    const {
-      isBatchPaymentPages,
-      initDefaultFormItems,
-      id,
-      user,
-      updateTemplateType,
-      tracking,
-      isWebView,
-    } = this.props;
+    const { initDefaultFormItems, id, user, updateTemplateType, tracking, isWebView } = this.props;
     const isEditExistingId = !!id;
     // if create flow & storefront enabled, then preselect the empty template
     if (!isEditExistingId && user.isPaymentPageStorefrontEnabled) {
@@ -322,8 +316,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
     // i18n: This will update the merchant currency in redux store.
     this.props.updateData(null, false, this.props.user.merchant.currency);
-    this.props.initDefaultFormItems();
-    initDefaultFormItems(isBatchPaymentPages);
+    initDefaultFormItems(this.state.isBatchPaymentPages);
 
     track.init(tracking.trackEvent, {
       payment_page_id: id,
@@ -388,6 +381,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   }
 
   handleClose = () => {
+    const { isBatchPaymentPages } = this.state;
+
     trackWYSIWYGCloseIntent();
 
     this.context.confirm({
@@ -403,13 +398,17 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       abortLabel: 'Cancel',
       action: () => {
         trackConfirmWYSIWYGCloseIntent();
-        this.props.history.push(`/paymentpages/`);
+        this.props.history.push(
+          isBatchPaymentPages ? BATCH_PAYMENT_PAGES_BASE_URL : `/paymentpages/`,
+        );
       },
     });
   };
 
   initSubApps = () => {
-    const { user, isBatchPaymentPages } = this.props;
+    const { user } = this.props;
+    const { isBatchPaymentPages } = this.state;
+
     ReactDOM.render(
       <DetailsSection
         supportEmailRef={this.supportEmailRef}
@@ -495,17 +494,10 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   )
   handleSavePublish = (label) => {
     const isEditExistingId = !!this.props.id;
-    const {
-      paymentPageEntity,
-      FORM_ITEMS,
-      magicCheckout,
-      user,
-      showNotification,
-      isBatchPaymentPages,
-    } = this.props;
+    const { paymentPageEntity, FORM_ITEMS, magicCheckout, user, showNotification } = this.props;
+    const { isBatchPaymentPages } = this.state;
     const { isMagicCheckoutLive, isPaymentPageMagicEnabled, isNoExpiryMandatoryPP } = user;
     const { enabled: magicEnabled, feeRule: magicFeeRule } = magicCheckout;
-    // console.log('Handle Create..', paymentPageEntity);
 
     const {
       currency,
@@ -589,12 +581,15 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         udf_schema.push(fi);
       }
     });
+
     if (isBatchPaymentPages) {
       const errorMessages = [];
+
       if (!paymentPageItems.length) {
         errorMessages.push(`${errorMessages.length + 1} : Add at least 1 Price field`);
       } else {
         const mandatoryPriceFeilds = paymentPageItems?.filter((item) => item?.mandatory);
+
         if (mandatoryPriceFeilds.length === 0) {
           errorMessages.push(
             `${
@@ -604,18 +599,20 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         }
       }
 
-      const primaryRefIdFeilds = FORM_ITEMS?.filter(
-        (item) => item?.name === 'pri__ref__id' && item?.pattern === 'alphanumeric',
+      const primaryRefIdFields = FORM_ITEMS?.filter(
+        (item) =>
+          item?.name === FIXED_FIELDS.primaryRefId.name &&
+          item?.pattern === FIXED_FIELDS.primaryRefId.pattern,
       );
-      if (primaryRefIdFeilds.length === 0) {
-        errorMessages.push(
-          `${errorMessages.length + 1} : Add at least 1 Primary reference ID field`,
-        );
+      const secondaryRefIdFields = FORM_ITEMS.filter((item) => item?.name?.includes(SEC_REF_ID));
+
+      if (primaryRefIdFields.length === 0) {
+        errorMessages.push(`${errorMessages.length + 1} : Add 1 Primary reference ID field`);
       }
 
-      if (primaryRefIdFeilds.length > 1) {
+      if (secondaryRefIdFields.length === 0) {
         errorMessages.push(
-          `${errorMessages.length + 1} : Only 1 Input Field may be added as Primary Reference ID`,
+          `${errorMessages.length + 1} : Add at least 1 Secondary reference ID field`,
         );
       }
 
@@ -831,13 +828,14 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   };
 
   onSaveSuccessActions = (resp) => {
-    const { isBatchPaymentPages, history, markDataSaved } = this.props;
+    const { history, markDataSaved } = this.props;
+    const { isBatchPaymentPages } = this.state;
     markDataSaved();
     this.isIntentDuplicate = false;
 
     const entityId = resp.data.id;
     const url = isBatchPaymentPages
-      ? `/paymentpages/batchpaymentpages/${entityId}/batchuploadsubpage`
+      ? `${BATCH_PAYMENT_PAGES_BASE_URL}/${entityId}/batchuploadsubpage`
       : `/paymentpages/${entityId}/success`;
     history.push(url);
   };
@@ -1217,16 +1215,10 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       isMagicSettingsModalOpen,
       magicFeeRule,
       isMagicCheckoutEnabled,
+      isBatchPaymentPages,
     } = this.state;
 
-    const {
-      paymentPageEntity,
-      id: payment_page_id,
-      user,
-      FORM_ITEMS,
-      magicCheckout,
-      isBatchPaymentPages,
-    } = this.props;
+    const { paymentPageEntity, id: payment_page_id, user, FORM_ITEMS, magicCheckout } = this.props;
     const createButtonText = isBatchPaymentPages
       ? 'Save and Proceed to Next Step'
       : payment_page_id
@@ -1300,7 +1292,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
                 );
               }}
               disabled={!isAllowedToSubmit || !isEntityLoaded}
-              pendingState="Publishing"
+              pendingState={isBatchPaymentPages ? 'Saving' : 'Publishing'}
               class="hidden-xs"
             >
               {createButtonText}

@@ -10,8 +10,7 @@ import fUnits from './field-units';
  * */
 
 export function getFieldTypes(isPaymentButton) {
-  const isBatchPaymentPages = window.location.pathname.includes('/batchpaymentpages');
-  let FIELD_TYPES = [
+  const FIELD_TYPES = [
     fUnits.str,
     fUnits.alphabets,
     fUnits.alphanumeric,
@@ -27,14 +26,6 @@ export function getFieldTypes(isPaymentButton) {
 
   if (!isPaymentButton) {
     FIELD_TYPES.push(fUnits.date);
-  }
-
-  if (isBatchPaymentPages) {
-    const primaryRefIdField = fUnits.alphanumeric;
-    primaryRefIdField.label = 'Primary Reference ID';
-    FIELD_TYPES.unshift(primaryRefIdField);
-    // remove dropdown
-    FIELD_TYPES = FIELD_TYPES.filter((fUnits) => fUnits?.label !== 'Dropdown');
   }
 
   return FIELD_TYPES; // JSON.parse(JSON.stringify(FIELD_TYPES)) is best way. But need to check if it breaks the selection in powerselect dropdown bcoz it works on object reference basis

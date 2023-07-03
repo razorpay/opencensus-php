@@ -11,7 +11,9 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import {
   BATCH_UPLOAD_MSG,
   FILLED_BY_CUSTOMER,
+  SEC_REF_ID,
 } from 'merchant/views/PaymentPages/PaymentPages/constants';
+import { FIXED_FIELDS } from './helpers/preAddedFields';
 
 export default class BaseForm extends React.PureComponent {
   constructor(props) {
@@ -26,7 +28,7 @@ export default class BaseForm extends React.PureComponent {
       isRequired: typeof fieldSchema.required !== 'undefined' ? !!fieldSchema.required : true, // NOTE: By default all fields are to be set as required
       isFieldEnum: !!fieldSchema.enum,
       enum: fieldSchema.hasOwnProperty('enum') ? fieldSchema.enum : undefined,
-      isSecondaryRefId: fieldSchema?.name?.indexOf('sec__ref__id') > -1 ?? false,
+      isSecondaryRefId: fieldSchema?.name?.indexOf(SEC_REF_ID) > -1 ?? false,
     };
 
     this.fieldIndexInOptions = props.fieldIndexInOptions || mapFieldToIndex(fieldSchema);
@@ -135,6 +137,11 @@ export default class BaseForm extends React.PureComponent {
       _RepresentationClass = 'Field--select';
     }
 
+    const shouldShowSecRefIDOption =
+      isBatchPaymentPages &&
+      FIXED_FIELDS.secondaryRefId.name !== field.name && // As first secondary referece id field is mandatory and is created by default not providing the option this option.
+      !isPrimaryField; // Not providing option for primary reference id.
+
     return (
       <Form setRef={this.setRefForm} onChange={this.onChange} onSubmit={this.onSaveForm}>
         <Input.TextareaAutoResize
@@ -176,7 +183,7 @@ export default class BaseForm extends React.PureComponent {
 
         <input name="field_type" value={this.fieldIndexInOptions} hidden readOnly />
         <input name="required" value={Number(isRequired)} hidden readOnly />
-        <ShowWhen additionalCondition={() => isBatchPaymentPages && !isFieldForcedRequired}>
+        <ShowWhen additionalCondition={() => isBatchPaymentPages}>
           <input name="sec__ref__id" value={Number(isSecondaryRefId)} hidden readOnly />
         </ShowWhen>
 
@@ -210,12 +217,12 @@ export default class BaseForm extends React.PureComponent {
 
         <FieldOptionsDropdownWrapper
           trigger={
-            <Button.Transparent>
+            <Button.Transparent data-testid="dropdown-trigger">
               <i class="i i-ellipsis-v" />
             </Button.Transparent>
           }
         >
-          <ShowWhen additionalCondition={() => isBatchPaymentPages && !isPrimaryField}>
+          <ShowWhen additionalCondition={() => shouldShowSecRefIDOption}>
             <OptionsItem isSelected={isSecondaryRefId}>
               <div onClick={this.toggleSecondaryRefId}>
                 <i className="i i-optional_mark" />
@@ -223,6 +230,7 @@ export default class BaseForm extends React.PureComponent {
               </div>
             </OptionsItem>
           </ShowWhen>
+
           {!isFieldForcedRequired && (
             <OptionsItem isSelected={!isRequired}>
               <div onClick={this.toggleOptional}>

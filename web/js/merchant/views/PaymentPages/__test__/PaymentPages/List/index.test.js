@@ -1,6 +1,7 @@
-import '@testing-library/jest-dom/extend-expect';
+import { screen, userEvent, waitFor, server, getByText } from 'test-utils';
+
 import { renderApp } from 'merchant/views/PaymentPages/__test__/mocks/fixtures/List/index';
-import { screen, userEvent, waitFor } from 'test-utils';
+import { paymentPagesErrorHandlers } from 'merchant/views/PaymentPages/PaymentPages/__test__/mocks/handlers';
 
 describe('Payment Pages -> List (file_upload_pp merchant feature flag of)', () => {
   test('should render payment page list screen', () => {
@@ -8,7 +9,6 @@ describe('Payment Pages -> List (file_upload_pp merchant feature flag of)', () =
       session: {
         user: { isPaymentPageFileUploadEnabled: false, showCustomTemplatePP: true },
       },
-      wysiwyg: { isBatchPaymentPages: false },
     };
     renderApp(initialState);
     const paymentPagesLink = screen.getByRole('link', {
@@ -25,10 +25,9 @@ describe('Payment Pages -> List (file_upload_pp merchant feature flag on)', () =
       session: {
         user: { isPaymentPageFileUploadEnabled: true, showCustomTemplatePP: true },
       },
-      wysiwyg: { isBatchPaymentPages: true },
     };
 
-    renderApp(initialState);
+    renderApp(initialState, { isBatchPaymentPages: true });
     const paymentPagesLink = screen.getByRole('link', {
       name: 'Payment Pages',
     });
@@ -46,10 +45,9 @@ describe('Payment Pages -> List (file_upload_pp merchant feature flag on)', () =
       session: {
         user: { isPaymentPageFileUploadEnabled: true, showCustomTemplatePP: true },
       },
-      wysiwyg: { isBatchPaymentPages: true },
     };
 
-    renderApp(initialState);
+    renderApp(initialState, { isBatchPaymentPages: true });
     const batchPaymentPagesLink = screen.getByRole('link', {
       name: 'Batch Payment Pages',
     });
@@ -64,6 +62,27 @@ describe('Payment Pages -> List (file_upload_pp merchant feature flag on)', () =
       expect(screen.queryAllByText('Title')[0]).toBeInTheDocument();
       expect(screen.getByText('Total Sales')).toBeInTheDocument();
       expect(screen.getByText('Page Url')).toBeInTheDocument();
+    });
+  });
+
+  test('should not notify of empty error message when the list api fails', async () => {
+    const errorMessage = 'Test Error';
+
+    server.use(paymentPagesErrorHandlers.fetchBatchPagesWithErrors([errorMessage]));
+
+    const initialState = {
+      session: {
+        user: { isPaymentPageFileUploadEnabled: true, showCustomTemplatePP: true },
+      },
+    };
+
+    renderApp(initialState, { isBatchPaymentPages: true });
+
+    await waitFor(() => {
+      const notificationErrorEl = screen.getByTestId('Notification--error');
+
+      expect(notificationErrorEl).toBeInTheDocument();
+      expect(getByText(notificationErrorEl, errorMessage)).toBeInTheDocument();
     });
   });
 });

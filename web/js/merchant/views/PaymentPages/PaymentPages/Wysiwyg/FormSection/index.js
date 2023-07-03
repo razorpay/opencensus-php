@@ -9,7 +9,7 @@ export default class FormView extends React.PureComponent {
     return (
       <Provider store={store}>
         <ConfirmModalProvider>
-          <ViewV3 />
+          <ViewV3 {...this.props} />
         </ConfirmModalProvider>
       </Provider>
     );

@@ -20,10 +20,18 @@ export const getUnitsDescription = ({ units, quantitySold, status }: InputType):
   return `${quantitySold} of ${_units + _quantitySold}`;
 };
 
-export const getProductBaseLink = (isStorefront, id) => {
-  return `/paymentpages/${isStorefront ? 'storefront/' : ''}${id}`;
-};
+export const getProductBaseLink = (
+  isStorefront: boolean,
+  id: string,
+  isBatchPaymentPages: boolean,
+): string => {
+  let endPoint = '';
 
-export const checkBatchPaymentPages = () => {
-  return window.location.pathname.includes('/batchpaymentpages');
+  if (isStorefront) {
+    endPoint = 'storefront/';
+  } else if (isBatchPaymentPages) {
+    endPoint = 'batchpaymentpages/';
+  }
+
+  return `/paymentpages/${endPoint}${id}`;
 };

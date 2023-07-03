@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { createRef } from 'react';
+import axios from 'axios';
 import { connect } from 'react-redux';
 import { Field } from 'redux-form';
 import ProductWrapper from 'common/ui/ProductWrapper';
@@ -35,18 +36,16 @@ import { RZPFeatures } from 'merchant/helpers/data';
 import TestModeBanner from 'merchant/components/TestModeBanner';
 import PaymentsAndStorefrontTab from './PaymentsAndStorefrontTab';
 import { setIsStorefrontPage } from 'merchant/reducers/paymentPages/storefront';
-import { setIsBatchPaymentPages } from 'merchant/reducers/wysiwyg';
-import { checkBatchPaymentPages } from 'merchant/views/PaymentPages/PaymentPages/utils';
 import {
   CREATE_PP_DOC_URL,
   CREATE_BATCH_PP_DOC_URL,
+  BATCH_PAYMENT_PAGES_BASE_URL,
 } from 'merchant/views/PaymentPages/PaymentPages/constants';
 @withRouter
 @connect(
   (state) => ({
     ...state.invoices,
     ...state.session,
-    isBatchPaymentPages: state.wysiwyg.isBatchPaymentPages,
     isStorefrontPage: state.paymentPageStorefront.isStorefrontPage,
     paymentPageProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PP),
   }),
@@ -56,7 +55,6 @@ import {
     populateStorefrontReduxList,
     handleProductQuickGuide,
     setIsStorefrontPage,
-    setIsBatchPaymentPages,
   },
 )
 @RTracking(() => window.rzpQ.component('PaymentPagesContainer'))
@@ -65,7 +63,8 @@ export default class PaymentPagesContainer extends ListContainer {
     super(props);
     const { user } = props;
     this.state = {
-      loading: true,
+      loading: false,
+      isBatchPagesLoading: false,
       loadingAllList: true,
       tabsData: [
         {
@@ -80,11 +79,12 @@ export default class PaymentPagesContainer extends ListContainer {
         },
         {
           title: 'Batch Payment Pages',
-          url: '/paymentpages/batchpaymentpages',
+          url: BATCH_PAYMENT_PAGES_BASE_URL,
           hidden: !user?.isPaymentPageFileUploadEnabled,
         },
       ],
     };
+    this.cancelToken = createRef();
   }
 
   componentDidMount() {
@@ -96,11 +96,8 @@ export default class PaymentPagesContainer extends ListContainer {
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
-    const { isStorefrontPage, loading, isBatchPaymentPages, setIsBatchPaymentPages } = this.props;
-    const _isBatchPaymentPages = checkBatchPaymentPages();
-    if (_isBatchPaymentPages !== isBatchPaymentPages) {
-      setIsBatchPaymentPages(_isBatchPaymentPages);
-    }
+    const { isStorefrontPage, loading, isBatchPaymentPages } = this.props;
+
     if (
       nextProps.isStorefrontPage !== isStorefrontPage ||
       nextProps.isBatchPaymentPages !== isBatchPaymentPages
@@ -152,10 +149,10 @@ export default class PaymentPagesContainer extends ListContainer {
       populateRPLReduxList,
       isBatchPaymentPages,
     } = this.props;
-    if (isBatchPaymentPages) {
-      params.view_type = 'file_upload_page';
-    }
     const { isPaymentPageStorefrontEnabled } = user;
+
+    params.view_type = isBatchPaymentPages ? 'file_upload_page' : undefined;
+
     if (isPaymentPageStorefrontEnabled) {
       fetchStorefrontList(params)
         .then((resp) => {
@@ -172,25 +169,31 @@ export default class PaymentPagesContainer extends ListContainer {
         });
     }
 
-    return fetchPaymentPagesList(params)
+    this.setState({ [isBatchPaymentPages ? 'isBatchPagesLoading' : 'loading']: true });
+
+    this.cancelToken.current?.cancel();
+    this.cancelToken.current = axios.CancelToken.source();
+
+    return fetchPaymentPagesList(params, { cancelToken: this.cancelToken.current.token })
       .then((resp) => {
         if (resp.data) {
           populateRPLReduxList(resp);
         }
-
-        this.setState({ loading: false });
 
         this.initPaymentPagesOnboarding();
 
         return resp;
       })
       .catch((err) => {
-        showNotification({
-          type: 'error',
-          message: err.errors,
-        });
-
-        this.setState({ loading: false });
+        if (err.errors.join('')) {
+          showNotification({
+            type: 'error',
+            message: err.errors.join(', '),
+          });
+        }
+      })
+      .finally(() => {
+        this.setState({ [isBatchPaymentPages ? 'isBatchPagesLoading' : 'loading']: false });
       });
   }
 
@@ -220,19 +223,18 @@ export default class PaymentPagesContainer extends ListContainer {
         isTour: this.state.isPaymentPageWysiwyg,
       });
     }
+
+    // Cancel out the request when component unmounts
+    this.cancelToken.current?.cancel();
   }
 
   handleProductQuickGuide = () => {
     const { isBatchPaymentPages, history } = this.props;
-    const url = isBatchPaymentPages ? `/paymentpages/batchpaymentpages/new` : `/paymentpages/new`;
-    this.setState(
-      {
-        isPaymentPageWysiwyg: true,
-      },
-      () => {
-        history.push(url);
-      },
-    );
+    const url = isBatchPaymentPages ? `${BATCH_PAYMENT_PAGES_BASE_URL}/new` : `/paymentpages/new`;
+
+    this.setState({ isPaymentPageWysiwyg: true }, () => {
+      history.push(url);
+    });
   };
 
   initPaymentPagesOnboarding = (props = this.props) => {
@@ -282,7 +284,7 @@ export default class PaymentPagesContainer extends ListContainer {
   };
 
   render() {
-    const { loading, loadingAllList } = this.state;
+    const { loading, loadingAllList, isBatchPagesLoading } = this.state;
     const {
       paymentPages,
       user,
@@ -294,7 +296,9 @@ export default class PaymentPagesContainer extends ListContainer {
     } = this.props;
     const entityList = isStorefrontPage ? storefrontPages : paymentPages;
     const isRoleAllowedEdit = user.isAllowedEdit('payment_pages');
+
     let content;
+
     if (loadingAllList) {
       content = (
         <div class="page-spinner-container">
@@ -304,15 +308,17 @@ export default class PaymentPagesContainer extends ListContainer {
     } else if (isRoleAllowedEdit && !entityList.length) {
       content = <EmptyComponent isStorefrontPage={isStorefrontPage} />;
     } else {
+      const isListLoading = loading || isBatchPagesLoading;
+
       content = (
         <React.Fragment>
           <List
-            loading={loading}
+            loading={isListLoading}
             paymentPages={entityList}
             isStorefrontPage={isStorefrontPage}
             isBatchPaymentPages={isBatchPaymentPages}
           />
-          {!loading && !!entityList.length && (
+          {!isListLoading && !!entityList.length && (
             <Pager
               count={this.state.count}
               skip={this.state.skip}
@@ -357,7 +363,7 @@ export default class PaymentPagesContainer extends ListContainer {
         }
       >
         <content>
-          {user.isPaymentPageStorefrontEnabled && (
+          {user.isPaymentPageStorefrontEnabled && !isBatchPaymentPages && (
             <PaymentsAndStorefrontTab
               totalPaymentPagesLength={totalPaymentPagesLength}
               totalStorefrontLength={totalStorefrontLength}

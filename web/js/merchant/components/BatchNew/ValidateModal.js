@@ -8,6 +8,10 @@ import { connect } from 'react-redux';
 import { DocLink } from 'merchant/components/DocsLink';
 import { bindActionCreators } from 'redux';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import {
+  BATCH_TYPE,
+  BATCH_UPLOAD_POINTS,
+} from 'merchant/views/PaymentPages/PaymentPages/constants';
 
 const DEFAULT_MAX_FILE_SIZE = 1048576; // 1MB in bytes.
 
@@ -132,7 +136,7 @@ class BatchValidateModal extends Component {
             {this.props.modalInfo || (
               <div className="modal-info">
                 <h5 className="modal-info-heading">
-                  Getting Started with Batch Uploads?{' '}
+                  Getting Started with Batch Uploads?
                   <ShowWhen
                     additionalCondition={(usr) => usr.isOrgAllowedFunctionality('external_links')}
                   >
@@ -159,6 +163,7 @@ class BatchValidateModal extends Component {
                         'payment_transfer',
                         'transfer_reversal',
                         'linked_account_create',
+                        BATCH_TYPE,
                       ].indexOf(batchType) === -1 && (
                         <li>
                           The {user?.isPaymentlinksV2Enabled ? 'reference id' : 'receipt id'} for
@@ -167,41 +172,41 @@ class BatchValidateModal extends Component {
                         </li>
                       )}
 
+                    {batchType === BATCH_TYPE ? <li>{BATCH_UPLOAD_POINTS[1]}</li> : null}
+
                     {batchType === 'refund' ? (
-                      <>
-                        {user.isOrgCurlec ? (
-                          'Mention refund speed of each payment Id as normal and refunds will be processed at default refund speed.'
-                        ) : (
-                          <>
-                            <li>The payment Id for all refunds should be unique.</li>
-                            <li>
-                              Mention refund speed of each payment Id otherwise refunds will be
-                              processed at default refund speed (check{' '}
-                              <strong
-                                className="btn-link"
-                                onClick={() => {
-                                  window.rzpAnalytics?.({
-                                    eventCategory: `Batch ${titleCase(this.props.batchType)}`,
-                                    eventAction: 'Setting -  upload modal',
-                                    eventLabel: `Click to setting`,
-                                  });
-                                  this.props.closeModal();
+                      user.isOrgCurlec ? (
+                        'Mention refund speed of each payment Id as normal and refunds will be processed at default refund speed.'
+                      ) : (
+                        <>
+                          <li>The payment Id for all refunds should be unique.</li>
+                          <li>
+                            Mention refund speed of each payment Id otherwise refunds will be
+                            processed at default refund speed (check{' '}
+                            <strong
+                              className="btn-link"
+                              onClick={() => {
+                                window.rzpAnalytics?.({
+                                  eventCategory: `Batch ${titleCase(this.props.batchType)}`,
+                                  eventAction: 'Setting -  upload modal',
+                                  eventLabel: `Click to setting`,
+                                });
+                                this.props.closeModal();
+                              }}
+                            >
+                              <Link
+                                to={{
+                                  pathname: '/config',
+                                  hash: 'instantrefunds',
                                 }}
                               >
-                                <Link
-                                  to={{
-                                    pathname: '/config',
-                                    hash: 'instantrefunds',
-                                  }}
-                                >
-                                  settings
-                                </Link>
-                              </strong>{' '}
-                              for default refund speed).
-                            </li>
-                          </>
-                        )}
-                      </>
+                                settings
+                              </Link>
+                            </strong>{' '}
+                            for default refund speed).
+                          </li>
+                        </>
+                      )
                     ) : (
                       ''
                     )}

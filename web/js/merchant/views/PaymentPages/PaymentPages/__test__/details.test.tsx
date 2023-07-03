@@ -348,9 +348,9 @@ describe('Batch Payment Pages -> Details page', () => {
   });
 
   test('should render payment page details page', async () => {
-    window.location.assign(getURL('pl_validid'));
     const defaultProps = {
       id: 'pl_validid',
+      isBatchPaymentPages: true,
     };
     renderApp(defaultProps, 'pl_validid');
     await waitForLoadingToFinish();
@@ -362,9 +362,9 @@ describe('Batch Payment Pages -> Details page', () => {
     expect(screen.getByText('Created by')).toBeInTheDocument();
   });
   test('should show error while getting pending payments', async () => {
-    window.location.assign(getURL('pl_invalidid'));
     const defaultProps = {
       id: 'pl_invalidid',
+      isBatchPaymentPages: true,
     };
     renderApp(defaultProps, 'pl_invalidid');
     await waitForLoadingToFinish();

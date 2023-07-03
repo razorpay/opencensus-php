@@ -78,9 +78,12 @@ export class FieldOptionsDropdownMobile extends React.PureComponent {
 }
 
 export const OptionsItem = ({ children, isSelected }) => (
-  <li class={classList('OptionsDropdown-item', isSelected && 'OptionsDropdown-item--selected')}>
+  <li
+    class={classList('OptionsDropdown-item', isSelected && 'OptionsDropdown-item--selected')}
+    data-testid={`list-option${isSelected ? '-selected' : ''}`}
+  >
     {children}
-    <i class="i i-check" />
+    <i className="i i-check" data-testid={`tick-icon${isSelected ? '-visible' : ''}`} />
   </li>
 );
 

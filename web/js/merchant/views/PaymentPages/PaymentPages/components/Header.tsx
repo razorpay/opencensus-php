@@ -171,7 +171,9 @@ const PaymentPagesHeader = ({
 
           {actionBtns && <PageAction>{actionBtns}</PageAction>}
 
-          <CloseButton onClick={handleClose}>×</CloseButton>
+          <CloseButton data-testid="close-btn" onClick={handleClose}>
+            ×
+          </CloseButton>
         </PageSizeContainer>
       </PageNav>
       {children}

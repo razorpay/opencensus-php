@@ -1,12 +1,15 @@
 import Button from 'common/new-ui/Button';
 import { withRouter } from 'react-router-dom';
 
+import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/PaymentPages/constants';
+
 const Header = (props) => {
   const onBackToDashboardClick = () => {
     const { isBatchPaymentPages, history } = props;
-    const url = isBatchPaymentPages ? `/paymentpages/batchpaymentpages` : `/paymentpages/`;
+    const url = isBatchPaymentPages ? BATCH_PAYMENT_PAGES_BASE_URL : `/paymentpages/`;
     history.push(url);
   };
+
   return (
     <div class="page-nav-container">
       <div class="payment-page-nav">

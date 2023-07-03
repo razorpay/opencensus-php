@@ -5,18 +5,21 @@ import BatchListContainer from 'merchant/views/PaymentPages/BatchUpload/List';
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 
+import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/PaymentPages/constants';
+
 const BatchDetailsContainer = (props) => {
   const { user, match } = props;
   const id = match?.params?.id;
   const title = match?.params?.title ?? 'Title';
+
   return (
     <tabbed-container>
       <header id="link-header">
         <div className="batch-payment-pages">
-          <Link to="/paymentpages/batchpaymentpages">
+          <Link to={BATCH_PAYMENT_PAGES_BASE_URL}>
             <i className="i i-arrow-back" /> Batch Payment Pages
           </Link>
-          <Link to="/paymentpages/batchpaymentpages">
+          <Link to={`${BATCH_PAYMENT_PAGES_BASE_URL}/${id}/payments#batchpaymentpages`}>
             <i className="i i-chevron-right" /> {title}
           </Link>
           <i className="i i-chevron-right" /> Batch Details

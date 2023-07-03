@@ -432,4 +432,16 @@ export const paymentPagesErrorHandlers = {
         ctx.delay(50),
       );
     }),
+  fetchBatchPagesWithErrors: (errors) =>
+    rest.get('*/merchant/api/*/payment_pages', (req, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          status_code: 500,
+          success: false,
+          errors,
+        }),
+        ctx.delay(50),
+      );
+    }),
 };

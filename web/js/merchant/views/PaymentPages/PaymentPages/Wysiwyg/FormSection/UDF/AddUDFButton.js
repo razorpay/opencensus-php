@@ -10,6 +10,7 @@ import {
   getFieldTypes,
   checkIsMagicCheckoutField,
 } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers';
+import fieldUnits from './helpers/field-units';
 
 @RTracking(() => window.rzpQ.component('AddUDFButton'))
 class AddUDFButton extends React.PureComponent {
@@ -26,12 +27,16 @@ class AddUDFButton extends React.PureComponent {
 
   getOptions = () => {
     const { isBatchPaymentPages } = this.props;
+
     let filteredOptions = getFieldTypes();
+
     if (isBatchPaymentPages) {
+      // Remove dropdown from the options.
       filteredOptions = filteredOptions.filter((option) => {
-        return option.label != 'Primary Reference ID';
+        return option.label !== fieldUnits.dropdown.label;
       });
     }
+
     return filteredOptions;
   };
 

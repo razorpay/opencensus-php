@@ -36,7 +36,6 @@ import NoEntityResultsFound from 'common/ui/NoEntityResultsFound';
 import PaymentPagesV3Entity from 'merchant/views/PaymentPages/PaymentPages/Details/V3';
 
 import ActivateAgain from 'merchant/views/PaymentPages/PaymentPages/components/Modals/ActivateAgain';
-import { checkBatchPaymentPages } from 'merchant/views/PaymentPages/PaymentPages/utils';
 
 @withRouter
 @connect((state) => ({ user: state.session.user }), {
@@ -60,14 +59,12 @@ export default class extends React.Component {
     pendingPayments: {},
   };
 
-  isBatchPaymentPages = checkBatchPaymentPages();
-
   UNSAFE_componentWillMount() {
     this.fetchEntity(this.entityId);
     !this.props.isStorefrontPage && this.fetchEntityPayments(this.entityId);
 
     track.init(this.props.tracking.trackEvent);
-    this.isBatchPaymentPages && this.getPendingPayments();
+    this.props.isBatchPaymentPages && this.getPendingPayments();
   }
 
   async getPendingPayments() {
@@ -261,7 +258,7 @@ export default class extends React.Component {
 
           return resp;
         } else {
-          throw new Error('Some network issue occured');
+          throw new Error('Some network issue occurred');
         }
       })
       .catch(({ errors }) => {
@@ -282,7 +279,7 @@ export default class extends React.Component {
         }
 
         if (!err) {
-          err = `Some network error has occured`;
+          err = `Some network error has occurred`;
         }
 
         this.props.showNotification({

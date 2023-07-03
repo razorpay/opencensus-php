@@ -65,10 +65,20 @@ export const FIXED_FIELDS = {
       ...fUnits.alphabets.schema,
     };
   },
+
   get primaryRefId() {
     return {
       name: 'pri__ref__id',
       title: 'Primary Reference ID',
+      required: true,
+      ...fUnits.alphanumeric.schema,
+    };
+  },
+
+  get secondaryRefId() {
+    return {
+      name: 'sec__ref__id_1',
+      title: 'Secondary Reference ID',
       required: true,
       ...fUnits.alphanumeric.schema,
     };

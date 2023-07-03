@@ -1,13 +1,14 @@
-import { Button } from '@razorpay/blade/components';
+import React from 'react';
 import { withRouter } from 'react-router-dom';
+import { Button } from '@razorpay/blade/components';
 
-const Header = ({ isBatchPaymentPages, history, id }) => {
+import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/PaymentPages/constants';
+
+const Header = ({ history, id }) => {
   const handlePuplishPage = () => {
-    const url = isBatchPaymentPages
-      ? `/paymentpages/batchpaymentpages/${id}/success`
-      : `/paymentpages/${id}/success`;
-    history.push(url);
+    history.push(`${BATCH_PAYMENT_PAGES_BASE_URL}/${id}/success`);
   };
+
   return (
     <div className="page-nav-container">
       <div className="payment-page-nav">
@@ -20,6 +21,7 @@ const Header = ({ isBatchPaymentPages, history, id }) => {
             variant="primary"
             size="medium"
             onClick={handlePuplishPage}
+            testID="bpp-publish-btn"
           >
             Create and publish page
           </Button>

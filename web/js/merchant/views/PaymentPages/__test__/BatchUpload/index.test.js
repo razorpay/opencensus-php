@@ -28,11 +28,7 @@ const renderApp = (initialState = {}, props = {}) => {
         user: initialState?.session?.user ?? globalState?.session?.user,
         org: initialState?.session?.org ?? globalState?.session?.org,
       },
-      wysiwyg: {
-        ...globalState.wysiwyg,
-        isBatchPaymentPages:
-          initialState?.wysiwyg?.isBatchPaymentPages ?? globalState?.wysiwyg?.isBatchPaymentPages,
-      },
+      wysiwyg: globalState.wysiwyg,
     },
     renderOptions: {
       historyOptions: {
@@ -49,9 +45,8 @@ describe('Batch Payment Page - Batch Details', () => {
       session: {
         user: { isPaymentPageFileUploadEnabled: true },
       },
-      wysiwyg: { isBatchPaymentPages: true },
     };
-    renderApp(initialState);
+    renderApp(initialState, { isBatchPaymentPages: true });
     const batchPaymentPagesLink = screen.getByRole('link', {
       name: 'Batch Payment Pages',
     });
@@ -69,7 +64,6 @@ describe('Batch Payment Page - Batch Details', () => {
       session: {
         user: { isPaymentPageFileUploadEnabled: false },
       },
-      wysiwyg: { isBatchPaymentPages: false },
     };
     const props = {
       match: {
@@ -78,6 +72,7 @@ describe('Batch Payment Page - Batch Details', () => {
           title: null,
         },
       },
+      isBatchPaymentPages: false,
     };
     renderApp(initialState, props);
     const batchPaymentPagesLink = screen.getByRole('link', {

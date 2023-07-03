@@ -36,6 +36,7 @@ import {
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { transformCatalog } from 'merchant/reducers/paymentPages/transformer';
 import { RZPFeatures } from 'merchant/helpers/data';
+import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/PaymentPages/constants';
 
 import CategoryIcon from 'assets/payment_pages/categories.svg';
 
@@ -71,6 +72,11 @@ export default class Products extends ListContainer {
           url: '/paymentpages/products',
           // razorx doesn't change during the component lifecycle
           isVisible: props.user.isPaymentPageStorefrontEnabled,
+        },
+        {
+          title: 'Batch Payment Pages',
+          url: BATCH_PAYMENT_PAGES_BASE_URL,
+          isVisible: props.user.isPaymentPageFileUploadEnabled,
         },
       ],
       productDrawer: {

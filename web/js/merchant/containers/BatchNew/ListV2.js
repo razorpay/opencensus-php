@@ -17,6 +17,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import { DocLink } from 'merchant/components/DocsLink';
 import Spinner from 'common/ui/Spinner';
 import track from './track';
+import { BATCH_TYPE } from 'merchant/views/PaymentPages/PaymentPages/constants';
 
 const batchStatus = {
   ...status,
@@ -119,9 +120,10 @@ class BatchList extends ListContainer {
     } = this.props;
     const { user } = session;
     const showBatchUploadButton = showUploadForAdminOrOwner ? user?.isAdminOrOwner : true;
+    const showDownloadSampleFile = sampleUrl && batchType !== BATCH_TYPE;
     const { tabsData } = this.state;
-    const showDownloadSampleFile = sampleUrl && batchType !== 'payment_page';
     const tabData = propsTabData?.length > 0 ? propsTabData : tabsData;
+
     return (
       <ProductWrapper
         tabsData={tabData}
@@ -132,9 +134,10 @@ class BatchList extends ListContainer {
                 Download Sample File
               </a>
             </ShowWhen>
-            <ShowWhen additionalCondition={() => batchType === 'payment_page'}>
-              {isPaymentPageDetailsLoading && <Spinner />}
-              {!isPaymentPageDetailsLoading && (
+            <ShowWhen additionalCondition={() => batchType === BATCH_TYPE}>
+              {isPaymentPageDetailsLoading ? (
+                <Spinner center />
+              ) : (
                 <button
                   type="button"
                   className="btn btn-link hidden-xs"

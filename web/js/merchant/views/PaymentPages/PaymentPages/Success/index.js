@@ -31,7 +31,7 @@ import { dispatchWebViewEvent } from 'common/utils/reactNativeWebView';
 import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
 import { getI18nTaxExemptionName } from 'merchant/views/PaymentPages/PaymentPages/helpers';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { checkBatchPaymentPages } from 'merchant/views/PaymentPages/PaymentPages/utils';
+import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/PaymentPages/constants';
 
 @connect(
   (state) => ({
@@ -267,9 +267,8 @@ class Success extends React.Component {
 
   render() {
     const { isLoaded, pageLoadError } = this.state;
-    const { org } = this.props;
+    const { org, isBatchPaymentPages, id: pageId } = this.props;
 
-    const isBatchPaymentPages = checkBatchPaymentPages();
     let content;
 
     if (!isLoaded) {
@@ -313,7 +312,14 @@ class Success extends React.Component {
           )}
 
           <div className="content">
-            <Link class="btn edit-page-btn" to={`/paymentpages/${paymentPageEntity.id}/edit`}>
+            <Link
+              className="btn edit-page-btn"
+              to={
+                isBatchPaymentPages
+                  ? `${BATCH_PAYMENT_PAGES_BASE_URL}/${pageId}/edit`
+                  : `/paymentpages/${pageId}/edit`
+              }
+            >
               <i class="i i-chevron-left" />
               <span>EDIT PAGE</span>
             </Link>

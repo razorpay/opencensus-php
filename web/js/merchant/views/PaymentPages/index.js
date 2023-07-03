@@ -15,6 +15,8 @@ import ProductsCatalogList from 'merchant/views/PaymentPages/Products';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import DashboardBanner from 'common/ui/DashboardBanner';
 
+import { BATCH_PAYMENT_PAGES_BASE_URL } from './PaymentPages/constants';
+
 @connect((state) => {
   return {
     paymentPageProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PP),
@@ -43,7 +45,11 @@ export default class PaymentPagesContainer extends Component {
               <Route path="/paymentpages/products" exact component={ProductsCatalogList} />
             )}
             {user.isPaymentPageFileUploadEnabled && (
-              <Route path="/paymentpages/batchpaymentpages" exact component={PaymentPagesList} />
+              <Route
+                path={BATCH_PAYMENT_PAGES_BASE_URL}
+                exact
+                render={(routeProps) => <PaymentPagesList {...routeProps} isBatchPaymentPages />}
+              />
             )}
           </Switch>
         </ErrorBoundary>

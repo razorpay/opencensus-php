@@ -29,11 +29,7 @@ const renderApp = (initialState = {}, props = {}, showModal = false) => {
         user: initialState?.session?.user ?? globalState?.session?.user,
         org: initialState?.session?.org ?? globalState?.session?.org,
       },
-      wysiwyg: {
-        ...globalState.wysiwyg,
-        isBatchPaymentPages:
-          initialState?.wysiwyg?.isBatchPaymentPages ?? globalState?.wysiwyg?.isBatchPaymentPages,
-      },
+      wysiwyg: globalState.wysiwyg,
     },
     renderOptions: {
       historyOptions: {

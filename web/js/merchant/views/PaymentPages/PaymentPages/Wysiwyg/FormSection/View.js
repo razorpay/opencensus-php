@@ -28,6 +28,12 @@ import {
 import { showNotification } from 'merchant_common/reducers/notifications';
 import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
 import { isMobileDevice } from 'merchant/components/Home/data';
+import {
+  SEC_REF_ID,
+  SEC_REF_ID_MAX_ERROR,
+} from 'merchant/views/PaymentPages/PaymentPages/constants';
+
+import { FIXED_FIELDS } from './UDF/helpers/preAddedFields';
 
 const SortableUDFDisplayField = sortableElement(UDFDisplayField);
 const SortableAmountDisplayField = sortableElement(AmountDisplayField);
@@ -198,26 +204,41 @@ export default class View extends React.PureComponent {
 
   onSubmitUDFField = (formData, indexInFormItems, isCheckoutOption) => {
     const { user, isBatchPaymentPages, FORM_ITEMS, showNotification } = this.props;
-    // console.log('FORM DATA.....', formData);
     const fieldSchema = constructFieldSchema(formData);
-    // console.log('FIELD SCHEMA...', fieldSchema);
+
     if (isBatchPaymentPages) {
-      const secondaryRefIds = FORM_ITEMS?.filter((item) => item?.name?.includes('sec__ref__id'));
-      if (formData?.title === 'Primary Reference ID') {
-        fieldSchema.name = 'pri__ref__id';
+      const formItem = FORM_ITEMS[indexInFormItems];
+      const secondaryRefIds = FORM_ITEMS?.filter((item) => item?.name?.includes(SEC_REF_ID));
+
+      if (formItem?.name === FIXED_FIELDS.primaryRefId.name) {
+        fieldSchema.name = formItem.name; // Preserving the name that got overridden while creating fieldSchema.
       }
-      if (formData?.sec__ref__id === '1') {
+
+      // Check if field is selected as secondary reference id.
+      if (formData?.[SEC_REF_ID] === '1') {
+        // Not more than 5 secondary reference id can be selected.
         if (secondaryRefIds.length === 5) {
           showNotification({
             type: 'info',
-            message: 'Max 5 Input Field may be added as Seconday Reference ID.',
+            message: SEC_REF_ID_MAX_ERROR,
           });
-          throw new Error('Max 5 Input Field may be added as Seconday Reference ID.');
+
+          return;
         }
-        fieldSchema.name = `sec__ref__id_${secondaryRefIds.length + 1}`;
+
+        // Override the same name if it has sec__ref__id prefix.
+        if (formItem?.name?.includes?.(SEC_REF_ID)) {
+          // Preserving the name that got overridden while creating fieldSchema.
+          fieldSchema.name = formItem.name;
+        } else {
+          // Create a new name with prefix sec__ref__id.
+          fieldSchema.name = `${SEC_REF_ID}_${secondaryRefIds.length + 1}`;
+        }
       }
     }
+
     const isPayerNameField = user?.showPayerNamePP && formData?.title === 'Payer Name';
+
     if (isPayerNameField) {
       fieldSchema.name = 'payer__name';
     }

@@ -44,11 +44,9 @@ import DonationGoalTrackerPreview from 'merchant/views/PaymentPages/PaymentPages
 import { parseGoalTrackerAmountValues } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/DetailsSection/helpers';
 import MagicCheckoutLabel from 'merchant/components/MagicCheckout/MagicCheckoutLabel';
 import { PAYMENT_PAGES_TYPES } from 'merchant/views/PaymentPages/PaymentPages/CreateEdit';
-import {
-  getProductBaseLink,
-  checkBatchPaymentPages,
-} from 'merchant/views/PaymentPages/PaymentPages/utils';
+import { getProductBaseLink } from 'merchant/views/PaymentPages/PaymentPages/utils';
 import Spinner from 'common/ui/Spinner';
+import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/PaymentPages/constants';
 
 // import mockPaymentPage from '../../Wysiwyg/data-mock';
 
@@ -90,7 +88,6 @@ const trackShare = (eventName, data) => {
 @RTracking(() => window.rzpQ.component('PaymentPagesContainer'))
 export default class PaymentPagesV3Entity extends React.Component {
   state = { detailsCollapse: true, isExportInProgress: false };
-  isBatchPaymentPages = checkBatchPaymentPages();
 
   componentDidMount() {
     if (!this.props.reportConfigs) {
@@ -102,7 +99,7 @@ export default class PaymentPagesV3Entity extends React.Component {
 
   getStatsTable(paymentPageEntity) {
     const { captured_payments_count, total_amount_paid, currency } = paymentPageEntity;
-    const { pendingPayments } = this.props;
+    const { pendingPayments, isBatchPaymentPages } = this.props;
     const { total_pending_payments, total_pending_revenue } = pendingPayments;
     let paymentContent = [
       {
@@ -114,7 +111,7 @@ export default class PaymentPagesV3Entity extends React.Component {
         value: <Amount value={total_amount_paid} currency={currency} />,
       },
     ];
-    if (this.isBatchPaymentPages) {
+    if (isBatchPaymentPages) {
       const pendingPaymentContent = [
         {
           title: 'Total Pending Payments',
@@ -304,11 +301,13 @@ export default class PaymentPagesV3Entity extends React.Component {
       reActivateLink,
       isStorefrontPage,
       isNoExpiryMandatory,
+      isBatchPaymentPages,
       hasPendingPayments,
     } = this.props;
+    const { isExportInProgress } = this.state;
 
-    // paymentPageEntity = mockPaymentPage;
     const { id, title } = paymentPageEntity;
+
     const isRoleAllowedEdit = this.props.user.isAllowedEdit('payment_pages');
 
     const status = paymentPageEntity.status;
@@ -317,10 +316,18 @@ export default class PaymentPagesV3Entity extends React.Component {
     const isActive = status === 'active';
     const isExpired = !isActive && statusReason?.toLowerCase() === 'expired';
     const isMagicCheckoutOrder = paymentPageEntity?.settings?.one_click_checkout === '1';
-    const productBaseUrl = getProductBaseLink(isStorefrontPage, paymentPageEntity.id);
+    const productBaseUrl = getProductBaseLink(isStorefrontPage, id, isBatchPaymentPages);
     const isShareButtonShown = isRoleAllowedEdit && isActive && !isStorefrontPage;
-    const { isExportInProgress } = this.state;
-    const isDownloadReport = !isStorefrontPage && !this.isBatchPaymentPages;
+
+    let type = PAYMENT_PAGES_TYPES.payment_page;
+
+    if (isStorefrontPage) {
+      type = PAYMENT_PAGES_TYPES.storefront;
+    } else if (isBatchPaymentPages) {
+      type = PAYMENT_PAGES_TYPES.batch_payment_page;
+    }
+
+    const isDownloadReport = !isStorefrontPage && !isBatchPaymentPages;
 
     return (
       <React.Fragment>
@@ -331,8 +338,9 @@ export default class PaymentPagesV3Entity extends React.Component {
           )}
         >
           <div className="content-header">
-            <Link to="/paymentpages">
-              <i className="i i-arrow-back" /> All Payment Pages
+            <Link to={isBatchPaymentPages ? BATCH_PAYMENT_PAGES_BASE_URL : '/paymentpages'}>
+              <i className="i i-arrow-back" />
+              {isBatchPaymentPages ? 'All Batch Payment Pages' : 'All Payment Pages'}
             </Link>
             <i className="i i-chevron-right" /> {title}
           </div>
@@ -341,7 +349,7 @@ export default class PaymentPagesV3Entity extends React.Component {
             <div className="panel-heading">
               <div className="text">{title}</div>
               <div className="btn-toolbar">
-                {this.isBatchPaymentPages && (
+                {isBatchPaymentPages && (
                   <Link to={`/paymentpages/batchuploads/${id}/${title}`}>
                     <Button.Primary>
                       <i className="i icon-border-bottom" /> View Batch Details
@@ -358,11 +366,7 @@ export default class PaymentPagesV3Entity extends React.Component {
                 )}
                 {isRoleAllowedEdit && (
                   <Link
-                    to={`/paymentpages/new?duplicate_id=${paymentPageEntity.id}&type=${
-                      isStorefrontPage
-                        ? PAYMENT_PAGES_TYPES.storefront
-                        : PAYMENT_PAGES_TYPES.payment_page
-                    }`}
+                    to={`/paymentpages/new?duplicate_id=${paymentPageEntity.id}&type=${type}`}
                     onClick={this.onClickDuplicatePage}
                   >
                     <Button className="Button--primary--invert">
@@ -378,6 +382,7 @@ export default class PaymentPagesV3Entity extends React.Component {
                   <DropdownSettings
                     paymentPageEntity={paymentPageEntity}
                     isStorefrontPage={isStorefrontPage}
+                    isBatchPaymentPages={isBatchPaymentPages}
                   />
                 )}
 

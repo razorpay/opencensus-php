@@ -12,8 +12,18 @@ const onShow = () => {
   track.settingsDropdown();
 };
 
-const DropdownSettings = ({ history, paymentPageEntity, isStorefrontPage }) => {
-  const productBaseUrl = getProductBaseLink(isStorefrontPage, paymentPageEntity.id);
+const DropdownSettings = ({
+  history,
+  paymentPageEntity,
+  isStorefrontPage,
+  isBatchPaymentPages,
+}) => {
+  const productBaseUrl = getProductBaseLink(
+    isStorefrontPage,
+    paymentPageEntity.id,
+    isBatchPaymentPages,
+  );
+
   return (
     <span className="d-inline-block">
       <Dropdown closeOnClick={false} onShow={onShow}>

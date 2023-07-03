@@ -33,6 +33,7 @@ import {
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
+import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/PaymentPages/constants';
 
 const ApiKeysAndPlugins = lazy(() =>
   import(/* webpackChunkName: "ApiKeysAndPlugins" */ 'merchant/views/ApiKeysAndPlugins'),
@@ -529,9 +530,10 @@ export default class Content extends Component {
             }
           />
           <ShowWhenRoute
-            path="/paymentpages/batchpaymentpages/:id(pl_.+)/:entity_name(payments)"
+            path={`${BATCH_PAYMENT_PAGES_BASE_URL}/:id(pl_.+)/:entity_name(payments)`}
             component={PaymentPagesDetails}
             additionalCondition={(user) => user.isPaymentPageFileUploadEnabled}
+            isBatchPaymentPages
           />
           <ShowWhenRoute
             path="/paymentpages/storefront/:id(st_.+)/:entity_name(payments)"

@@ -41,7 +41,6 @@ const FETCH_CUSTOM_DOMAIN = 'FETCH_CUSTOM_DOMAIN';
 const UPDATE_CUSTOM_DOMAIN = 'UPDATE_CUSTOM_DOMAIN';
 const UPDATE_MAGIC_CHECKOUT_DATA = 'UPDATE_MAGIC_CHECKOUT_DATA';
 const FETCH_CUSTOM_DOMAIN_PLAN = 'FETCH_CUSTOM_DOMAIN_PLAN';
-const PP_BATCH_PAYMENT_PAGE_ACTIVE = 'PP_BATCH_PAYMENT_PAGE_ACTIVE';
 
 export const updateTemplateType = (data, templateKey) => {
   const isPageDirty = false;
@@ -210,7 +209,6 @@ const initialState = {
     value: '',
     planDetails: {},
   }, // custom domain details at a merchant level
-  isBatchPaymentPages: false, // identify Batch Payment Page flow.
 };
 
 export const reorderFormItems = ({
@@ -228,11 +226,6 @@ export const updateSettings = (updatedSettings = {}) => ({
   payload: updatedSettings,
 });
 
-export const setIsBatchPaymentPages = (isActive = false) => ({
-  type: PP_BATCH_PAYMENT_PAGE_ACTIVE,
-  payload: isActive,
-});
-
 export default (state = initialState, action) => {
   switch (action.type) {
     case INIT_DEFAULT_FORM_ITEMS: {
@@ -240,13 +233,11 @@ export default (state = initialState, action) => {
       const currentUser = user;
 
       const defaultFields = [];
+
       if (isBatchPaymentPages) {
-        defaultFields.push(FIXED_FIELDS.primaryRefId);
-        state = {
-          ...state,
-          isBatchPaymentPages,
-        };
+        defaultFields.push(FIXED_FIELDS.primaryRefId, FIXED_FIELDS.secondaryRefId);
       }
+
       // if org feature flag 'enable_payer_name_for_pp' is enabled then add Payer Name as default filed.
       const orgDetails = org;
       const showPayerNamePP = orgDetails?.features?.indexOf('enable_payer_name_for_pp') > -1;
@@ -370,7 +361,6 @@ export default (state = initialState, action) => {
         },
         paymentPageEntity: entityData,
         FORM_ITEMS: formItems, // Sorted items having udf_schema and amount items mixed
-        isBatchPaymentPages: state.isBatchPaymentPages, // set value in edit flow
       };
 
       // 4. If intention while fetching is not to duplicate, then only add payment_page_id
@@ -561,11 +551,6 @@ export default (state = initialState, action) => {
         magicCheckout: merge(state.magicCheckout, {
           ...action.data,
         }),
-      };
-    case PP_BATCH_PAYMENT_PAGE_ACTIVE:
-      return {
-        ...state,
-        isBatchPaymentPages: action.payload,
       };
     default:
       return state;

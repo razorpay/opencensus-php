@@ -26,19 +26,13 @@ import {
   MAX_FILE_SIZE,
   BATCH_UPLOAD_DOC_URL,
   BATCH_TYPE,
+  BATCH_UPLOAD_POINTS,
+  BATCH_PAYMENT_PAGES_BASE_URL,
 } from 'merchant/views/PaymentPages/PaymentPages/constants';
 
 const gaEvents = setGaTrack('Dashboard - Batch Payment Page - BU');
 
-function BatchUploadSubPage({
-  id,
-  fetchPaymentPage,
-  validateBatch,
-  createBatch,
-  openModal,
-  isBatchPaymentPages,
-  paymentPageEntity,
-}) {
+function BatchUploadSubPage({ id, fetchPaymentPage, validateBatch, createBatch, openModal }) {
   const [pageDetails, setPageDetails] = useState({
     isLoaded: false,
     pageLoadError: '',
@@ -50,7 +44,7 @@ function BatchUploadSubPage({
 
   const fetchEntity = async () => {
     try {
-      const resp = await fetchPaymentPage(id, false); // Auto reinitialise store if id doesn't exist.
+      const resp = await fetchPaymentPage(id, false); // Auto reinitialize store if id doesn't exist.
       const headerList = getHeaderList(resp?.data);
       if (!headerList) {
         setPageDetails({
@@ -179,7 +173,7 @@ function BatchUploadSubPage({
   } else {
     content = (
       <div className="content">
-        <Link className="btn edit-page-btn" to={`/paymentpages/${paymentPageEntity.id}/edit`}>
+        <Link className="btn edit-page-btn" to={`${BATCH_PAYMENT_PAGES_BASE_URL}/${id}/edit`}>
           <i className="i i-chevron-left" />
           <span>EDIT PAGE</span>
         </Link>
@@ -211,9 +205,9 @@ function BatchUploadSubPage({
                 Please note the following things before proceeding further:
                 <br />
                 <ol>
-                  <li>The amount mentioned should be in paise.</li>
-                  <li>The Primary Reference ID should be unique for each entry.</li>
-                  <li>The number of rows should not exceed 50000.</li>
+                  {BATCH_UPLOAD_POINTS.map((point) => (
+                    <li key={point}>{point}</li>
+                  ))}
                 </ol>
                 <a className="btn-link" onClick={onSampleFileDownload}>
                   <strong>Download Sample File</strong>
@@ -238,7 +232,7 @@ function BatchUploadSubPage({
 
   return (
     <div className="pp-success-container">
-      <Header id={id} isBatchPaymentPages={isBatchPaymentPages} />
+      <Header id={id} />
       {content}
     </div>
   );

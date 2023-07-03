@@ -6,6 +6,7 @@ import Alert from 'common/new-ui/Alert';
 import Button from 'common/new-ui/Button';
 import { setSettingsModal } from 'merchant/reducers/wysiwyg';
 import { getAlertMsg } from 'merchant/views/PaymentPages/PaymentPages/helpers';
+import { FIXED_FIELDS } from './helpers/preAddedFields';
 
 export default function CreatorManager(WrappedDisplayFieldComponent) {
   class HOC extends React.PureComponent {
@@ -70,14 +71,21 @@ export default function CreatorManager(WrappedDisplayFieldComponent) {
           isFieldForcedRequired = true;
           isLabelDisabled = true;
         }
+
         if (isBatchPaymentPages) {
-          // primary reference id field
-          if (field?.name === 'pri__ref__id') {
+          // Primary reference id field
+          if (field?.name === FIXED_FIELDS.primaryRefId.name) {
             isFieldDeletable = false;
             isFieldForcedRequired = true;
             isPrimaryField = true;
-            isLabelDisabled = true;
           }
+
+          // First secondary reference id field
+          if (field?.name === FIXED_FIELDS.secondaryRefId.name) {
+            isFieldDeletable = false;
+            isFieldForcedRequired = true;
+          }
+
           if (field?.name === 'email' || field?.name === 'phone') {
             isFieldDeletable = false;
             isFieldForcedRequired = false;
@@ -90,6 +98,7 @@ export default function CreatorManager(WrappedDisplayFieldComponent) {
           <WrappedDisplayFieldComponent
             field={field}
             openBaseForm={this.openBaseForm}
+            isBatchPaymentPages={isBatchPaymentPages}
             {...restProps}
           />
           {this.state.isBaseFormOpened && (

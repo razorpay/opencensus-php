@@ -23,8 +23,8 @@ jest.spyOn(track, 'viewDoc').mockImplementation(() => {});
 jest.spyOn(track, 'copyUrl').mockImplementation(() => {});
 jest.spyOn(track, 'init').mockImplementation(() => {});
 
-const renderApp = (initialState = {}) =>
-  render(<PaymentPagesContainer />, {
+const renderApp = (initialState = {}, props = {}) =>
+  render(<PaymentPagesContainer {...props} />, {
     initialState: {
       ...globalState,
       session: {

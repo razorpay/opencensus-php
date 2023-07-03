@@ -58,11 +58,7 @@ describe('Batch Payment Page - Add Amount', () => {
           user: initialState?.session?.user ?? globalState?.session?.user,
           org: initialState?.session?.org ?? globalState?.session?.org,
         },
-        wysiwyg: {
-          ...globalState.wysiwyg,
-          isBatchPaymentPages:
-            initialState?.wysiwyg?.isBatchPaymentPages ?? globalState?.wysiwyg?.isBatchPaymentPages,
-        },
+        wysiwyg: globalState.wysiwyg,
       },
       renderOptions: {
         historyOptions: {
@@ -72,13 +68,12 @@ describe('Batch Payment Page - Add Amount', () => {
       },
     });
   };
-  test('should able to add "Price Field" without selecting dynyamic price if org feature flag "file_upload_pp" is enabled', async () => {
+  test('should able to add "Price Field" without selecting dynamic price if org feature flag "file_upload_pp" is enabled', async () => {
     track.wysiwyg.addPriceField = jest.fn();
     const initialState = {
       session: {
         user: { isPaymentPageFileUploadEnabled: true },
       },
-      wysiwyg: { isBatchPaymentPages: true },
     };
     const props = {
       ...defaultProps,
@@ -97,14 +92,11 @@ describe('Batch Payment Page - Add Amount', () => {
   test('should able to add "Price Field" after selecting "Item with Quantity" if org feature flag "file_upload_pp" is disabled', async () => {
     const initialState = {
       session: {
-        user: { isPaymentPageFileUploadEnabled: true },
+        user: { isPaymentPageFileUploadEnabled: false },
       },
-      wysiwyg: { isBatchPaymentPages: false },
     };
-    const props = {
-      ...defaultProps,
-    };
-    renderApp(initialState, props, true);
+
+    renderApp(initialState, defaultProps, true);
     const priceField = screen.getByText('Price field');
     expect(priceField).toBeInTheDocument();
     await userEvent.click(priceField);

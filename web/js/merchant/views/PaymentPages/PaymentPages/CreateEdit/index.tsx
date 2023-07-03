@@ -9,6 +9,7 @@ import { getURLQueryParams } from 'common/utils/rzp-utils';
 export const PAYMENT_PAGES_TYPES = {
   payment_page: 'payment_pages',
   storefront: 'storefront',
+  batch_payment_page: 'batch_payment_page',
 };
 
 const keys = Object.values(PAYMENT_PAGES_TYPES);

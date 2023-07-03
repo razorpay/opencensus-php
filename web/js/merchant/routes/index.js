@@ -7,6 +7,7 @@ import {
 import { isMobileResolution } from 'common/utils/rzp-utils';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { getProvidedChannels } from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/utils';
+import { BATCH_PAYMENT_PAGES_BASE_URL } from 'merchant/views/PaymentPages/PaymentPages/constants';
 
 import lazy from './LazyLoader';
 
@@ -603,20 +604,20 @@ const fullPageViewsMap = {
       user.isAllowedEdit('payment_pages') &&
       !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentPages),
   },
-  '/paymentpages/batchpaymentpages/new': {
-    component: PaymentPagesWysiwyg,
+  [`${BATCH_PAYMENT_PAGES_BASE_URL}/new`]: {
+    component: (props) => <PaymentPagesWysiwyg {...props} isBatchPaymentPages />,
     additionalCondition: (user) => user?.isPaymentPageFileUploadEnabled,
   },
-  '/paymentpages/batchpaymentpages/:id(pl_.+)/batchuploadsubpage': {
+  [`${BATCH_PAYMENT_PAGES_BASE_URL}/:id(pl_.+)/batchuploadsubpage`]: {
     component: BatchUploadSubPage,
     additionalCondition: (user) => user?.isPaymentPageFileUploadEnabled,
   },
-  '/paymentpages/batchpaymentpages/:id(pl_.+)/success': {
-    component: PaymentPagesSuccess,
+  [`${BATCH_PAYMENT_PAGES_BASE_URL}/:id(pl_.+)/success`]: {
+    component: (props) => <PaymentPagesSuccess {...props} isBatchPaymentPages />,
     additionalCondition: (user) => user?.isPaymentPageFileUploadEnabled,
   },
-  '/paymentpages/batchpaymentpages/:id(pl_.+)/edit': {
-    component: PaymentPagesWysiwyg,
+  [`${BATCH_PAYMENT_PAGES_BASE_URL}/:id(pl_.+)/edit`]: {
+    component: (props) => <PaymentPagesWysiwyg {...props} isBatchPaymentPages />,
     additionalCondition: (user) => user?.isPaymentPageFileUploadEnabled,
   },
   '/paymentpages/:id(pl_.+)/edit': {

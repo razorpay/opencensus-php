@@ -36,7 +36,7 @@ const displayField = ({ field, openBaseForm, tooltipTxt, setRef, isListSorting, 
     >
       <DragHandle />
 
-      <div class="Field-label">
+      <div data-testid={field.title} class="Field-label">
         {field.title}
         {!field.required && <div class="text-optional">(Optional)</div>}
       </div>
