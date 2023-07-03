@@ -889,32 +889,72 @@ class Service extends Base\Service
      */
     public function getShopify1ccConfigs($input)
     {
-        (new Validator())->setStrictFalse()->validateInput('gettingShopifyConfig', $input);
-
-        $mode = $this->getModeForConfigs($input);
-        $this->app['basicauth']->authCreds->setModeAndDbConnection($mode);
-
         $this->trace->info(TraceCode::MERCHANT_1CC_CONFIGS_REQUESTED, [
-                'input' => $input,
-                'mode' => $mode
+            'input' => $input,
         ]);
+
+        $result = [];
 
         if (isset($input['key_id']) === true)
         {
             $keyId = $input['key_id'];
+
+            (new Validator())->setStrictFalse()->validateInput('gettingShopifyConfigByKeyId', $input);
+
+            $this->getModeAndSetDBConnectionForConfigs($input);
 
             Key\Entity::verifyIdAndStripSign($keyId);
 
             $key = $this->repo->key->findOrFailPublic($keyId);
 
             $input[Constants::MERCHANT_ID] = $key->getMerchantId();
+
+            $this->merchant = $this->repo->merchant->findOrFail($input[Constants::MERCHANT_ID]);
+
+            $result['key_id'] = $input['key_id'];
         }
-        else if (isset($input[Constants::MERCHANT_ID]) === false)
+        else if (isset($input['shop_id']) === true)
         {
-            throw new BadRequestException("INVALID_REQUEST");
+            (new Validator())->setStrictFalse()->validateInput('gettingShopifyConfigByShopId', $input);
+
+            $this->getModeAndSetDBConnectionForConfigs($input);
+
+            $shopId = $input['shop_id'];
+
+            $merchantDetails = $this->repo->merchant_1cc_auth_configs->findLatestMerchantIdByPlatformConfigValue(
+                $shopId, Constants::SHOPIFY, Constants::SHOP_ID);
+
+            if ($merchantDetails === null)
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, "Merchant Id not found");
+            }
+
+            $merchantId = $merchantDetails['merchant_id'];
+
+            $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+
+            $input[Constants::MERCHANT_ID] = $merchantId;
+
+        }
+        else if (isset($input[Constants::MERCHANT_ID]) === true)
+        {
+            (new Validator())->setStrictFalse()->validateInput('gettingShopifyConfigByMerchantId', $input);
+
+            $this->getModeAndSetDBConnectionForConfigs($input);
+
+            $this->merchant = $this->repo->merchant->findOrFail($input[Constants::MERCHANT_ID]);
+        }
+        else
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, "request must contain any one of key_id, merchant_id or shop_id");
         }
 
-        $this->merchant = $this->repo->merchant->findOrFail($input[Constants::MERCHANT_ID]);
+        if (isset($result['key_id']) === false)
+        {
+            $key = $this->repo->key->getLatestActiveKeyForMerchant($input[Constants::MERCHANT_ID]);
+
+            $result['key_id'] = $key->getPublicKey($input['mode']);
+        }
 
         $result[Constants::MERCHANT_ID] = $input[Constants::MERCHANT_ID];
 
@@ -944,27 +984,30 @@ class Service extends Base\Service
         return $result;
     }
 
-    protected function getModeForConfigs($input): string
+    protected function getModeAndSetDBConnectionForConfigs($input)
     {
         if (isset($input['key_id']) === true)
         {
             $keyId = $input['key_id'];
-            return substr($keyId, 4, 4);
+            $mode = substr($keyId, 4, 4);
         }
         else if (isset($input['mode']) === true)
         {
-            return $input['mode'];
+            $mode = $input['mode'];
         }
         else
         {
             if (env('APP_MODE', 'prod') === 'prod')
             {
-                return 'live';
-            }else
+                $mode = 'live';
+            }
+            else
             {
-                return 'test';
+                $mode = 'test';
             }
         }
+
+        $this->app['basicauth']->authCreds->setModeAndDbConnection($mode);
     }
 
 

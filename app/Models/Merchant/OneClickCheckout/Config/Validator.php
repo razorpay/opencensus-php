@@ -74,13 +74,22 @@ class Validator extends Base\Validator
         'merchant_id'              => 'required|string|size:14',
    ];
 
-    protected static $gettingShopifyConfigRules = [
-         'key_id'                        => 'sometimes|string',
-         'keys'                          => 'sometimes|string|custom:keys',
-         'merchant_id'                   => 'sometimes|string|size:14',
-         'mode'                          => 'sometimes|string',
+    protected static $gettingShopifyConfigByKeyIdRules = [
+        'key_id' => 'required|string',
+        'keys'   => 'sometimes|string|custom:keys',
     ];
 
+    protected static $gettingShopifyConfigByShopIdRules = [
+        'shop_id' => 'required|string',
+        'mode'    => 'sometimes|string|in:live,test',
+        'keys'    => 'sometimes|string|custom:keys',
+    ];
+
+    protected static $gettingShopifyConfigByMerchantIdRules = [
+        'merchant_id' => 'required|string|size:14',
+        'mode'        => 'sometimes|string|in:live,test',
+        'keys'        => 'sometimes|string|custom:keys',
+    ];
 
     protected static $gettingWoocommerceConfigRules = [
         'merchant_id'     => 'required|string|size:14',
