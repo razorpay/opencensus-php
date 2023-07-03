@@ -210,7 +210,7 @@ const BottomSheetPricingContainer = ({
           title={title}
         />
         {pricingPlans.length ? (
-          <Carousel>
+          <Carousel trackingData={trackingData} pricingPlans={pricingPlans} togglePlan={togglePlan}>
             {pricingPlans.map((item) => (
               <PricingSectionMweb
                 trackInstrumentation={trackInstrumentation}

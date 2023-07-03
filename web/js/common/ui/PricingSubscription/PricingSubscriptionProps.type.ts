@@ -104,6 +104,10 @@ interface TrackingObjectType {
   plan_id?: string;
   time_spent?: any;
   checkout_id?: string;
+  icon_type?: string;
+  plan_viewed?: string;
+  last_plan_id?: string;
+  last_plan_viewed?: string;
 }
 interface PaymentCheckoutFlowType {
   plans: PlansType;
