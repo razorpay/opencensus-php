@@ -4597,10 +4597,10 @@ class Processor
             return;
         }
 
-        // On live request, either X should be enabled for merchant for proxy auth calls or merchant should be activated
+        // On live request, either RBL CA should be activated for merchant for proxy auth calls or merchant should be activated
         if ($this->app['basicauth']->isProxyAuth() &&
             $this->app['basicauth']->isProductBanking() &&
-            (new MerchantCore())->isXVaActivated($this->merchant))
+            (new MerchantCore())->isRblCurrentAccountActivated($this->merchant))
         {
             // adding this check due to PG onboarding pause
             return;

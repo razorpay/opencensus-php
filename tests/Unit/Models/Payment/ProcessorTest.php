@@ -442,12 +442,11 @@ class ProcessorTest extends TestCase
 
         $payment = $this->fixtures->create('payment');
 
-        $this->fixtures->create('merchant_attribute', [
+        $this->fixtures->create('banking_account', [
             'merchant_id'   =>  $merchant->getId(),
-            'product'       =>  'banking',
-            'group'         =>  'products_enabled',
-            'type'          =>  'X',
-            'value'         =>  'true'
+            'account_type'  => \RZP\Models\BankingAccount\AccountType::CURRENT,
+            'channel'       => \Rzp\Models\BankingAccount\Channel::RBL,
+            'status'        => \RZP\Models\BankingAccount\Status::ACTIVATED
         ]);
 
         // create an object & access functions to assert that checkMerchantPermissions has not failed

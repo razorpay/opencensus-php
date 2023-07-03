@@ -8029,6 +8029,28 @@ class Core extends Base\Core
         return $this->checkIfCurrentAccountIsActivated($merchant);
     }
 
+
+    public function isRblCurrentAccountActivated(Entity $merchant) : bool
+    {
+        $activatedBankingAccountExists = Tracer::inspan(['name' => HyperTrace::MERCHANT_CORE_FETCH_BANKING_ACCOUNT_BY_MERCHANT_ID_ACCOUNT_TYPE_CHANNEL_AND_STATUS], function () use ($merchant)
+        {
+            // handling the filtering here instead of the repo layer to help with API-decomp for current-accounts
+            foreach ($merchant->bankingAccounts as $bankingAccount)
+            {
+                if ($bankingAccount->getChannel() === BankingAccount\Channel::RBL &&
+                    $bankingAccount->getAccountType() === BankingAccount\AccountType::CURRENT &&
+                    $bankingAccount->getStatus() === BankingAccount\Status::ACTIVATED)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        });
+
+        return $activatedBankingAccountExists;
+    }
+
     public function isXVaActivated(Entity $merchant) : bool
     {
         return (new Attribute\Core())->isXVaActivated($merchant);
@@ -8042,14 +8064,8 @@ class Core extends Base\Core
      */
     public function checkIfCurrentAccountIsActivated(Entity $merchant): bool
     {
-        $bankingAccounts = Tracer::inspan(['name' => HyperTrace::MERCHANT_CORE_FETCH_BANKING_ACCOUNT_BY_MERCHANT_ID_ACCOUNT_TYPE_CHANNEL_AND_STATUS], function () use ($merchant)
-            {
-                return $this->repo->banking_account->fetchBankingAccountByMerchantIdAccountTypeChannelAndStatus(
-                    $merchant->getMerchantId(), BankingAccount\Channel::RBL, BankingAccount\AccountType::CURRENT, BankingAccount\Status::ACTIVATED);
-            });
-
         // RBL
-        if(empty($bankingAccounts) === false)
+        if($this->isRblCurrentAccountActivated($merchant))
         {
             return true;
         }
