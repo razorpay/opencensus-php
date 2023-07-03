@@ -96,13 +96,13 @@ class FeeRecovery extends Job
 
         try
         {
-            $payout = (new FeeRecoveryCore)->createFeeRecoveryPayout($data);
+            $response = (new FeeRecoveryCore)->createFeeRecoveryPayout($data);
 
             $this->trace->info(
                 TraceCode::FEE_RECOVERY_CRON_SUCCESS,
                 [
-                    'recovery_payout'   => $payout->toArrayPublic(),
-                    'balance_id'        => $this->balanceId,
+                    'response'   => $response,
+                    'balance_id' => $this->balanceId,
                 ]
             );
 

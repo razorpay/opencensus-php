@@ -154,7 +154,7 @@ class Core extends Base\Core
      *
      * @throws Exception\BadRequestException
      */
-    public function createFeeRecoveryPayout(array $input): Payout\Entity
+    public function createFeeRecoveryPayout(array $input)
     {
         $this->trace->info(
             TraceCode::FEE_RECOVERY_INITIATED,
@@ -174,9 +174,9 @@ class Core extends Base\Core
 
         (new Validator)->validateBalanceTypeAndTimeStamps($balance, $startTimeStamp, $endTimeStamp);
 
-        $feeRecoveryPayout = $this->processFeeRecovery($balance, $startTimeStamp, $endTimeStamp);
+        $response = $this->processFeeRecovery($balance, $startTimeStamp, $endTimeStamp);
 
-        return $feeRecoveryPayout;
+        return $response;
     }
 
     /**
@@ -386,7 +386,7 @@ class Core extends Base\Core
                                                  int $startTimestamp,
                                                  int $endTimestamp)
     {
-        $feeRecoveryPayout = $this->mutex->acquireAndRelease(
+        $response = $this->mutex->acquireAndRelease(
             'process_fee_recovery_' . $balance->getId(),
             function() use ($balance, $startTimestamp, $endTimestamp)
         {
@@ -417,6 +417,19 @@ class Core extends Base\Core
             }
             if ($amount == 0)
             {
+                $variant = $this->app['razorx']->getTreatment(
+                    $balance->getMerchantId(),
+                    Merchant\RazorxTreatment::RX_FEE_RECOVERY_CONTROL_ROLL_OUT,
+                    $this->mode,
+                    3);
+
+                if ($variant === 'on')
+                {
+                    return [
+                        'message'  => "The total amount to be recovered is zero and hence we are not creating a fee recovery payout for the current week"
+                    ];
+                }
+
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_FEE_RECOVERY_AMOUNT_ZERO,
                     null,
@@ -428,16 +441,19 @@ class Core extends Base\Core
                     ]);
             }
 
-            return $this->processAndGetFeeRecoveryPayout($payouts,
-                                                         $failedPayouts,
-                                                         $reversals,
-                                                         $balance,
-                                                         $amount);
+            $feeRecoveryPayout =  $this->processAndGetFeeRecoveryPayout($payouts,
+                                                                        $failedPayouts,
+                                                                        $reversals,
+                                                                        $balance,
+                                                                        $amount);
+
+            return $feeRecoveryPayout->toArrayPublic();
+
         },
         300,
         ErrorCode::BAD_REQUEST_FEE_RECOVERY_ANOTHER_OPERATION_IN_PROGRESS);
 
-        return $feeRecoveryPayout;
+        return $response;
     }
 
     protected function getPayoutAndReversalEntitiesForFeeRecovery(Balance\Entity $balance,

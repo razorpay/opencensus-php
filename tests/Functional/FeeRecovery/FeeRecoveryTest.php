@@ -10,6 +10,7 @@ use RZP\Models\Feature;
 use RZP\Models\Schedule;
 use RZP\Constants\Timezone;
 use RZP\Models\FeeRecovery;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\BankingAccount\Entity;
@@ -722,6 +723,42 @@ class FeeRecoveryTest extends TestCase
         $nextRunAt = $task->getNextRunAt();
 
         $job = new \RZP\Jobs\FeeRecovery('test', null, $balance->getId(), $lastRunAt, $nextRunAt, $task);
+
+        $job->handle();
+
+        $lastRun = Carbon::createFromTimestamp($initialNextRunAt, Timezone::IST);
+
+        $currentTime = Carbon::now(Timezone::IST);
+
+        $nextRunTime = Schedule\Library::computeFutureRun($task->schedule, $lastRun, $currentTime, true);
+
+        // Assert that last run and next run is updated when job is run
+        $this->assertEquals($nextRunAt, $task['last_run_at']);
+
+        $this->assertEquals($nextRunTime->getTimestamp(), $task['next_run_at']);
+    }
+
+    public function testFeeRecoveryPayoutCronNextAndLastRunUpdateForZeroAmount()
+    {
+        $oldTime = Carbon::create(2020, 1, 3, null, null, null);
+
+        Carbon::setTestNow($oldTime);
+
+        $this->setupScheduleAndScheduleTaskForMerchant();
+
+        $newTime = Carbon::create(2020, 1, 10, null, null, null);
+
+        $task = $this->getDbLastEntity('schedule_task');
+
+        $initialNextRunAt = $task['next_run_at'];
+
+        Carbon::setTestNow($newTime);
+
+        $nextRunAt = $task->getNextRunAt();
+
+        $this->mockRazorxFeeRecoveryRollout();
+
+        $job = new \RZP\Jobs\FeeRecovery('test', null, $this->balance->getId(), 1, $nextRunAt, $task);
 
         $job->handle();
 
@@ -2906,5 +2943,38 @@ class FeeRecoveryTest extends TestCase
         $this->ba->adminAuth();
 
         $this->startTest($data);
+    }
+
+    protected function mockRazorxFeeRecoveryRollout()
+    {
+        $this->mockRazorxTreatment('off', 'on');
+    }
+
+    protected function mockRazorxTreatment(string $defaultBehaviour = 'off',
+                                           string $feeRecoveryRolloutControl = 'control')
+
+    {
+        // Mock Razorx
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment', 'getCachedTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode) use (
+                    $defaultBehaviour,
+                    $feeRecoveryRolloutControl)
+                {
+                    if ($feature === 'rx_fee_recovery_control_roll_out')
+                    {
+                        return strtolower($feeRecoveryRolloutControl);
+                    }
+
+                    return strtolower($defaultBehaviour);
+                }));
+
     }
 }

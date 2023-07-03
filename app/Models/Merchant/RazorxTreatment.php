@@ -353,6 +353,8 @@ final class RazorxTreatment
     // This is to be used to block VA to VA payouts
     const RX_ALLOW_VA_TO_VA_PAYOUTS = 'rx_allow_va_to_va_payouts';
 
+    const RX_FEE_RECOVERY_CONTROL_ROLL_OUT = 'rx_fee_recovery_control_roll_out';
+
     const APPS_RISK_CHECK_CREATE_VA = 'apps_risk_check_create_va';
 
     const BT_RBL_CREATE_VIRTUAL_ACCOUNT = 'bt_rbl_create_virtual_account';

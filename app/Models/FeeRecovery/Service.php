@@ -8,9 +8,9 @@ class Service extends Base\Service
 {
     public function createRecoveryPayout(array $input)
     {
-        $feeRecovery = $this->core()->createFeeRecoveryPayout($input);
+        $response = $this->core()->createFeeRecoveryPayout($input);
 
-        return $feeRecovery->toArrayPublic();
+        return $response;
     }
 
     public function recoveryPayoutCron(array $input)
