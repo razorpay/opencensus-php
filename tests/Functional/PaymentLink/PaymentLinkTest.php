@@ -569,6 +569,54 @@ class PaymentLinkTest extends TestCase
         $this->assertEquals($entityArray['custom_field_schema'], '{"field_4": {"key": "Address", "value": "test", "dataType": "string"}, "field_5": {"key": "DOB", "value": "test123", "dataType": "string"}, "field_6": {"key": "item1", "value": "100001", "dataType": "string"}, "field_7": {"key": "item2", "value": "20000", "dataType": "string"}}');
     }
 
+    public function testFetchPaymentPageRecordsAfterPPUpdate()
+    {
+        $id = $this->testPaymentPageCreateForFileUploadAllFieldsInSettings();
+
+        $testData = $this->testData['testCreatePaymentPageRecordWithCustomFieldsSchema'];
+
+        $batch_id = 'batch_KoGILWQCoVkOz5';
+
+        $testData['request']['url'] = '/payment_pages/'. $id. '/create_record/'. $batch_id;
+
+        $testData['request']['content']['Phone'] = '1234567890';
+
+        $testData['request']['content']['DOB'] = 'test123';
+
+        $this->ba->batchAppAuth();
+
+        $content = $this->makeRequestAndGetContent($testData["request"]);
+
+        // update the payment page
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/'. $id;
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        // fetch payment page record
+
+        $testData = $this->testData['testFetchRecordsForPL'];
+
+        $testData['request']['url'] = '/payment_pages/'. $id . '/fetch_records';
+
+        $this->ba->directAuth();
+
+        $testData['request']['content']['pri__ref__id'] = '1234567890';
+
+        $testData['request']['content']['sec__ref__id_1'] = 'test123';
+
+        $content = $this->makeRequestAndGetContent($testData["request"]);
+    }
+
+    public function testPaymentPageCreateWithMoreThan5SeccRefIds()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+
+        $this->startTest();
+    }
+
     public function setupPaymentPageForUDFSchemaValidations()
     {
         $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
@@ -1171,10 +1219,11 @@ class PaymentLinkTest extends TestCase
             [
                 'id'          => '00000000000001',
                 'type'        => 'payment_page',
+                'status'      => 'COMPLETED'
             ]);
         $mock->shouldAllowMockingMethod('getMultipleBatchesFromBatchService')
             ->shouldReceive('getMultipleBatchesFromBatchService')
-            ->andReturn($batchEntity);
+            ->andReturn([$batchEntity]);
     }
 
     public function testGetMultipleBatchesForPaymentPage()
@@ -1202,7 +1251,6 @@ class PaymentLinkTest extends TestCase
 
         $this->ba->proxyAuth();
         $this->startTest();
-
     }
 
     public function testGetAllBatchesForPaymentPage()

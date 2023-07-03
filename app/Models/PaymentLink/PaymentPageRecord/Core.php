@@ -84,9 +84,12 @@ class Core extends Base\Core
             $notify[Entity::EMAILS] = [$paymentPageRecord[Entity::EMAIL]] ;
         }
 
+
+        $merchant = $paymentPage->merchant;
+
         if (!empty($notify))
         {
-            (new Service)->sendNotification($paymentPage->getPublicId(), $notify);
+            (new Service)->sendNotification($paymentPage->getPublicId(), $notify, $merchant);
         }
 
         return $paymentPageRecord;
@@ -194,10 +197,11 @@ class Core extends Base\Core
                     'Mandatory field entry missing for '.$udf[PaymentLink::TITLE]);
             }
 
-            // storing sec__ref__id_1 to perform uniqueness check
-            if ($udf[PaymentLink::NAME] === Entity::SECONDARY_1)
+            // storing all secondary_ref_id's also in the form of name: value mapping,
+            // so that if their title changes we can still validate using name
+            if (Entity::isSecondaryRefId($udf[PaymentLink::NAME]))
             {
-                $other_details[Entity::SECONDARY_1] = $input[$udf[PaymentLink::TITLE]];
+                $other_details[$udf[PaymentLink::NAME]] = $input[$udf[PaymentLink::TITLE]];
             }
 
             if ($udf[PaymentLink::NAME] === Entity::PRIMARY_REF_ID)
@@ -229,7 +233,8 @@ class Core extends Base\Core
             }
             else
             {
-                if (in_array($udf[PaymentLink::NAME],Entity::$secondary_ref_ids))
+
+                if (Entity::isSecondaryRefId($udf[PaymentLink::NAME]) === true)
                 {
                     if (($udf[Entity::PATTERN] === Entity::EMAIL) and
                         (isset($response[Entity::EMAIL]) === false))

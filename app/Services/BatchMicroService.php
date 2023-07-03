@@ -500,7 +500,7 @@ class BatchMicroService
         return $multipartData;
     }
 
-    protected function statusClusterMapping(string $status)
+    public function statusClusterMapping(string $status)
     {
         switch ($status)
         {

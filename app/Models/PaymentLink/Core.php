@@ -355,6 +355,21 @@ class Core extends Base\Core
             throw new BadRequestValidationFailureException(
                 'Primary reference ID and Secondary reference ID 1 cannot be have same title.');
         }
+
+        // check 4: number of secondary ref id's should be <= 5
+        $secRefIdsCount = 0;
+        foreach ($udfSchema as $udf) {
+            if ((isset($udf['name']) === true) and (PaymentPageRecord\Entity::isSecondaryRefId($udf['name'])))
+            {
+                $secRefIdsCount++;
+            }
+        }
+
+        if ($secRefIdsCount > 5)
+        {
+            throw new BadRequestValidationFailureException(
+                "Number of secondary reference ID's cannot be more than 5");
+        }
     }
 
     public function createPaymentHandle(array $input, Merchant\Entity $merchant): Entity

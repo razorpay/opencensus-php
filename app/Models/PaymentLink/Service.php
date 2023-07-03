@@ -6,6 +6,8 @@ use App;
 use phpseclib\Crypt\AES;
 use Razorpay\Trace\Logger as Trace;
 use Request;
+use RZP\Services;
+use RZP\Models\Batch;
 use RZP\Base\ConnectionType;
 use RZP\Encryption\AESEncryption;
 use RZP\Error\Error;
@@ -158,11 +160,12 @@ class Service extends Base\Service
         });
     }
 
-    public function sendNotification(string $id, array $input)
+    public function sendNotification(string $id, array $input, $merchant = null)
     {
-        $paymentLink = Tracer::inSpan(['name' => 'payment_page.send_notification.find_payment_link'], function() use($id)
+        $merchant = $this->merchant ?? $merchant;
+        $paymentLink = Tracer::inSpan(['name' => 'payment_page.send_notification.find_payment_link'], function() use($id, $merchant)
         {
-            return $this->repo->payment_link->findByPublicIdAndMerchant($id, $this->merchant);
+            return $this->repo->payment_link->findByPublicIdAndMerchant($id, $merchant);
         });
 
         Tracer::inSpan(['name' => 'payment_page.send_notification.core'], function() use($paymentLink, $input)
@@ -452,13 +455,10 @@ class Service extends Base\Service
 
         //$genericInput can only have pri_ref_id and sec_ref_id's
 
-        $genericKeys = array_merge([PaymentPageRecord\Entity::PRIMARY_REF_ID],
-            PaymentPageRecord\Entity::$secondary_ref_ids);
-
         foreach ($values as $value)
         {
-            if(array_key_exists($value['title'], $input) === true
-                and in_array($value['name'], $genericKeys) === true)
+            if ((array_key_exists($value['title'], $input) === true)
+                and (PaymentPageRecord\Entity::isRefId($value['name']) === true))
             {
                 $genericInput[$value['name']] = $input[$value['title']];
             }
@@ -490,7 +490,7 @@ class Service extends Base\Service
 
         foreach ($value as $val)
         {
-            if(in_array($val['name'], PaymentPageRecord\Entity::$secondary_ref_ids) === true
+            if ((PaymentPageRecord\Entity::isSecondaryRefId($val['name']) === true)
                 and ($val['required'] === true))
             {
                 $nameToRequiredMap[$val['name']] = $val['required'];
@@ -527,10 +527,10 @@ class Service extends Base\Service
 
         foreach ($value as $val)
         {
-            if(in_array($val['name'], PaymentPageRecord\Entity::$secondary_ref_ids) === true
+            if((PaymentPageRecord\Entity::isSecondaryRefId($val['name']) === true)
                 and ($val['required'] === true))
             {
-                $valueMap[$val['name']] = $details[$val['title']];
+                $valueMap[$val['name']] = $details[$val['name']];
             }
         }
 
@@ -678,22 +678,36 @@ class Service extends Base\Service
     {
         return Tracer::inSpan(['name' => 'payment_page.ppr.get.batches'], function() use($paymentPageId, $input)
         {
+            $validator = (new Validator);
+
+            $validator->validateInput('getPaymentPageBatches',$input);
+
             $id = Entity::stripDefaultSign($paymentPageId);
 
-            if (isset($input["all_batches"]) === true)
+            if (isset($input[PaymentPageRecord\Entity::ALL_BATCHES]) === true)
             {
                 $batches = $this->repo->payment_page_record->getAllBatchesByPaymentPageId($id);
 
                 return array_column($batches, PaymentPageRecord\Entity::BATCH_ID);
             }
 
+            $count = $input['count'] ?? PaymentPageRecord\Constants::MAX_LIMIT_FOR_GET_BATCH;
+
+            $skip = $input['skip'] ?? 0;
+
+            $hasMore = false;
+
             //Since batch service only supports max 25 batches at a time for this route
-            if ($input['count'] > 25)
+            if ($count > PaymentPageRecord\Constants::MAX_LIMIT_FOR_GET_BATCH)
             {
-                $input['count'] = 25;
+                $count = PaymentPageRecord\Constants::MAX_LIMIT_FOR_GET_BATCH;
             }
 
-            $batches = $this->repo->payment_page_record->getBatchesByPaymentPageId($id, $input['skip'], $input['count']);
+            $result = $this->repo->payment_page_record->getBatchesByPaymentPageId($id, $skip, $count);
+
+            $batches = $result['records'];
+            $totalCount = $result['totalCount'];
+
 
             $count = 0;
             $batchArr = [];
@@ -704,10 +718,43 @@ class Service extends Base\Service
 
             $this->merchant = $this->auth->getMerchant();
 
-            $batchResponse = null;
+            $batchResponse = [];
             if (count($batchArr) > 0) {
-                $batchResponse = $this->app->batchService->getMultipleBatchesFromBatchService($this->merchant, $batchArr);
+                $batchResponse = $this->app->batchService->getMultipleBatchesFromBatchService($this->merchant, $batchArr) ?? [];
             }
+
+            // change the status of the batch as per the mapping defined in statusClusterMapping
+            foreach ($batchResponse as &$batch)
+            {
+                $mappedStatus =  (new Services\BatchMicroService())->statusClusterMapping($batch[Batch\Entity::STATUS]);
+
+                $batch[Batch\Entity::STATUS] = $mappedStatus;
+
+                $batch[Batch\Entity::ID] = 'batch_'.$batch[Batch\Entity::ID];
+
+                $batch['entity'] = 'batch';
+
+                $batch['config'] = $batch['settings'];
+
+                unset($batch['settings']);
+            }
+
+            // build response
+
+            $response = [];
+
+            $response['entity'] = 'collection';
+
+            $response['count'] = count($batchArr);
+
+            $response['items'] = $batchResponse;
+
+            if ($count + $skip < $totalCount)
+            {
+                $hasMore = true;
+            }
+
+            $response['has_more'] = $hasMore;
 
             $this->trace->info(
                 TraceCode::GET_MULTIPLE_BATCHES_BATCH_SERVICE,
@@ -715,7 +762,7 @@ class Service extends Base\Service
                     'Batch service Response' => $batchResponse,
                 ]);
 
-            return $batchResponse;
+            return $response;
 
         });
 

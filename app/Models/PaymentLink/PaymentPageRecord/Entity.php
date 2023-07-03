@@ -46,7 +46,12 @@ class Entity extends Base\PublicEntity
     const TOTAL_PENDING_PAYMENTS= 'total_pending_payments';
     const TOTAL_PENDING_REVENUE = 'total_pending_revenue';
 
+    // get batches params
+    const SKIP                  = 'skip';
+    const COUNT                 = 'count';
+    const ALL_BATCHES           = 'all_batches';
 
+    const SEC_REF_ID_PREFIX = 'sec__ref__id';
 
     protected $generateIdOnCreate = true;
 
@@ -129,5 +134,20 @@ class Entity extends Base\PublicEntity
         Status::validateStatus($status);
 
         $this->setAttribute(self::STATUS, $status);
+    }
+
+    public static function isSecondaryRefId(String $name)
+    {
+        return strpos($name, self::SEC_REF_ID_PREFIX) === 0;
+    }
+
+    public static function isRefId(String $name)
+    {
+        return ($name === self::PRIMARY_REF_ID) or (self::isSecondaryRefId($name));
+    }
+
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
     }
 }

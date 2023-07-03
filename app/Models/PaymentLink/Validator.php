@@ -321,6 +321,12 @@ class Validator extends Base\Validator
         PPI::SECONDARY_5    => 'sometimes|string',
     ];
 
+    protected static $getPaymentPageBatchesRules = [
+        PPI::SKIP => 'sometimes|integer',
+        PPI::COUNT => 'sometimes|integer',
+        PPI::ALL_BATCHES => 'sometimes|bool'
+    ];
+
     /**
      * @var array fields for shiprocket
      */

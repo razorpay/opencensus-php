@@ -80,13 +80,25 @@ class Repository extends Base\Repository
         int $count = 25
     )
     {
-        return $this->newQuery()
+        $records =  $this->newQuery()
             ->select(Entity::BATCH_ID)
             ->where(Entity::PAYMENT_LINK_ID, $payment_page_id)
+            ->distinct()
             ->skip($skip)
             ->limit($count)
             ->get()
             ->toArray();
+
+        $totalCount =  $this->newQuery()
+            ->select(Entity::BATCH_ID)
+            ->where(Entity::PAYMENT_LINK_ID, $payment_page_id)
+            ->distinct()
+            ->count();
+
+        return [
+            'records' => $records,
+            'totalCount' => $totalCount
+        ];
     }
 
     public function getAllBatchesByPaymentPageId(
