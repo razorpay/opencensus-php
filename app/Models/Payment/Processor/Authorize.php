@@ -6480,6 +6480,9 @@ trait Authorize
                     $saveMethodInput[Token\Entity::MAX_AMOUNT] = $maxAmount;
 
                     $saveMethodInput[Token\Entity::EXPIRED_AT] = $tokenRegistration->getExpireAt();
+
+                    $saveMethodInput[Token\Entity::FREQUENCY] = $tokenRegistration->getFrequency() ??
+                        SubscriptionRegistration\Entity::AS_PRESENTED;
                 }
             }
 

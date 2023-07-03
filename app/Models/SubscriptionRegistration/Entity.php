@@ -45,6 +45,13 @@ class Entity extends Base\PublicEntity
     const CURRENCY          = 'currency';
     const FREQUENCY         = 'frequency';
 
+    // Allowed frequencies for card recurring
+    const AS_PRESENTED          = 'as_presented';
+    const DAILY                 = 'daily';
+    const WEEKLY                = 'weekly';
+    const MONTHLY               = 'monthly';
+    CONST YEARLY                = 'yearly';
+
     const FIRST_PAYMENT_AMOUNT = 'first_payment_amount';
 
     const BANK_ACCOUNT      = 'bank_account';
@@ -265,6 +272,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT);
     }
 
+    public function getFrequency()
+    {
+        return $this->getAttribute(self::FREQUENCY);
+    }
+
     public function getFailureReason()
     {
         return $this->getAttribute(self::FAILURE_REASON);
@@ -453,6 +465,11 @@ class Entity extends Base\PublicEntity
     public function setMaxAmount(string $maxAmount)
     {
         $this->setAttribute(self::MAX_AMOUNT, $maxAmount);
+    }
+
+    public function setFrequency(string $frequency)
+    {
+        $this->setAttribute(self::FREQUENCY, $frequency);
     }
 
     public function build(array $input = array())

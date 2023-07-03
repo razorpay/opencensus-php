@@ -325,9 +325,16 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
 
         $maxAmount = $token->getMaxAmount();
 
+        $frequency = $token->getFrequency();
+
         if ($maxAmount === null)
         {
             $maxAmount = Constants::MAX_AMOUNT_DEFAULT;
+        }
+
+        if ($frequency === null)
+        {
+            $frequency = Constants::FREQUENCY_AS_PRESENTED;
         }
 
         $startTime = $token->getStartTime();
@@ -340,12 +347,6 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
         if ($endTime === null)
         {
             $endTime = $token->card->getExpiryTimestamp();
-        }
-
-        $frequency = Constants::FREQUENCY_AS_PRESENTED;
-        if (empty($input['frequency']) === false)
-        {
-            $frequency = $input['frequency'];
         }
 
         $debitType = Constants::DEBIT_TYPE_VARIABLE_AMOUNT;

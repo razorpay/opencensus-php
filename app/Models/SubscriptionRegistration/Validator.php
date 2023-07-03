@@ -178,6 +178,19 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateFrequency(array $input){
+        $freqArray = array(ENTITY::DAILY, ENTITY::WEEKLY, ENTITY::MONTHLY, ENTITY::YEARLY, ENTITY::AS_PRESENTED);
+
+        $searchString = $input[Entity::FREQUENCY];
+
+        if (!in_array($searchString, $freqArray)) {
+            throw new BadRequestValidationFailureException(
+                'The frequency '.$input[Entity::FREQUENCY].' is not supported.',
+                Entity::FREQUENCY
+            );
+        }
+    }
+
     public function validateAuthType(array $input)
     {
         if (($input[Entity::METHOD] ?? null) === Method::NACH)

@@ -7173,3 +7173,6 @@ ALTER TABLE banking_account_statement_details
 
 ALTER TABLE payment_page_records
     ADD COLUMN merchant_id CHAR(14) COLLATE utf8mb4_bin;
+
+ALTER TABLE subscription_registrations
+    ADD frequency varchar(30) DEFAULT NULL,

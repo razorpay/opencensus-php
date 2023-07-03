@@ -76,7 +76,7 @@ class Validator extends Base\Validator
         Entity::AADHAAR_VID         => 'sometimes|nullable|string|size:16',
         Entity::START_TIME          => 'sometimes_if:method,upi,nach,emandate',
         Entity::DEBIT_TYPE          => 'required_only_if:auth_type,migrated|string|in:max_amount,fixed_amount',
-        Entity::FREQUENCY           => 'required_only_if:auth_type,migrated|string|in:adhoc,monthly,quarterly,yearly',
+        Entity::FREQUENCY           => 'required_if:auth_type,migrated|required_if:recurring,1|string|in:adhoc,daily,weekly,monthly,quarterly,yearly,as_presented',
         Entity::STATUS              => 'sometimes|nullable',
         Entity::NOTES               => 'sometimes|notes'
     ];

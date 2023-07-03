@@ -66,6 +66,20 @@ class Core extends Base\Core
 
         $subscriptionRegistration = (new Entity)->build($input);
 
+        if ($subscriptionRegistration->getMethod() === Payment\Method::CARD){
+            $variant = $this->app->razorx->getTreatment(
+                $this->merchant->getId(),
+                Merchant\RazorxTreatment::CARD_MANDATE_ENABLE_MULTIPLE_FREQUENCIES,
+                $this->mode
+            );
+
+            if ($variant === 'on')
+            {
+                $validator->validateFrequency($input);
+                $subscriptionRegistration->setFrequency($input[Entity::FREQUENCY] ?? Entity::AS_PRESENTED);
+            }
+        }
+
         $subscriptionRegistration->merchant()->associate($merchant);
 
         $subscriptionRegistration->customer()->associate($customer);

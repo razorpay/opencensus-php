@@ -63,6 +63,9 @@ class CreateSubscriptionRegistrationTable extends Migration
             $table->bigInteger(Entity::MAX_AMOUNT)
                   ->nullable();
 
+            $table->string(Entity::FREQUENCY, 30)
+                ->nullable();
+
             $table->string(Entity::AUTH_TYPE,255)
                   ->nullable();
 
