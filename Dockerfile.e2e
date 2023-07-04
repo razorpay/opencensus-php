@@ -1,11 +1,5 @@
 FROM mcr.microsoft.com/playwright:v1.31.0-focal
 
-ARG GITHUB_ACCESS_TOKEN
-ARG NPM_RAZORPAY_TOKEN
-
-ENV GITHUB_ACCESS_TOKEN=$GITHUB_ACCESS_TOKEN
-ENV NPM_RAZORPAY_TOKEN=$NPM_RAZORPAY_TOKEN
-
 WORKDIR /app
 
 RUN mkdir web
@@ -16,8 +10,19 @@ COPY --chown=node:node .npmrc package.json yarn.lock ./
 # Copy dependencies files so we can have better caching as these don't change often
 COPY --chown=node:node ./web/.npmrc ./web/package.json ./web/yarn.lock ./web
 
-RUN yarn config set unsafe-perm true \
-    && HUSKY=0 yarn --frozen-lockfile
+RUN --mount=type=secret,id=github_access_token set -eux && \
+    echo "$(cat /run/secrets/github_access_token)" >> ~/.GITHUB_ACCESS_TOKEN
+
+RUN --mount=type=secret,id=npm_razorpay_token set -eux && \
+    echo "$(cat /run/secrets/npm_razorpay_token)">> ~/.NPM_RAZORPAY_TOKEN
+
+RUN export GITHUB_ACCESS_TOKEN="$(cat ~/.GITHUB_ACCESS_TOKEN)" && \
+    export NPM_RAZORPAY_TOKEN="$(cat ~/.NPM_RAZORPAY_TOKEN)" && \
+    yarn config set unsafe-perm true && \
+    HUSKY=0 yarn --frozen-lockfile
+
+RUN rm -f ~/.GITHUB_ACCESS_TOKEN && \
+    rm -f ~/.NPM_RAZORPAY_TOKEN
 
 RUN cd web && npx playwright install --with-deps
 
