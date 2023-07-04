@@ -5754,7 +5754,8 @@ class Service extends Base\Service
         }
 
         if (($input['meta']['force_auth_payment'] === true) and
-            ($this->isForceAuthAllowed($gateway) ===true))
+            ($this->isForceAuthAllowed($gateway) ===true) and
+            ($payment->isUpiRecurring() === false))
         {
             return $this->forceAuthorizeUpiPayment($payment, $input);
         }
