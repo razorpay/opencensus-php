@@ -11,6 +11,10 @@ jest.mock('merchant/views/MagicCheckout/RTOAnalytics/containers/Header', () => (
   <div>Header section</div>
 ));
 
+jest.mock('merchant/views/MagicCheckout/RTOAnalytics/common/RiskReportBanner', () => () => (
+  <div>Risk report banner</div>
+));
+
 const OverviewMockedComponent = () => <div>Overview tab</div>;
 const RiskReportMockedComponent = () => <div>Risk report tab</div>;
 const RTOInsightsMockedComponent = () => <div>RTO insights tab</div>;
@@ -25,7 +29,6 @@ jest.mock('merchant/views/MagicCheckout/RTOAnalytics/constants', () => ({
     },
     RISK_REPORT: {
       label: 'Risk Report',
-      condition: (_user) => _user.isMagicRTOAnalyticsV2Enabled,
       Component: RiskReportMockedComponent,
       eventName: 'RiskReport',
     },
@@ -72,19 +75,14 @@ describe('RTO analytics component', () => {
     });
   });
 
-  test('should not show the risk report tab if rto analytics V2 is not enabled', async () => {
-    const customState = {
-      session: {
-        user: {
-          isMagicRTOAnalyticsV2Enabled: false,
-        },
-      },
-    };
-    renderApp({ state: customState });
+  test('should show risk report banner', async () => {
+    renderApp();
 
-    userEvent.click(screen.getByText('Overview'));
+    const riskReportTab = screen.getByText(/^Risk Report?/i);
+    userEvent.click(riskReportTab);
+
     await waitFor(() => {
-      expect(screen.queryByText(/risk report/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/^Risk report banner?/i)).toBeInTheDocument();
     });
   });
 });

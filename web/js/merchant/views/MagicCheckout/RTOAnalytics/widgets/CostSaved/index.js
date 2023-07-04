@@ -28,15 +28,16 @@ import {
   NO_GRAPH_DATA,
   DEFAULT_SHIPPING_CHARGE,
   BREAKDOWN,
+  COST_SAVED_WIDGET_TEXTS,
 } from 'merchant/views/MagicCheckout/RTOAnalytics/constants';
 
 const CostSaved = ({
-  user,
   widgetData,
   startTime,
   endTime,
   fetchWidgets,
   fetchingTimedWidgetsData,
+  isManualReviewOpted,
 }) => {
   const [chartData, setChartData] = useState(null);
   const [breakdown, setBreakdown] = useState(BREAKDOWN.weeks);
@@ -86,6 +87,7 @@ const CostSaved = ({
       [widgetName]: {
         shipping_charges: shippingCharge,
       },
+      manual_flag: isManualReviewOpted,
     };
     getWidgetData(
       widgetName,
@@ -96,7 +98,7 @@ const CostSaved = ({
       setRequestCount,
       additionalInfo,
     );
-  }, [endTime, startTime, fetchWidgets, shippingCharge]);
+  }, [endTime, startTime, fetchWidgets, shippingCharge, isManualReviewOpted]);
 
   useEffect(() => {
     if (startTime && endTime) {
@@ -105,7 +107,7 @@ const CostSaved = ({
   }, [startTime, endTime]);
 
   useEffect(() => {
-    onRequestCountChange(user, requestCount, fetchData, setRequestCount);
+    onRequestCountChange(requestCount, fetchData, setRequestCount);
   }, [requestCount]);
 
   const updateShippingCharge = useCallback(
@@ -127,12 +129,13 @@ const CostSaved = ({
       [widgetName]: {
         shipping_charges: shippingCharge,
       },
+      manual_flag: isManualReviewOpted,
     };
     fetchWidgets(widgetName, breakdown, startDate, endDate, additionalInfo);
-  }, [shippingCharge, startTime, endTime]);
+  }, [shippingCharge, startTime, endTime, isManualReviewOpted]);
 
   return (
-    <div className={`costSaved-container${!user.isMagicRTOAnalyticsV2Enabled ? ' col-md-9' : ''}`}>
+    <div className="costSaved-container">
       <GenericPanel
         className="analytics-panel cost-saved"
         isLoading={loading}
@@ -140,9 +143,15 @@ const CostSaved = ({
       >
         <PanelTopbar>
           <div className="panel-info">
-            <p className="panel-topbar-heading">Cost saved by COD Intelligence</p>
+            <p className="panel-topbar-heading">
+              {isManualReviewOpted
+                ? COST_SAVED_WIDGET_TEXTS.manualReview.header
+                : COST_SAVED_WIDGET_TEXTS.intelligence.header}
+            </p>
             <p className="panel-heading-subtext">
-              Total reverse shipping cost saved by blocking risky users from placing COD orders.
+              {isManualReviewOpted
+                ? COST_SAVED_WIDGET_TEXTS.manualReview.subtext
+                : COST_SAVED_WIDGET_TEXTS.intelligence.subtext}
             </p>
           </div>
           <div className="panel-actions pull-right">
@@ -177,7 +186,12 @@ const CostSaved = ({
                   onBlur={fetchCostSaved}
                 />
               </div>
-              <Graph key="cost-saving" breakdown={breakdown} data={chartData} />
+              <Graph
+                key="cost-saving"
+                breakdown={breakdown}
+                data={chartData}
+                isManualReviewOpted={isManualReviewOpted}
+              />
             </>
           ) : null}
         </PanelBody>
@@ -197,7 +211,7 @@ const mapStateToProps = (state) => ({
   startTime: state.magicRTOAnalytics.startTime,
   endTime: state.magicRTOAnalytics.endTime,
   fetchingTimedWidgetsData: state.magicRTOAnalytics.timedWidgetsFetching,
-  user: state.session.user,
+  isManualReviewOpted: state.magicCheckout.cod_order_control,
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(CostSaved);

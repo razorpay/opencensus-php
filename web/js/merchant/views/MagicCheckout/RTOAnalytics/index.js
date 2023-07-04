@@ -20,6 +20,7 @@ import {
   REQUEST_LIMIT,
   BREAKDOWN,
 } from 'merchant/views/MagicCheckout/RTOAnalytics/constants';
+import RiskReportBanner from './common/RiskReportBanner';
 
 const DEFAULT_DURATION = [-30, 'days'];
 
@@ -31,6 +32,7 @@ const RTOAnalytics = ({
   endTime,
   fetchProviders,
   user,
+  isManualReviewOpted,
 }) => {
   const [activeTab, setActiveTab] = useState(TABS.OVERVIEW);
   const [requestCount, setRequestCount] = useState(0);
@@ -58,8 +60,9 @@ const RTOAnalytics = ({
   }, [fetchProviders]);
 
   const fetchData = useCallback(() => {
+    const widgetName = isManualReviewOpted ? 'manual_risk_order_split' : 'order_split';
     getWidgetData(
-      'order_split',
+      widgetName,
       BREAKDOWN.cumulative,
       startTime,
       endTime,
@@ -75,12 +78,7 @@ const RTOAnalytics = ({
   }, [startTime, endTime]);
 
   useEffect(() => {
-    if (
-      user &&
-      user.isMagicRTOAnalyticsV2Enabled &&
-      requestCount > 0 &&
-      requestCount <= REQUEST_LIMIT
-    ) {
+    if (requestCount > 0 && requestCount <= REQUEST_LIMIT) {
       fetchData();
     } else if (requestCount > REQUEST_LIMIT) {
       setRequestCount(0);
@@ -173,8 +171,11 @@ const RTOAnalytics = ({
             })}
           </div>
           <div className="tab-content">
-            <Header />
-            <div className="charts-data">{<Component user={user} />}</div>
+            {activeTab.label === 'Risk Report' && isManualReviewOpted ? <RiskReportBanner /> : null}
+            <Header isManualReviewOpted={isManualReviewOpted} />
+            <div className="charts-data">
+              {<Component user={user} isManualReviewOpted={isManualReviewOpted} />}
+            </div>
           </div>
         </>
       )}
@@ -197,6 +198,7 @@ const mapStateToProps = (state) => ({
   isLoading: state.magicRTOAnalytics.loading,
   startTime: state.magicRTOAnalytics.startTime,
   endTime: state.magicRTOAnalytics.endTime,
+  isManualReviewOpted: state.magicCheckout.cod_order_control,
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(RTOAnalytics);

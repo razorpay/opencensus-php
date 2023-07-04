@@ -1,6 +1,8 @@
-import { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
+import { NavLink } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+
 import GenericPanel, {
   PanelTopbar,
   PanelBody,
@@ -21,12 +23,12 @@ import {
 
 import {
   BREAKDOWN_MAP,
-  ORDERS_SPLIT_CHARTS,
+  MANUAL_REVIEW_ORDERS_SPLIT_CHARTS,
   NO_GRAPH_DATA,
   BREAKDOWN,
 } from 'merchant/views/MagicCheckout/RTOAnalytics/constants';
 
-const OrderSplitChartOptions = {
+const ManualReviewOrderSplitChartOptions = {
   tooltips: {
     enabled: true,
     backgroundColor: '#ffffff',
@@ -44,11 +46,14 @@ const OrderSplitChartOptions = {
     titleMarginBottom: 12,
     titleFontColor: '#262D3A',
     callbacks: {
-      title(tooltipItem) {
-        const totalUsers = tooltipItem.reduce((count, cval) => {
-          return count + cval.yLabel;
-        }, 0);
-        return `Total users: ${totalUsers}`;
+      title() {
+        return `Total review rate %`;
+      },
+      label: (tooltipItem, { datasets }) => {
+        const { datasetIndex, yLabel } = tooltipItem;
+        const label = datasets[datasetIndex]?.label;
+
+        return `${label}: ${yLabel}%`;
       },
       labelColor: (item, chart) => {
         const color =
@@ -58,15 +63,42 @@ const OrderSplitChartOptions = {
       },
     },
   },
+  layout: {
+    padding: {
+      top: 24,
+      left: 0,
+      right: 0,
+      bottom: 0,
+    },
+  },
 };
 
-const OrderSplit = ({ widgetData, startTime, endTime, fetchWidgets, fetchingTimedWidgetsData }) => {
+type ManualReviewOrderSplitProps = {
+  widgetData: {
+    loading: boolean;
+    updatedAt: string;
+    data: [];
+  };
+  startTime: number | null;
+  endTime: number | null;
+  fetchWidgets: () => void;
+  fetchingTimedWidgetsData: boolean;
+};
+
+const ManualReviewOrderSplit = ({
+  widgetData,
+  startTime,
+  endTime,
+  fetchWidgets,
+  fetchingTimedWidgetsData,
+}: ManualReviewOrderSplitProps): JSX.Element => {
   const [breakdown, setBreakdown] = useState(BREAKDOWN.weeks);
-  const [chartData, setChartData] = useState(null);
+  const [chartData, setChartData] = useState<Record<string, unknown> | null>(null);
   const [requestCount, setRequestCount] = useState(0);
 
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   const { data, loading, updatedAt } = widgetData;
-  const widgetName = 'order_split';
+  const widgetName = 'manual_review_order_split';
 
   const onBtnChange = useCallback(
     (value) => {
@@ -91,7 +123,14 @@ const OrderSplit = ({ widgetData, startTime, endTime, fetchWidgets, fetchingTime
     }
 
     setChartData(
-      chartsDataFormatter(data, breakdown, startTime, endTime, ORDERS_SPLIT_CHARTS, true),
+      chartsDataFormatter(
+        data,
+        breakdown,
+        startTime,
+        endTime,
+        MANUAL_REVIEW_ORDERS_SPLIT_CHARTS,
+        true,
+      ),
     );
   }, [fetchingTimedWidgetsData, data, breakdown, startTime, endTime, widgetData]);
 
@@ -112,30 +151,41 @@ const OrderSplit = ({ widgetData, startTime, endTime, fetchWidgets, fetchingTime
 
   return (
     <GenericPanel
-      className="analytics-panel order-split"
+      className="analytics-panel manual-review-order-split"
       isLoading={loading}
       hasNoData={!data || data.length === 0}
     >
       <PanelTopbar>
-        <div className="panel-info">
-          <p className="panel-topbar-heading">Safe vs risky users</p>
-          <p className="panel-heading-subtext">
-            Risky users are the ones for whom the COD option is disabled on the payments screen by
-            Magic’s COD Intelligence.
-          </p>
+        <div>
+          <div className="panel-info">
+            <p className="panel-topbar-heading">COD Order Review Report</p>
+          </div>
+          <div className="panel-actions pull-right">
+            <BtnGroup
+              className="panel-action-item time-breakdown"
+              value={breakdown}
+              onChange={onBtnChange}
+            >
+              {Object.keys(BREAKDOWN_MAP).map((breakdown) => (
+                <Btn key={breakdown} value={breakdown} className="btn-default">
+                  <span>{BREAKDOWN_MAP[breakdown].text}</span>
+                </Btn>
+              ))}
+            </BtnGroup>
+          </div>
         </div>
-        <div className="panel-actions pull-right">
-          <BtnGroup
-            className="panel-action-item time-breakdown"
-            value={breakdown}
-            onChange={onBtnChange}
-          >
-            {Object.keys(BREAKDOWN_MAP).map((breakdown) => (
-              <Btn key={breakdown} value={breakdown} className="btn-default">
-                <span>{BREAKDOWN_MAP[breakdown].text}</span>
-              </Btn>
-            ))}
-          </BtnGroup>
+        <div className="manual-review-order-split-nudging-message">
+          <p>
+            Reduce your RTOs by enabling{' '}
+            <NavLink to="/magic/settings/cod-review-workflow" className="magic-link">
+              Automation
+            </NavLink>{' '}
+            or turn on{' '}
+            <NavLink to="/magic/settings/magic-intelligence" className="magic-link">
+              COD Intelligence
+            </NavLink>{' '}
+            to auto block risky COD orders.
+          </p>
         </div>
       </PanelTopbar>
       <PanelBody
@@ -148,17 +198,25 @@ const OrderSplit = ({ widgetData, startTime, endTime, fetchWidgets, fetchingTime
             breakdown={breakdown}
             data={chartData}
             isChartStacked
-            customOptions={OrderSplitChartOptions}
+            customOptions={ManualReviewOrderSplitChartOptions}
           />
         ) : null}
         <div className="legend">
           <div className="item-box">
+            <div className="colored total" />
+            <span>No action taken</span>
+          </div>
+          <div className="item-box">
+            <div className="colored neutral" />
+            <span>Order put on hold</span>
+          </div>
+          <div className="item-box">
             <div className="colored risky" />
-            <span>Risky users</span>
+            <span>Order cancelled</span>
           </div>
           <div className="item-box">
             <div className="colored safe" />
-            <span>Safe users</span>
+            <span>Order approved</span>
           </div>
         </div>
       </PanelBody>
@@ -173,10 +231,10 @@ const mapDispatchToProps = (dispatch) =>
   bindActionCreators({ fetchWidgets: fetchWidgetData }, dispatch);
 
 const mapStateToProps = (state) => ({
-  widgetData: state.magicRTOAnalytics.order_split,
+  widgetData: state.magicRTOAnalytics.manual_review_order_split,
   startTime: state.magicRTOAnalytics.startTime,
   endTime: state.magicRTOAnalytics.endTime,
   fetchingTimedWidgetsData: state.magicRTOAnalytics.timedWidgetsFetching,
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(OrderSplit);
+export default connect(mapStateToProps, mapDispatchToProps)(ManualReviewOrderSplit);

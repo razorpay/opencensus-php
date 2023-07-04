@@ -159,7 +159,7 @@ export const costSavedFormatter = (rawData, breakdown, startTime, endTime) => {
   return { labels, datasets: [costSavedOrders] };
 };
 
-export function getCostSavedChartOptions(breakdown) {
+export function getCostSavedChartOptions(breakdown, isManualReviewOpted) {
   const options = { ...costSavedDefaultOptions };
   const {
     tooltips,
@@ -179,6 +179,12 @@ export function getCostSavedChartOptions(breakdown) {
 
   tooltips.callbacks = {
     ...tooltips.callbacks,
+    title: (item) => {
+      if (isManualReviewOpted) {
+        return `Cost saved due to review     ${humanReadableIndianCurrency(item[0].yLabel)}`;
+      }
+      return `Cost saved due to RTO      ${humanReadableIndianCurrency(item[0].yLabel)}`;
+    },
     footer([tooltipItem]) {
       let displayLabel;
       const breakdownValue = BREAKDOWN_MAP[breakdown]?.value;

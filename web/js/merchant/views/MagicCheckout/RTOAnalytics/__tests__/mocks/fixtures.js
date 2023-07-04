@@ -54,10 +54,8 @@ export const RTO_ANALYTICS_INIT_STATE = {
     },
     timedWidgetsFetching: false,
   },
-  session: {
-    user: {
-      isMagicRTOAnalyticsV2Enabled: true,
-    },
+  magicCheckout: {
+    cod_order_control: true,
   },
 };
 
@@ -75,3 +73,49 @@ export const TABS = [
     displayText: 'Risk report tab',
   },
 ];
+
+export const MANUAL_REVIEW_ORDER_SPLIT_DATA = JSON.parse(`[{
+  "name": "Manual Review Order Split",
+  "aggregation_type": "weekly",
+  "updated_at": "1666297669",
+  "manual_review_order_split": [
+    {
+      "total_order": 100,
+      "approved": 57,
+      "cancel": 3,
+      "hold": 18,
+      "no_action": 22,
+      "period": "1683700022"
+    },
+    {
+      "total_order": 100,
+      "approved": 47,
+      "cancel": 23,
+      "hold": 18,
+      "no_action": 12,
+      "period": "1684564022"
+    }
+  ]
+}]`);
+
+export const MANUAL_RISK_ORDER_SPLIT_DATA = JSON.parse(`[{
+  "name": "Risk Level Order Split",
+  "aggregation_type": "weekly",
+  "updated_at": "1666297669",
+  "manual_risk_order_split": [
+    {
+      "total_order": 78,
+      "high_risk": 57,
+      "medium_risk": 3,
+      "low_risk": 18,
+      "period": "1683700022"
+    },
+    {
+      "total_order": 88,
+      "high_risk": 47,
+      "medium_risk": 23,
+      "low_risk": 18,
+      "period": "1684564022"
+    }
+  ]
+}]`);

@@ -2,11 +2,11 @@ import { memo, useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import { getCostSavedChartOptions } from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/CostSaved/utils';
 
-const Graph = ({ data, breakdown }) => {
+const Graph = ({ data, breakdown, isManualReviewOpted }) => {
   const [chartOptions, setChartOptions] = useState(null);
 
   useEffect(() => {
-    setChartOptions(getCostSavedChartOptions(breakdown));
+    setChartOptions(getCostSavedChartOptions(breakdown, isManualReviewOpted));
   }, [setChartOptions, breakdown]);
 
   return (

@@ -1,26 +1,17 @@
 import CODPrepaidOrders from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/CODPrepaidOrders';
 import FeedbackRate from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/FeedbackRate';
 import RTORate from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/RTORate';
-import OrderSplit from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/OrderSplit';
-import FlaggedReasons from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/FlaggedReasons';
+import ManualReviewOrderSplit from 'merchant/views/MagicCheckout/RTOAnalytics/widgets/ManualReviewOrderSplit';
 
-const OverviewTab = ({ user }) => {
+const OverviewTab = ({ isManualReviewOpted }) => {
   return (
     <div className="overview-container">
-      {user.isMagicRTOAnalyticsV2Enabled ? (
-        <>
-          <RTORate />
-          <div className="row">
-            <FeedbackRate />
-            <CODPrepaidOrders />
-          </div>
-        </>
-      ) : (
-        <>
-          <OrderSplit />
-          <FlaggedReasons />
-        </>
-      )}
+      <RTORate />
+      <div className="row">
+        <FeedbackRate />
+        <CODPrepaidOrders />
+      </div>
+      {isManualReviewOpted ? <ManualReviewOrderSplit /> : null}
     </div>
   );
 };

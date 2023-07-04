@@ -493,12 +493,8 @@ export default class User {
     );
   }
 
-  get isMagicRTOAnalyticsEnabled() {
-    return this.getExpStatus('magic_rto_analytics_live');
-  }
-
-  get isMagicRTOAnalyticsV2Enabled() {
-    return this.getExpStatus('magic_rto_analytics_v2_live');
+  get isMagicRTOAnalyticsV3Enabled() {
+    return getSplitzExperimentVariant('magic_rto_analytics_v3')?.variables?.result === 'on';
   }
 
   get isMagicPrepayCODEnabled() {

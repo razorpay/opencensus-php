@@ -61,7 +61,7 @@ const OrderInfoSlider = (props) => {
       abortLabel,
     };
 
-    openConfirmationModal(
+    openConfirmationModal({
       openModal,
       modalInfo,
       paymentLinkId,
@@ -69,7 +69,7 @@ const OrderInfoSlider = (props) => {
       reviewPrepayCODOrders,
       showNotification,
       closeModal,
-    );
+    });
   };
 
   useEffect(() => {

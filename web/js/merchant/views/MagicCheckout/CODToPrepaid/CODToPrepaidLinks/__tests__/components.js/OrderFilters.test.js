@@ -54,7 +54,6 @@ describe('order filter component', () => {
 
   test('should aloow to search via Razorpay order id', async () => {
     render(<App />);
-    screen.debug();
     const razorpayOrderIdFilter = screen.getByRole('textbox', {
       name: /^Razorpay Order Id?/i,
     });

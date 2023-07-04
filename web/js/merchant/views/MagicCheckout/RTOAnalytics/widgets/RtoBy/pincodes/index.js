@@ -33,7 +33,6 @@ import {
 import { NO_GRAPH_DATA, BREAKDOWN } from 'merchant/views/MagicCheckout/RTOAnalytics/constants';
 
 const Pincodes = ({
-  user,
   widgetData,
   openModal,
   closeModal,
@@ -109,7 +108,7 @@ const Pincodes = ({
   }, [fetchWidgets]);
 
   useEffect(() => {
-    onRequestCountChange(user, requestCount, fetchData, setRequestCount);
+    onRequestCountChange(requestCount, fetchData, setRequestCount);
   }, [requestCount]);
 
   const onCTAClick = useCallback(
@@ -166,7 +165,6 @@ const Pincodes = ({
 
 const mapStateToProps = (state) => ({
   widgetData: state.magicRTOAnalytics.rto_by_zipcode,
-  user: state.session.user,
 });
 
 const mapDispatchToProps = (dispatch) =>

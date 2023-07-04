@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { NavLink } from 'react-router-dom';
 import GenericPanel, {
   PanelTopbar,
   PanelBody,
@@ -115,12 +116,12 @@ const RTORateChartOptions = {
 };
 
 const RTORate = ({
-  user,
   widgetData,
   startTime,
   endTime,
   fetchWidgets,
   fetchingTimedWidgetsData,
+  isManualReviewOpted,
 }) => {
   const [breakdown, setBreakdown] = useState(BREAKDOWN.weeks);
   const [selectedDropDown, setSelectedDropDown] = useState('COD_RTO_RATE');
@@ -180,7 +181,7 @@ const RTORate = ({
   }, [startTime, endTime]);
 
   useEffect(() => {
-    onRequestCountChange(user, requestCount, fetchData, setRequestCount);
+    onRequestCountChange(requestCount, fetchData, setRequestCount);
   }, [requestCount]);
 
   const changeRTORateGraph = useCallback(
@@ -197,29 +198,42 @@ const RTORate = ({
       hasNoData={!data || data.length === 0}
     >
       <PanelTopbar>
-        RTO rate with Magic Checkout
-        <div className="panel-actions pull-right">
-          <Input.Select
-            name="rtoRateView"
-            options={RTO_RATE_FILTER}
-            value={selectedDropDown}
-            onChange={changeRTORateGraph}
-            className="rto-rate-input"
-          />
-          <BtnGroup
-            className="panel-action-item time-breakdown"
-            value={breakdown}
-            onChange={onBtnChange}
-          >
-            {Object.keys(BREAKDOWN_MAP)
-              .slice(1)
-              .map((breakdown) => (
-                <Btn key={breakdown} value={breakdown} className="btn-default">
-                  <span>{BREAKDOWN_MAP[breakdown].text}</span>
-                </Btn>
-              ))}
-          </BtnGroup>
+        <div className="display-flex justify-space-between">
+          RTO rate with Magic Checkout
+          <div className="panel-actions pull-right">
+            <Input.Select
+              name="rtoRateView"
+              options={RTO_RATE_FILTER}
+              value={selectedDropDown}
+              onChange={changeRTORateGraph}
+              className="rto-rate-input"
+            />
+            <BtnGroup
+              className="panel-action-item time-breakdown"
+              value={breakdown}
+              onChange={onBtnChange}
+            >
+              {Object.keys(BREAKDOWN_MAP)
+                .slice(1)
+                .map((breakdown) => (
+                  <Btn key={breakdown} value={breakdown} className="btn-default">
+                    <span>{BREAKDOWN_MAP[breakdown].text}</span>
+                  </Btn>
+                ))}
+            </BtnGroup>
+          </div>
         </div>
+        {isManualReviewOpted ? (
+          <div className="rto-rate-nudging-message">
+            <p>
+              Enable{' '}
+              <NavLink to="/magic/settings/magic-intelligence" className="magic-link">
+                COD Intelligence
+              </NavLink>{' '}
+              and reduce RTOs by an additional 10% without any manual actions.
+            </p>
+          </div>
+        ) : null}
       </PanelTopbar>
       <PanelBody
         customTitle={NO_GRAPH_DATA.customTitle}
@@ -271,12 +285,12 @@ const mapDispatchToProps = (dispatch) =>
   bindActionCreators({ fetchWidgets: fetchWidgetData }, dispatch);
 
 const mapStateToProps = (state) => ({
-  user: state.session.user,
   widgetData: state.magicRTOAnalytics.rto_rate,
   isLoading: state.magicRTOAnalytics.rto_rate.loading,
   startTime: state.magicRTOAnalytics.startTime,
   endTime: state.magicRTOAnalytics.endTime,
   fetchingTimedWidgetsData: state.magicRTOAnalytics.timedWidgetsFetching,
+  isManualReviewOpted: state.magicCheckout.cod_order_control,
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(RTORate);

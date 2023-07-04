@@ -4,7 +4,7 @@ import RiskReport from 'merchant/views/MagicCheckout/RTOAnalytics/containers/Ris
 
 const COLOR_SAFE = '#7EB471';
 const COLOR_RISKY = '#E86250';
-const COLOR_NEUTRAL = '#E5C214';
+const COLOR_NEUTRAL = '#FBBF48';
 const COLOR_TOTAL = '#6886B7';
 
 const LINE_GRAPH_COLOR_RISKY = '#FEF6F6';
@@ -20,7 +20,6 @@ export const TABS = {
   },
   RISK_REPORT: {
     label: 'Risk Report',
-    condition: (_user) => _user.isMagicRTOAnalyticsV2Enabled,
     Component: RiskReport,
     eventName: 'RiskReport',
   },
@@ -61,6 +60,13 @@ export const CHART_COLORS = {
   COD_RTO_RATE: COLOR_SAFE,
   PREPAID_RTO_RATE: COLOR_NEUTRAL,
   COD_ORDERS_PERCENTAGE: COLOR_SAFE,
+  APPROVED_ORDERS: COLOR_SAFE,
+  CANCELED_ORDERS: COLOR_RISKY,
+  ON_HOLD_ORDERS: COLOR_NEUTRAL,
+  NO_ACTION_TAKEN_ORDERS: COLOR_TOTAL,
+  HIGH_RISK_ORDERS: COLOR_RISKY,
+  MEDIUM_RISK_ORDERS: COLOR_NEUTRAL,
+  LOW_RISK_ORDERS: COLOR_SAFE,
 };
 
 export const DATASET_LABEL_MAP = {
@@ -120,6 +126,34 @@ export const DATASET_LABEL_MAP = {
     label: 'Prepaid RTO%',
     response_key: 'prepaid_rto_rate',
   },
+  ON_HOLD_ORDERS: {
+    label: 'Put on hold',
+    response_key: 'hold_order',
+  },
+  APPROVED_ORDERS: {
+    label: 'Approved orders',
+    response_key: 'approved_order',
+  },
+  CANCELED_ORDERS: {
+    label: 'Cancelled orders',
+    response_key: 'cancelled_order',
+  },
+  NO_ACTION_TAKEN_ORDERS: {
+    label: 'No action taken',
+    response_key: 'no_action_order',
+  },
+  HIGH_RISK_ORDERS: {
+    label: 'High risk orders',
+    response_key: 'high_risk_order',
+  },
+  MEDIUM_RISK_ORDERS: {
+    label: 'Medium risk orders',
+    response_key: 'medium_risk_order',
+  },
+  LOW_RISK_ORDERS: {
+    label: 'Low risk orders',
+    response_key: 'low_risk_order',
+  },
 };
 
 export const BREAKDOWN_MAP = {
@@ -138,6 +172,21 @@ export const BREAKDOWN_MAP = {
 };
 
 export const ORDERS_SPLIT_CHARTS = ['TOTAL_USERS', 'RISKY_USERS', 'SAFE_USERS'];
+
+export const RISK_LEVEL_ORDERS_SPLIT_CHARTS = [
+  'TOTAL_ORDERS',
+  'HIGH_RISK_ORDERS',
+  'MEDIUM_RISK_ORDERS',
+  'LOW_RISK_ORDERS',
+];
+
+export const MANUAL_REVIEW_ORDERS_SPLIT_CHARTS = [
+  'TOTAL_ORDERS',
+  'APPROVED_ORDERS',
+  'CANCELED_ORDERS',
+  'ON_HOLD_ORDERS',
+  'NO_ACTION_TAKEN_ORDERS',
+];
 
 export const SAFE_ORDERS_CHARTS = ['TOTAL_SAFE_ORDERS', 'NON_RTO_ORDERS', 'RTO_ORDERS'];
 
@@ -257,6 +306,13 @@ export const LINE_CHART_GRAPH_COLOR = {
   COD_ORDERS_PERCENTAGE: LINE_GRAPH_COLOR_SAFE,
   TOTAL_ORDERS: LINE_GRAPH_COLOR_TOTAL,
   TOTAL_USERS: LINE_GRAPH_COLOR_TOTAL,
+  APPROVED_ORDERS: LINE_GRAPH_COLOR_SAFE,
+  CANCELED_ORDERS: LINE_GRAPH_COLOR_RISKY,
+  ON_HOLD_ORDERS: LINE_GRAPH_COLOR_NEUTRAL,
+  NO_ACTION_TAKEN_ORDERS: LINE_GRAPH_COLOR_TOTAL,
+  HIGH_RISK_ORDERS: LINE_GRAPH_COLOR_RISKY,
+  MEDIUM_RISK_ORDERS: LINE_GRAPH_COLOR_NEUTRAL,
+  LOW_RISK_ORDERS: LINE_GRAPH_COLOR_SAFE,
 };
 
 export const BREAKDOWN = {
@@ -277,3 +333,14 @@ export const RTO_RATE_FILTER = [
 export const REQUEST_LIMIT = 2;
 
 export const OVERALL_LINE_CHARTS = ['rto_rate'];
+
+export const COST_SAVED_WIDGET_TEXTS = {
+  manualReview: {
+    header: 'Cost saved due to manual review of COD orders',
+    subtext: 'Total reverse shipping cost saved by cancelling risky COD orders.',
+  },
+  intelligence: {
+    header: 'Cost saved by COD Intelligence',
+    subtext: 'Total reverse shipping cost saved by blocking risky users from placing COD orders.',
+  },
+};

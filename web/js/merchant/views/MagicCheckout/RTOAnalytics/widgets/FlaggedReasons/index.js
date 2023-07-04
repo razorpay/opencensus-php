@@ -18,15 +18,7 @@ import {
 
 import { NO_GRAPH_DATA, BREAKDOWN } from 'merchant/views/MagicCheckout/RTOAnalytics/constants';
 
-const FlaggedReasons = ({
-  user,
-  widgetData,
-  isLoading,
-  updatedAt,
-  startTime,
-  endTime,
-  fetchWidgets,
-}) => {
+const FlaggedReasons = ({ widgetData, isLoading, updatedAt, startTime, endTime, fetchWidgets }) => {
   const [expanded, setExpanded] = useState(false);
   const [requestCount, setRequestCount] = useState(0);
   const widgetName = 'flagged_reason';
@@ -53,7 +45,7 @@ const FlaggedReasons = ({
   }, [startTime, endTime]);
 
   useEffect(() => {
-    onRequestCountChange(user, requestCount, fetchData, setRequestCount);
+    onRequestCountChange(requestCount, fetchData, setRequestCount);
   }, [requestCount]);
 
   const tableColumns = ['Reaons', 'Percentage of Risky users'];
@@ -95,7 +87,6 @@ const mapStateToProps = (state) => ({
   startTime: state.magicRTOAnalytics.startTime,
   endTime: state.magicRTOAnalytics.endTime,
   updatedAt: state.magicRTOAnalytics.flagged_reason.updatedAt,
-  user: state.session.user,
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(FlaggedReasons);

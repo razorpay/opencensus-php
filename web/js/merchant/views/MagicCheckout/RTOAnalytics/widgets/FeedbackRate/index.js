@@ -20,7 +20,6 @@ import {
 import { BREAKDOWN } from 'merchant/views/MagicCheckout/RTOAnalytics/constants';
 
 const FeedbackRate = ({
-  user,
   feedbackRateData,
   isloading,
   updatedAt,
@@ -56,7 +55,7 @@ const FeedbackRate = ({
   }, [fetchWidgets]);
 
   useEffect(() => {
-    onRequestCountChange(user, requestCount, fetchData, setRequestCount);
+    onRequestCountChange(requestCount, fetchData, setRequestCount);
   }, [requestCount]);
 
   return (
@@ -97,7 +96,6 @@ const mapStateToProps = (state) => ({
   startTime: state.magicRTOAnalytics.startTime,
   endTime: state.magicRTOAnalytics.endTime,
   shippingProviders: state.shippingService.shippingProviders,
-  user: state.session.user,
 });
 
 const mapDispatchToProps = (dispatch) =>

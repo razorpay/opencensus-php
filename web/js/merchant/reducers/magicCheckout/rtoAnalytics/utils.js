@@ -4,6 +4,8 @@ import { getStartDateFromDiff } from 'common/utils/rzp-utils';
 export const WIDGETS = [
   'order_split',
   'order_split_cumulative',
+  'manual_risk_order_split_cumulative',
+  'manual_review_order_split',
   'feedback_rate',
   'flagged_reason',
   'cost_saving',
@@ -13,10 +15,12 @@ export const WIDGETS = [
   'rto_rate',
   'cod_rate',
   'risky_orders',
+  'manual_risk_order_split',
 ];
 
 export const WIDGETS_MAP = {
   'Feedback Rate': 'feedback_rate',
+  'Manual Review Order Split': 'manual_review_order_split',
   'Order Split': 'order_split',
   'Flagged Reason': 'flagged_reason',
   'RTO by Zipcode': 'rto_by_zipcode',
@@ -26,6 +30,7 @@ export const WIDGETS_MAP = {
   'Risky Orders': 'risky_orders',
   'COD vs Prepaid Orders': 'cod_rate',
   'RTO Rate': 'rto_rate',
+  'Manual Risk Order Split': 'manual_risk_order_split',
 };
 
 const LIFETIME_WIDGETS = ['rto_by_ip', 'rto_by_zipcode'];
@@ -69,10 +74,13 @@ export const widgetsDataFormatter = (widgetsData) => {
   widgetsData?.forEach((widgetData) => {
     let widgetName = WIDGETS_MAP[widgetData.name];
 
-    if (widgetName === 'order_split' && widgetData.aggregation_type === 'cumulative') {
-      widgetName = 'order_split_cumulative';
+    if (
+      (widgetName === 'order_split' || widgetName === 'manual_risk_order_split') &&
+      widgetData.aggregation_type === 'cumulative'
+    ) {
+      widgetName = `${widgetName}_cumulative`;
       updateObj[widgetName] = {};
-      updateObj[widgetName].data = widgetData.order_split;
+      updateObj[widgetName].data = widgetData[WIDGETS_MAP[widgetData.name]];
       return;
     }
 

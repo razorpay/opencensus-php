@@ -306,6 +306,9 @@ return [
         //Magic Prepay COD
         'MAGIC_PREPAY_COD' => env('MAGIC_PREPAY_COD', ''),
 
+        //Magic RTO Analytics
+        'MAGIC_RTO_ANALYTICS_V3' => env('MAGIC_RTO_ANALYTICS_V3', ''),
+
         // Magic
         'MAGIC_COD_ENGINE' => env('MAGIC_COD_ENGINE'),
         'MAGIC_ORDER_ANALYTICS'  => env('MAGIC_ORDER_ANALYTICS', ''),

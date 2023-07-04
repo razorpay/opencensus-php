@@ -127,6 +127,15 @@ $panel-border = 1px solid #E0E8F4
           display: flex
           justify-content: flex-end
 
+      .manual-review-cumulative
+        .vertical-partition
+          margin: 0 20px
+
+        .medium-risk-color
+          border: 2px solid #EC9A37
+          border-radius: 1.5px
+          background-color: #EC9A37
+
   @media (max-width 960px)
     .rto-magic-sidebar
       width: 130px
@@ -169,12 +178,35 @@ $panel-border = 1px solid #E0E8F4
   .risk-report-container
     .row
       display: flex
+      margin-bottom: 20px
 
     .risky-orders > .panel-topbar,
     .order-split > .panel-topbar,
     .cost-saved > .panel-topbar
       display: flex
       justify-content: space-between
+
+    .manual-review-order-split > .panel-topbar
+      display: flex
+      flex-direction: column
+
+      .panel-info
+        display: inline-block
+
+      .manual-review-order-split-nudging-message
+        margin: 10px 0
+        background: #FFFBE8
+        border-left: 3px solid #CD8214
+        font-size: 14px
+        font-weight: 400
+        padding: 12px
+
+        .magic-link
+          font-weight: 700
+          text-decoration: underline
+
+    .manual-review-order-split > .panel-body
+      padding: 0
 
     #rto-rate-footer
       display: flex
@@ -228,6 +260,18 @@ $panel-border = 1px solid #E0E8F4
           width: 136px
           height: 40px
 
+      .rto-rate-nudging-message
+        margin-top: 10px
+        background: #FFFBE8
+        border-left: 3px solid #CD8214
+        font-size: 14px
+        padding: 12px
+        font-weight: 400
+
+        .magic-link
+          font-weight: 700
+          text-decoration: underline
+
   .feedbackRate-container
     padding: 0
     max-width: 276px
@@ -279,16 +323,15 @@ $panel-border = 1px solid #E0E8F4
       height: 100%
 
       .panel-topbar
-        padding: 22px 24px 8px
+        padding: 22px 24px 0
 
       .panel-body#cost-saved-body
         height: 100%
         padding-top: 10px
 
         .shipping-charge-container
-          padding: 5px 24px
+          padding: 3px 24px
           background-color: #F3F5F9CC
-          margin-top: 8px
 
         .shipping-charge-container > .Input--small
           padding: 5px 0
@@ -308,7 +351,7 @@ $panel-border = 1px solid #E0E8F4
           width: 88px
 
         .shipping-charge-container > .Input--small > .Input-content > .Input-elWrapper > .Input-el
-          height: 30px
+          height: 28px
 
         .shipping-charge-container > .Input--small > .Input-content > .Input-elWrapper > .Input-addons
           line-height: 28px
@@ -468,7 +511,7 @@ $panel-border = 1px solid #E0E8F4
           background: #E86250
 
         &.neutral
-          background: #E5C214
+          background: #FBBF48
 
     .panel-body
       height: auto
@@ -549,6 +592,14 @@ $panel-border = 1px solid #E0E8F4
 
       tr
         line-height: 40px
+
+  .panel.dasboard-home-panel.analytics-panel.manual-review-order-split,
+  .panel.dasboard-home-panel.analytics-panel.risk-level-order-split
+    .panel-body
+      padding-top: 10px
+
+    .rto-graph-container
+      height: 280px
 
   .experimentation-row-container
     margin-bottom: 20px
@@ -640,3 +691,37 @@ $panel-border = 1px solid #E0E8F4
   @media (max-width 1050px)
     .widget-row
       flex-direction: column
+
+  .announcement-banner-container
+    padding: 0;
+    margin-bottom: 20px
+
+    .nudging-cod-intelligence-banner > .content
+      display: flex
+      background: #FFF
+      border: none
+      color: #5B666D
+      align-items: center
+      justify-content: space-between
+      padding: 4px 15px 4px 4px
+      height: 100%
+
+      .graph-scale
+        height: 14px
+
+      .intelligence-link-cta
+        border: 1px solid #0B70E7
+        color: #0B70E7
+        font-weight: 700
+        line-height: 21px
+        border-radius: 2px
+        padding: 6px 10px
+        margin: 0
+        width: 96%
+
+        .i-chevron-right
+          font-size: 152%
+          top: 3px
+
+    .nudging-cod-intelligence-banner > .close-btn
+      color: #C7C7C7

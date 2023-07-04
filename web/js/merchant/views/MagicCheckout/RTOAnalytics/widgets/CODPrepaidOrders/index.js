@@ -114,7 +114,6 @@ const CODPrepaidOrdersChartOptions = {
 };
 
 const CODPrepaidOrders = ({
-  user,
   widgetData,
   startTime,
   endTime,
@@ -166,7 +165,7 @@ const CODPrepaidOrders = ({
   }, [startTime, endTime]);
 
   useEffect(() => {
-    onRequestCountChange(user, requestCount, fetchData, setRequestCount);
+    onRequestCountChange(requestCount, fetchData, setRequestCount);
   }, [requestCount]);
 
   return (
@@ -221,7 +220,6 @@ const mapDispatchToProps = (dispatch) =>
   bindActionCreators({ fetchWidgets: fetchWidgetData }, dispatch);
 
 const mapStateToProps = (state) => ({
-  user: state.session.user,
   widgetData: state.magicRTOAnalytics.cod_rate,
   isLoading: state.magicRTOAnalytics.cod_rate.loading,
   startTime: state.magicRTOAnalytics.startTime,

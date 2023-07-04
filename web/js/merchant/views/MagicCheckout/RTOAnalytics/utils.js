@@ -123,6 +123,7 @@ export const chartsDataFormatter = (...args) => {
       backgroundColor: CHART_COLORS[datasetKey],
       data: [],
       label: DATASET_LABEL_MAP[datasetKey].label,
+      barThickness: 12,
     };
 
     // for line chart in case of daily breakdown
@@ -250,13 +251,8 @@ export const getWidgetData = (
     });
 };
 
-export const onRequestCountChange = (user, requestCount, fetchData, setRequestCount) => {
-  if (
-    user &&
-    user.isMagicRTOAnalyticsV2Enabled &&
-    requestCount > 0 &&
-    requestCount <= REQUEST_LIMIT
-  ) {
+export const onRequestCountChange = (requestCount, fetchData, setRequestCount) => {
+  if (requestCount > 0 && requestCount <= REQUEST_LIMIT) {
     fetchData();
   } else if (requestCount > REQUEST_LIMIT) {
     setRequestCount(0);

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import GenericPanel, {
@@ -21,12 +21,12 @@ import {
 
 import {
   BREAKDOWN_MAP,
-  ORDERS_SPLIT_CHARTS,
+  RISK_LEVEL_ORDERS_SPLIT_CHARTS,
   NO_GRAPH_DATA,
   BREAKDOWN,
 } from 'merchant/views/MagicCheckout/RTOAnalytics/constants';
 
-const OrderSplitChartOptions = {
+const RiskLevelOrderSplitChartOptions = {
   tooltips: {
     enabled: true,
     backgroundColor: '#ffffff',
@@ -45,10 +45,10 @@ const OrderSplitChartOptions = {
     titleFontColor: '#262D3A',
     callbacks: {
       title(tooltipItem) {
-        const totalUsers = tooltipItem.reduce((count, cval) => {
+        const totalOrders = tooltipItem.reduce((count, cval) => {
           return count + cval.yLabel;
         }, 0);
-        return `Total users: ${totalUsers}`;
+        return `Total orders: ${totalOrders}`;
       },
       labelColor: (item, chart) => {
         const color =
@@ -60,13 +60,32 @@ const OrderSplitChartOptions = {
   },
 };
 
-const OrderSplit = ({ widgetData, startTime, endTime, fetchWidgets, fetchingTimedWidgetsData }) => {
+type RiskLevelOrderSplitPropType = {
+  widgetData: {
+    data: Record<string, unknown>[];
+    loading: boolean;
+    updatedAt: number;
+  };
+  startTime: number;
+  endTime: number;
+  fetchWidgets: () => void;
+  fetchingTimedWidgetsData: boolean;
+};
+
+const RiskLevelOrderSplit = ({
+  widgetData,
+  startTime,
+  endTime,
+  fetchWidgets,
+  fetchingTimedWidgetsData,
+}: RiskLevelOrderSplitPropType): JSX.Element => {
   const [breakdown, setBreakdown] = useState(BREAKDOWN.weeks);
   const [chartData, setChartData] = useState(null);
   const [requestCount, setRequestCount] = useState(0);
 
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   const { data, loading, updatedAt } = widgetData;
-  const widgetName = 'order_split';
+  const widgetName = 'manual_risk_order_split';
 
   const onBtnChange = useCallback(
     (value) => {
@@ -91,7 +110,14 @@ const OrderSplit = ({ widgetData, startTime, endTime, fetchWidgets, fetchingTime
     }
 
     setChartData(
-      chartsDataFormatter(data, breakdown, startTime, endTime, ORDERS_SPLIT_CHARTS, true),
+      chartsDataFormatter(
+        data,
+        breakdown,
+        startTime,
+        endTime,
+        RISK_LEVEL_ORDERS_SPLIT_CHARTS,
+        true,
+      ),
     );
   }, [fetchingTimedWidgetsData, data, breakdown, startTime, endTime, widgetData]);
 
@@ -112,17 +138,13 @@ const OrderSplit = ({ widgetData, startTime, endTime, fetchWidgets, fetchingTime
 
   return (
     <GenericPanel
-      className="analytics-panel order-split"
+      className="analytics-panel risk-level-order-split"
       isLoading={loading}
       hasNoData={!data || data.length === 0}
     >
-      <PanelTopbar>
+      <PanelTopbar className="display-flex justify-space-between">
         <div className="panel-info">
-          <p className="panel-topbar-heading">Safe vs risky users</p>
-          <p className="panel-heading-subtext">
-            Risky users are the ones for whom the COD option is disabled on the payments screen by
-            Magic’s COD Intelligence.
-          </p>
+          <p className="panel-topbar-heading">RTO risk distribution</p>
         </div>
         <div className="panel-actions pull-right">
           <BtnGroup
@@ -148,17 +170,21 @@ const OrderSplit = ({ widgetData, startTime, endTime, fetchWidgets, fetchingTime
             breakdown={breakdown}
             data={chartData}
             isChartStacked
-            customOptions={OrderSplitChartOptions}
+            customOptions={RiskLevelOrderSplitChartOptions}
           />
         ) : null}
         <div className="legend">
           <div className="item-box">
-            <div className="colored risky" />
-            <span>Risky users</span>
+            <div className="colored safe" />
+            <span>Low risk orders</span>
           </div>
           <div className="item-box">
-            <div className="colored safe" />
-            <span>Safe users</span>
+            <div className="colored neutral" />
+            <span>Medium risk orders</span>
+          </div>
+          <div className="item-box">
+            <div className="colored risky" />
+            <span>High risk orders</span>
           </div>
         </div>
       </PanelBody>
@@ -173,10 +199,10 @@ const mapDispatchToProps = (dispatch) =>
   bindActionCreators({ fetchWidgets: fetchWidgetData }, dispatch);
 
 const mapStateToProps = (state) => ({
-  widgetData: state.magicRTOAnalytics.order_split,
+  widgetData: state.magicRTOAnalytics.manual_risk_order_split,
   startTime: state.magicRTOAnalytics.startTime,
   endTime: state.magicRTOAnalytics.endTime,
   fetchingTimedWidgetsData: state.magicRTOAnalytics.timedWidgetsFetching,
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(OrderSplit);
+export default connect(mapStateToProps, mapDispatchToProps)(RiskLevelOrderSplit);

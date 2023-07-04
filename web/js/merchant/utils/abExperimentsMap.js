@@ -99,6 +99,13 @@ export default {
     //prod experiment id
     'LyzIbqJ3ETSBN9',
   ],
+  magic_rto_analytics_v3: [
+    //beta experiment id
+    'M3ltpBNar0aDxZ',
+
+    //prod experiment id
+    'LyzIbqJ3ETSBN9',
+  ],
   ultra_p2_cash_advance_banner_experiment: [
     // beta experiment ids
     'HzfUh5Z1nw1toU',

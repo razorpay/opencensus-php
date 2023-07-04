@@ -28,6 +28,15 @@ const initialState = {
   order_split_cumulative: {
     ...defaultWidgetState,
   },
+  manual_risk_order_split: {
+    ...defaultWidgetState,
+  },
+  manual_risk_order_split_cumulative: {
+    ...defaultWidgetState,
+  },
+  manual_review_order_split: {
+    ...defaultWidgetState,
+  },
   feedback_rate: {
     ...defaultWidgetState,
   },

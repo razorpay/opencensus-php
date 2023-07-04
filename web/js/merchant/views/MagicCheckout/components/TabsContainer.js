@@ -15,7 +15,12 @@ const RouteContainer = ({
 }) => {
   const renderNav = useCallback(
     (item) => {
-      if (item.tabName === 'RTO Analytics' && !isCODIntelligenceEnabled) return null;
+      if (
+        item.tabName === 'RTO Analytics' &&
+        !isCODIntelligenceEnabled &&
+        (!user.isMagicRTOAnalyticsV3Enabled || !isCODOrderControlEnabled)
+      )
+        return null;
       if (item.tabName === 'COD Orders' && !isCODOrderControlEnabled) return null;
       if (item.tabName === 'COD Order Conversion' && (platform === 'native' || !isPrepayCODEnabled))
         return null;

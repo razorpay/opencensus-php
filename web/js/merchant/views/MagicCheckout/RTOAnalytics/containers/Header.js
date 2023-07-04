@@ -3,6 +3,7 @@ import moment from 'moment';
 import { bindActionCreators } from 'redux';
 import DateRangePicker from 'common/ui/DateRangePicker';
 import CumulativeOrders from 'merchant/views/MagicCheckout/RTOAnalytics/common/CumulativeOrders';
+import RiskLevelOrderSplitCumulative from 'merchant/views/MagicCheckout/RTOAnalytics/common/RiskLevelOrderSplitCumulative';
 import { setTimeRange } from 'merchant/reducers/magicCheckout/rtoAnalytics/actions';
 
 const DATE_RANGE_PRESETS = [
@@ -13,7 +14,7 @@ const DATE_RANGE_PRESETS = [
 
 const defaultPreset = 1;
 
-const Header = ({ setTimeRange }) => {
+const Header = ({ setTimeRange, isManualReviewOpted }) => {
   const onDatesChange = (from, to) => {
     setTimeRange(from, to);
   };
@@ -23,7 +24,7 @@ const Header = ({ setTimeRange }) => {
 
   return (
     <div className="fixed-header">
-      <CumulativeOrders />
+      {!isManualReviewOpted ? <CumulativeOrders /> : <RiskLevelOrderSplitCumulative />}
       <div className="date-range-container">
         <DateRangePicker
           presets={DATE_RANGE_PRESETS}

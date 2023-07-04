@@ -61,7 +61,6 @@ const RiskyOrdersChartOptions = {
 };
 
 const RiskyOrders = ({
-  user,
   widgetData,
   startTime,
   endTime,
@@ -121,7 +120,7 @@ const RiskyOrders = ({
   }, [startTime, endTime]);
 
   useEffect(() => {
-    onRequestCountChange(user, requestCount, fetchData, setRequestCount);
+    onRequestCountChange(requestCount, fetchData, setRequestCount);
   }, [requestCount]);
 
   return (
@@ -188,7 +187,6 @@ const mapDispatchToProps = (dispatch) =>
   bindActionCreators({ fetchWidgets: fetchWidgetData }, dispatch);
 
 const mapStateToProps = (state) => ({
-  user: state.session.user,
   widgetData: state.magicRTOAnalytics.risky_orders,
   isLoading: state.magicRTOAnalytics.risky_orders.loading,
   startTime: state.magicRTOAnalytics.startTime,

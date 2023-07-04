@@ -37,7 +37,6 @@ const routes = [
   {
     tabName: 'RTO Analytics',
     path: '/magic/analytics',
-    condition: (_user) => _user.isMagicRTOAnalyticsEnabled,
     Component: RTOAnalytics,
   },
   {
