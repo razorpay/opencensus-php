@@ -61,8 +61,6 @@ class Core extends Base\Core
 
         $transactorEvent = $request[LedgerConstants::TRANSACTOR_EVENT] ?? "";
 
-        $merchantId = $request[LedgerConstants::MERCHANT_ID] ?? "";
-
         // Metric calculates latency for Outbox entry creation at Ledger Worker -> Ack Recieved on pg worker
         $ledgerCreatedAt = (int)($outboxPayload[Entity::CREATED_AT]*1000);
 
@@ -72,6 +70,10 @@ class Core extends Base\Core
             Metric::PG_LEDGER_KAFKA_ACKNOWLEDGMENT_RECEIVED_FROM_LEDGER,
             $durationFromLedger,
         );
+
+        $isBulkJournal = false;
+
+        $response = $payload[Constants::RESPONSE];
 
         $errorResponse = $payload[Constants::ERROR_RESPONSE];
 
@@ -99,49 +101,93 @@ class Core extends Base\Core
             }
         }
 
+        $journal = $payload[Constants::RESPONSE];
+
+        if(isset($response[LedgerConstants::JOURNALS]) and is_array($response[LedgerConstants::JOURNALS]))
+        {
+            $isBulkJournal = true;
+        }
+
+        if($isBulkJournal)
+        {
+            $bulkJournals = $response[LedgerConstants::JOURNALS];
+            $singleJournal = $bulkJournals[0];
+            $transactorId = $singleJournal[LedgerConstants::TRANSACTOR_ID];
+
+            $transactorEvent = $singleJournal[LedgerConstants::TRANSACTOR_EVENT];
+
+            $this->handleBulkJournalFlow($bulkJournals, $transactorId, $transactorEvent);
+            return;
+        }
+
+        // Assigning value again as request object is not populated in the kafka response for success cases
+        $transactorId = $journal[LedgerConstants::TRANSACTOR_ID];
+        $transactorEvent = $journal[LedgerConstants::TRANSACTOR_EVENT];
+
         try
         {
-            $journal = $payload[Constants::RESPONSE];
+            $this->handleTransactionCreationOnAcknowledgement($journal, $transactorId, $transactorEvent, false);
+        }
+        catch (Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::PG_LEDGER_ACK_WORKER_FAILURE,
+            );
 
-            $transactorPublicId = $journal[LedgerConstants::TRANSACTOR_ID];
-
-            $transactorEvent = $journal[LedgerConstants::TRANSACTOR_EVENT];
-
-            $this->emitMetric($transactorPublicId, $transactorEvent);
-
-            $txn = $this->createTransactionFromJournal($journal, Constants::ACK_WORKER);
-
-            if($txn ===  null)
-            {
-                $this->trace->info(TraceCode::PG_LEDGER_TRANSACTION_NOT_CREATED,
-                    [
-                        LedgerConstants::TRANSACTOR_EVENT       => $transactorEvent,
-                        LedgerConstants::TRANSACTOR_ID          => $transactorPublicId,
-                        Constants::SOURCE                       => Constants::ACK_WORKER
-                    ]
-                );
-            }
-            else
-            {
-                $txnId = $txn->getId();
-
-                $this->trace->info(TraceCode::PG_LEDGER_CREATE_TRANSACTION_SUCCESS,
-                    [
-                        LedgerConstants::API_TRANSACTION_ID     => $txnId,
-                        LedgerConstants::TRANSACTOR_EVENT       => $transactorEvent,
-                        LedgerConstants::TRANSACTOR_ID          => $transactorPublicId,
-                        Constants::SOURCE                       => Constants::ACK_WORKER
-                    ]
-                );
-
-                $this->trace->count(Metric::PG_LEDGER_CREATE_TRANSACTION_SUCCESS, [
-                    LedgerConstants::TRANSACTOR_EVENT   => $transactorEvent,
-                    Constants::SOURCE                   => Constants::ACK_WORKER
+            $this->trace->count(Metric::PG_LEDGER_ACK_WORKER_FAILURE,
+                [
+                    LedgerConstants::TRANSACTOR_EVENT       => $transactorEvent,
+                    LedgerConstants::TRANSACTOR_ID          => $transactorId,
+                    Constants::SOURCE                       => Constants::ACK_WORKER
                 ]);
-            }
+        }
+    }
 
-            $this->softDelete($transactorPublicId, $transactorEvent);
+    private function handleTransactionCreationOnAcknowledgement($journal, $transactorId, $transactorEvent, $isBulkJournal)
+    {
+        $this->emitMetric($transactorId, $transactorEvent);
 
+        $txn = $this->createTransactionFromJournal($journal, Constants::ACK_WORKER, $isBulkJournal);
+
+        if($txn ===  null)
+        {
+            $this->trace->info(TraceCode::PG_LEDGER_TRANSACTION_NOT_CREATED,
+                [
+                    LedgerConstants::TRANSACTOR_EVENT       => $transactorEvent,
+                    LedgerConstants::TRANSACTOR_ID          => $transactorId,
+                    Constants::SOURCE                       => Constants::ACK_WORKER
+                ]
+            );
+        }
+        else
+        {
+            $txnId = $txn->getId();
+
+            $this->trace->info(TraceCode::PG_LEDGER_CREATE_TRANSACTION_SUCCESS,
+                [
+                    LedgerConstants::API_TRANSACTION_ID     => $txnId,
+                    LedgerConstants::TRANSACTOR_EVENT       => $transactorEvent,
+                    LedgerConstants::TRANSACTOR_ID          => $transactorId,
+                    Constants::SOURCE                       => Constants::ACK_WORKER
+                ]
+            );
+
+            $this->trace->count(Metric::PG_LEDGER_CREATE_TRANSACTION_SUCCESS, [
+                LedgerConstants::TRANSACTOR_EVENT   => $transactorEvent,
+                Constants::SOURCE                   => Constants::ACK_WORKER
+            ]);
+        }
+
+        $this->softDelete($transactorId, $transactorEvent);
+    }
+
+    private function handleBulkJournalFlow($bulkJournals, $transactorId, $transactorEvent)
+    {
+        try
+        {
+            $this->handleTransactionCreationOnAcknowledgement($bulkJournals, $transactorId, $transactorEvent, true);
         }
         catch (Exception $e)
         {
@@ -255,6 +301,9 @@ class Core extends Base\Core
             case "rvrsl":
                 $res[Constants::TYPE] = Constants::REVERSAL;
                 return $res;
+            case "credits":
+                $res[Constants::TYPE] = Constants::CREDIT_LOADING;
+                return $res;
             default:
                 $res[Constants::TYPE] = "";
                 return $res;
@@ -347,6 +396,32 @@ class Core extends Base\Core
             {
                 if ($nonRetryableError === Constants::BAD_REQUEST_RECORD_ALREADY_EXIST)
                 {
+
+                    // if the error is record_already_exists and we do not have to create a txn then return from here.
+                    if(in_array($transactorEvent, Constants::NON_TRANSACTION_EVENTS))
+                    {
+                        $this->trace->debug(TraceCode::NON_RECOVERABLE_ERROR_ACK_WORKER, [
+                            constants::ERROR_TYPE               => constants::NON_RECOVERABLE_ERROR,
+                            constants::ERROR_MESSAGE            => $errorMessage,
+                            LedgerConstants::TRANSACTOR_ID      => $transactorId,
+                            LedgerConstants::TRANSACTOR_EVENT   => $transactorEvent,
+                            constants::SOURCE                   => constants::ACK_WORKER,
+                        ]);
+
+                        $this->trace->count(Metric::LEDGER_REVERSE_SHADOW_JOURNAL_CREATE_FAILURE, [
+                            constants::ERROR_TYPE               => constants::NON_RECOVERABLE_ERROR,
+                            LedgerConstants::TRANSACTOR_EVENT   => $transactorEvent,
+                            constants::SOURCE                   => constants::ACK_WORKER,
+
+                        ]);
+
+                        // Soft deleting this record from outbox as the error is not recoverable and will
+                        // fail when retried via cron as well
+                        $this->softDelete($transactorId, $transactorEvent);
+
+                        return null;
+                    }
+
                     // check if txn exists already for the journal
                     $journal = $this->getJournalByTransactorInfo($transactorId, $transactorEvent, $this->ledgerService);
 
@@ -371,7 +446,6 @@ class Core extends Base\Core
                         // if transaction does not exist, return journal so that worker creates txn.
                         return $journal;
                     }
-
                 }
 
                 $this->trace->debug(TraceCode::NON_RECOVERABLE_ERROR_ACK_WORKER, [
@@ -435,23 +509,44 @@ class Core extends Base\Core
         return null;
     }
 
-    public function createTransactionFromJournal(array $journal, $source)
+    public function createTransactionFromJournal(array $journal, $source, $isBulkJournal = false)
     {
-        $transactorPublicId = $journal[LedgerConstants::TRANSACTOR_ID];
+        $transactorPublicId = "";
+        $transactionType = "";
+        $merchantId = "";
+        $transactorEvent = "";
+        $ledgerEntries = [];
+        $journalId = "";
 
-        $journalId = $journal['id'];
+        if($isBulkJournal)
+        {
+            $singleJournal = $journal[0];
+            $transactorPublicId = $singleJournal[LedgerConstants::TRANSACTOR_ID];
 
-        $transactorInfo = $this->determineTransactionType($transactorPublicId);
+            $journalId = $singleJournal['id'];
 
-        $transactionType = $transactorInfo[Constants::TYPE];
+            $ledgerEntries = $singleJournal["ledger_entry"];
 
-        $ledgerEntries = $journal["ledger_entry"];
+            $transactorEvent = $singleJournal[LedgerConstants::TRANSACTOR_EVENT];
+        }
+        else
+        {
+
+            $transactorPublicId = $journal[LedgerConstants::TRANSACTOR_ID];
+            $journalId = $journal['id'];
+
+            $ledgerEntries = $journal["ledger_entry"];
+
+            $transactorEvent = $journal[LedgerConstants::TRANSACTOR_EVENT];
+        }
 
         $merchantId = (count($ledgerEntries) > 0) ? $ledgerEntries[0]["merchant_id"] : "";
 
         $this->merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        $transactorEvent = $journal[LedgerConstants::TRANSACTOR_EVENT];
+        $transactorInfo = $this->determineTransactionType($transactorPublicId);
+
+        $transactionType = $transactorInfo[Constants::TYPE];
 
         $txn = null;
 
@@ -571,8 +666,17 @@ class Core extends Base\Core
                 });
             }
         }
+        else if($transactionType === Constants::CREDIT_LOADING)
+        {
+            $this->trace->info(TraceCode::PG_LEDGER_ACK_WORKER_CREDIT_LOADING_EVENT, [
+                LedgerConstants::JOURNALS   => $journal,
+                LedgerConstants::SOURCE     => $source
+            ]);
 
-        //Note: Transaction is not created for gateway_captured event.
+            return null;
+        }
+
+        //Note: Transaction is not created for gateway_captured event and credit loading event.
 
         return $txn;
     }
@@ -639,14 +743,30 @@ class Core extends Base\Core
                         ]
                     );
 
-                    $response = $ledgerService->createJournal($payload, $requestHeaders, true);
+                    $isBulkJournal = false;
+                    if(in_array($transactorEvent, Constants::BULK_JOURNAL_EVENTS))
+                    {
+                        $isBulkJournal = true;
+                    }
+
+                    $response = ($isBulkJournal === false) ? $ledgerService->createJournal($payload, $requestHeaders, true) : $ledgerService->createBulkJournal($payload, $requestHeaders, true);
 
                     $journal = $response[LedgerService::RESPONSE_BODY];
+
+                    $bulkJournals = [];
+
+                    $responseBody = $response[LedgerService::RESPONSE_BODY];
+
+                    // Handling use case for bulk journals
+                    if($isBulkJournal === true)
+                    {
+                        $bulkJournals = $responseBody[LedgerConstants::JOURNALS];
+                    }
 
                     $this->trace->info(TraceCode::LEDGER_CREATE_JOURNAL_ENTRY_RESPONSE,
                         [
                             LedgerConstants::TRANSACTOR_EVENT => $transactorEvent,
-                            LedgerConstants::JOURNAL_ID       => $journal[LedgerConstants::ID],
+                            LedgerConstants::JOURNALS       => $journal,
                             Constants::SOURCE                 => Constants::CRON
                         ]
                     );
@@ -658,7 +778,16 @@ class Core extends Base\Core
 
                     try
                     {
-                        $txn = $this->createTransactionFromJournal($journal, Constants::CRON);
+                        $txn = null;
+
+                        if($isBulkJournal === true)
+                        {
+                            $txn = $this->createTransactionFromJournal($bulkJournals, Constants::CRON, true);
+                        }
+                        else
+                        {
+                            $txn = $this->createTransactionFromJournal($journal, Constants::CRON, false);
+                        }
 
                         if($txn ===  null)
                         {

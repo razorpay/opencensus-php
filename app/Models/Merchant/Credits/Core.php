@@ -17,6 +17,7 @@ use RZP\Constants\Product;
 use RZP\Models\Admin\Action;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Transaction\Processor\Ledger;
+use RZP\Models\Ledger\ReverseShadow\CreditLoading as ReverseShadowCreditLoading;
 use RZP\Mail\Merchant\RazorpayX\Credits\ConfirmationForKycUsers;
 use RZP\Mail\Merchant\RazorpayX\Credits\ConfirmationForChurnedUsers;
 use RZP\Models\Ledger\MerchantCreditJournalEvents;
@@ -96,6 +97,8 @@ class Core extends Base\Core
                     $type = $creditsLog->getType();
 
                     $this->updateCreditsInMerchantAccount($merchant, $creditsLog->getValue(), $type);
+
+                    $this->createLedgerEntriesForCreditLoadingReverseShadow($creditsLog, $payment);
 
                     $this->createLedgerEntriesForMerchantCreditLoading($creditsLog, $payment);
 
@@ -364,35 +367,78 @@ class Core extends Base\Core
         }
     }
 
+    private function createLedgerEntriesForCreditLoadingReverseShadow(Entity $creditsLog, $payment)
+    {
+        try
+        {
+            if ($creditsLog->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false) {
+                return;
+            }
+
+            (new ReverseShadowCreditLoading\Core())->createReverseShadowLedgerEntries($creditsLog, $payment);
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PG_LEDGER_ENTRY_FAILED,
+                [
+                    'credit_id' => $creditsLog->getId(),
+                    'type'      => Feature\Constants::PG_LEDGER_REVERSE_SHADOW,
+                ]);
+            throw $e;
+        }
+    }
+
     private function createLedgerEntriesForMerchantCreditLoading(Entity $creditsLog, $payment)
     {
         try
         {
-            if($creditsLog->getType() === Credits\Type::AMOUNT )
-            {
-                return;
-            }
 
             if($creditsLog->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false)
             {
                 return;
             }
 
-            $transactionMessage = MerchantCreditJournalEvents::createBulkTransactionMessageForMerchantCreditLoading($creditsLog, $payment);
-
-            \Event::dispatch(new TransactionalClosureEvent(function () use ($transactionMessage)
+            // use case where both shadow and reverse shadow are enabled. Since reverse shadow takes priority, we return from here itself
+            if($creditsLog->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
             {
-                LedgerEntryJob::dispatchNow($this->mode, $transactionMessage, true);
-            }));
+                return;
+            }
 
-            $this->trace->info(
-                TraceCode::MERCHANT_CREDITS_LOADING_EVENT,
-                [
-                    'merchant' => $creditsLog->getMerchantId(),
-                    'transactionMessage'    => $transactionMessage,
-                    'payment' => $payment,
-                ]);
+            if($creditsLog->getType() === Credits\Type::AMOUNT )
+            {
+                $transactionMessage = MerchantCreditJournalEvents::createTransactionMessageForMerchantAmountCreditLoading($creditsLog);
 
+                \Event::dispatch(new TransactionalClosureEvent(function () use ($transactionMessage) {
+                    LedgerEntryJob::dispatchNow($this->mode, $transactionMessage);
+                }));
+
+                $this->trace->info(
+                    TraceCode::MERCHANT_AMOUNTS_CREDITS_LOADING_EVENT,
+                    [
+                        'merchant' => $creditsLog->getMerchantId(),
+                        'transactionMessage' => $transactionMessage,
+                        'payment' => $payment,
+                    ]);
+            }
+            else
+            {
+                $transactionMessage = MerchantCreditJournalEvents::createBulkTransactionMessageForMerchantCreditLoading($creditsLog, $payment);
+
+                \Event::dispatch(new TransactionalClosureEvent(function () use ($transactionMessage) {
+                    LedgerEntryJob::dispatchNow($this->mode, $transactionMessage, true);
+                }));
+
+                $this->trace->info(
+                    TraceCode::MERCHANT_CREDITS_LOADING_EVENT,
+                    [
+                        'merchant' => $creditsLog->getMerchantId(),
+                        'transactionMessage' => $transactionMessage,
+                        'payment' => $payment,
+                    ]);
+            }
         }
         catch (\Exception $e)
         {

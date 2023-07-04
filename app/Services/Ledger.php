@@ -17,6 +17,7 @@ use Razorpay\Edge\Passport\Passport;
 use RZP\Constants\Entity as EntityConstant;
 use Symfony\Component\HttpFoundation\Response;
 use RZP\Models\Payout\Service as PayoutService;
+use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Reversal\Service as ReversalService;
 use RZP\Models\Adjustment\Service as AdjustmentService;
 use RZP\Models\BankTransfer\Service as BankTransferService;
@@ -300,6 +301,23 @@ class Ledger
     {
         return $this->sendRequest(self::JournalBaseURL . '/' . self::URLS['create'],
             Requests::POST, $requestBody, $requestHeaders, $throwExceptionOnFailure);
+    }
+
+    /**
+     * @param      $requestBody
+     * @param      $requestHeaders
+     * @param bool $throwExceptionOnFailure
+     *
+     * @return array
+     * @throws Exception\RuntimeException
+     * @throws \Throwable
+     */
+    public function createBulkJournal($requestBody, $requestHeaders = [], bool $throwExceptionOnFailure = false): array
+    {
+        $request = $this->transformBulkJournalRequest($requestBody);
+
+        return $this->sendRequest(self::JournalBaseURL . '/' . self::URLS['createInBulk'],
+            Requests::POST, $request, $requestHeaders, $throwExceptionOnFailure);
     }
 
     /**
@@ -818,6 +836,35 @@ class Ledger
             'headers'   => $this->headers,
             'options'   => $options,
             'content'   => $body
+        ];
+    }
+
+    /**
+     * This function transforms the request. This transformation is present in ledger-sdk,
+     * but is absent in API, so when calling the endpoint directly, explicit transformation needs to be done.
+     * @param $requestBody
+     * @return array
+     */
+    protected function transformBulkJournalRequest($requestBody): array {
+        $bulkRequest = [];
+        foreach ($requestBody[LedgerConstants::JOURNALS] as $journals) {
+            $request = [
+                LedgerConstants::CURRENCY         => $requestBody[LedgerConstants::CURRENCY],
+                LedgerConstants::TRANSACTOR_ID    => $requestBody[LedgerConstants::TRANSACTOR_ID],
+                LedgerConstants::TRANSACTOR_EVENT => $requestBody[LedgerConstants::TRANSACTOR_EVENT],
+                LedgerConstants::TRANSACTION_DATE => $requestBody[LedgerConstants::TRANSACTION_DATE]
+            ];
+            $request[LedgerConstants::MERCHANT_ID]        = $journals[LedgerConstants::MERCHANT_ID];
+            $request[LedgerConstants::IDENTIFIERS]        = $journals[LedgerConstants::IDENTIFIERS];
+            $request[LedgerConstants::ADDITIONAL_PARAMS]  = $journals[LedgerConstants::ADDITIONAL_PARAMS];
+            $request[LedgerConstants::API_TRANSACTION_ID] = $journals[LedgerConstants::API_TRANSACTION_ID];
+            $request[LedgerConstants::NOTES]              = $journals[LedgerConstants::NOTES];
+            $request[LedgerConstants::MONEY_PARAMS]       = $journals[LedgerConstants::MONEY_PARAMS];
+
+            array_push($bulkRequest, $request);
+        }
+        return [
+            LedgerConstants::JOURNALS => $bulkRequest
         ];
     }
 

@@ -654,6 +654,228 @@ return [
             'status_code' => 200,
         ],
     ],
+    'testRefundCreditLoadingOutboxPushPGLedgerReverseShadow' => [
+        'request'   => [
+            'content' => [
+                "entity" => "event",
+                "account_id" => "acc_BFQ7uQEaa7j2z7",
+                "event" => "order.paid",
+                "contains" => [
+                    "payment",
+                    "order"
+                ],
+                "payload"=> [
+                    "payment" => [
+                        "entity"=> [
+                            "id" => "pay_DESlfW9H8K9uqM",
+                            "entity" => "payment",
+                            "amount" => 50000,
+                            "currency" => "INR",
+                            "status" => "captured",
+                            "order_id" => "order_DESlLckIVRkHWj",
+                            "invoice_id" => null,
+                            "international" =>  false,
+                            "method" => "netbanking",
+                            "amount_refunded" => 0,
+                            "refund_status"=> null,
+                            "captured" => true,
+                            "description" => null,
+                            "card_id" => null,
+                            "bank" => "HDFC",
+                            "wallet" =>  null,
+                            "vpa" => null,
+                            "email" => "gaurav.kumar@example.com",
+                            "contact" => "+919876543210",
+                            "notes" => [
+                                "merchant_id" => "10000000000001",
+                                "type" => 'refund_credit'
+                            ],
+                            "fee" => 1476,
+                            "tax" =>  0,
+                            "error_code" => null,
+                            "error_description"=>  null,
+                            "created_at" => 1567674599
+                        ]
+                    ],
+                    "order" => [
+                        "entity" => [
+                            "id" => "order_DESlLckIVRkHWj",
+                            "entity" =>  "order",
+                            "amount" => 100,
+                            "amount_paid" => 100,
+                            "amount_due" => 0,
+                            "currency" => "INR",
+                            "receipt" => "rcptid #1",
+                            "offer_id" =>  null,
+                            "status" => "paid",
+                            "attempts" => 1,
+                            "notes" => [
+                                "merchant_id" => '10000000000001',
+                                'type' => 'refund_credit'
+                            ],
+                            "created_at" => 1567674581
+                        ]
+                    ]
+                ],
+                "created_at"=> 1567674606
+            ],
+            'method'  => 'POST',
+            'url'     => '/fund_addition/online_payment/webhook',
+        ],
+        'response'  => [
+            'content'     => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
+    'testFeeCreditLoadingOutboxPushPGLedgerReverseShadow' => [
+        'request'   => [
+            'content' => [
+                "entity" => "event",
+                "account_id" => "acc_BFQ7uQEaa7j2z7",
+                "event" => "order.paid",
+                "contains" => [
+                    "payment",
+                    "order"
+                ],
+                "payload"=> [
+                    "payment" => [
+                        "entity"=> [
+                            "id" => "pay_DESlfW9H8K9uqM",
+                            "entity" => "payment",
+                            "amount" => 50000,
+                            "currency" => "INR",
+                            "status" => "captured",
+                            "order_id" => "order_DESlLckIVRkHWj",
+                            "invoice_id" => null,
+                            "international" =>  false,
+                            "method" => "netbanking",
+                            "amount_refunded" => 0,
+                            "refund_status"=> null,
+                            "captured" => true,
+                            "description" => null,
+                            "card_id" => null,
+                            "bank" => "HDFC",
+                            "wallet" =>  null,
+                            "vpa" => null,
+                            "email" => "gaurav.kumar@example.com",
+                            "contact" => "+919876543210",
+                            "notes" => [
+                                "merchant_id" => "10000000000001",
+                                "type" => 'fee_credit'
+                            ],
+                            "fee" => 1476,
+                            "tax" =>  0,
+                            "error_code" => null,
+                            "error_description"=>  null,
+                            "created_at" => 1567674599
+                        ]
+                    ],
+                    "order" => [
+                        "entity" => [
+                            "id" => "order_DESlLckIVRkHWj",
+                            "entity" =>  "order",
+                            "amount" => 100,
+                            "amount_paid" => 100,
+                            "amount_due" => 0,
+                            "currency" => "INR",
+                            "receipt" => "rcptid #1",
+                            "offer_id" =>  null,
+                            "status" => "paid",
+                            "attempts" => 1,
+                            "notes" => [
+                                "merchant_id" => '10000000000001',
+                                'type' => 'fee_credit'
+                            ],
+                            "created_at" => 1567674581
+                        ]
+                    ]
+                ],
+                "created_at"=> 1567674606
+            ],
+            'method'  => 'POST',
+            'url'     => '/fund_addition/online_payment/webhook',
+        ],
+        'response'  => [
+            'content'     => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
+    'addFundsViaOrderReverseShadow' => [
+        'request'   => [
+            'content' => [
+                "entity" => "event",
+                "account_id" => "acc_BFQ7uQEaa7j2z7",
+                "event" => "order.paid",
+                "contains" => [
+                    "payment",
+                    "order"
+                ],
+                "payload"=> [
+                    "payment" => [
+                        "entity"=> [
+                            "id" => "pay_DESlfW9H8K9uqM",
+                            "entity" => "payment",
+                            "amount" => 50000,
+                            "currency" => "INR",
+                            "status" => "captured",
+                            "order_id" => "order_DESlLckIVRkHWj",
+                            "invoice_id" => null,
+                            "international" =>  false,
+                            "method" => "netbanking",
+                            "amount_refunded" => 0,
+                            "refund_status"=> null,
+                            "captured" => true,
+                            "description" => null,
+                            "card_id" => null,
+                            "bank" => "HDFC",
+                            "wallet" =>  null,
+                            "vpa" => null,
+                            "email" => "gaurav.kumar@example.com",
+                            "contact" => "+919876543210",
+                            "notes" => [
+                                "merchant_id" => "10000000000001",
+                                "type" => 'fee_credit'
+                            ],
+                            "fee" => 1476,
+                            "tax" =>  0,
+                            "error_code" => null,
+                            "error_description"=>  null,
+                            "created_at" => 1567674599
+                        ]
+                    ],
+                    "order" => [
+                        "entity" => [
+                            "id" => "order_DESlLckIVRkHWj",
+                            "entity" =>  "order",
+                            "amount" => 100,
+                            "amount_paid" => 100,
+                            "amount_due" => 0,
+                            "currency" => "INR",
+                            "receipt" => "rcptid #1",
+                            "offer_id" =>  null,
+                            "status" => "paid",
+                            "attempts" => 1,
+                            "notes" => [
+                                "merchant_id" => '10000000000001',
+                                'type' => 'fee_credit'
+                            ],
+                            "created_at" => 1567674581
+                        ]
+                    ]
+                ],
+                "created_at"=> 1567674606
+            ],
+            'method'  => 'POST',
+            'url'     => '/fund_addition/online_payment/webhook',
+        ],
+        'response'  => [
+            'content'     => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
     'testFundAdditionWebhookWithFundAdditionInCredits' => [
         'request'   => [
             'content' => [

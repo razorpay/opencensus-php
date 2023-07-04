@@ -32,6 +32,8 @@ class Constants
     const TRANSACTION_CREATE                           = "transaction_create";
     const JOURNAL_CREATE                               = "journal_create";
 
+    const CREDIT_LOADING                                = "credit_loading";
+
     // Async journal create error codes
     const BAD_REQUEST_RECORD_ALREADY_EXIST                     = "validation_failure: record_already_exist: BAD_REQUEST_RECORD_ALREADY_EXIST";
     const PAYLOAD_VALIDATION_FAILURE                           = "validation_failure: validation_failure: BAD_REQUEST_VALIDATION_FAILURE";
@@ -58,5 +60,15 @@ class Constants
     // Transactor events for which transaction is not created
     const NON_TRANSACTION_EVENTS = [
         LedgerConstants::GATEWAY_CAPTURED,
+        LedgerConstants::MERCHANT_FEE_CREDIT_LOADING,
+        LedgerConstants::MERCHANT_REFUND_CREDIT_LOADING
+    ];
+
+    const BULK_JOURNAL_EVENTS = [
+        LedgerConstants::MERCHANT_FEE_CREDIT_LOADING,
+        LedgerConstants::MERCHANT_REFUND_CREDIT_LOADING,
+        LedgerConstants::MERCHANT_RESERVE_BALANCE_LOADING,
+        LedgerConstants::TRANSFER,
+        LedgerConstants::TRANSFER_REVERSAL_PROCESSED
     ];
 }

@@ -31,6 +31,7 @@ class Constants
     const MERCHANT_BALANCE_ACCOUNTING                       = 'merchant_balance_accounting';
     const BALANCE_DEDUCT                                    = 'balance_deduct';
     const CUSTOMER_WALLET_LOADING                           = "customer_wallet_loading";
+    const RAZORPAY_REWARD                                   = 'razorpay_reward';
 
     //Refund events
     const REFUND_REVERSAL                                   = "refund_reversed";
@@ -131,6 +132,7 @@ class Constants
     const NOTES                                             = 'notes';
     const GATEWAY                                           = 'gateway';
     const JOURNALS                                          = 'journals';
+    const SOURCE                                            = "source";
 
     const REGISTER_EVENT_FOR_LEDGER_TRANSACTION                 = 'register_event_for_ledger_transaction';
     const REGISTER_EVENT_FOR_MULTI_MERCHANT_LEDGER_TRANSACTION  = 'register_event_for_multi_merchant_ledger_transaction';
@@ -143,7 +145,7 @@ class Constants
     const MERCHANT_REFUND_CREDIT_LOADING                    = "merchant_refund_credit_loading";
     const MERCHANT_FEE_CREDIT_LOADING                       = "merchant_fee_credit_loading";
     const MERCHANT_RESERVE_BALANCE_LOADING                  = "merchant_reserve_balance_loading";
-
+    const MERCHANT_AMOUNT_CREDIT_LOADING                    = "amount_credit_loading";
 
     //Reverse Shadow constants
     const MERCHANT_FEE_CREDITS       = 'merchant_fee_credits';
