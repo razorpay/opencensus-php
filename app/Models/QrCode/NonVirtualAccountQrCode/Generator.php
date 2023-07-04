@@ -679,7 +679,7 @@ class Generator extends QrCode\Generator
             throw new LogicException('No dedicated terminal found for merchant',
                                      ErrorCode::SERVER_ERROR_NO_TERMINAL_FOUND,
                                      [
-                                         'fetched_terminal_ids' => $terminals->getIds()
+                                         'fetched_terminals' => $terminals
                                      ]
             );
         }
