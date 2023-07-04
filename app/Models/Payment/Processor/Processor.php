@@ -598,9 +598,9 @@ class Processor
             return false;
         }
 
-        if (isset($input[Payment\Entity::SUBSCRIPTION_ID]) === true)
+        if (isset($input[Payment\Entity::SUBSCRIPTION_ID]) === true or (isset($input['recurring']) and $input['recurring'] == '1'))
         {
-           return false;
+            return false;
         }
 
         /*
