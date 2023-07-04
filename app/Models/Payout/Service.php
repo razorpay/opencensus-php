@@ -2979,6 +2979,13 @@ class Service extends Base\Service
 
         $templateFileId = env($configKey);
 
+        $this->trace->info(
+            TraceCode::PAYOUT_DOWNLOAD_TEMPLATE_REQUEST,
+            [
+                'config_key'           => $configKey,
+                'template_file_id'     => $templateFileId
+            ]);
+
         $ufhService = $this->getUfhService();
 
         $response = $ufhService->getSignedUrl($templateFileId, [], Account::SHARED_ACCOUNT);
