@@ -99,6 +99,7 @@ class Scrooge
     Const X_USER_EMAIL      = 'X-USER-EMAIL';
     Const X_IS_CRON         = 'X-IS-CRON';
     Const X_IS_DASHBOARD    = 'X-IS-DASHBOARD';
+    Const X_INIT_SOURCE     = 'X-INIT-SOURCE';
     Const ROUTE_NAME        = 'route-name';
     Const IS_BATCH          = 'is-batch';
 
@@ -895,6 +896,7 @@ class Scrooge
         $headers[self::X_MODE]        = $this->mode;
         $headers[self::ADMIN_EMAIL]   = $this->getAdminEmail();
         $headers[self::X_REQUEST_ID]  = $this->request->getId();
+        $headers[self::X_INIT_SOURCE] = $this->auth->getInternalApp();
 
         $this->headers = $headers;
     }
