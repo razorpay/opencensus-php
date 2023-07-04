@@ -264,12 +264,12 @@ export const ScheduleReportModal = ({
             .add(30, 'day')
             .format('DD MMM YYYY')}) from today.`,
         };
-      case endDate.diff(startDate, 'days') >= 184:
+      case endDate.diff(startDate, 'days') >= 185:
         return {
-          error: `*You can schedule upto ${startDate
+          error: `*You can only schedule report upto ${startDate
             .clone()
             .add(184, 'day')
-            .format('DD MMM YYYY')}.`,
+            .format('D MMM, YYYY')}`,
         };
 
       default:

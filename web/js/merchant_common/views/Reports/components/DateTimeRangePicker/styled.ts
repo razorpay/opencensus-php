@@ -1,4 +1,4 @@
-import styled, { css } from 'styled-components';
+import styled from 'styled-components';
 import {
   Button,
   FlexJustifyContentCenter,
@@ -11,12 +11,6 @@ import {
 } from 'merchant_common/views/Reports/components/styled';
 import { reportsTheme } from 'merchant_common/views/Reports/configs';
 import { BaseValidationStyledProps } from 'merchant_common/views/Reports/components/types';
-
-const baseSectionCss = css`
-  padding: 8px;
-  display: flex;
-  justify-content: space-between;
-`;
 
 export const CalendarField = styled.div`
   position: relative;
@@ -34,6 +28,7 @@ export const SelectedDateValue = styled.div<BaseValidationStyledProps>`
   display: flex;
   justify-content: space-between;
   align-items: center;
+
   ${({ theme, focused, validation }) => {
     const {
       FIELD_BORDER_DEFAULT_COLOR,
@@ -202,7 +197,11 @@ export const RangeSectionHeader = styled.div`
   margin-bottom: 15px;
 `;
 
-export const CalendarContent = styled.main``;
+export const CalendarContent = styled.main`
+  ${({ theme }) => `
+    padding-bottom: ${theme.spacing[6]};
+`}
+`;
 
 export const CalendarHeader = styled.div`
   padding: 10px;
@@ -215,8 +214,10 @@ export const CalendarHeader = styled.div`
   }}
 `;
 
-export const CalendarFooter = styled.div`
-  ${baseSectionCss}
+export const CalendarGuideContainer = styled.div`
+  ${({ theme }) => `
+    margin: ${theme.spacing[2]} 0;
+ `}
   flex-wrap: wrap;
 `;
 

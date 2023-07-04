@@ -1,6 +1,6 @@
 import React from 'react';
 import { CalendarContent, CalendarField } from './styled';
-import { CalendarFooter } from './components/CalendarFooter';
+import { CalendarGuide } from './components/CalendarGuide';
 import { DAY_SIZE } from './constants';
 import { DateTimeRangeContainer } from './components/DateTimeRangeContainer';
 import { DateTimeRangeHeader } from './components/DateTimeRangeHeader';
@@ -56,7 +56,14 @@ const Picker = ({
               <DateTimeRangeHeader
                 minutesInterval={minutesInterval}
                 disableTimeSelection={disableTimeSelection}
-              />
+              >
+                <CalendarGuide
+                  disableFuture={disableFuture}
+                  disablePast={disablePast}
+                  modifiers={modifiers}
+                />
+              </DateTimeRangeHeader>
+
               <CalendarContent aria-label={ariaLabel} theme={theme}>
                 <VisibleRangeContainer
                   showToday={showToday}
@@ -68,11 +75,6 @@ const Picker = ({
                   minDate={minDate}
                 />
               </CalendarContent>
-              <CalendarFooter
-                disableFuture={disableFuture}
-                disablePast={disablePast}
-                modifiers={modifiers}
-              />
             </DateTimeRangeContainer>
           </SelectedRangeInfoInput>
           <FieldFooter errorText={errorText} helpText={helpText} validation={validationState} />{' '}

@@ -1,4 +1,4 @@
-export * from './CalendarFooter';
+export * from './CalendarGuide';
 export * from './CalendarHeading';
 export * from './Date';
 export * from './DateRangePicker';

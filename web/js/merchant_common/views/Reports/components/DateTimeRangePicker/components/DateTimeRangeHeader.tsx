@@ -10,7 +10,11 @@ import {
   SelectedRangeInfoBadge,
 } from 'merchant_common/views/Reports/components/DateTimeRangePicker/styled';
 
-export const DateTimeRangeHeader = ({ disableTimeSelection, minutesInterval }): JSX.Element => {
+export const DateTimeRangeHeader = ({
+  disableTimeSelection,
+  minutesInterval,
+  children,
+}): JSX.Element => {
   const { theme } = useTheme();
   const [shouldIncludeTime, setShouldIncludeTime] = useState(!disableTimeSelection);
   const { endDate, setEndDate, setStartDate, startDate } = useDateTimeRangeContext();
@@ -69,6 +73,7 @@ export const DateTimeRangeHeader = ({ disableTimeSelection, minutesInterval }): 
           ) : null}
         </RangeSection>
       </SelectedRangeInfo>
+      {children}
     </CalendarHeader>
   );
 };
