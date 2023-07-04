@@ -439,6 +439,28 @@ class BasicAuth
     protected $idempotencyKeyId = null;
 
     /**
+     *  Routes which are allowed to pass X-Razorpay-Account
+     * @var array
+     */
+    protected $whitelistRoutesForReferrerPartnerAccess = [
+        'merchant_activation_save',
+        'merchant_activation_details',
+        'merchant_document_upload',
+        'merchant_document_delete',
+        'merchant_store_add',
+        'merchant_store_fetch',
+        'merchant_activation_clarifications_save',
+        'merchant_activation_clarifications_fetch',
+        'merchant_save_business_website',
+        'merchant_website_section_action',
+        'fetch_merchant_escalation',
+        'merchant_fetch_config',
+        'merchant_activation_gst_details',
+        'merchant_document_url_fetch',
+        'merchant_nc_revamp_eligibility',
+    ];
+
+    /**
      * Holds passport jwt payload that gets built in api.
      * Ref https://write.razorpay.com/doc/about-edge-passport-mCa579K52t.
      * @var array
@@ -2357,24 +2379,22 @@ class BasicAuth
         }
 
         $account = $this->repo->merchant->find($this->getAccountId());
-        if ($account === null)
+
+        $validateAccountForCurrentAuthType = Tracer::inspan(['name' => HyperTrace::BASIC_AUTH_VALIDATE_ACCOUNT_FOR_CURRENT_AUTH_TYPE], function () use ($account){
+                return ($account === null) or ($this->validateAccountForCurrentAuthType($account) === false);
+            });
+        if ($validateAccountForCurrentAuthType)
         {
             return $this->invalidAccountId($this->getAccountId());
         }
 
-        $validateAccountForCurrentAuthType = Tracer::inspan(['name' => HyperTrace::BASIC_AUTH_VALIDATE_ACCOUNT_FOR_CURRENT_AUTH_TYPE], function () use ($account){
-                return $this->validateAccountForCurrentAuthType($account);
-            });
-        if ($validateAccountForCurrentAuthType)
-        {
-            $this->authCreds->setMerchant($account);
+        $this->authCreds->setMerchant($account);
 
-            // This flow is used in at least 1) Route product, 2) Admin auth flow.
-            $this->setPassportImpersonationClaims(
-                $this->admin ? self::PASSPORT_IMPERSONATION_TYPE_ADMIN_MERCHANT : self::PASSPORT_IMPERSONATION_TYPE_PARTNER,
-                $account->getId()
-            );
-        }
+        // This flow is used in at least 1) Route product, 2) Admin auth flow.
+        $this->setPassportImpersonationClaims(
+            $this->admin ? self::PASSPORT_IMPERSONATION_TYPE_ADMIN_MERCHANT : self::PASSPORT_IMPERSONATION_TYPE_PARTNER,
+            $account->getId()
+        );
     }
 
     /**
@@ -2413,7 +2433,6 @@ class BasicAuth
         {
             if (in_array($route, Route::$partnerCredentialsWithoutSubmerchantIdWhitelist, true) === true)
             {
-                // unset partner related attributes
                 $this->isPartnerAuth = false;
 
                 $this->authCreds->unsetPartnerClient();
@@ -2442,7 +2461,10 @@ class BasicAuth
             }
         }
 
-        $account = $this->repo->merchant->find($accountId);
+        $account = $this->repo
+                        ->merchant
+                        ->find($accountId);
+
         if (empty($account) === true)
         {
             return $this->invalidAccountId($accountId);
@@ -2537,7 +2559,7 @@ class BasicAuth
         return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
     }
 
-    public function invalidAccountId(string $accountId)
+    protected function invalidAccountId(string $accountId)
     {
         $this->trace->info(
             TraceCode::BAD_REQUEST_INVALID_ACCOUNT_HEADER,
@@ -2671,7 +2693,7 @@ class BasicAuth
      *
      * @return bool
      */
-    public function isAccountAuthAllowed() : bool
+    protected function isAccountAuthAllowed() : bool
     {
         $authType = $this->getAuthType();
 
@@ -2768,6 +2790,18 @@ class BasicAuth
                     'submerchant_id' => $account->getId(),
                     'partner_id'     => $this->authCreds->getMerchant()->getId()
                 ]);
+            return true;
+        }
+
+        $merchantCore = new Merchant\Core;
+        if ((in_array($route_name, $this->whitelistRoutesForReferrerPartnerAccess, true) === true) and
+            ($merchantCore->canSkipWorkflowToAccessSubmerchantKyc($this->authCreds->getMerchant(), $account) === true))
+        {
+            $this->trace->info(TraceCode::PARTNER_CONTEXT_SWITCH_TO_SUBMERCHANT,
+                               ['route_name'     => $route_name,
+                                'submerchant_id' => $account->getId(),
+                                'partner_id'     => $this->authCreds->getMerchant()->getId()
+                               ]);
             return true;
         }
 

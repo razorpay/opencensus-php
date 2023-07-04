@@ -13,16 +13,22 @@ use Razorpay\Edge\Passport\Passport;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Http\Route;
+use RZP\Models\Key;
 use RZP\Models\Merchant;
 use RZP\Constants\Product;
+use Razorpay\OAuth\Client;
+use RZP\Models\Pricing\Fee;
 use RZP\Models\User\Role;
 use RZP\Services\DiagClient;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Models\BankingAccountStatement\Details;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use Razorpay\Edge\Passport\Tests\GeneratesTestPassportJwts;
@@ -1220,44 +1226,5 @@ class BasicAuthTest extends TestCase
         $this->ba->privateAuth();
 
         $this->runRequestResponseFlow($this->testData['testPaymentFetchWithAccId']);
-    }
-
-    public function testMerchantAuthWithImpersonationCannotSkipWorkflow()
-    {
-        $this->ba->privateAuth();
-
-        $this->fixtures->merchant->addFeatures(['marketplace']);
-
-        $this->runRequestResponseFlow($this->testData['testMerchantAuthWithImpersonationCannotSkipWorkflow']);
-    }
-
-    public function testMerchantAuthWithImpersonationCanSkipWorkflow()
-    {
-        $this->ba->proxyAuth();
-
-        $this->fixtures->merchant->addFeatures(['marketplace', 'partner_sub_kyc_access']);
-
-        $this->fixtures->create(
-            'merchant_access_map',
-            [
-                'entity_id'   => '10000000000000',
-                'merchant_id' => '100000Razorpay'
-            ]
-        );
-
-        $this->fixtures->create(
-            'merchant_application',
-            [
-                'merchant_id' => '100000Razorpay',
-                'application_id' => '10000000000000',
-                'type'   => 'referred'
-            ]
-        );
-
-        $this->fixtures->create('merchant_detail',
-            ['merchant_id'        => '100000Razorpay',
-                'activation_form_milestone'=>'L2']);
-
-        $this->runRequestResponseFlow($this->testData['testMerchantAuthWithImpersonationCanSkipWorkflow']);
     }
 }

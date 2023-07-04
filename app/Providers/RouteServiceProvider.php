@@ -106,7 +106,6 @@ class RouteServiceProvider extends ServiceProvider
                 'product_identifier',
                 'proxysql',
                 'auth',
-                'not_auth',
                 'sdk_metric',
                 'admin_access',
                 'user_access',
@@ -139,7 +138,6 @@ class RouteServiceProvider extends ServiceProvider
                 'product_identifier',
                 'throttle',
                 'auth',
-                'not_auth',
                 'p2p',
             ],
         ];

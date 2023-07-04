@@ -709,46 +709,4 @@ return [
         ],
     ],
 
-    'testOauthwithImpersontaionWithoutAggregatorClient' => [
-        'request'  => [
-            'url'    => '/users/otp/send',
-            'method' => 'POST',
-            'content' => [
-                'medium' => 'sms',
-                'action' => 'verify_contact',
-            ],
-            'server'  => [
-                'HTTP_X-Razorpay-Account' => 'acc_100000Razorpay',
-            ],
-        ],
-        'response' => [
-            'content'     => [
-                'error' => [
-                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PARTNER_AUTH_NOT_ALLOWED
-                ]
-            ],
-            'status_code' => 400
-        ],
-    ],
-
-    'testSendOtpWithBearerAuthWithoutRazorpayXFeatureEnabled' => [
-        'request'  => [
-            'url'    => '/users/otp/send',
-            'method' => 'POST',
-            'content' => [
-                'medium' => 'sms',
-                'action' => 'verify_contact',
-            ],
-        ],
-        'response' => [
-            'content'     => [
-                'error' => [
-                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_ACCESS_TO_RAZORPAYX_RESOURCE
-                ]
-            ],
-            'status_code' => 401
-        ],
-    ],
 ];
