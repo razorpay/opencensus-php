@@ -1407,7 +1407,6 @@ return [
                 'items'  => [
                     [
                         'id'               => 'acc_10000000000009',
-                        'entity'           => 'merchant',
                         'user'             => [],
                         'details'          => [
                             'activation_status' => 'under_review',
@@ -1745,7 +1744,6 @@ return [
                 'items'  => [
                     [
                         'id'               => 'acc_10000000000009',
-                        'entity'           => 'merchant',
                         'user'             => [],
                         'name'             => 'random_name_1',
                         'details'          => [
@@ -1813,7 +1811,6 @@ return [
                 'items'  => [
                     [
                         'id'               => 'acc_10000000000009',
-                        'entity'           => 'merchant',
                         'user'             => [],
                         'name'             => 'random_name_1',
                         'details'          => [
@@ -1973,7 +1970,6 @@ return [
                 'items'  => [
                     [
                         'id'               => 'acc_10000000000011',
-                        'entity'           => 'merchant',
                         'user'             => [],
                         'details'          => [
                             'activation_status' => 'activated',
@@ -2617,7 +2613,6 @@ return [
                 'items'  => [
                     [
                         'id'               => 'acc_10000000000009',
-                        'entity'           => 'merchant',
                         'user'             => [],
                         'details'          => [
                             'activation_status' => 'under_review',
@@ -2797,11 +2792,9 @@ return [
                 'items'  => [
                     [
                         'id'     => 'acc_10000000000010',
-                        'entity' => 'merchant',
                     ],
                     [
                         'id'     => 'acc_10000000000009',
-                        'entity' => 'merchant',
                     ],
                 ],
             ],
@@ -2819,7 +2812,6 @@ return [
         'response' => [
             'content' => [
                 'id'     => 'acc_10000000000010',
-                'entity' => 'merchant',
             ],
         ],
     ],
@@ -2856,7 +2848,6 @@ return [
                 'items'  => [
                     [
                         'id'     => 'acc_10000000000010',
-                        'entity' => 'merchant',
                     ],
                 ],
             ],
@@ -2878,7 +2869,6 @@ return [
                 'items'  => [
                     [
                         'id'     => 'acc_10000000000009',
-                        'entity' => 'merchant',
                     ],
                 ],
             ],

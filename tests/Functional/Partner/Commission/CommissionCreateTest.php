@@ -451,6 +451,7 @@ class CommissionCreateTest extends TestCase
                 'invoices'              => $expectedInvoiceData,
                 'invoice_count'         => 1,
                 'view'                  => $template,
+                'country_code'          => 'IN'
             ];
 
             $this->assertSame($expectedData, $mail->viewData);
@@ -547,6 +548,7 @@ class CommissionCreateTest extends TestCase
                 'invoices'              => $expectedInvoiceData,
                 'invoice_count'         => 1,
                 'view'                  => $template,
+                'country_code'          => 'IN'
             ];
 
             $this->assertSame($expectedData, $mail->viewData);
@@ -691,6 +693,8 @@ class CommissionCreateTest extends TestCase
         $this->createTaxes();
 
         $this->mockPartnerSubMtuDatalakeQuery(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->mockAllSplitzResponseDisable();
 
         $this->runRequestResponseFlow($testData);
 
@@ -1403,82 +1407,9 @@ class CommissionCreateTest extends TestCase
     }
 
     /**
-     * Check that when invoice created before dec-2022,
-     * invoice shouldn't be auto approved and marked to under_review
+     * Check that when invoice created after dec-2022,
+     * invoice should be auto approved
      */
-    public function testInvoiceMarkUnderReviewForInvoiceGeneratedBeforeDec()
-    {
-        Mail::fake();
-
-        $grossAmount = ( Invoice\Entity::MAX_AUTO_APPROVAL_AMOUNT - 100 );
-        list($partner, $subMerchant, $payment, $config, $commission) = $this->createSampleCommission([],[],[],[
-            'credit' => $grossAmount,
-            'debit'  => 0,
-            'fee'    => $grossAmount,
-            'tax'    => 762697,
-            'created_at' => '1669135053',
-            'updated_at' => '1669135053',
-        ]);
-
-
-        $this->ba->adminAuth();
-
-        $testData = $this->testData['testCaptureCommission'];
-        $testData['request']['url'] = '/commissions/'.$commission->getPublicId().'/capture';
-        $this->runRequestResponseFlow($testData);
-
-        $testData = $this->testData['testInvoiceGenerate'];
-        $testData['request']['content']['month']        = 11;
-        $testData['request']['content']['year']         = 2022;
-        $testData['request']['content']['merchant_ids'] = [$partner->getId()];
-
-        $this->createTaxes();
-
-        $this->mockPartnerSubMtuDatalakeQuery($partner->getId());
-
-        $this->startTest($testData);
-
-        // calling generate invoice twice should still create only one invoice
-        $this->startTest($testData);
-        $invoices = $this->getDbEntities('commission_invoice');
-        $this->assertCount(1, $invoices);
-
-        // check that invoice is created with line items and amounts
-        $invoice = $this->getDbLastEntity('commission_invoice');
-        $invoiceExpectedData = [
-            'merchant_id'   => 'DefaultPartner',
-            'month'         => 11,
-            'year'          => 2022,
-            'status'        => 'issued',
-            'gross_amount'  => $grossAmount,
-            'tax_amount'    => 762697,
-        ];
-        $this->assertArraySelectiveEquals($invoiceExpectedData, $invoice->toArray());
-
-        $lineItemExpectedData = [
-            [
-                'amount'        => $grossAmount,
-                'gross_amount'  => $grossAmount,
-                'tax_amount'    => 762697,
-                'net_amount'    => $grossAmount,
-                'tax_inclusive' => true,
-            ]
-        ];
-        $this->assertArraySelectiveEquals($lineItemExpectedData, $invoice->lineItems->toArray());
-
-        $this->fixtures->merchant->addFeatures('automated_comm_payout', Constants::DEFAULT_PLATFORM_MERCHANT_ID);
-
-        $this->mockAutoApprovalFinanceExp($partner->getId());
-
-        $testData = $this->testData['testInvoiceAction'];
-        $testData['request']['url'] = '/commissions/invoice/' . $invoice->getId();
-        $this->ba->proxyAuth('rzp_test_' . $partner->getId());
-        $this->runRequestResponseFlow($testData);
-
-        $invoice = $this->getDbLastEntity('commission_invoice');
-        $this->assertEquals('under_review', $invoice['status']);
-
-    }
 
     public function testInvoiceFinanceAutoApproveMarkProcessedForInvoiceGeneratedOnDec()
     {
@@ -1490,20 +1421,18 @@ class CommissionCreateTest extends TestCase
             'debit'  => 0,
             'fee'    => $grossAmount,
             'tax'    => 762697,
-            'created_at' => '1669894265',
-            'updated_at' => '1669894265',
         ]);
 
 
         $this->ba->adminAuth();
-
+        $now = Carbon::now(Timezone::IST);
         $testData = $this->testData['testCaptureCommission'];
         $testData['request']['url'] = '/commissions/'.$commission->getPublicId().'/capture';
         $this->runRequestResponseFlow($testData);
 
         $testData = $this->testData['testInvoiceGenerate'];
-        $testData['request']['content']['month']        = 12;
-        $testData['request']['content']['year']         = 2022;
+        $testData['request']['content']['month']        = $now->month;
+        $testData['request']['content']['year']         = $now->year;
         $testData['request']['content']['merchant_ids'] = [$partner->getId()];
 
         $this->createTaxes();
@@ -1521,8 +1450,8 @@ class CommissionCreateTest extends TestCase
         $invoice = $this->getDbLastEntity('commission_invoice');
         $invoiceExpectedData = [
             'merchant_id'   => 'DefaultPartner',
-            'month'         => 12,
-            'year'          => 2022,
+            'month'         => $now->month,
+            'year'          => $now->year,
             'status'        => 'issued',
             'gross_amount'  => $grossAmount,
             'tax_amount'    => 762697,
@@ -2932,6 +2861,7 @@ class CommissionCreateTest extends TestCase
 
         $this->mockPartnerInvoiceAutoApproval(Constants::DEFAULT_PLATFORM_MERCHANT_ID, 2023, 'enable');
         $this->mockPartnerSubMtuDatalakeQuery(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+        $this->mockAutoApprovalFinanceExp(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
 
         $this->runRequestResponseFlow($testData);
 

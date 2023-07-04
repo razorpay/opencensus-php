@@ -33,6 +33,19 @@ trait MocksSplitz
                     ->andReturn($output);
     }
 
+    protected function mockAllSplitzResponseDisable($output = [
+        "response" => [
+            "variant" => [
+                "name" => 'disable',
+            ]
+        ]
+    ])
+    {
+        return $this->getSplitzMock()
+            ->shouldReceive('evaluateRequest')
+            ->andReturn($output);
+    }
+
     protected function getSplitzMock()
     {
         if ($this->splitzMock === null)

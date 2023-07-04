@@ -459,8 +459,8 @@ class Core extends Base\Core
         {
             $commissionComponent = $this->repo->commission_component->findByCommissionId($commission->getId())->first();
             $data       = [
-                'commission'          => $commission->attributesToArray(),
-                'commission_component' => $commissionComponent->toArray()
+                'commission'           => $commission->attributesToArray(),
+                'commission_component' => optional($commissionComponent)->toArray()
             ];
 
             $data['commission']['notes'] = (object) ($data['commission']['notes']);
