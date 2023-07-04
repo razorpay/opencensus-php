@@ -485,15 +485,20 @@ class Core extends Base\Core
                 $bankCode = $bankAccount->getBankCode();
 
                 $data[Entity::BANK] = $bankCode;
-    
+
                 $bankAccountData = $bankAccount->getDataForCheckout();
-                
+
                 if ($order->getMethod() === Methods\Entity::EMANDATE)
                 {
                     $bankAccountData[BankAccount\Entity::ACCOUNT_NUMBER] = mask_except_last4($bankAccountData[BankAccount\Entity::ACCOUNT_NUMBER]);
                 }
 
                 $data[Entity::BANK_ACCOUNT] = $bankAccountData;
+            }
+
+            if ($tokenRegistration->getMethod() === Methods\Entity::CARD){
+                $data[Entity::TOKEN]['frequency'] = $tokenRegistration->getFrequency() ?? $tokenRegistration::AS_PRESENTED;
+                $data[Entity::TOKEN]['max_amount'] = $tokenRegistration->getMaxAmount() ?? null;
             }
 
             $data[Entity::AUTH_TYPE] = $tokenRegistration->getAuthType();
