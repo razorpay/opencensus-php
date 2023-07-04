@@ -854,6 +854,12 @@ class Core extends Base\Core
             ->setEntityAndId($terminal->getEntity(), $terminal->getId())
             ->handle([Entity::ENABLED_BANKS => $terminal->getEnabledBanks()], [Entity::ENABLED_BANKS => $banksToEnable]);
 
+        $syncInstruments = false;
+        if( (new Terminal\Core)->getSyncInstrumentsFlagFromWorkflow($terminal,Permission::ASSIGN_MERCHANT_BANKS) )
+        {
+            $syncInstruments = $option[TerminalConstants::SYNC_INSTRUMENTS];
+        }
+
         $terminal->setEnabledBanks($banksToEnable);
 
         $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
@@ -880,7 +886,7 @@ class Core extends Base\Core
         }
         else
         {
-            $this->repo->saveOrFail($terminal, ['shouldSync' => $option['sync_with_terminals_service']]);
+            $this->repo->saveOrFail($terminal, ['shouldSync' => $option['sync_with_terminals_service'], TerminalConstants::SYNC_INSTRUMENTS => $syncInstruments]);
         }
 
         return $this->getBanksForTerminal($terminal);

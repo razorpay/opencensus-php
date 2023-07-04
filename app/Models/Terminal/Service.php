@@ -645,9 +645,17 @@ class Service extends Base\Service
 
         $banksToEnable = $input[Entity::ENABLED_BANKS] ?? [];
 
+        $syncInstruments = false;
+        if( isset($input[Constants::SYNC_INSTRUMENTS]) )
+        {
+            $syncInstruments = $input[Constants::SYNC_INSTRUMENTS];
+            unset($input[Constants::SYNC_INSTRUMENTS]);
+        }
+
         $option = [
             'sync_with_terminals_service' => true,
             'bulk_update' => false,
+            Constants::SYNC_INSTRUMENTS => $syncInstruments
         ];
 
         $banks = $this->core()->setBanksForTerminal($terminal, $banksToEnable, $option);
