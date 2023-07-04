@@ -18,6 +18,7 @@ use RZP\Models\Settings;
 use Illuminate\Support\Facades\Config;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 
 class Entity extends Base\PublicEntity
 {
@@ -851,15 +852,33 @@ class Entity extends Base\PublicEntity
     public function getMerchantOrgBrandingDetails(): array
     {
         $brandingLogo = 'https://cdn.razorpay.com/logo.svg';
+        $securityBrandingLogo = '';
+        $isCurlecOrg = false;
 
         if($this->merchant->shouldShowCustomOrgBranding() === true)
         {
             $org = $this->merchant->org;
-
+            if(ORG_ENTITY::isOrgCurlec($org->getId()) === true){
+                $branding = $this->getCurlecBrandingConfig();
+                $securityBrandingLogo = $branding['security_branding_logo'];
+                $isCurlecOrg = true;
+            }
             $brandingLogo = $org->getCheckoutLogo();
         }
 
-        return ['branding_logo' => $brandingLogo];
+        return [
+            'branding_logo'          => $brandingLogo,
+            'security_branding_logo' => $securityBrandingLogo,
+            'is_curlec_org'          => $isCurlecOrg,
+        ];
+    }
+
+    public function getCurlecBrandingConfig()
+    {
+        $branding = [];
+        $branding['show_rzp_logo'] = true;
+        $branding['security_branding_logo'] = "https://cdn.razorpay.com/static/assets/i18n/malaysia/security-branding.png";
+        return $branding;
     }
 
     public function getHandleUrl(): string

@@ -4,6 +4,7 @@ namespace RZP\Models\PaymentLink;
 
 use Carbon\Carbon;
 
+use App;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Constants\Table;
@@ -47,6 +48,8 @@ class Repository extends Base\Repository
      */
     public function findActiveByPublicId(string $id): Entity
     {
+        $app = \App::getFacadeRoot();
+
         $entity = $this->findByPublicId($id);
 
         // No direct query with filter because index is as (status, status_reason).
@@ -55,6 +58,26 @@ class Repository extends Base\Repository
             $merchantDetails = $entity->getMerchantSupportDetails();
 
             $orgBrandingDetails = $entity->getMerchantOrgBrandingDetails();
+
+            $isCurlec = $orgBrandingDetails['is_curlec_org'];
+
+            $reportLinkUrl = '';
+
+            if($isCurlec === true)
+            {
+                $reportLinkUrl = $app['config']->get('app.curlec_customer_flagging_report_url');
+            }
+            else
+            {
+                $reportBaseUrl = $app['config']->get('app.customer_flagging_report_url');
+
+                $params = http_build_query([
+                    'e'  => base64_encode($entity->getPublicId()),
+                    's'  => base64_encode('hosted'),
+                ]);
+
+                $reportLinkUrl = $reportBaseUrl . $params;
+            }
 
             $data['merchant'] = $merchantDetails;
 
@@ -65,6 +88,8 @@ class Repository extends Base\Repository
             $data['mode'] = $this->app['rzp.mode'];
 
             $data['view_type'] = $entity->getViewType();
+
+            $data['report_link_url'] = $reportLinkUrl;
 
             throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID, null, $data, 'This page has been deactivated');
         }

@@ -34,6 +34,20 @@ class PaymentRequest extends Mailable
         $this->toEmail     = $toEmail;
     }
 
+    protected function getSenderEmail(): string
+    {
+        $orgCode = $this->mailPayload['org']['custom_code'] ?? '';
+
+        return Constants::getSenderEmailForOrg($orgCode, Constants::NOREPLY);
+    }
+
+    protected function getSenderHeader(): string
+    {
+        $orgCode = $this->mailPayload['org']['custom_code'] ?? '';
+
+        return Constants::getSenderNameForOrg($orgCode, Constants::NOREPLY);
+    }
+
     protected function addRecipients()
     {
         $this->to($this->toEmail);
@@ -50,8 +64,8 @@ class PaymentRequest extends Mailable
 
     protected function addSender()
     {
-        $fromEmail = Constants::MAIL_ADDRESSES[Constants::NOREPLY];
-        $fromName  = Constants::HEADERS[Constants::NOREPLY];
+        $fromEmail = $this->getSenderEmail();
+        $fromName  = $this->getSenderHeader();
 
         $this->from($fromEmail, $fromName);
 

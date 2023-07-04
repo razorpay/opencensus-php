@@ -244,6 +244,7 @@ class Org extends Base
             'default_pricing_plan_id' => 'BAJq6FJDNJ4ZqD',
             'custom_code'             => 'curlec',
             'display_name'            => "Curlec",
+            'payment_apps_logo_url'   => 'https://rzp-1415-prod-dashboard-activation.s3.ap-south-1.amazonaws.com/org_KjWRtYXwpK6VfK/payment_apps_logo/phplelIPA',
         ]);
 
         $org->permissions()->attach($permissions);

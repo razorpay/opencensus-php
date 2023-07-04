@@ -351,6 +351,8 @@ return array(
 
     'amount_difference_allowed_authorized' => ['EQ8AzfZip2meDu', 'FBYspBmKlWefX9'],
 
+    'curlec_customer_flagging_report_url' => env('CURLEC_CUSTOMER_FLAGGING_REPORT_URL'),
+
     'customer_flagging_report_url' => env('CUSTOMER_FLAGGING_REPORT_URL'),
 
     'keyless_header' =>  [
@@ -553,7 +555,7 @@ return array(
     'checkout_upi_turbo_splitz_experiment_id' => env('CHECKOUT_UPI_TURBO_SPLITZ_EXPERIMENT_ID'),
 
     'checkout_offers_ux_splitz_experiment_id' => env('CHECKOUT_OFFERS_UX_SPLITZ_EXPERIMENT_ID'),
-    
+
     'checkout_upi_number_contact_blacklist_splitz_experiment_id' => env('CHECKOUT_UPI_NUMBER_CONTACT_BLACKLIST_SPLITZ_EXPERIMENT_ID'),
 
     'dedicated_terminal_qr_code_splitz_experiment_id' => env('DEDICATED_TERMINAL_QR_CODE_SPLITZ_EXPERIMENT_ID'),

@@ -5,6 +5,7 @@ namespace RZP\Models\PaymentLink;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
+use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 use RZP\Models\Feature;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
@@ -178,6 +179,7 @@ class ViewSerializer extends Base\Core
             'support_email'    => $supportDetails['support_email'],
             'support_mobile'   => $supportDetails['support_mobile'],
             'tnc_link'         => $merchantTncLink,
+            'merchant_country_code' => $this->merchant->getCountry(),
         ];
     }
 
@@ -308,14 +310,20 @@ class ViewSerializer extends Base\Core
         $branding = [
             'show_rzp_logo' => true,
             'branding_logo' => '',
+            'security_branding_logo' => '',
         ];
 
         if($this->merchant->shouldShowCustomOrgBranding() === true)
         {
-            $branding['show_rzp_logo'] = false;
-
+            if(ORG_ENTITY::isOrgCurlec($org->getId()) === true)
+            {
+                $branding = array_merge($branding, $this->paymentLink->getCurlecBrandingConfig());
+            }
+            else
+            {
+                $branding['show_rzp_logo'] = false;
+            }
             $branding['branding_logo'] = $org->getPaymentAppLogo() ?: self::AXIS_BRANDING_LOGO;
-
         }
 
         return [

@@ -785,7 +785,7 @@ class ViewDataSerializer extends Base\Core
                     'timestamp'            => $payment->getUpdatedAt(),
                     'captured_at'          => $payment->getAttribute('captured_at'),
                     'amount_spread'        => $payment->getAmountComponents(),
-                    'created_at_formatted' => Utility::getTimestampFormatted($payment->getCreatedAt(), 'jS M, Y'),
+                    'created_at_formatted' => Utility::getTimestampFormattedByTimeZone($payment->getCreatedAt(), 'jS M, Y', $payment->merchant->getTimeZone()),
                     'method'               => $payment->getMethodWithDetail(),
                     'notes'                => $payment->getNotes(),
                 ];
