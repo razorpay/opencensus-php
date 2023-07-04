@@ -1974,4 +1974,35 @@ class MethodsTest extends TestCase
 
         $this->assertTrue($response[Wallet::PAYZAPP]);
     }
+
+    public function testEnableSodexo()
+    {
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'convertContentToString' => false,
+            'content' => [
+                'sodexo' => true,
+            ],
+        ];
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->addFeatures('raas');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertTrue($merchantMethods->isSodexoEnabled());
+
+    }
 }

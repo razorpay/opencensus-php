@@ -75,6 +75,7 @@ class Entity extends Base\PublicEntity
     const TOUCHNGO          = 'touchngo';
     const BOOST             = 'boost';
     const MCASH             = 'mcash';
+    const SODEXO            = 'sodexo';
 
     const DEBIT_EMI_PROVIDERS = 'debit_emi_providers';
     const CREDIT_EMI_PROVIDERS  = 'credit_emi_providers';
@@ -210,6 +211,7 @@ class Entity extends Base\PublicEntity
         self::GRABPAY,
         self::TOUCHNGO,
         self::INTL_BANK_TRANSFER,
+        self::SODEXO,
     ];
 
     protected $public = [
@@ -269,6 +271,7 @@ class Entity extends Base\PublicEntity
         self::GRABPAY,
         self::TOUCHNGO,
         self::INTL_BANK_TRANSFER,
+        self::SODEXO,
     ];
 
     protected $appends = [
@@ -288,6 +291,7 @@ class Entity extends Base\PublicEntity
         self::MCASH,
         self::GRABPAY,
         self::TOUCHNGO,
+        self::SODEXO,
     ];
 
 
@@ -479,6 +483,10 @@ class Entity extends Base\PublicEntity
             Paylaterprovider::LAZYPAY,
             Paylaterprovider::ICIC,
             Paylaterprovider::HDFC
+        ],
+
+        self::CARD => [
+            self::SODEXO
         ]
     ];
 
@@ -904,6 +912,14 @@ class Entity extends Base\PublicEntity
         return null;
     }
 
+    public function isSodexoEnabled(): bool 
+    {
+        $addonMethods = $this->getAddonMethods();
+
+        return !empty($addonMethods[self::CARD][self::SODEXO]);
+    }
+
+
     public function isMethodEnabled($method)
     {
         $func = 'is' . studly_case($method) . 'Enabled';
@@ -1218,6 +1234,17 @@ class Entity extends Base\PublicEntity
     public function getIntlBankTransferAttribute()
     {
         return $this->getIntlBankTransferEnabledModes();
+    }
+
+    public function getSodexo()
+    {
+        $addonMethods = $this->getAttribute(self::ADDON_METHODS);
+        return $addonMethods[self::CARD][self::SODEXO] ?? false;
+    }
+
+    public function getSodexoAttribute()
+    {
+        return $this->getSodexo();
     }
 
     // ----------------------- Getters End -----------------------------------------

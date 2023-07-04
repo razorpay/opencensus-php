@@ -362,6 +362,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     protected $googlePayCardNetworks   = [];
 
+    const SODEXO = 'sodexo';
+
     protected $fillable = [
         self::ID,
         self::AMOUNT,
@@ -486,6 +488,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::FEE_BEARER,
         self::REFERENCE13,
         self::UPI,
+        self::PROVIDER,
         self::UPI_METADATA,
         self::REFUND_AUTHORIZED_PAYMENT,
     ];
@@ -6691,5 +6694,18 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 (in_array($this->merchant->getId(),self::FEE_MODEL_OVERRIDE_MERCHANT_IDS) === true) and
                 (empty($this->transaction) === false)
             );
+    }
+
+    public function getProvider()
+    {
+        return $this->getAttribute(self::PROVIDER);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isSodexoPayment(): bool
+    {
+        return $this->isCard() && $this->getProvider() === self::SODEXO;
     }
 }

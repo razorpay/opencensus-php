@@ -11683,4 +11683,68 @@ class PaymentCreateTest extends TestCase
 
         $this->assertFalse($transaction['on_hold']);
     }
+    public function testRearchPaymentCreateAjaxSodexo()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        // we are ramping up auth terminal selection hence to make sure all test cases passes
+
+        $order = $this->fixtures->order->createPaymentCaptureOrder();
+
+        $this->enablePgRouterConfig();
+
+        $payment = [
+            'amount'            => '40000',
+            'currency'          => 'INR',
+            'email'             => 'a@b.com',
+            'contact'           => '9918899029',
+            'notes'             => [
+                'merchant_order_id' => 'random order id',
+            ],
+            'description'       => 'random description',
+            'provider'          => 'sodexo',
+        ];
+
+        $payment['card'] = array(
+            'number'            => '4012001038443335',
+            'name'              => 'Harshil',
+            'expiry_month'      => '12',
+            'expiry_year'       => '2032',
+            'cvv'               => '566',
+        );
+
+        $pgService = \Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('pg_router', $pgService);
+
+        $pgService->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'), Mockery::type('int'))
+            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure, int $timeout)
+            {
+                return [
+                    'body' => [
+                        'data' => [
+                            'pg_router' => 'true'
+                        ]
+                    ]
+
+                ];
+            });
+
+        $request = [
+            'content' => $payment,
+            'url'     => '/payments/create/ajax',
+            'method'  => 'post'
+        ];
+
+        $response = $this->makeRequestParent($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertEquals($content['data']['pg_router'], 'true');
+    }
+
 }

@@ -326,6 +326,11 @@ class Payment extends Base
         // Fee based on the method type
         $payment = $this->entity;
 
+        if ($payment->isSodexoPayment())
+        {
+            return $this->getRelevantPricingRuleForSodexoCardPayment($rules);
+        }
+
         $cardType = $payment->card->getTypeElseDefault();
 
         $international = $payment->isInternational();
@@ -953,5 +958,36 @@ class Payment extends Base
     protected function isFlexMoneyProvider($issuer): bool
     {
         return (in_array(strtoupper($issuer), self::$flexMoneyIssuers));
+    }
+
+    protected function getRelevantPricingRuleForSodexoCardPayment($rules)
+    {
+        $payment = $this->entity;
+
+        $international = $payment->isInternational();
+
+        $authType = $payment->getAuthType();
+
+        $filters = [
+            [Pricing\Entity::INTERNATIONAL,             $international, false,  false   ],
+            [Pricing\Entity::PAYMENT_METHOD_TYPE,       PaymentModel\Entity::SODEXO, true, null  ],
+            [Pricing\Entity::AUTH_TYPE,                 $authType,      true,   null    ],
+        ];
+
+        $sodexoRules = $this->applyFiltersOnRules($rules, $filters);
+
+        if (empty($sodexoRules) === true) {
+            $filters = [
+                [Pricing\Entity::INTERNATIONAL,             $international, false,  false   ],
+                [Pricing\Entity::PAYMENT_METHOD_TYPE,       Card\Type::DEBIT, true, null  ],
+                [Pricing\Entity::AUTH_TYPE,                 $authType,      true,   null    ],
+            ];
+            $rules = $this->applyFiltersOnRules($rules, $filters);
+        }
+        else {
+            $rules = $sodexoRules;
+        }
+
+        return $this->applyAmountRangeFilterAndReturnOneRule($rules);
     }
 }

@@ -418,6 +418,8 @@ class Processor
 
     const CAPTURE_VERIFY_METRO_TOPIC        = 'rearch-capture-verify';
 
+    const SODEXO = 'sodexo';
+
     const FORCE_AUTHORIZE_FAILED_ALLOW_GATEWAYS = [
         Payment\Gateway::KOTAK_DEBIT_EMI,
         Payment\Gateway::FULCRUM,
@@ -758,6 +760,12 @@ class Processor
                     'merchant_id' => $merchant->getId(),
                 ]);
                 return false;
+            }
+
+            if (($input[Payment\Entity::METHOD] == Payment\METHOD::CARD) and
+                ($input[Payment\Entity::PROVIDER] == self::SODEXO))
+            {
+                return true;
             }
 
             if ((empty($input['currency']) === false) and

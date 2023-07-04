@@ -419,6 +419,9 @@ class Repository extends Base\Repository
                     } else if ($method === Methods\Entity::IN_APP)
                     {
                         $join->where(Methods\Entity::ADDON_METHODS . '->' . Methods\Entity::UPI . '->' . Methods\Entity::IN_APP,'=', $value);
+                    } else if ($method === Methods\Entity::SODEXO)
+                    {
+                        $join->where(Methods\Entity::ADDON_METHODS . '->' . Methods\Entity::CARD . '->' . Methods\Entity::SODEXO,'=', $value);
                     } else
                     {
                         $join->where($method, '=', $queryValue);

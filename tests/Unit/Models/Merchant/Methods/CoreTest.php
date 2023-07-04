@@ -162,4 +162,28 @@ class CoreTest extends TestCase
         $this->assertEquals(1,$data['intl_bank_transfer']['usd']);
         $this->assertEquals(1,$data['intl_bank_transfer']['swift']);
     }
+
+    public function testSodexoIsEnabled()
+    {
+        $methods = [
+            'card'          => true,
+            'merchant_id'   => '8vUslVi0uFOSoy',
+            'disabled_banks'=> [],
+            'banks'         => '[]',
+            'addon_methods' => [
+                'card' => [
+                    'sodexo' => true,
+                ]
+            ]
+        ];
+
+        $this->fixtures->create('merchant', ['id' => '8vUslVi0uFOSoy']);
+        $methods = $this->fixtures->create('methods', $methods);
+
+        $data = (new MethodsCore())->getFormattedMethods($methods->merchant);
+
+        $this->assertTrue($data['sodexo']);
+    }
+
+
 }

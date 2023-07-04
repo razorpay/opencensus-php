@@ -424,6 +424,8 @@ class Core extends Base\Core
         $data[Payment\Method::PAYLATER] =
             $methods->isPayLaterEnabled() ? $this->getProviders($merchant, Payment\Method::PAYLATER, $methods) : [];
 
+        $data[Entity::SODEXO] = $methods->isSodexoEnabled();
+
         if ($merchant->isFeatureEnabled(Constants::BANK_TRANSFER_ON_CHECKOUT) === true)
         {
             $data[Payment\Method::BANK_TRANSFER] = $methods->isBankTransferEnabled();
