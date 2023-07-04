@@ -9970,6 +9970,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MERCHANT_OBSERVER_ACTION_FAILURE                  = 'MERCHANT_OBSERVER_ACTION_FAILURE';
 
+    const TURBO_UPI_GATEWAY_CALLBACK_CHECKSUM_MISMATCH      = 'TURBO_UPI_GATEWAY_CALLBACK_CHECKSUM_MISMATCH';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

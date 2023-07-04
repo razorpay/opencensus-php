@@ -937,6 +937,18 @@ trait Callback
                     'amount' => $payment->getAmount()
                 ]);
                 break;
+
+            case ErrorCode::GATEWAY_ERROR_CHECKSUM_MATCH_FAILED:
+                if ($payment->isInAppUPI() === true)
+                {
+                    $this->trace->error(TraceCode::TURBO_UPI_GATEWAY_CALLBACK_CHECKSUM_MISMATCH,
+                                        [
+                                            'payment_id' => $payment->getId(),
+                                            'status'     => $payment->getStatus(),
+                                            'gateway'    => $payment->getGateway(),
+                                        ]);
+                }
+                break;
         }
     }
 
@@ -959,6 +971,12 @@ trait Callback
         $internalErrorCode = $e->getError()->getInternalErrorCode();
 
         $previousExceptionData = $e->getData() ?? [];
+
+        if (($internalErrorCode === ErrorCode::GATEWAY_ERROR_CHECKSUM_MATCH_FAILED) and
+            ($this->payment->isInAppUPI() === true))
+        {
+            throw $e;
+        }
 
         if(($this->payment->isEmandateRecurring() === true) and
             ($this->payment->isRecurringTypeInitial() === true) and
