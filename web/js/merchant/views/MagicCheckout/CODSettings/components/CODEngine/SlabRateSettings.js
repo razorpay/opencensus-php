@@ -1,11 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+
+import { EditComposeIcon, Link } from '@razorpay/blade/components';
 import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
-import { EditComposeIcon, Link } from '@razorpay/blade/components';
 import Input from 'common/new-ui/Input';
 import DataTable from 'common/ui/Table/DataTable';
+
 import ConfirmationModal, {
   DisplayNotificationTxt,
 } from 'merchant/views/MagicCheckout/common/components/ConfirmationModal';
@@ -14,8 +16,8 @@ import {
   slatRate,
   actions,
 } from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/common/cellItem';
-
 import SettingsLabel from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/common/SettingsLabel';
+import PreventDeleteModal from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/common/PreventDeleteModal';
 
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -97,19 +99,27 @@ function SlabRateSettings({
 
   const onDeleteClick = useCallback(
     (id) => () => {
-      openModal({
-        size: 'small',
-        className: `magicToggleConfirmationModal`,
-        component: (
-          <ConfirmationModal
-            header="Delete slab?"
-            desc="Are you sure you want to delete this slab"
-            affirmativeLabel="Yes"
-            abortLabel="No"
-            onAffirm={() => deleteSlab(id)}
-          />
-        ),
-      });
+      if (fee_rules.length === 1) {
+        openModal({
+          size: 'small',
+          className: `magicToggleConfirmationModal`,
+          component: <PreventDeleteModal />,
+        });
+      } else {
+        openModal({
+          size: 'small',
+          className: `magicToggleConfirmationModal`,
+          component: (
+            <ConfirmationModal
+              header="Delete slab?"
+              desc="Are you sure you want to delete this slab"
+              affirmativeLabel="Yes"
+              abortLabel="No"
+              onAffirm={() => deleteSlab(id)}
+            />
+          ),
+        });
+      }
     },
     [],
   );

@@ -34,7 +34,7 @@ function CODEngine(props) {
     });
   };
 
-  if (!configs.cod_engine) return <EmptyView viewName="COD engine" />;
+  if (!configs.cod_engine) return <EmptyView viewName="COD settings" />;
 
   if (codEngineConfig.loading)
     return (
@@ -47,7 +47,7 @@ function CODEngine(props) {
     <div className="cod-content-wrapper">
       <div className="cod-content">
         <div className="text-container">
-          <Heading size="large">COD engine</Heading>
+          <Heading size="large">COD Settings</Heading>
           <Text type="subdued">
             Configure COD eligibility, rate, zones, product catalogues, fees{' '}
           </Text>

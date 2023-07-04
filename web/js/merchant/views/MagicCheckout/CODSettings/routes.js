@@ -9,7 +9,7 @@ const CODEngine = lazy(() =>
 
 const routes = [
   {
-    title: 'COD Engine',
+    title: 'Magic COD',
     id: 'cod-engine',
     component: <CODEngine />,
     className: 'cod-list-container',

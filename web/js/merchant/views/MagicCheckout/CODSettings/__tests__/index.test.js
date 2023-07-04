@@ -44,7 +44,7 @@ const App = ({ state = {}, ...props }) => {
 describe('COD Engine', () => {
   test('should render cod engine tabs', async () => {
     render(<App />);
-    const CODEngineTab = await screen.findByText('COD Engine');
+    const CODEngineTab = await screen.findByText('Magic COD');
     const BlockListTab = await screen.findByText('Block List');
     expect(CODEngineTab).toBeInTheDocument();
     expect(BlockListTab).toBeInTheDocument();

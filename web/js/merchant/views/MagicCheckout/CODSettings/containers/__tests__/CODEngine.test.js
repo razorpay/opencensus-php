@@ -27,7 +27,7 @@ describe('COD Engine', () => {
 
   test('should render cod engine settings view', () => {
     render(<App state={INITIAL_STATE} />);
-    const Heading = screen.getByText('COD engine');
+    const Heading = screen.getByText('COD Settings');
     const SubHeading = screen.getByText(
       'Configure COD eligibility, rate, zones, product catalogues, fees',
     );

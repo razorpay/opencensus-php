@@ -1,16 +1,22 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
+
 import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import DataTable from 'common/ui/Table/DataTable';
+
 import SettingsLabel from './common/SettingsLabel';
-import { POPOVER_CONTENT, MODAL_MODES } from 'merchant/views/MagicCheckout/CODSettings/constants';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
+import PreventDeleteModal from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/common/PreventDeleteModal';
+import { zoneCountry, zoneName, zoneStates, actions } from './common/cellItem';
+
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { deleteZone } from 'merchant/reducers/magicCheckout/codEngine/action';
-import DataTable from 'common/ui/Table/DataTable';
-import { zoneCountry, zoneName, zoneStates, actions } from './common/cellItem';
+
 import { merchantFetch } from 'merchant/utils/ajax';
+
+import { POPOVER_CONTENT, MODAL_MODES } from 'merchant/views/MagicCheckout/CODSettings/constants';
 
 const ConfirmationModal = lazy(() =>
   import(
@@ -91,21 +97,29 @@ function ZoneSettings({
   };
   const onDeleteClick = useCallback(
     (id) => () => {
-      openModal({
-        size: 'small',
-        className: `magicToggleConfirmationModal`,
-        component: (
-          <SuspenseWithLoader type="center">
-            <ConfirmationModal
-              header="Delete zone?"
-              desc="Are you sure you want to delete this zone"
-              affirmativeLabel="Yes"
-              abortLabel="No"
-              onAffirm={() => deleteZone(id)}
-            />
-          </SuspenseWithLoader>
-        ),
-      });
+      if (zones.length === 1) {
+        openModal({
+          size: 'small',
+          className: `magicToggleConfirmationModal`,
+          component: <PreventDeleteModal />,
+        });
+      } else {
+        openModal({
+          size: 'small',
+          className: `magicToggleConfirmationModal`,
+          component: (
+            <SuspenseWithLoader type="center">
+              <ConfirmationModal
+                header="Delete zone?"
+                desc="Are you sure you want to delete this zone"
+                affirmativeLabel="Yes"
+                abortLabel="No"
+                onAffirm={() => deleteZone(id)}
+              />
+            </SuspenseWithLoader>
+          ),
+        });
+      }
     },
     [],
   );
