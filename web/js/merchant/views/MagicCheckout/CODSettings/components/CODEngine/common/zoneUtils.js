@@ -1,9 +1,10 @@
 import { GLOBAL_KEY } from 'merchant/views/MagicCheckout/CODSettings/constants';
 
 export const DEPTH_MAP = {
-  [GLOBAL_KEY]: 0,
-  COUNTRY: 1,
-  STATE: 2,
+  // commented below line to remove International option in popup, might need it in future
+  // [GLOBAL_KEY]: 0,
+  COUNTRY: 0,
+  STATE: 1,
 };
 const getTotalSelectableItems = (depth, item, zone = {}) => {
   if (depth === DEPTH_MAP.COUNTRY) {
@@ -27,28 +28,29 @@ const getZoneCondition = ({ zone, itemZone, parentZone }) => {
 // builds countries list form /countries api response. Add total states, total selectable children, selected children properties to each country.
 // Adds zone name & parent index to states to handle enable/disabling of zone item & indeterminate status of parent checkboxes
 export const buildCountriesData = (countries, zone = {}) => {
+  // eslint-disable-next-line no-unused-vars
   let totalItemsForGlobal = 0;
   const countriesWithStates = {};
-  if (countries?.[0]?.code !== GLOBAL_KEY) {
-    countries.unshift({
-      code: GLOBAL_KEY,
-      name: GLOBAL_KEY,
-      depth: 0,
-      selected: false,
-      zone_name: null,
-    });
-  }
+  // if (countries?.[0]?.code !== GLOBAL_KEY) {
+  //   countries.unshift({
+  //     code: GLOBAL_KEY,
+  //     name: GLOBAL_KEY,
+  //     depth: 0,
+  //     selected: false,
+  //     zone_name: null,
+  //   });
+  // }
 
   const formattedCountries = countries.map((country, index) => {
     country = {
       index,
       code: country.code,
       name: country.name,
-      depth: country.depth ?? 1,
+      depth: 0,
       zone_name: country.zone_name,
       selected: country.zone_name === zone.name,
       total_children: country.states?.length || 0,
-      total_selectable_children: getTotalSelectableItems(country.depth ?? 1, country, zone) || 0,
+      total_selectable_children: getTotalSelectableItems(DEPTH_MAP.COUNTRY, country, zone) || 0,
       parentIndex: 0,
       states: country.states ?? {},
       total_selected: 0,
@@ -56,14 +58,14 @@ export const buildCountriesData = (countries, zone = {}) => {
     };
 
     if (country.states?.length > 0) {
-      countriesWithStates[country.code] = false;
+      countriesWithStates[country.code] = true;
       const statesMap = {};
 
       country.states.forEach((state) => {
         statesMap[state.code] = {
           code: state.code,
           name: state.name,
-          depth: 2,
+          depth: 1,
           zone_name: state.zone_name,
           parent: country.code,
           parentIndex: index,
@@ -96,7 +98,8 @@ export const buildCountriesData = (countries, zone = {}) => {
     }
     return country;
   });
-  formattedCountries[0].total_selectable_children = totalItemsForGlobal;
+  // commented below line to remove International option in popup, might need it in future
+  // formattedCountries[0].total_selectable_children = totalItemsForGlobal;
   return { allCountries: formattedCountries, countriesWithStates };
 };
 
@@ -141,7 +144,7 @@ export const getLocationsPayload = (countries, zone) => {
   // global check
   const locations = [];
   // return locations;
-  for (let i = 1; i < countries.length; i++) {
+  for (let i = 0; i < countries.length; i++) {
     const country = countries[i];
     const { total_selected, total_children, selected, states } = country;
     // eslint-disable-next-line no-continue

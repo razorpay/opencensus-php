@@ -25,10 +25,10 @@ export const SETTINGS_OPTIONS = [
     label: 'Basic',
     name: 'Basic',
   },
-  // {
-  //   label: 'Advanced',
-  //   name: 'Advanced',
-  // },
+  {
+    label: 'Advanced',
+    name: 'Advanced',
+  },
 ];
 
 export const POPOVER_CONTENT = {
@@ -37,6 +37,10 @@ export const POPOVER_CONTENT = {
   slabs:
     'Orders with a subtotal within these ranges will be eligible to pay with Cash on Delivery. You can additionally add fees for each slab',
   zones: 'Create shipping zones where COD is eligible',
+  categories:
+    'Create Product categories to create custom rates or destination restrictions for groups of products.',
+  zone_mapping: 'Manage applicable COD slabs and rates for different zones.',
+  category_mapping: 'Set applicable rates and delivery restrictions for product categories',
 };
 
 export const MODAL_MODES = {
@@ -53,3 +57,5 @@ export const SAVE_MODAL_TEXTS = {
 };
 
 export const GLOBAL_KEY = 'International';
+
+export const MAX_FEE_RULES = 20;

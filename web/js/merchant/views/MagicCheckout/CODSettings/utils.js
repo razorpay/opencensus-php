@@ -1,5 +1,5 @@
 import { rupeesToPaise, paiseToRupees } from 'common/utils/rzp-utils';
-
+import { COD_ENGINES } from './constants';
 export const formatRulesToSlabs = (feeRules = []) => {
   return feeRules.map((feeRule) => ({
     fee: paiseToRupees(feeRule.fee),
@@ -36,24 +36,16 @@ export const checkForExistingRule = ({ rule }, storeRules) => {
   );
 };
 
-export const findRuleInRange = ({ rule, id }, storeRules) => {
-  return storeRules?.find(
-    (r) =>
-      r.id !== id &&
-      rule.order_amount.lte > r.rule.order_amount.gte &&
-      rule.order_amount.lte <= r.rule.order_amount.lte &&
-      rule.order_amount.gte > r.rule.order_amount.gte &&
-      rule.order_amount.gte <= r.rule.order_amount.lte,
-  );
-};
-export const getRangedRules = (newRules, storeRules = []) => {
+export const getRangedRules = (newRules, storeRules = [], isAdvancedEngine) => {
   return newRules.map((rule) => {
     if (!rule.id) {
       const existingRule = checkForExistingRule(rule, storeRules);
-      if (existingRule) {
+      if (existingRule && !isAdvancedEngine) {
         rule.id = existingRule.id;
       }
     }
     return rule;
   });
 };
+
+export const isBasicCODEngine = (engine) => engine === COD_ENGINES.BASIC;

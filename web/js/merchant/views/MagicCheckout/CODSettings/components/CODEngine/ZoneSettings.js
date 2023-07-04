@@ -14,8 +14,6 @@ import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { deleteZone } from 'merchant/reducers/magicCheckout/codEngine/action';
 
-import { merchantFetch } from 'merchant/utils/ajax';
-
 import { POPOVER_CONTENT, MODAL_MODES } from 'merchant/views/MagicCheckout/CODSettings/constants';
 
 const ConfirmationModal = lazy(() =>
@@ -39,18 +37,7 @@ function ZoneSettings({
   showNotification,
   deleteZoneAction,
 }) {
-  const [countries, setCountries] = useState([]);
   const [errorText, setErrorText] = useState('');
-  useEffect(() => {
-    merchantFetch({
-      url: '1cc/shipping/cod/countries',
-      method: 'get',
-    }).then(({ data }) => {
-      const countries =
-        data?.countries?.map((c) => ({ ...c, total_states: c.states.length })) || [];
-      setCountries(countries);
-    });
-  }, []);
 
   useEffect(() => {
     if (!validations.zones) {
@@ -87,7 +74,7 @@ function ZoneSettings({
       className: `codSettingModal`,
       component: (
         <SuspenseWithLoader type="center">
-          <ZoneModal mode={mode} id={id} allcountries={countries} />
+          <ZoneModal mode={mode} id={id} />
         </SuspenseWithLoader>
       ),
     });
@@ -136,10 +123,9 @@ function ZoneSettings({
         popoverContent={POPOVER_CONTENT.zones}
         errorText={errorText}
       />
-      <i className="i i-line" />
       <div className="cod-options-container">
         {zones.length === 0 ? (
-          <button onClick={openZoneModal} className="add-zone-button">
+          <button onClick={openZoneModal} className="add-config-button">
             + Add zones
           </button>
         ) : (

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import lazy from 'merchant/routes/LazyLoader';
 import { Box, Text } from '@razorpay/blade/components';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 import ConfirmationModal, {
   DisplayNotificationTxt,
 } from 'merchant/views/MagicCheckout/common/components/ConfirmationModal';
@@ -56,13 +57,18 @@ const CODSettingsTab = ({
 
     const enableEngineConfigPromise = (params) =>
       new Promise((resolve) => {
-        updateEngineConfig(params);
-        validateConfig('zones', true);
-        validateConfig('fee_rules', true);
-        if (fee_rules.length === 0 || zones.length === 0) {
+        if (fee_rules.length && zones.length) {
+          updateSettings(params, false);
+          updateEngineConfig(params);
+          resolve();
+        } else {
+          updateEngineConfig(params);
+          validateConfig('zones', true);
+          validateConfig('fee_rules', true);
+          validateConfig('mapping', true);
           setEditMode(true);
+          resolve();
         }
-        resolve();
       });
     const disableEngineConfigPromise = (params) =>
       new Promise((resolve) => {
@@ -130,9 +136,11 @@ const CODSettingsTab = ({
         </Box>
       </div>
       <div className="cod-settings">
-        <SuspenseWithLoader type="center">
-          <CODSettings />
-        </SuspenseWithLoader>
+        <ErrorBoundary team={Teams?.MAGIC_CHECKOUT} rank={Ranks.P0} resetOnProps>
+          <SuspenseWithLoader type="center">
+            <CODSettings />
+          </SuspenseWithLoader>
+        </ErrorBoundary>
       </div>
     </div>
   );

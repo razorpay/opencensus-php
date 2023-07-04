@@ -17,7 +17,13 @@ const initState = {
     cod_engine_type: 'location',
   },
   magicCODEngine: {
-    loading: false,
+    loading: {
+      summary: false,
+      fee_rules: false,
+      zones: false,
+      item_categories: false,
+      mapping: false,
+    },
     error: {},
     configs: {
       cod_engine: true,
@@ -46,7 +52,10 @@ const App = ({ state = {}, ...props }) => {
   );
 };
 
-describe('COD Engine', () => {
+describe('Slab Modal', () => {
+  beforeAll(() => {
+    window.HTMLElement.prototype.scrollIntoView = jest.fn();
+  });
   beforeEach(() => {
     showNotificationSpy.mockClear();
     closeModalSpy.mockClear();
@@ -80,7 +89,7 @@ describe('COD Engine', () => {
     await userEvent.clear(screen.getAllByRole('spinbutton')[1]);
     await userEvent.type(screen.getAllByRole('spinbutton')[1], '101');
     expect(screen.getAllByRole('spinbutton')[1]).toHaveValue(101);
-    expect(screen.getByText('Invalid value')).toBeInTheDocument();
+    expect(screen.getByText('Slab in range exists')).toBeInTheDocument();
   });
 
   test('should error if slab in range already exists for gte', async () => {

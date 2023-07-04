@@ -13,7 +13,13 @@ const initState = {
     cod_engine_type: 'location',
   },
   magicCODEngine: {
-    loading: false,
+    loading: {
+      summary: false,
+      fee_rules: false,
+      zones: false,
+      item_categories: false,
+      mapping: false,
+    },
     error: {},
     configs: {
       cod_engine: true,

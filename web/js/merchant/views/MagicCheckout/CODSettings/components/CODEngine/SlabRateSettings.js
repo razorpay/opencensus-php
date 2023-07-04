@@ -26,14 +26,16 @@ import {
   deleteFeeRule,
 } from 'merchant/reducers/magicCheckout/codEngine/action';
 
+import { isBasicCODEngine } from 'merchant/views/MagicCheckout/CODSettings/utils';
+
 import {
   SLAB_RATE_RADIO_INPUT,
   POPOVER_CONTENT,
   MODAL_MODES,
+  COD_ENGINES,
   COD_ENGINE_TYPES,
+  MAX_FEE_RULES,
 } from 'merchant/views/MagicCheckout/CODSettings/constants';
-
-const MAX_FEE_RULES = 20;
 
 const SlabModal = lazy(() =>
   import(
@@ -130,7 +132,7 @@ function SlabRateSettings({
   };
 
   const TABLE_COLUMNS = [slabRange, actions({ onDeleteClick })];
-  if (configs.rate_slabs) {
+  if (configs.rate_slabs || configs.engine === COD_ENGINES.ADVANCED) {
     TABLE_COLUMNS.splice(1, 0, slatRate);
   }
 
@@ -144,17 +146,19 @@ function SlabRateSettings({
       />
 
       <div className="cod-settings-toggle">
-        <div className="slabs-radio">
-          <Input.Radio
-            name="slabs"
-            defaultValue={configs.rate_slabs}
-            options={SLAB_RATE_RADIO_INPUT}
-            onChange={handleRuleTypeChange}
-          />
-        </div>
+        {isBasicCODEngine(configs.engine) ? (
+          <div className="slabs-radio">
+            <Input.Radio
+              name="slabs"
+              defaultValue={configs.rate_slabs}
+              options={SLAB_RATE_RADIO_INPUT}
+              onChange={handleRuleTypeChange}
+            />
+          </div>
+        ) : null}
         <div className="cod-options-container">
           {fee_rules.length === 0 ? (
-            <button className="add-slab-button" onClick={openSlabModal}>
+            <button className="add-config-button" onClick={openSlabModal}>
               + Add slabs
             </button>
           ) : (

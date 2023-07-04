@@ -64,7 +64,7 @@ const ZoneItem = ({
     <>
       <div
         style={{ marginLeft: marginLeft[depth] }}
-        className={`${isItemDisabled ? 'disabled' : ''} zone-item`}
+        className={`${isItemDisabled ? 'disabled' : ''} modal-item`}
         data-testid="zone-item"
       >
         <div className="checkbox-wrapper">
@@ -73,7 +73,7 @@ const ZoneItem = ({
             type="checkbox"
             ref={inputRef}
             checked={item.selected}
-            className="zone-checkbox"
+            className="modal-checkbox"
             onChange={handleChange}
           />
           {isCountry && (

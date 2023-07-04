@@ -21,7 +21,13 @@ const initState = {
     cod_engine_type: 'location',
   },
   magicCODEngine: {
-    loading: false,
+    loading: {
+      summary: false,
+      fee_rules: false,
+      zones: false,
+      item_categories: false,
+      mapping: false,
+    },
     error: {},
     configs: {
       cod_engine: true,
@@ -77,52 +83,59 @@ describe('COD Engine', () => {
     render(<App />);
     const ZoneModal = await screen.findByTestId('zone-modal');
     expect(ZoneModal).toBeInTheDocument();
-    expect(screen.queryAllByTestId('zone-item')).toHaveLength(5);
+    expect(screen.queryAllByTestId('zone-item')).toHaveLength(6);
   });
 
   test('should check item in zone', async () => {
     render(<App />);
-    const checkbox = screen.getByRole('checkbox', { name: 'Algeria' });
+    const ZoneModal = await screen.findByTestId('zone-modal');
+    expect(ZoneModal).toBeInTheDocument();
+    const checkbox = screen.getByRole('checkbox', { name: 'India' });
     expect(checkbox).not.toBeChecked();
     await userEvent.click(checkbox);
     expect(checkbox).toBeChecked();
   });
 
-  test('should check unchecked items when International is selected', async () => {
+  test('should check unchecked items when India is selected', async () => {
     render(<App />);
-    const checkbox = screen.getByRole('checkbox', { name: 'Algeria' });
-    const internationalCheckbox = screen.getByRole('checkbox', { name: 'International' });
-    expect(internationalCheckbox).not.toBeChecked();
+    const ZoneModal = await screen.findByTestId('zone-modal');
+    expect(ZoneModal).toBeInTheDocument();
+    const checkbox = screen.getByRole('checkbox', { name: 'Assam' });
+    const indiaCheckbox = screen.getByRole('checkbox', { name: 'India' });
+    expect(indiaCheckbox).not.toBeChecked();
     expect(checkbox).not.toBeChecked();
-    await userEvent.click(internationalCheckbox);
-    expect(internationalCheckbox).toBeChecked();
+    await userEvent.click(indiaCheckbox);
+    expect(indiaCheckbox).toBeChecked();
     expect(checkbox).toBeChecked();
-    expect(screen.getByRole('checkbox', { name: 'India' })).toBeChecked();
   });
 
-  test('should collapse states', async () => {
+  test('should uncollapse states', async () => {
     render(<App />);
+    const ZoneModal = await screen.findByTestId('zone-modal');
+    expect(ZoneModal).toBeInTheDocument();
     const statesToggle = screen.getByText('0 of 5 states');
-    expect(screen.queryByRole('checkbox', { name: 'Bihar' })).not.toBeInTheDocument();
-    await userEvent.click(statesToggle);
     expect(screen.queryByRole('checkbox', { name: 'Bihar' })).toBeInTheDocument();
+    await userEvent.click(statesToggle);
+    expect(screen.queryByRole('checkbox', { name: 'Bihar' })).not.toBeInTheDocument();
   });
 
   test('should filter countries based on search', async () => {
     render(<App />);
+    const ZoneModal = await screen.findByTestId('zone-modal');
+    expect(ZoneModal).toBeInTheDocument();
     const searchInput = screen.getByTestId('search-input');
     await userEvent.type(searchInput, 'Bihar');
     await waitFor(
       () => {
         expect(screen.queryByRole('checkbox', { name: 'Bihar' })).toBeInTheDocument();
-        expect(screen.queryByRole('checkbox', { name: 'Algeria' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('checkbox', { name: 'Assam' })).not.toBeInTheDocument();
       },
       { timeout: 500 },
     );
     await userEvent.clear(searchInput);
     await waitFor(
       () => {
-        expect(screen.queryByRole('checkbox', { name: 'Algeria' })).toBeInTheDocument();
+        expect(screen.queryByRole('checkbox', { name: 'Assam' })).toBeInTheDocument();
       },
       { timeout: 500 },
     );
@@ -130,6 +143,8 @@ describe('COD Engine', () => {
 
   test('should mark parent as indeterminate', async () => {
     render(<App />);
+    const ZoneModal = await screen.findByTestId('zone-modal');
+    expect(ZoneModal).toBeInTheDocument();
     const searchInput = screen.getByTestId('search-input');
     await userEvent.type(searchInput, 'India');
     await waitFor(
@@ -145,6 +160,8 @@ describe('COD Engine', () => {
 
   test('should save zone', async () => {
     render(<App mode={MODAL_MODES.EDIT} id={DB_ZONE.id} />);
+    const ZoneModal = await screen.findByTestId('zone-modal');
+    expect(ZoneModal).toBeInTheDocument();
     const nameInput = screen.getByTestId('search-input');
     await userEvent.type(nameInput, 'New Zone');
     await waitFor(async () => {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { closeModal } from 'merchant_common/reducers/modals';
@@ -7,7 +7,7 @@ import { Button } from '@razorpay/blade/components';
 import RateSlabs from './RateSlabs';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { DisplayNotificationTxt } from 'merchant/views/MagicCheckout/common/components/ConfirmationModal';
-import { MODAL_MODES } from 'merchant/views/MagicCheckout/CODSettings/constants';
+import { MODAL_MODES, COD_ENGINES } from 'merchant/views/MagicCheckout/CODSettings/constants';
 import { upsertFeeRules, updateFeeRule } from 'merchant/reducers/magicCheckout/codEngine/action';
 import {
   formatRulesToSlabs,
@@ -19,8 +19,8 @@ import { paiseToRupees } from 'common/utils/rzp-utils';
 function SlabModal({ cod_engine_config, closeModal, mode, id, upsertFeeRules, showNotification }) {
   const editMode = mode === MODAL_MODES.EDIT;
   const { fee_rules, configs, loading } = cod_engine_config;
+  const hasRates = configs.rate_slabs || configs.engine === COD_ENGINES.ADVANCED;
   const [slabs, setSlabs] = useState([]);
-  const [disabled, setDisabled] = useState(false);
   const MODAL_HEADER = `${editMode ? 'Edit' : 'Create'} COD eligibility slabs`;
   useEffect(() => {
     if (fee_rules.length) {
@@ -45,11 +45,20 @@ function SlabModal({ cod_engine_config, closeModal, mode, id, upsertFeeRules, sh
   const updateSlabs = (newSlabs) => {
     setSlabs(newSlabs);
   };
-  const updateDisabled = (val) => setDisabled(val);
+
+  const disabled = useMemo(() => {
+    return (
+      slabs.length === 0 ||
+      slabs?.some(
+        (slab) => slab?.error?.lte?.length || slab?.error?.gte?.length || slab?.error?.fee?.length,
+      )
+    );
+  }, [slabs]);
+
   const confirmSlabs = () => {
-    const rules = formatSlabsToFeeRules(slabs, configs.rate_slabs);
+    const rules = formatSlabsToFeeRules(slabs, hasRates);
     const payload = {};
-    payload.fee_rules = getRangedRules(rules, fee_rules);
+    payload.fee_rules = getRangedRules(rules, fee_rules, configs.engine === COD_ENGINES.ADVANCED);
     upsertFeeRules(payload)
       .then(() => {
         showNotification({
@@ -74,23 +83,18 @@ function SlabModal({ cod_engine_config, closeModal, mode, id, upsertFeeRules, sh
     <div className="slab-modal cod-settings-modal" data-testid="slab-modal">
       <ModalHeader title={MODAL_HEADER} extraClass="no-padding" onCloseClick={closeModal} />
       <div className="items-container">
-        <RateSlabs
-          updateDisabled={updateDisabled}
-          slabs={slabs}
-          updateSlabs={updateSlabs}
-          editMode={editMode}
-        />
+        <RateSlabs slabs={slabs} updateSlabs={updateSlabs} editMode={editMode} />
       </div>
       <div className="actions-container">
         <div className="actions-text" />
         <div className="actions">
-          <Button onClick={closeModal} isDisabled={loading} variant="secondary">
+          <Button onClick={closeModal} isDisabled={loading.fee_rules} variant="secondary">
             Cancel
           </Button>
           <Button
             testID="save-slab"
-            isDisabled={disabled || loading}
-            isLoading={loading}
+            isDisabled={disabled || loading.fee_rules}
+            isLoading={loading.fee_rules}
             onClick={confirmSlabs}
           >
             {slabs.length <= 1 ? 'Save slab' : 'Save slabs'}

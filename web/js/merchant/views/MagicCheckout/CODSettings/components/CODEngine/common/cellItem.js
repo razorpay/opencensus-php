@@ -48,6 +48,18 @@ export const slatRate = {
   value: (item) => getFormattedAmountNew(item?.fee, true),
 };
 
+export const categoryName = {
+  title: 'Category name',
+  columnClass: 'text-left',
+  value: (item) => item.name,
+};
+
+export const productCount = {
+  title: 'Product count',
+  columnClass: 'text-left',
+  value: (item) => item?.item_count || item?.items?.length,
+};
+
 export const actions = ({ onDeleteClick, onEditClick }) => ({
   title: 'Action',
   columnClass: 'text-left',

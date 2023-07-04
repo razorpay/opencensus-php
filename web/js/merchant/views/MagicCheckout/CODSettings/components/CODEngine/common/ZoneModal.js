@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import Spinner from 'common/ui/Spinner';
 import { SearchIcon } from '@razorpay/blade/components';
 import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
 import List from 'react-virtualized/dist/commonjs/List';
@@ -22,6 +23,7 @@ import {
   getLocationsPayload,
   updateTotalSelectedStatus,
 } from 'merchant/views/MagicCheckout/CODSettings/components/CODEngine/common/zoneUtils';
+import { merchantFetch } from 'merchant/utils/ajax';
 
 const SettingModal = lazy(() =>
   import(
@@ -29,20 +31,13 @@ const SettingModal = lazy(() =>
   ),
 );
 
-function ZoneModal({
-  closeModal,
-  mode,
-  id,
-  showNotification,
-  zones,
-  allcountries,
-  createZone,
-  updateZone,
-}) {
+function ZoneModal({ closeModal, mode, id, showNotification, zones, createZone, updateZone }) {
   const zone = zones.find((z) => z.id === id);
   const editMode = mode === MODAL_MODES.EDIT;
   const MODAL_HEADER = `${editMode ? 'Edit' : 'Create'} COD zones`;
   const [searchText, setSearchText] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const [filteredCountries, setFilteredCountries] = useState([]);
   const [collapsibleCountries, setCollapsibleCountries] = useState({});
@@ -56,9 +51,24 @@ function ZoneModal({
   const parentWrapperRef = useRef(null);
 
   useEffect(() => {
-    const { allCountries, countriesWithStates } = buildCountriesData(allcountries, zone);
-    setCollapsibleCountries(countriesWithStates);
-    setFilteredCountries(allCountries);
+    setIsLoading(true);
+    merchantFetch({
+      url: '1cc/shipping/cod/countries',
+      method: 'get',
+    })
+      .then(({ data }) => {
+        const countries =
+          data?.countries?.map((c) => ({ ...c, total_states: c.states.length })) || [];
+        const { allCountries, countriesWithStates } = buildCountriesData(countries, zone);
+        setCollapsibleCountries(countriesWithStates);
+        setFilteredCountries(allCountries);
+      })
+      .catch((err) => {
+        setError(err?.errors[0] || 'Something went wrong');
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   }, []);
 
   const collapseAllCountries = (val) => {
@@ -81,7 +91,7 @@ function ZoneModal({
         return c;
       }),
     );
-    collapseAllCountries(false);
+    collapseAllCountries(true);
     listRef.current.recomputeRowHeights();
   };
 
@@ -123,7 +133,8 @@ function ZoneModal({
       }
     } else {
       updateParentSelectedStatus(item.parentIndex, status);
-      updateParentSelectedStatus(0, status);
+      // commented below line to remove International option in popup, might need it in future
+      // updateParentSelectedStatus(0, status);
     }
     setFilteredCountries(JSON.parse(JSON.stringify(filteredCountries)));
   };
@@ -154,7 +165,7 @@ function ZoneModal({
         return country;
       });
       setFilteredCountries(newFilteredCountries);
-      listRef.current.recomputeRowHeights();
+      listRef.current?.recomputeRowHeights();
     } else {
       resetVisibileStatus();
     }
@@ -167,32 +178,33 @@ function ZoneModal({
         type: 'error',
         message: 'Select atleast one location to create a zone',
       });
+    } else {
+      const zonePayload = {
+        name: zoneName,
+        type: 'cod',
+        locations,
+      };
+      if (zone?.id) zonePayload.id = zone.id;
+      const actionFn = editMode ? updateZone : createZone;
+      actionFn(zonePayload)
+        .then(() => {
+          showNotification({
+            type: 'success',
+            message: () => (
+              <DisplayNotificationTxt
+                notificationTxt={`${editMode ? 'Zone updated' : 'Zone created'} successfully`}
+              />
+            ),
+          });
+          closeModal();
+        })
+        .catch((err) => {
+          showNotification({
+            type: 'error',
+            message: err?.errors[0] || 'Something went wrong',
+          });
+        });
     }
-    const zonePayload = {
-      name: zoneName,
-      type: 'cod',
-      locations,
-    };
-    if (zone?.id) zonePayload.id = zone.id;
-    const actionFn = editMode ? updateZone : createZone;
-    actionFn(zonePayload)
-      .then(() => {
-        showNotification({
-          type: 'success',
-          message: () => (
-            <DisplayNotificationTxt
-              notificationTxt={`${editMode ? 'Zone updated' : 'Zone created'} successfully`}
-            />
-          ),
-        });
-        closeModal();
-      })
-      .catch((err) => {
-        showNotification({
-          type: 'error',
-          message: err?.errors[0] || 'Something went wrong',
-        });
-      });
   };
   const _getRowHeight = ({ index }) => {
     const country = filteredCountries[index];
@@ -216,8 +228,16 @@ function ZoneModal({
     setCollapsibleCountries(JSON.parse(JSON.stringify(collapsibleCountries)));
     listRef.current.recomputeRowHeights(index);
   };
+  if (isLoading) {
+    return (
+      <div className="page-spinner-container">
+        <Spinner />
+      </div>
+    );
+  }
+
   return (
-    <SuspenseWithLoader type="center">
+    <SuspenseWithLoader type="full">
       <SettingModal
         header={MODAL_HEADER}
         variant="Zone"
@@ -225,9 +245,12 @@ function ZoneModal({
         searchFn={handleSearch}
         name={editMode ? zone.name : ''}
         confirmAction={confirmZone}
-        className="zone-modal"
+        className="cod-config-modal"
+        type="zone"
       >
-        {Object.keys(filteredCountries).length === 0 ? (
+        {error ? (
+          <p>{error}</p>
+        ) : Object.keys(filteredCountries).length === 0 ? (
           <div className="empty-text">
             <SearchIcon size="large" />
             <p>No results found</p>

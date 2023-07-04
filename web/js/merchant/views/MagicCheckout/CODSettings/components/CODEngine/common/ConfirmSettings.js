@@ -8,9 +8,11 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { updateMagicSettings } from 'merchant/reducers/magicCheckout/magicSettings/actions';
 import { setEditMode } from 'merchant/reducers/magicCheckout/codEngine/action';
+
+import { isBasicCODEngine } from 'merchant/views/MagicCheckout/CODSettings/utils';
+
 import { PLATFORMS } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 import {
-  COD_ENGINES,
   COD_ENGINE_TYPES,
   SAVE_MODAL_TEXTS,
 } from 'merchant/views/MagicCheckout/CODSettings/constants';
@@ -24,7 +26,7 @@ const ConfirmSettings = ({
   closeModal,
 }) => {
   const { platform, shop_id } = settings;
-  const { configs } = codEngineConfig;
+  const { configs, item_categories } = codEngineConfig;
   const saveSettings = () => {
     const params = {
       platform,
@@ -34,12 +36,16 @@ const ConfirmSettings = ({
     if (platform === PLATFORMS.VALUES.SHOPIFY) {
       params.shop_id = shop_id;
     }
-    if (configs.engine === COD_ENGINES.BASIC) {
+    if (isBasicCODEngine(configs.engine)) {
       if (configs.rate_slabs) {
         params.cod_engine_type = COD_ENGINE_TYPES.SLAB_RATE;
       } else {
         params.cod_engine_type = COD_ENGINE_TYPES.SLAB_ELIGIBILITY;
       }
+    } else if (item_categories.length) {
+      params.cod_engine_type = COD_ENGINE_TYPES.PRODUCT;
+    } else {
+      params.cod_engine_type = COD_ENGINE_TYPES.LOCATION;
     }
     updateSettings(params, false)
       .then(() => {
@@ -56,7 +62,9 @@ const ConfirmSettings = ({
         showNotification({
           type: 'error',
           message: () => (
-            <DisplayNotificationTxt notificationTxt={`${err || 'Something went wrong'}`} />
+            <DisplayNotificationTxt
+              notificationTxt={`${err?.errors[0] || 'Something went wrong'}`}
+            />
           ),
         });
       });

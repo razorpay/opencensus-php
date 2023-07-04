@@ -15,10 +15,13 @@ function SettingModal({
   name = '',
   confirmAction,
   className = '',
+  itemClassName = '',
   disableConfirmButton = false,
-  isLoading,
+  loading,
+  type,
   children,
 }) {
+  const isLoading = loading[type];
   const [inputError, setInputError] = useState('');
   const [inputVal, setInputVal] = useState(name);
   const debouncedSearchFn = debounce(searchFn, 500);
@@ -69,7 +72,7 @@ function SettingModal({
             placeholder={`Search ${placeholder}`}
           />
         </div>
-        <div className="items">{children}</div>
+        <div className={`items ${itemClassName}`}>{children}</div>
       </div>
       <div className="actions-container">
         <div className="actions-text" />
@@ -104,7 +107,7 @@ const mapDispatchToProps = (dispatch) =>
   );
 
 const mapStateToProps = (state) => ({
-  isLoading: state.magicCODEngine.loading,
+  loading: state.magicCODEngine.loading,
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(SettingModal);
