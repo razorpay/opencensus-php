@@ -343,6 +343,17 @@ class Shield
                 $payloadDetails[ShieldConstants::CARD_EXPIRY_MONTH] = $card->getExpiryMonth();
                 $payloadDetails[ShieldConstants::CARD_EXPIRY_YEAR]  = $card->getExpiryYear();
 
+                if($payment->isInternational() === true)
+                {
+                    if(isset($input['card']) === true)
+                    {
+                        $payloadDetails[ShieldConstants::CARD_NUMBER]      = $input['card']['number'];
+                    }
+                    else
+                    {
+                        $this->trace->info(TraceCode::SHIELD_CARD_DATA_MISSING, ['payment_id' => $payment->getId()]);
+                    }
+                }
                 break;
 
         }

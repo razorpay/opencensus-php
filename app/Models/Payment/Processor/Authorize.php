@@ -11466,7 +11466,7 @@ trait Authorize
 
                 unset($inputDetails['gatewayInput']);
 
-                $this->runFraudChecksIfApplicable($payment);
+                $this->runFraudChecksIfApplicable($payment, $inputDetails);
 
                 return $this->gatewayRelatedProcessing($payment, $inputDetails, $gatewayInput);
             },

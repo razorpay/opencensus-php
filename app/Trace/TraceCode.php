@@ -2710,6 +2710,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CARD_VAULT_BU_NAMESPACE_EXCEPTION                     = 'CARD_VAULT_BU_NAMESPACE_EXCEPTION';
     const CARD_FETCH_FINGERPRINT_EXCEPTION                      = 'CARD_FETCH_FINGERPRINT_EXCEPTION';
     const SHIELD_REQUEST_DURATION                               = 'SHIELD_REQUEST_DURATION';
+    const SHIELD_CARD_DATA_MISSING                              = 'SHIELD_CARD_DATA_MISSING';
     const CORE_PAYMENT_SERVICE_REQUEST                          = 'CORE_PAYMENT_SERVICE_REQUEST';
     const CORE_PAYMENT_SERVICE_RESPONSE                         = 'CORE_PAYMENT_SERVICE_RESPONSE';
     const CORE_PAYMENT_SERVICE_RETRY                            = 'CORE_PAYMENT_SERVICE_RETRY';

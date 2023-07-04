@@ -56,6 +56,7 @@ final class Shield
     const CARD_LENGTH                   = 'card_length';
     const CARD_EXPIRY_MONTH             = 'card_expiry_month';
     const CARD_EXPIRY_YEAR              = 'card_expiry_year';
+    const CARD_NUMBER                   = 'card_number';
     const IP                            = 'ip';
     const USER_AGENT                    = 'user_agent';
     const REFERER                       = 'referer';
