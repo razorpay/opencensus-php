@@ -133,6 +133,11 @@ describe('PaymentRefund', () => {
     });
 
     test('should render seamless option is not enabled details', () => {
+      // a new Date object called now, represents the current date and time to ensure created_at is always less than six months
+      const now = new Date();
+      // valueOf() of the now object is in milliseconds so dividing by 1000 to get seconds
+      const created_at = now.valueOf() / 1000;
+
       const { container } = render(
         <App
           payment={{
@@ -140,7 +145,7 @@ describe('PaymentRefund', () => {
             refund_status: null,
             optimizer_provider: 'paytm',
             gateway_refund_support: false,
-            created_at: 1670070538,
+            created_at,
           }}
         />,
       );
