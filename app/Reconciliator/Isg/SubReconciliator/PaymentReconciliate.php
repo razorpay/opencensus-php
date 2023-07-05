@@ -59,7 +59,10 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
         {
             $this->reportMissingColumn($row, ReconciliationFields::MDR);
         }
-        return SubReconciliator\Helper::getIntegerFormattedAmount($row[ReconciliationFields::MDR]);
+        $serviceTax = $this->getGatewayServiceTax($row);
+        $fee = SubReconciliator\Helper::getIntegerFormattedAmount($row[ReconciliationFields::MDR]);
+
+        return $serviceTax + $fee;
     }
 
     protected function setAllowForceAuthorization(Payment\Entity $payment)
