@@ -24,7 +24,7 @@ class Processor extends BaseProcessor
 
         $this->setUpForBalanceFetch($input);
 
-        (new Validator)->validateInput('axis_credentials', $this->basResponse);
+        (new Validator)->setStrictFalse()->validateInput('axis_credentials', $this->basResponse);
 
         $this->accountCredentials = $this->extractBankingAccountCredsFromBASResponse($this->basResponse);
     }

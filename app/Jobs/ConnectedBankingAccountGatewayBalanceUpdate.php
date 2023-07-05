@@ -3,6 +3,7 @@
 namespace RZP\Jobs;
 
 use RZP\Trace\TraceCode;
+use RZP\Constants\Metric;
 use RZP\Models\BankingAccount;
 use RZP\Models\Settlement\SlackNotification;
 
@@ -96,6 +97,11 @@ class ConnectedBankingAccountGatewayBalanceUpdate extends Job
                                     'merchant_id'  => $this->params[BankingAccount\Entity::MERCHANT_ID],
                                     'job_attempts' => $this->attempts(),
                                 ]);
+
+            $this->trace->count(BankingAccount\Metrics::BANKING_ACCOUNT_GATEWAY_BALANCE_UPDATE_JOB_FAILED, [
+                Metric::LABEL_RZP_MERCHANT_ID   => $this->params[BankingAccount\Entity::MERCHANT_ID],
+                Metric::LABEL_TRACE_CHANNEL     => $this->params[BankingAccount\Entity::CHANNEL],
+            ]);
 
             $operation = 'banking account gateway balance update job failed';
 

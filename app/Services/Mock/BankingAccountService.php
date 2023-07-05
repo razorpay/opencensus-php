@@ -121,6 +121,7 @@ class BankingAccountService
                     'corp_id'           => '',
                     'user_id'           => '',
                     'urn'               => '',
+                    'account_number'    => $accountNumber,
                     Fields::CREDENTIALS => [
                         Yesbank\Fields::AES_KEY             => 'aes123456',
                         Yesbank\Fields::APP_ID              => 'RAZORPAYX',
@@ -139,6 +140,7 @@ class BankingAccountService
                     'corp_id'           => '',
                     'user_id'           => '',
                     'urn'               => '',
+                    'account_number'    => $accountNumber,
                     Fields::CREDENTIALS => [
                         Axis\Fields::ENCRYPTION_KEY => 'encryption_123',
                         Axis\Fields::ENCRYPTION_IV  => 'encryption_iv_123',
