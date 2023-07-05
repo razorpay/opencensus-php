@@ -11,4 +11,5 @@ return [
     'issuer_private_key'          => str_replace('\n', PHP_EOL, env('PASSPORT_ISSUER_PRIVATE_KEY')), // The private key for signing jwt.
     'issuer_private_key_id'       => 'apiv1',                                                        // The kid header for jwt.
     'issuer_passport_expire_secs' => 300,
+    'jwks_host' => env("PASSPORT_JWKS_HOST"),
 ];

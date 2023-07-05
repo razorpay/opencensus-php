@@ -32,6 +32,8 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use Razorpay\Edge\Passport\Tests\GeneratesTestPassportJwts;
+use GuzzleHttp\Server\Server;
+use GuzzleHttp\Psr7\Response;
 
 class BasicAuthTest extends TestCase
 {
@@ -41,16 +43,15 @@ class BasicAuthTest extends TestCase
     use GeneratesTestPassportJwts;
 
     /**
-     * @var string passport public key
+     * @var string passport jwks host
      */
-    protected $publicKey;
+    protected $jwksHost;
 
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/BasicAuthData.php';
 
-        $publicKeyStr = file_get_contents(__DIR__.'/helpers/edge-passport-apiv1-public.key');
-        $this->publicKey = str_replace('\n', PHP_EOL, $publicKeyStr);
+        $this->jwksHost = "https://edge-base.dev.razorpay.in";
 
         parent::setUp();
 
@@ -288,9 +289,7 @@ class BasicAuthTest extends TestCase
         // Asserts passport jwt build by api is valid.
         $token = $this->app['basicauth']->getPassportJwt('subscriptions.razorpay.com');
 
-        $publicKey = file_get_contents(__DIR__.'/helpers/passport-apiv1-public.key');
-        $kid1 = new Kid("apiv1", $publicKey);
-        Passport::init($kid1);
+        Passport::init($this->jwksHost, storage_path('passport'));
         $passport = Passport::fromToken($token);
 
         $this->assertTrue($passport->identified);
@@ -401,7 +400,7 @@ class BasicAuthTest extends TestCase
 
         // overriding public key for test case
         $oldKey = app('config')->get('passport')['public_key'];
-        app('config')->get('passport')['public_key'] = $this->publicKey;
+        app('config')->get('passport')['jwks_host'] = $this->jwksHost;
 
         $this->startTest([
             'request' => [
@@ -422,7 +421,7 @@ class BasicAuthTest extends TestCase
 
         // overriding public key for test case
         $oldKey = app('config')->get('passport')['public_key'];
-        app('config')->get('passport')['public_key'] = $this->publicKey;
+        app('config')->get('passport')['jwks_host'] = $this->jwksHost;
 
         $this->startTest([
             'request' => [
@@ -444,7 +443,7 @@ class BasicAuthTest extends TestCase
 
         // overriding public key for test case
         $oldKey = app('config')->get('passport')['public_key'];
-        app('config')->get('passport')['public_key'] = $this->publicKey;
+        app('config')->get('passport')['jwks_host'] = $this->jwksHost;
 
         $this->startTest([
             'request' => [
@@ -455,7 +454,7 @@ class BasicAuthTest extends TestCase
         ]);
 
         // resetting old key back
-        app('config')->get('passport')['public_key'] = $oldKey;
+        app('config')->get('passport')['jwks_host'] = $oldKey;
     }
 
     public function testAppAuthForCronWithXHeader()
@@ -1105,9 +1104,7 @@ class BasicAuthTest extends TestCase
         $this->app['basicauth']->setPassportFromJob($jwtToken);
         $token = $this->app['basicauth']->getPassportFromJob();
 
-        $publicKey = file_get_contents(__DIR__.'/helpers/passport-apiv1-public.key');
-        $kid1 = new Kid("apiv1", $publicKey);
-        Passport::init($kid1);
+        Passport::init($this->jwksHost, storage_path('passport'));
         $passport = Passport::fromToken($token);
 
         $this->assertTrue($passport->identified);

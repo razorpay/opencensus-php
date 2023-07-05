@@ -71,7 +71,7 @@ final class PreAuthenticate
 
             try
             {
-                Passport::init(new Kid('edgev1', $this->passportCfg['public_key']));
+                Passport::init($this->passportCfg['jwks_host'], \storage_path('passport'));
                 $this->reqCtx->passport = Passport::fromToken($jwt);
             }
             catch (Throwable $e)
