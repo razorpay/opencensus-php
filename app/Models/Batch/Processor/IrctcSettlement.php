@@ -48,7 +48,12 @@ class IrctcSettlement extends Base
                 if (($payment->isPartiallyOrFullyRefunded() === false) and
                     ($payment->hasBeenCaptured() === false))
                 {
-                    $paymentProcessor->capture($payment, $params);
+                    if ($payment->isExternal() === true) {
+                        $this->app['pg_router']->paymentCapture($payment->getId(), $params, true);
+                    } else {
+                        $paymentProcessor->capture($payment, $params);
+                    }
+
                 }},
 
             $mutex_timeout,
