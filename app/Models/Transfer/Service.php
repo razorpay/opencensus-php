@@ -509,8 +509,11 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::PENDING_ORDER_TRANSFERS_FETCHED,
             [
-                'order_ids' => $orderIds,
-                'time_taken' => ($endTime - $startTime),
+                'order_ids'      => $orderIds,
+                'time_taken'     => ($endTime - $startTime),
+                'count'          => array_count_values($orderIds),
+                'sync'           => $syncProcessing,
+                'older_than_min' => $olderThanMinutes
             ]
         );
 
@@ -536,8 +539,11 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::PENDING_ORDER_TRANSFERS_FOR_KEY_MERCHANTS_FETCHED,
             [
-                'order_ids' => $orderIds,
-                'time_taken' => ($endTime - $startTime),
+                'order_ids'      => $orderIds,
+                'time_taken'     => ($endTime - $startTime),
+                'count'          => array_count_values($orderIds),
+                'sync'           => $syncProcessing,
+                'older_than_min' => $olderThanMinutes
             ]
         );
 
@@ -596,8 +602,11 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::PENDING_PAYMENT_TRANSFERS_FETCHED,
             [
-                'payment_ids'   => $paymentIds,
-                'time_taken'    => ($endTime - $startTime),
+                'payment_ids'    => $paymentIds,
+                'time_taken'     => ($endTime - $startTime),
+                'count'          => array_count_values($paymentIds),
+                'sync'           => $syncProcessing,
+                'older_than_min' => $olderThanMinutes
             ]
         );
 
@@ -628,8 +637,11 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::PENDING_PAYMENT_TRANSFERS_FOR_KEY_MERCHANTS_FETCHED,
             [
-                'payment_ids'   => $paymentIds,
-                'time_taken'    => ($endTime - $startTime),
+                'payment_ids'    => $paymentIds,
+                'time_taken'     => ($endTime - $startTime),
+                'count'          => array_count_values($paymentIds),
+                'sync'           => $syncProcessing,
+                'older_than_min' => $olderThanMinutes
             ]
         );
 
@@ -728,7 +740,8 @@ class Service extends Base\Service
         $this->trace->info(
             TraceCode::FAILED_ORDER_TRANSFER_PROCESS,
             [
-                'order_ids' => $orderIds,
+                'order_ids'      => $orderIds,
+                'sync'           => $syncProcessing,
             ]
         );
 
@@ -836,7 +849,7 @@ class Service extends Base\Service
     protected function processOrderTransferSync(Payment\Entity $payment)
     {
         $this->trace->info(
-            TraceCode::PAYMENT_TRANSFER_PROCESS_SYNC_INIT,
+            TraceCode::ORDER_TRANSFER_PROCESS_SYNC_INIT,
             [
                 'order_id'   => $payment->getApiOrderId(),
                 'payment_id' => $payment->getId(),

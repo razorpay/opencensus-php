@@ -114,9 +114,11 @@ class ConfigKey
     const PAYOUT_SERVICE_DATA_MIGRATION_BATCH_ATTEMPTS = self::PREFIX . 'payout_service_data_migration_batch_attempts';
     const PAYOUT_SERVICE_DATA_MIGRATION_BUFFER         = self::PREFIX . 'payout_service_data_migration_buffer';
 
-    const TRANSFER_SYNC_PROCESSING_VIA_API_SEMAPHORE_LIMIT_PER_MID = self::PREFIX . 'transfer_sync_via_api_semaphore_limit_per_mid';
+    const TRANSFER_SYNC_PROCESSING_VIA_API_SEMAPHORE_CONFIG = self::PREFIX . 'transfer_sync_via_api_semaphore_config';
 
     const TRANSFER_SYNC_PROCESSING_VIA_API_HOURLY_RATE_LIMIT_PER_MID = self::PREFIX . 'transfer_sync_via_api_hourly_rate_limit_per_mid';
+
+    const TRANSFER_PROCESSING_MUTEX_CONFIG = self::PREFIX . 'transfer_processing_mutex_config';
 
     // while creating payouts we fetch balance from gateway at a frequency decided in SLA.
     // So if last fetched at was while ago greater than this value, then we will fetch balance
@@ -501,7 +503,7 @@ class ConfigKey
         self::ENABLE_DOWNTIME_SERVICE_EMANDATE,
         self::ENABLE_DOWNTIME_SERVICE_UPI,
         self::ENABLE_PAYMENT_DOWNTIME_PHONEPE,
-        self::TRANSFER_SYNC_PROCESSING_VIA_API_SEMAPHORE_LIMIT_PER_MID,
+        self::TRANSFER_SYNC_PROCESSING_VIA_API_SEMAPHORE_CONFIG,
         self::TRANSFER_SYNC_PROCESSING_VIA_API_HOURLY_RATE_LIMIT_PER_MID,
         self::RX_BAS_FORCED_FETCH_TIME_IN_HOURS,
         self::DELAY_RUPAY_CAPTURE,

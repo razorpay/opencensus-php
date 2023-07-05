@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Payment\Transfers;
 
 use Carbon\Carbon;
+use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\User\Role;
@@ -126,6 +127,14 @@ class PaymentMarketplaceTransferTest extends TestCase
     {
         $this->fixtures->merchant->addFeatures(['marketplace', 'route_code_support']);
         $this->fixtures->edit('merchant', '10000000000001', ['account_code' => 'code-007']);
+
+        (new Admin\Service)->setConfigKeys([
+            Admin\ConfigKey::TRANSFER_SYNC_PROCESSING_VIA_API_SEMAPHORE_CONFIG  => [
+                'limit'          => 3,
+                'retry_interval' => 0.1,
+                'retries'        => 5
+            ]
+        ]);
 
         $transfers[0] = [
             'account_code'  => 'code-007',

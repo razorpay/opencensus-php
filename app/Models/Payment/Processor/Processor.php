@@ -228,16 +228,24 @@ class Processor
     const PAYSECURE_CAPTURE_QUEUE_DELAY = 300; // In seconds
 
     /**
-     * The number of payment transfers to process per merchant in parallel using
-     * a semaphore. This limit is applied to the counting semaphore
-     */
-    const PAYMENT_TRANSFERS_SYNC_PROCESSING_SEMAPHORE_DEFAULT_LIMIT = 2;
-
-    /**
      * The number of payment transfers to process per merchant in sync via API per
      * hour
      */
     const PAYMENT_TRANSFERS_SYNC_PROCESSING_HOURLY_RATE_LIMIT = 7000;
+
+    /**
+     * The semaphore config parameters to use for payment transfers sync processing
+     *
+     * limit => The number of payment transfers to process per merchant in parallel
+     *          using semaphore. This limit is applied to the counting semaphore.
+     * retry_interval => The semaphore retry interval in seconds
+     * retries => The number of retries
+     */
+    const PAYMENT_TRANSFERS_SYNC_PROCESSING_DEFAULT_CONFIG = [
+        'limit'          => 3,
+        'retry_interval' => 0,
+        'retries'        => 0,
+    ];
 
     /**
      * Core payment service feature flag
@@ -4744,7 +4752,7 @@ class Processor
 
                 $asyncTransfer = true;
 
-                if ($this->checkIfPaymentTransferSyncProcessingAllowed($input) === true)
+                if ($this->checkIfPaymentTransferSyncProcessingAllowed($input, $payment) === true)
                 {
                     $asyncTransfer = false;
                 }
@@ -4795,7 +4803,7 @@ class Processor
         return $transfers;
     }
 
-    protected function checkIfPaymentTransferSyncProcessingAllowed(array $input): bool
+    protected function checkIfPaymentTransferSyncProcessingAllowed(array $input, Payment\Entity $payment): bool
     {
         $transfersCount = count($input);
 
@@ -4807,14 +4815,24 @@ class Processor
 
         $isExperimentEnabled = ($variant === 'on');
 
+        $transaction = $payment->transaction;
+
+        $txnAndBalanceUpdated = true;
+
+        if ((empty($transaction) === true) or ($transaction->isBalanceUpdated() === false))
+        {
+            $txnAndBalanceUpdated = false;
+        }
+
         $this->trace->info(TraceCode::PAYMENT_TRANSFER_SYNC_PROCESSING_CHECK,
             [
-                'merchant'            => $this->merchant->getId(),
-                'isExperimentEnabled' => $isExperimentEnabled,
-                'transfersCount'      => $transfersCount,
+                'merchant'             => $this->merchant->getId(),
+                'isExperimentEnabled'  => $isExperimentEnabled,
+                'transfersCount'       => $transfersCount,
+                'txnAndBalanceUpdated' => $txnAndBalanceUpdated,
             ]);
 
-        if ($transfersCount <= 3 and ($isExperimentEnabled === true))
+        if ($transfersCount <= 3 and ($isExperimentEnabled === true) and ($txnAndBalanceUpdated === true))
         {
             return true;
         }
@@ -4831,20 +4849,20 @@ class Processor
 
         $semaphore = null;
 
-        $semaphoreLimit = (int) (new Admin\Service)->getConfigKey(['key' => ConfigKey::TRANSFER_SYNC_PROCESSING_VIA_API_SEMAPHORE_LIMIT_PER_MID]);
+        $semaphoreConfig = (new Admin\Service)->getConfigKey(['key' => ConfigKey::TRANSFER_SYNC_PROCESSING_VIA_API_SEMAPHORE_CONFIG]);
 
-        if (empty($semaphoreLimit) === true)
+        if (empty($semaphoreConfig) === true)
         {
-            $semaphoreLimit = self::PAYMENT_TRANSFERS_SYNC_PROCESSING_SEMAPHORE_DEFAULT_LIMIT;
+            $semaphoreConfig = self::PAYMENT_TRANSFERS_SYNC_PROCESSING_DEFAULT_CONFIG;
         }
 
         try
         {
             $semaphoreAcquireStartTime = microtime(true);
 
-            $semaphore = new Semaphore($redis->client(), $this->merchant->getId(), $semaphoreLimit);
+            $semaphore = new Semaphore($redis->client(), $this->merchant->getId(), (int) $semaphoreConfig['limit']);
 
-            $isSemaphoreAcquired = $semaphore->acquire();
+            $isSemaphoreAcquired = $semaphore->acquire((float) $semaphoreConfig['retry_interval'], (int) $semaphoreConfig['retries']);
 
             if ($isSemaphoreAcquired === true)
             {

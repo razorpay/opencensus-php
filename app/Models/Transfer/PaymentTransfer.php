@@ -19,6 +19,16 @@ class PaymentTransfer extends  AbstractTransfer
 
     public function process()
     {
+        $mutexConfig = $this->fetchTransferProcessMutexConfig();
+
+        $mutexNumRetries = (int) ($mutexConfig['num_retries'] ?? self::MUTEX_NUM_RETRIES);
+
+        $mutexMinDelayMs = (int) ($mutexConfig['min_delay_ms'] ?? self::MUTEX_MIN_RETRY_DELAY_MS);
+
+        $mutexMaxDelayMs = (int) ($mutexConfig['max_delay_ms'] ?? self::MUTEX_MAX_RETRY_DELAY_MS);
+
+        $mutexLockTimeoutSec = (int) ($mutexConfig['lock_timeout_sec'] ?? self::MUTEX_LOCK_TIMEOUT);
+
         try
         {
             [$transfersProcessed, $failedTransfersToRetry] = $this->mutex->acquireAndRelease(
@@ -41,8 +51,8 @@ class PaymentTransfer extends  AbstractTransfer
 
                     return $this->processOrderTransfers($this->payment);
                 },
-                self::MUTEX_LOCK_TIMEOUT,
-                ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_PROCESS_IN_PROGRESS, 0,100,200 ,true);
+                $mutexLockTimeoutSec, ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_PROCESS_IN_PROGRESS, $mutexNumRetries,
+                $mutexMinDelayMs, $mutexMaxDelayMs, true);
 
             $this->trace->info(
                 TraceCode::PAYMENT_TRANSFER_PROCESS_SUCCESS,

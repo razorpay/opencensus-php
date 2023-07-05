@@ -5,6 +5,7 @@ namespace RZP\Models\Transfer;
 use Exception;
 use Throwable;
 use RZP\Constants;
+use RZP\Models\Admin;
 use RZP\Trace\Tracer;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
@@ -24,6 +25,9 @@ abstract class AbstractTransfer
     protected $payment;
 
     const MUTEX_LOCK_TIMEOUT = 600;
+    const MUTEX_NUM_RETRIES = 0;
+    const MUTEX_MIN_RETRY_DELAY_MS = 100;
+    const MUTEX_MAX_RETRY_DELAY_MS = 200;
 
     protected $mutex;
 
@@ -541,5 +545,12 @@ abstract class AbstractTransfer
         }
 
         return false;
+    }
+
+    protected function fetchTransferProcessMutexConfig()
+    {
+        $config = (new Admin\Service)->getConfigKey(['key' => Admin\ConfigKey::TRANSFER_PROCESSING_MUTEX_CONFIG]);
+
+        return $config;
     }
 }
