@@ -33,6 +33,7 @@ const payload = {
   interval: 60,
   mode: 'razorpay',
   filters: { method: ['card'], type: ['credit'] },
+  features: { use_alias: false },
   group_by: { limit: 4 },
 };
 

@@ -137,7 +137,7 @@ describe('<SuccessRate/>', () => {
 
     expect(srFetchAllSpy).toHaveBeenLastCalledWith(
       expect.objectContaining({
-        filters: { method: ['card', 'upi', 'netbanking', 'emandate'] },
+        filters: { method: ['card', 'upi', 'netbanking', 'emandate', 'upi_autopay'] },
       }),
     );
     await waitFor(() => {
@@ -174,6 +174,80 @@ describe('<SuccessRate/>', () => {
       expect(screen.getByTestId('Emandate-tab')).toHaveClass('active');
     });
     expect(screen.queryByTestId('method-types')).not.toBeInTheDocument();
+  });
+
+  test('should render UPI AutoPay tab on screen', async () => {
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('upi_autopay-tab')).toBeVisible();
+    });
+  });
+
+  test('should show method types upon clicking on UPI AutoPay and reflect changes in sr payload', async () => {
+    const srFetchAllSpy = jest.spyOn(services, 'getSR');
+    server.use(srApiHandler({ isSuccess: false }), errorApiHandler({ isSuccess: false }));
+    render(<App />);
+    await userEvent.click(screen.getByTestId('upi_autopay-tab').firstChild as HTMLElement);
+    expect(srFetchAllSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        filters: { method: ['upi_autopay'], recurring_type: ['auto'] },
+      }),
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Mandate Type:')).toBeVisible();
+    });
+
+    expect(screen.getByTestId('method-types')).toBeVisible();
+
+    await userEvent.click(screen.getByText('Creation'));
+    await waitForElementToBeRemoved(() => screen.getAllByTestId('sr-dashboard-chart-shimmer')[0]);
+    expect(srFetchAllSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        filters: { method: ['upi_autopay'], recurring_type: ['initial'] },
+      }),
+    );
+    await userEvent.click(screen.getByText('Debit'));
+    await waitForElementToBeRemoved(() => screen.getAllByTestId('sr-dashboard-chart-shimmer')[0]);
+    expect(srFetchAllSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        filters: { method: ['upi_autopay'], recurring_type: ['auto'] },
+      }),
+    );
+  });
+
+  test('should show method types upon clicking on UPI AutoPay and reflect changes in error payload', async () => {
+    const merchantErrorSpy = jest.spyOn(services, 'getMerchantError');
+    server.use(srApiHandler({ isSuccess: false }), errorApiHandler({ isSuccess: false }));
+    render(<App />);
+    await userEvent.click(screen.getByTestId('upi_autopay-tab').firstChild as HTMLElement);
+    expect(merchantErrorSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        filters: { method: ['upi_autopay'], recurring_type: ['auto'] },
+      }),
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Mandate Type:')).toBeVisible();
+    });
+
+    expect(screen.getByTestId('method-types')).toBeVisible();
+
+    await userEvent.click(screen.getByText('Creation'));
+    await waitForElementToBeRemoved(() => screen.getAllByTestId('sr-dashboard-chart-shimmer')[0]);
+    expect(merchantErrorSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        filters: { method: ['upi_autopay'], recurring_type: ['initial'] },
+      }),
+    );
+    await userEvent.click(screen.getByText('Debit'));
+    await waitForElementToBeRemoved(() => screen.getAllByTestId('sr-dashboard-chart-shimmer')[0]);
+    expect(merchantErrorSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        filters: { method: ['upi_autopay'], recurring_type: ['auto'] },
+      }),
+    );
   });
 
   test('should show method types upon clicking on card and reflect changes in sr payload', async () => {

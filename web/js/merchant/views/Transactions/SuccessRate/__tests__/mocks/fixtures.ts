@@ -39,17 +39,22 @@ export type BaseStruct = {
 };
 
 export type SrPayload = {
+  entity: string;
+  mode: string;
   from: number;
   to: number;
   filters: {
     method: string[];
     type?: string[];
+    recurring_type?: string[];
   };
   group_by: {
     keys?: string[];
-    limit: number;
+    limit?: number;
   };
   interval: number;
+  merchant_id?: string;
+  features: { use_alias: boolean };
 };
 
 export type SuccessSrResponse = {
@@ -78,6 +83,7 @@ const MAX_TOTAL = {
   card: 20,
   netbanking: 20,
   emandate: 0,
+  upi_autopay: 30,
 };
 
 const WEIGHT_MAPPINGS = {
@@ -101,6 +107,11 @@ const WEIGHT_MAPPINGS = {
   RuPay: 18,
   intent: 19,
   collect: 20,
+  upi_autopay: 21,
+  auto: 22,
+  initial: 23,
+  LESS_THAN: 1,
+  MORE_THAN: 2,
 };
 
 const NAME_MAPPINGS = {
@@ -108,16 +119,19 @@ const NAME_MAPPINGS = {
   card: 'card',
   netbanking: 'netbanking',
   emandate: 'emandate',
+  upi_autopay: 'upi_autopay',
   others: 'others',
   ICIC: 'ICICI bank',
   0: 'Domestic', // 0 (key) refers to Domestic payments as per DB
   1: 'International', // 1 (key) refers to International payments as per DB
+  LESS_THAN: 'Less than 15k',
+  MORE_THAN: 'More than 15k',
 };
 
 const GROUP_BY_MAPPINGS = {
   overall: {
     keys: {
-      method: ['upi', 'card', 'netbanking', 'others'],
+      method: ['upi', 'card', 'netbanking', 'upi_autopay', 'others'],
     },
   },
   upi: {
@@ -154,6 +168,18 @@ const GROUP_BY_MAPPINGS = {
   emandate: {
     keys: {
       bank: [],
+    },
+  },
+  upi_autopay: {
+    initial: {
+      keys: {
+        amount_split: ['LESS_THAN', 'MORE_THAN', 'others'],
+      },
+    },
+    auto: {
+      keys: {
+        amount_split: ['LESS_THAN', 'MORE_THAN', 'others'],
+      },
     },
   },
 };
@@ -213,7 +239,7 @@ export const getSrResponse = (
   const { filters, group_by, from, to, interval } = payload;
   const isParticularMethod = filters.method.length === 1;
   const method = isParticularMethod ? filters.method[0] : 'overall';
-  const isFilterTypePresent = filters?.type;
+  const isFilterTypePresent = filters?.type || filters?.recurring_type;
   const isGroupByPresent = group_by?.keys; //group by as of now for sr dashboard is only supported by keys.
 
   baseStruct.total = MAX_TOTAL[method];
@@ -322,7 +348,7 @@ export const getErrorResponse = (payload: SrPayload): ErrorResponse => {
   };
 };
 
-type Tabs = 'Card' | 'Overall' | 'Upi' | 'Netbanking' | 'Emandate';
+type Tabs = 'Card' | 'Overall' | 'Upi' | 'Netbanking' | 'Emandate' | 'UpiAutopay';
 type MerchantErrors = 'default' | 'international';
 
 type SuccessRate = {

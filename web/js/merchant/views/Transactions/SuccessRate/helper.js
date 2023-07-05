@@ -32,6 +32,7 @@ import {
   PAYMENT_METHOD_VS_CALLOUT_DISPLAY_TEXT,
   DEFAULT_METHOD,
   CUSTOM_ERROR_TYPES,
+  UPI_AUTOPAY,
 } from './constants';
 
 export const getBreakdownInterval = (from, to) => {
@@ -124,9 +125,8 @@ export const queryFilters = (updateDropdownOptions = false, refreshMetricTabs = 
       return methods;
     }, []);
   }
-
   const methodType = activeTab === 'Card' && isOptimizerEnabled ? null : selectedMethodType;
-
+  const typeField = activeTab === UPI_AUTOPAY ? 'recurring_type' : 'type';
   const payload = {
     entity: 'payments',
     from: startDate.unix(),
@@ -141,12 +141,15 @@ export const queryFilters = (updateDropdownOptions = false, refreshMetricTabs = 
             isOptimizerEnabled,
           })
         : {}),
-      ...(methodType ? { type: [methodType] } : {}),
+      ...(methodType ? { [typeField]: [methodType] } : {}),
     },
     ...(isSrAdminEnabled && searchedMerchantId ? { merchant_id: searchedMerchantId } : {}),
     group_by: {
       keys: _group_by,
       limit: isOptimizerEnabled ? 3 : GROUP_BY_KEY_VS_LIMIT[_group_by] || DEFAULT_GROUP_BY_LIMIT, // 3 for dropdown filters in case of optimizer merchant and other limits as per groupBy for graph pills in case of rzp merchant.
+    },
+    features: {
+      use_alias: true,
     },
   };
 
@@ -501,7 +504,7 @@ export const getMerchantErrorsPayload = (updateDropdownOptions) => {
   }
 
   const methodType = activeTab === 'Card' && isOptimizerEnabled ? null : selectedMethodType;
-
+  const typeField = activeTab === UPI_AUTOPAY ? 'recurring_type' : 'type';
   const payload = {
     entity: 'payments',
     from: startDate.unix(),
@@ -515,7 +518,7 @@ export const getMerchantErrorsPayload = (updateDropdownOptions) => {
             isOptimizerEnabled,
           })
         : {}),
-      ...(methodType ? { type: [methodType] } : {}),
+      ...(methodType ? { [typeField]: [methodType] } : {}),
       ...(errorType !== 'default' ? CUSTOM_ERROR_TYPES[activeTab]?.fetchOptions?.filters : {}),
     },
     ...(isSrAdminEnabled && searchedMerchantId ? { merchant_id: searchedMerchantId } : {}),
@@ -523,6 +526,9 @@ export const getMerchantErrorsPayload = (updateDropdownOptions) => {
     group_by: {
       ...(errorType !== 'default' ? CUSTOM_ERROR_TYPES[activeTab]?.fetchOptions?.groupBy : {}),
       limit: 6,
+    },
+    features: {
+      use_alias: true,
     },
   };
 

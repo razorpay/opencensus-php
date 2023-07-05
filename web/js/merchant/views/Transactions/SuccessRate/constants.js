@@ -13,6 +13,7 @@ export const UPI = 'UPI';
 export const CARD = 'Card';
 export const NETBANKING = 'Netbanking';
 export const EMANDATE = 'Emandate';
+export const UPI_AUTOPAY = 'upi_autopay';
 
 // Graph axis ids for downtimes and sr
 export const SR_X = 'sr_x';
@@ -49,6 +50,10 @@ export const DEFAULT_METHOD = {
       method: 'emandate',
       optimizerEnabled: false,
     },
+    {
+      method: 'upi_autopay',
+      optimizerEnabled: false,
+    },
   ],
   UPI: [
     {
@@ -74,6 +79,12 @@ export const DEFAULT_METHOD = {
       optimizerEnabled: false,
     },
   ],
+  upi_autopay: [
+    {
+      method: 'upi_autopay',
+      optimizerEnabled: false,
+    },
+  ],
 };
 
 export const DEFAULT_GROUP_BY = {
@@ -82,6 +93,7 @@ export const DEFAULT_GROUP_BY = {
   Card: 'network',
   Netbanking: 'bank',
   Emandate: 'bank',
+  upi_autopay: 'amount_split',
 };
 
 export const TAG_MAP = {
@@ -96,6 +108,7 @@ export const TAG_MAP = {
   prepaid: 'Prepaid',
   others: 'Others',
   MasterCard: 'Mastercard',
+  upi_autopay: 'UPI AutoPay',
 };
 
 export const TAG_OVERALL_MAP = {
@@ -107,6 +120,7 @@ export const TAG_OVERALL_MAP = {
   type: 'All cards types',
   bank: 'All banks',
   international: 'Overall',
+  amount_split: 'Overall',
 };
 
 /**************************************** Graph Widget Variables ****************************************/
@@ -132,6 +146,10 @@ export const tabsOrder = [
     tab: 'Emandate',
     optimizerEnabled: false,
   },
+  {
+    tab: 'upi_autopay',
+    optimizerEnabled: false,
+  },
 ];
 
 export const tabsTitleMap = {
@@ -140,6 +158,7 @@ export const tabsTitleMap = {
   Card: 'Cards',
   Netbanking: 'Netbanking',
   Emandate: 'Emandate',
+  upi_autopay: 'UPI AutoPay',
 };
 
 export const METHOD_HELP_TEXT =
@@ -506,6 +525,23 @@ export const METHOD_TYPES_MAP = {
       {
         name: 'Prepaid',
         value: 'prepaid',
+        shouldRender: () => true,
+      },
+    ],
+  },
+  upi_autopay: {
+    name: 'Mandate Type:',
+    shouldRender: ({ user }) => !user.isOptimizerEnabled,
+    defaultType: 'auto',
+    types: [
+      {
+        name: 'Debit',
+        value: 'auto',
+        shouldRender: () => true,
+      },
+      {
+        name: 'Creation',
+        value: 'initial',
         shouldRender: () => true,
       },
     ],
