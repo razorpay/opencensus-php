@@ -373,7 +373,7 @@ class KubernetesClient
                             ]
                         ],
                         'restartPolicy' => 'Never',
-                        'dnsPolicy' => 'Default',
+                        'dnsPolicy' => 'ClusterFirst',
                         'nodeSelector' => [
                             $this->nodeSelector => ''
                         ],
@@ -488,7 +488,7 @@ class KubernetesClient
                             ]
                         ],
                         'restartPolicy' => 'Never',
-                        'dnsPolicy' => 'Default',
+                        'dnsPolicy' => 'ClusterFirst',
                         'nodeSelector' => [
                             $this->nodeSelector => ''
                         ],
