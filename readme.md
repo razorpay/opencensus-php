@@ -101,6 +101,7 @@ Visit [this link](https://stackoverflow.com/questions/57851117/homebrew-upgrade-
 * In case you are on 12.04, see [this question](http://stackoverflow.com/questions/1528717/phpunit-require-once-error) on how to fix the PHPUnit install.
 * In case you see this error about missing tables in api_testing database, run the following on api root: `APP_ENV=testing php artisan rzp:dbr --install`
 * Run redis-cluster. `make redis-cluster`
+* Install `pecl install grpc-1.49.0`
 
 TIP: Change the values of `RUN_FIXTURES` and `RUN_FIXTURES_ONCE` in `.env.testing` file to `false` after running the tests once. This makes sure you don't run fixtures everytime and hence the tests will run faster. If you add/change/delete any fixtures or clear your test db then change them to `true` once, run tests and then change them back to `false`.
 
