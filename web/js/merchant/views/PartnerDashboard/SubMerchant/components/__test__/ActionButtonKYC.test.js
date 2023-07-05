@@ -1,7 +1,19 @@
-import { render, screen } from 'test-utils';
+import { render, screen, userEvent } from 'test-utils';
 import '@testing-library/jest-dom/extend-expect';
 import ActionButtonKYC from 'merchant/views/PartnerDashboard/SubMerchant/components/ActionButtonKYC';
 import moment from 'moment';
+import * as analyticsUtil from 'merchant/views/PartnerDashboard/SubMerchant/components/utils/analytics';
+import * as navigationUtil from 'merchant/views/PartnerDashboard/SubMerchant/utils/navigation';
+const trackAcceptedInvitesCtaSpy = jest.spyOn(analyticsUtil, 'trackAcceptedInvitesCta');
+const openKYCFormUtilSpy = jest.spyOn(navigationUtil, 'openKYCFormUtil');
+
+// TODO: reuse commonProps in existing test cases
+const commonProps = {
+  activation_status: null,
+  trackUserEvent: jest.fn(),
+  submerchant: { id: 'acc_LY0LBrSgJLlFHa', details: { activation_status: null } },
+  showNotification: jest.fn(),
+};
 
 describe('<ActionButtonKYC /> ', () => {
   test("Partner didn't request SubM", () => {
@@ -156,5 +168,57 @@ describe('<ActionButtonKYC /> ', () => {
       .getByTestId('component-wrapper')
       .firstChild.classList.contains('action-kyc-request-disable');
     expect(isButtonDisabled).toBe(false);
+  });
+
+  test('should trigger Perform KYC successfully for PG Invite Flow', async () => {
+    const props = {
+      ...commonProps,
+      isPGProductWithInviteFlow: true,
+      kyc_access: {
+        state: 'approved',
+        rejection_count: 1,
+      },
+    };
+    render(<ActionButtonKYC {...props} />);
+
+    const performKycButton = screen.getByRole('button', { name: 'Perform KYC' });
+    await userEvent.click(performKycButton);
+
+    // test tracking
+    expect(trackAcceptedInvitesCtaSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'acc_LY0LBrSgJLlFHa' }),
+      {
+        properties: { action: 'Perform KYC' },
+      },
+    );
+
+    // test redirection
+    expect(openKYCFormUtilSpy).toHaveBeenCalled();
+  });
+
+  test('should trigger Resend KYC request successfully for PG Invite Flow', async () => {
+    const props = {
+      ...commonProps,
+      isPGProductWithInviteFlow: true,
+      kyc_access: {
+        state: 'expired',
+        rejection_count: 0,
+      },
+    };
+    const { history } = render(<ActionButtonKYC {...props} />);
+
+    const resendKycButton = screen.getByRole('button', { name: 'Resend KYC request' });
+    await userEvent.click(resendKycButton);
+
+    // test tracking
+    expect(trackAcceptedInvitesCtaSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'acc_LY0LBrSgJLlFHa' }),
+      {
+        properties: { action: 'Resend KYC request' },
+      },
+    );
+
+    // test redirection
+    expect(history.location.pathname).toBe(`/partners/submerchants/acc_LY0LBrSgJLlFHa`);
   });
 });

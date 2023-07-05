@@ -240,10 +240,13 @@ class ProductSubMerchantsList extends ListContainer {
 
   constructor(props) {
     super(props);
+    const { product, user } = this.props;
 
     // if this feature is enabled - allows partner to perform submerchant kyc without requesting them
-    this.isSubMerchantKYCAccess = this.props.user.isFeatureEnabled('partner_sub_kyc_access');
-    this.isCapitalProduct = this.props.product === PRODUCT_TYPE.CAPITAL;
+    this.isSubMerchantKYCAccess = user.isFeatureEnabled('partner_sub_kyc_access');
+    this.isCapitalProduct = product === PRODUCT_TYPE.CAPITAL;
+    this.isPGProductWithInviteFlow =
+      user.isPartnershipsInviteFlowEnabled && product === PRODUCT_TYPE.PG;
   }
 
   getActivationBulkData = (items) => {
@@ -303,12 +306,7 @@ class ProductSubMerchantsList extends ListContainer {
   }
 
   checkIfPGInvitesEmpty = () => {
-    const { product, user } = this.props;
-
-    const isPGProductWithInviteFlow =
-      user.isPartnershipsInviteFlowEnabled && product === PRODUCT_TYPE.PG;
-
-    if (isPGProductWithInviteFlow) {
+    if (this.isPGProductWithInviteFlow) {
       // Note: This is a partially nonblocking network call to determine the welcome screen condition
       fetchInvites(this.props.user.id, {
         product: PRODUCT_TYPE.PG,
@@ -466,6 +464,7 @@ class ProductSubMerchantsList extends ListContainer {
         submerchant={submerchant}
         trackUserEvent={this.trackUserEvent}
         isSubMerchantKYCAccess={this.isSubMerchantKYCAccess}
+        isPGProductWithInviteFlow={this.isPGProductWithInviteFlow}
         showNotification={this.props.showNotification}
       />
     ),

@@ -3,13 +3,17 @@ import { Button } from '@razorpay/blade/components';
 import { useMutation } from 'react-query';
 import { resendInvite } from 'merchant/views/PartnerDashboard/SubMerchant/components/AllInvitesTable/api';
 import { ShowNotificationType } from 'common/typings';
+import { trackAllInvitesCta } from './analytics';
 
 type InviteActionButtonProps = {
-  invite: { id: string };
+  invite: { id: string; name: string; email: string; contact_no: string };
   showNotification: ShowNotificationType;
 };
 
-const InviteActionButton = ({ invite, showNotification }: InviteActionButtonProps): JSX.Element => {
+const InviteActionButton = ({
+  invite: { id, name, email, contact_no },
+  showNotification,
+}: InviteActionButtonProps): JSX.Element => {
   const [handleResendInvite, { isLoading }] = useMutation(resendInvite, {
     onError: (err: { errors: Array<string> }) => {
       showNotification?.({
@@ -24,13 +28,13 @@ const InviteActionButton = ({ invite, showNotification }: InviteActionButtonProp
       });
     },
   });
+
+  const onResendInviteClick = () => {
+    handleResendInvite(id);
+    trackAllInvitesCta({ name, email, contact_no });
+  };
   return (
-    <Button
-      variant="secondary"
-      size="small"
-      isLoading={isLoading}
-      onClick={() => handleResendInvite(invite.id)}
-    >
+    <Button variant="secondary" size="small" isLoading={isLoading} onClick={onResendInviteClick}>
       Resend Invite
     </Button>
   );

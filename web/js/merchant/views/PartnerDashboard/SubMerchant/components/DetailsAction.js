@@ -15,6 +15,7 @@ import WaitingApprovalImg from 'assets/partner-dashboard/waiting-approval.png';
 import DefaultImg from 'assets/partner-dashboard/req-by-email-1.png';
 import Image from 'common/ui/Image';
 import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
+import { trackAcceptedInvitesCta } from './utils/analytics';
 
 const DetailsAction = ({
   activation_status = null,
@@ -49,6 +50,12 @@ const DetailsAction = ({
       const isMWeb = isMobileAndTablet();
       setIsActionLoading(true);
 
+      // Note: product type is PG as parent conditionally renders it only for PG.
+      if (user.isPartnershipsInviteFlowEnabled) {
+        trackAcceptedInvitesCta(submerchant, {
+          properties: { action: btnText },
+        });
+      }
       openKYCFormUtil(isMWeb, history, submerchant, props.showNotification).then(() => {
         setIsActionLoading(false);
       });
@@ -60,6 +67,13 @@ const DetailsAction = ({
       props.trackUserEvent('partnerships.dashboard.affiliate_account.pannel', {
         cta: 'request_access',
       });
+
+      if (user.isPartnershipsInviteFlowEnabled) {
+        trackAcceptedInvitesCta(submerchant, {
+          properties: { action: btnText },
+        });
+      }
+
       await merchantFetch({
         url: 'partner/kyc_access_request',
         // mode: 'live',

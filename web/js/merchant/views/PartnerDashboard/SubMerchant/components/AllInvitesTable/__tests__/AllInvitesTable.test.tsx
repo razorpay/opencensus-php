@@ -4,7 +4,9 @@ import AllInvitesTable from 'merchant/views/PartnerDashboard/SubMerchant/compone
 import { allInvitesData, allInvitesDataEmpty } from './mocks/fixtures';
 import { allInvitesListSuccess, allInvitesListError, resendInviteHandler } from './mocks/handlers';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
+import * as analytics from 'common/utils/analytics';
 
+const analyticsTrackWithUserInfoSpy = jest.spyOn(analytics, 'analyticsTrackWithUserInfo');
 const showNotificationsSpy = jest.spyOn(NotificationsActions, 'showNotification');
 const location = {
   search: '',
@@ -73,7 +75,7 @@ describe('AllInvitesTable', () => {
     });
   });
 
-  test('should fire resend api when resend Invite clicked', async () => {
+  test('should fire resend api when Resend Invite clicked', async () => {
     server.use(allInvitesListSuccess());
     server.use(resendInviteHandler());
     renderApp();
@@ -84,6 +86,14 @@ describe('AllInvitesTable', () => {
     const firstResendButton = screen.queryAllByRole('button', { name: 'Resend Invite' })[0];
     await userEvent.click(firstResendButton);
 
+    // test tracking event
+    expect(analyticsTrackWithUserInfoSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        objectName: 'Partner Dashboard Account Level All Invites Tab Action Cta',
+      }),
+    );
+
+    // test api response
     await waitFor(() => {
       expect(showNotificationsSpy).toHaveBeenCalledWith(
         expect.objectContaining({

@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { NavLink } from 'react-router-dom';
 import FtuxTooltip from './components/FtuxTooltip';
+import { trackAcceptedInvitesClick, trackAllInvitesClick } from './analytics';
 
 const StyledPGInvitesNavLinks = styled.div(
   ({ theme }) => `
@@ -30,10 +31,22 @@ const PGInvitesNavLinks = ({ prefix }: PGInvitesNavLinksProps): JSX.Element => {
   return (
     <StyledPGInvitesNavLinks>
       <FtuxTooltip />
-      <NavLink exact activeClassName="active" className="navlink" to={`${prefix}`}>
+      <NavLink
+        exact
+        activeClassName="active"
+        onClick={trackAcceptedInvitesClick}
+        className="navlink"
+        to={`${prefix}`}
+      >
         Accepted Invites
       </NavLink>
-      <NavLink exact activeClassName="active" className="navlink" to={`${prefix}/all`}>
+      <NavLink
+        exact
+        activeClassName="active"
+        onClick={trackAllInvitesClick}
+        className="navlink"
+        to={`${prefix}/all`}
+      >
         All Invites
       </NavLink>
     </StyledPGInvitesNavLinks>

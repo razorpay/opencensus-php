@@ -5,6 +5,7 @@ import { Button } from '@razorpay/blade/components';
 import { withRouter } from 'react-router-dom';
 import { isMobileAndTablet } from 'common/utils/rzp-utils';
 import { openKYCFormUtil } from 'merchant/views/PartnerDashboard/SubMerchant/utils/navigation';
+import { trackAcceptedInvitesCta } from './utils/analytics';
 import moment from 'moment';
 
 const ActionButtonKYC = ({
@@ -14,6 +15,7 @@ const ActionButtonKYC = ({
   history,
   trackUserEvent,
   isSubMerchantKYCAccess,
+  isPGProductWithInviteFlow,
   showNotification,
 }) => {
   const submerchantId = submerchant?.id;
@@ -35,6 +37,11 @@ const ActionButtonKYC = ({
       action: 'open_pannel',
       submerchant_id: submerchantId,
     });
+    if (isPGProductWithInviteFlow) {
+      trackAcceptedInvitesCta(submerchant, {
+        properties: { action: btnText },
+      });
+    }
     history.push(`/partners/submerchants/${submerchantId}`);
   };
   const openKYCForm = () => {
@@ -46,6 +53,12 @@ const ActionButtonKYC = ({
       is_mweb,
       action: 'kyc_form',
     });
+
+    if (isPGProductWithInviteFlow) {
+      trackAcceptedInvitesCta(submerchant, {
+        properties: { action: btnText },
+      });
+    }
     if (!isActionLoading) {
       setIsActionLoading(true);
       openKYCFormUtil(is_mweb, history, submerchant, showNotification).then(() => {

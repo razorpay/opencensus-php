@@ -44,6 +44,10 @@ import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import lazy from 'merchant/routes/LazyLoader';
 import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import { createSubmerchantInvite } from './api';
+import {
+  trackSubmerchantReferViaBulkUpload,
+  trackSubmerchantReferViaEmail,
+} from './utils/analytics';
 
 const gaEvents = setGaTrack('Dashboard - Partner Submerchant - BU');
 const ORG_CONTACT_PLACEHOLDER_TEXT = {
@@ -239,6 +243,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
 
     if (this.isPGInviteFlow()) {
       const { contact_mobile, ...rest } = params;
+      trackSubmerchantReferViaEmail(params);
       return createSubmerchantInvite({
         ...rest,
         contact_no: contact_mobile,
@@ -247,6 +252,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
       })
         .then((response) => {
           if (!response.success) return;
+
           if (user && user.isPartner('reseller')) {
             this.setState((prevState) => ({
               step: prevState.step + 1,
@@ -260,7 +266,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
             });
             closeModal();
           }
-          trackAddNewMerchantEvents('Submit Form');
+
           this.onAddSuccess();
         })
         .catch(({ errors }) => {
@@ -393,6 +399,8 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
         });
     }
     if (this.isPGInviteFlow()) {
+      trackSubmerchantReferViaBulkUpload({ bulkContactsCount });
+
       return createReferralInvitesBatch?.({
         file_id,
         config: {

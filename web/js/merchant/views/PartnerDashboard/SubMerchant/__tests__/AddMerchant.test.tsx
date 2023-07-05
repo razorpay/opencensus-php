@@ -8,6 +8,8 @@ import AddMerchant from 'merchant/views/PartnerDashboard/SubMerchant/AddMerchant
 import * as api from 'merchant/views/PartnerDashboard/SubMerchant/api';
 import { referralData, fileUploadResponse, orgDetails } from './mocks/fixtures';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import * as analytics from 'common/utils/analytics';
+const analyticsTrackWithUserInfoSpy = jest.spyOn(analytics, 'analyticsTrackWithUserInfo');
 
 // TODO : covered only Capital use case, have to cover others later
 
@@ -177,6 +179,8 @@ describe('AddMerchant', () => {
     const sendButton = screen.getByRole('button', { name: 'Send Invite' });
     await userEvent.click(sendButton);
 
+    createSubmerchantInviteSpy.mockImplementation(() => ({ success: true }));
+
     expect(createSubmerchantInviteSpy).toHaveBeenCalledWith({
       name,
       email,
@@ -188,17 +192,25 @@ describe('AddMerchant', () => {
     await waitFor(() => {
       expect(screen.queryByText('Inviting...')).not.toBeInTheDocument();
     });
+    expect(analyticsTrackWithUserInfoSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        objectName: 'Partner Submerchant Refer Via Email',
+      }),
+    );
+
     expect(screen.getByText('Merchant Added Successfully')).toBeInTheDocument();
     isPartner.mockReset();
   });
 
   test('should return separate sample batch file for partnerships invite flow', async () => {
     renderApp({ isPartnershipsInviteFlowEnabled: true, isPartnershipForCapitalEnabled: false });
+
     const merchantBox = screen.getByText('Razorpay Payments');
     await userEvent.click(merchantBox);
     const nextButton = screen.getByRole('button', { name: 'Next' });
     await userEvent.click(nextButton);
     await userEvent.click(screen.getByText('Invite Multiple Clients'));
+
     const sampleLink = screen.getByRole('link', { name: 'Download sample file' });
     expect(sampleLink).toHaveAttribute('href', '/files/sample_invite_submerchant_batch.xlsx');
   });
