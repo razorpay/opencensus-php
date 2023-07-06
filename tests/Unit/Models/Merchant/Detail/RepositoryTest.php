@@ -349,6 +349,35 @@ class RepositoryTest extends Functional\TestCase
         $this->assertCount(2, $response);
     }
 
+    public function testFilterL2BankDetailsNotSubmittedMerchantIds()
+    {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'live',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzExperiment($output);
+
+        $routeMock = Mockery::mock('RZP\Http\Route')->makePartial();
+
+        $this->app->instance('api.route', $routeMock);
+
+        $routeMock->shouldReceive('getCurrentRouteName')->andReturn('merchant_onboarding_crons');
+
+        $detailRepository = $this->getMockBuilder(Repository::class)
+                                 ->onlyMethods(["filterL2BankDetailsNotSubmittedMerchantIdsFromWda"])
+                                 ->getMock();
+
+        $detailRepository->expects($this->exactly(1))->method('filterL2BankDetailsNotSubmittedMerchantIdsFromWda')->willReturn(["100001Razorpay", "100000Razorpay"]);
+
+        $response = $detailRepository->filterL2BankDetailsNotSubmittedMerchantIds(1688539025, 1688542625);
+
+        $this->assertCount(2, $response);
+    }
+
     /**
      * @throws \Exception
      */
