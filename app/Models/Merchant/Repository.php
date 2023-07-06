@@ -540,21 +540,6 @@ class Repository extends Base\Repository
                     ->pluck(Entity::ID)
                     ->toArray();
     }
-
-    public function fetchAllLiveAndActivatedRzpOrgMerchants(int $from, int $to)
-    {
-        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
-                    ->select(Entity::ID)
-                    ->where(Entity::LIVE, '=', 1)
-                    ->where(Entity::ACTIVATED, '=', 1)
-                    ->where(Entity::ORG_ID, '=', Org\Entity::RAZORPAY_ORG_ID)
-                    ->whereBetween(Entity::ACTIVATED_AT,[$from, $to])
-                    ->whereNull(Entity::SUSPENDED_AT)
-                    ->get()
-                    ->pluck(Entity::ID)
-                    ->toArray();
-    }
-
     public function fetchAllLiveActivatedRegularMerchantsOfOrg(int $from, int $to, $org = Org\Entity::RAZORPAY_ORG_ID)
     {
         $experimentResult = (new Detail\Core)->getSplitzResponse(UniqueIdEntity::generateUniqueId(),

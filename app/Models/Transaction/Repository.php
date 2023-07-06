@@ -484,29 +484,6 @@ class Repository extends Base\Repository
                     ->toArray();
     }
 
-    public function excludeTransactedMerchantsBeforeTimestamp(array $merchantIdList, string $type, int $timestamp)
-    {
-        $transactionsMerchantIdColumn  = $this->dbColumn(Entity::MERCHANT_ID);
-        $merchantIdColumn              = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
-        $merchantOrgIdColumn           = $this->repo->merchant->dbColumn(Merchant\Entity::ORG_ID);
-        $merchantParentIdColumn        = $this->repo->merchant->dbColumn(Merchant\Entity::PARENT_ID);
-
-        $excludeMerchantIdList =  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
-            ->join(Table::MERCHANT, $merchantIdColumn, '=', $transactionsMerchantIdColumn)
-            ->select(Entity::MERCHANT_ID)
-            ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
-            ->where($this->dbColumn(Entity::TYPE), '=', $type)
-            ->where($this->dbColumn(Entity::CREATED_AT), '<', $timestamp)
-            ->where($merchantOrgIdColumn, '=',  Org\Entity::RAZORPAY_ORG_ID)
-            ->where($merchantParentIdColumn, '=', null)
-            ->distinct()
-            ->get()
-            ->pluck(Entity::MERCHANT_ID)
-            ->toArray();
-
-        return array_diff($merchantIdList, $excludeMerchantIdList);
-    }
-
     public function filterMerchantsWithFirstTransactionAboveTimestamp(array $merchantIdList, int $timestamp)
     {
         return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())

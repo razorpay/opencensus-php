@@ -4126,19 +4126,6 @@ EOT;
                         ->where(Entity::BANK, $org->getCustomCode());
     }
 
-    public function filterMerchantsWithFirstPaymentAboveTimestamp(array $merchantIdList, int $timestamp)
-    {
-        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
-            ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
-            ->whereIn(Entity::STATUS, [Status::CAPTURED, Status::AUTHORIZED])
-            ->groupBy(Entity::MERCHANT_ID)
-            ->selectRaw('MIN(' . Entity::CREATED_AT . ') as first_created_at,' . Entity::MERCHANT_ID)
-            ->having('first_created_at', '>=', $timestamp)
-            ->get()
-            ->pluck(Entity::MERCHANT_ID)
-            ->toArray();
-    }
-
     public function hasMerchantTransacted(string $merchantId)
     {
         try

@@ -55,16 +55,6 @@ class Repository extends Base\Repository
                     ->callOnEveryItem('toArrayPublic');
 
     }
-
-    public function filterMerchantsInReferralState(array $merchantIdList, array $status)
-    {
-        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
-                    ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
-                    ->whereIn(Entity::STATUS, $status)
-                    ->get()
-                    ->pluck(Entity::MERCHANT_ID)
-                    ->toArray();
-    }
     public function fetchMerchantsInReferralState(array $status)
     {
         return $this->newQueryWithConnection($this->getSlaveConnection())
