@@ -131,6 +131,8 @@ class FundManagementPayoutInitiate extends Job
     {
         $app = App::getFacadeRoot();
 
+        $response = null;
+
         try
         {
             $response = $app['redis']->hGetAll(self::FUND_MANAGEMENT_PAYOUT_INITIATE_DISABLE);
@@ -143,6 +145,12 @@ class FundManagementPayoutInitiate extends Job
 
             $this->trace->count(Metric::FMP_INITIATE_DISABLE_REDIS_FAILURES_COUNT);
         }
+
+        $this->trace->info(TraceCode::FUND_MANAGEMENT_PAYOUT_INITIATE_KILL_SWITCH_RESPONSE, [
+            Entity::MERCHANT_ID    => $this->params[Entity::MERCHANT_ID],
+            Entity::CHANNEL        => $this->params[Entity::CHANNEL],
+            'kill_switch_response' => $response
+        ]);
 
         if ((isset($response[Constants::ALL_MERCHANTS]) === true) and
             (boolval($response[Constants::ALL_MERCHANTS]) === true))

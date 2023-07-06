@@ -9216,6 +9216,24 @@ class Core extends Base\Core
 
                 $liteBalanceThresholdWithAllowance = (int) round($liteBalanceThreshold - ($thresholds[PayoutConstants::LITE_DEFICIT_ALLOWED] / 10000) * $liteBalanceThreshold);
 
+                $liteBalanceThresholdWithFiftyPercentAllowance = (int) round($liteBalanceThreshold - 0.5 * $liteBalanceThreshold);
+
+                // Add metric counter if Lite balance is less than fifty percent of Lite balance threshold
+                if ($liteBalance <= $liteBalanceThresholdWithFiftyPercentAllowance)
+                {
+                    $this->trace->info(TraceCode::LITE_BALANCE_LESS_THAN_FIFTY_PERCENT_OF_LITE_THRESHOLD, [
+                        'merchant_id'                            => $merchantId,
+                        'channel'                                => $channel,
+                        'lite_balance'                           => $liteBalance,
+                        'lite_balance_threshold'                 => $liteBalanceThreshold,
+                        'lite_threshold_fifty_percent_allowance' => $liteBalanceThresholdWithFiftyPercentAllowance,
+                    ]);
+
+                    $this->trace->count(Metric::FMP_LESS_THAN_FIFTY_PERCENT_LITE_BALANCE_COUNT, [
+                        'channel' => $channel,
+                    ]);
+                }
+
                 $this->trace->info(TraceCode::LITE_BALANCE_FETCHED_FOR_FMP, [
                     'merchant_id'                           => $merchantId,
                     'channel'                               => $channel,
@@ -9282,7 +9300,7 @@ class Core extends Base\Core
                     'merchant_id'     => $merchantId,
                     'channel'         => $channel,
                     'gateway_balance' => $gatewayBalance,
-                    'pffset_amount'   => $offsetAmount,
+                    'offset_amount'   => $offsetAmount,
                 ]);
 
                 if ($gatewayBalance <= $offsetAmount)
@@ -9291,7 +9309,7 @@ class Core extends Base\Core
                         'merchant_id'     => $merchantId,
                         'channel'         => $channel,
                         'gateway_balance' => $gatewayBalance,
-                        'pffset_amount'   => $offsetAmount,
+                        'offset_amount'   => $offsetAmount,
                     ]);
                 }
 
@@ -9567,10 +9585,10 @@ class Core extends Base\Core
         $transferService = App::getFacadeRoot()['fts_fund_transfer'];
 
         $input = [
-            Entity::MERCHANT_ID               => $merchantId,
-            FTSConstants::OFFSET_AMOUNT       => $offsetAmount,
-            Attempt\Entity::SOURCE_ACCOUNT_ID => $ftsFundAccountId,
-            FTSConstants::ACTION              => PayoutConstants::FUND_MANAGEMENT_PAYOUT,
+            Entity::MERCHANT_ID                       => $merchantId,
+            FTSConstants::OFFSET_AMOUNT               => $offsetAmount,
+            FTSConstants::PREFERRED_SOURCE_ACCOUNT_ID => (int) $ftsFundAccountId,
+            FTSConstants::ACTION                      => PayoutConstants::FUND_MANAGEMENT_PAYOUT,
         ];
 
         $this->trace->info(TraceCode::FTS_MODE_FETCH_PAYLOAD, $input);
@@ -9670,7 +9688,7 @@ class Core extends Base\Core
         {
             $amountToCountMap[$totalAmount] = 1;
         }
-        elseif ($remainingAmount === 0)
+        elseif ($remainingAmount < 100)
         {
             $amountToCountMap[$amountThreshold] = $count;
         }
@@ -9686,6 +9704,8 @@ class Core extends Base\Core
 
     public function dispatchFundManagementPayouts($merchantId, $channel, $fmpInput, $fmpConfiguration)
     {
+        $firstJobDispatch = true;
+
         foreach ($fmpConfiguration as $payoutAmount => $payoutCount)
         {
             $fmpInput[Entity::AMOUNT] = $payoutAmount;
@@ -9694,16 +9714,28 @@ class Core extends Base\Core
                 Entity::MERCHANT_ID                    => $merchantId,
                 Entity::CHANNEL                        => $channel,
                 PayoutConstants::PAYOUT_CREATE_INPUT   => $fmpInput,
-                PayoutConstants::FMP_UNIQUE_IDENTIFIER => UniqueIdEntity::generateUniqueId(),
             ];
 
             do
             {
                 try
                 {
+                    $params[PayoutConstants::FMP_UNIQUE_IDENTIFIER] = UniqueIdEntity::generateUniqueId();
+
                     $this->trace->info(TraceCode::FUND_MANAGEMENT_PAYOUT_CREATION_DISPATCH_INITIATE, $params);
 
-                    FundManagementPayoutInitiate::dispatch($this->mode, $params);
+                    if ($firstJobDispatch === true)
+                    {
+                        FundManagementPayoutInitiate::dispatch($this->mode, $params);
+
+                        $firstJobDispatch = false;
+                    }
+                    else
+                    {
+                        // Adding delay of 2 secs (accounting for replica lag) so that fund account dedupe
+                        // happens properly during FMP creation
+                        FundManagementPayoutInitiate::dispatch($this->mode, $params)->delay(2);
+                    }
 
                     $this->trace->info(TraceCode::FUND_MANAGEMENT_PAYOUT_CREATION_DISPATCH_SUCCESS, $params);
                 }

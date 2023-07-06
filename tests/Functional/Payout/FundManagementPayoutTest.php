@@ -12,13 +12,11 @@ use RZP\Constants\Mode;
 use RZP\Models\Contact;
 use RZP\Services\Mozart;
 use RZP\Services\Ledger;
-use RZP\Constants\Entity;
 use RZP\Constants\Timezone;
 use RZP\Models\Payout\Purpose;
 use RZP\Models\BankingAccount;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\BankingAccountTpv;
-use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
@@ -30,6 +28,7 @@ use RZP\Models\Payout\Mode as PayoutMode;
 use RZP\Models\Payout\Core as PayoutCore;
 use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Payout\Entity as PayoutEntity;
@@ -270,7 +269,7 @@ class FundManagementPayoutTest extends TestCase
                         self::assertEquals('POST', $method);
 
                         self::assertArrayHasKey(FTSConstants::OFFSET_AMOUNT, $input);
-                        self::assertArrayHasKey(Attempt\Entity::SOURCE_ACCOUNT_ID, $input);
+                        self::assertArrayHasKey(FTSConstants::PREFERRED_SOURCE_ACCOUNT_ID, $input);
                         self::assertEquals('10000000000000', $input[PayoutEntity::MERCHANT_ID]);
                         self::assertEquals(PayoutConstants::FUND_MANAGEMENT_PAYOUT, $input[FTSConstants::ACTION]);
 
@@ -387,6 +386,68 @@ class FundManagementPayoutTest extends TestCase
         ];
 
         $this->expectWebhookEventWithContents($event, $expectedInitiatedWebhookAttributes);
+    }
+
+    public function getFundManagementPayoutBalanceConfig($merchantId)
+    {
+        $redis = $this->app['redis'];
+
+        return json_decode($redis->hget(PayoutCore::CA_FUND_MANAGEMENT_PAYOUT_BALANCE_CONFIG_REDIS_KEY, $merchantId), true);
+    }
+
+    public function setFundManagementPayoutBalanceConfig($merchantId, $balanceConfig)
+    {
+        $redis = $this->app['redis'];
+
+        $redis->hset(PayoutCore::CA_FUND_MANAGEMENT_PAYOUT_BALANCE_CONFIG_REDIS_KEY, $merchantId, json_encode($balanceConfig));
+    }
+
+    public function validateQueueParams($merchantId, $expectedParams, $actualParams)
+    {
+        $this->assertEquals($merchantId, $actualParams[PayoutConstants::MERCHANT_ID]);
+        $this->assertEquals($expectedParams[PayoutConstants::CHANNEL], $actualParams[PayoutConstants::CHANNEL]);
+        $this->assertEquals($expectedParams[PayoutConstants::NEFT_THRESHOLD], $actualParams[PayoutConstants::THRESHOLDS][PayoutConstants::NEFT_THRESHOLD]);
+        $this->assertEquals($expectedParams[PayoutConstants::LITE_BALANCE_THRESHOLD], $actualParams[PayoutConstants::THRESHOLDS][PayoutConstants::LITE_BALANCE_THRESHOLD]);
+        $this->assertEquals($expectedParams[PayoutConstants::LITE_DEFICIT_ALLOWED], $actualParams[PayoutConstants::THRESHOLDS][PayoutConstants::LITE_DEFICIT_ALLOWED]);
+        $this->assertEquals($expectedParams[PayoutConstants::FMP_CONSIDERATION_THRESHOLD], $actualParams[PayoutConstants::THRESHOLDS][PayoutConstants::FMP_CONSIDERATION_THRESHOLD]);
+        $this->assertEquals($expectedParams[PayoutConstants::TOTAL_AMOUNT_THRESHOLD], $actualParams[PayoutConstants::THRESHOLDS][PayoutConstants::TOTAL_AMOUNT_THRESHOLD]);
+    }
+
+    public function getAdminToken()
+    {
+        $adminForLive = $this->attachPermissionToAdmin('test');
+
+        $adminToken = $this->fixtures->on('test')->create('admin_token', [
+            'admin_id' => $adminForLive->getId(),
+            'token'    => Hash::make('ThisIsATokenForTest'),
+        ]);
+
+        return 'ThisIsATokenForTest' . $adminToken->getId();
+    }
+
+    public function attachPermissionToAdmin($mode)
+    {
+        $admin = $this->fixtures->on($mode)->create('admin', [
+            'id'     => 'poutBalnAdmnId',
+            'org_id' => Org::RZP_ORG,
+            'name'   => 'Admin Edit Config'
+        ]);
+
+        $role = $this->fixtures->on($mode)->create('role', [
+            'id'     => 'poutBalnAdmnId',
+            'org_id' => Org::RZP_ORG,
+            'name'   => 'Admin Edit Config',
+        ]);
+
+        $permission = $this->fixtures->on($mode)->create('permission', [
+            'name' => 'edit_balance_management_config'
+        ]);
+
+        $role->permissions()->attach($permission->getId());
+
+        $admin->roles()->attach($role);
+
+        return $admin;
     }
 
     // Tests for FundManagementPayoutCheck Queue
@@ -1367,11 +1428,13 @@ class FundManagementPayoutTest extends TestCase
             "channel"             => Channel::RBL,
         ];
 
-        $totalAmountOfFmps = 0;
+        $totalAmountOfFmps  = 0;
+        $uniqueIdsGenerated = [];
 
-        Queue::assertPushed(FundManagementPayoutInitiate::class, function($job) use ($expectedParams, &$totalAmountOfFmps) {
+        Queue::assertPushed(FundManagementPayoutInitiate::class, function($job) use ($expectedParams, &$totalAmountOfFmps, &$uniqueIdsGenerated) {
             $this->assertArraySubset($expectedParams, $job->getParams());
             $this->assertArrayHasKey(PayoutConstants::FMP_UNIQUE_IDENTIFIER, $job->getParams());
+            $uniqueIdsGenerated[] = $job->getParams()[PayoutConstants::FMP_UNIQUE_IDENTIFIER];
 
             $totalAmountOfFmps = $totalAmountOfFmps + $job->getParams()[PayoutConstants::PAYOUT_CREATE_INPUT][PayoutEntity::AMOUNT];
 
@@ -1380,6 +1443,7 @@ class FundManagementPayoutTest extends TestCase
 
         $this->assertEquals(2, Queue::Pushed(FundManagementPayoutInitiate::class)->count());
         $this->assertEquals(9500000, $totalAmountOfFmps);
+        $this->assertEquals(2, count(array_unique($uniqueIdsGenerated)));
 
         Carbon::setTestNow();
     }
@@ -1450,7 +1514,7 @@ class FundManagementPayoutTest extends TestCase
                 PayoutEntity::ON_HOLD_AT => Carbon::now(Timezone::IST)->subMinutes(39)->getTimestamp(),
             ],
             [
-                PayoutEntity::AMOUNT       => 1000000,
+                PayoutEntity::AMOUNT       => 999927,
                 PayoutEntity::STATUS       => PayoutStatus::INITIATED,
                 PayoutEntity::CREATED_AT   => Carbon::now(Timezone::IST)->subMinutes(40)->getTimestamp(),
                 PayoutEntity::INITIATED_AT => Carbon::now(Timezone::IST)->subMinutes(40)->getTimestamp(),
@@ -1507,19 +1571,27 @@ class FundManagementPayoutTest extends TestCase
             "channel"             => Channel::RBL,
         ];
 
-        $totalAmountOfFmps = 0;
+        $totalAmountOfFmps  = 0;
+        $uniqueIdsGenerated = [];
+        $delay = [];
 
-        Queue::assertPushed(FundManagementPayoutInitiate::class, function($job) use ($expectedParams, &$totalAmountOfFmps) {
+        Queue::assertPushed(FundManagementPayoutInitiate::class, function($job) use ($expectedParams, &$totalAmountOfFmps, &$uniqueIdsGenerated, &$delay) {
             $this->assertArraySubset($expectedParams, $job->getParams());
             $this->assertArrayHasKey(PayoutConstants::FMP_UNIQUE_IDENTIFIER, $job->getParams());
+            $uniqueIdsGenerated[] = $job->getParams()[PayoutConstants::FMP_UNIQUE_IDENTIFIER];
 
             $totalAmountOfFmps = $totalAmountOfFmps + $job->getParams()[PayoutConstants::PAYOUT_CREATE_INPUT][PayoutEntity::AMOUNT];
+            $delay[] = $job->delay;
 
             return true;
         });
 
+        $this->assertArraySelectiveEquals([null, 2], $delay);
+        $this->assertCount(2, $delay);
+
         $this->assertEquals(2, Queue::Pushed(FundManagementPayoutInitiate::class)->count());
         $this->assertEquals(9000000, $totalAmountOfFmps);
+        $this->assertEquals(2, count(array_unique($uniqueIdsGenerated)));
 
         Carbon::setTestNow();
     }
@@ -2691,66 +2763,4 @@ class FundManagementPayoutTest extends TestCase
         $this->startTest();
     }
     // --Fund Management Payout Admin Config Tests End Here
-
-    public function getFundManagementPayoutBalanceConfig($merchantId)
-    {
-        $redis = $this->app['redis'];
-
-        return json_decode($redis->hget(PayoutCore::CA_FUND_MANAGEMENT_PAYOUT_BALANCE_CONFIG_REDIS_KEY, $merchantId), true);
-    }
-
-    public function setFundManagementPayoutBalanceConfig($merchantId, $balanceConfig)
-    {
-        $redis = $this->app['redis'];
-
-        $redis->hset(PayoutCore::CA_FUND_MANAGEMENT_PAYOUT_BALANCE_CONFIG_REDIS_KEY, $merchantId, json_encode($balanceConfig));
-    }
-
-    public function validateQueueParams($merchantId, $expectedParams, $actualParams)
-    {
-        $this->assertEquals($merchantId, $actualParams[PayoutConstants::MERCHANT_ID]);
-        $this->assertEquals($expectedParams[PayoutConstants::CHANNEL], $actualParams[PayoutConstants::CHANNEL]);
-        $this->assertEquals($expectedParams[PayoutConstants::NEFT_THRESHOLD], $actualParams[PayoutConstants::THRESHOLDS][PayoutConstants::NEFT_THRESHOLD]);
-        $this->assertEquals($expectedParams[PayoutConstants::LITE_BALANCE_THRESHOLD], $actualParams[PayoutConstants::THRESHOLDS][PayoutConstants::LITE_BALANCE_THRESHOLD]);
-        $this->assertEquals($expectedParams[PayoutConstants::LITE_DEFICIT_ALLOWED], $actualParams[PayoutConstants::THRESHOLDS][PayoutConstants::LITE_DEFICIT_ALLOWED]);
-        $this->assertEquals($expectedParams[PayoutConstants::FMP_CONSIDERATION_THRESHOLD], $actualParams[PayoutConstants::THRESHOLDS][PayoutConstants::FMP_CONSIDERATION_THRESHOLD]);
-        $this->assertEquals($expectedParams[PayoutConstants::TOTAL_AMOUNT_THRESHOLD], $actualParams[PayoutConstants::THRESHOLDS][PayoutConstants::TOTAL_AMOUNT_THRESHOLD]);
-    }
-
-    public function getAdminToken()
-    {
-        $adminForLive = $this->attachPermissionToAdmin('test');
-
-        $adminToken = $this->fixtures->on('test')->create('admin_token', [
-            'admin_id' => $adminForLive->getId(),
-            'token'    => Hash::make('ThisIsATokenForTest'),
-        ]);
-
-        return 'ThisIsATokenForTest' . $adminToken->getId();
-    }
-
-    public function attachPermissionToAdmin($mode)
-    {
-        $admin = $this->fixtures->on($mode)->create('admin', [
-            'id'     => 'poutBalnAdmnId',
-            'org_id' => Org::RZP_ORG,
-            'name'   => 'Admin Edit Config'
-        ]);
-
-        $role = $this->fixtures->on($mode)->create('role', [
-            'id'     => 'poutBalnAdmnId',
-            'org_id' => Org::RZP_ORG,
-            'name'   => 'Admin Edit Config',
-        ]);
-
-        $permission = $this->fixtures->on($mode)->create('permission', [
-            'name' => 'edit_balance_management_config'
-        ]);
-
-        $role->permissions()->attach($permission->getId());
-
-        $admin->roles()->attach($role);
-
-        return $admin;
-    }
 }

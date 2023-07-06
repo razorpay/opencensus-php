@@ -56,6 +56,7 @@ final class Metric
 
     const FMP_INITIATE_DISABLE_REDIS_FAILURES_COUNT                 = 'fmp_initiate_disable_redis_failures_count';
     const FUND_MANAGEMENT_PAYOUT_CRON_DISPATCH_FAILURES_COUNT       = 'fund_management_payout_cron_dispatch_failures_count';
+    const FMP_LESS_THAN_FIFTY_PERCENT_LITE_BALANCE_COUNT            = 'fmp_less_than_fifty_percent_lite_balance_count';
 
 
     // Payout Service Metrics/Alerts
