@@ -3845,6 +3845,7 @@ class AdminFetch
                         'payout',
                         'commission',
                         'repayment_breakup',
+                        'interest_waiver',
                         'credit_repayment',
                         'installment',
                         'charge',

@@ -26,6 +26,7 @@ class Type
     const INSTALLMENT             = 'installment';
     const CHARGE                  = 'charge';
     const REPAYMENT_BREAKUP       = 'repayment_breakup';
+    const INTEREST_WAIVER         = 'interest_waiver';
     const CREDIT_TRANSFER         = 'credit_transfer';
 
     //
@@ -63,6 +64,7 @@ class Type
         self::REPAYMENT_BREAKUP,
         self::INSTALLMENT,
         self::CHARGE,
+        self::INTEREST_WAIVER
     ];
 
     public static function validateType(string $type)

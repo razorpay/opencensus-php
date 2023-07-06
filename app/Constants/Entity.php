@@ -542,6 +542,7 @@ class Entity
     const CAPITAL_COLLECTIONS_CREDIT_REPAYMENT     = 'capital_collections.credit_repayment';
     const CAPITAL_COLLECTIONS_REPAYMENT            = 'capital_collections.repayment';
     const CAPITAL_COLLECTIONS_REPAYMENT_BREAKUP    = 'capital_collections.repayment_breakup';
+    const CAPITAL_COLLECTIONS_INTEREST_WAIVER      = 'capital_collections.interest_waiver';
 
     // line_of_credit
     const LINE_OF_CREDIT_ACCOUNT_BALANCES                         = 'line_of_credit.account_balances';
@@ -601,6 +602,7 @@ class Entity
     const CREDIT_REPAYMENT               = 'credit_repayment';
     const CAPITAL_TRANSACTION            = 'capital_transaction';
     const REPAYMENT_BREAKUP              = 'repayment_breakup';
+    const INTEREST_WAIVER                = 'interest_waiver';
     const INSTALLMENT                    = 'installment';
     const CHARGE                         = 'charge';
 
@@ -1411,6 +1413,7 @@ class Entity
         self::INTERNATIONAL_ENABLEMENT_DOCUMENT => \RZP\Models\Merchant\InternationalEnablement\Document::class,
 
         self::REPAYMENT_BREAKUP => \RZP\Models\CapitalTransaction::class,
+        self::INTEREST_WAIVER   => \RZP\Models\CapitalTransaction::class,
         self::INSTALLMENT       => \RZP\Models\CapitalTransaction::class,
         self::CHARGE            => \RZP\Models\CapitalTransaction::class,
 
@@ -1697,6 +1700,7 @@ class Entity
         self::CAPITAL_COLLECTIONS_CREDIT_REPAYMENT  => \RZP\Services\CapitalCollectionsClient::class,
         self::CAPITAL_COLLECTIONS_REPAYMENT         => \RZP\Services\CapitalCollectionsClient::class,
         self::CAPITAL_COLLECTIONS_REPAYMENT_BREAKUP => \RZP\Services\CapitalCollectionsClient::class,
+        self::CAPITAL_COLLECTIONS_INTEREST_WAIVER   => \RZP\Services\CapitalCollectionsClient::class,
 
         self::CARE_CALLBACK                         => \RZP\Services\CareServiceClient::class,
         self::CARE_CALLBACK_LOG                     => \RZP\Services\CareServiceClient::class,

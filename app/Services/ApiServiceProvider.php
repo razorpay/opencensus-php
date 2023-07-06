@@ -1326,6 +1326,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
             'repayment_breakup'         => RZP\Models\CapitalTransaction\Entity::class,
 
+            'interest_waiver'           => RZP\Models\CapitalTransaction\Entity::class,
+
             'installment'               => RZP\Models\CapitalTransaction\Entity::class,
 
             'charge'                    => RZP\Models\CapitalTransaction\Entity::class,
