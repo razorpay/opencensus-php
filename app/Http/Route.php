@@ -16550,6 +16550,10 @@ class Route
         'fund_account_validate_fetch',
         'fund_account_validate_fetch_by_id',
 
+        // payout approval routes
+        'payout_approve',
+        'payout_reject',
+
         //payout related routes
         'payout_create',
         'payout_validate',

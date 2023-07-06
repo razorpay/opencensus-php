@@ -35887,6 +35887,25 @@ class PayoutTest extends OAuthTestCase
                 'entity_id' => substr($payout["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
             ]);
 
+        // Setting merchant activated as false for X merchant and activating VA
+        // This is done since going forward X merchants wont be activated on PG
+        $this->fixtures->on('live')->edit(
+            'merchant',
+            '10000000000000',
+            [
+                'activated' => false,
+            ]);
+
+        $this->fixtures->on('live')->create(
+            'merchant_attribute',
+            [
+                'merchant_id' => '10000000000000',
+                'product'     => 'banking',
+                'group'       => 'products_enabled',
+                'type'        => 'X',
+                'value'       => 'true'
+            ]);
+
         // Generate Access token for user with Admin role
         $accessToken = $this->setUpOAuthAndGenerateToken('20000000000000', 'admin');
 
@@ -35962,6 +35981,25 @@ class PayoutTest extends OAuthTestCase
             'workflow_entity_map',
             [
                 'entity_id' => substr($payout["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+            ]);
+
+        // Setting merchant activated as false for X merchant and activating VA
+        // This is done since going forward X merchants wont be activated on PG
+        $this->fixtures->on('live')->edit(
+            'merchant',
+            '10000000000000',
+            [
+                'activated' => false,
+            ]);
+
+        $this->fixtures->on('live')->create(
+            'merchant_attribute',
+            [
+                'merchant_id' => '10000000000000',
+                'product'     => 'banking',
+                'group'       => 'products_enabled',
+                'type'        => 'X',
+                'value'       => 'true'
             ]);
 
         // Generate Access token for user with owner role
