@@ -163,8 +163,6 @@ class Service extends Base\Service
             'rx_skip_payroll_payouts',
             'show_activation_form_full_view',
             'magic_bulk_address_live',
-            'magic_rto_analytics_live',
-            'magic_rto_analytics_v2_live',
             'magic_cod_orders_automation_live',
             'loans_allow_custom_amount_repayment',
             'rx_payout_link_workflow',

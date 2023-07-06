@@ -104,7 +104,7 @@ export default {
     'M3ltpBNar0aDxZ',
 
     //prod experiment id
-    'LyzIbqJ3ETSBN9',
+    'M4Bi4l52fMeIrE',
   ],
   ultra_p2_cash_advance_banner_experiment: [
     // beta experiment ids
