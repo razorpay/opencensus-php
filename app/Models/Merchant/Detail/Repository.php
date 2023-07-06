@@ -6,13 +6,19 @@ use Carbon\Carbon;
 use Database\Connection;
 use DB;
 
+use Exception;
 use RZP\Base\ConnectionType;
 use RZP\Models\Base;
+use Rzp\Wda_php\Symbol;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\AccessMap;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Org;
+use RZP\Services\WDAService;
+use RZP\Models\Merchant\Detail;
+use Rzp\Wda_php\WDAQueryBuilder;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Stakeholder;
@@ -439,22 +445,107 @@ class Repository extends Base\Repository
 
     public function filterL1NotSubmittedMerchantIds(int $from, int $to): array
     {
-        $detailMerchantIdColumn             = $this->dbColumn(Entity::MERCHANT_ID);
-        $merchantCreatedAtColumn            = $this->repo->merchant->dbColumn(Merchant\Entity::CREATED_AT);
-        $merchantIdColumn                   = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
-        $merchantOrgIdColumn                = $this->repo->merchant->dbColumn(Merchant\Entity::ORG_ID);
-        $merchantBusinessBankingIdColumn    = $this->repo->merchant->dbColumn(Merchant\Entity::BUSINESS_BANKING);
+        $experimentResult = (new Detail\Core)->getSplitzResponse(UniqueIdEntity::generateUniqueId(),
+                                                                 Merchant\Constants::WDA_MIGRATION_ACQUISITION_SPLITZ_EXP_ID);
+
+        $isWDAExperimentEnabled = ($experimentResult === 'live') ? true : false;
+
+        try
+        {
+            if (($this->app['api.route']->isWDAServiceRoute() === true) and ($isWDAExperimentEnabled === true))
+            {
+                return $this->filterL1NotSubmittedMerchantIdsFromWda($from, $to);
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
+                'wda_migration_error' => $ex->getMessage(),
+                'route_name'          => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+        }
+
+        $detailMerchantIdColumn          = $this->dbColumn(Entity::MERCHANT_ID);
+        $merchantCreatedAtColumn         = $this->repo->merchant->dbColumn(Merchant\Entity::CREATED_AT);
+        $merchantIdColumn                = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
+        $merchantOrgIdColumn             = $this->repo->merchant->dbColumn(Merchant\Entity::ORG_ID);
+        $merchantBusinessBankingIdColumn = $this->repo->merchant->dbColumn(Merchant\Entity::BUSINESS_BANKING);
 
         return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
-            ->join(Table::MERCHANT, $merchantIdColumn, '=', $detailMerchantIdColumn)
-            ->select(Entity::MERCHANT_ID)
-            ->whereBetween($merchantCreatedAtColumn, [$from, $to])
-            ->WhereNull(Entity::ACTIVATION_FORM_MILESTONE)
-            ->where($merchantOrgIdColumn,  '=' ,Org\Entity::RAZORPAY_ORG_ID)
-            ->where($merchantBusinessBankingIdColumn, '=', false)
-            ->get()
-            ->pluck(Entity::MERCHANT_ID)
-            ->toArray();
+                    ->join(Table::MERCHANT, $merchantIdColumn, '=', $detailMerchantIdColumn)
+                    ->select(Entity::MERCHANT_ID)
+                    ->whereBetween($merchantCreatedAtColumn, [$from, $to])
+                    ->WhereNull(Entity::ACTIVATION_FORM_MILESTONE)
+                    ->where($merchantOrgIdColumn, '=', Org\Entity::RAZORPAY_ORG_ID)
+                    ->where($merchantBusinessBankingIdColumn, '=', false)
+                    ->get()
+                    ->pluck(Entity::MERCHANT_ID)
+                    ->toArray();
+    }
+
+    /**
+     * Filter L1 not submitted merchantIdList based on the provided time interval.
+     *
+     * @param int $from
+     * @param int $to
+     *
+     * @return array
+     *
+     * @throws Exception
+     */
+    public function filterL1NotSubmittedMerchantIdsFromWda(int $from, int $to): array
+    {
+        $detailMerchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+        $merchantIdColumn       = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
+
+        $this->trace->info(TraceCode::WDA_SERVICE_REQUEST, [
+            'method_name' => __FUNCTION__,
+            'from'        => $from,
+            'to'          => $to,
+        ]);
+
+        $startTimeMs = round(microtime(true) * 1000);
+
+        $wdaClient = $this->app['wda-client']->wdaClient;
+
+        $wdaQueryBuilder = new WDAQueryBuilder();
+
+        $wdaQueryBuilder->addQuery($this->getTableName(), Entity::MERCHANT_ID);
+
+        $wdaQueryBuilder->resources($this->getTableName());
+
+        $wdaQueryBuilder->addResource(Table::MERCHANT, 'inner', "$merchantIdColumn = $detailMerchantIdColumn");
+
+        $wdaQueryBuilder->filters(Table::MERCHANT, Merchant\Entity::CREATED_AT, [$from, $to], Symbol::BETWEEN)
+                        ->filters($this->getTableName(), Entity::ACTIVATION_FORM_MILESTONE, [], Symbol::NULL)
+                        ->filters(Table::MERCHANT, Merchant\Entity::ORG_ID, [Org\Entity::RAZORPAY_ORG_ID], Symbol::EQ)
+                        ->filters(Table::MERCHANT, Merchant\Entity::BUSINESS_BANKING, [false], Symbol::EQ);
+
+        $wdaQueryBuilder->namespace($this->getEntityObject()->getConnection()->getDatabaseName());
+
+        $wdaQueryBuilder->cluster(WDAService::ADMIN_CLUSTER);
+
+        $this->trace->info(TraceCode::WDA_SERVICE_QUERY, [
+            'wda_query_builder' => $wdaQueryBuilder->build()->serializeToJsonString(),
+            'route_name'        => $this->app['api.route']->getCurrentRouteName(),
+        ]);
+
+        $response = $wdaClient->fetchMultipleWithExpand($wdaQueryBuilder->build(), $this->newQuery()->getModel(), []);
+
+        $l1NotSubmittedMerchantIds = (new Merchant\Repository)->convertWdaResponseToArray($response, Entity::MERCHANT_ID);
+
+        $endTimeMs = round(microtime(true) * 1000);
+
+        $queryDuration = $endTimeMs - $startTimeMs;
+
+        $this->trace->info(TraceCode::WDA_SERVICE_RESPONSE, [
+            'route_name'      => $this->app['api.route']->getCurrentRouteName(),
+            'method_name'     => __FUNCTION__,
+            'merchants_count' => count($l1NotSubmittedMerchantIds),
+            'duration_ms'     => $queryDuration,
+        ]);
+
+        return $l1NotSubmittedMerchantIds;
     }
 
     public function filterL1NotSubmittedMerchantIdsWithEmailId(int $from, int $to): array

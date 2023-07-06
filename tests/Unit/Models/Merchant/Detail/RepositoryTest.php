@@ -3,8 +3,10 @@
 namespace Unit\Models\Merchant\Detail;
 
 use Config;
+use Mockery;
 use RZP\Tests\Functional;
 use Razorpay\Asv\Error\GrpcError;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Models\Merchant\Detail\Repository;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use Rzp\Accounts\Merchant\V1\MerchantDetailResponse;
@@ -19,6 +21,7 @@ class RepositoryTest extends Functional\TestCase
 {
     use Functional\AsvFindOrFailAndFindOrFailPublicTrait;
 
+    use MocksSplitz;
 
     private $merchantDetailEntityJson1 = '{
         "merchant_id": "CzmiCwTPCL3t2K",
@@ -315,6 +318,35 @@ class RepositoryTest extends Functional\TestCase
             $this->getExceptionForFindAndFailPublicDatabase($repo, "K9UzmvitzJ"),
             $this->getExceptionForFindOrFailPublicAsv($repo, "getById", "K9UzmvitzJ", new GrpcError(\Grpc\STATUS_INVALID_ARGUMENT, "Invalid Argument"))
         );
+    }
+
+    public function testFilterL1NotSubmittedMerchantIds()
+    {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'live',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzExperiment($output);
+
+        $routeMock = Mockery::mock('RZP\Http\Route')->makePartial();
+
+        $this->app->instance('api.route', $routeMock);
+
+        $routeMock->shouldReceive('getCurrentRouteName')->andReturn('merchant_onboarding_crons');
+
+        $detailRepository = $this->getMockBuilder(Repository::class)
+                                 ->onlyMethods(["filterL1NotSubmittedMerchantIdsFromWda"])
+                                 ->getMock();
+
+        $detailRepository->expects($this->exactly(1))->method('filterL1NotSubmittedMerchantIdsFromWda')->willReturn(["100001Razorpay", "100000Razorpay"]);
+
+        $response = $detailRepository->filterL1NotSubmittedMerchantIds(1688539025, 1688542625);
+
+        $this->assertCount(2, $response);
     }
 
     /**
