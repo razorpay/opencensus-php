@@ -658,6 +658,8 @@ final class RazorxTreatment
     // This is to get the query data via WDA for emandate
     public const FETCH_PENDING_EMANDATE_REGISTRATION_FROM_WDA = "fetch_pending_emandate_registration_from_wda";
 
+    public const CARD_MANDATE_CORRECT_DETAILS_FETCH = "card_mandate_correct_details_fetch";
+
     // Experiment to migrate yes bank debit file batch processing
     public const BATCH_SERVICE_ENACH_NPCI_NETBANKING_MIGRATION = "batch_service_enach_npci_netbanking_migration";
 

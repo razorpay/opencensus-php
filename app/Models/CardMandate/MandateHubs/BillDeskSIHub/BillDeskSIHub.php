@@ -11,6 +11,7 @@ use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Models\CardMandate;
+use RZP\Models\Plan\Subscription;
 use RZP\Models\CardMandate\MandateHubs\Mandate;
 use RZP\Models\CardMandate\MandateHubs\Notification;
 use RZP\Models\CardMandate\MandateHubs\MandateHubs;
@@ -212,6 +213,20 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
         if ($endTime === null)
         {
             $endTime = $card->getExpiryTimestamp();
+        }
+
+        if (($this->app['razorx']->getTreatment($payment->merchant->getId(), Merchant\RazorxTreatment::CARD_MANDATE_CORRECT_DETAILS_FETCH, $this->app['rzp.mode']) === 'on') and
+            ($payment->getSubscriptionId() !== null))
+        {
+            $input = [
+                Payment\Entity::SUBSCRIPTION_ID => Subscription\Entity::getSignedId($payment->getSubscriptionId())
+            ];
+
+            $subscriptionData = $this->app['module']->subscription->fetchSubscriptionInfoCardMandate($input, $payment->merchant);
+
+            $tokenData['frequency'] = $subscriptionData['frequency'] ?? Constants::FREQUENCY_AS_PRESENTED;
+
+            $tokenData['max_amount'] = $subscriptionData['max_amount'] ?? $tokenData['max_amount'];
         }
 
         $inputResponse = [

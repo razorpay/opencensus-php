@@ -13,8 +13,10 @@ use RZP\Models\CardMandate\Entity;
 use RZP\Models\CardMandate\Status;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Models\CardMandate;
 use RZP\Constants\Timezone;
+use RZP\Models\Plan\Subscription;
 use RZP\Exception\LogicException;
 use RZP\Models\Currency\Currency;
 use Razorpay\Trace\Logger as Trace;
@@ -360,6 +362,21 @@ class MandateHQ extends CardMandate\MandateHubs\BaseHub
         {
             $skipSummaryPage = $input['skip_summary_page'];
         }
+
+        if (($this->app['razorx']->getTreatment($payment->merchant->getId(), Merchant\RazorxTreatment::CARD_MANDATE_CORRECT_DETAILS_FETCH, $this->app['rzp.mode']) === 'on') and
+            ($payment->getSubscriptionId() !== null))
+        {
+            $input = [
+                Payment\Entity::SUBSCRIPTION_ID => Subscription\Entity::getSignedId($payment->getSubscriptionId())
+            ];
+
+            $subscriptionData = $this->app['module']->subscription->fetchSubscriptionInfoCardMandate($input, $payment->merchant);
+
+            $frequency = $subscriptionData['frequency'] ?? Constants::FREQUENCY_AS_PRESENTED;
+
+            $maxAmount = $subscriptionData['max_amount'] ?? $maxAmount;
+        }
+
 
         $inputResponse = [
             Constants::AMOUNT       => $payment->getAmount(),
