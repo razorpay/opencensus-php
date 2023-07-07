@@ -218,6 +218,7 @@ module.exports = {
       new webpack.DefinePlugin({
         'process.env.PROJECT': JSON.stringify(project),
         'process.env.PUBLIC_ENV': JSON.stringify(process.env.STAGE),
+        'process.env.REDIRECTOR': JSON.stringify(isRedirector),
       }),
       new NodePolyfillPlugin({}),
     );
