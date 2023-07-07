@@ -47,10 +47,9 @@ class Entity extends Base\PublicEntity
 
     // Allowed frequencies for card recurring
     const AS_PRESENTED          = 'as_presented';
-    const DAILY                 = 'daily';
     const WEEKLY                = 'weekly';
     const MONTHLY               = 'monthly';
-    CONST YEARLY                = 'yearly';
+    const YEARLY                = 'yearly';
 
     const FIRST_PAYMENT_AMOUNT = 'first_payment_amount';
 
@@ -123,6 +122,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
+        self::FREQUENCY,
     ];
 
     protected $tokenFields = [

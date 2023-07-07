@@ -31,7 +31,7 @@ class Validator extends Base\Validator
         Entity::AUTH_TYPE                       => 'sometimes|string|nullable|in:netbanking,aadhaar,debitcard,physical,migrated',
         Entity::METHOD                          => 'sometimes|string|nullable|in:emandate,card,nach,upi',
         Entity::NOTES                           => 'sometimes|notes',
-        UPI_MANDATE::FREQUENCY                  => 'required_if:method,upi|in:monthly,as_presented',
+        Entity::FREQUENCY                       => 'required_if:method,upi|in:weekly,monthly,yearly,as_presented',
     ];
 
     protected static $createValidators = [
@@ -86,7 +86,7 @@ class Validator extends Base\Validator
         Entity::NOTES                           => 'sometimes|notes',
         Entity::BANK_ACCOUNT                    => 'required_if:method,nach',
         Entity::NACH                            => 'sometimes_if:method,nach|custom',
-        UPI_MANDATE::FREQUENCY                  => 'required_if:method,upi|in:monthly,as_presented',
+        Entity::FREQUENCY                       => 'required_if:method,upi|in:weekly,monthly,yearly,as_presented',
     ];
 
     protected static $nachAuthTypeRules = [
@@ -178,15 +178,24 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateFrequency(array $input){
-        $freqArray = array(ENTITY::DAILY, ENTITY::WEEKLY, ENTITY::MONTHLY, ENTITY::YEARLY, ENTITY::AS_PRESENTED);
+    public function validateFrequencyAndMaxAmountCardRecurring(array $input)
+    {
+        $freqArray = array(ENTITY::WEEKLY, ENTITY::MONTHLY, ENTITY::YEARLY, ENTITY::AS_PRESENTED);
 
-        $searchString = $input[Entity::FREQUENCY];
+        $frequency = $input[Entity::FREQUENCY] ?? null;
+        $maxAmount = $input[Entity::MAX_AMOUNT] ?? null;
 
-        if (!in_array($searchString, $freqArray)) {
+        if($frequency === null){
             throw new BadRequestValidationFailureException(
-                'The frequency '.$input[Entity::FREQUENCY].' is not supported.',
+                'frequency cannot be empty.',
                 Entity::FREQUENCY
+            );
+        }
+
+        if($maxAmount === null){
+            throw new BadRequestValidationFailureException(
+                'max amount cannot be empty.',
+                Entity::MAX_AMOUNT
             );
         }
     }
