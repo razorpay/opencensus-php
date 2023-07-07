@@ -86,6 +86,10 @@ class DisputesClient
 
     function getAuthType(): string
     {
+        if ($this->app['basicauth']->isProxyAuth() === true)
+        {
+            return self::AUTH_TYPE_PROXY;
+        }
         if ($this->app['basicauth']->isExpress() === true)
         {
             return self::AUTH_TYPE_EXPRESS;
@@ -98,10 +102,7 @@ class DisputesClient
         {
             return self::AUTH_TYPE_PRIVATE;
         }
-        if ($this->app['basicauth']->isProxyAuth() === true)
-        {
-            return self::AUTH_TYPE_PROXY;
-        }
+        
         return $this->app['basicauth']->getAuthType();
     }
 
