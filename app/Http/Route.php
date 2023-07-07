@@ -10380,8 +10380,8 @@ class Route
 
         //TPV - Third party validation
         //- validations on source accounts through which money gets loaded to va.
-        'merchant_fetch_tpvs'                          => Permission::VIEW_BANKING,
-        'merchant_tpv_create'                          => Permission::CREATE_BANKING,
+        'merchant_fetch_tpvs'                          => Permission::VIEW_PAYOUT,
+        'merchant_tpv_create'                          => Permission::CREATE_PAYOUT,
 
         //NPS
         'pending_survey_get'                           => '*',
