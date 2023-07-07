@@ -71,6 +71,7 @@ class Constants
         Constants::AUTH_CODE,
         Constants::GATEWAY_TRANSACTION_ID,
         Constants::GATEWAY_REFERENCE_ID1,
+        Constants::GATEWAY_REFERENCE_ID2
     ];
 
     // Fields being used in batch recon request flow

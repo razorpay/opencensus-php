@@ -451,6 +451,11 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             'batch_id'   => $this->batchId,
         ];
 
+        if ($this->payment->getGateway() === Payment\Gateway::CYBERSOURCE && $this->payment->terminal->getGatewayAcquirer() === 'axis')
+        {
+            $data['params'][ Base\Constants::GATEWAY_REFERENCE_ID2] = $rowDetails[BaseReconciliate::GATEWAY_REFERENCE_ID2];
+        }
+
         // Adding below check as we need to send fulcrum payment ids to cps service
         // to update the status further in fulcrum db
         // https://razorpay.slack.com/archives/CRVCT80KW/p1630389589039000
@@ -1113,6 +1118,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
 
         $gatewayReferenceId1 = $this->getGatewayReferenceId1($row);
 
+        $gatewayReferenceId2 = $this->getGatewayReferenceId2($row);
+
         $rowDetails = [
             BaseReconciliate::PAYMENT_ID             => $paymentId,
             BaseReconciliate::GATEWAY_SERVICE_TAX    => $serviceTax,
@@ -1128,6 +1135,7 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             BaseReconciliate::GATEWAY_UTR            => trim($gatewayUtr),
             BaseReconciliate::GATEWAY_UNIQUE_ID      => $gatewayUniqueId,
             BaseReconciliate::GATEWAY_REFERENCE_ID1  => trim($gatewayReferenceId1),
+            BaseReconciliate::GATEWAY_REFERENCE_ID2  => trim($gatewayReferenceId2)
         ];
 
         // For wallets and netbanking, $cardDetails would be empty.
