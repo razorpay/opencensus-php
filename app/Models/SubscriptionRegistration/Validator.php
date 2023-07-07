@@ -190,6 +190,11 @@ class Validator extends Base\Validator
                 'frequency cannot be empty.',
                 Entity::FREQUENCY
             );
+        } elseif (!in_array($frequency, $freqArray)) {
+            throw new BadRequestValidationFailureException(
+                'The selected frequency is invalid',
+                Entity::FREQUENCY
+            );
         }
 
         if($maxAmount === null){
