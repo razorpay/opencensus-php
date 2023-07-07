@@ -2,6 +2,7 @@
 
 namespace RZP\Models\MerchantRiskAlert;
 
+use RZP\Services\MerchantRiskAlertClient;
 use View;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -464,15 +465,11 @@ class Service extends Base\Service
     {
         try
         {
-            [$subject, $viewTemplate, $data, $fdSubcategory, $notificationType, $rasTriggerReason, $groupId, $emailConfigId] = $content;
+            [$subject, $emailBody, $fdSubcategory, $notificationType, $rasTriggerReason, $groupId, $emailConfigId] = $content;
 
             $merchantEmail = $merchant->merchantDetail->getContactEmail();
 
             $ccEmails = (new Dispute\Service)->getCCEmailsWithSalesPOC($merchant->getId());
-
-            $mailSubject = (new TemplateEngine)->render($subject, $data);
-
-            $mailBody = View::make($viewTemplate, $data)->render();
 
             $fdRasReasonTag = sprintf(Constants::FD_TAG_RAS_REASON_FOH, strtoupper($rasTriggerReason));
 
@@ -483,8 +480,8 @@ class Service extends Base\Service
             if (is_null($fdTicketId) === true)
             {
                 $fdOutboundEmailRequest = [
-                    'subject'         => $mailSubject,
-                    'description'     => $mailBody,
+                    'subject'         => $subject,
+                    'description'     => $emailBody,
                     'status'          => 6,
                     'type'            => 'Question',
                     'priority'        => 1,
@@ -512,7 +509,7 @@ class Service extends Base\Service
             }
             else
             {
-                $this->app['freshdesk_client']->postTicketReply($fdTicketId, ['body' => $mailBody]);
+                $this->app['freshdesk_client']->postTicketReply($fdTicketId, ['body' => $emailBody]);
             }
 
             $this->app['trace']->info(
@@ -1078,8 +1075,10 @@ class Service extends Base\Service
     /**
      * @throws BadRequestValidationFailureException
      */
-    public function triggerNeedsClarification(string $workflowActionId)
+    public function triggerNeedsClarification(string $workflowActionId, array $input)
     {
+        (new Validator)->validateInput('needs_clarification_request', $input);
+
         $this->trace->info(TraceCode::MERCHANT_RISK_ALERT_TRIGGER_NC_FOR_WORKFLOW, [
             'workflow_action_id' => $workflowActionId,
         ]);
@@ -1094,7 +1093,7 @@ class Service extends Base\Service
 
         if (Merchant\RiskMobileSignupHelper::isEligibleForMobileSignUp($merchant) === false)
         {
-            $ticketId = $this->sendOutboundEmailForTriggerNeedsClarification($merchant);
+            $ticketId = $this->sendOutboundEmailForTriggerNeedsClarification($merchant, $input);
         }
         else
         {
@@ -1108,19 +1107,15 @@ class Service extends Base\Service
         return ['success' => true];
     }
 
-    protected function sendOutboundEmailForTriggerNeedsClarification($merchant)
+    protected function sendOutboundEmailForTriggerNeedsClarification($merchant, array $params)
     {
-        $subject = Constants::FOH_ADMIN_TRIGGER_NEEDS_CLARIFICATION_SUBJECT;
+        $emailSubject = sprintf( " %s | %s | %s", Constants::RISK_CLARIFICATION, $merchant->getId(), $merchant->getName());
 
-        $viewTemplate = Constants::FOH_ADMIN_TRIGGER_NEEDS_CLARIFICATION_TPL;
-
-        $data = [
-            Merchant\Entity::MERCHANT_ID => $merchant->getId(),
-            'merchant_name'              => $merchant->getName() ?? '',
-        ];
+        $emailBody = array_get($params, 'email');
 
         return $this->sendEmail($merchant, [
-            $subject, $viewTemplate, $data,
+            $emailSubject,
+            $emailBody,
             Constants::FD_SUB_CATEGORY_NEED_CLARIFICATION,
             Constants::FOH_NC_NOTIFICATION,
             Constants::RAS_TRIGGER_REASON_NC_FLOW,
@@ -1186,5 +1181,10 @@ class Service extends Base\Service
         return (empty($this->app['cache']->connection()->hget(
                 Constants::REDIS_DEDUPE_SIGNUP_CHECKER_MAP, $merchantId))
                 === false);
+    }
+
+    public function fetchMappings(): array
+    {
+        return (new MerchantRiskAlertClient($this->app))->sendRequest(Constants::FETCH_MAPPING_URL, []);
     }
 }

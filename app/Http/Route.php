@@ -3914,6 +3914,12 @@ class Route
             'merchant_risk_alerts/merchant/foh/workflow/{workflow_action_id}/needs_clarification',
             'MerchantRiskAlertController@postTriggerNeedsClarification',
         ],
+        'merchant_risk_alerts_needs_clarification_fetch_mapping'    => [
+            'get',
+            'merchant_risk_alerts/needs_clarification/mappings',
+            'MerchantRiskAlertController@fetchMappings',
+        ],
+
         'merchant_risk_alerts_details' => [
             'get',
             'merchant_risk_alerts/merchant/{mid}/details',
@@ -7222,6 +7228,7 @@ class Route
         'admin_va_expiry_setting_upsert',
         'admin_va_setting_get',
         'merchant_risk_alerts_foh_workflow_trigger_nc',
+        'merchant_risk_alerts_needs_clarification_fetch_mapping',
         'user_verify_contact_batch',
         'rbl_current_account_serviceability_get_admin',
         'merchant_business_detail_fetch',
@@ -9860,6 +9867,7 @@ class Route
 
         // Merchant Risk Alerts
         'merchant_risk_alerts_foh_workflow_trigger_nc'    => Permission::MERCHANT_RISK_ALERT_FOH,
+        'merchant_risk_alerts_needs_clarification_fetch_mapping'  => Permission::MERCHANT_RISK_ALERT_FOH,
         'merchant_risk_alerts_create_rule'                => Permission::MERCHANT_RISK_ALERT_UPSERT_RULE,
         'merchant_risk_alerts_update_rule'                => Permission::MERCHANT_RISK_ALERT_UPSERT_RULE,
         'merchant_risk_alerts_delete_rule'                => Permission::MERCHANT_RISK_ALERT_DELETE_RULE,
@@ -13196,6 +13204,7 @@ class Route
             'merchant_edit_free_credits',
             'merchant_edit_pre_signup_details',
             'merchant_risk_alerts_foh_workflow_trigger_nc',
+            'merchant_risk_alerts_needs_clarification_fetch_mapping',
             'merchant_risk_alerts_create_rule',
             'merchant_risk_alerts_update_rule',
             'merchant_risk_alerts_delete_rule',

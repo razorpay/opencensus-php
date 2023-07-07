@@ -4,6 +4,7 @@ namespace RZP\Models\MerchantRiskAlert;
 
 class Constants
 {
+    const RISK_CLARIFICATION                    = 'Risk Clarification';
     const MERCHANT_FOH_KEY                      = 'merchant_foh';
     const MERCHANT_INTERNATIONAL_KEY            = 'merchant_international';
     const MERCHANT_LIVE_KEY                     = 'merchant_live';
@@ -191,6 +192,8 @@ class Constants
     const CREATE_RULE_URL = '/twirp/rzp.merchant_risk_alerts.rule.v1.RuleService/Create';
     const UPDATE_RULE_URL = '/twirp/rzp.merchant_risk_alerts.rule.v1.RuleService/Update';
     const DELETE_RULE_URL = '/twirp/rzp.merchant_risk_alerts.rule.v1.RuleService/Delete';
+
+    const FETCH_MAPPING_URL = '/twirp/rzp.merchant_risk_alerts.needs_clarification.v1.NeedsClarificationService/FetchTeamMapping';
 
     const RAS_SIGN_UP_CHECKER_POST_ACTION_FEATURE_FLAG = 'merchants_risk_trigger_sign_up_checker_post_actions';
 

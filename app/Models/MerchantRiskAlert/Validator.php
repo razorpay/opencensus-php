@@ -15,6 +15,12 @@ class Validator extends BaseValidator
 
     protected $app;
 
+    protected static array $needsClarificationRequestRules = [
+        "clarification_type"     => 'required|string',
+        "clarification_sub_type" => 'required|string',
+        "email_body"            => 'required|string'
+    ];
+
     public function __construct($entity = null)
     {
         parent::__construct($entity);
