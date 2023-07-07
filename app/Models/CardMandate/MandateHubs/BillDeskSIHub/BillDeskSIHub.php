@@ -218,15 +218,27 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
         if (($this->app['razorx']->getTreatment($payment->merchant->getId(), Merchant\RazorxTreatment::CARD_MANDATE_CORRECT_DETAILS_FETCH, $this->app['rzp.mode']) === 'on') and
             ($payment->getSubscriptionId() !== null))
         {
-            $input = [
-                Payment\Entity::SUBSCRIPTION_ID => Subscription\Entity::getSignedId($payment->getSubscriptionId())
-            ];
+            try
+            {
+                $input = [
+                    Payment\Entity::SUBSCRIPTION_ID => Subscription\Entity::getSignedId($payment->getSubscriptionId())
+                ];
 
-            $subscriptionData = $this->app['module']->subscription->fetchSubscriptionInfoCardMandate($input, $payment->merchant);
+                $subscriptionData = $this->app['module']->subscription->fetchSubscriptionInfoCardMandate($input, $payment->merchant);
 
-            $tokenData['frequency'] = $subscriptionData['frequency'] ?? Constants::FREQUENCY_AS_PRESENTED;
+                $tokenData['frequency'] = $subscriptionData['frequency'] ?? Constants::FREQUENCY_AS_PRESENTED;
 
-            $tokenData['max_amount'] = $subscriptionData['max_amount'] ?? $tokenData['max_amount'];
+                $tokenData['max_amount'] = $subscriptionData['max_amount'] ?? $tokenData['max_amount'];
+
+                $endTime = $subscriptionData['end_time'] ?? $endTime;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::CRITICAL,
+                    TraceCode::CARD_MANDATE_SUBSCRIPTIONS_FETCH_FAILURE);
+            }
         }
 
         $inputResponse = [

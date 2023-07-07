@@ -8575,6 +8575,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     # Card Mandate Constants
     const TRACE_RECURRING_PAYMENT_CARD_MANDATE                  = 'TRACE_RECURRING_PAYMENT_CARD_MANDATE';
+    const CARD_MANDATE_SUBSCRIPTIONS_FETCH_FAILURE              = 'CARD_MANDATE_SUBSCRIPTIONS_FETCH_FAILURE';
 
     const MERCHANT_STATUS_UPDATER_FAIL                                  = 'MERCHANT_STATUS_UPDATER_FAIL';
     const MERCHANT_STATUS_UPDATER_TRY                                   = 'MERCHANT_STATUS_UPDATER_TRY';
