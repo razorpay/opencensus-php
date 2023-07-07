@@ -1981,6 +1981,57 @@ class Processor
         }
     }
 
+    protected function validateCardRecurringAutoPayment($input)
+    {
+        if ((isset($input[Payment\Entity::METHOD])) and
+            ($input[Payment\Entity::METHOD] === Payment\Method::CARD))
+        {
+            $variant = $this->app->razorx->getTreatment(
+                $this->merchant->getId(),
+                Merchant\RazorxTreatment::CARD_MANDATE_ENABLE_MULTIPLE_FREQUENCIES,
+                $this->mode
+            );
+
+            if (($variant === 'on') and
+                (isset($input[Payment\Entity::TOKEN])) and
+                (isset($input[Payment\Entity::CUSTOMER_ID])))
+            {
+                $customerId = Customer\Entity::verifyIdAndStripSign($input['customer_id']);
+
+                $token = (new Customer\Token\Core)->getByTokenIdAndCustomerId($input['token'], $customerId);
+
+                if (($token !== null) and
+                    ($token->isRecurring() === true) and
+                    ($token->getMethod() === Payment\Method::CARD) and
+                    ($token->getFrequency() !== null) and
+                    ($token->getFrequency() !== SubscriptionRegistration\Entity::AS_PRESENTED))
+                {
+                    date_default_timezone_set('Asia/Kolkata');
+
+                    switch ($token->getFrequency()) {
+                        case SubscriptionRegistration\Entity::WEEKLY:
+                            $start = strtotime("sunday -1 week");
+                            break;
+
+                        case SubscriptionRegistration\Entity::MONTHLY:
+                            $start = strtotime(date('Y-m-01 00:00:00'));
+                            break;
+
+                        case SubscriptionRegistration\Entity::YEARLY:
+                            $start = strtotime(date('Y-01-01 00:00:00'));
+                            break;
+                    }
+
+                    $noOfAutoPayments = $this->repo->payment->fetchPaymentCountByTokenForCardInRange($token->getId(), $start, Carbon::now()->getTimestamp());
+
+                    if ($noOfAutoPayments > 0) {
+                        throw new Exception\BadRequestValidationFailureException("Debit is not as per the defined frequency of the Mandate.");
+                    }
+                }
+            }
+        }
+    }
+
     protected function preProcessPosPaymentRequest(&$input)
     {
         if(isset($input['receiver_type']) === false or $input['receiver_type'] !== Receiver::POS)
@@ -2032,6 +2083,8 @@ class Processor
             $this->setMethodForInput($input);
 
             $this->validateTokenisedPayment($input);
+
+            $this->validateCardRecurringAutoPayment($input);
 
             $this->setMethodForSubscription($input);
 
