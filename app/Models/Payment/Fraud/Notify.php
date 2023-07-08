@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Fraud;
 
 use App;
 use Carbon\Carbon;
+use RZP\Constants\Metric;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Shield;
 use RZP\Constants\Timezone;
@@ -199,6 +200,11 @@ class Notify
                 'merchant_id' => $merchant->getId(),
                 'response'    => $formattedResponse,
             ]);
+
+        $this->trace->count(Metric::SHIELD_SLACK_ALERT_METRIC, [
+            'rule_code'   => $ruleCode,
+            'merchant_id' => $merchant->getId()
+        ]);
     }
 
     private function prepareSlackMessage(MerchantEntity $merchant, string $ruleCode, array $rulesInfo): string

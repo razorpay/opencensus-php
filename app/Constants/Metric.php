@@ -8,6 +8,7 @@ namespace RZP\Constants;
 class Metric
 {
     const CF_REQUEST_LATENCY_MILLISECONDS       = 'cf_request_latency_milliseconds';
+    const SHIELD_SLACK_ALERT_METRIC             = 'shield_slack_alert_metric';
 
     // Counters type metric names
     const HTTP_REQUESTS_TOTAL                   = 'http_requests_total';
