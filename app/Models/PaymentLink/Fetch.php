@@ -17,6 +17,8 @@ class Fetch extends BaseFetch
             Entity::STATUS        => 'filled|required_with:status_reason|custom',
             Entity::STATUS_REASON => 'filled|custom',
             self::EXPAND_EACH     => 'filled|string|in:user',
+            Entity::SHORT_URL     => 'sometimes|string',
+            EsRepository::QUERY   => 'sometimes|string|min:1|max:100',
         ],
     ];
 
@@ -30,6 +32,8 @@ class Fetch extends BaseFetch
         ],
         AuthType::PROXY_AUTH => [
             self::EXPAND_EACH,
+            Entity::SHORT_URL,
+            EsRepository::QUERY,
         ],
         AuthType::PRIVILEGE_AUTH => [
             Entity::USER_ID,
@@ -43,6 +47,8 @@ class Fetch extends BaseFetch
     const ES_FIELDS = [
         Entity::TITLE,
         Entity::VIEW_TYPE,
+        Entity::SHORT_URL,
+        EsRepository::QUERY,
     ];
 
     const COMMON_FIELDS = [

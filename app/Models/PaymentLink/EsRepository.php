@@ -17,6 +17,7 @@ class EsRepository extends Base\EsRepository
         Entity::RECEIPT,
         Entity::TITLE,
         Entity::CREATED_AT,
+        Entity::SHORT_URL,
     ];
 
     protected $queryFields = [
