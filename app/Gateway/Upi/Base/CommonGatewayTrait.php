@@ -288,6 +288,10 @@ trait CommonGatewayTrait
             ],
         ];
 
+        if (isset ($data['payment']['payer_account_type'])=== true) {
+            $payment['payer_account_type'] = $data['payment']['payer_account_type'];
+        }
+
         return [
             'payment'   => $payment,
             'terminal'  => $data['terminal'],
