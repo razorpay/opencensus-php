@@ -1560,6 +1560,7 @@ class Header
     const WALLET_ACCOUNTS_IDENTIFICATION_ID = 'Identification ID';
     const WALLET_ACCOUNTS_IDENTIFICATION_TYPE = 'Identification Type';
     const WALLET_ACCOUNTS_PARTNER_CUSTOMER_ID = 'Partner Customer ID';
+    const WALLET_ACCOUNTS_PARTNER_USER_ID = 'Partner User ID';
     const WALLET_ACCOUNTS_DOB = 'Date Of Birth';
 
     // Wallet create load batch headers
@@ -1604,8 +1605,14 @@ class Header
         Header::WALLET_LOAD_AMOUNT
     ];
 
-    // mandatory headers for wallet container load batch
+    // mandatory headers for wallet users batch
+    const MANDATORY_HEADERS_FOR_WALLET_USERS = [
+        Header::WALLET_ACCOUNTS_CONTACT,
+        Header::WALLET_ACCOUNTS_EMAIL,
+        Header::WALLET_ACCOUNTS_PARTNER_USER_ID
+    ];
 
+    // mandatory headers for wallet container load batch
     const MANDATORY_HEADERS_FOR_WALLET_CONTAINER_LOADS = [
            Header::WALLET_CONTAINER_LOAD_USER_ID,
         Header::WALLET_CONTAINER_LOAD_PROGRAM_ID,
@@ -5356,6 +5363,15 @@ class Header
             ],
             self::OUTPUT => []
         ],
+
+        TYPE::CREATE_WALLET_USER_CONTAINERS => [
+            self::INPUT => [
+                self::WALLET_ACCOUNTS_CONTACT,
+                self::WALLET_ACCOUNTS_EMAIL,
+                self::WALLET_ACCOUNTS_PARTNER_USER_ID
+            ],
+            self::OUTPUT => []
+        ],
         Type::PARTNER_SUBMERCHANT_REFERRAL_INVITE => [
             self::INPUT => [
                 self::NAME,
@@ -5553,6 +5569,11 @@ class Header
         if ($type === Type::CREATE_WALLET_CONTAINER_LOADS)
         {
             self::validateWalletBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_WALLET_CONTAINER_LOADS);
+        }
+
+        if ($type === Type::CREATE_WALLET_USER_CONTAINERS)
+        {
+            self::validateWalletBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_WALLET_USERS);
         }
 
         // For payouts, we do not want to match exact headers, because we are allowing some headers to be skipped.

@@ -1011,6 +1011,12 @@ class Validator extends Base\Validator
         Entity::FILE_ID              => 'required_without:file|public_id',
     ];
 
+    protected static $createWalletUserContainersCreateRules = [
+        Entity::TYPE                 => 'required|custom',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required_without:file_id|file|max:51200' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID              => 'required_without:file|public_id'
+    ];
 
     protected static $creditCreateRules = [
         Entity::TYPE    => 'required|in:credit',
