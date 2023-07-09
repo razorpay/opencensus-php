@@ -534,6 +534,10 @@ export default class User {
     );
   }
 
+  get isCardMultipleFrequencyEnabled() {
+    return getSplitzExperimentVariant('recurring_card_multi_frequency')?.variables?.result === 'on';
+  }
+
   get isMagicCODEngineEnabled() {
     return getSplitzExperimentVariant('magic_cod_engine')?.variables?.result === 'on';
   }

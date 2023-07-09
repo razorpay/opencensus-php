@@ -8,18 +8,13 @@ import { AmountTooltip } from 'common/ui/Amount';
 import { checkIfAmount, checkIfAmountForFirstCharge } from './PaymentDetails/utils';
 import {
   MAX_TOKEN_AMOUNT,
+  BILLING_FREQUENCY,
+  FREQUENCY_DESC_MAP,
   CARD_AFA_MAX_AMOUNT,
-  CARD_MAX_AMOUNT_ALLOWED,
   MAX_TOKEN_AMOUNT_NACH,
+  CARD_MAX_AMOUNT_ALLOWED,
 } from 'merchant/views/Subscriptions/constants';
 import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
-
-const OptionLabel = ({ title, desc }) => (
-  <div className="label-container">
-    <span className="token-radio-label">{title}</span>
-    <div className="text-fade">{desc}</div>
-  </div>
-);
 
 const CARD_PAYMENT_LABEL = {
   [ORG_CUSTOM_CODE_MAP.RAZORPAY]: (
@@ -31,18 +26,6 @@ const CARD_PAYMENT_LABEL = {
   [ORG_CUSTOM_CODE_MAP.CURLEC]: <>Maximum Auto-debit Amount</>,
 };
 
-const BILLING_FREQUENCY_OPTIONS = [
-  {
-    label: () => <OptionLabel title="Monthly" desc="You can charge the customer once in a month" />,
-    value: 'monthly',
-  },
-  {
-    label: () => (
-      <OptionLabel title="As and When Presented" desc="You can charge the customer any time" />
-    ),
-    value: 'as_presented',
-  },
-];
 const maxAmountValidator = (methodAmount, maxAmount) => (value) => {
   const isAmountCheckFiled = checkIfAmount(value);
 
@@ -90,6 +73,7 @@ export default function TokenDetailsForm({
     description: `Max Amount for Mandate (Up to ${getFormattedAmount(MAX_TOKEN_AMOUNT)})`,
   };
   const currency = user.merchant.currency;
+  const isCardMultipleFrequencyEnabled = user.isCardMultipleFrequencyEnabled;
   const countryCode = user.merchant.country_code;
   const customCode = org.custom_code;
   const currencySym = currencySymbols[currency];
@@ -131,21 +115,25 @@ export default function TokenDetailsForm({
     }
   }
 
+  const billingFrequency = isUPIPayment
+    ? BILLING_FREQUENCY.filter(({ name }) => ['as_presented', 'monthly'].includes(name))
+    : BILLING_FREQUENCY;
+  const isCardFrequencyEnabled = isCardPayment && isCardMultipleFrequencyEnabled;
+
   return (
     <>
-      {isUPIPayment && (
-        <div class="Input billing-frequency ">
-          <Input.Group label="Billing Frequency" class="InputGroup--vTop">
-            <Input.Radio
-              class="Input--vTop"
-              name="frequency"
-              data-name="billing_frequency"
-              options={BILLING_FREQUENCY_OPTIONS}
-              defaultValue={frequency}
-            />
-          </Input.Group>
-        </div>
+      {(isCardFrequencyEnabled || isUPIPayment) && (
+        <Input.Select
+          name="frequency"
+          label=" Billing Frequency"
+          className="Input--vTop Input--small"
+          data-name="billing_frequency"
+          options={billingFrequency}
+          defaultValue={frequency}
+          description={FREQUENCY_DESC_MAP[frequency]}
+        />
       )}
+
       {!isCardPayment && (
         <>
           <Input.Group label="Expiry of Token" class="InputGroup--vTop">

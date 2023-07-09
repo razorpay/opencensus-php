@@ -173,7 +173,7 @@ export default class NewRegistrationLink extends React.Component {
         accountType: '',
         formReference1: '',
         formReference2: '',
-        frequency: 'monthly',
+        frequency: 'as_presented',
         currency: props.user.merchant.currency,
       },
       validTabs: [false, false, false],
@@ -309,7 +309,14 @@ export default class NewRegistrationLink extends React.Component {
         const currentTab = prevState.currentTab + step;
         const validTabs = [...prevState.validTabs];
         validTabs[prevState.currentTab] = true;
-        return { currentTab, validTabs };
+        return {
+          currentTab,
+          validTabs,
+          formFields: {
+            ...prevState.formFields,
+            frequency: 'as_presented',
+          },
+        };
       },
       () => {
         if (this.state.currentTab == 1) {
@@ -480,7 +487,7 @@ export default class NewRegistrationLink extends React.Component {
     }
 
     if (this.isCardPayment) {
-      payload.subscription_registration.frequency = 'as_presented';
+      payload.subscription_registration.frequency = data.frequency;
       const cardMaxAmount = rupeesToPaise(data.mandateMaxAmount || cardAfaMaxLimit);
       payload.subscription_registration.max_amount = cardMaxAmount;
     }

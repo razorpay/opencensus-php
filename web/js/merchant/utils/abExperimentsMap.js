@@ -741,4 +741,10 @@ export default {
     // prod
     'LoGggyN9DVhO7A',
   ],
+  recurring_card_multi_frequency: [
+    //prod
+    'MA6kWlvm3jWXqO',
+    //beta
+    'MARWDeA9lsGzbl',
+  ],
 };

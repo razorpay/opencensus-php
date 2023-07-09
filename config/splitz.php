@@ -335,6 +335,9 @@ return [
 
         'SODEXO_INSTRUMENT' => env('SODEXO_INSTRUMENT',''),
 
-        'SEARCH_V2_PHASE_1' => env('SEARCH_V2_PHASE_1','')
+        'SEARCH_V2_PHASE_1' => env('SEARCH_V2_PHASE_1',''),
+
+        'RECURRING_CARD_MULTI_FREQUENCY' => env('RECURRING_CARD_MULTI_FREQUENCY', ''),
+
     ]
 ];

@@ -54,13 +54,6 @@ describe('RL - Token Details Form', () => {
     expect(screen.getByPlaceholderText(/expiry \(dd-mm-yyyy\)/i)).toBeInTheDocument();
 
     [
-      'monthly you can charge the customer once in a month',
-      'as and when presented you can charge the customer any time',
-    ].forEach((fieldLabel) => {
-      expect(screen.getByRole('radio', { name: new RegExp(fieldLabel, 'i') })).toBeInTheDocument();
-    });
-
-    [
       'billing frequency',
       'maximum billing amount',
       'this is the maximum you can charge the customer per billing cycle',

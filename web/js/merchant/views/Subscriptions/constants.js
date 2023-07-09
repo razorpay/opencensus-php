@@ -42,3 +42,17 @@ export const CARD_MAX_AMOUNT_ALLOWED = {
   IN: CARD_TOKEN_MAX_AMOUNT,
   MY: MY_CARD_MAX_AMOUNT,
 };
+
+export const BILLING_FREQUENCY = [
+  { name: 'as_presented', label: 'As and when presented' },
+  { name: 'weekly', label: 'Weekly' },
+  { name: 'monthly', label: 'Monthly' },
+  { name: 'yearly', label: 'Yearly' },
+];
+
+export const FREQUENCY_DESC_MAP = {
+  as_presented: 'You can charge the customer anytime',
+  weekly: 'You can charge the customer once a week',
+  monthly: 'You can charge the customer once a month',
+  yearly: 'You can charge the customer once a year',
+};
