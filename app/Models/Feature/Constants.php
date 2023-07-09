@@ -14,8 +14,8 @@ class Constants
     //M2M referral environment keys
     const M2M_REFERRAL_MAX_REFERRED_COUNT_ALLOWED           = "M2M_REFERRAL_MAX_REFERRED_COUNT_ALLOWED";
 
-    CONST FEE_PAGE_TIMEOUT_CUSTOM         = 'FEE_PAGE_TIMEOUT_CUSTOM';
-    CONST SILENT_REFUND_LATE_AUTH         = 'SILENT_REFUND_LATE_AUTH';
+    CONST FEE_PAGE_TIMEOUT_CUSTOM         = 'fee_page_timeout_custom';
+    CONST SILENT_REFUND_LATE_AUTH         = 'silent_refund_late_auth';
 
     const ENTITY_IDS                      = 'entity_ids';
     const ENTITY_TYPE                     = 'entity_type';
