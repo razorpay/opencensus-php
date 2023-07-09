@@ -6,10 +6,13 @@ use App;
 use Carbon\Carbon;
 use RZP\Models\Merchant;
 use RZP\Constants\Entity;
+use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Customer\Token;
 use RZP\Exception\BaseException;
 use RZP\Exception\LogicException;
+use RZP\Models\UpiMandate\Frequency;
+use RZP\Models\UpiMandate\RecurringType;
 use RZP\Models\Payment\Processor\UpiRecurring;
 use RZP\Models\Payment\UpiMetadata\Mode as Mode;
 use RZP\Models\Payment\UpiMetadata\Entity as Metadata;
@@ -237,14 +240,14 @@ class UpiMetadataTransformer extends UpiTransformer
         // no next reminder needed when success
         if ($action === Action::AUTHORIZE and $mode === Mode::AUTO)
         {
-            $canRetry = false;
-
-            if($this->isSuccess() === false)
+            if($this->isSuccess() === true)
             {
-                $canRetry = $this->checkUpiAutopayIncreaseDebitRetry($this->input[Entity::PAYMENT]['id'], $this->input[Entity::PAYMENT]['merchant_id'], $this->upi);
+                return null;
             }
 
-            if (($canRetry === true and $attempt >= 10) or ($canRetry === false and $attempt >= 3))
+            $canRetry = $this->checkUpiAutopayIncreaseDebitRetry($this->input[Entity::PAYMENT]['id'], $this->input[Entity::PAYMENT]['merchant_id'], $this->upi);
+
+            if ((($canRetry === true) and ($attempt >= 10)) or (($canRetry === false) and ($attempt >= 3)))
             {
                 return null;
             }
@@ -259,6 +262,20 @@ class UpiMetadataTransformer extends UpiTransformer
                 // Starting with retries at 30 and 60 minutes
                 $remindAfter =  (pow(2, $attempt) * 15);
             }
+
+            $upiMandate = $this->input['upi_mandate'] ?? null;
+
+            if((empty($remindAfter) === false) and
+                ($upiMandate !== null) and
+                ($upiMandate['frequency'] !== Frequency::AS_PRESENTED) and
+                ($upiMandate['frequency'] !== Frequency::DAILY))
+            {
+                if(($this->isValidMandateExpiry($upiMandate, $remindAfter) === false) or
+                    ($this->isValidCycle($upiMandate, $remindAfter) === false))
+                {
+                    return null;
+                }
+            }
         }
 
         if (is_null($remindAfter) === true)
@@ -268,6 +285,76 @@ class UpiMetadataTransformer extends UpiTransformer
 
         return Carbon::now()->addMinutes($remindAfter)->getTimestamp();
     }
+
+    protected function isValidMandateExpiry($upiMandate, $remindAfter)
+    {
+        $reminderAfterTime = Carbon::now()->addMinutes($remindAfter)->getTimestamp();
+
+        // handle for mandate expiry condition
+        $mandateExpiry = $upiMandate['end_time'];
+        $diffInMins = floor(($mandateExpiry-$reminderAfterTime)/60);
+
+        if($diffInMins <= 5)
+        {
+            return false;
+        }
+        return true;
+    }
+
+    protected function isValidCycle($upiMandate, $remindAfter)
+    {
+        $frequency = $upiMandate['frequency'];
+        $reminderAfterTime = Carbon::now()->addMinutes($remindAfter)->getTimestamp();
+        $currentDay = Carbon::now(Timezone::IST)->day;
+
+        $endOfCycle = Carbon::now(Timezone::IST)->endOfMonth()->day;
+
+        if($frequency === Frequency::WEEKLY)
+        {
+            $currentDay = Carbon::now(Timezone::IST)->dayOfWeek;
+            if($currentDay === 0)
+            {
+                $currentDay = 7;
+            }
+            $endOfCycle = 7;
+        }
+
+        $recurVal = $upiMandate['recurring_value'];
+        $recurType = $upiMandate['recurring_type'];
+
+        switch ($recurType)
+        {
+            case RecurringType::BEFORE:
+
+                $diffInDays = abs($recurVal - $currentDay);
+                $nextExecutionTime = Carbon::now(Timezone::IST)->addDays($diffInDays)->endOfDay()->getTimestamp();
+                $diffInMin = floor(($nextExecutionTime-$reminderAfterTime)/60);
+
+                return (($currentDay <= $recurVal) and ($diffInMin >= 5));
+
+            case RecurringType::ON:
+                $diff = $recurVal-$currentDay;
+                if(($recurVal == 1) and ($currentDay === $endOfCycle))
+                {
+                    $diff = 1;
+                }
+                $nextExecutionTime = Carbon::now(Timezone::IST)->addDays($diff)->endOfDay()->getTimestamp();
+                $diffInMin = floor(($nextExecutionTime-$reminderAfterTime)/60);
+                return (($diff ==1) and ($diffInMin >=5));
+
+            case RecurringType::AFTER:
+
+                $diffInDays = abs($endOfCycle - $currentDay);
+                $nextExecutionDay = Carbon::now(Timezone::IST)->addDays($diffInDays)->endOfDay()->getTimestamp();
+                $diffInMin = floor(($nextExecutionDay-$reminderAfterTime)/60);
+
+                return (($currentDay >= $recurVal) and ($diffInMin >= 5));
+
+            default:
+                return false;
+        }
+    }
+
 
     /**
      * Updates the following attributes of UPI Metadata:

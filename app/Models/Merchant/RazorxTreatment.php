@@ -742,6 +742,9 @@ final class RazorxTreatment
     // Experiment to use old Pricing plan for upi autopay
     const UPI_AUTOPAY_PRICING_BLACKLIST = 'upi_autopay_pricing_blacklist';
 
+    //Experiment of susbcription other frequency changes
+    public const UPI_AUTOPAY_CORRECT_FREQUENCY_FETCH = "upi_autopay_correct_frequency_fetch";
+
     const ALLOW_CC_ON_UPI_PRICING = 'allow_cc_on_upi_pricing';
 
     // Experiment to enable async bulk approval or not
@@ -831,4 +834,7 @@ final class RazorxTreatment
 
     // Experiment to support multiple frequencies for card recurring payment CAW
     const CARD_MANDATE_ENABLE_MULTIPLE_FREQUENCIES = "card_mandate_enable_multiple_frequencies";
+
+    // experiment to disable default max amount for upi autopay
+    const UPI_AUTOPAY_DISABLE_MAX_AMOUNT_BLACKLIST = 'upi_autopay_disable_max_amount_blacklist';
 }

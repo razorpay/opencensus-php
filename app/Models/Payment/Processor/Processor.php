@@ -6734,11 +6734,35 @@ class Processor
         {
             $this->upiMandate = $this->app['repo']->upi_mandate->findByOrderId($this->order['id']);
 
-            if($this->upiMandate === null) {
+            if($this->upiMandate === null)
+            {
+                $frequencyUpiAutoPay = UPIMandateFrequency::AS_PRESENTED;
+
+                if ($this->app['razorx']->getTreatment($payment->merchant->getId(), Merchant\RazorxTreatment::UPI_AUTOPAY_CORRECT_FREQUENCY_FETCH, $this->app['rzp.mode']) === 'on')
+                {
+                    try
+                    {
+                        $subscriptionInput = [
+                            Payment\Entity::SUBSCRIPTION_ID => Subscription\Entity::getSignedId($payment->getSubscriptionId())
+                        ];
+
+                        $subscriptionData = $this->app['module']->subscription->fetchSubscriptionInfoUpiAutoPay($subscriptionInput, $payment->merchant);
+
+                        $frequencyUpiAutoPay = $subscriptionData['frequency'] ?? $frequencyUpiAutoPay;
+                    }
+                    catch (\Exception $ex)
+                    {
+                        $this->trace->traceException(
+                            $ex,
+                            Trace::CRITICAL,
+                            TraceCode::UPI_AUTOPAY_SUBSCRIPTIONS_FETCH_FAILURE);
+                    }
+                }
+
                 //upi token expires 1 week past the subscription's end_at
                 $upitoken = [
                     'max_amount' => $this->subscription->getCurrentInvoiceAmount(),
-                    'frequency' => UPIMandateFrequency::AS_PRESENTED,
+                    'frequency' => $frequencyUpiAutoPay,
                     'start_at' => Carbon::now()->addMinute(1)->getTimestamp(),
                     'expire_at' => $this->subscription->getEndAt() + self::UPI_SUBSCRIPTION_MANDATE_EXPIRY_EXTENSION,
                 ];

@@ -20,6 +20,9 @@ class Frequency
     public static $allowedFrequencies = [
          self::AS_PRESENTED,
          self::MONTHLY,
+         self::WEEKLY,
+         self::QUARTERLY,
+         self::YEARLY,
     ];
 
     public static $frequencyToRecurringValueMap = [

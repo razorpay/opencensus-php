@@ -20,6 +20,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\PaymentsUpi\Vpa as Vpa;
 use RZP\Models\Reminders\ReminderProcessor;
 use RZP\Models\UpiMandate\Entity as Mandate;
+use RZP\Gateway\Upi\Base\Constants as UpiConstants;
 use RZP\Models\Payment\UpiMetadata\Entity as Metadata;
 use RZP\Models\Payment\UpiMetadata\InternalStatus as InternalStatus;
 
@@ -495,17 +496,46 @@ trait UpiRecurring
     {
         $upiMandate = $token->getUpiMandate();
 
-        // if mandate expiry is withing 25 hr will not allow to create subsequent payment.
+        $lastSuccessDebitTimeStamp = $upiMandate['gateway_data']['lsd'] ?? null;
+
+        // validation for fixed frequencies
+        if(($upiMandate['frequency'] !== UpiMandate\Frequency::AS_PRESENTED) and
+            ($upiMandate->getFrequency() !== UpiMandate\Frequency::DAILY) and
+            ($lastSuccessDebitTimeStamp !== null))
+        {
+            $sequenceNumber = new UpiMandate\SequenceNumber($lastSuccessDebitTimeStamp, Carbon::now()->getTimestamp());
+            $recurType = $upiMandate['recurring_type'];
+            $recurVal = $upiMandate['recurring_value'];
+            $frequency = $upiMandate['frequency'];
+
+            if($sequenceNumber->isValidExecutionDate($frequency) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Customer has been already debited for the current cycle. Initiate the debit in next cycle to charge the customer',
+                    null,
+                    []);
+            }
+
+            if($sequenceNumber->isValidCycle($recurType, $recurVal, $frequency) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Debit not allowed at this time. Debit needs to be charged within the cycle & 26 hours before the last date',
+                    null,
+                    []);
+            }
+        }
+
+        // if mandate expiry is withing 26 hr we'll not allow to create subsequent payment.
         if ($upiMandate !== null)
         {
             $mandateExpiry = $upiMandate['end_time'];
             $currentTime = Carbon::now()->getTimestamp();
-            $diffInHours = round(($mandateExpiry - $currentTime)/3600);
-            
-            if($diffInHours <= 25)
+            $diffInHours = floor(($mandateExpiry - $currentTime)/3600);
+
+            if($diffInHours <= 26)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'You cannot initiate subsequent payments within 25 hours of expiration of the mandate',
+                    'You cannot initiate subsequent payments within 26 hours of expiration of the mandate',
                     null,
                     []);
             }
@@ -708,6 +738,53 @@ trait UpiRecurring
                 'payment_recurring_status'=> $payment->getRecurringType(),
             ]
         );
+
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        $upiMandate = $token->upiMandate;
+
+        if($payment->isRecurringTypeInitial() === true)
+        {
+            if ($upiMandate === null)
+            {
+                $upiMandate = $this->repo->upi_mandate->findByOrderId($payment->order->getId());
+
+                $upiMandateLinkedToken = $this->repo->token->findByIdAndMerchantId($upiMandate->getTokenId(), $token->getMerchantId());
+
+                if($upiMandateLinkedToken->getRecurringStatus() !== Token\RecurringStatus::CONFIRMED)
+                {
+                    $upiMandate->setTokenId($payment->localToken->getId());
+
+                    $token->upiMandate()->save($upiMandate);
+
+                    $token->refresh();
+
+                    $this->repo->saveOrFail($upiMandate);
+
+                    $this->trace->info(
+                        TraceCode::UPI_RECURRING_RELINK_UPIMANDATE_TOKEN,
+                        [
+                            'payment_id'    => $payment->getId(),
+                            'token_id'      => $token->getId(),
+                        ]
+                    );
+                }
+            }
+        }
+
+        if(($upiMandate->getFrequency() !== UpiMandate\Frequency::AS_PRESENTED) and
+            ($upiMandate->getFrequency() !== UpiMandate\Frequency::DAILY) and
+            ($internalStatus === UpiMetadata\InternalStatus::AUTHORIZED))
+        {
+            $upiMandateGatewayData = $upiMandate->getGatewayData();
+
+            $upiMandateGatewayData[UpiConstants::LAST_SUCCESSFUL_DEBIT] = Carbon::now()->getTimestamp();
+
+            $upiMandate->setGatewayData($upiMandateGatewayData);
+
+            $this->repo->saveOrFail($upiMandate);
+        }
+
         // For Auto Recurring
         if ($payment->isUpiAutoRecurring() === true)
         {
@@ -730,36 +807,6 @@ trait UpiRecurring
             return true;
         }
         // For Initial Recurring
-
-        $token = $payment->getGlobalOrLocalTokenEntity();
-
-        $upiMandate = $token->upiMandate;
-
-        if ($upiMandate === null)
-        {
-            $upiMandate = $this->repo->upi_mandate->findByOrderId($payment->order->getId());
-
-            $upiMandateLinkedToken = $this->repo->token->findByIdAndMerchantId($upiMandate->getTokenId(), $token->getMerchantId());
-
-            if($upiMandateLinkedToken->getRecurringStatus() !== Token\RecurringStatus::CONFIRMED)
-            {
-                $upiMandate->setTokenId($payment->localToken->getId());
-
-                $token->upiMandate()->save($upiMandate);
-
-                $token->refresh();
-
-                $this->repo->saveOrFail($upiMandate);
-
-                $this->trace->info(
-                    TraceCode::UPI_RECURRING_RELINK_UPIMANDATE_TOKEN,
-                    [
-                        'payment_id'    => $payment->getId(),
-                        'token_id'      => $token->getId(),
-                    ]
-                );
-            }
-        }
 
         // If gateway suggests that the payment is authorized, we do not need to skip the authorization
         if ($internalStatus === UpiMetadata\InternalStatus::AUTHORIZED)

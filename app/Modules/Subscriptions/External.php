@@ -293,6 +293,25 @@ class External extends Base
         return $this->sendRequest($url, Requests::GET, $requestBody, $headers);
     }
 
+    public function fetchSubscriptionInfoUpiAutoPay(array $input, Merchant\Entity $merchant)
+    {
+        $requestBody = $input;
+
+        $requestBody['data_fetch'] = 'upi_autopay';
+
+        $headers = [
+            self::MERCHANT_HEADER_KEY => $merchant->getId(),
+            self::MODE_HEADER_KEY     => $this->mode,
+            'X-Razorpay-Auth'         => $this->app['basicauth']->getAuthType(),
+        ];
+
+        $subscriptionId = $input['subscription_id'];
+
+        $url = 'subscriptions/' . $subscriptionId . '/info';
+
+        return $this->sendRequest($url, Requests::GET, $requestBody, $headers);
+    }
+
     public function createSubscription(array $input, Merchant\Entity $merchant, $headers = [])
     {
         $this->traceRequest($input);

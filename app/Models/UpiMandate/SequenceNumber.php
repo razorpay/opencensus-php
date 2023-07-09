@@ -3,6 +3,7 @@
 namespace RZP\Models\UpiMandate;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 /**
  * Class SequenceNumber
@@ -57,6 +58,93 @@ class SequenceNumber
         $this->fromDate = $this->formatDate($fromDate);
 
         $this->toDate =  $this->formatDate($toDate);
+    }
+
+    public function isValidCycle($recurType, $recurVal, $frequency)
+    {
+        $currentDay = Carbon::now(Timezone::IST)->day;
+        $endOfCycle = Carbon::now(Timezone::IST)->endOfMonth()->day;
+
+        if($frequency === Frequency::WEEKLY)
+        {
+            $currentDay = Carbon::now(Timezone::IST)->dayOfWeek;
+            if($currentDay == 0)
+            {
+                $currentDay = 7;
+            }
+            $endOfCycle = 7;
+        }
+
+        $currentTime = Carbon::now()->getTimestamp();
+
+        switch ($recurType)
+        {
+            case RecurringType::BEFORE:
+
+                $diffInDays = abs($recurVal - $currentDay);
+                $nextExecutionTime = Carbon::now(Timezone::IST)->addDays($diffInDays)->endOfDay()->getTimestamp();
+                $diffInHours = floor(($nextExecutionTime-$currentTime)/3600);
+                return (($currentDay <= $recurVal) and ($diffInHours >= 26));
+
+            case RecurringType::ON:
+                $diff = $recurVal-$currentDay;
+                if(($recurVal == 1) and ($currentDay === $endOfCycle))
+                {
+                    $diff = 1;
+                }
+                $nextExecutionTime = Carbon::now(Timezone::IST)->addDays($diff)->endOfDay()->getTimestamp();
+                $diffInHours = floor(($nextExecutionTime-$currentTime)/3600);
+
+                return (($diff==1) and ($diffInHours >=26));
+
+            case RecurringType::AFTER:
+
+                $diffInDays = abs($endOfCycle - $currentDay);
+                $nextExecutionDay = Carbon::now(Timezone::IST)->addDays($diffInDays)->endOfDay()->getTimestamp();
+                $diffInHours = floor(($nextExecutionDay-$currentTime)/3600);
+
+                return (($currentDay >= $recurVal) and ($diffInHours >= 26));
+
+            default:
+                return false;
+        }
+    }
+
+    public function isValidExecutionDate($frequency)
+    {
+        $this->frequency = $frequency;
+
+        if ($this->validateInput() === false)
+        {
+            return false;
+        }
+
+        $diff = $this->monthly();
+        if($frequency === Frequency::WEEKLY)
+        {
+            $diff = $this->weekly();
+        }
+        switch ($frequency)
+        {
+
+            case Frequency::WEEKLY:
+            case Frequency::MONTHLY:
+                return ($diff >=1);
+
+            case Frequency::QUARTERLY:
+                return (($diff%3)==0);
+
+            case Frequency::HALF_YEARLY:
+                return (($diff%6)==0);
+
+            case Frequency::YEARLY:
+                return (($diff%12)==0);
+
+            //For all other freq : Return diff as a false as we are not supporting other frequencies
+            default:
+                return false;
+        }
+
     }
 
     /**

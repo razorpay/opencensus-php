@@ -57,7 +57,7 @@ trait PaymentsUpiRecurringTrait
                 'max_amount'      => 150000,
                 'frequency'       => 'monthly',
                 'recurring_type'  => 'before',
-                'recurring_value' => 30,
+                'recurring_value' => 31,
                 'start_at'        => Carbon::now()->addDay(1)->getTimestamp(),
                 'expire_at'       => Carbon::now()->addDay(60)->getTimestamp(),
             ]
@@ -95,7 +95,7 @@ trait PaymentsUpiRecurringTrait
                 'max_amount'      => 150000,
                 'frequency'       => 'monthly',
                 'recurring_type'  => 'before',
-                'recurring_value' => 30,
+                'recurring_value' => 31,
                 'start_at'        => Carbon::now()->addDay(1)->getTimestamp(),
                 'expire_at'       => Carbon::now()->addDay(60)->getTimestamp(),
             ]
@@ -275,7 +275,7 @@ trait PaymentsUpiRecurringTrait
             'max_amount'        => 150000,
             'frequency'         => 'monthly',
             'recurring_type'    => 'before',
-            'recurring_value'   => 30,
+            'recurring_value'   => 31,
             'start_time'        => Carbon::now()->addDay(1)->getTimestamp(),
             'end_time'          => Carbon::now()->addDay(60)->getTimestamp(),
             'status'            => UpiMandate\Status::CREATED,

@@ -108,7 +108,14 @@ class Core extends Base\Core
                 if(isset($input['subscription_registration']['method'])  and
                     $input['subscription_registration']['method'] == Method::UPI and $order === null)
                 {
-                    if(isset($input['subscription_registration']['max_amount']) === false)
+                    $maxAmountVariant = $this->app->razorx->getTreatment(
+                        $this->merchant->getId(),
+                        Merchant\RazorxTreatment::UPI_AUTOPAY_DISABLE_MAX_AMOUNT_BLACKLIST,
+                        $this->mode
+                    );
+
+                    if((strtolower($maxAmountVariant) === 'on') and
+                        (isset($input['subscription_registration']['max_amount']) === false))
                     {
                         $input['subscription_registration']['max_amount'] = ($merchant->isBFSIMerchantCategory() === true) ? UpiValidator::BFSI_MAX_AMOUNT_LIMIT : UpiValidator::NON_BFSI_MAX_AMOUNT_LIMIT;
                     }
@@ -177,7 +184,7 @@ class Core extends Base\Core
 
         // Set default values for frequency and max amount for upi
         $frequency = $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::FREQUENCY] ?? UpiFrequency::MONTHLY;
-        $maxAmount = $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::MAX_AMOUNT] ?? UpiValidator::MAX_AMOUNT_LIMIT;
+        $maxAmount = $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][Entity::MAX_AMOUNT] ?? null;
 
         $variant = $this->app->razorx->getTreatment(
             $this->merchant->getId(),
@@ -216,8 +223,9 @@ class Core extends Base\Core
 
         if (array_key_exists($frequency, UpiMandate\Frequency::$frequencyToRecurringValueMap) === true)
         {
-            $orderPayLoad[Order\Entity::TOKEN][UpiMandate\Entity::RECURRING_TYPE]   = UpiMandate\RecurringType::BEFORE;
-            $orderPayLoad[Order\Entity::TOKEN][UpiMandate\Entity::RECURRING_VALUE]  =
+            $orderPayLoad[Order\Entity::TOKEN][UpiMandate\Entity::RECURRING_TYPE]   =  $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][UpiMandate\Entity::RECURRING_TYPE] ??
+                UpiMandate\RecurringType::BEFORE;
+            $orderPayLoad[Order\Entity::TOKEN][UpiMandate\Entity::RECURRING_VALUE]  = $input[Constants\Entity::SUBSCRIPTION_REGISTRATION][UpiMandate\Entity::RECURRING_VALUE] ??
                 UpiMandate\Frequency::$frequencyToRecurringValueMap[$frequency];
         }
 

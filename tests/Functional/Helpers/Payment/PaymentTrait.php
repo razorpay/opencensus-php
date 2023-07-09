@@ -3915,7 +3915,8 @@ trait PaymentTrait
             "omni",
             "dhani",
             "niyoicici",
-            "naviaxis"
+            "naviaxis",
+            "shriramhdfcbank",
         ];
 
         return $vpaHandles;

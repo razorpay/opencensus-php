@@ -499,6 +499,7 @@ class Core extends Base\Core
             if ($tokenRegistration->getMethod() === Methods\Entity::CARD){
                 $data[Entity::TOKEN]['frequency'] = $tokenRegistration->getFrequency() ?? $tokenRegistration::AS_PRESENTED;
                 $data[Entity::TOKEN]['max_amount'] = $tokenRegistration->getMaxAmount() ?? null;
+                $data[Entity::TOKEN]['end_time'] = $tokenRegistration->getExpireAt() ?? null;
             }
 
             $data[Entity::AUTH_TYPE] = $tokenRegistration->getAuthType();

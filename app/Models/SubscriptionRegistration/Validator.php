@@ -31,7 +31,9 @@ class Validator extends Base\Validator
         Entity::AUTH_TYPE                       => 'sometimes|string|nullable|in:netbanking,aadhaar,debitcard,physical,migrated',
         Entity::METHOD                          => 'sometimes|string|nullable|in:emandate,card,nach,upi',
         Entity::NOTES                           => 'sometimes|notes',
-        Entity::FREQUENCY                       => 'required_if:method,upi|in:weekly,monthly,yearly,as_presented',
+        Entity::FREQUENCY                       => 'required_if:method,upi|in:weekly,monthly,yearly,as_presented,quarterly',
+        Entity::RECURRING_TYPE                  => 'sometimes|string|in:before,on,after',
+        Entity::RECURRING_VALUE                 => 'sometimes|integer|nullable',
     ];
 
     protected static $createValidators = [
@@ -86,7 +88,9 @@ class Validator extends Base\Validator
         Entity::NOTES                           => 'sometimes|notes',
         Entity::BANK_ACCOUNT                    => 'required_if:method,nach',
         Entity::NACH                            => 'sometimes_if:method,nach|custom',
-        Entity::FREQUENCY                       => 'required_if:method,upi|in:weekly,monthly,yearly,as_presented',
+        Entity::FREQUENCY                       => 'required_if:method,upi|in:weekly,monthly,yearly,as_presented,quarterly',
+        Entity::RECURRING_TYPE                  => 'sometimes|string|in:before,on,after',
+        Entity::RECURRING_VALUE                 => 'sometimes|integer|nullable',
     ];
 
     protected static $nachAuthTypeRules = [

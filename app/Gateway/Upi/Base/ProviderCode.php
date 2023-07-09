@@ -189,6 +189,7 @@ class ProviderCode
     const DHANI              = 'dhani';
     const NIYOICICI          = 'niyoicici';
     const NAVIAXIS           = 'naviaxis';
+    const SHRIRAMHDFCBANK    = 'shriramhdfcbank';
 
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
@@ -369,6 +370,7 @@ class ProviderCode
         self::GOAXB              => IFSC::UTIB,
         self::NIYOICICI          => IFSC::ICIC,
         self::NAVIAXIS           => IFSC::UTIB,
+        self::SHRIRAMHDFCBANK    => IFSC::HDFC,
     ];
 
     /**
@@ -468,7 +470,8 @@ class ProviderCode
         ProviderPsp::BAJAJ_FINSERVE,
         ProviderPsp::GO_NIYO,
         ProviderPsp::EQUITAS_SMALL_FINANCE_BANK_LTD,
-        ProviderPsp::NAVI
+        ProviderPsp::NAVI,
+        ProviderPsp::SHRIRAMONE,
     ];
 
     /**
@@ -517,6 +520,8 @@ class ProviderCode
         self::NIYOICICI     => ProviderPsp::GO_NIYO,
         self::EQUITAS       => ProviderPsp::EQUITAS_SMALL_FINANCE_BANK_LTD,
         self::NAVIAXIS      => ProviderPsp::NAVI,
+
+        self::SHRIRAMHDFCBANK      => ProviderPsp::SHRIRAMONE,
 
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,
