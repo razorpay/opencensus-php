@@ -121,7 +121,7 @@ const Loads = (): JSX.Element => {
           failure_reason,
           notes,
         ]}
-        hasMoreData={(data?.count || 0) > paginationState.skip + (data?.items?.length || 0)}
+        hasMoreData={data?.has_more ?? true}
         loading={isLoading}
         items={data?.items || []}
         paginate={setPaginationState}

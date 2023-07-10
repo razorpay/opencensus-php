@@ -58,10 +58,7 @@ export const Transactions = (): JSX.Element => {
           error={transactions.error?.message}
           items={transactions.data?.items || []}
           loading={transactions.isLoading}
-          hasMoreData={
-            (transactions.data?.count || 0) >
-            paginationState.skip + (transactions.data?.items?.length || 0)
-          }
+          hasMoreData={transactions.data?.has_more ?? true}
         />
       </div>
     </>

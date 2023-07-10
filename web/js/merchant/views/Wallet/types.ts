@@ -84,6 +84,7 @@ export interface AccountBalance {
 export interface ListApiResponse<T> {
   entity: string;
   count: number;
+  has_more: boolean;
   items: T[];
 }
 export interface ListApiParams {

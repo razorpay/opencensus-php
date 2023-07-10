@@ -142,7 +142,7 @@ export const Accounts = ({ location, history }: RouteComponentProps): JSX.Elemen
         error={error?.message}
         items={data?.items || []}
         loading={isLoading}
-        hasMoreData={(data?.count || 0) > paginationState.skip + (data?.items?.length || 0)}
+        hasMoreData={data?.has_more ?? true}
       />
       <Modal
         isOpen={isDetailView}
