@@ -3,8 +3,6 @@ import { connect } from 'react-redux';
 import {
   fetchRecentlyUsedConfigsFailed,
   fetchRecentlyUsedConfigsSuccess,
-  fetchReportsConfigsSuccess,
-  fetchReportsConfigsFailed,
   handleOverviewLoading,
 } from 'merchant_common/views/Reports/redux/reducer';
 import { useDashboardType } from 'merchant_common/views/Reports/contexts/ReportsContext';
@@ -33,10 +31,6 @@ export const mapDispatchToProps = (dispatch, { dashboardType }) => {
       dispatch(fetchRecentlyUsedConfigsFailed({ ...payload, dashboardType })),
     fetchRecentlyUsedConfigsSuccess: (payload) =>
       dispatch(fetchRecentlyUsedConfigsSuccess({ ...payload, dashboardType })),
-    fetchReportsConfigsSuccess: (payload) =>
-      dispatch(fetchReportsConfigsSuccess({ ...payload, dashboardType })),
-    fetchReportsConfigsFailed: (payload) =>
-      dispatch(fetchReportsConfigsFailed({ ...payload, dashboardType })),
     handleOverviewLoading: (payload) =>
       dispatch(handleOverviewLoading({ ...payload, dashboardType })),
     showNotification: (payload) => dispatch(showNotification(payload)),

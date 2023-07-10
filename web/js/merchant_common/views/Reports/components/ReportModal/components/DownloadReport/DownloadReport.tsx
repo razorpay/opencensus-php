@@ -32,7 +32,11 @@ import { SelectedRangeType } from 'merchant_common/views/Reports/components/Date
 import { fetchAccountsApi } from 'merchant/reducers/marketplace/accounts';
 import { AccountType } from 'merchant_common/views/Reports/types/account';
 import { MARKET_PLACE_CONFIG_TYPES } from 'merchant_common/views/Reports/configs';
-import { downloadNewReport } from 'merchant_common/views/Reports/api/downloadModal';
+import {
+  downloadNewReport,
+  getBatchIds,
+  getPaymentPagesFileUploadPages,
+} from 'merchant_common/views/Reports/api/downloadModal';
 import {
   REPORT_GENERATE_LOG_POST_FAILED,
   MANDATORY_FIELD_REQUIRED,
@@ -45,10 +49,43 @@ import { Delimiter, Format } from 'merchant_common/views/Reports/types';
 
 import { preDefinedDurations } from './data';
 import { CancelButtonContainer } from './styled';
-import { DownloadReportModalPropsType, PredefinedDurationType } from './types';
+import {
+  BatchPage,
+  DownloadReportModalPropsType,
+  PredefinedDurationType,
+  PaymentStatus,
+  BatchId,
+} from './types';
 import { Formats } from './components/Formats';
-import { DATE_HELP_TEXT } from './constants';
-import { getAvailableDelimiter } from './components/Formats/utils';
+import {
+  ALL_OPTION,
+  CONFIG_TYPE_BATCH_PAGES,
+  PAYMENT_STATUS_OPTIONS,
+  BATCH_PAYMENT_PAGE_CUSTOMER_REPORT,
+  BATCH_PAYMENT_PAGE_PAYMENT_REPORT,
+  ERROR_IN_FIRST_SECTION,
+  ERROR_IN_SECOND_SECTION,
+  ERROR_IN_THIRD_SECTION,
+  ERROR_IN_FOURTH_SECTION,
+} from './constants';
+import {
+  formatBatchIds,
+  getOptionsAccordingToAllOptionSelected,
+  parseBatchPages,
+} from './Utils/batchPaymentPages';
+import { generatePayload } from './Utils/makePayload';
+import {
+  isBatchSectionValid,
+  isDurationSectionValid,
+  isRecipientsSectionValid,
+  isReportSectionValid,
+} from './Utils/sectionValidators';
+import {
+  isBatchIdsFieldValid,
+  isCustomDurationFieldValid,
+  isDefaultDurationFieldValid,
+  isPaymentStatusFieldValid,
+} from './Utils/fieldValidators';
 
 export const DownloadReportModal = ({
   allReportConfigs,
@@ -77,14 +114,24 @@ export const DownloadReportModal = ({
   const [selectedFormat, setSelectedFormat] = useState<Format>();
   const [selectedDelimiter, setSelectedDelimiter] = useState<Delimiter>();
 
-  // section 2
+  // Conditional section 2
+  const [batchIds, setBatchIds] = useState<BatchId[]>([]);
+  const [isBatchIdsLoading, setIsBatchIdsLoading] = useState(false);
+
+  const [selectedBatchPage, setSelectedBatchPage] = useState<BatchPage>();
+  const [selectedBatchIds, setSelectedBatchIds] = useState<BatchId[]>([]);
+  const [selectedPaymentStatus, setSelectedPaymentStatus] = useState<PaymentStatus[]>([
+    PAYMENT_STATUS_OPTIONS[0],
+  ]);
+
+  // section 3
   const [selectedPredefinedDurationRange, setSelectedPredefinedDurationRange] = useState<
     undefined | PredefinedDurationType
   >();
   const [customDurationRange, setCustomDurationRange] = useState<undefined | SelectedRangeType>();
 
+  // section 4
   const [isRecipientsEnabled, setIsRecipientsEnabled] = useState(false);
-  // section 3
   const [recipients, setRecipients] = useState<string[]>([]);
 
   const [isSubmitButtonLoading, setSubmitButtonLoading] = useState(false);
@@ -104,32 +151,26 @@ export const DownloadReportModal = ({
     return '';
   };
 
-  const validateDurationRange = (startDate, endDate) =>
-    moment.isMoment(startDate) && moment.isMoment(endDate);
-
-  const validateCustomDuration = () =>
-    validateDurationRange(customDurationRange?.startDate, customDurationRange?.endDate);
-
-  const validateDefaultDuration = () => {
-    if (selectedPredefinedDurationRange?.label) {
-      const { startDate, endDate } = selectedPredefinedDurationRange.value;
-      return validateDurationRange(startDate, endDate);
-    } else {
-      return false;
-    }
-  };
-
   const validationsForEachSections = [
-    Boolean(selectedConfig) &&
-      Boolean(
-        selectedFormat?.value && getAvailableDelimiter(selectedFormat).length > 0
-          ? Boolean(selectedDelimiter?.value)
-          : true,
-      ),
-    isCustomDurationEnabled ? validateCustomDuration() : validateDefaultDuration(),
-    Boolean(
-      isRecipientsEnabled ? recipients && Array.isArray(recipients) && recipients.length : true,
-    ),
+    isReportSectionValid({
+      selectedConfig,
+      selectedFormat,
+      selectedDelimiter,
+    }),
+    isBatchSectionValid({
+      selectedConfig,
+      selectedBatchPage,
+      selectedBatchIds,
+      selectedPaymentStatus,
+      batchIds,
+    }),
+    isDurationSectionValid({
+      selectedConfig,
+      customDurationRange,
+      selectedPredefinedDurationRange,
+      isCustomDurationEnabled,
+    }),
+    isRecipientsSectionValid({ isRecipientsEnabled, recipients }),
   ];
 
   const handleErrorStates = () => {
@@ -150,30 +191,20 @@ export const DownloadReportModal = ({
     });
 
     if (handleErrorStates()) {
-      const payload = {
-        config_id: selectedConfig?.id,
-        start_time: isCustomDurationEnabled
-          ? customDurationRange!.startDate.clone().unix()
-          : selectedPredefinedDurationRange!.value.startDate.clone().unix(),
-        end_time: isCustomDurationEnabled
-          ? customDurationRange!.endDate.clone().unix()
-          : selectedPredefinedDurationRange!.value.endDate.clone().unix(),
-        emails: isRecipientsEnabled ? recipients : undefined,
-        template_overrides:
-          Boolean(selectedFormat?.value) ||
-          Boolean(saveReportAs) ||
-          Boolean(selectedDelimiter?.value)
-            ? {
-                file_meta: {
-                  extension: Boolean(selectedFormat?.value) ? selectedFormat?.value : undefined,
-                  filename: Boolean(saveReportAs) ? saveReportAs : undefined,
-                  delimiter: Boolean(selectedDelimiter?.value)
-                    ? selectedDelimiter?.value
-                    : undefined,
-                },
-              }
-            : undefined,
-      };
+      const payload = generatePayload({
+        selectedConfig,
+        saveReportAs,
+        selectedFormat,
+        selectedDelimiter,
+        selectedBatchPage,
+        selectedBatchIds,
+        selectedPaymentStatus,
+        customDurationRange,
+        selectedPredefinedDurationRange,
+        recipients,
+        isCustomDurationEnabled,
+        isRecipientsEnabled,
+      });
 
       const parsedPayload = parsePayloadBeforeSubmit(payload, {
         selectedConfig,
@@ -297,6 +328,22 @@ export const DownloadReportModal = ({
     );
   };
 
+  const customBatchPagesOption = ({ title, id }) => {
+    return (
+      <Box aria-label={`${title}-${id}`}>
+        <Text
+          size="medium"
+          type="normal"
+          contrast="low"
+          color="surface.text.normal.lowContrast"
+          truncateAfterLines={1}
+        >
+          {`${title} - ${id}`}
+        </Text>
+      </Box>
+    );
+  };
+
   useEffect(() => {
     if (!params?.selectedConfig) return;
 
@@ -307,7 +354,7 @@ export const DownloadReportModal = ({
   useEffect(() => {
     if (!isRecipientsEnabled) {
       setRecipients([]);
-      if (showErrorInSection === 2) {
+      if (showErrorInSection === ERROR_IN_FOURTH_SECTION) {
         setShowErrorInSection(undefined);
       }
     }
@@ -319,6 +366,83 @@ export const DownloadReportModal = ({
       dashboardType,
     });
   }, []);
+
+  const handleConfigChange = ({ values }) => {
+    const config = allReportConfigs[+values[0]];
+
+    // Set the state only when config options change.
+    if (config?.id !== selectedConfig?.id) {
+      setSelectedConfig(allReportConfigs[+values[0]]);
+
+      if (selectedConfig?.type === CONFIG_TYPE_BATCH_PAGES) {
+        // Empty out the prev batch page selected.
+        setSelectedBatchPage(undefined);
+
+        if (showErrorInSection === ERROR_IN_SECOND_SECTION) {
+          setShowErrorInSection(undefined);
+        }
+      }
+    }
+  };
+
+  const handleIsCustomDurationEnabled = (bool: boolean) => {
+    setCustomDurationEnabled(bool);
+
+    trackDownloadModal({
+      actionName: 'Enable Custom Duration Switch Toggled',
+      properties: {
+        use_custom_duration: bool,
+      },
+      dashboardType,
+    });
+  };
+
+  const handleBatchPaymentPageChange = async (val: BatchPage): Promise<void> => {
+    setSelectedBatchPage(val);
+
+    if (
+      selectedConfig?.name === BATCH_PAYMENT_PAGE_CUSTOMER_REPORT &&
+      val.id !== selectedBatchPage?.id
+    ) {
+      try {
+        setBatchIds([]);
+        setSelectedBatchIds([]);
+        setIsBatchIdsLoading(true);
+
+        const res = await getBatchIds(val.id);
+
+        if (Array.isArray(res?.data) && Boolean(res.data.length)) {
+          setBatchIds(formatBatchIds(res?.data));
+          setSelectedBatchIds([ALL_OPTION]);
+        }
+      } catch (error: any) {
+        showNotification({
+          type: 'error',
+          message: error?.errors?.join(' ') ?? 'Error in getting batch ids',
+        });
+      } finally {
+        setIsBatchIdsLoading(false);
+      }
+    }
+  };
+
+  const handlePaymentStatusChange = (selectedValues: PaymentStatus[]): void => {
+    const values = getOptionsAccordingToAllOptionSelected<PaymentStatus[]>({
+      currSelectedOptions: selectedValues,
+      prevSelectedOptions: selectedPaymentStatus,
+    });
+
+    setSelectedPaymentStatus(values);
+  };
+
+  const handleBatchIdChange = (selectedValues: BatchId[]): void => {
+    const values = getOptionsAccordingToAllOptionSelected<BatchId[]>({
+      currSelectedOptions: selectedValues,
+      prevSelectedOptions: selectedBatchIds || [],
+    });
+
+    setSelectedBatchIds(values);
+  };
 
   return (
     <Fragment>
@@ -338,7 +462,7 @@ export const DownloadReportModal = ({
         <CollapsibleForm
           errorSectionIndex={showErrorInSection}
           validationsForEachSections={validationsForEachSections}
-          disableSectionsExpandOnError={true}
+          disableSectionsExpandOnError
           defaultOpen={0}
           style={{
             marginTop: 20,
@@ -352,10 +476,12 @@ export const DownloadReportModal = ({
               <SelectInput
                 necessityIndicator="required"
                 label="Select Report"
-                onChange={({ values }) => setSelectedConfig(allReportConfigs[+values[0]])}
+                onChange={handleConfigChange}
                 placeholder="Select A Report"
                 validationState={
-                  showErrorInSection === 0 && !Boolean(selectedConfig) ? 'error' : 'none'
+                  showErrorInSection === ERROR_IN_FIRST_SECTION && !Boolean(selectedConfig)
+                    ? 'error'
+                    : 'none'
                 }
                 helpText={
                   selectedConfig?.description ?? 'Select report you want to receive report about.'
@@ -422,91 +548,172 @@ export const DownloadReportModal = ({
               />
             ) : null}
           </CollapsibleFormSection>
-          <CollapsibleFormSection
-            title="What will you receive in this report?"
-            helpText={renderDurationInfo() ?? DATE_HELP_TEXT}
-            endComponent={{
-              component: () => (
-                <Switch
-                  label="Custom"
-                  value={isCustomDurationEnabled}
-                  onChange={(bool) => {
-                    setCustomDurationEnabled(bool);
-                    trackDownloadModal({
-                      actionName: 'Enable Custom Duration Switch Toggled',
-                      properties: {
-                        use_custom_duration: bool,
-                      },
-                      dashboardType,
-                    });
-                  }}
-                />
-              ),
-              visible: 'on-active',
-            }}
-          >
-            {isCustomDurationEnabled ? (
-              <DateTimeRangePicker
-                label="Select Duration"
-                helpText="Choose a duration to cover in report."
-                errorText="Mandatory Field: Choose a duration to cover in report."
-                placeHolder="Select duration covered in each report"
-                onChange={setCustomDurationRange}
-                value={customDurationRange}
-                allowSingleDateSelection
-                disableFuture
-                modifiers={{
-                  INFO_WHEN_FUTURE_DISABLED: `*You can only download report containing data upto ${moment().format(
-                    'MMMM Do, h A',
-                  )}`,
-                }}
-                validationState={showErrorInSection === 1 ? validateCustomDuration() : true}
-                validateRange={validateCustomDurationForPicker}
+
+          {selectedConfig?.type === CONFIG_TYPE_BATCH_PAGES ? (
+            <CollapsibleFormSection
+              title="Which details should be part of this report?"
+              helpText="Select the Batch Payment Page, Batch and Status for which the report should be generated"
+            >
+              <AsyncDropdown
+                label="Select Batch Payment Page"
+                placeHolder="Batch Page ID"
+                helpText="Select the page for which you want to download the data."
+                errorText="Mandatory Field: Select the page for which you want to download the data."
+                value={selectedBatchPage}
+                defaultValue={selectedBatchPage}
+                promise={({ query }) => getPaymentPagesFileUploadPages({ title: query })}
+                validate={() =>
+                  showErrorInSection === ERROR_IN_SECOND_SECTION ? Boolean(selectedBatchPage) : true
+                }
+                onChange={handleBatchPaymentPageChange}
+                parseData={parseBatchPages}
+                labelKey="id"
+                ariaLabelBy="Select Batch Payment Page"
+                renderCustomOption={customBatchPagesOption}
                 necessityIndicator="required"
-                minutesInterval={5}
               />
-            ) : (
-              <Dropdown selectionType="single">
-                <SelectInput
-                  label="Select Duration"
-                  helpText="Select duration to cover in report."
-                  placeholder="Select duration covered in each report"
+
+              {selectedConfig?.name === BATCH_PAYMENT_PAGE_CUSTOMER_REPORT &&
+              selectedBatchPage?.id ? (
+                <MultiSelectDropdown
+                  label="Select Batch"
+                  helpText="Select one or more batch IDs from the dropdown or type the batch ID to search and select."
+                  errorText="Mandatory Field: Select one or more batch IDs from the dropdown or type the batch ID to search and select."
+                  placeHolder={
+                    batchIds.length === 0
+                      ? 'No batches available'
+                      : 'Please enter any batch ID you want to search and select it from the list.'
+                  }
+                  value={selectedBatchIds}
+                  onChange={handleBatchIdChange}
+                  shouldCloseDropdownOnSelect={false}
+                  validate={() =>
+                    showErrorInSection === ERROR_IN_SECOND_SECTION
+                      ? isBatchIdsFieldValid({ selectedBatchPage, selectedBatchIds, batchIds })
+                      : true
+                  }
+                  isSearchable
+                  options={batchIds}
+                  labelKey="label"
+                  isVirtualized
+                  isLoading={isBatchIdsLoading}
+                  itemHeight={36}
+                  ariaLabelBy="Select Batch"
                   necessityIndicator="required"
-                  onChange={({ values }) =>
-                    setSelectedPredefinedDurationRange(preDefinedDurations[+values[0]])
-                  }
-                  validationState={
-                    showErrorInSection === 1
-                      ? validateDefaultDuration()
-                        ? 'none'
-                        : 'error'
-                      : 'none'
-                  }
-                  errorText="Mandatory Field: Select duration to cover in report."
-                  value={preDefinedDurations
-                    .findIndex((e) => e.value === selectedPredefinedDurationRange?.value)
-                    .toString()}
+                  isDisabled={!isBatchIdsLoading && batchIds.length === 0}
                 />
-                <DropdownOverlay>
-                  <ActionList
-                    options={preDefinedDurations}
-                    itemComponent={({ data, index }) => (
-                      <ActionListItem
-                        key={data.label}
-                        title={data.label}
-                        value={index.toString()}
-                        testID={data.label}
-                      />
-                    )}
+              ) : null}
+
+              {selectedConfig?.name === BATCH_PAYMENT_PAGE_CUSTOMER_REPORT ? (
+                <MultiSelectDropdown
+                  label="Select Payment Status"
+                  helpText="Filter the report results by selecting the payment status."
+                  errorText="Mandatory Field: Filter the report results by selecting the payment status."
+                  placeHolder="Select payment status from the list."
+                  value={selectedPaymentStatus}
+                  onChange={handlePaymentStatusChange}
+                  shouldCloseDropdownOnSelect={false}
+                  validate={() =>
+                    showErrorInSection === ERROR_IN_SECOND_SECTION
+                      ? isPaymentStatusFieldValid(selectedPaymentStatus)
+                      : true
+                  }
+                  options={PAYMENT_STATUS_OPTIONS}
+                  labelKey="label"
+                  ariaLabelBy="Select Payment Status"
+                  necessityIndicator="required"
+                />
+              ) : null}
+            </CollapsibleFormSection>
+          ) : (
+            <></>
+          )}
+
+          {selectedConfig?.name !== BATCH_PAYMENT_PAGE_PAYMENT_REPORT ? (
+            <CollapsibleFormSection
+              title="What will you receive in this report?"
+              helpText={renderDurationInfo() ?? 'Period of data, time, date etc.'}
+              endComponent={{
+                component: () => (
+                  <Switch
+                    label="Custom"
+                    value={isCustomDurationEnabled}
+                    onChange={handleIsCustomDurationEnabled}
                   />
-                </DropdownOverlay>
-              </Dropdown>
-            )}
-          </CollapsibleFormSection>
+                ),
+                visible: 'on-active',
+              }}
+            >
+              {isCustomDurationEnabled ? (
+                <DateTimeRangePicker
+                  label="Select Duration"
+                  helpText="Choose a duration to cover in report."
+                  errorText="Mandatory Field: Choose a duration to cover in report."
+                  placeHolder="Select duration covered in each report"
+                  onChange={setCustomDurationRange}
+                  value={customDurationRange}
+                  allowSingleDateSelection
+                  disableFuture
+                  modifiers={{
+                    INFO_WHEN_FUTURE_DISABLED: `*You can only download report containing data upto ${moment().format(
+                      'MMMM Do, h A',
+                    )}`,
+                  }}
+                  validationState={
+                    showErrorInSection === ERROR_IN_THIRD_SECTION
+                      ? isCustomDurationFieldValid(customDurationRange)
+                      : true
+                  }
+                  validateRange={validateCustomDurationForPicker}
+                  necessityIndicator="required"
+                  minutesInterval={5}
+                />
+              ) : (
+                <Dropdown selectionType="single">
+                  <SelectInput
+                    label="Select Duration"
+                    helpText="Select duration to cover in report."
+                    placeholder="Select duration covered in each report"
+                    necessityIndicator="required"
+                    onChange={({ values }) =>
+                      setSelectedPredefinedDurationRange(preDefinedDurations[+values[0]])
+                    }
+                    validationState={
+                      showErrorInSection === ERROR_IN_THIRD_SECTION
+                        ? isDefaultDurationFieldValid(selectedPredefinedDurationRange)
+                          ? 'none'
+                          : 'error'
+                        : 'none'
+                    }
+                    errorText="Mandatory Field: Select duration to cover in report."
+                    value={preDefinedDurations
+                      .findIndex((e) => e.value === selectedPredefinedDurationRange?.value)
+                      .toString()}
+                  />
+                  <DropdownOverlay>
+                    <ActionList
+                      options={preDefinedDurations}
+                      itemComponent={({ data, index }) => (
+                        <ActionListItem
+                          key={data.label}
+                          title={data.label}
+                          value={index.toString()}
+                          testID={data.label}
+                        />
+                      )}
+                    />
+                  </DropdownOverlay>
+                </Dropdown>
+              )}
+            </CollapsibleFormSection>
+          ) : (
+            <></>
+          )}
+
           <CollapsibleFormSection
             title="Do you want this report in an email?"
             helpText={
-              (isRecipientsEnabled ? validationsForEachSections[2] : false)
+              (isRecipientsEnabled ? validationsForEachSections[ERROR_IN_FOURTH_SECTION] : false)
                 ? recipients.join(', ')
                 : "Add receiver's email addresses."
             }
@@ -539,7 +746,11 @@ export const DownloadReportModal = ({
               value={recipients}
               onChange={setRecipients}
               shouldCloseDropdownOnSelect={false}
-              validate={() => (showErrorInSection === 2 ? validationsForEachSections[2] : true)}
+              validate={() =>
+                showErrorInSection === ERROR_IN_FOURTH_SECTION
+                  ? validationsForEachSections[ERROR_IN_FOURTH_SECTION]
+                  : true
+              }
               isSearchable
               options={availableEmails && Array.isArray(availableEmails) ? availableEmails : []}
               isVirtualized

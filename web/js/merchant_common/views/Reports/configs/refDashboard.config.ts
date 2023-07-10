@@ -14,11 +14,16 @@ import { BaseConfigType } from 'merchant_common/views/Reports/types/config';
 import { BaseLogPayloadType } from 'merchant_common/views/Reports/types/log';
 
 import { parseConfigsViaCommonExceptions } from './downloadModal.config';
+import { CONFIG_TYPE_BATCH_PAGES } from 'merchant_common/views/Reports/components/ReportModal/components/DownloadReport/constants';
 import { ScheduleServerPayload, ScheduleType } from 'merchant_common/views/Reports/types/schedule';
 import {
   changeScheduleNumericsToString,
   changeScheduleStringsToNumerics,
 } from 'merchant_common/views/Reports/features/Schedules/utils';
+import {
+  MONTHLY_INVOICE_REPORT,
+  OPTIMISER_SETTLEMENTS,
+} from 'merchant_common/views/Reports/constants';
 
 /**
  * @param {DashboardType} dashboardType Dashboard type where the core report component will be used.
@@ -42,18 +47,22 @@ export const getReportsDashboardConfig = (
       availableFormats: getAvailableFormats(session?.user),
       parseConfigs: (configs: BaseConfigType[]) => {
         if (session?.user?.findTag) {
-          return configs.filter((config) => {
-            const inCheck = REPORT_CONFIG_TYPE?.[config.name] ?? REPORT_CONFIG_TYPE?.[config.type];
+          return configs.filter(({ name, type }) => {
+            const { isSupportRole, isOptimizerRZPVASEnabled, isPaymentPageFileUploadEnabled } =
+              session.user;
+
+            const inCheck = REPORT_CONFIG_TYPE?.[name] ?? REPORT_CONFIG_TYPE?.[type];
             const isI18TagFound = inCheck && session.user.findTag(inCheck);
 
             switch (true) {
               case isI18TagFound:
                 return false;
-              case config?.name === 'Monthly Invoice Report' && session.user.isSupportRole:
+              case name === MONTHLY_INVOICE_REPORT && isSupportRole:
                 return false;
-              case config?.name === 'Optimiser Settlements' &&
-                session.user.isOptimizerRZPVASEnabled:
+              case name === OPTIMISER_SETTLEMENTS && isOptimizerRZPVASEnabled:
                 return false;
+              case type === CONFIG_TYPE_BATCH_PAGES:
+                return isPaymentPageFileUploadEnabled;
               default:
                 return true;
             }

@@ -15,7 +15,7 @@ export const Form = ({
     if (typeof errorSectionIndex === 'number') setActiveSectionIndex(errorSectionIndex);
   }, [errorSectionIndex]);
 
-  const handleClick = (index) => {
+  const handleClick = (index: number) => {
     if (!disableSectionsExpandOnError) {
       setActiveSectionIndex(index);
     } else if (typeof errorSectionIndex === 'number') {

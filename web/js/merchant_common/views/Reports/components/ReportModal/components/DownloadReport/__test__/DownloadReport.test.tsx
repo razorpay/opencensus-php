@@ -1,8 +1,7 @@
 import React from 'react';
-import { render, screen, userEvent } from 'test-utils';
+import { findByText, getByText, queryByText, render, screen, server, userEvent } from 'test-utils';
 import * as modalFn from 'merchant_common/reducers/modals';
 import { REPORT_TEST_DASHBOARD, TODAY } from 'merchant_common/views/Reports/constants';
-import { getOverViewStateWith } from 'merchant_common/views/Reports/features/Overview/__test__/fixtures';
 import { mockConfigs } from 'merchant_common/views/Reports/redux/__test__/fixtures/configs.fixtures';
 import * as notification from 'merchant_common/reducers/notifications';
 import {
@@ -20,57 +19,32 @@ import {
   FORMATS_PLACEHOLDER,
 } from 'merchant_common/views/Reports/components/ReportModal/components/DownloadReport/components/Formats/constants';
 import { getFormattedDate } from 'merchant_common/views/Reports/components/DateTimeRangePicker/utils';
-import { DATE_HELP_TEXT } from 'merchant_common/views/Reports/components/ReportModal/components/DownloadReport/constants';
+import {
+  BATCH_PAYMENT_PAGE_CUSTOMER_REPORT,
+  BATCH_PAYMENT_PAGE_PAYMENT_REPORT,
+  CONFIG_TYPE_BATCH_PAGES,
+  PAYMENT_STATUS_OPTIONS,
+} from 'merchant_common/views/Reports/components/ReportModal/components/DownloadReport/constants';
+import {
+  BATCH_ID_OPTIONS,
+  BATCH_PAGE_ITEMS,
+  getBatchIds,
+  getPaymentPagesFileUploadPages,
+} from './mocks/handlers';
 import DownloadReport from 'merchant_common/views/Reports/components/ReportModal/components/DownloadReport';
-
-const initialState = getOverViewStateWith({
-  allConfigs: {
-    loading: false,
-    error: false,
-    data: mockConfigs,
-  },
-});
-
-// choosing a market place config type for testing complete flow
-const TEST_CONFIG = mockConfigs[0];
-const TEST_USER = {
-  name: 'Rzp',
-  email: 'rzp@gmail.com',
-  id: 'MID_ASDASW',
-  current: 'IASD_ASD',
-  isOrgAllowedFunctionality: jest.fn(() => true),
-  findTag: jest.fn(),
-  isMarketplaceEnabled: true,
-};
-const TEST_DUM_ACCOUNT = {
-  name: `RZP`,
-  id: 'DUMMY_ACCOUNT',
-  email: 'dummy-account@rzp.com',
-  tag: 'Ref Account',
-  current: true,
-};
-const TEST_ACCOUNTS_STATE = {
-  accounts: [],
-  count: 0,
-  loading: false,
-  error: false,
-};
-
-// Download api params that will be checked against the mock api.
-const defaultDownloadAPIParams = {
-  generatedBy: TEST_USER.current ?? TEST_USER.id,
-  headers: {},
-  payload: {
-    config_id: TEST_CONFIG.id,
-    emails: ['rzp@rzp.com'],
-    start_time: preDefinedDurations[0].value.startDate.clone().unix(),
-    end_time: preDefinedDurations[0].value.endDate.clone().unix(),
-    template_overrides: {
-      file_meta: { extension: 'csv', filename: 'Rzp Doc', delimiter: ',' },
-    },
-  },
-  accountId: undefined,
-};
+import {
+  BATCH_ID,
+  BATCH_PAGE,
+  BATCH_TITLE,
+  DATE_HELP_TEXT,
+  DEFAULT_DOWNLOAD_API_PARAMS,
+  PAYMENT_STATUS,
+  TEST_ACCOUNTS_STATE,
+  TEST_CONFIG,
+  TEST_DUM_ACCOUNT,
+  TEST_USER,
+  initialState,
+} from './mocks/fixtures';
 
 defineMatchMedia(false);
 
@@ -128,8 +102,9 @@ describe('Download Reports', () => {
       />
     );
   };
-  const renderDetailedApp = () =>
-    render(<App configId={TEST_CONFIG.id} />, {
+
+  const renderDetailedApp = ({ configId = TEST_CONFIG.id } = {}) =>
+    render(<App configId={configId} />, {
       initialState: {
         ...initialState,
         accounts: TEST_ACCOUNTS_STATE,
@@ -190,8 +165,6 @@ describe('Download Reports', () => {
 
     await userEvent.click(screen.getByLabelText('RZP (DUMMY_ACCOUNT)'));
     await userEvent.click(screen.getByText('What will you receive in this report?'));
-    await userEvent.click(screen.getByLabelText('Custom Switch'));
-    await userEvent.click(screen.getByLabelText('Custom Switch'));
     await userEvent.click(screen.getByPlaceholderText('Select duration covered in each report'));
     await userEvent.click(screen.getByTestId(preDefinedDurations[0].label));
     await userEvent.click(screen.getByLabelText('Yes Switch'));
@@ -201,7 +174,7 @@ describe('Download Reports', () => {
 
     await userEvent.click(screen.getByLabelText('Start Download'));
 
-    expect(downloadAPI.downloadNewReport).toHaveBeenCalledWith(defaultDownloadAPIParams);
+    expect(downloadAPI.downloadNewReport).toHaveBeenCalledWith(DEFAULT_DOWNLOAD_API_PARAMS);
 
     expect(downloadAPI.downloadNewReport).toHaveReturned();
     expect(notification.showNotification).toHaveBeenCalledWith({
@@ -264,14 +237,174 @@ describe('Download Reports', () => {
     await userEvent.click(screen.getByLabelText('Start Download'));
 
     const updatedParams = {
-      ...defaultDownloadAPIParams,
+      ...DEFAULT_DOWNLOAD_API_PARAMS,
       payload: {
-        ...defaultDownloadAPIParams.payload,
+        ...DEFAULT_DOWNLOAD_API_PARAMS.payload,
         emails: undefined,
-        template_overrides: { file_meta: { extension: formatValue, delimiter: delimiterValue } },
+        template_overrides: {
+          file_meta: { extension: formatValue, delimiter: delimiterValue },
+          filters: undefined,
+        },
       },
     };
 
     expect(downloadAPI.downloadNewReport).toHaveBeenCalledWith(updatedParams);
+  });
+
+  test('should render batch payment block having three fields(batch page, batch id, payment status), when report of type - batch_pages and name - Bulk Payment Page Customers Report is selected', async () => {
+    server.use(getPaymentPagesFileUploadPages(), getBatchIds());
+
+    const config = mockConfigs.find(
+      ({ type, name }) =>
+        type === CONFIG_TYPE_BATCH_PAGES && name === BATCH_PAYMENT_PAGE_CUSTOMER_REPORT,
+    );
+
+    renderDetailedApp({ configId: config?.id });
+
+    // Open the batch payment page block.
+    await userEvent.click(screen.getByText(BATCH_TITLE));
+
+    const batchPaymentPageFieldEl = screen.getByLabelText(BATCH_PAGE.LABEL);
+
+    // Payment status field should be present.
+    expect(screen.getByLabelText(PAYMENT_STATUS.LABEL)).toBeInTheDocument();
+    // Batch page field should be present
+    expect(getByText(batchPaymentPageFieldEl, BATCH_PAGE.PLACEHOLDER)).toBeInTheDocument();
+
+    // When all option is selected batch id field is hidden.
+    expect(screen.queryByText(BATCH_ID.LABEL)).not.toBeInTheDocument();
+
+    await userEvent.click(batchPaymentPageFieldEl);
+    // Type in batch payment page id.
+    await userEvent.type(screen.getByLabelText('Search An Item Here'), 'test');
+
+    // Select the item.
+    await userEvent.click(await screen.findByLabelText(BATCH_PAGE_ITEMS[0].id));
+
+    const batchIdField = screen.getByLabelText(BATCH_ID.LABEL);
+
+    // Should have loading text.
+    expect(screen.getByPlaceholderText('Loading... Please wait...')).toBeInTheDocument();
+
+    // 'All' option should be pre-select for batch id field after getting batch ids options.
+    expect(await findByText(batchIdField, 'All')).toBeInTheDocument();
+  });
+
+  test('should render batch payment block having only one field(batch page dropdown), when report of type - batch_pages and name - Bulk Payment Page Payments Report is selected and duration field should be hidden', async () => {
+    server.use(getPaymentPagesFileUploadPages());
+
+    const config = mockConfigs.find(
+      ({ type, name }) =>
+        type === CONFIG_TYPE_BATCH_PAGES && name === BATCH_PAYMENT_PAGE_PAYMENT_REPORT,
+    );
+
+    renderDetailedApp({ configId: config?.id });
+
+    // Open the batch page block.
+    await userEvent.click(screen.getByText(BATCH_TITLE));
+
+    // Payment status field should not be present.
+    expect(screen.queryByLabelText(PAYMENT_STATUS.LABEL)).not.toBeInTheDocument();
+
+    // Click on batch payment page field.
+    await userEvent.click(screen.getByLabelText(BATCH_PAGE.LABEL));
+    // Type in batch payment page id.
+    await userEvent.type(screen.getByLabelText('Search An Item Here'), 'test');
+    // Select the item.
+    await userEvent.click(await screen.findByLabelText(BATCH_PAGE_ITEMS[0].id));
+
+    // Even after selecting batch page, batch id field should be hidden.
+    expect(screen.queryByText(BATCH_ID.LABEL)).not.toBeInTheDocument();
+  });
+
+  test('"All" option should not be present when batch ids are selected and also validate the field, when no batch ids are selected', async () => {
+    server.use(getPaymentPagesFileUploadPages(), getBatchIds());
+
+    const config = mockConfigs.find(
+      ({ type, name }) =>
+        type === CONFIG_TYPE_BATCH_PAGES && name === BATCH_PAYMENT_PAGE_CUSTOMER_REPORT,
+    );
+
+    renderDetailedApp({ configId: config?.id });
+
+    // Open the batch page block.
+    await userEvent.click(screen.getByText(BATCH_TITLE));
+    // Click on batch page field.
+    await userEvent.click(screen.getByLabelText(BATCH_PAGE.LABEL));
+    // Type in batch page id.
+    await userEvent.type(screen.getByLabelText('Search An Item Here'), 'test');
+    // Select the item.
+    await userEvent.click(await screen.findByLabelText(BATCH_PAGE_ITEMS[0].id));
+
+    // Wait for loading to complete.
+    const batchIdInputEl = await screen.findByPlaceholderText(BATCH_ID.PLACEHOLDER);
+
+    // Open dropdown to select options.
+    await userEvent.click(batchIdInputEl);
+    // Click the option.
+    await userEvent.click(screen.getByLabelText(BATCH_ID_OPTIONS[0]));
+
+    // 'All' option should be unselected for batch id field.
+    expect(queryByText(screen.getByLabelText(BATCH_ID.LABEL), 'All')).not.toBeInTheDocument();
+
+    // Remove the selected batch id.
+    await userEvent.click(
+      screen.getByLabelText(`Remove Selected Option -> ${BATCH_ID_OPTIONS[0]}`),
+    );
+    // Start downloading.
+    await userEvent.click(screen.getByLabelText('Start Download'));
+
+    // Should render error msg when download button is clicked.
+    expect(screen.getByText(BATCH_ID.ERROR_TEXT)).toBeInTheDocument();
+  });
+
+  test('"All" option should not be present when payment status are selected other than "All" option and also validate the field, when no payment status are selected', async () => {
+    const config = mockConfigs.find(
+      ({ type, name }) =>
+        type === CONFIG_TYPE_BATCH_PAGES && name === BATCH_PAYMENT_PAGE_CUSTOMER_REPORT,
+    );
+
+    renderDetailedApp({ configId: config?.id });
+
+    // Open the batch page block.
+    await userEvent.click(screen.getByText(BATCH_TITLE));
+
+    const paymentStatusFieldEl = screen.getByLabelText(PAYMENT_STATUS.LABEL);
+    const selectedPaymentStatus = PAYMENT_STATUS_OPTIONS[1];
+
+    // Should have all option pre-selected for payment status field.
+    expect(getByText(paymentStatusFieldEl, 'All')).toBeInTheDocument();
+
+    // Open dropdown to select option.
+    await userEvent.click(screen.getByText(PAYMENT_STATUS.PLACEHOLDER));
+    // Select the option.
+    await userEvent.click(screen.getByLabelText(selectedPaymentStatus.label));
+
+    // "All" option should not be present.
+    expect(queryByText(paymentStatusFieldEl, 'All')).not.toBeInTheDocument();
+
+    // Remove the selected payment status.
+    await userEvent.click(
+      screen.getByLabelText(`Remove Selected Option -> ${selectedPaymentStatus.label}`),
+    );
+    // Start downloading.
+    await userEvent.click(screen.getByLabelText('Start Download'));
+
+    // Should render error msg when download button is clicked.
+    expect(screen.getByText(PAYMENT_STATUS.ERROR_TEXT)).toBeInTheDocument();
+  });
+
+  test('should validate batch page field', async () => {
+    const config = mockConfigs.find(
+      ({ type, name }) =>
+        type === CONFIG_TYPE_BATCH_PAGES && name === BATCH_PAYMENT_PAGE_PAYMENT_REPORT,
+    );
+
+    renderDetailedApp({ configId: config?.id });
+
+    // Start downloading.
+    await userEvent.click(screen.getByLabelText('Start Download'));
+
+    expect(screen.getByText(BATCH_PAGE.ERROR_TEXT)).toBeInTheDocument();
   });
 });

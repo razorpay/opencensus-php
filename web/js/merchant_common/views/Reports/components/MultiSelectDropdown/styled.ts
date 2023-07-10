@@ -31,9 +31,13 @@ export const DefaultOption = styled.div`
   align-items: center;
 `;
 
-export const InputContainer = styled.div<{ shouldShowDropDown: boolean; validation: boolean }>`
+export const InputContainer = styled.div<{
+  shouldShowDropDown: boolean;
+  validation: boolean;
+  isDisabled: boolean;
+}>`
   ${BASE_FIELD_MARGIN}
-  ${({ theme, shouldShowDropDown, validation }) => {
+  ${({ theme, shouldShowDropDown, validation, isDisabled }) => {
     const {
       FIELD_BORDER_DEFAULT_COLOR,
       FIELD_BORDER_RADIUS,
@@ -44,15 +48,19 @@ export const InputContainer = styled.div<{ shouldShowDropDown: boolean; validati
       NEGATIVE_BG,
       HOVER_BG_COLOR_L3,
     } = reportsTheme(theme);
+
     const bgColor = validation
       ? shouldShowDropDown
         ? FIELD_FOCUS_COLOR_L1
         : FIELD_BG_COLOR
       : NEGATIVE_BG;
+
     return `
       transition: background-color border-color 0.3s ${theme.motion.easing.standard.revealing};
       border-bottom: 1px solid ${
-        validation
+        isDisabled
+          ? 'transparent'
+          : validation
           ? shouldShowDropDown
             ? FIELD_FOCUS_COLOR_L3
             : FIELD_BORDER_DEFAULT_COLOR
@@ -62,7 +70,13 @@ export const InputContainer = styled.div<{ shouldShowDropDown: boolean; validati
       border-top-right-radius: ${FIELD_BORDER_RADIUS};
       background-color: ${bgColor};
       &: hover{
-        background-color: ${shouldShowDropDown || !validation ? bgColor : HOVER_BG_COLOR_L3};
+        background-color: ${
+          isDisabled
+            ? 'transparent'
+            : shouldShowDropDown || !validation
+            ? bgColor
+            : HOVER_BG_COLOR_L3
+        };
       }
     `;
   }}
@@ -74,6 +88,9 @@ export const baseSelectedStyles = css<{ shouldShowDropDown: boolean }>`
   ${BASE_FIELD_BORDER_RADIUS}
   background-color: transparent;
   border: none;
+  &: disabled {
+    cursor: not-allowed;
+  }
 `;
 
 // processed and fileid null

@@ -50,7 +50,7 @@ export type DefaultDropdownProps<ItemType, AllowMultiple, Virtualized> = {
   /**
    * In TODO
    */
-  disabled?: boolean;
+  isDisabled?: boolean;
   label?: string;
   isLoading?: boolean;
   onChange: (x: SingleOrMultipleItem<ItemType, AllowMultiple>) => void;

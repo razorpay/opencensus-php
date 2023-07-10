@@ -1,3 +1,5 @@
+import moment, { Moment } from 'moment';
+
 import { SelectedRangeType } from 'merchant_common/views/Reports/components/types';
 import { TODAY } from 'merchant_common/views/Reports/constants';
 
@@ -36,3 +38,6 @@ export const getPastQuaterRange = (): SelectedRangeType => {
   const endDate = TODAY;
   return { startDate, endDate };
 };
+
+export const validateDurationRange = (startDate?: Moment, endDate?: Moment): boolean =>
+  moment.isMoment(startDate) && moment.isMoment(endDate);

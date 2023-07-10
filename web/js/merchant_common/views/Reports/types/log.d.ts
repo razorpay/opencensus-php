@@ -1,3 +1,8 @@
+export interface FilterObjType {
+  op: string;
+  values: string[];
+}
+
 export interface TemplateOverridesType {
   file_meta?: {
     extension?: string;
@@ -5,10 +10,15 @@ export interface TemplateOverridesType {
   };
   filters?: {
     paymentlinksv2?: {
-      mode?: {
-        op: string;
-        values: string[];
-      };
+      mode?: FilterObjType;
+    };
+    payment_page_records?: {
+      payment_link_id?: FilterObjType;
+      batch_id?: FilterObjType;
+      status?: FilterObjType;
+    };
+    payment_links?: {
+      id?: FilterObjType;
     };
   };
 }

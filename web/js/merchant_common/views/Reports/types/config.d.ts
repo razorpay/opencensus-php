@@ -2,6 +2,7 @@ export interface BaseConfigType {
   id: string;
   name: string;
   type: string;
+  type_title?: string;
   description: string;
   scheduled?: boolean;
   consumer?: string;

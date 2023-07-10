@@ -14,7 +14,7 @@ export const CardWrapper = styled.div(
 `,
 );
 
-export const CardLink = styled.p(
+export const CardLink = styled.span(
   ({ theme }) => `
   color: ${theme.colors.action.border.secondary.default};
   text-wrap: nowrap;
@@ -36,7 +36,7 @@ export const Footer = styled.div<{ count: number }>`
   align-items: center;
 `;
 
-export const TextWrapper = styled.p(
+export const TextWrapper = styled.div(
   ({ theme }) => `
   margin: ${theme.spacing[4]}px ${theme.spacing[0]}px;
 `,

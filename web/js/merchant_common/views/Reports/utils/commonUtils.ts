@@ -3,11 +3,18 @@ import { uniqueArray, randomInt } from 'common/utils/rzp-utils';
 
 import { prefixEntityValue } from 'merchant_common/helpers/data';
 import { AccountStateType } from 'merchant_common/views/Reports/types/account';
-import { Format } from 'merchant_common/views/Reports/types';
+import { Format, QueryStringParams } from 'merchant_common/views/Reports/types';
 import {
   DEFAULT_FORMATS,
   RPT_FORMAT,
 } from 'merchant_common/views/Reports/components/ReportModal/components/DownloadReport/components/Formats/constants';
+import { BaseConfigType } from 'merchant_common/views/Reports/types/config';
+import {
+  BATCH_PAYMENT_PAGE_CUSTOMER_REPORT,
+  BATCH_PAYMENT_PAGE_PAYMENT_REPORT,
+  CONFIG_TYPE_BATCH_PAGES,
+  TYPE_TITLE_BATCH_PAGES,
+} from 'merchant_common/views/Reports/components/ReportModal/components/DownloadReport/constants';
 
 export { randomInt };
 
@@ -22,7 +29,7 @@ export const appendReportTypeHeader = (isPartnerReport) => {
   };
 };
 
-export const sortCardsByReportType = (configs) => {
+export const sortCardsByReportType = (configs): Array<[string, BaseConfigType[]]> => {
   try {
     if (!configs || !Array.isArray(configs)) return [];
     const obj = [...configs]?.reduce((prev, curr) => {
@@ -34,7 +41,6 @@ export const sortCardsByReportType = (configs) => {
     configs?.forEach((config) => obj[config?.type_title ?? config?.type]?.push(config));
     return Object.entries(obj);
   } catch (err) {
-    console.error(err);
     return [];
   }
 };
@@ -85,17 +91,26 @@ export const getMerchantAccounts = (
   return undefined;
 };
 
-export const parseReqDataFromConfigs = (configs) => {
-  return configs.map(({ name, description, id, type, template, ...otherProps }) => ({
-    name,
-    description,
-    id,
-    type,
-    template: {
-      referred_accounts: template?.referred_accounts,
-    },
-    type_title: otherProps?.type_title,
-  }));
+export const parseReqDataFromConfigs = (configs): BaseConfigType[] => {
+  return configs.map(({ name, description, id, type, template, ...otherProps }) => {
+    const config = {
+      name,
+      description,
+      id,
+      type,
+      template: {
+        referred_accounts: template?.referred_accounts,
+      },
+      type_title: otherProps?.type_title,
+    };
+
+    if (name === BATCH_PAYMENT_PAGE_PAYMENT_REPORT || name === BATCH_PAYMENT_PAGE_CUSTOMER_REPORT) {
+      config.type_title = TYPE_TITLE_BATCH_PAGES;
+      config.type = CONFIG_TYPE_BATCH_PAGES;
+    }
+
+    return config;
+  });
 };
 
 export const getAvailableFormats = (user?: User): Format[] => {
@@ -106,4 +121,13 @@ export const getAvailableFormats = (user?: User): Format[] => {
   }
 
   return [...DEFAULT_FORMATS, ...conditionalFormats];
+};
+
+export const getQueryString = ({
+  title,
+  viewType,
+  skip = 0,
+  count = 25,
+}: QueryStringParams): string => {
+  return `title=${title}&view_type=${viewType}&skip=${skip}&count=${count}`;
 };

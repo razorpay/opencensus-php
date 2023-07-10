@@ -60,6 +60,7 @@ describe('Core Reports Reducer', () => {
       });
 
       const result = reportsReducer(initialStateForSlice, action);
+
       expect(result[dashboard].overview.reportConfigs.allConfigs).toStrictEqual({
         loading: false,
         data: parseReqDataFromConfigs(mockConfigs),

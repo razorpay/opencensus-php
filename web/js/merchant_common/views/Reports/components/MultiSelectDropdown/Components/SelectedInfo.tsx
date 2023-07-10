@@ -8,8 +8,25 @@ export const DropdownSingleSelectedInput = ({
   labelKey,
   placeHolder,
   shouldShowDropDown,
-}) => {
+  shouldAllowMultiple,
+}): JSX.Element => {
   const { theme } = useTheme();
+
+  const renderDropdownText = () => {
+    if (value && !shouldShowDropDown && !shouldAllowMultiple) {
+      if (typeof value === 'string') {
+        return value;
+      } else if (typeof labelKey === 'string') {
+        return value[labelKey];
+      } else {
+        return '';
+      }
+    } else if (placeHolder) {
+      return placeHolder;
+    }
+    return 'Select An Option';
+  };
+
   return (
     <SingleSelectedOption shouldShowDropDown={shouldShowDropDown} theme={theme}>
       <Text
@@ -23,13 +40,7 @@ export const DropdownSingleSelectedInput = ({
             : 'surface.text.muted.lowContrast'
         }
       >
-        {value && !shouldShowDropDown
-          ? typeof value === 'string'
-            ? value
-            : typeof labelKey === 'string'
-            ? value[labelKey]
-            : null
-          : placeHolder ?? 'Select An Option'}
+        {renderDropdownText()}
       </Text>
     </SingleSelectedOption>
   );

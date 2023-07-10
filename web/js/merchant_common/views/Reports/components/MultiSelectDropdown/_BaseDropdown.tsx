@@ -48,6 +48,7 @@ export const BaseDropdown = <ItemType, AllowMultiple, Virtualized>(
     tabIndex,
     necessityIndicator,
     errorText,
+    isDisabled = false,
     // as in case of components full potential
   } = props as unknown as BaseDropdownPropsType<Record<string, unknown>, true, true>;
 
@@ -139,9 +140,12 @@ export const BaseDropdown = <ItemType, AllowMultiple, Virtualized>(
           role="select"
           aria-label={ariaLabelBy}
           onClick={() => {
-            setShowDropDown(true);
+            if (!isDisabled) {
+              setShowDropDown(true);
+            }
           }}
           shouldShowDropDown={shouldShowDropDown}
+          isDisabled={isDisabled}
         >
           <InfoPanel theme={theme} shouldShowDropDown={shouldShowDropDown} validation={isValidated}>
             {value && Array.isArray(value) && Boolean(value.length) && shouldAllowMultiple ? (
@@ -153,7 +157,7 @@ export const BaseDropdown = <ItemType, AllowMultiple, Virtualized>(
                   ref={inputRef}
                   value={searchFor}
                   shouldShowDropDown={shouldShowDropDown}
-                  disabled={isLoading}
+                  disabled={isLoading || isDisabled}
                   role="input"
                   aria-label="Search An Item Here"
                   placeholder={
@@ -167,6 +171,7 @@ export const BaseDropdown = <ItemType, AllowMultiple, Virtualized>(
                   placeHolder={placeHolder}
                   shouldShowDropDown={shouldShowDropDown}
                   value={value}
+                  shouldAllowMultiple={shouldAllowMultiple}
                 />
               )}
               <DropdownIconWrapper>

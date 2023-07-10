@@ -55,6 +55,7 @@ type Getters = {
   isWebsiteComplianceFlowEnabled: boolean;
   isBundlePricingEnabled: boolean;
   isCustomReportExtensionsEnabled: boolean;
+  isPaymentPageFileUploadEnabled: boolean;
   isSodexoInstrumentEnabled: boolean;
   isSearchv2Phase1Enabled: boolean;
 };

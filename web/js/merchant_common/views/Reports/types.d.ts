@@ -82,3 +82,10 @@ export interface Format {
 }
 
 export type Delimiter = Format;
+
+export interface QueryStringParams {
+  title?: string;
+  viewType: string;
+  skip?: number;
+  count?: number;
+}
