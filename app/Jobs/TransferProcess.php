@@ -9,9 +9,13 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
 use RZP\Models\Transfer;
 use RZP\Trace\TraceCode;
+use RZP\Models\Transfer\Core;
 use RZP\Models\Transfer\Metric;
 use RZP\Models\Transfer\Utility;
+use RZP\Models\Transfer\Constant;
 use RZP\Exception\LogicException;
+use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Exception\BadRequestException;
 
 class TransferProcess extends Job
@@ -30,7 +34,7 @@ class TransferProcess extends Job
 
     protected $queueConfigKey = 'transfer_process';
 
-    protected const TRANSFER_FAILURE_RETRY_ATTEMPT = 2;
+    protected int $attemptLimit = 0;
 
     public function __construct(string $mode, $payment, $transfermode = Transfer\Constant::ORDER)
     {
@@ -39,6 +43,13 @@ class TransferProcess extends Job
         $this->payment = $payment;
 
         $this->transferMode = $transfermode;
+
+        $totalRetryAttempts = (int) (new AdminService)->getConfigKey(['key' => ConfigKey::RETRY_TRANSFER_FAILURE_TOTAL_ATTEMPTS]);
+
+        if (empty($totalRetryAttempts) === false)
+        {
+            $this->attemptLimit = $totalRetryAttempts;
+        }
     }
 
     public function handle()
@@ -50,7 +61,7 @@ class TransferProcess extends Job
             $this->payment = $this->getPaymentEntity($this->payment);
 
             // if the balance is not update we would further delay the transfer processing
-            // this happens for merchants who are on aysnc balance update flow
+            // this happens for merchants who are on async balance update flow
             $delay = $this->checkProcessingDelay($this->payment);
 
             if ($delay === true)
@@ -86,7 +97,7 @@ class TransferProcess extends Job
 
             if(empty($failedTransfersToRetry) === false)
             {
-                $this->checkRetry(Utility::INSUFFICIENT_BALANCE_RETRY_INTERVAL);
+                $this->checkRetry(Utility::INSUFFICIENT_BALANCE_RETRY_INTERVAL, $failedTransfersToRetry);
 
                 return null;
             }
@@ -158,9 +169,9 @@ class TransferProcess extends Job
         }
     }
 
-    protected function checkRetry($delay)
+    protected function checkRetry($delay, $failedTransfersToRetry = [])
     {
-        if ($this->attempts() > self::TRANSFER_FAILURE_RETRY_ATTEMPT)
+        if ($this->attempts() > $this->attemptLimit)
         {
             $this->trace->error(
                 TraceCode::TRANSFER_FAILED_POST_ALL_RETRIES,
@@ -168,6 +179,20 @@ class TransferProcess extends Job
                     'payment_id' => $this->payment,
                 ]
             );
+
+            if (empty($failedTransfersToRetry) === false)
+            {
+                foreach ($failedTransfersToRetry as $transfer)
+                {
+                    $transfer->setFailed();
+
+                    $transfer->incrementAttempts();
+
+                    $this->repo->saveOrFail($transfer);
+
+                    $this->fireTransferFailedWebhookIfApplicable($transfer);
+                }
+            }
 
             $this->delete();
         }
@@ -181,6 +206,21 @@ class TransferProcess extends Job
             );
 
             $this->release($delay);
+        }
+    }
+
+    protected function fireTransferFailedWebhookIfApplicable(Transfer\Entity $transfer)
+    {
+        $source = $transfer->getSourceType();
+
+        //
+        // Payment transfers are not retried on failure whereas order transfers are
+        // retried thrice. The webhook is being triggered below based on this.
+        //
+        if (($source === Constant::PAYMENT) or
+            (($source === Constant::ORDER) and ($transfer->getAttempts() === Constant::MAX_ALLOWED_ORDER_TRANSFER_PROCESS_ATTEMPTS)))
+        {
+            (new Core())->eventTransferFailed($transfer);
         }
     }
 

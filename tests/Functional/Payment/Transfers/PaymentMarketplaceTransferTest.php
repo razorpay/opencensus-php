@@ -540,7 +540,7 @@ class PaymentMarketplaceTransferTest extends TestCase
 
     public function testTransferFailedWebhook()
     {
-        $this->markTestSkipped('Failing due to PR-37809, will be fixed');
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RETRY_TRANSFER_FAILURE_TOTAL_ATTEMPTS => 0]);
 
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
@@ -671,9 +671,9 @@ class PaymentMarketplaceTransferTest extends TestCase
 
     public function testErrorCodeForTransferWithInsufficientBalance()
     {
-        $this->markTestSkipped('Failing due to PR-37809, will be fixed');
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RETRY_TRANSFER_FAILURE_TOTAL_ATTEMPTS => 0]);
 
-        $this->mockRazorxTreatment('on');
+        $this->mockRazorxTreatmentV2(RazorxTreatment::ENABLE_TRANSFER_SYNC_PROCESSING_VIA_API, 'control');
 
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
@@ -705,9 +705,9 @@ class PaymentMarketplaceTransferTest extends TestCase
 
     public function testErrorFieldInGetTransfer()
     {
-        $this->markTestSkipped('Failing due to PR-37809, will be fixed');
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RETRY_TRANSFER_FAILURE_TOTAL_ATTEMPTS => 0]);
 
-        $this->mockRazorxTreatment('on');
+        $this->mockRazorxTreatmentV2(RazorxTreatment::ENABLE_TRANSFER_SYNC_PROCESSING_VIA_API, 'control');
 
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
@@ -808,6 +808,55 @@ class PaymentMarketplaceTransferTest extends TestCase
         $this->fixtures->merchant->addFeatures(['display_parent_payment_id'], '10000000000001');
 
         $this->runRequestResponseFlow($testData);
+    }
+
+    public function testCronProcessFailedOrderTransfers()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $order = $this->fixtures->order->create(['receipt' => 'check123', 'bank' => 'ICICI', 'account_number' => '0040304030403040', 'amount' => '50000', 'status' => 'paid']);
+
+        $this->fixtures->edit('payment', $this->payment['id'], ['order_id' => $order['id']]);
+
+        $paymentId = $this->payment['id'];
+
+        $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
+
+        $dummyTransferData = [
+            'id'                 => "AnyRandomID123",
+            'source_id'          => $order['id'],
+            'source_type'        => "order",
+            'status'             => "failed",
+            'settlement_status'  => NULL,
+            'to_id'              => 10000000000001,
+            'to_type'            => "merchant",
+            'amount'             => 50000,
+            'currency'           => "INR",
+            'amount_reversed'    => 0,
+            'created_at'         => Carbon::now()->addHours(-5)->getTimestamp(),
+            'updated_at'         => Carbon::now()->addHours(-4)->getTimestamp(),
+            'processed_at'       => Carbon::now()->addHours(-4)->getTimestamp(),
+        ];
+
+        $this->fixtures->transfer->create($dummyTransferData);
+
+        $transfer = $this->getLastEntity('transfer', true);
+
+        $this->assertEquals('failed', $transfer['status']);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->ba->cronAuth();
+
+        $orderIds = $this->runRequestResponseFlow($data);
+
+        $transfer = $this->getLastEntity('transfer', true);
+
+        $this->assertEquals('processed', $transfer['status']);
+
+        $this->assertEquals($order['id'], $orderIds[0]);
+
+        $this->assertNotNULL($transfer['processed_at']);
     }
 
     public function testCronProcessPendingPaymentTransfers()

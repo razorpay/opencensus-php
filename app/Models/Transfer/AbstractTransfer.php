@@ -130,17 +130,17 @@ abstract class AbstractTransfer
                         ]
                     );
 
+                    $transfer->setMessage($e->getMessage());
+
+                    $this->verifyAndSetErrorCode($transfer, $e->getCode());
+
                     if ((new Utility)->isRetryableError($e) === true)
                     {
-                        $failedTransfersToRetry[] = $transfer;
+                        $failedTransfersToRetry[] = clone $transfer;
                         continue;
                     }
 
                     $transfer->setFailed();
-
-                    $transfer->setMessage($e->getMessage());
-
-                    $this->verifyAndSetErrorCode($transfer, $e->getCode());
 
                     $transfer->incrementAttempts();
 

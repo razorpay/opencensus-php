@@ -312,6 +312,8 @@ class ConfigKey
     // for some a/cs and low for some.
     const ACCOUNT_STATEMENT_RECORDS_TO_SAVE_IN_TOTAL = self::PREFIX . 'account_statement_records_to_save_in_total';
 
+    const RETRY_TRANSFER_FAILURE_TOTAL_ATTEMPTS = self::PREFIX . 'retry_transfer_failure_total_attempts';
+
     // Account numbers for which new flow applies where we divide fetch and process flow
     const ACCOUNT_STATEMENT_V2_FLOW = self::PREFIX . 'account_statement_v2_flow';
 
@@ -505,6 +507,7 @@ class ConfigKey
         self::ENABLE_PAYMENT_DOWNTIME_PHONEPE,
         self::TRANSFER_SYNC_PROCESSING_VIA_API_SEMAPHORE_CONFIG,
         self::TRANSFER_SYNC_PROCESSING_VIA_API_HOURLY_RATE_LIMIT_PER_MID,
+        self::RETRY_TRANSFER_FAILURE_TOTAL_ATTEMPTS,
         self::RX_BAS_FORCED_FETCH_TIME_IN_HOURS,
         self::DELAY_RUPAY_CAPTURE,
         self::PAGINATION_ATTRIBUTES_FOR_TRIM_SPACE,

@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Payment\Transfers;
 
+use RZP\Models\Admin;
 use RZP\Models\Transfer;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
@@ -383,7 +384,7 @@ class PaymentMarketplaceRefundTest extends TestCase
 
     public function testReverseFailedPaymentTransferUsingReverseAll()
     {
-        $this->markTestSkipped('Failing due to PR-37809, will be fixed');
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RETRY_TRANSFER_FAILURE_TOTAL_ATTEMPTS => 0]);
 
         $data = $this->testData['createOrderTransfers'];
         $this->ba->privateAuth();

@@ -374,6 +374,17 @@ return [
         ],
     ],
 
+    'testCronProcessFailedOrderTransfers' => [
+        'request'   => [
+            'method'    => 'POST',
+            'url'       => '/order_transfers/process_failed',
+            'content'   => [],
+        ],
+        'response'  => [
+            'content' => [],
+        ],
+    ],
+
     'testCronProcessPendingPaymentTransfersSync' => [
         'request'   => [
             'method'    => 'POST',
