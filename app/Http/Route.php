@@ -17583,7 +17583,10 @@ class Route
         'external_admin_fetch_entity_multiple'             =>  'wda_migration_admin',
         'merchant_fetch_payment_failure_analysis'          =>  'wda_merchant_fetch_payment_failure_analysis_migration',
         'transaction_statement_fetch_multiple_for_banking' =>  'wda_transaction_statement_fetch_multiple_for_banking_migration',
-        'merchant_onboarding_crons'                        =>  'wda_merchant_onboarding_crons'
+        'merchant_onboarding_escalations'                  =>  'wda_merchant_onboarding_escalations',
+        'merchant_autokyc_escalation'                      =>  'wda_merchant_autokyc_escalation',
+        'merchant_autokyc_hard_limit'                      =>  'wda_merchant_autokyc_hard_limit',
+        'merchant_onboarding_crons'                        =>  'wda_merchant_onboarding_crons',
     ];
 
     /**

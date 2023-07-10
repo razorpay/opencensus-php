@@ -18,6 +18,25 @@ class Service extends Base\Service
 
         try
         {
+            if($this->app['api.route']->isWDAServiceRoute() === true)
+            {
+                $this->trace->info(TraceCode::WDA_MERCHANT_ONBOARDING_ESCALATIONS, [
+                    'input'         => $input,
+                    'route_auth'    => $this->auth->getAuthType(),
+                    'route_name'    => $this->app['api.route']->getCurrentRouteName(),
+                ]);
+            }
+        }
+        catch(\Throwable $ex)
+        {
+            $this->trace->error(TraceCode::WDA_SERVICE_LOGGING_ERROR, [
+                'error_message'    => $ex->getMessage(),
+                'route_name'       => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+        }
+
+        try
+        {
             $core->triggerPaymentEscalations($timeBound);
 
             $this->trace->count(Metric::PAYMENT_ESCALATION_SUCCESS_TOTAL);

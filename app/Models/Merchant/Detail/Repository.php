@@ -419,6 +419,26 @@ class Repository extends Base\Repository
 
     public function filterMerchantIdsByActivationStatus(array $mids, array $activationStatusList): array
     {
+        $experimentResult = (new Detail\Core)->getSplitzResponse(UniqueIdEntity::generateUniqueId(),
+                     Merchant\Constants::WDA_MIGRATION_ACQUISITION_SPLITZ_EXP_ID);
+
+        $isWDAExperimentEnabled = ( $experimentResult === 'live' ) ? true : false;
+
+        try
+        {
+            if(($this->app['api.route']->isWDAServiceRoute() === true) and ($isWDAExperimentEnabled === true))
+            {
+                return $this->filterMerchantIdsByActivationStatusFromWda($mids, $activationStatusList);
+            }
+        }
+        catch(\Throwable $ex)
+        {
+            $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
+                'wda_migration_error' => $ex->getMessage(),
+                'route_name'          => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+        }
+
         return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN))
                     ->select(Entity::MERCHANT_ID)
                     ->whereIn(Entity::MERCHANT_ID, $mids)
@@ -426,6 +446,64 @@ class Repository extends Base\Repository
                     ->get()
                     ->pluck(Entity::MERCHANT_ID)
                     ->toArray();
+    }
+
+    /**
+     * Filter the mids based on the provided activationStatusList array.
+     *
+     * @param array $mids
+     * @param array $activationStatusList
+     *
+     * @return array
+     *
+     * @throws Exception
+     */
+    public function filterMerchantIdsByActivationStatusFromWda(array $mids, array $activationStatusList): array
+    {
+        $this->trace->info(TraceCode::WDA_SERVICE_REQUEST, [
+            'method_name'      => __FUNCTION__,
+            'merchants_count'  => count($mids),
+        ]);
+
+        $startTimeMs = round(microtime(true) * 1000);
+
+        $wdaClient = $this->app['wda-client']->wdaClient;
+
+        $wdaQueryBuilder = new WDAQueryBuilder();
+
+        $limit = count($mids);
+
+        $wdaQueryBuilder->addQuery($this->getTableName(), Entity::MERCHANT_ID);
+        $wdaQueryBuilder->resources($this->getTableName());
+        $wdaQueryBuilder->filters($this->getTableName(), Entity::MERCHANT_ID, $mids, Symbol::IN)
+                        ->filters($this->getTableName(), Entity::ACTIVATION_STATUS, $activationStatusList, Symbol::IN);
+        $wdaQueryBuilder->size($limit);
+
+        $wdaQueryBuilder->namespace($this->getEntityObject()->getConnection()->getDatabaseName());
+
+        $wdaQueryBuilder->cluster(WDAService::ADMIN_CLUSTER);
+
+        $this->trace->info(TraceCode::WDA_SERVICE_QUERY, [
+            'wda_query_builder' => $wdaQueryBuilder->build()->serializeToJsonString(),
+            'route_name'        => $this->app['api.route']->getCurrentRouteName(),
+        ]);
+
+        $response = $wdaClient->fetchMultipleWithExpand($wdaQueryBuilder->build(), $this->newQuery()->getModel(), []);
+
+        $merchantIdsByActivationStatus = (new Merchant\Repository)->convertWdaResponseToArray($response, Entity::MERCHANT_ID);
+
+        $endTimeMs = round(microtime(true) * 1000);
+
+        $queryDuration = $endTimeMs - $startTimeMs;
+
+        $this->trace->info(TraceCode::WDA_SERVICE_RESPONSE, [
+            'route_name'       => $this->app['api.route']->getCurrentRouteName(),
+            'method_name'      => __FUNCTION__,
+            'merchants_count'  => count($merchantIdsByActivationStatus),
+            'duration_ms'      => $queryDuration,
+        ]);
+
+        return $merchantIdsByActivationStatus;
     }
 
     public function filterMerchantIdsByOrg(array $mids, array $orgIdList): array

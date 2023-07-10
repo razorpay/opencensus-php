@@ -378,6 +378,39 @@ class RepositoryTest extends Functional\TestCase
         $this->assertCount(2, $response);
     }
 
+    public function testFilterMerchantIdsByActivationStatus()
+    {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'live',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzExperiment($output);
+
+        $routeMock = Mockery::mock('RZP\Http\Route')->makePartial();
+
+        $this->app->instance('api.route', $routeMock);
+
+        $routeMock->shouldReceive('getCurrentRouteName')->andReturn('merchant_onboarding_escalations');
+
+        $detailRepository = $this->getMockBuilder(Repository::class)
+                                 ->onlyMethods(["filterMerchantIdsByActivationStatusFromWda"])
+                                 ->getMock();
+
+        $merchantIds = ["100001Razorpay", "100000Razorpay"];
+
+        $activationStatusList = ["activated_mcc_pending", "needs_clarification"];
+
+        $detailRepository->expects($this->exactly(1))->method('filterMerchantIdsByActivationStatusFromWda')->willReturn($merchantIds);
+
+        $response = $detailRepository->filterMerchantIdsByActivationStatus($merchantIds, $activationStatusList);
+
+        $this->assertCount(2, $response);
+    }
+
     /**
      * @throws \Exception
      */
