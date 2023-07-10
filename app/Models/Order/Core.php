@@ -431,6 +431,7 @@ class Core extends Base\Core
                 }
                 $data[OrderMeta\Order1cc\Fields::LINE_ITEMS_TOTAL] = $orderMeta->getValue()[OrderMeta\Order1cc\Fields::LINE_ITEMS_TOTAL];
                 $data[OrderMeta\Order1cc\Fields::LINE_ITEMS]       = $orderMeta->getValue()[OrderMeta\Order1cc\Fields::LINE_ITEMS] ?? [];
+                $data[OrderMeta\Order1cc\Fields::TAX_DETAILS]      = $orderMeta->getValue()[OrderMeta\Order1cc\Fields::TAX_DETAILS] ?? [];
                 break;
             }
 

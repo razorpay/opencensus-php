@@ -269,6 +269,7 @@ class Entity extends Base\PublicEntity
         OrderMeta\Order1cc\Fields::SHIPPING_FEE,
         OrderMeta\Order1cc\Fields::CUSTOMER_DETAILS,
         OrderMeta\Order1cc\Fields::LINE_ITEMS_TOTAL,
+        OrderMeta\Order1cc\Fields::TAX_DETAILS,
     ];
 
     protected $casts = [

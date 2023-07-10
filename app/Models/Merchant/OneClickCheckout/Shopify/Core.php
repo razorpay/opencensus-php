@@ -1341,6 +1341,8 @@ class Core extends Base\Core
 
         $checkout = (new Checkout)->getCheckoutbyStorefrontId($checkoutId);
 
+        $totalTax =  (new Utils)->formatNumber($checkout['data']['node']['totalTax']['amount']);
+        
         $order = (new RzpOrders())->findOrderByIdAndMerchant($rzpOrder['id']);
 
         $orderMeta = array_first($order->orderMetas ?? [], function ($orderMeta)
@@ -1524,7 +1526,14 @@ class Core extends Base\Core
             $codFeeApplied = $rzpOrder['cod_fee'];
         }
 
-        $discountAmountPaise = $rzpOrder['line_items_total'] + $rzpOrder['shipping_fee'] + $codFeeApplied - $rzpPayment['amount'] - $giftCardAmount;
+        if($body['taxes_included'] === true)
+        {
+            $discountAmountPaise = $rzpOrder['line_items_total'] + $rzpOrder['shipping_fee'] + $codFeeApplied - $rzpPayment['amount'] - $giftCardAmount;
+        }
+        else
+        {
+            $discountAmountPaise = $rzpOrder['line_items_total'] + ($totalTax*100) + $rzpOrder['shipping_fee'] + $codFeeApplied - $rzpPayment['amount'] - $giftCardAmount;
+        }
 
         if(isset($scriptDiscountTitle))
         {
@@ -1580,14 +1589,22 @@ class Core extends Base\Core
 
         $defaultPendingStatus = false;
 
+        $orderStatusExpInput = $this->fillExperimentData(
+            $rzpOrder['id'],
+            'app.1cc_order_default_pending_splitz_experiment_id',
+            ['merchant_id' => $this->merchant->getId()]
+        );
+
         try {
-            $defaultPendingStatus = $this->canSetOrderStatusPending($rzpOrder['id'], $this->merchant);
+
+            $defaultPendingStatus = $this->getExperimentResponse($orderStatusExpInput, 'magic_order');
+
         } catch (\Throwable $e) {
 
-            $this->trace->info(
-                TraceCode::SHOPIFY_1CC_API_ERROR,
+            $this->trace->error(
+                TraceCode::MAGIC_SPLITZ_ERROR,
                 [
-                    'type' => 'canSetOrderStatusPending',
+                    'type'         => 'canSetOrderStatusPendingExpError',
                     'errorMessage' => $e->getMessage()
                 ]
             );
@@ -1681,6 +1698,136 @@ class Core extends Base\Core
                 $body['note_attributes'] = $noteAttributes;
             }
         }
+
+        $isTaxExpEnabled = false;
+
+        $taxEnableExpInput = $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.magic_enable_shopify_taxes_experiment_id',
+            ['merchant_id' => $this->merchant->getId()]
+        );
+
+        try {
+
+            $isTaxExpEnabled = $this->getExperimentResponse($taxEnableExpInput, 'test');
+
+        } catch (\Throwable $e) {
+
+            $this->trace->error(
+                TraceCode::MAGIC_SPLITZ_ERROR,
+                [
+                    'type'         => 'isTaxExpEnabledExpError',
+                    'errorMessage' => $e->getMessage()
+                ]
+            );
+            $isTaxExpEnabled = false;
+        }
+
+        $taxLineRequired = false;
+
+        if(empty($orderMeta) === false)
+        {
+            $value = $orderMeta->getValue();
+
+            if (empty($value['tax_details']) === false)
+            {
+                $taxLineRequired = ($value['tax_details']['total_tax'] > 0) ? true : false;
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::SHOPIFY_MAGIC_TAX_INFO,
+            [
+                'type'            => 'MagicOrderTaxInfo',
+                'order_id'        => $rzpOrder['id'],
+                'taxLineRequired' => $taxLineRequired,
+                'isTaxExpEnabled' => $isTaxExpEnabled
+            ]
+        );
+
+        // Based on experiment value and tax amount field value will add tax_lines to the order create payload
+        if($isTaxExpEnabled === true && $taxLineRequired === true)
+        {
+            //To fetch the tax line details from admin REST api
+            $adminCheckoutRes = (new Checkout)->getCheckoutFromAdminApi($checkoutId);
+
+            if(empty($adminCheckoutRes) === false && empty($adminCheckoutRes['tax_lines']) === false)
+            {
+
+                $body['tax_lines'] = $adminCheckoutRes['tax_lines'];
+            }
+            else
+            {
+                $taxablePrice = 0;
+                $allocatedAmount = 0;
+
+                if(isset($orderMeta))
+                {
+                    $value = $orderMeta->getValue();
+
+                    $cartItems = $value['line_items'];
+
+                    foreach ($cartItems as $cartItem)
+                    {
+
+                        if($cartItem['taxable'] === true)
+                        {
+
+                            $items = $checkout['data']['node']['lineItems']['edges'];
+
+                            if(isset($items))
+                            {
+                                foreach ($items as $item)
+                                {
+                                    if(strpos($item['node']['variant']['id'], strval($cartItem['variant_id'])) !== false)
+                                    {
+                                        if(!empty($item['node']['discountAllocations']))
+                                        {
+
+                                            $allocatedAmount = $allocatedAmount + floatval($item['node']['discountAllocations'][0]['allocatedAmount']['amount']);
+                                        }
+                                    }
+                                }
+                            }
+                            $taxablePrice = $taxablePrice + (($cartItem['price']/100) * $cartItem['quantity']) - $allocatedAmount;
+                        }
+                    }
+
+                    if(isset($totalTax) && $totalTax > 0 && $taxablePrice > 0)
+                    {
+                        if($body['taxes_included'] === true)
+                        {
+                            $productPrice = $taxablePrice - $totalTax;
+                            $rate = (new Utils)->formatNumber($totalTax / $productPrice);
+                        }
+                        else
+                        {
+                            $rate = (new Utils)->formatNumber($totalTax / $taxablePrice);
+                        }
+
+                        $taxDetails = [];
+
+                        array_push($taxDetails, [
+                            'title' => 'GST',
+                            'rate'  => $rate,
+                            'price' => $totalTax,
+                        ]);
+
+                        $body['tax_lines'] = $taxDetails;
+                    }
+                }
+            }
+
+            $this->trace->info(
+                TraceCode::SHOPIFY_MAGIC_TAX_INFO,
+                [
+                    'type'            => 'MagicOrderTaxLines',
+                    'order_id'        => $rzpOrder['id'],
+                    'tax_lines'       => $body['tax_lines'] ?? [],
+                ]
+            );
+        }
+
         return $body;
     }
 
@@ -2369,50 +2516,37 @@ class Core extends Base\Core
         return $customerId;
     }
 
-    /**
-     * Will return false if platform in apart from shopify or test mode keys,
-     * and return true in case of variant is equal to magic_order
-     */
-    public function canSetOrderStatusPending($orderId, $merchant): bool
+    public function fillExperimentData(
+        string $experimentEntityId,
+        string $experimentIdVariable,
+        array $requestData
+    )
     {
-        $platformConfig = $merchant->getMerchantPlatformConfig();
-        if ((app()->isEnvironmentProduction() === true && $this->mode === Mode::TEST) ||
-            ($platformConfig != null && $platformConfig->getValue() !== Constants::SHOPIFY))
-        {
-            $this->trace->info(
-                TraceCode::SHOPIFY_1CC_ORDER_STATUS_PENDING_EXP,
-                [
-                    'type' => 'canSetOrderStatusPending',
-                    'mode' => $this->mode,
-                    'env' => app()->isEnvironmentProduction(),
-                    'platform' => $platformConfig->getValue()
-                ]
-            );
-            return false;
-        }
+        $expData = [
+            'id'            => $experimentEntityId,
+            'experiment_id' => $this->app['config']->get($experimentIdVariable),
+            'request_data'  => json_encode($requestData),
+        ];
 
-        $expResult = (new SplitzExperimentEvaluator())->evaluateExperiment(
-            [
-                'id'            => $orderId,
-                'experiment_id' => $this->app['config']->get('app.1cc_order_default_pending_splitz_experiment_id'),
-                'request_data'  => json_encode(
-                    [
-                        'merchant_id' => $merchant->getId(),
-                    ]),
-            ]
-        );
+        return $expData;
+    }
+
+    /**
+     * Will return true in case of exp variant is equal to input variant
+     */
+    public function getExperimentResponse($input, $expVariant): bool
+    {
+        $expResult = (new SplitzExperimentEvaluator())->evaluateExperiment($input);
 
         $this->trace->info(
-            TraceCode::SHOPIFY_1CC_ORDER_STATUS_PENDING_EXP,
+            TraceCode::MAGIC_SPLITZ_RESPONSE,
             [
-                'type' => 'canSetOrderStatusPending',
-                'mode' => $this->mode,
+                'input' => $input,
                 'env' => app()->isEnvironmentProduction(),
-                'platform' => $platformConfig->getValue(),
                 'variant' => $expResult['variant']
             ]
         );
-        return $expResult['variant'] === 'magic_order';
+        return $expResult['variant'] === $expVariant;
     }
 
     public function markShopifyOrderPlaced(string $orderId): void

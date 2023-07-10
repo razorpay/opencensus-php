@@ -443,12 +443,14 @@ class Service extends Base\Service
 
         $value = $orderMeta->getValue();
         $existingPromotions = $value[OrderOneCCFields::PROMOTIONS] ?? [];
+        $taxDetails = $value[OrderOneCCFields::TAX_DETAILS] ?? [];
 
         $promotions =  isset($orderMetaInput[OrderOneCCFields::PROMOTIONS]) ? $orderMetaInput[OrderOneCCFields::PROMOTIONS] : $existingPromotions;
         $discount = (new CommonUtils())->getAppliedCouponValue($promotions);
 
         $lineItemsTotal = $value[OrderOneCCFields::LINE_ITEMS_TOTAL];
         $shippingFee = $value[OrderOneCCFields::SHIPPING_FEE] ?? 0;
+        $taxValue = (new OneClickCheckoutCore)->getTaxesApplied($taxDetails);
 
         $shippingFeeValue = isset($orderMetaInput[OrderOneCCFields::SHIPPING_FEE]) ? $orderMetaInput[OrderOneCCFields::SHIPPING_FEE] : $shippingFee;
 
@@ -458,7 +460,7 @@ class Service extends Base\Service
 
         $cartAmountAfterDiscount = max(0,$lineItemsTotal-$discount);
 
-        $finalCartAmount = max($minimumAllowedCartAmount, $cartAmountAfterDiscount + $shippingFeeValue);
+        $finalCartAmount = max($minimumAllowedCartAmount, $cartAmountAfterDiscount + $shippingFeeValue + $taxValue);
 
         if (count($promotions) > 0) {
 

@@ -67,6 +67,7 @@ class Fields
     const SHIPPING_METHOD              = 'shipping_method';
     const NAME                         = 'name';
     const DESCRIPTION                  = 'description';
+    const TAX_DETAILS                  = 'tax_details';
 
     //rto recommendation fields
     const REVIEW_STATUS = 'review_status';
@@ -110,5 +111,6 @@ class Fields
         self::SHIPPING_FEE,
         self::CUSTOMER_DETAILS,
         self::PROMOTIONS,
+        self::TAX_DETAILS,
     ];
 }

@@ -261,6 +261,8 @@ class Service extends Base\Service
 
             $orderId = $input['order_id'];
 
+            $taxDetails = null;
+
             $merchantOrderId = null;
             try {
                 $rzpOrder = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
@@ -299,6 +301,12 @@ class Service extends Base\Service
                 $decodedResponse = $res['response'];
 
                 $statusCode = $res['status_code'];
+
+                if (empty($decodedResponse) === false && empty($decodedResponse['tax_details']) === false) {
+                    $taxDetails = $decodedResponse['tax_details'];
+                    unset($decodedResponse['tax_details']);
+                }
+
             } else {
                 $couponValidityUrlConfig = $this->merchant->getApplyCouponUrlConfig();
 
@@ -371,7 +379,10 @@ class Service extends Base\Service
 
             array_push($promotions, $decodedResponse['promotion']);
 
-            (new OneClickCheckoutCore)->update1CcOrder($orderId, ['promotions' => $promotions]);
+            (new OneClickCheckoutCore)->update1CcOrder($orderId, [
+                'promotions' => $promotions,
+                'tax_details' => $taxDetails ?? []
+            ]);
 
             // get coupon_config for MID
             $couponConfig = $this->merchant->get1ccConfig(Type::COUPON_CONFIG);
@@ -383,8 +394,10 @@ class Service extends Base\Service
                 $decodedResponse['promotion']['disabled_methods'] = $disabledMethods;
             }
 
-            return ['status_code' => 200, 'data' => ['promotions' => [$decodedResponse['promotion']]]];
-
+            return ['status_code' => 200, 'data' => [
+                'promotions' => [$decodedResponse['promotion']],
+                'tax_details' => $taxDetails
+            ]];
         }
         catch(\Throwable $e)
         {
@@ -445,6 +458,10 @@ class Service extends Base\Service
 
             $orderId = $input['order_id'];
 
+            $taxDetails = null;
+
+            $decodedResponse = [];
+
             $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
 
             $orderMeta = array_first($order->orderMetas ?? [], function ($orderMeta) {
@@ -455,18 +472,45 @@ class Service extends Base\Service
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_1CC_ORDER);
             }
 
+            $platformConfig = $this->merchant->getMerchantPlatformConfig();
+
+            if ($platformConfig !== null and $platformConfig->getValue() === Merchant1ccConfig\Type::SHOPIFY and
+                method_exists(Shopify\Service::class, 'removeShopifyCoupon') === true) {
+
+                $storeFrontId = $order->getNotes()['storefront_id'];
+
+                $res = (new Shopify\Service)->removeShopifyCoupon($storeFrontId);
+
+                $decodedResponse = $res['response'];
+
+                $statusCode = $res['status_code'];
+
+                if (empty($decodedResponse) === false && empty($decodedResponse['tax_details']) === false) {
+                    $taxDetails = $decodedResponse['tax_details'];
+                }
+
+                if ($statusCode === 400) {
+                    return ['status_code' => 400, 'data' => $decodedResponse];
+                }
+            }
+
             $existingPromotions = $orderMeta->getValue()['promotions'] ?? [];
             $promotions = (new CommonUtils())->removeCouponsFromPromotions($existingPromotions);
 
-            (new OneClickCheckoutCore)->update1CcOrder($orderId, ['promotions' => $promotions]);
+            (new OneClickCheckoutCore)->update1CcOrder($orderId, [
+                'promotions' => $promotions,
+                'tax_details' => $taxDetails ?? [],
+            ]);
+
+            return ['status_code' => 200, 'data' => $decodedResponse];
 
         } catch (\Throwable $e) {
             $input['reference_id'] = mask_by_percentage($input['reference_id']);
 
             $this->trace->error(TraceCode::REMOVE_COUPON_ERROR,
                 [
-                    'request' =>  $input,
-                    'exception'=> $e->getTrace()
+                    'request' => $input,
+                    'exception' => $e->getTrace()
                 ]
             );
 

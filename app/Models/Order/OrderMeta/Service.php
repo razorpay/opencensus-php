@@ -93,10 +93,14 @@ class Service extends \RZP\Models\Base\Service
                     'addresses' => $address,
                 ];
 
+                $taxesApplied = [];
+
                 try {
 
-                    $addresses = (new ShippingInfo\Service())->getShippingInfo($shippingInfoReq);
-                    $shippingInfo = $addresses['addresses'][0];
+                    $shippingInfoResponse = (new ShippingInfo\Service())->getShippingInfo($shippingInfoReq);
+                    $addresses = $shippingInfoResponse['addresses'];
+                    $shippingInfo = $addresses[0];
+                    $taxesApplied = $shippingInfoResponse['tax_details'] ?? [];
 
                 } catch (\Throwable $e) {
                     $this->trace->count(Metric::UPDATE_CUSTOMERS_DETAILS_REQUEST_FAULT_COUNT, $dimensions);
@@ -138,6 +142,7 @@ class Service extends \RZP\Models\Base\Service
             $orderMetaInput = [
                 Order1cc\Fields::COD_FEE      => $codFee,
                 Order1cc\Fields::SHIPPING_FEE => $shippingFee,
+                Order1cc\Fields::TAX_DETAILS  => $taxesApplied,
             ];
         }
 
@@ -188,18 +193,24 @@ class Service extends \RZP\Models\Base\Service
         try {
             $core->validateActive1CCOrderId($orderId);
 
+            [$notes, $taxDetails] = $this->getOrderNotes($orderId);
+
+            if (empty($taxDetails) === false && empty($taxDetails['total_tax']) === false) {
+                $taxDetails['total_tax'] = 0;
+            }
+
             (new OneClickCheckoutCore)->update1CcOrder(
                 $orderId,
                 [
                     Order1cc\Fields::COD_FEE => 0,
                     Order1cc\Fields::SHIPPING_FEE => 0,
                     Order1cc\Fields::PROMOTIONS => [],
+                    Order1cc\Fields::TAX_DETAILS => $taxDetails,
                 ]);
 
             /*
              * reset gstin & order_instructions
              */
-            $notes = $this->getOrderNotes($orderId);
             unset($notes[Order1cc\Fields::GSTIN]);
             unset($notes[Order1cc\Fields::ORDER_INSTRUCTIONS]);
             (new Order\Service)->update($orderId, ['notes' => $notes]);
@@ -349,7 +360,7 @@ class Service extends \RZP\Models\Base\Service
 
             (new Order1cc\Validator())->validateInput('editOrderNotes', $input);
 
-            $notes = $this->getOrderNotes($orderId);
+            [$notes, $taxDetails] = $this->getOrderNotes($orderId);
 
             if ($this->merchant->get1ccConfigFlagStatus('one_cc_capture_gstin') === true &&
                 isset($input[Order1cc\Fields::GSTIN]) === true) {
@@ -394,7 +405,8 @@ class Service extends \RZP\Models\Base\Service
     protected function getOrderNotes(string $orderId) {
         $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
         $orderArray = $order->toArrayPublic();
-        return $orderArray['notes'];
+        $taxDetails = $orderArray['tax_details'] ?? [];
+        return [$orderArray['notes'], $taxDetails];
     }
 
     protected function maskOrderNotesRequest($orderId, $input) {

@@ -8931,6 +8931,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SHOPIFY_1CC_METAFIELD_API_ERROR                     = 'SHOPIFY_1CC_METAFIELD_API_ERROR';
 
     const SHOPIFY_1CC_API_ERROR                               = 'SHOPIFY_1CC_API_ERROR';
+    const MAGIC_SPLITZ_ERROR                                  = 'MAGIC_SPLITZ_ERROR';
+    const MAGIC_SPLITZ_RESPONSE                               = 'MAGIC_SPLITZ_RESPONSE';
     const SHOPIFY_1CC_API_ACCESS_DENIED                       = 'SHOPIFY_1CC_API_ACCESS_DENIED';
     const SHOPIFY_1CC_PG_ROUTER_FAILED                        = 'SHOPIFY_1CC_PG_ROUTER_FAILED';
     const SHOPIFY_1CC_API_CHECKOUT_ERROR                      = 'SHOPIFY_1CC_API_CHECKOUT_ERROR';
@@ -9003,6 +9005,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SHOPIFY_1CC_RTO_LABEL_MISSING                       = 'SHOPIFY_1CC_RTO_LABEL_MISSING';
     const SHOPIFY_1CC_SYNC_CREDENTIALS_FAILED                 = 'SHOPIFY_1CC_SYNC_CREDENTIALS_FAILED';
     const SHOPIFY_1CC_UPDATE_CONFIG                           = 'SHOPIFY_1CC_UPDATE_CONFIG';
+    const SHOPIFY_MAGIC_TAX_INFO                              = 'SHOPIFY_MAGIC_TAX_INFO';
 
     const MAGIC_ANALYTICS_CUSTOMER_INFO                       = 'MAGIC_ANALYTICS_CUSTOMER_INFO';
 
@@ -9684,11 +9687,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const GET_SHOPIFY_CLIENT_ERROR                                    = 'GET_SHOPIFY_CLIENT_ERROR';
     const SHOPIFY_1CC_APPLY_COUPON_ERROR                              = 'SHOPIFY_1CC_APPLY_COUPON_ERROR';
+    const SHOPIFY_1CC_REMOVE_COUPON_ERROR                             = 'SHOPIFY_1CC_REMOVE_COUPON_ERROR';
 
     const SHOPIFY_COUPONS_BAD_REQUEST_ERROR                           = 'SHOPIFY_COUPONS_BAD_REQUEST_ERROR';
 
     const SHOPIFY_1CC_ORDER_STATUS_PENDING_EXP                        = 'SHOPIFY_1CC_ORDER_STATUS_PENDING_EXP';
-    const SHOPIFY_1CC_REMOVE_COUPON_ERROR                             = 'SHOPIFY_1CC_REMOVE_COUPON_ERROR';
 
     const IMPACT_PARTNER_PASSING_ACCOUNT_ID_IN_BODY                   = 'IMPACT_PARTNER_PASSING_ACCOUNT_ID_IN_BODY';
 

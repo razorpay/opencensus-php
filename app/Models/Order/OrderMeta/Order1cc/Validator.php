@@ -28,6 +28,7 @@ class Validator extends Base\Validator
         Fields::REVIEW_STATUS    => 'sometimes|in:approved,canceled,hold,approval_initiated,hold_initiated,cancel_initiated',
         Fields::SHIPPING_METHOD  => 'sometimes|array|custom',
         Fields::UTM_PARAMETERS   => 'sometimes|array|custom',
+        Fields::TAX_DETAILS      => 'sometimes|array',
     ];
 
     protected static $editCustomerDetailsRules = [
