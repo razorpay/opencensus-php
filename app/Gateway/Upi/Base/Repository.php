@@ -181,4 +181,14 @@ class Repository extends Base\Repository
             ->where('gateway', '=', $gateway)
             ->get();
     }
+
+    public function fetchAllByMerchantReferenceAndNpciReferenceIdAndGateway(string $merchantReference, string $npciReferenceId, string $gateway, string $action = Action::AUTHORIZE)
+    {
+        return $this->newQuery()
+            ->where(Entity::MERCHANT_REFERENCE, '=', $merchantReference)
+            ->where(Entity::NPCI_REFERENCE_ID, '=', $npciReferenceId)
+            ->where(Entity::GATEWAY, '=', $gateway)
+            ->where('action', '=', $action)
+            ->get();
+    }
 }

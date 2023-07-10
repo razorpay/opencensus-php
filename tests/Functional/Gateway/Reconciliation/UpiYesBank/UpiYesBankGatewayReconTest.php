@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Constants\Timezone;
 use RZP\Models\Batch\Status;
+use RZP\Services\RazorXClient;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Account;
 use RZP\Gateway\Upi\Base\Entity;
@@ -504,6 +505,115 @@ class UpiYesBankGatewayReconTest extends TestCase
     }
 
     /**
+     * Tests the payment create for duplicate unexpected payment
+     * using merchant_reference as an identifier
+     */
+    public function testDuplicateUnexpectedPaymentWithMerchantReference()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $paymentCount = 1;
+
+        $payments = $this->makeUpiYesBankPaymentsSince($paymentCount, $createdAt);
+
+        $upiEntity = $this->getDbLastEntityToArray('upi');
+
+        $this->fixtures->edit('upi', $upiEntity['id'], ['vpa' => 'unexpectedPayment@ybl']);
+        $this->fixtures->edit('upi', $upiEntity['id'], ['gateway' => 'upi_yesbank']);
+        $this->fixtures->edit('upi', $upiEntity['id'], ['npci_reference_id' => '123456789012']);
+        $this->fixtures->edit('upi', $upiEntity['id'], ['merchant_reference' => $upiEntity['payment_id']]);
+
+        $content = $this->buildUnexpectedPaymentRequest();
+
+        $upiEntity = $this->getDbLastEntityToArray('upi');
+
+        $content['upi']['merchant_reference'] = $upiEntity['payment_id'];
+
+        $content['upi']['vpa'] = $upiEntity['vpa'];
+
+        $gateway = $content['terminal']['gateway'];
+
+        // Setting the feature to use merchant_reference as an identifier
+        $this->setRazorxMock(function ($gateway, $feature, $mode)
+        {
+            if ($feature === 'use_merchant_reference_for_unexpected_payment')
+            {
+                return 'on';
+            }
+
+            return 'control';
+        });
+
+        // Hit payment create again
+        $this->makeRequestAndCatchException(function() use ($content) {
+            $request = [
+                'url'     => '/payments/create/upi/unexpected',
+                'method'  => 'POST',
+                'content' => $content,
+            ];
+            $this->ba->appAuth();
+            $this->makeRequestAndGetContent($request);
+
+        }, Exception\BadRequestException::class,
+            'Duplicate Unexpected payment with same amount');
+    }
+
+    /**
+     * Tests the payment create for multiple payments with same RRN
+     */
+    public function testUnexpectedPaymentForDuplicateRRNWithMerchantReference()
+    {
+        $content = $this->buildUnexpectedPaymentRequest();
+
+        $response = $this->makeUnexpectedPaymentAndGetContent($content);
+
+        $this->assertNotEmpty($response['payment_id']);
+
+        $this->assertTrue($response['success']);
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertEquals($upi['npci_reference_id'], $content['upi']['npci_reference_id']);
+
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $paymentCount = 1;
+
+        $payments = $this->makeUpiYesBankPaymentsSince($paymentCount, $createdAt);
+
+        $upiEntity = $this->getDbLastEntityToArray('upi');
+
+        $this->fixtures->edit('upi', $upiEntity['id'], ['vpa' => 'unexpectedPayment@ybl']);
+        $this->fixtures->edit('upi', $upiEntity['id'], ['gateway' => 'upi_yesbank']);
+        $this->fixtures->edit('upi', $upiEntity['id'], ['npci_reference_id' => '123456789012']);
+        $this->fixtures->edit('upi', $upiEntity['id'], ['merchant_reference' => $upiEntity['payment_id']]);
+
+        // Setting the feature to use merchant_reference as an identifier
+        $this->setRazorxMock(function ($gateway, $feature, $mode)
+        {
+            if ($feature === 'use_merchant_reference_for_unexpected_payment')
+            {
+                return 'on';
+            }
+
+            return 'control';
+        });
+
+        // Hitting the payment create again for same amount mismatch request
+        $this->makeRequestAndCatchException(function() use ($content) {
+            $request = [
+                'url'     => '/payments/create/upi/unexpected',
+                'method'  => 'POST',
+                'content' => $content,
+            ];
+            $this->ba->appAuth();
+            $this->makeRequestAndGetContent($request);
+
+        }, Exception\BadRequestException::class,
+            'Duplicate Unexpected payment with same amount');
+    }
+
+    /**
      * Authorize the failed payment by force authorizing it
      */
     public function testAuthorizeFailedPayment()
@@ -916,5 +1026,43 @@ class UpiYesBankGatewayReconTest extends TestCase
         $this->ba->appAuth();
 
         return $this->makeRequestAndGetContent($request);
+    }
+
+    /**
+     * sets the razox mock
+     *
+     * @param [type] $closure
+     * @return void
+     */
+    protected function setRazorxMock($closure)
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx
+            ->method('getTreatment')
+            ->will($this->returnCallback($closure));
+    }
+
+    /**
+     * returns a mock response of the razorx request
+     *
+     * @param string $inputFeature
+     * @param string $expectedFeature
+     * @param string $variant
+     * @return string
+     */
+    protected function getRazoxVariant(string $inputFeature, string $expectedFeature, string $variant): string
+    {
+        if ($expectedFeature === $inputFeature)
+        {
+            return $variant;
+        }
+
+        return 'control';
     }
 }

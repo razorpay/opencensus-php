@@ -2536,7 +2536,7 @@ class Service extends Base\Service
                 and ($currency !== $iinEntity->getIinCurrency()))
             {
                 $dccInfo = $this->getDCCInfo($amount, $currency, $merchant->getDccMarkupPercentage());
-                
+
                 $dccInfo['card_currency'] = $iinEntity->getIinCurrency() ?? Currency\Currency::USD;
 
                 $dccInfo['show_markup'] = $merchant->isDCCMarkupVisible();
@@ -5590,7 +5590,20 @@ class Service extends Base\Service
             TODO : Revisit this logic against isDuplicateUnexpectedPaymentV2
             */
 
-            $upiEntity = $this->repo->upi->findAllByNpciReferenceIdAndGateway($npciReferenceId, $gateway);
+            $upiEntity = null;
+
+            $merchant_reference = $input['upi']['merchant_reference'];
+
+            // This checks if merchant_reference can be used for fetching unexpected payments
+            if (($this->shouldUseMerchantReferenceForUnexpectedPayment($gateway) === true) and
+                (empty($merchant_reference) === false))
+            {
+                $upiEntity = $this->repo->upi->fetchAllByMerchantReferenceAndNpciReferenceIdAndGateway($merchant_reference, $npciReferenceId, $gateway);
+            }
+            else
+            {
+                $upiEntity = $this->repo->upi->findAllByNpciReferenceIdAndGateway($npciReferenceId, $gateway);
+            }
 
             if ((empty($upiEntity) === false) and ($upiEntity->count() > 1))
             {
@@ -7252,5 +7265,31 @@ class Service extends Base\Service
         );
 
         return $payment;
+    }
+
+    /**
+     * Checks if gateway is enabled for using merchant reference
+     * for identifying unexpected payments
+     * @param string $gateway
+     * @return bool
+     */
+    private function shouldUseMerchantReferenceForUnexpectedPayment(string $gateway)
+    {
+        $variant = $this->app->razorx->getTreatment($gateway, Merchant\RazorxTreatment::USE_MERCHANT_REFERENCE_FOR_UNEXPECTED_PAYMENT, Mode::LIVE);
+
+        $this->trace->info(
+            TraceCode::UPI_UNEXPECTED_PAYMENT_IDENTIFIER_RAZORX_VARIANT,
+            [
+                'gateway'           => $gateway,
+                'variant'           => $variant
+            ]
+        );
+
+        if (strtolower($variant) === 'on')
+        {
+            return true;
+        }
+
+        return false;
     }
 }

@@ -837,4 +837,9 @@ final class RazorxTreatment
 
     // experiment to disable default max amount for upi autopay
     const UPI_AUTOPAY_DISABLE_MAX_AMOUNT_BLACKLIST = 'upi_autopay_disable_max_amount_blacklist';
+
+    /**
+     * Razorx flag to use merchant_refernce as an identifier to fetch unexpected payments
+     */
+    const USE_MERCHANT_REFERENCE_FOR_UNEXPECTED_PAYMENT = 'use_merchant_reference_for_unexpected_payment';
 }
