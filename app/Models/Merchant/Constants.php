@@ -173,6 +173,14 @@ final class Constants
     const USER_CONTACT_MOBILE                     = 'user_contact_mobile';
     const CONTACT_INFO                            = 'contact_info';
 
+    // Fields for ASV Merchan Entity
+    const SETTLEMENT_SCHEDULE                       = 'settlement_schedule';
+    const SETTLEMENT_SCHEDULE_ID                    = 'settlement_schedule_id';
+    const FREE_PAYOUTS_CONSUMED                     = 'free_payouts_consumed';
+    const FREE_PAYOUTS_CONSUMED_LAST_RESET_AT       = 'free_payouts_consumed_last_reset_at';
+    const FETCH_COUPONS_URL                         = 'fetch_coupons_url';
+    const COUPON_VALIDITY_URL                       = 'coupon_validity_url';
+
     // Instant Refunds Pricing Fetch related constants
     const RULES                     = 'rules';
     const CUSTOM_PRICING            = 'custom_pricing';

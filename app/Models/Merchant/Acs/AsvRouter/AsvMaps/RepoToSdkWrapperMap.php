@@ -18,6 +18,8 @@ use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantDocument as MerchantDocume
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\Stakeholder as StakholderSdkWrapper;
 use RZP\Models\Merchant\Detail\Repository as MerchantDetailRepository;
 use RZP\Models\Merchant\Acs\AsvSdkIntegration\MerchantDetail as MerchantDetailSDKWrapper;
+use RZP\Models\Merchant\Repository as MerchantRepository;
+use RZP\Models\Merchant\Acs\AsvSdkIntegration\Merchant as MerchantSDKWrapper;
 
 
 final class RepoToSdkWrapperMap {
@@ -30,6 +32,7 @@ final class RepoToSdkWrapperMap {
         MerchantDocumentRepository::class => MerchantDocumentSDKWrapper::class,
         StakeholderRepository::class => StakholderSdkWrapper::class,
         MerchantDetailRepository::class => MerchantDetailSDKWrapper::class,
+        MerchantRepository::class => MerchantSDKWrapper::class,
     );
 
     /**

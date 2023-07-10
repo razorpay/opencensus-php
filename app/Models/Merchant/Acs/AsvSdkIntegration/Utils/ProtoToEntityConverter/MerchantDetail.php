@@ -152,6 +152,7 @@ class MerchantDetail
 
         $merchantDetailEntity = new MerchantDetailEntity();
         $merchantDetailEntity->setRawAttributes($merchantDetailRawAttributes);
+        $merchantDetailEntity->exists = true;
         return $merchantDetailEntity;
     }
 }

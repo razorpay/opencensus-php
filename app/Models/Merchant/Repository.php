@@ -44,12 +44,22 @@ use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Fraud\HealthChecker as HealthChecker;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Modules\Acs\Wrapper\Merchant as MerchantWrapper;
+use RZP\Models\Merchant\Acs\traits\AsvFind;
+use RZP\Models\Merchant\Acs\AsvRouter\AsvRouter;
 
 class Repository extends Base\Repository
 {
     use CacheQueries;
 
     use Base\RepositoryUpdateTestAndLive;
+
+    use AsvFind;
+    function __construct()
+    {
+        parent::__construct();
+
+        $this->asvRouter = new AsvRouter();
+    }
 
     //
     // Possible values for sub_accounts(other than merchant id) query:

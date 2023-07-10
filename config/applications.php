@@ -1523,7 +1523,8 @@ return [
         'splitz_experiment_stakeholder_read_by_id' => env('ASV_SPLITZ_EXPERIMENT_STAKEHOLDER_READ_BY_ID', ''),
         'splitz_experiment_stakeholder_read_by_merchant_id' => env('ASV_SPLITZ_EXPERIMENT_STAKEHOLDER_READ_BY_MERCHANT_ID', ''),
         'splitz_experiment_address_read_by_stakeholder_id' => env('ASV_SPLITZ_EXPERIMENT_ADDRESS_READ_BY_STAKEHOLDER_ID', ''),
-        'splitz_experiment_merchant_detail_read_by_id' => env('ASV_SPLITZ_EXPERIMENT_MERCHANT_DETAIL_READ_BY_ID', '')
+        'splitz_experiment_merchant_detail_read_by_id' => env('ASV_SPLITZ_EXPERIMENT_MERCHANT_DETAIL_READ_BY_ID', ''),
+        'splitz_experiment_merchant_read_by_id' => env('ASV_SPLITZ_EXPERIMENT_MERCHANT_READ_BY_ID','')
     ],
 
     'recon'         => [
