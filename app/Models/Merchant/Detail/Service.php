@@ -2,9 +2,12 @@
 
 namespace RZP\Models\Merchant\Detail;
 
-use RZP\lib\TemplateEngine;
+
+use App;
+use Config;
 use DOMDocument;
 use RZP\Http\RequestHeader;
+use RZP\lib\TemplateEngine;
 use RZP\Constants\Environment;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
@@ -13,7 +16,6 @@ use RZP\Services\Segment\Constants as SegmentConstants;
 use Throwable;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
-
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -51,6 +53,7 @@ use RZP\Models\Comment\Core as CommentCore;
 use RZP\Models\Batch\Header as BatchHeader;
 use RZP\Models\Batch\Status as BatchStatus;
 use RZP\Models\Merchant\Credits as Credits;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Document as Document;
 use RZP\Models\Merchant\Referral as Referral;
 use RZP\Notifications\AdminDashboard\Events;
@@ -130,6 +133,8 @@ class Service extends Base\Service
     protected $accountCore;
 
     protected $ba;
+
+    protected $config;
 
     public function __construct(Core $core = null, Validator  $validator = null, Account\Core $accountCore = null)
     {
@@ -424,6 +429,23 @@ class Service extends Base\Service
         return (new User\Service())->sendOtpEmailVerification($this->merchant, $this->user, $input, $inputData);
     }
 
+    public function isMerchantConsentExperimentEnabled($merchantId): bool
+    {
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $this->app['config']->get('app.merchant_consent_v2')
+        ];
+
+        $isExpEnabled = (new MerchantCore())->isSplitzExperimentEnable($properties, 'live');
+
+        $this->trace->info(TraceCode::CREATE_MERCHANT_CONSENTS_EXPT, [
+            '$isExpEnabled' => $isExpEnabled,
+            '$properties'   => $properties
+        ]);
+
+        return $isExpEnabled;
+    }
+
     public function saveMerchantDetailsForActivation(array $input)
     {
         $activationFormMilestone = $input[Entity::ACTIVATION_FORM_MILESTONE] ?? null;
@@ -450,7 +472,7 @@ class Service extends Base\Service
         }
         else
         {
-            if ($activationFormMilestone === DEConstants::L2_SUBMISSION and $consent != null)
+            if ($activationFormMilestone === DEConstants::L2_SUBMISSION and $consent !== null)
             {
                 // If merchant has not accepted the legal documents, merchant can not submit the L2 form.
                 if ($consent === false)
@@ -461,7 +483,6 @@ class Service extends Base\Service
                 }
 
                 try {
-
                     //if legal documents are not present already, store them in database
                     if($this->checkIfConsentsPresent($merchantId, ConsentConstant::VALID_LEGAL_DOC_L2) === false)
                     {
@@ -472,7 +493,9 @@ class Service extends Base\Service
 
                         $this->storeConsents($merchantId, $input);
 
-                        $documents_detail = $this->getDocumentsDetails($input);
+                        $isExpEnabled = $this->isMerchantConsentExperimentEnabled($merchantId);
+
+                        $documents_detail = $this->getDocumentsDetails($input, $isExpEnabled);
 
                         $legalDocumentsInput = [
                             DEConstants::DOCUMENTS_DETAIL => $documents_detail
@@ -480,7 +503,7 @@ class Service extends Base\Service
 
                         $processor = (new ProcessorFactory())->getLegalDocumentProcessor();
 
-                        $response = $processor->processLegalDocuments($legalDocumentsInput);
+                        $response = $processor->processLegalDocuments($legalDocumentsInput, DEConstants::PG, $isExpEnabled);
 
                         $responseData = $response->getResponseData();
 
@@ -511,7 +534,7 @@ class Service extends Base\Service
                     {
                         $this->trace->info(TraceCode::CREATE_MERCHANT_CONSENTS, [
                             'merchant_id' => $merchantId,
-                            'message' => 'Consents are already present.'
+                            'message' => 'Consents are already present'
                         ]);
                     }
                 }
@@ -3818,6 +3841,7 @@ class Service extends Base\Service
             $metadata = [
                 ConsentConstant::IP_ADDRESS => $input[DEConstants::IP_ADDRESS] ?? $_SERVER['HTTP_X_IP_ADDRESS'] ?? $this->app['request']->ip(),
                 ConsentConstant::USER_AGENT => $this->app['request']->header('X-User-Agent') ?? $this->app['request']->header('User-Agent') ?? null,
+                ConsentConstant::TEMPLATE_ID => $this->app['config']->get('app'. '.' .ConsentConstant::TEMPLATE_ID_MAPPING[$documentDetailInput[DEConstants::URL]])
             ];
 
             $merchantConsentInput = [
@@ -3836,7 +3860,7 @@ class Service extends Base\Service
 
             try
             {
-                $this->repo->transaction(function() use ($merchantConsentDetail, $merchantConsent, $merchantConsentDetailInput, $merchantConsentInput) {
+                    $this->repo->transaction(function() use ($merchantConsentDetail, $merchantConsent, $merchantConsentDetailInput, $merchantConsentInput) {
 
                     $merchantConsentDetail->build($merchantConsentDetailInput);
 
@@ -4047,24 +4071,56 @@ class Service extends Base\Service
 
     /**
      * @param $input
-     *
+     * @param bool $isExpEnabled
+     * @param array $mapConsentUrlToFileContent
      * @return array
      */
-    public function getDocumentsDetails($input, array &$mapConsentUrlToFileContent = []): array
+    public function getDocumentsDetails($input, bool &$isExpEnabled = false, array &$mapConsentUrlToFileContent = []): array
     {
         $documentDetailsInput = $input[DEConstants::DOCUMENTS_DETAIL];
 
         $documents_detail = [];
 
+        $isTemplateIDEmpty = false;
+
         foreach ($documentDetailsInput as $documentDetailInput)
         {
-            $consentType = $input[Entity::ACTIVATION_FORM_MILESTONE] ? ($input[Entity::ACTIVATION_FORM_MILESTONE] . '_' . $documentDetailInput[DEConstants::TYPE]) : $documentDetailInput[DEConstants::TYPE];
+            $templateID = $documentDetailInput[ConsentConstant::METADATA][ConsentConstant::TEMPLATE_ID]
+                ?? $this->app['config']->get('app' . '.' . ConsentConstant::TEMPLATE_ID_MAPPING[$documentDetailInput[DEConstants::URL]]);
 
-            $document_detail = [
-                "type"         => $consentType,
-                "content_type" => "html",
-                "content"      => $this->getDocumentDetailsContent($documentDetailInput, $mapConsentUrlToFileContent)
-            ];
+            if (empty($templateID) === true)
+            {
+                $isTemplateIDEmpty = true;
+            }
+        }
+
+        foreach ($documentDetailsInput as $documentDetailInput)
+        {
+            $consentType = $input[Entity::ACTIVATION_FORM_MILESTONE]
+                ? ($input[Entity::ACTIVATION_FORM_MILESTONE] . '_' . $documentDetailInput[DEConstants::TYPE])
+                : $documentDetailInput[DEConstants::TYPE];
+
+            if ($isExpEnabled === false or $isTemplateIDEmpty === true)
+            {
+                $document_detail = [
+                    "type"         => $consentType,
+                    "content_type" => "html",
+                    "content"      => $this->getDocumentDetailsContent($documentDetailInput, $mapConsentUrlToFileContent)
+                ];
+
+                // if isExpEnabled is true & template ID is null then V1 flow is followed
+                $isExpEnabled = false;
+            }
+            else
+            {
+                $templateID = $documentDetailInput[ConsentConstant::METADATA][ConsentConstant::TEMPLATE_ID]
+                    ?? $this->app['config']->get('app' . '.' . ConsentConstant::TEMPLATE_ID_MAPPING[$documentDetailInput[DEConstants::URL]]);
+
+                $document_detail = [
+                    "type"           =>  $consentType,
+                    "template_id"    =>  $templateID
+                ];
+            }
 
             $documents_detail[] = $document_detail;
         }

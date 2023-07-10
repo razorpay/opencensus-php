@@ -172,7 +172,7 @@ abstract class LegalDocumentManagerAPIAbstractClient
             ->withHeader('Content-Type', $contentType)
             ->withHeader('Twirp-Version', 'v8.1.0')
             ->withHeader('TwirPHP-Version', '')
-        ;
+            ;
     }
 
     /**
@@ -229,7 +229,7 @@ abstract class LegalDocumentManagerAPIAbstractClient
         $error = TwirpError::newError($rawError['code'], $rawError['msg']);
 
         foreach ($rawError['meta'] as $key => $value) {
-           $error->setMeta($key, $value);
+            $error->setMeta($key, $value);
         }
 
         return $error;

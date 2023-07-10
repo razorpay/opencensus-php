@@ -330,6 +330,7 @@ class Constants
 
     const CONSENT = 'consent';
     const DOCUMENTS_DETAIL = 'documents_detail';
+    const PG  = 'pg';
     const URL = 'url';
     const TYPE = 'type';
     const IP_ADDRESS = 'ip_address';

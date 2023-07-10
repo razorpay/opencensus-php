@@ -5439,6 +5439,7 @@ class ActivationTest extends OAuthTestCase
         $this->assertFalse($merchant->convertOnApi());
     }
 
+
     public function testStorageConsentForInstantlyActivatedMerchantWithL2Milestone()
     {
         Mail::fake();
@@ -5446,6 +5447,68 @@ class ActivationTest extends OAuthTestCase
         Config::set('services.bvs.mock', true);
 
         $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->setupKycSubmissionForInstantlyActivatedMerchant($merchantId);
+
+        $this->startTest();
+
+        $consentDetail = $this->getDbLastEntity('merchant_consents', 'test');
+
+        $this->assertEquals($merchantId, $consentDetail['merchant_id']);
+
+        $this->assertEquals('initiated', $consentDetail['status']);
+    }
+
+    public function testStorageConsentV1ForInstantlyActivatedMerchantWithL2Milestone()
+    {
+        Mail::fake();
+
+        Config::set('services.bvs.mock', true);
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'off',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
+        $merchantId = '1cXSLlUU8V9sXb';
+
+        $this->fixtures->create('merchant', ['id' => $merchantId]);
+
+        $this->setupKycSubmissionForInstantlyActivatedMerchant($merchantId);
+
+        $this->startTest();
+
+        $consentDetail = $this->getDbLastEntity('merchant_consents', 'test');
+
+        $this->assertEquals($merchantId, $consentDetail['merchant_id']);
+
+        $this->assertEquals('initiated', $consentDetail['status']);
+    }
+
+    public function testStorageConsentV2ForInstantlyActivatedMerchantWithL2Milestone()
+    {
+        Mail::fake();
+
+        Config::set('services.bvs.mock', true);
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'live',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
+        $merchantId = '1cXSLlUU8V9sXa';
+
+        $this->fixtures->create('merchant', ['id' => $merchantId]);
 
         $this->setupKycSubmissionForInstantlyActivatedMerchant($merchantId);
 

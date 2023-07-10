@@ -10,6 +10,8 @@ use RZP\Models\Base;
 use RZP\Exception\LogicException;
 use Illuminate\Support\Facades\DB;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Models\Merchant\AutoKyc\Bvs\BvsClient;
 use RZP\Models\Merchant\Consent\Processor\Factory;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Consent\Processor\Factory as ProcessorFactory;
@@ -20,7 +22,7 @@ use RZP\Models\Merchant\Detail\Service as DetailService;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestHeader;
 use RZP\Models\Merchant\Consent\Details\Entity as DetailEntity;
-use RZP\Models\Merchant\AutoKyc\Bvs\BvsClient;
+
 
 class Core extends Base\Core
 {
@@ -141,18 +143,26 @@ class Core extends Base\Core
 
                 $this->app['basicauth']->setMerchant($this->merchant);
 
-                $consentDetailsForMerchant = $this->repo->merchant_consents->getFailedConsentDetailsForMerchants($merchantId, array_keys(ConsentConstant::VALID_LEGAL_DOC));
+                $consentDetailsForMerchant = $this->repo->merchant_consents->getFailedConsentDetailsForMerchants(
+                                                                                $merchantId,
+                                                                                array_keys(ConsentConstant::VALID_LEGAL_DOC));
 
                 foreach ($consentDetailsForMerchant as $consentDetailForMerchant)
                 {
                     $consents = [
-                        'url'  => $consentDetailForMerchant['url'],
-                        'type' => $consentDetailForMerchant['consent_for']
+                        'url'      => $consentDetailForMerchant['url'],
+                        'type'     => $consentDetailForMerchant['consent_for'],
+                        'metadata' => $consentDetailForMerchant['metadata']
                     ];
 
                     $consentDetails[DEConstants::DOCUMENTS_DETAIL] = [$consents];
 
-                    $documents_detail = (new DetailService())->getDocumentsDetails($consentDetails, $mapConsentUrlToFileContent);
+                    $isExpEnabled = (new DetailService())->isMerchantConsentExperimentEnabled($merchantId);
+
+                    $documents_detail = (new DetailService())->getDocumentsDetails(
+                                                                    $consentDetails,
+                                                                 $isExpEnabled,
+                                                                 $mapConsentUrlToFileContent);
 
                     $legalDocumentsInput = [
                         DEConstants::DOCUMENTS_DETAIL               => $documents_detail,
@@ -162,13 +172,18 @@ class Core extends Base\Core
 
                     $processor = (new Factory())->getLegalDocumentProcessor();
 
-                    $response = $processor->processLegalDocuments($legalDocumentsInput, $this->getPlatform($consentDetailForMerchant['consent_for']));
+                    $response = $processor->processLegalDocuments($legalDocumentsInput,
+                                                            $this->getPlatform($consentDetailForMerchant['consent_for']),
+                                                            $isExpEnabled);
 
                     $responseData = $response->getResponseData();
 
                     $type = $consentDetailForMerchant['consent_for'];
 
-                    $merchantConsentDetail = $this->repo->merchant_consents->fetchMerchantConsentForTypeAndDetailsId($merchantId, $type, $consentDetailForMerchant['details_id']);
+                    $merchantConsentDetail = $this->repo->merchant_consents->fetchMerchantConsentForTypeAndDetailsId(
+                                                                                $merchantId,
+                                                                                $type,
+                                                                                $consentDetailForMerchant['details_id']);
 
                     $input = [
                         'status'      => ConsentConstant::INITIATED,
@@ -178,7 +193,6 @@ class Core extends Base\Core
                     ];
 
                     $this->updateConsentDetails($merchantConsentDetail, $input);
-
                 }
             }
             catch (\Throwable $e)
@@ -267,6 +281,12 @@ class Core extends Base\Core
             }
 
             return $responseData;
+        }
+        else
+        {
+            $this->trace->info(TraceCode::GET_MERCHANT_CONSENTS_ERROR, [
+                "message" => 'Could not get consents for merchant'
+            ]);
         }
 
         return [];
@@ -383,7 +403,17 @@ class Core extends Base\Core
             "id"   => $consent['request_id']
         ];
 
-        $bvsResponse = app('bvs_legal_document_manager')->getLegalDocumentsByRequestId($requestBody);
+        // if experiment is enabled consent documents are fetched in V2 flow to display on admin dashboard
+        $isExpEnabled = (new DetailService())->isMerchantConsentExperimentEnabled($consent['merchant_id']);
+
+        if ($isExpEnabled === false)
+        {
+            $bvsResponse = app('bvs_legal_document_manager')->getLegalDocumentsByRequestId($requestBody);
+        }
+        else
+        {
+            $bvsResponse = app('bvs_legal_document_manager')->getLegalDocumentsByRequestIdV2($requestBody);
+        }
 
         $bvsResponseData = $bvsResponse->getResponseData();
 

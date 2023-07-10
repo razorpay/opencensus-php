@@ -4165,6 +4165,20 @@ We look forward to transacting with you!
 
     public function testFetchMerchantConsents()
     {
+        $input = [
+            "experiment_id" => "M2AzEhkuVykf18",
+            "id" => self::DEFAULT_MERCHANT_ID
+        ];
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'live',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
         $this->testPutPreSignupDetails();
 
         $dataToReplace = [
@@ -4172,6 +4186,7 @@ We look forward to transacting with you!
                 'url'     => '/merchant/consents/'. self::DEFAULT_MERCHANT_ID,
             ]
         ];
+        $this->mockCreateLegalDocument();
 
         $this->ba->adminAuth();
 

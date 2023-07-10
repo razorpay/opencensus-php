@@ -5,13 +5,16 @@ namespace RZP\Models\Merchant\Consent\Processor;
 use App;
 use Carbon\Carbon;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Base\RepositoryManager;
 use Razorpay\Trace\Logger as Trace;
 use Illuminate\Foundation\Application;
+use RZP\Models\Merchant\AutoKyc\Bvs\BvsClient;
 use RZP\Models\Merchant\Consent\Processor\Processor;
+use RZP\Models\Merchant\AutoKyc\Response as Response;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\LegalDocumentBaseResponse;
-use RZP\Models\Merchant;
+use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\ConsentDocumentBaseResponse;
 
 class LegalDocumentProcessor implements Processor
 {
@@ -64,11 +67,11 @@ class LegalDocumentProcessor implements Processor
 
     /**
      * @param array|null $input
-     * @param string     $platform
-     *
-     * @return LegalDocumentBaseResponse
+     * @param string $platform
+     * @param bool $isExpEnabled
+     * @return LegalDocumentBaseResponse|ConsentDocumentBaseResponse
      */
-    public function processLegalDocuments(array $input = null, string $platform = 'pg')
+    public function processLegalDocuments(array $input = null, string $platform = 'pg',bool $isExpEnabled = false): LegalDocumentBaseResponse|ConsentDocumentBaseResponse
     {
         $documents_detail = $input[DEConstants::DOCUMENTS_DETAIL];
 
@@ -92,20 +95,62 @@ class LegalDocumentProcessor implements Processor
             "email"                => $this->merchant->getEmail(),
         ];
 
-        $body = [
-            "client_details"   => ['platform' => $platform],
-            "owner_details"    => $ownerDetails,
-            "documents_detail" => $documents_detail
+        // TODO: Register email template & update $emailDetails
+        $emailDetails = [
+            "owner_id"              =>  $this->merchant->getMerchantId(),
+            "owner_type"            => "merchant",
+            "org_id"                =>  $this->merchant->getOrgId(),
+            "template_name"         => "user.consent.email.documents",
+            "template_namespace"    => "pg",
+            "service"               => "api",
+            "from"                  =>  [
+                                            "address" => "no-reply@razorpay.com",
+                                            "name"    => "Razorpay"
+                                        ],
+            "params"                =>  [
+                                            "ownerName" => $ownerName,
+                                        ],
+            "to"                    =>  [
+                                            "address" => $this->merchant->getEmail(),
+                                            "name" => $ownerName
+                                        ],
+            "cc"                    => [],
+            "bcc"                   => [],
+            "reply_to"              => [],
+            "subject"               => "Consent Documents"
         ];
 
-        $response = app('bvs_legal_document_manager')->createLegalDocument($body);
+        // send_email is hardcoded to false, since it would be enabled in another PR
+        $body = [
+            "client_details"        =>  ['platform' => $platform],
+            "owner_details"         =>  $ownerDetails,
+            "documents_detail"      =>  $documents_detail,
+            "send_email"            =>  false,
+            "email_details"         =>  $emailDetails
+        ];
 
-        $this->trace->info(TraceCode::BVS_RESPONSE_CREATE_CONSENTS, [
-            'id'     => $response->getId(),
-            'status' => $response->getStatus()
-        ]);
+        if ($isExpEnabled === false)
+        {
+            $response = app('bvs_legal_document_manager')->createLegalDocument($body);
 
-        return new LegalDocumentBaseResponse($response);
+            $this->trace->info(TraceCode::BVS_RESPONSE_CREATE_CONSENTS, [
+                'id'     => $response->getId(),
+                'status' => $response->getStatus()
+            ]);
+
+            return new LegalDocumentBaseResponse($response);
+        }
+        else
+        {
+            $response = app('bvs_legal_document_manager')->createLegalDocumentV2($body, $this->merchant);
+
+            $this->trace->info(TraceCode::BVS_RESPONSE_CREATE_CONSENTS_V2, [
+                'id'     => $response->getId(),
+                'status' => $response->getStatus()
+            ]);
+
+            return new ConsentDocumentBaseResponse($response);
+        }
     }
 
     public function setMerchant(Merchant\Entity $merchant)
