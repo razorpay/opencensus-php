@@ -372,6 +372,11 @@ class Processor
     const SAVED_CARD_PAYMENTS_VIA_PGROUTER_V2 = 'saved_card_payments_via_pg_router_v2';
 
     /**
+     * Razorx flag to indicate if a banking Org ID card payment should go via PG Router and CPS or just via API service
+     */
+    const BANKING_ORG_ID_CARDS_PAYMENTS_VIA_PGROUTER = 'banking_org_id_card_payments_via_pg_router';
+
+    /**
      * Razorx flag to block merchants from re-arch flow
      */
     const BLOCK_MERCHANTS_ON_REARCH_UPS = 'block_merchants_on_rearch_ups';
@@ -704,7 +709,7 @@ class Processor
                 (empty($input[Payment\Entity::OFFER_ID]) === false) or
                 (empty($input[Payment\Entity::CHARGE_ACCOUNT]) === false) or
                 ((empty($input['reward_ids']) === false) and ($merchant->getId() !== '2aTeFCKTYWwfrF')) or
-                ($merchant->isRazorpayOrgId() === false) or
+//                ($merchant->isRazorpayOrgId() === false) or
                 ((empty($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) === false) and
                     empty($input[Payment\Entity::CARD][Card\Entity::CRYPTOGRAM_VALUE]) === true) or
                 (empty($input['application']) === false && $input['application'] === 'visasafeclick') or
@@ -721,6 +726,19 @@ class Processor
                     ]);
                 }
                 return false;
+            }
+
+            // check if eligible banking org id to redirect to card's re-arch
+            if ($merchant->isRazorpayOrgId() === false) {
+                $result = $this->app->razorx->getTreatment($merchant->getOrgId(), self::BANKING_ORG_ID_CARDS_PAYMENTS_VIA_PGROUTER, $this->mode);
+                if ($result !== 'on') {
+                    $this->trace->info(TraceCode::REARCH_ROUTING_CRITERIA_FAILED_REASON, [
+                        'reason' => "Banking_Org_Id",
+                        'merchant_id' => $merchant->getId(),
+                        'banking_org_id' => $merchant->getOrgId(),
+                    ]);
+                    return false;
+                }
             }
 
             $order = null;
