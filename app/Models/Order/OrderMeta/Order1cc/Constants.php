@@ -51,6 +51,8 @@ final class Constants
         self::CANCEL_INITIATED      => self::CANCEL
     ];
 
+    const PL_CREATED = "created";
+    const PL_MAPPED_CREATED = "pl_created";
     const PL_AWAITED = "awaited";
     const PL_MAPPED_AWAITED = "msg_awaited";
     const PL_SENT = "sent";
@@ -69,7 +71,8 @@ final class Constants
         self::PL_FAILED => self::PL_MAPPED_FAILED,
         self::PL_EXPIRED => self::PL_MAPPED_EXPIRED,
         self::PL_CANCELLED => self::PL_MAPPED_CANCELLED,
-        self::PL_PAID => self::PL_MAPPED_PAID
+        self::PL_PAID => self::PL_MAPPED_PAID,
+        self::PL_CREATED => self::PL_MAPPED_CREATED
     ];
     const MAGIC_PAYMENT_LINK_REVERSE_STATUS_MAPPING = [
         self::PL_MAPPED_AWAITED => self::PL_AWAITED,
@@ -77,7 +80,8 @@ final class Constants
         self::PL_MAPPED_FAILED => self::PL_FAILED,
         self::PL_MAPPED_EXPIRED => self::PL_EXPIRED,
         self::PL_MAPPED_CANCELLED => self::PL_CANCELLED,
-        self::PL_MAPPED_PAID => self::PL_PAID
+        self::PL_MAPPED_PAID => self::PL_PAID,
+        self::PL_MAPPED_CREATED => self::PL_CREATED
     ];
 
     const ACTION_STATUS            = 'status';

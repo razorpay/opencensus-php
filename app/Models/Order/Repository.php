@@ -295,7 +295,7 @@ class Repository extends Base\Repository
         $query = $query
             ->select($idCol,$receiptColumn,$amountCol,$createdAtCol,$valueCol)
             ->join($orderMetaTable, $idCol, '=', $orderMetaTable . '.order_id')
-            ->where($statusCol, '=',Status::PLACED )
+            ->whereIn($statusCol, array(Status::PLACED, Status::PAID))
             ->where($typeCol, '=',Fields::ONE_CLICK_CHECKOUT )
             ->where($merchantIdCol , '=', $merchantId );
 
@@ -337,7 +337,7 @@ class Repository extends Base\Repository
         $query = $query
             ->select($idCol,$receiptColumn,$amountCol,$createdAtCol,$valueCol)
             ->join($orderMetaTable, $idCol, '=', $orderMetaTable . '.order_id')
-            ->where($statusCol, '=',Status::PLACED )
+            ->whereIn($statusCol, array(Status::PLACED, Status::PAID))
             ->where($typeCol, '=',Fields::ONE_CLICK_CHECKOUT )
             ->where($merchantIdCol , '=', $merchantId );
 
@@ -389,19 +389,27 @@ class Repository extends Base\Repository
 
         $valueCol = $orderMetaTable.'.'.\RZP\Models\Order\OrderMeta\Entity::VALUE;
 
-        $magicPaymentLinkStatus = $valueCol.'->'.Fields::MAGIC_PAYMENT_LINK.'->'.Fields::MAGIC_PAYMENT_LINK_STATUS;
+        $magicPaymentLink = $valueCol.'->'.Fields::MAGIC_PAYMENT_LINK;
 
-        $query
-            ->whereNotNull($magicPaymentLinkStatus)
-            ->where($magicPaymentLinkStatus,'!=', Order1cc\Constants::PL_MAPPED_AWAITED);
+        $magicPaymentLinkStatus = $valueCol.'->'.Fields::MAGIC_PAYMENT_LINK.'->'.Fields::MAGIC_PAYMENT_LINK_STATUS;
 
         if (isset($params[Fields::MAGIC_PAYMENT_LINK_STATUS_KEY]))
         {
-            $query->where(
-                $magicPaymentLinkStatus,'=',
-                Order1cc\Constants::MAGIC_PAYMENT_LINK_STATUS_MAPPING[$params[Fields::MAGIC_PAYMENT_LINK_STATUS_KEY]]);
+            $query
+                ->whereNotNull($magicPaymentLinkStatus)
+                ->where(
+                    $magicPaymentLinkStatus,'=',
+                    Order1cc\Constants::MAGIC_PAYMENT_LINK_STATUS_MAPPING[
+                        $params[Fields::MAGIC_PAYMENT_LINK_STATUS_KEY]
+                    ]
+                );
 
             unset($params[Fields::MAGIC_PAYMENT_LINK_STATUS_KEY]);
+        }else {
+            $query
+                ->whereNotNull($magicPaymentLink)
+                ->whereNotNull($magicPaymentLinkStatus)
+                ->where($magicPaymentLinkStatus,'!=', Order1cc\Constants::PL_MAPPED_CREATED);
         }
     }
 
