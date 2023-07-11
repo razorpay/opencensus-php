@@ -2,8 +2,9 @@ import { PRODUCTS_DATA } from 'merchant/components/SidebarV2/utils/Products';
 import {
   SearchableEntitiesType,
   entityAttributesTypes,
+  statusKeywordsStoreType,
 } from 'merchant/components/HeaderNav/UniversalSearch/typings';
-const { transactions, settlements } = PRODUCTS_DATA;
+const { transactions, settlements, payment_links, payment_pages, payment_button } = PRODUCTS_DATA;
 
 export const searchableEntities: SearchableEntitiesType = {
   Payments: {
@@ -11,11 +12,11 @@ export const searchableEntities: SearchableEntitiesType = {
     route: '/payments',
     icon: transactions.icon,
     attributes: {
-      payment_id: 'id',
-      order_id: 'order_id',
-      email_id: 'email',
-      ph_number: 'contact',
-      payment_status: 'status',
+      PaymentId: 'id',
+      OrderId: 'order_id',
+      Email: 'email',
+      PhoneNumber: 'contact',
+      PaymentStatus: 'status',
     },
   },
   Settlements: {
@@ -23,8 +24,8 @@ export const searchableEntities: SearchableEntitiesType = {
     route: '/settlements',
     icon: settlements.icon,
     attributes: {
-      settlement_id: 'id',
-      settlement_status: 'status',
+      SettlementId: 'id',
+      SettlementStatus: 'status',
     },
   },
   Refunds: {
@@ -32,9 +33,9 @@ export const searchableEntities: SearchableEntitiesType = {
     route: '/refunds',
     icon: transactions.icon,
     attributes: {
-      refund_id: 'id',
-      payment_id: 'payment_id',
-      refund_status: 'public_status',
+      RefundId: 'id',
+      PaymentId: 'payment_id',
+      RefundStatus: 'public_status',
     },
   },
   Orders: {
@@ -42,8 +43,8 @@ export const searchableEntities: SearchableEntitiesType = {
     route: '/orders',
     icon: transactions.icon,
     attributes: {
-      order_id: 'id',
-      order_status: 'status',
+      OrderId: 'id',
+      OrderStatus: 'status',
     },
   },
   Disputes: {
@@ -51,91 +52,240 @@ export const searchableEntities: SearchableEntitiesType = {
     route: '/disputes',
     icon: transactions.icon,
     attributes: {
-      dispute_id: 'id',
-      payment_id: 'payment_id',
-      dispute_type: 'phase',
-      dispute_state: 'status',
+      DisputeId: 'id',
+      PaymentId: 'payment_id',
+      DisputeType: 'phase',
+      DisputeState: 'status',
+    },
+  },
+  Invoices: {
+    id: 'Invoices',
+    route: '/invoices',
+    icon: transactions.icon,
+    attributes: {
+      InvoiceId: 'id',
+    },
+  },
+  PaymentLinks: {
+    id: 'PaymentLinks',
+    route: '/paymentlinks',
+    icon: payment_links.icon,
+    attributes: {
+      PaymentLinkId: 'id',
+      PaymentLinkUrl: 'short_url',
+      PaymentLinkStatus: 'status',
+      Email: 'customer_email',
+      PhoneNumber: 'customer_contact',
+      PaymentLinkBatchId: 'batch_id',
+    },
+  },
+  PaymentPages: {
+    id: 'PaymentPages',
+    route: '/paymentpages',
+    icon: payment_pages.icon,
+    attributes: {
+      PaymentPageUrl: 'short_url',
+      PaymentPageStatus: 'status',
+    },
+  },
+  PaymentButtons: {
+    id: 'PaymentButtons',
+    route: '/paymentbuttons',
+    icon: payment_button.icon,
+    attributes: {
+      PaymentButtonStatus: 'status',
     },
   },
 };
 
 export const entityAttributes: entityAttributesTypes = {
   PaymentId: {
-    attributeId: 'payment_id',
+    attributeId: 'PaymentId',
     attributeType: 'entity_id',
     matchWith: /^pay_[a-zA-Z0-9]{0,14}/,
     entities: ['Payments', 'Refunds', 'Disputes'],
   },
   OrderId: {
-    attributeId: 'order_id',
+    attributeId: 'OrderId',
     attributeType: 'entity_id',
     matchWith: /^order_[a-zA-Z0-9]{0,14}/,
     entities: ['Payments', 'Orders'],
   },
   SettlementId: {
-    attributeId: 'settlement_id',
+    attributeId: 'SettlementId',
     attributeType: 'entity_id',
     matchWith: /^setl_[a-zA-Z0-9]{0,14}/,
     entities: ['Settlements'],
   },
   RefundId: {
-    attributeId: 'refund_id',
+    attributeId: 'RefundId',
     attributeType: 'entity_id',
     matchWith: /^rfnd_[a-zA-Z0-9]{0,14}/,
     entities: ['Refunds'],
   },
   DisputeId: {
-    attributeId: 'dispute_id',
+    attributeId: 'DisputeId',
     attributeType: 'entity_id',
     matchWith: /^disp_[a-zA-Z0-9]{0,14}/,
     entities: ['Disputes'],
   },
+  InvoiceId: {
+    attributeId: 'InvoiceId',
+    attributeType: 'entity_id',
+    matchWith: /^inv_[a-zA-Z0-9]{0,14}/,
+    entities: ['Invoices'],
+  },
+  PaymentLinkId: {
+    attributeId: 'PaymentLinkId',
+    attributeType: 'entity_id',
+    matchWith: /^plink_[a-zA-Z0-9]{0,14}/,
+    entities: ['PaymentLinks'],
+  },
+  PaymentLinkUrl: {
+    attributeId: 'PaymentLinkUrl',
+    attributeType: 'entity_url',
+    matchWith: /^https:\/\/rzp\.io\/i\/[a-zA-Z0-9]+$/,
+    entities: ['PaymentLinks'],
+  },
+  PaymentLinkBatchId: {
+    attributeId: 'PaymentLinkBatchId',
+    attributeType: 'entity_secondary_id',
+    matchWith: /^batch_[a-zA-Z0-9]{14}$/,
+    entities: ['PaymentLinks'],
+  },
+  PaymentPageUrl: {
+    attributeId: 'PaymentPageUrl',
+    attributeType: 'entity_url',
+    matchWith: /^https:\/\/rzp\.io\/i\/[a-zA-Z0-9]+$/,
+    entities: ['PaymentPages'],
+  },
   Email: {
-    attributeId: 'email_id',
+    attributeId: 'Email',
     attributeType: 'entity_email',
     matchWith: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$/,
-    entities: ['Payments'],
+    entities: ['Payments', 'PaymentLinks'],
   },
   PhoneNumber: {
-    attributeId: 'ph_number',
+    attributeId: 'PhoneNumber',
     attributeType: 'entity_contact_number',
     matchWith: /^(?:\+91|0)?[6-9]\d{9}$/,
-    entities: ['Payments'],
+    entities: ['Payments', 'PaymentLinks'],
   },
   PaymentStatus: {
-    attributeId: 'payment_status',
+    attributeId: 'PaymentStatus',
     attributeType: 'entity_state',
-    matchWith: ['captured', 'authorized', 'failed', 'refunded'],
+    matchWith: ['captured', 'authorized', 'failed', 'refunded', 'authorised'],
     entities: ['Payments'],
   },
   SettlementStatus: {
-    attributeId: 'settlement_status',
+    attributeId: 'SettlementStatus',
     attributeType: 'entity_state',
     matchWith: ['created', 'processed', 'failed', 'initiated'],
     entities: ['Settlements'],
   },
   RefundStatus: {
-    attributeId: 'refund_status',
+    attributeId: 'RefundStatus',
     attributeType: 'entity_state',
     matchWith: ['processed', 'processing', 'paid'],
     entities: ['Refunds'],
   },
   OrderStatus: {
-    attributeId: 'order_status',
+    attributeId: 'OrderStatus',
     attributeType: 'entity_state',
     matchWith: ['created', 'attempted', 'paid'],
     entities: ['Orders'],
   },
   DisputeType: {
-    attributeId: 'dispute_type',
+    attributeId: 'DisputeType',
     attributeType: 'entity_state',
-    matchWith: ['retrieval', 'chargeback', 'pre_arbitration', 'arbitration', 'fraud'],
+    matchWith: [
+      'retrieval',
+      'chargeback',
+      'pre_arbitration',
+      'pre arbitration',
+      'arbitration',
+      'fraud',
+    ],
     entities: ['Disputes'],
   },
   DisputeState: {
-    attributeId: 'dispute_state',
+    attributeId: 'DisputeState',
     attributeType: 'entity_state',
-    matchWith: ['open', 'under_review', 'lost', 'won', 'closed'],
+    matchWith: ['open', 'lost', 'won', 'closed', 'review', 'under review'],
     entities: ['Disputes'],
+  },
+  PaymentLinkStatus: {
+    attributeId: 'PaymentLinkStatus',
+    attributeType: 'entity_state',
+    matchWith: ['created', 'partially paid', 'paid', 'cancelled', 'expired'],
+    entities: ['PaymentLinks'],
+  },
+  PaymentPageStatus: {
+    attributeId: 'PaymentPageStatus',
+    attributeType: 'entity_state',
+    matchWith: ['active', 'inactive', 'in active'],
+    entities: ['PaymentPages'],
+  },
+  PaymentButtonStatus: {
+    attributeId: 'PaymentButtonStatus',
+    attributeType: 'entity_state',
+    matchWith: ['active', 'inactive', 'in active'],
+    entities: ['PaymentButtons'],
+  },
+};
+
+export const statusKeywordsStore: statusKeywordsStoreType = {
+  Payments: {
+    captured: 'captured',
+    failed: 'failed',
+    refunded: 'refunded',
+    authorised: 'authorized',
+    authorized: 'authorized',
+  },
+  Settlements: {
+    created: 'created',
+    processed: 'processed',
+    failed: 'failed',
+    initiated: 'initiated',
+  },
+  Refunds: {
+    processed: 'processed',
+    processing: 'processing',
+    paid: 'paid',
+  },
+  Orders: {
+    created: 'created',
+    attempted: 'attempted',
+    paid: 'paid',
+  },
+  Disputes: {
+    retrieval: 'retrieval',
+    chargeback: 'chargeback',
+    arbitration: 'arbitration',
+    'pre arbitration': 'pre_arbitration',
+    fraud: 'fraud',
+    open: 'open',
+    lost: 'lost',
+    won: 'won',
+    closed: 'closed',
+    'under review': 'under_review',
+    review: 'under_review',
+  },
+  PaymentLinks: {
+    created: 'created',
+    paid: 'paid',
+    cancelled: 'cancelled',
+    expired: 'expired',
+    'partially paid': 'partially_paid',
+  },
+  PaymentPages: {
+    active: 'active',
+    inactive: 'inactive',
+    'in active': 'inactive',
+  },
+  PaymentButtons: {
+    active: 'active',
+    inactive: 'inactive',
+    'in active': 'inactive',
   },
 };

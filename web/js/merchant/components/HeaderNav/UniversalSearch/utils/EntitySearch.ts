@@ -1,36 +1,46 @@
 import {
   entityAttributes,
   searchableEntities,
+  statusKeywordsStore,
 } from 'merchant/components/HeaderNav/UniversalSearch/configs';
 import {
-  EntityAttributeIdsTypes,
   attributeType,
   SearchableEntities,
   SearchableEntityType,
   ProductType,
   defaultEntityParamTypes,
+  EntityAttributeTypes,
+  AttributeType,
 } from 'merchant/components/HeaderNav/UniversalSearch/typings';
 import moment from 'moment';
 
+// **** Constants ****
 const DEFAULT_DATE_RANGE_IN_DAYS = 30;
 const DEFAULT_COUNTRY_CODE = '+91';
+const COMMON_ENTITY_ATTRIBUT_TYPES: AttributeType[] = ['entity_state', 'entity_url'];
+// *****
 
 const defaultQueryParamsPerEntity: defaultEntityParamTypes = {
   Payments: 'q',
   Settlements: 'utr',
+  Invoices: 'q',
   Orders: 'q',
+  PaymentButtons: 'title',
+  PaymentLinks: 'q',
   Refunds: 'q',
+  PaymentPages: 'title',
   Disputes: 'q',
 };
 
+// **** Main search util for entities
 export function entitySearch(searchQuery: string): {
   success: boolean;
   results: ProductType[];
 } {
   const entityAttributesKeys = Object.keys(entityAttributes);
   const matchedEntities: SearchableEntities[] = [];
-  const matchedAttribute: EntityAttributeIdsTypes[] = [];
-  let matchedAttributeType = '';
+  const matchedAttribute: EntityAttributeTypes[] = [];
+  let matchedAttributeType: string | AttributeType = '';
 
   for (let i = 0; i < entityAttributesKeys.length; i++) {
     const attribute: attributeType = entityAttributes[entityAttributesKeys[i]];
@@ -45,6 +55,7 @@ export function entitySearch(searchQuery: string): {
     } else {
       // eslint-disable-next-line no-lonely-if
       if (attribute.matchWith.includes(searchQuery.toLowerCase())) {
+        console.log('1.', attribute.matchWith.includes(searchQuery.toLowerCase()), attribute);
         matchedEntities.push(...attribute.entities);
         matchedAttribute.push(attribute.attributeId);
         matchedAttributeType = attribute.attributeType;
@@ -68,8 +79,8 @@ export function entitySearch(searchQuery: string): {
 export function transformEntitySearchResults(
   searchQuery: string,
   results: SearchableEntities[],
-  matchedAttribute: EntityAttributeIdsTypes[],
-  matchedAttributeType: string,
+  matchedAttribute: EntityAttributeTypes[],
+  matchedAttributeType: string | AttributeType,
 ): ProductType[] {
   const intermediateView: SearchableEntityType[] = [];
   const entitiesLookedUp = {};
@@ -119,8 +130,8 @@ export const getDefaultDateRangeForPayments = (): { to: number; from: number } =
 export function makeQuery(
   result: SearchableEntityType,
   searchQuery: string,
-  matchedAttribute: EntityAttributeIdsTypes[],
-  matchedAttributeType: string,
+  matchedAttribute: EntityAttributeTypes[],
+  matchedAttributeType: string | AttributeType,
 ): string {
   const entityAttributes = result.attributes;
 
@@ -130,7 +141,7 @@ export function makeQuery(
     if (result.id === 'Payments') {
       const { to, from } = getDefaultDateRangeForPayments();
 
-      if (matchedAttribute[0] === 'ph_number') {
+      if (matchedAttribute[0] === 'PhoneNumber') {
         let countryCode = DEFAULT_COUNTRY_CODE;
         let number: string | undefined;
 
@@ -150,17 +161,28 @@ export function makeQuery(
       }
     } else {
       queryParam = entityAttributes[matchedAttribute[0]];
+
+      if ((matchedAttributeType as AttributeType) === 'entity_state') {
+        const queryParamValue = statusKeywordsStore[result.id][searchQuery];
+        return `${result.route}?${queryParam}=${queryParamValue}`;
+      }
+
       return `${result.route}?${queryParam}=${searchQuery}`;
     }
   }
 
   // multiple attributes have matched
-  if (matchedAttributeType === 'entity_state') {
+  if (COMMON_ENTITY_ATTRIBUT_TYPES.includes(matchedAttributeType as AttributeType)) {
     const entityAttributes = result.attributes;
     for (let i = 0; i <= matchedAttribute.length; i++) {
       if (entityAttributes[matchedAttribute[i]]) {
         queryParam = entityAttributes[matchedAttribute[i]];
-        return `${result.route}?${queryParam}=${searchQuery}`;
+        if ((matchedAttributeType as AttributeType) === 'entity_state') {
+          const queryParamValue = statusKeywordsStore[result.id][searchQuery];
+          return `${result.route}?${queryParam}=${queryParamValue}`;
+        } else {
+          return `${result.route}?${queryParam}=${searchQuery}`;
+        }
       }
     }
   }

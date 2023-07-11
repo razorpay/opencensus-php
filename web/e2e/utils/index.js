@@ -1,8 +1,11 @@
+import moment from 'moment';
 const { expect } = require('@playwright/test');
 const { COMMON_SELECTORS } = require('./selectors');
 const { routes } = require('./constants');
 
-function generateRandomText(length) {
+const DEFAULT_DATE_RANGE_IN_DAYS = 30;
+
+export function generateRandomText(length) {
   const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let result = '';
   for (let i = 0; i < length; i++) {
@@ -55,6 +58,14 @@ function generateRandomWebsiteUrl() {
   const keyword = Math.random().toString(36).substring(2, 9);
   return `https://www.youtube.com/${keyword}`;
 }
+
+export const getDefaultDateRangeForPayments = () => {
+  const now = moment();
+  const to = now.startOf('D').unix(); // to
+  const from = now.startOf('D').subtract(DEFAULT_DATE_RANGE_IN_DAYS, 'days').endOf('D').unix(); // from
+
+  return { to, from };
+};
 
 const generateDataForPaymentLink = () => {
   const amount = '100';
@@ -177,6 +188,7 @@ module.exports = {
   getDemoGSTIN,
   expectSuccessNotification,
   generateRandomWebsiteUrl,
+  getDefaultDateRangeForPayments,
   generateDataForPaymentLink,
   switchToTestMode,
   hideSearchFTUXBannerByClick,

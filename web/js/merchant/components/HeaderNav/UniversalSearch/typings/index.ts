@@ -88,52 +88,66 @@ export interface ObjType {
   optionSetTotal: number;
 }
 
-export type SearchableEntities = 'Payments' | 'Refunds' | 'Orders' | 'Disputes' | 'Settlements';
+export type SearchableEntities =
+  | 'Payments'
+  | 'Refunds'
+  | 'Orders'
+  | 'Disputes'
+  | 'Settlements'
+  | 'Invoices'
+  | 'PaymentLinks'
+  | 'PaymentPages'
+  | 'PaymentButtons';
+
+type PaymentEntityAttributeTypes = 'PaymentId' | 'PaymentStatus';
+type RefundEntityAttributeTypes = 'RefundId' | 'RefundStatus';
+type DisputeEntityAttributeTypes = 'DisputeId' | 'DisputeType' | 'DisputeState';
+type SettlementEntityAttributeTypes = 'SettlementId' | 'SettlementStatus';
+type OrderEntityAttributeTypes = 'OrderId' | 'OrderStatus';
+type PaymentLinkEntityAttributeTypes =
+  | 'PaymentLinkId'
+  | 'PaymentLinkBatchId'
+  | 'PaymentLinkUrl'
+  | 'PaymentLinkStatus';
+type PaymentPageEntityAttributeTypes = 'PaymentPageUrl' | 'PaymentPageStatus';
+type PaymentButtonsEntityAttributeTypes = 'PaymentButtonStatus';
+type InvoiceEntityAttributeTypes = 'InvoiceId';
+type GeneralAttributeTypes = 'Email' | 'PhoneNumber';
+
+export type EntityAttributeTypes =
+  | PaymentEntityAttributeTypes
+  | RefundEntityAttributeTypes
+  | DisputeEntityAttributeTypes
+  | SettlementEntityAttributeTypes
+  | OrderEntityAttributeTypes
+  | InvoiceEntityAttributeTypes
+  | PaymentLinkEntityAttributeTypes
+  | PaymentPageEntityAttributeTypes
+  | PaymentButtonsEntityAttributeTypes
+  | GeneralAttributeTypes;
 
 export interface SearchableEntityType {
   id: SearchableEntities;
   route: string;
   icon: string;
   attributes: {
-    [key in EntityAttributeIdsTypes]?: string;
+    [key in EntityAttributeTypes]?: string;
   };
 }
 
 export type SearchableEntitiesType = Record<SearchableEntities, SearchableEntityType>;
 
-export type EntityAttributeIdsTypes =
-  | 'payment_id'
-  | 'order_id'
-  | 'settlement_id'
-  | 'refund_id'
-  | 'dispute_id'
-  | 'email_id'
-  | 'ph_number'
-  | 'payment_status'
-  | 'settlement_status'
-  | 'refund_status'
-  | 'order_status'
-  | 'dispute_type'
-  | 'dispute_state';
-
-export type EntityAttributeTypes =
-  | 'PaymentId'
-  | 'OrderId'
-  | 'SettlementId'
-  | 'RefundId'
-  | 'DisputeId'
-  | 'Email'
-  | 'PhoneNumber'
-  | 'PaymentStatus'
-  | 'SettlementStatus'
-  | 'RefundStatus'
-  | 'OrderStatus'
-  | 'DisputeType'
-  | 'DisputeState';
+export type AttributeType =
+  | 'entity_id'
+  | 'entity_url'
+  | 'entity_state'
+  | 'entity_contact_number'
+  | 'entity_email'
+  | 'entity_secondary_id';
 
 export interface attributeType {
-  attributeId: EntityAttributeIdsTypes;
-  attributeType: string;
+  attributeId: EntityAttributeTypes;
+  attributeType: AttributeType;
   matchWith: RegExp | string[];
   entities: SearchableEntities[];
 }
@@ -141,3 +155,8 @@ export interface attributeType {
 export type entityAttributesTypes = Record<EntityAttributeTypes, attributeType>;
 
 export type defaultEntityParamTypes = Record<SearchableEntities, string>;
+
+export type statusKeywordsStoreType = Record<
+  Exclude<SearchableEntities, 'Invoices'>,
+  Record<string, string>
+>;

@@ -25,26 +25,26 @@ describe('Entity search util', () => {
 
   test('Valid email as search query', () => {
     const searchResults = entitySearch('akash.raina@razorpay.com');
-    const validSearchResults: SearchableEntities[] = ['Payments'];
+    const validSearchResults: SearchableEntities[] = ['Payments', 'PaymentLinks'];
 
     expect(searchResults.success).toBe(true);
     searchResults.results.forEach((result) => {
       const isEntityFound = validSearchResults.includes(result.item.id as SearchableEntities);
       expect(isEntityFound).toBe(true);
     });
-    expect(searchResults.results).toHaveLength(1);
+    expect(searchResults.results).toHaveLength(validSearchResults.length);
   });
 
   test('Valid entity status as search query', () => {
     const searchResults = entitySearch('created');
-    const validSearchResults: SearchableEntities[] = ['Orders', 'Settlements'];
+    const validSearchResults: SearchableEntities[] = ['Orders', 'Settlements', 'PaymentLinks'];
 
     expect(searchResults.success).toBe(true);
     searchResults.results.forEach((result) => {
       const isEntityFound = validSearchResults.includes(result.item.id as SearchableEntities);
       expect(isEntityFound).toBe(true);
     });
-    expect(searchResults.results).toHaveLength(2);
+    expect(searchResults.results).toHaveLength(validSearchResults.length);
   });
 
   test(`Search query can't be identified`, () => {
@@ -55,6 +55,10 @@ describe('Entity search util', () => {
       'Payments',
       'Refunds',
       'Disputes',
+      'Invoices',
+      'PaymentLinks',
+      'PaymentPages',
+      'PaymentButtons',
     ];
 
     expect(searchResults.success).toBe(false);
@@ -71,7 +75,7 @@ describe('Transform search results util', () => {
     const transformedSearchResults = transformEntitySearchResults(
       'pay_',
       ['Payments', 'Orders', 'Disputes'],
-      ['payment_id'],
+      ['PaymentId'],
       'entity_id',
     );
     const validSearchResults: SearchableEntities[] = ['Payments', 'Orders', 'Disputes'];
@@ -87,7 +91,7 @@ describe('Transform search results util', () => {
     const transformedSearchResults = transformEntitySearchResults(
       'akash.raina@razorpay.com',
       ['Payments'],
-      ['email_id'],
+      ['Email'],
       'entity_email',
     );
     const validSearchResults: SearchableEntities[] = ['Payments'];
@@ -106,6 +110,10 @@ describe('Transform search results util', () => {
       'Orders',
       'Refunds',
       'Settlements',
+      'PaymentButtons',
+      'PaymentLinks',
+      'PaymentPages',
+      'Invoices',
     ];
 
     expect(transformedSearchResults).toHaveLength(Object.keys(searchableEntities).length);
@@ -125,18 +133,18 @@ describe('Make query util', () => {
       route: '/payments',
       icon: 'i-repeat',
       attributes: {
-        payment_id: 'id',
-        order_id: 'order_id',
-        email_id: 'email',
-        ph_number: 'contact',
-        payment_status: 'status',
+        PaymentId: 'id',
+        OrderId: 'order_id',
+        Email: 'email',
+        PhoneNumber: 'contact',
+        PaymentStatus: 'status',
       },
     };
-    const query = makeQuery(entity, searchKey, ['payment_id'], 'entity_id');
+    const query = makeQuery(entity, searchKey, ['PaymentId'], 'entity_id');
     const { to, from } = getDefaultDateRangeForPayments();
 
     expect(query).toBe(
-      `${entity.route}?${entity.attributes.payment_id}=${searchKey}&from=${from}&to=${to}`,
+      `${entity.route}?${entity.attributes.PaymentId}=${searchKey}&from=${from}&to=${to}`,
     );
   });
 
@@ -148,11 +156,11 @@ describe('Make query util', () => {
       route: '/payments',
       icon: 'i-repeat',
       attributes: {
-        payment_id: 'id',
-        order_id: 'order_id',
-        email_id: 'email',
-        ph_number: 'contact',
-        payment_status: 'status',
+        PaymentId: 'id',
+        OrderId: 'order_id',
+        Email: 'email',
+        PhoneNumber: 'contact',
+        PaymentStatus: 'status',
       },
     };
     const query = makeQuery(entity, searchKey, [], '');
