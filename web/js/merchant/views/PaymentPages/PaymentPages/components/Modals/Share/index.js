@@ -8,7 +8,7 @@ import Input from 'common/new-ui/Input';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import CreateEmbedButton from '../CreateEmbedButton';
+import CreateEmbedButton from 'merchant/views/PaymentPages/PaymentPages/components/Modals/CreateEmbedButton';
 
 import { isEmail, isPhone } from 'common/utils/validators';
 
@@ -86,15 +86,8 @@ export default class extends React.PureComponent {
   };
 
   render() {
-    const {
-      isNew,
-      isPaymentPagesV2,
-      isEditExistingId,
-      handleClose,
-      url,
-      AddonAction,
-      closeModal,
-    } = this.props;
+    const { isNew, isPaymentPagesV2, isEditExistingId, handleClose, url, AddonAction, closeModal } =
+      this.props;
 
     const askToShare = (
       <React.Fragment>

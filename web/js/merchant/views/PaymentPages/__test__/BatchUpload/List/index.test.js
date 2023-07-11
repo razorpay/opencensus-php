@@ -1,9 +1,10 @@
-import { screen, waitForLoadingToFinish, userEvent, waitFor } from 'test-utils';
+import { screen, waitForLoadingToFinish, userEvent, waitFor, server } from 'test-utils';
 import {
   renderApp,
   defaultProps,
 } from 'merchant/views/PaymentPages/__test__/mocks/fixtures/BatchUpload/List/index';
 import FileSaver from 'file-saver';
+import { paymentPagesErrorHandlers } from 'merchant/views/PaymentPages/PaymentPages/__test__/mocks/handlers';
 const saveAsSpy = jest.spyOn(FileSaver, 'saveAs');
 
 describe('Batch Payment Page - Batch Details', () => {
@@ -45,6 +46,7 @@ describe('Batch Payment Page - Batch Details', () => {
       id: 'pl_parsingerrortest',
       isBatchPaymentPages: true,
     };
+    server.use(paymentPagesErrorHandlers.paymentPagesDetailsParsingError());
     renderApp(initialState, props);
     await waitForLoadingToFinish();
     expect(
@@ -63,6 +65,7 @@ describe('Batch Payment Page - Batch Details', () => {
       id: 'pl_apierrortest',
       isBatchPaymentPages: true,
     };
+    server.use(paymentPagesErrorHandlers.paymentPagesDetailsError());
     renderApp(initialState, props);
     await waitForLoadingToFinish();
     expect(screen.getByText(/The requested URL was not found on the server./i)).toBeInTheDocument();
@@ -79,6 +82,7 @@ describe('Batch Payment Page - Batch Details', () => {
       id: 'pl_apierrortest',
       isBatchPaymentPages: true,
     };
+    server.use(paymentPagesErrorHandlers.paymentPagesDetailsError());
     renderApp(initialState, props);
     await waitForLoadingToFinish();
     const downloadSampleFileBtn = screen.getByRole('button', { name: 'Download Sample File' });
@@ -143,6 +147,7 @@ describe('Batch Payment Page - Batch Details', () => {
       id: 'pl_LpoFCooJAk0a2j',
       isBatchPaymentPages: true,
     };
+    server.use(paymentPagesErrorHandlers.batchPaymentPageGetBatchesError());
     jest.setTimeout(30000);
     renderApp(initialState, props, true);
     await waitForLoadingToFinish();
@@ -288,6 +293,7 @@ describe('Batch Payment Page - Batch Details', () => {
       id: 'pl_notify_error_test',
       isBatchPaymentPages: true,
     };
+    server.use(paymentPagesErrorHandlers.batchPaymentPagesFetchNotifyDetails());
     renderApp(initialState, props, true);
     await waitForLoadingToFinish();
     const notifyBatch = screen.getAllByText('Send all links')[0];
@@ -322,6 +328,7 @@ describe('Batch Payment Page - Batch Details', () => {
       id: 'pl_invalid_id',
       isBatchPaymentPages: true,
     };
+    server.use(paymentPagesErrorHandlers.batchPaymentPageGetBatchesError());
     renderApp(initialState, props, true);
     await waitForLoadingToFinish();
     expect(screen.getByText(/No Batch Files Found/i)).toBeInTheDocument();

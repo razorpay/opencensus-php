@@ -1,6 +1,6 @@
 import { rest } from 'msw';
 import {
-  merchantTnCError,
+  errorResponse,
   product,
   productError,
   paymentPageDetails,
@@ -146,7 +146,7 @@ export const paymentPagesHandlers = [
       ctx.delay(50),
     );
   }),
-  rest.get('*/merchant/api/*/payment_pages/pl_validid/details', (req, res, ctx) => {
+  rest.get('*/merchant/api/*/payment_pages/:id/details', (req, res, ctx) => {
     return res(
       ctx.status(200),
       ctx.json({
@@ -157,47 +157,14 @@ export const paymentPagesHandlers = [
       ctx.delay(50),
     );
   }),
-  rest.get('*/merchant/api/*/payment_pages/pl_parsingerrortest/details', (req, res, ctx) => {
-    return res(
-      ctx.status(200),
-      ctx.json({
-        status_code: 200,
-        success: true,
-        data: {},
-      }),
-      ctx.delay(50),
-    );
-  }),
 
-  rest.get('*/merchant/api/*/payment_pages/pl_apierrortest/details', (req, res, ctx) => {
-    return res(
-      ctx.status(200),
-      ctx.json({
-        status_code: 400,
-        success: false,
-        errors: merchantTnCError,
-      }),
-      ctx.delay(50),
-    );
-  }),
-  rest.get('*/merchant/api/*/payment_pages/pl_validid/pending_payments', (req, res, ctx) => {
+  rest.get('*/merchant/api/*/payment_pages/:id/pending_payments', (req, res, ctx) => {
     return res(
       ctx.status(200),
       ctx.json({
         status_code: 200,
         success: true,
         data: pendingPaymentDetails,
-      }),
-      ctx.delay(50),
-    );
-  }),
-  rest.get('*/merchant/api/*/payment_pages/pl_invalidid/pending_payments', (req, res, ctx) => {
-    return res(
-      ctx.status(200),
-      ctx.json({
-        status_code: 400,
-        success: false,
-        errors: merchantTnCError,
       }),
       ctx.delay(50),
     );
@@ -214,7 +181,7 @@ export const paymentPagesHandlers = [
       ctx.delay(50),
     );
   }),
-  rest.get('*/merchant/api/*/payment_pages/pl_valid_id/batches', (req, res, ctx) => {
+  rest.get('*/merchant/api/*/payment_pages/:id/batches', (req, res, ctx) => {
     return res(
       ctx.status(200),
       ctx.json({
@@ -225,18 +192,8 @@ export const paymentPagesHandlers = [
       ctx.delay(50),
     );
   }),
-  rest.get('*/merchant/api/*/payment_pages/pl_notify_error_test/batches', (req, res, ctx) => {
-    return res(
-      ctx.status(200),
-      ctx.json({
-        status_code: 200,
-        success: true,
-        data: batchPaymentPageDetails,
-      }),
-      ctx.delay(50),
-    );
-  }),
-  rest.put('*/merchant/api/*/invoices/batch/batch_LiRjPP0YF5eZi0/notify', (req, res, ctx) => {
+
+  rest.put('*/merchant/api/*/invoices/batch/:batchId/notify', (req, res, ctx) => {
     return res(
       ctx.status(200),
       ctx.json({
@@ -247,18 +204,7 @@ export const paymentPagesHandlers = [
       ctx.delay(50),
     );
   }),
-  rest.get('*/merchant/api/*/payment_pages/pl_invalid_id/batches', (req, res, ctx) => {
-    return res(
-      ctx.status(200),
-      ctx.json({
-        status_code: 400,
-        success: false,
-        errors: merchantTnCError,
-      }),
-      ctx.delay(50),
-    );
-  }),
-  rest.post('*/merchant/api/*/payment_pages/pl_valid_id/fetch_notify_details', (req, res, ctx) => {
+  rest.post('*/merchant/api/*/payment_pages/:id/fetch_notify_details', (req, res, ctx) => {
     return res(
       ctx.status(200),
       ctx.json({
@@ -269,20 +215,6 @@ export const paymentPagesHandlers = [
       ctx.delay(50),
     );
   }),
-  rest.post(
-    '*/merchant/api/*/payment_pages/pl_notify_error_test/fetch_notify_details',
-    (req, res, ctx) => {
-      return res(
-        ctx.status(200),
-        ctx.json({
-          status_code: 400,
-          success: false,
-          errors: merchantTnCError,
-        }),
-        ctx.delay(50),
-      );
-    },
-  ),
 ];
 
 export const paymentPagesErrorHandlers = {
@@ -293,7 +225,67 @@ export const paymentPagesErrorHandlers = {
         ctx.json({
           status_code: 400,
           success: false,
-          errors: merchantTnCError,
+          errors: errorResponse,
+        }),
+        ctx.delay(50),
+      );
+    }),
+  paymentPagesDetailsError: () =>
+    rest.get('*/merchant/api/*/payment_pages/:id/details', (req, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          status_code: 400,
+          success: false,
+          errors: errorResponse,
+        }),
+        ctx.delay(50),
+      );
+    }),
+  paymentPagesDetailsParsingError: () =>
+    rest.get('*/merchant/api/*/payment_pages/:id/details', (req, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          status_code: 200,
+          success: true,
+          data: {},
+        }),
+        ctx.delay(50),
+      );
+    }),
+  batchPaymentPagesFetchNotifyDetails: () =>
+    rest.post('*/merchant/api/*/payment_pages/:id/fetch_notify_details', (req, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          status_code: 400,
+          success: false,
+          errors: errorResponse,
+        }),
+        ctx.delay(50),
+      );
+    }),
+  batchPaymentPageGetBatchesError: () =>
+    rest.get('*/merchant/api/*/payment_pages/:id/batches', (req, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          status_code: 400,
+          success: false,
+          errors: errorResponse,
+        }),
+        ctx.delay(50),
+      );
+    }),
+  paymentsPendingError: () =>
+    rest.get('*/merchant/api/*/payment_pages/:id/pending_payments', (req, res, ctx) => {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          status_code: 400,
+          success: false,
+          errors: errorResponse,
         }),
         ctx.delay(50),
       );

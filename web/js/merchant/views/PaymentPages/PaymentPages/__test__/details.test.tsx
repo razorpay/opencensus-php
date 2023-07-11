@@ -366,6 +366,10 @@ describe('Batch Payment Pages -> Details page', () => {
       id: 'pl_invalidid',
       isBatchPaymentPages: true,
     };
+    server.use(
+      paymentPagesErrorHandlers.paymentPagesDetailsError(),
+      paymentPagesErrorHandlers.paymentsPendingError(),
+    );
     renderApp(defaultProps, 'pl_invalidid');
     await waitForLoadingToFinish();
     expect(screen.getByText(/No results found for id/i)).toBeInTheDocument();
